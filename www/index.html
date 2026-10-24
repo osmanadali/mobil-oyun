@@ -3,42 +3,70 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<meta name="theme-color" content="#15171b">
+<meta name="theme-color" content="#0e1120">
 <title>Ray — Metro Bulmaca</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div class="bg" aria-hidden="true"><i class="glow g1"></i><i class="glow g2"></i><i class="glow g3"></i><i class="map"></i></div>
 <div id="app">
   <section id="home" class="screen active">
-    <div class="brand"><div class="logo"></div><h1>Ray</h1><p>Hatları bağla. Şehri yak.</p></div>
-    <div class="stats">
-      <div><b id="sStars">0</b><span>yıldız</span></div>
-      <div><b id="sStreak">0</b><span>gün seri</span></div>
-      <div><b id="sHints">3</b><span>ipucu</span></div>
+    <header class="top">
+      <div class="chip" id="streakChip"><svg viewBox="0 0 24 24"><path d="M12 2c1 4 5 5.5 5 11a5 5 0 0 1-10 0c0-2.5 1.2-4 2.5-5 .2 1.8 1 3 2.2 3.3C11 8.6 11.3 5 12 2z"/></svg><b id="sStreak">0</b></div>
+      <div class="chip"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z"/></svg><b id="sStars">0</b></div>
+      <button class="ic" id="bSettings" aria-label="Ayarlar"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
+    </header>
+
+    <div class="hero">
+      <svg class="logo" viewBox="0 0 200 120" aria-hidden="true">
+        <path class="ln l1" d="M14 92H62L98 56H186"/>
+        <path class="ln l2" d="M98 10V56L134 92H186"/>
+        <path class="ln l3" d="M14 30H54L98 56"/>
+        <rect class="hub" x="86" y="44" width="24" height="24" rx="7"/>
+        <circle class="st s1" cx="14" cy="92" r="7"/><circle class="st s2" cx="186" cy="56" r="7"/>
+        <circle class="st s3" cx="98" cy="10" r="7"/><circle class="st s4" cx="186" cy="92" r="7"/><circle class="st s5" cx="14" cy="30" r="7"/>
+      </svg>
+      <h1>Ray</h1>
+      <p>Hatları bağla · Şehri yak</p>
     </div>
+
+    <div class="cards">
+      <button class="card daily btn" id="bDaily">
+        <span class="k">GÜNÜN HATTI</span>
+        <b id="dailyTitle">Hazır</b>
+        <small id="dailyState">Seriyi koru</small>
+        <svg class="arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+      </button>
+      <div class="card prog">
+        <div class="ph"><span class="k">İLERLEME</span><small id="nextReward">+2 ipucu: Bölüm 10</small></div>
+        <div class="pb"><i id="progBar"></i></div>
+        <div class="ph"><small><b id="sHints">3</b> ipucu</small><small id="sSize">3×3</small></div>
+      </div>
+    </div>
+
     <div class="actions">
-      <button id="bDaily" class="btn ghost">Günün Hattı <small id="dailyState"></small></button>
-      <button id="bPlay" class="btn primary">Oyna · Bölüm <span id="hLevel">1</span></button>
-      <div class="row"><button id="bSettings" class="btn ghost sm">Ayarlar</button><button id="bHow" class="btn ghost sm">Nasıl?</button></div>
+      <button id="bPlay" class="btn primary"><span>Oyna</span><small>Bölüm <span id="hLevel">1</span></small></button>
+      <button id="bHow" class="link">Nasıl oynanır?</button>
     </div>
   </section>
 
   <section id="game" class="screen">
-    <header class="bar">
-      <button id="bBack" class="ic" aria-label="Geri">‹</button>
-      <div class="title"><b id="gTitle">Bölüm 1</b><small id="gMoves">0 / 0 hamle</small></div>
-      <span class="ic"></span>
+    <header class="top">
+      <button id="bBack" class="ic" aria-label="Geri"><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg></button>
+      <div class="title"><b id="gTitle">Bölüm 1</b><small id="gMoves">0 hamle · hedef 0</small></div>
+      <button id="bReset" class="ic" aria-label="Baştan"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4.5h4.5"/></svg></button>
     </header>
+    <div class="meter"><i id="gBar"></i><span id="gPct">0%</span></div>
     <div id="board"><canvas id="cv"></canvas></div>
-    <footer class="bar bottom">
-      <button id="bReset" class="btn ghost sm">Baştan</button>
-      <button id="bHint" class="btn ghost sm">İpucu <span id="gHints">3</span></button>
+    <footer class="bottom">
+      <div class="parInfo"><span>HAMLE / HEDEF</span><b id="gPar">0</b></div>
+      <button id="bHint" class="btn hint"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.6.5 1.1 1.2 1.1 2.2h5c0-1 .5-1.7 1.1-2.2A6 6 0 0 0 12 3z"/></svg>İpucu<b id="gHints">3</b></button>
     </footer>
   </section>
 
-  <div id="modal" class="modal"><div class="card" id="mCard"></div></div>
+  <div id="modal" class="modal"><div class="sheet" id="mCard"></div></div>
   <div id="toast"></div>
 </div>
 <script src="ads.js"></script>
