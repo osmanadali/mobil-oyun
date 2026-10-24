@@ -1,0 +1,31 @@
+# Test APK (AdMob test reklamları). Sabit indirme linki:
+# https://github.com/osmanadali/mobil-oyun/releases/download/test/ray-test.apk
+name: Android APK (test)
+on:
+  push: { branches: [main], paths: ['www/**', 'package.json', 'capacitor.config.json', '.github/workflows/apk.yml'] }
+  workflow_dispatch:
+permissions: { contents: write }
+concurrency: { group: apk, cancel-in-progress: true }
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - run: npm install --no-audit --no-fund
+      - run: npx cap add android
+      - name: AdMob test App ID
+        run: sed -i 's#</application>#<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713"/></application>#' android/app/src/main/AndroidManifest.xml
+      - run: npx cap sync android
+      - run: cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon -q
+      - run: cp android/app/build/outputs/apk/debug/app-debug.apk ray-test.apk
+      - uses: actions/upload-artifact@v4
+        with: { name: ray-test-apk, path: ray-test.apk }
+      - name: Sabit "test" sürümünü güncelle
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          gh release delete test --yes --cleanup-tag || true
+          gh release create test ray-test.apk --prerelease --target "$GITHUB_SHA" --title "Test sürümü" --notes "Otomatik test APK'sı (${GITHUB_SHA::7}). Reklamlar Google test reklamıdır."
