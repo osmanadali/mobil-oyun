@@ -231,6 +231,7 @@ body.introing .screen *{animation-play-state:paused!important}
 .sheet:before{content:"";width:40px;height:5px;border-radius:5px;background:var(--stroke);align-self:center;margin-bottom:8px;box-shadow:inset 0 0 0 9px var(--rail)}
 .modal.open .sheet{transform:none}
 .sheet{max-height:96%;overflow-y:auto;overscroll-behavior:contain}
+.sheet.fit,.sheet h2{touch-action:none}.sheet.drag{transition:none}
 @media (max-height:720px){.opt{padding:6px 4px}.sheet{gap:9px}}
 .sheet h2{text-align:center;font-size:28px;font-weight:800;letter-spacing:-.5px}
 .sheet p{text-align:center;color:var(--mut);line-height:1.5}

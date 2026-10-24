@@ -270,7 +270,7 @@ function haptic(kind) {
 }
 
 // ---------- UI yardımcıları ----------
-let toastT, mLocked = false, howBack = null;   // howBack: anlatıcı açıkken Android geri tuşu
+let toastT, mLocked = false, howBack = null, mOnClose = null;   // mOnClose: pencere nasıl kapanırsa kapansın bir kez çalışır   // howBack: anlatıcı açıkken Android geri tuşu
 function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2200); }
 const active = id => $(id).classList.contains('active');
 function show(id) {
@@ -284,13 +284,38 @@ function show(id) {
 }
 const bind = binds => { for (const [id, fn] of Object.entries(binds)) { const el = $(id); if (el) el.onclick = fn; } };
 function modal(html, binds = {}, locked = false) {
-  mLocked = locked; howBack = null;
-  $('mCard').innerHTML = html; $('modal').classList.add('open');
+  mLocked = locked; howBack = null; mOnClose = null;
+  const sh = $('mCard'); sh.innerHTML = html; sh.scrollTop = 0; $('modal').classList.add('open');
+  sh.classList.toggle('fit', sh.scrollHeight <= sh.clientHeight + 1);   // sığan pencere: her yerinden aşağı çekilebilir
   bind(binds);
 }
-const closeModal = () => { howBack = null; $('modal').classList.remove('open'); };
+const closeModal = () => { howBack = null; const f = mOnClose; mOnClose = null; $('modal').classList.remove('open'); f?.(); };
 const modalOpen = () => $('modal').classList.contains('open');
 $('modal').onclick = e => { if (e.target.id === 'modal' && !mLocked) closeModal(); };
+// alt pencere: aşağı kaydırarak kapat. Kilitli pencere (anlatıcı, kural kartı) hafifçe esneyip geri gelir.
+{
+  const sh = $('mCard');
+  let y0 = null, dy = 0, t0 = 0, pid = 0, dragged = false;
+  sh.addEventListener('pointerdown', e => {
+    if (e.target.closest('.demobox,.lvs.hunt') || sh.scrollTop > 0) return;
+    y0 = e.clientY; dy = 0; t0 = performance.now(); pid = e.pointerId; dragged = false;
+  });
+  sh.addEventListener('pointermove', e => {
+    if (y0 == null || e.pointerId !== pid) return;
+    dy = e.clientY - y0;
+    if (!dragged && dy > 8) { dragged = true; sh.classList.add('drag'); sh.setPointerCapture?.(pid); }
+    if (dragged) sh.style.transform = `translateY(${Math.max(0, mLocked ? dy * .15 : dy)}px)`;
+  });
+  const end = () => {
+    if (y0 == null) return; y0 = null;
+    if (!dragged) return;
+    sh.classList.remove('drag'); sh.style.transform = '';
+    const v = dy / Math.max(1, performance.now() - t0);
+    if (!mLocked && (dy > 110 || (dy > 40 && v > .6))) { closeModal(); haptic(); }
+  };
+  sh.addEventListener('pointerup', end); sh.addEventListener('pointercancel', end);
+  sh.addEventListener('click', e => { if (dragged) { e.stopPropagation(); e.preventDefault(); dragged = false; } }, true);   // sürükleme sonrası düğmeye basılmış sayılmasın
+}
 const bump = el => { el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); };
 const fmtT = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return `${s / 60 | 0}:${String(s % 60).padStart(2, '0')}`; };
 const STAR = '<svg viewBox="0 0 24 24"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z"/></svg>';
@@ -1023,7 +1048,8 @@ function how() {
     <p id="demoTxt" class="demotxt">${DEMO_STEPS[0][1]}</p>
     <small class="swipe" id="demoSwipe">‹ kaydır ›</small>
     <button id="mClose" class="btn primary"><span>İleri ›</span><small>1 / ${DEMO_STEPS.length}</small></button>`, {}, true);
-  const btn = $('mClose'), close = () => { howBack = null; closeModal(); if (save.played === 0 && !G) start('level'); };
+  const btn = $('mClose'), close = closeModal;
+  mOnClose = () => { if (save.played === 0 && !G) start('level'); };
   const D = demo($('demoCv'), k => {
     if (k === last && !done) { done = true; mLocked = false; $('demoSwipe').style.visibility = 'hidden'; }
     btn.classList.toggle('fin', done && k === last);

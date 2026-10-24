@@ -174,6 +174,8 @@ async function inViewport(page, sel) {
     check('onboard.demo', 'Nasıl oynanır: sayfa kendi sahnesini oynayıp ~3 sn sonra kendiliğinden geçiyor', !!cap1 && !!cap2 && cap1 !== cap2, `"${cap1}" → "${cap2}"`, 'medium');
     // kilit: dışarı dokunmak kapatmaz · kaydırma: sola → sonraki sayfa
     await page.mouse.click(195, 30); await page.waitForTimeout(400);
+    const drag = async sel => { const b = await page.locator(sel).boundingBox(); await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await page.mouse.down(); await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2 + 260, { steps: 8 }); await page.mouse.up(); await page.waitForTimeout(600); };
+    await drag('.sheet h2');
     const lockOpen = await modalOpen(page), capA = await page.textContent('#demoTxt');
     const bx = await page.locator('.demobox').boundingBox();
     await page.mouse.move(bx.x + bx.width * .8, bx.y + bx.height / 2); await page.mouse.down();
@@ -183,7 +185,7 @@ async function inViewport(page, sel) {
     let fwd = 0;
     while (fwd < 10 && !/Hadi|Tamam/.test(await page.textContent('#mClose'))) { await page.click('#mClose'); fwd++; await page.waitForTimeout(250); }
     await shot(page, 'onboarding-last');
-    check('onboard.lock', 'Anlatıcı son sayfaya gelmeden kapanmıyor; "İleri" sayfa sayfa ilerler', lockOpen && await modalOpen(page) && fwd >= 3 && fwd <= 6, `${fwd} kez İleri`, 'medium');
+    check('onboard.lock', 'Anlatıcı son sayfaya gelmeden kapanmıyor (dışarı dokunma, aşağı çekme); "İleri" sayfa sayfa ilerler', lockOpen && await modalOpen(page) && fwd >= 3 && fwd <= 6, `${fwd} kez İleri`, 'medium');
     if (howOpen) await page.click('#mClose');
     await page.waitForTimeout(600);
     const inGame = await page.evaluate(() => document.getElementById('game').classList.contains('active'));
@@ -430,6 +432,10 @@ async function inViewport(page, sel) {
     const nt = await page.evaluate(() => ({ n: window.__log.notif?.length || 0, titles: (window.__log.notif || []).map(x => x.title), on: JSON.parse(localStorage.getItem('ray')).remind }));
     check('remind', 'Günlük hatırlatma: ana sayfada bir kez sorulur, izinle 3–4 bildirim planlanır', asked && nt.on && nt.n >= 3, JSON.stringify(nt), 'medium');
     // reklamsız paket: ayarlar → satın al → +10 ipucu, Altın tema, geçiş reklamı yok
+    const dragClose = async () => { const b = await page.locator('.sheet h2').boundingBox(); await page.mouse.move(b.x + b.width / 2, b.y + 10); await page.mouse.down(); await page.mouse.move(b.x + b.width / 2, b.y + 250, { steps: 8 }); await page.mouse.up(); await page.waitForTimeout(600); return !(await page.evaluate(() => document.getElementById('modal').classList.contains('open'))); };
+    await page.click('#bSettings'); await page.waitForTimeout(500); const c1 = await dragClose();
+    await page.click('#crownChip'); await page.waitForTimeout(500); const c2 = await dragClose();
+    check('sheet.swipe', 'Ayarlar ve Renk temaları aşağı kaydırınca kapanıyor', c1 && c2, `ayarlar ${c1} · temalar ${c2}`, 'medium');
     const h0 = (await getSave(page)).hints;
     await page.click('#bSettings'); await page.waitForTimeout(400); await page.click('#oShop'); await page.waitForTimeout(400);
     const price = await page.textContent('#mBuy').catch(() => '');
