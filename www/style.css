@@ -143,6 +143,26 @@ h1{font-size:64px;font-weight:800;letter-spacing:-2px;line-height:1;background:l
 .lv.cur{box-shadow:inset 0 0 0 2px var(--lc),0 0 16px -4px var(--lc)}
 .lv.off{opacity:.4}
 
+/* sonuç paneli: tahtanın altına oturur, tahtayı örtmez */
+.winp{display:none}
+#game.won .bottom{display:none}
+#game.won .winp{display:flex;flex-direction:column;gap:10px;flex:none;margin:10px -18px 0;padding:14px 18px max(16px,env(safe-area-inset-bottom));border-radius:28px 28px 0 0;background:var(--sheetBg);-webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4);box-shadow:inset 0 1px 0 var(--stroke),0 -10px 40px rgba(0,0,0,.22);animation:wpIn .45s cubic-bezier(.2,.9,.2,1)}
+@keyframes wpIn{from{transform:translateY(100%)}}
+.wp-top{display:flex;align-items:center;gap:10px}
+.wp-sum{flex:1;display:flex;align-items:center;gap:12px;min-width:0}
+.wp-t{display:flex;flex-direction:column;gap:4px;min-width:0}
+.winp .stars{margin:0;gap:3px;flex:none}
+.winp .stars svg{width:28px;height:28px}.winp .stars svg:nth-child(2){width:34px;height:34px;margin-top:-8px}
+.winp h2{font-size:21px;font-weight:800;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.winp .badge{align-self:flex-start;font-size:10.5px;padding:3px 9px;white-space:nowrap}
+.wp-tog{flex:none;border:0;height:44px;padding:0 12px;border-radius:14px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--stroke);color:var(--mut);font:inherit;font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px}
+.wp-tog svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .3s}
+#game.mini .wp-tog svg{transform:rotate(180deg)}
+#game.mini .wp-more{display:none}
+.winp .statrow{margin:2px 0 0}.winp .tip{font-size:13px;color:var(--mut);text-align:center}
+.winp .primary{height:62px}.winp .row2 .glassbtn{height:48px}
+@media (max-height:720px){#game.won .winp{gap:8px;padding-top:10px}.winp .primary{height:54px}.winp .row2 .glassbtn{height:44px}.winp .statrow b{font-size:18px}}
+
 /* ---------- alt sayfa (modal) ---------- */
 .modal{position:absolute;inset:0;display:flex;align-items:flex-end;background:rgba(5,6,15,.45);opacity:0;pointer-events:none;transition:opacity .3s;z-index:5}
 .modal.open{opacity:1;pointer-events:auto}

@@ -64,7 +64,7 @@ async function open(browser, url, { vp = [390, 844], scheme = 'dark', save = nul
 }
 const shot = (page, name) => page.screenshot({ path: path.join(SHOTS, name + '.png') });
 const getSave = page => page.evaluate(() => JSON.parse(localStorage.getItem('ray') || '{}'));
-const modalOpen = page => page.evaluate(() => document.getElementById('modal').classList.contains('open'));
+const modalOpen = page => page.evaluate(() => document.getElementById('modal').classList.contains('open') || document.getElementById('game').classList.contains('won'));
 
 async function tapTile(page, i) {
   const p = await page.evaluate(i => {
@@ -170,7 +170,19 @@ async function inViewport(page, sel) {
       const won = await waitModal(page);
       const stars = await page.evaluate(() => document.querySelectorAll('.stars svg.on').length);
       lv.push({ ...st, taps, won, stars, ms: Date.now() - t });
-      if (L === 1) await shot(page, 'win-sheet');
+      if (L === 1) {
+        await shot(page, 'win-sheet');
+        // sonuç paneli tahtayı örtmemeli; "Hattı gör" tahtayı büyütmeli
+        const vis = () => page.evaluate(() => { const { G, geo } = window.__ray, bd = document.getElementById('board').getBoundingClientRect(), wp = document.getElementById('winPanel').getBoundingClientRect();
+          const bottom = bd.top + geo.oy + geo.s * G.rows; return { s: geo.s, boardBottom: Math.round(bottom), panelTop: Math.round(wp.top), top: Math.round(bd.top + geo.oy) }; });
+        const v1 = await vis();
+        await page.click('#wTog'); await page.waitForTimeout(700);
+        const v2 = await vis(); await shot(page, 'win-mini');
+        await page.click('#wTog'); await page.waitForTimeout(600);
+        metrics.winView = { full: v1, mini: v2 };
+        check('win.visible', 'Kazanınca tamamlanan hat görünür (panel tahtayı örtmez)', v1.boardBottom <= v1.panelTop + 1 && v1.s >= 40, JSON.stringify(v1));
+        check('win.mini', '"Hattı gör" paneli küçültüp tahtayı büyütür', (v1.s >= 96 || v2.s > v1.s) && v2.boardBottom <= v2.panelTop + 1, `${v1.s} → ${v2.s} px`, 'medium');
+      }
       if (!won) {
         lv[lv.length - 1].diag = await page.evaluate(() => { const { G } = window.__ray; return { lvl: G.lvl, won: G.won, solved: G.L.solved, lit: G.L.n, tiles: G.cur.length, wrong: G.cur.filter((v, i) => v !== G.sol[i]).length, moves: G.moves, modal: document.getElementById('modal').className, active: document.querySelector('.screen.active').id }; });
         await shot(page, `fail-level-${L}`);

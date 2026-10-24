@@ -155,10 +155,11 @@ function show(id) {
   if (id === 'map') renderMap();
   clearInterval(clockT); if (id === 'home') clockT = setInterval(dailyClock, 1000);
 }
+const bind = binds => { for (const [id, fn] of Object.entries(binds)) { const el = $(id); if (el) el.onclick = fn; } };
 function modal(html, binds = {}, locked = false) {
   mLocked = locked;
   $('mCard').innerHTML = html; $('modal').classList.add('open');
-  for (const [id, fn] of Object.entries(binds)) { const el = $(id); if (el) el.onclick = fn; }
+  bind(binds);
 }
 const closeModal = () => $('modal').classList.remove('open');
 const modalOpen = () => $('modal').classList.contains('open');
@@ -241,7 +242,7 @@ function lockedSheet(c) {
 // ---------- oyun durumu ----------
 let G = null;
 const cv = $('cv'), cx = cv.getContext('2d');
-let geo = { s: 0, ox: 0, oy: 0, dpr: 1 };
+let geo = { s: 0, ox: 0, oy: 0, dpr: 1 }, vg = geo, geoFrom = null, geoT0 = 0;
 const anim = new Map(), press = new Map();   // i -> başlangıç zamanı
 let litAt = [], ripples = [], parts = [], winT = 0, raf = 0, winTimer = 0, tickT = 0, howT = 0, sessionWins = 0;
 
@@ -262,7 +263,7 @@ function saveRun() {
   persist();
 }
 function start(mode, lvl = save.level) {
-  clearTimeout(howT); clearTimeout(winTimer); closeModal();
+  clearTimeout(howT); clearTimeout(winTimer); closeModal(); closePanel();
   const daily = mode === 'daily', day = today();
   if (!daily && !unlocked(lineOf(lvl))) { lockedSheet(lineOf(lvl)); return; }
   const [c, r] = daily ? [6, 8] : sizeFor(lvl);
@@ -310,8 +311,9 @@ function resize() {
   cv.width = Math.round(Wd * dpr); cv.height = Math.round(Hd * dpr);
   if (!G) return;
   const s = Math.floor(Math.min((Wd - 8) / G.cols, (Hd - 8) / G.rows, 96));
-  geo = { s, ox: (Wd - s * G.cols) / 2, oy: (Hd - s * G.rows) / 2, dpr };
-  draw();
+  const ng = { s, ox: (Wd - s * G.cols) / 2, oy: (Hd - s * G.rows) / 2, dpr };
+  if (G.won && vg.s && (ng.s !== vg.s || ng.oy !== vg.oy)) { geoFrom = vg; geoT0 = performance.now(); }
+  geo = ng; draw();
 }
 new ResizeObserver(() => resize()).observe($('board'));
 
@@ -322,7 +324,7 @@ function rr(x, y, w, h, r) { cx.beginPath(); rrp(x, y, w, h, r); }
 const DV = [[N, 0, -1], [E, 1, 0], [S, 0, 1], [W, -1, 0]];
 // karonun raylarını mevcut yola ekler (ekran koordinatında; save/restore yok)
 function railPath(T, m) {
-  const [x, y, a, sc] = T, c = Math.cos(a), si = Math.sin(a), L = geo.s / 2 * sc;
+  const [x, y, a, sc] = T, c = Math.cos(a), si = Math.sin(a), L = vg.s / 2 * sc;
   for (const [b, dx, dy] of DV) if (m & b) { cx.moveTo(x, y); cx.lineTo(x + (dx * c - dy * si) * L, y + (dx * si + dy * c) * L); }
 }
 
@@ -330,10 +332,16 @@ function railPath(T, m) {
 function draw() {
   raf = 0;
   if (!G || !geo.s) return;
-  const now = performance.now(), { s, ox, oy, dpr } = geo, n = G.cur.length, col = G.color;
+  const now = performance.now();
+  let busy = false;
+  if (geoFrom) {
+    const t = Math.min((now - geoT0) / 420, 1), e = ease(t), f = k => geoFrom[k] + (geo[k] - geoFrom[k]) * e;
+    vg = { s: f('s'), ox: f('ox'), oy: f('oy'), dpr: geo.dpr };
+    if (t < 1) busy = true; else geoFrom = null;
+  } else vg = geo;
+  const { s, ox, oy, dpr } = vg, n = G.cur.length, col = G.color;
   cx.setTransform(dpr, 0, 0, dpr, 0, 0);
   cx.clearRect(0, 0, cv.width / dpr, cv.height / dpr);
-  let busy = false;
   // karo dönüşümleri
   const X = [];
   for (let i = 0; i < n; i++) {
@@ -412,7 +420,8 @@ function burst(i, k = 9, delay = 0, color = G.color) {
 }
 
 cv.addEventListener('pointerdown', e => {
-  if (!G || G.won) return;
+  if (G?.won) { if ($('game').classList.contains('won')) toggleMini(); return; }
+  if (!G) return;
   const { s, ox, oy } = geo, px = e.offsetX, py = e.offsetY;   // offsetX: CSS dönüşümlerinden bağımsız
   const c = Math.floor((px - ox) / s), w = Math.floor((py - oy) / s);
   if (c < 0 || w < 0 || c >= G.cols || w >= G.rows) return;
@@ -463,23 +472,30 @@ function win() {
   const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650;
   winTimer = setTimeout(() => { if (G === g && active('game')) winSheet(g, st, extra, unlockedNow); }, wait);
 }
+// Sonuç paneli tahtanın altına yerleşir; tahta küçülüp üstte görünür kalır.
 function winSheet(g, st, extra, unlockedNow) {
   const L = g.lim, nx = g.lvl + 1, nxLocked = !g.daily && !unlocked(lineOf(nx));
+  const badge = unlockedNow ? `<span class="badge">YENİ HAT AÇILDI · M${unlockedNow + 1}</span>` : st === 3 ? '<span class="badge">MÜKEMMEL ROTA</span>' : '';
   const tip = st < 3 ? `<p class="tip">3★ için: ≤ ${L.m3} hamle ve ≤ ${fmtT(L.t3 * 1000)}</p>` : '';
   const primary = g.daily
     ? '<button id="mShare" class="btn primary"><span>Paylaş</span><small>Arkadaşına meydan oku</small></button><button id="mHome" class="btn glassbtn">Ana sayfa</button>'
     : `${nxLocked ? `<button id="mMap" class="btn primary"><span>Yeni hat kilitli</span><small>★ ${totalStars()} / ${need(lineOf(nx))} · yıldız topla</small></button>` : `<button id="mNext" class="btn primary"><span>Sonraki</span><small>Bölüm ${nx}</small></button>`}
        <div class="row2"><button id="mRetry" class="btn glassbtn">Tekrar</button><button id="mShare" class="btn glassbtn">Paylaş</button><button id="mHome" class="btn glassbtn">Ana sayfa</button></div>`;
-  modal(`${starsHtml(st)}
-    ${unlockedNow ? `<span class="badge">YENİ HAT AÇILDI · M${unlockedNow + 1}</span>` : st === 3 ? '<span class="badge">MÜKEMMEL ROTA</span>' : ''}
-    <h2>${g.daily ? 'Günün hattı tamam!' : 'Hat açıldı!'}</h2>
-    <div class="statrow"><div><b>${g.moves}</b><span>hamle</span></div><div><b>${fmtT(g.time)}</b><span>süre</span></div><div><b>${starTxt(st)}</b><span>yıldız</span></div></div>
-    ${tip}${extra ? `<p>${extra}</p>` : ''}${primary}`,
-    { mNext: next, mMap: () => { closeModal(); show('map'); }, mRetry: () => start('level', g.lvl), mHome: () => { closeModal(); show('home'); },
-      mShare: () => share({ daily: g.daily, lvl: g.lvl, day: g.day, moves: g.moves, time: g.time, st }) }, true);
+  $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml(st)}<div class="wp-t"><h2>${g.daily ? 'Günün hattı tamam!' : 'Hat açıldı!'}</h2>${badge}</div></div>
+      <button id="wTog" class="wp-tog" aria-label="Hattı gör"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg><span>Hattı gör</span></button></div>
+    <div class="wp-more"><div class="statrow"><div><b>${g.moves}</b><span>hamle</span></div><div><b>${fmtT(g.time)}</b><span>süre</span></div><div><b>${starTxt(st)}</b><span>yıldız</span></div></div>${tip}${extra ? `<p class="tip">${extra}</p>` : ''}</div>
+    ${primary}`;
+  $('game').classList.add('won');
+  bind({ wTog: toggleMini, mNext: next, mMap: () => show('map'), mRetry: () => start('level', g.lvl), mHome: () => show('home'),
+    mShare: () => share({ daily: g.daily, lvl: g.lvl, day: g.day, moves: g.moves, time: g.time, st }) });
 }
+function toggleMini() {
+  const mini = $('game').classList.toggle('mini');
+  $('wTog').querySelector('span').textContent = mini ? 'Sonuç' : 'Hattı gör';
+  haptic(); tone(mini ? 700 : 900, .05, .03, 'triangle');
+}
+function closePanel() { $('game').classList.remove('won', 'mini'); $('winPanel').innerHTML = ''; }
 async function next() {
-  closeModal();
   if (!G.daily && save.played >= 5 && sessionWins % INTER_EVERY === 0) await Ads.interstitial();
   start('level', G.lvl + 1);
 }
@@ -585,6 +601,7 @@ document.addEventListener('visibilitychange', () => {
 const App = window.Capacitor?.Plugins?.App;
 App?.addListener?.('backButton', () => {
   if (modalOpen()) { if (mLocked) show('home'); closeModal(); }
+  else if (G?.won && active('game')) show('home');
   else if (!active('home')) show('home');
   else App.minimizeApp?.();
 });
