@@ -7,20 +7,20 @@
   --tile:rgba(255,255,255,.045);--rail:rgba(220,226,255,.14);
   --acc:#ffb35c;--acc2:#ff7a8a;--onacc:#2a1406;--shadow:0 10px 30px rgba(0,0,0,.35);
   --mapOp:.075;--glowOp:.22;
-  --sheetBg:rgba(22,27,51,.97);--toastBg:rgba(26,31,58,.96);--accGlow:rgba(255,122,138,.7);--starGlow:rgba(255,179,92,.6);--railC:#535a7a;--warn:#ff7a8a;
+  --sheetBg:rgba(22,27,51,.97);--toastBg:rgba(26,31,58,.96);--accGlow:rgba(255,122,138,.7);--starGlow:rgba(255,179,92,.6);--railC:#535a7a;--pin:rgba(0,0,0,.42);--warn:#ff7a8a;
 }
 @media (prefers-color-scheme:light){:root:not([data-theme=dark]){
   --bg0:#f7f2ec;--bg1:#efe8f4;--fg:#25283a;--mut:#62667a;
   --glass:rgba(255,255,255,.78);--glass2:rgba(255,255,255,.8);--stroke:rgba(40,40,80,.08);
   --tile:rgba(255,255,255,.62);--rail:rgba(37,40,58,.13);
   --acc:#f59a3c;--acc2:#f0637a;--onacc:#3b1a08;--shadow:0 10px 30px rgba(80,60,90,.12);
-  --mapOp:.10;--glowOp:.30;--sheetBg:rgba(246,241,244,.97);--toastBg:rgba(255,253,250,.96);--accGlow:rgba(240,99,122,.55);--starGlow:rgba(245,154,60,.6);--railC:#aeabba;--warn:#d9435c;}}
+  --mapOp:.10;--glowOp:.30;--sheetBg:rgba(246,241,244,.97);--toastBg:rgba(255,253,250,.96);--accGlow:rgba(240,99,122,.55);--starGlow:rgba(245,154,60,.6);--railC:#aeabba;--pin:rgba(40,40,70,.13);--warn:#d9435c;}}
 :root[data-theme=light]{
   --bg0:#f7f2ec;--bg1:#efe8f4;--fg:#25283a;--mut:#62667a;
   --glass:rgba(255,255,255,.78);--glass2:rgba(255,255,255,.8);--stroke:rgba(40,40,80,.08);
   --tile:rgba(255,255,255,.62);--rail:rgba(37,40,58,.13);
   --acc:#f59a3c;--acc2:#f0637a;--onacc:#3b1a08;--shadow:0 10px 30px rgba(80,60,90,.12);
-  --mapOp:.10;--glowOp:.30;--sheetBg:rgba(246,241,244,.97);--toastBg:rgba(255,253,250,.96);--accGlow:rgba(240,99,122,.55);--starGlow:rgba(245,154,60,.6);--railC:#aeabba;--warn:#d9435c;}
+  --mapOp:.10;--glowOp:.30;--sheetBg:rgba(246,241,244,.97);--toastBg:rgba(255,253,250,.96);--accGlow:rgba(240,99,122,.55);--starGlow:rgba(245,154,60,.6);--railC:#aeabba;--pin:rgba(40,40,70,.13);--warn:#d9435c;}
 
 *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 html,body{height:100%;overflow:hidden;overflow:clip;overscroll-behavior:none}
@@ -188,6 +188,18 @@ body.introing .screen *{animation-play-state:paused!important}
 
 /* reklam ilerlemesi */
 .vids{display:flex;justify-content:center;gap:8px}.vids i{width:12px;height:12px;border-radius:50%;background:var(--rail)}.vids i.on{background:var(--acc);box-shadow:0 0 10px var(--starGlow)}
+
+/* yeni kural kartı: sabit karo animasyonu */
+.rdemo{position:relative;align-self:center;width:96px;height:96px;margin:6px 0 2px}
+.rt{position:absolute;inset:0;border-radius:24px;background:var(--pin);box-shadow:inset 0 0 0 1px var(--stroke);
+  background-image:radial-gradient(circle,var(--mut) 3.5px,transparent 4.5px),radial-gradient(circle,var(--mut) 3.5px,transparent 4.5px),radial-gradient(circle,var(--mut) 3.5px,transparent 4.5px),radial-gradient(circle,var(--mut) 3.5px,transparent 4.5px);
+  background-size:20px 20px;background-repeat:no-repeat;background-position:8px 8px,68px 8px,8px 68px,68px 68px;animation:nope 2.2s ease-in-out infinite}
+.rt b{position:absolute;left:41px;top:0;width:14px;height:62px;border-radius:8px;background:var(--acc)}
+.rt b:after{content:"";position:absolute;left:0;top:48px;width:55px;height:14px;border-radius:8px;background:var(--acc)}
+.rtap{position:absolute;left:50%;top:50%;width:30px;height:30px;margin:-15px;border-radius:50%;border:2.5px solid var(--fg);opacity:0;animation:tap 2.2s ease-out infinite}
+@keyframes tap{0%,30%{opacity:0;transform:scale(.6)}38%{opacity:.9;transform:scale(1)}60%,100%{opacity:0;transform:scale(1.8)}}
+@keyframes nope{0%,38%,62%,100%{transform:none}42%{transform:translateX(-5px)}48%{transform:translateX(5px)}54%{transform:translateX(-3px)}}
+.lh b em{font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.5px;margin-left:8px;padding:2px 7px;border-radius:99px;color:var(--onacc);background:linear-gradient(120deg,var(--acc),var(--acc2));vertical-align:2px}
 
 /* seri penceresi */
 .flame{align-self:center;width:64px;height:64px;fill:var(--acc2);filter:drop-shadow(0 0 16px var(--accGlow));animation:flick 1.6s ease-in-out infinite}

@@ -353,6 +353,28 @@ async function inViewport(page, sel) {
     await ictx.close();
   }
 
+  // ---------- E4. Yeni kural: sabit karolar (M4, bölüm 31+) ----------
+  {
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 30, level: 31, stars: starsUpTo(31) } });
+    await page.click('#bPlay'); await page.waitForTimeout(700);
+    const card = await page.evaluate(() => ({ open: document.getElementById('modal').classList.contains('open'), txt: document.querySelector('.sheet h2')?.textContent, timerPaused: !window.__ray.G.runAt }));
+    await shot(page, 'rule-card');
+    if (card.open) await page.click('#mGo');
+    await page.waitForTimeout(400);
+    const g = await page.evaluate(() => { const G = window.__ray.G; return { size: G.cols + 'x' + G.rows, pins: G.pinned.filter(Boolean).length, idx: G.pinned.indexOf(true) }; });
+    const st = i => page.evaluate(i => ({ m: window.__ray.G.moves, v: window.__ray.G.cur[i] }), i);
+    const before = await st(g.idx); await tapTile(page, g.idx); await page.waitForTimeout(200); const after = await st(g.idx);
+    await shot(page, 'pinned');
+    await solve(page, 10); const won = await waitModal(page);
+    const sv = await getSave(page);
+    const sizes = await page.evaluate(() => [30, 31, 33, 34, 40, 41].map(l => window.__ray.sizeFor(l).join('x')).join(' '));
+    check('rule.card', 'M4 ilk girişte "YENİ KURAL · Sabit karo" kartı, kart açıkken süre durur', card.open && /Sabit karo/.test(card.txt || '') && card.timerPaused && sv.seen?.[3] === 1, JSON.stringify(card));
+    check('rule.pins', 'Sabit karolar dönmez, hamle saymaz; bölüm çözülür', g.pins >= 5 && before.m === after.m && before.v === after.v && won, JSON.stringify({ ...g, before, after, won }), 'high');
+    check('rule.saw', 'Testere dişi: M4 ilk 3 bölüm bir küçük ızgara (5×6), sonra 5×7', sizes === '5x7 5x6 5x6 5x7 5x7 6x8', sizes, 'medium');
+    check('e4.errors', 'Sabit karo senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
+    await ctx.close();
+  }
+
   // ---------- F. Boşta CPU: animasyon döngüsü durmalı ----------
   {
     const { ctx, page } = await open(browser, URL, { save: { played: 4, level: 30, stars: starsUpTo(30) } });

@@ -22,10 +22,11 @@ const today = () => ymd(new Date());
 const dayBefore = s => { const [y, m, d] = s.split('-').map(Number); return ymd(new Date(y, m - 1, d - 1)); };
 
 // ---------- kayıt ----------
-const def = { level: 1, stars: {}, hints: DAILY_FREE_HINTS, hintDay: '', streak: 0, lastDaily: '', dailyDone: '', dailyStats: null, runs: {}, crowns: {}, shards: 0, sound: true, music: true, vib: true, theme: 'auto', played: 0 };
+const def = { level: 1, stars: {}, hints: DAILY_FREE_HINTS, hintDay: '', streak: 0, lastDaily: '', dailyDone: '', dailyStats: null, runs: {}, crowns: {}, shards: 0, seen: {}, sound: true, music: true, vib: true, theme: 'auto', played: 0 };
 let save;
 try { save = Object.assign({}, def, JSON.parse(localStorage.getItem('ray') || '{}')); } catch { save = { ...def }; }
 if (!save.runs || typeof save.runs !== 'object') save.runs = {};
+if (!save.seen || typeof save.seen !== 'object') save.seen = {};
 if (!Array.isArray(save.dailyLog)) save.dailyLog = save.lastDaily ? [save.lastDaily] : [];
 const persist = () => { try { localStorage.setItem('ray', JSON.stringify(save)); } catch {} };
 // gün değişimi: ücretsiz ipucu, kopan seri
@@ -50,7 +51,7 @@ const isLight = () => save.theme === 'light' || (save.theme === 'auto' && matchM
 function applyTheme() {
   if (save.theme === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.dataset.theme = save.theme;
   const cs = getComputedStyle(document.documentElement), v = n => cs.getPropertyValue(n).trim();
-  pal = { tile: v('--tile'), stroke: v('--stroke'), rail: v('--railC'), mut: v('--mut'), bg: v('--bg0'), fg: v('--fg'), light: isLight() };
+  pal = { tile: v('--tile'), pin: v('--pin'), stroke: v('--stroke'), rail: v('--railC'), mut: v('--mut'), bg: v('--bg0'), fg: v('--fg'), light: isLight() };
   const bar = pal.light ? '#f7f2ec' : '#0d1020';
   document.querySelector('meta[name=theme-color]').content = bar;
   const SB = window.Capacitor?.Plugins?.StatusBar;
@@ -64,13 +65,19 @@ function rgba(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >
 function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 const hashStr = s => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
 
+// Yeni kural gelen hatlar (0 tabanlı). M4: sabit karolar.
+const RULES = { 3: { name: 'Sabit karo', tag: 'Yeni: sabit karo' } };
+const PINS_FROM = 3;                                    // M4 ve sonrası: sabit karolar
+const TIERS = [[3, 3], [4, 4], [4, 5], [5, 6], [5, 7], [6, 8], [7, 9]], CAPS = [3, 8, 15, 25, 40, 60, 1e9];
 function sizeFor(l) {
-  const t = [[3, 3, 3], [8, 4, 4], [15, 4, 5], [25, 5, 6], [40, 5, 7], [60, 6, 8], [1e9, 7, 9]];
-  for (const [max, c, r] of t) if (l <= max) return [c, r];
+  let k = CAPS.findIndex(m => l <= m);
+  // testere dişi: yeni kural gelen hattın ilk 3 bölümü bir küçük ızgara → kural rahat öğrenilir
+  if (RULES[lineOf(l)] && (l - 1) % PER_LINE < 3) k = Math.max(0, k - 1);
+  return TIERS[k];
 }
 
 // ---------- üretim: merkezden rastgele ağaç (her zaman çözülebilir) ----------
-function generate(cols, rows, seed) {
+function generate(cols, rows, seed, pins = 0) {
   const R = rng(seed), n = cols * rows, sol = new Array(n).fill(0);
   const hub = (rows >> 1) * cols + (cols >> 1), inT = new Array(n).fill(false);
   inT[hub] = true;
@@ -88,11 +95,18 @@ function generate(cols, rows, seed) {
   }
   const cur = sol.map(m => { let r = R() * 4 | 0, v = m; while (r--) v = rot(v); return v; });
   // çözülmüş hâlde gelmesin
-  if (cur.every((v, i) => v === sol[i])) cur[hub === 0 ? 1 : 0] = rot(cur[hub === 0 ? 1 : 0]);
+  // sabit karolar: doğru yönde, dönmez (merkez ve 4'lü kavşak hariç). pins=0 iken eski bölümler aynen kalır.
+  const pinned = new Array(n).fill(false);
+  if (pins) {
+    const cand = []; for (let i = 0; i < n; i++) if (i !== hub && sol[i] !== 15) cand.push(i);
+    for (let k = 0; k < pins && cand.length; k++) { const i = cand.splice(R() * cand.length | 0, 1)[0]; pinned[i] = true; cur[i] = sol[i]; }
+  }
+  // çözülmüş hâlde gelmesin
+  if (cur.every((v, i) => v === sol[i])) { const i = cur.findIndex((v, j) => !pinned[j] && rot(v) !== v); cur[i] = rot(cur[i]); }
   // par: döndürülmesi gereken karo sayısı · taps: gereken en az dokunuş (süre hedefi için)
   let par = 0, taps = 0;
   cur.forEach((v, i) => { let r = 0, t = v; while (t !== sol[i] && r < 4) { t = rot(t); r++; } taps += r; if (r) par++; });
-  return { cols, rows, sol, cur, hub, par, taps, fixed: new Array(n).fill(false) };
+  return { cols, rows, sol, cur, hub, par, taps, pinned, fixed: new Array(n).fill(false) };
 }
 function popc(m) { return (m & 1) + (m >> 1 & 1) + (m >> 2 & 1) + (m >> 3 & 1); }
 
@@ -308,7 +322,7 @@ function renderMap() {
     const open = unlocked(c), first = c * PER_LINE + 1;
     const got = Array.from({ length: PER_LINE }, (_, k) => save.stars[first + k] || 0).reduce((a, b) => a + b, 0);
     html += `<div class="line ${open ? '' : 'lockd'}" style="--lc:${col[c % 6]}">
-      <div class="lh"><i class="dot"></i><b>${lineName(c)}</b><small>${open ? `★ ${got} / ${PER_LINE * 3}` : `🔒 ★ ${tot} / ${need(c)}`}</small></div>
+      <div class="lh"><i class="dot"></i><b>${lineName(c)}${RULES[c] ? `<em>${RULES[c].tag}</em>` : ''}</b><small>${open ? `★ ${got} / ${PER_LINE * 3}` : `🔒 ★ ${tot} / ${need(c)}`}</small></div>
       <div class="lvs">${Array.from({ length: PER_LINE }, (_, k) => {
         const l = first + k, st = save.stars[l] || 0, can = open && l <= save.level;
         return `<button class="lv ${can ? '' : 'off'} ${l === save.level && can ? 'cur' : ''}" data-l="${l}" ${can ? '' : 'disabled'}><b>${l}</b><i>${can ? (save.crowns[l] ? '👑' : starTxt(st)) : ''}</i></button>`;
@@ -354,8 +368,9 @@ function start(mode, lvl = save.level) {
   const daily = mode === 'daily', day = today();
   if (!daily && !unlocked(lineOf(lvl))) { lockedSheet(lineOf(lvl)); return; }
   const [c, r] = daily ? [6, 8] : sizeFor(lvl);
-  const seed = daily ? hashStr('ray' + day) : lvl * 7919 + 13;
-  G = { ...generate(c, r, seed), daily, lvl: daily ? 0 : lvl, day: daily ? day : null, practice: daily && save.dailyDone === day, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0 };
+  const seed = daily ? hashStr('ray' + day) : lvl * 7919 + 13, ln = lineOf(lvl);
+  const pins = daily || ln < PINS_FROM ? 0 : Math.round(c * r * (lvl === ln * PER_LINE + 1 && RULES[ln] ? .22 : .14));   // yeni kuralın ilk bölümü: daha çok sabit karo (kolay)
+  G = { ...generate(c, r, seed, pins), daily, lvl: daily ? 0 : lvl, day: daily ? day : null, practice: daily && save.dailyDone === day, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0 };
   G.lim = limits(G);
   // yarım kalan oyunu sürdür
   const run = save.runs[daily ? 'daily' : 'level'];
@@ -370,6 +385,7 @@ function start(mode, lvl = save.level) {
   $('gMoves').textContent = daily ? new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl));
   $('gHints').textContent = save.hints;
   show('game'); resize(); hud(); tick();
+  if (!daily && RULES[ln] && !save.seen[ln]) ruleCard(ln);
   if (save.played === 0) setTimeout(() => toast('Karoya dokun → döner'), 500);
 }
 function hud() {
@@ -452,6 +468,13 @@ function draw() {
   const tiles = f => { cx.beginPath(); for (let i = 0; i < n; i++) if (f(i)) { const [x, y, , sc] = X[i], w = (s - 6) * sc; rrp(x - w / 2, y - w / 2, w, w, s * .24 * sc); } };
   tiles(() => true); cx.fillStyle = pal.tile; cx.fill(); cx.lineWidth = 1; cx.strokeStyle = pal.stroke; cx.stroke();
   tiles(on); cx.fillStyle = rgba(col, pal.light ? .10 : .07); cx.fill();
+  // sabit karo: koyu beton zemin + köşelerde cıvata
+  if (G.pinned.includes(true)) {
+    tiles(i => G.pinned[i]); cx.fillStyle = pal.pin; cx.fill();
+    cx.fillStyle = pal.mut; cx.beginPath();
+    for (let i = 0; i < n; i++) if (G.pinned[i]) { const [x, y, , sc] = X[i], o = s * .31 * sc, r = s * .038; for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { cx.moveTo(x + dx * o + r, y + dy * o); cx.arc(x + dx * o, y + dy * o, r, 0, 7); } }
+    cx.fill();
+  }
   const anyFixed = G.fixed.includes(true);
   if (anyFixed) { tiles(i => G.fixed[i]); cx.lineWidth = 2.5; cx.strokeStyle = rgba(col, .85); cx.stroke(); }
   // 2) raylar: sönük → ışıma → yanan
@@ -522,6 +545,7 @@ cv.addEventListener('pointerdown', e => {
   if (c < 0 || w < 0 || c >= G.cols || w >= G.rows) return;
   const i = w * G.cols + c, now = performance.now();
   if (G.fixed[i]) { haptic('light'); tone(440, .06, .02); toast('Bu karo ipucuyla sabitlendi'); press.set(i, now); kick(); return; }
+  if (G.pinned[i]) { haptic('light'); tone(220, .05, .015); press.set(i, now); kick(); if (!G.pinTold) { toast('Sabit karo · dönmez'); G.pinTold = true; } return; }
   G.cur[i] = rot(G.cur[i]);
   if (G.lastTile !== i) { G.moves++; G.lastTile = i; }   // aynı karoya art arda dokunuş = 1 hamle
   anim.set(i, now); press.set(i, now); ripples.push({ x: px, y: py, t: now });
@@ -673,6 +697,16 @@ function adSheet() {
     },
     mNo: closeModal });
 }
+// Yeni kural kartı: hattın ilk girişinde bir kez, kart açıkken süre durur
+function ruleCard(c) {
+  pause();
+  modal(`<span class="badge">YENİ KURAL · ${lineName(c)}</span>
+    <div class="rdemo" aria-hidden="true"><i class="rt"><b></b></i><i class="rtap"></i></div>
+    <h2>${RULES[c].name}</h2>
+    <p>Koyu, cıvatalı karolar <b>dönmez</b>. Zaten doğru yöndeler: etrafındaki hattı <b>onlara göre</b> bağla. Hamle saymazlar.</p>
+    <button id="mGo" class="btn primary"><span>Anladım</span></button>`,
+    { mGo: () => { save.seen[c] = 1; persist(); closeModal(); if (active('game')) resume(); } }, true);
+}
 function nearLit(i) { const x = i % G.cols, y = i / G.cols | 0; let n = 0; for (const [, dx, dy] of DIRS) { const nx = x + dx, ny = y + dy; if (nx >= 0 && ny >= 0 && nx < G.cols && ny < G.rows && G.L.d[ny * G.cols + nx] >= 0) n++; } return n; }
 // baştan: süre ve hamle sıfırlanır, ipucuyla açılan karolar korunur
 function reset() {
@@ -720,7 +754,7 @@ function settings() {
 }
 function how() {
   modal(`<h2>Nasıl oynanır?</h2>
-    <div class="how"><i>1</i><span>Karoya dokun → ray 90° döner.</span><i>2</i><span>Merkez istasyondan çıkan hattı <b>tüm duraklara</b> ulaştır. Açıkta ray ucu kalmasın.</span><i>★</i><span>Her yıldız bir hedef: <b>bitir</b> · <b>⏱ süre</b> · <b>↻ hamle</b>. İkisini birden tutturursan <b>KUSURSUZ 👑</b> + ipucu parçası.</span><i>↻</i><span>Aynı karoya art arda dokunmak <b>tek hamle</b> sayılır.</span><i>M2</i><span>Yıldız topla → <b>yeni hatlar</b> aç.</span><i>🔥</i><span>Her gün yeni <b>Günün Hattı</b>. Seriyi bozma!</span></div>
+    <div class="how"><i>1</i><span>Karoya dokun → ray 90° döner.</span><i>2</i><span>Merkez istasyondan çıkan hattı <b>tüm duraklara</b> ulaştır. Açıkta ray ucu kalmasın.</span><i>★</i><span>Her yıldız bir hedef: <b>bitir</b> · <b>⏱ süre</b> · <b>↻ hamle</b>. İkisini birden tutturursan <b>KUSURSUZ 👑</b> + ipucu parçası.</span><i>↻</i><span>Aynı karoya art arda dokunmak <b>tek hamle</b> sayılır.</span><i>M2</i><span>Yıldız topla → <b>yeni hatlar</b> aç. Bazı hatlar <b>yeni kural</b> getirir.</span><i>🔥</i><span>Her gün yeni <b>Günün Hattı</b>. Seriyi bozma!</span></div>
     <button id="mClose" class="btn primary"><span>Başla</span></button>`, { mClose: () => { closeModal(); if (save.played === 0 && !G) start('level'); } });
 }
 
@@ -771,5 +805,5 @@ function endIntro() {
 if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro; setTimeout(endIntro, 2300); } else intro.classList.add('gone');
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 // test kancası
-window.__ray = { generate, lit, rot, limits, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
+window.__ray = { generate, lit, rot, limits, sizeFor, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();
