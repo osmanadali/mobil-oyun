@@ -89,7 +89,13 @@ async function tapTile(page, i) {
 async function solve(page, gap = 25) {
   const taps = await page.evaluate(() => {
     const { G, rot } = window.__ray, out = [];
-    G.cur.forEach((v, i) => { if (G.fixed[i]) return; let k = 0, t = v; while (t !== G.sol[i] && k < 4) { t = rot(t); k++; } for (let j = 0; j < k; j++) out.push(i); });
+    G.cur.forEach((v, i) => {
+      if (G.fixed[i] || G.pinned[i]) return;
+      const j = G.link?.[i] ?? -1; if (j >= 0 && j < i) return;   // eşli karo: biri çevrilir, eşi de döner
+      let k = 0, t = v, u = j >= 0 ? G.cur[j] : 0;
+      while ((t !== G.sol[i] || (j >= 0 && u !== G.sol[j])) && k < 4) { t = rot(t); if (j >= 0) u = rot(u); k++; }
+      for (let q = 0; q < k; q++) out.push(i);
+    });
     return out;
   });
   for (const i of taps) { await tapTile(page, i); if (gap) await page.waitForTimeout(gap); }
@@ -475,6 +481,48 @@ async function inViewport(page, sel) {
     await page.click('#mPlayD').catch(() => {}); await page.waitForTimeout(600); await solve(page, 10); await waitModal(page);
     check('rescue.next', 'Kurtarılan seri bugünün hattıyla devam eder (8 → 9)', (await getSave(page)).streak === 9, String((await getSave(page)).streak), 'medium');
     check('e6.errors', 'Seri kurtarma senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
+    await ctx.close();
+  }
+
+  // ---------- E7. Yeni kural: eşli karolar (M6, bölüm 51+) ----------
+  {
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 50, level: 51, stars: starsUpTo(51), seen: { 3: 1 }, remindAsked: true } });
+    // çözülebilirlik: eşli + sabit karolu 600 bölüm, eşleri birlikte çevirerek çözülmeli
+    const gen = await page.evaluate(() => {
+      const { generate, lit, rot } = window.__ray; let bad = 0, pairs = 0, pre = 0;
+      for (const [c, r] of [[5, 7], [6, 8], [7, 9]]) for (let sd = 1; sd <= 200; sd++) {
+        const n = c * r, P = generate(c, r, sd * 7919 + 13, Math.round(n * .14), Math.max(1, Math.round(n * .07))), cur = P.cur.slice();
+        if (lit(P).solved) pre++;
+        cur.forEach((v, i) => {
+          const j = P.link[i]; if (j >= 0) pairs += .5; if (j >= 0 && j < i) return;
+          let k = 0; while ((cur[i] !== P.sol[i] || (j >= 0 && cur[j] !== P.sol[j])) && k < 4) { cur[i] = rot(cur[i]); if (j >= 0) cur[j] = rot(cur[j]); k++; }
+        });
+        if (!lit({ ...P, cur }).solved || P.link.some((j, i) => j >= 0 && (P.pinned[i] || P.link[j] !== i))) bad++;
+      }
+      return { bad, pairs, pre };
+    });
+    check('pairs.solvable', 'Eşli karolu 600 bölümün hepsi çözülebilir, eşler simetrik, sabit karoyla çakışmaz', gen.bad === 0 && gen.pairs > 1000 && gen.pre === 0, JSON.stringify(gen));
+    await page.click('#bPlay'); await page.waitForTimeout(700);
+    const card = await page.evaluate(() => ({ open: document.getElementById('modal').classList.contains('open'), txt: document.querySelector('.sheet h2')?.textContent, demo: !!document.querySelector('.rdemo2') }));
+    await shot(page, 'rule-pairs');
+    if (card.open) await page.click('#mGo');
+    await page.waitForTimeout(400);
+    const g = await page.evaluate(() => { const G = window.__ray.G; const a = G.link.findIndex(v => v >= 0); return { size: G.cols + 'x' + G.rows, pairs: G.link.filter(v => v >= 0).length / 2, a, b: G.link[a] }; });
+    const st = () => page.evaluate(([a, b]) => ({ m: window.__ray.G.moves, a: window.__ray.G.cur[a], b: window.__ray.G.cur[b] }), [g.a, g.b]);
+    const s0 = await st(); await tapTile(page, g.a); await page.waitForTimeout(150); const s1 = await st(); await tapTile(page, g.b); await page.waitForTimeout(150); const s2 = await st();
+    await shot(page, 'pairs');
+    const rot = (m, k) => { while (k--) m = ((m << 1) | (m >> 3)) & 15; return m; };
+    check('rule.pairs.card', 'M6 ilk girişte "YENİ KURAL · Eşli karo" kartı (animasyonlu)', card.open && /Eşli karo/.test(card.txt || '') && card.demo, JSON.stringify(card), 'medium');
+    check('rule.pairs', 'Eşli karo: birine dokununca ikisi döner; eşine art arda dokunuş aynı hamle', g.pairs === 1 && s1.a === rot(s0.a, 1) && s1.b === rot(s0.b, 1) && s1.m === s0.m + 1 && s2.m === s1.m && s2.a === rot(s0.a, 2), JSON.stringify({ ...g, s0, s1, s2 }));
+    // ipucu: yalnızca eş yanlışken ipucu → ikisi birden oturur, bölüm biter
+    if (await page.evaluate(([a, b]) => { const G = window.__ray.G; return G.cur[a] === G.sol[a] && G.cur[b] === G.sol[b]; }, [g.a, g.b])) { await tapTile(page, g.a); await page.waitForTimeout(150); }
+    await page.evaluate(([a, b]) => { const G = window.__ray.G; G.cur.forEach((v, i) => { if (i !== a && i !== b) G.cur[i] = G.sol[i]; }); }, [g.a, g.b]);
+    await page.click('#bHint'); const won = await waitModal(page);
+    const hf = await page.evaluate(([a, b]) => { const G = window.__ray.G; return G.fixed[a] && G.fixed[b] && G.cur[a] === G.sol[a] && G.cur[b] === G.sol[b]; }, [g.a, g.b]);
+    check('rule.pairs.hint', 'İpucu eşli karoyu seçince ikisini birden oturtur', hf && won, `${hf} · ${won}`, 'medium');
+    const sizes = await page.evaluate(() => [51, 53, 54, 60, 61].map(l => window.__ray.sizeFor(l).join('x')).join(' '));
+    check('rule.pairs.win', 'Eşli karolu bölüm çözülüp kazanılıyor · testere dişi (51–53: 5×7)', won && sizes === '5x7 5x7 6x8 6x8 7x9', `${won} · ${sizes}`, 'medium');
+    check('e7.errors', 'Eşli karo senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
     await ctx.close();
   }
 

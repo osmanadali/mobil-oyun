@@ -98,9 +98,15 @@ function rgba(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >
 function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 const hashStr = s => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
 
-// Yeni kural gelen hatlar (0 tabanlı). M4: sabit karolar.
-const RULES = { 3: { name: 'Sabit karo', tag: 'Yeni: sabit karo' } };
-const PINS_FROM = 3;                                    // M4 ve sonrası: sabit karolar
+// Yeni kural gelen hatlar (0 tabanlı). M4: sabit karolar · M6: eşli karolar.
+const RULES = {
+  3: { name: 'Sabit karo', tag: 'Yeni: sabit karo', demo: '<div class="rdemo" aria-hidden="true"><i class="rt"><b></b></i><i class="rtap"></i></div>',
+    text: 'Koyu, cıvatalı karolar <b>dönmez</b>. Zaten doğru yöndeler: etrafındaki hattı <b>onlara göre</b> bağla. Hamle saymazlar.' },
+  5: { name: 'Eşli karo', tag: 'Yeni: eşli karo', demo: '<div class="rdemo2" aria-hidden="true"><i class="pt"><b></b><em>1</em></i><i class="pt"><b></b><em>1</em></i><i class="rtap2"></i></div>',
+    text: 'Aynı renk ve numaralı iki karo <b>birlikte döner</b>: birine dokununca öteki de çevrilir. İkisinin de oturacağı yönü bul. Tek dokunuş = <b>1 hamle</b>.' },
+};
+const PINS_FROM = 3, PAIRS_FROM = 5;                    // M4+: sabit karolar · M6+: eşli karolar
+const PAIR_COLS = ['#ff7ab6', '#4cc9ff', '#ffc94d', '#8fe388', '#c39bff'];
 const TIERS = [[3, 3], [4, 4], [4, 5], [5, 6], [5, 7], [6, 8], [7, 9]], CAPS = [3, 8, 15, 25, 40, 60, 1e9];
 function sizeFor(l) {
   let k = CAPS.findIndex(m => l <= m);
@@ -110,7 +116,7 @@ function sizeFor(l) {
 }
 
 // ---------- üretim: merkezden rastgele ağaç (her zaman çözülebilir) ----------
-function generate(cols, rows, seed, pins = 0) {
+function generate(cols, rows, seed, pins = 0, pairs = 0) {
   const R = rng(seed), n = cols * rows, sol = new Array(n).fill(0);
   const hub = (rows >> 1) * cols + (cols >> 1), inT = new Array(n).fill(false);
   inT[hub] = true;
@@ -134,12 +140,27 @@ function generate(cols, rows, seed, pins = 0) {
     const cand = []; for (let i = 0; i < n; i++) if (i !== hub && sol[i] !== 15) cand.push(i);
     for (let k = 0; k < pins && cand.length; k++) { const i = cand.splice(R() * cand.length | 0, 1)[0]; pinned[i] = true; cur[i] = sol[i]; }
   }
+  // eşli karolar: iki karo birlikte döner. İkisi de aynı sayıda dokunuşla oturacak şekilde karıştırılır → her zaman çözülebilir.
+  const link = new Array(n).fill(-1);
+  if (pairs) {
+    const cand = []; for (let i = 0; i < n; i++) if (i !== hub && !pinned[i] && sol[i] !== 15) cand.push(i);
+    for (let k = 0; k < pairs && cand.length > 1; k++) {
+      const a = cand.splice(R() * cand.length | 0, 1)[0], b = cand.splice(R() * cand.length | 0, 1)[0], t = 1 + (R() * 3 | 0);
+      for (const i of [a, b]) { let v = sol[i]; for (let q = 0; q < 4 - t; q++) v = rot(v); cur[i] = v; }   // t dokunuşta çözüme döner
+      link[a] = b; link[b] = a;
+    }
+  }
   // çözülmüş hâlde gelmesin
-  if (cur.every((v, i) => v === sol[i])) { const i = cur.findIndex((v, j) => !pinned[j] && rot(v) !== v); cur[i] = rot(cur[i]); }
-  // par: döndürülmesi gereken karo sayısı · taps: gereken en az dokunuş (süre hedefi için)
+  if (cur.every((v, i) => v === sol[i])) { const i = cur.findIndex((v, j) => !pinned[j] && link[j] < 0 && rot(v) !== v); cur[i] = rot(cur[i]); }
+  // par: döndürülmesi gereken karo (eş = 1) sayısı · taps: gereken en az dokunuş (süre hedefi için)
   let par = 0, taps = 0;
-  cur.forEach((v, i) => { let r = 0, t = v; while (t !== sol[i] && r < 4) { t = rot(t); r++; } taps += r; if (r) par++; });
-  return { cols, rows, sol, cur, hub, par, taps, pinned, fixed: new Array(n).fill(false) };
+  cur.forEach((v, i) => {
+    const j = link[i]; if (j >= 0 && j < i) return;
+    let r = 0, t = v, u = j >= 0 ? cur[j] : 0;
+    while ((t !== sol[i] || (j >= 0 && u !== sol[j])) && r < 4) { t = rot(t); if (j >= 0) u = rot(u); r++; }
+    taps += r; if (r) par++;
+  });
+  return { cols, rows, sol, cur, hub, par, taps, pinned, link, fixed: new Array(n).fill(false) };
 }
 function popc(m) { return (m & 1) + (m >> 1 & 1) + (m >> 2 & 1) + (m >> 3 & 1); }
 
@@ -404,7 +425,7 @@ let G = null;
 const cv = $('cv'), cx = cv.getContext('2d');
 let geo = { s: 0, ox: 0, oy: 0, dpr: 1 }, vg = geo, geoFrom = null, geoT0 = 0;
 const anim = new Map(), press = new Map();   // i -> başlangıç zamanı
-let litAt = [], ripples = [], parts = [], winT = 0, raf = 0, winTimer = 0, tickT = 0, howT = 0, sessionWins = 0;
+let litAt = [], ripples = [], parts = [], links = [], winT = 0, raf = 0, winTimer = 0, tickT = 0, howT = 0, sessionWins = 0;
 
 // süre yalnızca oyun ekranı açıkken ve uygulama öndeyken akar
 const elapsed = () => G ? G.ms + (G.runAt ? performance.now() - G.runAt : 0) : 0;
@@ -419,7 +440,7 @@ function setLineColor() {
 const runKey = () => G.daily ? 'daily' : 'level';
 function saveRun() {
   if (!G || G.won) return;
-  save.runs[runKey()] = { lvl: G.lvl, day: G.day, cur: G.cur, fixed: G.fixed, moves: G.moves, last: G.lastTile, ms: elapsed() };
+  save.runs[runKey()] = { lvl: G.lvl, day: G.day, cur: G.cur, fixed: G.fixed, moves: G.moves, last: G.lastTile, ms: elapsed(), lk: 1 };
   persist();
 }
 function start(mode, lvl = save.level) {
@@ -428,16 +449,18 @@ function start(mode, lvl = save.level) {
   if (!daily && !unlocked(lineOf(lvl))) { lockedSheet(lineOf(lvl)); return; }
   const [c, r] = daily ? [6, 8] : sizeFor(lvl);
   const seed = daily ? hashStr('ray' + day) : lvl * 7919 + 13, ln = lineOf(lvl);
-  const pins = daily || ln < PINS_FROM ? 0 : Math.round(c * r * (lvl === ln * PER_LINE + 1 && RULES[ln] ? .22 : .14));   // yeni kuralın ilk bölümü: daha çok sabit karo (kolay)
-  G = { ...generate(c, r, seed, pins), daily, lvl: daily ? 0 : lvl, day: daily ? day : null, practice: daily && save.dailyDone === day, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0 };
+  const intro = lvl === ln * PER_LINE + 1;   // yeni kuralın ilk bölümü: kolay
+  const pins = daily || ln < PINS_FROM ? 0 : Math.round(c * r * (intro && ln === PINS_FROM ? .22 : .14));
+  const pairs = daily || ln < PAIRS_FROM ? 0 : Math.max(1, Math.round(c * r * (intro && ln === PAIRS_FROM ? .03 : .07)));
+  G = { ...generate(c, r, seed, pins, pairs), daily, lvl: daily ? 0 : lvl, day: daily ? day : null, practice: daily && save.dailyDone === day, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0 };
   G.lim = limits(G);
   // yarım kalan oyunu sürdür
   const run = save.runs[daily ? 'daily' : 'level'];
-  if (run && (daily ? run.day === day : run.lvl === lvl) && run.cur?.length === G.cur.length) {
+  if (run && (daily ? run.day === day : run.lvl === lvl) && run.cur?.length === G.cur.length && (!pairs || run.lk)) {   // eşli karo öncesi yarım kayıt geçersiz
     G.cur = run.cur.slice(); G.fixed = run.fixed.slice(); G.moves = run.moves; G.lastTile = run.last ?? -1; G.ms = run.ms || 0;
   }
   setLineColor();
-  G.L = lit(G); anim.clear(); press.clear(); ripples = []; parts = []; winT = 0;
+  G.L = lit(G); anim.clear(); press.clear(); ripples = []; parts = []; links = []; winT = 0;
   litAt = G.L.d.map(v => v >= 0 ? -1e9 : 0);
   G.tOk = timeOk(G.ms / 1000); G.mOk = movesOk();
   $('gTitle').textContent = daily ? (G.practice ? 'Günün Hattı · pratik' : 'Günün Hattı') : 'Bölüm ' + lvl;
@@ -570,6 +593,28 @@ function draw() {
   }
   // 6) ipucu kilidi rozeti
   if (anyFixed) { cx.fillStyle = col; cx.beginPath(); for (let i = 0; i < n; i++) if (G.fixed[i]) { const [x, y] = X[i]; cx.moveTo(x + s * .3 + s * .055, y - s * .3); cx.arc(x + s * .3, y - s * .3, s * .055, 0, 7); } cx.fill(); }
+  // 6b) eşli karolar: aynı renk + numara rozeti (sol üst); dokununca eşler arasında kesik çizgi
+  if (G.link.some(v => v >= 0)) {
+    const ids = {}; let k = 0; for (let i = 0; i < n; i++) if (G.link[i] > i) ids[i] = ids[G.link[i]] = k++;
+    const r = s * .145;
+    cx.font = `800 ${Math.round(s * .19)}px Outfit, system-ui`; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.lineWidth = 2;
+    for (const i in ids) {
+      const [x, y, , sc] = X[i], bx = x - s * .27 * sc, by = y - s * .27 * sc, pc = PAIR_COLS[ids[i] % PAIR_COLS.length], w = (s - 6) * sc;
+      cx.globalAlpha = G.fixed[i] ? .45 : 1;
+      cx.strokeStyle = rgba(pc, .55); rr(x - w / 2, y - w / 2, w, w, s * .24 * sc); cx.stroke();   // karo kenarı eşin renginde
+      cx.fillStyle = pc; cx.beginPath(); cx.arc(bx, by, r, 0, 7); cx.fill();
+      cx.fillStyle = '#16182a'; cx.fillText(ids[i] + 1, bx, by + 1);
+    }
+    cx.globalAlpha = 1; cx.textBaseline = 'alphabetic';
+    cx.lineWidth = 3; cx.setLineDash([6, 7]);
+    links = links.filter(L => {
+      const t = (now - L.t) / 650; if (t >= 1) return false;
+      const [x1, y1] = X[L.a], [x2, y2] = X[L.b];
+      cx.strokeStyle = rgba(PAIR_COLS[ids[L.a] % PAIR_COLS.length], .8 * (1 - t)); cx.beginPath(); cx.moveTo(x1, y1); cx.lineTo(x2, y2); cx.stroke();
+      return busy = true;
+    });
+    cx.setLineDash([]);
+  }
   // 7) dokunma dalgaları
   cx.lineWidth = 2.5;
   ripples = ripples.filter(r => {
@@ -606,9 +651,14 @@ cv.addEventListener('pointerdown', e => {
   const i = w * G.cols + c, now = performance.now();
   if (G.fixed[i]) { haptic('light'); tone(440, .06, .02); toast('Bu karo ipucuyla sabitlendi'); press.set(i, now); kick(); return; }
   if (G.pinned[i]) { haptic('light'); tone(220, .05, .015); press.set(i, now); kick(); if (!G.pinTold) { toast('Sabit karo · dönmez'); G.pinTold = true; } return; }
+  const j = G.link[i], key = j >= 0 ? Math.min(i, j) : i;
   G.cur[i] = rot(G.cur[i]);
-  if (G.lastTile !== i) { G.moves++; G.lastTile = i; }   // aynı karoya art arda dokunuş = 1 hamle
+  if (G.lastTile !== key) { G.moves++; G.lastTile = key; }   // aynı karoya (ya da eşine) art arda dokunuş = 1 hamle
   anim.set(i, now); press.set(i, now); ripples.push({ x: px, y: py, t: now });
+  if (j >= 0) {   // eşi de döner
+    G.cur[j] = rot(G.cur[j]); anim.set(j, now); press.set(j, now); links.push({ a: i, b: j, t: now });
+    if (!save.pairTold) { save.pairTold = 1; persist(); toast('Eşli karo · ikisi birlikte döner'); }
+  }
   const prev = G.L.d;
   G.L = lit(G);
   let gained = 0, stations = 0;
@@ -813,7 +863,7 @@ async function hint() {
   // ışıklı bölgeye komşu olanı seç → daha anlamlı ipucu
   wrong.sort((a, b) => nearLit(b) - nearLit(a));
   const i = wrong[0], now = performance.now(), prev = G.L.d;
-  G.cur[i] = G.sol[i]; G.fixed[i] = true; anim.set(i, now); press.set(i, now);
+  for (const k of G.link[i] >= 0 ? [i, G.link[i]] : [i]) { G.cur[k] = G.sol[k]; G.fixed[k] = true; anim.set(k, now); press.set(k, now); }   // eşli karo: ikisi birden
   save.hints--; persist(); $('gHints').textContent = save.hints; bump($('gHints'));
   G.L = lit(G);
   G.L.d.forEach((v, j) => { if (v >= 0 && prev[j] < 0) litAt[j] = now + v * 12; });
@@ -848,9 +898,9 @@ function adSheet() {
 function ruleCard(c) {
   pause();
   modal(`<span class="badge">YENİ KURAL · ${lineName(c)}</span>
-    <div class="rdemo" aria-hidden="true"><i class="rt"><b></b></i><i class="rtap"></i></div>
+    ${RULES[c].demo}
     <h2>${RULES[c].name}</h2>
-    <p>Koyu, cıvatalı karolar <b>dönmez</b>. Zaten doğru yöndeler: etrafındaki hattı <b>onlara göre</b> bağla. Hamle saymazlar.</p>
+    <p>${RULES[c].text}</p>
     <button id="mGo" class="btn primary"><span>Anladım</span></button>`,
     { mGo: () => { save.seen[c] = 1; persist(); closeModal(); if (active('game')) resume(); } }, true);
 }
