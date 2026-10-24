@@ -34,7 +34,12 @@ const persist = () => { try { localStorage.setItem('ray', JSON.stringify(save));
 function dayTick() {
   const t = today();
   if (save.hintDay !== t) { save.hints = Math.max(save.hints, DAILY_FREE_HINTS); save.hintDay = t; }
-  if (save.streak && save.lastDaily !== t && save.lastDaily !== dayBefore(t)) save.streak = 0;
+  if (save.lost && save.lost.day !== t) save.lost = null;   // kurtarma hakkı yalnızca o gün
+  if (save.streak && save.lastDaily !== t && save.lastDaily !== dayBefore(t)) {
+    // tek gün kaçtıysa (ve seri ≥ 2) bugün içinde videoyla kurtarılabilir
+    if (save.streak >= 2 && save.lastDaily === dayBefore(dayBefore(t))) save.lost = { n: save.streak, day: t, part: 0 };
+    save.streak = 0;
+  }
   persist();
   $('gHints').textContent = save.hints;
 }
@@ -279,7 +284,7 @@ function show(id) {
   document.body.classList.toggle('playing', id === 'game');
   if (id === 'game') resume(); else pause();
   Music.setMode(id === 'game' ? 'game' : 'menu');
-  if (id === 'home') { refreshHome(); if (G && Remind.avail() && !save.remindAsked && (save.dailyDone || save.played >= 6)) setTimeout(() => { if (active('home') && !modalOpen()) remindAsk(); }, 700); }
+  if (id === 'home') { refreshHome(); setTimeout(maybeRescue, 600); if (G && Remind.avail() && !save.remindAsked && (save.dailyDone || save.played >= 6)) setTimeout(() => { if (active('home') && !modalOpen()) remindAsk(); }, 700); }
   if (id === 'map') renderMap();
   clearInterval(clockT); if (id === 'home') clockT = setInterval(dailyClock, 1000);
 }
@@ -349,14 +354,14 @@ function refreshHome() {
   dayTick();
   const tot = totalStars();
   $('sStars').textContent = tot;
-  $('sStreak').textContent = save.streak;
+  $('sStreak').textContent = save.streak; $('streakChip').classList.toggle('new', rescueOk());
   $('sCrowns').textContent = crownCount(); $('crownChip').classList.toggle('new', !!save.newSkin);
   $('sHints').textContent = save.hints;
   $('hLevel').textContent = save.level;
   const done = save.dailyDone === today();
   $('bDaily').classList.toggle('done', done);
   $('dailyTitle').textContent = done ? 'Tamamlandı ✓' : 'Hazır';
-  if (done) dailyClock(); else $('dailyState').textContent = save.streak ? `🔥 ${save.streak} günlük serini koru` : 'Her gün yeni bir hat';
+  if (done) dailyClock(); else $('dailyState').textContent = rescueOk() ? `💔 ${save.lost.n} günlük serin koptu · kurtar` : save.streak ? `🔥 ${save.streak} günlük serini koru` : 'Her gün yeni bir hat';
   const c = lineOf(save.level), nx = c + 1, lo = need(c), hi = need(nx);
   $('lineName').textContent = lineName(c);
   $('lineName').style.color = lineCols()[c % 6];
@@ -741,7 +746,7 @@ const Remind = (() => {
       const h = (save.remindAt ?? 1110) / 60 | 0, m = (save.remindAt ?? 1110) % 60, now = new Date();
       const at = d => { const x = new Date(now); x.setDate(x.getDate() + d); x.setHours(h, m, 0, 0); return x; };
       const done = save.dailyDone === today(), sk = save.streak, list = [];
-      if (!done && at(0) - now > 20 * 60e3) list.push([1, at(0), 'Günün Hattı seni bekliyor 🚇', sk ? `🔥 ${sk} günlük serin bugün sönmesin` : 'Bir dakikalık bulmaca · hattı bağla, şehri canlandır']);
+      if (!done && at(0) - now > 20 * 60e3) list.push([1, at(0), save.lost?.day === today() ? 'Serin kopmak üzere 💔' : 'Günün Hattı seni bekliyor 🚇', save.lost?.day === today() ? `${save.lost.n} günlük serini bugün hâlâ kurtarabilirsin` : sk ? `🔥 ${sk} günlük serin bugün sönmesin` : 'Bir dakikalık bulmaca · hattı bağla, şehri canlandır']);
       list.push([2, at(1), 'Yeni Günün Hattı açıldı 🚇', done && sk ? `🔥 Serin ${sk} gün · bugün bir gün daha ekle` : 'Bugünün bulmacası hazır · yolculuğa bir hat bağla']);
       list.push([3, at(3), 'Şehir seni özledi 🌃', `Bölüm ${save.level} seni bekliyor · ★ topla, yeni hat aç`]);
       list.push([4, at(7), 'Hatlar durdu 🚦', 'Bir dakikanı ayır, şehri yeniden canlandır']);
@@ -864,13 +869,44 @@ function reset() {
 }
 
 const FLAME = '<svg class="flame" viewBox="0 0 24 24"><path d="M12 2c1 4 5 5.5 5 11a5 5 0 0 1-10 0c0-2.5 1.2-4 2.5-5 .2 1.8 1 3 2.2 3.3C11 8.6 11.3 5 12 2z"/></svg>';
+// ---------- seriyi kurtar: dün kaçan Günün Hattı → bugün isteğe bağlı video (7+ gün seride 2 video) ----------
+const rescueOk = () => save.lost?.day === today();
+function rescueSheet() {
+  const L = save.lost; if (!rescueOk()) return streakSheet();
+  const need = L.n >= 7 ? 2 : 1, dots = need > 1 ? `<div class="vids">${Array.from({ length: need }, (_, k) => `<i class="${k < L.part ? 'on' : ''}"></i>`).join('')}</div>` : '';
+  modal(`${FLAME.replace('class="flame"', 'class="flame cold"')}<h2>${L.n} günlük serin koptu</h2>
+    <p>Dün Günün Hattı'nı kaçırdın. ${need === 1 ? 'Kısa bir video' : `${need} kısa video`} izle, serin <b>${L.n} günden</b> devam etsin.<br>Bu hak yalnızca <b>bugün</b> geçerli.</p>${dots}
+    <button id="mSave" class="btn primary"><span>${L.part ? `Devam · ${L.part + 1}. video` : '▶ Seriyi kurtar'}</span><small>~${need * 15} sn${need > 1 ? ` · ${need} video` : ''}</small></button>
+    <button id="mClose" class="btn glassbtn">Vazgeç</button>`, {
+    mSave: async () => {
+      if (Ads.busy()) return;
+      if (!Ads.online()) { toast('İnternete bağlan · bugün içinde kurtarabilirsin'); return; }
+      closeModal(); toast('Reklam yükleniyor…'); Music.stop();
+      const ok = await Ads.rewarded(); Music.start();
+      if (!ok || !rescueOk()) { toast('Ödül alınamadı · video sonuna kadar izlenmeli'); return; }
+      if (++L.part < need) { persist(); rescueSheet(); return; }
+      const t = today(), y = dayBefore(t), done = save.dailyDone === t;
+      save.streak = L.n + (done ? 1 : 0); save.lastDaily = done ? t : y;
+      save.dailyLog = [...save.dailyLog.filter(d => d !== y), y].sort().slice(-90);
+      save.rescued = [...(save.rescued || []), y].slice(-30);
+      save.best = Math.max(save.best || 0, save.streak); save.lost = null; persist();
+      refreshHome(); bump($('streakChip')); haptic('win'); [0, 4, 7].forEach((k, j) => tone(note(k + 5), .35, .045, 'sine', j * .09));
+      toast(`🔥 Serin kurtarıldı · ${save.streak} gün`);
+    },
+    mClose: closeModal });
+}
+// ana sayfada bir kez kendiliğinden sorulur (sonra 🔥 çipinden)
+function maybeRescue() {
+  if (!rescueOk() || save.lost.seen || !active('home') || modalOpen() || introOn) return;
+  save.lost.seen = 1; persist(); rescueSheet();
+}
 function streakSheet() {
   dayTick();
   const log = new Set(save.dailyLog), names = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'], done = save.dailyDone === today();
   let week = '';
   for (let k = 6; k >= 0; k--) {
-    const d = new Date(); d.setDate(d.getDate() - k); const on = log.has(ymd(d));
-    week += `<div><i class="${on ? 'on' : ''} ${k ? '' : 'today'}">${on ? '✓' : ''}</i>${k ? names[(d.getDay() + 6) % 7] : 'Bugün'}</div>`;
+    const d = new Date(); d.setDate(d.getDate() - k); const on = log.has(ymd(d)), ice = on && save.rescued?.includes(ymd(d));
+    week += `<div><i class="${on ? 'on' : ''} ${ice ? 'ice' : ''} ${k ? '' : 'today'}">${ice ? '❄' : on ? '✓' : ''}</i>${k ? names[(d.getDay() + 6) % 7] : 'Bugün'}</div>`;
   }
   modal(`${FLAME}<h2>${save.streak} gün seri</h2>
     <p>${done ? 'Bugünün hattı tamam.' : save.streak ? 'Bugünün hattını bitir, serini koru!' : 'Günün Hattı\'nı bitir, serini başlat!'}</p>
@@ -1081,13 +1117,13 @@ $('bBack').onclick = () => show('home');
 $('bReset').onclick = reset;
 $('bHint').onclick = hint;
 $('bSettings').onclick = settings;
-$('streakChip').onclick = streakSheet;
+$('streakChip').onclick = () => rescueOk() ? rescueSheet() : streakSheet();
 $('starsChip').onclick = () => show('map');
 $('crownChip').onclick = skinSheet;
 $('bHow').onclick = how;
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) { pause(); ac?.suspend?.(); Remind.plan(); }
-  else { ac?.resume?.(); dayTick(); if (active('game')) resume(); if (active('home')) refreshHome(); }
+  else { ac?.resume?.(); dayTick(); if (active('game')) resume(); if (active('home')) { refreshHome(); setTimeout(maybeRescue, 600); } }
 });
 // Android geri tuşu: pencere → kapat, oyun/harita → ana sayfa, ana sayfa → arka plana al
 const App = window.Capacitor?.Plugins?.App;
@@ -1123,6 +1159,7 @@ function endIntro() {
 }
 if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro; setTimeout(endIntro, 2300); } else intro.classList.add('gone');
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
+else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
 window.__ray = { generate, lit, rot, limits, sizeFor, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();

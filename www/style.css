@@ -223,6 +223,8 @@ body.introing .screen *{animation-play-state:paused!important}
 .week i{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;font-style:normal;font-size:16px;background:var(--rail)}
 .week i.on{background:linear-gradient(120deg,var(--acc),var(--acc2));color:var(--onacc)}
 .week i.today{box-shadow:0 0 0 2px var(--acc)}
+.week i.ice{background:linear-gradient(120deg,#7dd3fc,#a5b4fc);color:#14213d}
+.flame.cold{fill:var(--mut);filter:drop-shadow(0 0 14px rgba(125,211,252,.35));animation:none;opacity:.8}
 
 /* ---------- alt sayfa (modal) ---------- */
 .modal{position:absolute;inset:0;display:flex;align-items:flex-end;background:rgba(5,6,15,.45);opacity:0;pointer-events:none;transition:opacity .3s;z-index:5}

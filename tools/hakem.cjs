@@ -27,7 +27,7 @@ function serve() {
 
 const checks = [], metrics = {};
 const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-const TODAY = ymd(new Date()), YDAY = ymd(new Date(Date.now() - 864e5));
+const TODAY = ymd(new Date()), YDAY = ymd(new Date(Date.now() - 864e5)), DAY2 = ymd(new Date(Date.now() - 2 * 864e5));
 const starsUpTo = (l, v = 3) => Object.fromEntries(Array.from({ length: l - 1 }, (_, k) => [k + 1, v]));   // 1..l-1 bölümleri
 function check(id, name, pass, detail = '', severity = 'high') {
   checks.push({ id, name, pass: !!pass, detail: String(detail), severity });
@@ -457,6 +457,24 @@ async function inViewport(page, sel) {
     const ads = await page.evaluate(() => window.__log.ads.filter(a => a === 'interstitial').length);
     check('shop', 'Reklamsız paket: fiyat görünür, satın alınca +20 ipucu + Altın tema, geçiş reklamı çıkmaz', /59,99/.test(price) && sv.noAds && sv.hints === h0 + 20 && ads === 0, JSON.stringify({ price: price.trim(), noAds: sv.noAds, hints: [h0, sv.hints], ads }), 'medium');
     check('e5.errors', 'Tema / hatırlatma / mağaza senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
+    await ctx.close();
+  }
+
+  // ---------- E6. Seriyi kurtar: dün kaçtı → bugün video (7+ gün: 2 video) ----------
+  {
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 20, level: 21, stars: starsUpTo(21), streak: 8, best: 8, lastDaily: DAY2, dailyDone: DAY2, dailyLog: [DAY2], remindAsked: true } });
+    await page.waitForTimeout(900);
+    const sheet = await page.evaluate(() => ({ open: document.getElementById('modal').classList.contains('open'), h: document.querySelector('.sheet h2')?.textContent, dot: document.getElementById('streakChip').classList.contains('new'), streak: document.getElementById('sStreak').textContent }));
+    await shot(page, 'rescue');
+    for (let k = 0; k < 2; k++) { if (await page.$('#mSave')) { await page.click('#mSave'); await page.waitForTimeout(900); } }
+    const sv = await getSave(page), ads = await page.evaluate(() => window.__log.ads.filter(a => a === 'rewarded').length);
+    await page.click('#streakChip'); await page.waitForTimeout(500); await shot(page, 'rescue-week');
+    const ice = await page.evaluate(() => !!document.querySelector('.week i.ice'));
+    check('rescue', 'Seriyi kurtar: dün kaçınca bugün açılışta sorulur, 8 gün seride 2 video → seri 8 gün geri gelir', sheet.open && /8 günlük serin koptu/.test(sheet.h || '') && sheet.dot && sheet.streak === '0' && ads === 2 && sv.streak === 8 && sv.lastDaily === YDAY && !sv.lost && ice, JSON.stringify({ ...sheet, ads, streak: sv.streak, last: sv.lastDaily, ice }), 'medium');
+    // seriyi kurtardıktan sonra Günün Hattı → 9 gün
+    await page.click('#mPlayD').catch(() => {}); await page.waitForTimeout(600); await solve(page, 10); await waitModal(page);
+    check('rescue.next', 'Kurtarılan seri bugünün hattıyla devam eder (8 → 9)', (await getSave(page)).streak === 9, String((await getSave(page)).streak), 'medium');
+    check('e6.errors', 'Seri kurtarma senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
     await ctx.close();
   }
 
