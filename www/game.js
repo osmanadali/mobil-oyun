@@ -125,49 +125,45 @@ const movesOk = () => G.moves <= G.lim.m;
 // ---------- ses / dokunsal ----------
 let ac;
 function ensureAC() { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume(); return ac; }
+// yumuşak çan tınısı: sinüs + hafif üst oktav, üstel sönüm (sert tık yok)
 function tone(f, dur = .08, vol = .05, type = 'sine', at = 0) {
   if (!save.sound) return;
   try {
     ensureAC();
-    const t = ac.currentTime + at, o = ac.createOscillator(), g = ac.createGain();
-    o.type = type; o.frequency.value = f;
-    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .008);
-    g.gain.exponentialRampToValueAtTime(.0001, t + dur);
-    o.connect(g).connect(ac.destination); o.start(t); o.stop(t + dur + .02);
+    const t = ac.currentTime + at, o = ac.createOscillator(), o2 = ac.createOscillator(), g = ac.createGain(), g2 = ac.createGain();
+    o.type = type; o.frequency.value = f; o2.frequency.value = f * 2; g2.gain.value = .18;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .012);
+    g.gain.exponentialRampToValueAtTime(.0001, t + Math.max(dur, .06) * 1.6);
+    o.connect(g); o2.connect(g2).connect(g); g.connect(ac.destination);
+    const end = t + Math.max(dur, .06) * 1.6 + .02;
+    o.start(t); o2.start(t); o.stop(end); o2.stop(end);
   } catch {}
 }
 // ---------- arka plan müziği: cihazda üretilen sakin ambiyans (dosya yok, internetsiz) ----------
 const Music = (() => {
-  const CH = [[62, 66, 69, 73], [59, 62, 66, 69], [55, 59, 62, 66], [57, 61, 64, 69]];   // Dmaj7 · Bm7 · Gmaj7 · A
-  const BAR = 8, VOL = .22, hz = m => 440 * Math.pow(2, (m - 69) / 12);
-  let on = false, master, echo, timer = 0, next = 0, step = 0;
+  // Re majör · D – Bm – G – A · her akor: bas + 4 nota. Arpej sabit kalıplarla döner → rastgele uyumsuzluk yok.
+  const PROG = [[50, 62, 66, 69, 74], [47, 59, 62, 66, 71], [43, 55, 59, 62, 67], [45, 57, 61, 64, 69]];
+  const PAT = [[1, 2, 3, 4, 3, 2, 3, 2], [1, 3, 2, 4, 2, 3, 1, 3]];
+  const STEP = .45, VOL = .55, hz = m => 440 * Math.pow(2, (m - 69) / 12);
+  let on = false, master, timer = 0, next = 0, step = 0;
   function setup() {
     master = ac.createGain(); master.gain.value = 0;
-    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1500;
-    echo = ac.createDelay(1); echo.delayTime.value = .42;
-    const fb = ac.createGain(); fb.gain.value = .3;
-    echo.connect(fb).connect(echo); echo.connect(lp);
+    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400;
     master.connect(lp).connect(ac.destination);
   }
-  function pad(m, t, dur) {
-    const o = ac.createOscillator(), g = ac.createGain();
-    o.type = 'sine'; o.frequency.value = hz(m); o.detune.value = (Math.random() - .5) * 10;
-    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.13, t + 2.5);
-    g.gain.setValueAtTime(.13, t + dur - 2); g.gain.linearRampToValueAtTime(0, t + dur + .8);
-    o.connect(g).connect(master); o.start(t); o.stop(t + dur + 1);
-  }
-  function pluck(m, t) {
-    const o = ac.createOscillator(), g = ac.createGain();
-    o.type = 'triangle'; o.frequency.value = hz(m);
-    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.1, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + 1.4);
-    o.connect(g); g.connect(master); g.connect(echo); o.start(t); o.stop(t + 1.5);
+  function bell(m, t, v, len) {
+    const o = ac.createOscillator(), o2 = ac.createOscillator(), g = ac.createGain(), g2 = ac.createGain();
+    o.frequency.value = hz(m); o2.frequency.value = hz(m) * 2; g2.gain.value = .22;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .02); g.gain.exponentialRampToValueAtTime(.0005, t + len);
+    o.connect(g); o2.connect(g2).connect(g); g.connect(master);
+    o.start(t); o2.start(t); o.stop(t + len + .05); o2.stop(t + len + .05);
   }
   function sched() {
-    while (next < ac.currentTime + 1) {
-      const c = CH[(step / 16 | 0) % CH.length], beat = step % 16;
-      if (beat === 0) { c.forEach(m => pad(m - 12, next, BAR)); pad(c[0] - 24, next, BAR); }
-      if (Math.random() < (beat % 4 === 0 ? .5 : .2)) pluck(c[Math.random() * 4 | 0] + 12, next);
-      next += BAR / 16; step++;
+    while (next < ac.currentTime + .8) {
+      const bar = step / 8 | 0, beat = step % 8, c = PROG[bar % 4], cycle = (bar / 4 | 0) % 4;
+      if (beat === 0) bell(c[0], next, .1, 3.2);                         // bas
+      if (cycle !== 3 || beat < 4) bell(c[PAT[cycle % 2][beat]], next, beat % 2 ? .045 : .06, 1.8);   // her 4. turda yarım ölçü nefes
+      next += STEP; step++;
     }
   }
   function start() {
@@ -176,8 +172,8 @@ const Music = (() => {
       ensureAC(); if (!master) setup();
       on = true; next = Math.max(next, ac.currentTime + .1);
       master.gain.cancelScheduledValues(ac.currentTime); master.gain.setValueAtTime(master.gain.value, ac.currentTime);
-      master.gain.linearRampToValueAtTime(VOL, ac.currentTime + 3);
-      clearInterval(timer); timer = setInterval(sched, 250); sched();
+      master.gain.linearRampToValueAtTime(VOL, ac.currentTime + 2.5);
+      clearInterval(timer); timer = setInterval(sched, 300); sched();
     } catch {}
   }
   function stop() {
@@ -230,9 +226,8 @@ document.addEventListener('pointerdown', e => {
   const b = e.target.closest('.btn,.ic,.lv,.chip'); if (!b) return;
   const r = b.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2.2, sp = document.createElement('i');
   sp.className = 'rip'; sp.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX - r.left - d / 2}px;top:${e.clientY - r.top - d / 2}px`;
-  if (getComputedStyle(b).position === 'static') b.style.position = 'relative';
-  b.style.overflow = 'hidden'; b.appendChild(sp); setTimeout(() => sp.remove(), 600);
-  haptic(); tone(1400, .03, .02, 'triangle');
+  b.appendChild(sp); setTimeout(() => sp.remove(), 600);
+  haptic(); tone(587, .05, .012);
 }, { passive: true });
 
 let clockT;
@@ -355,7 +350,8 @@ function tick() {
   $('gTime').textContent = fmtT(ms);
   const [s1, s2, s3] = $('gStars').children;
   s1.classList.add('on'); s2.classList.toggle('on', tOk); s3.classList.toggle('on', mOk);
-  $('gNext').innerHTML = `<span class="${tOk ? '' : 'miss'}">⏱ ${tOk ? fmtT(left * 1000 + 999) + ' kaldı' : 'süre kaçtı'}</span> · <span class="${mOk ? '' : 'miss'}">↻ ${mOk ? `${G.lim.m - G.moves} hamle hakkı` : 'hamle aşıldı'}</span>`;
+  const nx = `<span class="${tOk ? '' : 'miss'}">⏱ ${tOk ? fmtT(left * 1000 + 999) + ' kaldı' : 'süre kaçtı'}</span> · <span class="${mOk ? '' : 'miss'}">↻ ${mOk ? `${G.lim.m - G.moves} hamle hakkı` : 'hamle aşıldı'}</span>`;
+  if (nx !== G.nxHtml) { $('gNext').innerHTML = nx; G.nxHtml = nx; }
   $('gPill').classList.toggle('warn', tOk && left <= 10 && !G.won);
   if (!G.won) {
     if (G.tOk && !tOk) lose('⏱ Süre hedefi kaçtı · ★ söndü');
@@ -363,10 +359,10 @@ function tick() {
   }
   G.tOk = tOk; G.mOk = mOk;
 }
-function lose(msg) { bump($('gPill')); tone(330, .14, .04, 'triangle'); haptic('heavy'); toast(msg); }
+function lose(msg) { bump($('gPill')); tone(294, .2, .04); haptic('heavy'); toast(msg); }
 
 function resize() {
-  const bd = $('board'), Wd = bd.clientWidth, Hd = bd.clientHeight, dpr = Math.min(devicePixelRatio || 1, 3);
+  const bd = $('board'), Wd = bd.clientWidth, Hd = bd.clientHeight, dpr = Math.min(devicePixelRatio || 1, 2);   // 3x ekranda 2x yeterli, yük ~%55 az
   if (!Wd || !Hd) return;
   cv.width = Math.round(Wd * dpr); cv.height = Math.round(Hd * dpr);
   if (!G) return;
@@ -486,7 +482,7 @@ cv.addEventListener('pointerdown', e => {
   const c = Math.floor((px - ox) / s), w = Math.floor((py - oy) / s);
   if (c < 0 || w < 0 || c >= G.cols || w >= G.rows) return;
   const i = w * G.cols + c, now = performance.now();
-  if (G.fixed[i]) { haptic('light'); tone(520, .06, .03, 'triangle'); toast('Bu karo ipucuyla sabitlendi'); press.set(i, now); kick(); return; }
+  if (G.fixed[i]) { haptic('light'); tone(440, .06, .02); toast('Bu karo ipucuyla sabitlendi'); press.set(i, now); kick(); return; }
   G.cur[i] = rot(G.cur[i]);
   if (G.lastTile !== i) { G.moves++; G.lastTile = i; }   // aynı karoya art arda dokunuş = 1 hamle
   anim.set(i, now); press.set(i, now); ripples.push({ x: px, y: py, t: now });
@@ -496,7 +492,7 @@ cv.addEventListener('pointerdown', e => {
   G.L.d.forEach((v, j) => { if (v >= 0 && prev[j] < 0) { litAt[j] = now + v * 12; gained++; if (popc(G.cur[j]) === 1) { stations++; burst(j, 7, v * 12); } } });
   const k = Math.round(G.L.n / G.cur.length * (PENTA.length - 1));
   if (gained) { tone(note(k), .22, .05); if (stations) tone(note(k + 2), .3, .035, 'sine', .06); haptic(stations ? 'heavy' : 'light'); }
-  else { tone(G.L.n < prev.filter(v => v >= 0).length ? 330 : 900, .05, .03, 'triangle'); haptic('light'); }
+  else { tone(G.L.n < prev.filter(v => v >= 0).length ? 294 : 523, .05, .022); haptic('light'); }
   hud(); tick(); kick();
   if (gained) bump($('gPct'));
   if (G.L.solved) win(); else saveRun();
@@ -561,7 +557,7 @@ function winSheet(g, { st, tOk, mOk, perfect, extra, unlockedNow }) {
 function toggleMini() {
   const mini = $('game').classList.toggle('mini');
   $('wTog').querySelector('span').textContent = mini ? 'Sonuç' : 'Hattı gör';
-  haptic(); tone(mini ? 700 : 900, .05, .03, 'triangle');
+  haptic(); tone(mini ? 440 : 587, .06, .02);
 }
 function closePanel() { $('game').classList.remove('won', 'mini'); $('winPanel').innerHTML = ''; }
 async function next() {
