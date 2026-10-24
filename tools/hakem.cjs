@@ -26,6 +26,9 @@ function serve() {
 }
 
 const checks = [], metrics = {};
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const TODAY = ymd(new Date()), YDAY = ymd(new Date(Date.now() - 864e5));
+const starsUpTo = (l, v = 3) => Object.fromEntries(Array.from({ length: l - 1 }, (_, k) => [k + 1, v]));   // 1..l-1 bölümleri
 function check(id, name, pass, detail = '', severity = 'high') {
   checks.push({ id, name, pass: !!pass, detail: String(detail), severity });
   console.log(`${pass ? '✓' : '✗'} [${severity}] ${name}${detail ? ' — ' + detail : ''}`);
@@ -37,8 +40,11 @@ const MOCK = `
   const _raf = window.requestAnimationFrame.bind(window);
   window.requestAnimationFrame = cb => { window.__log.raf++; return _raf(cb); };
   if (!window.__noCap) window.Capacitor = { Plugins: {
-    AdMob: { initialize: async () => {}, prepareInterstitial: async () => {}, showInterstitial: async () => { window.__log.ads.push('interstitial'); },
-             prepareRewardVideoAd: async () => {}, showRewardVideoAd: async () => { window.__log.ads.push('rewarded'); return { type: 'hint', amount: 2 }; } },
+    AdMob: (() => { const L = {}, emit = e => (L[e] || []).slice().forEach(f => f({}));
+      return { addListener: (e, f) => { (L[e] = L[e] || []).push(f); return Promise.resolve({ remove() { L[e] = L[e].filter(x => x !== f); } }); },
+        initialize: async () => {}, prepareInterstitial: async () => {}, prepareRewardVideoAd: async () => {},
+        showInterstitial: async () => { window.__log.ads.push('interstitial'); setTimeout(() => emit('interstitialAdDismissed'), 50); },
+        showRewardVideoAd: async () => { window.__log.ads.push('rewarded'); setTimeout(() => { emit('onRewardedVideoAdReward'); emit('onRewardedVideoAdDismissed'); }, 50); return { type: 'hint', amount: 2 }; } }; })(),
     Haptics: { impact() { window.__log.hap++; }, notification() { window.__log.hap++; } },
     Share: { share: async o => { window.__log.share.push(o.text); } } } };
 `;
@@ -79,7 +85,7 @@ async function solve(page, gap = 25) {
 }
 async function waitModal(page, ms = 5000) {
   const t = Date.now();
-  while (Date.now() - t < ms) { if (await modalOpen(page)) return true; await page.waitForTimeout(100); }
+  while (Date.now() - t < ms) { if (await modalOpen(page)) { await page.waitForTimeout(700); return true; } await page.waitForTimeout(100); }   // alt sayfa animasyonu bitsin
   return false;
 }
 async function inViewport(page, sel) {
@@ -127,7 +133,7 @@ async function inViewport(page, sel) {
   metrics.layout = {};
   for (const vp of [[360, 640], [390, 844], [412, 915]]) for (const scheme of ['dark', 'light']) {
     const key = `${vp[0]}x${vp[1]}-${scheme}`;
-    const { ctx, page, errors } = await open(browser, URL, { vp, scheme, save: { level: 61, played: 3, streak: 2 } });
+    const { ctx, page, errors } = await open(browser, URL, { vp, scheme, save: { level: 61, played: 3, streak: 2, lastDaily: YDAY, stars: starsUpTo(61) } });
     await page.waitForTimeout(1600);
     await shot(page, `home-${key}`);
     const ov = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth || document.documentElement.scrollHeight > innerHeight);
@@ -185,8 +191,7 @@ async function inViewport(page, sel) {
 
   // ---------- D. Günün Hattı + seri + paylaşım ----------
   {
-    const y = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
-    const { ctx, page } = await open(browser, URL, { save: { played: 4, streak: 3, lastDaily: y, dailyDone: y, hints: 3, hintDay: new Date().toISOString().slice(0, 10) } });
+    const { ctx, page } = await open(browser, URL, { save: { played: 4, streak: 3, lastDaily: YDAY, dailyDone: YDAY, hints: 3, hintDay: TODAY } });
     await page.click('#bDaily'); await page.waitForTimeout(500);
     await solve(page, 10);
     const won = await waitModal(page);
@@ -205,8 +210,8 @@ async function inViewport(page, sel) {
 
   // ---------- E. İpucu + ödüllü reklam + çevrimdışı ----------
   {
-    const today = new Date().toISOString().slice(0, 10);
-    const { ctx, page } = await open(browser, URL, { save: { played: 4, level: 20, hints: 1, hintDay: today } });
+    const today = TODAY;
+    const { ctx, page } = await open(browser, URL, { save: { played: 4, level: 20, hints: 1, hintDay: today, stars: starsUpTo(20) } });
     await page.click('#bPlay'); await page.waitForTimeout(500);
     await page.click('#bHint'); await page.waitForTimeout(500);
     const h = await page.evaluate(() => { const G = window.__ray.G; const i = G.fixed.indexOf(true); return { fixed: G.fixed.filter(Boolean).length, correct: i >= 0 && G.cur[i] === G.sol[i] }; });
@@ -220,7 +225,7 @@ async function inViewport(page, sel) {
     check('ads.reward', 'İpucu bitince ödüllü reklam → +2 ipucu', !!adSheet && log.ads.includes('rewarded') && s.hints === 2, `hints=${s.hints} ads=${JSON.stringify(log.ads)}`);
     await ctx.close();
     // çevrimdışıyken reklam teklifi çıkmamalı
-    const o = await open(browser, URL, { save: { played: 4, level: 20, hints: 0, hintDay: today } });
+    const o = await open(browser, URL, { save: { played: 4, level: 20, hints: 0, hintDay: today, stars: starsUpTo(20) } });
     await o.ctx.setOffline(true);
     await o.page.click('#bPlay'); await o.page.waitForTimeout(400);
     await o.page.click('#bHint'); await o.page.waitForTimeout(500);
@@ -230,9 +235,63 @@ async function inViewport(page, sel) {
     await o.ctx.close();
   }
 
+  // ---------- E2. Süre → yıldız, hat kilidi, Hatlar ekranı, yarım oyunu sürdürme ----------
+  {
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 4, level: 5, stars: starsUpTo(5) } });
+    await page.click('#bPlay'); await page.waitForTimeout(400);
+    const pill0 = await page.evaluate(() => document.querySelectorAll('#gStars i.on').length);
+    // 3★ süresini aş → gösterge 2★'a düşmeli, çözünce en fazla 2★
+    await page.evaluate(() => { const G = window.__ray.G; G.ms += (G.lim.t3 + 1) * 1000; });
+    await page.waitForTimeout(400);
+    const pill1 = await page.evaluate(() => document.querySelectorAll('#gStars i.on').length);
+    const next = await page.textContent('#gNext');
+    await shot(page, 'timer-2star');
+    await solve(page, 15); await waitModal(page);
+    const st = await page.evaluate(() => document.querySelectorAll('.stars svg.on').length);
+    check('time.stars', '3★ süresi aşılınca en fazla 2★ (gösterge + sonuç)', pill0 === 3 && pill1 === 2 && st === 2, `başta ${pill0}★ → süre aşımı ${pill1}★ → sonuç ${st}★ · "${next}"`);
+    await shot(page, 'win-2star');
+    await ctx.close();
+
+    // süre yalnızca oyun ekranında akmalı + geri dönünce kaldığı yerden sürmeli
+    const r = await open(browser, URL, { save: { played: 4, level: 12, stars: starsUpTo(12) } });
+    await r.page.click('#bPlay'); await r.page.waitForTimeout(300);
+    for (const i of [0, 1, 2]) await tapTile(r.page, i);
+    await r.page.click('#bBack'); await r.page.waitForTimeout(300);
+    const t1 = await r.page.evaluate(() => window.__ray.G.ms);
+    await r.page.waitForTimeout(1500);
+    const t2 = await r.page.evaluate(() => window.__ray.G.ms);
+    await r.page.reload(); await r.page.waitForTimeout(300);
+    await r.page.click('#bPlay'); await r.page.waitForTimeout(300);
+    const resumed = await r.page.evaluate(() => ({ lvl: window.__ray.G.lvl, moves: window.__ray.G.moves, ms: window.__ray.G.ms }));
+    check('timer.pause', 'Ana sayfadayken süre durur', t2 === t1, `${t1} → ${t2} ms`, 'medium');
+    check('resume', 'Yarım bölüm uygulama kapanınca bile kaldığı yerden sürer', resumed.lvl === 12 && resumed.moves === 3 && resumed.ms >= t1 - 5, JSON.stringify(resumed), 'medium');
+    await r.ctx.close();
+
+    // yıldız kapısı: M2 için ★22 gerekli
+    const g = await open(browser, URL, { save: { played: 10, level: 11, stars: { ...starsUpTo(11, 2), 5: 3 } } });   // ★21 / 22
+    await g.page.click('#bPlay'); await g.page.waitForTimeout(500);
+    const lockedOk = !!(await g.page.$('#mMap')) && !(await g.page.evaluate(() => document.getElementById('game').classList.contains('active')));
+    await shot(g.page, 'gate-locked');
+    await g.page.click('#mMap'); await g.page.waitForTimeout(600);
+    const map = await g.page.evaluate(() => ({ lines: document.querySelectorAll('.line').length, open: document.querySelectorAll('.lv:not([disabled])').length, locked: document.querySelectorAll('.line.lockd').length }));
+    await shot(g.page, 'map');
+    await g.page.click('.lv[data-l="3"]'); await g.page.waitForTimeout(500);
+    const replay = await g.page.evaluate(() => window.__ray.G?.lvl);
+    await solve(g.page, 15); await waitModal(g.page);
+    const after = await getSave(g.page);
+    const sum = Object.values(after.stars).reduce((a, b) => a + b, 0);
+    await shot(g.page, 'gate-unlock');
+    const badge = await g.page.textContent('.badge').catch(() => '');
+    check('gate.lock', 'Yetersiz yıldızda yeni hat kilitli (★21/22)', lockedOk, '', 'high');
+    check('map', 'Hatlar ekranı: açık bölümler seçilebilir, kilitli hat görünür', map.open === 10 && map.locked >= 1 && replay === 3, JSON.stringify({ ...map, replay }), 'high');
+    check('gate.replay', 'Eski bölümü 3★ yapınca (★22) yeni hat açılır', sum === 22 && /YENİ HAT/.test(badge || ''), `★${sum} · rozet: ${badge || '-'}`, 'medium');
+    check('e2.errors', 'Bu senaryolarda konsol hatası yok', !errors.length && !r.errors.length && !g.errors.length, [...errors, ...r.errors, ...g.errors].join(' | '));
+    await g.ctx.close();
+  }
+
   // ---------- F. Boşta CPU: animasyon döngüsü durmalı ----------
   {
-    const { ctx, page } = await open(browser, URL, { save: { played: 4, level: 30 } });
+    const { ctx, page } = await open(browser, URL, { save: { played: 4, level: 30, stars: starsUpTo(30) } });
     await page.click('#bPlay'); await page.waitForTimeout(400);
     await tapTile(page, 0); await page.waitForTimeout(1500);
     const a = await page.evaluate(() => window.__log.raf); await page.waitForTimeout(2000);
@@ -244,7 +303,7 @@ async function inViewport(page, sel) {
 
   // ---------- G. Düşük donanım: 4× yavaş CPU'da kare süresi ----------
   {
-    const { ctx, page } = await open(browser, URL, { save: { played: 4, level: 61 } });
+    const { ctx, page } = await open(browser, URL, { save: { played: 4, level: 61, stars: starsUpTo(61) } });
     await page.click('#bPlay'); await page.waitForTimeout(500);
     const cdp = await ctx.newCDPSession(page);
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });

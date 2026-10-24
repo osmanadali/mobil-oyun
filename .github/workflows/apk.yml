@@ -2,7 +2,7 @@
 # https://github.com/osmanadali/mobil-oyun/releases/download/test/ray-test.apk
 name: Android APK (test)
 on:
-  push: { branches: [main], paths: ['www/**', 'package.json', 'capacitor.config.json', '.github/workflows/apk.yml'] }
+  push: { branches: [main], paths: ['www/**', 'assets/**', 'package.json', 'capacitor.config.json', '.github/workflows/apk.yml'] }
   workflow_dispatch:
 permissions: { contents: write }
 concurrency: { group: apk, cancel-in-progress: true }
@@ -17,6 +17,8 @@ jobs:
         with: { distribution: temurin, java-version: 17 }
       - run: npm install --no-audit --no-fund
       - run: npx cap add android
+      - name: İkon ve açılış ekranı (assets/)
+        run: npx @capacitor/assets generate --android --iconBackgroundColor '#0d1020' --iconBackgroundColorDark '#0d1020' --splashBackgroundColor '#0d1020' --splashBackgroundColorDark '#0d1020'
       - name: AdMob test App ID
         run: sed -i 's#</application>#<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713"/></application>#' android/app/src/main/AndroidManifest.xml
       - run: npx cap sync android

@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#0e1120">
 <title>Ray — Metro Bulmaca</title>
+<meta name="description" content="Hatları bağla, şehri yak. Tek elle, internetsiz oynanan sakin metro bulmacası.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Ray — Metro Bulmaca">
+<meta property="og:description" content="Hatları bağla, şehri yak. Günün Hattı'nı kaç hamlede bitirirsin?">
+<meta property="og:image" content="https://osmanadali.github.io/mobil-oyun/og.jpg">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg">
 <link rel="stylesheet" href="style.css">
@@ -39,11 +46,12 @@
         <small id="dailyState">Seriyi koru</small>
         <svg class="arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
       </button>
-      <div class="card prog">
-        <div class="ph"><span class="k">İLERLEME</span><small id="nextReward">+2 ipucu: Bölüm 10</small></div>
+      <button class="card prog btn" id="bMap">
+        <div class="ph"><span class="k">HATLAR</span><small><b id="sHints">3</b> ipucu</small></div>
+        <b id="lineName">M1 · Turuncu Hat</b>
         <div class="pb"><i id="progBar"></i></div>
-        <div class="ph"><small><b id="sHints">3</b> ipucu</small><small id="sSize">3×3</small></div>
-      </div>
+        <div class="ph"><small id="gateTxt">★ 0 / 22 → M2</small><small id="sSize">3×3 ızgara</small></div>
+      </button>
     </div>
 
     <div class="actions">
@@ -58,12 +66,25 @@
       <div class="title"><b id="gTitle">Bölüm 1</b><small id="gMoves">0 hamle · hedef 0</small></div>
       <button id="bReset" class="ic" aria-label="Baştan"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4.5h4.5"/></svg></button>
     </header>
+    <div class="status">
+      <div class="pill" id="gPill"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></svg><b id="gTime">0:00</b><span id="gStars"><i>★</i><i>★</i><i>★</i></span></div>
+      <small id="gNext">3★ süresi: 0:30</small>
+    </div>
     <div class="meter"><i id="gBar"></i><span id="gPct">0%</span></div>
     <div id="board"><canvas id="cv"></canvas></div>
     <footer class="bottom">
-      <div class="parInfo"><span>HAMLE / HEDEF</span><b id="gPar">0</b></div>
+      <div class="parInfo"><span id="gParLbl">HAMLE</span><b id="gPar">0</b></div>
       <button id="bHint" class="btn hint"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.6.5 1.1 1.2 1.1 2.2h5c0-1 .5-1.7 1.1-2.2A6 6 0 0 0 12 3z"/></svg>İpucu<b id="gHints">3</b></button>
     </footer>
+  </section>
+
+  <section id="map" class="screen">
+    <header class="top">
+      <button id="pBack" class="ic" aria-label="Geri"><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg></button>
+      <div class="title"><b>Hatlar</b><small id="pSub"></small></div>
+      <div class="chip"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z"/></svg><b id="pStars">0</b></div>
+    </header>
+    <div class="mapList" id="mapList"></div>
   </section>
 
   <div id="modal" class="modal"><div class="sheet" id="mCard"></div></div>
