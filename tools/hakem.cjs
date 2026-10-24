@@ -157,7 +157,10 @@ async function inViewport(page, sel) {
     await page.waitForTimeout(2200);
     const howOpen = await modalOpen(page);
     await shot(page, 'onboarding');
+    const cap1 = await page.textContent('#demoTxt').catch(() => ''); await page.waitForTimeout(2800); const cap2 = await page.textContent('#demoTxt').catch(() => '');
+    await shot(page, 'onboarding-demo');
     check('onboard.auto', 'İlk açılışta "Nasıl oynanır" kendiliğinden açılıyor', howOpen, '', 'medium');
+    check('onboard.demo', 'Nasıl oynanır: kendi kendine oynayan demo, sahne yazısı ilerliyor', !!cap1 && !!cap2 && cap1 !== cap2, `"${cap1}" → "${cap2}"`, 'medium');
     if (howOpen) await page.click('#mClose');
     await page.waitForTimeout(600);
     const inGame = await page.evaluate(() => document.getElementById('game').classList.contains('active'));

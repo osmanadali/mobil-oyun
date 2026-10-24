@@ -752,10 +752,101 @@ function settings() {
     mClose: closeModal });
   $('oT').onclick = e => { const t = e.target.dataset.t; if (!t) return; save.theme = t; persist(); applyTheme(); refreshHome(); $('oT').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.t === t)); };
 }
+// ---------- nasıl oynanır: kendi kendine oynayan kısa demo (video yerine: keskin, birkaç KB, internetsiz) ----------
+const DEMO_STEPS = [
+  [0, 'Karoya dokun → <b>döner</b>'],
+  [2.6, 'Ortadaki istasyondan çıkan <b>hattı uzat</b>'],
+  [4.4, 'Bütün <b>durakları yak</b>'],
+  [7.2, 'Hepsi bağlandı → <b>kazandın!</b> 🎉'],
+  [9.4, '<b>Hızlı</b> bitir + <b>az</b> dokun = ★★★'],
+  [12, 'Bölümler gittikçe <b>büyür ve zorlaşır</b>'],
+  [15, 'Her gün yeni <b>Günün Hattı</b> 🔥'],
+];
+function demo(cv2) {
+  const c2 = cv2.getContext('2d'), D = 240, dpr = Math.min(devicePixelRatio || 1, 2), LOOP = 18;
+  cv2.width = cv2.height = D * dpr;
+  // 3×3 örnek: merkez 4; 3, 1, 5, 7 birer dokunuşta yerine oturur
+  const SOL = [6, 8, 4, 3, 14, 9, 2, 11, 8], WRONG = [3, 1, 5, 7], TAPS = [[1.2, 3], [3.2, 1], [5, 5], [6.4, 7]];
+  const unrot = m => ((m >> 1) | (m << 3)) & 15;
+  const big = [generate(4, 4, 77), generate(5, 5, 78), generate(5, 5, 79)];
+  const col = (pal.light ? LINES_LIGHT : LINES_DARK)[0];
+  let step = -1, t0 = performance.now();
+  function grid(cols, cur, opt = {}) {
+    const n = cur.length, rows = n / cols, s = Math.min(D / cols, D / rows) * (opt.scale ?? 1), ox = (D - s * cols) / 2, oy = (D - s * rows) / 2;
+    const L = opt.lit ? { d: cur.map(() => 0) } : lit({ cols, rows, cur, hub: (rows >> 1) * cols + (cols >> 1) });
+    c2.lineCap = 'round';
+    for (let i = 0; i < n; i++) {
+      const x = ox + (i % cols) * s + s / 2, y = oy + (i / cols | 0) * s + s / 2, on = L.d[i] >= 0, hub = i === (rows >> 1) * cols + (cols >> 1);
+      let sc = 1; if (opt.wave != null) { const k = opt.wave - L.d[i] * .06; if (k > 0 && k < .35) sc = 1 + Math.sin(k / .35 * Math.PI) * .12; }
+      c2.save(); c2.translate(x, y); c2.scale(sc, sc);
+      c2.beginPath(); c2.roundRect ? c2.roundRect(-s / 2 + 2, -s / 2 + 2, s - 4, s - 4, s * .22) : c2.rect(-s / 2 + 2, -s / 2 + 2, s - 4, s - 4);
+      c2.fillStyle = pal.tile; c2.fill(); if (on) { c2.fillStyle = rgba(col, .08); c2.fill(); }
+      c2.rotate(opt.rot?.[i] || 0);
+      const m = cur[i];
+      for (const [w, st] of on ? [[s * .36, rgba(col, .22)], [s * .16, col]] : [[s * .16, pal.rail]]) {
+        c2.lineWidth = w; c2.strokeStyle = st; c2.beginPath();
+        for (const [b, dx, dy] of DV) if (m & b) { c2.moveTo(0, 0); c2.lineTo(dx * s / 2, dy * s / 2); }
+        c2.stroke();
+      }
+      if (hub) { c2.fillStyle = col; c2.fillRect(-s * .2, -s * .2, s * .4, s * .4); c2.fillStyle = '#fff'; c2.beginPath(); c2.arc(0, 0, s * .07, 0, 7); c2.fill(); }
+      else if (popc(m) === 1) { c2.fillStyle = on ? '#fff' : pal.bg; c2.strokeStyle = on ? col : pal.mut; c2.lineWidth = s * .06; c2.beginPath(); c2.arc(0, 0, s * .14, 0, 7); c2.fill(); c2.stroke(); }
+      c2.restore();
+    }
+    return { s, ox, oy };
+  }
+  function finger(x, y, tap) {
+    if (tap > 0 && tap < .5) { c2.strokeStyle = `rgba(255,255,255,${.8 * (1 - tap / .5)})`; c2.lineWidth = 3; c2.beginPath(); c2.arc(x, y, 14 + tap * 50, 0, 7); c2.stroke(); }
+    c2.fillStyle = 'rgba(255,255,255,.88)'; c2.shadowColor = 'rgba(0,0,0,.35)'; c2.shadowBlur = 10;
+    c2.beginPath(); c2.arc(x + 4, y + 6, tap > 0 && tap < .15 ? 11 : 14, 0, 7); c2.fill(); c2.shadowBlur = 0;
+  }
+  function frame(now) {
+    if (!cv2.isConnected || !modalOpen()) return;   // pencere kapanınca demo durur (pil)
+    const t = ((now - t0) / 1000) % LOOP, k = DEMO_STEPS.findLastIndex(([st]) => t >= st);
+    if (k !== step) {
+      step = k; const el = $('demoTxt');
+      if (el) { el.classList.add('fade'); setTimeout(() => { el.innerHTML = DEMO_STEPS[k][1]; el.classList.remove('fade'); }, 180); }
+      document.querySelectorAll('#demoDots i').forEach((d, j) => d.classList.toggle('on', j === k));
+    }
+    c2.setTransform(dpr, 0, 0, dpr, 0, 0); c2.clearRect(0, 0, D, D);
+    if (t < 9.4) {
+      const cur = SOL.slice(), rot = {}; WRONG.forEach(i => { cur[i] = unrot(SOL[i]); });
+      for (const [tt, i] of TAPS) if (t >= tt) { cur[i] = SOL[i]; const q = (t - tt) / .19; if (q < 1) rot[i] = -(1 - back(q)) * Math.PI / 2; }
+      const g = grid(3, cur, { rot, wave: t > 6.6 ? t - 6.6 : null });
+      // parmak: bir sonraki dokunuşa kayar
+      const nxt = TAPS.findIndex(([tt]) => t < tt + .5);
+      if (nxt >= 0) {
+        const [tt, i] = TAPS[nxt], [, pi] = TAPS[Math.max(0, nxt - 1)], P = j => [g.ox + (j % 3) * g.s + g.s / 2, g.oy + (j / 3 | 0) * g.s + g.s / 2];
+        const a = P(nxt ? pi : 4), b = P(i), f = Math.min(1, Math.max(0, (t - (tt - .7)) / .6)), e = ease(f);
+        finger(a[0] + (b[0] - a[0]) * e, a[1] + (b[1] - a[1]) * e, t - tt);
+      }
+    } else if (t < 12) {
+      c2.globalAlpha = .35; grid(3, SOL, { lit: true }); c2.globalAlpha = 1;
+      [0, 1, 2].forEach(j => {
+        const q = Math.min(1, Math.max(0, (t - 9.7 - j * .35) / .3)), sz = (j === 1 ? 46 : 38) * back(q);
+        if (q <= 0) return;
+        c2.save(); c2.translate(D / 2 + (j - 1) * 62, D / 2 - (j === 1 ? 8 : 0)); c2.scale(sz / 24, sz / 24); c2.translate(-12, -12);
+        c2.fillStyle = col; c2.shadowColor = col; c2.shadowBlur = 12; c2.fill(new Path2D('m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z')); c2.restore();
+      });
+      c2.fillStyle = pal.fg; c2.font = '600 13px Outfit, system-ui'; c2.textAlign = 'center';
+      c2.fillText('bitir  ·  ⏱ süre  ·  ↻ hamle', D / 2, D / 2 + 52);
+    } else if (t < 15) {
+      const k2 = t < 13.5 ? 0 : 1, P = big[k2], q = Math.min(1, (t - (k2 ? 13.5 : 12)) / .35);
+      grid(P.cols, P.cur, { scale: (.6 + .4 * back(q)) * .84 });
+      c2.fillStyle = pal.fg; c2.font = '700 14px Outfit, system-ui'; c2.textAlign = 'center';
+      c2.fillText(`${P.cols}×${P.rows}`, D / 2, 14);
+    } else grid(5, big[2].sol, { lit: true, wave: (t - 15) % 1.2, scale: .9 });
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
 function how() {
   modal(`<h2>Nasıl oynanır?</h2>
-    <div class="how"><i>1</i><span>Karoya dokun → ray 90° döner.</span><i>2</i><span>Merkez istasyondan çıkan hattı <b>tüm duraklara</b> ulaştır. Açıkta ray ucu kalmasın.</span><i>★</i><span>Her yıldız bir hedef: <b>bitir</b> · <b>⏱ süre</b> · <b>↻ hamle</b>. İkisini birden tutturursan <b>KUSURSUZ 👑</b> + ipucu parçası.</span><i>↻</i><span>Aynı karoya art arda dokunmak <b>tek hamle</b> sayılır.</span><i>M2</i><span>Yıldız topla → <b>yeni hatlar</b> aç. Bazı hatlar <b>yeni kural</b> getirir.</span><i>🔥</i><span>Her gün yeni <b>Günün Hattı</b>. Seriyi bozma!</span></div>
-    <button id="mClose" class="btn primary"><span>Başla</span></button>`, { mClose: () => { closeModal(); if (save.played === 0 && !G) start('level'); } });
+    <canvas id="demoCv" class="demo" aria-label="Oynanış demosu"></canvas>
+    <p id="demoTxt" class="demotxt">${DEMO_STEPS[0][1]}</p>
+    <div class="vids" id="demoDots">${'<i></i>'.repeat(DEMO_STEPS.length)}</div>
+    <button id="mClose" class="btn primary"><span>${save.played ? 'Tamam' : 'Hadi oynayalım!'}</span></button>`,
+    { mClose: () => { closeModal(); if (save.played === 0 && !G) start('level'); } });
+  demo($('demoCv'));
 }
 
 $('bPlay').onclick = () => start('level');
