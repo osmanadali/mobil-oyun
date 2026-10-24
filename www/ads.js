@@ -40,17 +40,20 @@ window.Ads = (() => {
       timer = setTimeout(() => fin(false), ms);
     });
   }
+  // true: reklam gösterildi ve kapandı
   async function interstitial() {
     const A = plug();
-    if (!A || !ready || !online() || Date.now() - lastShown < 90e3) return;   // en az 90 sn arayla
-    if (!interReady) { preload(); return; }
+    if (!A || !ready || !online() || Date.now() - lastShown < 90e3) return false;   // en az 90 sn arayla
+    if (!interReady) { preload(); return false; }
+    let shown = false;
     try {
       const wait = closed(A, ['interstitialAdDismissed'], ['interstitialAdFailedToShow'], 60e3);
       interReady = false;
       await A.showInterstitial();
-      if (await wait) lastShown = Date.now();
+      if (shown = await wait) lastShown = Date.now();
     } catch {}
     preload();
+    return shown;
   }
   // true yalnızca ödül hak edildiyse (video sonuna kadar izlendi). Aynı anda tek reklam.
   async function rewarded() {

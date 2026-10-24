@@ -22,7 +22,7 @@ const today = () => ymd(new Date());
 const dayBefore = s => { const [y, m, d] = s.split('-').map(Number); return ymd(new Date(y, m - 1, d - 1)); };
 
 // ---------- kayıt ----------
-const def = { level: 1, stars: {}, hints: DAILY_FREE_HINTS, hintDay: '', streak: 0, lastDaily: '', dailyDone: '', dailyStats: null, runs: {}, crowns: {}, shards: 0, seen: {}, sound: true, music: true, vib: true, theme: 'auto', played: 0 };
+const def = { level: 1, stars: {}, hints: DAILY_FREE_HINTS, hintDay: '', streak: 0, lastDaily: '', dailyDone: '', dailyStats: null, runs: {}, crowns: {}, shards: 0, seen: {}, sound: true, music: true, vib: true, theme: 'auto', played: 0, skin: 'metro', dCrowns: 0, newSkin: 0, remind: false, remindAt: 1110, remindAsked: false, noAds: false };
 let save;
 try { save = Object.assign({}, def, JSON.parse(localStorage.getItem('ray') || '{}')); } catch { save = { ...def }; }
 if (!save.runs || typeof save.runs !== 'object') save.runs = {};
@@ -40,7 +40,7 @@ function dayTick() {
 
 // ---------- hatlar ve yıldız kapıları ----------
 const lineOf = l => Math.floor((l - 1) / PER_LINE);
-const lineName = c => `M${c + 1} · ${LINE_NAMES[c % LINE_NAMES.length]} Hat`;
+const lineName = c => `M${c + 1} · ${(skin().names || LINE_NAMES)[c % 6]} Hat`;
 const need = c => Math.round(c * PER_LINE * STAR_AVG);
 const totalStars = () => Object.values(save.stars).reduce((a, b) => a + b, 0);
 const unlocked = c => totalStars() >= need(c);
@@ -48,7 +48,34 @@ const unlocked = c => totalStars() >= need(c);
 // ---------- tema / palet ----------
 let pal = {};
 const isLight = () => save.theme === 'light' || (save.theme === 'auto' && matchMedia('(prefers-color-scheme: light)').matches);
+// ---------- hat temaları: kusursuz bitirilen bölümlerin taçlarıyla (👑) açılır ----------
+const SKINS = [
+  { id: 'metro', name: 'Metro', need: 0 },
+  { id: 'sunset', name: 'Gün Batımı', need: 3, lines: ['#ff9e7a', '#ffcf6b', '#ff6f91', '#c98bff', '#ffb86b', '#ff8fab'], names: ['Mercan', 'Kehribar', 'Gül', 'Lavanta', 'Şeftali', 'Pembe'], acc: ['#ffb36b', '#ff6f91'], glow: ['#ff9e5a', '#c86bff', '#ff5f7e'] },
+  { id: 'ocean', name: 'Okyanus', need: 8, lines: ['#5ce1e6', '#4fa3ff', '#7dd3fc', '#38d9a9', '#a5b4fc', '#2dd4bf'], names: ['Lagün', 'Derin Mavi', 'Gök', 'Yosun', 'Lila', 'Turkuaz'], acc: ['#5ce1e6', '#5b8cff'], glow: ['#3fb6d9', '#3a5bff', '#2dd4bf'] },
+  { id: 'neon', name: 'Neon Gece', need: 15, lines: ['#ff3ddc', '#22e6ff', '#39ff88', '#fff23a', '#ff8a1f', '#b84dff'], names: ['Neon Pembe', 'Elektrik', 'Fosfor', 'Limon', 'Lav', 'Ultraviyole'], acc: ['#ff3ddc', '#22e6ff'], glow: ['#ff3ddc', '#22e6ff', '#7a2bff'] },
+  { id: 'sakura', name: 'Sakura', need: 25, lines: ['#ffb7c5', '#e7a6ff', '#ff8fab', '#ffd6a5', '#9ee6c0', '#f9a8d4'], names: ['Sakura', 'Leylak', 'Gül', 'Şeftali', 'Nane', 'Pembe'], acc: ['#ffb7c5', '#e48bff'], glow: ['#ff9fb8', '#c58bff', '#ffd1a1'] },
+  { id: 'gold', name: 'Altın', need: 40, vip: true, lines: ['#ffd36b', '#f5b942', '#ffe7a3', '#e9a93a', '#fff1b8', '#d9a520'], names: ['Altın', 'Bal', 'Fildişi', 'Kehribar', 'Krem', 'Hardal'], acc: ['#ffd36b', '#e9a23a'], glow: ['#ffcf6b', '#b8862b', '#ffe8a3'] },
+];
+const crownCount = () => Object.keys(save.crowns).length + (save.dCrowns || 0);
+const skinOpen = k => crownCount() >= k.need || (k.vip && save.noAds);
+const skin = () => { const k = SKINS.find(x => x.id === save.skin); return k && skinOpen(k) ? k : SKINS[0]; };
+const shade = (hex, f) => '#' + [16, 8, 0].map(b => Math.round((parseInt(hex.slice(1), 16) >> b & 255) * f).toString(16).padStart(2, '0')).join('');
+const skinCols = k => k.lines ? (isLight() ? k.lines.map(c => shade(c, .78)) : k.lines) : isLight() ? LINES_LIGHT : LINES_DARK;
+const lineCols = () => skinCols(skin());
+// tema renkleri CSS değişkenlerine yazılır; Metro'da hiçbiri yazılmaz → stil dosyasındaki asıl değerler
+function applySkin() {
+  const k = skin(), st = document.documentElement.style, L = isLight();
+  ['--acc', '--acc2', '--accGlow', '--starGlow', '--g1', '--g1a', '--g2', '--g2a', '--g3', '--g3a', '--ln1', '--ln2', '--ln3'].forEach(v => st.removeProperty(v));
+  if (!k.lines) return;
+  const [a1, a2] = k.acc.map(c => L ? shade(c, .82) : c);
+  st.setProperty('--acc', a1); st.setProperty('--acc2', a2);
+  st.setProperty('--accGlow', rgba(a2, L ? .55 : .7)); st.setProperty('--starGlow', rgba(a1, .6));
+  k.glow.forEach((c, j) => { st.setProperty(`--g${j + 1}`, c); st.setProperty(`--g${j + 1}a`, rgba(c, .35)); });
+  skinCols(k).slice(0, 3).forEach((c, j) => st.setProperty(`--ln${j + 1}`, c));
+}
 function applyTheme() {
+  applySkin();
   if (save.theme === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.dataset.theme = save.theme;
   const cs = getComputedStyle(document.documentElement), v = n => cs.getPropertyValue(n).trim();
   pal = { tile: v('--tile'), pin: v('--pin'), stroke: v('--stroke'), rail: v('--railC'), mut: v('--mut'), bg: v('--bg0'), fg: v('--fg'), light: isLight() };
@@ -243,7 +270,7 @@ function haptic(kind) {
 }
 
 // ---------- UI yardımcıları ----------
-let toastT, mLocked = false;
+let toastT, mLocked = false, howBack = null;   // howBack: anlatıcı açıkken Android geri tuşu
 function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2200); }
 const active = id => $(id).classList.contains('active');
 function show(id) {
@@ -251,17 +278,17 @@ function show(id) {
   document.body.classList.toggle('playing', id === 'game');
   if (id === 'game') resume(); else pause();
   Music.setMode(id === 'game' ? 'game' : 'menu');
-  if (id === 'home') refreshHome();
+  if (id === 'home') { refreshHome(); if (G && Remind.avail() && !save.remindAsked && (save.dailyDone || save.played >= 6)) setTimeout(() => { if (active('home') && !modalOpen()) remindAsk(); }, 700); }
   if (id === 'map') renderMap();
   clearInterval(clockT); if (id === 'home') clockT = setInterval(dailyClock, 1000);
 }
 const bind = binds => { for (const [id, fn] of Object.entries(binds)) { const el = $(id); if (el) el.onclick = fn; } };
 function modal(html, binds = {}, locked = false) {
-  mLocked = locked;
+  mLocked = locked; howBack = null;
   $('mCard').innerHTML = html; $('modal').classList.add('open');
   bind(binds);
 }
-const closeModal = () => $('modal').classList.remove('open');
+const closeModal = () => { howBack = null; $('modal').classList.remove('open'); };
 const modalOpen = () => $('modal').classList.contains('open');
 $('modal').onclick = e => { if (e.target.id === 'modal' && !mLocked) closeModal(); };
 const bump = el => { el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); };
@@ -297,6 +324,7 @@ function refreshHome() {
   const tot = totalStars();
   $('sStars').textContent = tot;
   $('sStreak').textContent = save.streak;
+  $('sCrowns').textContent = crownCount(); $('crownChip').classList.toggle('new', !!save.newSkin);
   $('sHints').textContent = save.hints;
   $('hLevel').textContent = save.level;
   const done = save.dailyDone === today();
@@ -305,7 +333,7 @@ function refreshHome() {
   if (done) dailyClock(); else $('dailyState').textContent = save.streak ? `🔥 ${save.streak} günlük serini koru` : 'Her gün yeni bir hat';
   const c = lineOf(save.level), nx = c + 1, lo = need(c), hi = need(nx);
   $('lineName').textContent = lineName(c);
-  $('lineName').style.color = (pal.light ? LINES_LIGHT : LINES_DARK)[c % 6];
+  $('lineName').style.color = lineCols()[c % 6];
   $('gateTxt').textContent = tot >= hi ? `★ ${tot} · M${nx + 1} açık` : `★ ${tot} / ${hi} → M${nx + 1}`;
   $('progBar').style.width = Math.min(100, Math.max(4, (tot - lo) / Math.max(1, hi - lo) * 100)) + '%';
   const [w, h] = sizeFor(save.level); $('sSize').textContent = `${w}×${h} ızgara`;
@@ -314,7 +342,7 @@ function refreshHome() {
 
 // ---------- hat haritası (bölüm seçimi) ----------
 function renderMap() {
-  const tot = totalStars(), last = lineOf(save.level) + 1, col = pal.light ? LINES_LIGHT : LINES_DARK;
+  const tot = totalStars(), last = lineOf(save.level) + 1, col = lineCols();
   $('pStars').textContent = tot;
   $('pSub').textContent = 'Yıldız topla → yeni hat aç';
   let html = '';
@@ -354,7 +382,7 @@ function resume() { if (G && !G.won && !G.runAt && !document.hidden) { G.runAt =
 
 function setLineColor() {
   const k = G.daily ? 2 : lineOf(G.lvl) % 6;
-  G.color = (pal.light ? LINES_LIGHT : LINES_DARK)[k];
+  G.color = lineCols()[k];
   $('game').style.setProperty('--line', G.color);
 }
 const runKey = () => G.daily ? 'daily' : 'level';
@@ -573,14 +601,15 @@ function win() {
   Music.setMode('rest'); setTimeout(() => { if (G?.won) Music.setMode('menu'); }, 1600);
   const tOk = timeOk(G.time / 1000), mOk = movesOk(), st = 1 + tOk + mOk, perfect = tOk && mOk;
   save.played++;
+  const cr0 = crownCount();
   let extra = '', unlockedNow = null, shard = false;
   if (G.daily) {
     if (save.dailyDone !== G.day) {
       save.streak = save.lastDaily === dayBefore(G.day) ? save.streak + 1 : 1; save.lastDaily = save.dailyDone = G.day;
       save.dailyLog = [...save.dailyLog.filter(d => d !== G.day), G.day].slice(-90); save.best = Math.max(save.best || 0, save.streak);
-      save.hints++; extra = `🔥 ${save.streak} gün seri · +1 ipucu`;
+      save.hints++; extra = `🔥 ${save.streak} gün seri · +1 ipucu`; Remind.habit(); Remind.plan();
       save.dailyStats = { day: G.day, moves: G.moves, time: G.time, st, perfect };
-      shard = perfect;
+      shard = perfect; if (perfect) save.dCrowns = (save.dCrowns || 0) + 1;
     }
   } else {
     sessionWins++;
@@ -597,14 +626,16 @@ function win() {
     save.shards = (save.shards || 0) + 1;
     if (save.shards >= 3) { save.shards -= 3; save.hints++; shardMsg = '💎 3 parça birleşti · +1 ipucu'; } else shardMsg = `💎 İpucu parçası ${save.shards}/3`;
   }
+  const ns = SKINS.find(k => k.need > cr0 && k.need <= crownCount() && !(k.vip && save.noAds));
+  if (ns) { save.newSkin = 1; extra = [extra, `🎨 Yeni tema: ${ns.name}`].filter(Boolean).join(' · '); }
   persist();
-  const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { st, tOk, mOk, perfect, extra: [shardMsg, extra].filter(Boolean).join(' · '), unlockedNow };
+  const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { st, tOk, mOk, perfect, extra: [shardMsg, extra].filter(Boolean).join(' · '), unlockedNow, ns };
   winTimer = setTimeout(() => { if (G === g && active('game')) winSheet(g, info); }, wait);
 }
 // Sonuç paneli tahtanın altına yerleşir; tahta küçülüp üstte görünür kalır.
-function winSheet(g, { st, tOk, mOk, perfect, extra, unlockedNow }) {
+function winSheet(g, { st, tOk, mOk, perfect, extra, unlockedNow, ns }) {
   const L = g.lim, nx = g.lvl + 1, nxLocked = !g.daily && !unlocked(lineOf(nx));
-  const badge = unlockedNow ? `<span class="badge">YENİ HAT AÇILDI · M${unlockedNow + 1}</span>` : perfect ? '<span class="badge">KUSURSUZ 👑</span>' : '';
+  const badge = unlockedNow ? `<span class="badge">YENİ HAT AÇILDI · M${unlockedNow + 1}</span>` : ns ? '<span class="badge">YENİ TEMA 🎨</span>' : perfect ? '<span class="badge">KUSURSUZ 👑</span>' : '';
   const tip = perfect ? '' : `<p class="tip">Kusursuz için: ${[tOk ? '' : `⏱ ≤ ${fmtT(L.t * 1000)}`, mOk ? '' : `↻ ≤ ${L.m} hamle`].filter(Boolean).join(' ve ')}</p>`;
   const primary = g.daily
     ? '<button id="mShare" class="btn primary"><span>Paylaş</span><small>Arkadaşına meydan oku</small></button><button id="mHome" class="btn glassbtn">Ana sayfa</button>'
@@ -626,7 +657,10 @@ function toggleMini() {
 }
 function closePanel() { $('game').classList.remove('won', 'mini'); $('winPanel').innerHTML = ''; }
 async function next() {
-  if (!G.daily && save.played >= 5 && sessionWins % INTER_EVERY === 0) { Music.stop(); await Ads.interstitial(); Music.start(); }
+  if (!G.daily && !save.noAds && save.played >= 5 && sessionWins % INTER_EVERY === 0) {
+    Music.stop(); const shown = await Ads.interstitial(); Music.start();
+    if (shown && (save.interN = (save.interN || 0) + 1) % 3 === 0) { persist(); setTimeout(() => toast('Reklamsız oyna → Ayarlar · Reklamsız paket'), 900); }
+  }
   start('level', G.lvl + 1);
 }
 function dailyResult() {
@@ -649,6 +683,76 @@ async function share(r) {
     if (navigator.share) return await navigator.share({ text });
     await navigator.clipboard.writeText(text); toast('Panoya kopyalandı');
   } catch {}
+}
+
+// ---------- günlük hatırlatma: cihazda planlanan bildirim (internet gerekmez) ----------
+// Uygulama her arka plana geçtiğinde yeniden planlanır: bugün (Günün Hattı bitmediyse), yarın, 3. ve 7. gün.
+const Remind = (() => {
+  const LN = () => window.Capacitor?.Plugins?.LocalNotifications;
+  // saat sorulmaz: oyuncunun Günün Hattı'nı bitirdiği saat (15 dk'ya yuvarlı, 08:00–21:30 arası)
+  const habit = () => { const d = new Date(); save.remindAt = Math.min(1290, Math.max(480, Math.round((d.getHours() * 60 + d.getMinutes()) / 15) * 15)); };
+  async function perm() {
+    const P = LN(); if (!P) return false;
+    try { let r = await P.checkPermissions(); if (r.display !== 'granted') r = await P.requestPermissions(); return r.display === 'granted'; } catch { return false; }
+  }
+  async function plan() {
+    const P = LN(); if (!P) return;
+    try {
+      await P.cancel({ notifications: [1, 2, 3, 4].map(id => ({ id })) });
+      if (!save.remind) return;
+      const h = (save.remindAt ?? 1110) / 60 | 0, m = (save.remindAt ?? 1110) % 60, now = new Date();
+      const at = d => { const x = new Date(now); x.setDate(x.getDate() + d); x.setHours(h, m, 0, 0); return x; };
+      const done = save.dailyDone === today(), sk = save.streak, list = [];
+      if (!done && at(0) - now > 20 * 60e3) list.push([1, at(0), 'Günün Hattı seni bekliyor 🚇', sk ? `🔥 ${sk} günlük serin bugün sönmesin` : 'Bir dakikalık bulmaca · hattı bağla, şehri canlandır']);
+      list.push([2, at(1), 'Yeni Günün Hattı açıldı 🚇', done && sk ? `🔥 Serin ${sk} gün · bugün bir gün daha ekle` : 'Bugünün bulmacası hazır · yolculuğa bir hat bağla']);
+      list.push([3, at(3), 'Şehir seni özledi 🌃', `Bölüm ${save.level} seni bekliyor · ★ topla, yeni hat aç`]);
+      list.push([4, at(7), 'Hatlar durdu 🚦', 'Bir dakikanı ayır, şehri yeniden canlandır']);
+      await P.schedule({ notifications: list.map(([id, when, title, body]) => ({ id, title, body, schedule: { at: when, allowWhileIdle: true }, smallIcon: 'ic_stat_ray', iconColor: '#ffb35c', extra: { go: 'daily' } })) });
+    } catch {}
+  }
+  // izin istenip verilirse açılır
+  async function enable() {
+    if (!await perm()) { save.remind = false; persist(); return false; }
+    if (!save.dailyDone) habit();
+    save.remind = true; persist(); plan(); return true;
+  }
+  LN()?.addListener?.('localNotificationActionPerformed', a => { if (a?.notification?.extra?.go === 'daily' && save.dailyDone !== today()) setTimeout(() => start('daily'), 400); });
+  return { avail: () => !!LN(), plan, enable, habit };
+})();
+// ilk Günün Hattı'ndan (ya da birkaç bölümden) sonra ana sayfada bir kez, kibarca sorulur
+function remindAsk() {
+  save.remindAsked = true; persist();
+  modal(`<div class="bell">🔔</div><h2>Hatırlatayım mı?</h2>
+    <p>Her gün yeni bir <b>Günün Hattı</b> geliyor. Serin bozulmasın diye günde bir kez, kısa bir hatırlatma.</p>
+    <button id="mYes" class="btn primary"><span>Evet, hatırlat</span><small>Ayarlardan kapatabilirsin</small></button>
+    <button id="mClose" class="btn glassbtn">Şimdi değil</button>`, {
+    mYes: async () => { closeModal(); toast(await Remind.enable() ? 'Tamam! Oynadığın saatte hatırlatacağım 🔔' : 'Bildirim izni verilmedi'); },
+    mClose: closeModal });
+}
+
+// ---------- reklamsız paket ----------
+function shopSheet() {
+  const owned = save.noAds, price = Shop.price();
+  modal(`<div class="bell">💛</div><h2>Reklamsız paket</h2>
+    <div class="perks"><div><i>🚫</i><span>Bölüm aralarındaki reklamlar kalkar</span></div><div><i>💡</i><span><b>+10 ipucu</b> hediye</span></div><div><i>🎨</i><span>Özel <b>Altın</b> tema</span></div><div><i>🚇</i><span>Tek seferlik · ömür boyu</span></div></div>
+    ${owned ? '<span class="badge">AKTİF ✓ · Teşekkürler!</span>' : `<button id="mBuy" class="btn primary"><span>${price ? `Satın al · ${price}` : 'Satın al'}</span><small>${Shop.ready() ? 'Google Play ile güvenli ödeme' : 'Mağazaya bağlanılıyor…'}</small></button>`}
+    <p class="tip">İpucu videoları isteğe bağlı kalır.</p>
+    ${owned ? '' : '<button id="mRestore" class="link">Satın alımı geri yükle</button>'}
+    <button id="mClose" class="btn glassbtn">Kapat</button>`, {
+    mBuy: async () => {
+      if (!Shop.ready()) { toast(Shop.avail() ? 'Mağaza şu an kullanılamıyor · sonra dene' : 'Satın alma Play Store sürümünde açılır'); return; }
+      const r = await Shop.buy();
+      if (r === 'hata') toast('Satın alma tamamlanamadı');
+    },
+    mRestore: async () => { toast('Kontrol ediliyor…'); await Shop.restore(); setTimeout(() => { if (!save.noAds) toast('Bu hesapta satın alım bulunamadı'); }, 2500); },
+    mClose: closeModal });
+}
+function grantNoAds() {
+  if (save.noAds) return;
+  save.noAds = true; save.hints += 10; persist();
+  $('gHints').textContent = save.hints; refreshHome();
+  haptic('win'); toast('Reklamsız paket aktif 💛 +10 ipucu · Altın tema açıldı');
+  if (modalOpen() && $('mBuy')) shopSheet();
 }
 
 async function hint() {
@@ -744,15 +848,63 @@ function settings() {
     <div class="opt">Müzik <button id="oM" class="tog ${save.music ? 'on' : ''}" aria-label="Müzik"></button></div>
     <div class="opt">Efekt sesleri <button id="oS" class="tog ${save.sound ? 'on' : ''}" aria-label="Efekt sesleri"></button></div>
     <div class="opt">Titreşim <button id="oV" class="tog ${save.vib ? 'on' : ''}" aria-label="Titreşim"></button></div>
-    <div class="opt">Tema <div class="seg" id="oT">${seg}</div></div>
+    ${Remind.avail() ? `<div class="opt">Günlük hatırlatma <button id="oR" class="tog ${save.remind ? 'on' : ''}" aria-label="Günlük hatırlatma"></button></div>
+` : ''}
+    <div class="opt">Görünüm <div class="seg" id="oT">${seg}</div></div>
+    <button class="opt row" id="oSkin"><span>Renk temaları</span><small>${skin().name} · 👑 ${crownCount()} ›</small></button>
+    <button class="opt row" id="oShop"><span>Reklamsız paket</span><small>${save.noAds ? 'Aktif ✓' : (Shop.price() || '💛') + ' ›'}</small></button>
     <button id="mClose" class="btn glassbtn">Tamam</button>`, {
+    oR: async () => {
+      if (save.remind) { save.remind = false; persist(); Remind.plan(); }
+      else if (!await Remind.enable()) toast('Bildirim izni verilmedi');
+      $('oR').classList.toggle('on', save.remind);
+    },
+    oSkin: skinSheet, oShop: shopSheet,
     oM: () => { save.music = !save.music; persist(); $('oM').classList.toggle('on', save.music); save.music ? Music.start() : Music.stop(); },
     oS: () => { save.sound = !save.sound; persist(); $('oS').classList.toggle('on', save.sound); },
     oV: () => { save.vib = !save.vib; persist(); $('oV').classList.toggle('on', save.vib); haptic(); },
     mClose: closeModal });
   $('oT').onclick = e => { const t = e.target.dataset.t; if (!t) return; save.theme = t; persist(); applyTheme(); refreshHome(); $('oT').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.t === t)); };
 }
-// ---------- nasıl oynanır: kendi kendine oynayan kısa demo (video yerine: keskin, birkaç KB, internetsiz) ----------
+// ---------- renk temaları ----------
+function skinSheet() {
+  const n = crownCount(), cur = skin().id;
+  if (save.newSkin) { save.newSkin = 0; persist(); refreshHome(); }
+  const card = k => {
+    const open = skinOpen(k), c = skinCols(k);
+    return `<button class="skin ${open ? '' : 'lockd'} ${k.id === cur ? 'on' : ''}" data-k="${k.id}" style="--s1:${c[0]};--s2:${c[1]};--s3:${c[2]}">
+      <svg viewBox="0 0 120 60"><path d="M10 46H40L60 28H110"/><path d="M60 6V28L80 46H110"/><path d="M10 14H36L60 28"/><rect x="52" y="20" width="16" height="16" rx="5"/></svg>
+      <b>${k.name}</b><small>${k.id === cur ? 'Seçili ✓' : open ? 'Seç' : `🔒 ${k.need} 👑${k.vip ? ' · ya da 💛' : ''}`}</small></button>`;
+  };
+  const nx = SKINS.find(k => !skinOpen(k)), prev = nx ? [...SKINS].reverse().find(k => k.need < nx.need)?.need || 0 : 0;
+  modal(`<h2>Renk temaları</h2><p>Bölümleri <b>kusursuz</b> bitir (⏱ ve ↻ hedefi), 👑 topla, yeni renkler aç. Sende <b>${n} 👑</b></p>
+    <div class="skins" id="skins">${SKINS.map(card).join('')}</div>
+    ${nx ? `<div class="nexts"><small>Sonraki: <b>${nx.name}</b></small><small>👑 ${n} / ${nx.need}</small></div><div class="pb"><i style="width:${Math.max(4, Math.min(100, (n - prev) / (nx.need - prev) * 100))}%"></i></div>
+    <button id="mHunt" class="btn primary"><span>Taç topla 👑</span><small>${huntList().length} bölüm kusursuz bitmeyi bekliyor</small></button>` : ''}
+    <button id="mClose" class="btn glassbtn">Tamam</button>`, { mClose: closeModal, mHunt: () => crownHunt(nx) });
+  $('skins').onclick = e => {
+    const b = e.target.closest('.skin'); if (!b) return;
+    const k = SKINS.find(x => x.id === b.dataset.k);
+    if (!skinOpen(k)) { haptic('light'); crownHunt(k); return; }
+    if (k.id === cur) return;
+    save.skin = k.id; persist(); applyTheme(); refreshHome(); haptic('heavy'); tone(note(7), .25, .045); tone(note(9), .3, .035, 'sine', .07);
+    skinSheet();
+  };
+}
+// Taç avı: kusursuz bitmemiş bölümler, yıldızlarıyla. En çok yıldızlı (kusursuza en yakın) önce; dokun → oyna.
+const huntList = () => { const L = []; for (let l = 1; l < save.level; l++) if (!save.crowns[l] && unlocked(lineOf(l))) L.push(l); return L.sort((a, b) => (save.stars[b] || 0) - (save.stars[a] || 0) || a - b); };
+function crownHunt(k) {
+  const n = crownCount(), L = huntList();
+  modal(`<h2>Taç topla 👑</h2>
+    <p>${k ? `<b>${k.name}</b> için <b>${k.need - n} 👑</b> daha gerekli${k.vip ? ' (ya da Reklamsız paket)' : ''}. ` : ''}Aşağıdaki bölümleri <b>⏱ süre</b> ve <b>↻ hamle</b> hedefiyle bitir: her biri 1 👑.</p>
+    ${L.length ? `<div class="lvs hunt" id="hunt">${L.map(l => `<button class="lv" data-l="${l}"><b>${l}</b><i>${starTxt(save.stars[l] || 0)}</i></button>`).join('')}</div>
+    <p class="tip">★★☆ olanlar kusursuza en yakın · Günün Hattı'nı kusursuz bitirmek de 1 👑</p>`
+    : `<p class="tip">Oynadığın her bölüm kusursuz! 🎉 Yeni bölümler ve Günün Hattı yeni 👑 getirir.</p><button id="mPlay" class="btn primary"><span>Oyna</span><small>Bölüm ${save.level}</small></button>`}
+    <button id="mBack" class="btn glassbtn">Temalara dön</button>`, { mBack: skinSheet, mPlay: () => start('level') });
+  if ($('hunt')) $('hunt').onclick = e => { const b = e.target.closest('.lv'); if (b) start('level', +b.dataset.l); };
+}
+// ---------- nasıl oynanır: sayfalı, kendi kendine oynayan demo (video yerine: keskin, birkaç KB, internetsiz) ----------
+// [sahne başlangıcı (sn), yazı]. Her sayfa kendi sahnesini oynar (+0,5 sn okuma payı), sonra kendiliğinden geçer; parmakla kaydırılır.
 const DEMO_STEPS = [
   [0, 'Karoya dokun → <b>döner</b>'],
   [2.6, 'Ortadaki istasyondan çıkan <b>hattı uzat</b>'],
@@ -762,15 +914,27 @@ const DEMO_STEPS = [
   [12, 'Bölümler gittikçe <b>büyür ve zorlaşır</b>'],
   [15, 'Her gün yeni <b>Günün Hattı</b> 🔥'],
 ];
-function demo(cv2) {
-  const c2 = cv2.getContext('2d'), D = 240, dpr = Math.min(devicePixelRatio || 1, 2), LOOP = 18, SLOW = 1.7;   // SLOW: tüm demo bu kadar yavaş oynar (~30 sn)
+const DEMO_END = 18, DEMO_PAD = .5;
+function demo(cv2, onPage) {
+  const c2 = cv2.getContext('2d'), D = 240, dpr = Math.min(devicePixelRatio || 1, 2), last = DEMO_STEPS.length - 1;
   cv2.width = cv2.height = D * dpr;
   // 3×3 örnek: merkez 4; 3, 1, 5, 7 birer dokunuşta yerine oturur
   const SOL = [6, 8, 4, 3, 14, 9, 2, 11, 8], WRONG = [3, 1, 5, 7], TAPS = [[1.2, 3], [3.2, 1], [5, 5], [6.4, 7]];
   const unrot = m => ((m >> 1) | (m << 3)) & 15;
   const big = [generate(4, 4, 77), generate(5, 5, 78), generate(5, 5, 79)];
-  const col = (pal.light ? LINES_LIGHT : LINES_DARK)[0];
-  let step = -1, t0 = performance.now();
+  const col = lineCols()[0];
+  const span = k => [DEMO_STEPS[k][0], (DEMO_STEPS[k + 1] || [DEMO_END])[0]];
+  let pg = 0, pt0 = performance.now();
+  const bars = [...document.querySelectorAll('#demoDots b')];
+  function go(k, dir = 1) {
+    k = Math.max(0, Math.min(last, k)); if (k === pg && dir) return;
+    pg = k; pt0 = performance.now();
+    const el = $('demoTxt');
+    if (el) { el.classList.add('fade'); setTimeout(() => { el.innerHTML = DEMO_STEPS[k][1]; el.classList.remove('fade'); }, 160); }
+    bars.forEach((b, j) => { b.style.width = j < k ? '100%' : '0'; });
+    cv2.classList.remove('inL', 'inR'); void cv2.offsetWidth; if (dir) cv2.classList.add(dir > 0 ? 'inL' : 'inR');
+    onPage(k);
+  }
   function grid(cols, cur, opt = {}) {
     const n = cur.length, rows = n / cols, s = Math.min(D / cols, D / rows) * (opt.scale ?? 1), ox = (D - s * cols) / 2, oy = (D - s * rows) / 2;
     const L = opt.lit ? { d: cur.map(() => 0) } : lit({ cols, rows, cur, hub: (rows >> 1) * cols + (cols >> 1) });
@@ -801,17 +965,15 @@ function demo(cv2) {
   }
   function frame(now) {
     if (!cv2.isConnected || !modalOpen()) return;   // pencere kapanınca demo durur (pil)
-    const t = (((now - t0) / 1000) % (LOOP * SLOW)) / SLOW, k = DEMO_STEPS.findLastIndex(([st]) => t >= st);
-    if (k !== step) {
-      step = k; const el = $('demoTxt');
-      if (el) { el.classList.add('fade'); setTimeout(() => { el.innerHTML = DEMO_STEPS[k][1]; el.classList.remove('fade'); }, 180); }
-      document.querySelectorAll('#demoDots i').forEach((d, j) => d.classList.toggle('on', j === k));
-    }
+    const [st, en] = span(pg), len = en - st, dur = len + DEMO_PAD, tau = (now - pt0) / 1000;
+    if (tau >= dur) { if (pg < last) go(pg + 1); else pt0 = now; }   // son sayfa kendi içinde döner
+    const t = st + Math.min(tau, dur) * len / dur;
+    if (bars[pg]) bars[pg].style.width = Math.min(100, tau / dur * 100) + '%';
     c2.setTransform(dpr, 0, 0, dpr, 0, 0); c2.clearRect(0, 0, D, D);
     if (t < 9.4) {
       const cur = SOL.slice(), rot = {}; WRONG.forEach(i => { cur[i] = unrot(SOL[i]); });
       for (const [tt, i] of TAPS) if (t >= tt) { cur[i] = SOL[i]; const q = (t - tt) / .19; if (q < 1) rot[i] = -(1 - back(q)) * Math.PI / 2; }
-      const g = grid(3, cur, { rot, wave: t > 6.6 ? t - 6.6 : null });
+      const g = grid(3, cur, { rot, wave: t > 7.3 ? (t - 7.3) % 1.1 : null });   // kazanma dalgası kendi sayfasında
       // parmak: bir sonraki dokunuşa kayar
       const nxt = TAPS.findIndex(([tt]) => t < tt + .5);
       if (nxt >= 0) {
@@ -837,16 +999,38 @@ function demo(cv2) {
     } else grid(5, big[2].sol, { lit: true, wave: (t - 15) % 1.2, scale: .9 });
     requestAnimationFrame(frame);
   }
+  // kaydırma: sola → sonraki, sağa → önceki. Sürüklerken tuval parmağı izler.
+  const box = cv2.parentElement;
+  let x0 = null, dx = 0;
+  box.addEventListener('pointerdown', e => { x0 = e.clientX; dx = 0; box.setPointerCapture?.(e.pointerId); cv2.style.transition = 'none'; });
+  box.addEventListener('pointermove', e => { if (x0 == null) return; dx = e.clientX - x0; cv2.style.transform = `translateX(${dx * .45}px) rotate(${dx * .012}deg)`; });
+  const up = () => {
+    if (x0 == null) return; x0 = null; cv2.style.transition = ''; cv2.style.transform = '';
+    if (dx < -36 && pg < last) { go(pg + 1, 1); haptic(); }
+    else if (dx > 36 && pg > 0) { go(pg - 1, -1); haptic(); }
+  };
+  box.addEventListener('pointerup', up); box.addEventListener('pointercancel', up);
   requestAnimationFrame(frame);
+  return { next: () => go(pg + 1, 1), prev: () => go(pg - 1, -1), get page() { return pg; } };
 }
+// Anlatıcı: son sayfaya gelmeden kapanmaz (dışarı dokunma ve geri tuşu da kapatmaz).
 function how() {
+  const last = DEMO_STEPS.length - 1, endTxt = save.played ? 'Tamam' : 'Hadi oynayalım!';
+  let done = false;
   modal(`<h2>Nasıl oynanır?</h2>
-    <canvas id="demoCv" class="demo" aria-label="Oynanış demosu"></canvas>
+    <div class="pgs" id="demoDots">${'<i><b></b></i>'.repeat(DEMO_STEPS.length)}</div>
+    <div class="demobox"><canvas id="demoCv" class="demo" aria-label="Oynanış demosu"></canvas></div>
     <p id="demoTxt" class="demotxt">${DEMO_STEPS[0][1]}</p>
-    <div class="vids" id="demoDots">${'<i></i>'.repeat(DEMO_STEPS.length)}</div>
-    <button id="mClose" class="btn primary"><span>${save.played ? 'Tamam' : 'Hadi oynayalım!'}</span></button>`,
-    { mClose: () => { closeModal(); if (save.played === 0 && !G) start('level'); } });
-  demo($('demoCv'));
+    <small class="swipe" id="demoSwipe">‹ kaydır ›</small>
+    <button id="mClose" class="btn primary"><span>İleri ›</span><small>1 / ${DEMO_STEPS.length}</small></button>`, {}, true);
+  const btn = $('mClose'), close = () => { howBack = null; closeModal(); if (save.played === 0 && !G) start('level'); };
+  const D = demo($('demoCv'), k => {
+    if (k === last && !done) { done = true; mLocked = false; $('demoSwipe').style.visibility = 'hidden'; }
+    btn.classList.toggle('fin', done && k === last);
+    btn.innerHTML = k === last ? `<span>${endTxt}</span>` : `<span>İleri ›</span><small>${k + 1} / ${DEMO_STEPS.length}</small>`;
+  });
+  btn.onclick = () => D.page === last ? close() : D.next();
+  howBack = () => { if (done) close(); else if (D.page > 0) D.prev(); };
 }
 
 $('bPlay').onclick = () => start('level');
@@ -859,15 +1043,17 @@ $('bHint').onclick = hint;
 $('bSettings').onclick = settings;
 $('streakChip').onclick = streakSheet;
 $('starsChip').onclick = () => show('map');
+$('crownChip').onclick = skinSheet;
 $('bHow').onclick = how;
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) { pause(); ac?.suspend?.(); }
+  if (document.hidden) { pause(); ac?.suspend?.(); Remind.plan(); }
   else { ac?.resume?.(); dayTick(); if (active('game')) resume(); if (active('home')) refreshHome(); }
 });
 // Android geri tuşu: pencere → kapat, oyun/harita → ana sayfa, ana sayfa → arka plana al
 const App = window.Capacitor?.Plugins?.App;
 App?.addListener?.('backButton', () => {
-  if (modalOpen()) { if (mLocked) show('home'); closeModal(); }
+  if (modalOpen() && howBack) howBack();
+  else if (modalOpen()) { if (mLocked) show('home'); closeModal(); }
   else if (G?.won && active('game')) show('home');
   else if (!active('home')) show('home');
   else App.minimizeApp?.();
@@ -876,6 +1062,8 @@ App?.addListener?.('backButton', () => {
 applyTheme();
 show('home');
 Ads.init();
+Shop.init(grantNoAds);
+Remind.plan();
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
 // paylaşılan Günün Hattı bağlantısı: ?d=YYYY-MM-DD&m=hamle
 const q = new URLSearchParams(location.search), qd = q.get('d'), qm = +q.get('m');

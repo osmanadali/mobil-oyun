@@ -14,6 +14,10 @@
     "StatusBar": {
       "backgroundColor": "#0d1020",
       "style": "DARK"
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_ray",
+      "iconColor": "#ffb35c"
     }
   }
 }

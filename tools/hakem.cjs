@@ -48,11 +48,22 @@ const MOCK = `
         showRewardVideoAd: async () => { window.__log.ads.push('rewarded'); setTimeout(() => { emit('onRewardedVideoAdReward'); emit('onRewardedVideoAdDismissed'); }, 50); return { type: 'hint', amount: 2 }; } }; })(),
     Haptics: { impact() { window.__log.hap++; }, notification() { window.__log.hap++; } },
     Share: { share: async o => { window.__log.share.push(o.text); } } } };
+  // günlük hatırlatma (yalnızca __withNotif ile; yoksa diğer senaryolarda izin penceresi araya girer)
+  if (window.__withNotif && window.Capacitor) window.Capacitor.Plugins.LocalNotifications = { addListener() {},
+    checkPermissions: async () => ({ display: 'prompt' }), requestPermissions: async () => ({ display: 'granted' }),
+    cancel: async () => {}, schedule: async o => { window.__log.notif = o.notifications; } };
 `;
+// Google Play satın alma sahtesi (cordova-plugin-purchase): sipariş → hemen sahip olunur
+const SHOP_MOCK = `window.CdvPurchase = (() => { let owned = false; const cb = {};
+  const product = { id: 'ray_reklamsiz', canPurchase: true, pricing: { price: '₺59,99' }, getOffer: () => ({ order: async () => { owned = true; window.__log.bought = 1; (cb.r || []).forEach(f => f({})); } }) };
+  const when = { approved() { return when; }, verified() { return when; }, productUpdated(f) { cb.p = [f]; return when; }, receiptUpdated(f) { cb.r = [f]; return when; } };
+  return { ProductType: { NON_CONSUMABLE: 'nc' }, Platform: { GOOGLE_PLAY: 'gp' }, ErrorCode: { PAYMENT_CANCELLED: 1 },
+    store: { register() {}, when: () => when, initialize: async () => { (cb.p || []).forEach(f => f(product)); return []; }, get: () => product, owned: () => owned, restorePurchases: async () => {} } }; })();`;
 
-async function open(browser, url, { vp = [390, 844], scheme = 'dark', save = null, cap = true } = {}) {
+async function open(browser, url, { vp = [390, 844], scheme = 'dark', save = null, cap = true, init = '' } = {}) {
   const ctx = await browser.newContext({ viewport: { width: vp[0], height: vp[1] }, deviceScaleFactor: 2, colorScheme: scheme, hasTouch: true, isMobile: true });
   if (!cap) await ctx.addInitScript('window.__noCap = true');
+  if (init) await ctx.addInitScript(init);
   await ctx.addInitScript(MOCK);
   const page = await ctx.newPage();
   const errors = [];
@@ -157,10 +168,22 @@ async function inViewport(page, sel) {
     await page.waitForTimeout(2200);
     const howOpen = await modalOpen(page);
     await shot(page, 'onboarding');
-    const cap1 = await page.textContent('#demoTxt').catch(() => ''); await page.waitForTimeout(4800); const cap2 = await page.textContent('#demoTxt').catch(() => '');
+    const cap1 = await page.textContent('#demoTxt').catch(() => ''); await page.waitForTimeout(3700); const cap2 = await page.textContent('#demoTxt').catch(() => '');
     await shot(page, 'onboarding-demo');
     check('onboard.auto', 'İlk açılışta "Nasıl oynanır" kendiliğinden açılıyor', howOpen, '', 'medium');
-    check('onboard.demo', 'Nasıl oynanır: kendi kendine oynayan demo, sahne yazısı ilerliyor', !!cap1 && !!cap2 && cap1 !== cap2, `"${cap1}" → "${cap2}"`, 'medium');
+    check('onboard.demo', 'Nasıl oynanır: sayfa kendi sahnesini oynayıp ~3 sn sonra kendiliğinden geçiyor', !!cap1 && !!cap2 && cap1 !== cap2, `"${cap1}" → "${cap2}"`, 'medium');
+    // kilit: dışarı dokunmak kapatmaz · kaydırma: sola → sonraki sayfa
+    await page.mouse.click(195, 30); await page.waitForTimeout(400);
+    const lockOpen = await modalOpen(page), capA = await page.textContent('#demoTxt');
+    const bx = await page.locator('.demobox').boundingBox();
+    await page.mouse.move(bx.x + bx.width * .8, bx.y + bx.height / 2); await page.mouse.down();
+    await page.mouse.move(bx.x + bx.width * .2, bx.y + bx.height / 2, { steps: 6 }); await page.mouse.up(); await page.waitForTimeout(450);
+    const capB = await page.textContent('#demoTxt');
+    check('onboard.swipe', 'Anlatıcı parmakla kaydırılıyor (sola → sonraki sayfa)', capA !== capB, `"${capA}" → "${capB}"`, 'medium');
+    let fwd = 0;
+    while (fwd < 10 && !/Hadi|Tamam/.test(await page.textContent('#mClose'))) { await page.click('#mClose'); fwd++; await page.waitForTimeout(250); }
+    await shot(page, 'onboarding-last');
+    check('onboard.lock', 'Anlatıcı son sayfaya gelmeden kapanmıyor; "İleri" sayfa sayfa ilerler', lockOpen && await modalOpen(page) && fwd >= 3 && fwd <= 6, `${fwd} kez İleri`, 'medium');
     if (howOpen) await page.click('#mClose');
     await page.waitForTimeout(600);
     const inGame = await page.evaluate(() => document.getElementById('game').classList.contains('active'));
@@ -375,6 +398,50 @@ async function inViewport(page, sel) {
     check('rule.pins', 'Sabit karolar dönmez, hamle saymaz; bölüm çözülür', g.pins >= 5 && before.m === after.m && before.v === after.v && won, JSON.stringify({ ...g, before, after, won }), 'high');
     check('rule.saw', 'Testere dişi: M4 ilk 3 bölüm bir küçük ızgara (5×6), sonra 5×7', sizes === '5x7 5x6 5x6 5x7 5x7 6x8', sizes, 'medium');
     check('e4.errors', 'Sabit karo senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
+    await ctx.close();
+  }
+
+  // ---------- E5. Renk temaları (👑), günlük hatırlatma, reklamsız paket ----------
+  {
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 12, level: 13, stars: { ...starsUpTo(10), 10: 2, 11: 1, 12: 2 }, crowns: starsUpTo(10, 1) }, init: 'window.__withNotif = true;\n' + SHOP_MOCK });
+    // temalar: 9 👑 → Gün Batımı (3) ve Okyanus (8) açık, Neon (15) kilitli
+    await page.click('#crownChip'); await page.waitForTimeout(500);
+    const acc0 = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--acc').trim());
+    await page.click('.skin[data-k=neon]'); await page.waitForTimeout(350);
+    // kilitli tema → "Taç topla": kusursuz olmayan bölümler yıldızlarıyla, kusursuza en yakın önce
+    const hunt = await page.evaluate(() => [...document.querySelectorAll('#hunt .lv')].map(b => b.textContent));
+    await shot(page, 'crown-hunt');
+    check('skin.hunt', 'Taç yetmeyince kusursuz olmayan bölümler yıldızlarıyla listeleniyor (en yakın önce)', hunt.join(',') === '10★★☆,12★★☆,11★☆☆', hunt.join(','), 'medium');
+    await page.click('#mBack'); await page.waitForTimeout(350);
+    const neonLocked = await page.evaluate(() => !document.querySelector('.skin[data-k=neon]').classList.contains('on'));
+    await page.click('.skin[data-k=ocean]'); await page.waitForTimeout(400);
+    await shot(page, 'skins');
+    const sk = await page.evaluate(() => ({ acc: getComputedStyle(document.documentElement).getPropertyValue('--acc').trim(), sel: JSON.parse(localStorage.getItem('ray')).skin, open: document.querySelectorAll('.skin:not(.lockd)').length }));
+    await page.click('#mClose'); await page.waitForTimeout(400);
+    await page.click('#bPlay'); await page.waitForTimeout(600);
+    const lineCol = await page.evaluate(() => window.__ray.G.color);
+    await shot(page, 'skin-game');
+    check('skin.pick', 'Renk temaları: 👑 ile açılan tema seçiliyor, kilitli tema seçilmiyor, oyuna yansıyor', sk.sel === 'ocean' && sk.acc !== acc0 && neonLocked && sk.open === 3 && lineCol === '#4fa3ff', JSON.stringify({ ...sk, acc0, lineCol }), 'medium');
+    // hatırlatma: oyundan ana sayfaya dönünce bir kez sorulur → izin → bildirimler planlanır
+    await page.click('#bBack'); await page.waitForTimeout(1300);
+    const asked = await page.evaluate(() => /Hatırlatayım/.test(document.querySelector('.sheet h2')?.textContent || '') && document.getElementById('modal').classList.contains('open'));
+    await shot(page, 'remind-ask');
+    if (asked) { await page.click('#mYes'); await page.waitForTimeout(500); }
+    const nt = await page.evaluate(() => ({ n: window.__log.notif?.length || 0, titles: (window.__log.notif || []).map(x => x.title), on: JSON.parse(localStorage.getItem('ray')).remind }));
+    check('remind', 'Günlük hatırlatma: ana sayfada bir kez sorulur, izinle 3–4 bildirim planlanır', asked && nt.on && nt.n >= 3, JSON.stringify(nt), 'medium');
+    // reklamsız paket: ayarlar → satın al → +10 ipucu, Altın tema, geçiş reklamı yok
+    const h0 = (await getSave(page)).hints;
+    await page.click('#bSettings'); await page.waitForTimeout(400); await page.click('#oShop'); await page.waitForTimeout(400);
+    const price = await page.textContent('#mBuy').catch(() => '');
+    await shot(page, 'shop');
+    await page.click('#mBuy'); await page.waitForTimeout(600);
+    const sv = await getSave(page);
+    await page.click('#mClose').catch(() => {}); await page.waitForTimeout(300);
+    await page.click('#bPlay'); await page.waitForTimeout(500);
+    for (let k = 0; k < 4; k++) { await solve(page, 10); await waitModal(page); await page.click('#mNext'); await page.waitForTimeout(500); }   // 4. galibiyet normalde geçiş reklamı
+    const ads = await page.evaluate(() => window.__log.ads.filter(a => a === 'interstitial').length);
+    check('shop', 'Reklamsız paket: fiyat görünür, satın alınca +10 ipucu + Altın tema, geçiş reklamı çıkmaz', /59,99/.test(price) && sv.noAds && sv.hints === h0 + 10 && ads === 0, JSON.stringify({ price: price.trim(), noAds: sv.noAds, hints: [h0, sv.hints], ads }), 'medium');
+    check('e5.errors', 'Tema / hatırlatma / mağaza senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
     await ctx.close();
   }
 

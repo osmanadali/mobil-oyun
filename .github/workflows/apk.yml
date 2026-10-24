@@ -2,7 +2,7 @@
 # https://github.com/osmanadali/mobil-oyun/releases/download/test/ray-test.apk
 name: Android APK (test)
 on:
-  push: { branches: [main], paths: ['www/**', 'assets/**', 'package.json', 'capacitor.config.json', '.github/workflows/apk.yml'] }
+  push: { branches: [main], paths: ['www/**', 'assets/**', 'tools/android/**', 'package.json', 'capacitor.config.json', '.github/workflows/apk.yml'] }
   workflow_dispatch:
 permissions: { contents: write }
 concurrency: { group: apk, cancel-in-progress: true }
@@ -21,6 +21,12 @@ jobs:
         run: npx @capacitor/assets generate --android --iconBackgroundColor '#0d1020' --iconBackgroundColorDark '#0d1020' --splashBackgroundColor '#0d1020' --splashBackgroundColorDark '#0d1020'
       - name: AdMob test App ID
         run: sed -i 's#</application>#<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713"/></application>#' android/app/src/main/AndroidManifest.xml
+      - name: Bildirim simgesi + minSdk 23 (Play Billing 8 gereği)
+        run: |
+          mkdir -p android/app/src/main/res/drawable
+          cp tools/android/ic_stat_ray.xml android/app/src/main/res/drawable/
+          sed -i 's/minSdkVersion = 22/minSdkVersion = 23/' android/variables.gradle
+          grep -n minSdkVersion android/variables.gradle
       - run: npx cap sync android
       - run: cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon -q
       - run: cp android/app/build/outputs/apk/debug/app-debug.apk ray-test.apk
