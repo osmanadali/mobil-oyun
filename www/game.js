@@ -950,8 +950,8 @@ function win() {
         else if (combo === 3) { save.hints++; cmsg = '🔥 3 kusursuz seri · +1 ipucu'; }
         else if (lost?.lvl === G.lvl) cmsg = `🔥 Seri geri geldi · ${combo}`;
       } else {
-        if ((save.combo || 0) >= 2) save.comboLost = { n: broke = save.combo, lvl: G.lvl };
-        save.combo = 0;
+        if ((save.combo || 0) >= 2 && save.shield > 0) { save.shield--; combo = save.combo; cmsg = `🛡 Kalkan seriyi korudu · 🔥${combo}`; }   // sandıktan
+        else { if ((save.combo || 0) >= 2) save.comboLost = { n: broke = save.combo, lvl: G.lvl }; save.combo = 0; }
         near = (tOk || late <= 5) && (mOk || G.moves - G.lim.m <= 2);
       }
     }
@@ -1270,11 +1270,12 @@ function skinSheet() {
   const nx = SKINS.filter(k => !k.vip && !skinOpen(k)).sort((a, b) => a.need - b.need)[0];   // en ucuz alınmamış tema
   modal(`<h2>Renk temaları</h2><p>Bölümleri <b>kusursuz</b> bitir (⏱ ve ↻ hedefi), 👑 kazan, temayı <b>satın al</b>. Harcanan 👑 geri gelmez, seçimini iyi yap!</p>
     <div class="nexts"><small>Bakiye</small><b class="bal">👑 ${bal}</b></div>
+    <button id="mChest" class="chestrow ${bal >= CHEST ? 'can' : ''}"><i>🎁</i><span><b>Sürpriz sandık</b><small>İpucu · 🛡 seri kalkanı · 🚆 tren kaplaması</small></span><em>👑 ${CHEST}</em></button>
     <div class="skins" id="skins">${SKINS.filter(k => !k.vip).map(card).join('')}
       <small class="vipk">💛 Reklamsız pakete özel</small>${SKINS.filter(k => k.vip).map(card).join('')}</div>
     ${nx ? `<div class="nexts"><small>Sonraki: <b>${nx.name}</b></small><small>👑 ${Math.min(bal, nx.need)} / ${nx.need}</small></div><div class="pb"><i style="width:${Math.max(4, Math.min(100, bal / nx.need * 100))}%"></i></div>
     <button id="mHunt" class="btn primary"><span>Taç topla 👑</span><small>${huntList().length} bölüm kusursuz bitmeyi bekliyor</small></button>` : ''}
-    <button id="mClose" class="btn glassbtn">Tamam</button>`, { mClose: closeModal, mHunt: () => crownHunt(nx) });
+    <button id="mClose" class="btn glassbtn">Tamam</button>`, { mClose: closeModal, mHunt: () => crownHunt(nx), mChest: chestSheet });
   $('skins').onclick = e => {
     const b = e.target.closest('.skin'); if (!b) return;
     const k = SKINS.find(x => x.id === b.dataset.k);
@@ -1311,6 +1312,80 @@ function crownHunt(k) {
     : `<p class="tip">Oynadığın her bölüm kusursuz! 🎉 Yeni bölümler ve Günün Hattı yeni 👑 getirir.</p><button id="mPlay" class="btn primary"><span>Oyna</span><small>Bölüm ${save.level}</small></button>`}
     <button id="mBack" class="btn glassbtn">Temalara dön</button>`, { mBack: skinSheet, mPlay: () => start('level') });
   if ($('hunt')) $('hunt').onclick = e => { const b = e.target.closest('.hrow'); if (b) start('level', +b.dataset.l); };
+}
+
+// ---------- sürpriz sandık: 👑 ile açılır (temaya alternatif harcama). İçinden asla 👑 çıkmaz → taçla taç kumarı yok ----------
+// Algoritma: oyuncuya özel tohum (ilk sandıkta bir kez) + sandık sırası → ağırlıklı çekiliş. Sonuç taç harcandığı an
+// kaydedilir; uygulamayı kapatıp açmak sonucu değiştirmez. Şanssızlık koruması: 7 sandık destansısız → 8. destansı.
+const CHEST = 10, PITY = 8, SHIELD_MAX = 3;
+const RARITY = { c: ['Sıradan', .60], r: ['Nadir', .28], e: ['Destansı', .12] };
+// tren kaplamaları: sefer şeridindeki trenin görünüşü. 'hat' = trenin rengi hattın rengi (herkeste var)
+const LIVERIES = [
+  { id: 'hat', name: 'Hat rengi' },
+  { id: 'ekspres', name: 'Kırmızı Ekspres', b: ['#e8475b', '#e8475b'], w: '#fff' },
+  { id: 'gece', name: 'Gece Treni', b: ['#34449a', '#34449a'], w: '#ffd36b' },
+  { id: 'nane', name: 'Nane', b: ['#5fd6b0', '#5fd6b0'], w: '#0f3b30' },
+  { id: 'retro', name: 'Retro', b: ['#f3e3c3', '#c8423b'], w: '#3a2a20' },
+  { id: 'gunbatimi', name: 'Gün Batımı', b: ['#ff8a5c', '#ffcf5c'], w: '#fff' },
+  { id: 'buz', name: 'Buz', b: ['#bfe9ff', '#bfe9ff'], w: '#2b6e99' },
+  { id: 'lavanta', name: 'Lavanta', b: ['#b394ff', '#ff9ad5'], w: '#fff' },
+  { id: 'altin', name: 'Altın Ekspres', b: ['#e9b949', '#e9b949'], w: '#fff6d6' },
+];
+const TRAIN = '<svg class="trn" viewBox="0 0 40 14"><path class="tb1" d="M3 3h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path class="tb2" d="M22 3h10c4 0 7 3 7 6v1a2 2 0 0 1-2 2H22a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path class="tw" d="M4 5h12v2.6H4zm19 0h9.5c1.6 0 3 1 3.6 2.6H23z"/><circle class="tl" cx="36.6" cy="9.8" r="1.1"/></svg>';
+const livVars = v => v?.b ? `--tb1:${v.b[0]};--tb2:${v.b[1]};--tw:${v.w}` : '';
+const ownsLiv = id => id === 'hat' || !!save.trains?.[id];
+function applyLivery() { const v = LIVERIES.find(x => x.id === save.train), s = $('gTrip').style; ['--tb1', '--tb2', '--tw'].forEach((k, i) => v?.b ? s.setProperty(k, i < 2 ? v.b[i] : v.w) : s.removeProperty(k)); }
+$('gTrain').innerHTML = TRAIN; applyLivery();
+
+function chestRoll() {
+  if (!save.seed) save.seed = (Math.random() * 2147483646 | 0) + 1;
+  const R = rng(save.seed + (save.chests || 0) * 7919);
+  let x = R(), tier = 'e';
+  for (const t of ['c', 'r']) { if (x < RARITY[t][1]) { tier = t; break; } x -= RARITY[t][1]; }
+  if ((save.dry || 0) >= PITY - 1) tier = 'e';
+  const y = R(), free = LIVERIES.filter(v => !ownsLiv(v.id));
+  if (tier === 'c') return { tier, kind: 'hint', n: 2 };
+  if (tier === 'r') return y < .5 || (save.shield || 0) >= SHIELD_MAX ? { tier, kind: 'hint', n: 4 } : { tier, kind: 'shield' };
+  return free.length ? { tier, kind: 'liv', id: free[y * free.length | 0].id } : { tier, kind: 'hint', n: 6 };
+}
+function chestSheet() {
+  const bal = crownBal(), can = bal >= CHEST, own = LIVERIES.filter(v => ownsLiv(v.id)).length, cur = save.train || 'hat';
+  modal(`<h2>Sürpriz sandık</h2><div class="chest" id="chestBox">🎁</div>
+    <div class="odds">${[['c', '+2 💡 ipucu'], ['r', '+4 💡 ya da 🛡 seri kalkanı'], ['e', '🚆 yeni tren kaplaması']].map(([t, s]) => `<b class="tier-${t}">${RARITY[t][0]}</b><span>${s}</span><small>%${Math.round(RARITY[t][1] * 100)}</small>`).join('')}</div>
+    <p class="tip">${PITY} sandıkta destansı çıkmazsa ${PITY}.si garanti · 🛡 kalkan kırılan seriyi bir kez korur (sende ${save.shield || 0}/${SHIELD_MAX})</p>
+    <button id="mOpen" class="btn primary"><span>${can ? `Aç · 👑 ${CHEST}` : 'Taç topla 👑'}</span><small>${can ? `Bakiye 👑 ${bal} → ${bal - CHEST}` : `${CHEST - bal} 👑 daha gerekli · bakiye 👑 ${bal}`}</small></button>
+    <div class="nexts"><small>Trenin</small><small>🚆 ${own} / ${LIVERIES.length}</small></div>
+    <div class="trains" id="trains">${LIVERIES.map(v => `<button data-v="${v.id}" class="${ownsLiv(v.id) ? '' : 'lockd'} ${v.id === cur ? 'on' : ''}" style="${livVars(v)}">${TRAIN}<span>${ownsLiv(v.id) ? v.name : '?'}</span></button>`).join('')}</div>
+    <button id="mBack" class="btn glassbtn">Temalara dön</button>`, { mOpen: () => can ? openChest() : crownHunt(), mBack: skinSheet });
+  $('trains').onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (!ownsLiv(b.dataset.v)) { haptic('light'); toast('Sandıktan destansı olarak çıkar'); return; }
+    save.train = b.dataset.v; persist(); applyLivery(); haptic(); tone(note(7), .2, .04); chestSheet();
+  };
+}
+function openChest() {
+  if (crownBal() < CHEST) return chestSheet();
+  const r = chestRoll();
+  // sonuç ödülle birlikte hemen kaydedilir (animasyon yarıda kesilse de)
+  save.spent = (save.spent || 0) + CHEST; save.chests = (save.chests || 0) + 1; save.dry = r.tier === 'e' ? 0 : (save.dry || 0) + 1;
+  if (r.kind === 'hint') save.hints += r.n;
+  else if (r.kind === 'shield') save.shield = (save.shield || 0) + 1;
+  else save.trains = { ...save.trains, [r.id]: 1 };
+  persist(); refreshHome();
+  const box = $('chestBox'), btn = $('mOpen'), calm = calmMotion.matches;
+  btn.disabled = true; box.classList.add('shake'); haptic();
+  if (!calm) [0, 2, 4].forEach((k, j) => tone(note(k), .12, .03, 'sine', j * .25));
+  setTimeout(() => chestReveal(r), calm ? 0 : 950);
+}
+function chestReveal(r) {
+  const [tn] = RARITY[r.tier], v = LIVERIES.find(x => x.id === r.id);
+  const what = r.kind === 'hint' ? [`+${r.n} 💡 ipucu`, '💡'] : r.kind === 'shield' ? ['🛡 Seri kalkanı', '🛡'] : [v.name, TRAIN];
+  modal(`<div class="chest got" ${v ? `style="${livVars(v)}"` : ''}>${what[1]}</div><span class="badge tier-${r.tier}">${tn.toUpperCase()}</span><h2>${what[0]}</h2>
+    <p>${r.kind === 'hint' ? `Şimdi ${save.hints} ipucun var.` : r.kind === 'shield' ? `Kusursuz serin bir kez kırılırsa kalkan korur. Sende ${save.shield}/${SHIELD_MAX}.` : 'Yeni tren kaplaması! Sefer şeridindeki trenin bu görünüşe bürünür.'}</p>
+    ${v ? '<button id="mUse" class="btn primary"><span>Kullan</span><small>Trenine tak</small></button>' : ''}
+    <button id="mBack" class="btn glassbtn">Tamam</button>`, { mUse: () => { save.train = r.id; persist(); applyLivery(); chestSheet(); }, mBack: chestSheet });
+  haptic(r.tier === 'e' ? 'win' : 'heavy');
+  (r.tier === 'e' ? [0, 4, 7, 12] : r.tier === 'r' ? [0, 4, 7] : [0, 4]).forEach((q, j) => tone(note(q + 3), .35, .045, 'sine', j * .08));
 }
 // ---------- nasıl oynanır: sayfalı, kendi kendine oynayan demo (video yerine: keskin, birkaç KB, internetsiz) ----------
 // [sahne başlangıcı (sn), yazı]. Her sayfa kendi sahnesini oynar (+0,5 sn okuma payı), sonra kendiliğinden geçer; parmakla kaydırılır.

@@ -672,6 +672,54 @@ async function inViewport(page, sel) {
     await ctx.close();
   }
 
+  // ---------- E11. Sürpriz sandık (👑 ile), tren kaplaması, seri kalkanı ----------
+  {
+    const crowns = Object.fromEntries(Array.from({ length: 12 }, (_, k) => [k + 1, 1]));   // bakiye 👑 12
+    const sv = { played: 6, level: 13, stars: starsUpTo(13), crowns, hints: 3 };
+    const { ctx, page, errors } = await open(browser, URL, { save: { ...sv, seed: 4242, dry: 7 } });
+    await page.click('#crownChip'); await page.waitForTimeout(450);
+    await page.click('#mChest'); await page.waitForTimeout(400);
+    const odds = await page.textContent('.odds');
+    await page.click('#mOpen'); await page.waitForTimeout(1400);
+    const s1 = await getSave(page), rev = await page.textContent('#mCard');
+    await shot(page, 'chest-epic');
+    const id = Object.keys(s1.trains || {})[0];
+    check('chest.pity', 'Sandık 👑10 ile açılır, bakiyeden düşer; 7 destansısız sandıktan sonra 8.si destansı (tren kaplaması); oranlar yazılı', s1.spent === 10 && s1.chests === 1 && s1.dry === 0 && !!id && /DESTANSI/.test(rev) && /%60/.test(odds) && /%12/.test(odds) && s1.hints === 3, JSON.stringify({ spent: s1.spent, chests: s1.chests, dry: s1.dry, trains: s1.trains }), 'medium');
+    if (await page.$('#mUse')) { await page.click('#mUse'); await page.waitForTimeout(400); }
+    await shot(page, 'chest-sheet');
+    const bal = await page.evaluate(() => document.getElementById('sCrowns').textContent);
+    await page.click('#mBack'); await page.waitForTimeout(350); await page.click('#mClose'); await page.waitForTimeout(350);
+    await page.click('#bPlay'); await page.waitForTimeout(450);
+    const liv = await page.evaluate(() => document.getElementById('gTrip').style.getPropertyValue('--tb1'));
+    const s2 = await getSave(page);
+    check('chest.livery', 'Kaplama "Kullan" → oyundaki tren o renge bürünür; taç bakiyesi 12 → 2', s2.train === id && /^#/.test(liv) && bal === '2', `${s2.train} · ${liv} · bakiye ${bal}`, 'medium');
+    check('chest.errors', 'Sandık senaryosunda konsol hatası yok', errors.length === 0, errors.slice(0, 3).join(' | '));
+    await ctx.close();
+  }
+  {
+    // aynı tohum + aynı sandık sırası → aynı sonuç (kapatıp açmak sonucu değiştirmez)
+    const crowns = Object.fromEntries(Array.from({ length: 12 }, (_, k) => [k + 1, 1])), res = [];
+    for (let k = 0; k < 2; k++) {
+      const { ctx, page } = await open(browser, URL, { save: { played: 6, level: 13, stars: starsUpTo(13), crowns, hints: 3, seed: 99, chests: 5 } });
+      await page.click('#crownChip'); await page.waitForTimeout(400); await page.click('#mChest'); await page.waitForTimeout(350);
+      await page.click('#mOpen'); await page.waitForTimeout(1300);
+      const s = await getSave(page); res.push(JSON.stringify({ h: s.hints, sh: s.shield || 0, t: s.trains || {} })); await ctx.close();
+    }
+    check('chest.seed', 'Sandık sonucu oyuncu tohumu + sandık sırasıyla belirlenir (aynı girdi → aynı sonuç)', res[0] === res[1], res.join(' = '), 'medium');
+  }
+  {
+    const { ctx, page } = await open(browser, URL, { save: { played: 6, level: 14, stars: starsUpTo(14, 2), hints: 3, combo: 3, shield: 1 } });
+    await page.click('#crownChip'); await page.waitForTimeout(400); await page.click('#mChest'); await page.waitForTimeout(350);
+    const poor = await page.textContent('#mOpen');
+    await page.click('#mBack'); await page.waitForTimeout(300); await page.click('#mClose'); await page.waitForTimeout(300);
+    await page.click('#bPlay'); await page.waitForTimeout(400);
+    await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.t + 20) * 1000; });
+    await solve(page, 10); await waitModal(page);
+    const s = await getSave(page), w = await page.evaluate(() => ({ prim: document.querySelector('#winPanel .primary')?.id, txt: document.getElementById('winPanel').textContent }));
+    check('chest.shield', 'Bakiye yetmezse "Taç topla"; 🛡 kalkan kırılan seriyi bir kez korur (Tekrar öne çıkmaz)', /Taç topla/.test(poor) && s.combo === 3 && s.shield === 0 && !s.comboLost && w.prim === 'mNext' && /Kalkan/.test(w.txt), JSON.stringify({ poor: poor.slice(0, 12), combo: s.combo, shield: s.shield, prim: w.prim }), 'medium');
+    await ctx.close();
+  }
+
   // ---------- F. Boşta CPU: animasyon döngüsü durmalı ----------
   {
     const { ctx, page } = await open(browser, URL, { save: { played: 4, level: 30, stars: starsUpTo(30) } });

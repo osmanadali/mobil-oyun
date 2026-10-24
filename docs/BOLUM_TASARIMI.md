@@ -126,6 +126,29 @@ Kusursuz bitirilen her bölüm (⏱ ve ↻ hedefi aynı oyunda) bir kez 1 👑 v
 | Kozmos | 👑 160 |
 | Altın, Elmas, Yakut | Yalnızca Reklamsız paketle |
 
+### Sürpriz sandık
+
+Taçların temalar dışındaki tek harcama yeri. Oyun içinde kendiliğinden çıkmaz; oyuncu Renk temaları sayfasından **👑 10** harcayarak açar. İçinden asla taç çıkmaz, böylece taçla taç kazanma kumarı oluşmaz. Taç gerçek parayla satılmadığı için sandık da parayla açılamaz.
+
+| Nadirlik | Olasılık | İçerik |
+|---|---|---|
+| Sıradan | %60 | +2 💡 ipucu |
+| Nadir | %28 | +4 💡 ya da 🛡 seri kalkanı (yarı yarıya; en çok 3 kalkan birikir) |
+| Destansı | %12 | 🚆 sahip olunmayan bir tren kaplaması (hepsi varsa +6 💡) |
+
+**Algoritma:**
+
+- Her oyuncunun ilk sandıkta bir kez belirlenen kendi tohumu vardır.
+- Sonuç, bu tohum ve sandığın sıra numarasından ağırlıklı çekilişle hesaplanır.
+- Sonuç taç harcandığı anda ödülle birlikte kaydedilir. Uygulamayı kapatıp açmak sonucu değiştirmez.
+- **Şanssızlık koruması:** 7 sandık üst üste destansı çıkmazsa 8. sandık destansı olur.
+- Olasılıklar sandık ekranında yazılıdır.
+
+**Ödüller:**
+
+- **🛡 Seri kalkanı:** Kusursuz seri kırılacağı zaman bir kez devreye girer ve seriyi korur.
+- **🚆 Tren kaplaması:** Sefer şeridindeki trenin görünüşünü değiştirir. Hat rengine ek olarak 8 kaplama vardır: Kırmızı Ekspres, Gece Treni, Nane, Retro, Gün Batımı, Buz, Lavanta, Altın Ekspres.
+
 ## 9. Sefer şeridi ve kusursuz seri
 
 Bu iki sistemin amacı oyuncuya "bir bölüm daha" dedirtmektir. Hiçbiri oyunu cezalandırmaz: süre dolunca oyun bitmez, yalnızca ⏱ yıldızı söner.
