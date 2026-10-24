@@ -150,7 +150,7 @@ const Music = (() => {
   const ALARM = [[50, 62, 65, 69, 74], [45, 61, 64, 67, 73]];   // son saniyeler: Dm ↔ A7
   const GPAT = [1, 2, 3, 2, 4, 2, 3, 2];
   const VOL = .55, hz = m => 440 * Math.pow(2, (m - 69) / 12);
-  let on = false, mode = 'menu', tension = 0, master, lp, noise, timer = 0, next = 0, step = 0;
+  let on = false, mode = 'menu', tension = 0, alarm = false, barT = 0, barAlarm = false, master, lp, noise, timer = 0, next = 0, step = 0;
   function setup() {
     master = ac.createGain(); master.gain.value = 0;
     lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400;
@@ -186,15 +186,16 @@ const Music = (() => {
         if (beat === 0) bell(c[0], next, .1, 3.2);
         if (cycle !== 3 || beat < 4) bell(c[MPAT[cycle % 2][beat]], next, beat % 2 ? .045 : .06, 1.8);
       } else if (mode === 'game') {
-        const T = tension, alarm = T >= .999, prog = alarm ? ALARM : GAME, c = prog[bar % prog.length];
-        dt = .36 - .12 * T;                                                     // 8'lik: ~83 → ~125 bpm
-        lp.frequency.setTargetAtTime(1600 + 3200 * T, next, .5);
+        // tempo, akor ve ses rengi yalnızca ölçü başında değişir → geçişler pürüzsüz
+        if (beat === 0) { barT = tension; barAlarm = alarm; lp.frequency.setTargetAtTime(1600 + 3200 * barT, next, .6); }
+        const T = barT, prog = barAlarm ? ALARM : GAME, c = prog[bar % prog.length];
+        dt = .36 - .14 * T;                                                     // 8'lik: ~83 → ~136 bpm
         if (beat === 0) bell(c[0], next, .09, 2.4);                              // bas
         if (T > .2 && (T > .5 || beat % 2 === 0)) bell(c[0] + 12, next, .03 + .05 * T, .3);   // bas nabzı
         bell(c[GPAT[beat]] + (T > .7 ? 12 : 0), next, .035 + .02 * T, .9);       // arpej
         if (T > .45 && beat % 2) hat(next, .012 + .03 * T);                      // tıkırtı
         if (T > .8 && beat % 2 === 0) hat(next, .008 + .012 * T);
-        if (alarm && beat % 4 === 0) { thump(next, .22); thump(next + .14, .14); }   // son 10 sn: kalp atışı
+        if (barAlarm && beat % 4 === 0) { thump(next, .2); thump(next + .14, .12); }   // son 10 sn: kalp atışı
       }                                                                          // 'rest': sessiz
       next += dt; step++;
     }
@@ -213,9 +214,9 @@ const Music = (() => {
     if (!on) return; on = false; clearInterval(timer);
     try { master.gain.cancelScheduledValues(ac.currentTime); master.gain.setTargetAtTime(0, ac.currentTime, .3); } catch {}
   }
-  function setMode(m) { if (m === mode) return; mode = m; step = 0; if (m !== 'game') tension = 0; }
-  function setTension(x) { tension = Math.max(0, Math.min(1, x)); }
-  return { start, stop, setMode, setTension, state: () => ({ on, mode, tension }) };
+  function setMode(m) { if (m === mode) return; mode = m; step = 0; if (m !== 'game') { tension = barT = 0; alarm = barAlarm = false; } }
+  function setTension(x, a = false) { tension = Math.max(0, Math.min(1, x)); alarm = a; }
+  return { start, stop, setMode, setTension, state: () => ({ on, mode, tension, alarm }) };
 })();
 const note = k => 392 * Math.pow(2, PENTA[Math.max(0, Math.min(PENTA.length - 1, k))] / 12);
 function haptic(kind) {
@@ -394,9 +395,10 @@ function tick() {
     if (G.mOk && !mOk) lose('↻ Hamle hedefi aşıldı · ★ söndü');
   }
   G.tOk = tOk; G.mOk = mOk;
-  if (!G.won) Music.setTension(!tOk ? .12 : left <= 10 ? 1 : Math.max(0, (sec / G.lim.t - .35) / .65) * .95);
+  // gerilim: süre hedefinin %30'undan sonra 8 kademede artar; hedef geçince de 2 katına kadar artmaya devam eder
+  if (!G.won) { const r = sec / G.lim.t, T = r < .3 ? 0 : r <= 1 ? (r - .3) / .7 * .8 : .8 + Math.min(1, r - 1) * .2; Music.setTension(Math.round(T * 8) / 8, tOk && left <= 10); }
 }
-function lose(msg) { bump($('gPill')); tone(294, .2, .04); haptic('heavy'); toast(msg); }
+function lose(msg) { bump($('gPill')); tone(294, .2, .012); haptic('light'); toast(msg); }
 
 function resize() {
   const bd = $('board'), Wd = bd.clientWidth, Hd = bd.clientHeight, dpr = Math.min(devicePixelRatio || 1, 2);   // 3x ekranda 2x yeterli, yük ~%55 az

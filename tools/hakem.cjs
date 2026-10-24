@@ -275,7 +275,7 @@ async function inViewport(page, sel) {
     const pill1 = await page.evaluate(() => document.querySelectorAll('#gStars i.on').length);
     const next = await page.textContent('#gNext');
     const mus2 = await page.evaluate(() => window.__ray.music());
-    check('music.tension', 'Oyun müziği: başta sakin, son 10 sn tam gerilim, süre kaçınca rahatlar', mus0.on && mus0.mode === 'game' && mus0.tension < .3 && mus1.tension === 1 && mus2.tension < .2, `${mus0.mode} ${mus0.tension.toFixed(2)} → ${mus1.tension.toFixed(2)} → ${mus2.tension.toFixed(2)}`, 'medium');
+    check('music.tension', 'Oyun müziği: başta sakin → kademeli hızlanır, son 10 sn kalp atışı, süre geçince düşmeden hızlanmaya devam', mus0.on && mus0.mode === 'game' && mus0.tension === 0 && mus1.alarm && mus1.tension >= .5 && !mus2.alarm && mus2.tension > mus1.tension, `${mus0.mode} ${mus0.tension} → ${mus1.tension}${mus1.alarm ? '♥' : ''} → ${mus2.tension}${mus2.alarm ? '♥' : ''}`, 'medium');
     await shot(page, 'timer-2star');
     await solve(page, 15); await waitModal(page);
     const st = await page.evaluate(() => document.querySelectorAll('.stars svg.on').length);
