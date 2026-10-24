@@ -22,7 +22,7 @@
   --mapOp:.10;--glowOp:.30}
 
 *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
-html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+html,body{height:100%;overflow:hidden;overflow:clip;overscroll-behavior:none}
 body{background:linear-gradient(165deg,var(--bg1),var(--bg0) 60%);color:var(--fg);font:16px/1.35 Outfit,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;letter-spacing:.1px}
 svg{display:block}
 
@@ -30,15 +30,17 @@ svg{display:block}
 .bg{position:fixed;inset:0;overflow:hidden;pointer-events:none}
 .map{position:absolute;inset:-6%;background:url(bg.svg) center/cover no-repeat;opacity:var(--mapOp);
   -webkit-mask:radial-gradient(ellipse at 50% 45%,#000 30%,transparent 80%);mask:radial-gradient(ellipse at 50% 45%,#000 30%,transparent 80%);
-  animation:drift 60s ease-in-out infinite alternate}
-.glow{position:absolute;width:70vmax;height:70vmax;border-radius:50%;filter:blur(60px);opacity:var(--glowOp);animation:float 40s ease-in-out infinite alternate}
-.g1{background:radial-gradient(circle,#ff9f5a,transparent 65%);top:-30vmax;left:-25vmax}
-.g2{background:radial-gradient(circle,#6d7bff,transparent 65%);bottom:-35vmax;right:-30vmax;animation-delay:-12s}
-.g3{background:radial-gradient(circle,#ff6f91,transparent 65%);top:35%;left:40%;width:45vmax;height:45vmax;opacity:calc(var(--glowOp)*.6);animation-delay:-25s}
+  animation:drift 60s ease-in-out infinite alternate;will-change:transform}
+.glow{position:absolute;width:70vmax;height:70vmax;border-radius:50%;opacity:var(--glowOp);animation:float 40s ease-in-out infinite alternate;will-change:transform}
+/* oyun sırasında arkaplan durur → pil ve akıcılık */
+body.playing .glow,body.playing .map,body.playing .primary:after{animation-play-state:paused}
+.g1{background:radial-gradient(circle,#ff9f5a,rgba(255,159,90,.35) 30%,transparent 68%);top:-30vmax;left:-25vmax}
+.g2{background:radial-gradient(circle,#6d7bff,rgba(109,123,255,.35) 30%,transparent 68%);bottom:-35vmax;right:-30vmax;animation-delay:-12s}
+.g3{background:radial-gradient(circle,#ff6f91,rgba(255,111,145,.35) 30%,transparent 68%);top:35%;left:40%;width:45vmax;height:45vmax;opacity:calc(var(--glowOp)*.6);animation-delay:-25s}
 @keyframes drift{to{transform:translate3d(-3%,2%,0) scale(1.04)}}
 @keyframes float{to{transform:translate3d(6vmax,4vmax,0)}}
 
-#app{height:100%;max-width:520px;margin:auto;position:relative}
+#app{position:fixed;inset:0;max-width:520px;margin:auto;overflow:hidden;overflow:clip}
 .screen{position:absolute;inset:0;padding:env(safe-area-inset-top) 18px 0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:scale(.985);transition:opacity .35s ease,transform .45s cubic-bezier(.2,.8,.2,1)}
 .screen.active{opacity:1;pointer-events:auto;transform:none}
 

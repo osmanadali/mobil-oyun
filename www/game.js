@@ -114,6 +114,7 @@ let toastT;
 function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2000); }
 function show(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+  document.body.classList.toggle('playing', id === 'game');
   if (id === 'home') refreshHome(); else requestAnimationFrame(resize);
   clearInterval(clockT); if (id === 'home') clockT = setInterval(dailyClock, 1000);
 }
@@ -204,16 +205,16 @@ addEventListener('resize', resize);
 
 const ease = t => 1 - Math.pow(1 - t, 3);
 const back = t => { const c1 = 1.25, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
-function rr(x, y, w, h, r) { cx.beginPath(); cx.moveTo(x + r, y); cx.arcTo(x + w, y, x + w, y + h, r); cx.arcTo(x + w, y + h, x, y + h, r); cx.arcTo(x, y + h, x, y, r); cx.arcTo(x, y, x + w, y, r); cx.closePath(); }
-function rails(m, h) {
-  cx.beginPath();
-  if (m & N) { cx.moveTo(0, 0); cx.lineTo(0, -h); }
-  if (m & E) { cx.moveTo(0, 0); cx.lineTo(h, 0); }
-  if (m & S) { cx.moveTo(0, 0); cx.lineTo(0, h); }
-  if (m & W) { cx.moveTo(0, 0); cx.lineTo(-h, 0); }
-  cx.stroke();
+function rrp(x, y, w, h, r) { cx.moveTo(x + r, y); cx.arcTo(x + w, y, x + w, y + h, r); cx.arcTo(x + w, y + h, x, y + h, r); cx.arcTo(x, y + h, x, y, r); cx.arcTo(x, y, x + w, y, r); cx.closePath(); }
+function rr(x, y, w, h, r) { cx.beginPath(); rrp(x, y, w, h, r); }
+const DV = [[N, 0, -1], [E, 1, 0], [S, 0, 1], [W, -1, 0]];
+// karonun raylarını mevcut yola ekler (ekran koordinatında; save/restore yok)
+function railPath(T, m) {
+  const [x, y, a, sc] = T, c = Math.cos(a), si = Math.sin(a), L = geo.s / 2 * sc;
+  for (const [b, dx, dy] of DV) if (m & b) { cx.moveTo(x, y); cx.lineTo(x + (dx * c - dy * si) * L, y + (dx * si + dy * c) * L); }
 }
 
+// Aynı stildeki her şey tek yolda toplanır → kare başına ~15 çizim çağrısı (düşük donanımda akıcı).
 function draw() {
   raf = 0;
   if (!G) return;
@@ -230,45 +231,43 @@ function draw() {
     if (winT) { const t = (now - winT - G.L.d[i] * 45) / 320; if (t > 0 && t < 1) sc *= 1 + Math.sin(t * Math.PI) * .1; if (t < 1) busy = true; }
     X.push([ox + (i % G.cols) * s + s / 2, oy + (i / G.cols | 0) * s + s / 2, a, sc]);
   }
-  const each = (fn) => { for (let i = 0; i < n; i++) { const [x, y, a, sc] = X[i]; cx.save(); cx.translate(x, y); cx.rotate(a); cx.scale(sc, sc); fn(i); cx.restore(); } };
-  const on = i => G.L.d[i] >= 0, h = s / 2;
+  const on = i => G.L.d[i] >= 0;
   cx.lineCap = 'round';
   // 1) zemin
-  each(i => {
-    rr(-h + 3, -h + 3, s - 6, s - 6, s * .24);
-    cx.fillStyle = pal.tile; cx.fill();
-    if (on(i)) { cx.fillStyle = rgba(col, pal.light ? .10 : .07); cx.fill(); }
-    cx.lineWidth = 1; cx.strokeStyle = G.fixed[i] ? rgba(col, .55) : pal.stroke; cx.stroke();
-  });
-  // 2) ışıma
-  cx.strokeStyle = rgba(col, pal.light ? .16 : .22); cx.lineWidth = s * .38;
-  each(i => { if (on(i)) rails(G.cur[i], h); });
-  // 3) ray
-  cx.lineWidth = s * .17;
-  each(i => { cx.strokeStyle = on(i) ? col : pal.rail; rails(G.cur[i], h); });
-  // 4) yeni yanan karoda parlama
-  each(i => {
+  const tiles = f => { cx.beginPath(); for (let i = 0; i < n; i++) if (f(i)) { const [x, y, , sc] = X[i], w = (s - 6) * sc; rrp(x - w / 2, y - w / 2, w, w, s * .24 * sc); } };
+  tiles(() => true); cx.fillStyle = pal.tile; cx.fill(); cx.lineWidth = 1; cx.strokeStyle = pal.stroke; cx.stroke();
+  tiles(on); cx.fillStyle = rgba(col, pal.light ? .10 : .07); cx.fill();
+  if (G.fixed.includes(true)) { tiles(i => G.fixed[i]); cx.lineWidth = 1.5; cx.strokeStyle = rgba(col, .6); cx.stroke(); }
+  // 2) raylar: sönük → ışıma → yanan
+  const rails = f => { cx.beginPath(); for (let i = 0; i < n; i++) if (f(i)) railPath(X[i], G.cur[i]); cx.stroke(); };
+  cx.lineWidth = s * .17; cx.strokeStyle = pal.rail; rails(i => !on(i));
+  cx.lineWidth = s * .38; cx.strokeStyle = rgba(col, pal.light ? .16 : .22); rails(on);
+  cx.lineWidth = s * .17; cx.strokeStyle = col; rails(on);
+  // 3) yeni yanan karoda parlama
+  for (let i = 0; i < n; i++) {
+    if (!on(i)) continue;
     const t = (now - litAt[i]) / 420;
-    if (on(i) && t < 1) { busy = true; if (t > 0) { cx.strokeStyle = `rgba(255,255,255,${.65 * (1 - t)})`; cx.lineWidth = s * .17; rails(G.cur[i], h); } }
-  });
-  // 5) duraklar ve merkez
-  each(i => {
-    const m = G.cur[i], lt = on(i);
-    if (i === G.hub) {
-      cx.fillStyle = rgba(col, .25); cx.beginPath(); cx.arc(0, 0, s * .36, 0, 7); cx.fill();
-      const g = cx.createLinearGradient(-s * .2, -s * .2, s * .2, s * .2); g.addColorStop(0, rgba(col, 1)); g.addColorStop(1, rgba(col, .78));
-      cx.fillStyle = g; rr(-s * .22, -s * .22, s * .44, s * .44, s * .12); cx.fill();
-      cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(0, 0, s * .075, 0, 7); cx.fill();
-    } else if (popc(m) === 1) {
-      if (lt) { cx.fillStyle = rgba(col, .22); cx.beginPath(); cx.arc(0, 0, s * .27, 0, 7); cx.fill(); }
-      cx.fillStyle = lt ? '#fff' : pal.bg; cx.strokeStyle = lt ? col : pal.mut; cx.lineWidth = s * .065;
-      cx.beginPath(); cx.arc(0, 0, s * .15, 0, 7); cx.fill(); cx.stroke();
-    }
-  });
+    if (t < 1) { busy = true; if (t > 0) { cx.strokeStyle = `rgba(255,255,255,${.65 * (1 - t)})`; cx.beginPath(); railPath(X[i], G.cur[i]); cx.stroke(); } }
+  }
+  // 4) duraklar
+  const dots = (f, r) => { cx.beginPath(); for (let i = 0; i < n; i++) if (i !== G.hub && popc(G.cur[i]) === 1 && f(i)) { const [x, y, , sc] = X[i]; cx.moveTo(x + r * sc, y); cx.arc(x, y, r * sc, 0, 7); } };
+  dots(on, s * .27); cx.fillStyle = rgba(col, .22); cx.fill();
+  cx.lineWidth = s * .065;
+  dots(on, s * .15); cx.fillStyle = '#fff'; cx.fill(); cx.strokeStyle = col; cx.stroke();
+  dots(i => !on(i), s * .15); cx.fillStyle = pal.bg; cx.fill(); cx.strokeStyle = pal.mut; cx.stroke();
+  // 5) merkez istasyon
+  {
+    const [x, y, , sc] = X[G.hub], k = s * sc;
+    cx.fillStyle = rgba(col, .25); cx.beginPath(); cx.arc(x, y, k * .36, 0, 7); cx.fill();
+    const g = cx.createLinearGradient(x - k * .2, y - k * .2, x + k * .2, y + k * .2); g.addColorStop(0, rgba(col, 1)); g.addColorStop(1, rgba(col, .78));
+    cx.fillStyle = g; rr(x - k * .22, y - k * .22, k * .44, k * .44, k * .12); cx.fill();
+    cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(x, y, k * .075, 0, 7); cx.fill();
+  }
   // 6) dokunma dalgaları
+  cx.lineWidth = 2.5;
   ripples = ripples.filter(r => {
     const t = (now - r.t) / 420; if (t >= 1) return false;
-    cx.strokeStyle = rgba(col, .45 * (1 - t)); cx.lineWidth = 2.5;
+    cx.strokeStyle = rgba(col, .45 * (1 - t));
     cx.beginPath(); cx.arc(r.x, r.y, s * (.2 + .55 * ease(t)), 0, 7); cx.stroke();
     return busy = true;
   });
@@ -424,5 +423,5 @@ Ads.init();
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
 if (save.played === 0) setTimeout(how, 1700);
 // test kancası
-window.__ray = { generate, lit, rot, get G() { return G; } };
+window.__ray = { generate, lit, rot, get G() { return G; }, get geo() { return geo; } };
 })();

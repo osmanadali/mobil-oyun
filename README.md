@@ -25,6 +25,10 @@ npx cap open android      # Android Studio → Run / Build APK-AAB
 ```
 `www/ads.js` içindeki test reklam kimliklerini kendi kimliklerinle değiştir, `isTesting` / `initializeForTesting` değerlerini `false` yap.
 
+## Hakem (test + değerlendirme)
+- **Test robotu:** `node tools/hakem.cjs` → oyunu gerçek tarayıcıda oynar; çözülebilirlik, 3 ekran boyutu × 2 tema, 12 bölüm oynanış, Günün Hattı/seri, ipucu, reklam akışı (sahte AdMob), boşta pil kullanımı, 4× yavaş CPU'da akıcılık, çevrimdışı açılış. Çıktı: `hakem-out/ozet.md`, ekran görüntüleri. Her push'ta GitHub Actions'ta da çalışır.
+- **Yapay zekâ jürisi:** Claude Code'da `hakem` workflow'u (`.claude/workflows/hakem.js`) → robot + 4 hakem (oyuncu, tasarımcı, büyüme, teknik) → 100 üzerinden puan, yayın eşiği 80, öncelikli geliştirme listesi `docs/HAKEM_RAPORU.md`.
+
 ## Dosyalar
 | Dosya | İş |
 |---|---|
@@ -33,3 +37,5 @@ npx cap open android      # Android Studio → Run / Build APK-AAB
 | `www/style.css` | Tema ve arayüz |
 | `www/sw.js` | Çevrimdışı önbellek |
 | `docs/RAPOR.md` | Pazar araştırması ve aşama raporları |
+| `tools/hakem.cjs` | Test robotu |
+| `docs/HAKEM_RAPORU.md` | Son jüri raporu |
