@@ -66,17 +66,17 @@ Yeni kural gelen hattın **ilk 3 bölümü bir boy küçük ızgarayla** gelir v
 ## 6. Günün Hattı
 
 - Herkes aynı gün aynı bulmacayı oynar, paylaşım ve karşılaştırma bu sayede adil kalır.
-- Günün Hattı da **her gün biraz zorlaşır**. 1 Ekim 2026'dan beri geçen her gün 0,75 bölüm ilerlemiş sayılır ve aynı z eğrisini kullanır.
-- Sabit ve eşli karo içermez; yeni başlayan oyuncu da kuralları bilmeden oynayabilir. Izgara en az 6×8'dir.
+- Zorluk **haftalık bir dalga** çizer: Pazartesi haftanın en kolayı, her gün biraz zorlaşır, Pazar en zorudur (%85–100). Oyuncu hafta boyunca ısınır, Pazar "büyük bulmaca" günüdür.
+- Dalganın dibi ve tepesi bir yıl içinde yavaşça yükselir (dip %45 → %60, tepe %85 → %97); oyuncu oyuna alıştıkça daha zor bulmacaları çözebilir.
+- Her hafta ±%8 farklıdır, haftalar birbirinin kopyası olmaz.
+- Hiçbir gün **%40'ın altına düşmez**; Günün Hattı hiçbir zaman fazla kolay olmaz.
+- Sabit ve eşli karo içermez (kuralları bilmeyen yeni oyuncu da oynayabilir); ızgara 7×9'dur.
 
-| Tarih | Zorluk |
-|---|---|
-| 24 Ekim 2026 | %29 |
-| Ocak 2027 | %46 |
-| Haziran 2027 | %72 |
-| Haziran 2028 | %94 |
-
-Not: Günün Hattı zamanla herkes için zorlaşır, yeni katılan oyuncu için de. Gerekirse ileride "yeni oyuncuya ilk hafta daha kolay günlük" gibi bir ayar eklenebilir.
+| Hafta | Pzt | Sal | Çar | Per | Cum | Cmt | Paz |
+|---|---|---|---|---|---|---|---|
+| 26 Ekim 2026 | %45 | %50 | %56 | %63 | %70 | %77 | %85 |
+| 2 Kasım 2026 | %52 | %56 | %62 | %69 | %76 | %84 | %92 |
+| 6 Eylül 2027 | %66 | %70 | %76 | %82 | %89 | %96 | %100 |
 
 ## 7. Doğrulama
 
@@ -85,6 +85,24 @@ Test robotu (`tools/hakem.cjs`) her değişiklikte şunları kontrol eder:
 - Hat uzunlukları 12, 16, 20… diye doğrusal artıyor.
 - Her hattın ortalama zorluk puanı bir öncekinden yüksek.
 - Sonsuzda zorluk %99'a ulaşıyor.
-- Günün Hattı her gün zorlaşıyor.
+- Günün Hattı haftalık dalga çiziyor, %40'ın altına düşmüyor, zamanla yükseliyor.
 - Sabit ve eşli karolu 600 bölümün hepsi çözülebiliyor.
 - Bir bölümü üretmek tarayıcıda 60 ms'nin altında sürüyor; sonraki bölüm kazanma ekranındayken önceden hazırlanıyor.
+
+## 8. Taç ekonomisi (renk temaları)
+
+Kusursuz bitirilen her bölüm (⏱ ve ↻ hedefi aynı oyunda) bir kez 1 👑 verir; Günün Hattı'nı kusursuz bitirmek de 1 👑. Taç bir para birimidir: tema satın alınınca bakiyeden düşer ve geri gelmez. Fiyatlar hızla artar, oyuncu bölümleri daha başarılı geçmeye zorlanır.
+
+| Tema | Fiyat |
+|---|---|
+| Metro | Hazır |
+| Gün Batımı | 👑 5 |
+| Okyanus | 👑 25 |
+| Orman | 👑 40 |
+| Çöl | 👑 55 |
+| Sakura | 👑 70 |
+| Neon Gece | 👑 90 |
+| Kuzey Işıkları | 👑 110 |
+| Lav | 👑 135 |
+| Kozmos | 👑 160 |
+| Altın, Elmas, Yakut | Yalnızca Reklamsız paketle |

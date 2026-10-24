@@ -53,9 +53,17 @@ const lineEnd = c => lineStart(c + 1) - 1;
 // zorluk: z(l) = 1 − e^(−l/170). Hiç düşmez; sonsuzda %100 = imkânsız. Ekranda "Zorluk %".
 const zOf = l => 1 - Math.exp(-l / 170);
 const zPct = l => Math.min(99, Math.round(zOf(l) * 100));
-// Günün Hattı da her gün zorlaşır: 1 Ekim 2026'dan beri her gün +0,75 bölüm denk zorluk (herkeste aynı bulmaca)
-const DAILY_EPOCH = new Date(2026, 9, 1);
-const dailyLevel = day => { const [y, m, d] = day.split('-').map(Number); return 40 + .75 * Math.max(0, Math.round((new Date(y, m - 1, d) - DAILY_EPOCH) / 864e5)); };
+// Günün Hattı: haftalık dalga. Pazartesi en kolay, Pazar en zor (%85–100). Dip ve tepe bir yılda yükselir (oyuncu alışır),
+// her hafta ±%8 farklı, hiçbir gün %40'ın altına düşmez. Herkeste aynı bulmaca.
+const DAILY_EPOCH = new Date(2026, 9, 1);   // Perşembe
+function dailyZ(day) {
+  const [y, m, d] = day.split('-').map(Number), dt = new Date(y, m - 1, d);
+  const n = Math.max(0, Math.round((dt - DAILY_EPOCH) / 864e5)), w = (dt.getDay() + 6) % 7, wk = Math.floor((n + 3) / 7);
+  const tr = Math.min(1, n / 365), lo = .45 + .15 * tr, hi = .85 + .12 * tr;
+  const wob = ((hashStr('hafta' + wk) % 1000) / 1000 - .5) * .16;
+  return Math.max(.4, Math.min(1, lo + (hi - lo) * Math.pow(w / 6, 1.2) + wob));
+}
+const dPct = day => Math.round(dailyZ(day) * 100);
 const lineName = c => `M${c + 1} · ${(skin().names || LINE_NAMES)[c % 6]} Hat`;
 const need = c => Math.round((lineStart(c) - 1) * STAR_AVG);
 const totalStars = () => Object.values(save.stars).reduce((a, b) => a + b, 0);
@@ -69,14 +77,14 @@ const isLight = () => save.theme === 'light' || (save.theme === 'auto' && matchM
 const SKINS = [
   { id: 'metro', name: 'Metro', need: 0 },
   { id: 'sunset', name: 'Gün Batımı', need: 5, lines: ['#ff9e7a', '#ffb36b', '#ff7f6b', '#ffc48a', '#ff8fa3', '#ffa94d'], names: ['Mercan', 'Kehribar', 'Kızıl', 'Şafak', 'Gül', 'Akşam'], acc: ['#ffb36b', '#ff7f6b'], glow: ['#ff9e5a', '#ff6f91', '#ffb86b'] },
-  { id: 'ocean', name: 'Okyanus', need: 10, lines: ['#5ce1e6', '#4fa3ff', '#7dd3fc', '#38bdf8', '#67e8f9', '#2dd4bf'], names: ['Lagün', 'Derin Mavi', 'Gök', 'Okyanus', 'Buz', 'Turkuaz'], acc: ['#5ce1e6', '#4fa3ff'], glow: ['#3fb6d9', '#3a5bff', '#2dd4bf'] },
-  { id: 'forest', name: 'Orman', need: 15, lines: ['#7bd88f', '#a3e635', '#4ade80', '#86efac', '#5fd3a1', '#bef264'], names: ['Çam', 'Filiz', 'Orman', 'Nane', 'Yosun', 'Fıstık'], acc: ['#7bd88f', '#3fb68b'], glow: ['#4fb477', '#2f7d5b', '#a3e635'] },
-  { id: 'neon', name: 'Neon Gece', need: 25, lines: ['#ff3ddc', '#22e6ff', '#b84dff', '#ff5ea8', '#5b8cff', '#d65cff'], names: ['Neon Pembe', 'Elektrik', 'Ultraviyole', 'Fuşya', 'Lazer', 'Plazma'], acc: ['#ff3ddc', '#22e6ff'], glow: ['#ff3ddc', '#22e6ff', '#7a2bff'] },
-  { id: 'desert', name: 'Çöl', need: 35, lines: ['#f2c38b', '#e8935f', '#e0b26f', '#d98a66', '#f5d6a8', '#cf9a63'], names: ['Kum', 'Kiremit', 'Vaha', 'Kızıl Kaya', 'Bej', 'Hurma'], acc: ['#f2c38b', '#e8935f'], glow: ['#e8935f', '#a8653f', '#f2c38b'] },
-  { id: 'sakura', name: 'Sakura', need: 50, lines: ['#ffb7c5', '#ff8fab', '#f9a8d4', '#ffc2d9', '#f48fb1', '#e7a6ff'], names: ['Sakura', 'Gül', 'Pembe', 'Pudra', 'Fuşya', 'Leylak'], acc: ['#ffb7c5', '#f48fb1'], glow: ['#ff9fb8', '#e48bff', '#ffc2d9'] },
-  { id: 'aurora', name: 'Kuzey Işıkları', need: 70, lines: ['#6ef3c5', '#5ee0ff', '#a6ffcb', '#7aa2ff', '#9d8cff', '#63e6be'], names: ['Aurora', 'Kutup', 'Işık', 'Buzul', 'Ametist', 'Zümrüt'], acc: ['#6ef3c5', '#7aa2ff'], glow: ['#2ee6a6', '#6b5bff', '#5ee0ff'] },
-  { id: 'lava', name: 'Lav', need: 90, lines: ['#ff5a36', '#ff9f1c', '#ff7b54', '#ffb347', '#e63946', '#ff6b6b'], names: ['Lav', 'Magma', 'Kor', 'Ateş', 'Volkan', 'Alev'], acc: ['#ff7b3a', '#e63946'], glow: ['#ff3d00', '#b5179e', '#ff9f1c'] },
-  { id: 'cosmos', name: 'Kozmos', need: 120, lines: ['#9d8cff', '#b5a8ff', '#c084fc', '#818cf8', '#a78bfa', '#e0aaff'], names: ['Galaksi', 'Nebula', 'Pulsar', 'Yörünge', 'Kuyruklu', 'Yıldız Tozu'], acc: ['#9d8cff', '#c084fc'], glow: ['#5b3df5', '#0ea5e9', '#d946ef'] },
+  { id: 'ocean', name: 'Okyanus', need: 25, lines: ['#5ce1e6', '#4fa3ff', '#7dd3fc', '#38bdf8', '#67e8f9', '#2dd4bf'], names: ['Lagün', 'Derin Mavi', 'Gök', 'Okyanus', 'Buz', 'Turkuaz'], acc: ['#5ce1e6', '#4fa3ff'], glow: ['#3fb6d9', '#3a5bff', '#2dd4bf'] },
+  { id: 'forest', name: 'Orman', need: 40, lines: ['#7bd88f', '#a3e635', '#4ade80', '#86efac', '#5fd3a1', '#bef264'], names: ['Çam', 'Filiz', 'Orman', 'Nane', 'Yosun', 'Fıstık'], acc: ['#7bd88f', '#3fb68b'], glow: ['#4fb477', '#2f7d5b', '#a3e635'] },
+  { id: 'desert', name: 'Çöl', need: 55, lines: ['#f2c38b', '#e8935f', '#e0b26f', '#d98a66', '#f5d6a8', '#cf9a63'], names: ['Kum', 'Kiremit', 'Vaha', 'Kızıl Kaya', 'Bej', 'Hurma'], acc: ['#f2c38b', '#e8935f'], glow: ['#e8935f', '#a8653f', '#f2c38b'] },
+  { id: 'sakura', name: 'Sakura', need: 70, lines: ['#ffb7c5', '#ff8fab', '#f9a8d4', '#ffc2d9', '#f48fb1', '#e7a6ff'], names: ['Sakura', 'Gül', 'Pembe', 'Pudra', 'Fuşya', 'Leylak'], acc: ['#ffb7c5', '#f48fb1'], glow: ['#ff9fb8', '#e48bff', '#ffc2d9'] },
+  { id: 'neon', name: 'Neon Gece', need: 90, lines: ['#ff3ddc', '#22e6ff', '#b84dff', '#ff5ea8', '#5b8cff', '#d65cff'], names: ['Neon Pembe', 'Elektrik', 'Ultraviyole', 'Fuşya', 'Lazer', 'Plazma'], acc: ['#ff3ddc', '#22e6ff'], glow: ['#ff3ddc', '#22e6ff', '#7a2bff'] },
+  { id: 'aurora', name: 'Kuzey Işıkları', need: 110, lines: ['#6ef3c5', '#5ee0ff', '#a6ffcb', '#7aa2ff', '#9d8cff', '#63e6be'], names: ['Aurora', 'Kutup', 'Işık', 'Buzul', 'Ametist', 'Zümrüt'], acc: ['#6ef3c5', '#7aa2ff'], glow: ['#2ee6a6', '#6b5bff', '#5ee0ff'] },
+  { id: 'lava', name: 'Lav', need: 135, lines: ['#ff5a36', '#ff9f1c', '#ff7b54', '#ffb347', '#e63946', '#ff6b6b'], names: ['Lav', 'Magma', 'Kor', 'Ateş', 'Volkan', 'Alev'], acc: ['#ff7b3a', '#e63946'], glow: ['#ff3d00', '#b5179e', '#ff9f1c'] },
+  { id: 'cosmos', name: 'Kozmos', need: 160, lines: ['#9d8cff', '#b5a8ff', '#c084fc', '#818cf8', '#a78bfa', '#e0aaff'], names: ['Galaksi', 'Nebula', 'Pulsar', 'Yörünge', 'Kuyruklu', 'Yıldız Tozu'], acc: ['#9d8cff', '#c084fc'], glow: ['#5b3df5', '#0ea5e9', '#d946ef'] },
   // 💛 yalnızca Reklamsız paketle (taçla alınmaz)
   { id: 'gold', name: 'Altın', vip: true, lines: ['#ffd36b', '#f5b942', '#ffe7a3', '#e9a93a', '#fff1b8', '#d9a520'], names: ['Altın', 'Bal', 'Fildişi', 'Kehribar', 'Krem', 'Hardal'], acc: ['#ffd36b', '#e9a23a'], glow: ['#ffcf6b', '#b8862b', '#ffe8a3'] },
   { id: 'diamond', name: 'Elmas', vip: true, lines: ['#d6f1ff', '#bae6fd', '#c7d2fe', '#e9e4ff', '#a5f3fc', '#ddd6fe'], names: ['Elmas', 'Kristal', 'Prizma', 'İnci', 'Buz', 'Opal'], acc: ['#bae6fd', '#c7d2fe'], glow: ['#7dd3fc', '#a78bfa', '#e0f2fe'] },
@@ -246,8 +254,8 @@ function puzzleFor(l) {
 }
 function dailyFor(day) {
   return cached('d' + day, () => {
-    const L = dailyLevel(day), [c, r] = sizeFor(L), z = zOf(L);
-    return pick(Math.max(6, c), Math.max(8, r), hashStr('ray' + day), 0, 0, z, 5 + 11 * z);
+    const z = dailyZ(day);
+    return pick(z < .35 ? 6 : 7, z < .35 ? 8 : 9, hashStr('ray' + day), 0, 0, z, 5 + 11 * z);
   });
 }
 
@@ -478,7 +486,7 @@ function refreshHome() {
   $('gateTxt').textContent = tot >= hi ? `★ ${tot} · M${nx + 1} açık` : `★ ${tot} / ${hi} → M${nx + 1}`;
   $('progBar').style.width = Math.min(100, Math.max(4, (tot - lo) / Math.max(1, hi - lo) * 100)) + '%';
   const [w, h] = sizeFor(save.level); $('sSize').textContent = `${w}×${h} · ⚡ zorluk %${zPct(save.level)}`;
-  $('dailyK').textContent = `GÜNÜN HATTI · ⚡%${zPct(dailyLevel(today()))}`;
+  $('dailyK').textContent = `GÜNÜN HATTI · ⚡%${dPct(today())}`;
   $('bPlay').classList.toggle('locked', !unlocked(c));
 }
 
@@ -554,7 +562,7 @@ function start(mode, lvl = save.level) {
   litAt = G.L.d.map(v => v >= 0 ? -1e9 : 0);
   G.tOk = timeOk(G.ms / 1000); G.mOk = movesOk();
   $('gTitle').textContent = daily ? (G.practice ? 'Günün Hattı · pratik' : 'Günün Hattı') : 'Bölüm ' + lvl;
-  $('gMoves').textContent = `${daily ? new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl))} · ⚡%${zPct(daily ? dailyLevel(day) : lvl)}`;
+  $('gMoves').textContent = `${daily ? new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl))} · ⚡%${daily ? dPct(day) : zPct(lvl)}`;
   $('gHints').textContent = save.hints;
   show('game'); resize(); hud(); tick();
   if (!daily && RULES[ln] && !save.seen[ln]) ruleCard(ln);
@@ -1320,5 +1328,5 @@ if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, zPct, dailyLevel, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
+window.__ray = { generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, zPct, dPct, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();

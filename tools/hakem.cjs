@@ -420,8 +420,8 @@ async function inViewport(page, sel) {
 
   // ---------- E5. Renk temaları (👑), günlük hatırlatma, reklamsız paket ----------
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: { played: 12, level: 13, stars: { ...starsUpTo(10), 10: 2, 11: 1, 12: 2 }, crowns: starsUpTo(10, 1), dCrowns: 3, miss: { 10: [4, 0], 11: [3, 2], 12: [0, 5] } }, init: 'window.__withNotif = true;\n' + SHOP_MOCK });
-    // temalar: 👑 para birimi. Bakiye 12 (9 bölüm + 3 günlük) → Okyanus (10) alınır, kalan 2 Gün Batımı'na (5) yetmez
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 12, level: 13, stars: { ...starsUpTo(10), 10: 2, 11: 1, 12: 2 }, crowns: starsUpTo(10, 1), dCrowns: 18, miss: { 10: [4, 0], 11: [3, 2], 12: [0, 5] } }, init: 'window.__withNotif = true;\n' + SHOP_MOCK });
+    // temalar: 👑 para birimi. Bakiye 27 (9 bölüm + 18 günlük) → Okyanus (25) alınır, kalan 2 Gün Batımı'na (5) yetmez
     await page.click('#crownChip'); await page.waitForTimeout(500);
     const acc0 = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--acc').trim());
     await page.click('.skin[data-k=neon]'); await page.waitForTimeout(350);
@@ -443,7 +443,7 @@ async function inViewport(page, sel) {
     await page.click('#bPlay'); await page.waitForTimeout(600);
     const lineCol = await page.evaluate(() => ({ c: window.__ray.G.color, acc: getComputedStyle(document.getElementById('game')).getPropertyValue('--acc').trim() }));
     await shot(page, 'skin-game');
-    check('skin.buy', 'Temalar 👑 ile satın alınır: onayda kalan bakiye, harcanan düşer, kalan diğerine yetmez', /kalan 👑 2/.test(buy) && sk.sel === 'ocean' && sk.spent === 10 && sk.chip === '2' && sk.own === 2 && poor && neonLocked, JSON.stringify({ ...sk, poor, buy: buy.slice(0, 60) }), 'medium');
+    check('skin.buy', 'Temalar 👑 ile satın alınır: onayda kalan bakiye, harcanan düşer, kalan diğerine yetmez', /kalan 👑 2/.test(buy) && sk.sel === 'ocean' && sk.spent === 25 && sk.chip === '2' && sk.own === 2 && poor && neonLocked, JSON.stringify({ ...sk, poor, buy: buy.slice(0, 60) }), 'medium');
     check('skin.pick', 'Seçilen tema oyuna yansır; oyunda düğme/yıldız rengi oynanan hattın rengi', sk.acc !== acc0 && lineCol.c === '#4fa3ff' && lineCol.acc === lineCol.c, JSON.stringify({ acc0, acc: sk.acc, ...lineCol }), 'medium');
     // hatırlatma: oyundan ana sayfaya dönünce bir kez sorulur → izin → bildirimler planlanır
     await page.click('#bBack'); await page.waitForTimeout(1300);
@@ -515,12 +515,17 @@ async function inViewport(page, sel) {
       const R = window.__ray, lines = [], lens = [];
       for (let c = 0; c < 9; c++) { const a = R.lineStart(c), z = R.lineStart(c + 1) - 1; let d = 0; for (let l = a; l <= z; l++) d += R.puzzleFor(l).diff; lines.push(Math.round(d / (z - a + 1) * 10) / 10); lens.push(z - a + 1); }
       const t0 = performance.now(); for (let l = 901; l <= 910; l++) R.puzzleFor(l); const ms = Math.round((performance.now() - t0) / 10 * 10) / 10;
-      const daily = ['2026-10-24', '2027-01-24', '2027-06-24', '2028-06-24'].map(d => R.zPct(R.dailyLevel(d)));
+      // Günün Hattı: haftalık dalga (Pzt kolay → Paz zor), %40 tabanı, tepe %85+; yıl içinde ortalama yükselir
+      const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const week = mon => Array.from({ length: 7 }, (_, k) => { const d = new Date(mon); d.setDate(d.getDate() + k); return R.dPct(ymd(d)); });
+      const weeks = [new Date(2026, 10, 2), new Date(2026, 10, 9), new Date(2026, 10, 16), new Date(2026, 10, 23)].map(week), late = week(new Date(2027, 8, 6));
+      const avg = a => a.reduce((x, y) => x + y, 0) / a.length;
+      const daily = { wave: weeks.every(w => w.every((v, k) => !k || v > w[k - 1])), min: Math.min(...weeks.flat(), ...late), peak: Math.max(...weeks.map(w => w[6])), early: Math.round(avg(weeks.flat())), late: Math.round(avg(late)) };
       return { lines, lens, ms, daily, far: R.zPct(5000) };
     });
     metrics.difficulty = cv;
     check('difficulty.ladder', 'Zorluk merdiveni: hat uzunluğu doğrusal artıyor, her hat bir öncekinden zor, sonsuzda %99', cv.lens.every((v, k) => v === 12 + 4 * k) && cv.lines.every((v, k) => !k || v > cv.lines[k - 1]) && cv.far === 99 && cv.ms < 60, `${cv.lines.join(' → ')} · ${cv.ms} ms/bölüm`, 'medium');
-    check('difficulty.daily', 'Günün Hattı her gün zorlaşıyor', cv.daily.every((v, k) => !k || v > cv.daily[k - 1]), cv.daily.map(v => '%' + v).join(' → '), 'medium');
+    check('difficulty.daily', 'Günün Hattı haftalık dalga: Pzt→Paz zorlaşır, %40 altına düşmez, tepe %85+, zamanla yükselir', cv.daily.wave && cv.daily.min >= 40 && cv.daily.peak >= 85 && cv.daily.late > cv.daily.early, JSON.stringify(cv.daily), 'medium');
     check('pairs.solvable', 'Eşli karolu 600 bölümün hepsi çözülebilir, eşler simetrik, sabit karoyla çakışmaz', gen.bad === 0 && gen.pairs > 1000 && gen.pre === 0, JSON.stringify(gen));
     await page.click('#bPlay'); await page.waitForTimeout(700);
     const card = await page.evaluate(() => ({ open: document.getElementById('modal').classList.contains('open'), txt: document.querySelector('.sheet h2')?.textContent, demo: !!document.querySelector('.rdemo2') }));
