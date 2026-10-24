@@ -219,6 +219,13 @@ async function inViewport(page, sel) {
         await shot(page, `fail-level-${L}`);
         break;
       }
+      if (L === 10) {
+        const h0 = (await getSave(page)).hints, has = await page.$('#mDbl');
+        if (has) { await page.click('#mDbl'); await page.waitForTimeout(900); }
+        const h1 = (await getSave(page)).hints, ok = await page.$('.dblok');
+        await shot(page, 'win-double');
+        check('reward.double', 'Hat sonu ödülü: "▶ 2 katı" videosuyla +2 ipucu daha (bir kez)', !!has && h1 === h0 + 2 && !!ok, `${h0} → ${h1}`, 'medium');
+      }
       await page.click('#mNext'); await page.waitForTimeout(450);
     }
     const s = await getSave(page), log = await page.evaluate(() => window.__log);
@@ -309,6 +316,8 @@ async function inViewport(page, sel) {
     const st = await page.evaluate(() => document.querySelectorAll('.stars svg.on').length);
     check('time.stars', 'Süre hedefi kaçınca ⏱ yıldızı söner, sonuç 2★ (gösterge + sonuç)', pill0 === 3 && pill1 === 2 && st === 2, `başta ${pill0}★ → süre aşımı ${pill1}★ → sonuç ${st}★ · "${next}"`);
     await shot(page, 'win-2star');
+    const ms = await page.evaluate(() => { const l = window.__ray.G.lvl; return JSON.parse(localStorage.getItem('ray')).miss?.[l]; });
+    check('miss.track', 'Kaçan hedef kaydediliyor (⏱ kaç sn geç, ↻ kaç hamle fazla)', Array.isArray(ms) && ms[0] >= 1 && ms[1] === 0, JSON.stringify(ms), 'medium');
     await ctx.close();
 
     // süre yalnızca oyun ekranında akmalı + geri dönünce kaldığı yerden sürmeli
@@ -405,15 +414,15 @@ async function inViewport(page, sel) {
 
   // ---------- E5. Renk temaları (👑), günlük hatırlatma, reklamsız paket ----------
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: { played: 12, level: 13, stars: { ...starsUpTo(10), 10: 2, 11: 1, 12: 2 }, crowns: starsUpTo(10, 1) }, init: 'window.__withNotif = true;\n' + SHOP_MOCK });
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 12, level: 13, stars: { ...starsUpTo(10), 10: 2, 11: 1, 12: 2 }, crowns: starsUpTo(10, 1), miss: { 10: [4, 0], 11: [3, 2], 12: [0, 5] } }, init: 'window.__withNotif = true;\n' + SHOP_MOCK });
     // temalar: 9 👑 → Gün Batımı (3) ve Okyanus (8) açık, Neon (15) kilitli
     await page.click('#crownChip'); await page.waitForTimeout(500);
     const acc0 = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--acc').trim());
     await page.click('.skin[data-k=neon]'); await page.waitForTimeout(350);
     // kilitli tema → "Taç topla": kusursuz olmayan bölümler yıldızlarıyla, kusursuza en yakın önce
-    const hunt = await page.evaluate(() => [...document.querySelectorAll('#hunt .lv')].map(b => b.textContent));
+    const hunt = await page.evaluate(() => [...document.querySelectorAll('#hunt .hrow')].map(b => b.textContent));
     await shot(page, 'crown-hunt');
-    check('skin.hunt', 'Taç yetmeyince kusursuz olmayan bölümler yıldızlarıyla listeleniyor (en yakın önce)', hunt.join(',') === '10★★☆,12★★☆,11★☆☆', hunt.join(','), 'medium');
+    check('skin.hunt', 'Taç yetmeyince kusursuz olmayan bölümler yıldızları ve kaçan hedefiyle listeleniyor (en yakın önce)', hunt.join(',') === '10★★☆⏱ 4 sn geç,12★★☆↻ 5 hamle fazla,11★☆☆⏱ 3 sn geç · ↻ 2 hamle fazla', hunt.join(','), 'medium');
     await page.click('#mBack'); await page.waitForTimeout(350);
     const neonLocked = await page.evaluate(() => !document.querySelector('.skin[data-k=neon]').classList.contains('on'));
     await page.click('.skin[data-k=ocean]'); await page.waitForTimeout(400);

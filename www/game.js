@@ -22,11 +22,12 @@ const today = () => ymd(new Date());
 const dayBefore = s => { const [y, m, d] = s.split('-').map(Number); return ymd(new Date(y, m - 1, d - 1)); };
 
 // ---------- kayıt ----------
-const def = { level: 1, stars: {}, hints: DAILY_FREE_HINTS, hintDay: '', streak: 0, lastDaily: '', dailyDone: '', dailyStats: null, runs: {}, crowns: {}, shards: 0, seen: {}, sound: true, music: true, vib: true, theme: 'auto', played: 0, skin: 'metro', dCrowns: 0, newSkin: 0, remind: false, remindAt: 1110, remindAsked: false, noAds: false };
+const def = { level: 1, stars: {}, hints: DAILY_FREE_HINTS, hintDay: '', streak: 0, lastDaily: '', dailyDone: '', dailyStats: null, runs: {}, crowns: {}, miss: {}, shards: 0, seen: {}, sound: true, music: true, vib: true, theme: 'auto', played: 0, skin: 'metro', dCrowns: 0, newSkin: 0, remind: false, remindAt: 1110, remindAsked: false, noAds: false };
 let save;
 try { save = Object.assign({}, def, JSON.parse(localStorage.getItem('ray') || '{}')); } catch { save = { ...def }; }
 if (!save.runs || typeof save.runs !== 'object') save.runs = {};
 if (!save.seen || typeof save.seen !== 'object') save.seen = {};
+if (!save.miss || typeof save.miss !== 'object') save.miss = {};
 if (!Array.isArray(save.dailyLog)) save.dailyLog = save.lastDaily ? [save.lastDaily] : [];
 const persist = () => { try { localStorage.setItem('ray', JSON.stringify(save)); } catch {} };
 // gün değişimi: ücretsiz ipucu, kopan seri
@@ -297,7 +298,7 @@ $('modal').onclick = e => { if (e.target.id === 'modal' && !mLocked) closeModal(
   const sh = $('mCard');
   let y0 = null, dy = 0, t0 = 0, pid = 0, dragged = false;
   sh.addEventListener('pointerdown', e => {
-    if (e.target.closest('.demobox,.lvs.hunt') || sh.scrollTop > 0) return;
+    if (e.target.closest('.demobox,.hunt') || sh.scrollTop > 0) return;
     y0 = e.clientY; dy = 0; t0 = performance.now(); pid = e.pointerId; dragged = false;
   });
   sh.addEventListener('pointermove', e => {
@@ -440,6 +441,7 @@ function start(mode, lvl = save.level) {
   show('game'); resize(); hud(); tick();
   if (!daily && RULES[ln] && !save.seen[ln]) ruleCard(ln);
   if (save.played === 0) setTimeout(() => toast('Karoya dokun → döner'), 500);
+  else if (!daily && save.miss[lvl] && !save.crowns[lvl] && !G.moves) setTimeout(() => toast(`Geçen sefer: ${missTxt(lvl)}`), 600);
 }
 function hud() {
   const ok = movesOk();
@@ -627,12 +629,12 @@ function win() {
   const tOk = timeOk(G.time / 1000), mOk = movesOk(), st = 1 + tOk + mOk, perfect = tOk && mOk;
   save.played++;
   const cr0 = crownCount();
-  let extra = '', unlockedNow = null, shard = false;
+  let extra = '', unlockedNow = null, shard = false, dbl = 0;   // dbl: videoyla ikiye katlanabilecek ipucu
   if (G.daily) {
     if (save.dailyDone !== G.day) {
       save.streak = save.lastDaily === dayBefore(G.day) ? save.streak + 1 : 1; save.lastDaily = save.dailyDone = G.day;
       save.dailyLog = [...save.dailyLog.filter(d => d !== G.day), G.day].slice(-90); save.best = Math.max(save.best || 0, save.streak);
-      save.hints++; extra = `🔥 ${save.streak} gün seri · +1 ipucu`; Remind.habit(); Remind.plan();
+      save.hints++; dbl = 1; extra = `🔥 ${save.streak} gün seri · +1 ipucu`; Remind.habit(); Remind.plan();
       save.dailyStats = { day: G.day, moves: G.moves, time: G.time, st, perfect };
       shard = perfect; if (perfect) save.dCrowns = (save.dCrowns || 0) + 1;
     }
@@ -640,9 +642,11 @@ function win() {
     sessionWins++;
     const before = totalStars(), old = save.stars[G.lvl] || 0, firstClear = G.lvl >= save.level;
     save.stars[G.lvl] = Math.max(old, st);
+    // hangi hedef ne kadar kaçtı: [⏱ sn geç, ↻ hamle fazla]. Taç topla listesi ve tekrar oynarken gösterilir.
+    if (perfect) delete save.miss[G.lvl]; else if (st >= old) save.miss[G.lvl] = [tOk ? 0 : Math.ceil(G.time / 1000 - G.lim.t), mOk ? 0 : G.moves - G.lim.m];
     if (st > old && old) extra = `Yeni rekor: ${starTxt(st)}`;
     save.level = Math.max(save.level, G.lvl + 1);
-    if (G.lvl % 10 === 0 && firstClear) { save.hints += 2; extra = '🎁 Hat tamam · +2 ipucu'; }
+    if (G.lvl % 10 === 0 && firstClear) { save.hints += 2; dbl = 2; extra = '🎁 Hat tamam · +2 ipucu'; }
     if (perfect && !save.crowns[G.lvl]) { save.crowns[G.lvl] = 1; shard = true; }   // parça bölüm başına bir kez
     for (let c = 1; c <= lineOf(save.level) + 1; c++) if (need(c) > before && unlocked(c)) unlockedNow = c;
   }
@@ -654,11 +658,11 @@ function win() {
   const ns = SKINS.find(k => k.need > cr0 && k.need <= crownCount() && !(k.vip && save.noAds));
   if (ns) { save.newSkin = 1; extra = [extra, `🎨 Yeni tema: ${ns.name}`].filter(Boolean).join(' · '); }
   persist();
-  const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { st, tOk, mOk, perfect, extra: [shardMsg, extra].filter(Boolean).join(' · '), unlockedNow, ns };
+  const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { st, tOk, mOk, perfect, extra: [shardMsg, extra].filter(Boolean).join(' · '), unlockedNow, ns, dbl };
   winTimer = setTimeout(() => { if (G === g && active('game')) winSheet(g, info); }, wait);
 }
 // Sonuç paneli tahtanın altına yerleşir; tahta küçülüp üstte görünür kalır.
-function winSheet(g, { st, tOk, mOk, perfect, extra, unlockedNow, ns }) {
+function winSheet(g, { st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl }) {
   const L = g.lim, nx = g.lvl + 1, nxLocked = !g.daily && !unlocked(lineOf(nx));
   const badge = unlockedNow ? `<span class="badge">YENİ HAT AÇILDI · M${unlockedNow + 1}</span>` : ns ? '<span class="badge">YENİ TEMA 🎨</span>' : perfect ? '<span class="badge">KUSURSUZ 👑</span>' : '';
   const tip = perfect ? '' : `<p class="tip">Kusursuz için: ${[tOk ? '' : `⏱ ≤ ${fmtT(L.t * 1000)}`, mOk ? '' : `↻ ≤ ${L.m} hamle`].filter(Boolean).join(' ve ')}</p>`;
@@ -668,12 +672,21 @@ function winSheet(g, { st, tOk, mOk, perfect, extra, unlockedNow, ns }) {
        <div class="row2"><button id="mRetry" class="btn glassbtn">Tekrar</button><button id="mShare" class="btn glassbtn">Paylaş</button><button id="mHome" class="btn glassbtn">Ana sayfa</button></div>`;
   $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml([true, tOk, mOk])}<div class="wp-t"><h2>${g.practice ? 'Pratik tamam!' : g.daily ? 'Günün hattı tamam!' : 'Hat açıldı!'}</h2>${badge}</div></div>
       <button id="wTog" class="wp-tog" aria-label="Hattı gör"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg><span>Hattı gör</span></button></div>
-    <div class="wp-more"><div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(L.t * 1000)}</small></b><span>⏱ süre ${tOk ? '★' : '✗'}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${L.m}</small></b><span>↻ hamle ${mOk ? '★' : '✗'}</span></div></div>${tip}${extra ? `<p class="tip">${extra}</p>` : ''}</div>
+    <div class="wp-more"><div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(L.t * 1000)}</small></b><span>⏱ süre ${tOk ? '★' : '✗'}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${L.m}</small></b><span>↻ hamle ${mOk ? '★' : '✗'}</span></div></div>${tip}${extra ? `<p class="tip">${extra}${dbl && Ads.online() ? ` <button id="mDbl" class="dbl">▶ 2 katı</button>` : ''}</p>` : ''}</div>
     ${primary}`;
   $('game').classList.add('won');
-  bind({ wTog: toggleMini, mNext: next, mMap: () => show('map'), mRetry: () => start('level', g.lvl), mHome: () => show('home'),
+  bind({ wTog: toggleMini, mNext: next, mDbl: () => doubleReward(dbl), mMap: () => show('map'), mRetry: () => start('level', g.lvl), mHome: () => show('home'),
     // pratikte paylaşılan, günün resmî (ilk) sonucudur
     mShare: () => share(g.practice && save.dailyStats ? { ...save.dailyStats, daily: true } : { daily: g.daily, lvl: g.lvl, day: g.day, moves: g.moves, time: g.time, st, perfect }) });
+}
+// hat sonu / Günün Hattı ödülü: isteğe bağlı bir video → ödül bir kez daha
+async function doubleReward(n) {
+  const b = $('mDbl'); if (!b || Ads.busy()) return;
+  b.disabled = true; b.textContent = 'Yükleniyor…'; Music.stop();
+  const ok = await Ads.rewarded(); Music.start();
+  if (!ok) { b.disabled = false; b.textContent = '▶ 2 katı'; toast(Ads.online() ? 'Ödül alınamadı · video sonuna kadar izlenmeli' : 'Bağlantı yok · sonra dene'); return; }
+  save.hints += n; persist(); $('gHints').textContent = save.hints;
+  b.outerHTML = `<b class="dblok">✓ +${n}</b>`; haptic('heavy'); tone(note(9), .3, .045); toast(`+${n} ipucu daha 🎁`);
 }
 function toggleMini() {
   const mini = $('game').classList.toggle('mini');
@@ -917,16 +930,17 @@ function skinSheet() {
   };
 }
 // Taç avı: kusursuz bitmemiş bölümler, yıldızlarıyla. En çok yıldızlı (kusursuza en yakın) önce; dokun → oyna.
+const missTxt = l => { const [t, m] = save.miss[l] || [0, 0]; return [t ? `⏱ ${t} sn geç` : '', m ? `↻ ${m} hamle fazla` : ''].filter(Boolean).join(' · '); };
 const huntList = () => { const L = []; for (let l = 1; l < save.level; l++) if (!save.crowns[l] && unlocked(lineOf(l))) L.push(l); return L.sort((a, b) => (save.stars[b] || 0) - (save.stars[a] || 0) || a - b); };
 function crownHunt(k) {
   const n = crownCount(), L = huntList();
   modal(`<h2>Taç topla 👑</h2>
     <p>${k ? `<b>${k.name}</b> için <b>${k.need - n} 👑</b> daha gerekli${k.vip ? ' (ya da Reklamsız paket)' : ''}. ` : ''}Aşağıdaki bölümleri <b>⏱ süre</b> ve <b>↻ hamle</b> hedefiyle bitir: her biri 1 👑.</p>
-    ${L.length ? `<div class="lvs hunt" id="hunt">${L.map(l => `<button class="lv" data-l="${l}"><b>${l}</b><i>${starTxt(save.stars[l] || 0)}</i></button>`).join('')}</div>
+    ${L.length ? `<div class="hunt" id="hunt">${L.map(l => `<button class="hrow" data-l="${l}"><b>${l}</b><span>${starTxt(save.stars[l] || 0)}</span><small>${missTxt(l)}</small></button>`).join('')}</div>
     <p class="tip">★★☆ olanlar kusursuza en yakın · Günün Hattı'nı kusursuz bitirmek de 1 👑</p>`
     : `<p class="tip">Oynadığın her bölüm kusursuz! 🎉 Yeni bölümler ve Günün Hattı yeni 👑 getirir.</p><button id="mPlay" class="btn primary"><span>Oyna</span><small>Bölüm ${save.level}</small></button>`}
     <button id="mBack" class="btn glassbtn">Temalara dön</button>`, { mBack: skinSheet, mPlay: () => start('level') });
-  if ($('hunt')) $('hunt').onclick = e => { const b = e.target.closest('.lv'); if (b) start('level', +b.dataset.l); };
+  if ($('hunt')) $('hunt').onclick = e => { const b = e.target.closest('.hrow'); if (b) start('level', +b.dataset.l); };
 }
 // ---------- nasıl oynanır: sayfalı, kendi kendine oynayan demo (video yerine: keskin, birkaç KB, internetsiz) ----------
 // [sahne başlangıcı (sn), yazı]. Her sayfa kendi sahnesini oynar (+0,5 sn okuma payı), sonra kendiliğinden geçer; parmakla kaydırılır.
