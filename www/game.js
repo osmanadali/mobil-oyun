@@ -763,7 +763,7 @@ const DEMO_STEPS = [
   [15, 'Her gün yeni <b>Günün Hattı</b> 🔥'],
 ];
 function demo(cv2) {
-  const c2 = cv2.getContext('2d'), D = 240, dpr = Math.min(devicePixelRatio || 1, 2), LOOP = 18;
+  const c2 = cv2.getContext('2d'), D = 240, dpr = Math.min(devicePixelRatio || 1, 2), LOOP = 18, SLOW = 1.7;   // SLOW: tüm demo bu kadar yavaş oynar (~30 sn)
   cv2.width = cv2.height = D * dpr;
   // 3×3 örnek: merkez 4; 3, 1, 5, 7 birer dokunuşta yerine oturur
   const SOL = [6, 8, 4, 3, 14, 9, 2, 11, 8], WRONG = [3, 1, 5, 7], TAPS = [[1.2, 3], [3.2, 1], [5, 5], [6.4, 7]];
@@ -801,7 +801,7 @@ function demo(cv2) {
   }
   function frame(now) {
     if (!cv2.isConnected || !modalOpen()) return;   // pencere kapanınca demo durur (pil)
-    const t = ((now - t0) / 1000) % LOOP, k = DEMO_STEPS.findLastIndex(([st]) => t >= st);
+    const t = (((now - t0) / 1000) % (LOOP * SLOW)) / SLOW, k = DEMO_STEPS.findLastIndex(([st]) => t >= st);
     if (k !== step) {
       step = k; const el = $('demoTxt');
       if (el) { el.classList.add('fade'); setTimeout(() => { el.innerHTML = DEMO_STEPS[k][1]; el.classList.remove('fade'); }, 180); }
