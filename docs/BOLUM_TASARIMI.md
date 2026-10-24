@@ -58,8 +58,8 @@ Izgara boyu bölüme göre büyür: 1–3 3×3 · 4–8 4×4 · 9–15 4×5 · 1
 |---|---|---|---|
 | M3 | 29 | **Sabit karo:** koyu, cıvatalı karolar dönmez | İlk bölümde daha çok sabit karo, animasyonlu kural kartı |
 | M4 | 49 | **Eşli karo:** aynı numaralı iki karo birlikte döner | İlk bölümde tek eş, animasyonlu kural kartı |
-| M6 | 101 | Boş yer: ileride yeni kural (öneri: karanlık tünel) | |
-| M8 | 169 | Boş yer | |
+| M6 | 101 | **Karanlık tünel:** hattın ulaşmadığı karolar karanlıktır, rayları görünmez ve dokunulamaz. Yanan hattın 2 karo yakını aydınlanır ve açık kalır. | Animasyonlu kural kartı; ilk 3 bölüm 6×8 |
+| M8 | 169 | Boş yer (ileride yeni kural) | |
 
 Yeni kural gelen hattın **ilk 3 bölümü bir boy küçük ızgarayla** gelir ve ilk bölüm biraz daha kolay seçilir. Böylece oyuncu kuralı rahatça öğrenir (testere dişi).
 

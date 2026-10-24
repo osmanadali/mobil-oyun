@@ -85,21 +85,29 @@ async function tapTile(page, i) {
   }, i);
   await page.mouse.click(p.x, p.y);
 }
-// En kısa çözüm: her karoyu çözüm yönüne getirecek kadar dokun.
+// En kısa çözüm: her karoyu çözüm yönüne getirecek kadar dokun. Eşli karo: biri çevrilir (eşi de döner).
+// Karanlık tünel: yalnızca aydınlık karolara dokunulur; hat ilerledikçe yeni tur (ışığı takip eder).
 async function solve(page, gap = 25) {
-  const taps = await page.evaluate(() => {
-    const { G, rot } = window.__ray, out = [];
-    G.cur.forEach((v, i) => {
-      if (G.fixed[i] || G.pinned[i]) return;
-      const j = G.link?.[i] ?? -1; if (j >= 0 && j < i) return;   // eşli karo: biri çevrilir, eşi de döner
-      let k = 0, t = v, u = j >= 0 ? G.cur[j] : 0;
-      while ((t !== G.sol[i] || (j >= 0 && u !== G.sol[j])) && k < 4) { t = rot(t); if (j >= 0) u = rot(u); k++; }
-      for (let q = 0; q < k; q++) out.push(i);
+  let total = 0;
+  for (let round = 0; round < 40; round++) {
+    const taps = await page.evaluate(() => {
+      const { G, rot } = window.__ray, out = [], lit = i => !G.seen || G.seen[i];
+      if (!G || G.won) return out;
+      G.cur.forEach((v, i) => {
+        if (G.fixed[i] || G.pinned[i]) return;
+        const j = G.link?.[i] ?? -1, lo = j >= 0 ? Math.min(i, j) : i, hi = j >= 0 ? Math.max(i, j) : i, tapper = lit(lo) ? lo : hi;
+        if (i !== tapper || !lit(i)) return;
+        let k = 0, t = v, u = j >= 0 ? G.cur[j] : 0;
+        while ((t !== G.sol[i] || (j >= 0 && u !== G.sol[j])) && k < 4) { t = rot(t); if (j >= 0) u = rot(u); k++; }
+        for (let q = 0; q < k; q++) out.push(i);
+      });
+      return out;
     });
-    return out;
-  });
-  for (const i of taps) { await tapTile(page, i); if (gap) await page.waitForTimeout(gap); }
-  return taps.length;
+    if (!taps.length) break;
+    for (const i of taps) { await tapTile(page, i); if (gap) await page.waitForTimeout(gap); }
+    total += taps.length;
+  }
+  return total;
 }
 async function waitModal(page, ms = 5000) {
   const t = Date.now();
@@ -548,6 +556,28 @@ async function inViewport(page, sel) {
     const sizes = await page.evaluate(() => [49, 51, 52, 60, 61].map(l => window.__ray.sizeFor(l).join('x')).join(' '));
     check('rule.pairs.win', 'Eşli karolu bölüm çözülüp kazanılıyor · testere dişi (49–51: 5×7)', won && sizes === '5x7 5x7 6x8 6x8 7x9', `${won} · ${sizes}`, 'medium');
     check('e7.errors', 'Eşli karo senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
+    await ctx.close();
+  }
+
+  // ---------- E8. Yeni kural: karanlık tünel (M6, bölüm 101+) ----------
+  {
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 100, level: 101, stars: starsUpTo(101), seen: { 2: 1, 3: 1 }, remindAsked: true } });
+    await page.click('#bPlay'); await page.waitForTimeout(700);
+    const card = await page.evaluate(() => ({ open: document.getElementById('modal').classList.contains('open'), txt: document.querySelector('.sheet h2')?.textContent, demo: !!document.querySelector('.rdemo3') }));
+    await shot(page, 'rule-fog');
+    if (card.open) await page.click('#mGo');
+    await page.waitForTimeout(400);
+    const f0 = await page.evaluate(() => { const G = window.__ray.G, dark = G.seen.map((v, i) => v ? -1 : i).filter(i => i >= 0); return { fog: G.fog, dark: dark.length, n: G.cur.length, size: G.cols + 'x' + G.rows, idx: dark.find(i => !G.pinned[i] && G.link[i] < 0) ?? dark[0] }; });
+    const st = () => page.evaluate(i => ({ m: window.__ray.G.moves, v: window.__ray.G.cur[i] }), f0.idx);
+    const b0 = await st(); await tapTile(page, f0.idx); await page.waitForTimeout(200); const b1 = await st();
+    await shot(page, 'fog');
+    const taps = await solve(page, 8); const won = await waitModal(page);
+    const all = await page.evaluate(() => window.__ray.G.seen.every(Boolean));
+    const sizes = await page.evaluate(() => [100, 101, 103, 104].map(l => window.__ray.sizeFor(l).join('x')).join(' '));
+    check('rule.fog.card', 'M6 ilk girişte "YENİ KURAL · Karanlık tünel" kartı (animasyonlu)', card.open && /Karanlık tünel/.test(card.txt || '') && card.demo, JSON.stringify(card), 'medium');
+    check('rule.fog', 'Karanlık tünel: başta karanlık karolar var, dokunulmaz, hamle saymaz; ışığı takip ederek çözülür', f0.fog && f0.dark > 10 && b0.m === b1.m && b0.v === b1.v && won && all, JSON.stringify({ ...f0, b0, b1, taps, won, all }));
+    check('rule.fog.saw', 'Testere dişi: M6 ilk 3 bölüm 6×8, sonra 7×9', sizes === '7x9 6x8 6x8 7x9', sizes, 'medium');
+    check('e8.errors', 'Karanlık tünel senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
     await ctx.close();
   }
 
