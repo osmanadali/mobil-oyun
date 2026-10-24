@@ -265,11 +265,17 @@ async function inViewport(page, sel) {
     const { ctx, page, errors } = await open(browser, URL, { save: { played: 4, level: 5, stars: starsUpTo(5) } });
     await page.click('#bPlay'); await page.waitForTimeout(400);
     const pill0 = await page.evaluate(() => document.querySelectorAll('#gStars i.on').length);
+    const mus0 = await page.evaluate(() => window.__ray.music());
+    await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.t - 5) * 1000; });
+    await page.waitForTimeout(400);
+    const mus1 = await page.evaluate(() => window.__ray.music());
     // 3★ süresini aş → gösterge 2★'a düşmeli, çözünce en fazla 2★
     await page.evaluate(() => { const G = window.__ray.G; G.ms += (G.lim.t + 1) * 1000; });
     await page.waitForTimeout(400);
     const pill1 = await page.evaluate(() => document.querySelectorAll('#gStars i.on').length);
     const next = await page.textContent('#gNext');
+    const mus2 = await page.evaluate(() => window.__ray.music());
+    check('music.tension', 'Oyun müziği: başta sakin, son 10 sn tam gerilim, süre kaçınca rahatlar', mus0.on && mus0.mode === 'game' && mus0.tension < .3 && mus1.tension === 1 && mus2.tension < .2, `${mus0.mode} ${mus0.tension.toFixed(2)} → ${mus1.tension.toFixed(2)} → ${mus2.tension.toFixed(2)}`, 'medium');
     await shot(page, 'timer-2star');
     await solve(page, 15); await waitModal(page);
     const st = await page.evaluate(() => document.querySelectorAll('.stars svg.on').length);

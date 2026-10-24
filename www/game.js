@@ -142,29 +142,61 @@ function tone(f, dur = .08, vol = .05, type = 'sine', at = 0) {
 }
 // ---------- arka plan müziği: cihazda üretilen sakin ambiyans (dosya yok, internetsiz) ----------
 const Music = (() => {
-  // Re majör · D – Bm – G – A · her akor: bas + 4 nota. Arpej sabit kalıplarla döner → rastgele uyumsuzluk yok.
-  const PROG = [[50, 62, 66, 69, 74], [47, 59, 62, 66, 71], [43, 55, 59, 62, 67], [45, 57, 61, 64, 69]];
-  const PAT = [[1, 2, 3, 4, 3, 2, 3, 2], [1, 3, 2, 4, 2, 3, 1, 3]];
-  const STEP = .45, VOL = .55, hz = m => 440 * Math.pow(2, (m - 69) / 12);
-  let on = false, master, timer = 0, next = 0, step = 0;
+  // MENÜ: Re majör müzik kutusu (D – Bm – G – A), sakin.
+  const MENU = [[50, 62, 66, 69, 74], [47, 59, 62, 66, 71], [43, 55, 59, 62, 67], [45, 57, 61, 64, 69]];
+  const MPAT = [[1, 2, 3, 4, 3, 2, 3, 2], [1, 3, 2, 4, 2, 3, 1, 3]];
+  // OYUN: Re minör (Dm – B♭ – F – C). Gerilim (0–1) arttıkça tempo hızlanır, katmanlar eklenir.
+  const GAME = [[50, 62, 65, 69, 74], [46, 58, 62, 65, 70], [41, 57, 60, 65, 69], [48, 60, 64, 67, 72]];
+  const ALARM = [[50, 62, 65, 69, 74], [45, 61, 64, 67, 73]];   // son saniyeler: Dm ↔ A7
+  const GPAT = [1, 2, 3, 2, 4, 2, 3, 2];
+  const VOL = .55, hz = m => 440 * Math.pow(2, (m - 69) / 12);
+  let on = false, mode = 'menu', tension = 0, master, lp, noise, timer = 0, next = 0, step = 0;
   function setup() {
     master = ac.createGain(); master.gain.value = 0;
-    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400;
+    lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400;
     master.connect(lp).connect(ac.destination);
+    noise = ac.createBuffer(1, ac.sampleRate * .06, ac.sampleRate);
+    const d = noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   }
   function bell(m, t, v, len) {
     const o = ac.createOscillator(), o2 = ac.createOscillator(), g = ac.createGain(), g2 = ac.createGain();
     o.frequency.value = hz(m); o2.frequency.value = hz(m) * 2; g2.gain.value = .22;
-    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .02); g.gain.exponentialRampToValueAtTime(.0005, t + len);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .015); g.gain.exponentialRampToValueAtTime(.0005, t + len);
     o.connect(g); o2.connect(g2).connect(g); g.connect(master);
     o.start(t); o2.start(t); o.stop(t + len + .05); o2.stop(t + len + .05);
   }
+  function hat(t, v) {
+    const src = ac.createBufferSource(), hp = ac.createBiquadFilter(), g = ac.createGain();
+    src.buffer = noise; hp.type = 'highpass'; hp.frequency.value = 7000;
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t + .05);
+    src.connect(hp).connect(g).connect(master); src.start(t); src.stop(t + .06);
+  }
+  function thump(t, v) {   // kalp atışı
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(45, t + .12);
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t + .22);
+    o.connect(g).connect(master); o.start(t); o.stop(t + .25);
+  }
   function sched() {
-    while (next < ac.currentTime + .8) {
-      const bar = step / 8 | 0, beat = step % 8, c = PROG[bar % 4], cycle = (bar / 4 | 0) % 4;
-      if (beat === 0) bell(c[0], next, .1, 3.2);                         // bas
-      if (cycle !== 3 || beat < 4) bell(c[PAT[cycle % 2][beat]], next, beat % 2 ? .045 : .06, 1.8);   // her 4. turda yarım ölçü nefes
-      next += STEP; step++;
+    while (next < ac.currentTime + .6) {
+      const beat = step % 8, bar = step / 8 | 0;
+      let dt = .45;
+      if (mode === 'menu') {
+        const c = MENU[bar % 4], cycle = (bar / 4 | 0) % 4;
+        if (beat === 0) bell(c[0], next, .1, 3.2);
+        if (cycle !== 3 || beat < 4) bell(c[MPAT[cycle % 2][beat]], next, beat % 2 ? .045 : .06, 1.8);
+      } else if (mode === 'game') {
+        const T = tension, alarm = T >= .999, prog = alarm ? ALARM : GAME, c = prog[bar % prog.length];
+        dt = .36 - .12 * T;                                                     // 8'lik: ~83 → ~125 bpm
+        lp.frequency.setTargetAtTime(1600 + 3200 * T, next, .5);
+        if (beat === 0) bell(c[0], next, .09, 2.4);                              // bas
+        if (T > .2 && (T > .5 || beat % 2 === 0)) bell(c[0] + 12, next, .03 + .05 * T, .3);   // bas nabzı
+        bell(c[GPAT[beat]] + (T > .7 ? 12 : 0), next, .035 + .02 * T, .9);       // arpej
+        if (T > .45 && beat % 2) hat(next, .012 + .03 * T);                      // tıkırtı
+        if (T > .8 && beat % 2 === 0) hat(next, .008 + .012 * T);
+        if (alarm && beat % 4 === 0) { thump(next, .22); thump(next + .14, .14); }   // son 10 sn: kalp atışı
+      }                                                                          // 'rest': sessiz
+      next += dt; step++;
     }
   }
   function start() {
@@ -174,14 +206,16 @@ const Music = (() => {
       on = true; next = Math.max(next, ac.currentTime + .1);
       master.gain.cancelScheduledValues(ac.currentTime); master.gain.setValueAtTime(master.gain.value, ac.currentTime);
       master.gain.linearRampToValueAtTime(VOL, ac.currentTime + 2.5);
-      clearInterval(timer); timer = setInterval(sched, 300); sched();
+      clearInterval(timer); timer = setInterval(sched, 250); sched();
     } catch {}
   }
   function stop() {
     if (!on) return; on = false; clearInterval(timer);
     try { master.gain.cancelScheduledValues(ac.currentTime); master.gain.setTargetAtTime(0, ac.currentTime, .3); } catch {}
   }
-  return { start, stop };
+  function setMode(m) { if (m === mode) return; mode = m; step = 0; if (m !== 'game') tension = 0; }
+  function setTension(x) { tension = Math.max(0, Math.min(1, x)); }
+  return { start, stop, setMode, setTension, state: () => ({ on, mode, tension }) };
 })();
 const note = k => 392 * Math.pow(2, PENTA[Math.max(0, Math.min(PENTA.length - 1, k))] / 12);
 function haptic(kind) {
@@ -201,6 +235,7 @@ function show(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
   document.body.classList.toggle('playing', id === 'game');
   if (id === 'game') resume(); else pause();
+  Music.setMode(id === 'game' ? 'game' : 'menu');
   if (id === 'home') refreshHome();
   if (id === 'map') renderMap();
   clearInterval(clockT); if (id === 'home') clockT = setInterval(dailyClock, 1000);
@@ -359,6 +394,7 @@ function tick() {
     if (G.mOk && !mOk) lose('↻ Hamle hedefi aşıldı · ★ söndü');
   }
   G.tOk = tOk; G.mOk = mOk;
+  if (!G.won) Music.setTension(!tOk ? .12 : left <= 10 ? 1 : Math.max(0, (sec / G.lim.t - .35) / .65) * .95);
 }
 function lose(msg) { bump($('gPill')); tone(294, .2, .04); haptic('heavy'); toast(msg); }
 
@@ -508,6 +544,7 @@ function win() {
   kick();
   [0, 2, 4, 5, 7].forEach((k, j) => tone(note(k + 3), .4, .05, 'sine', .12 + j * .09));
   haptic('win');
+  Music.setMode('rest'); setTimeout(() => { if (G?.won) Music.setMode('menu'); }, 1600);
   const tOk = timeOk(G.time / 1000), mOk = movesOk(), st = 1 + tOk + mOk, perfect = tOk && mOk;
   save.played++;
   let extra = '', unlockedNow = null, shard = false;
@@ -732,5 +769,5 @@ function endIntro() {
 if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro; setTimeout(endIntro, 2300); } else intro.classList.add('gone');
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 // test kancası
-window.__ray = { generate, lit, rot, limits, get G() { return G; }, get geo() { return geo; } };
+window.__ray = { generate, lit, rot, limits, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();
