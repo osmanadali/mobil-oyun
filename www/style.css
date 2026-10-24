@@ -242,7 +242,7 @@ body.introing .screen *{animation-play-state:paused!important}
 .sheet{width:100%;border-radius:30px 30px 0 0;padding:14px 20px max(22px,env(safe-area-inset-bottom));background:var(--sheetBg);box-shadow:inset 0 1px 0 var(--stroke),0 -10px 40px rgba(0,0,0,.25);transform:translateY(105%);transition:transform .45s cubic-bezier(.2,.9,.2,1);display:flex;flex-direction:column;gap:12px}
 .sheet:before{content:"";width:40px;height:5px;border-radius:5px;background:var(--stroke);align-self:center;margin-bottom:8px;box-shadow:inset 0 0 0 9px var(--rail)}
 .modal.open .sheet{transform:none}
-.sheet{max-height:96%;overflow-y:auto;overscroll-behavior:contain}
+.sheet{max-height:96%;overflow-y:auto;overscroll-behavior:contain}.sheet>*{flex-shrink:0}
 .sheet.fit,.sheet h2{touch-action:none}.sheet.drag{transition:none}
 @media (max-height:720px){.opt{padding:6px 4px}.sheet{gap:9px}}
 .sheet h2{text-align:center;font-size:28px;font-weight:800;letter-spacing:-.5px}
@@ -273,14 +273,18 @@ body.introing .screen *{animation-play-state:paused!important}
 .opt.sub{padding-top:0;transition:opacity .25s}.opt.sub.off{opacity:.35;pointer-events:none}
 .opt .seg button{padding:7px 10px}
 /* renk temaları */
-.skins{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.skin{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 8px 10px;border:0;border-radius:20px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--stroke);font:inherit;color:var(--fg);transition:transform .18s cubic-bezier(.3,1.6,.5,1),box-shadow .25s}
+.skins{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.vipk{grid-column:1/-1;margin:6px 2px -2px;font-size:12px;font-weight:700;letter-spacing:.5px;color:var(--mut)}
+.skin{position:relative;display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 4px;border:0;border-radius:20px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--stroke);font:inherit;color:var(--fg);transition:transform .18s cubic-bezier(.3,1.6,.5,1),box-shadow .25s}
 .skin:active{transform:scale(.96)}
-.skin svg{width:100%;max-width:130px;height:58px;fill:none;stroke-width:7;stroke-linecap:round;stroke-linejoin:round}
+.skin svg{width:100%;max-width:96px;height:40px;fill:none;stroke-width:7;stroke-linecap:round;stroke-linejoin:round}
 .skin path:nth-child(1){stroke:var(--s1)}.skin path:nth-child(2){stroke:var(--s2)}.skin path:nth-child(3){stroke:var(--s3)}.skin rect{fill:var(--s1);stroke:none}
-.skin b{font-size:15px}.skin small{font-size:12px;color:var(--mut)}
+.skin b{font-size:13px;white-space:nowrap}.skin small{font-size:11px;color:var(--mut);white-space:nowrap}
 .skin.on{box-shadow:inset 0 0 0 2px var(--acc),0 6px 22px -8px var(--accGlow)}.skin.on small{color:var(--acc);font-weight:700}
 .skin.lockd svg{opacity:.32;filter:grayscale(.6)}
+.skin.can{box-shadow:inset 0 0 0 1.5px var(--acc)}.skin.can svg{opacity:.75;filter:none}.skin.can small{color:var(--acc);font-weight:700}
+.skin.big{align-self:center;width:200px;padding:14px;pointer-events:none}.skin.big svg{max-width:170px;height:84px}
+.nexts .bal{font-size:17px}
 /* hatırlatma / reklamsız paket */
 .bell{align-self:center;font-size:46px;line-height:1;filter:drop-shadow(0 0 16px var(--starGlow));animation:flick 1.8s ease-in-out infinite}
 .nexts{display:flex;justify-content:space-between;margin:2px 4px -6px}.nexts small{color:var(--mut)}.nexts b{color:var(--fg)}

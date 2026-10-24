@@ -4,7 +4,7 @@ Tek elle, internetsiz oynanan sade bir bulmaca. Karoya dokun → ray 90° döner
 
 - **Çevrimdışı:** Bölümler cihazda üretilir (sonsuz, her zaman çözülebilir). Service worker ile PWA olarak da çalışır.
 - **Reklam:** Yalnızca internet varken. Her 4 bölümde bir geçiş reklamı (5. bölümden sonra, en az 90 sn arayla) + ipucu bitince isteğe bağlı ödüllü reklam (+2 ipucu).
-- **Tutundurma:** 3 yıldız (hedef hamle), Günün Hattı + gün serisi, her gün 3 ücretsiz ipucu, her 10 bölümde +2 ipucu, kademeli büyüyen ızgara (3×3 → 7×9).
+- **Tutundurma:** 3 yıldız (hedef hamle), Günün Hattı + gün serisi, her gün 3 ücretsiz ipucu, her hat sonunda +2 ipucu; hatlar uzar (12, 16, 20… bölüm), zorluk sonsuza dek artar — bkz. docs/BOLUM_TASARIMI.md.
 - **Göz dostu:** Koyu/açık/otomatik tema, düşük kontrastlı yumuşak palet, animasyon sadece hareket varken çalışır (pil dostu).
 
 ## Çalıştır (tarayıcı)

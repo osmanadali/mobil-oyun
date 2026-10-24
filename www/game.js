@@ -8,7 +8,7 @@ const rot = m => ((m << 1) | (m >> 3)) & 15;          // saat yönü 90°
 const LINES_DARK = ['#ffb35c', '#4fc3a1', '#7ea6ff', '#ff7a8a', '#b394ff', '#5ccfe6'];
 const LINES_LIGHT = ['#f08a24', '#1fa383', '#4a7fe0', '#e8566c', '#8c6ae0', '#1a9fbd'];
 const LINE_NAMES = ['Turuncu', 'Yeşil', 'Mavi', 'Kırmızı', 'Mor', 'Turkuaz'];
-const PER_LINE = 10;                                    // her hat 10 bölüm
+const LINE0 = 12, LINE_STEP = 4;                        // hat uzunluğu doğrusal artar: M1 12 bölüm, her hat +4 (16, 20, 24…)
 const STAR_AVG = 2.2;                                   // yeni hat: önceki bölümlerde ortalama 2,2★
 const INTER_EVERY = 4;                                  // her 4 galibiyette 1 geçiş reklamı
 const DAILY_FREE_HINTS = 3;
@@ -22,12 +22,13 @@ const today = () => ymd(new Date());
 const dayBefore = s => { const [y, m, d] = s.split('-').map(Number); return ymd(new Date(y, m - 1, d - 1)); };
 
 // ---------- kayıt ----------
-const def = { level: 1, stars: {}, hints: DAILY_FREE_HINTS, hintDay: '', streak: 0, lastDaily: '', dailyDone: '', dailyStats: null, runs: {}, crowns: {}, miss: {}, shards: 0, seen: {}, sound: true, music: true, vib: true, theme: 'auto', played: 0, skin: 'metro', dCrowns: 0, newSkin: 0, remind: false, remindAt: 1110, remindAsked: false, noAds: false };
+const def = { level: 1, stars: {}, hints: DAILY_FREE_HINTS, hintDay: '', streak: 0, lastDaily: '', dailyDone: '', dailyStats: null, runs: {}, crowns: {}, miss: {}, shards: 0, seen: {}, sound: true, music: true, vib: true, theme: 'auto', played: 0, skin: 'metro', spent: 0, dCrowns: 0, newSkin: 0, remind: false, remindAt: 1110, remindAsked: false, noAds: false };
 let save;
 try { save = Object.assign({}, def, JSON.parse(localStorage.getItem('ray') || '{}')); } catch { save = { ...def }; }
 if (!save.runs || typeof save.runs !== 'object') save.runs = {};
 if (!save.seen || typeof save.seen !== 'object') save.seen = {};
 if (!save.miss || typeof save.miss !== 'object') save.miss = {};
+if (!save.owned || typeof save.owned !== 'object') save.owned = { metro: 1, ...(save.skin && save.skin !== 'metro' ? { [save.skin]: 1 } : {}) };   // eski kayıtta seçili tema korunur
 if (!Array.isArray(save.dailyLog)) save.dailyLog = save.lastDaily ? [save.lastDaily] : [];
 const persist = () => { try { localStorage.setItem('ray', JSON.stringify(save)); } catch {} };
 // gün değişimi: ücretsiz ipucu, kopan seri
@@ -45,9 +46,18 @@ function dayTick() {
 }
 
 // ---------- hatlar ve yıldız kapıları ----------
-const lineOf = l => Math.floor((l - 1) / PER_LINE);
+const lineLen = c => LINE0 + LINE_STEP * c;
+const lineStart = c => 1 + LINE0 * c + LINE_STEP * c * (c - 1) / 2;   // M1 1 · M2 13 · M3 29 · M4 49 · M5 73 · M6 101 · M10 sonu 300
+const lineOf = l => { let c = 0; while (lineStart(c + 1) <= l) c++; return c; };
+const lineEnd = c => lineStart(c + 1) - 1;
+// zorluk: z(l) = 1 − e^(−l/170). Hiç düşmez; sonsuzda %100 = imkânsız. Ekranda "Zorluk %".
+const zOf = l => 1 - Math.exp(-l / 170);
+const zPct = l => Math.min(99, Math.round(zOf(l) * 100));
+// Günün Hattı da her gün zorlaşır: 1 Ekim 2026'dan beri her gün +0,75 bölüm denk zorluk (herkeste aynı bulmaca)
+const DAILY_EPOCH = new Date(2026, 9, 1);
+const dailyLevel = day => { const [y, m, d] = day.split('-').map(Number); return 40 + .75 * Math.max(0, Math.round((new Date(y, m - 1, d) - DAILY_EPOCH) / 864e5)); };
 const lineName = c => `M${c + 1} · ${(skin().names || LINE_NAMES)[c % 6]} Hat`;
-const need = c => Math.round(c * PER_LINE * STAR_AVG);
+const need = c => Math.round((lineStart(c) - 1) * STAR_AVG);
 const totalStars = () => Object.values(save.stars).reduce((a, b) => a + b, 0);
 const unlocked = c => totalStars() >= need(c);
 
@@ -55,16 +65,26 @@ const unlocked = c => totalStars() >= need(c);
 let pal = {};
 const isLight = () => save.theme === 'light' || (save.theme === 'auto' && matchMedia('(prefers-color-scheme: light)').matches);
 // ---------- hat temaları: kusursuz bitirilen bölümlerin taçlarıyla (👑) açılır ----------
+// Taç (👑) bir para birimidir: tema satın alınınca harcanır. Her tema tek renk ailesidir (6 hattın hepsi aynı ailenin tonları).
 const SKINS = [
   { id: 'metro', name: 'Metro', need: 0 },
-  { id: 'sunset', name: 'Gün Batımı', need: 3, lines: ['#ff9e7a', '#ffcf6b', '#ff6f91', '#c98bff', '#ffb86b', '#ff8fab'], names: ['Mercan', 'Kehribar', 'Gül', 'Lavanta', 'Şeftali', 'Pembe'], acc: ['#ffb36b', '#ff6f91'], glow: ['#ff9e5a', '#c86bff', '#ff5f7e'] },
-  { id: 'ocean', name: 'Okyanus', need: 8, lines: ['#5ce1e6', '#4fa3ff', '#7dd3fc', '#38d9a9', '#a5b4fc', '#2dd4bf'], names: ['Lagün', 'Derin Mavi', 'Gök', 'Yosun', 'Lila', 'Turkuaz'], acc: ['#5ce1e6', '#5b8cff'], glow: ['#3fb6d9', '#3a5bff', '#2dd4bf'] },
-  { id: 'neon', name: 'Neon Gece', need: 15, lines: ['#ff3ddc', '#22e6ff', '#39ff88', '#fff23a', '#ff8a1f', '#b84dff'], names: ['Neon Pembe', 'Elektrik', 'Fosfor', 'Limon', 'Lav', 'Ultraviyole'], acc: ['#ff3ddc', '#22e6ff'], glow: ['#ff3ddc', '#22e6ff', '#7a2bff'] },
-  { id: 'sakura', name: 'Sakura', need: 25, lines: ['#ffb7c5', '#e7a6ff', '#ff8fab', '#ffd6a5', '#9ee6c0', '#f9a8d4'], names: ['Sakura', 'Leylak', 'Gül', 'Şeftali', 'Nane', 'Pembe'], acc: ['#ffb7c5', '#e48bff'], glow: ['#ff9fb8', '#c58bff', '#ffd1a1'] },
-  { id: 'gold', name: 'Altın', need: 40, vip: true, lines: ['#ffd36b', '#f5b942', '#ffe7a3', '#e9a93a', '#fff1b8', '#d9a520'], names: ['Altın', 'Bal', 'Fildişi', 'Kehribar', 'Krem', 'Hardal'], acc: ['#ffd36b', '#e9a23a'], glow: ['#ffcf6b', '#b8862b', '#ffe8a3'] },
+  { id: 'sunset', name: 'Gün Batımı', need: 5, lines: ['#ff9e7a', '#ffb36b', '#ff7f6b', '#ffc48a', '#ff8fa3', '#ffa94d'], names: ['Mercan', 'Kehribar', 'Kızıl', 'Şafak', 'Gül', 'Akşam'], acc: ['#ffb36b', '#ff7f6b'], glow: ['#ff9e5a', '#ff6f91', '#ffb86b'] },
+  { id: 'ocean', name: 'Okyanus', need: 10, lines: ['#5ce1e6', '#4fa3ff', '#7dd3fc', '#38bdf8', '#67e8f9', '#2dd4bf'], names: ['Lagün', 'Derin Mavi', 'Gök', 'Okyanus', 'Buz', 'Turkuaz'], acc: ['#5ce1e6', '#4fa3ff'], glow: ['#3fb6d9', '#3a5bff', '#2dd4bf'] },
+  { id: 'forest', name: 'Orman', need: 15, lines: ['#7bd88f', '#a3e635', '#4ade80', '#86efac', '#5fd3a1', '#bef264'], names: ['Çam', 'Filiz', 'Orman', 'Nane', 'Yosun', 'Fıstık'], acc: ['#7bd88f', '#3fb68b'], glow: ['#4fb477', '#2f7d5b', '#a3e635'] },
+  { id: 'neon', name: 'Neon Gece', need: 25, lines: ['#ff3ddc', '#22e6ff', '#b84dff', '#ff5ea8', '#5b8cff', '#d65cff'], names: ['Neon Pembe', 'Elektrik', 'Ultraviyole', 'Fuşya', 'Lazer', 'Plazma'], acc: ['#ff3ddc', '#22e6ff'], glow: ['#ff3ddc', '#22e6ff', '#7a2bff'] },
+  { id: 'desert', name: 'Çöl', need: 35, lines: ['#f2c38b', '#e8935f', '#e0b26f', '#d98a66', '#f5d6a8', '#cf9a63'], names: ['Kum', 'Kiremit', 'Vaha', 'Kızıl Kaya', 'Bej', 'Hurma'], acc: ['#f2c38b', '#e8935f'], glow: ['#e8935f', '#a8653f', '#f2c38b'] },
+  { id: 'sakura', name: 'Sakura', need: 50, lines: ['#ffb7c5', '#ff8fab', '#f9a8d4', '#ffc2d9', '#f48fb1', '#e7a6ff'], names: ['Sakura', 'Gül', 'Pembe', 'Pudra', 'Fuşya', 'Leylak'], acc: ['#ffb7c5', '#f48fb1'], glow: ['#ff9fb8', '#e48bff', '#ffc2d9'] },
+  { id: 'aurora', name: 'Kuzey Işıkları', need: 70, lines: ['#6ef3c5', '#5ee0ff', '#a6ffcb', '#7aa2ff', '#9d8cff', '#63e6be'], names: ['Aurora', 'Kutup', 'Işık', 'Buzul', 'Ametist', 'Zümrüt'], acc: ['#6ef3c5', '#7aa2ff'], glow: ['#2ee6a6', '#6b5bff', '#5ee0ff'] },
+  { id: 'lava', name: 'Lav', need: 90, lines: ['#ff5a36', '#ff9f1c', '#ff7b54', '#ffb347', '#e63946', '#ff6b6b'], names: ['Lav', 'Magma', 'Kor', 'Ateş', 'Volkan', 'Alev'], acc: ['#ff7b3a', '#e63946'], glow: ['#ff3d00', '#b5179e', '#ff9f1c'] },
+  { id: 'cosmos', name: 'Kozmos', need: 120, lines: ['#9d8cff', '#b5a8ff', '#c084fc', '#818cf8', '#a78bfa', '#e0aaff'], names: ['Galaksi', 'Nebula', 'Pulsar', 'Yörünge', 'Kuyruklu', 'Yıldız Tozu'], acc: ['#9d8cff', '#c084fc'], glow: ['#5b3df5', '#0ea5e9', '#d946ef'] },
+  // 💛 yalnızca Reklamsız paketle (taçla alınmaz)
+  { id: 'gold', name: 'Altın', vip: true, lines: ['#ffd36b', '#f5b942', '#ffe7a3', '#e9a93a', '#fff1b8', '#d9a520'], names: ['Altın', 'Bal', 'Fildişi', 'Kehribar', 'Krem', 'Hardal'], acc: ['#ffd36b', '#e9a23a'], glow: ['#ffcf6b', '#b8862b', '#ffe8a3'] },
+  { id: 'diamond', name: 'Elmas', vip: true, lines: ['#d6f1ff', '#bae6fd', '#c7d2fe', '#e9e4ff', '#a5f3fc', '#ddd6fe'], names: ['Elmas', 'Kristal', 'Prizma', 'İnci', 'Buz', 'Opal'], acc: ['#bae6fd', '#c7d2fe'], glow: ['#7dd3fc', '#a78bfa', '#e0f2fe'] },
+  { id: 'ruby', name: 'Yakut', vip: true, lines: ['#ff4d6d', '#ff758f', '#e0245e', '#ff8fab', '#f43f5e', '#ff5c8a'], names: ['Yakut', 'Garnet', 'Lal', 'Gül', 'Kızıl', 'Mercan'], acc: ['#ff4d6d', '#e0245e'], glow: ['#c9184a', '#ff4d6d', '#7b2cbf'] },
 ];
-const crownCount = () => Object.keys(save.crowns).length + (save.dCrowns || 0);
-const skinOpen = k => crownCount() >= k.need || (k.vip && save.noAds);
+const crownCount = () => Object.keys(save.crowns).length + (save.dCrowns || 0);   // toplam kazanılan
+const crownBal = () => crownCount() - (save.spent || 0);                             // harcanabilir bakiye
+const skinOpen = k => !!save.owned[k.id] || !!(k.vip && save.noAds);
 const skin = () => { const k = SKINS.find(x => x.id === save.skin); return k && skinOpen(k) ? k : SKINS[0]; };
 const shade = (hex, f) => '#' + [16, 8, 0].map(b => Math.round((parseInt(hex.slice(1), 16) >> b & 255) * f).toString(16).padStart(2, '0')).join('');
 const skinCols = k => k.lines ? (isLight() ? k.lines.map(c => shade(c, .78)) : k.lines) : isLight() ? LINES_LIGHT : LINES_DARK;
@@ -92,26 +112,27 @@ function applyTheme() {
   if (G) { setLineColor(); draw(); }
 }
 matchMedia('(prefers-color-scheme: light)').addEventListener?.('change', applyTheme);
+const lum = hex => { const n = parseInt(hex.slice(1), 16); return ((n >> 16) * .299 + (n >> 8 & 255) * .587 + (n & 255) * .114) / 255; };   // algılanan parlaklık 0–1
 function rgba(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${n >> 8 & 255},${n & 255},${a})`; }
 
 // ---------- rastgele ----------
 function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 const hashStr = s => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
 
-// Yeni kural gelen hatlar (0 tabanlı). M4: sabit karolar · M6: eşli karolar.
+// Yeni kural gelen hatlar (0 tabanlı). M3 (29+): sabit karolar · M4 (49+): eşli karolar.
 const RULES = {
-  3: { name: 'Sabit karo', tag: 'Yeni: sabit karo', demo: '<div class="rdemo" aria-hidden="true"><i class="rt"><b></b></i><i class="rtap"></i></div>',
+  2: { name: 'Sabit karo', tag: 'Yeni: sabit karo', demo: '<div class="rdemo" aria-hidden="true"><i class="rt"><b></b></i><i class="rtap"></i></div>',
     text: 'Koyu, cıvatalı karolar <b>dönmez</b>. Zaten doğru yöndeler: etrafındaki hattı <b>onlara göre</b> bağla. Hamle saymazlar.' },
-  5: { name: 'Eşli karo', tag: 'Yeni: eşli karo', demo: '<div class="rdemo2" aria-hidden="true"><i class="pt"><b></b><em>1</em></i><i class="pt"><b></b><em>1</em></i><i class="rtap2"></i></div>',
+  3: { name: 'Eşli karo', tag: 'Yeni: eşli karo', demo: '<div class="rdemo2" aria-hidden="true"><i class="pt"><b></b><em>1</em></i><i class="pt"><b></b><em>1</em></i><i class="rtap2"></i></div>',
     text: 'Aynı renk ve numaralı iki karo <b>birlikte döner</b>: birine dokununca öteki de çevrilir. İkisinin de oturacağı yönü bul. Tek dokunuş = <b>1 hamle</b>.' },
 };
-const PINS_FROM = 3, PAIRS_FROM = 5;                    // M4+: sabit karolar · M6+: eşli karolar
+const PINS_FROM = 2, PAIRS_FROM = 3;                    // M3+: sabit karolar · M4+: eşli karolar
 const PAIR_COLS = ['#ff7ab6', '#4cc9ff', '#ffc94d', '#8fe388', '#c39bff'];
 const TIERS = [[3, 3], [4, 4], [4, 5], [5, 6], [5, 7], [6, 8], [7, 9]], CAPS = [3, 8, 15, 25, 40, 60, 1e9];
 function sizeFor(l) {
   let k = CAPS.findIndex(m => l <= m);
   // testere dişi: yeni kural gelen hattın ilk 3 bölümü bir küçük ızgara → kural rahat öğrenilir
-  if (RULES[lineOf(l)] && (l - 1) % PER_LINE < 3) k = Math.max(0, k - 1);
+  if (RULES[lineOf(l)] && l - lineStart(lineOf(l)) < 3) k = Math.max(0, k - 1);
   return TIERS[k];
 }
 
@@ -164,6 +185,72 @@ function generate(cols, rows, seed, pins = 0, pairs = 0) {
 }
 function popc(m) { return (m & 1) + (m >> 1 & 1) + (m >> 2 & 1) + (m >> 3 & 1); }
 
+// ---------- zorluk puanı: oyuncunun kesin çıkarımlarını taklit eder ----------
+// Kenar + komşu tutarlılığıyla aday eleme. puan = çıkarım zinciri (tur) + 3 × tahmin dalı + 10 × ilk turda elenemeyen oran.
+// ~7 kolay · ~8 orta (60. bölüm düzeyi) · 12+ zor · 15+ usta
+function difficulty(P) {
+  const { cols, rows, cur, pinned, link } = P, n = cur.length, unit = new Array(n).fill(-1), units = [];
+  for (let i = 0; i < n; i++) if (unit[i] < 0) { const j = link[i]; unit[i] = units.length; if (j >= 0) unit[j] = units.length; units.push(j >= 0 ? [i, j] : [i]); }
+  const rn = (m, k) => { while (k--) m = rot(m); return m; };
+  const C0 = units.map(U => { if (U.some(i => pinned[i])) return [0]; const seen = new Set(), out = []; for (let r = 0; r < 4; r++) { const k = U.map(i => rn(cur[i], r)).join(); if (!seen.has(k)) { seen.add(k); out.push(r); } } return out; });
+  // bir tur: her karo, komşusunun önceki turdaki kesin rayına göre aday eler. Dönüş: değişen karo sayısı, çelişkide -1
+  const step = (C, prev) => {
+    const hit = new Set();
+    for (let i = 0; i < n; i++) {
+      const x = i % cols, y = i / cols | 0, u = unit[i];
+      for (const [b, dx, dy, o] of DIRS) {
+        const nx = x + dx, ny = y + dy, out = nx < 0 || ny < 0 || nx >= cols || ny >= rows, j = ny * cols + nx;
+        const can = v => out ? !v : prev[unit[j]].some(r => !!(rn(cur[j], r) & o) === v);
+        const k = C[u].filter(r => can(!!(rn(cur[i], r) & b)));
+        if (!k.length) return -1;
+        if (k.length < C[u].length) { C[u] = k; hit.add(u); }
+      }
+    }
+    let c = 0; hit.forEach(u => { c += units[u].length; }); return c;
+  };
+  const copy = C => C.map(a => a.slice()), fix = C => { for (;;) { const c = step(C, copy(C)); if (c < 0) return false; if (!c) return true; } };
+  let waves = 0, first = 0; const C = copy(C0);
+  for (;;) { const c = step(C, copy(C)); if (c <= 0) break; if (!waves) first = c; waves++; }
+  let nodes = 0;
+  const dfs = D => {
+    if (++nodes > 200) return true;
+    let b = -1; D.forEach((a, k) => { if (a.length > 1 && (b < 0 || a.length < D[b].length)) b = k; });
+    if (b < 0) return lit({ ...P, cur: cur.map((v, i) => rn(v, D[unit[i]][0])) }).solved;
+    for (const r of D[b]) { const E = copy(D); E[b] = [r]; if (fix(E) && dfs(E)) return true; }
+    return false;
+  };
+  dfs(C);
+  return Math.round((waves + 3 * (nodes - 1) + 10 * (1 - first / n)) * 10) / 10;
+}
+// ---------- zorluk merdiveni ----------
+// Her bölüm K aday arasından zorluk puanı hedefe (5 + 11·z) en yakın olan; herkeste aynı. z arttıkça:
+// sabit karo azalır (%16 → 0), taranan aday artar (6 → 32), ileri seviyede hamle toleransı daralır (limits).
+// Yeni kuralın ilk bölümü 2 puan kolay. Sonraki bölüm, kazanma ekranı açıkken önceden hazırlanır.
+const pzCache = new Map();
+function pick(cols, rows, seed, pins, pairs, z, T) {
+  const K = 6 + Math.round(26 * z); let best = null;
+  for (let k = 0; k < K; k++) { const P = generate(cols, rows, seed + k * 104729, pins, pairs); P.diff = difficulty(P); if (!best || Math.abs(P.diff - T) < Math.abs(best.diff - T)) best = P; }
+  best.z = z; return best;
+}
+function cached(key, make) {
+  if (!pzCache.has(key)) { pzCache.set(key, make()); if (pzCache.size > 4) pzCache.delete(pzCache.keys().next().value); }
+  const P = pzCache.get(key); return { ...P, cur: P.cur.slice(), fixed: P.fixed.slice() };   // oyun cur/fixed'i değiştirir
+}
+function puzzleFor(l) {
+  return cached('l' + l, () => {
+    const [c, r] = sizeFor(l), ln = lineOf(l), n = c * r, intro = l === lineStart(ln) && RULES[ln], z = zOf(l);
+    const pins = ln < PINS_FROM ? 0 : Math.round(n * (intro && ln === PINS_FROM ? .22 : .16 * (1 - z)));
+    const pairs = ln < PAIRS_FROM ? 0 : Math.max(1, Math.round(n * (intro && ln === PAIRS_FROM ? .03 : .07)));
+    return pick(c, r, l * 7919 + 13, pins, pairs, z, (intro ? 3 : 5) + 11 * z);
+  });
+}
+function dailyFor(day) {
+  return cached('d' + day, () => {
+    const L = dailyLevel(day), [c, r] = sizeFor(L), z = zOf(L);
+    return pick(Math.max(6, c), Math.max(8, r), hashStr('ray' + day), 0, 0, z, 5 + 11 * z);
+  });
+}
+
 // ---------- bağlantı ----------
 function lit(P) {
   const { cols, rows, cur, hub } = P, d = new Array(cur.length).fill(-1), q = [hub];
@@ -186,7 +273,9 @@ function lit(P) {
 // hamle toleransı zorlukla büyür: küçük ızgara +%100 → 7×9 +%130 (en az +5). Oyuncu karoları denerken gidip gelir; hedef bunu kaldırmalı.
 const moveTol = n => 1 + .3 * Math.min(1, Math.max(0, (n - 9) / 54));
 function limits(P) {
-  return { m: P.par + Math.max(5, Math.round(P.par * moveTol(P.cur.length))), t: Math.max(20, Math.round(P.taps * 1.6 + P.cur.length * .7)) };
+  // zor bölüm (61+) → düşünme payı: puanın 8'i aşan her birimi +3 sn
+  const tight = 1 - .5 * Math.max(0, ((P.z || 0) - .3) / .7);   // z %30'dan sonra tolerans yavaşça yarıya iner (imkânsıza doğru)
+  return { m: P.par + Math.max(Math.round(5 * tight), Math.round(P.par * moveTol(P.cur.length) * tight)), t: Math.max(20, Math.round(P.taps * 1.6 + P.cur.length * .7 + Math.max(0, (P.diff || 0) - 8) * 3)) };
 }
 const timeOk = sec => sec <= G.lim.t;
 const movesOk = () => G.moves <= G.lim.m;
@@ -376,7 +465,7 @@ function refreshHome() {
   const tot = totalStars();
   $('sStars').textContent = tot;
   $('sStreak').textContent = save.streak; $('streakChip').classList.toggle('new', rescueOk());
-  $('sCrowns').textContent = crownCount(); $('crownChip').classList.toggle('new', !!save.newSkin);
+  $('sCrowns').textContent = crownBal(); $('crownChip').classList.toggle('new', !!save.newSkin);
   $('sHints').textContent = save.hints;
   $('hLevel').textContent = save.level;
   const done = save.dailyDone === today();
@@ -388,7 +477,8 @@ function refreshHome() {
   $('lineName').style.color = lineCols()[c % 6];
   $('gateTxt').textContent = tot >= hi ? `★ ${tot} · M${nx + 1} açık` : `★ ${tot} / ${hi} → M${nx + 1}`;
   $('progBar').style.width = Math.min(100, Math.max(4, (tot - lo) / Math.max(1, hi - lo) * 100)) + '%';
-  const [w, h] = sizeFor(save.level); $('sSize').textContent = `${w}×${h} ızgara`;
+  const [w, h] = sizeFor(save.level); $('sSize').textContent = `${w}×${h} · ⚡ zorluk %${zPct(save.level)}`;
+  $('dailyK').textContent = `GÜNÜN HATTI · ⚡%${zPct(dailyLevel(today()))}`;
   $('bPlay').classList.toggle('locked', !unlocked(c));
 }
 
@@ -399,11 +489,11 @@ function renderMap() {
   $('pSub').textContent = 'Yıldız topla → yeni hat aç';
   let html = '';
   for (let c = 0; c <= Math.max(1, last); c++) {
-    const open = unlocked(c), first = c * PER_LINE + 1;
-    const got = Array.from({ length: PER_LINE }, (_, k) => save.stars[first + k] || 0).reduce((a, b) => a + b, 0);
+    const open = unlocked(c), first = lineStart(c), len = lineLen(c);
+    const got = Array.from({ length: len }, (_, k) => save.stars[first + k] || 0).reduce((a, b) => a + b, 0);
     html += `<div class="line ${open ? '' : 'lockd'}" style="--lc:${col[c % 6]}">
-      <div class="lh"><i class="dot"></i><b>${lineName(c)}${RULES[c] ? `<em>${RULES[c].tag}</em>` : ''}</b><small>${open ? `★ ${got} / ${PER_LINE * 3}` : `🔒 ★ ${tot} / ${need(c)}`}</small></div>
-      <div class="lvs">${Array.from({ length: PER_LINE }, (_, k) => {
+      <div class="lh"><i class="dot"></i><b>${lineName(c)}${RULES[c] ? `<em>${RULES[c].tag}</em>` : ''}</b><small>${open ? `★ ${got} / ${len * 3} · ⚡%${zPct(first)}` : `🔒 ★ ${tot} / ${need(c)}`}</small></div>
+      <div class="lvs">${Array.from({ length: len }, (_, k) => {
         const l = first + k, st = save.stars[l] || 0, can = open && l <= save.level;
         return `<button class="lv ${can ? '' : 'off'} ${l === save.level && can ? 'cur' : ''}" data-l="${l}" ${can ? '' : 'disabled'}><b>${l}</b><i>${can ? (save.crowns[l] ? '👑' : starTxt(st)) : ''}</i></button>`;
       }).join('')}</div></div>`;
@@ -435,28 +525,28 @@ function resume() { if (G && !G.won && !G.runAt && !document.hidden) { G.runAt =
 function setLineColor() {
   const k = G.daily ? 2 : lineOf(G.lvl) % 6;
   G.color = lineCols()[k];
-  $('game').style.setProperty('--line', G.color);
+  const st = $('game').style;
+  st.setProperty('--line', G.color);
+  // oyun ekranında vurgu = hattın rengi: tahta, düğmeler, yıldızlar, rozetler aynı renk
+  st.setProperty('--acc', G.color); st.setProperty('--acc2', shade(G.color, .8)); st.setProperty('--onacc', lum(G.color) > .5 ? '#16182a' : '#ffffff');
+  st.setProperty('--accGlow', rgba(G.color, .55)); st.setProperty('--starGlow', rgba(G.color, .6));
 }
 const runKey = () => G.daily ? 'daily' : 'level';
 function saveRun() {
   if (!G || G.won) return;
-  save.runs[runKey()] = { lvl: G.lvl, day: G.day, cur: G.cur, fixed: G.fixed, moves: G.moves, last: G.lastTile, ms: elapsed(), lk: 1 };
+  save.runs[runKey()] = { lvl: G.lvl, day: G.day, cur: G.cur, fixed: G.fixed, moves: G.moves, last: G.lastTile, ms: elapsed(), pv: 3 };
   persist();
 }
 function start(mode, lvl = save.level) {
   clearTimeout(howT); clearTimeout(winTimer); closeModal(); closePanel();
   const daily = mode === 'daily', day = today();
   if (!daily && !unlocked(lineOf(lvl))) { lockedSheet(lineOf(lvl)); return; }
-  const [c, r] = daily ? [6, 8] : sizeFor(lvl);
-  const seed = daily ? hashStr('ray' + day) : lvl * 7919 + 13, ln = lineOf(lvl);
-  const intro = lvl === ln * PER_LINE + 1;   // yeni kuralın ilk bölümü: kolay
-  const pins = daily || ln < PINS_FROM ? 0 : Math.round(c * r * (intro && ln === PINS_FROM ? .22 : .14));
-  const pairs = daily || ln < PAIRS_FROM ? 0 : Math.max(1, Math.round(c * r * (intro && ln === PAIRS_FROM ? .03 : .07)));
-  G = { ...generate(c, r, seed, pins, pairs), daily, lvl: daily ? 0 : lvl, day: daily ? day : null, practice: daily && save.dailyDone === day, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0 };
+  const ln = lineOf(lvl), pairs = !daily && ln >= PAIRS_FROM;
+  G = { ...(daily ? dailyFor(day) : puzzleFor(lvl)), daily, lvl: daily ? 0 : lvl, day: daily ? day : null, practice: daily && save.dailyDone === day, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0 };
   G.lim = limits(G);
   // yarım kalan oyunu sürdür
   const run = save.runs[daily ? 'daily' : 'level'];
-  if (run && (daily ? run.day === day : run.lvl === lvl) && run.cur?.length === G.cur.length && (!pairs || run.lk)) {   // eşli karo öncesi yarım kayıt geçersiz
+  if (run && (daily ? run.day === day : run.lvl === lvl) && run.cur?.length === G.cur.length && run.pv === 3) {   // eski üreticiyle yarım kalan kayıt geçersiz
     G.cur = run.cur.slice(); G.fixed = run.fixed.slice(); G.moves = run.moves; G.lastTile = run.last ?? -1; G.ms = run.ms || 0;
   }
   setLineColor();
@@ -464,7 +554,7 @@ function start(mode, lvl = save.level) {
   litAt = G.L.d.map(v => v >= 0 ? -1e9 : 0);
   G.tOk = timeOk(G.ms / 1000); G.mOk = movesOk();
   $('gTitle').textContent = daily ? (G.practice ? 'Günün Hattı · pratik' : 'Günün Hattı') : 'Bölüm ' + lvl;
-  $('gMoves').textContent = daily ? new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl));
+  $('gMoves').textContent = `${daily ? new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl))} · ⚡%${zPct(daily ? dailyLevel(day) : lvl)}`;
   $('gHints').textContent = save.hints;
   show('game'); resize(); hud(); tick();
   if (!daily && RULES[ln] && !save.seen[ln]) ruleCard(ln);
@@ -683,7 +773,7 @@ function win() {
   Music.setMode('rest'); setTimeout(() => { if (G?.won) Music.setMode('menu'); }, 1600);
   const tOk = timeOk(G.time / 1000), mOk = movesOk(), st = 1 + tOk + mOk, perfect = tOk && mOk;
   save.played++;
-  const cr0 = crownCount();
+  const cr0 = crownBal();
   let extra = '', unlockedNow = null, shard = false, dbl = 0;   // dbl: videoyla ikiye katlanabilecek ipucu
   if (G.daily) {
     if (save.dailyDone !== G.day) {
@@ -701,7 +791,7 @@ function win() {
     if (perfect) delete save.miss[G.lvl]; else if (st >= old) save.miss[G.lvl] = [tOk ? 0 : Math.ceil(G.time / 1000 - G.lim.t), mOk ? 0 : G.moves - G.lim.m];
     if (st > old && old) extra = `Yeni rekor: ${starTxt(st)}`;
     save.level = Math.max(save.level, G.lvl + 1);
-    if (G.lvl % 10 === 0 && firstClear) { save.hints += 2; dbl = 2; extra = '🎁 Hat tamam · +2 ipucu'; }
+    if (G.lvl === lineEnd(lineOf(G.lvl)) && firstClear) { save.hints += 2; dbl = 2; extra = '🎁 Hat tamam · +2 ipucu'; }
     if (perfect && !save.crowns[G.lvl]) { save.crowns[G.lvl] = 1; shard = true; }   // parça bölüm başına bir kez
     for (let c = 1; c <= lineOf(save.level) + 1; c++) if (need(c) > before && unlocked(c)) unlockedNow = c;
   }
@@ -710,16 +800,17 @@ function win() {
     save.shards = (save.shards || 0) + 1;
     if (save.shards >= 3) { save.shards -= 3; save.hints++; shardMsg = '💎 3 parça birleşti · +1 ipucu'; } else shardMsg = `💎 İpucu parçası ${save.shards}/3`;
   }
-  const ns = SKINS.find(k => k.need > cr0 && k.need <= crownCount() && !(k.vip && save.noAds));
-  if (ns) { save.newSkin = 1; extra = [extra, `🎨 Yeni tema: ${ns.name}`].filter(Boolean).join(' · '); }
+  const ns = SKINS.find(k => !k.vip && !skinOpen(k) && k.need > cr0 && k.need <= crownBal());   // bakiye bir temaya yetti
+  if (ns) { save.newSkin = 1; extra = [extra, `🎨 ${ns.name} alınabilir (👑 ${ns.need})`].filter(Boolean).join(' · '); }
   persist();
   const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { st, tOk, mOk, perfect, extra: [shardMsg, extra].filter(Boolean).join(' · '), unlockedNow, ns, dbl };
   winTimer = setTimeout(() => { if (G === g && active('game')) winSheet(g, info); }, wait);
+  if (!g.daily) setTimeout(() => puzzleFor(g.lvl + 1), wait + 900);   // sonraki bölüm hazır olsun (geçişte takılma olmasın)
 }
 // Sonuç paneli tahtanın altına yerleşir; tahta küçülüp üstte görünür kalır.
 function winSheet(g, { st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl }) {
   const L = g.lim, nx = g.lvl + 1, nxLocked = !g.daily && !unlocked(lineOf(nx));
-  const badge = unlockedNow ? `<span class="badge">YENİ HAT AÇILDI · M${unlockedNow + 1}</span>` : ns ? '<span class="badge">YENİ TEMA 🎨</span>' : perfect ? '<span class="badge">KUSURSUZ 👑</span>' : '';
+  const badge = unlockedNow ? `<span class="badge">YENİ HAT AÇILDI · M${unlockedNow + 1}</span>` : ns ? '<span class="badge">TEMA ALINABİLİR 🎨</span>' : perfect ? '<span class="badge">KUSURSUZ 👑</span>' : '';
   const tip = perfect ? '' : `<p class="tip">Kusursuz için: ${[tOk ? '' : `⏱ ≤ ${fmtT(L.t * 1000)}`, mOk ? '' : `↻ ≤ ${L.m} hamle`].filter(Boolean).join(' ve ')}</p>`;
   const primary = g.daily
     ? '<button id="mShare" class="btn primary"><span>Paylaş</span><small>Arkadaşına meydan oku</small></button><button id="mHome" class="btn glassbtn">Ana sayfa</button>'
@@ -827,7 +918,7 @@ function remindAsk() {
 function shopSheet() {
   const owned = save.noAds, price = Shop.price();
   modal(`<div class="bell">💛</div><h2>Reklamsız paket</h2>
-    <div class="perks"><div><i>🚫</i><span>Bölüm aralarındaki reklamlar kalkar</span></div><div><i>💡</i><span><b>+20 ipucu</b> hediye</span></div><div><i>🎨</i><span>Özel <b>Altın</b> tema</span></div><div><i>🚇</i><span>Tek seferlik · ömür boyu</span></div></div>
+    <div class="perks"><div><i>🚫</i><span>Bölüm aralarındaki reklamlar kalkar</span></div><div><i>💡</i><span><b>+20 ipucu</b> hediye</span></div><div><i>🎨</i><span><b>3 özel tema:</b> Altın, Elmas, Yakut</span></div><div><i>🚇</i><span>Tek seferlik · ömür boyu</span></div></div>
     ${owned ? '<span class="badge">AKTİF ✓ · Teşekkürler!</span>' : `<button id="mBuy" class="btn primary"><span>${price ? `Satın al · ${price}` : 'Satın al'}</span><small>${Shop.ready() ? 'Google Play ile güvenli ödeme' : 'Mağazaya bağlanılıyor…'}</small></button>`}
     <p class="tip">İpucu videoları isteğe bağlı kalır.</p>
     ${owned ? '' : '<button id="mRestore" class="link">Satın alımı geri yükle</button>'}
@@ -842,9 +933,9 @@ function shopSheet() {
 }
 function grantNoAds() {
   if (save.noAds) return;
-  save.noAds = true; save.hints += 20; persist();
+  save.noAds = true; SKINS.forEach(k => { if (k.vip) save.owned[k.id] = 1; }); save.hints += 20; persist();
   $('gHints').textContent = save.hints; refreshHome();
-  haptic('win'); toast('Reklamsız paket aktif 💛 +20 ipucu · Altın tema açıldı');
+  haptic('win'); toast('Reklamsız paket aktif 💛 +20 ipucu · 3 özel tema açıldı');
   if (modalOpen() && $('mBuy')) shopSheet();
 }
 
@@ -975,7 +1066,7 @@ function settings() {
     ${Remind.avail() ? `<div class="opt">Günlük hatırlatma <button id="oR" class="tog ${save.remind ? 'on' : ''}" aria-label="Günlük hatırlatma"></button></div>
 ` : ''}
     <div class="opt">Görünüm <div class="seg" id="oT">${seg}</div></div>
-    <button class="opt row" id="oSkin"><span>Renk temaları</span><small>${skin().name} · 👑 ${crownCount()} ›</small></button>
+    <button class="opt row" id="oSkin"><span>Renk temaları</span><small>${skin().name} · 👑 ${crownBal()} ›</small></button>
     <button class="opt row" id="oShop"><span>Reklamsız paket</span><small>${save.noAds ? 'Aktif ✓' : (Shop.price() || '💛') + ' ›'}</small></button>
     <button id="mClose" class="btn glassbtn">Tamam</button>`, {
     oR: async () => {
@@ -991,37 +1082,55 @@ function settings() {
   $('oT').onclick = e => { const t = e.target.dataset.t; if (!t) return; save.theme = t; persist(); applyTheme(); refreshHome(); $('oT').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.t === t)); };
 }
 // ---------- renk temaları ----------
+const skinSvg = '<svg viewBox="0 0 120 60"><path d="M10 46H40L60 28H110"/><path d="M60 6V28L80 46H110"/><path d="M10 14H36L60 28"/><rect x="52" y="20" width="16" height="16" rx="5"/></svg>';
+const skinVars = k => { const c = skinCols(k); return `--s1:${c[0]};--s2:${c[1]};--s3:${c[2]}`; };
 function skinSheet() {
-  const n = crownCount(), cur = skin().id;
+  const bal = crownBal(), cur = skin().id;
   if (save.newSkin) { save.newSkin = 0; persist(); refreshHome(); }
   const card = k => {
-    const open = skinOpen(k), c = skinCols(k);
-    return `<button class="skin ${open ? '' : 'lockd'} ${k.id === cur ? 'on' : ''}" data-k="${k.id}" style="--s1:${c[0]};--s2:${c[1]};--s3:${c[2]}">
-      <svg viewBox="0 0 120 60"><path d="M10 46H40L60 28H110"/><path d="M60 6V28L80 46H110"/><path d="M10 14H36L60 28"/><rect x="52" y="20" width="16" height="16" rx="5"/></svg>
-      <b>${k.name}</b><small>${k.id === cur ? 'Seçili ✓' : open ? 'Seç' : `🔒 ${k.need} 👑${k.vip ? ' · ya da 💛' : ''}`}</small></button>`;
+    const own = skinOpen(k), can = !own && bal >= k.need;
+    return `<button class="skin ${own ? '' : 'lockd'} ${can ? 'can' : ''} ${k.id === cur ? 'on' : ''}" data-k="${k.id}" style="${skinVars(k)}">${skinSvg}
+      <b>${k.name}</b><small>${k.id === cur ? 'Seçili ✓' : own ? 'Seç' : k.vip ? '💛 Reklamsız' : `👑 ${k.need}`}</small></button>`;
   };
-  const nx = SKINS.find(k => !skinOpen(k)), prev = nx ? [...SKINS].reverse().find(k => k.need < nx.need)?.need || 0 : 0;
-  modal(`<h2>Renk temaları</h2><p>Bölümleri <b>kusursuz</b> bitir (⏱ ve ↻ hedefi), 👑 topla, yeni renkler aç. Sende <b>${n} 👑</b></p>
-    <div class="skins" id="skins">${SKINS.map(card).join('')}</div>
-    ${nx ? `<div class="nexts"><small>Sonraki: <b>${nx.name}</b></small><small>👑 ${n} / ${nx.need}</small></div><div class="pb"><i style="width:${Math.max(4, Math.min(100, (n - prev) / (nx.need - prev) * 100))}%"></i></div>
+  const nx = SKINS.filter(k => !k.vip && !skinOpen(k)).sort((a, b) => a.need - b.need)[0];   // en ucuz alınmamış tema
+  modal(`<h2>Renk temaları</h2><p>Bölümleri <b>kusursuz</b> bitir (⏱ ve ↻ hedefi), 👑 kazan, temayı <b>satın al</b>. Harcanan 👑 geri gelmez, seçimini iyi yap!</p>
+    <div class="nexts"><small>Bakiye</small><b class="bal">👑 ${bal}</b></div>
+    <div class="skins" id="skins">${SKINS.filter(k => !k.vip).map(card).join('')}
+      <small class="vipk">💛 Reklamsız pakete özel</small>${SKINS.filter(k => k.vip).map(card).join('')}</div>
+    ${nx ? `<div class="nexts"><small>Sonraki: <b>${nx.name}</b></small><small>👑 ${Math.min(bal, nx.need)} / ${nx.need}</small></div><div class="pb"><i style="width:${Math.max(4, Math.min(100, bal / nx.need * 100))}%"></i></div>
     <button id="mHunt" class="btn primary"><span>Taç topla 👑</span><small>${huntList().length} bölüm kusursuz bitmeyi bekliyor</small></button>` : ''}
     <button id="mClose" class="btn glassbtn">Tamam</button>`, { mClose: closeModal, mHunt: () => crownHunt(nx) });
   $('skins').onclick = e => {
     const b = e.target.closest('.skin'); if (!b) return;
     const k = SKINS.find(x => x.id === b.dataset.k);
-    if (!skinOpen(k)) { haptic('light'); crownHunt(k); return; }
+    if (!skinOpen(k)) { haptic('light'); k.vip ? shopSheet() : bal >= k.need ? buySheet(k) : crownHunt(k); return; }
     if (k.id === cur) return;
     save.skin = k.id; persist(); applyTheme(); refreshHome(); haptic('heavy'); tone(note(7), .25, .045); tone(note(9), .3, .035, 'sine', .07);
     skinSheet();
   };
 }
+// satın alma onayı: kalan bakiye açıkça gösterilir
+function buySheet(k) {
+  const bal = crownBal(), left = bal - k.need, nx = SKINS.filter(x => !x.vip && !skinOpen(x) && x !== k).sort((a, b) => a.need - b.need)[0];
+  modal(`<div class="skin big" style="${skinVars(k)}">${skinSvg}</div><h2>${k.name}</h2>
+    <p><b>👑 ${k.need}</b> harcanacak. Sende 👑 ${bal} → kalan <b>👑 ${left}</b>.${nx && left < nx.need ? `<br>Sonra ${nx.name} için ${nx.need - left} 👑 daha toplaman gerekecek.` : ''}</p>
+    <button id="mBuy" class="btn primary"><span>Satın al · 👑 ${k.need}</span><small>Temayı hemen kullan</small></button>
+    <button id="mBack" class="btn glassbtn">Vazgeç</button>`, {
+    mBuy: () => {
+      if (crownBal() < k.need || skinOpen(k)) return skinSheet();
+      save.spent = (save.spent || 0) + k.need; save.owned[k.id] = 1; save.skin = k.id; persist();
+      applyTheme(); refreshHome(); haptic('win'); [0, 4, 7, 12].forEach((q, j) => tone(note(q + 3), .35, .045, 'sine', j * .08));
+      toast(`🎨 ${k.name} senin!`); skinSheet();
+    },
+    mBack: skinSheet });
+}
 // Taç avı: kusursuz bitmemiş bölümler, yıldızlarıyla. En çok yıldızlı (kusursuza en yakın) önce; dokun → oyna.
 const missTxt = l => { const [t, m] = save.miss[l] || [0, 0]; return [t ? `⏱ ${t} sn geç` : '', m ? `↻ ${m} hamle fazla` : ''].filter(Boolean).join(' · '); };
 const huntList = () => { const L = []; for (let l = 1; l < save.level; l++) if (!save.crowns[l] && unlocked(lineOf(l))) L.push(l); return L.sort((a, b) => (save.stars[b] || 0) - (save.stars[a] || 0) || a - b); };
 function crownHunt(k) {
-  const n = crownCount(), L = huntList();
+  const n = crownBal(), L = huntList();
   modal(`<h2>Taç topla 👑</h2>
-    <p>${k ? `<b>${k.name}</b> için <b>${k.need - n} 👑</b> daha gerekli${k.vip ? ' (ya da Reklamsız paket)' : ''}. ` : ''}Aşağıdaki bölümleri <b>⏱ süre</b> ve <b>↻ hamle</b> hedefiyle bitir: her biri 1 👑.</p>
+    <p>${k ? `<b>${k.name}</b> için <b>${Math.max(0, k.need - n)} 👑</b> daha gerekli. ` : ''}Aşağıdaki bölümleri <b>⏱ süre</b> ve <b>↻ hamle</b> hedefiyle bitir: her biri 1 👑.</p>
     ${L.length ? `<div class="hunt" id="hunt">${L.map(l => `<button class="hrow" data-l="${l}"><b>${l}</b><span>${starTxt(save.stars[l] || 0)}</span><small>${missTxt(l)}</small></button>`).join('')}</div>
     <p class="tip">★★☆ olanlar kusursuza en yakın · Günün Hattı'nı kusursuz bitirmek de 1 👑</p>`
     : `<p class="tip">Oynadığın her bölüm kusursuz! 🎉 Yeni bölümler ve Günün Hattı yeni 👑 getirir.</p><button id="mPlay" class="btn primary"><span>Oyna</span><small>Bölüm ${save.level}</small></button>`}
@@ -1211,5 +1320,5 @@ if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { generate, lit, rot, limits, sizeFor, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
+window.__ray = { generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, zPct, dailyLevel, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();

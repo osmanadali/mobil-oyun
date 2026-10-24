@@ -225,7 +225,7 @@ async function inViewport(page, sel) {
         await shot(page, `fail-level-${L}`);
         break;
       }
-      if (L === 10) {
+      if (L === 12) {   // M1 sonu
         const h0 = (await getSave(page)).hints, has = await page.$('#mDbl');
         if (has) { await page.click('#mDbl'); await page.waitForTimeout(900); }
         const h1 = (await getSave(page)).hints, ok = await page.$('.dblok');
@@ -346,8 +346,8 @@ async function inViewport(page, sel) {
     check('resume', 'Yarım bölüm uygulama kapanınca bile kaldığı yerden sürer', resumed.lvl === 12 && resumed.moves === 3 && resumed.ms >= t1 - 5, JSON.stringify(resumed), 'medium');
     await r.ctx.close();
 
-    // yıldız kapısı: M2 için ★22 gerekli
-    const g = await open(browser, URL, { save: { played: 10, level: 11, stars: { ...starsUpTo(11, 2), 5: 3 } } });   // ★21 / 22
+    // yıldız kapısı: M2 için ★26 gerekli (12 bölüm × 2,2)
+    const g = await open(browser, URL, { save: { played: 12, level: 13, stars: { ...starsUpTo(13, 2), 5: 3 } } });   // ★25 / 26
     await g.page.click('#bPlay'); await g.page.waitForTimeout(500);
     const lockedOk = !!(await g.page.$('#mMap')) && !(await g.page.evaluate(() => document.getElementById('game').classList.contains('active')));
     await shot(g.page, 'gate-locked');
@@ -361,9 +361,9 @@ async function inViewport(page, sel) {
     const sum = Object.values(after.stars).reduce((a, b) => a + b, 0);
     await shot(g.page, 'gate-unlock');
     const badge = await g.page.textContent('.badge').catch(() => '');
-    check('gate.lock', 'Yetersiz yıldızda yeni hat kilitli (★21/22)', lockedOk, '', 'high');
-    check('map', 'Hatlar ekranı: açık bölümler seçilebilir, kilitli hat görünür', map.open === 10 && map.locked >= 1 && replay === 3, JSON.stringify({ ...map, replay }), 'high');
-    check('gate.replay', 'Eski bölümü 3★ yapınca (★22) yeni hat açılır', sum === 22 && /YENİ HAT/.test(badge || ''), `★${sum} · rozet: ${badge || '-'}`, 'medium');
+    check('gate.lock', 'Yetersiz yıldızda yeni hat kilitli (★25/26)', lockedOk, '', 'high');
+    check('map', 'Hatlar ekranı: M1 12 bölüm seçilebilir, kilitli hat görünür', map.open === 12 && map.locked >= 1 && replay === 3, JSON.stringify({ ...map, replay }), 'high');
+    check('gate.replay', 'Eski bölümü 3★ yapınca (★26) yeni hat açılır', sum === 26 && /YENİ HAT/.test(badge || ''), `★${sum} · rozet: ${badge || '-'}`, 'medium');
     check('e2.errors', 'Bu senaryolarda konsol hatası yok', !errors.length && !r.errors.length && !g.errors.length, [...errors, ...r.errors, ...g.errors].join(' | '));
     await g.ctx.close();
   }
@@ -396,9 +396,9 @@ async function inViewport(page, sel) {
     await ictx.close();
   }
 
-  // ---------- E4. Yeni kural: sabit karolar (M4, bölüm 31+) ----------
+  // ---------- E4. Yeni kural: sabit karolar (M3, bölüm 29+) ----------
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: { played: 30, level: 31, stars: starsUpTo(31) } });
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 28, level: 29, stars: starsUpTo(29) } });
     await page.click('#bPlay'); await page.waitForTimeout(700);
     const card = await page.evaluate(() => ({ open: document.getElementById('modal').classList.contains('open'), txt: document.querySelector('.sheet h2')?.textContent, timerPaused: !window.__ray.G.runAt }));
     await shot(page, 'rule-card');
@@ -410,18 +410,18 @@ async function inViewport(page, sel) {
     await shot(page, 'pinned');
     await solve(page, 10); const won = await waitModal(page);
     const sv = await getSave(page);
-    const sizes = await page.evaluate(() => [30, 31, 33, 34, 40, 41].map(l => window.__ray.sizeFor(l).join('x')).join(' '));
-    check('rule.card', 'M4 ilk girişte "YENİ KURAL · Sabit karo" kartı, kart açıkken süre durur', card.open && /Sabit karo/.test(card.txt || '') && card.timerPaused && sv.seen?.[3] === 1, JSON.stringify(card));
+    const sizes = await page.evaluate(() => [28, 29, 31, 32, 40, 41].map(l => window.__ray.sizeFor(l).join('x')).join(' '));
+    check('rule.card', 'M3 ilk girişte "YENİ KURAL · Sabit karo" kartı, kart açıkken süre durur', card.open && /Sabit karo/.test(card.txt || '') && card.timerPaused && sv.seen?.[2] === 1, JSON.stringify(card));
     check('rule.pins', 'Sabit karolar dönmez, hamle saymaz; bölüm çözülür', g.pins >= 5 && before.m === after.m && before.v === after.v && won, JSON.stringify({ ...g, before, after, won }), 'high');
-    check('rule.saw', 'Testere dişi: M4 ilk 3 bölüm bir küçük ızgara (5×6), sonra 5×7', sizes === '5x7 5x6 5x6 5x7 5x7 6x8', sizes, 'medium');
+    check('rule.saw', 'Testere dişi: M3 ilk 3 bölüm bir küçük ızgara (5×6), sonra 5×7', sizes === '5x7 5x6 5x6 5x7 5x7 6x8', sizes, 'medium');
     check('e4.errors', 'Sabit karo senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
     await ctx.close();
   }
 
   // ---------- E5. Renk temaları (👑), günlük hatırlatma, reklamsız paket ----------
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: { played: 12, level: 13, stars: { ...starsUpTo(10), 10: 2, 11: 1, 12: 2 }, crowns: starsUpTo(10, 1), miss: { 10: [4, 0], 11: [3, 2], 12: [0, 5] } }, init: 'window.__withNotif = true;\n' + SHOP_MOCK });
-    // temalar: 9 👑 → Gün Batımı (3) ve Okyanus (8) açık, Neon (15) kilitli
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 12, level: 13, stars: { ...starsUpTo(10), 10: 2, 11: 1, 12: 2 }, crowns: starsUpTo(10, 1), dCrowns: 3, miss: { 10: [4, 0], 11: [3, 2], 12: [0, 5] } }, init: 'window.__withNotif = true;\n' + SHOP_MOCK });
+    // temalar: 👑 para birimi. Bakiye 12 (9 bölüm + 3 günlük) → Okyanus (10) alınır, kalan 2 Gün Batımı'na (5) yetmez
     await page.click('#crownChip'); await page.waitForTimeout(500);
     const acc0 = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--acc').trim());
     await page.click('.skin[data-k=neon]'); await page.waitForTimeout(350);
@@ -432,13 +432,19 @@ async function inViewport(page, sel) {
     await page.click('#mBack'); await page.waitForTimeout(350);
     const neonLocked = await page.evaluate(() => !document.querySelector('.skin[data-k=neon]').classList.contains('on'));
     await page.click('.skin[data-k=ocean]'); await page.waitForTimeout(400);
+    const buy = await page.evaluate(() => document.querySelector('.sheet p')?.textContent || '');
+    await shot(page, 'skin-buy');
+    await page.click('#mBuy'); await page.waitForTimeout(450);
     await shot(page, 'skins');
-    const sk = await page.evaluate(() => ({ acc: getComputedStyle(document.documentElement).getPropertyValue('--acc').trim(), sel: JSON.parse(localStorage.getItem('ray')).skin, open: document.querySelectorAll('.skin:not(.lockd)').length }));
-    await page.click('#mClose'); await page.waitForTimeout(400);
+    const sk = await page.evaluate(() => { const v = JSON.parse(localStorage.getItem('ray')); return { acc: getComputedStyle(document.documentElement).getPropertyValue('--acc').trim(), sel: v.skin, spent: v.spent, chip: document.getElementById('sCrowns').textContent, own: document.querySelectorAll('.skin:not(.lockd)').length }; });
+    await page.click('.skin[data-k=sunset]'); await page.waitForTimeout(400);   // kalan 2 👑 → 5'lik temaya yetmez → Taç topla
+    const poor = await page.evaluate(() => /Taç topla/.test(document.querySelector('.sheet h2')?.textContent || '') && /3 👑/.test(document.querySelector('.sheet p')?.textContent || '') && JSON.parse(localStorage.getItem('ray')).skin === 'ocean');
+    await page.click('#mBack'); await page.waitForTimeout(350); await page.click('#mClose'); await page.waitForTimeout(400);
     await page.click('#bPlay'); await page.waitForTimeout(600);
-    const lineCol = await page.evaluate(() => window.__ray.G.color);
+    const lineCol = await page.evaluate(() => ({ c: window.__ray.G.color, acc: getComputedStyle(document.getElementById('game')).getPropertyValue('--acc').trim() }));
     await shot(page, 'skin-game');
-    check('skin.pick', 'Renk temaları: 👑 ile açılan tema seçiliyor, kilitli tema seçilmiyor, oyuna yansıyor', sk.sel === 'ocean' && sk.acc !== acc0 && neonLocked && sk.open === 3 && lineCol === '#4fa3ff', JSON.stringify({ ...sk, acc0, lineCol }), 'medium');
+    check('skin.buy', 'Temalar 👑 ile satın alınır: onayda kalan bakiye, harcanan düşer, kalan diğerine yetmez', /kalan 👑 2/.test(buy) && sk.sel === 'ocean' && sk.spent === 10 && sk.chip === '2' && sk.own === 2 && poor && neonLocked, JSON.stringify({ ...sk, poor, buy: buy.slice(0, 60) }), 'medium');
+    check('skin.pick', 'Seçilen tema oyuna yansır; oyunda düğme/yıldız rengi oynanan hattın rengi', sk.acc !== acc0 && lineCol.c === '#4fa3ff' && lineCol.acc === lineCol.c, JSON.stringify({ acc0, acc: sk.acc, ...lineCol }), 'medium');
     // hatırlatma: oyundan ana sayfaya dönünce bir kez sorulur → izin → bildirimler planlanır
     await page.click('#bBack'); await page.waitForTimeout(1300);
     const asked = await page.evaluate(() => /Hatırlatayım/.test(document.querySelector('.sheet h2')?.textContent || '') && document.getElementById('modal').classList.contains('open'));
@@ -452,7 +458,9 @@ async function inViewport(page, sel) {
     await page.click('#crownChip'); await page.waitForTimeout(500); const c2 = await dragClose();
     check('sheet.swipe', 'Ayarlar ve Renk temaları aşağı kaydırınca kapanıyor', c1 && c2, `ayarlar ${c1} · temalar ${c2}`, 'medium');
     const h0 = (await getSave(page)).hints;
-    await page.click('#bSettings'); await page.waitForTimeout(400); await page.click('#oShop'); await page.waitForTimeout(400);
+    // 💛 özel tema taçla alınmaz: Altın'a dokununca Reklamsız paket açılır
+    await page.click('#crownChip'); await page.waitForTimeout(450); await page.click('.skin[data-k=gold]'); await page.waitForTimeout(400);
+    const vipShop = await page.evaluate(() => /Reklamsız paket/.test(document.querySelector('.sheet h2')?.textContent || ''));
     const price = await page.textContent('#mBuy').catch(() => '');
     await shot(page, 'shop');
     await page.click('#mBuy'); await page.waitForTimeout(600);
@@ -461,7 +469,8 @@ async function inViewport(page, sel) {
     await page.click('#bPlay'); await page.waitForTimeout(500);
     for (let k = 0; k < 4; k++) { await solve(page, 10); await waitModal(page); await page.click('#mNext'); await page.waitForTimeout(500); }   // 4. galibiyet normalde geçiş reklamı
     const ads = await page.evaluate(() => window.__log.ads.filter(a => a === 'interstitial').length);
-    check('shop', 'Reklamsız paket: fiyat görünür, satın alınca +20 ipucu + Altın tema, geçiş reklamı çıkmaz', /59,99/.test(price) && sv.noAds && sv.hints === h0 + 20 && ads === 0, JSON.stringify({ price: price.trim(), noAds: sv.noAds, hints: [h0, sv.hints], ads }), 'medium');
+    const vip = ['gold', 'diamond', 'ruby'].every(k => sv.owned?.[k]);
+    check('shop', 'Reklamsız paket: özel temaya dokununca açılır, fiyat görünür; satın alınca +20 ipucu + 3 özel tema, geçiş reklamı çıkmaz', vipShop && /59,99/.test(price) && sv.noAds && sv.hints === h0 + 20 && vip && ads === 0, JSON.stringify({ vipShop, price: price.trim(), noAds: sv.noAds, hints: [h0, sv.hints], vip, ads }), 'medium');
     check('e5.errors', 'Tema / hatırlatma / mağaza senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
     await ctx.close();
   }
@@ -484,9 +493,9 @@ async function inViewport(page, sel) {
     await ctx.close();
   }
 
-  // ---------- E7. Yeni kural: eşli karolar (M6, bölüm 51+) ----------
+  // ---------- E7. Yeni kural: eşli karolar (M4, bölüm 49+) + zorluk merdiveni ----------
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: { played: 50, level: 51, stars: starsUpTo(51), seen: { 3: 1 }, remindAsked: true } });
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 48, level: 49, stars: starsUpTo(49), seen: { 2: 1 }, remindAsked: true } });
     // çözülebilirlik: eşli + sabit karolu 600 bölüm, eşleri birlikte çevirerek çözülmeli
     const gen = await page.evaluate(() => {
       const { generate, lit, rot } = window.__ray; let bad = 0, pairs = 0, pre = 0;
@@ -501,6 +510,17 @@ async function inViewport(page, sel) {
       }
       return { bad, pairs, pre };
     });
+    // zorluk merdiveni: hat uzunluğu doğrusal (12, 16, 20…), her hattın ortalama zorluğu bir öncekinden yüksek; Günün Hattı da her gün zorlaşır
+    const cv = await page.evaluate(() => {
+      const R = window.__ray, lines = [], lens = [];
+      for (let c = 0; c < 9; c++) { const a = R.lineStart(c), z = R.lineStart(c + 1) - 1; let d = 0; for (let l = a; l <= z; l++) d += R.puzzleFor(l).diff; lines.push(Math.round(d / (z - a + 1) * 10) / 10); lens.push(z - a + 1); }
+      const t0 = performance.now(); for (let l = 901; l <= 910; l++) R.puzzleFor(l); const ms = Math.round((performance.now() - t0) / 10 * 10) / 10;
+      const daily = ['2026-10-24', '2027-01-24', '2027-06-24', '2028-06-24'].map(d => R.zPct(R.dailyLevel(d)));
+      return { lines, lens, ms, daily, far: R.zPct(5000) };
+    });
+    metrics.difficulty = cv;
+    check('difficulty.ladder', 'Zorluk merdiveni: hat uzunluğu doğrusal artıyor, her hat bir öncekinden zor, sonsuzda %99', cv.lens.every((v, k) => v === 12 + 4 * k) && cv.lines.every((v, k) => !k || v > cv.lines[k - 1]) && cv.far === 99 && cv.ms < 60, `${cv.lines.join(' → ')} · ${cv.ms} ms/bölüm`, 'medium');
+    check('difficulty.daily', 'Günün Hattı her gün zorlaşıyor', cv.daily.every((v, k) => !k || v > cv.daily[k - 1]), cv.daily.map(v => '%' + v).join(' → '), 'medium');
     check('pairs.solvable', 'Eşli karolu 600 bölümün hepsi çözülebilir, eşler simetrik, sabit karoyla çakışmaz', gen.bad === 0 && gen.pairs > 1000 && gen.pre === 0, JSON.stringify(gen));
     await page.click('#bPlay'); await page.waitForTimeout(700);
     const card = await page.evaluate(() => ({ open: document.getElementById('modal').classList.contains('open'), txt: document.querySelector('.sheet h2')?.textContent, demo: !!document.querySelector('.rdemo2') }));
@@ -512,7 +532,7 @@ async function inViewport(page, sel) {
     const s0 = await st(); await tapTile(page, g.a); await page.waitForTimeout(150); const s1 = await st(); await tapTile(page, g.b); await page.waitForTimeout(150); const s2 = await st();
     await shot(page, 'pairs');
     const rot = (m, k) => { while (k--) m = ((m << 1) | (m >> 3)) & 15; return m; };
-    check('rule.pairs.card', 'M6 ilk girişte "YENİ KURAL · Eşli karo" kartı (animasyonlu)', card.open && /Eşli karo/.test(card.txt || '') && card.demo, JSON.stringify(card), 'medium');
+    check('rule.pairs.card', 'M4 ilk girişte "YENİ KURAL · Eşli karo" kartı (animasyonlu)', card.open && /Eşli karo/.test(card.txt || '') && card.demo, JSON.stringify(card), 'medium');
     check('rule.pairs', 'Eşli karo: birine dokununca ikisi döner; eşine art arda dokunuş aynı hamle', g.pairs === 1 && s1.a === rot(s0.a, 1) && s1.b === rot(s0.b, 1) && s1.m === s0.m + 1 && s2.m === s1.m && s2.a === rot(s0.a, 2), JSON.stringify({ ...g, s0, s1, s2 }));
     // ipucu: yalnızca eş yanlışken ipucu → ikisi birden oturur, bölüm biter
     if (await page.evaluate(([a, b]) => { const G = window.__ray.G; return G.cur[a] === G.sol[a] && G.cur[b] === G.sol[b]; }, [g.a, g.b])) { await tapTile(page, g.a); await page.waitForTimeout(150); }
@@ -520,8 +540,8 @@ async function inViewport(page, sel) {
     await page.click('#bHint'); const won = await waitModal(page);
     const hf = await page.evaluate(([a, b]) => { const G = window.__ray.G; return G.fixed[a] && G.fixed[b] && G.cur[a] === G.sol[a] && G.cur[b] === G.sol[b]; }, [g.a, g.b]);
     check('rule.pairs.hint', 'İpucu eşli karoyu seçince ikisini birden oturtur', hf && won, `${hf} · ${won}`, 'medium');
-    const sizes = await page.evaluate(() => [51, 53, 54, 60, 61].map(l => window.__ray.sizeFor(l).join('x')).join(' '));
-    check('rule.pairs.win', 'Eşli karolu bölüm çözülüp kazanılıyor · testere dişi (51–53: 5×7)', won && sizes === '5x7 5x7 6x8 6x8 7x9', `${won} · ${sizes}`, 'medium');
+    const sizes = await page.evaluate(() => [49, 51, 52, 60, 61].map(l => window.__ray.sizeFor(l).join('x')).join(' '));
+    check('rule.pairs.win', 'Eşli karolu bölüm çözülüp kazanılıyor · testere dişi (49–51: 5×7)', won && sizes === '5x7 5x7 6x8 6x8 7x9', `${won} · ${sizes}`, 'medium');
     check('e7.errors', 'Eşli karo senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
     await ctx.close();
   }
