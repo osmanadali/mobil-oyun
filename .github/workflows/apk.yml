@@ -1,8 +1,8 @@
 # Test APK (AdMob test reklamları). Sabit indirme linki:
 # https://github.com/osmanadali/mobil-oyun/releases/download/test/ray-test.apk
 name: Android APK (test)
+# Yalnızca elle: Actions → "Android APK (test)" → Run workflow (ya da: gh workflow run apk.yml)
 on:
-  push: { branches: [main], paths: ['www/**', 'assets/**', 'tools/android/**', 'package.json', 'capacitor.config.json', '.github/workflows/apk.yml'] }
   workflow_dispatch:
 permissions: { contents: write }
 concurrency: { group: apk, cancel-in-progress: true }

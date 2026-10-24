@@ -772,7 +772,7 @@ function remindAsk() {
 function shopSheet() {
   const owned = save.noAds, price = Shop.price();
   modal(`<div class="bell">💛</div><h2>Reklamsız paket</h2>
-    <div class="perks"><div><i>🚫</i><span>Bölüm aralarındaki reklamlar kalkar</span></div><div><i>💡</i><span><b>+10 ipucu</b> hediye</span></div><div><i>🎨</i><span>Özel <b>Altın</b> tema</span></div><div><i>🚇</i><span>Tek seferlik · ömür boyu</span></div></div>
+    <div class="perks"><div><i>🚫</i><span>Bölüm aralarındaki reklamlar kalkar</span></div><div><i>💡</i><span><b>+20 ipucu</b> hediye</span></div><div><i>🎨</i><span>Özel <b>Altın</b> tema</span></div><div><i>🚇</i><span>Tek seferlik · ömür boyu</span></div></div>
     ${owned ? '<span class="badge">AKTİF ✓ · Teşekkürler!</span>' : `<button id="mBuy" class="btn primary"><span>${price ? `Satın al · ${price}` : 'Satın al'}</span><small>${Shop.ready() ? 'Google Play ile güvenli ödeme' : 'Mağazaya bağlanılıyor…'}</small></button>`}
     <p class="tip">İpucu videoları isteğe bağlı kalır.</p>
     ${owned ? '' : '<button id="mRestore" class="link">Satın alımı geri yükle</button>'}
@@ -787,9 +787,9 @@ function shopSheet() {
 }
 function grantNoAds() {
   if (save.noAds) return;
-  save.noAds = true; save.hints += 10; persist();
+  save.noAds = true; save.hints += 20; persist();
   $('gHints').textContent = save.hints; refreshHome();
-  haptic('win'); toast('Reklamsız paket aktif 💛 +10 ipucu · Altın tema açıldı');
+  haptic('win'); toast('Reklamsız paket aktif 💛 +20 ipucu · Altın tema açıldı');
   if (modalOpen() && $('mBuy')) shopSheet();
 }
 

@@ -440,7 +440,7 @@ async function inViewport(page, sel) {
     if (asked) { await page.click('#mYes'); await page.waitForTimeout(500); }
     const nt = await page.evaluate(() => ({ n: window.__log.notif?.length || 0, titles: (window.__log.notif || []).map(x => x.title), on: JSON.parse(localStorage.getItem('ray')).remind }));
     check('remind', 'Günlük hatırlatma: ana sayfada bir kez sorulur, izinle 3–4 bildirim planlanır', asked && nt.on && nt.n >= 3, JSON.stringify(nt), 'medium');
-    // reklamsız paket: ayarlar → satın al → +10 ipucu, Altın tema, geçiş reklamı yok
+    // reklamsız paket: ayarlar → satın al → +20 ipucu, Altın tema, geçiş reklamı yok
     const dragClose = async () => { const b = await page.locator('.sheet h2').boundingBox(); await page.mouse.move(b.x + b.width / 2, b.y + 10); await page.mouse.down(); await page.mouse.move(b.x + b.width / 2, b.y + 250, { steps: 8 }); await page.mouse.up(); await page.waitForTimeout(600); return !(await page.evaluate(() => document.getElementById('modal').classList.contains('open'))); };
     await page.click('#bSettings'); await page.waitForTimeout(500); const c1 = await dragClose();
     await page.click('#crownChip'); await page.waitForTimeout(500); const c2 = await dragClose();
@@ -455,7 +455,7 @@ async function inViewport(page, sel) {
     await page.click('#bPlay'); await page.waitForTimeout(500);
     for (let k = 0; k < 4; k++) { await solve(page, 10); await waitModal(page); await page.click('#mNext'); await page.waitForTimeout(500); }   // 4. galibiyet normalde geçiş reklamı
     const ads = await page.evaluate(() => window.__log.ads.filter(a => a === 'interstitial').length);
-    check('shop', 'Reklamsız paket: fiyat görünür, satın alınca +10 ipucu + Altın tema, geçiş reklamı çıkmaz', /59,99/.test(price) && sv.noAds && sv.hints === h0 + 10 && ads === 0, JSON.stringify({ price: price.trim(), noAds: sv.noAds, hints: [h0, sv.hints], ads }), 'medium');
+    check('shop', 'Reklamsız paket: fiyat görünür, satın alınca +20 ipucu + Altın tema, geçiş reklamı çıkmaz', /59,99/.test(price) && sv.noAds && sv.hints === h0 + 20 && ads === 0, JSON.stringify({ price: price.trim(), noAds: sv.noAds, hints: [h0, sv.hints], ads }), 'medium');
     check('e5.errors', 'Tema / hatırlatma / mağaza senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
     await ctx.close();
   }
