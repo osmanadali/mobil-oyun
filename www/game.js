@@ -115,9 +115,10 @@ function lit(P) {
 
 // ---------- yıldızlar: her yıldız bir hedef ----------
 // ★ bitir · ★ ⏱ süre hedefi · ★ ↻ hamle hedefi (aynı karoya art arda dokunuş = 1 hamle). İkisi birden → KUSURSUZ 👑
-const MOVE_TOL = .25;                                   // hamle toleransı: hedef + %25 (en az +2)
+// hamle toleransı zorlukla büyür: küçük ızgara +%40 → 7×9 +%60 (en az +3). Büyük ızgarada keşif için daha çok gidip gelmek gerekir.
+const moveTol = n => .4 + .2 * Math.min(1, Math.max(0, (n - 9) / 54));
 function limits(P) {
-  return { m: P.par + Math.max(2, Math.round(P.par * MOVE_TOL)), t: Math.max(20, Math.round(P.taps * 1.6 + P.cur.length * .7)) };
+  return { m: P.par + Math.max(3, Math.round(P.par * moveTol(P.cur.length))), t: Math.max(20, Math.round(P.taps * 1.6 + P.cur.length * .7)) };
 }
 const timeOk = sec => sec <= G.lim.t;
 const movesOk = () => G.moves <= G.lim.m;
