@@ -318,7 +318,7 @@ function start(mode, lvl = save.level) {
   if (!daily && !unlocked(lineOf(lvl))) { lockedSheet(lineOf(lvl)); return; }
   const [c, r] = daily ? [6, 8] : sizeFor(lvl);
   const seed = daily ? hashStr('ray' + day) : lvl * 7919 + 13;
-  G = { ...generate(c, r, seed), daily, lvl: daily ? 0 : lvl, day: daily ? day : null, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0 };
+  G = { ...generate(c, r, seed), daily, lvl: daily ? 0 : lvl, day: daily ? day : null, practice: daily && save.dailyDone === day, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0 };
   G.lim = limits(G);
   // yarım kalan oyunu sürdür
   const run = save.runs[daily ? 'daily' : 'level'];
@@ -329,7 +329,7 @@ function start(mode, lvl = save.level) {
   G.L = lit(G); anim.clear(); press.clear(); ripples = []; parts = []; winT = 0;
   litAt = G.L.d.map(v => v >= 0 ? -1e9 : 0);
   G.tOk = timeOk(G.ms / 1000); G.mOk = movesOk();
-  $('gTitle').textContent = daily ? 'Günün Hattı' : 'Bölüm ' + lvl;
+  $('gTitle').textContent = daily ? (G.practice ? 'Günün Hattı · pratik' : 'Günün Hattı') : 'Bölüm ' + lvl;
   $('gMoves').textContent = daily ? new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl));
   $('gHints').textContent = save.hints;
   show('game'); resize(); hud(); tick();
@@ -546,13 +546,14 @@ function winSheet(g, { st, tOk, mOk, perfect, extra, unlockedNow }) {
     ? '<button id="mShare" class="btn primary"><span>Paylaş</span><small>Arkadaşına meydan oku</small></button><button id="mHome" class="btn glassbtn">Ana sayfa</button>'
     : `${nxLocked ? `<button id="mMap" class="btn primary"><span>Yeni hat kilitli</span><small>★ ${totalStars()} / ${need(lineOf(nx))} · yıldız topla</small></button>` : `<button id="mNext" class="btn primary"><span>Sonraki</span><small>Bölüm ${nx}</small></button>`}
        <div class="row2"><button id="mRetry" class="btn glassbtn">Tekrar</button><button id="mShare" class="btn glassbtn">Paylaş</button><button id="mHome" class="btn glassbtn">Ana sayfa</button></div>`;
-  $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml([true, tOk, mOk])}<div class="wp-t"><h2>${g.daily ? 'Günün hattı tamam!' : 'Hat açıldı!'}</h2>${badge}</div></div>
+  $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml([true, tOk, mOk])}<div class="wp-t"><h2>${g.practice ? 'Pratik tamam!' : g.daily ? 'Günün hattı tamam!' : 'Hat açıldı!'}</h2>${badge}</div></div>
       <button id="wTog" class="wp-tog" aria-label="Hattı gör"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg><span>Hattı gör</span></button></div>
     <div class="wp-more"><div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(L.t * 1000)}</small></b><span>⏱ süre ${tOk ? '★' : '✗'}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${L.m}</small></b><span>↻ hamle ${mOk ? '★' : '✗'}</span></div></div>${tip}${extra ? `<p class="tip">${extra}</p>` : ''}</div>
     ${primary}`;
   $('game').classList.add('won');
   bind({ wTog: toggleMini, mNext: next, mMap: () => show('map'), mRetry: () => start('level', g.lvl), mHome: () => show('home'),
-    mShare: () => share({ daily: g.daily, lvl: g.lvl, day: g.day, moves: g.moves, time: g.time, st, perfect }) });
+    // pratikte paylaşılan, günün resmî (ilk) sonucudur
+    mShare: () => share(g.practice && save.dailyStats ? { ...save.dailyStats, daily: true } : { daily: g.daily, lvl: g.lvl, day: g.day, moves: g.moves, time: g.time, st, perfect }) });
 }
 function toggleMini() {
   const mini = $('game').classList.toggle('mini');
@@ -569,7 +570,7 @@ function dailyResult() {
   modal(`${starsHtml(d.st)}<h2>Günün hattı tamam</h2>
     <div class="statrow"><div><b>${d.moves}</b><span>hamle</span></div><div><b>${fmtT(d.time)}</b><span>süre</span></div><div><b>${save.streak}</b><span>gün seri</span></div></div>
     <p id="mClock"></p>
-    <button id="mShare" class="btn primary"><span>Paylaş</span><small>Arkadaşına meydan oku</small></button><button id="mReplay" class="btn glassbtn">Tekrar oyna (puansız)</button>`,
+    <button id="mShare" class="btn primary"><span>Paylaş</span><small>Arkadaşına meydan oku</small></button><button id="mReplay" class="btn glassbtn">Tekrar oyna · pratik</button><p class="tip">Pratikte sonucun ve serin değişmez</p>`,
     { mShare: () => share({ ...d, daily: true }), mReplay: () => start('daily') });
   dailyClock();
 }
