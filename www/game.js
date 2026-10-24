@@ -22,7 +22,7 @@ const today = () => ymd(new Date());
 const dayBefore = s => { const [y, m, d] = s.split('-').map(Number); return ymd(new Date(y, m - 1, d - 1)); };
 
 // ---------- kayıt ----------
-const def = { level: 1, stars: {}, hints: DAILY_FREE_HINTS, hintDay: '', streak: 0, lastDaily: '', dailyDone: '', dailyStats: null, runs: {}, sound: true, music: true, vib: true, theme: 'auto', played: 0 };
+const def = { level: 1, stars: {}, hints: DAILY_FREE_HINTS, hintDay: '', streak: 0, lastDaily: '', dailyDone: '', dailyStats: null, runs: {}, crowns: {}, shards: 0, sound: true, music: true, vib: true, theme: 'auto', played: 0 };
 let save;
 try { save = Object.assign({}, def, JSON.parse(localStorage.getItem('ray') || '{}')); } catch { save = { ...def }; }
 if (!save.runs || typeof save.runs !== 'object') save.runs = {};
@@ -89,9 +89,10 @@ function generate(cols, rows, seed) {
   const cur = sol.map(m => { let r = R() * 4 | 0, v = m; while (r--) v = rot(v); return v; });
   // çözülmüş hâlde gelmesin
   if (cur.every((v, i) => v === sol[i])) cur[hub === 0 ? 1 : 0] = rot(cur[hub === 0 ? 1 : 0]);
-  let par = 0;
-  cur.forEach((v, i) => { let r = 0, t = v; while (t !== sol[i] && r < 4) { t = rot(t); r++; } par += r; });
-  return { cols, rows, sol, cur, hub, par, fixed: new Array(n).fill(false) };
+  // par: döndürülmesi gereken karo sayısı · taps: gereken en az dokunuş (süre hedefi için)
+  let par = 0, taps = 0;
+  cur.forEach((v, i) => { let r = 0, t = v; while (t !== sol[i] && r < 4) { t = rot(t); r++; } taps += r; if (r) par++; });
+  return { cols, rows, sol, cur, hub, par, taps, fixed: new Array(n).fill(false) };
 }
 function popc(m) { return (m & 1) + (m >> 1 & 1) + (m >> 2 & 1) + (m >> 3 & 1); }
 
@@ -112,14 +113,14 @@ function lit(P) {
   return { d, n: d.filter(v => v >= 0).length, solved: loose === 0 && d.every(v => v >= 0) };
 }
 
-// ---------- yıldız sınırları: hamle ve süre (hangisi düşükse) ----------
+// ---------- yıldızlar: her yıldız bir hedef ----------
+// ★ bitir · ★ ⏱ süre hedefi · ★ ↻ hamle hedefi (aynı karoya art arda dokunuş = 1 hamle). İkisi birden → KUSURSUZ 👑
+const MOVE_TOL = .25;                                   // hamle toleransı: hedef + %25 (en az +2)
 function limits(P) {
-  const t3 = Math.max(15, Math.round(P.par * 1.5 + P.cur.length * .6));
-  return { m3: P.par + Math.ceil(P.par * .15), m2: Math.ceil(P.par * 1.6), t3, t2: t3 * 2 };
+  return { m: P.par + Math.max(2, Math.round(P.par * MOVE_TOL)), t: Math.max(20, Math.round(P.taps * 1.6 + P.cur.length * .7)) };
 }
-const moveStars = () => G.moves <= G.lim.m3 ? 3 : G.moves <= G.lim.m2 ? 2 : 1;
-const timeStars = sec => sec <= G.lim.t3 ? 3 : sec <= G.lim.t2 ? 2 : 1;
-const starsNow = () => Math.min(moveStars(), timeStars(elapsed() / 1000));
+const timeOk = sec => sec <= G.lim.t;
+const movesOk = () => G.moves <= G.lim.m;
 
 // ---------- ses / dokunsal ----------
 let ac;
@@ -219,7 +220,8 @@ $('modal').onclick = e => { if (e.target.id === 'modal' && !mLocked) closeModal(
 const bump = el => { el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); };
 const fmtT = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return `${s / 60 | 0}:${String(s % 60).padStart(2, '0')}`; };
 const STAR = '<svg viewBox="0 0 24 24"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z"/></svg>';
-const starsHtml = st => `<div class="stars">${[0, 1, 2].map(k => STAR.replace('<svg', `<svg class="${k < st ? 'on' : ''}" style="animation-delay:${.1 + k * .14}s"`)).join('')}</div>`;
+// st: yıldız sayısı ya da [bitir, süre, hamle] dizisi (hangi hedefin söndüğü görünsün)
+const starsHtml = st => { const on = Array.isArray(st) ? st : [0, 1, 2].map(k => k < st); return `<div class="stars">${on.map((o, k) => STAR.replace('<svg', `<svg class="${o ? 'on' : ''}" style="animation-delay:${.1 + k * .14}s"`)).join('')}</div>`; };
 const starTxt = st => '★'.repeat(st) + '☆'.repeat(3 - st);
 
 // her düğmede dokunma dalgası
@@ -277,7 +279,7 @@ function renderMap() {
       <div class="lh"><i class="dot"></i><b>${lineName(c)}</b><small>${open ? `★ ${got} / ${PER_LINE * 3}` : `🔒 ★ ${tot} / ${need(c)}`}</small></div>
       <div class="lvs">${Array.from({ length: PER_LINE }, (_, k) => {
         const l = first + k, st = save.stars[l] || 0, can = open && l <= save.level;
-        return `<button class="lv ${can ? '' : 'off'} ${l === save.level && can ? 'cur' : ''}" data-l="${l}" ${can ? '' : 'disabled'}><b>${l}</b><i>${can ? starTxt(st) : ''}</i></button>`;
+        return `<button class="lv ${can ? '' : 'off'} ${l === save.level && can ? 'cur' : ''}" data-l="${l}" ${can ? '' : 'disabled'}><b>${l}</b><i>${can ? (save.crowns[l] ? '👑' : starTxt(st)) : ''}</i></button>`;
       }).join('')}</div></div>`;
   }
   $('mapList').innerHTML = html;
@@ -312,7 +314,7 @@ function setLineColor() {
 const runKey = () => G.daily ? 'daily' : 'level';
 function saveRun() {
   if (!G || G.won) return;
-  save.runs[runKey()] = { lvl: G.lvl, day: G.day, cur: G.cur, fixed: G.fixed, moves: G.moves, ms: elapsed() };
+  save.runs[runKey()] = { lvl: G.lvl, day: G.day, cur: G.cur, fixed: G.fixed, moves: G.moves, last: G.lastTile, ms: elapsed() };
   persist();
 }
 function start(mode, lvl = save.level) {
@@ -321,17 +323,17 @@ function start(mode, lvl = save.level) {
   if (!daily && !unlocked(lineOf(lvl))) { lockedSheet(lineOf(lvl)); return; }
   const [c, r] = daily ? [6, 8] : sizeFor(lvl);
   const seed = daily ? hashStr('ray' + day) : lvl * 7919 + 13;
-  G = { ...generate(c, r, seed), daily, lvl: daily ? 0 : lvl, day: daily ? day : null, moves: 0, won: false, ms: 0, runAt: 0 };
+  G = { ...generate(c, r, seed), daily, lvl: daily ? 0 : lvl, day: daily ? day : null, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0 };
   G.lim = limits(G);
   // yarım kalan oyunu sürdür
   const run = save.runs[daily ? 'daily' : 'level'];
   if (run && (daily ? run.day === day : run.lvl === lvl) && run.cur?.length === G.cur.length) {
-    G.cur = run.cur.slice(); G.fixed = run.fixed.slice(); G.moves = run.moves; G.ms = run.ms || 0;
+    G.cur = run.cur.slice(); G.fixed = run.fixed.slice(); G.moves = run.moves; G.lastTile = run.last ?? -1; G.ms = run.ms || 0;
   }
   setLineColor();
   G.L = lit(G); anim.clear(); press.clear(); ripples = []; parts = []; winT = 0;
   litAt = G.L.d.map(v => v >= 0 ? -1e9 : 0);
-  G.lastSt = starsNow();
+  G.tOk = timeOk(G.ms / 1000); G.mOk = movesOk();
   $('gTitle').textContent = daily ? 'Günün Hattı' : 'Bölüm ' + lvl;
   $('gMoves').textContent = daily ? new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl));
   $('gHints').textContent = save.hints;
@@ -339,24 +341,29 @@ function start(mode, lvl = save.level) {
   if (save.played === 0) setTimeout(() => toast('Karoya dokun → döner'), 500);
 }
 function hud() {
-  const ms = moveStars(), lim = ms === 3 ? G.lim.m3 : G.lim.m2;
-  $('gPar').textContent = ms === 1 ? `${G.moves}` : `${G.moves} / ${lim}`;
-  $('gParLbl').textContent = ms === 1 ? 'HAMLE' : `HAMLE · ${ms}★ SINIRI`;
+  const ok = movesOk();
+  $('gPar').innerHTML = `${G.moves}<small> / ${G.lim.m}</small>`;
+  $('gPar').classList.toggle('miss', !ok);
+  $('gParLbl').textContent = ok ? '↻ HAMLE HEDEFİ' : '↻ HEDEF AŞILDI';
   const pct = Math.round(G.L.n / G.cur.length * 100);
   $('gBar').style.width = pct + '%'; $('gPct').textContent = pct + '%';
 }
-// üst gösterge: süre + şu an alınabilecek yıldız
+// üst gösterge: süre + üç yıldız (bitir · ⏱ süre · ↻ hamle)
 function tick() {
   if (!G) return;
-  const ms = elapsed(), sec = ms / 1000, st = starsNow(), ts = timeStars(sec);
+  const ms = elapsed(), sec = ms / 1000, tOk = timeOk(sec), mOk = movesOk(), left = G.lim.t - sec;
   $('gTime').textContent = fmtT(ms);
-  [...$('gStars').children].forEach((el, k) => el.classList.toggle('on', k < st));
-  const lim = ts === 3 ? G.lim.t3 : ts === 2 ? G.lim.t2 : 0, left = lim - sec;
-  $('gNext').textContent = lim ? `${ts}★ süresi: ${fmtT(left * 1000 + 999)}` : 'Süre sınırı bitti · yine de bağla!';
-  $('gPill').classList.toggle('warn', !!lim && left <= 10 && !G.won);
-  if (st < G.lastSt && !G.won) { bump($('gPill')); tone(330, .14, .04, 'triangle'); haptic('heavy'); toast(`${st}★'a düştü`); }
-  G.lastSt = st;
+  const [s1, s2, s3] = $('gStars').children;
+  s1.classList.add('on'); s2.classList.toggle('on', tOk); s3.classList.toggle('on', mOk);
+  $('gNext').innerHTML = `<span class="${tOk ? '' : 'miss'}">⏱ ${tOk ? fmtT(left * 1000 + 999) + ' kaldı' : 'süre kaçtı'}</span> · <span class="${mOk ? '' : 'miss'}">↻ ${mOk ? `${G.lim.m - G.moves} hamle hakkı` : 'hamle aşıldı'}</span>`;
+  $('gPill').classList.toggle('warn', tOk && left <= 10 && !G.won);
+  if (!G.won) {
+    if (G.tOk && !tOk) lose('⏱ Süre hedefi kaçtı · ★ söndü');
+    if (G.mOk && !mOk) lose('↻ Hamle hedefi aşıldı · ★ söndü');
+  }
+  G.tOk = tOk; G.mOk = mOk;
 }
+function lose(msg) { bump($('gPill')); tone(330, .14, .04, 'triangle'); haptic('heavy'); toast(msg); }
 
 function resize() {
   const bd = $('board'), Wd = bd.clientWidth, Hd = bd.clientHeight, dpr = Math.min(devicePixelRatio || 1, 3);
@@ -480,7 +487,8 @@ cv.addEventListener('pointerdown', e => {
   if (c < 0 || w < 0 || c >= G.cols || w >= G.rows) return;
   const i = w * G.cols + c, now = performance.now();
   if (G.fixed[i]) { haptic('light'); tone(520, .06, .03, 'triangle'); toast('Bu karo ipucuyla sabitlendi'); press.set(i, now); kick(); return; }
-  G.cur[i] = rot(G.cur[i]); G.moves++;
+  G.cur[i] = rot(G.cur[i]);
+  if (G.lastTile !== i) { G.moves++; G.lastTile = i; }   // aynı karoya art arda dokunuş = 1 hamle
   anim.set(i, now); press.set(i, now); ripples.push({ x: px, y: py, t: now });
   const prev = G.L.d;
   G.L = lit(G);
@@ -503,15 +511,16 @@ function win() {
   kick();
   [0, 2, 4, 5, 7].forEach((k, j) => tone(note(k + 3), .4, .05, 'sine', .12 + j * .09));
   haptic('win');
-  const st = Math.min(moveStars(), timeStars(G.time / 1000));
+  const tOk = timeOk(G.time / 1000), mOk = movesOk(), st = 1 + tOk + mOk, perfect = tOk && mOk;
   save.played++;
-  let extra = '', unlockedNow = null;
+  let extra = '', unlockedNow = null, shard = false;
   if (G.daily) {
     if (save.dailyDone !== G.day) {
       save.streak = save.lastDaily === dayBefore(G.day) ? save.streak + 1 : 1; save.lastDaily = save.dailyDone = G.day;
       save.dailyLog = [...save.dailyLog.filter(d => d !== G.day), G.day].slice(-90); save.best = Math.max(save.best || 0, save.streak);
       save.hints++; extra = `🔥 ${save.streak} gün seri · +1 ipucu`;
-      save.dailyStats = { day: G.day, moves: G.moves, time: G.time, st };
+      save.dailyStats = { day: G.day, moves: G.moves, time: G.time, st, perfect };
+      shard = perfect;
     }
   } else {
     sessionWins++;
@@ -520,28 +529,34 @@ function win() {
     if (st > old && old) extra = `Yeni rekor: ${starTxt(st)}`;
     save.level = Math.max(save.level, G.lvl + 1);
     if (G.lvl % 10 === 0 && firstClear) { save.hints += 2; extra = '🎁 Hat tamam · +2 ipucu'; }
+    if (perfect && !save.crowns[G.lvl]) { save.crowns[G.lvl] = 1; shard = true; }   // parça bölüm başına bir kez
     for (let c = 1; c <= lineOf(save.level) + 1; c++) if (need(c) > before && unlocked(c)) unlockedNow = c;
   }
+  let shardMsg = '';
+  if (shard) {
+    save.shards = (save.shards || 0) + 1;
+    if (save.shards >= 3) { save.shards -= 3; save.hints++; shardMsg = '💎 3 parça birleşti · +1 ipucu'; } else shardMsg = `💎 İpucu parçası ${save.shards}/3`;
+  }
   persist();
-  const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650;
-  winTimer = setTimeout(() => { if (G === g && active('game')) winSheet(g, st, extra, unlockedNow); }, wait);
+  const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { st, tOk, mOk, perfect, extra: [shardMsg, extra].filter(Boolean).join(' · '), unlockedNow };
+  winTimer = setTimeout(() => { if (G === g && active('game')) winSheet(g, info); }, wait);
 }
 // Sonuç paneli tahtanın altına yerleşir; tahta küçülüp üstte görünür kalır.
-function winSheet(g, st, extra, unlockedNow) {
+function winSheet(g, { st, tOk, mOk, perfect, extra, unlockedNow }) {
   const L = g.lim, nx = g.lvl + 1, nxLocked = !g.daily && !unlocked(lineOf(nx));
-  const badge = unlockedNow ? `<span class="badge">YENİ HAT AÇILDI · M${unlockedNow + 1}</span>` : st === 3 ? '<span class="badge">MÜKEMMEL ROTA</span>' : '';
-  const tip = st < 3 ? `<p class="tip">3★ için: ≤ ${L.m3} hamle ve ≤ ${fmtT(L.t3 * 1000)}</p>` : '';
+  const badge = unlockedNow ? `<span class="badge">YENİ HAT AÇILDI · M${unlockedNow + 1}</span>` : perfect ? '<span class="badge">KUSURSUZ 👑</span>' : '';
+  const tip = perfect ? '' : `<p class="tip">Kusursuz için: ${[tOk ? '' : `⏱ ≤ ${fmtT(L.t * 1000)}`, mOk ? '' : `↻ ≤ ${L.m} hamle`].filter(Boolean).join(' ve ')}</p>`;
   const primary = g.daily
     ? '<button id="mShare" class="btn primary"><span>Paylaş</span><small>Arkadaşına meydan oku</small></button><button id="mHome" class="btn glassbtn">Ana sayfa</button>'
     : `${nxLocked ? `<button id="mMap" class="btn primary"><span>Yeni hat kilitli</span><small>★ ${totalStars()} / ${need(lineOf(nx))} · yıldız topla</small></button>` : `<button id="mNext" class="btn primary"><span>Sonraki</span><small>Bölüm ${nx}</small></button>`}
        <div class="row2"><button id="mRetry" class="btn glassbtn">Tekrar</button><button id="mShare" class="btn glassbtn">Paylaş</button><button id="mHome" class="btn glassbtn">Ana sayfa</button></div>`;
-  $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml(st)}<div class="wp-t"><h2>${g.daily ? 'Günün hattı tamam!' : 'Hat açıldı!'}</h2>${badge}</div></div>
+  $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml([true, tOk, mOk])}<div class="wp-t"><h2>${g.daily ? 'Günün hattı tamam!' : 'Hat açıldı!'}</h2>${badge}</div></div>
       <button id="wTog" class="wp-tog" aria-label="Hattı gör"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg><span>Hattı gör</span></button></div>
-    <div class="wp-more"><div class="statrow"><div><b>${g.moves}</b><span>hamle</span></div><div><b>${fmtT(g.time)}</b><span>süre</span></div><div><b>${starTxt(st)}</b><span>yıldız</span></div></div>${tip}${extra ? `<p class="tip">${extra}</p>` : ''}</div>
+    <div class="wp-more"><div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(L.t * 1000)}</small></b><span>⏱ süre ${tOk ? '★' : '✗'}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${L.m}</small></b><span>↻ hamle ${mOk ? '★' : '✗'}</span></div></div>${tip}${extra ? `<p class="tip">${extra}</p>` : ''}</div>
     ${primary}`;
   $('game').classList.add('won');
   bind({ wTog: toggleMini, mNext: next, mMap: () => show('map'), mRetry: () => start('level', g.lvl), mHome: () => show('home'),
-    mShare: () => share({ daily: g.daily, lvl: g.lvl, day: g.day, moves: g.moves, time: g.time, st }) });
+    mShare: () => share({ daily: g.daily, lvl: g.lvl, day: g.day, moves: g.moves, time: g.time, st, perfect }) });
 }
 function toggleMini() {
   const mini = $('game').classList.toggle('mini');
@@ -566,7 +581,7 @@ async function share(r) {
   const [, m, d] = (r.day || today()).split('-');
   const head = r.daily ? `Ray 🚇 Günün Hattı ${d}.${m}` : `Ray 🚇 Bölüm ${r.lvl}`;
   const url = r.daily ? `${SHARE_URL}?d=${r.day}&m=${r.moves}` : SHARE_URL;
-  const text = `${head}\n${'⭐'.repeat(r.st)}${'☆'.repeat(3 - r.st)} ${r.moves} hamle · ${fmtT(r.time)}${r.daily && save.streak > 1 ? `\n🔥 ${save.streak} gün seri` : ''}\nSen kaç hamlede bağlarsın?\n${url}`;
+  const text = `${head}\n${'⭐'.repeat(r.st)}${'☆'.repeat(3 - r.st)}${r.perfect ? ' 👑' : ''} ${r.moves} hamle · ${fmtT(r.time)}${r.daily && save.streak > 1 ? `\n🔥 ${save.streak} gün seri` : ''}\nSen kaç hamlede bağlarsın?\n${url}`;
   try {
     const P = window.Capacitor?.Plugins?.Share;
     if (P) return await P.share({ text });
@@ -668,7 +683,7 @@ function settings() {
 }
 function how() {
   modal(`<h2>Nasıl oynanır?</h2>
-    <div class="how"><i>1</i><span>Karoya dokun → ray 90° döner.</span><i>2</i><span>Merkez istasyondan çıkan hattı <b>tüm duraklara</b> ulaştır. Açıkta ray ucu kalmasın.</span><i>★</i><span>Az hamle + hızlı bitir → <b>3 yıldız</b>. Süreyi aşarsan en fazla 2★.</span><i>M2</i><span>Yıldız topla → <b>yeni hatlar</b> aç.</span><i>🔥</i><span>Her gün yeni <b>Günün Hattı</b>. Seriyi bozma!</span></div>
+    <div class="how"><i>1</i><span>Karoya dokun → ray 90° döner.</span><i>2</i><span>Merkez istasyondan çıkan hattı <b>tüm duraklara</b> ulaştır. Açıkta ray ucu kalmasın.</span><i>★</i><span>Her yıldız bir hedef: <b>bitir</b> · <b>⏱ süre</b> · <b>↻ hamle</b>. İkisini birden tutturursan <b>KUSURSUZ 👑</b> + ipucu parçası.</span><i>↻</i><span>Aynı karoya art arda dokunmak <b>tek hamle</b> sayılır.</span><i>M2</i><span>Yıldız topla → <b>yeni hatlar</b> aç.</span><i>🔥</i><span>Her gün yeni <b>Günün Hattı</b>. Seriyi bozma!</span></div>
     <button id="mClose" class="btn primary"><span>Başla</span></button>`, { mClose: () => { closeModal(); if (save.played === 0 && !G) start('level'); } });
 }
 

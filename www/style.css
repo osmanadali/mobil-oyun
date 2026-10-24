@@ -127,6 +127,9 @@ h1{font-size:64px;font-weight:800;letter-spacing:-2px;line-height:1;background:l
 .pill.warn svg{stroke:var(--warn)}
 @keyframes warn{50%{background:rgba(255,122,138,.14)}}
 #gNext{font-size:12px;color:var(--mut);font-variant-numeric:tabular-nums}
+#gNext .miss,#gPar.miss,.statrow b.miss{color:var(--warn)}
+#gPar small{font-size:15px;color:var(--mut);font-weight:600}
+.statrow small{font-size:13px;color:var(--mut);font-weight:500}
 
 /* hat haritası */
 #map{padding-bottom:0}

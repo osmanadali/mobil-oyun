@@ -196,6 +196,7 @@ async function inViewport(page, sel) {
     const s = await getSave(page), log = await page.evaluate(() => window.__log);
     metrics.playthrough = { levels: lv, ads: log.ads, haptics: log.hap };
     check('play.12', '12 bölüm art arda çözülüp kazanılıyor', lv.length === 12 && lv.every(l => l.won), `${lv.filter(l => l.won).length}/12`);
+    check('play.perfect', 'Kusursuz çözüm: 3★ + 👑 + ipucu parçası', Object.keys(s.crowns || {}).length === 12 && (s.shards || 0) === 0, `👑 ${Object.keys(s.crowns || {}).length} · parça ${s.shards}`, 'medium');
     check('play.stars', 'Hedef hamlede çözünce 3 yıldız', lv.every(l => l.stars === 3), lv.map(l => l.stars).join(''), 'medium');
     check('play.save', 'İlerleme kaydediliyor (seviye 13)', s.level === 13, `level=${s.level}`);
     check('ads.inter', 'Geçiş reklamı 8. bölüm sonrası 1 kez (90 sn aralık kuralı)', log.ads.filter(a => a === 'interstitial').length === 1, JSON.stringify(log.ads), 'medium');
@@ -265,14 +266,14 @@ async function inViewport(page, sel) {
     await page.click('#bPlay'); await page.waitForTimeout(400);
     const pill0 = await page.evaluate(() => document.querySelectorAll('#gStars i.on').length);
     // 3★ süresini aş → gösterge 2★'a düşmeli, çözünce en fazla 2★
-    await page.evaluate(() => { const G = window.__ray.G; G.ms += (G.lim.t3 + 1) * 1000; });
+    await page.evaluate(() => { const G = window.__ray.G; G.ms += (G.lim.t + 1) * 1000; });
     await page.waitForTimeout(400);
     const pill1 = await page.evaluate(() => document.querySelectorAll('#gStars i.on').length);
     const next = await page.textContent('#gNext');
     await shot(page, 'timer-2star');
     await solve(page, 15); await waitModal(page);
     const st = await page.evaluate(() => document.querySelectorAll('.stars svg.on').length);
-    check('time.stars', '3★ süresi aşılınca en fazla 2★ (gösterge + sonuç)', pill0 === 3 && pill1 === 2 && st === 2, `başta ${pill0}★ → süre aşımı ${pill1}★ → sonuç ${st}★ · "${next}"`);
+    check('time.stars', 'Süre hedefi kaçınca ⏱ yıldızı söner, sonuç 2★ (gösterge + sonuç)', pill0 === 3 && pill1 === 2 && st === 2, `başta ${pill0}★ → süre aşımı ${pill1}★ → sonuç ${st}★ · "${next}"`);
     await shot(page, 'win-2star');
     await ctx.close();
 
@@ -287,6 +288,11 @@ async function inViewport(page, sel) {
     await r.page.reload(); await r.page.waitForTimeout(300);
     await r.page.click('#bPlay'); await r.page.waitForTimeout(300);
     const resumed = await r.page.evaluate(() => ({ lvl: window.__ray.G.lvl, moves: window.__ray.G.moves, ms: window.__ray.G.ms }));
+    for (let k = 0; k < 3; k++) await tapTile(r.page, 5);
+    const m3 = await r.page.evaluate(() => window.__ray.G.moves);
+    await tapTile(r.page, 6); await tapTile(r.page, 5);
+    const m5 = await r.page.evaluate(() => window.__ray.G.moves);
+    check('moves.rule', 'Aynı karoya art arda 3 dokunuş = 1 hamle; başka karodan dönünce yeni hamle', m3 === resumed.moves + 1 && m5 === m3 + 2, `${resumed.moves} → ${m3} → ${m5}`, 'high');
     check('timer.pause', 'Ana sayfadayken süre durur', t2 === t1, `${t1} → ${t2} ms`, 'medium');
     check('resume', 'Yarım bölüm uygulama kapanınca bile kaldığı yerden sürer', resumed.lvl === 12 && resumed.moves === 3 && resumed.ms >= t1 - 5, JSON.stringify(resumed), 'medium');
     await r.ctx.close();
