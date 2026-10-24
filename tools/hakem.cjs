@@ -632,6 +632,46 @@ async function inViewport(page, sel) {
     await A.ctx.close(); await B.ctx.close(); await C2.ctx.close();
   }
 
+  // ---------- E10. Sefer şeridi (tren sayacı), kusursuz seri, kıl payı tekrar ----------
+  {
+    const base = { played: 6, level: 14, stars: starsUpTo(14, 2), hints: 3 };   // 1–13 taçsız → 14 seriyi etkiler
+    const { ctx, page, errors } = await open(browser, URL, { save: { ...base, combo: 2 } });
+    await page.click('#bPlay'); await page.waitForTimeout(400);
+    const trip = () => page.evaluate(() => { const t = document.getElementById('gTrip'); return { p: +t.style.getPropertyValue('--p'), cls: t.className, next: document.getElementById('gNext').textContent, bub: document.getElementById('gBub').classList.contains('show'), combo: document.getElementById('gCombo').hidden ? '' : document.getElementById('gCombo').textContent, off: document.getElementById('gCombo').classList.contains('off') }; });
+    const t0 = await trip();
+    await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.t + 3.2) * 1000; }); await page.waitForTimeout(450);
+    const t1 = await trip(), toast1 = await page.textContent('#toast');
+    check('trip.run', 'Sefer şeridi: tren süreyle ilerler; süre dolunca sinyalde bekler, "+rötar" sayar, yolcu laf atar; seri 🔥 göstergesi sönükleşir', t0.p < .1 && /^⏱/.test(t0.next) && t0.combo === '🔥2' && /late/.test(t1.cls) && Math.abs(t1.p - .84) < .001 && /rötar/.test(t1.next) && t1.bub && t1.off && /baştan/.test(toast1), `${JSON.stringify(t0)} → ${JSON.stringify(t1)} · "${toast1}"`, 'medium');
+    await shot(page, 'trip-late');
+    await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.t + 1) * 1000; });   // kıl payı: ~1–3 sn rötar
+    await solve(page, 10); await waitModal(page);
+    const w1 = await page.evaluate(() => ({ prim: document.querySelector('#winPanel .primary')?.id, ptxt: document.querySelector('#winPanel .primary')?.textContent, next: !!document.querySelector('#winPanel .row2 #mNext'), n: document.querySelectorAll('#winPanel button').length, trip: document.getElementById('gTrip').className }));
+    const s1 = await getSave(page);
+    await shot(page, 'win-near');
+    check('near.retry', 'Kıl payı + kırılan seri: "Tekrar dene" büyük düğmeye geçer, Sonraki alt sıraya iner (düğme sayısı aynı)', w1.prim === 'mRetry' && /Kıl payı/.test(w1.ptxt) && /2 seri/.test(w1.ptxt) && w1.next && w1.n === 5 && /arr/.test(w1.trip) && s1.combo === 0 && s1.comboLost?.n === 2 && s1.comboLost?.lvl === 14, JSON.stringify({ ...w1, combo: s1.combo, lost: s1.comboLost }), 'medium');
+    await page.click('#mRetry'); await page.waitForTimeout(800);   // bildirim 600 ms sonra çıkar
+    const toast2 = await page.textContent('#toast'), chip = await page.evaluate(() => document.getElementById('gCombo').textContent);
+    await solve(page, 10); await waitModal(page);
+    const w2 = await page.evaluate(() => ({ prim: document.querySelector('#winPanel .primary')?.id, txt: document.getElementById('winPanel').textContent, next: document.getElementById('gNext').textContent }));
+    const s2 = await getSave(page);
+    check('combo.restore', 'Kırılan seri aynı bölümü kusursuz bitirince geri gelir; 3. kusursuz → +1 ipucu, rozet 🔥3', /geri gelir/.test(toast2) && chip === '🔥2' && s2.combo === 3 && s2.hints === base.hints + 1 && !s2.comboLost && /🔥3/.test(w2.txt) && /3 kusursuz seri/.test(w2.txt) && w2.prim === 'mNext' && w2.next === 'Tam vaktinde', JSON.stringify({ toast2, chip, combo: s2.combo, hints: s2.hints, prim: w2.prim, next: w2.next }), 'medium');
+    check('trip.errors', 'Sefer şeridi + seri: konsol hatası yok', errors.length === 0, errors.slice(0, 3).join(' | '));
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await open(browser, URL, { save: { played: 6, level: 14, stars: starsUpTo(14, 2), hints: 3, combo: 4 } });
+    await page.click('#bPlay'); await page.waitForTimeout(400);
+    await solve(page, 10); await waitModal(page);
+    const s1 = await getSave(page), cr = await page.evaluate(() => document.getElementById('winPanel').textContent);
+    await page.click('#mRetry'); await page.waitForTimeout(450);   // artık taçlı → seri etkilenmez
+    const chip = await page.evaluate(() => document.getElementById('gCombo').hidden);
+    await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.t + 1) * 1000; });
+    await solve(page, 10); await waitModal(page);
+    const s2 = await getSave(page), prim = await page.evaluate(() => document.querySelector('#winPanel .primary')?.id);
+    check('combo.crown', '5. kusursuz → +1 bonus 👑 (bakiyeye eklenir); taçlı bölüm seriyi bozmaz, Tekrar öne çıkmaz', s1.combo === 5 && s1.cc === 1 && /bonus 👑/.test(cr) && chip && s2.combo === 5 && !s2.comboLost && prim === 'mNext', JSON.stringify({ c1: s1.combo, cc: s1.cc, chipHidden: chip, c2: s2.combo, prim }), 'medium');
+    await ctx.close();
+  }
+
   // ---------- F. Boşta CPU: animasyon döngüsü durmalı ----------
   {
     const { ctx, page } = await open(browser, URL, { save: { played: 4, level: 30, stars: starsUpTo(30) } });

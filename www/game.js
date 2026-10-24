@@ -91,7 +91,7 @@ const SKINS = [
   { id: 'diamond', name: 'Elmas', vip: true, lines: ['#d6f1ff', '#bae6fd', '#c7d2fe', '#e9e4ff', '#a5f3fc', '#ddd6fe'], names: ['Elmas', 'Kristal', 'Prizma', 'İnci', 'Buz', 'Opal'], acc: ['#bae6fd', '#c7d2fe'], glow: ['#7dd3fc', '#a78bfa', '#e0f2fe'] },
   { id: 'ruby', name: 'Yakut', vip: true, lines: ['#ff4d6d', '#ff758f', '#e0245e', '#ff8fab', '#f43f5e', '#ff5c8a'], names: ['Yakut', 'Garnet', 'Lal', 'Gül', 'Kızıl', 'Mercan'], acc: ['#ff4d6d', '#e0245e'], glow: ['#c9184a', '#ff4d6d', '#7b2cbf'] },
 ];
-const crownCount = () => Object.keys(save.crowns).length + (save.dCrowns || 0) + (save.fc || 0);   // toplam kazanılan (bölüm + günlük + final bonusu)
+const crownCount = () => Object.keys(save.crowns).length + (save.dCrowns || 0) + (save.fc || 0) + (save.cc || 0);   // toplam kazanılan (bölüm + günlük + final + seri bonusu)
 const crownBal = () => crownCount() - (save.spent || 0);                             // harcanabilir bakiye
 const skinOpen = k => !!save.owned[k.id] || !!(k.vip && save.noAds);
 const skin = () => { const k = SKINS.find(x => x.id === save.skin); return k && skinOpen(k) ? k : SKINS[0]; };
@@ -605,7 +605,7 @@ function start(mode, lvl = save.level) {
   const daily = mode === 'daily', day = today();
   if (!daily && !unlocked(lineOf(lvl))) { lockedSheet(lineOf(lvl)); return; }
   const ln = lineOf(lvl);
-  G = { ...(daily ? dailyFor(day) : puzzleFor(lvl)), daily, lvl: daily ? 0 : lvl, day: daily ? day : null, practice: daily && save.dailyDone === day, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0 };
+  G = { ...(daily ? dailyFor(day) : puzzleFor(lvl)), daily, lvl: daily ? 0 : lvl, day: daily ? day : null, practice: daily && save.dailyDone === day, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0, bub: 0 };
   G.lim = limits(G);
   // yarım kalan oyunu sürdür
   const run = save.runs[daily ? 'daily' : 'level'];
@@ -624,9 +624,12 @@ function start(mode, lvl = save.level) {
   $('game').classList.toggle('final', !!G.final);
   $('gMoves').textContent = `${daily ? new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl))} · ⚡%${daily ? dPct(day) : zPct(lvl)}`;
   $('gHints').textContent = save.hints;
+  clearTimeout(bubT); $('gBub').classList.remove('show');
+  const stake = comboStake(); $('gCombo').hidden = stake < 2; $('gCombo').textContent = `🔥${stake}`;
   show('game'); resize(); hud(); tick();
   if (!daily && RULES[ln] && !save.seen[ln]) ruleCard(ln);
   if (save.played === 0) setTimeout(() => toast('Karoya dokun → döner'), 500);
+  else if (save.comboLost?.lvl === lvl && !daily && !G.moves) setTimeout(() => toast(`🔥 Kusursuz bitir → ${save.comboLost.n} seri geri gelir`), 600);
   else if (G.final && !save.crowns[lvl] && !G.moves) setTimeout(() => toast('🏁 Son durak · kusursuz bitir → +1 bonus 👑'), 600);
   else if (!daily && save.miss[lvl] && !save.crowns[lvl] && !G.moves) setTimeout(() => toast(`Geçen sefer: ${missTxt(lvl)}`), 600);
 }
@@ -658,18 +661,42 @@ function tick() {
   $('gTime').textContent = fmtT(ms);
   const [s1, s2, s3] = $('gStars').children;
   s1.classList.add('on'); s2.classList.toggle('on', tOk); s3.classList.toggle('on', mOk);
-  const nx = `<span class="${tOk ? '' : 'miss'}">⏱ ${tOk ? fmtT(left * 1000 + 999) + ' kaldı' : 'süre kaçtı'}</span> · <span class="${mOk ? '' : 'miss'}">↻ ${mOk ? `${G.lim.m - G.moves} hamle hakkı` : 'hamle aşıldı'}</span>`;
-  if (nx !== G.nxHtml) { $('gNext').innerHTML = nx; G.nxHtml = nx; }
+  if (!G.won) setNext(tOk ? `⏱ ${fmtT(left * 1000 + 999)}` : `<span class="miss">+${fmtT(-left * 1000)} rötar</span>`);
   $('gPill').classList.toggle('warn', tOk && left <= 10 && !G.won);
+  $('gCombo').classList.toggle('off', !(tOk && mOk));
+  trip(sec, tOk, left);
   if (!G.won) {
-    if (G.tOk && !tOk) lose('⏱ Süre hedefi kaçtı · ★ söndü');
-    if (G.mOk && !mOk) lose('↻ Hamle hedefi aşıldı · ★ söndü');
+    // kusursuz seri bu bölümde tehlikede → baştan başlamak seriyi korur (↺ süreyi de sıfırlar)
+    const s = comboStake(), keep = s >= 2 ? ` · ↺ baştan → 🔥${s} sürer` : '';
+    if (G.tOk && !tOk) lose('⏱ Tren rötarda · ★ söndü' + keep);
+    if (G.mOk && !mOk) lose('↻ Hamle hedefi aşıldı · ★ söndü' + keep);
   }
   G.tOk = tOk; G.mOk = mOk;
   // gerilim: süre hedefinin %30'undan sonra 8 kademede artar; hedef geçince de 2 katına kadar artmaya devam eder
   if (!G.won) { const r = sec / G.lim.t, T = r < .3 ? 0 : r <= 1 ? (r - .3) / .7 * .8 : .8 + Math.min(1, r - 1) * .2; Music.setTension(Math.round(T * 8) / 8, tOk && left <= 10); }
 }
 function lose(msg) { bump($('gPill')); tone(294, .2, .012); haptic('light'); toast(msg); }
+const setNext = h => { if (h !== G.nxHtml) { $('gNext').innerHTML = h; G.nxHtml = h; } };
+
+// ---------- sefer şeridi: tren süre boyunca sinyale ilerler; bulmaca bitince perona girer ----------
+// Süre dolunca oyun bitmez: tren sinyalde bekler, rötar sayar, peronda yolcular arada bir laf atar (en çok 3 kez).
+const SIG = .84, PAX_AT = [3, 15, 30], calmMotion = matchMedia('(prefers-reduced-motion: reduce)');
+const PAX = ['☕ Bir kahve daha alırım o zaman…', 'Patron bugün de anlayış gösterir herhalde.', 'Kitabın bir bölümü daha bitti 📖', 'Sinyal arızası mı var acaba?',
+  'Yürüsem daha erken varırdım 🚶', 'Neyse, manzara güzel.', 'Annem "neredesin" diye yazdı 📱', 'Kulaklıkta bir albüm bitti 🎧', 'Sabır, sabır… 🧘',
+  'Tren gelince alkışlayacağım 👏', '"Yoldayım" demiştim, inanmışlardı 😅', 'Kahvem soğudu ☕', 'Bu rötar da tarihe geçer.', 'Az kaldı galiba, ışık yandı 💡'];
+let bubT = 0;
+function pax(msg) {
+  const b = $('gBub'); b.textContent = msg || PAX[Math.random() * PAX.length | 0]; b.classList.add('show');
+  clearTimeout(bubT); bubT = setTimeout(() => b.classList.remove('show'), 3400);
+}
+function trip(sec, tOk, left) {
+  let p = G.won ? 1 : tOk ? Math.min(1, sec / G.lim.t) * SIG : SIG;
+  if (calmMotion.matches && !G.won) p = Math.floor(p / SIG * 8) / 8 * SIG;   // hareketi azalt: 8 kademe (müzik gerilimiyle aynı)
+  const el = $('gTrip'); el.style.setProperty('--p', p.toFixed(4));
+  el.classList.toggle('soon', !G.won && tOk && left <= 10); el.classList.toggle('late', !G.won && !tOk); el.classList.toggle('arr', G.won);
+  // yarım kalan oyun rötardayken açılırsa geçmiş eşikler sessizce atlanır
+  if (!G.won && !tOk) for (const late = -left; G.bub < PAX_AT.length && late >= PAX_AT[G.bub]; G.bub++) if (late - PAX_AT[G.bub] < 2) pax();
+}
 
 function resize() {
   const bd = $('board'), Wd = bd.clientWidth, Hd = bd.clientHeight, dpr = Math.min(devicePixelRatio || 1, 2);   // 3x ekranda 2x yeterli, yük ~%55 az
@@ -878,6 +905,12 @@ cv.addEventListener('pointerdown', e => {
   if (G.L.solved) win(); else saveRun();
 });
 
+// kusursuz seri: tacı olmayan bölümü kusursuz bitirmek seriyi +1 yapar, kusursuzsuz bitirmek sıfırlar; taçlı bölüm seriyi etkilemez.
+// Seri kırılınca aynı bölümü kusursuz bitiren oyuncu seriyi kaldığı yerden sürdürür (comboLost).
+function comboStake() {
+  if (!G || G.daily || save.crowns[G.lvl]) return 0;
+  return save.comboLost?.lvl === G.lvl ? save.comboLost.n : save.combo || 0;
+}
 const ownCol = i => G.L.own?.[i] === 2 ? G.color2 : G.L.own?.[i] === 3 ? pal.warn : G.color;
 function win() {
   pause();
@@ -893,6 +926,10 @@ function win() {
   save.played++;
   const cr0 = crownBal();
   let extra = '', unlockedNow = null, shard = false, dbl = 0;   // dbl: videoyla ikiye katlanabilecek ipucu
+  let cmsg = '', combo = 0, broke = 0, near = false;               // kusursuz seri · kıl payı (tekrar öne çıkar)
+  const late = Math.ceil(G.time / 1000 - G.lim.t);
+  setNext(tOk ? 'Tam vaktinde' : `<span class="miss">+${fmtT(late * 1000)} rötar</span>`); trip(G.time / 1000, tOk, 0);
+  if (!tOk) setTimeout(() => { if (G?.won) pax('Nihayet! 👏'); }, 700);
   if (G.daily) {
     if (save.dailyDone !== G.day) {
       save.streak = save.lastDaily === dayBefore(G.day) ? save.streak + 1 : 1; save.lastDaily = save.dailyDone = G.day;
@@ -905,6 +942,19 @@ function win() {
     sessionWins++;
     const before = totalStars(), old = save.stars[G.lvl] || 0, firstClear = G.lvl >= save.level;
     save.stars[G.lvl] = Math.max(old, st);
+    if (!save.crowns[G.lvl]) {
+      const lost = save.comboLost; delete save.comboLost;
+      if (perfect) {
+        combo = save.combo = (lost?.lvl === G.lvl ? lost.n : save.combo || 0) + 1; save.comboBest = Math.max(save.comboBest || 0, combo);
+        if (combo % 5 === 0) { save.cc = (save.cc || 0) + 1; cmsg = `🔥 ${combo} kusursuz seri · +1 bonus 👑`; }
+        else if (combo === 3) { save.hints++; cmsg = '🔥 3 kusursuz seri · +1 ipucu'; }
+        else if (lost?.lvl === G.lvl) cmsg = `🔥 Seri geri geldi · ${combo}`;
+      } else {
+        if ((save.combo || 0) >= 2) save.comboLost = { n: broke = save.combo, lvl: G.lvl };
+        save.combo = 0;
+        near = (tOk || late <= 5) && (mOk || G.moves - G.lim.m <= 2);
+      }
+    }
     // hangi hedef ne kadar kaçtı: [⏱ sn geç, ↻ hamle fazla]. Taç topla listesi ve tekrar oynarken gösterilir.
     if (perfect) delete save.miss[G.lvl]; else if (st >= old) save.miss[G.lvl] = [tOk ? 0 : Math.ceil(G.time / 1000 - G.lim.t), mOk ? 0 : G.moves - G.lim.m];
     if (st > old && old) extra = `Yeni rekor: ${starTxt(st)}`;
@@ -922,22 +972,28 @@ function win() {
   const ns = SKINS.find(k => !k.vip && !skinOpen(k) && k.need > cr0 && k.need <= crownBal());   // bakiye bir temaya yetti
   if (ns) { save.newSkin = 1; extra = [extra, `🎨 ${ns.name} alınabilir (👑 ${ns.need})`].filter(Boolean).join(' · '); }
   persist();
-  const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { st, tOk, mOk, perfect, extra: [shardMsg, extra].filter(Boolean).join(' · '), unlockedNow, ns, dbl };
+  $('gCombo').hidden = combo < 2; $('gCombo').textContent = `🔥${combo}`; $('gCombo').classList.remove('off');
+  const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { st, tOk, mOk, perfect, extra: [cmsg, shardMsg, extra].filter(Boolean).join(' · '), unlockedNow, ns, dbl, combo, broke, near };
   winTimer = setTimeout(() => { if (G === g && active('game')) winSheet(g, info); }, wait);
   if (!g.daily) setTimeout(() => puzzleFor(g.lvl + 1), wait + 900);   // sonraki bölüm hazır olsun (geçişte takılma olmasın)
 }
 // Sonuç paneli tahtanın altına yerleşir; tahta küçülüp üstte görünür kalır.
-function winSheet(g, { st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl }) {
-  const L = g.lim, nx = g.lvl + 1, nxLocked = !g.daily && !unlocked(lineOf(nx));
-  const badge = unlockedNow ? `<span class="badge">YENİ HAT AÇILDI · M${unlockedNow + 1}</span>` : ns ? '<span class="badge">TEMA ALINABİLİR 🎨</span>' : perfect ? '<span class="badge">KUSURSUZ 👑</span>' : '';
+// Kıl payı ya da kırılan seri → "Tekrar dene" büyük düğmeye geçer, Sonraki küçük sıraya iner (düğme sayısı aynı kalır).
+function winSheet(g, { st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, combo, broke, near }) {
+  const L = g.lim, nx = g.lvl + 1, nxLocked = !g.daily && !unlocked(lineOf(nx)), again = !g.daily && (near || broke >= 2);
+  const badge = unlockedNow ? `<span class="badge">YENİ HAT AÇILDI · M${unlockedNow + 1}</span>` : ns ? '<span class="badge">TEMA ALINABİLİR 🎨</span>' : perfect ? `<span class="badge">KUSURSUZ 👑${combo >= 2 ? ` · 🔥${combo}` : ''}</span>` : '';
+  const miss = [tOk ? '' : `⏱ ${Math.ceil(g.time / 1000 - L.t)} sn`, mOk ? '' : `↻ ${g.moves - L.m} hamle`].filter(Boolean).join(' · ');
   const tip = perfect ? '' : `<p class="tip">Kusursuz için: ${[tOk ? '' : `⏱ ≤ ${fmtT(L.t * 1000)}`, mOk ? '' : `↻ ≤ ${L.m} hamle`].filter(Boolean).join(' ve ')}</p>`;
   const primary = g.daily
     ? '<button id="mShare" class="btn primary"><span>Paylaş</span><small>Arkadaşına meydan oku</small></button><button id="mHome" class="btn glassbtn">Ana sayfa</button>'
-    : `${nxLocked ? `<button id="mMap" class="btn primary"><span>Yeni hat kilitli</span><small>★ ${totalStars()} / ${need(lineOf(nx))} · yıldız topla</small></button>` : `<button id="mNext" class="btn primary"><span>Sonraki</span><small>Bölüm ${nx}</small></button>`}
+    : again
+      ? `<button id="mRetry" class="btn primary"><span>Tekrar dene</span><small>${broke >= 2 ? `${near ? 'Kıl payı · ' : ''}🔥 ${broke} seri geri gelsin` : `Kıl payı · ${miss}`}</small></button>
+       <div class="row2">${nxLocked ? '<button id="mMap" class="btn glassbtn">Hatlar</button>' : '<button id="mNext" class="btn glassbtn">Sonraki</button>'}<button id="mShare" class="btn glassbtn">Paylaş</button><button id="mHome" class="btn glassbtn">Ana sayfa</button></div>`
+      : `${nxLocked ? `<button id="mMap" class="btn primary"><span>Yeni hat kilitli</span><small>★ ${totalStars()} / ${need(lineOf(nx))} · yıldız topla</small></button>` : `<button id="mNext" class="btn primary"><span>Sonraki</span><small>Bölüm ${nx}</small></button>`}
        <div class="row2"><button id="mRetry" class="btn glassbtn">Tekrar</button><button id="mShare" class="btn glassbtn">Paylaş</button><button id="mHome" class="btn glassbtn">Ana sayfa</button></div>`;
   $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml([true, tOk, mOk])}<div class="wp-t"><h2>${g.practice ? 'Pratik tamam!' : g.daily ? 'Günün hattı tamam!' : 'Hat açıldı!'}</h2>${badge}</div></div>
       <button id="wTog" class="wp-tog" aria-label="Hattı gör"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg><span>Hattı gör</span></button></div>
-    <div class="wp-more"><div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(L.t * 1000)}</small></b><span>⏱ süre ${tOk ? '★' : '✗'}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${L.m}</small></b><span>↻ hamle ${mOk ? '★' : '✗'}</span></div></div>${tip}${extra ? `<p class="tip">${extra}${dbl && Ads.online() ? ` <button id="mDbl" class="dbl">▶ 2 katı</button>` : ''}</p>` : ''}</div>
+    <div class="wp-more"><div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(L.t * 1000)}</small></b><span>${tOk ? '⏱ tam vaktinde ★' : '⏱ rötar ✗'}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${L.m}</small></b><span>↻ hamle ${mOk ? '★' : '✗'}</span></div></div>${tip}${extra ? `<p class="tip">${extra}${dbl && Ads.online() ? ` <button id="mDbl" class="dbl">▶ 2 katı</button>` : ''}</p>` : ''}</div>
     ${primary}`;
   $('game').classList.add('won');
   bind({ wTog: toggleMini, mNext: next, mDbl: () => doubleReward(dbl), mMap: () => show('map'), mRetry: () => start('level', g.lvl), mHome: () => show('home'),

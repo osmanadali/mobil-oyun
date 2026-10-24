@@ -130,6 +130,24 @@ h1{font-size:64px;font-weight:800;letter-spacing:-2px;line-height:1;background:l
 .pill.warn svg{stroke:var(--warn)}
 @keyframes warn{50%{background:rgba(255,122,138,.14)}}
 #gNext{font-size:12px;color:var(--mut);font-variant-numeric:tabular-nums}
+/* sefer şeridi: süre hedefi = trenin sinyale varışı · --p 0→.84 süre, 1 = perona girdi (yalnız transform → ucuz) */
+.cmb{font-style:normal;font-size:13px;font-weight:700;color:var(--acc);transition:opacity .3s}.cmb.off{opacity:.4}
+.trip{position:relative;display:flex;align-items:center;gap:10px;width:min(300px,80vw);height:18px;--p:0}
+.trk{position:relative;flex:1;height:18px}
+.trk::before,.trk .done{content:'';position:absolute;left:0;right:0;top:8px;height:2px;border-radius:2px;background:var(--rail)}
+.trk .done{background:var(--line,var(--acc));opacity:.75;transform-origin:0 50%;transform:scaleX(var(--p));transition:transform .25s linear}
+.trk .peron{position:absolute;right:-2px;top:5px;width:46px;height:8px;border-radius:3px;background:var(--glass2);box-shadow:inset 0 0 0 1px var(--stroke)}
+.trk .sig{position:absolute;top:0;left:calc(.84 * (100% - 40px) + 43px);width:6px;height:6px;border-radius:50%;background:#4fc3a1;box-shadow:0 0 6px #4fc3a1;transition:background .3s,box-shadow .3s}
+.trip.soon .sig{background:#ffc94d;box-shadow:0 0 6px #ffc94d}
+.trip.late .sig{background:var(--warn);box-shadow:0 0 6px var(--warn)}
+.mv{position:absolute;left:0;top:2px;width:calc(100% - 40px);height:14px;transform:translateX(calc(var(--p) * 100%));transition:transform .25s linear;will-change:transform}
+.trip.arr .mv,.trip.arr .done{transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+.trn{width:40px;height:14px}
+.trn .tb{fill:var(--line,var(--acc))}.trn .tw{fill:rgba(255,255,255,.8)}.trn .tl{fill:#fff}
+.trip #gNext{min-width:66px;text-align:right;white-space:nowrap}
+.bub{position:absolute;right:0;top:calc(100% + 6px);z-index:5;max-width:min(250px,72vw);padding:6px 11px;border-radius:12px 12px 4px 12px;background:var(--toastBg);box-shadow:inset 0 0 0 1px var(--stroke),var(--shadow);font-size:12.5px;line-height:1.3;opacity:0;transform:translateY(-4px);transition:opacity .35s,transform .35s;pointer-events:none}
+.bub.show{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.mv,.trk .done,.trip.arr .mv,.trip.arr .done,.bub{transition:none}}
 #gNext .miss,#gPar.miss,.statrow b.miss{color:var(--warn)}
 #gPar small{font-size:15px;color:var(--mut);font-weight:600}
 .statrow small{font-size:13px;color:var(--mut);font-weight:500}
