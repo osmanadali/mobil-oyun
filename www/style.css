@@ -53,6 +53,7 @@ body.playing .glow,body.playing .map,body.playing .primary:after{animation-play-
 .ic:active{transform:scale(.9)}
 .chip{display:flex;align-items:center;gap:6px;height:38px;padding:0 14px 0 10px;border-radius:99px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--stroke);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);font-weight:600}
 .chip svg{width:18px;height:18px;fill:var(--acc)}
+button.chip{border:0;font:inherit;color:var(--fg);transition:transform .15s}button.chip:active{transform:scale(.94)}
 .chip:first-child svg{fill:var(--acc2)}
 #home .top .ic{margin-left:auto}
 .k{font-size:11px;font-weight:700;letter-spacing:1.6px;color:var(--mut)}
@@ -158,10 +159,40 @@ h1{font-size:64px;font-weight:800;letter-spacing:-2px;line-height:1;background:l
 .wp-tog{flex:none;border:0;height:44px;padding:0 12px;border-radius:14px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--stroke);color:var(--mut);font:inherit;font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px}
 .wp-tog svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .3s}
 #game.mini .wp-tog svg{transform:rotate(180deg)}
-#game.mini .wp-more{display:none}
+#game.mini .wp-more,#game.mini .winp .row2{display:none}
+#game.won #bReset{visibility:hidden;pointer-events:none}
 .winp .statrow{margin:2px 0 0}.winp .tip{font-size:13px;color:var(--mut);text-align:center}
 .winp .primary{height:62px}.winp .row2 .glassbtn{height:48px}
 @media (max-height:720px){#game.won .winp{gap:8px;padding-top:10px}.winp .primary{height:54px}.winp .row2 .glassbtn{height:44px}.winp .statrow b{font-size:18px}}
+
+/* açılış intro'su */
+.intro{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(165deg,var(--bg1),var(--bg0) 60%);transition:opacity .5s ease,transform .6s ease}
+.intro.out{opacity:0;transform:scale(1.04);pointer-events:none}
+.intro.gone{display:none}
+.ilogo{width:min(70vw,280px);overflow:visible}
+.iln{fill:none;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:300;stroke-dashoffset:300;animation:draw .9s cubic-bezier(.6,0,.2,1) forwards}
+.iln.a{stroke:#ffb35c;animation-delay:.15s}.iln.b{stroke:#4fc3a1;animation-delay:.35s}.iln.c{stroke:#7ea6ff;animation-delay:.55s}
+.ihub{fill:var(--fg);transform-box:fill-box;transform-origin:center;animation:pop .45s .05s cubic-bezier(.3,1.6,.5,1) both,ihub 1.2s 1.3s ease-out}
+.ihubdot{fill:var(--bg0)}
+.ist{fill:var(--bg0);stroke:var(--fg);stroke-width:5;transform-box:fill-box;transform-origin:center;animation:pop .4s var(--d) cubic-bezier(.3,1.7,.5,1) both,ilit .5s calc(var(--d) + .25s) forwards}
+@keyframes ilit{to{fill:#fff;stroke:#ffb35c}}
+@keyframes ihub{40%{filter:drop-shadow(0 0 18px #ffb35c)}}
+.ititle{margin-top:18px;opacity:0;transform:translateY(10px);animation:rise .6s 1.3s cubic-bezier(.2,.9,.2,1) forwards}
+.isub{color:var(--mut);margin-top:6px;opacity:0;animation:rise .6s 1.55s ease forwards}
+@keyframes rise{to{opacity:1;transform:none}}
+body.introing .screen *{animation-play-state:paused!important}
+
+/* reklam ilerlemesi */
+.vids{display:flex;justify-content:center;gap:8px}.vids i{width:12px;height:12px;border-radius:50%;background:var(--rail)}.vids i.on{background:var(--acc);box-shadow:0 0 10px var(--starGlow)}
+
+/* seri penceresi */
+.flame{align-self:center;width:64px;height:64px;fill:var(--acc2);filter:drop-shadow(0 0 16px var(--accGlow));animation:flick 1.6s ease-in-out infinite}
+@keyframes flick{50%{transform:scale(1.06) rotate(-2deg)}}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:4px 0}
+.week div{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--mut)}
+.week i{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;font-style:normal;font-size:16px;background:var(--rail)}
+.week i.on{background:linear-gradient(120deg,var(--acc),var(--acc2));color:var(--onacc)}
+.week i.today{box-shadow:0 0 0 2px var(--acc)}
 
 /* ---------- alt sayfa (modal) ---------- */
 .modal{position:absolute;inset:0;display:flex;align-items:flex-end;background:rgba(5,6,15,.45);opacity:0;pointer-events:none;transition:opacity .3s;z-index:5}

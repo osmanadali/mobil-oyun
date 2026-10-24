@@ -12,6 +12,7 @@ const PER_LINE = 10;                                    // her hat 10 bölüm
 const STAR_AVG = 2.2;                                   // yeni hat: önceki bölümlerde ortalama 2,2★
 const INTER_EVERY = 4;                                  // her 4 galibiyette 1 geçiş reklamı
 const DAILY_FREE_HINTS = 3;
+const AD_TIERS = [1, 2, 2, 3];                          // aynı bölümde ipucu için izlenecek video: ~15 sn, ~30, ~30, ~45…
 const SHARE_URL = 'https://osmanadali.github.io/mobil-oyun/';
 const PENTA = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26, 28];
 
@@ -21,10 +22,11 @@ const today = () => ymd(new Date());
 const dayBefore = s => { const [y, m, d] = s.split('-').map(Number); return ymd(new Date(y, m - 1, d - 1)); };
 
 // ---------- kayıt ----------
-const def = { level: 1, stars: {}, hints: DAILY_FREE_HINTS, hintDay: '', streak: 0, lastDaily: '', dailyDone: '', dailyStats: null, runs: {}, sound: true, vib: true, theme: 'auto', played: 0 };
+const def = { level: 1, stars: {}, hints: DAILY_FREE_HINTS, hintDay: '', streak: 0, lastDaily: '', dailyDone: '', dailyStats: null, runs: {}, sound: true, music: true, vib: true, theme: 'auto', played: 0 };
 let save;
 try { save = Object.assign({}, def, JSON.parse(localStorage.getItem('ray') || '{}')); } catch { save = { ...def }; }
 if (!save.runs || typeof save.runs !== 'object') save.runs = {};
+if (!Array.isArray(save.dailyLog)) save.dailyLog = save.lastDaily ? [save.lastDaily] : [];
 const persist = () => { try { localStorage.setItem('ray', JSON.stringify(save)); } catch {} };
 // gün değişimi: ücretsiz ipucu, kopan seri
 function dayTick() {
@@ -121,11 +123,11 @@ const starsNow = () => Math.min(moveStars(), timeStars(elapsed() / 1000));
 
 // ---------- ses / dokunsal ----------
 let ac;
+function ensureAC() { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume(); return ac; }
 function tone(f, dur = .08, vol = .05, type = 'sine', at = 0) {
   if (!save.sound) return;
   try {
-    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
-    if (ac.state === 'suspended') ac.resume();
+    ensureAC();
     const t = ac.currentTime + at, o = ac.createOscillator(), g = ac.createGain();
     o.type = type; o.frequency.value = f;
     g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .008);
@@ -133,6 +135,56 @@ function tone(f, dur = .08, vol = .05, type = 'sine', at = 0) {
     o.connect(g).connect(ac.destination); o.start(t); o.stop(t + dur + .02);
   } catch {}
 }
+// ---------- arka plan müziği: cihazda üretilen sakin ambiyans (dosya yok, internetsiz) ----------
+const Music = (() => {
+  const CH = [[62, 66, 69, 73], [59, 62, 66, 69], [55, 59, 62, 66], [57, 61, 64, 69]];   // Dmaj7 · Bm7 · Gmaj7 · A
+  const BAR = 8, VOL = .22, hz = m => 440 * Math.pow(2, (m - 69) / 12);
+  let on = false, master, echo, timer = 0, next = 0, step = 0;
+  function setup() {
+    master = ac.createGain(); master.gain.value = 0;
+    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1500;
+    echo = ac.createDelay(1); echo.delayTime.value = .42;
+    const fb = ac.createGain(); fb.gain.value = .3;
+    echo.connect(fb).connect(echo); echo.connect(lp);
+    master.connect(lp).connect(ac.destination);
+  }
+  function pad(m, t, dur) {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'sine'; o.frequency.value = hz(m); o.detune.value = (Math.random() - .5) * 10;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.13, t + 2.5);
+    g.gain.setValueAtTime(.13, t + dur - 2); g.gain.linearRampToValueAtTime(0, t + dur + .8);
+    o.connect(g).connect(master); o.start(t); o.stop(t + dur + 1);
+  }
+  function pluck(m, t) {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'triangle'; o.frequency.value = hz(m);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.1, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + 1.4);
+    o.connect(g); g.connect(master); g.connect(echo); o.start(t); o.stop(t + 1.5);
+  }
+  function sched() {
+    while (next < ac.currentTime + 1) {
+      const c = CH[(step / 16 | 0) % CH.length], beat = step % 16;
+      if (beat === 0) { c.forEach(m => pad(m - 12, next, BAR)); pad(c[0] - 24, next, BAR); }
+      if (Math.random() < (beat % 4 === 0 ? .5 : .2)) pluck(c[Math.random() * 4 | 0] + 12, next);
+      next += BAR / 16; step++;
+    }
+  }
+  function start() {
+    if (on || !save.music) return;
+    try {
+      ensureAC(); if (!master) setup();
+      on = true; next = Math.max(next, ac.currentTime + .1);
+      master.gain.cancelScheduledValues(ac.currentTime); master.gain.setValueAtTime(master.gain.value, ac.currentTime);
+      master.gain.linearRampToValueAtTime(VOL, ac.currentTime + 3);
+      clearInterval(timer); timer = setInterval(sched, 250); sched();
+    } catch {}
+  }
+  function stop() {
+    if (!on) return; on = false; clearInterval(timer);
+    try { master.gain.cancelScheduledValues(ac.currentTime); master.gain.setTargetAtTime(0, ac.currentTime, .3); } catch {}
+  }
+  return { start, stop };
+})();
 const note = k => 392 * Math.pow(2, PENTA[Math.max(0, Math.min(PENTA.length - 1, k))] / 12);
 function haptic(kind) {
   if (!save.vib) return;
@@ -172,7 +224,8 @@ const starTxt = st => '★'.repeat(st) + '☆'.repeat(3 - st);
 
 // her düğmede dokunma dalgası
 document.addEventListener('pointerdown', e => {
-  const b = e.target.closest('.btn,.ic,.lv'); if (!b) return;
+  Music.start();
+  const b = e.target.closest('.btn,.ic,.lv,.chip'); if (!b) return;
   const r = b.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2.2, sp = document.createElement('i');
   sp.className = 'rip'; sp.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX - r.left - d / 2}px;top:${e.clientY - r.top - d / 2}px`;
   if (getComputedStyle(b).position === 'static') b.style.position = 'relative';
@@ -456,6 +509,7 @@ function win() {
   if (G.daily) {
     if (save.dailyDone !== G.day) {
       save.streak = save.lastDaily === dayBefore(G.day) ? save.streak + 1 : 1; save.lastDaily = save.dailyDone = G.day;
+      save.dailyLog = [...save.dailyLog.filter(d => d !== G.day), G.day].slice(-90); save.best = Math.max(save.best || 0, save.streak);
       save.hints++; extra = `🔥 ${save.streak} gün seri · +1 ipucu`;
       save.dailyStats = { day: G.day, moves: G.moves, time: G.time, st };
     }
@@ -496,7 +550,7 @@ function toggleMini() {
 }
 function closePanel() { $('game').classList.remove('won', 'mini'); $('winPanel').innerHTML = ''; }
 async function next() {
-  if (!G.daily && save.played >= 5 && sessionWins % INTER_EVERY === 0) await Ads.interstitial();
+  if (!G.daily && save.played >= 5 && sessionWins % INTER_EVERY === 0) { Music.stop(); await Ads.interstitial(); Music.start(); }
   start('level', G.lvl + 1);
 }
 function dailyResult() {
@@ -526,16 +580,8 @@ async function hint() {
   dayTick();
   if (save.hints <= 0) {
     if (!Ads.online()) { toast('İpucu kalmadı · yarın +3 hediye'); return; }
-    modal(`<h2>İpucun bitti</h2><p>Kısa bir video izle, <b>2 ipucu</b> kazan.</p>
-      <button id="mAd" class="btn primary"><span>İzle · +2</span><small>~30 sn</small></button><button id="mNo" class="btn glassbtn">Vazgeç</button>`, {
-      mAd: async () => {
-        closeModal(); pause();
-        const ok = await Ads.rewarded();
-        if (active('game')) resume();
-        if (ok) { save.hints += 2; persist(); $('gHints').textContent = save.hints; bump($('gHints')); toast('+2 ipucu kazandın'); }
-        else toast('Ödül alınamadı · video sonuna kadar izlenmeli');
-      },
-      mNo: closeModal });
+    if (Ads.busy()) { toast('Reklam yükleniyor…'); return; }
+    adSheet();
     return;
   }
   const wrong = [];
@@ -552,6 +598,29 @@ async function hint() {
   hud(); kick();
   if (G.L.solved) win(); else saveRun();
 }
+// Ödüllü reklam: aynı bölümde ipucu istedikçe izlenecek video sayısı artar. Her video oyuncunun basışıyla açılır.
+function adSheet() {
+  const key = G.daily ? 'd' + G.day : 'l' + G.lvl;
+  if (save.adProg?.key !== key) save.adProg = { key, n: 0, part: 0 };
+  const P = save.adProg, need = AD_TIERS[Math.min(P.n, AD_TIERS.length - 1)], sec = need * 15;
+  const dots = need > 1 ? `<div class="vids">${Array.from({ length: need }, (_, k) => `<i class="${k < P.part ? 'on' : ''}"></i>`).join('')}</div>` : '';
+  modal(`<h2>${P.part ? 'Bir video kaldı' + (need - P.part > 1 ? '' : '!') : 'İpucun bitti'}</h2>
+    <p>${need === 1 ? 'Kısa bir video izle' : `${need} kısa video izle`} (~${sec} sn), <b>2 ipucu</b> kazan.${P.part ? `<br>${P.part}/${need} izlendi.` : ''}</p>${dots}
+    <button id="mAd" class="btn primary"><span>${P.part ? `Devam · ${P.part + 1}. video` : 'İzle · +2 ipucu'}</span><small>~${sec} sn${need > 1 ? ` · ${need} video` : ''}</small></button>
+    <button id="mNo" class="btn glassbtn">Vazgeç</button>`, {
+    mAd: async () => {
+      if (Ads.busy()) return;
+      closeModal(); pause(); toast('Reklam yükleniyor…'); Music.stop();
+      const ok = await Ads.rewarded();
+      Music.start(); if (active('game')) resume();
+      if (!ok) { toast(Ads.online() ? 'Ödül alınamadı · video sonuna kadar izlenmeli' : 'Bağlantı yok · sonra dene'); return; }
+      P.part++;
+      if (P.part < need) { persist(); adSheet(); return; }
+      P.n++; P.part = 0; save.hints += 2; persist();
+      $('gHints').textContent = save.hints; bump($('gHints')); haptic('heavy'); toast('+2 ipucu kazandın');
+    },
+    mNo: closeModal });
+}
 function nearLit(i) { const x = i % G.cols, y = i / G.cols | 0; let n = 0; for (const [, dx, dy] of DIRS) { const nx = x + dx, ny = y + dy; if (nx >= 0 && ny >= 0 && nx < G.cols && ny < G.rows && G.L.d[ny * G.cols + nx] >= 0) n++; } return n; }
 // baştan: süre ve hamle sıfırlanır, ipucuyla açılan karolar korunur
 function reset() {
@@ -566,13 +635,32 @@ function reset() {
   toast('Baştan başladı');
 }
 
+const FLAME = '<svg class="flame" viewBox="0 0 24 24"><path d="M12 2c1 4 5 5.5 5 11a5 5 0 0 1-10 0c0-2.5 1.2-4 2.5-5 .2 1.8 1 3 2.2 3.3C11 8.6 11.3 5 12 2z"/></svg>';
+function streakSheet() {
+  dayTick();
+  const log = new Set(save.dailyLog), names = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'], done = save.dailyDone === today();
+  let week = '';
+  for (let k = 6; k >= 0; k--) {
+    const d = new Date(); d.setDate(d.getDate() - k); const on = log.has(ymd(d));
+    week += `<div><i class="${on ? 'on' : ''} ${k ? '' : 'today'}">${on ? '✓' : ''}</i>${k ? names[(d.getDay() + 6) % 7] : 'Bugün'}</div>`;
+  }
+  modal(`${FLAME}<h2>${save.streak} gün seri</h2>
+    <p>${done ? 'Bugünün hattı tamam.' : save.streak ? 'Bugünün hattını bitir, serini koru!' : 'Günün Hattı\'nı bitir, serini başlat!'}</p>
+    <div class="week">${week}</div>
+    <div class="statrow"><div><b>${Math.max(save.best || 0, save.streak)}</b><span>en iyi seri</span></div><div><b>${save.dailyLog.length}</b><span>toplam gün</span></div></div>
+    ${done ? '<p id="mClock"></p><button id="mClose" class="btn glassbtn">Tamam</button>' : '<button id="mPlayD" class="btn primary"><span>Günün Hattı</span><small>Seriyi koru</small></button>'}`,
+    { mClose: closeModal, mPlayD: () => start('daily') });
+  dailyClock();
+}
 function settings() {
   const seg = ['auto', 'dark', 'light'].map(t => `<button data-t="${t}" class="${save.theme === t ? 'on' : ''}">${{ auto: 'Oto', dark: 'Koyu', light: 'Açık' }[t]}</button>`).join('');
   modal(`<h2>Ayarlar</h2>
-    <div class="opt">Ses <button id="oS" class="tog ${save.sound ? 'on' : ''}" aria-label="Ses"></button></div>
+    <div class="opt">Müzik <button id="oM" class="tog ${save.music ? 'on' : ''}" aria-label="Müzik"></button></div>
+    <div class="opt">Efekt sesleri <button id="oS" class="tog ${save.sound ? 'on' : ''}" aria-label="Efekt sesleri"></button></div>
     <div class="opt">Titreşim <button id="oV" class="tog ${save.vib ? 'on' : ''}" aria-label="Titreşim"></button></div>
     <div class="opt">Tema <div class="seg" id="oT">${seg}</div></div>
     <button id="mClose" class="btn glassbtn">Tamam</button>`, {
+    oM: () => { save.music = !save.music; persist(); $('oM').classList.toggle('on', save.music); save.music ? Music.start() : Music.stop(); },
     oS: () => { save.sound = !save.sound; persist(); $('oS').classList.toggle('on', save.sound); },
     oV: () => { save.vib = !save.vib; persist(); $('oV').classList.toggle('on', save.vib); haptic(); },
     mClose: closeModal });
@@ -592,6 +680,8 @@ $('bBack').onclick = () => show('home');
 $('bReset').onclick = reset;
 $('bHint').onclick = hint;
 $('bSettings').onclick = settings;
+$('streakChip').onclick = streakSheet;
+$('starsChip').onclick = () => show('map');
 $('bHow').onclick = how;
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) { pause(); ac?.suspend?.(); }
@@ -619,7 +709,15 @@ if (qd) {
     else { start('daily'); if (qm) setTimeout(() => toast(`Arkadaşın ${qm} hamlede bitirdi · geçebilir misin?`), 700); }
   } else toast('Bu meydan okuma eski · bugünün hattı seni bekliyor');
 }
-if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, 1700);
+const intro = $('intro');
+let introOn = !(window.__noIntro || qd || matchMedia('(prefers-reduced-motion: reduce)').matches);
+function endIntro() {
+  if (!introOn) return; introOn = false;
+  intro.classList.add('out'); document.body.classList.remove('introing');
+  setTimeout(() => intro.classList.add('gone'), 600);
+}
+if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro; setTimeout(endIntro, 2300); } else intro.classList.add('gone');
+if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 // test kancası
 window.__ray = { generate, lit, rot, limits, get G() { return G; }, get geo() { return geo; } };
 })();

@@ -36,6 +36,7 @@ function check(id, name, pass, detail = '', severity = 'high') {
 
 // Capacitor eklentilerinin sahtesi: reklam, titreşim, paylaşım çağrılarını kaydeder.
 const MOCK = `
+  window.__noIntro = !window.__withIntro;
   window.__log = { ads: [], hap: 0, share: [], raf: 0, errors: [] };
   const _raf = window.requestAnimationFrame.bind(window);
   window.requestAnimationFrame = cb => { window.__log.raf++; return _raf(cb); };
@@ -178,6 +179,8 @@ async function inViewport(page, sel) {
         const v1 = await vis();
         await page.click('#wTog'); await page.waitForTimeout(700);
         const v2 = await vis(); await shot(page, 'win-mini');
+        const rowHidden = await page.evaluate(() => getComputedStyle(document.querySelector('#winPanel .row2')).display === 'none' && getComputedStyle(document.getElementById('bReset')).visibility === 'hidden');
+        check('win.miniRow', '"Hattı gör": Tekrar/Paylaş/Ana sayfa gizlenir, üstteki ↺ bitişte gizli', rowHidden, '', 'medium');
         await page.click('#wTog'); await page.waitForTimeout(600);
         metrics.winView = { full: v1, mini: v2 };
         check('win.visible', 'Kazanınca tamamlanan hat görünür (panel tahtayı örtmez)', v1.boardBottom <= v1.panelTop + 1 && v1.s >= 40, JSON.stringify(v1));
@@ -234,6 +237,15 @@ async function inViewport(page, sel) {
     await shot(page, 'hint-ad-offer');
     if (adSheet) { await page.click('#mAd'); await page.waitForTimeout(600); }
     const s = await getSave(page), log = await page.evaluate(() => window.__log);
+    // kademeli reklam: aynı bölümde 2. ipucu seti için 2 video (her biri kullanıcının basışıyla)
+    await page.click('#bHint'); await page.waitForTimeout(350); await page.click('#bHint'); await page.waitForTimeout(350);
+    await page.click('#bHint'); await page.waitForTimeout(400);
+    const offer2 = await page.evaluate(() => document.querySelector('#mAd small')?.textContent || '');
+    await shot(page, 'ad-tier2');
+    let cont = '';
+    if (await page.$('#mAd')) { await page.click('#mAd'); await page.waitForTimeout(700); cont = await page.evaluate(() => document.querySelector('#mAd span')?.textContent || ''); if (cont) { await page.click('#mAd'); await page.waitForTimeout(700); } }
+    const s2 = await getSave(page), adsN = (await page.evaluate(() => window.__log.ads)).filter(a => a === 'rewarded').length;
+    check('ads.tier', 'Aynı bölümde 2. ipucu için 2 video (~30 sn), 2. videoyu oyuncu başlatır', /30 sn · 2 video/.test(offer2) && /2\. video/.test(cont) && adsN === 3 && s2.hints === 2, `teklif "${offer2}" · devam "${cont}" · reklam ${adsN} · ipucu ${s2.hints}`, 'high');
     check('ads.reward', 'İpucu bitince ödüllü reklam → +2 ipucu', !!adSheet && log.ads.includes('rewarded') && s.hints === 2, `hints=${s.hints} ads=${JSON.stringify(log.ads)}`);
     await ctx.close();
     // çevrimdışıyken reklam teklifi çıkmamalı
@@ -299,6 +311,34 @@ async function inViewport(page, sel) {
     check('gate.replay', 'Eski bölümü 3★ yapınca (★22) yeni hat açılır', sum === 22 && /YENİ HAT/.test(badge || ''), `★${sum} · rozet: ${badge || '-'}`, 'medium');
     check('e2.errors', 'Bu senaryolarda konsol hatası yok', !errors.length && !r.errors.length && !g.errors.length, [...errors, ...r.errors, ...g.errors].join(' | '));
     await g.ctx.close();
+  }
+
+  // ---------- E3. Seri penceresi, müzik ayarı, açılış intro'su ----------
+  {
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 9, streak: 3, best: 5, lastDaily: YDAY, dailyLog: [YDAY, ymd(new Date(Date.now() - 2 * 864e5)), ymd(new Date(Date.now() - 3 * 864e5))] } });
+    await page.click('#streakChip'); await page.waitForTimeout(600);
+    const w = await page.evaluate(() => ({ cells: document.querySelectorAll('.week i').length, on: document.querySelectorAll('.week i.on').length, title: document.querySelector('.sheet h2')?.textContent }));
+    await shot(page, 'streak-sheet');
+    check('streak.sheet', 'Seri rozetine dokununca 7 günlük seri penceresi', w.cells === 7 && w.on === 3 && /3 gün/.test(w.title), JSON.stringify(w), 'medium');
+    await page.click('#mPlayD').catch(() => {}); await page.waitForTimeout(300);
+    await page.click('#bBack').catch(() => {}); await page.waitForTimeout(300);
+    await page.click('#bSettings'); await page.waitForTimeout(500);
+    const hasM = !!(await page.$('#oM')); if (hasM) await page.click('#oM');
+    const mus = (await getSave(page)).music;
+    await shot(page, 'settings');
+    check('music', 'Ayarlarda Müzik anahtarı çalışıyor', hasM && mus === false, `music=${mus}`, 'medium');
+    await ctx.close();
+    const ictx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, colorScheme: 'dark' });
+    await ictx.addInitScript('window.__withIntro = true;'); await ictx.addInitScript(MOCK);
+    const ip = await ictx.newPage(), ierr = []; ip.on('pageerror', e => ierr.push(e.message));
+    await ip.goto(URL); await ip.waitForTimeout(1500);
+    const showing = await ip.evaluate(() => !document.getElementById('intro').classList.contains('gone'));
+    await shot(ip, 'intro');
+    await ip.waitForTimeout(2000);
+    const gone = await ip.evaluate(() => document.getElementById('intro').classList.contains('gone'));
+    check('intro', 'Açılışta intro oynar ve kendiliğinden kapanır', showing && gone, `görünür:${showing} kapandı:${gone}`, 'medium');
+    check('e3.errors', 'Seri/müzik/intro senaryosunda konsol hatası yok', !errors.length && !ierr.length, [...errors, ...ierr].join(' | '));
+    await ictx.close();
   }
 
   // ---------- F. Boşta CPU: animasyon döngüsü durmalı ----------

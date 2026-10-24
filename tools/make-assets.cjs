@@ -36,7 +36,7 @@ svg{display:block}</style></head><body>${body}</body></html>`;
     <div style="display:flex;align-items:center;gap:56px;position:relative">
       <div style="width:400px">${logo(100)}</div>
       <div><div style="font-size:150px;font-weight:800;letter-spacing:-5px;line-height:1;background:linear-gradient(120deg,${FG} 30%,#ffb35c 75%,#ff7a8a);-webkit-background-clip:text;color:transparent">Ray</div>
-      <div style="font-size:38px;color:#b9bfd6;margin-top:10px">Hatları bağla · Şehri yak</div>
+      <div style="font-size:38px;color:#b9bfd6;margin-top:10px">Hatları bağla · Şehri canlandır</div>
       <div style="font-size:30px;margin-top:28px;padding:12px 26px;border-radius:99px;background:linear-gradient(120deg,#ffb35c,#ff7a8a);color:#2a1406;font-weight:700;display:inline-block">Günün Hattı'nı kaç hamlede bitirirsin?</div></div>
     </div>`));
   // favicon / manifest ikonu

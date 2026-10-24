@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#0e1120">
 <title>Ray — Metro Bulmaca</title>
-<meta name="description" content="Hatları bağla, şehri yak. Tek elle, internetsiz oynanan sakin metro bulmacası.">
+<meta name="description" content="Hatları bağla, şehri canlandır. Tek elle, internetsiz oynanan sakin metro bulmacası.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Ray — Metro Bulmaca">
-<meta property="og:description" content="Hatları bağla, şehri yak. Günün Hattı'nı kaç hamlede bitirirsin?">
+<meta property="og:description" content="Hatları bağla, şehri canlandır. Günün Hattı'nı kaç hamlede bitirirsin?">
 <meta property="og:image" content="https://osmanadali.github.io/mobil-oyun/og.jpg">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
@@ -19,10 +19,18 @@
 <body>
 <div class="bg" aria-hidden="true"><i class="glow g1"></i><i class="glow g2"></i><i class="glow g3"></i><i class="map"></i></div>
 <div id="app">
+  <div id="intro" class="intro" aria-hidden="true">
+    <svg class="ilogo" viewBox="-10 -10 220 140">
+      <path class="iln a" d="M14 92H62L98 56H186"/><path class="iln b" d="M98 10V56L134 92H186"/><path class="iln c" d="M14 30H54L98 56"/>
+      <rect class="ihub" x="85" y="43" width="26" height="26" rx="8"/><circle class="ihubdot" cx="98" cy="56" r="4.5"/>
+      <circle class="ist" style="--d:.95s" cx="14" cy="92" r="8"/><circle class="ist" style="--d:1.05s" cx="14" cy="30" r="8"/><circle class="ist" style="--d:1.15s" cx="98" cy="10" r="8"/><circle class="ist" style="--d:1.25s" cx="186" cy="56" r="8"/><circle class="ist" style="--d:1.35s" cx="186" cy="92" r="8"/>
+    </svg>
+    <h1 class="ititle">Ray</h1><p class="isub">Hatları bağla · Şehri canlandır</p>
+  </div>
   <section id="home" class="screen active">
     <header class="top">
-      <div class="chip" id="streakChip"><svg viewBox="0 0 24 24"><path d="M12 2c1 4 5 5.5 5 11a5 5 0 0 1-10 0c0-2.5 1.2-4 2.5-5 .2 1.8 1 3 2.2 3.3C11 8.6 11.3 5 12 2z"/></svg><b id="sStreak">0</b></div>
-      <div class="chip"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z"/></svg><b id="sStars">0</b></div>
+      <button class="chip" id="streakChip" aria-label="Seri"><svg viewBox="0 0 24 24"><path d="M12 2c1 4 5 5.5 5 11a5 5 0 0 1-10 0c0-2.5 1.2-4 2.5-5 .2 1.8 1 3 2.2 3.3C11 8.6 11.3 5 12 2z"/></svg><b id="sStreak">0</b></button>
+      <button class="chip" id="starsChip" aria-label="Yıldızlar"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z"/></svg><b id="sStars">0</b></button>
       <button class="ic" id="bSettings" aria-label="Ayarlar"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
     </header>
 
@@ -36,7 +44,7 @@
         <circle class="st s3" cx="98" cy="10" r="7"/><circle class="st s4" cx="186" cy="92" r="7"/><circle class="st s5" cx="14" cy="30" r="7"/>
       </svg>
       <h1>Ray</h1>
-      <p>Hatları bağla · Şehri yak</p>
+      <p>Hatları bağla · Şehri canlandır</p>
     </div>
 
     <div class="cards">

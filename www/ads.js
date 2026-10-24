@@ -9,15 +9,21 @@ window.Ads = (() => {
   const TESTING = true;
   const plug = () => window.Capacitor?.Plugins?.AdMob;
   const online = () => navigator.onLine !== false;
-  let ready = false, interReady = false, lastShown = 0;
+  let ready = false, interReady = false, rewardReady = false, busy = false, lastShown = 0;
+  const within = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
 
   async function init() {
     const A = plug(); if (!A) return;
-    try { await A.initialize({ initializeForTesting: TESTING }); ready = true; preload(); } catch {}
+    try { await A.initialize({ initializeForTesting: TESTING }); ready = true; preload(); preloadReward(); } catch {}
   }
   async function preload() {
     const A = plug(); if (!A || !ready || !online() || interReady) return;
     try { await A.prepareInterstitial({ adId: IDS.interstitial, isTesting: TESTING }); interReady = true; } catch {}
+  }
+  // ödüllü reklamı önceden yükle → "İzle"ye basınca hemen açılır
+  async function preloadReward() {
+    const A = plug(); if (!A || !ready || !online() || rewardReady || busy) return;
+    try { await A.prepareRewardVideoAd({ adId: IDS.rewarded, isTesting: TESTING }); rewardReady = true; } catch {}
   }
   // Tam ekran reklam kapanana (ya da hata / zaman aşımı) kadar bekle.
   function closed(A, okEvents, failEvents, ms) {
@@ -46,21 +52,25 @@ window.Ads = (() => {
     } catch {}
     preload();
   }
-  // true yalnızca ödül hak edildiyse (video sonuna kadar izlendi)
+  // true yalnızca ödül hak edildiyse (video sonuna kadar izlendi). Aynı anda tek reklam.
   async function rewarded() {
-    const A = plug(); if (!A || !ready || !online()) return false;
+    const A = plug(); if (!A || !ready || !online() || busy) return false;
+    busy = true;
     let earned = false;
     const h = A.addListener('onRewardedVideoAdReward', () => { earned = true; });
     try {
-      await A.prepareRewardVideoAd({ adId: IDS.rewarded, isTesting: TESTING });
+      if (!rewardReady) await within(A.prepareRewardVideoAd({ adId: IDS.rewarded, isTesting: TESTING }), 10e3);
+      rewardReady = false;
       const wait = closed(A, ['onRewardedVideoAdDismissed'], ['onRewardedVideoAdFailedToShow', 'onRewardedVideoAdFailedToLoad'], 180e3);
       A.showRewardVideoAd().then(r => { if (r) earned = true; }).catch(() => {});
       await wait;
       await new Promise(r => setTimeout(r, 300));   // ödül olayı kapanıştan hemen sonra gelebilir
     } catch {}
     Promise.resolve(h).then(x => x?.remove?.()).catch(() => {});
+    busy = false;
+    preloadReward();
     return earned;
   }
-  addEventListener('online', preload);
-  return { init, interstitial, rewarded, online: () => online() && !!plug() };
+  addEventListener('online', () => { preload(); preloadReward(); });
+  return { init, interstitial, rewarded, busy: () => busy, online: () => online() && !!plug() };
 })();
