@@ -662,7 +662,7 @@ function draw() {
     if (winT) { const t = (now - winT - G.L.d[i] * 45) / 320; if (t > 0 && t < 1) sc *= 1 + Math.sin(t * Math.PI) * .1; if (t < 1) busy = true; }
     X.push([ox + (i % G.cols) * s + s / 2, oy + (i / G.cols | 0) * s + s / 2, a, sc]);
   }
-  const on = i => G.L.d[i] >= 0;
+  const on = i => G.L.d[i] >= 0, vis = i => !G.fog || G.won || G.seen[i];   // vis: karanlık karonun rayı/durağı hiç çizilmez (uçlar taşmasın)
   cx.lineCap = 'round';
   // 1) zemin
   const tiles = f => { cx.beginPath(); for (let i = 0; i < n; i++) if (f(i)) { const [x, y, , sc] = X[i], w = (s - 6) * sc; rrp(x - w / 2, y - w / 2, w, w, s * .24 * sc); } };
@@ -672,13 +672,13 @@ function draw() {
   if (G.pinned.includes(true)) {
     tiles(i => G.pinned[i]); cx.fillStyle = pal.pin; cx.fill();
     cx.fillStyle = pal.mut; cx.beginPath();
-    for (let i = 0; i < n; i++) if (G.pinned[i]) { const [x, y, , sc] = X[i], o = s * .31 * sc, r = s * .038; for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { cx.moveTo(x + dx * o + r, y + dy * o); cx.arc(x + dx * o, y + dy * o, r, 0, 7); } }
+    for (let i = 0; i < n; i++) if (G.pinned[i] && vis(i)) { const [x, y, , sc] = X[i], o = s * .31 * sc, r = s * .038; for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { cx.moveTo(x + dx * o + r, y + dy * o); cx.arc(x + dx * o, y + dy * o, r, 0, 7); } }
     cx.fill();
   }
   const anyFixed = G.fixed.includes(true);
   if (anyFixed) { tiles(i => G.fixed[i]); cx.lineWidth = 2.5; cx.strokeStyle = rgba(col, .85); cx.stroke(); }
   // 2) raylar: sönük → ışıma → yanan
-  const rails = f => { cx.beginPath(); for (let i = 0; i < n; i++) if (f(i)) railPath(X[i], G.cur[i]); cx.stroke(); };
+  const rails = f => { cx.beginPath(); for (let i = 0; i < n; i++) if (f(i) && vis(i)) railPath(X[i], G.cur[i]); cx.stroke(); };
   cx.lineWidth = s * .17; cx.strokeStyle = pal.rail; rails(i => !on(i));
   cx.lineWidth = s * .38; cx.strokeStyle = rgba(col, pal.light ? .16 : .22); rails(on);
   cx.lineWidth = s * .17; cx.strokeStyle = col; rails(on);
@@ -695,7 +695,7 @@ function draw() {
     cx.beginPath(); railPath(X[i], G.cur[i]); cx.stroke(); cx.restore();
   }
   // 4) duraklar
-  const dots = (f, r) => { cx.beginPath(); for (let i = 0; i < n; i++) if (i !== G.hub && popc(G.cur[i]) === 1 && f(i)) { const [x, y, , sc] = X[i]; cx.moveTo(x + r * sc, y); cx.arc(x, y, r * sc, 0, 7); } };
+  const dots = (f, r) => { cx.beginPath(); for (let i = 0; i < n; i++) if (i !== G.hub && popc(G.cur[i]) === 1 && f(i) && vis(i)) { const [x, y, , sc] = X[i]; cx.moveTo(x + r * sc, y); cx.arc(x, y, r * sc, 0, 7); } };
   dots(on, s * .27); cx.fillStyle = rgba(col, .22); cx.fill();
   cx.lineWidth = s * .065;
   dots(on, s * .15); cx.fillStyle = '#fff'; cx.fill(); cx.strokeStyle = col; cx.stroke();
