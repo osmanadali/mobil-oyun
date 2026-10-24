@@ -91,14 +91,14 @@ async function solve(page, gap = 25) {
   let total = 0;
   for (let round = 0; round < 40; round++) {
     const taps = await page.evaluate(() => {
-      const { G, rot } = window.__ray, out = [], lit = i => !G.seen || G.seen[i];
+      const { G, rot } = window.__ray, out = [], lit = i => !G.seen || G.seen[i], unrot = m => ((m >> 1) | (m << 3)) & 15;
       if (!G || G.won) return out;
       G.cur.forEach((v, i) => {
         if (G.fixed[i] || G.pinned[i]) return;
         const j = G.link?.[i] ?? -1, lo = j >= 0 ? Math.min(i, j) : i, hi = j >= 0 ? Math.max(i, j) : i, tapper = lit(lo) ? lo : hi;
         if (i !== tapper || !lit(i)) return;
-        let k = 0, t = v, u = j >= 0 ? G.cur[j] : 0;
-        while ((t !== G.sol[i] || (j >= 0 && u !== G.sol[j])) && k < 4) { t = rot(t); if (j >= 0) u = rot(u); k++; }
+        let k = 0, t = v, u = j >= 0 ? G.cur[j] : 0; const step = G.rev?.[i] ? unrot : rot;   // ters karo saat yönünün tersine
+        while ((t !== G.sol[i] || (j >= 0 && u !== G.sol[j])) && k < 4) { t = step(t); if (j >= 0) u = rot(u); k++; }
         for (let q = 0; q < k; q++) out.push(i);
       });
       return out;
@@ -233,7 +233,9 @@ async function inViewport(page, sel) {
         await shot(page, `fail-level-${L}`);
         break;
       }
-      if (L === 12) {   // M1 sonu
+      if (L === 12) {   // M1 sonu = hat finali (SON DURAK)
+        const fin = await page.evaluate(() => ({ title: document.getElementById('gTitle').textContent, cls: document.getElementById('game').classList.contains('final'), fc: JSON.parse(localStorage.getItem('ray')).fc, tip: document.getElementById('winPanel').textContent }));
+        check('final', 'Hat finali: son bölüm "🏁 Son durak", altın çerçeve; kusursuz → +1 bonus 👑', /Son durak/.test(fin.title) && fin.cls && fin.fc === 1 && /bonus/.test(fin.tip), JSON.stringify({ ...fin, tip: undefined }), 'medium');
         const h0 = (await getSave(page)).hints, has = await page.$('#mDbl');
         if (has) { await page.click('#mDbl'); await page.waitForTimeout(900); }
         const h1 = (await getSave(page)).hints, ok = await page.$('.dblok');
@@ -579,6 +581,55 @@ async function inViewport(page, sel) {
     check('rule.fog.saw', 'Testere dişi: M6 ilk 3 bölüm 6×8, sonra 7×9', sizes === '7x9 6x8 6x8 7x9', sizes, 'medium');
     check('e8.errors', 'Karanlık tünel senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
     await ctx.close();
+  }
+
+  // ---------- E9. Ters karo (M5), sayaçlı karo (M7), iki merkez (M8), kural dönüşümü ----------
+  {
+    const ruleIntro = async (lvl, seenUpTo) => {
+      const seen = Object.fromEntries(Array.from({ length: seenUpTo - 1 }, (_, k) => [k + 2, 1]));
+      const o = await open(browser, URL, { save: { played: lvl - 1, level: lvl, stars: starsUpTo(lvl), seen, remindAsked: true } });
+      await o.page.click('#bPlay'); await o.page.waitForTimeout(700);
+      o.card = await o.page.evaluate(() => ({ open: document.getElementById('modal').classList.contains('open'), txt: document.querySelector('.sheet h2')?.textContent }));
+      return o;
+    };
+    // ters karo
+    const A = await ruleIntro(73, 3); await shot(A.page, 'rule-rev'); if (A.card.open) await A.page.click('#mGo'); await A.page.waitForTimeout(400);
+    const ra = await A.page.evaluate(() => { const G = window.__ray.G, i = G.rev.indexOf(true); return { n: G.rev.filter(Boolean).length, i, v: G.cur[i] }; });
+    await tapTile(A.page, ra.i); await A.page.waitForTimeout(250);
+    const rb = await A.page.evaluate(i => window.__ray.G.cur[i], ra.i); await shot(A.page, 'rev');
+    await solve(A.page, 8); const wA = await waitModal(A.page);
+    check('rule.rev', 'M5 ters karo: kural kartı, ↺ karo saat yönünün tersine döner, bölüm çözülür', /Ters karo/.test(A.card.txt || '') && ra.n >= 2 && rb === (((ra.v >> 1) | (ra.v << 3)) & 15) && wA, JSON.stringify({ ...A.card, ...ra, rb, wA }));
+    // sayaçlı karo: 3 dokunuştan sonra kilitlenir, baştan alınca sayaç geri gelir
+    const B = await ruleIntro(133, 5); await shot(B.page, 'rule-cnt'); if (B.card.open) await B.page.click('#mGo'); await B.page.waitForTimeout(400);
+    const ca = await B.page.evaluate(() => { const G = window.__ray.G, i = G.cnt.indexOf(3); return { n: G.cnt.filter(v => v >= 0).length, i }; });
+    for (let k = 0; k < 4; k++) { await tapTile(B.page, ca.i); await B.page.waitForTimeout(160); }
+    const cb = await B.page.evaluate(i => ({ c: window.__ray.G.cnt[i] }), ca.i); await shot(B.page, 'cnt');
+    await B.page.click('#bReset'); await B.page.waitForTimeout(400);
+    const cc = await B.page.evaluate(i => window.__ray.G.cnt[i], ca.i);
+    await solve(B.page, 8); const wB = await waitModal(B.page);
+    check('rule.cnt', 'M7 sayaçlı karo: 3 dönüşten sonra kilitlenir, ↺ baştan sayacı yeniler, bölüm çözülür', /Sayaçlı karo/.test(B.card.txt || '') && ca.n >= 2 && cb.c === 0 && cc === 3 && wB, JSON.stringify({ ...B.card, ...ca, ...cb, cc, wB }));
+    // iki merkez: ikinci merkez var; hatlar değerse "karıştı" ve çözülmüş sayılmaz; 300 bölüm çözülebilir
+    const C2 = await ruleIntro(169, 6); await shot(C2.page, 'rule-two'); if (C2.card.open) await C2.page.click('#mGo'); await C2.page.waitForTimeout(400);
+    const tw = await C2.page.evaluate(() => {
+      const R = window.__ray; let bad = 0, merge = 0;
+      for (let sd = 1; sd <= 300; sd++) {
+        const P = R.generate(7, 9, sd * 7919 + 5, 0, 2, { two: true }), L = R.lit({ ...P, cur: P.sol });
+        if (!L.solved || L.merged || !L.own.includes(1) || !L.own.includes(2)) bad++;
+        // birbirine komşu iki farklı hattın karolarını bağla → karışmalı
+        const own = L.own, cur = P.sol.slice(); let done = false;
+        for (let i = 0; i < cur.length && !done; i++) { const j = i + 1; if (j % P.cols && own[i] === 1 && own[j] === 2) { cur[i] |= 2; cur[j] |= 8; done = true; } }
+        if (done) { const M = R.lit({ ...P, cur }); if (M.merged && !M.solved) merge++; else bad++; }
+      }
+      const G = R.G; return { bad, merge, hub2: G.hub2, two: G.hub2 >= 0 };
+    });
+    await shot(C2.page, 'two');
+    await solve(C2.page, 8); const wC = await waitModal(C2.page);
+    check('rule.two', 'M8 iki merkez: kural kartı, iki ayrı hat; değince karışır (çözülmez); 300 bölüm çözülebilir', /İki merkez/.test(C2.card.txt || '') && tw.two && tw.bad === 0 && tw.merge > 200 && wC, JSON.stringify({ ...C2.card, ...tw, wC }));
+    // kural dönüşümü: M9+ (209+) her bölüm 1–2 kural, karışım bölümden bölüme değişir
+    const mix = await C2.page.evaluate(() => { const R = window.__ray, L = []; for (let l = 209; l <= 240; l++) L.push(R.puzzleFor(l).rules.sort().join('+')); return { sizes: [...new Set(L.map(x => x.split('+').length))], kinds: new Set(L).size, sample: L.slice(0, 6) }; });
+    check('rule.mix', 'Karma hatlar (M9+): her bölümde 1–2 kural, karışım çeşitli', mix.sizes.every(k => k >= 1 && k <= 2) && mix.kinds >= 6, JSON.stringify(mix), 'medium');
+    check('e9.errors', 'Yeni kural senaryolarında konsol hatası yok', ![...A.errors, ...B.errors, ...C2.errors].length, [...A.errors, ...B.errors, ...C2.errors].join(' | '));
+    await A.ctx.close(); await B.ctx.close(); await C2.ctx.close();
   }
 
   // ---------- F. Boşta CPU: animasyon döngüsü durmalı ----------

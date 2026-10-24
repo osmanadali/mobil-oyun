@@ -54,14 +54,33 @@ Izgara boyu bölüme göre büyür: 1–3 3×3 · 4–8 4×4 · 9–15 4×5 · 1
 
 ## 5. Yeni kurallar (öğrenme basamakları)
 
-| Hat | İlk bölüm | Kural | Tanıtım |
+| Hat | İlk bölüm | Kural | Ne yapar? |
 |---|---|---|---|
-| M3 | 29 | **Sabit karo:** koyu, cıvatalı karolar dönmez | İlk bölümde daha çok sabit karo, animasyonlu kural kartı |
-| M4 | 49 | **Eşli karo:** aynı numaralı iki karo birlikte döner | İlk bölümde tek eş, animasyonlu kural kartı |
-| M6 | 101 | **Karanlık tünel:** hattın ulaşmadığı karolar karanlıktır, rayları görünmez ve dokunulamaz. Yanan hattın 2 karo yakını aydınlanır ve açık kalır. | Animasyonlu kural kartı; ilk 3 bölüm 6×8 |
-| M8 | 169 | Boş yer (ileride yeni kural) | |
+| M3 | 29 | 🔩 **Sabit karo** | Koyu, cıvatalı karolar dönmez; zaten doğru yöndedir. |
+| M4 | 49 | 🔗 **Eşli karo** | Aynı numaralı iki karo birlikte döner. |
+| M5 | 73 | ↺ **Ters karo** | Oklu karo saat yönünün tersine döner. |
+| M6 | 101 | 🌑 **Karanlık tünel** | Hattın ulaşmadığı karolar karanlıktır, dokunulamaz; yanan hattın 2 karo yakını aydınlanır ve açık kalır. Merkez başta yalnız başlar. |
+| M7 | 133 | 🔢 **Sayaçlı karo** | En fazla 3 kez döner, sayı bitince kilitlenir. Önce düşün, sonra dokun. |
+| M8 | 169 | 🚉 **İki merkez** | İki istasyon, iki renk; her durak kendi merkezine bağlanmalı. İki hat birbirine değerse kırmızı yanar, bölüm bitmez. |
+| M9+ | 209 | Karma hatlar | Yeni kural yok; her bölümde öğrenilmiş kurallardan 1–2 tanesi. |
 
-Yeni kural gelen hattın **ilk 3 bölümü bir boy küçük ızgarayla** gelir ve ilk bölüm biraz daha kolay seçilir. Böylece oyuncu kuralı rahatça öğrenir (testere dişi).
+**Öğretme:**
+
+- Yeni kuralın ilk girişinde animasyonlu bir kural kartı çıkar.
+- Yeni kural gelen hattın ilk 3 bölümü bir boy küçük ızgarayla gelir, yalnızca o kuralı içerir ve ilk bölüm biraz daha kolay seçilir (testere dişi).
+
+**Kural dönüşümü:**
+
+- Kurallar üst üste yığılmaz. Bir kural kendi hattında her bölümde vardır.
+- Sonraki hatlarda kendi kuralına ek olarak bölüm bölüm değişen en fazla 1 eski kural gelir.
+- M9 ve sonrası karma hatlardır: her bölüm 1–2 kuralın farklı bir karışımıdır.
+- Böylece tahta kalabalıklaşmaz ve her bölüm biraz farklı hissettirir.
+
+**Hat finali (🏁 Son durak):**
+
+- Her hattın son bölümü finaldir: zorluk hedefi +2 puan, en çok aday taranır.
+- Tahtada altın çerçeve olur, haritada 🏁 işareti görünür.
+- Finali kusursuz bitiren oyuncu bir kez **+1 bonus 👑** kazanır. Hattın son bölümü olduğu için +2 ipucu da verir.
 
 ## 6. Günün Hattı
 
