@@ -720,6 +720,19 @@ async function inViewport(page, sel) {
     await ctx.close();
   }
 
+  // ---------- E12. "Her şey açık" test sürümü (yalnız apk.yml unlocked derlemesi) ----------
+  {
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 1 }, init: 'window.__rayTest = 1' });
+    const home = await page.evaluate(() => ({ test: document.body.classList.contains('test'), crowns: +document.getElementById('sCrowns').textContent }));
+    await page.click('#bMap'); await page.waitForTimeout(400);
+    const map = await page.evaluate(() => ({ on: document.querySelectorAll('.lv:not(.off)').length, locked: document.querySelectorAll('.line.lockd').length, l200: !!document.querySelector('.lv[data-l="200"]:not([disabled])') }));
+    await page.click('.lv[data-l="200"]'); await page.waitForTimeout(500);
+    const lvl = await page.evaluate(() => window.__ray.G?.lvl);
+    const s = await getSave(page);
+    check('test.open', 'Test sürümü: bütün hatlar ve 408 bölüm açık, temalar/kaplamalar sende, bol 👑', home.test && home.crowns >= 999 && map.locked === 0 && map.on >= 408 && map.l200 && lvl === 200 && Object.keys(s.owned).length >= 13 && Object.keys(s.trains).length === 9 && errors.length === 0, JSON.stringify({ ...home, ...map, lvl }), 'medium');
+    await ctx.close();
+  }
+
   // ---------- F. Boşta CPU: animasyon döngüsü durmalı ----------
   {
     const { ctx, page } = await open(browser, URL, { save: { played: 4, level: 30, stars: starsUpTo(30) } });

@@ -13,6 +13,7 @@ const LINE0 = 12, LINE_STEP = 4;                        // hat uzunluğu doğrus
 const STAR_AVG = 2.2;                                   // yeni hat: önceki bölümlerde ortalama 2,2★
 const INTER_EVERY = 4;                                  // her 4 galibiyette 1 geçiş reklamı
 const DAILY_FREE_HINTS = 3;
+const TEST = !!window.__rayTest;                        // yalnız "her şey açık" test APK'sı (apk.yml → unlocked): bütün hatlar ve bölümler açık
 const AD_TIERS = [1, 2, 2, 3];                          // aynı bölümde ipucu için izlenecek video: ~15 sn, ~30, ~30, ~45…
 const SHARE_URL = 'https://osmanadali.github.io/mobil-oyun/';
 const PENTA = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26, 28];
@@ -68,7 +69,7 @@ const dPct = day => Math.round(dailyZ(day) * 100);
 const lineName = c => `M${c + 1} · ${(skin().names || LINE_NAMES)[c % 6]} Hat`;
 const need = c => Math.round((lineStart(c) - 1) * STAR_AVG);
 const totalStars = () => Object.values(save.stars).reduce((a, b) => a + b, 0);
-const unlocked = c => totalStars() >= need(c);
+const unlocked = c => TEST || totalStars() >= need(c);
 
 // ---------- tema / palet ----------
 let pal = {};
@@ -547,7 +548,7 @@ function refreshHome() {
 
 // ---------- hat haritası (bölüm seçimi) ----------
 function renderMap() {
-  const tot = totalStars(), last = lineOf(save.level) + 1, col = lineCols();
+  const tot = totalStars(), last = Math.max(TEST ? 11 : 0, lineOf(save.level) + 1), col = lineCols();
   $('pStars').textContent = tot;
   $('pSub').textContent = 'Yıldız topla → yeni hat aç';
   let html = '';
@@ -557,7 +558,7 @@ function renderMap() {
     html += `<div class="line ${open ? '' : 'lockd'}" style="--lc:${col[c % 6]}">
       <div class="lh"><i class="dot"></i><b>${lineName(c)}${RULES[c] ? `<em>${RULES[c].tag}</em>` : ''}</b><small>${open ? `★ ${got} / ${len * 3} · ⚡%${zPct(first)}` : `🔒 ★ ${tot} / ${need(c)}`}</small></div>
       <div class="lvs">${Array.from({ length: len }, (_, k) => {
-        const l = first + k, st = save.stars[l] || 0, can = open && l <= save.level;
+        const l = first + k, st = save.stars[l] || 0, can = open && (TEST || l <= save.level);
         return `<button class="lv ${can ? '' : 'off'} ${l === save.level && can ? 'cur' : ''} ${l === lineEnd(c) ? 'fin' : ''}" data-l="${l}" ${can ? '' : 'disabled'}><b>${l}</b><i>${can ? (save.crowns[l] ? '👑' : starTxt(st)) : ''}</i></button>`;
       }).join('')}</div></div>`;
   }
@@ -1544,6 +1545,12 @@ App?.addListener?.('backButton', () => {
   else App.minimizeApp?.();
 });
 
+// "her şey açık" test sürümü: bütün temalar ve tren kaplamaları sende; bol 👑 (sandık için), 💡 ve 🛡 (bir kez verilir)
+if (TEST && !save.testOpen) {
+  save.testOpen = 1; SKINS.forEach(k => { save.owned[k.id] = 1; }); save.trains = Object.fromEntries(LIVERIES.map(v => [v.id, 1]));
+  save.cc = (save.cc || 0) + 999; save.hints = Math.max(save.hints, 99); save.shield = SHIELD_MAX; persist();
+}
+document.body.classList.toggle('test', TEST);
 applyTheme();
 show('home');
 Ads.init();
