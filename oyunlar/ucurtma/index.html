@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#4a92dc">
+<meta name="description" content="Uçurtmanı rüzgârla yükselt: basılı tut, bırak, ipi koparma.">
+<title>Uçurtma</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="c" aria-label="Uçurtma oyun alanı"></canvas>
+
+<div id="hud" class="hidden">
+  <div class="hud-l">
+    <div id="hAlt" class="alt">0 m</div>
+    <div class="sub"><span id="hBest">En iyi 0 m</span><span id="hMult" class="chip hidden">×1</span></div>
+  </div>
+  <button id="bPause" class="icon" aria-label="Duraklat">
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.5" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.5" fill="currentColor"/></svg>
+  </button>
+</div>
+
+<div id="menu" class="screen">
+  <div class="title">
+    <h1>Uçurtma</h1>
+    <p>Rüzgârı yakala, gökyüzüne yüksel.</p>
+  </div>
+  <div class="card">
+    <div class="best">En iyi: <b id="mBest">0</b> m</div>
+    <button id="bPlay" class="btn primary">Oyna</button>
+    <button id="bHow" class="btn" aria-expanded="false">Nasıl oynanır</button>
+    <div id="how" class="how hidden">
+      <div class="row">
+        <svg viewBox="0 0 44 44" width="40" height="40" aria-hidden="true"><path d="M20 4 28 13 20 24 12 13Z" fill="#ff6b5e"/><path d="M20 4V24M12 13H28" stroke="#6b4a32" stroke-width="1.4"/><path d="M20 24c3 5-3 9 0 14" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="20" cy="39" r="3.5" fill="currentColor" opacity=".45"/><path d="M37 24V9M33 13l4-4 4 4" stroke="#3fb8ae" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span><b>Basılı tut:</b> uçurtma parmağına döner ve hızla yükselir, ama ip gerilir.</span>
+      </div>
+      <div class="row">
+        <svg viewBox="0 0 44 44" width="40" height="40" aria-hidden="true"><path d="M6 40Q20 34 27 18" stroke="#ffc35a" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M27 18q2-4 4-7" stroke="#f0584c" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M31 3l7 6-6 8-7-6Z" fill="#ffd166"/></svg>
+        <span><b>Bırak:</b> ip gevşer. İp kızarıp titrerse hemen bırak, yoksa kopar!</span>
+      </div>
+      <div class="row">
+        <svg viewBox="0 0 44 44" width="40" height="40" aria-hidden="true"><path d="M3 15q4-5 8 0q4-5 8 0M12 26q3-4 6 0q3-4 6 0" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M34 24l2.2 5 5 2.2-5 2.2-2.2 5-2.2-5-5-2.2 5-2.2z" fill="#ffc94d"/><path d="M33 9l-5-3v6zM33 9l5-3v6z" fill="#a78bfa"/></svg>
+        <span><b>Kaçın:</b> kenarlar, kuşlar, başka ipler, fırtına. <b>Topla:</b> kurdele ve yıldız.</span>
+      </div>
+    </div>
+    <div class="toggles">
+      <button class="tog" data-k="sound" aria-pressed="true">Ses</button>
+      <button class="tog" data-k="music" aria-pressed="true">Müzik</button>
+    </div>
+  </div>
+</div>
+
+<div id="pause" class="screen dim hidden">
+  <div class="card">
+    <h2>Duraklatıldı</h2>
+    <button id="bResume" class="btn primary">Devam</button>
+    <div class="toggles">
+      <button class="tog" data-k="sound" aria-pressed="true">Ses</button>
+      <button class="tog" data-k="music" aria-pressed="true">Müzik</button>
+    </div>
+    <button id="bQuit" class="btn ghost">Ana menü</button>
+  </div>
+</div>
+
+<div id="over" class="screen dim hidden">
+  <div class="card center">
+    <h2 id="oReason">İp koptu!</h2>
+    <div id="oScore" class="big">0 m</div>
+    <div id="oDetail" class="detail"></div>
+    <div id="oBest" class="best"></div>
+    <button id="bAgain" class="btn primary">Tekrar</button>
+    <button id="bCont" class="btn video hidden">Devam et (video)</button>
+    <button id="bMenu" class="btn ghost">Ana menü</button>
+  </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
