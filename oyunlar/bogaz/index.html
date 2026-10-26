@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#081428">
+<meta name="description" content="Boğaz: gece İstanbul Boğazı'nda gemilere rota çizip onları iskelelerine ulaştırdığın sakin bir mobil oyun.">
+<title>Boğaz</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="c" aria-label="Boğaz oyun alanı"></canvas>
+<div id="safe" aria-hidden="true"></div>
+
+<div id="hud" class="hidden">
+  <div class="chip"><span class="lbl">Skor</span><b id="score">0</b></div>
+  <div class="hud-r">
+    <div class="chip"><span class="lbl">En iyi</span><b id="hudBest">0</b></div>
+    <button id="btnPause" class="icon-btn" aria-label="Duraklat">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.5" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.5" fill="currentColor"/></svg>
+    </button>
+  </div>
+</div>
+<div id="toast" class="toast" aria-live="polite"></div>
+
+<section id="menu" class="screen">
+  <div class="panel">
+    <svg class="bridge-art" viewBox="0 0 200 40" aria-hidden="true">
+      <path d="M0 30 H200" stroke="currentColor" stroke-opacity=".5" stroke-width="2"/>
+      <path d="M20 30 Q 50 6 52 6 Q 100 30 148 6 Q 150 6 180 30" stroke="currentColor" stroke-opacity=".55" stroke-width="1.3" fill="none"/>
+      <rect x="49" y="4" width="6" height="27" rx="1" fill="currentColor" fill-opacity=".7"/>
+      <rect x="145" y="4" width="6" height="27" rx="1" fill="currentColor" fill-opacity=".7"/>
+      <g fill="#ffd79a"><circle cx="30" cy="30" r="1.2"/><circle cx="66" cy="30" r="1.2"/><circle cx="84" cy="30" r="1.2"/><circle cx="100" cy="30" r="1.2"/><circle cx="116" cy="30" r="1.2"/><circle cx="134" cy="30" r="1.2"/><circle cx="170" cy="30" r="1.2"/></g>
+      <circle cx="52" cy="3" r="1.4" fill="#ff8a80"/><circle cx="148" cy="3" r="1.4" fill="#ff8a80"/>
+    </svg>
+    <h1 class="title">Boğaz</h1>
+    <p class="sub">Gece vardiyası · İstanbul</p>
+    <p class="best">En iyi skor: <b id="menuBest">0</b></p>
+    <button id="btnPlay" class="btn primary">Oyna</button>
+    <button id="btnHow" class="btn">Nasıl oynanır</button>
+    <div class="toggles">
+      <button class="tgl" data-k="sound" aria-pressed="true">Ses <span>Açık</span></button>
+      <button class="tgl" data-k="music" aria-pressed="true">Müzik <span>Açık</span></button>
+    </div>
+  </div>
+</section>
+
+<section id="how" class="screen hidden">
+  <div class="panel">
+    <h2>Nasıl oynanır</h2>
+    <ul class="hints">
+      <li>
+        <svg viewBox="0 0 56 40" aria-hidden="true"><rect x="3" y="21" width="18" height="9" rx="4.5" fill="#e9edf3"/><rect x="7" y="23" width="9" height="5" rx="1.5" fill="#ff8a73"/><path d="M23 25 C 33 25 33 10 45 11" stroke="#ff8a73" stroke-width="3" stroke-linecap="round" stroke-dasharray="0.1 6" fill="none"/><circle cx="47" cy="10" r="6" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="1.6"/></svg>
+        <span>Gemiye dokun ve parmağını sürükleyerek <b>rota çiz</b>.</span>
+      </li>
+      <li>
+        <svg viewBox="0 0 56 40" aria-hidden="true"><rect x="44" y="0" width="12" height="40" fill="#141c2d"/><rect x="30" y="17" width="16" height="6" fill="#3b4256"/><rect x="30" y="17" width="5" height="6" fill="#4fd6bd"/><circle cx="24" cy="20" r="7" fill="none" stroke="#4fd6bd" stroke-width="1.8"/><rect x="2" y="15.5" width="16" height="9" rx="4.5" fill="#e9edf3"/><rect x="5" y="17.5" width="9" height="5" rx="1.5" fill="#4fd6bd"/></svg>
+        <span>Gemiyi <b>kendi rengindeki iskeleye</b> ulaştır: +1 puan.</span>
+      </li>
+      <li>
+        <svg viewBox="0 0 56 40" aria-hidden="true"><path d="M8 4 H48" stroke="#fff" stroke-opacity=".35" stroke-dasharray="3 3"/><path d="M8 37 H48" stroke="#fff" stroke-opacity=".35" stroke-dasharray="3 3"/><path d="M14 8 h9 v16 l-4.5 7 l-4.5 -7z" fill="#7a4a45"/><rect x="15.5" y="9" width="6" height="5" fill="#eef1f6"/><path d="M19 27 V35" stroke="#e6edf7" stroke-width="2" stroke-linecap="round"/><path d="M16 32 L19 36 L22 32" stroke="#e6edf7" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="40" cy="20" r="10" fill="none" stroke="#ff6b6b" stroke-width="1.8" stroke-opacity=".8"/><text x="40" y="25" text-anchor="middle" font-size="14" font-weight="700" fill="#ff8a80">!</text></svg>
+        <span><b>Tankerleri</b> karşı uçtan çıkar. Gemiler <b>çarpışmasın</b>!</span>
+      </li>
+    </ul>
+    <button id="btnHowBack" class="btn primary">Anladım</button>
+  </div>
+</section>
+
+<section id="pause" class="screen dim hidden">
+  <div class="panel">
+    <h2>Duraklatıldı</h2>
+    <button id="btnResume" class="btn primary">Devam et</button>
+    <button id="btnRestart" class="btn">Yeniden başla</button>
+    <button id="btnPauseMenu" class="btn ghost">Ana menü</button>
+    <div class="toggles">
+      <button class="tgl" data-k="sound" aria-pressed="true">Ses <span>Açık</span></button>
+      <button class="tgl" data-k="music" aria-pressed="true">Müzik <span>Açık</span></button>
+    </div>
+  </div>
+</section>
+
+<section id="over" class="screen dim hidden">
+  <div class="panel">
+    <h2 class="danger">Çarpışma!</h2>
+    <p class="sub">İki gemi birbirine değdi.</p>
+    <div class="final"><span class="lbl">Skor</span><b id="overScore">0</b></div>
+    <p class="best">En iyi: <b id="overBest">0</b> <span id="newBest" class="badge hidden">Yeni rekor!</span></p>
+    <button id="btnAgain" class="btn primary">Tekrar</button>
+    <button id="btnRevive" class="btn hidden">Devam et (video)</button>
+    <button id="btnOverMenu" class="btn ghost">Ana menü</button>
+  </div>
+</section>
+
+<script src="game.js"></script>
+</body>
+</html>
