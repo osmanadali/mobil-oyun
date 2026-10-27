@@ -60,8 +60,8 @@ const SHOP_MOCK = `window.CdvPurchase = (() => { let owned = false; const cb = {
   return { ProductType: { NON_CONSUMABLE: 'nc' }, Platform: { GOOGLE_PLAY: 'gp' }, ErrorCode: { PAYMENT_CANCELLED: 1 },
     store: { register() {}, when: () => when, initialize: async () => { (cb.p || []).forEach(f => f(product)); return []; }, get: () => product, owned: () => owned, restorePurchases: async () => {} } }; })();`;
 
-async function open(browser, url, { vp = [390, 844], scheme = 'dark', save = null, cap = true, init = '' } = {}) {
-  const ctx = await browser.newContext({ viewport: { width: vp[0], height: vp[1] }, deviceScaleFactor: 2, colorScheme: scheme, hasTouch: true, isMobile: true });
+async function open(browser, url, { vp = [390, 844], scheme = 'dark', save = null, cap = true, init = '', rm = false } = {}) {
+  const ctx = await browser.newContext({ viewport: { width: vp[0], height: vp[1] }, deviceScaleFactor: 2, colorScheme: scheme, hasTouch: true, isMobile: true, reducedMotion: rm ? 'reduce' : 'no-preference' });
   if (!cap) await ctx.addInitScript('window.__noCap = true');
   if (init) await ctx.addInitScript(init);
   await ctx.addInitScript(MOCK);
@@ -672,40 +672,92 @@ async function inViewport(page, sel) {
     await ctx.close();
   }
 
-  // ---------- E11. Sürpriz sandık (👑 ile), tren kaplaması, seri kalkanı ----------
+  // ---------- E11. Sürpriz sandık (👑 ile): açılış sahnesi, tren kaplaması, seri kalkanı ----------
+  // Sahne gözle de kontrol edilir: chest-closed (kapalı sandık), chest-open-* (açılmış sandık + ödül)
+  const chestCrowns = Object.fromEntries(Array.from({ length: 12 }, (_, k) => [k + 1, 1]));   // bakiye 👑 12
+  const chestScene = page => page.evaluate(() => {
+    const s = document.getElementById('chestScene'); if (!s) return null;
+    const q = c => s.querySelector(c), ic = q('.cs-ic'), n = q('.cs-n'), r = ic.getBoundingClientRect(), nb = n?.getBoundingClientRect();
+    return { open: s.classList.contains('open'), done: s.classList.contains('done'), tap: q('.cs-tap').textContent, tier: q('.cs-tier').textContent, name: q('.cs-name h2').textContent, go: q('.cs-go').textContent,
+      kind: ic.className.replace('cs-ic ', ''), op: +getComputedStyle(ic).opacity, tb1: getComputedStyle(ic).getPropertyValue('--tb1').trim(), trn: !!ic.querySelector('.trn'), use: !!q('#csUse'),
+      n: n ? n.textContent : null, round: !!n && Math.abs(nb.width - nb.height) < 1 && parseFloat(getComputedStyle(n).borderRadius) >= nb.height / 2, br: !!n && nb.left > r.left + r.width / 2 && nb.top > r.top + r.height / 2 };
+  });
+  const sheetBack = page => page.evaluate(() => !document.getElementById('chestScene') && document.getElementById('modal').classList.contains('open') && !!document.getElementById('mOpen'));
   {
-    const crowns = Object.fromEntries(Array.from({ length: 12 }, (_, k) => [k + 1, 1]));   // bakiye 👑 12
-    const sv = { played: 6, level: 13, stars: starsUpTo(13), crowns, hints: 3 };
-    const { ctx, page, errors } = await open(browser, URL, { save: { ...sv, seed: 4242, dry: 7 } });
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 6, level: 13, stars: starsUpTo(13), crowns: chestCrowns, hints: 3, seed: 4242, dry: 7 } });
     await page.click('#crownChip'); await page.waitForTimeout(450);
-    await page.click('#mChest'); await page.waitForTimeout(400);
-    const odds = await page.textContent('.odds');
-    await page.click('#mOpen'); await page.waitForTimeout(1400);
-    const s1 = await getSave(page), rev = await page.textContent('#mCard');
-    await shot(page, 'chest-epic');
-    const id = Object.keys(s1.trains || {})[0];
-    check('chest.pity', 'Sandık 👑10 ile açılır, bakiyeden düşer; 7 destansısız sandıktan sonra 8.si destansı (tren kaplaması); oranlar yazılı', s1.spent === 10 && s1.chests === 1 && s1.dry === 0 && !!id && /DESTANSI/.test(rev) && /%60/.test(odds) && /%12/.test(odds) && s1.hints === 3, JSON.stringify({ spent: s1.spent, chests: s1.chests, dry: s1.dry, trains: s1.trains }), 'medium');
-    if (await page.$('#mUse')) { await page.click('#mUse'); await page.waitForTimeout(400); }
+    await page.click('#mChest'); await page.waitForTimeout(450);
+    const sh = await page.evaluate(() => {
+      const o = document.querySelector('.odds'), mid = r => r.top + r.height / 2, kids = [...o.children].map(k => mid(k.getBoundingClientRect())), c = document.getElementById('mCard'), b = document.getElementById('mOpen');
+      return { odds: o.textContent, row: kids.every(y => Math.abs(y - kids[0]) < 3) && o.offsetHeight < 34, q: document.getElementById('mOdds')?.textContent, btn: b.textContent.trim(), btnH: b.offsetHeight,
+        svg: !!c.querySelector('#chestBox .chl') && !/🎁/.test(c.textContent), tip: /garanti|kırılan seriyi/.test(c.innerText) };
+    });
     await shot(page, 'chest-sheet');
+    await page.click('#mOdds'); await page.waitForTimeout(350);
+    const loot = await page.evaluate(() => { const l = document.querySelector('.loot'); return { vis: l.offsetHeight > 0, txt: l.textContent }; });
+    await shot(page, 'chest-info');
+    check('chest.sheet', 'Sandık penceresi: çizilmiş sandık; oranlar tek satırda + "?" sandıktan ne çıkacağını gösterir; eski uzun ipucu satırı yok; Aç düğmesi küçük ve bakiye yazmaz',
+      sh.svg && sh.row && /Sıradan %60/.test(sh.odds) && /Nadir %28/.test(sh.odds) && /Destansı %12/.test(sh.odds) && sh.q === '?' && !sh.tip && sh.btn === 'Aç · 👑 10' && sh.btnH < 76
+      && loot.vis && /💡 ipucu ×2/.test(loot.txt) && /💡 ipucu ×4/.test(loot.txt) && /🛡 seri kalkanı ×1/.test(loot.txt) && /🚆 yeni tren kaplaması/.test(loot.txt) && /8 sandıkta destansı çıkmazsa 8\.si garanti/.test(loot.txt), JSON.stringify({ ...sh, loot: loot.txt }), 'medium');
+    await page.click('#mOdds'); await page.waitForTimeout(200);
+    await page.click('#mOpen'); await page.waitForTimeout(900);
+    const s1 = await getSave(page), c0 = await chestScene(page);
+    await shot(page, 'chest-closed');
+    await page.click('#chestScene'); await page.waitForTimeout(1900);
+    const c1 = await chestScene(page);
+    await shot(page, 'chest-open-epic');
+    const id = Object.keys(s1.trains || {})[0];
+    check('chest.pity', 'Sandık 👑10 ile açılır; ödül sahne başlamadan kaydedilir; 7 destansısız sandıktan sonra 8.si destansı (tren kaplaması)', s1.spent === 10 && s1.chests === 1 && s1.dry === 0 && !!id && s1.hints === 3 && !!c0 && !c0.open && c1?.tier === 'DESTANSI', JSON.stringify({ spent: s1.spent, chests: s1.chests, dry: s1.dry, trains: s1.trains, tier: c1?.tier }), 'medium');
+    check('chest.scene', 'Açılış sahnesi: kapalı sandık "Dokun → aç", dokununca açılır; kaplama treni kendi renginde ve adıyla, rozetsiz; "Trenine tak" + "Devam için dokun"', c0?.tap === 'Dokun → aç' && c1.open && c1.done && c1.op === 1 && c1.kind === 'rw-liv' && c1.trn && /^#/.test(c1.tb1) && c1.n === null && c1.name === 'Nane' && c1.use && c1.go === 'Devam için dokun', JSON.stringify(c1), 'medium');
+    await page.click('#csUse'); await page.waitForTimeout(500);
+    const back = await sheetBack(page);
+    await shot(page, 'chest-sheet-after');
     const bal = await page.evaluate(() => document.getElementById('sCrowns').textContent);
     await page.click('#mBack'); await page.waitForTimeout(350); await page.click('#mClose'); await page.waitForTimeout(350);
     await page.click('#bPlay'); await page.waitForTimeout(450);
     const liv = await page.evaluate(() => document.getElementById('gTrip').style.getPropertyValue('--tb1'));
     const s2 = await getSave(page);
-    check('chest.livery', 'Kaplama "Kullan" → oyundaki tren o renge bürünür; taç bakiyesi 12 → 2', s2.train === id && /^#/.test(liv) && bal === '2', `${s2.train} · ${liv} · bakiye ${bal}`, 'medium');
+    check('chest.livery', '"Trenine tak" → sahne kapanır, sandık penceresine dönülür; oyundaki tren o renge bürünür; taç bakiyesi 12 → 2', back && s2.train === id && /^#/.test(liv) && bal === '2', `${s2.train} · ${liv} · bakiye ${bal} · dönüş ${back}`, 'medium');
     check('chest.errors', 'Sandık senaryosunda konsol hatası yok', errors.length === 0, errors.slice(0, 3).join(' | '));
     await ctx.close();
   }
   {
-    // aynı tohum + aynı sandık sırası → aynı sonuç (kapatıp açmak sonucu değiştirmez)
-    const crowns = Object.fromEntries(Array.from({ length: 12 }, (_, k) => [k + 1, 1])), res = [];
+    // aynı tohum + aynı sandık sırası → aynı sonuç (kapatıp açmak sonucu değiştirmez). Bu girdi sıradan ödül verir: 💡 ×2
+    const res = []; let c = null, back = false;
     for (let k = 0; k < 2; k++) {
-      const { ctx, page } = await open(browser, URL, { save: { played: 6, level: 13, stars: starsUpTo(13), crowns, hints: 3, seed: 99, chests: 5 } });
+      const { ctx, page } = await open(browser, URL, { save: { played: 6, level: 13, stars: starsUpTo(13), crowns: chestCrowns, hints: 3, seed: 99, chests: 5 } });
       await page.click('#crownChip'); await page.waitForTimeout(400); await page.click('#mChest'); await page.waitForTimeout(350);
-      await page.click('#mOpen'); await page.waitForTimeout(1300);
-      const s = await getSave(page); res.push(JSON.stringify({ h: s.hints, sh: s.shield || 0, t: s.trains || {} })); await ctx.close();
+      await page.click('#mOpen'); await page.waitForTimeout(900);
+      const s = await getSave(page); res.push(JSON.stringify({ h: s.hints, sh: s.shield || 0, t: s.trains || {} }));
+      if (!k) {
+        await page.click('#chestScene'); await page.waitForTimeout(1900);
+        c = await chestScene(page); await shot(page, 'chest-open-hint');
+        await page.click('#chestScene'); await page.waitForTimeout(500);
+        back = await sheetBack(page);
+      }
+      await ctx.close();
     }
     check('chest.seed', 'Sandık sonucu oyuncu tohumu + sandık sırasıyla belirlenir (aynı girdi → aynı sonuç)', res[0] === res[1], res.join(' = '), 'medium');
+    check('chest.badge', 'Sıradan ödül: SIRADAN şeridi, çizilmiş ampul, sağ altında yuvarlak "2" rozeti; "Devam için dokun" → sandık penceresine dönülür', c?.tier === 'SIRADAN' && c.kind === 'rw-hint' && c.name === 'İpucu' && c.n === '2' && c.round && c.br && !c.use && back && /"h":5/.test(res[0]), JSON.stringify({ ...c, back }), 'medium');
+  }
+  {
+    // nadir ödül (🛡 + "1"), açık tema, 360×640, hareketi azalt: sahne ekrana sığar, yatay taşma yok, dokununca yine açılır
+    const { ctx, page, errors } = await open(browser, URL, { vp: [360, 640], scheme: 'light', rm: true, save: { played: 6, level: 13, stars: starsUpTo(13), crowns: chestCrowns, hints: 3, seed: 1, chests: 5 } });
+    await page.click('#crownChip'); await page.waitForTimeout(400); await page.click('#mChest'); await page.waitForTimeout(450);
+    const row = await page.evaluate(() => document.querySelector('.odds').offsetHeight);
+    await shot(page, 'chest-sheet-small');
+    await page.click('#mOpen'); await page.waitForTimeout(500);
+    const c0 = await chestScene(page);
+    await page.click('#chestScene'); await page.waitForTimeout(1200);
+    const c = await chestScene(page), fit = await page.evaluate(() => {
+      const W = innerWidth, H = innerHeight, s = document.getElementById('chestScene');
+      const inV = q => { const r = s.querySelector(q).getBoundingClientRect(); return r.left >= 0 && r.right <= W && r.top >= 0 && r.bottom <= H; };
+      return { calm: s.classList.contains('calm'), all: ['.cs-tier', '.cs-ic', '.cs-name', '.cs-chest', '.cs-go'].every(inV), ov: document.documentElement.scrollWidth <= W && document.body.scrollWidth <= W };
+    });
+    await shot(page, 'chest-open-shield');
+    const sv = await getSave(page);
+    check('chest.small', '360×640 · açık tema · hareketi azalt: oranlar tek satır, sahne ekrana sığar, yatay taşma yok; dokununca açılır (NADİR 🛡 + yuvarlak "1" rozeti)', row < 34 && fit.calm && fit.all && fit.ov && !!c0 && !c0.open && c?.done && c.op === 1 && c.tier === 'NADİR' && c.kind === 'rw-shield' && c.n === '1' && c.round && sv.shield === 1 && errors.length === 0, JSON.stringify({ row, ...fit, tier: c?.tier, n: c?.n, shield: sv.shield, err: errors[0] }), 'medium');
+    await ctx.close();
   }
   {
     const { ctx, page } = await open(browser, URL, { save: { played: 6, level: 14, stars: starsUpTo(14, 2), hints: 3, combo: 3, shield: 1 } });
@@ -716,7 +768,7 @@ async function inViewport(page, sel) {
     await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.t + 20) * 1000; });
     await solve(page, 10); await waitModal(page);
     const s = await getSave(page), w = await page.evaluate(() => ({ prim: document.querySelector('#winPanel .primary')?.id, txt: document.getElementById('winPanel').textContent }));
-    check('chest.shield', 'Bakiye yetmezse "Taç topla"; 🛡 kalkan kırılan seriyi bir kez korur (Tekrar öne çıkmaz)', /Taç topla/.test(poor) && s.combo === 3 && s.shield === 0 && !s.comboLost && w.prim === 'mNext' && /Kalkan/.test(w.txt), JSON.stringify({ poor: poor.slice(0, 12), combo: s.combo, shield: s.shield, prim: w.prim }), 'medium');
+    check('chest.shield', 'Bakiye yetmezse "Taç topla · 👑 10 gerekli" (bakiye yazmaz); 🛡 kalkan kırılan seriyi bir kez korur (Tekrar öne çıkmaz)', /Taç topla/.test(poor) && /👑 10 gerekli/.test(poor) && !/akiye/.test(poor) && s.combo === 3 && s.shield === 0 && !s.comboLost && w.prim === 'mNext' && /Kalkan/.test(w.txt), JSON.stringify({ poor, combo: s.combo, shield: s.shield, prim: w.prim }), 'medium');
     await ctx.close();
   }
 
