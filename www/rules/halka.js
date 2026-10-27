@@ -8,7 +8,7 @@
   const arms = (P, i, f) => { let m = 0; for (let k = 0; k < 4; k++) { const b = DIRS[k][0], j = b & P.cur[i] ? nb(P, i, k) : -1; if (j >= 0 && f(j) && (P.cur[j] & ob(P, i, k))) m |= b; } return m; };
   const ICON = '<svg class="rd-ring-i" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7"/></svg>';
   return {
-    key: 'ring', line: 16, clash: ['sign', 'bridge'],
+    key: 'ring', line: 16, boost: 1.5,   // zorluk payı: hedef puana eklenir (docs/kurallar/README.md) clash: ['sign', 'bridge'],
     // 6×8 (M17'nin ilk 3 bölümü, testere dişi) → 1 işaret; 7×9 → 2
     amount: (n, intro) => intro || n < 63 ? 1 : 2,
     // ağaçtan sonra, karıştırmadan önce (tünel tOrder 0 ile önce çalışır, C.adj hazır): ağaca bir kenar ekle, işaretleri ayır

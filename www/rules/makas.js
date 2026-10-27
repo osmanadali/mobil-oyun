@@ -5,7 +5,7 @@
   const kOf = b => 31 - Math.clz32(b);   // tek bit → DIRS sırası
   const CELLS = new WeakMap(), cells = sw => { let L = CELLS.get(sw); if (!L) CELLS.set(sw, L = sw.reduce((a, m, i) => (m && a.push(i), a), [])); return L; };
   return {
-    key: 'sw', line: 8,
+    key: 'sw', line: 8, boost: 1.5,   // zorluk payı: hedef puana eklenir (docs/kurallar/README.md)
     card: { name: 'Makas', tag: 'Yeni: makas',
       // .pt içinde <b> yok (.pt b döner): karo durur, yalnız kollar değişir
       demo: '<div class="rdemo2 rd-sw" aria-hidden="true"><i class="pt"><u class="rd-swa"><u class="rd-swo"></u><u class="rd-swl"></u><u class="rd-swr"></u></u><u class="rd-swa rd-sw2"><u class="rd-swo"></u><u class="rd-swl"></u><u class="rd-swr"></u></u><u class="rd-swt"></u></i><i class="rtap2"></i></div>',

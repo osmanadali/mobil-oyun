@@ -435,9 +435,12 @@ function puzzleFor(l) {
     const pins = U.has('pins') ? Math.round(n * (intro && ln === RULE_LINE.pins ? .22 : Math.max(.05, .16 * (1 - z)))) : 0;
     const pairs = U.has('pairs') ? Math.max(1, Math.round(n * (intro && ln === RULE_LINE.pairs ? .03 : .07))) : 0;
     const x = { rev: U.has('rev') ? Math.max(2, Math.round(n * (intro ? .08 : .15))) : 0, cnt: U.has('cnt') ? Math.max(2, Math.round(n * (intro ? .06 : .12))) : 0, two: U.has('two'), fog: U.has('fog') };
-    for (const m of MODS) if (U.has(m.key)) x[m.key] = m.amount(n, intro && ln === m.line, z, fin, c, r);   // eklenti kuralı: bu bölümdeki miktar
-    // hat finali (SON DURAK): hedef +2 puan, en çok aday taranır
-    const P = pick(c, r, l * 7919 + 13, pins, pairs, z, (intro ? 3 : 5) + 11 * z + (fin ? 2 : 0), x, fin ? 32 : undefined);
+    // eklenti kuralı: bu bölümdeki miktar + zorluk payı (boost). Pay hedefe eklenir: seçici kuralın zorluğunu kolay tabanla silmesin.
+    // Kuralın kendi hattındaki ilk 3 öğrenme bölümünde pay yok (testere dişi).
+    let boost = 0;
+    for (const m of MODS) if (U.has(m.key)) { x[m.key] = m.amount(n, intro && ln === m.line, z, fin, c, r); if (ln !== m.line || l - lineStart(ln) >= 3) boost += m.boost || 0; }
+    // hat finali (SON DURAK): hedef +2 puan, en çok aday taranır · zorluk paylı bölümde de geniş tarama
+    const P = pick(c, r, l * 7919 + 13, pins, pairs, z, (intro ? 3 : 5) + 11 * z + (fin ? 2 : 0) + boost, x, fin ? 32 : boost ? Math.max(24, 6 + Math.round(26 * z)) : undefined);
     P.fog = U.has('fog'); P.final = fin; P.rules = [...U]; return P;
   });
 }
@@ -482,12 +485,13 @@ function lit(P) {
 
 // ---------- yıldızlar: her yıldız bir hedef ----------
 // ★ bitir · ★ ⏱ süre hedefi · ★ ↻ hamle hedefi (aynı karoya art arda dokunuş = 1 hamle). İkisi birden → KUSURSUZ 👑
-// hamle toleransı zorlukla büyür: küçük ızgara +%100 → 7×9 +%130 (en az +5). Oyuncu karoları denerken gidip gelir; hedef bunu kaldırmalı.
-const moveTol = n => 1 + .3 * Math.min(1, Math.max(0, (n - 9) / 54));
+// hamle toleransı ızgarayla büyür: küçük ızgara +%60 → 7×9 +%75 (en az +3). Oyuncu karoları denerken gidip gelir; hedef bunu kaldırmalı.
+const moveTol = n => .6 + .15 * Math.min(1, Math.max(0, (n - 9) / 54));
 function limits(P) {
-  // zor bölüm (61+) → düşünme payı: puanın 8'i aşan her birimi +3 sn
-  const tight = 1 - .5 * Math.max(0, ((P.z || 0) - .3) / .7);   // z %30'dan sonra tolerans yavaşça yarıya iner (imkânsıza doğru)
-  return { m: P.par + Math.max(Math.round(5 * tight), Math.round(P.par * moveTol(P.cur.length) * tight)), t: Math.max(20, Math.round(P.taps * 1.6 + P.cur.length * .7 + Math.max(0, (P.diff || 0) - 8) * 3)) };
+  // ↻ hamle payı: par'ın %60'ı (küçük ızgara) – %75'i (7×9); z %30'dan sonra yavaşça %60'ına iner → 1–200 ≈ par × 1,6–1,75, sonsuzda ≈ × 1,45
+  // ⏱ süre: dokunuş başına 1,3 sn + karo başına ,5 sn + zor bölüme düşünme payı (puanın 8'i aşan her birimi +3 sn)
+  const tight = 1 - .4 * Math.max(0, ((P.z || 0) - .3) / .7);
+  return { m: P.par + Math.max(Math.round(3 * tight), Math.round(P.par * moveTol(P.cur.length) * tight)), t: Math.max(15, Math.round(P.taps * 1.3 + P.cur.length * .5 + Math.max(0, (P.diff || 0) - 8) * 3)) };
 }
 const timeOk = sec => sec <= G.lim.t;
 const movesOk = () => G.moves <= G.lim.m;

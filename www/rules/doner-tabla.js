@@ -6,7 +6,7 @@
   const mid = (X, [a, , b]) => [(X[a][0] + X[b][0]) / 2, (X[a][1] + X[b][1]) / 2];
   const disc = (D, r) => { D.cx.beginPath(); for (const Q of D.G.table.plates) if (D.vis(Q[0])) { const [x, y] = mid(D.X, Q); D.cx.moveTo(x + r, y); D.cx.arc(x, y, r, 0, 7); } };
   return {
-    key: 'table', line: 14,
+    key: 'table', line: 14, boost: 2,   // zorluk payı: hedef puana eklenir (docs/kurallar/README.md)
     card: { name: 'Döner tabla', tag: 'Yeni: döner tabla', demo: '<div class="rd-table" aria-hidden="true"><div><i></i><i></i><i></i><i></i><b></b></div><s></s><em></em></div>',
       text: 'Yuvarlak <b>döner tabla</b> dört karoyu taşır: birine dokun, tabla bütünüyle <b>90° döner</b>. Karolar yer değiştirir, raylar <b>kopmaz</b>.' },
     css: `.rd-table,.rd-table *{position:absolute;box-sizing:border-box}.rd-table{position:relative;align-self:center;width:104px;height:104px;margin:6px 0 2px}
