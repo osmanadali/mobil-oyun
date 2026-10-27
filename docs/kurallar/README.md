@@ -23,7 +23,7 @@ Aradaki çift hatlar (M10, M12…) ve M20 sonrası karma hatlardır: her bölüm
 
 ## Temel ilkeler
 
-1. **Eski bölümler bit bit aynı kalır.** Eklenti `R()` rastgele sayısını yalnız kendi miktarı sıfırdan büyükken tüketir. Çekirdek, eklentisi olmayan bölümde hiçbir kancayı çağırmaz.
+1. **Eski bölümler bit bit aynı kalır.** Eklenti `R()` rastgele sayısını yalnız kendi miktarı sıfırdan farklıyken tüketir. Çekirdek, eklentisi olmayan bölümde hiçbir kancayı çağırmaz.
 2. **Yapı gereği çözülebilir.** Üretim çözümden (`sol`) başlar. Karıştırma yalnız oyuncunun geri alabileceği işlemlerle yapılır. Kanıt `docs/kurallar/<ad>.md` içine yazılır.
 3. **Bölüm verisi `P[key]`'de durur.** Eklentinin bölüme özgü verisi üretimde `C.out[key]` alanına yazılır, dönüş nesnesinde `P[key]` olur. Bu alan doluysa (truthy) eklentinin bütün oyun ve çizim kancaları o bölümde çalışır, boşsa hiçbiri çalışmaz.
 4. **Tek dokunuş, gerçek zamanlı baskı yok, kendi kendine hareket eden karo yok.**
@@ -39,7 +39,7 @@ Aradaki çift hatlar (M10, M12…) ve M20 sonrası karma hatlardır: her bölüm
   clash: [],                                 // aynı bölümde birlikte gelemeyeceği kurallar (simetrik)
   card: { name: 'Makas', tag: 'Yeni: makas', demo: '<div class="rd-sw">…</div>', text: '…' },
   css: `.rd-sw{…}`,                          // kural kartı demosu ve gerekirse başka stiller (sınıf adları rd-<anahtar> ile başlar)
-  amount: (n, intro, z, fin, cols, rows) => 0,   // bu bölümdeki miktar (0 → kural yok)
+  amount: (n, intro, z, fin, cols, rows) => 0,   // bu bölümdeki miktar (0 → kural yok; sıfırdan farklı her değer kuralı açar, ör. tanıtım işareti −1)
   // üretim aşamaları (aşağıda C)
   pre(C) {}, tree(C) {}, shape(C) {}, mark(C) {},
   tOrder: 8,                                 // isteğe bağlı: tree aşamasında sıra (varsayılan line)
@@ -64,9 +64,9 @@ Karo maskesi 4 bittir: `N = 1, E = 2, S = 4, W = 8`. `DIRS[k] = [bit, dx, dy, ka
 
 Aşamalar ve sırası:
 
-1. **`pre(C)`:** Ağaç kurulmadan önce. Köprü hücresi, tünel komşuluğu (`C.adj`, `C.ao`) burada hazırlanır.
-2. Ağaç (Prim): `C.take(j)` hücreyi ağaca alır. `C.onTake` dizisine eklenen işlevler her alınan hücre için çağrılır (köprü, karşı kolu birlikte almak için).
-3. **`tree(C)`:** Ağaç bittikten sonra, karıştırmadan önce. Halka kenarı, tünel değiş tokuşu burada yapılır. Sıra `tOrder ?? line`; tünel (`tOrder: 0`) halkadan önce çalışır.
+1. **`pre(C)`:** Ağaç kurulmadan önce. Köprü hücresi, tünel komşuluğu (`C.adj`, `C.ao`) ve ikisinin `C.onTake` kancaları burada hazırlanır.
+2. Ağaç (Prim): `C.take(j)` hücreyi ağaca alır. `C.onTake` dizisine eklenen işlevler her alınan hücre için çağrılır: köprü karşı kolu, tünel ağzı eş ağzı birlikte alır. Böylece eklenen her kenar ormana yeni bir yaprak ekler, döngü ve hat karışması oluşmaz.
+3. **`tree(C)`:** Ağaç bittikten sonra, karıştırmadan önce. Halka kenarı burada eklenir. Sıra `tOrder ?? line`. Ağaçtan kenar SİLMEK yasaktır: köprü yarılarını ve iki merkezin ayrılığını bozar (tünel doğrulamasında karşı örnekle görüldü).
 4. Karıştırma (`C.cur`), sabit karo, eşli karo.
 5. **`shape(C)`:** Eşliden sonra, ters/sayaçlıdan önce. Makas, döner tabla burada `C.unit(...)` ile birim kurar.
 6. Ters ve sayaçlı karo (`C.free(i)` bu aşamada kurulan birimleri dışlar).
@@ -142,7 +142,7 @@ Birden çok durum taşıyan, dönmeyen ya da birlikte hareket eden karolar için
 | Tabela `sign` | `out.sign`: n uzunlukta dizi; ok yönünün biti ya da 0 |
 | Döner tabla `table` | `out.table = { plates: [[sol-üst, sağ-üst, sağ-alt, sol-alt], …], plate: n uzunlukta (−1 ya da tabla no) }`; birim türü `'table'`, K = 4 |
 | Halka `ring` | `out.ring = { mark: n uzunlukta bool, cyc: [döngü karoları] }` |
-| Tünel ağzı `portal` | `C.adj/C.ao` (pre), `out.portal`: `[{ a, ka, b, kb, id }]` çiftleri, `C.mouth`: ağız hücrelerinin Set'i; ağız hücreleri `C.keep` |
+| Tünel ağzı `portal` | `C.adj/C.ao` (pre; çift yoksa kurulmaz), `out.portal`: `[{ a, ka, b, kb, id }]` çiftleri, `C.mouth`: ağız hücrelerinin Set'i; ağız hücreleri `C.keep` |
 
 Çakışma ve dışlamalar (tasarım doğrulamasından):
 
