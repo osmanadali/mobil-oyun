@@ -174,7 +174,7 @@ module.exports = async T => {
     const run = (extra, cur = P.cur) => ({ lvl: 301, cur, fixed: cur.map(() => false), moves: 3, last: -1, ms: 1000, ...extra });
     const bad = P.cur.slice(); bad[P.B] = 5;
     const res = [];
-    for (const r of [run({ pv: 4 }, bad), run({ pv: 4, sig: 12345 }, bad), run({ pv: 4, sig: fnv(P.sol.join()) })]) {
+    for (const r of [run({ pv: 4 }, bad), run({ pv: 4, sig: 12345 }, bad), run({ pv: 4, sig: fnv(P.sol.join() + '|' + P.cur.join()) })]) {
       // önce ana sayfaya: oyun açıkken yeniden yüklemek pause() → saveRun() ile yazdığımız kaydı ezer
       await page.evaluate(() => document.getElementById('bBack').click()); await page.waitForTimeout(200);
       await page.evaluate(r => { const s = JSON.parse(localStorage.getItem('ray')); s.runs = { level: r }; localStorage.setItem('ray', JSON.stringify(s)); }, r);
