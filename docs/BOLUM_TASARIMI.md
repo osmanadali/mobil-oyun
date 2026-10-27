@@ -167,7 +167,8 @@ Taçların temalar dışındaki tek harcama yeri. Oyun içinde kendiliğinden ç
 - Sonuç, bu tohum ve sandığın sıra numarasından ağırlıklı çekilişle hesaplanır.
 - Sonuç taç harcandığı anda ödülle birlikte kaydedilir. Uygulamayı kapatıp açmak sonucu değiştirmez.
 - **Şanssızlık koruması:** 7 sandık üst üste destansı çıkmazsa 8. sandık destansı olur.
-- Olasılıklar sandık ekranında yazılıdır.
+- Olasılıklar sandık ekranında tek satırda yazılıdır; yanındaki **?** sandıktan ne çıkabileceğini gösterir.
+- **Açılış:** sandık tam ekranda düşer; dokununca kapak açılır, ödül sandıktan fırlar (ipucu ve kalkanda sağ altta sayı rozeti, kaplamada trenin kendisi). Ödül açılış başlamadan kaydedilmiştir.
 
 **Ödüller:**
 

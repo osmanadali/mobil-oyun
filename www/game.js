@@ -1334,7 +1334,7 @@ function skinSheet() {
   const nx = SKINS.filter(k => !k.vip && !skinOpen(k)).sort((a, b) => a.need - b.need)[0];   // en ucuz alınmamış tema
   modal(`<h2>Renk temaları</h2><p>Bölümleri <b>kusursuz</b> bitir (⏱ ve ↻ hedefi), 👑 kazan, temayı <b>satın al</b>. Harcanan 👑 geri gelmez, seçimini iyi yap!</p>
     <div class="nexts"><small>Bakiye</small><b class="bal">👑 ${bal}</b></div>
-    <button id="mChest" class="chestrow ${bal >= CHEST ? 'can' : ''}"><i>🎁</i><span><b>Sürpriz sandık</b><small>İpucu · 🛡 seri kalkanı · 🚆 tren kaplaması</small></span><em>👑 ${CHEST}</em></button>
+    <button id="mChest" class="chestrow ${bal >= CHEST ? 'can' : ''}"><i>${CHEST_SVG}</i><span><b>Sürpriz sandık</b><small>İpucu · 🛡 seri kalkanı · 🚆 tren kaplaması</small></span><em>👑 ${CHEST}</em></button>
     <div class="skins" id="skins">${SKINS.filter(k => !k.vip).map(card).join('')}
       <small class="vipk">💛 Reklamsız pakete özel</small>${SKINS.filter(k => k.vip).map(card).join('')}</div>
     ${nx ? `<div class="nexts"><small>Sonraki: <b>${nx.name}</b></small><small>👑 ${Math.min(bal, nx.need)} / ${nx.need}</small></div><div class="pb"><i style="width:${Math.max(4, Math.min(100, bal / nx.need * 100))}%"></i></div>
@@ -1412,15 +1412,47 @@ function chestRoll() {
   if (tier === 'r') return y < .5 || (save.shield || 0) >= SHIELD_MAX ? { tier, kind: 'hint', n: 4 } : { tier, kind: 'shield' };
   return free.length ? { tier, kind: 'liv', id: free[y * free.length | 0].id } : { tier, kind: 'hint', n: 6 };
 }
+// çizilmiş sandık, üç katman: arkada açık kapağın içi, ortada gövde, önde kapalı kapak. Menteşe arkada: açılırken dış kapak
+// yukarı kalkıp incelir, iç yüzü menteşeden büyür. Yalnız transform (SVG yeniden çizilmez) → düşük donanımda da akıcı.
+// Renk geçişleri belgeye bir kez eklenir (aynı id her sandıkta tekrar etmesin)
+const CH_BODY = 'M12 57h96v33a6 6 0 0 1-6 6H18a6 6 0 0 1-6-6z', CH_LID = 'M12 58V40C12 27 32 20 60 20S108 27 108 40v18z', CH_O = 'stroke="#3a1c0c"';
+document.body.insertAdjacentHTML('beforeend', `<svg class="cdefs" aria-hidden="true"><defs>
+<linearGradient id="cgW" x2="0" y2="1"><stop offset="0" stop-color="#bd7442"/><stop offset="1" stop-color="#6a3518"/></linearGradient>
+<linearGradient id="cgL" x2="0" y2="1"><stop offset="0" stop-color="#94502a"/><stop offset=".3" stop-color="#dc975d"/><stop offset=".62" stop-color="#b0683a"/><stop offset="1" stop-color="#7a3f1f"/></linearGradient>
+<linearGradient id="cgI" x2="0" y2="1"><stop offset="0" stop-color="#2a1309"/><stop offset="1" stop-color="#7a4520"/></linearGradient>
+<linearGradient id="cgE"><stop offset="0" stop-opacity=".3"/><stop offset=".14" stop-opacity="0"/><stop offset=".86" stop-opacity="0"/><stop offset="1" stop-opacity=".34"/></linearGradient>
+<linearGradient id="cgG"><stop offset="0" stop-color="#fff2bd"/><stop offset=".45" stop-color="#f4c24f"/><stop offset="1" stop-color="#b5741d"/></linearGradient>
+<linearGradient id="cgP" x2="0" y2="1"><stop offset="0" stop-color="#ffeaa3"/><stop offset="1" stop-color="#d6962b"/></linearGradient>
+<linearGradient id="cgM" x2="0" y2="1"><stop offset="0" stop-color="#fffbe6"/><stop offset=".55" stop-color="#ffd76e"/><stop offset="1" stop-color="#ff9f43"/></linearGradient>
+<radialGradient id="cgB" cy=".42" r=".62"><stop offset="0" stop-color="#fffbe0"/><stop offset="1" stop-color="#ffc93c"/></radialGradient>
+<linearGradient id="cgS" x2="0" y2="1"><stop offset="0" stop-color="#a9c6ff"/><stop offset="1" stop-color="#4a68d6"/></linearGradient>
+<linearGradient id="cgF" x2="0" y2="1"><stop offset="0" stop-color="#ffd36b"/><stop offset="1" stop-color="#ff6f61"/></linearGradient>
+<clipPath id="cgC"><path d="${CH_LID}"/></clipPath></defs></svg>`);
+const chStrap = (y, h) => `<rect x="26" y="${y}" width="10" height="${h}" fill="url(#cgG)"/><rect x="84" y="${y}" width="10" height="${h}" fill="url(#cgG)"/><path d="M26 ${y}v${h}M36 ${y}v${h}M84 ${y}v${h}M94 ${y}v${h}" ${CH_O} stroke-opacity=".5"/>`;
+const CHEST_SVG = `<div class="chx"><svg class="chi" viewBox="0 0 120 104"><path d="M14 58V41C14 29 33 23 60 23S106 29 106 41v17z" fill="url(#cgI)" ${CH_O} stroke-width="2"/><path d="M20 57V42C20 33 37 28 60 28S100 33 100 42v15" fill="none" stroke="url(#cgP)" stroke-width="2.6" stroke-opacity=".8"/></svg>`
+  + `<svg class="chb" viewBox="0 0 120 104"><rect x="15" y="49" width="90" height="11" rx="5.5" fill="url(#cgM)"/><path d="${CH_BODY}" fill="url(#cgW)"/><path d="M13 70h94M13 83h94" ${CH_O} stroke-opacity=".4" stroke-width="1.4"/><path d="M13 71.6h94M13 84.6h94" stroke="#fff" stroke-opacity=".12"/>${chStrap(57, 39)}<path d="${CH_BODY}" fill="url(#cgE)"/><g fill="#fff6d0"><circle cx="31" cy="64" r="1.6"/><circle cx="31" cy="89" r="1.6"/><circle cx="89" cy="64" r="1.6"/><circle cx="89" cy="89" r="1.6"/></g><rect x="49" y="58" width="22" height="20" rx="5" fill="url(#cgP)" ${CH_O} stroke-width="1.6"/><path d="M60 63a2.6 2.6 0 0 0-1.4 4.8l-.8 4.2h4.4l-.8-4.2A2.6 2.6 0 0 0 60 63z" fill="#3a1c0c"/><path d="${CH_BODY}" fill="none" ${CH_O} stroke-width="2"/></svg>`
+  + `<svg class="chl" viewBox="0 0 120 104"><path d="${CH_LID}" fill="url(#cgL)"/><path d="M13 44h94" ${CH_O} stroke-opacity=".35" stroke-width="1.4"/><path d="M27 31c9-4 20-5.5 33-5.5s24 1.5 33 5.5" fill="none" stroke="#fff" stroke-opacity=".32" stroke-width="2.4" stroke-linecap="round"/><g clip-path="url(#cgC)">${chStrap(16, 42)}</g><path d="${CH_LID}" fill="url(#cgE)"/><rect x="12" y="51" width="96" height="7" fill="url(#cgP)"/><path d="M12 51h96" ${CH_O} stroke-opacity=".45"/><g fill="#fff6d0"><circle cx="31" cy="33" r="1.6"/><circle cx="89" cy="33" r="1.6"/></g><path d="M52 48h16v9a4 4 0 0 1-4 4h-8a4 4 0 0 1-4-4z" fill="url(#cgP)" ${CH_O} stroke-width="1.6"/><path d="${CH_LID}" fill="none" ${CH_O} stroke-width="2"/></svg></div>`;
+// ödül simgeleri (oyunun çizgi simgeleriyle aynı dil): ampul = #bHint yolu + ışık çizgileri, kalkanın içinde seri alevi
+const RW_ICON = {
+  hint: '<svg class="rwi" viewBox="-1 -3 26 26"><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1.1 1.2 1.1 2.2h5c0-1 .5-1.7 1.1-2.2A6 6 0 0 0 12 3z" fill="url(#cgB)"/><path d="M9 18h6M10 21h4"/><path class="ry" d="M12 .6v-2M17.9 3.1l1.4-1.4M6.1 3.1 4.7 1.7M20.4 9h2M3.6 9h-2"/></svg>',
+  shield: '<svg class="rwi" viewBox="0 0 24 24"><path d="M12 2.6 19.4 5.4v5.4c0 4.7-3 8.6-7.4 10.6-4.4-2-7.4-5.9-7.4-10.6V5.4z" fill="url(#cgS)"/><path d="M12 8.2c.5 2 2.5 2.75 2.5 5.5a2.5 2.5 0 0 1-5 0c0-1.25.6-2 1.25-2.5.1.9.5 1.5 1.1 1.65C11.5 11.5 11.65 9.7 12 8.2z" fill="url(#cgF)" stroke="none"/></svg>',
+};
+const LOOT = [['c', '💡 ipucu ×2'], ['r', '💡 ipucu ×4 <i>ya da</i> 🛡 seri kalkanı ×1'], ['e', '🚆 yeni tren kaplaması']];
 function chestSheet() {
   const bal = crownBal(), can = bal >= CHEST, own = LIVERIES.filter(v => ownsLiv(v.id)).length, cur = save.train || 'hat';
-  modal(`<h2>Sürpriz sandık</h2><div class="chest" id="chestBox">🎁</div>
-    <div class="odds">${[['c', '+2 💡 ipucu'], ['r', '+4 💡 ya da 🛡 seri kalkanı'], ['e', '🚆 yeni tren kaplaması']].map(([t, s]) => `<b class="tier-${t}">${RARITY[t][0]}</b><span>${s}</span><small>%${Math.round(RARITY[t][1] * 100)}</small>`).join('')}</div>
-    <p class="tip">${PITY} sandıkta destansı çıkmazsa ${PITY}.si garanti · 🛡 kalkan kırılan seriyi bir kez korur (sende ${save.shield || 0}/${SHIELD_MAX})</p>
-    <button id="mOpen" class="btn primary"><span>${can ? `Aç · 👑 ${CHEST}` : 'Taç topla 👑'}</span><small>${can ? `Bakiye 👑 ${bal} → ${bal - CHEST}` : `${CHEST - bal} 👑 daha gerekli · bakiye 👑 ${bal}`}</small></button>
+  modal(`<h2>Sürpriz sandık</h2>
+    <div class="cbox ${can ? 'can' : ''}" id="chestBox">${CHEST_SVG}<div class="loot">${LOOT.map(([t, s]) => `<b class="tier-${t}">${RARITY[t][0]}</b><span>${s}</span>`).join('')}<small>${PITY} sandıkta destansı çıkmazsa ${PITY}.si garanti</small></div></div>
+    <div class="odds">${Object.entries(RARITY).map(([t, [n, p]]) => `<b class="tier-${t}">${n} %${Math.round(p * 100)}</b>`).join('<i>·</i>')}<button id="mOdds" class="qm" aria-label="Sandıktan ne çıkar?">?</button></div>
+    <button id="mOpen" class="btn primary cbtn">${can ? `<span>Aç · 👑 ${CHEST}</span>` : `<span>Taç topla</span><small>👑 ${CHEST} gerekli</small>`}</button>
     <div class="nexts"><small>Trenin</small><small>🚆 ${own} / ${LIVERIES.length}</small></div>
     <div class="trains" id="trains">${LIVERIES.map(v => `<button data-v="${v.id}" class="${ownsLiv(v.id) ? '' : 'lockd'} ${v.id === cur ? 'on' : ''}" style="${livVars(v)}">${TRAIN}<span>${ownsLiv(v.id) ? v.name : '?'}</span></button>`).join('')}</div>
     <button id="mBack" class="btn glassbtn">Temalara dön</button>`, { mOpen: () => can ? openChest() : crownHunt(), mBack: skinSheet });
+  // "?": sandık çiziminin yerinde içindekiler; tekrar "?" ya da kartın kendisi → geri
+  const box = $('chestBox'), info = () => {
+    const on = box.classList.toggle('info'), sh = $('mCard'); $('mOdds').classList.toggle('on', on); haptic();
+    sh.classList.toggle('fit', sh.scrollHeight <= sh.clientHeight + 1);
+  };
+  $('mOdds').onclick = info; box.onclick = () => box.classList.contains('info') && info();
   $('trains').onclick = e => {
     const b = e.target.closest('button'); if (!b) return;
     if (!ownsLiv(b.dataset.v)) { haptic('light'); toast('Sandıktan destansı olarak çıkar'); return; }
@@ -1435,21 +1467,43 @@ function openChest() {
   if (r.kind === 'hint') save.hints += r.n;
   else if (r.kind === 'shield') save.shield = (save.shield || 0) + 1;
   else save.trains = { ...save.trains, [r.id]: 1 };
-  persist(); refreshHome();
-  const box = $('chestBox'), btn = $('mOpen'), calm = calmMotion.matches;
-  btn.disabled = true; box.classList.add('shake'); haptic();
-  if (!calm) [0, 2, 4].forEach((k, j) => tone(note(k), .12, .03, 'sine', j * .25));
-  setTimeout(() => chestReveal(r), calm ? 0 : 950);
+  persist(); refreshHome(); chestScene(r);
 }
-function chestReveal(r) {
-  const [tn] = RARITY[r.tier], v = LIVERIES.find(x => x.id === r.id);
-  const what = r.kind === 'hint' ? [`+${r.n} 💡 ipucu`, '💡'] : r.kind === 'shield' ? ['🛡 Seri kalkanı', '🛡'] : [v.name, TRAIN];
-  modal(`<div class="chest got" ${v ? `style="${livVars(v)}"` : ''}>${what[1]}</div><span class="badge tier-${r.tier}">${tn.toUpperCase()}</span><h2>${what[0]}</h2>
-    <p>${r.kind === 'hint' ? `Şimdi ${save.hints} ipucun var.` : r.kind === 'shield' ? `Kusursuz serin bir kez kırılırsa kalkan korur. Sende ${save.shield}/${SHIELD_MAX}.` : 'Yeni tren kaplaması! Sefer şeridindeki trenin bu görünüşe bürünür.'}</p>
-    ${v ? '<button id="mUse" class="btn primary"><span>Kullan</span><small>Trenine tak</small></button>' : ''}
-    <button id="mBack" class="btn glassbtn">Tamam</button>`, { mUse: () => { save.train = r.id; persist(); applyLivery(); chestSheet(); }, mBack: chestSheet });
-  haptic(r.tier === 'e' ? 'win' : 'heavy');
-  (r.tier === 'e' ? [0, 4, 7, 12] : r.tier === 'r' ? [0, 4, 7] : [0, 4]).forEach((q, j) => tone(note(q + 3), .35, .045, 'sine', j * .08));
+// açılış sahnesi (tam ekran): sandık düşer ve sallanır → dokun → kapak açılır, ışık patlar, ödül sandıktan fırlar → dokun → pencereye dön
+function chestScene(r) {
+  const calm = calmMotion.matches, v = LIVERIES.find(x => x.id === r.id), n = r.kind === 'hint' ? r.n : r.kind === 'shield' ? 1 : 0;
+  const [name, sub] = r.kind === 'hint' ? ['İpucu', `Şimdi ${save.hints} ipucun var`] : r.kind === 'shield' ? ['Seri kalkanı', `Kırılan seriyi bir kez korur · sende ${save.shield}/${SHIELD_MAX}`] : [v.name, 'Yeni tren kaplaması'];
+  const el = document.createElement('div');
+  el.id = 'chestScene'; el.className = `cscene t-${r.tier}${calm ? ' calm' : ''}`; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Sürpriz sandık');
+  el.innerHTML = `<div class="cs-col"><span class="badge tier-${r.tier} cs-tier">${RARITY[r.tier][0].toLocaleUpperCase('tr')}</span>
+    <div class="cs-rw"><i class="cs-glow"></i><i class="cs-rays"></i><div class="cs-ic rw-${r.kind}" style="${livVars(v)}">${v ? TRAIN : RW_ICON[r.kind]}${n ? `<b class="cs-n">${n}</b>` : ''}</div></div>
+    <div class="cs-name"><h2>${name}</h2><p>${sub}</p></div>
+    <div class="cs-box"><div class="cs-ch"><i class="cs-sh"></i><div class="cs-chest">${CHEST_SVG}<i class="cs-flash"></i><i class="cs-sp">${[...Array(8)].map((_, k) => `<i style="--a:${k * 45 + 22}deg"></i>`).join('')}</i></div></div><small class="cs-tap">Dokun → aç</small></div>
+    <div class="cs-foot">${v ? '<button id="csUse" class="btn primary cbtn"><span>Trenine tak</span></button>' : ''}<small class="cs-go">Devam için dokun</small></div></div>`;
+  $('app').appendChild(el);
+  // kapalı sandık ekranın ortasında durur, açılınca yerine iner; ödül sandığın ağzından kendi yerine uçar
+  const col = el.firstChild, box = el.querySelector('.cs-box'), rw = el.querySelector('.cs-rw');
+  el.style.setProperty('--fly', `${box.offsetTop + box.offsetHeight * .52 - rw.offsetTop - rw.offsetHeight / 2}px`);
+  if (!calm) el.style.setProperty('--up', `${col.offsetHeight / 2 - box.offsetTop - box.offsetHeight / 2}px`);
+  requestAnimationFrame(() => el.classList.add('in'));
+  let st = 0;   // 0 kapalı · 1 açılıyor · 2 ödül göründü
+  const t0 = performance.now();
+  if (!calm) setTimeout(() => { if (!st) { tone(note(0) / 2, .12, .05, 'triangle'); haptic(); } }, 380);   // yere iniş
+  const open = () => {
+    st = 1; el.classList.add('tap'); haptic();
+    if (!calm) [0, 2, 4].forEach((k, j) => tone(note(k), .12, .03, 'sine', j * .1));
+    setTimeout(() => {
+      el.classList.add('open'); haptic(r.tier === 'e' ? 'win' : 'heavy');
+      (r.tier === 'e' ? [0, 4, 7, 12] : r.tier === 'r' ? [0, 4, 7] : [0, 4]).forEach((q, j) => tone(note(q + 3), .35, .045, 'sine', .06 + j * .08));
+      setTimeout(() => { st = 2; el.classList.add('done'); }, calm ? 450 : 1300);
+    }, calm ? 0 : 360);
+  };
+  const close = () => { st = 3; el.id = ''; el.classList.remove('in'); setTimeout(() => el.remove(), 320); chestSheet(); };
+  el.onclick = e => {
+    if (e.target.closest('#csUse')) { save.train = r.id; persist(); applyLivery(); haptic('heavy'); tone(note(7), .25, .045); return close(); }
+    if (!st && performance.now() - t0 > (calm ? 250 : 420)) open(); else if (st === 2) close();
+  };
+  howBack = () => !st ? open() : st === 2 && close();   // Android geri tuşu: dokunmakla aynı
 }
 // ---------- nasıl oynanır: sayfalı, kendi kendine oynayan demo (video yerine: keskin, birkaç KB, internetsiz) ----------
 // [sahne başlangıcı (sn), yazı]. Her sayfa kendi sahnesini oynar (+0,5 sn okuma payı), sonra kendiliğinden geçer; parmakla kaydırılır.
