@@ -1,273 +1,213 @@
 # M17 · Halka hat (anahtar: `ring`)
 
-> Bu belge tasarım iş akışının çıktısıdır: üç bağımsız tasarımcı, bir seçici ve şüpheci bir doğrulayıcı. Uygulama notlarındaki satır numaraları ve "şu fonksiyonu değiştir" önerileri eklenti iskeletinden ÖNCE yazıldı. Ortak altyapı (birim/val, komşuluk adj, bölünmüş düğüm, tree(), kayıt imzası, kural kartı göçü, çakışma) artık çekirdekte hazır; kural yalnız kendi dosyasında, kancalarla yazılır: docs/kurallar/README.md.
+> **Durum: uygulandı.** Kod `www/rules/halka.js`, robot testleri `tools/hakem/halka.cjs`. Çekirdekte değişiklik yok. Aşağıdaki bölümler uygulanan hâli anlatır. Tasarım iş akışının (üç tasarımcı, seçici, şüpheci doğrulayıcı) kaydı en altta korunur; doğrulayıcının zorunlu düzeltmelerinin her biri orada işaretlidir.
 
-**Neden seçildi:** Hedef türünde en derin kural: Net türünün temel sezgisini (döngü yok) bir kez tersine çeviriyor. Sayım kanıtını tüm kurallarla birlikte denetledim: makas, tabla, köprü ve tünel kol sayısını korur. Bu yüzden zarif ve sağlam. Kavramsal olarak tabladan zor, tünel ağzından kolay. M13'ün tree() yardımcısını yeniden kullanıyor. Türü: hedef (tabla gibi bir etkileşim kuralından sonra, tünel gibi bir geometri kuralından önce). Seçimde değişiklik yaptım: CLASH'e köprü eklendi, halka kenarının tünelden geçebilmesi, işaretin makas ve tablaya konmaması, iki merkezde sayım kanıtı.
+**Neden seçildi:** Hedef türünde en derin kural: Net türünün temel sezgisini (döngü yok) bir kez tersine çeviriyor. Sayım kanıtı tüm kurallarla birlikte geçerli: makas, tabla, köprü ve tünel kol sayısını korur. Kavramsal olarak tabladan zor, tünel ağzından kolay. M13'ün `tree()` yardımcısını yeniden kullanıyor. Türü: hedef (tabla gibi bir etkileşim kuralından sonra, tünel gibi bir geometri kuralından önce).
 
-## Kural kartı metni
+## Kural kartı
 
-Bu hatta raylar <b>bir kez</b> kendi üstüne kapanır ve <b>halka</b> olur. Halka <b>◯ işaretli</b> karodan geçmeli.
+- Ad: **Halka hat** · etiket: "Yeni: halka hat".
+- Metin: Bu hatta raylar **bir kez** kendi üstüne kapanır ve **halka** olur. Halka **kesik çemberli** (satır içi SVG simgesi) karodan geçmeli: geçince çember dolar.
+- ◯ (U+25EF) karakteri kullanılmaz; Android yazı tipinde boş kutu çıkabilir. Simge satır içi SVG'dir (`.rd-ring-i`).
+- Demo (`.rd-ring`, satır içi SVG, 100×100): 2×2 karo, gri halka rayı, sağ üst karoda kesik çember. Hat rengi halkayı alttan başlayıp dolaşarak çizer (`stroke-dashoffset`, `pathLength=100`). Halka kapanınca kesik çember söner, hat renginde düz çember zemin halkasıyla belirir (küçük bir sıçrama), halkada ince "çift ray" çizgisi çıkar. 4 sn döngü.
+- Temel (animasyonsuz) stil **kapalı** hâli gösterir. Azaltılmış harekette (genel kural: animasyon .01 sn, tek tur) kart boş kalmaz, kapanmış halkayı gösterir.
+- Keyframe adları: `rd-ring-draw`, `rd-ring-a`, `rd-ring-b`, `rd-ring-c`.
 
-## Görünüş
+## Görünüş (oyun içi)
 
-◯: karonun içinde kesik çizgili büyük çember (r = .36s). Halka bu karodan geçip kapanınca çember düz çizgiye döner, halka rayları da ortada ince bir zemin çizgisiyle 'çift ray' görünür. Ayrım kesik/düz biçimle yapılır.
+- **İşaret:** karonun içinde büyük çember, r = .36s.
+  - Halkada değilken: kesik, `pal.mut`, kalınlık .045s. 18 kesik çevreye tam oturur (dikiş yok). Kesik uç `lineCap = 'butt'` ile çizilir, sonra `'round'` geri yüklenir (round uçta boşluk ~0,7 px'e iniyordu). Altında yarı saydam zemin halkası vardır, raydan ayrışır.
+  - Halkadayken: düz, hattın rengi (iki merkezde sahibinin rengi), kalınlık .055s. Altında .12s zemin rengi halka vardır. Raylarla birleşip ağır bir "⊕" gibi görünmez, aktarma istasyonu gibi okunur.
+- **Çift ray:** işaret taşıyan basit döngünün karolarında, yalnız döngü komşusuna giden kollara ince bir zemin çizgisi çizilir (.055s, `pal.bg` %60). Ray çift hatlı görünür. `rails` kancasında, duraklardan ve merkezden önce çizilir.
+- **Uyarı nabzı:** yakın kazançta halkada olmayan işaret 900 ms içinde iki kez dışa açılan, uyarı renginde bir halka atar. Karo da `press` ile küçülüp büyür.
+- Ayrım biçimle yapılır (kesik / düz), yalnız renge dayanmaz. Karanlıkta `vis(i)` gizler.
+- Maliyet: kare başına 3–5 çizim çağrısı. Nabız dışında animasyon yoktur, boşta kare çizilmez.
 
-## Mekanik
+## Mekanik ve sayım kanıtı
 
-Çözüm artık ağaç değil, tek döngülü bir çizgedir. Kol sayıları rot, makas, tabla ve köprü işlemlerinde değişmez. Tek merkezde n düğüm ve n kenar vardır, iki merkezde n düğüm, n−1 kenar ve 2 bileşen. Dolayısıyla açık ucu olmayan ve hepsi bağlı (karışmamış) her dizilimde TAM OLARAK bir halka vardır.
-Kural bunu söyler ve halkanın yerini ◯ işaretine bağlar. Net oyuncusunun en güçlü sezgisi 'döngü kapatma' bu hatta bir kez tersine döner: bir yerde kapatman gerekir, ama yalnız işaretli karodan geçerek. Metro teması: çevre hattı.
+Çözüm artık ağaç değil, tek döngülü bir çizgedir. Kural "bir yerde kapatman gerekir, ama işaretli karodan geçerek" der. Net oyuncusunun en güçlü sezgisi (döngü kapatma) bu hatta bir kez tersine döner. Metro teması: çevre hattı.
+
+**Sayım:** her karonun kol sayısı dokunuşla değişmez (döndürme, makas, tabla, tünel kol toplamını korur). Çözümde ağaç n − h kenar taşır (h = merkez sayısı); halka kenarı bir kenar ekler. Kol toplamı Σpopc = 2(n − h + 1).
+
+- Açık uç yoksa her kol karşılıklıdır: kenar sayısı m = n − h + 1.
+- **Tek merkez** (h = 1): her şey yanıyorsa çizge bağlıdır (c = 1), m = n. Döngü sayısı m − n + c = **1**.
+- **İki merkez** (h = 2): karışma yoksa iki bileşen vardır (c = 2), m = n − 1. Döngü sayısı (n − 1) − n + 2 = **1**.
+
+Yani açık ucu olmayan, hepsi yanan, karışmamış her dizilimde **tam olarak bir döngü** vardır. Tek döngülü çizgenin 2-çekirdeği (dereceleri ≤ 1 olan düğümler soyulunca kalan) tam o döngüdür. Kazanma denetimi bu yüzden yalnız "işaretler 2-çekirdekte mi?" diye bakar.
 
 ## Üretim ve çözülebilirlik kanıtı
 
-Ağaç döngüsünden (satır 254–261) sonra, cur karıştırmasından (262) ÖNCE, yalnız x.ring iken çalışır; eski bölümler bit bit aynı kalır.
-(1) sol'de tree() (M13'ten) ile pa, dep ve sahip bulunur.
-(2) Aday kenar (a,b): komşu (P.adj varsa tünel kenarı da olabilir), sol'de bağlı değil, ikisi de merkez ya da köprü değil, sahipleri aynı. Döngü = a→LCA→b ağaç yolu + yeni kenar, uzunluk L = dep[a]+dep[b]−2·dep[lca]+1. Koşul 8 ≤ L ≤ 20; hattın ilk 3 bölümünde L ≤ 12.
-(3) sol[a] |= b, sol[b] |= o.
-(4) Karıştırma ve öteki kurallar olduğu gibi yeni sol üzerinden yapılır.
-(5) İşaret: döngü karolarından bare olanlardan x.ring tane seçilir (n<48 ise 1, sonra 2). ringMark[i] = true, döngü P.ringCyc'e yazılır.
-KANIT: Karıştırma yine yalnız geri alınabilir işlemlerden oluşur; cur→sol erişilebilir. Eklenen kenar iki uçta da kol eklediği için sol'de açık uç yoktur; bağlılık değişmez; a ve b aynı sahipte olduğundan karışma olmaz. İşaret sol'ün döngüsündedir, dolayısıyla lit(sol).solved.
-DOĞRULAMA: tasarımcı 360 bulmacada 0 hata bildirdi. Ben 6×8 ve 7×9'da ortalama 16,4 aday kenar ve 11,0 karoluk ortalama halka ölçtüm; aday hiç tükenmiyor.
+`tree(C)` aşaması: Prim ağacından sonra, karıştırmadan önce. Tünel (`tOrder: 0`) önce çalışır, `C.adj` hazırdır.
 
-## Kazanma koşulu
+1. `tree(C, sol)` ile `pa`, `dep`, `ow` bulunur.
+2. **Aday kenar (a, b):**
+   - `b = C.nb(a, k)` komşudur; tünel kenarı da olabilir.
+   - `b > a` (tekil).
+   - İki kol da `sol`'de boştur.
+   - İki uç da merkez ya da köprü (`C.br`) değildir.
+   - `ow[a] = ow[b] > 0`: aynı hat, karışma olmaz.
+3. **Döngü:** a → ortak ata ← b ağaç yolu + yeni kenar. Uzunluk L = dep[a] + dep[b] − 2·dep[lca] + 1.
+   - Koşul 8 ≤ L ≤ hi. `hi = n < 63 ? 12 : 20`: 6×8 yalnız M17'nin ilk 3 bölümüdür (testere dişi), karma hatlar hep 7×9'dur. `amount()` bölüm sırasını almadığı için sınır boyuttan okunur.
+   - Aralıkta aday yoksa bütün adaylara düşülür. Hiç aday yoksa `out.ring` yazılmaz, bölüm halkasız gelir.
+4. Rastgele bir aday seçilir: `sol[a] |= bit`, `sol[b] |= karşı bit`.
+5. **İşaret burada, ağaç aşamasında ayrılır.**
+   - Adaylar döngü karolarıdır: merkez değil, `C.keep` değil (tünel ağzı, köprü), dört yollu kavşak değil (`per > 1`). İkinci işaret döngüde en az L/3 uzaktan seçilir.
+   - İşaret karosuna `C.keep` ve `C.busy` yazılır. Böylece sabit, eşli, ters, sayaçlı ve birimler (makas, tabla) dokunmaz; işaret hep çıplak karodur.
+   - Sayaçtan sonra çıplak karo arayan sürüm karma bölümlerde 32 kez boş kalıyordu; bu sürümde 0.
+6. `mark(C)` aşaması (sayaçtan sonra):
+   - İşaretin `busy` bayrağı geri alınır. Karanlık yalnızlaştırma ve "çözülmüş gelmesin" bu karoyu çevirebilir.
+   - Karıştırılmış başlangıçta işaret bir döngüdeyse (ör. rastgele 2×2 halka) karo 1–3 kez çevrilir. Oyun her zaman kesik çemberle başlar. R() tüketmez.
+7. `out.ring = { mark: bool[n], cyc: [döngü karoları] }`. Miktar `amount = (n, intro) => intro || n < 63 ? 1 : 2` (işaret sayısı).
 
-lit()'e yalnız P.ringMark varken eklenir: yanan alt çizgede 2-çekirdek hesaplanır. Her karonun derecesi (karşılıklı bağlı kol sayısı) bulunur, derecesi ≤1 olanlar kuyrukla soyulur, kalanlar core[i] olur. ringBad = core'da olmayan işaretli karo sayısı; solved &&= !ringBad. Maliyet O(n). Kazanma anında çizge tek döngülü olduğundan core tam olarak halkadır. Dönüşe core eklenir (çizim ve ses için).
+**KANIT:** Karıştırma yalnız geri alınabilir işlemlerden oluşur (döndürme; işaret karosunun ek döndürmesi de öyle), dolayısıyla cur → sol erişilebilir. Eklenen kenar iki uçta da kol eklediği için sol'de açık uç yoktur. Bağlılık değişmez. a ve b aynı sahipte olduğundan karışma olmaz. İşaretler sol'ün döngüsündedir, dolayısıyla `lit(sol).solved`.
 
-## Dokunma
+**Eski bölümler:** Kancalar yalnız `x.ring > 0` iken çalışır, R() yalnız o zaman tüketilir. 1–672 (halka hattından önce) ve Günün Hattı (`x = {}`) bit bit aynıdır.
 
-Değişmez. pointerdown sonunda: işaretli karo core'a ilk kez girince 'halka kapandı' tonu (note(k+4)), hafif titreşim ve bir kez 'Halka kapandı' toast'ı. Halka işaret dışında kapanırsa (core boş değil ama işaret core'da değil) bir kez '◯ karo halkanın üstünde olmalı' toast'ı ve işaret press.set ile nabız atar.
+## Kazanma koşulu (`check`)
 
-## Çizim
+Her `lit()` çağrısında ve zorluk çözücüsünün yaprağında çalışır, O(n).
 
-(1) İşaret tek yolda: arc(x, y, .36s). Core'da değilken kesik (setLineDash([s·.07, s·.06])) ve pal.mut; core'daysa düz ve OC[own].
-(2) Halka kapanınca core karolarının yalnız core komşularına giden kollarına ikinci bir ince geçiş yapılır: lineWidth .05s, strokeStyle pal.bg. Bu 'çift ray' görünümü verir (tek yol).
-Toplam ~4 çağrı. vis(i) karanlıkta gizler. İşaret yalnız bare karoya konduğu için köşe rozetleriyle çakışmaz.
+1. Yanan alt çizgede karşılıklı kollarla derece bulunur (komşuluk `nb/ob`, tünel geçerli). Derecesi ≤ 1 olanlar kuyrukla soyulur. Kalanlar `L.core`'dur.
+2. `bad` = çekirdekte olmayan işaret sayısıdır. Dönüş değeri `bad`'dir; sıfırdan büyükse `L.solved = false` olur.
+3. Her işaretin çekirdek bileşenine bakılır. Bileşendeki her karonun çekirdek derecesi 2 ise bileşen basit bir döngüdür. Bu karolar `L.rc`'ye (çizim) yazılır. `L.rOn` = böyle döngüdeki işaret sayısıdır.
+   - Bu ayrım, iki döngü arasındaki yolda duran işaretin "halkada" sayılmasını önler. Rastgele 89 400 durumda 125 kez görüldü; çember kesik kalır.
+4. `L.ringNear = bad > 0 && L.solved`. Buradaki `L.solved` temel sonuçtur: açık uç yok, hepsi yanıyor, karışma yok. "Her şey bağlı ama halka işaretten geçmiyor" anlamına gelir. Sayım kanıtı gereği o anda tek döngü vardır ve işaret onun dışındadır.
 
-## Zorluk çözücüsü ve robot
+Kazanma anında çizge tek döngülüdür, çekirdek tam halkadır, `rOn` işaret sayısına eşittir.
 
-Robot solve() değişmez: cur→sol yapar, sol da işaretleri sağlar.
-difficulty(): yerel eleme ve DFS aynen çalışır (döngüsüzlüğü zaten kullanmıyordu); kısıtı yapraktaki lit uygular. Tasarımcı ölçümü: 7×9'da puan 13,8 → 13,5; halkalı tabanların %6–10'u çok çözümlü ve işaret çoğunu tekleştiriyor.
-İsteğe bağlı RULE_W.ring = 1: P.diff'e eklenirse pick() algılanan zorluğu dengelemek için biraz daha hafif bir taban seçer. Önce ölçülmeli.
-hakem testleri:
-- 600 üretimde lit(sol) çözülü olmalı ve core tam bir döngü olmalı.
-- İşaret halka dışına taşınınca sol reddedilmeli.
-- {ring:1, sw:3, table:1} karışımında sayım kanıtı denenmeli (solve kazanmalı).
+## Dokunma ve geri bildirim
 
-## İpucu, baştan, kayıt
+Dokunma değişmez. İki geçiş izlenir:
 
-İpucu: mekanizma değişmez; sol işaretli halkayı içerdiği için ipucu asla yanlış halkaya itmez. ringBad varsa P.ringCyc'teki yanlış karolar öne alınır.
-↺ baştan: halka ve işaret statiktir.
-Kayıt: yeni alan yok, ortak sig yeterli.
+- **Dokunuştan önceki hâl:** `block(G)` her geçerli dokunuştan önce çağrılır ve hiç engellemez. `G.ringWas` (rOn) ve `G.ringNear0` buraya yazılır. Böylece çekirdekte `after(G, i, now, prevL)` değişikliğine gerek kalmadı. Başlangıçta zaten kapalı olan durum da kapanma sayılmaz. İpucu ve ↺ baştan bu bayrakları doğal olarak yeniler.
+- **Yakın kazanç** (`ringNear` yükselir):
+  - İşaret nabız atar.
+  - Bölümde bir kez hafif titreşim ve "Halka kesik çemberli karodan geçmeli" bildirimi.
+  - Kazanma olmaz.
+  - Doğru çözen oyuncu bu uyarıyı hiç görmez (200 bölümde 0).
+- **İşaret halkaya girdi** (`rOn` artar, bölüm bitmemiş):
+  - Çember dolar ve kısa, yumuşak bir ton (`note(10)`, düşük ses) çalar.
+  - Kutlama, bildirim ve ek titreşim yoktur. Kapanan döngü henüz asıl halka olmayabilir; kutlama `win()` ile gelir.
+  - Oyuncunun hayatında bir kez açıklama gösterilir: "Halka çemberli karodan geçti · çember doldu" (`save.ringTold`).
+- Uyarı kapanma geri bildiriminden önceliklidir: aynı dokunuşta ikisi birden gelmez.
+
+## Zorluk, ipucu, baştan, kayıt
+
+- `difficulty()`: değişmez. Yerel eleme döngüsüzlüğü kullanmıyordu, kısıtı yaprakta `lit` + `check` uygular. Merdiven: M16 ortalaması 15,70, M17 15,62, M18 (ilk 31 bölüm) 15,73.
+- İşaret pratikte kısıt değil, bilgi ve geri bildirim noktasıdır (doğrulayıcının sayımı: 6×8'de çok çözümlü pay 6/60 → 5/60, 7×9'da 4/50 → 4/50). Kuralın asıl etkisi topoloji değişimidir: tek döngü, 1–2 durak eksik.
+- **İpucu:** değişmez. `sol` işaretli halkayı içerdiği için ipucu asla yanlış halkaya itmez.
+- **↺ baştan:** yeni `G` kurulur; halka ve işaret statiktir, `ringWarn` sıfırlanır.
+- **Kayıt:** yeni alan yok. Ortak imza (`sig = hash(sol)`) halka kenarını içerir. `save.ringTold` yalnız bir kerelik açıklama içindir.
 
 ## Öteki kurallarla karışım
 
-Sabit: halkada olabilir, yardım eder. Eşli, ters, sayaçlı: karıştırma yeni sol'e göre yapıldığından aynen geçerli; sayaç kanıtı per(sol)'e bağlıdır.
-Makas ve tabla: kol sayısı korunur, sayım kanıtı geçerli; işaret bu karolara konmaz.
-Karanlık: merkezi yalnızlaştırma yalnız merkez komşularını döndürür, halka karanlıkta keşfedilir.
-İki merkez: halka tek hattın içindedir (a ve b aynı sahipte).
-Tünel ağzı: halka kenarı tünelden geçebilir; lit ve 2-çekirdek adj'den okur.
-Tabela ve köprü ile ÇAKIŞIR: CLASH = {ring: ['sign', 'bridge']}. Köprüde 2-çekirdek bölünmüş düğümle yapılırsa köprü yasağı kaldırılabilir.
-Karma hatlarda öteki 8 kuralla karışır.
+- **Sabit, eşli, ters, sayaçlı:** karıştırma yeni `sol`'e göre yapılır, aynen geçerli. İşaret bunlara konmaz (`keep` + `busy`).
+- **Makas, tabla:** kol sayısı korunur, sayım kanıtı geçerli. İşaret bu birimlere konmaz (birimler `busy`'ye saygı gösterir).
+- **Karanlık:** merkez yalnızlaştırma işaret karosunu da çevirebilir. Halka karanlıkta keşfedilir, karanlıktaki işaret çizilmez.
+- **İki merkez:** halka tek hattın içindedir (a ve b aynı sahipte). Düz çember sahibinin renginde çizilir.
+- **Tünel ağzı:** halka kenarı tünelden geçebilir. `check` ve çift ray komşuluğu `nb/ob` ile okur. İşaret ağız hücresine konmaz.
+- **Tabela ve köprüyle ÇAKIŞIR:** `clash: ['sign', 'bridge']`.
+  - Tabela, oku ağaçtaki ebeveyne göre koyar; halka kenarı bu varsayımı bozar.
+  - Köprüde bölünmüş düğüm 2-çekirdek ve `tree()` ile uyuşmaz.
+  - Köprüde 2-çekirdek bölünmüş düğümle hesaplanırsa köprü yasağı kaldırılabilir.
 
-## Kural kartı demosu
+## Ölçümler
 
-.rdemo10 (satır içi SVG, 96×96): 2×2 karo zemini, köşeleri yuvarlatılmış kare halka yolu (rect rx). Mevcut .ln/draw kalıbıyla stroke-dashoffset kullanılarak 1,1 sn'de çizilir. Sağ üst karoda kesik bir çember vardır; çizim tamamlanınca iki katman arasında opaklık geçişiyle düzleşir. 3 sn döngü. Altında 1 cümle: 'Halkayı ◯ karodan geçirerek kapat.'
+- **Üretim (Node, gerçek `generate/lit`):** 6×8 ve 7×9 × 10 karışım × 150 tohum = 3000 bulmaca.
+  - Hata 0, hazır çözülü 0, "çekirdek ≠ döngü" 0, yanlış başlangıç (işaret döngüde) 0.
+  - Aday tükenmesi 0, aralık dışına düşme 0.
+  - Ortalama halka 10,2 karo (8–20). İki işaret döngüde ortalama 0,41 L uzakta.
+- **Kayan işaret:** işaret döngü dışına taşınınca sol 3000/3000 reddedildi, hepsinde `ringNear`.
+- **Hat:** 673–1400'de halkalı 181 bölümün hepsinde halka var ve hepsi çözülür. İki merkezli 15, karanlıklı 13 bölüm.
+  - 673–675: 6×8, halka 8 / 10 / 8 karo, 1 işaret. 676+: 7×9, 2 işaret.
+  - Ortalama üretim 17 ms (Node), tarayıcıda 24 ms.
+- **Eski bölümler:** eklentili ve eklentisiz yükleme 1–672 arasında (her 3. bölüm) birebir aynı. Robot erken bölümlerin ve Günün Hattı'nın eklentisiz özetini sabit olarak denetler.
+- **Geri bildirim (doğru çözen oyuncu, merkezden dışa, 200 bölüm):**
+  - Yanlış uyarı 0. Başlangıçta dolu çember 0.
+  - Çember son dokunuştan önce 197 bölümde dolar: halka tahtanın geri kalanından önce kapanır.
+  - 49 bölümde geçici bir döngü yüzünden dolup yeniden kesikleşir. Geri bildirim yalnız olgusal olduğu için (çember + yumuşak ton) yanıltıcı kutlama yoktur.
+- **Çizim maliyeti (4× yavaş CPU, kapalı halka, 7×9):** halka kancaları kare başına ortanca ~0,1 ms. Bütün kare çizimi ortanca ~2 ms, çekirdeğin 61. bölümüyle aynı.
+- **Boyut:** `halka.js` ~10 KB (kart SVG'si ve CSS dahil).
 
-## Zorluğa etkisi
+## Robot testleri (`tools/hakem/halka.cjs`)
 
-Gerçek bir hedef değişikliği: 'döngü kapatma' alışkanlığı bir kez bırakılır ve kapatma yeri işaretten çıkarılır. 4'lü kavşak sayısı biraz artar. Ölçülen puan yaklaşık −0,3, algılanan zorluk ise artar. İsteğe bağlı kural ağırlığıyla dengelenir.
+1. `rule.ring.gen`: 600 üretim (2 boy × 10 karışım; birleşik sürümde makas, tabla ve tünel karışımları kendiliğinden eklenir).
+   - `lit(sol)` çözülü.
+   - 2-çekirdek tam tek döngü; `rc` = çekirdek; `rOn` = işaret sayısı.
+   - İşaret döngüde, çıplak, merkez değil, kavşak değil.
+   - Uzunluk sınırı tutuyor; hazır çözülü yok.
+2. `rule.ring.move`: işaret döngü dışına kayınca sol reddedilir, `ringNear` olur.
+3. `rule.ring.old`: 1–672 ve Günün Hattı bit bit aynı.
+   - Halka kancaları hiç çağrılmaz.
+   - `{ring: 0} ≡ {}`.
+   - Eklentisiz özet (FNV) tutar.
+4. `rule.ring.line`: M17'nin 76 bölümünde de halka var; ilk 3 bölüm 6×8, ≤ 12 karo, 1 işaret; sonra 7×9, 2 işaret; üretim < 60 ms.
+5. `rule.ring.clash`: 673–20000'de halka tabela ya da köprüyle hiç birlikte gelmez. Tabela/köprü eklentisi henüz yoksa miktarı 0 olan kukla kural konur, böylece test boşa geçmez.
+6. `rule.ring.card`: 673'te "YENİ KURAL · Halka hat" kartı, demo SVG ve satır içi simge.
+7. `rule.ring.play`:
+   - 673: 6×8, kesik başlar.
+   - Halka işaretten kapanınca çember dolar ve bir kerelik açıklama çıkar; bölüm kazanılmaz.
+   - Kalan karo çözülünce kazanılır.
+8. `rule.ring.warn` (açık tema, 7×9, 2 işaret):
+   - Yakın kazançta kazanılmaz.
+   - Uyarı bir kez söylenir; aynı duruma dönülünce yeniden söylenmez, yalnız nabız atar.
+9. `rule.ring.mix`: halka + karanlık tünel; ışığı izleyen çözüm kazanır.
+10. `rule.ring.perf`: 4× yavaş CPU'da çizim süresi ölçülür (kare temposu değil). Böylece aynı makinede koşan öteki işler sonucu bozmaz.
+11. `rule.ring.errors`: konsol hatası yok.
 
-## Riskler
+Ekran görüntüleri: `rule-ring`, `ring-open`, `ring-closed`, `ring-win`, `ring-warn` (açık tema), `ring-fog`.
 
-(1) Oyuncu halkayı başka yerde kapatırsa 'neden bitmedi' diye düşünebilir; kesik/düz çember, toast ve nabız bunu açıklar.
-(2) Kart iki kavramı birden anlatıyor; testere dişi küçük ızgara ve ilk 3 bölümde L ≤ 12 bunu hafifletir.
-(3) Bir yerde 'her zaman ağaç' varsayımı varsa kırılır: win() dalgası ve durak patlaması d'ye dayanır, döngüde de çalışır. hakem gen.solvable varsayılan üretimi denetlediği için etkilenmez.
-(4) CLASH uygulanmazsa tabela ya da köprüyle aynı bölümde yanlış sonuç çıkar; rulesFor testi eklenmeli.
+## Bilinen sınırlar
 
-## Doğrulayıcının kararı
+- **İki merkezli küçük ızgara** (3×3'te 68/400): aynı sahipte ağaç dışı kenar olmayabilir. O zaman `out.ring` yazılmaz ve bölüm halkasız gelir. Gerçek halka boyutlarında (6×8, 7×9) hiç görülmedi (0/3000, 673–1400'de 0). Bu yüzden doğrulayıcının önerdiği `pick()` süzgeci (Ç2) eklenmedi.
+- **İşaret pratikte bilgi verir,** çözüm sayısını azaltmaz (bkz. Zorluk).
+- **Geçici döngü:** çember doğru çözen oyuncuda bile geçici bir döngü yüzünden dolup yeniden kesikleşebilir (200 bölümde 49). Bu bilerek kabul edildi: geri bildirim olgusaldır, kutlama yoktur.
+- **Merkez halkada olabilir:** ortak ata merkez olduğunda halka merkezden geçer. Merkez çift rayın üstüne çizilir, sorun değil.
+- **Web paketi bütçesi:** hakemin "< 300 KB" denetimi eklentisiz hâlde yalnız ~2,7 KB pay bırakıyordu. Bu eklentiyle paket ~307 KB olur, düşük önemli `size` denetimi geçmez. Her kural eklentisi bu sınırı aşar; sınırın ortak olarak yükseltilmesi ya da çalışma zamanında yüklenmeyen `og.jpg`'nin (48 KB, service worker listesinde yok) sayımdan çıkarılması gerekir.
+- **`docs/BOLUM_TASARIMI.md` §5:** tabloya M17 satırı bu dalda eklenmedi (izinli dosyalar dışında).
+
+## Çekirdek değişikliği: yok
+
+- **Ç1 (`after(G, i, now, prevL)`) gerekmedi.** Dokunuştan önceki hâl `block(G)` kancasında saklanır. Bu kanca her geçerli dokunuştan önce çağrılır ve hiç engellemez.
+- **Ç2 (`pick()` halkasız adayı atlasın) gerekmedi.** Gerçek boyutlarda aday hiç tükenmiyor.
+- **Ç3 (ipucu önceliği) gerekmedi.** İpucu karoyu `sol`'e oturtur, `sol` işaretli halkayı içerir.
+
+---
+
+## Tasarım kaydı: doğrulayıcının kararı
 
 Çözülebilir: evet · Uygulanabilir: evet · Tutulsun: evet
 
-**Karşı örnek / risk:** ÇÖZÜLEMEZLİK İÇİN KARŞI ÖRNEK BULUNAMADI. Kanıt doğru: rot, makas (iki durumu da 2 kollu), tabla (karo taşır) ve tünel kol toplamını (Σpopc) değiştirmez. Halkalı sol'de bu toplam 2n'dir; açık uç yoksa kenar sayısı n olur. Tek merkezde bağlı n düğüm ve n kenar, iki merkezde karışmamış 2 bileşen ve n−1 kenar demektir. Her iki durumda döngü sayısı (m−n+c) tam 1'dir, kazanma anında 2-çekirdek tam o döngüdür. Köprüde bölünmüş düğüm tree() ile uyuşmaz; tabela da ağaç aşamasında halkadan önce çalışıp eski ağaca göre ok koyar. Bu yüzden CLASH ['sign','bridge'] haklı. rulesFor ile 673–20000 arasındaki 2079 halkalı bölümde 0 çakışma çıktı.
+**Karşı örnek / risk:** Çözülemezlik için karşı örnek bulunamadı. Kanıt doğru: rot, makas (iki durumu da 2 kollu), tabla (karo taşır) ve tünel kol toplamını (Σpopc) değiştirmez. Halkalı sol'de bu toplam 2n'dir; açık uç yoksa kenar sayısı n olur. Tek merkezde bağlı n düğüm ve n kenar, iki merkezde karışmamış 2 bileşen ve n−1 kenar demektir. Her iki durumda döngü sayısı (m−n+c) tam 1'dir, kazanma anında 2-çekirdek tam o döngüdür. Köprüde bölünmüş düğüm tree() ile uyuşmaz; tabela da ağaç aşamasında halkadan önce çalışıp eski ağaca göre ok koyar. Bu yüzden CLASH ['sign','bridge'] haklı. rulesFor ile 673–20000 arasındaki 2079 halkalı bölümde 0 çakışma çıktı.
 
-DENEY: game.js'in gerçek generate/lit/difficulty/tree/rulesFor/puzzleFor kodunu Node'a çıkarıp öneriyi eklenti olarak yazdım. Dosyalar: /tmp/claude-0/-home-user-mobil-oyun/bb21aa69-f6d1-52e7-9b31-ec2477378b24/scratchpad/ring/load.cjs, ring.js, t1–t10.cjs.
-- Kapsam: 7 boy (3×3–7×9) × 9 karışım (yalın, sabit, eşli, ters, sayaçlı, iki merkez, karanlık, iki merkez+karanlık, hepsi) × 150 tohum × 2 işaret aşaması = 18 900 bulmaca.
-- Sonuç: lit(sol) hatası 0, hazır çözülü 0, "core ≠ döngü" 0. İşaret döngü dışına taşınınca sol 1050/1050 reddedildi.
+**Deney (doğrulayıcı):** game.js'in gerçek generate/lit/difficulty/tree/rulesFor/puzzleFor kodu Node'a çıkarılıp öneri eklenti olarak yazıldı.
+- 7 boy (3×3–7×9) × 9 karışım × 150 tohum × 2 işaret aşaması = 18 900 bulmaca. lit(sol) hatası 0, hazır çözülü 0, "core ≠ döngü" 0. İşaret döngü dışına taşınınca sol 1050/1050 reddedildi.
 - puzzleFor 673–1300: 166 halkalı bölüm, hepsinde halka var, hepsi çözülür. Ortalama 16 ms/bölüm.
-- Merdiven: M16 ortalaması 15,58, M17 ortalaması 15,64. difficulty 7×9'da 13,85 → 13,40, 6×8'de 11,61 → 11,53. Tasarımcının "16,4 aday / 11 karoluk halka" ölçümü doğrulandı: 6×8'de 13,1, 7×9'da 19,6 aday; halka 10,8 / 11,3 karo.
+- Merdiven: M16 ortalaması 15,58, M17 15,64. difficulty 7×9'da 13,85 → 13,40, 6×8'de 11,61 → 11,53. Aday sayısı 6×8'de 13,1, 7×9'da 19,6; halka 10,8 / 11,3 karo.
 
-BOZULMA VE YANLIŞ İDDİALAR (çözülebilirliği bozmuyor, düzeltilmeli):
-(1) Yanlış uyarı. Öneri "core boş değil ama işaret core'da değil" olunca toast gösteriyor. Merkezden dışa doğru KUSURSUZ çözen oyuncu bile 200 bölümün 39'unda bu uyarıyı görür, çünkü karıştırılmış karolar yanan bölgede rastgele döngü kurar.
-(2) Erken "Halka kapandı". Doğru çözen oyuncuda bu bildirim 42/200 bölümde asıl halka bitmeden çalar; 16/200 bölümde de kapanıp açılıp yeniden kapanır. Rastgele dokunuşla 80 000 durumda, işaretin 2-çekirdekte olup hiçbir döngüde olmadığı 10 sahte olumlu durum çıktı. Kutlayan toast ve titreşim yanıltıcı.
-(3) "İşaret çok çözümlülüğü tekleştirir" iddiası YANLIŞ. Bütün açık-uçsuz dizilimleri saydım:
-  - 6×8'de çok çözümlü pay işaretsiz 6/60, işaretle 5/60.
-  - 7×9'da 4/50; 1 ya da 2 işaret bunu hiç değiştirmiyor.
-  İşaret pratikte kısıt değil, bilgi ve görsel bir noktadır. Kuralın asıl etkisi çözüm topolojisinin değişmesi: tek döngü, 1–2 durak eksik.
-(4) Miktar hatası. Gerçek boyutlar yalnız 6×8 (n=48) ve 7×9 (n=63) olduğu için "n<48 ise 1" hiç tutmaz; giriş bölümü dahil hep 2 işaret gelir, kart ise tek işaretten söz ediyor. Ayrıca amount() bölüm sırasını almadığı için "ilk 3 bölümde L≤12" yazıldığı gibi uygulanamaz.
-(5) İşaret aşaması. İşaret "sayaçtan sonra çıplak karo" olarak seçilirse karma bölümlerde 32 bulmacada döngüde hiç çıplak karo kalmadı. İşaret ağaç aşamasında ayrılınca 0 oldu.
-(6) Aday tükenmesi. 6×8 ve 7×9'da 400'er tohumda hiç tükenmedi. İki merkezde ise 3×3'te 68/400 tohumda aynı sahipte ağaç dışı kenar HİÇ yok. Küçük boyda halka kurulamaz; yedek davranış ve pick süzgeci gerekir.
-(7) Sözleşme uyumsuzluğu. docs/kurallar/README.md out.ring = { mark, cyc } istiyor, öneri P.ringMark/P.ringCyc kullanıyor. CSS sınıfı rd-ring olmalı, öneride .rdemo10 var. İpucu önceliği için çekirdekte kanca yok.
-(8) Çizim. Chromium'da 48 px karoyla çizdim (ring-render.png). Kesik ve düz çember iki temada da renk körü için ayrışıyor. Ancak draw() lineCap='round' iken kesik boşluk ~0,7 px'e düşüyor; 'butt' uç gerekir. Düz çember hat renginde olunca raylarla birleşip ağır bir "⊕" görüntüsü veriyor.
-(9) Azaltılmış hareket. Global kural animasyonu .01 sn ve tek turda bitiriyor. Demo temel stilde KAPALI halka göstermezse bu oyuncular boş kart görür.
+**Bulunan bozulmalar ve yanlış iddialar** (çözülebilirliği bozmuyordu):
+1. Yanlış uyarı: "core boş değil ama işaret core'da değil" koşulu doğru çözende 200 bölümün 39'unda uyarı veriyordu.
+2. Erken "Halka kapandı": doğru çözende 42/200 bölümde asıl halka bitmeden çalıyor, 16/200'de kapanıp açılıyordu. 2-çekirdekte olup hiçbir döngüde olmayan işaret de vardı (80 000 rastgele durumda 10).
+3. "İşaret çok çözümlülüğü tekleştirir" iddiası yanlıştı: 6×8'de 6/60 → 5/60, 7×9'da 4/50 → 4/50.
+4. Miktar hatası: gerçek boyutlar yalnız 6×8 ve 7×9 olduğu için "n<48 ise 1" hiç tutmuyordu; "ilk 3 bölümde L≤12" amount() ile uygulanamıyordu.
+5. İşaret aşaması: sayaçtan sonra çıplak karo arayınca karma bölümlerde 32 bulmacada döngüde çıplak karo kalmıyordu.
+6. Aday tükenmesi: iki merkezli 3×3'te 68/400 tohumda aynı sahipte ağaç dışı kenar yok.
+7. Sözleşme uyumsuzluğu: P.ringMark/P.ringCyc yerine out.ring = { mark, cyc }; .rdemo10 yerine .rd-ring.
+8. Çizim: round uçla kesik boşluk ~0,7 px; hat renginde düz çember raylarla "⊕" gibi ağır görünüyordu.
+9. Azaltılmış hareket: temel stil kapalı halkayı göstermezse kart boş kalıyordu.
 
-### Zorunlu düzeltmeler
+### Zorunlu düzeltmeler ve uygulanışı
 
-- Toast uyarısı yalnız 'yakın kazanç' anında çıkmalı: check() içinde L.ringNear = (bad > 0 && L.solved). Bu andaki L.solved, ring denetimi bozuk saymadan önceki temel sonuçtur: açık uç yok, hepsi yanıyor, karışma yok. after() yalnız L.ringNear iken bir kez (G.ringWarn) toast + press nabzı verir. 'core boş değil ama işaret yok' koşulu kaldırılmalı (doğru çözende 39/200 yanlış uyarı).
-- 'Halka kapandı' kutlaması kaldırılmalı. İşaret döngüye girince yalnız olgusal bir geri bildirim kalır: çember düzleşir, kısa yumuşak ton, toast ve titreşim yok. Gerekirse oyuncunun hayatında bir kez açıklayıcı toast (save.ringTold). Kutlama win() ile gelir. Neden: doğru çözende 42/200 erken kapanma, 16/200 yanıp sönme.
-- Döngü göstergesi doğru olmalı. L.ringOn = işaretler core'da VE core basit (her core düğümünün core derecesi 2). Çift ray yalnız ringOn iken ve yalnız core kollarına çizilir. Böylece iki döngü arasındaki yol 'halka' gibi çizilmez.
-- Veri sözleşmeye uymalı: C.out.ring = { mark: bool[n], cyc: number[] }, x.ring = işaret sayısı. check P.ring.mark okur. Çizim ve geri bildirim için yalnız G'ye bayrak yazılır, G.ring nesnesine yazılmaz (cached() bu nesneyi paylaşıyor).
-- amount = (n, intro) => (intro || n < 63) ? 1 : 2. Kısa halka sınırı tree(C) içinde hi = C.n < 63 ? 12 : 20 olarak yazılır: testere dişi yalnız M17'nin ilk 3 bölümünü 6×8 yapar, karma hatlar hep 7×9'dur.
-- İşaret ağaç aşamasında, halka kenarıyla birlikte ayrılmalı. Seçim e.cyc içinden yapılır: merkez değil, per(sol) > 1 (dört yollu kavşak değil), tünel ağzı (C.mouth) değil. Ayrılan karoya C.keep ve C.busy yazılır. mark(C) aşamasında busy geri alınır; böylece karanlık yalnızlaştırma ve 'çözülmüş gelmesin' bu karoyu döndürebilir. 'Çıplak karo' arayan sürüm karma bölümlerde 32 kez boş kaldı.
-- Aday kenar koşulları: b > a (tünelde de tekil), iki kol da sol'de boş, iki uç da merkez değil, iki uç da C.keep değil (köprü ya da tünel ağzı), T.ow eşit ve sıfırdan büyük. 8 ≤ L ≤ hi içinde aday yoksa bütün adaylara düşülür. Hiç aday yoksa out.ring yazılmaz. pick() de bu adayı atlar: MODS.some(m => x[m.key] && !P[m.key]) ise, son aday değilse atla. Bu, iki merkezli küçük ızgaradaki (3×3'te 68/400) durumu kapatır.
-- Kesik çember cx.lineCap = 'butt' ile çizilmeli, sonra 'round' geri yüklenmeli. Düz çember hat renginden ayrışmalı: hat renginde ama ince (lineWidth .04s), yarıçap .38s; ya da pal.fg. Kesik ve düz biçim farkı korunur.
-- Kart metninde ◯ (U+25EF) Android yazı tipinde boş kutu çıkabilir. Kartta satır içi SVG ikonu kullanılmalı, toast metninde 'kesik çemberli karo' denmeli.
-- Demo CSS'i sözleşmeye uymalı: sınıf adı .rd-ring, kendi keyframe adları (rd-ring-draw, rd-ring-a, rd-ring-b). Temel (animasyonsuz) stil KAPALI hâli gösterir: stroke-dashoffset:0, kesik çember opacity:0, düz çember opacity:1. Böylece azaltılmış hareket kuralı demoyu boş bırakmaz.
-- Çekirdekte en küçük değişiklik: pointerdown içinde lit'ten önce const prevL = G.L yazılır ve m.after(G, i, now, prevL) çağrılır. Bu, kapanma geçişini başlangıçta zaten kapalı durumdan ayırmak için gerekir. Raporda belirtilmeli.
-- Belgeler düzeltilmeli. docs/kurallar/halka.md'de 'işaret çoğunu tekleştirir' yerine ölçüm yazılmalı (6×8: 6/60 → 5/60, 7×9: 4/50 → 4/50). Kuralın asıl etkisi topoloji değişimidir (tek döngü, 1–2 durak eksik); işaret bilgi verir ve geri bildirim noktasıdır. BOLUM_TASARIMI §5 tablosuna M17 satırı eklenmeli.
-
-### Doğrulayıcının uygulama planı
-
-YER: Sözleşme gereği kodun hepsi www/rules/halka.js (anahtar 'ring', line 16), tools/hakem/halka.cjs ve docs/kurallar/halka.md dosyalarına girer. game.js'te yalnız 2 küçük değişiklik var (aşağıda Ç1, Ç2).
-
-=== www/rules/halka.js ===
-(window.RAY_RULES ||= []).push(api => {
-  const { DIRS, rot, nb, ob, tree, toast, tone, note, haptic, press, kick } = api;
-  const per = m => rot(m) === m ? 1 : rot(rot(m)) === m ? 2 : 4;
-
-  // 2-çekirdek: yanan alt çizge, yalnız karşılıklı kollar
-  // Dönüş: core (Uint8Array), arm (core komşusuna giden kollar), simple (her core düğümünün derecesi 2)
-  function core2(P, L) {
-    n = P.cur.length; deg = Uint8Array(n); core = Uint8Array(n); arm = Uint8Array(n); q = [];
-    for i with L.d[i] >= 0:
-      core[i] = 1
-      for k in 0..3:
-        if (cur[i] & DIRS[k][0]) && (j = nb(P,i,k)) >= 0 && L.d[j] >= 0 && (cur[j] & ob(P,i,k)): deg[i]++
-    kuyruk: deg ≤ 1 olanlar soyulur; soyulan düğümün core komşularının deg'i 1 azalır
-    for i with core[i]:
-      arm[i] = core komşusuna giden kol bitleri
-      simple &&= popc(arm[i]) === 2
-    return { core, arm, simple }
-  }
-
-  return {
-    key: 'ring', line: 16, clash: ['sign', 'bridge'],
-    amount: (n, intro) => (intro || n < 63) ? 1 : 2,
-
-    tree(C) {   // tOrder yok → line 16; tünel (tOrder 0) önce çalışır, C.adj hazırdır
-      const { sol, n, R } = C, T = tree(C, sol), hi = n < 63 ? 12 : 20, all = [], ok = [];
-      for a in 0..n-1, for k in 0..3:
-        b = C.nb(a,k); if (b <= a) continue
-        o = C.ob(a,k); bit = DIRS[k][0]
-        if ((sol[a] & bit) || (sol[b] & o)) continue
-        if (C.isHub(a) || C.isHub(b) || C.keep[a] || C.keep[b]) continue
-        if (!T.ow[a] || T.ow[a] !== T.ow[b]) continue
-        // LCA: derin olan yukarı çıkar
-        pu = [a], pv = [b]; u = a; v = b
-        while (u !== v): dep[u] >= dep[v] ? pu.push(u = pa[u]) : pv.push(v = pa[v])
-        pv.pop(); cyc = pu.concat(pv.reverse())
-        e = { a, b, bit, o, cyc }; all.push(e); if (8 <= cyc.length <= hi) ok.push(e)
-      pool = ok.length ? ok : all
-      if (!pool.length) return          // out.ring yazılmaz → pick() bu adayı atlar
-      e = pool[R() * pool.length | 0]; sol[e.a] |= e.bit; sol[e.b] |= e.o
-      // işaret burada ayrılır: sabit, eşli, ters, sayaçlı ve birimler (makas/tabla) busy/keep'e saygı gösterir
-      c1 = e.cyc.filter(i => !C.isHub(i) && per(sol[i]) > 1 && !C.mouth?.has(i))
-      cand = c1.length ? c1 : e.cyc.filter(i => !C.isHub(i))
-      mark = Array(n).fill(false)
-      for (k = 0; k < C.x.ring && cand.length; k++):
-        i = cand.splice(R() * cand.length | 0, 1)[0]; mark[i] = true; C.keep[i] = C.busy[i] = true
-      C.out.ring = { mark, cyc: e.cyc }
-    },
-    mark(C) {   // sayaçtan sonra: busy geri alınır (karanlık yalnızlaştırma ve "çözülmüş gelmesin" çevirebilsin)
-      C.out.ring?.mark.forEach((v, i) => v && (C.busy[i] = false))
-    },
-
-    check(P, L) {   // lit() ve difficulty yaprağı; O(n)
-      const r = core2(P, L); L.core = r.core; L.cArm = r.arm
-      let bad = 0; P.ring.mark.forEach((v, i) => { if (v && !r.core[i]) bad++ })
-      L.ringOn = !bad && r.simple
-      L.ringNear = bad > 0 && L.solved   // L.solved burada henüz temel sonuçtur
-      return bad
-    },
-
-    after(G, i, now, prevL) {   // Ç1 gerektirir
-      if (G.L.ringOn && !prevL?.ringOn) {
-        tone(note(10), .18, .03)   // olgusal, kutlamasız
-        if (!api.save.ringTold) { api.save.ringTold = 1; api.persist(); toast('Halka kesik çemberli karodan geçti') }
-      }
-      if (G.L.ringNear && !G.ringWarn) {
-        G.ringWarn = 1; haptic('light'); toast('Halka kesik çemberli karodan geçmeli')
-        G.ring.mark.forEach((v, j) => v && press.set(j, now)); kick()
-      }
-    },
-
-    rails(D) {   // çift ray: 1 çağrı
-      const { G, cx, s, X, vis, pal, railPath } = D; if (!G.L.ringOn) return
-      cx.beginPath()
-      for i: if (G.L.core[i] && vis(i) && !G.split?.[i]) railPath(X[i], G.cur[i] & G.L.cArm[i])
-      cx.lineWidth = s * .05; cx.strokeStyle = pal.bg; cx.stroke()
-    },
-
-    over(D) {   // işaret: kesik 1 + düz ≤3 çağrı; karanlık örtüden önce
-      const { G, cx, s, X, vis, own, OC, pal } = D, mk = G.ring.mark, on = i => G.L.core?.[i] && G.L.ringOn
-      // kesik
-      cx.beginPath()
-      for i: if (mk[i] && vis(i) && !on(i)): [x, y, , sc] = X[i]; cx.moveTo(x + s*.38*sc, y); cx.arc(x, y, s*.38*sc, 0, 7)
-      cx.lineCap = 'butt'; cx.setLineDash([s*.07, s*.06]); cx.lineWidth = s*.045; cx.strokeStyle = pal.mut; cx.stroke()
-      cx.setLineDash([]); cx.lineCap = 'round'
-      // düz
-      for t of [1, 2, 3]: aynı yol yalnız on(i) && own(i) === t için; lineWidth s*.04; strokeStyle OC[t]
-    },
-
-    card: {
-      name: 'Halka hat', tag: 'Yeni: halka hat',
-      demo: '<div class="rd-ring" aria-hidden="true"><svg viewBox="0 0 96 96"><rect class="t" .../>×4<rect class="p" x="24" y="24" width="48" height="48" rx="12"/><circle class="m0" cx="72" cy="24" r="13"/><circle class="m1" cx="72" cy="24" r="13"/></svg></div>',
-      text: 'Bu hatta raylar <b>bir kez</b> kendi üstüne kapanır ve <b>halka</b> olur. Halka <b>kesik çemberli</b> karodan geçmeli; geçince çember dolar.'
-    },
-    css: `
-      .rd-ring{align-self:center;margin:6px 0 2px}
-      .rd-ring svg{width:96px;height:96px}
-      .rd-ring .t{fill:var(--tile);stroke:var(--stroke)}
-      .rd-ring .p{fill:none;stroke:var(--acc);stroke-width:9;stroke-linecap:round;stroke-dasharray:180;stroke-dashoffset:0;animation:rd-ring-draw 3s ease-in-out infinite}
-      .rd-ring .m0{fill:none;stroke:var(--mut);stroke-width:3;stroke-dasharray:5 4;opacity:0;animation:rd-ring-a 3s infinite}
-      .rd-ring .m1{fill:none;stroke:var(--acc);stroke-width:3;opacity:1;animation:rd-ring-b 3s infinite}
-      @keyframes rd-ring-draw{0%{stroke-dashoffset:180}45%,100%{stroke-dashoffset:0}}
-      @keyframes rd-ring-a{0%,45%{opacity:1}55%,100%{opacity:0}}
-      @keyframes rd-ring-b{0%,45%{opacity:0}55%,100%{opacity:1}}`
-      // temel stil = KAPALI hâl → azaltılmış harekette de doğru kare
-  };
-});
-
-=== game.js (en küçük çekirdek değişikliği) ===
-Ç1 pointerdown:
-  const prev = G.L.d, prevL = G.L, wasMerged = G.L.merged
-  ...
-  for (const m of MODS) if (m.after && G[m.key]) m.after(G, i, now, prevL)
-Ç2 pick(): her adayda
-  if (MODS.some(m => x[m.key] && !P[m.key]) && k < K - 1) continue
-  Halka kurulamayan aday seçilmez. Eklentisiz bölümlerde MODS boş olduğundan sonuç bit bit aynı kalır.
-İsteğe bağlı Ç3: hint() içinde "wrong" sıralamasından önce G.L.ringNear ise P.ring.cyc içindeki yanlış karolar öne alınır, ya da genel bir m.hintOrder kancası eklenir. Yakın kazanç durumu 6×8'de ~1/60 tahtada olası; zorunlu değil.
-
-=== Değişmeyenler ===
-- generate'in kendisi (kanca aşamaları yeterli), lit (check kancası), difficulty (eleme döngüye bakmıyor; yaprakta lit+check), solve() (cur→sol).
-- İpucu (sol işaretli halkayı içerir), reset (start yeni G kurar, G.ringWarn sıfırlanır), saveRun (sig = hash(sol) halka kenarını içerir; işaret tohumdan yeniden üretilir).
-- index.html'de rules/halka.js script etiketi iskelette var. sw.js önbellek listesine halka.js eklenmeli.
-
-=== tools/hakem/halka.cjs ===
-(1) Üretim:
-  - Boylar: 6×8 ve 7×9. Karışımlar: {ring:1}, {ring:2}, +pins, +pairs, +rev, +cnt, +two, +fog, +two+fog, {ring:2, sw:3, table:1}, {ring:2, portal:..}. Her biri 300 tohum.
-  - Beklenen: P.ring var; lit(sol).solved; L.core'daki kümenin P.ring.cyc'e eşit olması ve her düğümün core derecesinin 2 olması; işaretler ⊂ cyc; işaretlerde hub yok, per > 1; !lit(cur).solved.
-(2) İşaret döngü dışına taşınınca lit(sol) çözülmüş sayılmamalı.
-(3) Hiçbir l < 673 için rulesFor(l) 'ring' içermemeli ve puzzleFor(l).ring tanımsız olmalı. 673–5000'de ring ile sign ya da bridge birlikte gelmemeli.
-(4) 673–760 arasında rulesFor 'ring' içeren her bölümde puzzleFor(l).ring var. 673–675'te halka uzunluğu ≤ 12 ve 1 işaret. Ortalama üretim < 60 ms.
-(5) Oyun:
-  - open({ save: { played: 6, level: 673, stars: starsUpTo(673) } }).
-  - Kural kartında /Halka/ çıkar; 'Anladım'a basılır.
-  - solve(page) → waitModal; G.L.ringOn true; G.ring.mark'taki her karo G.L.core'da.
-(6) Uyarı yolu:
-  - page.evaluate: G.cur = G.sol.slice(); G.ring = { ...G.ring, mark: döngü dışı bir karoya taşınmış }. Bu yalnız test kopyasıdır.
-  - Bir karoya iki kez değil dört kez dokunulur (aynı duruma döner) → toast /kesik çemberli/ bir kez görünür, kazanma olmaz.
-(7) Karanlık ile halka (fog+ring bölümü, ör. rulesFor'dan bulunur): ışığı izleyen solve() kazanır.
-(8) Görsel: 7×9 halkalı bölümde shot 'ring-dark' ve 'ring-light' alınır. Hata konsolu boş olmalı.
-(9) Performans: halkalı 7×9'da 30 dokunuşta p95 kare süresi mevcut sınırın (34 ms, 4× CPU) altında kalmalı.
-
-=== docs/kurallar/halka.md ===
-Kanıt, ölçümler, CLASH gerekçesi (tabela ağaç aşamasında halkadan önce; köprü bölünmüş düğüm) ve bilinen sınırlar yazılır: iki merkezde küçük ızgarada halka kurulamayabilir, işaret pratikte bilgi verir.
+- ✅ Uyarı yalnız yakın kazançta: `L.ringNear = bad > 0 && L.solved`, bölümde bir kez (`G.ringWarn`) bildirim ve nabız. Doğru çözende 0 yanlış uyarı.
+- ✅ "Halka kapandı" kutlaması kaldırıldı: çember dolar, yumuşak ton; bildirim ve ek titreşim yok, açıklama ömürde bir kez (`save.ringTold`).
+- ✅ Döngü göstergesi doğru: `L.rc` / `L.rOn` yalnız basit döngüdeki işaretler için. Çift ray yalnız o döngünün kollarına.
+- ✅ Veri sözleşmeye uygun: `out.ring = { mark, cyc }`, `x.ring` = işaret sayısı. Oyun bayrakları `G`'ye yazılır, `G.ring`'e yazılmaz (önbellek paylaşıyor).
+- ✅ `amount = (n, intro) => intro || n < 63 ? 1 : 2`, `hi = n < 63 ? 12 : 20`.
+- ✅ İşaret ağaç aşamasında ayrılır (`keep` + `busy`), `mark(C)`'de `busy` geri alınır.
+- ✅ Aday koşulları: `b > a`, iki kol boş, merkez ve köprü değil, aynı sahip; aralık dışına ve hiç aday yoksa halkasıza düşme. Tünel kenarı serbest; işaret ağız hücresine konmaz.
+- ✅ Kesik çember `butt` uçla; düz çember zemin halkasıyla raydan ayrışır.
+- ✅ Kartta ◯ yerine satır içi SVG; bildirimde "kesik çemberli karo".
+- ✅ Demo `.rd-ring`, kendi keyframe adları, temel stil kapalı hâl.
+- ✅ Çekirdek değişikliği Ç1 gerekmedi (`block` kancası), Ç2 gerekmedi (aday tükenmiyor).
+- ✅ Belge ölçümle düzeltildi. ⏳ `BOLUM_TASARIMI §5` satırı bu dalın dışında.
+- ➕ Ek: karışık başlangıçta işaret rastgele bir döngüdeyse karo çevrilir. 673'ün kendisinde 2×2'lik bir halka tanıtım bölümünü "çözülmüş gibi" gösteriyordu.
