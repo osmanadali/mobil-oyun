@@ -733,6 +733,34 @@ async function inViewport(page, sel) {
     await ctx.close();
   }
 
+  // ---------- E13. Temalar: en az 25 renk teması; her hat kendi adı ve rengiyle (tekrar yok), uyarı kırmızısıyla karışmaz ----------
+  {
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 1 } });
+    const res = {};
+    for (const scheme of ['dark', 'light']) {
+      await page.emulateMedia({ colorScheme: scheme });
+      res[scheme] = await page.evaluate(() => {
+        const R = window.__ray, dE = (a, b) => { const [L1, C1, h1] = R.okl(a), [L2, C2, h2] = R.okl(b), r = Math.PI / 180; return Math.hypot(L1 - L2, C1 * Math.cos(h1 * r) - C2 * Math.cos(h2 * r), C1 * Math.sin(h1 * r) - C2 * Math.sin(h2 * r)); };
+        const bad = [];
+        for (const k of R.SKINS) {
+          const cols = Array.from({ length: 60 }, (_, c) => R.lineCol(c, k));
+          if (new Set(cols).size < 60) bad.push(k.id + ':tekrar');
+          if (cols.some((c, i) => i && dE(c, cols[i - 1]) < .028)) bad.push(k.id + ':komşu');
+          if (cols.some((c, i) => i >= 6 && dE(c, cols[i - 6]) < .04)) bad.push(k.id + ':6');
+          if (cols.some(c => dE(c, R.warnFor(c)) < .08)) bad.push(k.id + ':uyarı');
+        }
+        const crown = R.SKINS.filter(k => !k.vip), prices = crown.map(k => k.need);
+        const names = Array.from({ length: 300 }, (_, c) => R.lineName(c));
+        return { skins: R.SKINS.length, rising: prices.every((v, i) => !i || v > prices[i - 1]), names: new Set(names).size, n25: new Set(names.slice(0, 25).map(n => n.split(' · ')[1])).size, bad };
+      });
+    }
+    const d = res.dark, l = res.light;
+    check('theme.lines', 'En az 25 renk teması (fiyat artarak); her hat kendi adıyla (300 hatta tekrar yok) ve rengiyle: 60 hatta birebir tekrar yok, komşu ve 6 hat arası ayrışır, uyarı kırmızısıyla karışmaz (koyu + açık)', d.skins >= 25 && d.rising && d.names === 300 && d.n25 === 25 && !d.bad.length && !l.bad.length && errors.length === 0, JSON.stringify({ skins: d.skins, rising: d.rising, names: d.names, bad: [...d.bad, ...l.bad.map(b => 'açık ' + b)] }), 'medium');
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.click('#crownChip'); await page.waitForTimeout(450); await shot(page, 'themes-25');
+    await ctx.close();
+  }
+
   // ---------- F. Boşta CPU: animasyon döngüsü durmalı ----------
   {
     const { ctx, page } = await open(browser, URL, { save: { played: 4, level: 30, stars: starsUpTo(30) } });

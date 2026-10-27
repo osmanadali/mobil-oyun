@@ -6,9 +6,9 @@ const N = 1, E = 2, S = 4, W = 8;
 const DIRS = [[N, 0, -1, S], [E, 1, 0, W], [S, 0, 1, N], [W, -1, 0, E]];
 const rot = m => ((m << 1) | (m >> 3)) & 15;          // saat yönü 90°
 const unrot = m => ((m >> 1) | (m << 3)) & 15;        // saat yönünün tersi 90° (ters karo)
-const LINES_DARK = ['#ffb35c', '#4fc3a1', '#7ea6ff', '#ff7a8a', '#b394ff', '#5ccfe6'];
-const LINES_LIGHT = ['#f08a24', '#1fa383', '#4a7fe0', '#e8566c', '#8c6ae0', '#1a9fbd'];
-const LINE_NAMES = ['Turuncu', 'Yeşil', 'Mavi', 'Kırmızı', 'Mor', 'Turkuaz'];
+// hat adları: renk değil yer adı (her renk temasında doğru okunur). 25 ad; sonra "Yeni Liman", "Kuzey Liman"… → hiçbir hat adı tekrar etmez
+const LINE_NAMES = ['Liman', 'Çarşı', 'Sahil', 'Kule', 'Bahçe', 'Köprü', 'Fener', 'Vadi', 'Pınar', 'Meydan', 'Tepe', 'Ada', 'Saray', 'Rıhtım', 'Kanal', 'Çınar', 'Yayla', 'Koru', 'Kervan', 'Değirmen', 'Göl', 'Bağ', 'Pazar', 'Kale', 'Gar'];
+const NAME_PRE = ['', 'Yeni', 'Eski', 'Kuzey', 'Güney', 'Doğu', 'Batı', 'Yukarı', 'Aşağı', 'Büyük', 'Küçük'];
 const LINE0 = 12, LINE_STEP = 4;                        // hat uzunluğu doğrusal artar: M1 12 bölüm, her hat +4 (16, 20, 24…)
 const STAR_AVG = 2.2;                                   // yeni hat: önceki bölümlerde ortalama 2,2★
 const INTER_EVERY = 4;                                  // her 4 galibiyette 1 geçiş reklamı
@@ -66,7 +66,11 @@ function dailyZ(day) {
   return Math.max(.4, Math.min(1, lo + (hi - lo) * Math.pow(w / 6, 1.2) + wob));
 }
 const dPct = day => Math.round(dailyZ(day) * 100);
-const lineName = c => `M${c + 1} · ${(skin().names || LINE_NAMES)[c % 6]} Hat`;
+function lineTitle(c) {
+  const n = LINE_NAMES.length, k = Math.floor(c / n), pre = NAME_PRE[k % NAME_PRE.length], tur = Math.floor(k / NAME_PRE.length);
+  return `${pre ? pre + ' ' : ''}${LINE_NAMES[c % n]}${tur ? ' ' + (tur + 1) : ''}`;
+}
+const lineName = c => `M${c + 1} · ${lineTitle(c)} Hattı`;
 const need = c => Math.round((lineStart(c) - 1) * STAR_AVG);
 const totalStars = () => Object.values(save.stars).reduce((a, b) => a + b, 0);
 const unlocked = c => TEST || totalStars() >= need(c);
@@ -75,30 +79,88 @@ const unlocked = c => TEST || totalStars() >= need(c);
 let pal = {};
 const isLight = () => save.theme === 'light' || (save.theme === 'auto' && matchMedia('(prefers-color-scheme: light)').matches);
 // ---------- hat temaları: kusursuz bitirilen bölümlerin taçlarıyla (👑) açılır ----------
-// Taç (👑) bir para birimidir: tema satın alınınca harcanır. Her tema tek renk ailesidir (6 hattın hepsi aynı ailenin tonları).
+// Taç (👑) bir para birimidir: tema satın alınınca harcanır. Her tema bir renk ailesidir: 6 temel ton, sonraki hatlarda tonu
+// ve parlaklığı kayan çeşitlemeleri (famCol) → 6 hatta bir birebir tekrar yok. 22 taç teması + 3 reklamsız paket teması = 25.
 const SKINS = [
   { id: 'metro', name: 'Metro', need: 0 },
-  { id: 'sunset', name: 'Gün Batımı', need: 5, lines: ['#ff9e7a', '#ffb36b', '#ff7f6b', '#ffc48a', '#ff8fa3', '#ffa94d'], names: ['Mercan', 'Kehribar', 'Kızıl', 'Şafak', 'Gül', 'Akşam'], acc: ['#ffb36b', '#ff7f6b'], glow: ['#ff9e5a', '#ff6f91', '#ffb86b'] },
-  { id: 'ocean', name: 'Okyanus', need: 25, lines: ['#5ce1e6', '#4fa3ff', '#7dd3fc', '#38bdf8', '#67e8f9', '#2dd4bf'], names: ['Lagün', 'Derin Mavi', 'Gök', 'Okyanus', 'Buz', 'Turkuaz'], acc: ['#5ce1e6', '#4fa3ff'], glow: ['#3fb6d9', '#3a5bff', '#2dd4bf'] },
-  { id: 'forest', name: 'Orman', need: 40, lines: ['#7bd88f', '#a3e635', '#4ade80', '#86efac', '#5fd3a1', '#bef264'], names: ['Çam', 'Filiz', 'Orman', 'Nane', 'Yosun', 'Fıstık'], acc: ['#7bd88f', '#3fb68b'], glow: ['#4fb477', '#2f7d5b', '#a3e635'] },
-  { id: 'desert', name: 'Çöl', need: 55, lines: ['#f2c38b', '#e8935f', '#e0b26f', '#d98a66', '#f5d6a8', '#cf9a63'], names: ['Kum', 'Kiremit', 'Vaha', 'Kızıl Kaya', 'Bej', 'Hurma'], acc: ['#f2c38b', '#e8935f'], glow: ['#e8935f', '#a8653f', '#f2c38b'] },
-  { id: 'sakura', name: 'Sakura', need: 70, lines: ['#ffb7c5', '#ff8fab', '#f9a8d4', '#ffc2d9', '#f48fb1', '#e7a6ff'], names: ['Sakura', 'Gül', 'Pembe', 'Pudra', 'Fuşya', 'Leylak'], acc: ['#ffb7c5', '#f48fb1'], glow: ['#ff9fb8', '#e48bff', '#ffc2d9'] },
-  { id: 'neon', name: 'Neon Gece', need: 90, lines: ['#ff3ddc', '#22e6ff', '#b84dff', '#ff5ea8', '#5b8cff', '#d65cff'], names: ['Neon Pembe', 'Elektrik', 'Ultraviyole', 'Fuşya', 'Lazer', 'Plazma'], acc: ['#ff3ddc', '#22e6ff'], glow: ['#ff3ddc', '#22e6ff', '#7a2bff'] },
-  { id: 'aurora', name: 'Kuzey Işıkları', need: 110, lines: ['#6ef3c5', '#5ee0ff', '#a6ffcb', '#7aa2ff', '#9d8cff', '#63e6be'], names: ['Aurora', 'Kutup', 'Işık', 'Buzul', 'Ametist', 'Zümrüt'], acc: ['#6ef3c5', '#7aa2ff'], glow: ['#2ee6a6', '#6b5bff', '#5ee0ff'] },
-  { id: 'lava', name: 'Lav', need: 135, lines: ['#ff5a36', '#ff9f1c', '#ff7b54', '#ffb347', '#e63946', '#ff6b6b'], names: ['Lav', 'Magma', 'Kor', 'Ateş', 'Volkan', 'Alev'], acc: ['#ff7b3a', '#e63946'], glow: ['#ff3d00', '#b5179e', '#ff9f1c'] },
-  { id: 'cosmos', name: 'Kozmos', need: 160, lines: ['#9d8cff', '#b5a8ff', '#c084fc', '#818cf8', '#a78bfa', '#e0aaff'], names: ['Galaksi', 'Nebula', 'Pulsar', 'Yörünge', 'Kuyruklu', 'Yıldız Tozu'], acc: ['#9d8cff', '#c084fc'], glow: ['#5b3df5', '#0ea5e9', '#d946ef'] },
+  { id: 'sunset', name: 'Gün Batımı', need: 5, lines: ['#ff9e7a', '#ffb36b', '#ff7f6b', '#ffc48a', '#ff8fa3', '#ffa94d'], acc: ['#ffb36b', '#ff7f6b'], glow: ['#ff9e5a', '#ff6f91', '#ffb86b'] },
+  { id: 'ocean', name: 'Okyanus', need: 25, lines: ['#5ce1e6', '#4fa3ff', '#7dd3fc', '#38bdf8', '#67e8f9', '#2dd4bf'], acc: ['#5ce1e6', '#4fa3ff'], glow: ['#3fb6d9', '#3a5bff', '#2dd4bf'] },
+  { id: 'forest', name: 'Orman', need: 40, lines: ['#7bd88f', '#a3e635', '#4ade80', '#86efac', '#5fd3a1', '#bef264'], acc: ['#7bd88f', '#3fb68b'], glow: ['#4fb477', '#2f7d5b', '#a3e635'] },
+  { id: 'desert', name: 'Çöl', need: 55, lines: ['#f2c38b', '#e8935f', '#e0b26f', '#d98a66', '#f5d6a8', '#cf9a63'], acc: ['#f2c38b', '#e8935f'], glow: ['#e8935f', '#a8653f', '#f2c38b'] },
+  { id: 'sakura', name: 'Sakura', need: 70, lines: ['#ffb7c5', '#ff8fab', '#f9a8d4', '#ffc2d9', '#f48fb1', '#e7a6ff'], acc: ['#ffb7c5', '#f48fb1'], glow: ['#ff9fb8', '#e48bff', '#ffc2d9'] },
+  { id: 'neon', name: 'Neon Gece', need: 90, lines: ['#ff3ddc', '#22e6ff', '#b84dff', '#ff5ea8', '#5b8cff', '#d65cff'], acc: ['#ff3ddc', '#22e6ff'], glow: ['#ff3ddc', '#22e6ff', '#7a2bff'] },
+  { id: 'aurora', name: 'Kuzey Işıkları', need: 110, lines: ['#6ef3c5', '#5ee0ff', '#a6ffcb', '#7aa2ff', '#9d8cff', '#63e6be'], acc: ['#6ef3c5', '#7aa2ff'], glow: ['#2ee6a6', '#6b5bff', '#5ee0ff'] },
+  { id: 'lava', name: 'Lav', need: 135, lines: ['#ff5a36', '#ff9f1c', '#ff7b54', '#ffb347', '#e63946', '#ff6b6b'], acc: ['#ff7b3a', '#e63946'], glow: ['#ff3d00', '#b5179e', '#ff9f1c'] },
+  { id: 'cosmos', name: 'Kozmos', need: 160, lines: ['#9d8cff', '#b5a8ff', '#c084fc', '#818cf8', '#a78bfa', '#e0aaff'], acc: ['#9d8cff', '#c084fc'], glow: ['#5b3df5', '#0ea5e9', '#d946ef'] },
+  { id: 'glacier', name: 'Buzul', need: 190, lines: ['#a8e6ff', '#7cc8ff', '#c4f1ff', '#8fb8ff', '#b0d8ff', '#9ee7f0'], acc: ['#a8e6ff', '#7cc8ff'], glow: ['#5fb8ff', '#a8e6ff', '#3a7bd5'] },
+  { id: 'spring', name: 'Bahar', need: 220, lines: ['#9be15d', '#ffb3c7', '#7ee0b5', '#ffd36e', '#c7f08a', '#f7a8d8'], acc: ['#9be15d', '#ffb3c7'], glow: ['#6ccf5f', '#ff9ec1', '#ffd36e'] },
+  { id: 'autumn', name: 'Sonbahar', need: 250, lines: ['#e8a33d', '#d9824a', '#f0c060', '#c9a24a', '#e6b980', '#d6945a'], acc: ['#e8a33d', '#d9824a'], glow: ['#d9822b', '#8c3b1f', '#f0c060'] },
+  { id: 'reef', name: 'Mercan Resifi', need: 280, lines: ['#ff9a8b', '#4fd1c5', '#ffc074', '#5ab8ff', '#ff9ec7', '#7be0a5'], acc: ['#ff9a8b', '#4fd1c5'], glow: ['#ff7e6b', '#22b8cf', '#ffc074'] },
+  { id: 'tea', name: 'Çay Bahçesi', need: 310, lines: ['#7fbf7f', '#a7d49b', '#5fae8a', '#c9e4a7', '#8fc9a3', '#b5d98c'], acc: ['#7fbf7f', '#5fae8a'], glow: ['#3f8f5f', '#7fbf7f', '#c9e4a7'] },
+  { id: 'tulip', name: 'Lale', need: 340, lines: ['#e86fb0', '#b77cff', '#ff96d0', '#9b7bff', '#f2a0e6', '#c58bff'], acc: ['#e86fb0', '#b77cff'], glow: ['#c2185b', '#7b4bff', '#ff86c8'] },
+  { id: 'storm', name: 'Fırtına', need: 370, lines: ['#a9bccf', '#7f9ec0', '#c8d4e0', '#8fb2d2', '#b3c0dc', '#98adc2'], acc: ['#a9bccf', '#7f9ec0'], glow: ['#4a6380', '#8aa1b8', '#2c3e57'] },
+  { id: 'midnight', name: 'Gece Yarısı', need: 400, lines: ['#7d8bff', '#9a8cff', '#6aa8ff', '#b09aff', '#8c9dff', '#8080ff'], acc: ['#9a8cff', '#7d8bff'], glow: ['#2b2f8f', '#5b3df5', '#1e3a8a'] },
+  { id: 'rainbow', name: 'Gökkuşağı', need: 440, lines: ['#ff9a5c', '#ffd166', '#7bd88f', '#5cc8ff', '#9d8cff', '#ff8fd6'], acc: ['#ffd166', '#5cc8ff'], glow: ['#ff8a5c', '#5cc8ff', '#9d8cff'] },
+  { id: 'synth', name: 'Retro Dalga', need: 480, lines: ['#ff71ce', '#01cdfe', '#05ffa1', '#b967ff', '#fffb96', '#ff9cf0'], acc: ['#ff71ce', '#01cdfe'], glow: ['#b967ff', '#ff71ce', '#01cdfe'] },
+  { id: 'pastel', name: 'Pastel', need: 520, lines: ['#ffc8d6', '#b9e3b9', '#b6dafe', '#fff0a8', '#ddbcff', '#ffd2b0'], acc: ['#b6dafe', '#ffc8d6'], glow: ['#cdb4db', '#a2d2ff', '#ffc8dd'] },
+  { id: 'dawn', name: 'Şafak', need: 560, lines: ['#ffb38a', '#ffd6a5', '#f9a8c4', '#f5c2f2', '#ffe5b4', '#f7a87a'], acc: ['#ffb38a', '#f9a8c4'], glow: ['#ff9a76', '#c38bff', '#ffd6a5'] },
   // 💛 yalnızca Reklamsız paketle (taçla alınmaz)
-  { id: 'gold', name: 'Altın', vip: true, lines: ['#ffd36b', '#f5b942', '#ffe7a3', '#e9a93a', '#fff1b8', '#d9a520'], names: ['Altın', 'Bal', 'Fildişi', 'Kehribar', 'Krem', 'Hardal'], acc: ['#ffd36b', '#e9a23a'], glow: ['#ffcf6b', '#b8862b', '#ffe8a3'] },
-  { id: 'diamond', name: 'Elmas', vip: true, lines: ['#d6f1ff', '#bae6fd', '#c7d2fe', '#e9e4ff', '#a5f3fc', '#ddd6fe'], names: ['Elmas', 'Kristal', 'Prizma', 'İnci', 'Buz', 'Opal'], acc: ['#bae6fd', '#c7d2fe'], glow: ['#7dd3fc', '#a78bfa', '#e0f2fe'] },
-  { id: 'ruby', name: 'Yakut', vip: true, lines: ['#ff4d6d', '#ff758f', '#e0245e', '#ff8fab', '#f43f5e', '#ff5c8a'], names: ['Yakut', 'Garnet', 'Lal', 'Gül', 'Kızıl', 'Mercan'], acc: ['#ff4d6d', '#e0245e'], glow: ['#c9184a', '#ff4d6d', '#7b2cbf'] },
+  { id: 'gold', name: 'Altın', vip: true, lines: ['#ffd36b', '#f5b942', '#ffe7a3', '#e9a93a', '#fff1b8', '#d9a520'], acc: ['#ffd36b', '#e9a23a'], glow: ['#ffcf6b', '#b8862b', '#ffe8a3'] },
+  { id: 'diamond', name: 'Elmas', vip: true, lines: ['#d6f1ff', '#bae6fd', '#c7d2fe', '#e9e4ff', '#a5f3fc', '#ddd6fe'], acc: ['#bae6fd', '#c7d2fe'], glow: ['#7dd3fc', '#a78bfa', '#e0f2fe'] },
+  { id: 'ruby', name: 'Yakut', vip: true, lines: ['#ff4d6d', '#ff758f', '#e0245e', '#ff8fab', '#f43f5e', '#ff5c8a'], acc: ['#ff4d6d', '#e0245e'], glow: ['#c9184a', '#ff4d6d', '#7b2cbf'] },
 ];
 const crownCount = () => Object.keys(save.crowns).length + (save.dCrowns || 0) + (save.fc || 0) + (save.cc || 0);   // toplam kazanılan (bölüm + günlük + final + seri bonusu)
 const crownBal = () => crownCount() - (save.spent || 0);                             // harcanabilir bakiye
 const skinOpen = k => !!save.owned[k.id] || !!(k.vip && save.noAds);
 const skin = () => { const k = SKINS.find(x => x.id === save.skin); return k && skinOpen(k) ? k : SKINS[0]; };
 const shade = (hex, f) => '#' + [16, 8, 0].map(b => Math.round((parseInt(hex.slice(1), 16) >> b & 255) * f).toString(16).padStart(2, '0')).join('');
-const skinCols = k => k.lines ? (isLight() ? k.lines.map(c => shade(c, .78)) : k.lines) : isLight() ? LINES_LIGHT : LINES_DARK;
-const lineCols = () => skinCols(skin());
+// ---------- hat renkleri: OKLCH (algısal) uzayda üretilir → bütün hatlar eşit parlaklıkta, koyu/açık zeminde okunur ----------
+function oklch(L, C, h) {
+  for (; C > 0; C -= .01) {   // renk sRGB'ye sığana dek doygunluk azalır
+    const a = C * Math.cos(h * Math.PI / 180), b = C * Math.sin(h * Math.PI / 180);
+    const l = (L + .3963377774 * a + .2158037573 * b) ** 3, m = (L - .1055613458 * a - .0638541728 * b) ** 3, s = (L - .0894841775 * a - 1.291485548 * b) ** 3;
+    const v = [4.0767416621 * l - 3.3077115913 * m + .2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - .3413193965 * s, -.0041960863 * l - .7034186147 * m + 1.707614701 * s];
+    if (v.every(x => x >= -.001 && x <= 1.001)) return '#' + v.map(x => Math.round(Math.min(1, Math.max(0, x <= .0031308 ? 12.92 * x : 1.055 * x ** (1 / 2.4) - .055)) * 255).toString(16).padStart(2, '0')).join('');
+  }
+  return oklch(L, 0, h);
+}
+function okl(hex) {   // hex → [L, C, ton°]
+  const n = parseInt(hex.slice(1), 16), f = x => (x /= 255) <= .04045 ? x / 12.92 : ((x + .055) / 1.055) ** 2.4, r = f(n >> 16), g = f(n >> 8 & 255), b = f(n & 255);
+  const l = Math.cbrt(.4122214708 * r + .5363325363 * g + .0514459929 * b), m = Math.cbrt(.2119034982 * r + .6806995451 * g + .1073969566 * b), s = Math.cbrt(.0883024619 * r + .2817188376 * g + .6299787005 * b);
+  const A = 1.9779984951 * l - 2.428592205 * m + .4505937099 * s, B = .0259040371 * l + .7827717662 * m - .808675766 * s;
+  return [.2104542553 * l + .793617785 * m - .0040720468 * s, Math.hypot(A, B), (Math.atan2(B, A) * 180 / Math.PI + 360) % 360];
+}
+const PHI = .6180339887, WARN_H = 14.5;   // uyarı kırmızısının (#ff7a8a) OKLCH tonu
+const hueGap = (a, b) => Math.abs(((a - b) % 360 + 540) % 360 - 180);
+// Metro: altın oran adımlı ton dizisi (komşu hatlar ≥115° ayrı), uyarı kırmızısının ±30°'si atlanır; M1 turuncu. Sonsuza dek birebir tekrar yok.
+const metroCol = (c, light) => oklch(light ? .6 : .8 - (c % 2) * .04, light ? .15 : .135, WARN_H + 30 + ((.0767 + c * PHI) % 1) * 300);
+// renk ailesi: ilk 6 hat temel tonlar; sonraki turlar ton ve parlaklık kayar (parlaklık farkı ≥ .06 → soluk tonlar da ayrışır)
+const FAM = [[0, 0], [22, -.08], [-22, .07], [12, .1], [-12, -.07], [32, .06], [-32, -.06]];
+const dE = (x, y) => { const [L1, C1, h1] = okl(x), [L2, C2, h2] = okl(y), r = Math.PI / 180; return Math.hypot(L1 - L2, C1 * Math.cos(h1 * r) - C2 * Math.cos(h2 * r), C1 * Math.sin(h1 * r) - C2 * Math.sin(h2 * r)); };
+const toLight = v => { const [L, C, h] = okl(v); return oklch(L * .8, C, h); };   // açık zeminde aynı ton, koyulaşmış
+// Her hat için birkaç aday denenir; komşu hattan (≥ .035) ve 6 hat öncekinden (≥ .05) ayrışan ilk aday seçilir. Tema başına önbellek.
+const famCache = new Map();
+function famCol(k, c, light) {
+  const key = k.id + (light ? 'L' : ''); let A = famCache.get(key); if (!A) famCache.set(key, A = []);
+  for (let i = A.length; i <= c; i++) A.push(famPick(k.lines, i, A, light));
+  return A[c];
+}
+function famPick(lines, c, A, light) {
+  const n = lines.length, k = Math.floor(c / n), base = lines[c % n], out = v => light ? toLight(v) : v;
+  if (!k) return out(base);
+  const [L, C, h] = okl(base), [dh, dl] = FAM[k] || [((k * PHI) % 1 - .5) * 64, ((k * .382) % 1 < .5 ? -1 : 1) * .07];
+  let best = out(base), bs = -1;
+  for (const [mh, ml] of [[1, 1], [1, -1], [-1, 1], [-1, -1], [1, 2], [-1, -2]]) {
+    const v = out(oklch(Math.min(.95, Math.max(.58, L + dl * ml)), C, h + dh * mh)), sc = A.includes(v) ? 0 : Math.min(dE(v, A[c - 1]), dE(v, A[c - n]) * .7);
+    if (sc >= .035) return v;
+    if (sc > bs) { bs = sc; best = v; }
+  }
+  return best;
+}
+const lineCol = (c, k = skin()) => k.lines ? famCol(k, c, isLight()) : metroCol(c, isLight());
+const skinCols = k => [0, 1, 2].map(c => lineCol(c, k));
+// oyun içi uyarı rengi: hat rengi kırmızıya yakınsa (Lav, Yakut…) uyarı kehribar olur → iki hat değince yine seçilir
+const warnFor = col => { const [, C, h] = okl(col); return C > .06 && hueGap(h, WARN_H) < 32 ? '#ffc94d' : pal.warn; };
 // tema renkleri CSS değişkenlerine yazılır; Metro'da hiçbiri yazılmaz → stil dosyasındaki asıl değerler
 function applySkin() {
   const k = skin(), st = document.documentElement.style, L = isLight();
@@ -538,7 +600,7 @@ function refreshHome() {
   if (done) dailyClock(); else $('dailyState').textContent = rescueOk() ? `💔 ${save.lost.n} günlük serin koptu · kurtar` : save.streak ? `🔥 ${save.streak} günlük serini koru` : 'Her gün yeni bir hat';
   const c = lineOf(save.level), nx = c + 1, lo = need(c), hi = need(nx);
   $('lineName').textContent = lineName(c);
-  $('lineName').style.color = lineCols()[c % 6];
+  $('lineName').style.color = lineCol(c);
   $('gateTxt').textContent = tot >= hi ? `★ ${tot} · M${nx + 1} açık` : `★ ${tot} / ${hi} → M${nx + 1}`;
   $('progBar').style.width = Math.min(100, Math.max(4, (tot - lo) / Math.max(1, hi - lo) * 100)) + '%';
   const [w, h] = sizeFor(save.level); $('sSize').textContent = `${w}×${h} · ⚡ zorluk %${zPct(save.level)}`;
@@ -548,14 +610,14 @@ function refreshHome() {
 
 // ---------- hat haritası (bölüm seçimi) ----------
 function renderMap() {
-  const tot = totalStars(), last = Math.max(TEST ? 11 : 0, lineOf(save.level) + 1), col = lineCols();
+  const tot = totalStars(), last = Math.max(TEST ? 19 : 0, lineOf(save.level) + 1);
   $('pStars').textContent = tot;
   $('pSub').textContent = 'Yıldız topla → yeni hat aç';
   let html = '';
   for (let c = 0; c <= Math.max(1, last); c++) {
     const open = unlocked(c), first = lineStart(c), len = lineLen(c);
     const got = Array.from({ length: len }, (_, k) => save.stars[first + k] || 0).reduce((a, b) => a + b, 0);
-    html += `<div class="line ${open ? '' : 'lockd'}" style="--lc:${col[c % 6]}">
+    html += `<div class="line ${open ? '' : 'lockd'}" style="--lc:${lineCol(c)}">
       <div class="lh"><i class="dot"></i><b>${lineName(c)}${RULES[c] ? `<em>${RULES[c].tag}</em>` : ''}</b><small>${open ? `★ ${got} / ${len * 3} · ⚡%${zPct(first)}` : `🔒 ★ ${tot} / ${need(c)}`}</small></div>
       <div class="lvs">${Array.from({ length: len }, (_, k) => {
         const l = first + k, st = save.stars[l] || 0, can = open && (TEST || l <= save.level);
@@ -587,13 +649,14 @@ function pause() { if (G?.runAt) { G.ms += performance.now() - G.runAt; G.runAt 
 function resume() { if (G && !G.won && !G.runAt && !document.hidden) { G.runAt = performance.now(); clearInterval(tickT); tickT = setInterval(tick, 250); } }
 
 function setLineColor() {
-  const k = G.daily ? 2 : lineOf(G.lvl) % 6;
-  G.color = lineCols()[k]; G.color2 = hueRot(G.color, 150);   // iki merkez: ikinci hat tamamlayıcı renkte
+  G.color = lineCol(G.daily ? 2 : lineOf(G.lvl)); G.warn = warnFor(G.color);
+  G.color2 = hueRot(G.color, 150);   // iki merkez: ikinci hat tamamlayıcı renkte (uyarı rengine düşmesin)
+  if (hueGap(okl(G.color2)[2], okl(G.warn)[2]) < 30) G.color2 = hueRot(G.color, 210);
   const st = $('game').style;
   st.setProperty('--line', G.color);
   // oyun ekranında vurgu = hattın rengi: tahta, düğmeler, yıldızlar, rozetler aynı renk
   st.setProperty('--acc', G.color); st.setProperty('--acc2', shade(G.color, .8)); st.setProperty('--onacc', lum(G.color) > .5 ? '#16182a' : '#ffffff');
-  st.setProperty('--accGlow', rgba(G.color, .55)); st.setProperty('--starGlow', rgba(G.color, .6));
+  st.setProperty('--accGlow', rgba(G.color, .55)); st.setProperty('--starGlow', rgba(G.color, .6)); st.setProperty('--warn', G.warn);
 }
 const runKey = () => G.daily ? 'daily' : 'level';
 function saveRun() {
@@ -751,7 +814,7 @@ function draw() {
   const tiles = f => { cx.beginPath(); for (let i = 0; i < n; i++) if (f(i)) { const [x, y, , sc] = X[i], w = (s - 6) * sc; rrp(x - w / 2, y - w / 2, w, w, s * .24 * sc); } };
   tiles(() => true); cx.fillStyle = pal.tile; cx.fill(); cx.lineWidth = 1; cx.strokeStyle = pal.stroke; cx.stroke();
   // iki merkez: her hat kendi renginde, karışan hat kırmızı (OC[3])
-  const own = i => G.L.own[i], OC = [null, col, G.color2 || col, pal.warn], tags = [1, 2, 3].filter(t => G.L.own.includes(t));
+  const own = i => G.L.own[i], OC = [null, col, G.color2 || col, G.warn], tags = [1, 2, 3].filter(t => G.L.own.includes(t));
   for (const t of tags) { tiles(i => own(i) === t); cx.fillStyle = rgba(OC[t], pal.light ? .10 : .07); cx.fill(); }
   // sabit karo: koyu beton zemin + köşelerde cıvata
   if (G.pinned.includes(true)) {
@@ -826,7 +889,7 @@ function draw() {
       if (G.rev[i]) { cx.font = `700 ${Math.round(s * .26)}px system-ui, sans-serif`; cx.fillStyle = on(i) ? OC[own(i)] : pal.mut; cx.fillText('↺', x + s * .29 * sc, y + s * .27 * sc); }
       if (G.cnt[i] >= 0) {
         const bx = x - s * .28 * sc, by = y + s * .28 * sc, z0 = G.cnt[i] === 0;
-        cx.fillStyle = z0 ? pal.warn : rgba(pal.light ? '#25283a' : '#eef0f7', .9); cx.beginPath(); cx.arc(bx, by, s * .13, 0, 7); cx.fill();
+        cx.fillStyle = z0 ? G.warn : rgba(pal.light ? '#25283a' : '#eef0f7', .9); cx.beginPath(); cx.arc(bx, by, s * .13, 0, 7); cx.fill();
         cx.font = `800 ${Math.round(s * .18)}px Outfit, system-ui`; cx.fillStyle = z0 ? '#fff' : pal.light ? '#fff' : '#16182a'; cx.fillText(G.cnt[i], bx, by + 1);
       }
     }
@@ -912,7 +975,7 @@ function comboStake() {
   if (!G || G.daily || save.crowns[G.lvl]) return 0;
   return save.comboLost?.lvl === G.lvl ? save.comboLost.n : save.combo || 0;
 }
-const ownCol = i => G.L.own?.[i] === 2 ? G.color2 : G.L.own?.[i] === 3 ? pal.warn : G.color;
+const ownCol = i => G.L.own?.[i] === 2 ? G.color2 : G.L.own?.[i] === 3 ? G.warn : G.color;
 function win() {
   pause();
   G.won = true; G.time = elapsed();
@@ -1407,7 +1470,7 @@ function demo(cv2, onPage) {
   const SOL = [6, 8, 4, 3, 14, 9, 2, 11, 8], WRONG = [3, 1, 5, 7], TAPS = [[1.2, 3], [3.2, 1], [5, 5], [6.4, 7]];
   const unrot = m => ((m >> 1) | (m << 3)) & 15;
   const big = [generate(4, 4, 77), generate(5, 5, 78), generate(5, 5, 79)];
-  const col = lineCols()[0];
+  const col = lineCol(0);
   const span = k => [DEMO_STEPS[k][0], (DEMO_STEPS[k + 1] || [DEMO_END])[0]];
   let pg = 0, pt0 = performance.now();
   const bars = [...document.querySelectorAll('#demoDots b')];
@@ -1577,5 +1640,5 @@ if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, zPct, dPct, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
+window.__ray = { generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();

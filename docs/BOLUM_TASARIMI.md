@@ -124,7 +124,32 @@ Kusursuz bitirilen her bölüm (⏱ ve ↻ hedefi aynı oyunda) bir kez 1 👑 v
 | Kuzey Işıkları | 👑 110 |
 | Lav | 👑 135 |
 | Kozmos | 👑 160 |
+| Buzul | 👑 190 |
+| Bahar | 👑 220 |
+| Sonbahar | 👑 250 |
+| Mercan Resifi | 👑 280 |
+| Çay Bahçesi | 👑 310 |
+| Lale | 👑 340 |
+| Fırtına | 👑 370 |
+| Gece Yarısı | 👑 400 |
+| Gökkuşağı | 👑 440 |
+| Retro Dalga | 👑 480 |
+| Pastel | 👑 520 |
+| Şafak | 👑 560 |
 | Altın, Elmas, Yakut | Yalnızca Reklamsız paketle |
+
+Toplam 25 renk teması vardır: 22'si taçla, 3'ü Reklamsız paketle açılır.
+
+### Hat adları ve renkleri
+
+Sonsuz bölümlerde hiçbir hat bir öncekinin kopyası olmaz:
+
+- **Adlar:** Hat adları renk değil, yer adıdır; böylece hangi renk teması seçilirse seçilsin ad renkle çelişmez. İlk 25 hat: Liman, Çarşı, Sahil, Kule, Bahçe, Köprü, Fener, Vadi, Pınar, Meydan, Tepe, Ada, Saray, Rıhtım, Kanal, Çınar, Yayla, Koru, Kervan, Değirmen, Göl, Bağ, Pazar, Kale, Gar. Sonra "Yeni Liman", "Eski Liman", "Kuzey Liman"… diye sürer, 275 hattan sonra numara eklenir ("Liman 2").
+- **Metro (varsayılan) renkleri:** Algısal renk uzayında (OKLCH) üretilir, bu yüzden bütün hatlar eşit parlaklıkta ve koyu/açık zeminde okunur. Ton, altın oran adımıyla ilerler; komşu hatlar renk tekerleğinde en az ~115° ayrıdır ve hiçbir hat birebir tekrar etmez. M1 turuncudur.
+- **Renk temaları:** Her tema bir renk ailesidir. İlk 6 hat temanın temel tonlarıdır; sonraki turlarda ton ve parlaklık kayar. Her hat için birkaç aday denenir: komşu hattan ve 6 hat öncekinden yeterince ayrışan, daha önce kullanılmamış ilk aday seçilir.
+- **Uyarı rengi:** İki hat değince yanan kırmızı hiçbir hat rengiyle karışmaz. Metro renkleri kırmızının çevresini atlar; kırmızı ağırlıklı temalarda (Lav, Yakut…) oyun içi uyarı rengi kehribara döner.
+
+Robot her temada ilk 60 hattı, koyu ve açık görünümde ayrı ayrı denetler.
 
 ### Sürpriz sandık
 
