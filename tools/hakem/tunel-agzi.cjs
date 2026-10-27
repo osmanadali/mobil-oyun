@@ -42,13 +42,17 @@ module.exports = async T => {
       let mid = 0; for (let l = 1; l <= 828; l++) if (R.rulesFor(l).has('portal')) mid++;
       const L0 = R.lineStart(18), P829 = R.puzzleFor(L0);
       const d = k => { let a = 0; for (let s = 0; s < 150; s++) a += R.difficulty(R.generate(7, 9, s * 31, 0, 0, { portal: k })); return +(a / 150).toFixed(2); };
-      return { ...o, fogOk, viaTunnel, same, old, day, mid, L0, p829: { n: P829.portal.length, row: P829.portal[0] && (P829.portal[0].a / P829.cols | 0) === (P829.portal[0].b / P829.cols | 0), size: P829.cols + 'x' + P829.rows, adjMid: !!R.puzzleFor(L0 - 1).adj }, diff: [0, 1, 2, 3].map(d) };
+      // köprüyle birlikte (doğrulayıcının karşı örnekleri): köprü eklentisi yoksa atlanır
+      const br = R.MODS.some(m => m.key === 'bridge') ? [R.generate(7, 9, 55446, 0, 0, { portal: 1, bridge: 2 }), ...[987, 2120, 2780, 13592, 17037, 17633].map(l => R.puzzleFor(l))]
+        .map(P => R.lit({ ...P, cur: P.sol }).solved && (P.bridge || []).every(i => P.sol[i] === 15 && P.cur[i] === 15)) : null;
+      return { ...o, br, fogOk, viaTunnel, same, old, day, mid, L0, p829: { n: P829.portal.length, row: P829.portal[0] && (P829.portal[0].a / P829.cols | 0) === (P829.portal[0].b / P829.cols | 0) && Math.abs((P829.portal[0].a / P829.cols | 0) - (P829.hub / P829.cols | 0)) === 1, size: P829.cols + 'x' + P829.rows, adjMid: !!R.puzzleFor(L0 - 1).adj }, diff: [0, 1, 2, 3].map(d) };
     });
     check('rule.portal.gen', 'Tünel ağzı: 300 tohum {portal:3} → çözüm çözülü, her birinde en az bir tünel kullanılıyor, geçitler kurala uygun (merkezden uzak, komşu değil, köşede tek)', r.bad === 0 && r.noUse === 0 && r.rule === 0, JSON.stringify({ bad: r.bad, noUse: r.noUse, rule: r.rule }));
     check('rule.portal.open', 'Tüneli tek taraftan kullanan dizilim açık uç sayılır (çözülmez)', r.openN > 50 && r.open === r.openN && r.both === 300, JSON.stringify({ open: r.open, openN: r.openN, cut: r.both }));
     check('rule.portal.fog', 'Karanlık tünel + 2 tünel (+ sabit, eşli, ters, sayaçlı): 200 tohumda ışığı izleyen robot çözüme varır (ışık tünelden geçer)', r.fogOk === 200 && r.viaTunnel > 20, JSON.stringify({ fogOk: r.fogOk, viaTunnel: r.viaTunnel }));
     check('rule.portal.old', 'Eski bölümler bit bit aynı: {portal:0} üretim + zorluk birebir, 1–208 ve Günün Hattı imzası değişmedi, 1–828 tünelsiz', r.same === 60 && r.old === 'ehstyp' && r.day === 'rfdaew' && r.mid === 0 && !r.p829.adjMid, JSON.stringify({ same: r.same, old: r.old, day: r.day, mid: r.mid, adjMid: r.p829.adjMid }));
-    check('rule.portal.intro', `Bölüm ${r.L0} (tanıtım): 1 tünel, aynı satırın iki ucunda`, r.L0 === 829 && r.p829.n === 1 && r.p829.row, JSON.stringify(r.p829), 'medium');
+    check('rule.portal.bridge', 'Tünel + köprü: karşı örnek (7×9 tohum 55446) ve 6 gerçek bölümde çözüm çözülü, köprü sol = cur = 15' + (r.br ? '' : ' (köprü eklentisi yok: atlandı)'), !r.br || r.br.every(Boolean), JSON.stringify(r.br));
+    check('rule.portal.intro', `Bölüm ${r.L0} (tanıtım): 1 tünel, merkez satırının bir üstü/altında satırın iki ucunda`, r.L0 === 829 && r.p829.n === 1 && r.p829.row, JSON.stringify(r.p829), 'medium');
     check('rule.portal.diff', 'Zorluk tünel sayısıyla artar (0 → 3 çift)', r.diff[3] > r.diff[0] && r.diff[2] >= r.diff[0], r.diff.join(' → '), 'low');
     check('rule.portal.errors', 'Tünel ağzı üretim testinde konsol hatası yok', !errors.length, errors.join(' | '));
     await ctx.close();
