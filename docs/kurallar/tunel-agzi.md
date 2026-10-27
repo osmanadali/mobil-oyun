@@ -136,7 +136,8 @@ Karanlık tünel: robot ve oyuncu aydınlık karoları çözdükçe ışık ağa
 - Tek taraflı kullanım: kullanılmayan çiftte yalnız bir ağza kol eklenince 144/144 çözülmez (açık uç); kullanılan tünelin bir kolu kesilince 300/300 çözülmez.
 - Karanlık tünel + 2 çift + sabit + eşli + ters + sayaçlı, 200 tohum: ışığı izleyen robot benzetimi 200/200 çözüme varır, bütün karolar aydınlanır. Gerçek oyunda bölüm 833 (karanlık + 2 tünel) `solve()` ile kazanılıyor.
 - `{portal:0}`: 60 tohumda üretim JSON'u ve zorluk birebir aynı, `adj` yok. Bölüm 1–208 ve Günün Hattı imzası kural eklenmeden önce ölçülenle aynı. 1–828 arasında hiçbir bölümde tünel yok.
-- Köprü regresyonu (karşı örnek + bölüm 987, 2120, 2780, 13592, 17037, 17633: `lit(sol)` çözülü, köprüde sol = cur = 15): köprü eklentisi bu dalda yok, test köprü yüklüyse çalışacak şekilde koşullu; şimdilik atlanıyor.
+- Köprü regresyonu (main birleştirildikten sonra, köprü yüklü): karşı örnek `generate(7, 9, 55446, 0, 0, { portal: 1, bridge: 2 })` ve bölüm 987, 2120, 2780, 13592, 17037, 17633: 7/7 `lit(sol)` çözülü, köprüde sol = cur = 15. Test köprü yüklü değilse atlanır.
+- Yüklü her eklentiyle birlikte (makas, köprü, tabela, döner tabla; sabit, eşli, karanlık ve iki merkez dönüşümlü): her biri 300 tohumda 0 hata.
 - Bölüm 829: kural kartı açılıyor (animasyon `rdpt`), 6×8, 1 çift merkez satırının komşu satırında; ağızlar tahta dışında ve ekranda; robot kazanıyor.
 - Zorluk (bu dal, 7×9, 150 tohum): 0 çift 14,65 · 1 çift 15,28 · 2 çift 16,31 · 3 çift 17,31. Doğrulayıcının beyanı yukarıda (+0,9 / +2,1 / +3,9); ikisi de tünelin zorluğu artırdığını gösteriyor.
 - Zorluk hesabı tünelli bölümde ~0,3 ms (generate + difficulty).
@@ -144,7 +145,6 @@ Karanlık tünel: robot ve oyuncu aydınlık karoları çözdükçe ışık ağa
 
 ## Bilinen sınırlar
 
-- Web paketi bütçesi: bu dosya ~7,8 KB. Eklentiden önce paket 297,2 KB'tı; şimdi 304,8 KB, yani hakemin `size` (< 300 KB, önem: low) kontrolü düşüyor. Altı kuralın hepsi eklenince bütçenin ana oturumda yeniden belirlenmesi gerekecek.
 - İpucu `nearLit` geometrik komşuya bakar; tünelin öbür ucunu önceliklendirmez (isteğe bağlıydı, çekirdeğe dokunmamak için yapılmadı).
 - Kullanılmayan bir çiftin iki ucuna birden kol vermek de geçerli bir çözümdür (döngü oluşur, açık uç yok). Bu, çekirdeğin "bağlı + açık uç yok" tanımıyla tutarlı.
 - Tünel bağlandığında ağız rengi anında değişir; ayrı bir animasyon yok (kıvılcım ve ton geri bildirim verir).
