@@ -94,14 +94,14 @@ async function solve(page, gap = 25) {
       const { G, rot } = window.__ray, out = [], lit = i => !G.seen || G.seen[i], unrot = m => ((m >> 1) | (m << 3)) & 15;
       if (!G || G.won) return out;
       G.cur.forEach((v, i) => {
-        if (G.fixed[i] || G.pinned[i]) return;
+        if (G.fixed[i] || G.pinned[i] || G.unitOf?.[i] >= 0) return;   // eklenti birimi (makas, tabla…): aşağıda plan()
         const j = G.link?.[i] ?? -1, lo = j >= 0 ? Math.min(i, j) : i, hi = j >= 0 ? Math.max(i, j) : i, tapper = lit(lo) ? lo : hi;
         if (i !== tapper || !lit(i)) return;
         let k = 0, t = v, u = j >= 0 ? G.cur[j] : 0; const step = G.rev?.[i] ? unrot : rot;   // ters karo saat yönünün tersine
         while ((t !== G.sol[i] || (j >= 0 && u !== G.sol[j])) && k < 4) { t = step(t); if (j >= 0) u = rot(u); k++; }
         for (let q = 0; q < k; q++) out.push(i);
       });
-      return out;
+      return out.concat(window.__ray.plan());
     });
     if (!taps.length) break;
     for (const i of taps) { await tapTile(page, i); if (gap) await page.waitForTimeout(gap); }
@@ -811,6 +811,12 @@ async function inViewport(page, sel) {
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.click('#crownChip'); await page.waitForTimeout(450); await shot(page, 'themes-25');
     await ctx.close();
+  }
+
+  // ---------- K. Eklenti kuralları: her kuralın testi kendi dosyasında (tools/hakem/*.cjs) ----------
+  {
+    const T = { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, modalOpen, inViewport, starsUpTo };
+    for (const f of fs.readdirSync(path.join(__dirname, 'hakem')).filter(f => f.endsWith('.cjs')).sort()) await require(path.join(__dirname, 'hakem', f))(T);
   }
 
   // ---------- F. Boşta CPU: animasyon döngüsü durmalı ----------
