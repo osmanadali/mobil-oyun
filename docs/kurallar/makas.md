@@ -2,6 +2,55 @@
 
 > Bu belge tasarım iş akışının çıktısıdır: üç bağımsız tasarımcı, bir seçici ve şüpheci bir doğrulayıcı. Uygulama notlarındaki satır numaraları ve "şu fonksiyonu değiştir" önerileri eklenti iskeletinden ÖNCE yazıldı. Ortak altyapı (birim/val, komşuluk adj, bölünmüş düğüm, tree(), kayıt imzası, kural kartı göçü, çakışma) artık çekirdekte hazır; kural yalnız kendi dosyasında, kancalarla yazılır: docs/kurallar/README.md.
 
+## Uygulama (yapıldı)
+
+Kural yalnız kancalarla yazıldı; çekirdekte (`www/game.js`) değişiklik yok.
+
+| Dosya | İçerik |
+|---|---|
+| `www/rules/makas.js` | `shape` (üretim), `onTap` (tık sesi, ilk bildirim), `xform` (dönme animasyonunu siler), `over` (kesik kol), kural kartı ve CSS |
+| `tools/hakem/makas.cjs` | 13 denetim (aşağıda) |
+| `tools/hakem.cjs` | `rule.mix` aralığı 209–240 → 253–300 (M10), çünkü M9 artık makas hattı. Boyut denetimi `300e3` → `300 * 1024`: ekranda KB (1024) yazıyor, karşılaştırma 1000 ile yapılıyordu ("296 KB < 300 KB" başarısız sayılıyordu). Eklentisiz paket zaten 297 229 bayttı; 300 000'e yalnız 2,7 KB kalıyordu |
+
+**Üretim (`shape`).** `C.out.sw` n uzunlukta dizi: makas karosunda iki kolun maskesi, ötekilerde 0. Aday: `C.free(i)`, `popc(sol[i]) === 2`, `hub` ve `hub2`'ye Manhattan ≥ 2 (`hub2 < 0` → 99). Adaylar `R()` ile çekilir; her aday için geçerli kol üçlüleri süzülür (gövde t, açık kol a = sol & ~t, öbür kol b: a düzse t'ye dik iki yön, sapaksa t'nin karşısı; `C.nb(i, b) >= 0`, tünel komşuluğu kendiliğinden geçerli). Üçlü kalmazsa aday atlanır. Seçilen `sw = a|b`, `cur = R() < .75 ? sol^sw : sol`, birim `C.unit([i], 2, c => { c[i] ^= sw }, 'sw')`. Miktar `max(2, round(n · (giriş ? .05 : .08)))`: 209'da 2, 6×8'de 4, 7×9'da 5.
+
+**Giriş güvencesi.** Hiçbir makas ters gelmediyse ilk makas çevrilir (`R()` tüketmez). `shape` giriş bölümünü bilemediği için güvence her makaslı bölüme uygulanır; böylece her makaslı bölümde kural en az bir kez oynanır. Ayrıca çekirdeğin "çözülmüş gelmesin" yedeği (birimleri atlar) makaslı bölümde hiç gerekmez.
+
+**Dokunuş.** Çekirdek `U.tap(G.cur)`, hamle (art arda aynı makas = 1 hamle), basma ve dalgayı yapar; `anim` hiç kurulmaz. `onTap` kısa ve çok kısık bir makas tıkı (üçgen dalga 1480 Hz, 30 ms) çalar, ilk dokunuşta bir kez "Makas · düz ↔ sapak" bildirimi gösterir (`save.swTold`).
+
+**İpucu.** Çekirdek `hint()` birimin karolarına `anim.set` çağırır. Çekirdeğe dokunmamak için `xform` kancası makas karolarındaki animasyonu siler ve açıyı sıfırlar: ilk karede bile dönme görünmez.
+
+**Çizim (`over`).** Açık kol normal raydır (çekirdek çizer). Kullanılmayan kol (`sw & ~cur`) iki tek yolda: kesik çizgi (`lineCap butt`, `setLineDash([.06s, .045s])`, kalınlık .065s, merkezden .10s → .29s) ve ucunda boş halka (merkez .355s, r .06s, kalınlık .035s). Renk `pal.mut`, saydamlık .85. Halkanın dış kenarı .43s'de, karo kenarının (.5s − 3 px) içinde kalır; komşu rayın ucuna binmez. Görünmeyen (karanlık), ipucuyla sabitlenen ve kazanılmış bölümde çizilmez. Kare başına +2 stroke; makas karoları `WeakMap` önbelleğinde.
+
+Doğrulayıcının ölçüsünden (.055s / .03s) biraz kalın: 7×9'da (karo 49 px) .055s kesikler çok silik kalıyordu. Uçlar düz kesildiği için kesikler birleşmez; ekran görüntüsüyle koyu ve açık temada denetlendi.
+
+**Kural kartı.** `.rdemo2 .rd-sw` içinde tek `.pt` karo. `.pt` içinde yalnız `<u>` öğeleri var (`.pt b` dönme animasyonu almasın). Düz kol yukarıda; sapak kol aynı DOM parçasının sabit 90° çevrilmiş kopyası. Kollar 2 sn'de `steps(1)` ile dolu ↔ kesik (kesik: `repeating-linear-gradient` + halka, oyundakiyle aynı oranlar) değişir. Dokunma halkası (`.rtap2`, gecikme −.55 sn) ve karonun hafif basılması geçiş anına denk gelir. Azaltılmış harekette durağan görünüm: düz kol dolu, sapak kesik.
+
+### Ölçümler (robot ve ön deneme)
+
+| Ölçüm | Sonuç |
+|---|---|
+| 7×9, `{ sw: 5 }`, tohum 1–300 | 1500 makas, %74 ters; 0 hatalı, 0 çözülmüş gelen, 0 merkeze bitişik, yörünge ihlali 0 |
+| 6×8 karma (sabit 3, eşli 2, ters 4, sayaç 4, iki merkez, karanlık), 300 tohum | 1200 makas, %75 ters; 0 hatalı, 0 çözülmüş, makas sabit/eşli/ters/sayaçlı değil |
+| 1–208 ve 40 Günün Hattı imzası (sol, cur, par, taps, diff, kurallar…) | Eklentisiz iskeletle bit bit aynı |
+| Zorluk merdiveni (hat ortalaması) | M7 11,4 → M8 12,3 → **M9 13,1** → M10 13,9 |
+| Bölüm 209 | 6×8, yalnız makas, 2 makas (ikisi ters), puan 11 |
+| Testere dişi 208–212 | 7×9 · 6×8 · 6×8 · 6×8 · 7×9 |
+| M9 karışımları | sw, sw+pins, sw+pairs, sw+rev, sw+fog, sw+cnt, sw+two |
+| M10'da makaslı bölümler | 273 (eşli+makas), 282, 283 (eşli+makas): 48'de 3 |
+
+Robot denetimleri (`tools/hakem/makas.cjs`): `sw.gen`, `sw.legacy`, `sw.intro`, `rule.sw.card`, `rule.sw` (cur ^= sw, art arda 1 hamle, bildirim), `rule.sw.run` (yarım kayıt geri gelir, ↺ ilk duruma döner), `rule.sw.win` (solve + plan), `rule.sw.hint`, `rule.sw.mix` (M10 eşli+makas bölümü çözülür) ve her senaryoda konsol hatası denetimi. Ekran görüntüleri: `rule-sw`, `sw`, `sw-tap`, `sw-mix`.
+
+### Bilinen sınırlar
+
+- M10'da makas 48 bölümün yalnız 3'ünde çıkıyor (`rulesFor` öğrenilmiş kuralları eşit ağırlıkla seçer; çekirdek konusu).
+- Makas tıkı ile çekirdeğin olağan dokunuş tonu üst üste çalar (tık çok kısık).
+- Robot dönme animasyonunun olmadığını doğrudan ölçemez (`anim` dışarı açık değil); kod (`xform`) ve ekran görüntüsüyle denetlendi.
+- Paket bütçesi neredeyse dolu: makasla 302 339 bayt (295 KiB / 300 KiB). Öteki beş kural eklenince 300 KiB aşılır; bütçe (ya da paylaşım görseli `og.jpg`, 48 KB) için karar gerekir.
+- `docs/BOLUM_TASARIMI.md` §5 tablosu (M9 = Makas, karma hatlar M10+) bu dalda güncellenmedi; dosya bu kuralın sahip olduğu dosyalardan değil.
+
+> Aşağıdaki bölümler tasarım ve doğrulama kaydıdır (uygulamadan önce yazıldı).
+
 **Neden seçildi:** M9 için en sade kural: tek satırlık dokunuş, 2 durumlu ve kendi tersi olan bir işlem. Çözülebilirlik kanıtı en sağlam kurallardan biri; prototipini ben de yeniden koşturdum (600/600). Yeni bir düşünme biçimi getiriyor: karo dönmüyor, şekil değiştiriyor. İki merkezle çok iyi karışıyor. Ortak altyapıyı (birim/val refaktörü, kayıt imzası, kural kartı göçü) taşıyan ilk kural olmaya en uygun aday bu. Türü: etkileşim. Seçimde değişiklik yaptım: merkeze bitişiklik yasağı, ortadaki üçgenin kaldırılması (tabelayla karışmasın) ve eski oyuncular için kart göçü.
 
 ## Kural kartı metni

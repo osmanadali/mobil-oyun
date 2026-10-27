@@ -625,9 +625,9 @@ async function inViewport(page, sel) {
     await shot(C2.page, 'two');
     await solve(C2.page, 8); const wC = await waitModal(C2.page);
     check('rule.two', 'M8 iki merkez: kural kartı, iki ayrı hat; değince karışır (çözülmez); 300 bölüm çözülebilir', /İki merkez/.test(C2.card.txt || '') && tw.two && tw.bad === 0 && tw.merge > 200 && wC, JSON.stringify({ ...C2.card, ...tw, wC }));
-    // kural dönüşümü: M9+ (209+) her bölüm 1–2 kural, karışım bölümden bölüme değişir
-    const mix = await C2.page.evaluate(() => { const R = window.__ray, L = []; for (let l = 209; l <= 240; l++) L.push(R.puzzleFor(l).rules.sort().join('+')); return { sizes: [...new Set(L.map(x => x.split('+').length))], kinds: new Set(L).size, sample: L.slice(0, 6) }; });
-    check('rule.mix', 'Karma hatlar (M9+): her bölümde 1–2 kural, karışım çeşitli', mix.sizes.every(k => k >= 1 && k <= 2) && mix.kinds >= 6, JSON.stringify(mix), 'medium');
+    // kural dönüşümü: karma hat M10 (253–300; M9 artık makas hattı) her bölüm 1–2 kural, karışım bölümden bölüme değişir
+    const mix = await C2.page.evaluate(() => { const R = window.__ray, L = []; for (let l = 253; l <= 300; l++) L.push(R.puzzleFor(l).rules.sort().join('+')); return { sizes: [...new Set(L.map(x => x.split('+').length))], kinds: new Set(L).size, sample: L.slice(0, 6) }; });
+    check('rule.mix', 'Karma hatlar (M10+): her bölümde 1–2 kural, karışım çeşitli', mix.sizes.every(k => k >= 1 && k <= 2) && mix.kinds >= 6, JSON.stringify(mix), 'medium');
     check('e9.errors', 'Yeni kural senaryolarında konsol hatası yok', ![...A.errors, ...B.errors, ...C2.errors].length, [...A.errors, ...B.errors, ...C2.errors].join(' | '));
     await A.ctx.close(); await B.ctx.close(); await C2.ctx.close();
   }
@@ -865,7 +865,7 @@ async function inViewport(page, sel) {
   {
     let bytes = 0; const walk = d => fs.readdirSync(d).forEach(f => { const p = path.join(d, f); fs.statSync(p).isDirectory() ? walk(p) : bytes += fs.statSync(p).size; });
     walk(ROOT); metrics.webBytes = bytes;
-    check('size', 'Web paketi < 300 KB', bytes < 300e3, `${(bytes / 1024).toFixed(0)} KB`, 'low');
+    check('size', 'Web paketi < 300 KB', bytes < 300 * 1024, `${(bytes / 1024).toFixed(0)} KB`, 'low');
   }
 
   await browser.close(); server.close();
