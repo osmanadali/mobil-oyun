@@ -6,7 +6,7 @@
 
 ## Kural kartı metni
 
-Kenardaki <b>aynı harfli</b> iki tünel ağzı bağlıdır: birine giren ray <b>öbüründen çıkar</b>. Harfsiz kenar <b>kapalıdır</b>.
+Kenardaki <b>aynı harfli</b> iki tünel ağzı bağlıdır: birine giren ray <b>öbüründen çıkar</b>. Tüneli kullanmak zorunlu değil; harfsiz kenar <b>kapalıdır</b>.
 
 ## Görünüş
 
@@ -94,4 +94,57 @@ M19'da z ≈ .99 ve hedef ≈ 15,9 olduğundan, yalın tahtanın ortalamasıyla 
 
 ## Doğrulayıcının kararı
 
-Henüz yok.
+Tasarımdaki hâliyle çözülebilir DEĞİL: tree aşamasındaki döngü değiş tokuşu köprüyle aynı bölümde bozuk bölüm üretiyordu (karşı örnek: `generate(7, 9, 55446, 0, 0, { portal: 1, bridge: 2 })`). Zorunlu düzeltmeler (yukarıdaki ilgili maddelerin yerine geçer, uygulandı):
+
+1. Üretim: döngü değiş tokuşu yok, `tOrder` yok. Yerine köprü kalıbıyla `C.onTake`: ağaca ilk giren ağzın eşi henüz ağaçta değilse eşi de tünelden alınır. İlk değen çift her zaman kullanılır, sonraki çiftler R() < .5 ile serbest kalır. Doğrulayıcı ölçümü: 34 200 bulmaca + 143 gerçek tünel+köprü bölümünde 0 hata.
+2. Çift bulunamazsa `C.adj/C.ao` ve `C.out.portal` yazılmaz.
+3. Karanlık: `d[a] ≥ 0` → `on(b)`, `area(b)` (ve tersi). Kancasız 600 bulmacanın 6–17'sinde robot takılıyordu.
+4. Çizim: kenardan dışa .27s taşan, .54s boyunda yuvarlak köşeli sekme, içinde tek harf (800, max(10, .26s) px), ek şekil yok. pad: ağızlı yanlara .3 karo.
+5. Bağlı ağız dolgusu yalnız iki kol da tünele bakıyor ve iki uç da yanıyorsa; renk `OC[own(a)]` (karışmada uyarı rengi), harf `lum(dolgu) > .5 ? '#16182a' : '#fff'`.
+6. Tanıtım: `amount` −1 döndürür (1 çift, merkez satırının bir üstü ya da altında satırın iki ucu); öteki bölümler `fin ? 3 : 2`.
+7. Kart: `rd-portal`, ağızlar `.ft`'nin kardeşi; azaltılmış harekette nokta gizlenir, iki ağız dolu kalır; metin yukarıdaki gibi.
+8. Zorluk beyanı (doğrulayıcı, 7×9): 1 çift ≈ 14,56 (+0,9), 2 çift ≈ 15,70 (+2,1), 3 çift ≈ 17,57 (+3,9).
+
+## Uygulama (www/rules/tunel-agzi.js)
+
+Kural yalnız kancalarla yazıldı, çekirdekte değişiklik yok. Yukarıdaki "game.js'te şunu değiştir" önerilerinin hepsi çekirdekteki ortak altyapıyla karşılandı: `nb/ob` `P.adj/P.ao` varsa onu okur (addF, lit, tree, difficulty.step), `pad`, `reveal`, `top` kancaları.
+
+- **Miktar:** `amount = intro ? -1 : fin ? 3 : 2`. Çekirdek yalnız `x.portal`'ın truthy olmasına bakar; `pre` `Math.abs(x.portal)` ve `x.portal < 0` (tanıtım biçimi) okur. Tanıtım (bölüm 829, 6×8): tek çift, merkez satırının bir üstünde ya da altında satırın iki ucu (sağdan çıkan soldan girer).
+- **`pre(C)`** (R() yalnız portal ≠ 0 iken):
+  - `adj/ao` önce geometrik komşularla doldurulur.
+  - Aday: kenar hücresi + dışa bakan yön (`adj < 0`). Köşede iki yön arasından biri rastgele seçilir (köşede tek geçit). Merkez(ler) ve ızgara komşuları, `C.keep` hücreleri (köprü) aday olamaz. Bir hücre en çok bir geçit taşır.
+  - Çift: iki ağzın Manhattan uzaklığı ≥ 3 (aynı ve komşu hücre yasak; 2 uzaklıktaki köşe çiftleri sıkıcı olduğu için elendi). Çift başına en çok 40 deneme; olmazsa o çift atlanır.
+  - Çift yoksa hiçbir şey yazılmaz (kural o bölümde kapalı). Varsa `adj[a·4+ka] = b`, `ao[a·4+ka] = bit(kb)` ve tersi; `C.mouth`, `C.keep[ağız] = true`, `C.out.portal = [{ a, ka, b, kb, id }]` (`id` 0, 1, 2 → A, B, C).
+  - `C.onTake` kancası: bir ağız ağaca ilk girdiğinde, o çift daha önce görülmediyse ve eşi henüz ağaçta değilse, ilk çift için her zaman, sonrakiler için R() < .5 ile `sol[j] |= bit(kj)`, `sol[o] |= bit(ko)`, `C.take(o)`. Prim tünel kenarını frontier'den de kendiliğinden kullanabilir (`addF` adj'den okur).
+- **`reveal`:** yanan (d ≥ 0) her ağzın eşi `on()` + `area()` ile FOG_R çevresiyle açılır.
+- **`pad`:** ağız bulunan her yana .3 karo.
+- **`after`:** bir tünel bölümde ilk kez bağlanıp iki ucu da yanınca kısa iki notalı ton ve iki ağızda küçük kıvılcım; ilk bağlantıda bir kez bildirim: "Tünel A · bir ağızdan girdi, öbüründen çıktı". Kayda yeni alan yazılmaz.
+- **`top`:** ağız = kenardan dışa .27s taşan, .54s boyunda yuvarlak köşeli sekme, içinde tek harf. Boş ağızlar tek yolda (`pal.bg` dolgu, `pal.mut` kenar); bağlı tünelin ağızları (iki kol tünele bakıyor + iki uç yanıyor) `OC[own(a)]` renginde, renk başına bir yol. Harfler `fillText` (en çok 6). Karanlıkta yanmayan uç dolmaz → yön sızmaz. Kare başına ~5–9 çağrı, animasyon yok.
+- **Kural kartı:** `.rd-portal`: iki yanda turuncu ağız (A), ortada üç yanan karo; beyaz nokta sağ ağza girer, sol ağızdan çıkar (`@keyframes rdpt`, yalnız transform/opacity). Azaltılmış harekette nokta gizlenir, ağızlar dolu kalır.
+
+## Kanıt (onTake)
+
+Prim, merkez(ler)den büyüyen bir orman kurar; her `take(j)` ormana bir yaprak ekler. Kanca, ağaca giren ağız j'nin eşi o **henüz hiçbir ağaçta değilken** çalışır: tünel kenarı (j, kj)–(o, ko) ormana yeni bir yaprak (o) ekler. Bu yüzden döngü oluşmaz, iki merkezin ağaçları birleşmez (o hiçbir ağaçta değildi) ve başka hiçbir kenar silinmez; köprü yarılarına dokunulmaz. j kenar hücresi olduğu için `bit(kj)` daha önce boştur, aynı şekilde o için `bit(ko)`. `take(o)` sıradan bir alım olduğundan o'nun komşuları frontier'e girer, köprü gibi başka `onTake` kancaları da çalışır. Sonuçta `sol` yine yayılan orman, her hücre ≥ 1 kollu. `lit` komşuyu `adj/ao`'dan okuduğu için `sol` çözülüdür. Bütün hücreler ağaca girdiği için bir ağız mutlaka alınır; bir çiftin ilk alınan ağzında eşi henüz ağaçta olamaz (olsaydı kanca eş için daha önce çalışırdı), bu yüzden ilk değen çift her zaman kullanılır. Karıştırma çekirdekte geri alınabilir işlemlerle yapılır.
+
+Eski döngü değiş tokuşu (tree aşamasında ağaç yolundan bir kenar çıkarmak) doğrulayıcının karşı örneğinde köprüyle birlikte bozuk bölüm ürettiği için kaldırıldı; onTake hiçbir kenarı silmediği için bu sınıf hata oluşamaz.
+
+Karanlık tünel: robot ve oyuncu aydınlık karoları çözdükçe ışık ağacın kenarları boyunca ilerler. Ağaç kenarı geometrikse çocuk FOG_R içinde zaten açılır. Tünel kenarıysa ebeveyn ağız yanınca `reveal` eşi açar. Bu yüzden her hücre sonunda görünür. Merkez ve merkez komşusu ağız olmadığı için çekirdekteki "merkez başta bağlı gelmesin" adımı (geometrik komşu okur) tünelden etkilenmez.
+
+## Ölçümler (hakem, tools/hakem/tunel-agzi.cjs)
+
+- 300 tohum, 7×9, `{portal:3}`: `lit(sol)` 300/300 çözülü, 300/300'de en az bir tünel kullanılıyor; geçit kuralları (merkezden uzak, komşu değil, hücre başına bir geçit, adj simetrik) 0 ihlal.
+- Tek taraflı kullanım: kullanılmayan çiftte yalnız bir ağza kol eklenince 144/144 çözülmez (açık uç); kullanılan tünelin bir kolu kesilince 300/300 çözülmez.
+- Karanlık tünel + 2 çift + sabit + eşli + ters + sayaçlı, 200 tohum: ışığı izleyen robot benzetimi 200/200 çözüme varır, bütün karolar aydınlanır. Gerçek oyunda bölüm 833 (karanlık + 2 tünel) `solve()` ile kazanılıyor.
+- `{portal:0}`: 60 tohumda üretim JSON'u ve zorluk birebir aynı, `adj` yok. Bölüm 1–208 ve Günün Hattı imzası kural eklenmeden önce ölçülenle aynı. 1–828 arasında hiçbir bölümde tünel yok.
+- Köprü regresyonu (karşı örnek + bölüm 987, 2120, 2780, 13592, 17037, 17633: `lit(sol)` çözülü, köprüde sol = cur = 15): köprü eklentisi bu dalda yok, test köprü yüklüyse çalışacak şekilde koşullu; şimdilik atlanıyor.
+- Bölüm 829: kural kartı açılıyor (animasyon `rdpt`), 6×8, 1 çift merkez satırının komşu satırında; ağızlar tahta dışında ve ekranda; robot kazanıyor.
+- Zorluk (bu dal, 7×9, 150 tohum): 0 çift 14,65 · 1 çift 15,28 · 2 çift 16,31 · 3 çift 17,31. Doğrulayıcının beyanı yukarıda (+0,9 / +2,1 / +3,9); ikisi de tünelin zorluğu artırdığını gösteriyor.
+- Zorluk hesabı tünelli bölümde ~0,3 ms (generate + difficulty).
+- Küçük ızgaralar (3×3, 4×4, 4×5; iki merkez, sabit, eşli ile birlikte): istisna yok, `lit(sol)` çözülü. 3×3'te 3 çift istenince ortalama 2 çift çıkıyor. 4×4 iki merkezde çekirdek zaten ~%1,5 oranında kolsuz merkez üretiyor (tünelden bağımsız, oyunda bu boyut iki merkezle gelmez).
+
+## Bilinen sınırlar
+
+- Web paketi bütçesi: bu dosya ~7,8 KB. Eklentiden önce paket 297,2 KB'tı; şimdi 304,8 KB, yani hakemin `size` (< 300 KB, önem: low) kontrolü düşüyor. Altı kuralın hepsi eklenince bütçenin ana oturumda yeniden belirlenmesi gerekecek.
+- İpucu `nearLit` geometrik komşuya bakar; tünelin öbür ucunu önceliklendirmez (isteğe bağlıydı, çekirdeğe dokunmamak için yapılmadı).
+- Kullanılmayan bir çiftin iki ucuna birden kol vermek de geçerli bir çözümdür (döngü oluşur, açık uç yok). Bu, çekirdeğin "bağlı + açık uç yok" tanımıyla tutarlı.
+- Tünel bağlandığında ağız rengi anında değişir; ayrı bir animasyon yok (kıvılcım ve ton geri bildirim verir).
