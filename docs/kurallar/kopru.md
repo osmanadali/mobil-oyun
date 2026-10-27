@@ -4,6 +4,97 @@
 
 **Neden seçildi:** Topoloji türünde ve metro temasına en doğal kural; iki merkezle (M8) güçlü bir karma oluşturur. Kavramı kolay anlaşılır: köprü dönmez, statik bir karodur. Bu yüzden M11'de ikinci sıraya uygun. Adj altyapısı gerektirmediği için tasarımcının tahmininden daha küçük. Üretim kanıtını ve zorluk etkisini kendi prototipimle doğruladım: 600/600 bulmaca, 2+ köprüde −1,6 puan. Seçimde değişiklik yaptım: tabla adaylarından köprü dışlandı, tabela köprü komşusuna konmuyor, halkayla CLASH eklendi, köprü sayısı en çok 2.
 
+## Uygulama (güncel durum)
+
+Kural uygulandı. Kod: `www/rules/kopru.js`, robot: `tools/hakem/kopru.cjs`. Çekirdekte değişiklik yok; her şey kancalarla. Bu bölüm günceldir. Aşağıdaki tasarım ve doğrulayıcı planı tarihçe olarak durur; plandaki "game.js'te şunu değiştir" maddelerinin karşılığı en altta "Plan → uygulama" listesindedir.
+
+**Eklenti alanları**
+
+| Alan | Ne yapar |
+|---|---|
+| `key: 'bridge', line: 10` | M11, bölüm 301–352. Kural kartı `RULES[10]` olur; 301–303 testere dişiyle 6×8 gelir |
+| `clash: ['ring']` | Halka dosyası da tanımlar; simetrik, iki kez yazmak zararsız |
+| `amount` | Tanıtım bölümünde (301) 1, sonra 2. Karma hatlarda da en çok 2 |
+| `pre(C)` | Köprü hücrelerini seçer, `C.onTake`'e karşı kolu birlikte alan işlevi ekler. `C.br`, `C.out.split`, `C.out.bridge` |
+| `block(G, i)` | Köprüye dokunuş: hamle saymaz, karo dönmez, oyun başına bir kez "Köprü · dönmez" |
+| `under(D)` | Yalnız D–B yarısıyla yanan köprü karosunun zeminini o hattın tonuyla boyar (çekirdek K–G sahibine göre boyar) |
+| `rails(D)` | Köprünün raylarını, korkuluğunu ve parlamasını çizer |
+| `card`, `css` | Kural kartı ve canlı demo (`.rd-bridge*`) |
+
+`check`, `allow`, `reveal`, `pad` gerekmedi: iki yarı şartı ve "karıştı" denetimi çekirdekteki bölünmüş `lit()` içinde. Karanlıkta `d[B]` yanan yarının değeri olduğu için çevresi kendiliğinden aydınlanır.
+
+**Üretim (`pre`)**
+
+- `R()` yalnız `x.bridge > 0` iken tüketilir. En çok 200 deneme: iç bölgede rastgele hücre. Merkez(ler)e Manhattan ≥ 2 (`hub2 = −1` ise o denetim atlanır). Önceki köprülere Chebyshev ≥ 3. `inT` ya da `keep` olan hücre atlanır. Yer yoksa daha az köprü konur; hiç yoksa `out.split`/`out.bridge` yazılmaz ve bölüm köprüsüz (eski `lit` yolu) oynanır.
+- Köprü `B`: `sol[B] = 15`, `inT[B] = true`, `C.keep[B] = C.busy[B] = true`. `busy`, öteki eklentiler de köprüye dokunmasın diye eklendi; ters, sayaçlı ve "çözülmüş gelmesin" adayları köprüyü zaten dışlıyordu (`per(15) = 1`, `rot(15) = 15`).
+- Kol grupları `C.nb/C.ob` ile kurulur (tünel ağzı `adj` gelse de doğru): `grp[kol] = [karşı kol, koldaki köprüye bakan bit, karşı koldaki bit]`. `C.onTake` işlevi: alınan `j` bir kolsa ve karşı kol ağaçta değilse iki kola köprüye bakan biti yazar, karşı kolu `C.take` ile ağaca çeker.
+- Kanıt değişmedi (aşağıda): ilk giren kol karşısını çeker, o an karşı kol ağaçta olmadığından döngü yok. Kollar en çok bir köprüye aittir (Chebyshev ≥ 3), merkez hiçbir köprünün kolu değildir (Manhattan ≥ 2). Merkezler `take` ile değil `addF` ile başlar; onTake'in onlar için çağrılması gerekmez.
+
+**Çizim (`rails`)**
+
+- Çekirdekteki üç geçişin aynısı, yarı bazında: sönük (`pal.rail`, .17s) → ışıma (.38s, yarı saydam) → yanan (.17s). K–G yarısı `railPath(X, 5)` ile `own[B]` renginde, D–B yarısı `ownB[B]` renginde iki kısa parça: kenar ±.5s'den iç uç ±.31s'ye. Yuvarlak uç ±.225s'de görünür; K–G rayının kenarı ±.085s'de olduğu için ortada açık bir boşluk (alt geçit) kalır.
+- Korkuluk: K–G rayına paralel ±.17s'de, boy .5s, `lineWidth = max(2, s·.045)`, `pal.mut`. Tek yol.
+- Işıma kırpması: çekirdek komşuların ışımasını tek yolda çizer, ucu (yarıçap .19s yarım daire) köprü karosuna taşar. Köprünün ışıması ayrı çizildiği için bu yarım daireler iki kat koyulaşıp "kabarcık" görünüyordu (ekran görüntüsünde görüldü). Düzeltme: köprünün ışıması karosuna kırpılır ve aynı renkte ışıyan, köprüye kolu olan komşunun uç yarım dairesi `evenodd` ile dışarıda bırakılır. Birleşim birebir, renk tek kat.
+- Parlama (çekirdekteki 3. geçiş bölünmüş karoyu atlar): yarı yeni yanınca (dokunuş ya da ipucu) 420 ms beyaz (açık temada hat rengi) parlama; kazanınca dalgayla (`110 + d·45` ms). Durum `G.brFx`'te; ilk çizimde yalnız kaydedilir, açılışta yanık gelen yarı parlamaz.
+- `vis(i)` karanlıktaki köprüyü gizler. Bütün döngüler yalnız köprü hücrelerinde (≤ 2); kare başına sabit birkaç çağrı. Köprüsüz bölümde kanca hiç çağrılmaz.
+
+**Kural kartı:** 96 px karo. Önce alt geçidin sol parçası, kısa bir aradan sonra (tren köprünün altında) sağ parçası vurgu renginde yanar; sonra üst hat mavi (#4cc9ff) yukarıdan aşağı yanar; iki renk hiç karışmaz. Yalnız `transform/opacity` canlanır. Pencere kapalıyken durur. Hareketi azalt: canlanma yok, iki yarı yanık durur.
+
+**Kayıt:** Çekirdeğin ortak imza kuralı (`sig = hashStr(sol)`) yeterli. İmzasız eski kayıt yalnız 209 öncesinde yüklenir. İmza tutuyorsa köprü hücresi zorunlu olarak 15'tir, çünkü `sol[B] = 15` ve 15'in her dönüşü 15'tir. Doğrulayıcının "pv 5 ya da cur[B] ≠ 15 ise yükleme" düzeltmesi böylece karşılandı.
+
+**Robot testleri (`tools/hakem/kopru.cjs`, 11 kontrol)**
+
+1. `bridge.gen`: 3200 bulmaca. Boyutlar 4×4, 5×6, 6×8, 7×9. Kombinasyonlar: yalın (300 tohum), sabit, eşli, ters+sayaç, karanlık, iki merkez, hepsi (100'er tohum). İki merkez yalnız ≥ 6×8. Her bulmacada `lit(sol)` çözülü, iki yarı bağlı (`own > 0`, `ownB > 0`) ve boş hücre yok. Köprü 15, sabit, eşli, ters ya da sayaçlı değil, birim değil. Köprü iç bölgede, merkeze ≥ 2, köprüler arası ≥ 3. `split` ile `bridge` tutarlı. Hazır çözülü bulmaca yok.
+2. `bridge.split`: 3×3 sabit regresyonlar. `[4,6,12,3,15,9,2,11,8]` çözülü. Sahte `[4,6,8,3,15,8,2,11,8]` çözülü değil: D–B yarısına yalnız K–G üzerinden varılıyor. Aynı düzeni eski kavşak `lit`'i "çözüldü" sayar.
+3. `bridge.two`: İki merkez + köprüde `merged` hiç yok ve renk çaprazı var. 3×3 örnekte `own[4] = 1`, `ownB[4] = 2`.
+4. `bridge.old`: `puzzleFor(1..208)` ve iki Günün Hattı (2026-10-27, 2027-03-14), köprüden önce ölçülen sabit parmak izine eşit. 209–300, köprü eklentisi `MODS`'tan çıkarılınca da birebir aynı; bu bölüm makas birleşince değişebileceği için sabite bağlanmadı. 1–300'de köprü yok.
+5. `bridge.perf`: 301–340 üretimi < 60 ms/bölüm. Bölünmüş `lit` 7×9'da < 150 µs/çağrı.
+6. `bridge.card`: Bölüm 301'de kart açılır, canlı demo görünür ve kart açıkken süre durur. Izgara 6×8, tek köprü.
+7. `bridge.tap`: Köprüye iki dokunuş: hamle, karo ve `lastTile` değişmez, "Köprü · dönmez" bildirimi çıkar. Ardından `solve()` kazanır.
+8. `bridge.mixed`: Köprülü ilk karma bölüm robotla çözülür.
+9. `bridge.cross`: Köprüde renk çaprazı olan iki merkezli bölümde tahta, bir istasyon dışında çözülür. `merged` yok. K–G ve D–B pikselleri kendi hat renginde, alt geçit boşluğu D–B renginde değil. Son dokunuşla kazanılır.
+10. `bridge.save`: İmzasız (pv:4) ya da imzası tutmayan, köprüsü 5 yazılmış yarım oyun yüklenmez. Doğru imzalı yarım oyun sürer.
+11. `bridge.errors`: konsol hatası yok.
+
+Ekran görüntüleri: `kopru-kart`, `kopru-oyun`, `kopru-iki-merkez`.
+
+**Ölçümler (bu uygulamada, Chromium)**
+
+| Ölçüm | Sonuç |
+|---|---|
+| Zorluk, 7×9, 150 tohum, köprü 0 / 1 / 2 | 13,63 / 13,71 / 11,95. 2 köprü ~1,7 puan kolaylaştırır; doğrulayıcının ölçümünde 1 köprü de ~1,5 kolaylaştırıyordu. Etki tohuma bağlı, `pick()` telafi ediyor |
+| `pick()` hedefi | 304: 14,3 (hedef 14,16) · 800: 16,0 (15,90) · 352 (final, hedef +2 = 16,61): 17,1 |
+| Yerleşim, istenen 2 köprü (500 tohum) | 6×8 ve 7×9: 2,00 · 5×6: 1,73 · 4×4: 1,00 |
+| İki merkez, 6×8 / 7×9 | Bulmaca başına 0,44 / 0,37 renk çaprazı; aç merkez 0/500 |
+| M11 hattı (301–352) | Bölüm başına ortalama 1,98 köprü |
+| Karma hatlar, 353–1000 | 648 bölümün 114'ünde köprü, 5'inde köprü + iki merkez |
+| Süre | Üretim ~12 ms/bölüm (301–340, pick + zorluk). `lit` 7×9 + 2 köprü ~8 µs (köprüsüz ~7 µs) |
+
+**Bilinen sınırlar**
+
+- İki merkezli küçük ızgarada (3×3, 4×4) merkez aç kalabilir (`sol[hub2] = 0`). Sorun kodda zaten var, köprü onu artırır. Oyunda iki merkez + köprü yalnız ≥ 6×8'de (301+ bölümlerin hepsi ≥ 6×8) gelir; orada 0/500. Doğrulayıcının önerdiği `pick()` elemesi çekirdek değişikliği olduğu için yapılmadı; robot bu birleşimi ≥ 6×8 ile sınırlar.
+- Halka ile aynı bölüme girmez (`clash`). Halkanın 2-çekirdeği bölünmüş düğümle hesaplanırsa yasak kalkabilir.
+- `tree()` yardımcısı bölünmüş düğümü bilmez: köprüyü kavşak gibi görür. Tabela tasarımı bu yüzden köprü komşusunu dışlar (`C.br`). Bu yardımcıyı kullanacak yeni kurallar da köprü komşusunu dışlamalı.
+- Kart demosu tek karodur. "Soldan gelen sağa" komşu karolarla değil, metin ve ışığın sırasıyla anlatılır.
+
+**Plan → uygulama**
+
+| Plan | Durum |
+|---|---|
+| 0, 11 Kart, `RULE_LINE` | `card` ve `line: 10` (çekirdek `loadRules` yazar) |
+| 1 `generate` | `pre(C)` ve `C.onTake`. `free` ve tabla dışlaması `C.keep/busy` ve `C.br` ile |
+| 2 `lit` | Çekirdekte hazır (`P.split`, `dB/ownB`). Alan adları planla farklı: `dEW/ownEW` yerine `dB/ownB` |
+| 3 `difficulty`, `pick` | Değişiklik yok. `P.bad` elemesi yapılmadı (bilinen sınırlar) |
+| 4 `puzzleFor` | `amount` |
+| 5 `rulesFor` CLASH | Çekirdekte hazır; `clash: ['ring']` |
+| 6 `pointerdown` | `block` (bildirim, ses, titreşim ve basma animasyonu çekirdekte) |
+| 7 `draw` | `rails` ve `under` kancaları. Parlama da kancada; çekirdek bölünmüş karoyu atlar |
+| 8, 9 İpucu, baştan | Değişiklik yok (`cur = sol = 15`) |
+| 10 Kayıt | Ortak imza kuralı (yukarıda) |
+| 12 CSS | `css` alanı, `.rd-bridge*` sınıfları |
+| 13 `BOLUM_TASARIMI.md` | Bu görevin kapsamı dışında, dokunulmadı |
+| 14 Hakem | `tools/hakem/kopru.cjs` (yukarıda) |
+
 ## Kural kartı metni
 
 <b>Köprüde</b> iki hat üst üste geçer ama <b>birleşmez</b>: soldan gelen sağa, üstten gelen alta gider. Köprü dönmez; <b>dört ucuna</b> da ray bağla.

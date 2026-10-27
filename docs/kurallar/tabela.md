@@ -2,11 +2,73 @@
 
 > Bu belge tasarım iş akışının çıktısıdır: üç bağımsız tasarımcı, bir seçici ve şüpheci bir doğrulayıcı. Uygulama notlarındaki satır numaraları ve "şu fonksiyonu değiştir" önerileri eklenti iskeletinden ÖNCE yazıldı. Ortak altyapı (birim/val, komşuluk adj, bölünmüş düğüm, tree(), kayıt imzası, kural kartı göçü, çakışma) artık çekirdekte hazır; kural yalnız kendi dosyasında, kancalarla yazılır: docs/kurallar/README.md.
 
+## Uygulama (eklenti, güncel durum)
+
+Kural yazıldı ve robottan geçti. Kod: `www/rules/tabela.js`, testler: `tools/hakem/tabela.cjs`. Çekirdekte değişiklik yok. Aşağıdaki tasarım bölümleri tarihçe olarak duruyor; uygulamayla çelişen yerde bu bölüm geçerlidir.
+
+### Kancalar
+
+| Kanca | Ne yapar |
+|---|---|
+| `amount(n, intro)` | `max(2, round(n · (intro ? .03 : .05)))`. 409–411: 6×8, 2 tabela. 7×9: 3 tabela |
+| `mark(C)` | `api.tree(C)` ile sol ağacı (pd, dep, ow). Aday: `C.free(i) && !rev && cnt < 0 && popc ∈ {2, 3} && düz değil && dep ≥ 2 && köprü (C.br) ya da komşusu değil`. Önce şaşırtıcılar (`pd` yönü · (kendi merkezi − i) ≤ 0), sonra ötekiler. Her grupta tabelalı karoya bitişik olmayan aday öne alınır. `C.out.sign[i] = pd[i]` |
+| `check(P, L)` | Her tabela için `j = nb(P, i, k)`: `d[i] ≥ 0 && cur[i] & b && cur[j] & ob(P, i, k) && d[j] = d[i] − 1 && own[j] = own[i]`. Bozuklar `L.signBad`'e yazılır. `L.signBase` = tabelalar dışında her şey tamam mı (çekirdeğin `solved` değeri) |
+| `allow(P, i, m)` | Tabelalı karoda ok kenarında kolu olmayan durum elenir |
+| `after(G, i, now)` | `signBase && signBad` ise yanlış tabelalar `press` ile nabız atar. Bölüm başına bir kez bildirim çıkar: "Tabela: merkeze giden yol okun kenarından geçmeli". Sayacı biten yanlış karo varsa sonuna " · ↺ baştan ya da 💡" eklenir. Oyuncu tabelalı karoya ilk kez dokununca (kayıtta bir kez, `save.signTip`) "Tabela · karo döner, ok yerinde kalır" bildirimi çıkar |
+| `over(D)` | Ok, hücreye sabit üçgendir; `X[i]`'nin açısı kullanılmaz. Tepesi `.43s`, tabanı `.20s`, yarı genişliği `.15s` (s = 54'te ~12×16 px). Sağlanmış ve yanıyorsa hat rengi dolgu ve beyaz 1,5 px kenar. Öteki durumlarda `pal.bg` dolgu ve `pal.fg` 2 px kontur (içi boş). İpucuyla sabitlenmiş doğru ok `.45` soluk, yanlışsa tam opak. `!vis(i)` iken çizilmez. 2–4 yol |
+| `clash: ['ring']` | Halka dosyası da tanımlar; simetrik, zararsız tekrar |
+| `card` / `css` | `.rd-sign*` demo: merkez ve karo. Köşe ray döner, ok solda sabit. Batı kolu varken (%50–90) ray yanar, ok dolar |
+
+### Tasarımdan sapmalar
+
+- **Kayıt imzası:** Çekirdek zaten `sig = hashStr(sol)` kullanıyor (pv 4 + sig). Tabela aynı tohumdan belirlenimli üretildiği için ayrı imza gerekmedi.
+- **`lit()` dönüşü:** `base` alanı yerine eklenti `L.signBase` ve `L.signBad` alanlarını yazar.
+- **Ok boyu:** Doğrulayıcı tepe `.44s` önermişti. `.43s` seçildi; `.44s`'de 2 px kontur karo kenarından taşıyor.
+- **Ek: yayılma.** Tabelalar birbirine bitişik gelmesin diye her grupta yalnız bitişik olmayan adaylar kalmazsa bitişik aday seçilir. Şaşırtıcı önceliği korunur.
+- **Ek: ilk dokunuş bildirimi** (`save.signTip`). Doğrulayıcı planının 7. maddesinde vardı.
+- **Atlanan:** İpucu sıralamasında yanlış tabelanın sol yolundaki karoları öne alma. Bu çekirdek değişikliği ister ve isteğe bağlıydı. İpucu `sol`'e oturttuğu için tabela yüzünden çıkmaza girmez.
+
+### Ölçümler (robot, `tools/hakem/tabela.cjs`)
+
+- **Üretim:** 600 bölüm (6×8 ve 7×9). Karışımlar: yalın, ters, sayaçlı, iki merkez, karanlık, hepsi bir arada (+ sabit, eşli).
+  - Çözüm her bölümde kabul ediliyor. Hiçbir bölüm çözülmüş gelmiyor.
+  - Her bölümde ≥ 2 tabela var: toplam 1500; 1088 köşe, 412 T, 0 düz.
+  - Yerleşim ihlali 0.
+- **Ters örnek:** 4500 ok yönü değişikliğinin (çocuğa giden kol ya da kolsuz kenar) hepsi çözümü reddediyor.
+- **İki merkez:**
+  - 500 tabelanın hepsi kendi merkezinin ağacında ebeveyne bakıyor.
+  - Komşunun sahibi öbür merkez yapılınca hepsi reddediliyor.
+- **Bit bit aynılık:** 1–408 bölümleri ve 14 Günün Hattı, eklentili ve eklentisiz (route ile `rules/tabela.js` boşaltılarak) aynı: 422 bulmaca, 0 fark. `R()` yalnız `x.sign > 0` iken `mark` içinde tüketilir; sonraki adımlar (karanlık, çözülmüş gelmesin, par) `R()` kullanmaz.
+- **Zorluk merdiveni:** M12 14,70 → M13 15,11 → M14 15,39 (hat ortalaması, bütün bölümler). Merdiven korunuyor.
+- **Şaşırtıcı oran:** 409–468 arasında yerleşen 177 tabelanın 160'ı şaşırtıcı (115 köşe, 62 T). Burada "yana çıkış" (nokta çarpımı 0) da şaşırtıcı sayılıyor.
+- **Süre:** `puzzleFor(409–418)` bölüm başına 14–18 ms; robot başka işlerle yüklüyken 41 ms. Sınır 60 ms.
+- **Oyun içi:**
+  - 409'da kural kartı açılıyor. Tabelalı karo dönünce ok yerinde kalıyor; `solve()` kazanıyor.
+  - Bir ok çocuğa çevrilip her şey bağlanınca bölüm bitmiyor: bildirim çıkıyor, yanlış tabela `signBad`'de. Ok düzelince bölüm bitiyor.
+- **Ekran görüntüleri** (`hakem-out/shots/`):
+  - `sign-card`, `sign-card-2`: kartın dolu ve boş evresi
+  - `sign-start`, `sign-start-light`: başlangıç, içi boş oklar
+  - `sign-ok`, `sign-ok-light`: sağlanmış, dolu oklar
+  - `sign-bad`: hepsi bağlı ama ok yanlış
+
+### Bilinen sınırlar
+
+- **Küresel kısmın etkisi:** Doğrulayıcı ölçümüne göre bölümlerin ~%2'sinde bağlayıcı. Geri kalanında tabela yerel ipucu gibi çalışır (o kenarda kol var), artı insanın kullanabileceği bir yön bilgisi verir.
+- **T karoda yerel bilgi az:** Ok, dört durumdan yalnız birini eler. Köşede ikisini eler.
+- **İpucu sonrası bildirim yok:** İpucu sonrasında "hepsi bağlı ama tabela yanlış" durumu oluşursa bildirim çıkmaz; `after` yalnız dokunuşta çağrılır. Ok yine de içi boş görünür.
+- **Küçük ızgara:** ≤ 4×4'te aday yetmeyebilir. Oyunda M13 en küçük 6×8 olduğu için görülmez.
+- **Web paketi bütçesi:** Robotun `size` denetimi (`bytes < 300e3`, düşük önem) tabelayla geçmiyor.
+  - İskelette paket 297.229 bayt; altı kurala kalan pay yalnız 2.771 bayt.
+  - `rules/tabela.js` 6,7 KB (CSS demosu dahil). Paket 303.724 bayt oluyor.
+  - Çözüm çekirdekte olmalı: `og.jpg` (48 KB; uygulama yüklemez, yalnız paylaşım önizlemesi) bütçe dışı bırakılabilir ya da sınır yükseltilebilir.
+  - `tools/hakem.cjs` bu işin kapsamı dışında olduğu için değiştirilmedi.
+- **Kayıt imzası:** Tabela seçim algoritması ileride değişirse aynı `sol` farklı tabela taşıyabilir. Çekirdek imzası yalnız `sol`'ü kapsar. Algoritma değişirse imzaya `sign` eklenmeli.
+
 **Neden seçildi:** Hedef türünden ve ucuz bir kural. Oyuncuya yeni bir soru sorduruyor: 'merkeze giden yol bu karodan hangi yönde çıkıyor'. Gizli dolanmayı söylediği için sabit karonun kopyası değil; şaşırtıcı aday oranını ben ölçtüm (%18,3). Getirdiği tree() yardımcısını M17 halka yeniden kullanır. Köprüden (topoloji) sonra ve tabladan (etkileşim) önce geldiği için tür sırası I–Geo–G–I–G–Geo olur. Seçimde değişiklik yaptım: köprü komşusu dışlandı, tünel için adj okuması eklendi, sabitlenen karoda ok soluk çiziliyor, CLASH simetrik.
 
 ## Kural kartı metni
 
-<b>Tabelalı</b> karodan merkeze giden yol <b>okun gösterdiği kenardan</b> çıkmalı. Ok yere sabittir: <b>karo döner, tabela dönmez</b>.
+<b>Tabelalı</b> karodan merkeze giden yol <b>okun gösterdiği kenardan</b> çıkmalı. Ok yere sabittir: <b>karo döner, ok dönmez</b>.
 
 ## Görünüş
 
