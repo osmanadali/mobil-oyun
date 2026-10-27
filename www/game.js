@@ -228,8 +228,9 @@ function rulesFor(l) {
   if (!learned.length || (own && l - lineStart(c) < 3)) return set;   // yeni kuralın ilk 3 bölümü yalın
   const h = hashStr('kural' + l), extra = own ? (h % 100 < 55 ? 1 : 0) : (h % 100 < 65 ? 1 : 2);
   for (let k = 0; k < extra; k++) {
-    const at = (h >>> (7 + k * 6)) % learned.length;   // çakışan kural sıradaki uyumlu öğrenilmiş kuralla değişir
-    for (let t = 0; t < learned.length; t++) { const r = learned[(at + t) % learned.length]; if (![...set].some(q => clash(q, r))) { set.add(r); break; } }
+    // M9+: ek kuralın yarısı en yeni 3 kuraldan → yeni öğrenilen kural karma hatlarda sık tekrar eder (M1–M8 aynen)
+    const rec = c >= 8 && (hashStr('kip' + h + k) & 3) < 2, pool = rec ? learned.slice(-3) : learned, at = (rec ? hashStr('yeni' + h + k) : h >>> (7 + k * 6)) % pool.length;
+    for (let t = 0; t < pool.length; t++) { const r = pool[(at + t) % pool.length]; if (![...set].some(q => clash(q, r))) { set.add(r); break; } }   // çakışan kural sıradaki uyumluyla değişir
   }
   if (!set.size) set.add(learned[h % learned.length]);
   return set;

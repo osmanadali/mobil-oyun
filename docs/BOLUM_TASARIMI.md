@@ -62,7 +62,15 @@ Izgara boyu bölüme göre büyür: 1–3 3×3 · 4–8 4×4 · 9–15 4×5 · 1
 | M6 | 101 | 🌑 **Karanlık tünel** | Hattın ulaşmadığı karolar karanlıktır, dokunulamaz; yanan hattın 2 karo yakını aydınlanır ve açık kalır. Merkez başta yalnız başlar. |
 | M7 | 133 | 🔢 **Sayaçlı karo** | En fazla 3 kez döner, sayı bitince kilitlenir. Önce düşün, sonra dokun. |
 | M8 | 169 | 🚉 **İki merkez** | İki istasyon, iki renk; her durak kendi merkezine bağlanmalı. İki hat birbirine değerse kırmızı yanar, bölüm bitmez. |
-| M9+ | 209 | Karma hatlar | Yeni kural yok; her bölümde öğrenilmiş kurallardan 1–2 tanesi. |
+| M9 | 209 | ✂ **Makas** | Dönmez; dokununca yol düz ile sapak arasında değişir. Kesik çizgi öbür yolu gösterir. |
+| M11 | 301 | 🌉 **Köprü** | İki hat üst üste geçer ama birleşmez; köprü dönmez, dört ucuna da ray bağlanmalı. |
+| M13 | 409 | ➜ **Yön tabelası** | Tabelalı karodan merkeze giden yol okun gösterdiği kenardan çıkmalı; karo döner, tabela dönmez. |
+| M15 | 533 | ◉ **Döner tabla** | Dört karoyu taşır; dokununca tabla bütünüyle 90° döner, karolar yer değiştirir. |
+| M17 | 673 | ◯ **Halka hat** | Raylar bir kez kendi üstüne kapanır; halka kesik çemberli karodan geçmeli. |
+| M19 | 829 | ⊂ **Tünel ağzı** | Kenardaki aynı harfli iki ağız bağlıdır: birine giren ray öbüründen çıkar. Tünel kullanmak zorunlu değil. |
+| M10, M12… M20+ | 253 | Karma hatlar | Yeni kural yok; her bölümde öğrenilmiş kurallardan 1–2 tanesi. |
+
+M9 ve sonrasının kuralları çekirdekte değil, eklenti dosyalarındadır (`www/rules/*.js`). Her kuralın tasarımı, çözülebilirlik kanıtı ve ölçümleri `docs/kurallar/` altındadır; eklenti sözleşmesi `docs/kurallar/README.md`'dedir.
 
 **Öğretme:**
 
@@ -73,7 +81,8 @@ Izgara boyu bölüme göre büyür: 1–3 3×3 · 4–8 4×4 · 9–15 4×5 · 1
 
 - Kurallar üst üste yığılmaz. Bir kural kendi hattında her bölümde vardır.
 - Sonraki hatlarda kendi kuralına ek olarak bölüm bölüm değişen en fazla 1 eski kural gelir.
-- M9 ve sonrası karma hatlardır: her bölüm 1–2 kuralın farklı bir karışımıdır.
+- M10, M12… ve M20 sonrası karma hatlardır: her bölüm 1–2 kuralın farklı bir karışımıdır. M9'dan sonra ek kuralın yarısı en yeni 3 kuraldan seçilir, böylece yeni öğrenilen kural karma hatlarda sık tekrar eder.
+- Birlikte gelemeyen kurallar vardır: halka, tabela ve köprüyle aynı bölümde olmaz (çakışan kural sıradaki uyumlu kuralla değişir).
 - Böylece tahta kalabalıklaşmaz ve her bölüm biraz farklı hissettirir.
 
 **Hat finali (🏁 Son durak):**
@@ -106,6 +115,7 @@ Test robotu (`tools/hakem.cjs`) her değişiklikte şunları kontrol eder:
 - Sonsuzda zorluk %99'a ulaşıyor.
 - Günün Hattı haftalık dalga çiziyor, %40'ın altına düşmüyor, zamanla yükseliyor.
 - Sabit ve eşli karolu 600 bölümün hepsi çözülebiliyor.
+- Yeni kuralların her biri kendi testinde yüzlerce üretimle denenir: çözüm geçerli, başlangıç çözülmüş değil, kural kartı çıkıyor, robot bölümü kazanıyor; 1–208. bölümler ve Günün Hattı eklentilerden önceki hâliyle bit bit aynı.
 - Bir bölümü üretmek tarayıcıda 60 ms'nin altında sürüyor; sonraki bölüm kazanma ekranındayken önceden hazırlanıyor.
 
 ## 8. Taç ekonomisi (renk temaları)

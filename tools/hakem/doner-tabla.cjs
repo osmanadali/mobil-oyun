@@ -51,7 +51,7 @@ module.exports = async T => {
     for (let l = 533; l <= 572; l++) { const P = R.puzzleFor(l); if (P.rules.includes('table')) lv.push([l, P.table?.plates.length || 0, P.cols + 'x' + P.rows, P.diff]); }
     out.lv = { n: lv.length, intro: lv[0], miss: lv.filter(([l, k]) => k !== (l === 533 ? 1 : 2)).map(v => v[0]), saw: lv.slice(0, 4).map(v => v[2]).join(' ') };
     // karanlık + tablalı bölüm (arayüz testi için)
-    for (let l = 536; l <= 672 && !out.fogLvl; l++) { const P = R.puzzleFor(l); if (P.fog && P.table) out.fogLvl = l; }
+    for (let l = 536; l <= 3000 && !out.fogLvl; l++) { const U = R.rulesFor(l); if (!U.has('fog') || !U.has('table')) continue; const P = R.puzzleFor(l); if (P.fog && P.table) out.fogLvl = l; }   // karma hatlar yeni kurallara ağırlık verir → aralık geniş
     return out;
   });
   check('rule.table.gen', `Döner tabla: ${gen.n} üretim (7×9, 6×8, 5×6; sabit, eşli, ters/sayaçlı, iki merkez, karanlık, hepsi) çözülebilir, hazır çözülü gelmez; her tabla 2×2 tek birim, dokunuş yalnız dört karoyu çevirir`, gen.bad === 0 && gen.pre === 0 && gen.play === 0 && gen.taps === 0, JSON.stringify({ n: gen.n, plates: gen.plates, bad: gen.bad, pre: gen.pre, play: gen.play, taps: gen.taps, why: gen.why }));
@@ -162,7 +162,7 @@ module.exports = async T => {
     const won = await waitModal(page), info = await page.evaluate(() => { const G = window.__ray.G; return { lvl: G.lvl, fog: G.fog, plates: G.table.plates.length, rules: G.rules }; });
     check('rule.table.fog', 'Döner tabla + karanlık tünel: tablanın dört karosu hep birlikte aydınlanır (yarı karanlık tabla yok), ışığı izleyerek kazanılır', info.fog && bad === 0 && won, JSON.stringify({ ...info, bad, taps, won }));
     await ctx.close();
-  } else check('rule.table.fog', 'Döner tabla + karanlık tünel: 536–672 arasında karanlık ve tablalı bölüm bulunmalı', false, 'bulunamadı');
+  } else check('rule.table.fog', 'Döner tabla + karanlık tünel: 536–3000 arasında karanlık ve tablalı bölüm bulunmalı', false, 'bulunamadı');
 
   check('rule.table.errors', 'Döner tabla senaryolarında konsol hatası yok', !errs.flat().length, errs.flat().slice(0, 3).join(' | '));
 };

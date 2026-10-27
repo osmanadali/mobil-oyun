@@ -87,7 +87,7 @@ module.exports = async T => {
       for (let l = 673; l <= 20000; l++) { const U = R.rulesFor(l); if (U.has('sign')) sign++; if (U.has('bridge')) bridge++; if (U.has('ring')) { ring++; if (U.has('sign') || U.has('bridge')) bad++; } }
       return { ring, sign, bridge, bad, clash: R.MODS.find(m => m.key === 'ring').clash };
     });
-    check('rule.ring.clash', 'Halka: tabela ve köprüyle aynı bölümde hiç gelmiyor (673–20000, rulesFor)', !c.bad && c.ring > 1000 && c.sign > 1000 && c.bridge > 1000 && c.clash.includes('sign') && c.clash.includes('bridge'), JSON.stringify({ ...c, dummy: dummy.map(d => d[0]) }));
+    check('rule.ring.clash', 'Halka: tabela ve köprüyle aynı bölümde hiç gelmiyor (673–20000, rulesFor)', !c.bad && c.ring > 1000 && c.sign > 500 && c.bridge > 500 && c.clash.includes('sign') && c.clash.includes('bridge'), JSON.stringify({ ...c, dummy: dummy.map(d => d[0]) }));
     errs.push(...errors); await ctx.close();
   }
 
