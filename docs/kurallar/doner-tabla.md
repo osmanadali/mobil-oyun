@@ -2,11 +2,60 @@
 
 > Bu belge tasarım iş akışının çıktısıdır: üç bağımsız tasarımcı, bir seçici ve şüpheci bir doğrulayıcı. Uygulama notlarındaki satır numaraları ve "şu fonksiyonu değiştir" önerileri eklenti iskeletinden ÖNCE yazıldı. Ortak altyapı (birim/val, komşuluk adj, bölünmüş düğüm, tree(), kayıt imzası, kural kartı göçü, çakışma) artık çekirdekte hazır; kural yalnız kendi dosyasında, kancalarla yazılır: docs/kurallar/README.md.
 
+## Uygulama (eklenti) ve ölçümler
+
+Kural `www/rules/doner-tabla.js` içinde, yalnız kancalarla yazıldı; çekirdekte değişiklik yok. Robot testleri: `tools/hakem/doner-tabla.cjs`. Aşağıdaki "Doğrulayıcının uygulama planı" bölümü iskeletten önce yazıldı; geçmiş kayıt olarak duruyor. Geçerli durum bu bölümdedir.
+
+| Kanca | Ne yapar |
+|---|---|
+| `amount` | `cols < 4 \|\| rows < 4 → 0`, giriş (533) → 1, sonra 2 |
+| `shape(C)` | Aday: bütün 2×2 bloklar. Dört hücre `C.free(i)` olmalı, `C.keep`, `C.br` (köprü) ya da `C.mouth` (tünel ağzı) olmamalı. Merkez(ler)e Manhattan uzaklığı > 1 olmalı, önceki tablanın hücrelerine de > 1 olmalı (en az bir karo ara). Tabla t = 1..3 dönüşte kendine benzememeli. Seçilen blokta önce `cur = sol` yapılır, `C.unit(Q, 4, spin(Q), 'table')` kurulur ve `t = 1 + (R()·3 \| 0)` kez tabla dönüşü uygulanır. `C.out.table = { plates, plate }`. R() yalnız `x.table > 0` iken tüketilir |
+| birim `tap(c)` | `c[Q[p]] = rot(eski[Q[(p+3)%4]])`, Q = [sol-üst, sağ-üst, sağ-alt, sol-alt]: saat yönü. Parametre dizisi üzerinde çalışır, kapanışta `C.cur` tutulmaz |
+| `reveal(G, on)` | Karanlıkta tablanın bir karosu görünürse dördü birden açılır (yarı karanlık tabla olmaz) |
+| `onTap` | 190 ms dönüş animasyonunu başlatır (hareketi azalt açıksa başlatmaz) ve alçak bir "tak" tonu çalar (196 Hz, üçgen dalga) |
+| `xform(D)` | Dönüş sürerken 4 karonun merkezi tabla merkezi çevresinde `a = (back(t) − 1)·π/2` kadar döner. `X[q][2] += a` ve `X[q][4] = true` olur, yani eksen hizalı zemin çizilmez. İpucunun koyduğu yerinde dönme (`anim`) tabla karolarında silinir: karo hem yer değiştirip hem yerinde dönüyormuş gibi görünmez |
+| `base(D)` | Karo zemininden önce bütün tablaların plakası tek yolda çizilir: `r = .98s` daire, `rgba(fg, .06)` dolgu, 2 px `pal.mut` kenar. Dönen karoların zemini de kendi açısıyla çizilir (fill + stroke + yanıyorsa hat tonu; yalnız 190 ms boyunca) |
+| `under(D)` | Zeminden sonra pim çizilir: dolu `pal.mut` disk (r = .08s) ve `pal.bg` mil noktası (r = .028s). Durağın içi boş halkasına benzemez. Raylar köşeye uğramadığı için ray altında kalmaz |
+| kart | `.rd-table`: dört karolu yuvarlak plaka `spin4` ile 4 adımda döner, U biçimli ray dörtlü boyunca uzanır, pim dönmez, `tap2` halkası sol üst karoya vurur |
+
+Karanlıkta plaka ve pim yalnız tabla görünürken çizilir (`D.vis(Q[0])`). Örtünün yuvarlak köşe boşluklarından sızmaz.
+
+Kare başına ek çizim: animasyonsuz karede 4 çağrı (plaka dolgu + kenar, pim iki katman). Dönüş sürerken tabla başına yaklaşık 12 çağrı daha eklenir.
+
+Çekirdeğin hazır altyapısı kullanıldı. Dokunuş `unit.tap(G.cur)` ile yapılır; art arda aynı tablaya dokunmak 1 hamle sayılır. İpucu dört karoyu birlikte oturtur ve büyük birimi sona alır. Zorluk çözücüsü 4 durumu dener. par/taps `unitTaps` ile, robot `plan()` ile hesaplanır.
+
+### Ölçümler (robot, `node tools/hakem.cjs` K bölümü)
+
+- **Üretim, 1750 bulmaca:** 7×9, 6×8 ve 5×6 ızgaralar; sabit, eşli, ters/sayaçlı, iki merkez, karanlık karışımları ve hepsi bir arada. Sonuç: 0 hatalı, 0 hazır çözülü. Hepsi dokunuşla çözülüyor ve dokunuş sayısı `P.taps` ile aynı.
+- **Tabla denetimleri:** Her tabla 1–3 dokunuşla çözüme dönüyor, yani yörünge dışı tabla yok. Merkeze bitişik tabla 0, sabit/eşli/ters/sayaçlı ile çakışma 0, birbirine bitişik iki tabla 0.
+- **Eksik tabla:** Gerçek bölümlerde görülen 6×8 ve 7×9 karışımlarında hiç yok. Bölümde en çok 2 kural olur. Yalnız gerçekte gelmeyen aşırı yüklü 6×8 karışımında (iki merkez + 5 sabit + 3 eşli + ters + sayaçlı + karanlık) bulmacaların %19'unda tek tabla çıkıyor.
+- **Bölümler 533–572:** 533 tek tablalı, diğer bütün bölümlerde 2 tabla var. 533–535 6×8 (testere dişi), sonrası 7×9. Karma hatlardan 673–900 arası örneklendi: tablalı 12 bölümün hiçbirinde eksik yok. Bu yüzden `pick()` koruması gerekmedi.
+- **pick() isabeti:** 533–672 arasında ortalama |zorluk − hedef| = 0,37.
+- **Zorluğa etkisi:** 7×9'da 80 tohumda ortalama zorluk tablasız 13,90, 1 tablayla 13,24, 2 tablayla 12,51.
+- **Eski bölümler bit bit aynı:** 1–532 arasından 21 örnek bölüm ve 3 Günün Hattı, tabla eklentisi kaldırılmış sayfayla birebir aynı.
+- **Arayüz:**
+  - 533'te kural kartı çıkıyor.
+  - Dokunuşta 4 karo saat yönünde yer değiştirip dönüyor ve 1 hamle sayılıyor. Aynı tablaya art arda dokunuş hamle saymıyor, 4 dokunuşta tabla başa dönüyor.
+  - Yarım oyun aynı durumla sürüyor.
+  - Yalnız tabla yanlışken 💡 dört karoyu oturtup sabitliyor ve bölüm kazanılıyor.
+  - Robot 533'ü par hamlede çözüyor.
+  - Karanlık + tablalı bölümde (548) her dokunuştan sonra yarı karanlık tabla 0; bölüm ışık izlenerek kazanılıyor.
+  - Hareketi azalt açıkken tabla anında yer değiştiriyor, animasyon yok ve çizim döngüsü boşta duruyor.
+  - Konsol hatası yok.
+- **Ekran görüntüleri:** `rule-table`, `table`, `table-spin` (dönüşün ortası, saat dondurularak), `table-hint`, `table-fog`, `table-fog-lit` (açık tema).
+
+### Bilinen sınırlar
+
+- **Kayıt imzası:** Çekirdekteki imza yalnız `hash(sol)`. Tabla `sol`'ü değiştirmez. Aynı tohumla tablasız eski bir sürümde kaydedilmiş yarım oyun (imzalı, 533+) tablalı sürümde yüklenirse tabla yörünge dışında kalabilir. Bu bir kilitlenme değildir, ↺ ya da 💡 kurtarır. Kalıcı çözüm çekirdekte `sig = hash(sol + '|' + ilk cur)` olur ve bütün birimli kuralları (makas da) kapsar. İskelet yayımlanmadıysa gerekmez.
+- **İpucu kilidi rozeti:** Pimin yanında tek rozet yerine dört karoda ayrı ayrı çiziliyor (çekirdek; kozmetik).
+- **Küçük ızgara:** 3×3'te hiç aday yok, 4×4'te en çok 1 aday var. `amount` 4'ün altını keser. M15 ve karma hatlar 6×8/7×9 olduğundan bölümlerde sorun yok.
+- **Web paketi bütçesi:** Kuraldan önce `www` 297,2 KB'tı, hakemin `size` sınırı 300 KB. Bu dosya ~5,3 KB ekliyor, bu yüzden `size` denetimi (önem: low) aşılıyor. Altı kuralın birleşmesi için sınırın yükseltilmesi gerekir; ya da `og.jpg` (48 KB, yalnız bağlantı önizlemesi) sayımdan çıkarılabilir.
+
 **Neden seçildi:** Metro temasında gerçek bir aygıt ve en tatmin edici dokunuş kurallarından biri. Yeni bir düşünme biçimi getiriyor: büyük parça mantığı, karonun yeri de değişiyor. R⁴ = kimlik kanıtı çok temiz; prototipi yeniden koşturdum. Kızaktan farklı olarak 'her hücre dolu' varsayımını bozmuyor, bu yüzden daha az riskli. Kolaylaştırma etkisine rağmen pick()'in hedefe ulaştığını ölçtüm. Türü: etkileşim (makastan farklı: şekil değil, konum değişiyor). Seçimde değişiklik yaptım: merkeze bitişiklik, köprü ve tünel ağzı dışlandı, animasyonda zemin atlanıyor, ipucunda tabla sona alınıyor.
 
 ## Kural kartı metni
 
-Yuvarlak <b>döner tabla</b> dört karoyu taşır: birine dokun, tabla bütünüyle <b>90° döner</b>. Karolar yer değiştirir, aralarındaki raylar <b>kopmaz</b>.
+Yuvarlak <b>döner tabla</b> dört karoyu taşır: birine dokun, tabla bütünüyle <b>90° döner</b>. Karolar yer değiştirir, raylar <b>kopmaz</b>.
 
 ## Görünüş
 
@@ -71,7 +120,7 @@ Izgara en az 4×4 olmalı. M15 girişi 6×8, karma hatlar 7×9 olduğundan sorun
 
 ## Kural kartı demosu
 
-.rdemo9 (96×96): dairesel .tb zemini (var(--pin)) içinde 2×2 küçük karo; raylar dörtlü boyunca bir U çizer. .tb{animation:spin4 4s cubic-bezier(.3,1.4,.5,1) infinite}: spin4 kareleri 4×90° adım attığı için döngü kesintisizdir. .rtap halkası bir karoya dokunur. Altında 1 cümle: 'Dokun: dört karo birlikte döner ve yer değiştirir.' Yaklaşık 7 satır.
+Uygulanan: `.rd-table` (104×104; ayrıntı yukarıdaki tabloda). Tasarımdaki taslak: .rdemo9 (96×96): dairesel .tb zemini (var(--pin)) içinde 2×2 küçük karo; raylar dörtlü boyunca bir U çizer. .tb{animation:spin4 4s cubic-bezier(.3,1.4,.5,1) infinite}: spin4 kareleri 4×90° adım attığı için döngü kesintisizdir. .rtap halkası bir karoya dokunur. Altında 1 cümle: 'Dokun: dört karo birlikte döner ve yer değiştirir.' Yaklaşık 7 satır.
 
 ## Zorluğa etkisi
 
