@@ -21,7 +21,7 @@ Demo: kesikli kare, ortada merkez. Önce yatay ray kareyi geçer ve sınırda ka
 ## Üretim ve çözülebilirlik kanıtı
 
 1. **`tree(C)` aşaması** ağaçtan sonra, karıştırmadan önce çalışır. Halka kenarı (M17, `tOrder` 16) daha önce eklenmiş olur.
-2. Sınır kenarları `E` (n·4, simetrik) ve tek sayımlık liste `pr = [i, k, j]` (k = D ya da G) kurulur.
+2. Sınır kenarları `E` (n·4, simetrik) ve tek sayımlık liste `pr = [i, k, j]` (k = D ya da G) **geometrik** komşulukla kurulur. Tünel ağzı kenarı (`C.adj`) sınır sayılmaz. İlk sürümde `C.nb` kullanılmıştı; tünel testinin iki merkezli doğrudan üretiminde (merkez tahta kenarına yakın) ağız kenarı sınır sayılıyordu, düzeltildi.
 3. **Tampon adayı** sınır kenarındaki (i, k) çiftidir. Şartlar:
    - `sol`'de iki yan da kolsuz;
    - i merkez değil, `keep` değil (köprü, tünel ağzı, halka işareti), `busy` değil;

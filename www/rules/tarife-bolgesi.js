@@ -3,7 +3,7 @@
 // Kazanma: lit (sınır kenarı open → gevşek sayılmaz) + sınırdan tam B geçiş ve tam T tampon (ikisi de rozette yazılı).
 (window.RAY_RULES = window.RAY_RULES || []).push(api => {
   const { DIRS, popc } = api, ZD = 1;
-  // P.zone.pr: sınır kenarları [i, k, j]: j = i'nin k (D ya da G) komşusu; her kenar bir kez. ub/vb: iki yandaki kol bitleri
+  // P.zone.pr: sınır kenarları [i, k, j]: j = i'nin k (D ya da G) geometrik komşusu; her kenar bir kez
   const arm = (P, m, i, b) => !P.void?.[i] && !!(m[i] & b);
   const count = (P, m, see) => {
     const pr = P.zone.pr; let b = 0, t = 0;
@@ -22,22 +22,22 @@
     amount: () => 1,
     // ağaçtan sonra (halka kenarı eklendikten sonra), karıştırmadan önce: tampon kolu ekle, B'yi çözümden say
     tree(C) {
-      const { cols, n, sol, R, hub } = C, hx = hub % cols, hy = hub / cols | 0, E = new Uint8Array(n * 4), pr = [];
+      const { cols, rows, n, sol, R, hub } = C, hx = hub % cols, hy = hub / cols | 0, E = new Uint8Array(n * 4), pr = [], geo = { cols, rows };
       const inZ = i => Math.max(Math.abs(i % cols - hx), Math.abs((i / cols | 0) - hy)) <= ZD;
       for (let i = 0; i < n; i++) for (let k = 0; k < 4; k++) {
-        const j = api.nb(C, i, k); if (j < 0 || inZ(i) === inZ(j)) continue;   // geometrik komşu (tünel ağzı yalnız tahta dışına bakan kenarı değiştirir)
+        const j = api.nb(geo, i, k); if (j < 0 || inZ(i) === inZ(j)) continue;   // geometrik komşu: tünel ağzı kenarı (C.adj) sınır sayılmaz
         E[i * 4 + k] = 1; if (k === 1 || k === 2) pr.push(i, k, j);
       }
       // tampon adayı: sınır kenarında iki yan da kolsuz; karo merkez, köprü, tünel ağzı, halka işareti değil, en çok 2 kollu (sonra ≤ 3)
       const cand = [];
       for (let i = 0; i < n; i++) if (!C.isHub(i) && !C.keep[i] && !C.busy[i] && popc(sol[i]) <= 2) for (let k = 0; k < 4; k++) {
-        if (!E[i * 4 + k]) continue; const j = api.nb(C, i, k);
+        if (!E[i * 4 + k]) continue; const j = api.nb(geo, i, k);
         if (!(sol[i] & DIRS[k][0]) && !(sol[j] & DIRS[k][3])) cand.push([i, k]);
       }
       const at = [], used = new Set();
       for (let t = 0; t < C.x.zone && cand.length; t++) {
-        const Q = cand.filter(([i, k]) => !used.has(i) && !used.has(api.nb(C, i, k))); if (!Q.length) break;
-        const [i, k] = Q[R() * Q.length | 0]; used.add(i); used.add(api.nb(C, i, k)); sol[i] |= DIRS[k][0]; at.push([i, k]);
+        const Q = cand.filter(([i, k]) => !used.has(i) && !used.has(api.nb(geo, i, k))); if (!Q.length) break;
+        const [i, k] = Q[R() * Q.length | 0]; used.add(i); used.add(api.nb(geo, i, k)); sol[i] |= DIRS[k][0]; at.push([i, k]);
       }
       const Z = { E, pr, T: at.length, at };
       Z.B = count({ zone: Z }, sol)[0];
