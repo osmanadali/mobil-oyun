@@ -705,6 +705,8 @@ function refreshHome() {
   const [w, h] = sizeFor(save.level); $('sSize').textContent = `${w}×${h} · ⚡ zorluk %${zPct(save.level)}`;
   $('dailyK').textContent = `GÜNÜN HATTI · ⚡%${dPct(today())}`;
   $('bPlay').classList.toggle('locked', !unlocked(c));
+  // sıradaki bölümü boşta önceden üret: zor kurallı 7×9 bölüm telefonda 1–2 sn sürebilir, "Oyna"da beklenmesin (çıktı aynı, yalnız önbellek)
+  if (unlocked(c)) { const l = save.level, go = () => { if (active('home')) puzzleFor(l); }; window.requestIdleCallback ? requestIdleCallback(go, { timeout: 1500 }) : setTimeout(go, 600); }
 }
 
 // ---------- hat haritası (bölüm seçimi) ----------
