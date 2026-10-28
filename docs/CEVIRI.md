@@ -130,6 +130,8 @@ Hat adları yer adıdır ve çevrilir:
 | KUSURSUZ · YENİ HAT AÇILDI · TEMA ALINABİLİR | PERFECT · NEW LINE OPEN · NEW THEME |
 | YENİ KURAL · Anladım | NEW RULE · Got it |
 | ⚡ zorluk %30 | ⚡ 30% hard |
+| ☕ mola · ☕ mola bölümü | ☕ breather · ☕ breather level |
+| ★ 11 kaldı → M3 | ★ 11 to go → M3 |
 | Tamamlandı ✓ · Hazır | Done ✓ · Ready |
 | 5 günlük seri | 5-day streak |
 | en iyi seri · toplam gün | best streak · total days |

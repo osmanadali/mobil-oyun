@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="bg" aria-hidden="true"><i class="glow g1"></i><i class="glow g2"></i><i class="glow g3"></i><i class="map"></i></div>
+<div class="bg" aria-hidden="true"><i class="glow g1"></i><i class="glow g2"></i><i class="glow g3"></i><i class="map"><svg viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice"><g fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><path d="M-20 130H130L250 250V520L350 620H440" stroke="#f0a64a"/><path d="M70-20V200L190 320H420" stroke="#4fc3a1"/><path d="M-20 470H120L220 370H320L420 270" stroke="#6ea8ff"/><path d="M110 820V650L210 550H300V320" stroke="#ff7a8a"/><path d="M-20 720H90L190 820" stroke="#b394ff"/><path d="M310-20V110L420 220" stroke="#4fc3a1"/></g><g class="st" fill="#fff" stroke="#8892a6" stroke-width="5"><circle cx="130" cy="130" r="11"/><circle cx="250" cy="320" r="11"/><circle cx="350" cy="620" r="11"/><circle cx="70" cy="200" r="11"/><circle cx="120" cy="470" r="11"/><circle cx="320" cy="370" r="11"/><circle cx="210" cy="550" r="11"/><circle cx="300" cy="420" r="11"/><circle cx="90" cy="720" r="11"/><circle cx="310" cy="110" r="11"/></g><g class="ctr"><rect x="-26" y="-9" width="52" height="18" rx="7"/><animateMotion dur="2.6s" begin="indefinite" fill="freeze" rotate="auto" path="M0 0"/></g></svg></i></div>
 <div id="app">
   <div id="intro" class="intro" aria-hidden="true">
     <svg class="ilogo" viewBox="-10 -10 220 140">
@@ -80,7 +80,6 @@
       <div class="pill" id="gPill"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></svg><b id="gTime">0:00</b><span id="gStars"><i>★</i><i>★</i><i>★</i></span><em id="gCombo" class="cmb" hidden></em></div>
       <div class="trip" id="gTrip"><div class="trk" aria-hidden="true"><i class="done"></i><i class="peron"></i><i class="sig"></i><div class="mv" id="gTrain"></div></div><small id="gNext">⏱ 0:30</small><span class="bub" id="gBub" role="status"></span></div>
     </div>
-    <div class="meter"><i id="gBar"></i><span id="gPct">0%</span></div>
     <div id="board"><canvas id="cv" role="img" aria-label="Oyun tahtası: karolara dokunarak döndür, bütün durakları merkeze bağla" data-en-label="Game board: tap tiles to turn them and connect every station to the hub"></canvas></div>
     <div id="winPanel" class="winp"></div>
     <footer class="bottom">

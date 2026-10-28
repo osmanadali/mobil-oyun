@@ -261,10 +261,12 @@ const FOG_R = 2;                                        // yanan hattın bu kada
 const FOG_T = 420;                                      // karanlık örtünün açılma/kapanma süresi (ms)
 const PAIR_COLS = ['#ff7ab6', '#4cc9ff', '#ffc94d', '#8fe388', '#c39bff'];
 const TIERS = [[3, 3], [4, 4], [4, 5], [5, 6], [5, 7], [6, 8], [7, 9]], CAPS = [3, 8, 15, 25, 40, 60, 1e9];
+// mola bölümü: M2'den sonra her hattın 6., 12., 18.… bölümü (öğrenme bölümleri ve son durak hariç) kısa ve kolay → zorluk dalga dalga artar, oyuncu nefes alır
+const breath = l => { const c = lineOf(l), o = l - lineStart(c); return c > 0 && o >= 3 && o % 6 === 5 && l !== lineEnd(c); };
 function sizeFor(l) {
   let k = CAPS.findIndex(m => l <= m);
-  // testere dişi: yeni kural gelen hattın ilk 3 bölümü bir küçük ızgara → kural rahat öğrenilir
-  if (RULES[lineOf(l)] && l - lineStart(lineOf(l)) < 3) k = Math.max(0, k - 1);
+  // testere dişi: yeni kural gelen hattın ilk 3 bölümü ve mola bölümleri bir küçük ızgara → kural rahat öğrenilir
+  if ((RULES[lineOf(l)] && l - lineStart(lineOf(l)) < 3) || breath(l)) k = Math.max(0, k - 1);
   return TIERS[k];
 }
 
@@ -458,9 +460,10 @@ function puzzleFor(l) {
     let boost = 0;
     for (const m of MODS) if (U.has(m.key)) { x[m.key] = m.amount(n, intro && ln === m.line, z, fin, c, r); if (ln !== m.line || l - lineStart(ln) >= 3) boost += m.boost || 0; }
     if (ln >= 20) boost += 2;   // M21+ sınırsız karma: eski kuralların payı küçük, hedef M20 düzeyinde kalsın
+    if (breath(l)) boost = 0;   // mola: kural payı yok, hedef aşağıda yarıya yakın
     // hat finali (SON DURAK): hedef +2 puan, en çok aday taranır · zorluk paylı bölümde de geniş tarama
-    const P = pick(c, r, l * 7919 + 13, pins, pairs, z, (intro ? 3 : 5) + 11 * z + (fin ? 2 : 0) + boost, x, fin ? 32 : boost ? Math.max(24, 6 + Math.round(26 * z)) : undefined);
-    P.fog = U.has('fog'); P.final = fin; P.rules = [...U]; return P;
+    const P = pick(c, r, l * 7919 + 13, pins, pairs, z, (intro ? 3 : 5) + 11 * z * (breath(l) ? .55 : 1) + (fin ? 2 : 0) + boost, x, fin ? 32 : boost ? Math.max(24, 6 + Math.round(26 * z)) : undefined);
+    P.fog = U.has('fog'); P.final = fin; P.rules = [...U]; P.breath = breath(l); return P;
   });
 }
 function dailyFor(day) {
@@ -628,7 +631,7 @@ const active = id => $(id).classList.contains('active');
 function show(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
   document.body.classList.toggle('playing', id === 'game');
-  if (id === 'game') resume(); else pause();
+  if (id === 'game') resume(); else { pause(); cityDown(); }
   Music.setMode(id === 'game' ? 'game' : 'menu');
   if (id === 'home') { refreshHome(); setTimeout(maybeRescue, 600); if (G && Remind.avail() && !save.remindAsked && (save.dailyDone || save.level > lineEnd(0))) setTimeout(() => { if (active('home') && !modalOpen()) remindAsk(); }, 700); }
   if (id === 'map') renderMap();
@@ -711,9 +714,10 @@ function refreshHome() {
   const c = lineOf(save.level), nx = c + 1, lo = need(c), hi = need(nx);
   $('lineName').textContent = lineName(c);
   $('lineName').style.color = lineCol(c);
-  $('gateTxt').textContent = tot >= hi ? `★ ${tot} · M${nx + 1} ${L('açık', 'open')}` : `★ ${tot} / ${hi} → M${nx + 1}`;
+  // toplam ★ üstteki çipte; burada yalnız sıradaki hatta kalan (tek ilerleme ekseni)
+  $('gateTxt').textContent = tot >= hi ? `M${nx + 1} ${L('açık', 'open')} ✓` : L(`★ ${hi - tot} kaldı → M${nx + 1}`, `★ ${hi - tot} to go → M${nx + 1}`);
   $('progBar').style.width = Math.min(100, Math.max(4, (tot - lo) / Math.max(1, hi - lo) * 100)) + '%';
-  const [w, h] = sizeFor(save.level); $('sSize').textContent = L(`${w}×${h} · ⚡ zorluk %${zPct(save.level)}`, `${w}×${h} · ⚡ ${zPct(save.level)}% hard`);
+  $('sSize').textContent = breath(save.level) ? L('☕ mola bölümü', '☕ breather level') : L(`⚡ zorluk %${zPct(save.level)}`, `⚡ ${zPct(save.level)}% hard`);
   $('dailyK').textContent = L(`GÜNÜN HATTI · ⚡%${dPct(today())}`, `DAILY LINE · ⚡${dPct(today())}%`);
   $('bPlay').classList.toggle('locked', !unlocked(c));
   // sıradaki bölümü boşta önceden üret: zor kurallı 7×9 bölüm telefonda 1–2 sn sürebilir, "Oyna"da beklenmesin (çıktı aynı, yalnız önbellek)
@@ -780,7 +784,7 @@ function saveRun() {
   persist();
 }
 function start(mode, lvl = save.level) {
-  clearTimeout(howT); clearTimeout(winTimer); closeModal(); closePanel();
+  clearTimeout(howT); clearTimeout(winTimer); closeModal(); closePanel(); cityDown();
   const daily = mode === 'daily', day = today();
   if (!daily && !unlocked(lineOf(lvl))) { lockedSheet(lineOf(lvl)); return; }
   G = { ...(daily ? dailyFor(day) : puzzleFor(lvl)), daily, lvl: daily ? 0 : lvl, day: daily ? day : null, practice: daily && save.dailyDone === day, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0, bub: 0 };
@@ -802,7 +806,7 @@ function start(mode, lvl = save.level) {
   G.tOk = timeOk(G.ms / 1000); G.mOk = movesOk();
   $('gTitle').textContent = daily ? (G.practice ? L('Günün Hattı · pratik', 'Daily Line · practice') : L('Günün Hattı', 'Daily Line')) : `${L('Bölüm', 'Level')} ${lvl}${G.final ? L(' · 🏁 Son durak', ' · 🏁 Last stop') : ''}`;
   $('game').classList.toggle('final', !!G.final);
-  $('gMoves').textContent = `${daily ? new Date().toLocaleDateString(LOC, { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl))} · ⚡${L('%' + (daily ? dPct(day) : zPct(lvl)), (daily ? dPct(day) : zPct(lvl)) + '%')}`;
+  $('gMoves').textContent = `${daily ? new Date().toLocaleDateString(LOC, { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl))} · ${!daily && breath(lvl) ? L('☕ mola', '☕ breather') : `⚡${L('%' + (daily ? dPct(day) : zPct(lvl)), (daily ? dPct(day) : zPct(lvl)) + '%')}`}`;
   $('gHints').textContent = save.hints;
   clearTimeout(bubT); $('gBub').classList.remove('show');
   const stake = comboStake(); $('gCombo').hidden = stake < 2; $('gCombo').textContent = `🔥${stake}`;
@@ -838,8 +842,8 @@ function hud() {
   $('gPar').innerHTML = `${G.moves}<small> / ${G.lim.m}</small>`;
   $('gPar').classList.toggle('miss', !ok);
   $('gParLbl').textContent = ok ? L('↻ HAMLE HEDEFİ', '↻ MOVE TARGET') : L('↻ HEDEF AŞILDI', '↻ OVER TARGET');
-  const pct = Math.round(G.L.n / G.cur.length * 100);
-  $('gBar').style.width = pct + '%'; $('gPct').textContent = pct + '%';
+  // sefer şeridinin rayı bağlantıyla döşenir (yanan karo oranı): tren süreyle ilerler, ray önünden yetişmeli
+  $('gTrip').style.setProperty('--b', (G.L.n / G.cur.length).toFixed(3));
 }
 // üst gösterge: süre + üç yıldız (bitir · ⏱ süre · ↻ hamle)
 function tick() {
@@ -1122,7 +1126,7 @@ cv.addEventListener('pointerdown', e => {
   if (gained) { tone(note(k), .22, .05); if (stations) tone(note(k + 2), .3, .035, 'sine', .06); haptic(stations ? 'heavy' : 'light'); }
   else { tone(G.L.n < prev.filter(v => v >= 0).length ? 294 : 523, .05, .022); haptic('light'); }
   hud(); tick(); kick();
-  if (gained) bump($('gPct'));
+  if (gained) bump($('gTrip').querySelector('.done'));
   if (G.L.solved) win(); else saveRun();
 });
 
@@ -1133,8 +1137,19 @@ function comboStake() {
   return save.comboLost?.lvl === G.lvl ? save.comboLost.n : save.combo || 0;
 }
 const ownCol = i => G.L.own?.[i] === 2 ? G.color2 : G.L.own?.[i] === 3 ? G.warn : G.color;
+// bölüm bitince şehir canlanır: arkaplan haritası parlar, duraklar yanar, bir tren ekran dışından ekran dışına bir hattan geçer
+// (hareket azaltılmışsa yalnız ışık). Sonraki bölümde ya da menüye dönünce söner.
+const CITY = document.querySelector('.bg'), CITY_LINES = [0, 1, 2, 5];   // iki ucu da ekran dışında kalan hatlar
+function cityUp() {
+  const m = CITY.querySelector('animateMotion'), ps = CITY.querySelectorAll('.map path');
+  CITY.classList.add('city');
+  if (calmMotion.matches || !m?.beginElement) return;
+  m.setAttribute('path', ps[CITY_LINES[(G.lvl || new Date().getDate()) % CITY_LINES.length]].getAttribute('d'));
+  CITY.classList.add('run'); m.beginElement();
+}
+function cityDown() { document.querySelector('.bg')?.classList.remove('city', 'run'); }   // show/start erken çağırabilir → tanım sırasından bağımsız
 function win() {
-  pause();
+  pause(); cityUp();
   G.won = true; G.time = elapsed();
   delete save.runs[runKey()];
   winT = performance.now() + 120;
@@ -1969,5 +1984,5 @@ if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { plan, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
+window.__ray = { plan, breath, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();

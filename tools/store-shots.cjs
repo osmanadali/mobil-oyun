@@ -94,17 +94,17 @@ const play = (page, l) => page.evaluate(() => document.getElementById('bMap').cl
 const bal = (s, n) => Object.assign(s, { cc: n + s.spent - Object.keys(s.crowns).length - s.dCrowns });
 const seenTo = c => Object.fromEntries(Array.from({ length: c }, (_, k) => [k, 1]));   // c'den önceki hatların kural kartları görülmüş
 const SCENES = [
-  { id: '01-ana', t: ['Hatları bağla,', 'şehri canlandır'], s: 'Tek elle · internetsiz · her gün yeni bir Günün Hattı', te: ['Connect the lines,', 'light up the city'], se: 'One hand · offline · a new Daily Line every day',
+  // ilk görsel oynanış (mağazada ilk bakılan): M8 iki merkez, iki renkli hat, yarısı yanmış
+  { id: '01-oyun', t: ['Dokun, döndür,', 'hattı yak'], s: 'Bütün durakları merkeze bağla, açık uç kalmasın', te: ['Tap, turn,', 'light the line'], se: 'Link every station to the hub, leave no open ends',
+    save: saveAt(183), go: async page => { await play(page, 181); await page.waitForTimeout(900); await clock(page, 47); await solveTo(page, .42); await page.waitForTimeout(1400); } },
+  { id: '02-ana', t: ['Hatları bağla,', 'şehri canlandır'], s: 'Tek elle · internetsiz · her gün yeni bir Günün Hattı', te: ['Connect the lines,', 'light up the city'], se: 'One hand · offline · a new Daily Line every day',
     save: saveAt(241), go: async page => { await page.waitForTimeout(900); } },
-  // M8 iki merkez: iki renkli hat, yarısı yanmış
-  { id: '02-oyun', t: ['Dokun, döndür,', 'hattı yak'], s: 'Bütün durakları merkeze bağla, açık uç kalmasın', te: ['Tap, turn,', 'light the line'], se: 'Link every station to the hub, leave no open ends',
-    save: saveAt(183), go: async page => { await play(page, 180); await page.waitForTimeout(900); await clock(page, 47); await solveTo(page, .42); await page.waitForTimeout(1400); } },
   // kusursuz bitiş: 3 yıldız + taç + 5'li seri bonusu
   { id: '03-kazan', t: ['Kusursuz bitir,', 'taç kazan'], s: 'Süre ve hamle hedefini tuttur, üç yıldızı topla', te: ['Finish perfect,', 'earn crowns'], se: 'Beat the time and move targets, collect three stars',
     save: saveAt(46, { combo: 4 }), go: async page => { await play(page, 45); await page.waitForTimeout(900); await clock(page, 38); await solveTo(page, 1); await page.waitForTimeout(3200); } },
   // harita gerçek ilerlemeyle (test açık değil): şimdiki hattın (M10, karma) başlığı üstte, bitmiş M9 sonu üstünde;
   // ekranın altı satır arasına denk gelir (yarım kesik sayı kalmasın, ev çizgisi yazının üstüne binmesin)
-  { id: '04-harita', t: ['20 hat,', 'sonu gelmeyen bölüm'], s: 'Her bölüm bir öncekinden biraz daha zor', te: ['20 lines,', 'endless levels'], se: 'Each level a little harder than the last', test: false,
+  { id: '04-harita', t: ['20 hat,', 'sonu gelmeyen bölüm'], s: 'Zorluk dalga dalga artar, arada mola var', te: ['20 lines,', 'endless levels'], se: 'Harder and harder, with breather levels', test: false,
     save: saveAt(270), go: async page => {
       await page.evaluate(() => document.getElementById('bMap').click()); await page.waitForTimeout(700);
       await page.evaluate(() => {

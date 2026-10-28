@@ -76,6 +76,8 @@ APK indirme linkleri (sabit):
 <!-- DURUM:BAŞ -->
 Durum 28 Ekim 2026 sabahı itibarıyla:
 
+- **Eleştiri turu (28 Ekim gecesi):** mola bölümleri (`breath`, her hattın 6./12./18.… bölümü kısa ve kolay); oyun ekranında ayrı "%" çubuğu kalktı, sefer şeridinin rayı bağlantıyla yanar; bölüm bitince arkaplan şehir haritası parlar ve bir tren geçer (`cityUp`); ana sayfa hat kartında toplam ★ yerine sıradaki hatta kalan ★, ızgara boyu kalktı; mağaza görsellerinde ilk sıra oynanış (`01-oyun`).
+
 - **18 kural, 20 hat tamam.** Çift hatların zor kuralları eklendi:
 
   | Hat | Kural | Anahtar |

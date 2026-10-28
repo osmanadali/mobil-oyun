@@ -32,10 +32,17 @@ svg{display:block}
 
 /* ---------- arkaplan: saydam metro haritası + yumuşak ışık ---------- */
 .bg{position:fixed;inset:0;overflow:hidden;pointer-events:none}
-.map{position:absolute;inset:-6%;background:url(bg.svg) center/cover no-repeat;opacity:var(--mapOp);
+.map{position:absolute;inset:-6%;opacity:var(--mapOp);transition:opacity 1.6s ease;
   -webkit-mask:radial-gradient(ellipse at 50% 45%,#000 30%,transparent 80%);mask:radial-gradient(ellipse at 50% 45%,#000 30%,transparent 80%);
   animation:drift 60s ease-in-out infinite alternate;will-change:transform}
 .glow{position:absolute;width:70vmax;height:70vmax;border-radius:50%;opacity:var(--glowOp);animation:float 40s ease-in-out infinite alternate;will-change:transform}
+/* bölüm bitince şehir canlanır: harita parlar, duraklar yanar, bir tren hattan geçer (game.js cityUp) */
+.map svg{width:100%;height:100%}
+.map .st circle{transition:fill .6s,stroke .6s}
+.map .ctr{opacity:0;fill:#fff}
+.bg.city .map{opacity:calc(var(--mapOp)*4.5);transition-duration:.5s}
+.bg.city .map .st circle{fill:#ffe7a3;stroke:#ffc24d}
+.bg.run .map .ctr{opacity:1}
 /* oyun sırasında arkaplan durur → pil ve akıcılık */
 body.playing .glow,body.playing .map,body.playing .primary:after{animation-play-state:paused}
 .g1{background:radial-gradient(circle,var(--g1,#ff9f5a),var(--g1a,rgba(255,159,90,.35)) 30%,transparent 68%);top:-30vmax;left:-25vmax}
@@ -112,9 +119,6 @@ html:lang(en) body.test .hero p::after{content:' · 🧪 TEST: all unlocked'}
 
 /* ---------- oyun ekranı ---------- */
 .title{flex:1;text-align:center}.title b{font-size:19px;font-weight:700}.title small{display:block;color:var(--mut);font-size:13px}
-.meter{position:relative;height:6px;margin:4px 6px 0;border-radius:6px;background:var(--rail);flex:none}
-.meter i{position:absolute;inset:0 auto 0 0;width:0;border-radius:6px;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.4)) var(--line,var(--acc));box-shadow:0 0 12px var(--line,var(--acc));transition:width .35s cubic-bezier(.2,.8,.2,1)}
-.meter span{position:absolute;right:0;top:10px;font-size:12px;color:var(--mut);font-variant-numeric:tabular-nums}
 #board{flex:1;position:relative;min-height:0;margin-top:22px}
 #cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 .bottom{display:flex;align-items:center;gap:12px;padding:12px 0 max(18px,var(--sab));flex:none}
@@ -139,14 +143,17 @@ html:lang(en) body.test .hero p::after{content:' · 🧪 TEST: all unlocked'}
 .cmb{font-style:normal;font-size:13px;font-weight:700;color:var(--acc);transition:opacity .3s}.cmb.off{opacity:.4}
 .trip{position:relative;display:flex;align-items:center;gap:10px;width:min(300px,80vw);height:18px;--p:0}
 .trk{position:relative;flex:1;height:18px}
-.trk::before,.trk .done{content:'';position:absolute;left:0;right:0;top:8px;height:2px;border-radius:2px;background:var(--rail)}
-.trk .done{background:var(--line,var(--acc));opacity:.75;transform-origin:0 50%;transform:scaleX(var(--p));transition:transform .25s linear}
+.trk::before,.trk .done{content:'';position:absolute;left:0;right:0;top:7.5px;height:3px;border-radius:2px;background:var(--rail)}
+/* yanan ray = bağlantı oranı (--b); tren süreyle (--p) ilerler */
+.trk .done{background:var(--line,var(--acc));box-shadow:0 0 8px var(--line,var(--acc));transform-origin:0 50%;transform:scaleX(var(--b,0));transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.trk .done.bump{animation:railGlow .5s ease-out}
+@keyframes railGlow{40%{filter:brightness(1.8)}}
 .trk .peron{position:absolute;right:-2px;top:5px;width:46px;height:8px;border-radius:3px;background:var(--glass2);box-shadow:inset 0 0 0 1px var(--stroke)}
 .trk .sig{position:absolute;top:0;left:calc(.84 * (100% - 40px) + 43px);width:6px;height:6px;border-radius:50%;background:#4fc3a1;box-shadow:0 0 6px #4fc3a1;transition:background .3s,box-shadow .3s}
 .trip.soon .sig{background:#ffc94d;box-shadow:0 0 6px #ffc94d}
 .trip.late .sig{background:var(--warn);box-shadow:0 0 6px var(--warn)}
 .mv{position:absolute;left:0;top:2px;width:calc(100% - 40px);height:14px;transform:translateX(calc(var(--p) * 100%));transition:transform .25s linear;will-change:transform}
-.trip.arr .mv,.trip.arr .done{transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+.trip.arr .mv{transition:transform .8s cubic-bezier(.2,.8,.2,1)}
 .trn{width:40px;height:14px}
 .trn .tb1{fill:var(--tb1,var(--line,var(--acc)))}.trn .tb2{fill:var(--tb2,var(--line,var(--acc)))}.trn .tw{fill:var(--tw,rgba(255,255,255,.8))}.trn .tl{fill:#fff}
 .trip #gNext{min-width:66px;text-align:right;white-space:nowrap}
