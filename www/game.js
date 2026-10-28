@@ -727,7 +727,7 @@ $('mapList').onclick = e => { const b = e.target.closest('.lv'); if (b && !b.dis
 function lockedSheet(c) {
   const tot = totalStars();
   modal(`<h2>${lineName(c)} kilitli</h2>
-    <p>Bu hattı açmak için <b>★ ${need(c)}</b> gerekli. Sende <b>★ ${tot}</b> var.<br>Önceki bölümleri daha <b>hızlı</b> ve <b>az hamleyle</b> tekrar oyna, yıldızlarını artır.</p>
+    <p>Bu hattı açmak için <b class="nw">★ ${need(c)}</b> gerekli. Sende <b class="nw">★ ${tot}</b> var.<br>Önceki bölümleri daha <b>hızlı</b> ve <b>az hamleyle</b> tekrar oyna, yıldızlarını artır.</p>
     <div class="pb big"><i style="width:${Math.min(100, tot / need(c) * 100)}%"></i></div>
     <button id="mMap" class="btn primary"><span>Hatlara git</span><small>${need(c) - tot} yıldız eksik</small></button><button id="mClose" class="btn glassbtn">Kapat</button>`,
     { mMap: () => { closeModal(); show('map'); }, mClose: closeModal });
@@ -1188,7 +1188,7 @@ function winSheet(g, { st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, combo
        <div class="row2">${nxLocked ? '<button id="mMap" class="btn glassbtn">Hatlar</button>' : '<button id="mNext" class="btn glassbtn">Sonraki</button>'}<button id="mShare" class="btn glassbtn">Paylaş</button><button id="mHome" class="btn glassbtn">Ana sayfa</button></div>`
       : `${nxLocked ? `<button id="mMap" class="btn primary"><span>Yeni hat kilitli</span><small>★ ${totalStars()} / ${need(lineOf(nx))} · yıldız topla</small></button>` : `<button id="mNext" class="btn primary"><span>Sonraki</span><small>Bölüm ${nx}</small></button>`}
        <div class="row2"><button id="mRetry" class="btn glassbtn">Tekrar</button><button id="mShare" class="btn glassbtn">Paylaş</button><button id="mHome" class="btn glassbtn">Ana sayfa</button></div>`;
-  $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml([true, tOk, mOk])}<div class="wp-t"><h2>${g.practice ? 'Pratik tamam!' : g.daily ? 'Günün hattı tamam!' : 'Hat açıldı!'}</h2>${badge}</div></div>
+  $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml([true, tOk, mOk])}<div class="wp-t"><h2>${g.practice ? 'Pratik tamam!' : g.daily ? 'Günün Hattı tamam!' : 'Hat açıldı!'}</h2>${badge}</div></div>
       <button id="wTog" class="wp-tog" aria-label="Hattı gör"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg><span>Hattı gör</span></button></div>
     <div class="wp-more"><div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(L.t * 1000)}</small></b><span>${tOk ? '⏱ tam vaktinde ★' : '⏱ rötar ✗'}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${L.m}</small></b><span>↻ hamle ${mOk ? '★' : '✗'}</span></div></div>${tip}${extra ? `<p class="tip">${extra}${dbl && Ads.online() ? ` <button id="mDbl" class="dbl">▶ 2 katı</button>` : ''}</p>` : ''}</div>
     ${primary}`;
@@ -1213,15 +1213,16 @@ function toggleMini() {
 }
 function closePanel() { $('game').classList.remove('won', 'mini'); $('winPanel').innerHTML = ''; }
 async function next() {
-  if (!G.daily && !save.noAds && save.played >= 5 && sessionWins % INTER_EVERY === 0) {
+  const g = G; if (g.going) return; g.going = 1;   // çift dokunuş tek geçiş: reklam sürerken ikinci basış bölüm atlatmasın
+  if (!g.daily && !save.noAds && save.played >= 5 && sessionWins % INTER_EVERY === 0) {
     Music.stop(); const shown = await Ads.interstitial(); Music.start();
     if (shown && (save.interN = (save.interN || 0) + 1) % 3 === 0) { persist(); setTimeout(() => toast('Reklamsız oyna → Ayarlar · Reklamsız paket'), 900); }
   }
-  start('level', G.lvl + 1);
+  if (G === g) start('level', g.lvl + 1);
 }
 function dailyResult() {
   const d = save.dailyStats;
-  modal(`${starsHtml(d.st)}<h2>Günün hattı tamam</h2>
+  modal(`${starsHtml(d.st)}<h2>Günün Hattı tamam</h2>
     <div class="statrow"><div><b>${d.moves}</b><span>hamle</span></div><div><b>${fmtT(d.time)}</b><span>süre</span></div><div><b>${save.streak}</b><span>gün seri</span></div></div>
     <p id="mClock"></p>
     <button id="mShare" class="btn primary"><span>Paylaş</span><small>Arkadaşına meydan oku</small></button><button id="mReplay" class="btn glassbtn">Tekrar oyna · pratik</button><p class="tip">Pratikte sonucun ve serin değişmez</p>`,
@@ -1465,14 +1466,14 @@ function skinSheet() {
     return `<button class="skin ${own ? '' : 'lockd'} ${can ? 'can' : ''} ${k.id === cur ? 'on' : ''}" data-k="${k.id}" style="${skinVars(k)}">${skinSvg}
       <b>${k.name}</b><small>${k.id === cur ? 'Seçili ✓' : own ? 'Seç' : k.vip ? '💛 Reklamsız' : `👑 ${k.need}`}</small></button>`;
   };
-  const nx = SKINS.filter(k => !k.vip && !skinOpen(k)).sort((a, b) => a.need - b.need)[0];   // en ucuz alınmamış tema
+  const nx = SKINS.filter(k => !k.vip && !skinOpen(k)).sort((a, b) => a.need - b.need)[0], hn = huntList().length;   // en ucuz alınmamış tema · taç bekleyen bölüm
   modal(`<h2>Renk temaları</h2><p>Bölümleri <b>kusursuz</b> bitir (⏱ ve ↻ hedefi), 👑 kazan, temayı <b>satın al</b>. Harcanan 👑 geri gelmez, seçimini iyi yap!</p>
     <div class="nexts"><small>Bakiye</small><b class="bal">👑 ${bal}</b></div>
     <button id="mChest" class="chestrow ${bal >= CHEST ? 'can' : ''}"><i>${CHEST_SVG}</i><span><b>Sürpriz sandık</b><small>İpucu · 🛡 seri kalkanı · 🚆 tren kaplaması</small></span><em>👑 ${CHEST}</em></button>
     <div class="skins" id="skins">${SKINS.filter(k => !k.vip).map(card).join('')}
       <small class="vipk">💛 Reklamsız pakete özel</small>${SKINS.filter(k => k.vip).map(card).join('')}</div>
     ${nx ? `<div class="nexts"><small>Sonraki: <b>${nx.name}</b></small><small>👑 ${Math.min(bal, nx.need)} / ${nx.need}</small></div><div class="pb"><i style="width:${Math.max(4, Math.min(100, bal / nx.need * 100))}%"></i></div>
-    <button id="mHunt" class="btn primary"><span>Taç topla 👑</span><small>${huntList().length} bölüm kusursuz bitmeyi bekliyor</small></button>` : ''}
+    <button id="mHunt" class="btn primary"><span>Taç topla 👑</span><small>${hn ? `${hn} bölüm kusursuz bitmeyi bekliyor` : 'Yeni bölümleri ⏱ ve ↻ hedefiyle bitir'}</small></button>` : ''}
     <button id="mClose" class="btn glassbtn">Tamam</button>`, { mClose: closeModal, mHunt: () => crownHunt(nx), mChest: chestSheet });
   $('skins').onclick = e => {
     const b = e.target.closest('.skin'); if (!b) return;
@@ -1487,7 +1488,7 @@ function skinSheet() {
 function buySheet(k) {
   const bal = crownBal(), left = bal - k.need, nx = SKINS.filter(x => !x.vip && !skinOpen(x) && x !== k).sort((a, b) => a.need - b.need)[0];
   modal(`<div class="skin big" style="${skinVars(k)}">${skinSvg}</div><h2>${k.name}</h2>
-    <p><b>👑 ${k.need}</b> harcanacak. Sende 👑 ${bal} → kalan <b>👑 ${left}</b>.${nx && left < nx.need ? `<br>Sonra ${nx.name} için ${nx.need - left} 👑 daha toplaman gerekecek.` : ''}</p>
+    <p><b class="nw">👑 ${k.need}</b> harcanacak. Sende <span class="nw">👑 ${bal}</span> → kalan <b class="nw">👑 ${left}</b>.${nx && left < nx.need ? `<br>Sonra ${nx.name} için ${nx.need - left} 👑 daha toplaman gerekecek.` : ''}</p>
     <button id="mBuy" class="btn primary"><span>Satın al · 👑 ${k.need}</span><small>Temayı hemen kullan</small></button>
     <button id="mBack" class="btn glassbtn">Vazgeç</button>`, {
     mBuy: () => {
@@ -1504,10 +1505,10 @@ const huntList = () => { const L = []; for (let l = 1; l < save.level; l++) if (
 function crownHunt(k) {
   const n = crownBal(), L = huntList();
   modal(`<h2>Taç topla 👑</h2>
-    <p>${k ? `<b>${k.name}</b> için <b>${Math.max(0, k.need - n)} 👑</b> daha gerekli. ` : ''}Aşağıdaki bölümleri <b>⏱ süre</b> ve <b>↻ hamle</b> hedefiyle bitir: her biri 1 👑.</p>
+    <p>${k && k.need > n ? `<b>${k.name}</b> için <b>${k.need - n} 👑</b> daha gerekli. ` : ''}${L.length ? 'Aşağıdaki bölümleri' : 'Bölümleri'} <b>⏱ süre</b> ve <b>↻ hamle</b> hedefiyle bitir: her biri 1 👑.</p>
     ${L.length ? `<div class="hunt" id="hunt">${L.map(l => `<button class="hrow" data-l="${l}"><b>${l}</b><span>${starTxt(save.stars[l] || 0)}</span><small>${missTxt(l)}</small></button>`).join('')}</div>
     <p class="tip">★★☆ olanlar kusursuza en yakın · Günün Hattı'nı kusursuz bitirmek de 1 👑</p>`
-    : `<p class="tip">Oynadığın her bölüm kusursuz! 🎉 Yeni bölümler ve Günün Hattı yeni 👑 getirir.</p><button id="mPlay" class="btn primary"><span>Oyna</span><small>Bölüm ${save.level}</small></button>`}
+    : `<p class="tip">${save.level > 1 ? 'Oynadığın her bölüm kusursuz! 🎉 ' : ''}Yeni bölümler ve Günün Hattı yeni 👑 getirir.</p><button id="mPlay" class="btn primary"><span>Oyna</span><small>Bölüm ${save.level}</small></button>`}
     <button id="mBack" class="btn glassbtn">Temalara dön</button>`, { mBack: skinSheet, mPlay: () => start('level') });
   if ($('hunt')) $('hunt').onclick = e => { const b = e.target.closest('.hrow'); if (b) start('level', +b.dataset.l); };
 }
@@ -1782,12 +1783,17 @@ $('streakChip').onclick = () => rescueOk() ? rescueSheet() : streakSheet();
 $('starsChip').onclick = () => show('map');
 $('crownChip').onclick = skinSheet;
 $('bHow').onclick = how;
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) { pause(); ac?.suspend?.(); Remind.plan(); }
-  else { ac?.resume?.(); dayTick(); if (active('game')) resume(); if (active('home')) { refreshHome(); setTimeout(maybeRescue, 600); } }
-});
+// arka plan ↔ ön plan: süre ve ses durur. İki kaynak (ikisi birden gelebilir, iş tekrarı zararsız): visibilitychange ve Capacitor appStateChange
+function front(on) {
+  if (!on) { pause(); ac?.suspend?.(); Remind.plan(); return; }
+  ac?.resume?.(); dayTick();
+  if (active('game') && !(modalOpen() && mLocked)) resume();   // kural kartı açıkken süre durgun kalır (Anladım'la akar)
+  if (active('home')) { refreshHome(); setTimeout(maybeRescue, 600); }
+}
+document.addEventListener('visibilitychange', () => front(!document.hidden));
 // Android geri tuşu: pencere → kapat, oyun/harita → ana sayfa, ana sayfa → arka plana al
 const App = window.Capacitor?.Plugins?.App;
+App?.addListener?.('appStateChange', s => front(!!s?.isActive));
 App?.addListener?.('backButton', () => {
   if (modalOpen() && howBack) howBack();
   else if (modalOpen()) { if (mLocked) show('home'); closeModal(); }
