@@ -132,10 +132,18 @@ module.exports = async T => {
   }
 
   // ---------- 4. Karanlık tünel + tabla (açık tema): dört karo birlikte aydınlanır, ışığı izleyerek çözülür ----------
-  if (gen.fogLvl) {
-    const l = gen.fogLvl, { ctx, page, errors } = await open(browser, URL, { scheme: 'light', save: lvlSave(l, { seen: seenTo(15) }) }); errs.push(errors);
+  // rulesFor karma hatlarda ek kuralın yarısını en yeni 3 kuraldan seçer; M15'ten sonra yeni kural gelince (ör. M16 kapalı durak) tabla bu havuzdan çıkar ve
+  // karanlıkla aynı bölüme hiç düşmeyebilir. O zaman tablalı bir M15 bölümünde karanlık açılır (başlangıç ışığı çekirdekteki reveal ile aynı kuralla).
+  {
+    const l = gen.fogLvl || 540, { ctx, page, errors } = await open(browser, URL, { scheme: 'light', save: lvlSave(l, { seen: seenTo(15) }) }); errs.push(errors);
     await page.click('#bPlay'); await page.waitForTimeout(700);
     if (await page.evaluate(() => document.getElementById('modal').classList.contains('open'))) { await page.click('#mGo'); await page.waitForTimeout(400); }
+    if (!gen.fogLvl) await page.evaluate(() => {
+      const R = window.__ray, G = R.G, { cols, rows } = G, FR = 2, on = i => { G.seen[i] = true; };
+      const area = i => { const x = i % cols, y = i / cols | 0; for (let dy = -FR; dy <= FR; dy++) for (let dx = -FR; dx <= FR; dx++) { const nx = x + dx, ny = y + dy; if (Math.abs(dx) + Math.abs(dy) <= FR && nx >= 0 && ny >= 0 && nx < cols && ny < rows) on(ny * cols + nx); } };
+      G.fog = true; G.seen = G.cur.map(() => false); G.L.d.forEach((v, i) => v >= 0 && area(i));
+      R.MODS.find(m => m.key === 'table').reveal(G, on, area);
+    });
     const half = async () => {   // yarı karanlık tabla sayısı; bir tabla ilk kez aydınlanınca ekran görüntüsü
       const r = await page.evaluate(() => { const G = window.__ray.G, P = G.table.plates; return { h: P.filter(Q => Q.some(q => G.seen[q]) && !Q.every(q => G.seen[q])).length, on: P.some(Q => Q.every(q => G.seen[q])) }; });
       if (r.on && !lit) { lit = true; await page.waitForTimeout(500); await shot(page, 'table-fog-lit'); }
@@ -162,7 +170,7 @@ module.exports = async T => {
     const won = await waitModal(page), info = await page.evaluate(() => { const G = window.__ray.G; return { lvl: G.lvl, fog: G.fog, plates: G.table.plates.length, rules: G.rules }; });
     check('rule.table.fog', 'Döner tabla + karanlık tünel: tablanın dört karosu hep birlikte aydınlanır (yarı karanlık tabla yok), ışığı izleyerek kazanılır', info.fog && bad === 0 && won, JSON.stringify({ ...info, bad, taps, won }));
     await ctx.close();
-  } else check('rule.table.fog', 'Döner tabla + karanlık tünel: 536–3000 arasında karanlık ve tablalı bölüm bulunmalı', false, 'bulunamadı');
+  }
 
   check('rule.table.errors', 'Döner tabla senaryolarında konsol hatası yok', !errs.flat().length, errs.flat().slice(0, 3).join(' | '));
 };
