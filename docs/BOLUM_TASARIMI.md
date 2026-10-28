@@ -63,12 +63,20 @@ Izgara boyu bölüme göre büyür: 1–3 3×3 · 4–8 4×4 · 9–15 4×5 · 1
 | M7 | 133 | 🔢 **Sayaçlı karo** | En fazla 3 kez döner, sayı bitince kilitlenir. Önce düşün, sonra dokun. |
 | M8 | 169 | 🚉 **İki merkez** | İki istasyon, iki renk; her durak kendi merkezine bağlanmalı. İki hat birbirine değerse kırmızı yanar, bölüm bitmez. |
 | M9 | 209 | ✂ **Makas** | Dönmez; dokununca yol düz ile sapak arasında değişir. Kesik çizgi öbür yolu gösterir. |
+| M10 | 253 | ⊙ **Kapak** | Kapaklı karonun rayı görünmez ve dönmez; doğru yönde durur. Hangi yönlere açıldığı komşulardan çıkarılır. |
 | M11 | 301 | 🌉 **Köprü** | İki hat üst üste geçer ama birleşmez; köprü dönmez, dört ucuna da ray bağlanmalı. |
+| M12 | 353 | ? **Silik kol** | Soluk kolun altında ray olabilir de olmayabilir de; karo dönünce "?" de döner. Gerçeği komşulardan çıkarılır. |
 | M13 | 409 | ➜ **Yön tabelası** | Tabelalı karodan merkeze giden yol okun gösterdiği kenardan çıkmalı; karo döner, tabela dönmez. |
+| M14 | 469 | ⌂ **Gizli depo** | Kenardaki ayracın altındaki üç karodan tam biri dışarı, depoya çıkar; hangisi olduğu gizli. |
 | M15 | 533 | ◉ **Döner tabla** | Dört karoyu taşır; dokununca tabla bütünüyle 90° döner, karolar yer değiştirir. |
+| M16 | 601 | ⊘ **Kapalı durak** | Bazı duraklar kapalı ama sıradan görünür; merkezdeki ⊘ sayısı kaç tane olduğunu söyler. Kapalıya ray bağlanmaz. |
 | M17 | 673 | ◯ **Halka hat** | Raylar bir kez kendi üstüne kapanır; halka kesik çemberli karodan geçmeli. |
+| M18 | 749 | ≈ **Nehir** | Ray nehri geçitten geçer ya da kıyıda tamponla biter; kıyıda tam rozetteki sayı kadar tampon olmalı (eksikse döngü var). |
 | M19 | 829 | ⊂ **Tünel ağzı** | Kenardaki aynı harfli iki ağız bağlıdır: birine giren ray öbüründen çıkar. Tünel kullanmak zorunlu değil. |
-| M10, M12… M20+ | 253 | Karma hatlar | Yeni kural yok; her bölümde öğrenilmiş kurallardan 1–2 tanesi. |
+| M20 | 913 | ⇄ **Tarife bölgesi** | Merkezi saran bölge sınırında ray geçer ya da tamponla biter; geçiş ve tampon sayıları rozetle aynı olmalı. |
+| M21+ | — | Karma hatlar | Yeni kural yok; her bölümde öğrenilmiş kurallardan 1–2 tanesi. |
+
+**Zor kurallar (M10–M20 çift hatlar):** Oyuncu geri bildirimi "yeni kurallar zorluk katmıyor" oldu. Çift hatların kuralları bu yüzden gizli bilgi (kapak, silik kol, gizli depo, kapalı durak) ya da küresel sayım (nehir, tarife bölgesi) üzerine kuruludur: yerel çıkarım çıpalarını bozar, oyuncuyu komşulardan ve sayılardan akıl yürütmeye zorlar. Her biri aynı tohum ve boyutta zorluk puanını ölçülerek artırır (7×9'da +3 ile +8 arası) ve gördüğün bilgiyle tek çözüme iner (üretimde çözüm sayımıyla denetlenir). Ayrıca her kuralın bir **zorluk payı** (`boost`) vardır: kuralın kendi hattının ilk 3 bölümü dışında seçicinin hedef puanına eklenir, böylece kurallı bölüm kolay tabandan seçilip fark silinmez. Paylar: makas 1,5 · kapak 2,5 · köprü 2 · silik kol 2,5 · tabela 1,5 · gizli depo 3 · tabla 2 · kapalı durak 3 · halka 1,5 · nehir 3,5 · tünel 1 · tarife bölgesi 4.
 
 M9 ve sonrasının kuralları çekirdekte değil, eklenti dosyalarındadır (`www/rules/*.js`). Her kuralın tasarımı, çözülebilirlik kanıtı ve ölçümleri `docs/kurallar/` altındadır; eklenti sözleşmesi `docs/kurallar/README.md`'dedir.
 
@@ -81,8 +89,8 @@ M9 ve sonrasının kuralları çekirdekte değil, eklenti dosyalarındadır (`ww
 
 - Kurallar üst üste yığılmaz. Bir kural kendi hattında her bölümde vardır.
 - Sonraki hatlarda kendi kuralına ek olarak bölüm bölüm değişen en fazla 1 eski kural gelir.
-- M10, M12… ve M20 sonrası karma hatlardır: her bölüm 1–2 kuralın farklı bir karışımıdır. M9'dan sonra ek kuralın yarısı en yeni 3 kuraldan seçilir, böylece yeni öğrenilen kural karma hatlarda sık tekrar eder.
-- Birlikte gelemeyen kurallar vardır: halka, tabela ve köprüyle aynı bölümde olmaz (çakışan kural sıradaki uyumlu kuralla değişir).
+- M20 sonrası karma hatlardır: her bölüm 1–2 kuralın farklı bir karışımıdır. Kurallı hatlarda da bölümlerin yaklaşık yarısına bir eski kural eklenir. M9'dan sonra ek kuralın yarısı en yeni 3 kuraldan seçilir, böylece yeni öğrenilen kural karma hatlarda sık tekrar eder.
+- Birlikte gelemeyen kurallar vardır (çakışan kural sıradaki uyumlu kuralla değişir): halka ↔ tabela, köprü; kapak ↔ karanlık tünel, silik kol; kapalı durak ↔ kapak, silik kol, gizli depo; nehir ↔ köprü, tabla, halka, tarife bölgesi; tarife bölgesi ↔ iki merkez.
 - Böylece tahta kalabalıklaşmaz ve her bölüm biraz farklı hissettirir.
 
 **Hat finali (🏁 Son durak):**
