@@ -51,10 +51,10 @@ module.exports = async T => {
       const t0 = performance.now(); for (let l = 409; l <= 418; l++) R.puzzleFor(l); const ms = Math.round((performance.now() - t0) / 10);
       const sz = [408, 409, 411, 412].map(l => R.sizeFor(l).join('x')).join(' ');
       const rules = [409, 410, 411].map(l => R.puzzleFor(l).rules.join('+')).join(' ');
-      return { m12: avg(11), m13: avg(12), m14: avg(13), ms, sz, rules };
+      return { m11: avg(10), m12: avg(11), m13: avg(12), m14: avg(13), ms, sz, rules };
     });
-    check('sign.ladder', 'Tabela: M13 ortalama zorluğu M12\'den yüksek, M14\'ten düşük; 409–411 6×8 yalın tabela; puzzleFor(409–418) < 60 ms',
-      lad.m13 > lad.m12 && lad.m14 > lad.m13 && lad.ms < 60 && lad.sz === '7x9 6x8 6x8 7x9' && lad.rules === 'sign sign sign', JSON.stringify(lad), 'medium');
+    check('sign.ladder', 'Tabela: M13 ortalama zorluğu bir önceki tek hattan (M11) yüksek, M14\'ten düşük (M12 artık zor kural hattı); 409–411 6×8 yalın tabela; puzzleFor(409–418) < 60 ms',
+      lad.m13 > lad.m11 && lad.m14 > lad.m13 && lad.ms < 60 && lad.sz === '7x9 6x8 6x8 7x9' && lad.rules === 'sign sign sign', JSON.stringify(lad), 'medium');
     errs.push(...errors);
     await ctx.close();
   }

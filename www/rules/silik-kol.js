@@ -53,20 +53,30 @@
       C.out.faint = faint;
       const cand = [];
       for (let i = 0; i < n; i++) if (C.free(i) && !C.rev[i] && C.cnt[i] < 0 && per4(C.sol[i]) && md(cols, i, C.hub) >= 2 && md(cols, i, C.hub2) >= 2) cand.push(i);
-      for (let k = 0; k < Math.abs(C.x.faint) && cand.length;) {
-        const i = cand.splice(R() * cand.length | 0, 1)[0];
-        if ([0, 1, 2, 3].some(d => { const j = C.nb(i, d); return j >= 0 && faint[j]; })) continue;   // silik karolar 4-komşu olmaz
+      // önce hepsi yerleşir, adillik tek sayımla denetlenir (çoğu bölüm geçer). Geçmezse aynı sıra tek tek, adil olmayan yerleşim atlanarak yeniden kurulur.
+      const want = Math.abs(C.x.faint), pick = [], shape = i => {
         const m = cur[i], has = [], not = [];
         for (let t = 0; t < 4; t++) {
           const b = 1 << t, side = rot(b) | rot(rot(rot(b)));   // b'ye 90° iki kenar
           if (m & b) { const V = m & ~b; if (popc(m) >= 2 && per4(V) && (V & side)) has.push(b); }
           else if (popc(m) <= 2 && (m & side)) not.push(b);
         }
-        const pool = R() < .5 ? (has.length ? has : not) : (not.length ? not : has); if (!pool.length) continue;
-        faint[i] = [m, pool[R() * pool.length | 0]]; F.push(i);
-        if (!fair(asP(C), F)) { faint[i] = 0; F.pop(); continue; }
-        C.busy[i] = true; k++;
+        const pool = R() < .5 ? (has.length ? has : not) : (not.length ? not : has);
+        return pool.length ? [m, pool[R() * pool.length | 0]] : 0;
+      };
+      const near = i => [0, 1, 2, 3].some(d => { const j = C.nb(i, d); return j >= 0 && faint[j]; });   // silik karolar 4-komşu olmaz
+      while (pick.length < want && cand.length) {
+        const i = cand.splice(R() * cand.length | 0, 1)[0]; if (near(i)) continue;
+        const f = shape(i); if (f) { faint[i] = f; pick.push([i, f]); }
       }
+      if (pick.length && fair(asP(C), pick.map(p => p[0]))) F.push(...pick.map(p => p[0]));
+      else {
+        pick.forEach(([i]) => { faint[i] = 0; });
+        const add = (i, f) => { faint[i] = f; F.push(i); if (fair(asP(C), F)) return true; faint[i] = 0; F.pop(); return false; };
+        for (const [i, f] of pick) add(i, f);
+        while (F.length < want && cand.length) { const i = cand.splice(R() * cand.length | 0, 1)[0]; if (near(i)) continue; const f = shape(i); if (f) add(i, f); }
+      }
+      F.forEach(i => { C.busy[i] = true; });
       if (!F.length) { delete C.out.faint; C.out.reject = true; return; }   // hiç yerleşmedi: seçici başka adayı alır
       C.out.self = faint.map(v => v ? 1 : 0);
     },
@@ -75,7 +85,7 @@
     // oyunda hep 0 (karo yalnız döner); çözücü yaprağında yanlış sınıf inancını eler
     check(P) { let bad = 0; for (const i of list(P.faint)) if (!orbit(P.faint[i][0]).includes(P.cur[i])) bad++; return bad; },
     after(G, i) { if (G.faint[i] && !api.save.faintTold) { api.save.faintTold = 1; api.persist(); api.toast('Silik kol · ? altında ray olabilir de olmayabilir de'); } },
-    // çekirdek silik karoyu çizmez (P.self). Görünen kısım çekirdekle aynı stilde (sönük → ışıma → yanan); "?" kolu: iki dolu nokta + "?" (makasın kesik çizgi + boş halkasından ayrı).
+    // çekirdek silik karoyu çizmez (P.self). Görünen kısım çekirdekle aynı stilde (sönük → ışıma → yanan); "?" kolu: soluk şerit + iri "?" (makasın kesik çizgi + boş halkasından ayrı).
     // İpucuyla sabitlenen, kazanılan ya da "?" kolundan gerçekten ışık geçen karoda gerçek karo düz çizilir.
     rails({ G, s, X, vis, own, OC, cx, pal, railPath, rgba }) {
       const I = list(G.faint).filter(vis), S = I.map(i => {

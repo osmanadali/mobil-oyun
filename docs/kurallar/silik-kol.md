@@ -45,7 +45,7 @@ Gerçek karo değişmez, yalnız rastgele döndürülerek karıştırılmıştı
 
 ### Adillik (oyuncunun gördüğüyle tek sınıf)
 
-Her yerleşimden sonra:
+Önce istenen sayıda silik kol yerleşir ve adillik **tek sayımla** denetlenir (çoğu bölüm geçer). Geçmezse aynı sıra tek tek, adil olmayan yerleşim atlanarak yeniden kurulur ve eksik kalan sayı yeni adaylarla tamamlanır. Sayım şöyledir:
 
 - `api.difficulty(P, leaf, 3000)` çağrılır. Çözücü silik karoda `cands` ile **görünen kısmın ve "? dahil" hâlinin bütün yönlerini** dener (oyuncunun bildiği tam bu).
 - `leaf`, kural denetimi olmadan (`faint: null`) `lit` ile çözüm olup olmadığına bakar ve çözümdeki silik karoların sınıf anahtarını toplar (gerçek yörüngede mi).
@@ -98,12 +98,12 @@ Hat ortalaması (`puzzleFor`, P.diff):
 |---|---|
 | M11 (köprü, önceki tek hat) | 16,30 |
 | M12 silik kol, pay 2 | 17,32 |
-| **M12 silik kol, pay 2,5 (seçilen)** | **17,71** (+1,41) |
+| **M12 silik kol, pay 2,5 (seçilen)** | **17,73** (+1,43) |
 | M13 (karmalarda artık silik kol da var) | 16,8 → 17,03 |
 
 Pay 2 sınırda kaldığı için (+1,02) **boost = 2,5** seçildi. İlk 3 bölüm (tanıtım, pay yok): 12,2 · 14,2 · 14,8.
 
-Üretim süresi (masaüstü Chromium, `puzzleFor`): M11 ~30 ms, M12 ~150–250 ms (en çok ~350 ms; aday başına adillik sayımı). Sonraki bölüm kazanma ekranında önceden hazırlandığı için oyuncu beklemez.
+Üretim süresi (masaüstü Chromium, `puzzleFor` ortalaması): M11 ~30 ms, M12 ~100 ms (24–32 aday, aday başına çoğunlukla tek adillik sayımı), karma hatlar (901–910) ~30 ms. İlk sürümde her yerleşimden sonra ayrı sayım yapılıyordu (M12 ~175 ms, 901–910 ~63 ms); toplu denetim süreyi yarıya indirdi. Sonraki bölüm kazanma ekranında önceden hazırlanır.
 
 Eski bölümler: `silik-kol.js` yüklü ve yüksüz, `puzzleFor(1..352)` ve 28 günlük Günün Hattı imzaları birebir aynı (test `rule.faint.old`).
 
@@ -112,4 +112,11 @@ Eski bölümler: `silik-kol.js` yüklü ve yüksüz, `puzzleFor(1..352)` ve 28 g
 - Işık geri bildirimi bilgi sızdırır: "?" kolu varsa ve yanan komşuya dönükse ışık geçer, kol dolu çizilir. Bu, Net türünün olağan ışık geri bildirimidir (oyuncu yine dener-görür); zorluk puanı bu denemeyi saymaz.
 - Önsel eğilim: "uç + ?" desenlerinde gerçek karo daha çok uç (426'ya 193). Mantık yine tek çözüm verir; istenirse üretimde dengelenebilir.
 - Bölümlerin ~%28'inde (7×9) silik kol puanı artırmıyor: karo yerelde kolay çözülüyor. Pay ve seçici bunu dengeler.
-- Üretim M12'de M11'e göre ~5–8 kat yavaş (hâlâ < 0,4 s masaüstünde); çok yavaş telefonda ilk bölüm açılışı ~1 s sürebilir.
+- Üretim M12'de M11'e göre ~3 kat yavaş (masaüstünde ~0,1 s); yavaş telefonda M12 bölümü açılışı ~0,5 s sürebilir.
+
+## Öteki testlere dokunan değişiklikler
+
+Silik kol öğrenilmiş kurallara katılınca `rulesFor` karma dağılımı kayar ve M12 artık zor kural hattıdır. İki eski test bu yüzden güncellendi (çekirdek değişmedi):
+
+- `tools/hakem/tabela.cjs` (`sign.ladder`): "M13 > M12" yerine "M13 > M11" (bir önceki tek hat); M12 çift hat olarak bilerek daha zor.
+- `tools/hakem/kopru.cjs` (`bridge.cross`): köprü + iki merkezli karma bölüm 40 000 bölümde yalnız 2 kaldı ve ikisinde de köprüde renk çaprazı yok. Böyle bölüm bulunamazsa yalın köprülü bir 7×9 bölüme renkleri köprüde kesişen bir köprü + iki merkez bulmacası (`generate`) yüklenir; çizim ve kazanma denetimi aynı kalır.

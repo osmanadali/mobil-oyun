@@ -116,7 +116,10 @@ module.exports = async T => {
           if ((P.bridge || []).some(b => L.own[b] && L.ownB[b] && L.own[b] !== L.ownB[b])) cross = l;
         }
       }
-      return { mix, cross };
+      // yeni kurallar öğrenildikçe rulesFor dağılımı kayar; köprü + iki merkez bölümü kalmayabilir → yalın köprülü 7×9 bölüme
+      // renkleri köprüde kesişen bir köprü + iki merkez bulmacası yüklenir (aşağıda), çizim denetimi aynı
+      let host = 0; if (!cross) for (let l = 360; l < 3000 && !host; l++) if ([...R.rulesFor(l)].join() === 'bridge' && R.sizeFor(l).join('x') === '7x9') host = l;
+      return { mix, cross: cross || host, host: !!host };
     });
     await ctx.close();
     if (!lv.mix || !lv.cross) check('bridge.mixed', 'Karma hat: köprülü karma ve iki merkezli bölüm bulunur', false, JSON.stringify(lv));
@@ -135,6 +138,13 @@ module.exports = async T => {
       const o = await open(browser, URL, { save: { played: lv.cross - 1, level: lv.cross, stars: starsUpTo(lv.cross), seen: SEEN, remindAsked: true } });
       const { page } = o;
       await page.click('#bPlay'); await page.waitForTimeout(600);
+      if (lv.host) await page.evaluate(() => {
+        const R = window.__ray, G = R.G;
+        for (let sd = 1; sd < 400; sd++) {
+          const P = R.generate(7, 9, sd * 7919, 0, 0, { bridge: 2, two: true }), L = R.lit({ ...P, cur: P.sol });
+          if ((P.bridge || []).some(b => L.own[b] && L.ownB[b] && L.own[b] !== L.ownB[b])) { Object.assign(G, P, { fixed: P.cur.map(() => false), seen: P.cur.map(() => true), fog: false }); G.L = R.lit(G); return; }
+        }
+      });
       const t = await page.evaluate(() => {
         const R = window.__ray, G = R.G, rot = R.rot, hubs = [G.hub, G.hub2];
         G.cur = G.sol.slice();
@@ -160,7 +170,7 @@ module.exports = async T => {
       });
       await shot(page, 'kopru-iki-merkez');
       await tapTile(page, t); const won = await waitModal(page);
-      check('bridge.cross', `İki merkez (bölüm ${lv.cross}): köprüde iki renk kesişir, "karıştı" olmaz; K–G ve D–B kendi renginde çizilir, alt geçitte boşluk var; bölüm biter`,
+      check('bridge.cross', `İki merkez (bölüm ${lv.cross}${lv.host ? ', yüklenen köprü + iki merkez bulmacası' : ''}): köprüde iki renk kesişir, "karıştı" olmaz; K–G ve D–B kendi renginde çizilir, alt geçitte boşluk var; bölüm biter`,
         lv.cross > 0 && px.b != null && !px.merged && px.nsOk && px.ewOk && px.gapOk && won, JSON.stringify({ l: lv.cross, ...px, won }));
       allErr.push(...o.errors);
       await o.ctx.close();
