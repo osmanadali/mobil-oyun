@@ -141,10 +141,16 @@ Actions → **Android yayın (imzalı AAB)** → Run workflow. Komut satırında
   - SKAdNetwork listesi
   - şifreleme beyanı
   - yalnız dikey yön
+  - diller: geliştirme bölgesi `en`, `CFBundleLocalizations` = en + tr
+- `en.lproj` ve `tr.lproj` (`InfoPlist.strings`: izleme izni metninin İngilizcesi ve Türkçesi) pakette
 - yalnız iPhone desteği
 - simgeler
 
-App Store'a göndermek için Apple hesabı ve imza gerekir.
+AdMob değişkenleri eksikse ya da Google test kimliği içeriyorsa `ios.yml` yalnız uyarır, durmaz.
+
+App Store'a göndermek için Apple hesabı ve imza gerekir: `ios-release.yml` (§3.2-A).
+
+**Dil:** `www/i18n.js` dili `navigator.languages[0]`'dan alır. iOS'ta WKWebView bu değeri yalnız uygulamanın bildirdiği diller arasından verir; eşleşme yoksa geliştirme bölgesine düşer. Bu yüzden `tools/ios/hazirla.sh` geliştirme bölgesini `en` yapar, iki dili `CFBundleLocalizations` ile bildirir ve `en.lproj`/`tr.lproj` klasörlerini `xcodeproj` gem'iyle projeye (Resources) ekler. Böylece Türkçe iPhone'da oyun Türkçe, öteki her dilde İngilizce açılır; izleme izni metni de aynı dilde görünür.
 
 ### 3.1 Hesap ve kayıtlar
 
@@ -172,7 +178,7 @@ App Store'a göndermek için Apple hesabı ve imza gerekir.
    - `ADMOB_INTERSTITIAL_IOS`
    - `ADMOB_REWARDED_IOS`
 
-   Bunlar yoksa `ios.yml` Google'ın test App ID'sini (`ca-app-pub-3940256099942544~1458002511`) kullanır.
+   Üçü de **iOS yayınında zorunludur**: `ios-release.yml` biri eksikse, biçimi yanlışsa ya da Google test kimliği (`3940256099942544`) içeriyorsa hiç derlemeden durur. Bunlar yoksa `ios.yml` (simülatör) Google'ın test App ID'sini (`ca-app-pub-3940256099942544~1458002511`) kullanır ve uyarı verir; `www/ads.js` de `window.RAY_ADS.ios` yoksa test reklamlarına düşer ("Test Ad", gelir sıfır).
 
 ### 3.2 İmzalı arşiv: dört yol
 
@@ -189,7 +195,25 @@ App Store'a göndermek için Apple hesabı ve imza gerekir.
 | `APPSTORE_API_KEY_P8_BASE64` | `.p8` dosyasının base64 hâli |
 | `APPLE_TEAM_ID` | Membership sayfasındaki Team ID (10 karakter) |
 
-Sonra `ios.yml`'nin bir kopyası (`ios-release.yml`) yazılır. Bu kopya derleme adımı yerine arşivler ve doğrudan App Store Connect'e yükler:
+Gerekli ayarların tamamı (Settings → Secrets and variables → Actions):
+
+| Tür | Ad |
+|---|---|
+| Gizli değer | `APPSTORE_API_KEY_ID`, `APPSTORE_API_ISSUER_ID`, `APPSTORE_API_KEY_P8_BASE64`, `APPLE_TEAM_ID` |
+| Değişken | `ADMOB_APP_ID_IOS`, `ADMOB_INTERSTITIAL_IOS`, `ADMOB_REWARDED_IOS` |
+
+`.p8` dosyasını kodlamak için: `base64 -i AuthKey_XXXX.p8 | pbcopy` (macOS) ya da `base64 -w0 AuthKey_XXXX.p8` (Linux).
+
+Sonra Actions → **iOS yayın (App Store Connect)** → Run workflow (ya da `gh workflow run ios-release.yml [-f buildNumber=12]`). `.github/workflows/ios-release.yml` sırayla şunları yapar:
+
+1. **Ön denetim:** yukarıdaki yedi ayardan biri eksikse, AdMob kimliklerinin biçimi yanlışsa, biri Google test kimliği içeriyorsa ya da yapı numarası geçersizse durur (Android'deki `release.yml` korumasının aynısı).
+2. `ios.yml` ile aynı hazırlık: `npx cap add ios`, simgeler, `tools/ios/hazirla.sh` (gerçek App ID, `window.RAY_ADS`, diller), `npx cap sync ios`.
+3. API anahtarıyla imzalı arşiv; yapı numarası `CURRENT_PROJECT_VERSION` = çalıştırma numarası (ya da `buildNumber` girdisi).
+4. **Arşiv denetimi:** `GADApplicationIdentifier` test kimliği değil, paketteki `public/index.html` içinde `window.RAY_ADS` var ve test kimliği taşımıyor, sürüm numarası doğru, yalnız iPhone, en + tr dil dosyaları yerinde, uygulama imzalı. Biri tutmazsa yükleme yapılmaz.
+5. Dışa aktarma ve yükleme (`ExportOptions.plist`, `destination: upload`). Yapı işlenince TestFlight'ta görünür.
+6. Günlükler ve dSYM dosyaları iş akışı çıktısı olarak 30 gün saklanır; `.p8` makineden silinir.
+
+İş akışının özü:
 
 ```bash
 echo "$APPSTORE_API_KEY_P8_BASE64" | base64 -d > "$RUNNER_TEMP/AuthKey.p8"
@@ -214,7 +238,7 @@ xcodebuild -exportArchive -archivePath build/Ray.xcarchive -exportPath build/out
 </dict></plist>
 ```
 
-Yapı numarası (`CURRENT_PROJECT_VERSION`) her yüklemede artmalı. `tools/ios/hazirla.sh` bunu `VERSION_CODE` ortam değişkeninden alır; iş akışında çalıştırma numarası verilir.
+Yapı numarası (`CURRENT_PROJECT_VERSION`) aynı sürümde her yüklemede artmalı. `tools/ios/hazirla.sh` bunu `VERSION_CODE` ortam değişkeninden alır; iş akışı çalıştırma numarasını verir ve arşivlerken komut satırında da geçirir. Yükleme bir kez reddedilip yeniden denenirse çalıştırma numarası zaten artmış olur.
 
 **B) Elle sertifika ve profil.**
 
@@ -263,7 +287,7 @@ Bu yol A'dan daha zahmetlidir ve sertifika her yıl yenilenir.
   - Diagnostics
 
   Kullanıcı izleme iznini verirse bu veriler "izleme" (tracking) sayılır.
-- **İzleme izni (ATT):** `Info.plist`'te `NSUserTrackingUsageDescription` var.
+- **İzleme izni (ATT):** `Info.plist`'te `NSUserTrackingUsageDescription` var (İngilizce; Türkçesi `tr.lproj/InfoPlist.strings`'te). ABD'deki inceleyici İngilizce metni görür.
   - Reklam katmanı izni `AdMob.requestTrackingAuthorization()` ile istemeli. Bu iş reklam dalının işidir.
   - İzin istenmeden IDFA kullanılamaz. Apple, izin metnini yazıp hiç sormamayı da reddedebilir.
 - **Şifreleme:** `ITSAppUsesNonExemptEncryption = false` yazılı olduğu için her yüklemede soru sorulmaz.

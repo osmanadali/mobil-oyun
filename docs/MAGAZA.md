@@ -361,7 +361,7 @@ Geri yükleme: pencerede "Satın alımı geri yükle" düğmesi var (Apple bunu 
 - Not (İngilizce yaz):
 
 ```text
-No account or sign-in. The game works fully offline; ads (Google AdMob) only load when online. Levels unlock with stars, so the first levels are enough to review the core loop. The Ad-free Pack in-app purchase (ray_reklamsiz) is in Settings (top right on the home screen) > "Ad-free pack", with a restore button in the same sheet. The UI follows the device language (English or Turkish) and can be changed in Settings > Language.
+No account or sign-in. The game works fully offline; ads (Google AdMob) only load when online. Levels unlock with stars, so the first levels are enough to review the core loop. The Ad-free Pack in-app purchase (ray_reklamsiz) is in Settings (top right on the home screen) > "Ad-free pack", with a restore button in the same sheet. The UI follows the device language (English or Turkish) and can be changed in Settings > Language. The ATT prompt appears on first launch after the consent step.
 ```
 
 **Google Play › Uygulama erişimi**: "Tüm işlevler herhangi bir özel erişim olmadan kullanılabilir."
