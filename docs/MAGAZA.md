@@ -192,6 +192,8 @@ Available in English and Turkish.
 
 ## 5. App Store girişi
 
+**Fiyat:** Ücretsiz (App Store Connect › Fiyatlandırma ve Uygunluk › Fiyat **0,00 $ / Ücretsiz**). Uygulamanın kendisi ücretsiz indirilir; tek ücretli şey isteğe bağlı Reklamsız paket (§10).
+
 **Ad** (30)
 
 ```text
@@ -339,6 +341,8 @@ Gizlilik politikası da "13 yaş ve üzeri" der; hedef kitle ve politika uyumlud
 
 ## 10. Uygulama içi ürün: Reklamsız paket
 
+Oyun iki mağazada da **ücretsiz indirilir**. Aşağıdaki fiyat yalnız oyunun içinden isteğe bağlı alınan Reklamsız paketin fiyatıdır; uygulamanın kendisine fiyat girilmez.
+
 | Alan | Google Play | App Store Connect |
 |---|---|---|
 | Kimlik | `ray_reklamsiz` | `ray_reklamsiz` |
@@ -405,7 +409,8 @@ Mağaza
 
 - [ ] Play'de ve App Store Connect'te uygulama kaydı (paket `com.osmanadali.ray`, birincil dil Türkçe, ikinci dil İngilizce).
 - [ ] Uygulama içi ürün `ray_reklamsiz` (§10) iki mağazada oluşturulup etkinleştirilmeli.
-- [ ] Fiyat (§10): App Store'da taban ülke ABD 2,99 $, Türkiye elle ₺59,99. Play'de ABD 2,99 $ · AB 2,99 € · BK 2,49 £ elle (ya da USD tabanlı şablon). Taban Türkiye bırakılmaz.
+- [ ] Uygulama fiyatı: iki mağazada **Ücretsiz** (Play'de "Ücretsiz", App Store'da 0,00 $).
+- [ ] Reklamsız paket fiyatı (§10): App Store'da taban ülke ABD 2,99 $, Türkiye elle ₺59,99. Play'de ABD 2,99 $ · AB 2,99 € · BK 2,49 £ elle (ya da USD tabanlı şablon). Taban Türkiye bırakılmaz.
 - [ ] Metinleri (§4, §5) ve görselleri (§2) yükle.
 - [ ] Formlar: Veri güvenliği (§6), App Privacy (§7), yaş derecelendirmesi (§8), hedef kitle ve öteki beyanlar (§9), inceleme notları (§11).
 - [ ] Gerçek cihazda son deneme: rıza penceresi, iOS ATT penceresi, reklam, satın alma ve geri yükleme (Play lisans test hesabı, Apple Sandbox).
