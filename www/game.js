@@ -361,7 +361,7 @@ function popc(m) { return (m & 1) + (m >> 1 & 1) + (m >> 2 & 1) + (m >> 3 & 1); 
 // ---------- zorluk puanı: oyuncunun kesin çıkarımlarını taklit eder ----------
 // Kenar + komşu tutarlılığıyla aday eleme. puan = çıkarım zinciri (tur) + 3 × tahmin dalı + 10 × ilk turda elenemeyen oran.
 // ~7 kolay · ~8 orta (60. bölüm düzeyi) · 12+ zor · 15+ usta
-function difficulty(P) {
+function difficulty(P, leaf = null, cap = 200) {
   const { cur, pinned, link } = P, n = cur.length, unit = new Array(n).fill(-1), units = [];
   for (let i = 0; i < n; i++) if (unit[i] < 0) {
     const u = P.unitOf?.[i] ?? -1, cells = u >= 0 ? P.units[u].cells : link[i] >= 0 ? [i, link[i]] : [i];
@@ -376,7 +376,12 @@ function difficulty(P) {
     for (let r = 0; r < B.K; r++) { B.cells.forEach(i => M[i].push(c[i])); B.U.tap(c); }
   }
   const allow = MODS.filter(m => m.allow && P[m.key]);   // eklenti yerel süzgeci (ör. tabela: o kenarda kol olmalı)
-  const C0 = units.map(B => {
+  // eklenti gizli bilgisi: cands(P, i) oyuncunun o karo için düşünebileceği maskeler (tek karolu birim; ör. kapak, silik kol)
+  const hid = new Set(), cm = MODS.filter(m => m.cands && P[m.key]);
+  if (cm.length) for (let i = 0; i < n; i++) for (const m of cm) { const c = m.cands(P, i); if (c) { M[i] = c; hid.add(unit[i]); break; } }
+  const opm = MODS.filter(m => m.open && P[m.key]), pm = MODS.filter(m => m.prune && P[m.key]);   // open: o kenarda kol eşsiz bitebilir · prune: küresel sayım süzgeci
+  const C0 = units.map((B, u) => {
+    if (hid.has(u)) return M[B.cells[0]].map((_, r) => r);
     if (B.cells.some(i => pinned[i])) return [0];
     const seen = new Set(), out = [];
     for (let r = 0; r < B.K; r++) {
@@ -393,12 +398,13 @@ function difficulty(P) {
       const u = unit[i];
       for (let k = 0; k < 4; k++) {
         const j = nb(P, i, k), out = j < 0, b = DIRS[k][0], o = out ? 0 : ob(P, i, k);
-        const can = v => out ? !v : prev[unit[j]].some(r => !!(M[j][r] & o) === v);
+        const can = opm.length && opm.some(m => m.open(P, i, k)) ? () => true : v => out ? !v : prev[unit[j]].some(r => !!(M[j][r] & o) === v);
         const K = C[u].filter(r => can(!!(M[i][r] & b)));
         if (!K.length) return -1;
         if (K.length < C[u].length) { C[u] = K; hit.add(u); }
       }
     }
+    for (const m of pm) { const r = m.prune(P, C, M, unit, units); if (r === -1) return -1; for (const u of r) hit.add(u); }
     let c = 0; hit.forEach(u => { c += units[u].cells.length; }); return c;
   };
   const copy = C => C.map(a => a.slice()), fix = C => { for (;;) { const c = step(C, copy(C)); if (c < 0) return false; if (!c) return true; } };
@@ -406,9 +412,9 @@ function difficulty(P) {
   for (;;) { const c = step(C, copy(C)); if (c <= 0) break; if (!waves) first = c; waves++; }
   let nodes = 0;
   const dfs = D => {
-    if (++nodes > 200) return true;
+    if (++nodes > cap) return true;
     let b = -1; D.forEach((a, k) => { if (a.length > 1 && (b < 0 || a.length < D[b].length)) b = k; });
-    if (b < 0) return lit({ ...P, cur: cur.map((v, i) => M[i][D[unit[i]][0]]) }).solved;
+    if (b < 0) { const cfg = cur.map((v, i) => M[i][D[unit[i]][0]]); return leaf ? leaf(cfg) : lit({ ...P, cur: cfg }).solved; }
     for (const r of D[b]) { const E = copy(D); E[b] = [r]; if (fix(E) && dfs(E)) return true; }
     return false;
   };
@@ -422,7 +428,7 @@ function difficulty(P) {
 const pzCache = new Map();
 function pick(cols, rows, seed, pins, pairs, z, T, x = {}, K = 6 + Math.round(26 * z)) {
   let best = null;
-  for (let k = 0; k < K; k++) { const P = generate(cols, rows, seed + k * 104729, pins, pairs, x); P.diff = difficulty(P); if (!best || Math.abs(P.diff - T) < Math.abs(best.diff - T)) best = P; }
+  for (let k = 0; k < K; k++) { const P = generate(cols, rows, seed + k * 104729, pins, pairs, x); P.diff = difficulty(P); if (!best || (best.reject && !P.reject) || (!P.reject === !best.reject && Math.abs(P.diff - T) < Math.abs(best.diff - T))) best = P; }
   best.z = z; return best;
 }
 function cached(key, make) {
@@ -456,9 +462,10 @@ function dailyFor(day) {
 // P.split[i] (köprü): karo iki ayrı düğümdür: K–G yarısı (d/own) ve D–B yarısı (dB/ownB); ikisi de bağlanmalı.
 // Eklenti denetimi: m.check(P, L) bozuk sayısı döndürür (tabela, halka…); L'ye çizim verisi yazabilir.
 function lit(P) {
-  const { cur, hub, hub2 = -1, split } = P, n = cur.length, d = new Array(n).fill(-1), own = new Array(n).fill(0);
+  const { hub, hub2 = -1, split } = P, cur = P.void ? P.cur.map((v, i) => P.void[i] ? 0 : v) : P.cur, n = cur.length, d = new Array(n).fill(-1), own = new Array(n).fill(0);
+  const opm = MODS.filter(m => m.open && P[m.key]);   // eklenti: eşi olmadan bitebilen kol (tampon, depo çıkışı) → gevşek sayılmaz, L.open sayar
   const dB = split ? new Array(n).fill(-1) : null, ownB = split ? new Array(n).fill(0) : null;
-  let loose = 0;
+  let loose = 0, opn = 0;
   for (const [h, tag] of hub2 >= 0 ? [[hub, 1], [hub2, 2]] : [[hub, 1]]) {
     const dd = new Array(split ? 2 * n : n).fill(-1), q = [h]; dd[h] = 0;
     while (q.length) {
@@ -469,16 +476,16 @@ function lit(P) {
         const b = DIRS[k][0];
         if (!(cur[i] & b & half)) continue;
         const j = nb(P, i, k), o = j < 0 ? 0 : ob(P, i, k);
-        if (j < 0 || !(cur[j] & o)) { loose++; continue; }
+        if (j < 0 || !(cur[j] & o)) { if (opm.length && opm.some(m => m.open(P, i, k))) opn++; else loose++; continue; }
         const v = split?.[j] && (o & 10) ? n + j : j;
         if (dd[v] < 0) { dd[v] = dd[u] + 1; q.push(v); }
       }
     }
   }
   const merged = own.includes(3) || !!ownB?.includes(3);
-  let ok = loose === 0 && !merged && d.every(v => v >= 0);
+  let ok = loose === 0 && !merged && d.every((v, i) => v >= 0 || P.void?.[i]);
   if (split) for (let i = 0; i < n; i++) if (split[i]) { ok = ok && dB[i] >= 0; if (dB[i] >= 0 && (d[i] < 0 || dB[i] < d[i])) d[i] = dB[i]; }   // çizim için: iki yarının yanan küçüğü
-  const L = { d, own, merged, n: d.filter(v => v >= 0).length, solved: ok, ...(split ? { dB, ownB } : {}) };
+  const L = { d, own, merged, open: opn, n: d.filter((v, i) => v >= 0 || P.void?.[i]).length, solved: ok, ...(split ? { dB, ownB } : {}) };
   for (const m of MODS) if (m.check && P[m.key]) { const bad = m.check(P, L); if (bad) L.solved = false; }
   return L;
 }
@@ -931,15 +938,15 @@ function draw() {
   const anyFixed = G.fixed.includes(true);
   if (anyFixed) { tiles(i => G.fixed[i]); cx.lineWidth = 2.5; cx.strokeStyle = rgba(col, .85); cx.stroke(); }
   hook('under');
-  // 2) raylar: sönük → ışıma → yanan (bölünmüş karo, ör. köprü, kendi kancasında çizilir)
-  const rails = f => { cx.beginPath(); for (let i = 0; i < n; i++) if (f(i) && vis(i) && !G.split?.[i]) railPath(X[i], G.cur[i]); cx.stroke(); };
+  // 2) raylar: sönük → ışıma → yanan (bölünmüş karo, ör. köprü, ve P.self karosu kendi kancasında çizilir)
+  const rails = f => { cx.beginPath(); for (let i = 0; i < n; i++) if (f(i) && vis(i) && !G.split?.[i] && !G.self?.[i]) railPath(X[i], G.cur[i]); cx.stroke(); };
   cx.lineWidth = s * .17; cx.strokeStyle = pal.rail; rails(i => !on(i));
   for (const t of tags) { cx.lineWidth = s * .38; cx.strokeStyle = rgba(OC[t], pal.light ? .16 : .22); rails(i => own(i) === t); }
   for (const t of tags) { cx.lineWidth = s * .17; cx.strokeStyle = OC[t]; rails(i => own(i) === t); }
   hook('rails');
   // 3) yeni yanan karoda parlama (karo sınırına kırpılır → komşuya taşmaz)
   for (let i = 0; i < n; i++) {
-    if (!on(i) || G.split?.[i]) continue;
+    if (!on(i) || G.split?.[i] || G.self?.[i]) continue;
     const t = (now - litAt[i]) / 420;
     if (t >= 1) continue;
     busy = true; if (t <= 0) continue;
@@ -950,7 +957,7 @@ function draw() {
     cx.beginPath(); railPath(X[i], G.cur[i]); cx.stroke(); cx.restore();
   }
   // 4) duraklar
-  const dots = (f, r) => { cx.beginPath(); for (let i = 0; i < n; i++) if (i !== G.hub && i !== G.hub2 && popc(G.cur[i]) === 1 && f(i) && vis(i)) { const [x, y, , sc] = X[i]; cx.moveTo(x + r * sc, y); cx.arc(x, y, r * sc, 0, 7); } };
+  const dots = (f, r) => { cx.beginPath(); for (let i = 0; i < n; i++) if (i !== G.hub && i !== G.hub2 && popc(G.cur[i]) === 1 && f(i) && vis(i) && !G.self?.[i]) { const [x, y, , sc] = X[i]; cx.moveTo(x + r * sc, y); cx.arc(x, y, r * sc, 0, 7); } };
   for (const t of tags) { dots(i => own(i) === t, s * .27); cx.fillStyle = rgba(OC[t], .22); cx.fill(); }
   cx.lineWidth = s * .065;
   for (const t of tags) { dots(i => own(i) === t, s * .15); cx.fillStyle = '#fff'; cx.fill(); cx.strokeStyle = OC[t]; cx.stroke(); }
@@ -1314,7 +1321,7 @@ async function hint() {
     return;
   }
   const wrong = [];
-  G.cur.forEach((v, i) => { if (!G.fixed[i] && v !== G.sol[i]) wrong.push(i); });
+  G.cur.forEach((v, i) => { if (!G.fixed[i] && !G.void?.[i] && v !== G.sol[i]) wrong.push(i); });
   if (!wrong.length) return;
   // ışıklı bölgeye komşu olanı seç → daha anlamlı ipucu
   const usz = i => G.units?.[G.unitOf[i]]?.cells.length || 1;   // eklenti birimi (tabla: 4 karo) sona
@@ -1792,7 +1799,7 @@ App?.addListener?.('backButton', () => {
 // ---------- kural eklentileri: www/rules/*.js (M9+ yeni kurallar). Ayrıntı: docs/kurallar/README.md ----------
 const API = {
   N, E, S, W, DIRS, FOG_R, PAIR_COLS, rot, unrot, popc, nb, ob, tree, hashStr, rgba, shade, lum, hueRot, okl, oklch,
-  toast, tone, note, haptic, persist, kick, burst, rrp, rr, railPath, ease, back, anim, press, lineName,
+  toast, tone, note, haptic, persist, kick, burst, rrp, rr, railPath, ease, back, anim, press, lineName, difficulty, lit,
   get G() { return G; }, get pal() { return pal; }, get save() { return save; }, get geo() { return geo; }, get vg() { return vg; }, get cx() { return cx; },
 };
 loadRules(API);

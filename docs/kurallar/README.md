@@ -19,7 +19,18 @@ M9'dan sonraki yeni kurallar çekirdeğe (`www/game.js`) dağılmaz. Her kural �
 | M17 | 673 | Halka hat | `ring` | `halka` |
 | M19 | 829 | Tünel ağzı | `portal` | `tunel-agzi` |
 
-Aradaki çift hatlar (M10, M12…) ve M20 sonrası karma hatlardır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`).
+Çift hatlar (zor kurallar; gizli bilgi ve küresel koşul):
+
+| Hat | İlk bölüm | Kural | Anahtar | Dosya adı |
+|---|---|---|---|---|
+| M10 | 253 | Kapak | `cover` | `kapak` |
+| M12 | 353 | Silik kol | `faint` | `silik-kol` |
+| M14 | 469 | Gizli depo | `depot` | `gizli-depo` |
+| M16 | 601 | Kapalı durak | `closed` | `kapali-durak` |
+| M18 | 749 | Nehir | `river` | `nehir` |
+| M20 | 913 | Tarife bölgesi | `zone` | `tarife-bolgesi` |
+
+M20 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`).
 
 ## Temel ilkeler
 
@@ -49,6 +60,10 @@ Aradaki çift hatlar (M10, M12…) ve M20 sonrası karma hatlardır: her bölüm
   after(G, i, now) {},                       // her dokunuştan sonra, lit hesaplandıktan sonra (geri bildirim)
   check(P, L) { return 0; },                 // kazanma denetimi: bozuk sayısı (0 = tamam); L'ye çizim verisi yazılabilir
   allow(P, i, mask) { return true; },        // zorluk çözücüsü için yerel süzgeç: bu maske i karosunda olabilir mi
+  // gizli bilgi ve küresel koşullar (M10–M20 zor kuralları)
+  cands(P, i) { return null; },              // gizli karo: oyuncunun bu karo için düşünebileceği maskeler dizisi (null = karo normal)
+  open(P, i, k) { return 0; },               // i karosunun k kolu eşi olmadan bitebilir mi (tampon, depo çıkışı); lit ve çözücü
+  prune(P, C, M, unit, units) { return []; },// çözücünün her turunda küresel süzgeç (sayım): daralttığı birimler ya da −1 (çelişki)
   reveal(G, on, area) {},                    // karanlık tünel: on(i) karoyu açar, area(i) onun FOG_R çevresini açar
   pad(G, p) {},                              // tahta dışı pay (karo cinsinden): p.l, p.r, p.t, p.b artırılır
   // çizim kancaları (D aşağıda); true dönerse animasyon sürüyor demektir
@@ -104,12 +119,15 @@ Birden çok durum taşıyan, dönmeyen ya da birlikte hareket eden karolar için
 - **Oyun:** dokunuş `tap(G.cur)`'u çağırır. Art arda aynı birime dokunmak 1 hamle sayılır.
 - **İpucu:** birimin bütün karolarını çözüme oturtup sabitler. Büyük birimler sona alınır.
 - **Zorluk çözücüsü:** birimin `K` durumunu dener.
+- **Gizli karo (`cands`):** tek karolu birim olmalı. Çözücü o karonun gerçek maskesi yerine `cands` dizisini aday kabul eder (ör. kapak: görünmeyen ama sabit ray; silik kol: kol var ya da yok). Bölüm, oyuncunun gördüğü bilgiyle tek çözüme inmelidir; üretimde adillik bunu denetler.
 - **Par ve robot:** `unitTaps` ile dokunuş sayısını bulur; robot `__ray.plan()` ile dokunur.
 
 ## Kazanma (`lit`)
 
 - Komşuluk `nb/ob` ile okunur, tünel komşuluğu kendiliğinden geçerlidir.
 - **Bölünmüş düğüm (köprü):** `P.split[i] = 1` olan karo iki ayrı düğümdür. K–G yarısı (bitler 5) `d/own`, D–B yarısı (bitler 10) `dB/ownB` dizilerine yazılır. Çözülmüş sayılması için iki yarı da bağlanmalıdır. Çizim için `d[i]` iki yarının yanan küçüğü olur. Köprü eklentisi `C.out.split` alanını doldurur.
+- **Yok sayılan karo (`P.void`):** `P.void[i] = 1` olan karonun rayları yok sayılır (0 maske gibi), ışık almasa da çözüm bozulmaz; ipucu bu karoya verilmez. `L.n` bu karoları yanmış sayar. Kapalı durak eklentisi `C.out.void` alanını doldurur.
+- **Eşsiz biten kol (`open`):** `open(P, i, k)` doğru dönerse i karosunun k yönündeki kol, komşusu karşılamasa da (ya da tahta dışına baksa da) gevşek sayılmaz; `L.open` bunları sayar. Kaç tane olması gerektiğini eklenti `check` ile denetler. İç kenarda simetrik olmalı: `open(P, i, k)` ile `open(P, j, ters k)` aynı değeri döndürür. Çözücüde bu kenar serbest bırakılır, sayım `prune` ile yapılır.
 - **Eklenti denetimi:** `check(P, L)` bozuk sayısını döndürür. Sıfırdan büyükse `L.solved = false` olur. L'ye çizim verisi yazılabilir (ör. `L.signBad`, `L.core`). Bu işlev zorluk çözücüsünün yaprağında da çağrılır, ucuz olmalıdır.
 
 ## Oyun ve çizim
@@ -125,8 +143,9 @@ Birden çok durum taşıyan, dönmeyen ya da birlikte hareket eden karolar için
   2. `base`: karo zemininden önce
   3. zemin ve sabit karolar
   4. `under`
-  5. raylar (`G.split` karoları atlanır)
-  6. `rails`: bölünmüş karonun rayları
+  5. raylar (`G.split` ve `G.self` karoları atlanır)
+  6. `rails`: bölünmüş karonun ve `G.self` karosunun rayları
+  - `G.self[i] = 1` olan karonun rayını, parlamasını ve durak noktasını çekirdek çizmez; eklenti kendisi çizer (ör. silik kol). `C.out.self` ile doldurulur.
   7. parlama, duraklar, merkez, rozetler
   8. `over`
   9. karanlık örtü
@@ -151,6 +170,12 @@ Birden çok durum taşıyan, dönmeyen ya da birlikte hareket eden karolar için
 - Tabela köprü komşusuna konmaz.
 - Halka, tabela ve köprü ile aynı bölümde olmaz: `clash: ['sign', 'bridge']` halka dosyasında tanımlanır.
 - Karanlık tünelde tabla dört karosuyla birlikte aydınlanır; tünel ağzı aydınlanınca eşi de aydınlanır (`reveal`).
+
+## Çözücü ve seçim yardımcıları
+
+- `api.difficulty(P, leaf, cap)`: zorluk puanı. `leaf(cfg)` verilirse çözücü her tam dizilimde `lit` yerine onu çağırır (çözüm sayımı, adillik denetimi için); `cap` düğüm tavanıdır (varsayılan 200). `api.lit(P)` da açıktır.
+- `P.reject = true`: eklenti adayı adil bulmazsa (ör. gizli bilgiyle tek çözüme inmiyor) işaretler. `pick` reddedilmemiş adaylar arasından seçer; hepsi reddedilirse eski davranış sürer.
+- `boost`: kuralın zorluk payı (puan). Kuralın kendi hattının ilk 3 bölümü dışında hedef puana eklenir; böylece kurallı bölüm daha zor tabandan seçilir. Kuralın ölçülmüş zorluk artışına göre verilir.
 
 ## Robot testi
 
