@@ -4,6 +4,7 @@
 name: iOS (simülatör)
 on:
   workflow_dispatch:
+  push: { branches: [magaza-yerel] }   # GEÇİCİ: dalda doğrulama
 permissions: { contents: read }
 concurrency: { group: 'ios-${{ github.ref }}', cancel-in-progress: true }
 jobs:
