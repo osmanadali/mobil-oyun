@@ -132,8 +132,16 @@ module.exports = async T => {
   }
 
   // ---------- 4. Karanlık tünel + tabla (açık tema): dört karo birlikte aydınlanır, ışığı izleyerek çözülür ----------
+  // Karma hatların dağılımı her yeni kuralla değişir (rulesFor havuzu); bu ikili bulunamazsa çift hat kuralları (M10–M20) yüklenmeden aranır.
+  let fogInit = '';
+  if (!gen.fogLvl) {
+    fogInit = `window.RAY_RULES = []; { const p = window.RAY_RULES.push.bind(window.RAY_RULES); window.RAY_RULES.push = f => p(api => { const m = f(api); return m && ['cover', 'faint', 'depot', 'closed', 'river', 'zone'].includes(m.key) ? null : m; }); }`;
+    const o = await open(browser, URL, { save: { played: 1 }, init: fogInit }); errs.push(o.errors);
+    gen.fogLvl = await o.page.evaluate(() => { const R = window.__ray; for (let l = 536; l <= 3000; l++) { const U = R.rulesFor(l); if (!U.has('fog') || !U.has('table')) continue; const P = R.puzzleFor(l); if (P.fog && P.table) return l; } return 0; });
+    await o.ctx.close();
+  }
   if (gen.fogLvl) {
-    const l = gen.fogLvl, { ctx, page, errors } = await open(browser, URL, { scheme: 'light', save: lvlSave(l, { seen: seenTo(15) }) }); errs.push(errors);
+    const l = gen.fogLvl, { ctx, page, errors } = await open(browser, URL, { scheme: 'light', save: lvlSave(l, { seen: seenTo(15) }), init: fogInit }); errs.push(errors);
     await page.click('#bPlay'); await page.waitForTimeout(700);
     if (await page.evaluate(() => document.getElementById('modal').classList.contains('open'))) { await page.click('#mGo'); await page.waitForTimeout(400); }
     const half = async () => {   // yarı karanlık tabla sayısı; bir tabla ilk kez aydınlanınca ekran görüntüsü
