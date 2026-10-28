@@ -108,14 +108,18 @@ module.exports = async T => {
     const { ctx, page, errors } = await open(browser, URL, { save: { played: 1 } });
     const lv = await page.evaluate(() => {
       const R = window.__ray; let mix = 0, cross = 0, tries = 0;
-      for (let l = 353; l < 3000 && (!mix || !cross); l++) {
+      // köprü + iki merkez karma hatta seyrek (rulesFor en yeni kurallara ağırlık verir): çaprazlı bölüm yoksa ilk köprü + iki merkez bölümü alınır,
+      // aşağıda tahtası aynı boyutta çaprazlı bir üretimle değiştirilir (swap)
+      let alt = 0;
+      for (let l = 353; l < 20000 && (!mix || !cross); l++) {
         const U = R.rulesFor(l); if (!U.has('bridge')) continue;
         if (!mix && U.size > 1) mix = l;
         if (!cross && U.has('two') && !U.has('fog') && tries++ < 30) {
           const P = R.puzzleFor(l), L = R.lit({ ...P, cur: P.sol });
-          if ((P.bridge || []).some(b => L.own[b] && L.ownB[b] && L.own[b] !== L.ownB[b])) cross = l;
+          if ((P.bridge || []).some(b => L.own[b] && L.ownB[b] && L.own[b] !== L.ownB[b])) cross = l; else if (!alt && P.bridge?.length) alt = l;
         }
       }
+      if (!cross && alt) return { mix, cross: alt, swap: true };
       return { mix, cross };
     });
     await ctx.close();
@@ -135,15 +139,19 @@ module.exports = async T => {
       const o = await open(browser, URL, { save: { played: lv.cross - 1, level: lv.cross, stars: starsUpTo(lv.cross), seen: SEEN, remindAsked: true } });
       const { page } = o;
       await page.click('#bPlay'); await page.waitForTimeout(600);
-      const t = await page.evaluate(() => {
+      const t = await page.evaluate(swap => {
         const R = window.__ray, G = R.G, rot = R.rot, hubs = [G.hub, G.hub2];
+        if (swap) for (let s = 1; s < 500; s++) {   // aynı boyutta köprüde renk çaprazı olan üretim
+          const P = R.generate(G.cols, G.rows, s * 7919, 0, 0, { bridge: 2, two: true }), L = R.lit({ ...P, cur: P.sol });
+          if (P.bridge.some(b => L.own[b] && L.ownB[b] && L.own[b] !== L.ownB[b])) { Object.assign(G, P); break; }
+        }
         G.cur = G.sol.slice();
         const ok = i => !G.split?.[i] && !hubs.includes(i) && !G.pinned[i] && !G.fixed[i] && G.link[i] < 0 && !(G.unitOf?.[i] >= 0) && G.cnt[i] < 0 && !G.rev[i] && rot(rot(G.sol[i])) !== G.sol[i];
         const far = i => Math.min(...G.bridge.map(b => Math.abs(b % G.cols - i % G.cols) + Math.abs((b / G.cols | 0) - (i / G.cols | 0))));
         const c = G.sol.map((v, i) => i).filter(ok).sort((a, b) => (((G.sol[b] & (G.sol[b] - 1)) === 0) - ((G.sol[a] & (G.sol[a] - 1)) === 0)) || far(b) - far(a))[0];
         G.cur[c] = rot(rot(G.sol[c]));
         return c;
-      });
+      }, !!lv.swap);
       await tapTile(page, t); await page.waitForTimeout(600);
       // parlamalar bitsin: çizim döngüsü durana dek bekle (yük altında kare gecikebilir)
       for (let k = 0, a = -1, b = 0; k < 20 && a !== b; k++) { a = b; await page.waitForTimeout(150); b = await page.evaluate(() => window.__log.raf); }

@@ -98,7 +98,7 @@ module.exports = async T => {
 
   // ---- 4) M10 karma: makas başka bir kuralla aynı bölümde; robot çözer ----
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: base(mixLvl || 253, { ...seen, 8: 1 }) });
+    const { ctx, page, errors } = await open(browser, URL, { save: base(mixLvl || 253, { ...seen, 8: 1, 9: 1 }) });   // M10 artık kapak hattı: kapak kartı da görülmüş
     await page.click('#bPlay'); await page.waitForTimeout(700);
     const g = await G(page, () => { const G = window.__ray.G; return { lvl: G.lvl, rules: G.rules.join('+'), sw: G.sw?.filter(Boolean).length || 0, card: document.getElementById('modal').classList.contains('open') }; });
     await shot(page, 'sw-mix');
