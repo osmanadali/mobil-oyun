@@ -110,6 +110,56 @@ Hat adları yer adıdır ve çevrilir:
 
 Önekler: Yeni New · Eski Old · Kuzey North · Güney South · Doğu East · Batı West · Yukarı Upper · Aşağı Lower · Büyük Great · Küçük Little. "Hat" → "Line" (ör. `M1 · Liman Hattı` → `M1 · Harbor Line`).
 
+### Arayüz
+
+Çekirdek arayüzde (`game.js`, `index.html`) kullanılan terimler. Yeni metin yazarken buradaki karşılıkları kullan.
+
+| Türkçe | İngilizce |
+|---|---|
+| Bölüm 12 | Level 12 |
+| Hatlar (harita) | Lines |
+| Sonraki · Tekrar · Tekrar dene | Next · Retry · Try again |
+| Paylaş · Ana sayfa | Share · Home |
+| Arkadaşına meydan oku | Challenge a friend |
+| Hat açıldı! (bölüm bitti) | Connected! |
+| Hattı gör · Sonuç | See line · Results |
+| tam vaktinde · rötar | on time · late |
+| ↻ HAMLE HEDEFİ · ↻ HEDEF AŞILDI | ↻ MOVE TARGET · ↻ OVER TARGET |
+| Kıl payı | So close |
+| Kusursuz için: … ve … | For perfect: … and … |
+| KUSURSUZ · YENİ HAT AÇILDI · TEMA ALINABİLİR | PERFECT · NEW LINE OPEN · NEW THEME |
+| YENİ KURAL · Anladım | NEW RULE · Got it |
+| ⚡ zorluk %30 | ⚡ 30% hard |
+| Tamamlandı ✓ · Hazır | Done ✓ · Ready |
+| 5 günlük seri | 5-day streak |
+| en iyi seri · toplam gün | best streak · total days |
+| Seriyi kurtar | Save streak |
+| İpucu parçası 1/3 | Hint piece 1/3 |
+| ▶ 2 katı | ▶ Double |
+| İzle · +2 ipucu | Watch · +2 hints |
+| Vazgeç · Kapat · Tamam | Cancel · Close · Done (OK) |
+| Taç topla | Earn crowns |
+| Bakiye · Satın al · Seç · Seçili | Balance · Buy · Select · Selected |
+| Temalara dön | Back to themes |
+| Trenin · Trenine tak | Your train · Put on your train |
+| Hat rengi (kaplama) | Line color |
+| seri kalkanı | streak shield |
+| Ayarlar: Müzik · Efekt sesleri · Titreşim · Günlük hatırlatma | Music · Sound effects · Vibration · Daily reminder |
+| Görünüm: Oto · Koyu · Açık | Theme: Auto · Dark · Light |
+| Dil | Language (seçenekler kendi dilinde: Türkçe · English) |
+| Gizlilik politikası · Reklam gizlilik seçenekleri | Privacy policy · Ad privacy options |
+| Verilerin silinsin mi? · Evet, hepsini sil | Delete your data? · Yes, delete it all |
+| Satın alımı geri yükle | Restore purchase |
+| Hatırlatayım mı? · Evet, hatırlat · Şimdi değil | Want a reminder? · Yes, remind me · Not now |
+| Nasıl oynanır? · İleri › · ‹ kaydır › · Hadi oynayalım! | How to play? · Next › · ‹ swipe › · Let’s play! |
+
+Renk temaları: Metro · Sunset · Ocean · Forest · Desert · Sakura · Neon Night · Northern Lights · Lava · Cosmos · Glacier · Spring · Autumn · Coral Reef · Tea Garden · Tulip · Storm · Midnight · Rainbow · Retro Wave · Pastel · Dawn · (reklamsız) Gold · Diamond · Ruby.
+
+Tren kaplamaları: Line color · Red Express · Night Train · Mint · Retro · Sunset · Ice · Lavender · Gold Express.
+
+- Kodda yerel `L` adıyla değişken tanımlama: küresel `L()`'yi gölgeler. Metin içeren işlevlerde başka ad kullan (`lim`, `lo`, `list`).
+- Durağan HTML'de `data-en` yalnız JS'in sonradan değiştirmediği öğelere konur (çeviri `DOMContentLoaded`'da uygulanır, JS'in yazdığını ezer).
+
 ### Kural metinleri
 
 Kural kartlarında, `block()` mesajlarında ve bildirimlerde kullanılan terimler (`www/rules/*.js`):

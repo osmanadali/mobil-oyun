@@ -18,7 +18,7 @@ Bu belge Google Play ve App Store'a gönderim için gereken her şeyi tek yerde 
 | Pazarlama URL'si (isteğe bağlı) | https://osmanadali.github.io/mobil-oyun/ (oyunun web sürümü) |
 | Telif (App Store) | © 2026 [geliştirici adı] |
 | İletişim e-postası (iki mağaza, herkese açık) | [iletişim e-postası] |
-| Dil | Türkçe (oyun içi metinler yalnız Türkçe) |
+| Dil | Türkçe ve İngilizce (oyun cihaz diline göre açılır: Türkçe cihazda Türkçe, ötekilerde İngilizce; Ayarlar › Dil ile değişir) |
 | Cihaz | Android telefon, iPhone (yalnız dikey; iPad yok) |
 
 Gizlilik ve destek adresleri GitHub Pages açılınca yayına girer. Pages kullanıcının onayıyla açılacak (bkz. §11).
@@ -31,6 +31,7 @@ Bütün görseller `node tools/store-shots.cjs` ile gerçek oyundan üretilir. A
 node tools/store-shots.cjs                 # hepsi (Play, iPhone 6,9", iPhone 6,5", öne çıkan görsel)
 node tools/store-shots.cjs play 02 03      # yalnız Play'in 2. ve 3. sahnesi
 node tools/store-shots.cjs feature         # yalnız öne çıkan görsel
+node tools/store-shots.cjs en              # İngilizce: oyun en-US'de, başlıklar İngilizce → store/screens-en/, store/feature-graphic-en.png
 ```
 
 | Dosya | Boyut | Nereye |
@@ -40,6 +41,7 @@ node tools/store-shots.cjs feature         # yalnız öne çıkan görsel
 | `store/screens/play/*.png` | 1080×1920 (9:16) | Play › Telefon ekran görüntüleri (7 adet; Play 2–8 kabul eder) |
 | `store/screens/ios-69/*.png` | 1320×2868 | App Store Connect › iPhone 6,9" ekran (zorunlu boy) |
 | `store/screens/ios-65/*.png` | 1284×2778 | App Store Connect › iPhone 6,5" (6,9" yüklenince gerekmez; yedek) |
+| `store/screens-en/…`, `store/feature-graphic-en.png` | aynı boylar | İngilizce mağaza girişi (Play › İngilizce çeviri, App Store Connect › English (U.S.)) |
 | `store/appstore-icon-1024.png` | 1024×1024 | iOS projesinin simgesi (App Store simgesi derlemeden gelir) |
 
 Hepsi 24 bit PNG'dir, saydamlık (alfa) içermez; iki mağazanın kuralına uyar.
@@ -57,6 +59,8 @@ Hepsi 24 bit PNG'dir, saydamlık (alfa) içermez; iki mağazanın kuralına uyar
 | 7 | `07-sandik` | Sürpriz sandık, yeni trenler | İpucu, seri kalkanı ya da yeni bir tren kaplaması | Sandık açılışı: destansı Lavanta kaplaması |
 
 Öne çıkan görsel: koyu lacivert zemin, yeni R simgesi, "Ray", "Hatları bağla · Şehri canlandır" ve üç rozet (Tek elle, İnternetsiz, Metro bulmacası).
+
+İngilizce sahne başlıkları (`en`): 1 Connect the lines, light up the city · 2 Tap, turn, light the line · 3 Finish perfect, earn crowns · 4 20 lines, endless levels · 5 New rules as the line grows · 6 Collect crowns, unlock 25 themes · 7 Surprise chest, new trains. Öne çıkan görselde "Connect the lines · Light up the city" ve One hand, Offline, Metro puzzle rozetleri.
 
 ## 3. Karakter sayıları
 
@@ -165,12 +169,12 @@ Dark, light and automatic appearance. Soft colors. Animations only run while som
 FREE AND FAIR
 Ray is free to play. Your hints are topped up to at least 3 every day, and you earn extra hints at the end of each line. Ads are only shown when you are online: an occasional interstitial between levels, and rewarded videos only when you choose to watch them (extra hints, doubling a reward, saving a broken streak). The Daily Line has no interstitials.
 
-REMOVE ADS PACK
+AD-FREE PACK
 A one-time purchase. Removes the ads between levels, gives you 20 hints and unlocks 3 exclusive themes (Gold, Diamond, Ruby). Hint videos stay optional.
 
 No account needed and no personal details asked. Your progress stays on your device.
 
-Note: the in-game text is currently in Turkish only.
+Available in English and Turkish.
 ```
 
 **Diğer Play alanları**
@@ -339,7 +343,7 @@ Gizlilik politikası da "13 yaş ve üzeri" der; hedef kitle ve politika uyumlud
 |---|---|---|
 | Kimlik | `ray_reklamsiz` | `ray_reklamsiz` |
 | Tür | Tek seferlik ürün (uygulama içi ürün, tüketilemez) | Non-Consumable (tüketilemez) |
-| Ad (TR / EN) | Reklamsız paket / Remove Ads Pack | Reklamsız paket / Remove Ads Pack (30) |
+| Ad (TR / EN) | Reklamsız paket / Ad-free Pack | Reklamsız paket / Ad-free Pack (12) |
 | Açıklama TR | `Bölüm aralarındaki reklamları kaldırır, 20 ipucu hediye eder ve 3 özel temayı (Altın, Elmas, Yakut) açar. Tek seferlik, ömür boyu.` | `Reklamlar kalkar, 20 ipucu ve 3 özel tema` (45) |
 | Açıklama EN | `Removes the ads between levels, gives you 20 hints and unlocks 3 exclusive themes (Gold, Diamond, Ruby). One-time purchase, yours forever.` | `No ads between levels, 20 hints, 3 themes` (45) |
 | Fiyat önerisi | ₺59,99 · 2,99 $ (öteki ülkeler otomatik) | Taban ülke Türkiye, ₺59,99'a en yakın fiyat noktası; öteki ülkeler otomatik |
@@ -357,7 +361,7 @@ Geri yükleme: pencerede "Satın alımı geri yükle" düğmesi var (Apple bunu 
 - Not (İngilizce yaz):
 
 ```text
-No account or sign-in. The game works fully offline; ads (Google AdMob) only load when online. Levels unlock with stars, so the first levels are enough to review the core loop. The Remove Ads in-app purchase (ray_reklamsiz) is in Settings (top right on the home screen) > "Reklamsız paket", with a restore button in the same sheet. The UI is in Turkish.
+No account or sign-in. The game works fully offline; ads (Google AdMob) only load when online. Levels unlock with stars, so the first levels are enough to review the core loop. The Ad-free Pack in-app purchase (ray_reklamsiz) is in Settings (top right on the home screen) > "Ad-free pack", with a restore button in the same sheet. The UI follows the device language (English or Turkish) and can be changed in Settings > Language.
 ```
 
 **Google Play › Uygulama erişimi**: "Tüm işlevler herhangi bir özel erişim olmadan kullanılabilir."
@@ -400,7 +404,7 @@ Mağaza
 
 ## 13. Bilinen sınırlar
 
-- **Oyun yalnız Türkçe.** İngilizce mağaza metni bu yüzden "Note: the in-game text is currently in Turkish only." satırıyla biter. İngilizce arayüz gelene dek İngilizce girişi açmamak da bir seçenek.
+- **İki dil.** Oyun Türkçe ve İngilizcedir (28 Ekim 2026). İngilizce mağaza girişi İngilizce ekran görüntüleriyle (`store/screens-en/`) yüklenir. Altyapı ve sözlük: `docs/CEVIRI.md`.
 - **Kural sayısı.** Açıklama 18 kuralın hepsini sayar (çift hatların zor kuralları 28 Ekim'de eklendi; tam açıklama ~90 karakter uzadı, 4000 sınırının yine altında). 5. ekran görüntüsünün alt satırı eski 12 kurallı listeyi gösterir; istenirse `tools/store-shots.cjs` ile yeniden üretilir.
 - **Görseller çalışan koda bağlı.** Arayüz değişince `node tools/store-shots.cjs` yeniden çalıştırılmalı. Sahneler bölüm numarasıyla kurulur (180, 45, 829…); üretim değişirse aynı numara farklı bir tahta verebilir, çıktı gözle kontrol edilmeli.
 - **Veri ve gizlilik yanıtları** AdMob'un Ekim 2026 itibarıyla bilinen davranışına göredir. Gönderimden önce §6 ve §7'deki Google bağlantılarıyla karşılaştırılmalı.

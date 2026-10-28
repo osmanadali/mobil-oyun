@@ -7,8 +7,12 @@ const DIRS = [[N, 0, -1, S], [E, 1, 0, W], [S, 0, 1, N], [W, -1, 0, E]];
 const rot = m => ((m << 1) | (m >> 3)) & 15;          // saat yönü 90°
 const unrot = m => ((m >> 1) | (m << 3)) & 15;        // saat yönünün tersi 90° (ters karo)
 // hat adları: renk değil yer adı (her renk temasında doğru okunur). 25 ad; sonra "Yeni Liman", "Kuzey Liman"… → hiçbir hat adı tekrar etmez
-const LINE_NAMES = ['Liman', 'Çarşı', 'Sahil', 'Kule', 'Bahçe', 'Köprü', 'Fener', 'Vadi', 'Pınar', 'Meydan', 'Tepe', 'Ada', 'Saray', 'Rıhtım', 'Kanal', 'Çınar', 'Yayla', 'Koru', 'Kervan', 'Değirmen', 'Göl', 'Bağ', 'Pazar', 'Kale', 'Gar'];
-const NAME_PRE = ['', 'Yeni', 'Eski', 'Kuzey', 'Güney', 'Doğu', 'Batı', 'Yukarı', 'Aşağı', 'Büyük', 'Küçük'];
+// İngilizce adlar aynı sırada (docs/CEVIRI.md sözlüğü): ad yalnız ekranda, üretim ve tohumlar dile bağlı değil
+const LINE_NAMES = L(['Liman', 'Çarşı', 'Sahil', 'Kule', 'Bahçe', 'Köprü', 'Fener', 'Vadi', 'Pınar', 'Meydan', 'Tepe', 'Ada', 'Saray', 'Rıhtım', 'Kanal', 'Çınar', 'Yayla', 'Koru', 'Kervan', 'Değirmen', 'Göl', 'Bağ', 'Pazar', 'Kale', 'Gar'],
+  ['Harbor', 'Bazaar', 'Shore', 'Tower', 'Garden', 'Bridge', 'Lighthouse', 'Valley', 'Spring', 'Square', 'Hill', 'Island', 'Palace', 'Quay', 'Canal', 'Plane Tree', 'Highland', 'Grove', 'Caravan', 'Mill', 'Lake', 'Vineyard', 'Market', 'Castle', 'Terminal']);
+const NAME_PRE = L(['', 'Yeni', 'Eski', 'Kuzey', 'Güney', 'Doğu', 'Batı', 'Yukarı', 'Aşağı', 'Büyük', 'Küçük'], ['', 'New', 'Old', 'North', 'South', 'East', 'West', 'Upper', 'Lower', 'Great', 'Little']);
+const LOC = L('tr-TR', 'en-US');                         // tarih biçimi
+const pl = (n, one, many) => n === 1 ? one : many;      // İngilizce tekil/çoğul
 const LINE0 = 12, LINE_STEP = 4;                        // hat uzunluğu doğrusal artar: M1 12 bölüm, her hat +4 (16, 20, 24…)
 const STAR_AVG = 2.2;                                   // yeni hat: önceki bölümlerde ortalama 2,2★
 const INTER_EVERY = 4;                                  // her 4 galibiyette 1 geçiş reklamı
@@ -71,7 +75,7 @@ function lineTitle(c) {
   const n = LINE_NAMES.length, k = Math.floor(c / n), pre = NAME_PRE[k % NAME_PRE.length], tur = Math.floor(k / NAME_PRE.length);
   return `${pre ? pre + ' ' : ''}${LINE_NAMES[c % n]}${tur ? ' ' + (tur + 1) : ''}`;
 }
-const lineName = c => `M${c + 1} · ${lineTitle(c)} Hattı`;
+const lineName = c => `M${c + 1} · ${lineTitle(c)} ${L('Hattı', 'Line')}`;
 const need = c => Math.round((lineStart(c) - 1) * STAR_AVG);
 const totalStars = () => Object.values(save.stars).reduce((a, b) => a + b, 0);
 const unlocked = c => TEST || totalStars() >= need(c);
@@ -84,31 +88,31 @@ const isLight = () => save.theme === 'light' || (save.theme === 'auto' && matchM
 // ve parlaklığı kayan çeşitlemeleri (famCol) → 6 hatta bir birebir tekrar yok. 22 taç teması + 3 reklamsız paket teması = 25.
 const SKINS = [
   { id: 'metro', name: 'Metro', need: 0 },
-  { id: 'sunset', name: 'Gün Batımı', need: 5, lines: ['#ff9e7a', '#ffb36b', '#ff7f6b', '#ffc48a', '#ff8fa3', '#ffa94d'], acc: ['#ffb36b', '#ff7f6b'], glow: ['#ff9e5a', '#ff6f91', '#ffb86b'] },
-  { id: 'ocean', name: 'Okyanus', need: 25, lines: ['#5ce1e6', '#4fa3ff', '#7dd3fc', '#38bdf8', '#67e8f9', '#2dd4bf'], acc: ['#5ce1e6', '#4fa3ff'], glow: ['#3fb6d9', '#3a5bff', '#2dd4bf'] },
-  { id: 'forest', name: 'Orman', need: 40, lines: ['#7bd88f', '#a3e635', '#4ade80', '#86efac', '#5fd3a1', '#bef264'], acc: ['#7bd88f', '#3fb68b'], glow: ['#4fb477', '#2f7d5b', '#a3e635'] },
-  { id: 'desert', name: 'Çöl', need: 55, lines: ['#f2c38b', '#e8935f', '#e0b26f', '#d98a66', '#f5d6a8', '#cf9a63'], acc: ['#f2c38b', '#e8935f'], glow: ['#e8935f', '#a8653f', '#f2c38b'] },
+  { id: 'sunset', name: L('Gün Batımı', 'Sunset'), need: 5, lines: ['#ff9e7a', '#ffb36b', '#ff7f6b', '#ffc48a', '#ff8fa3', '#ffa94d'], acc: ['#ffb36b', '#ff7f6b'], glow: ['#ff9e5a', '#ff6f91', '#ffb86b'] },
+  { id: 'ocean', name: L('Okyanus', 'Ocean'), need: 25, lines: ['#5ce1e6', '#4fa3ff', '#7dd3fc', '#38bdf8', '#67e8f9', '#2dd4bf'], acc: ['#5ce1e6', '#4fa3ff'], glow: ['#3fb6d9', '#3a5bff', '#2dd4bf'] },
+  { id: 'forest', name: L('Orman', 'Forest'), need: 40, lines: ['#7bd88f', '#a3e635', '#4ade80', '#86efac', '#5fd3a1', '#bef264'], acc: ['#7bd88f', '#3fb68b'], glow: ['#4fb477', '#2f7d5b', '#a3e635'] },
+  { id: 'desert', name: L('Çöl', 'Desert'), need: 55, lines: ['#f2c38b', '#e8935f', '#e0b26f', '#d98a66', '#f5d6a8', '#cf9a63'], acc: ['#f2c38b', '#e8935f'], glow: ['#e8935f', '#a8653f', '#f2c38b'] },
   { id: 'sakura', name: 'Sakura', need: 70, lines: ['#ffb7c5', '#ff8fab', '#f9a8d4', '#ffc2d9', '#f48fb1', '#e7a6ff'], acc: ['#ffb7c5', '#f48fb1'], glow: ['#ff9fb8', '#e48bff', '#ffc2d9'] },
-  { id: 'neon', name: 'Neon Gece', need: 90, lines: ['#ff3ddc', '#22e6ff', '#b84dff', '#ff5ea8', '#5b8cff', '#d65cff'], acc: ['#ff3ddc', '#22e6ff'], glow: ['#ff3ddc', '#22e6ff', '#7a2bff'] },
-  { id: 'aurora', name: 'Kuzey Işıkları', need: 110, lines: ['#6ef3c5', '#5ee0ff', '#a6ffcb', '#7aa2ff', '#9d8cff', '#63e6be'], acc: ['#6ef3c5', '#7aa2ff'], glow: ['#2ee6a6', '#6b5bff', '#5ee0ff'] },
-  { id: 'lava', name: 'Lav', need: 135, lines: ['#ff5a36', '#ff9f1c', '#ff7b54', '#ffb347', '#e63946', '#ff6b6b'], acc: ['#ff7b3a', '#e63946'], glow: ['#ff3d00', '#b5179e', '#ff9f1c'] },
-  { id: 'cosmos', name: 'Kozmos', need: 160, lines: ['#9d8cff', '#b5a8ff', '#c084fc', '#818cf8', '#a78bfa', '#e0aaff'], acc: ['#9d8cff', '#c084fc'], glow: ['#5b3df5', '#0ea5e9', '#d946ef'] },
-  { id: 'glacier', name: 'Buzul', need: 190, lines: ['#a8e6ff', '#7cc8ff', '#c4f1ff', '#8fb8ff', '#b0d8ff', '#9ee7f0'], acc: ['#a8e6ff', '#7cc8ff'], glow: ['#5fb8ff', '#a8e6ff', '#3a7bd5'] },
-  { id: 'spring', name: 'Bahar', need: 220, lines: ['#9be15d', '#ffb3c7', '#7ee0b5', '#ffd36e', '#c7f08a', '#f7a8d8'], acc: ['#9be15d', '#ffb3c7'], glow: ['#6ccf5f', '#ff9ec1', '#ffd36e'] },
-  { id: 'autumn', name: 'Sonbahar', need: 250, lines: ['#e8a33d', '#d9824a', '#f0c060', '#c9a24a', '#e6b980', '#d6945a'], acc: ['#e8a33d', '#d9824a'], glow: ['#d9822b', '#8c3b1f', '#f0c060'] },
-  { id: 'reef', name: 'Mercan Resifi', need: 280, lines: ['#ff9a8b', '#4fd1c5', '#ffc074', '#5ab8ff', '#ff9ec7', '#7be0a5'], acc: ['#ff9a8b', '#4fd1c5'], glow: ['#ff7e6b', '#22b8cf', '#ffc074'] },
-  { id: 'tea', name: 'Çay Bahçesi', need: 310, lines: ['#7fbf7f', '#a7d49b', '#5fae8a', '#c9e4a7', '#8fc9a3', '#b5d98c'], acc: ['#7fbf7f', '#5fae8a'], glow: ['#3f8f5f', '#7fbf7f', '#c9e4a7'] },
-  { id: 'tulip', name: 'Lale', need: 340, lines: ['#e86fb0', '#b77cff', '#ff96d0', '#9b7bff', '#f2a0e6', '#c58bff'], acc: ['#e86fb0', '#b77cff'], glow: ['#c2185b', '#7b4bff', '#ff86c8'] },
-  { id: 'storm', name: 'Fırtına', need: 370, lines: ['#a9bccf', '#7f9ec0', '#c8d4e0', '#8fb2d2', '#b3c0dc', '#98adc2'], acc: ['#a9bccf', '#7f9ec0'], glow: ['#4a6380', '#8aa1b8', '#2c3e57'] },
-  { id: 'midnight', name: 'Gece Yarısı', need: 400, lines: ['#7d8bff', '#9a8cff', '#6aa8ff', '#b09aff', '#8c9dff', '#8080ff'], acc: ['#9a8cff', '#7d8bff'], glow: ['#2b2f8f', '#5b3df5', '#1e3a8a'] },
-  { id: 'rainbow', name: 'Gökkuşağı', need: 440, lines: ['#ff9a5c', '#ffd166', '#7bd88f', '#5cc8ff', '#9d8cff', '#ff8fd6'], acc: ['#ffd166', '#5cc8ff'], glow: ['#ff8a5c', '#5cc8ff', '#9d8cff'] },
-  { id: 'synth', name: 'Retro Dalga', need: 480, lines: ['#ff71ce', '#01cdfe', '#05ffa1', '#b967ff', '#fffb96', '#ff9cf0'], acc: ['#ff71ce', '#01cdfe'], glow: ['#b967ff', '#ff71ce', '#01cdfe'] },
+  { id: 'neon', name: L('Neon Gece', 'Neon Night'), need: 90, lines: ['#ff3ddc', '#22e6ff', '#b84dff', '#ff5ea8', '#5b8cff', '#d65cff'], acc: ['#ff3ddc', '#22e6ff'], glow: ['#ff3ddc', '#22e6ff', '#7a2bff'] },
+  { id: 'aurora', name: L('Kuzey Işıkları', 'Northern Lights'), need: 110, lines: ['#6ef3c5', '#5ee0ff', '#a6ffcb', '#7aa2ff', '#9d8cff', '#63e6be'], acc: ['#6ef3c5', '#7aa2ff'], glow: ['#2ee6a6', '#6b5bff', '#5ee0ff'] },
+  { id: 'lava', name: L('Lav', 'Lava'), need: 135, lines: ['#ff5a36', '#ff9f1c', '#ff7b54', '#ffb347', '#e63946', '#ff6b6b'], acc: ['#ff7b3a', '#e63946'], glow: ['#ff3d00', '#b5179e', '#ff9f1c'] },
+  { id: 'cosmos', name: L('Kozmos', 'Cosmos'), need: 160, lines: ['#9d8cff', '#b5a8ff', '#c084fc', '#818cf8', '#a78bfa', '#e0aaff'], acc: ['#9d8cff', '#c084fc'], glow: ['#5b3df5', '#0ea5e9', '#d946ef'] },
+  { id: 'glacier', name: L('Buzul', 'Glacier'), need: 190, lines: ['#a8e6ff', '#7cc8ff', '#c4f1ff', '#8fb8ff', '#b0d8ff', '#9ee7f0'], acc: ['#a8e6ff', '#7cc8ff'], glow: ['#5fb8ff', '#a8e6ff', '#3a7bd5'] },
+  { id: 'spring', name: L('Bahar', 'Spring'), need: 220, lines: ['#9be15d', '#ffb3c7', '#7ee0b5', '#ffd36e', '#c7f08a', '#f7a8d8'], acc: ['#9be15d', '#ffb3c7'], glow: ['#6ccf5f', '#ff9ec1', '#ffd36e'] },
+  { id: 'autumn', name: L('Sonbahar', 'Autumn'), need: 250, lines: ['#e8a33d', '#d9824a', '#f0c060', '#c9a24a', '#e6b980', '#d6945a'], acc: ['#e8a33d', '#d9824a'], glow: ['#d9822b', '#8c3b1f', '#f0c060'] },
+  { id: 'reef', name: L('Mercan Resifi', 'Coral Reef'), need: 280, lines: ['#ff9a8b', '#4fd1c5', '#ffc074', '#5ab8ff', '#ff9ec7', '#7be0a5'], acc: ['#ff9a8b', '#4fd1c5'], glow: ['#ff7e6b', '#22b8cf', '#ffc074'] },
+  { id: 'tea', name: L('Çay Bahçesi', 'Tea Garden'), need: 310, lines: ['#7fbf7f', '#a7d49b', '#5fae8a', '#c9e4a7', '#8fc9a3', '#b5d98c'], acc: ['#7fbf7f', '#5fae8a'], glow: ['#3f8f5f', '#7fbf7f', '#c9e4a7'] },
+  { id: 'tulip', name: L('Lale', 'Tulip'), need: 340, lines: ['#e86fb0', '#b77cff', '#ff96d0', '#9b7bff', '#f2a0e6', '#c58bff'], acc: ['#e86fb0', '#b77cff'], glow: ['#c2185b', '#7b4bff', '#ff86c8'] },
+  { id: 'storm', name: L('Fırtına', 'Storm'), need: 370, lines: ['#a9bccf', '#7f9ec0', '#c8d4e0', '#8fb2d2', '#b3c0dc', '#98adc2'], acc: ['#a9bccf', '#7f9ec0'], glow: ['#4a6380', '#8aa1b8', '#2c3e57'] },
+  { id: 'midnight', name: L('Gece Yarısı', 'Midnight'), need: 400, lines: ['#7d8bff', '#9a8cff', '#6aa8ff', '#b09aff', '#8c9dff', '#8080ff'], acc: ['#9a8cff', '#7d8bff'], glow: ['#2b2f8f', '#5b3df5', '#1e3a8a'] },
+  { id: 'rainbow', name: L('Gökkuşağı', 'Rainbow'), need: 440, lines: ['#ff9a5c', '#ffd166', '#7bd88f', '#5cc8ff', '#9d8cff', '#ff8fd6'], acc: ['#ffd166', '#5cc8ff'], glow: ['#ff8a5c', '#5cc8ff', '#9d8cff'] },
+  { id: 'synth', name: L('Retro Dalga', 'Retro Wave'), need: 480, lines: ['#ff71ce', '#01cdfe', '#05ffa1', '#b967ff', '#fffb96', '#ff9cf0'], acc: ['#ff71ce', '#01cdfe'], glow: ['#b967ff', '#ff71ce', '#01cdfe'] },
   { id: 'pastel', name: 'Pastel', need: 520, lines: ['#ffc8d6', '#b9e3b9', '#b6dafe', '#fff0a8', '#ddbcff', '#ffd2b0'], acc: ['#b6dafe', '#ffc8d6'], glow: ['#cdb4db', '#a2d2ff', '#ffc8dd'] },
-  { id: 'dawn', name: 'Şafak', need: 560, lines: ['#ffb38a', '#ffd6a5', '#f9a8c4', '#f5c2f2', '#ffe5b4', '#f7a87a'], acc: ['#ffb38a', '#f9a8c4'], glow: ['#ff9a76', '#c38bff', '#ffd6a5'] },
+  { id: 'dawn', name: L('Şafak', 'Dawn'), need: 560, lines: ['#ffb38a', '#ffd6a5', '#f9a8c4', '#f5c2f2', '#ffe5b4', '#f7a87a'], acc: ['#ffb38a', '#f9a8c4'], glow: ['#ff9a76', '#c38bff', '#ffd6a5'] },
   // 💛 yalnızca Reklamsız paketle (taçla alınmaz)
-  { id: 'gold', name: 'Altın', vip: true, lines: ['#ffd36b', '#f5b942', '#ffe7a3', '#e9a93a', '#fff1b8', '#d9a520'], acc: ['#ffd36b', '#e9a23a'], glow: ['#ffcf6b', '#b8862b', '#ffe8a3'] },
-  { id: 'diamond', name: 'Elmas', vip: true, lines: ['#d6f1ff', '#bae6fd', '#c7d2fe', '#e9e4ff', '#a5f3fc', '#ddd6fe'], acc: ['#bae6fd', '#c7d2fe'], glow: ['#7dd3fc', '#a78bfa', '#e0f2fe'] },
-  { id: 'ruby', name: 'Yakut', vip: true, lines: ['#ff4d6d', '#ff758f', '#e0245e', '#ff8fab', '#f43f5e', '#ff5c8a'], acc: ['#ff4d6d', '#e0245e'], glow: ['#c9184a', '#ff4d6d', '#7b2cbf'] },
+  { id: 'gold', name: L('Altın', 'Gold'), vip: true, lines: ['#ffd36b', '#f5b942', '#ffe7a3', '#e9a93a', '#fff1b8', '#d9a520'], acc: ['#ffd36b', '#e9a23a'], glow: ['#ffcf6b', '#b8862b', '#ffe8a3'] },
+  { id: 'diamond', name: L('Elmas', 'Diamond'), vip: true, lines: ['#d6f1ff', '#bae6fd', '#c7d2fe', '#e9e4ff', '#a5f3fc', '#ddd6fe'], acc: ['#bae6fd', '#c7d2fe'], glow: ['#7dd3fc', '#a78bfa', '#e0f2fe'] },
+  { id: 'ruby', name: L('Yakut', 'Ruby'), vip: true, lines: ['#ff4d6d', '#ff758f', '#e0245e', '#ff8fab', '#f43f5e', '#ff5c8a'], acc: ['#ff4d6d', '#e0245e'], glow: ['#c9184a', '#ff4d6d', '#7b2cbf'] },
 ];
 const crownCount = () => Object.keys(save.crowns).length + (save.dCrowns || 0) + (save.fc || 0) + (save.cc || 0);   // toplam kazanılan (bölüm + günlük + final + seri bonusu)
 const crownBal = () => crownCount() - (save.spent || 0);                             // harcanabilir bakiye
@@ -205,18 +209,24 @@ const hashStr = s => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ 
 
 // Yeni kural gelen hatlar (0 tabanlı). M3 (29+): sabit karolar · M4 (49+): eşli karolar.
 const RULES = {
-  2: { name: 'Sabit karo', tag: 'Yeni: sabit karo', demo: '<div class="rdemo" aria-hidden="true"><i class="rt"><b></b></i><i class="rtap"></i></div>',
-    text: 'Koyu, cıvatalı karolar <b>dönmez</b>. Zaten doğru yöndeler: etrafındaki hattı <b>onlara göre</b> bağla. Hamle saymazlar.' },
-  5: { name: 'Karanlık tünel', tag: 'Yeni: karanlık tünel', demo: '<div class="rdemo3" aria-hidden="true"><i class="ft on"><b></b></i><i class="ft mid"><b></b></i><i class="ft dk"><b></b><s></s></i></div>',
-    text: 'Hattın ulaşmadığı yerler <b>karanlık</b>: rayları görünmez, dokunulmaz. Hat ilerledikçe çevresi <b>aydınlanır</b> ve açık kalır. Işığı takip et!' },
-  4: { name: 'Ters karo', tag: 'Yeni: ters karo', demo: '<div class="rdemo2" aria-hidden="true"><i class="pt rv"><b></b><em>↺</em></i><i class="rtap2"></i></div>',
-    text: 'Oklu (↺) karolar <b>ters yöne</b>, saat yönünün tersine döner. Parmağının alışkanlığına güvenme!' },
-  6: { name: 'Sayaçlı karo', tag: 'Yeni: sayaçlı karo', demo: '<div class="rdemo2" aria-hidden="true"><i class="pt cn"><b></b><em><span>3<br>2<br>1<br>0</span></em></i><i class="rtap2"></i></div>',
-    text: 'Sayılı karo en fazla <b>3 kez</b> döner; sayı bitince kilitlenir. <b>Önce düşün, sonra dokun.</b> Takılırsan ↺ baştan ya da 💡 ipucu.' },
-  7: { name: 'İki merkez', tag: 'Yeni: iki merkez', demo: '<div class="rdemo5" aria-hidden="true"><i class="hb a"></i><i class="ln a"></i><i class="gap"></i><i class="ln b"></i><i class="hb b"></i></div>',
-    text: '<b>İki istasyon, iki renk.</b> Her durak kendi merkezine bağlanmalı. İki hat birbirine değerse <b>kırmızı</b> yanar: ayır!' },
-  3: { name: 'Eşli karo', tag: 'Yeni: eşli karo', demo: '<div class="rdemo2" aria-hidden="true"><i class="pt"><b></b><em>1</em></i><i class="pt"><b></b><em>1</em></i><i class="rtap2"></i></div>',
-    text: 'Aynı renk ve numaralı iki karo <b>birlikte döner</b>: birine dokununca öteki de çevrilir. İkisinin de oturacağı yönü bul. Tek dokunuş = <b>1 hamle</b>.' },
+  2: { name: L('Sabit karo', 'Fixed tile'), tag: L('Yeni: sabit karo', 'New: fixed tile'), demo: '<div class="rdemo" aria-hidden="true"><i class="rt"><b></b></i><i class="rtap"></i></div>',
+    text: L('Koyu, cıvatalı karolar <b>dönmez</b>. Zaten doğru yöndeler: etrafındaki hattı <b>onlara göre</b> bağla. Hamle saymazlar.',
+      'Dark, bolted tiles <b>don’t turn</b>. They already face the right way: build the line around them <b>to fit</b>. They never cost a move.') },
+  5: { name: L('Karanlık tünel', 'Dark tunnel'), tag: L('Yeni: karanlık tünel', 'New: dark tunnel'), demo: '<div class="rdemo3" aria-hidden="true"><i class="ft on"><b></b></i><i class="ft mid"><b></b></i><i class="ft dk"><b></b><s></s></i></div>',
+    text: L('Hattın ulaşmadığı yerler <b>karanlık</b>: rayları görünmez, dokunulmaz. Hat ilerledikçe çevresi <b>aydınlanır</b> ve açık kalır. Işığı takip et!',
+      'Where the line hasn’t reached is <b>dark</b>: tracks are hidden and can’t be tapped. As the line grows, the area <b>lights up</b> and stays lit. Follow the light!') },
+  4: { name: L('Ters karo', 'Reverse tile'), tag: L('Yeni: ters karo', 'New: reverse tile'), demo: '<div class="rdemo2" aria-hidden="true"><i class="pt rv"><b></b><em>↺</em></i><i class="rtap2"></i></div>',
+    text: L('Oklu (↺) karolar <b>ters yöne</b>, saat yönünün tersine döner. Parmağının alışkanlığına güvenme!',
+      'Arrow (↺) tiles turn the <b>other way</b>, counterclockwise. Don’t trust your finger’s habit!') },
+  6: { name: L('Sayaçlı karo', 'Counter tile'), tag: L('Yeni: sayaçlı karo', 'New: counter tile'), demo: '<div class="rdemo2" aria-hidden="true"><i class="pt cn"><b></b><em><span>3<br>2<br>1<br>0</span></em></i><i class="rtap2"></i></div>',
+    text: L('Sayılı karo en fazla <b>3 kez</b> döner; sayı bitince kilitlenir. <b>Önce düşün, sonra dokun.</b> Takılırsan ↺ baştan ya da 💡 ipucu.',
+      'A numbered tile turns at most <b>3 times</b>, then locks. <b>Think first, then tap.</b> Stuck? ↺ restart or use a 💡 hint.') },
+  7: { name: L('İki merkez', 'Two hubs'), tag: L('Yeni: iki merkez', 'New: two hubs'), demo: '<div class="rdemo5" aria-hidden="true"><i class="hb a"></i><i class="ln a"></i><i class="gap"></i><i class="ln b"></i><i class="hb b"></i></div>',
+    text: L('<b>İki istasyon, iki renk.</b> Her durak kendi merkezine bağlanmalı. İki hat birbirine değerse <b>kırmızı</b> yanar: ayır!',
+      '<b>Two hubs, two colors.</b> Every station must reach its own hub. If the two lines touch, they glow <b>red</b>: split them!') },
+  3: { name: L('Eşli karo', 'Paired tiles'), tag: L('Yeni: eşli karo', 'New: paired tiles'), demo: '<div class="rdemo2" aria-hidden="true"><i class="pt"><b></b><em>1</em></i><i class="pt"><b></b><em>1</em></i><i class="rtap2"></i></div>',
+    text: L('Aynı renk ve numaralı iki karo <b>birlikte döner</b>: birine dokununca öteki de çevrilir. İkisinin de oturacağı yönü bul. Tek dokunuş = <b>1 hamle</b>.',
+      'Two tiles with the same color and number <b>turn together</b>: tap one and the other turns too. Find a spot where both fit. One tap = <b>1 move</b>.') },
 };
 // kural → tanıtıldığı hat. Kendi hattında her bölümde; sonra bölüm bölüm dönüşümlü 1–2 kural (kalabalık olmasın).
 // M9'dan sonra yeni kurallar eklenti dosyalarından gelir (www/rules/*.js → loadRules): M9, M11, M13… · aradaki hatlar karma.
@@ -682,8 +692,8 @@ function countdown() {
 }
 function dailyClock() {
   if (save.dailyDone !== today()) { if ($('bDaily').classList.contains('done')) refreshHome(); return; }
-  $('dailyState').textContent = `Yeni hat ${countdown()}`;
-  if ($('mClock')) $('mClock').textContent = `Yeni Günün Hattı: ${countdown()}`;
+  $('dailyState').textContent = L(`Yeni hat ${countdown()}`, `New line in ${countdown()}`);
+  if ($('mClock')) $('mClock').textContent = L(`Yeni Günün Hattı: ${countdown()}`, `Next Daily Line: ${countdown()}`);
 }
 function refreshHome() {
   dayTick();
@@ -691,19 +701,19 @@ function refreshHome() {
   $('sStars').textContent = tot;
   $('sStreak').textContent = save.streak; $('streakChip').classList.toggle('new', rescueOk());
   $('sCrowns').textContent = crownBal(); $('crownChip').classList.toggle('new', !!save.newSkin);
-  $('sHints').textContent = save.hints;
-  $('hLevel').textContent = save.level;
+  $('sHints').textContent = save.hints; $('sHintsL').textContent = L('ipucu', pl(save.hints, 'hint', 'hints'));
+  $('hLevel').textContent = save.level; $('hLvl').firstChild.textContent = L('Bölüm ', 'Level ');
   const done = save.dailyDone === today();
   $('bDaily').classList.toggle('done', done);
-  $('dailyTitle').textContent = done ? 'Tamamlandı ✓' : 'Hazır';
-  if (done) dailyClock(); else $('dailyState').textContent = rescueOk() ? `💔 ${save.lost.n} günlük serin koptu · kurtar` : save.streak ? `🔥 ${save.streak} günlük serini koru` : 'Her gün yeni bir hat';
+  $('dailyTitle').textContent = done ? L('Tamamlandı ✓', 'Done ✓') : L('Hazır', 'Ready');
+  if (done) dailyClock(); else $('dailyState').textContent = rescueOk() ? L(`💔 ${save.lost.n} günlük serin koptu · kurtar`, `💔 ${save.lost.n}-day streak lost · save it`) : save.streak ? L(`🔥 ${save.streak} günlük serini koru`, `🔥 Keep your ${save.streak}-day streak`) : L('Her gün yeni bir hat', 'A new line every day');
   const c = lineOf(save.level), nx = c + 1, lo = need(c), hi = need(nx);
   $('lineName').textContent = lineName(c);
   $('lineName').style.color = lineCol(c);
-  $('gateTxt').textContent = tot >= hi ? `★ ${tot} · M${nx + 1} açık` : `★ ${tot} / ${hi} → M${nx + 1}`;
+  $('gateTxt').textContent = tot >= hi ? `★ ${tot} · M${nx + 1} ${L('açık', 'open')}` : `★ ${tot} / ${hi} → M${nx + 1}`;
   $('progBar').style.width = Math.min(100, Math.max(4, (tot - lo) / Math.max(1, hi - lo) * 100)) + '%';
-  const [w, h] = sizeFor(save.level); $('sSize').textContent = `${w}×${h} · ⚡ zorluk %${zPct(save.level)}`;
-  $('dailyK').textContent = `GÜNÜN HATTI · ⚡%${dPct(today())}`;
+  const [w, h] = sizeFor(save.level); $('sSize').textContent = L(`${w}×${h} · ⚡ zorluk %${zPct(save.level)}`, `${w}×${h} · ⚡ ${zPct(save.level)}% hard`);
+  $('dailyK').textContent = L(`GÜNÜN HATTI · ⚡%${dPct(today())}`, `DAILY LINE · ⚡${dPct(today())}%`);
   $('bPlay').classList.toggle('locked', !unlocked(c));
   // sıradaki bölümü boşta önceden üret: zor kurallı 7×9 bölüm telefonda 1–2 sn sürebilir, "Oyna"da beklenmesin (çıktı aynı, yalnız önbellek)
   if (unlocked(c)) { const l = save.level, go = () => { if (active('home')) puzzleFor(l); }; window.requestIdleCallback ? requestIdleCallback(go, { timeout: 1500 }) : setTimeout(go, 600); }
@@ -713,13 +723,13 @@ function refreshHome() {
 function renderMap() {
   const tot = totalStars(), last = Math.max(TEST ? 19 : 0, lineOf(save.level) + 1);
   $('pStars').textContent = tot;
-  $('pSub').textContent = 'Yıldız topla → yeni hat aç';
+  $('pSub').textContent = L('Yıldız topla → yeni hat aç', 'Earn stars → open new lines');
   let html = '';
   for (let c = 0; c <= Math.max(1, last); c++) {
     const open = unlocked(c), first = lineStart(c), len = lineLen(c);
     const got = Array.from({ length: len }, (_, k) => save.stars[first + k] || 0).reduce((a, b) => a + b, 0);
     html += `<div class="line ${open ? '' : 'lockd'}" style="--lc:${lineCol(c)}">
-      <div class="lh"><i class="dot"></i><b>${lineName(c)}${RULES[c] ? `<em>${RULES[c].tag}</em>` : ''}</b><small>${open ? `★ ${got} / ${len * 3} · ⚡%${zPct(first)}` : `🔒 ★ ${tot} / ${need(c)}`}</small></div>
+      <div class="lh"><i class="dot"></i><b>${lineName(c)}${RULES[c] ? `<em>${RULES[c].tag}</em>` : ''}</b><small>${open ? `★ ${got} / ${len * 3} · ⚡${L('%' + zPct(first), zPct(first) + '%')}` : `🔒 ★ ${tot} / ${need(c)}`}</small></div>
       <div class="lvs">${Array.from({ length: len }, (_, k) => {
         const l = first + k, st = save.stars[l] || 0, can = open && (TEST || l <= save.level);
         return `<button class="lv ${can ? '' : 'off'} ${l === save.level && can ? 'cur' : ''} ${l === lineEnd(c) ? 'fin' : ''}" data-l="${l}" ${can ? '' : 'disabled'}><b>${l}</b><i>${can ? (save.crowns[l] ? '👑' : starTxt(st)) : ''}</i></button>`;
@@ -730,10 +740,13 @@ function renderMap() {
 $('mapList').onclick = e => { const b = e.target.closest('.lv'); if (b && !b.disabled) start('level', +b.dataset.l); };
 function lockedSheet(c) {
   const tot = totalStars();
-  modal(`<h2>${lineName(c)} kilitli</h2>
-    <p>Bu hattı açmak için <b class="nw">★ ${need(c)}</b> gerekli. Sende <b class="nw">★ ${tot}</b> var.<br>Önceki bölümleri daha <b>hızlı</b> ve <b>az hamleyle</b> tekrar oyna, yıldızlarını artır.</p>
+  const miss = need(c) - tot;
+  modal(L(`<h2>${lineName(c)} kilitli</h2>
+    <p>Bu hattı açmak için <b class="nw">★ ${need(c)}</b> gerekli. Sende <b class="nw">★ ${tot}</b> var.<br>Önceki bölümleri daha <b>hızlı</b> ve <b>az hamleyle</b> tekrar oyna, yıldızlarını artır.</p>`,
+    `<h2>${lineName(c)} is locked</h2>
+    <p>You need <b class="nw">★ ${need(c)}</b> to open this line. You have <b class="nw">★ ${tot}</b>.<br>Replay earlier levels <b>faster</b> and in <b>fewer moves</b> to earn more stars.</p>`) + `
     <div class="pb big"><i style="width:${Math.min(100, tot / need(c) * 100)}%"></i></div>
-    <button id="mMap" class="btn primary"><span>Hatlara git</span><small>${need(c) - tot} yıldız eksik</small></button><button id="mClose" class="btn glassbtn">Kapat</button>`,
+    <button id="mMap" class="btn primary"><span>${L('Hatlara git', 'Go to lines')}</span><small>${L(`${miss} yıldız eksik`, `${miss} ${pl(miss, 'star', 'stars')} short`)}</small></button><button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`,
     { mMap: () => { closeModal(); show('map'); }, mClose: closeModal });
 }
 
@@ -787,19 +800,19 @@ function start(mode, lvl = save.level) {
   if (!G.seen) G.seen = G.cur.map(() => !G.fog);
   seenAt = G.seen.map(() => -1e9); reveal(true);
   G.tOk = timeOk(G.ms / 1000); G.mOk = movesOk();
-  $('gTitle').textContent = daily ? (G.practice ? 'Günün Hattı · pratik' : 'Günün Hattı') : `Bölüm ${lvl}${G.final ? ' · 🏁 Son durak' : ''}`;
+  $('gTitle').textContent = daily ? (G.practice ? L('Günün Hattı · pratik', 'Daily Line · practice') : L('Günün Hattı', 'Daily Line')) : `${L('Bölüm', 'Level')} ${lvl}${G.final ? L(' · 🏁 Son durak', ' · 🏁 Last stop') : ''}`;
   $('game').classList.toggle('final', !!G.final);
-  $('gMoves').textContent = `${daily ? new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl))} · ⚡%${daily ? dPct(day) : zPct(lvl)}`;
+  $('gMoves').textContent = `${daily ? new Date().toLocaleDateString(LOC, { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl))} · ⚡${L('%' + (daily ? dPct(day) : zPct(lvl)), (daily ? dPct(day) : zPct(lvl)) + '%')}`;
   $('gHints').textContent = save.hints;
   clearTimeout(bubT); $('gBub').classList.remove('show');
   const stake = comboStake(); $('gCombo').hidden = stake < 2; $('gCombo').textContent = `🔥${stake}`;
   show('game'); resize(); hud(); tick();
   const rc = daily ? null : (G.rules || []).map(k => RULE_LINE[k]).filter(c => RULES[c] && !save.seen[c]).sort((a, b) => a - b)[0];
   if (rc != null) ruleCard(rc);
-  if (save.played === 0) setTimeout(() => toast('Karoya dokun → döner'), 500);
-  else if (save.comboLost?.lvl === lvl && !daily && !G.moves) setTimeout(() => toast(`🔥 Kusursuz bitir → ${save.comboLost.n} seri geri gelir`), 600);
-  else if (G.final && !save.crowns[lvl] && !G.moves) setTimeout(() => toast('🏁 Son durak · kusursuz bitir → +1 bonus 👑'), 600);
-  else if (!daily && save.miss[lvl] && !save.crowns[lvl] && !G.moves) setTimeout(() => toast(`Geçen sefer: ${missTxt(lvl)}`), 600);
+  if (save.played === 0) setTimeout(() => toast(L('Karoya dokun → döner', 'Tap a tile → it turns')), 500);
+  else if (save.comboLost?.lvl === lvl && !daily && !G.moves) setTimeout(() => toast(L(`🔥 Kusursuz bitir → ${save.comboLost.n} seri geri gelir`, `🔥 Finish perfect → get your ${save.comboLost.n} streak back`)), 600);
+  else if (G.final && !save.crowns[lvl] && !G.moves) setTimeout(() => toast(L('🏁 Son durak · kusursuz bitir → +1 bonus 👑', '🏁 Last stop · finish perfect → +1 bonus 👑')), 600);
+  else if (!daily && save.miss[lvl] && !save.crowns[lvl] && !G.moves) setTimeout(() => toast(L(`Geçen sefer: ${missTxt(lvl)}`, `Last time: ${missTxt(lvl)}`)), 600);
 }
 // karanlık tünel: yanan karoların FOG_R yakını (ve ipucuyla sabitlenen) aydınlanır; aydınlanan bir daha kararmaz
 let seenAt = [];
@@ -821,7 +834,7 @@ function hud() {
   const ok = movesOk();
   $('gPar').innerHTML = `${G.moves}<small> / ${G.lim.m}</small>`;
   $('gPar').classList.toggle('miss', !ok);
-  $('gParLbl').textContent = ok ? '↻ HAMLE HEDEFİ' : '↻ HEDEF AŞILDI';
+  $('gParLbl').textContent = ok ? L('↻ HAMLE HEDEFİ', '↻ MOVE TARGET') : L('↻ HEDEF AŞILDI', '↻ OVER TARGET');
   const pct = Math.round(G.L.n / G.cur.length * 100);
   $('gBar').style.width = pct + '%'; $('gPct').textContent = pct + '%';
 }
@@ -832,15 +845,15 @@ function tick() {
   $('gTime').textContent = fmtT(ms);
   const [s1, s2, s3] = $('gStars').children;
   s1.classList.add('on'); s2.classList.toggle('on', tOk); s3.classList.toggle('on', mOk);
-  if (!G.won) setNext(tOk ? `⏱ ${fmtT(left * 1000 + 999)}` : `<span class="miss">+${fmtT(-left * 1000)} rötar</span>`);
+  if (!G.won) setNext(tOk ? `⏱ ${fmtT(left * 1000 + 999)}` : `<span class="miss">+${fmtT(-left * 1000)} ${L('rötar', 'late')}</span>`);
   $('gPill').classList.toggle('warn', tOk && left <= 10 && !G.won);
   $('gCombo').classList.toggle('off', !(tOk && mOk));
   trip(sec, tOk, left);
   if (!G.won) {
     // kusursuz seri bu bölümde tehlikede → baştan başlamak seriyi korur (↺ süreyi de sıfırlar)
-    const s = comboStake(), keep = s >= 2 ? ` · ↺ baştan → 🔥${s} sürer` : '';
-    if (G.tOk && !tOk) lose('⏱ Tren rötarda · ★ söndü' + keep);
-    if (G.mOk && !mOk) lose('↻ Hamle hedefi aşıldı · ★ söndü' + keep);
+    const s = comboStake(), keep = s >= 2 ? L(` · ↺ baştan → 🔥${s} sürer`, ` · ↺ restart → keep 🔥${s}`) : '';
+    if (G.tOk && !tOk) lose(L('⏱ Tren rötarda · ★ söndü', '⏱ Train is late · ★ lost') + keep);
+    if (G.mOk && !mOk) lose(L('↻ Hamle hedefi aşıldı · ★ söndü', '↻ Move target passed · ★ lost') + keep);
   }
   G.tOk = tOk; G.mOk = mOk;
   // gerilim: süre hedefinin %30'undan sonra 8 kademede artar; hedef geçince de 2 katına kadar artmaya devam eder
@@ -852,9 +865,12 @@ const setNext = h => { if (h !== G.nxHtml) { $('gNext').innerHTML = h; G.nxHtml 
 // ---------- sefer şeridi: tren süre boyunca sinyale ilerler; bulmaca bitince perona girer ----------
 // Süre dolunca oyun bitmez: tren sinyalde bekler, rötar sayar, peronda yolcular arada bir laf atar (en çok 3 kez).
 const SIG = .84, PAX_AT = [3, 15, 30], calmMotion = matchMedia('(prefers-reduced-motion: reduce)');
-const PAX = ['☕ Bir kahve daha alırım o zaman…', 'Patron bugün de anlayış gösterir herhalde.', 'Kitabın bir bölümü daha bitti 📖', 'Sinyal arızası mı var acaba?',
+const PAX = L(['☕ Bir kahve daha alırım o zaman…', 'Patron bugün de anlayış gösterir herhalde.', 'Kitabın bir bölümü daha bitti 📖', 'Sinyal arızası mı var acaba?',
   'Yürüsem daha erken varırdım 🚶', 'Neyse, manzara güzel.', 'Annem "neredesin" diye yazdı 📱', 'Kulaklıkta bir albüm bitti 🎧', 'Sabır, sabır… 🧘',
-  'Tren gelince alkışlayacağım 👏', '"Yoldayım" demiştim, inanmışlardı 😅', 'Kahvem soğudu ☕', 'Bu rötar da tarihe geçer.', 'Az kaldı galiba, ışık yandı 💡'];
+  'Tren gelince alkışlayacağım 👏', '"Yoldayım" demiştim, inanmışlardı 😅', 'Kahvem soğudu ☕', 'Bu rötar da tarihe geçer.', 'Az kaldı galiba, ışık yandı 💡'],
+  ['☕ Guess I’ll grab another coffee…', 'Hope the boss is patient today.', 'Finished another chapter 📖', 'Signal failure, maybe?',
+  'Walking would’ve been faster 🚶', 'Oh well, nice view.', 'Mom texted “where are you” 📱', 'A whole album just ended 🎧', 'Patience, patience… 🧘',
+  'I’ll clap when the train arrives 👏', 'I said “on my way”. They believed me 😅', 'My coffee went cold ☕', 'This delay will go down in history.', 'Almost there? The light’s on 💡']);
 let bubT = 0;
 function pax(msg) {
   const b = $('gBub'); b.textContent = msg || PAX[Math.random() * PAX.length | 0]; b.classList.add('show');
@@ -1063,10 +1079,10 @@ cv.addEventListener('pointerdown', e => {
   const c = Math.floor((px - ox) / s), w = Math.floor((py - oy) / s);
   if (c < 0 || w < 0 || c >= G.cols || w >= G.rows) return;
   const i = w * G.cols + c, now = performance.now();
-  if (G.fixed[i]) { haptic('light'); tone(440, .06, .02); toast('Bu karo ipucuyla sabitlendi'); press.set(i, now); kick(); return; }
-  if (G.fog && !G.seen[i]) { haptic('light'); tone(196, .05, .012); press.set(i, now); kick(); if (!G.fogTold) { toast('Karanlık tünel · hat yaklaşınca aydınlanır'); G.fogTold = true; } return; }
-  if (G.pinned[i]) { haptic('light'); tone(220, .05, .015); press.set(i, now); kick(); if (!G.pinTold) { toast('Sabit karo · dönmez'); G.pinTold = true; } return; }
-  if (G.cnt[i] === 0) { haptic('light'); tone(196, .05, .012); press.set(i, now); kick(); toast(G.cur[i] === G.sol[i] ? 'Sayaç bitti · bu karo yerinde' : 'Sayaç bitti · ↺ baştan ya da 💡 ipucu'); return; }
+  if (G.fixed[i]) { haptic('light'); tone(440, .06, .02); toast(L('Bu karo ipucuyla sabitlendi', 'This tile was set by a hint')); press.set(i, now); kick(); return; }
+  if (G.fog && !G.seen[i]) { haptic('light'); tone(196, .05, .012); press.set(i, now); kick(); if (!G.fogTold) { toast(L('Karanlık tünel · hat yaklaşınca aydınlanır', 'Dark tunnel · lights up as the line nears')); G.fogTold = true; } return; }
+  if (G.pinned[i]) { haptic('light'); tone(220, .05, .015); press.set(i, now); kick(); if (!G.pinTold) { toast(L('Sabit karo · dönmez', 'Fixed tile · doesn’t turn')); G.pinTold = true; } return; }
+  if (G.cnt[i] === 0) { haptic('light'); tone(196, .05, .012); press.set(i, now); kick(); toast(G.cur[i] === G.sol[i] ? L('Sayaç bitti · bu karo yerinde', 'Counter used up · tile is in place') : L('Sayaç bitti · ↺ baştan ya da 💡 ipucu', 'Counter used up · ↺ restart or 💡 hint')); return; }
   // eklenti engeli (ör. köprü dönmez): m.block(G, i) → bildirim metni ya da true
   for (const m of MODS) {
     const msg = m.block && G[m.key] && m.block(G, i); if (!msg) continue;
@@ -1089,14 +1105,14 @@ cv.addEventListener('pointerdown', e => {
   anim.set(i, now); press.set(i, now); ripples.push({ x: px, y: py, t: now });
   if (j >= 0) {   // eşi de döner
     G.cur[j] = rot(G.cur[j]); anim.set(j, now); press.set(j, now); links.push({ a: i, b: j, t: now });
-    if (!save.pairTold) { save.pairTold = 1; persist(); toast('Eşli karo · ikisi birlikte döner'); }
+    if (!save.pairTold) { save.pairTold = 1; persist(); toast(L('Eşli karo · ikisi birlikte döner', 'Paired tiles · both turn together')); }
   }
   }
   const prev = G.L.d, wasMerged = G.L.merged;
   G.L = lit(G); reveal();
   let gained = 0, stations = 0;
   G.L.d.forEach((v, j) => { if (v >= 0 && prev[j] < 0) { litAt[j] = now + v * 12; gained++; if (popc(G.cur[j]) === 1) { stations++; burst(j, 7, v * 12, ownCol(j)); } } });
-  if (G.L.merged && !wasMerged) { haptic('heavy'); toast('İki hat birbirine değdi · ayır!'); }
+  if (G.L.merged && !wasMerged) { haptic('heavy'); toast(L('İki hat birbirine değdi · ayır!', 'The two lines touch · split them!')); }
   for (const m of MODS) if (m.after && G[m.key]) m.after(G, i, now);   // eklenti geri bildirimi (halka kapandı, tabela…)
   const k = Math.round(G.L.n / G.cur.length * (PENTA.length - 1));
   if (gained) { tone(note(k), .22, .05); if (stations) tone(note(k + 2), .3, .035, 'sine', .06); haptic(stations ? 'heavy' : 'light'); }
@@ -1129,13 +1145,13 @@ function win() {
   let extra = '', unlockedNow = null, shard = false, dbl = 0;   // dbl: videoyla ikiye katlanabilecek ipucu
   let cmsg = '', combo = 0, broke = 0, near = false;               // kusursuz seri · kıl payı (tekrar öne çıkar)
   const late = Math.ceil(G.time / 1000 - G.lim.t);
-  setNext(tOk ? 'Tam vaktinde' : `<span class="miss">+${fmtT(late * 1000)} rötar</span>`); trip(G.time / 1000, tOk, 0);
-  if (!tOk) setTimeout(() => { if (G?.won) pax('Nihayet! 👏'); }, 700);
+  setNext(tOk ? L('Tam vaktinde', 'On time') : `<span class="miss">+${fmtT(late * 1000)} ${L('rötar', 'late')}</span>`); trip(G.time / 1000, tOk, 0);
+  if (!tOk) setTimeout(() => { if (G?.won) pax(L('Nihayet! 👏', 'Finally! 👏')); }, 700);
   if (G.daily) {
     if (save.dailyDone !== G.day) {
       save.streak = save.lastDaily === dayBefore(G.day) ? save.streak + 1 : 1; save.lastDaily = save.dailyDone = G.day;
       save.dailyLog = [...save.dailyLog.filter(d => d !== G.day), G.day].slice(-90); save.best = Math.max(save.best || 0, save.streak);
-      save.hints++; dbl = 1; extra = `🔥 ${save.streak} gün seri · +1 ipucu`; Remind.habit(); Remind.plan();
+      save.hints++; dbl = 1; extra = L(`🔥 ${save.streak} gün seri · +1 ipucu`, `🔥 ${save.streak}-day streak · +1 hint`); Remind.habit(); Remind.plan();
       save.dailyStats = { day: G.day, moves: G.moves, time: G.time, st, perfect };
       shard = perfect; if (perfect) save.dCrowns = (save.dCrowns || 0) + 1;
     }
@@ -1147,31 +1163,31 @@ function win() {
       const lost = save.comboLost; delete save.comboLost;
       if (perfect) {
         combo = save.combo = (lost?.lvl === G.lvl ? lost.n : save.combo || 0) + 1; save.comboBest = Math.max(save.comboBest || 0, combo);
-        if (combo % 5 === 0) { save.cc = (save.cc || 0) + 1; cmsg = `🔥 ${combo} kusursuz seri · +1 bonus 👑`; }
-        else if (combo === 3) { save.hints++; cmsg = '🔥 3 kusursuz seri · +1 ipucu'; }
-        else if (lost?.lvl === G.lvl) cmsg = `🔥 Seri geri geldi · ${combo}`;
+        if (combo % 5 === 0) { save.cc = (save.cc || 0) + 1; cmsg = L(`🔥 ${combo} kusursuz seri · +1 bonus 👑`, `🔥 ${combo} perfect in a row · +1 bonus 👑`); }
+        else if (combo === 3) { save.hints++; cmsg = L('🔥 3 kusursuz seri · +1 ipucu', '🔥 3 perfect in a row · +1 hint'); }
+        else if (lost?.lvl === G.lvl) cmsg = L(`🔥 Seri geri geldi · ${combo}`, `🔥 Streak is back · ${combo}`);
       } else {
-        if ((save.combo || 0) >= 2 && save.shield > 0) { save.shield--; combo = save.combo; cmsg = `🛡 Kalkan seriyi korudu · 🔥${combo}`; }   // sandıktan
+        if ((save.combo || 0) >= 2 && save.shield > 0) { save.shield--; combo = save.combo; cmsg = L(`🛡 Kalkan seriyi korudu · 🔥${combo}`, `🛡 Shield saved your streak · 🔥${combo}`); }   // sandıktan
         else { if ((save.combo || 0) >= 2) save.comboLost = { n: broke = save.combo, lvl: G.lvl }; save.combo = 0; }
         near = (tOk || late <= 5) && (mOk || G.moves - G.lim.m <= 2);
       }
     }
     // hangi hedef ne kadar kaçtı: [⏱ sn geç, ↻ hamle fazla]. Taç topla listesi ve tekrar oynarken gösterilir.
     if (perfect) delete save.miss[G.lvl]; else if (st >= old) save.miss[G.lvl] = [tOk ? 0 : Math.ceil(G.time / 1000 - G.lim.t), mOk ? 0 : G.moves - G.lim.m];
-    if (st > old && old) extra = `Yeni rekor: ${starTxt(st)}`;
+    if (st > old && old) extra = L(`Yeni rekor: ${starTxt(st)}`, `New best: ${starTxt(st)}`);
     save.level = Math.max(save.level, G.lvl + 1);
-    if (G.lvl === lineEnd(lineOf(G.lvl)) && firstClear) { save.hints += 2; dbl = 2; extra = '🎁 Hat tamam · +2 ipucu'; }
-    if (perfect && G.final && !save.crowns[G.lvl]) { save.fc = (save.fc || 0) + 1; extra = [extra, '🏁 Son durak kusursuz · +1 bonus 👑'].filter(Boolean).join(' · '); }
+    if (G.lvl === lineEnd(lineOf(G.lvl)) && firstClear) { save.hints += 2; dbl = 2; extra = L('🎁 Hat tamam · +2 ipucu', '🎁 Line complete · +2 hints'); }
+    if (perfect && G.final && !save.crowns[G.lvl]) { save.fc = (save.fc || 0) + 1; extra = [extra, L('🏁 Son durak kusursuz · +1 bonus 👑', '🏁 Perfect last stop · +1 bonus 👑')].filter(Boolean).join(' · '); }
     if (perfect && !save.crowns[G.lvl]) { save.crowns[G.lvl] = 1; shard = true; }   // parça bölüm başına bir kez
     for (let c = 1; c <= lineOf(save.level) + 1; c++) if (need(c) > before && unlocked(c)) unlockedNow = c;
   }
   let shardMsg = '';
   if (shard) {
     save.shards = (save.shards || 0) + 1;
-    if (save.shards >= 3) { save.shards -= 3; save.hints++; shardMsg = '💎 3 parça birleşti · +1 ipucu'; } else shardMsg = `💎 İpucu parçası ${save.shards}/3`;
+    if (save.shards >= 3) { save.shards -= 3; save.hints++; shardMsg = L('💎 3 parça birleşti · +1 ipucu', '💎 3 pieces joined · +1 hint'); } else shardMsg = L(`💎 İpucu parçası ${save.shards}/3`, `💎 Hint piece ${save.shards}/3`);
   }
   const ns = SKINS.find(k => !k.vip && !skinOpen(k) && k.need > cr0 && k.need <= crownBal());   // bakiye bir temaya yetti
-  if (ns) { save.newSkin = 1; extra = [extra, `🎨 ${ns.name} alınabilir (👑 ${ns.need})`].filter(Boolean).join(' · '); }
+  if (ns) { save.newSkin = 1; extra = [extra, L(`🎨 ${ns.name} alınabilir (👑 ${ns.need})`, `🎨 ${ns.name} available (👑 ${ns.need})`)].filter(Boolean).join(' · '); }
   persist();
   $('gCombo').hidden = combo < 2; $('gCombo').textContent = `🔥${combo}`; $('gCombo').classList.remove('off');
   const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { st, tOk, mOk, perfect, extra: [cmsg, shardMsg, extra].filter(Boolean).join(' · '), unlockedNow, ns, dbl, combo, broke, near };
@@ -1181,38 +1197,41 @@ function win() {
 // Sonuç paneli tahtanın altına yerleşir; tahta küçülüp üstte görünür kalır.
 // Kıl payı ya da kırılan seri → "Tekrar dene" büyük düğmeye geçer, Sonraki küçük sıraya iner (düğme sayısı aynı kalır).
 function winSheet(g, { st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, combo, broke, near }) {
-  const L = g.lim, nx = g.lvl + 1, nxLocked = !g.daily && !unlocked(lineOf(nx)), again = !g.daily && (near || broke >= 2);
-  const badge = unlockedNow ? `<span class="badge">YENİ HAT AÇILDI · M${unlockedNow + 1}</span>` : ns ? '<span class="badge">TEMA ALINABİLİR 🎨</span>' : perfect ? `<span class="badge">KUSURSUZ 👑${combo >= 2 ? ` · 🔥${combo}` : ''}</span>` : '';
-  const miss = [tOk ? '' : `⏱ ${Math.ceil(g.time / 1000 - L.t)} sn`, mOk ? '' : `↻ ${g.moves - L.m} hamle`].filter(Boolean).join(' · ');
-  const tip = perfect ? '' : `<p class="tip">Kusursuz için: ${[tOk ? '' : `⏱ ≤ ${fmtT(L.t * 1000)}`, mOk ? '' : `↻ ≤ ${L.m} hamle`].filter(Boolean).join(' ve ')}</p>`;
+  const lim = g.lim, nx = g.lvl + 1, nxLocked = !g.daily && !unlocked(lineOf(nx)), again = !g.daily && (near || broke >= 2);
+  const badge = unlockedNow ? `<span class="badge">${L('YENİ HAT AÇILDI', 'NEW LINE OPEN')} · M${unlockedNow + 1}</span>` : ns ? `<span class="badge">${L('TEMA ALINABİLİR', 'NEW THEME')} 🎨</span>` : perfect ? `<span class="badge">${L('KUSURSUZ', 'PERFECT')} 👑${combo >= 2 ? ` · 🔥${combo}` : ''}</span>` : '';
+  const late = Math.ceil(g.time / 1000 - lim.t), over = g.moves - lim.m;
+  const miss = [tOk ? '' : `⏱ ${late} ${L('sn', 's')}`, mOk ? '' : `↻ ${over} ${L('hamle', pl(over, 'move', 'moves'))}`].filter(Boolean).join(' · ');
+  const tip = perfect ? '' : `<p class="tip">${L('Kusursuz için', 'For perfect')}: ${[tOk ? '' : `⏱ ≤ ${fmtT(lim.t * 1000)}`, mOk ? '' : `↻ ≤ ${lim.m} ${L('hamle', 'moves')}`].filter(Boolean).join(L(' ve ', ' and '))}</p>`;
+  const B = { share: L('Paylaş', 'Share'), home: L('Ana sayfa', 'Home'), close: L('Kıl payı', 'So close') };
   const primary = g.daily
-    ? '<button id="mShare" class="btn primary"><span>Paylaş</span><small>Arkadaşına meydan oku</small></button><button id="mHome" class="btn glassbtn">Ana sayfa</button>'
+    ? `<button id="mShare" class="btn primary"><span>${B.share}</span><small>${L('Arkadaşına meydan oku', 'Challenge a friend')}</small></button><button id="mHome" class="btn glassbtn">${B.home}</button>`
     : again
-      ? `<button id="mRetry" class="btn primary"><span>Tekrar dene</span><small>${broke >= 2 ? `${near ? 'Kıl payı · ' : ''}🔥 ${broke} seri geri gelsin` : `Kıl payı · ${miss}`}</small></button>
-       <div class="row2">${nxLocked ? '<button id="mMap" class="btn glassbtn">Hatlar</button>' : '<button id="mNext" class="btn glassbtn">Sonraki</button>'}<button id="mShare" class="btn glassbtn">Paylaş</button><button id="mHome" class="btn glassbtn">Ana sayfa</button></div>`
-      : `${nxLocked ? `<button id="mMap" class="btn primary"><span>Yeni hat kilitli</span><small>★ ${totalStars()} / ${need(lineOf(nx))} · yıldız topla</small></button>` : `<button id="mNext" class="btn primary"><span>Sonraki</span><small>Bölüm ${nx}</small></button>`}
-       <div class="row2"><button id="mRetry" class="btn glassbtn">Tekrar</button><button id="mShare" class="btn glassbtn">Paylaş</button><button id="mHome" class="btn glassbtn">Ana sayfa</button></div>`;
-  $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml([true, tOk, mOk])}<div class="wp-t"><h2>${g.practice ? 'Pratik tamam!' : g.daily ? 'Günün Hattı tamam!' : 'Hat açıldı!'}</h2>${badge}</div></div>
-      <button id="wTog" class="wp-tog" aria-label="Hattı gör"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg><span>Hattı gör</span></button></div>
-    <div class="wp-more"><div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(L.t * 1000)}</small></b><span>${tOk ? '⏱ tam vaktinde ★' : '⏱ rötar ✗'}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${L.m}</small></b><span>↻ hamle ${mOk ? '★' : '✗'}</span></div></div>${tip}${extra ? `<p class="tip">${extra}${dbl && Ads.online() ? ` <button id="mDbl" class="dbl">▶ 2 katı</button>` : ''}</p>` : ''}</div>
+      ? `<button id="mRetry" class="btn primary"><span>${L('Tekrar dene', 'Try again')}</span><small>${broke >= 2 ? `${near ? B.close + ' · ' : ''}${L(`🔥 ${broke} seri geri gelsin`, `🔥 Win back your ${broke} streak`)}` : `${B.close} · ${miss}`}</small></button>
+       <div class="row2">${nxLocked ? `<button id="mMap" class="btn glassbtn">${L('Hatlar', 'Lines')}</button>` : `<button id="mNext" class="btn glassbtn">${L('Sonraki', 'Next')}</button>`}<button id="mShare" class="btn glassbtn">${B.share}</button><button id="mHome" class="btn glassbtn">${B.home}</button></div>`
+      : `${nxLocked ? `<button id="mMap" class="btn primary"><span>${L('Yeni hat kilitli', 'Next line locked')}</span><small>★ ${totalStars()} / ${need(lineOf(nx))} · ${L('yıldız topla', 'earn stars')}</small></button>` : `<button id="mNext" class="btn primary"><span>${L('Sonraki', 'Next')}</span><small>${L('Bölüm', 'Level')} ${nx}</small></button>`}
+       <div class="row2"><button id="mRetry" class="btn glassbtn">${L('Tekrar', 'Retry')}</button><button id="mShare" class="btn glassbtn">${B.share}</button><button id="mHome" class="btn glassbtn">${B.home}</button></div>`;
+  $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml([true, tOk, mOk])}<div class="wp-t"><h2>${g.practice ? L('Pratik tamam!', 'Practice done!') : g.daily ? L('Günün Hattı tamam!', 'Daily Line done!') : L('Hat açıldı!', 'Connected!')}</h2>${badge}</div></div>
+      <button id="wTog" class="wp-tog" aria-label="${L('Hattı gör', 'See the line')}"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg><span>${L('Hattı gör', 'See line')}</span></button></div>
+    <div class="wp-more"><div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(lim.t * 1000)}</small></b><span>${tOk ? L('⏱ tam vaktinde ★', '⏱ on time ★') : L('⏱ rötar ✗', '⏱ late ✗')}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${lim.m}</small></b><span>↻ ${L('hamle', 'moves')} ${mOk ? '★' : '✗'}</span></div></div>${tip}${extra ? `<p class="tip">${extra}${dbl && Ads.online() ? ` <button id="mDbl" class="dbl">${L('▶ 2 katı', '▶ Double')}</button>` : ''}</p>` : ''}</div>
     ${primary}`;
   $('game').classList.add('won');
   bind({ wTog: toggleMini, mNext: next, mDbl: () => doubleReward(dbl), mMap: () => show('map'), mRetry: () => start('level', g.lvl), mHome: () => show('home'),
     // pratikte paylaşılan, günün resmî (ilk) sonucudur
     mShare: () => share(g.practice && save.dailyStats ? { ...save.dailyStats, daily: true } : { daily: g.daily, lvl: g.lvl, day: g.day, moves: g.moves, time: g.time, st, perfect }) });
 }
+const NO_REWARD = L('Ödül alınamadı · video sonuna kadar izlenmeli', 'No reward · watch the video to the end'), NO_NET = L('Bağlantı yok · sonra dene', 'No connection · try later');
 // hat sonu / Günün Hattı ödülü: isteğe bağlı bir video → ödül bir kez daha
 async function doubleReward(n) {
   const b = $('mDbl'); if (!b || Ads.busy()) return;
-  b.disabled = true; b.textContent = 'Yükleniyor…'; Music.stop();
+  b.disabled = true; b.textContent = L('Yükleniyor…', 'Loading…'); Music.stop();
   const ok = await Ads.rewarded(); Music.start();
-  if (!ok) { b.disabled = false; b.textContent = '▶ 2 katı'; toast(Ads.online() ? 'Ödül alınamadı · video sonuna kadar izlenmeli' : 'Bağlantı yok · sonra dene'); return; }
+  if (!ok) { b.disabled = false; b.textContent = L('▶ 2 katı', '▶ Double'); toast(Ads.online() ? NO_REWARD : NO_NET); return; }
   save.hints += n; persist(); $('gHints').textContent = save.hints;
-  b.outerHTML = `<b class="dblok">✓ +${n}</b>`; haptic('heavy'); tone(note(9), .3, .045); toast(`+${n} ipucu daha 🎁`);
+  b.outerHTML = `<b class="dblok">✓ +${n}</b>`; haptic('heavy'); tone(note(9), .3, .045); toast(L(`+${n} ipucu daha 🎁`, `+${n} more ${pl(n, 'hint', 'hints')} 🎁`));
 }
 function toggleMini() {
   const mini = $('game').classList.toggle('mini');
-  $('wTog').querySelector('span').textContent = mini ? 'Sonuç' : 'Hattı gör';
+  $('wTog').querySelector('span').textContent = mini ? L('Sonuç', 'Results') : L('Hattı gör', 'See line');
   haptic(); tone(mini ? 440 : 587, .06, .02);
 }
 function closePanel() { $('game').classList.remove('won', 'mini'); $('winPanel').innerHTML = ''; }
@@ -1220,29 +1239,29 @@ async function next() {
   const g = G; if (g.going) return; g.going = 1;   // çift dokunuş tek geçiş: reklam sürerken ikinci basış bölüm atlatmasın
   if (!g.daily && !save.noAds && save.played >= 5 && sessionWins % INTER_EVERY === 0) {
     Music.stop(); const shown = await Ads.interstitial(); Music.start();
-    if (shown && (save.interN = (save.interN || 0) + 1) % 3 === 0) { persist(); setTimeout(() => toast('Reklamsız oyna → Ayarlar · Reklamsız paket'), 900); }
+    if (shown && (save.interN = (save.interN || 0) + 1) % 3 === 0) { persist(); setTimeout(() => toast(L('Reklamsız oyna → Ayarlar · Reklamsız paket', 'Play ad-free → Settings · Ad-free pack')), 900); }
   }
   if (G === g) start('level', g.lvl + 1);
 }
 function dailyResult() {
   const d = save.dailyStats;
-  modal(`${starsHtml(d.st)}<h2>Günün Hattı tamam</h2>
-    <div class="statrow"><div><b>${d.moves}</b><span>hamle</span></div><div><b>${fmtT(d.time)}</b><span>süre</span></div><div><b>${save.streak}</b><span>gün seri</span></div></div>
+  modal(`${starsHtml(d.st)}<h2>${L('Günün Hattı tamam', 'Daily Line done')}</h2>
+    <div class="statrow"><div><b>${d.moves}</b><span>${L('hamle', pl(d.moves, 'move', 'moves'))}</span></div><div><b>${fmtT(d.time)}</b><span>${L('süre', 'time')}</span></div><div><b>${save.streak}</b><span>${L('gün seri', 'day streak')}</span></div></div>
     <p id="mClock"></p>
-    <button id="mShare" class="btn primary"><span>Paylaş</span><small>Arkadaşına meydan oku</small></button><button id="mReplay" class="btn glassbtn">Tekrar oyna · pratik</button><p class="tip">Pratikte sonucun ve serin değişmez</p>`,
+    <button id="mShare" class="btn primary"><span>${L('Paylaş', 'Share')}</span><small>${L('Arkadaşına meydan oku', 'Challenge a friend')}</small></button><button id="mReplay" class="btn glassbtn">${L('Tekrar oyna · pratik', 'Replay · practice')}</button><p class="tip">${L('Pratikte sonucun ve serin değişmez', 'Practice won’t change your result or streak')}</p>`,
     { mShare: () => share({ ...d, daily: true }), mReplay: () => start('daily') });
   dailyClock();
 }
 async function share(r) {
   const [, m, d] = (r.day || today()).split('-');
-  const head = r.daily ? `Ray 🚇 Günün Hattı ${d}.${m}` : `Ray 🚇 Bölüm ${r.lvl}`;
+  const head = r.daily ? L(`Ray 🚇 Günün Hattı ${d}.${m}`, `Ray 🚇 Daily Line ${+m}/${+d}`) : `Ray 🚇 ${L('Bölüm', 'Level')} ${r.lvl}`;
   const url = r.daily ? `${SHARE_URL}?d=${r.day}&m=${r.moves}` : SHARE_URL;
-  const text = `${head}\n${'⭐'.repeat(r.st)}${'☆'.repeat(3 - r.st)}${r.perfect ? ' 👑' : ''} ${r.moves} hamle · ${fmtT(r.time)}${r.daily && save.streak > 1 ? `\n🔥 ${save.streak} gün seri` : ''}\nSen kaç hamlede bağlarsın?\n${url}`;
+  const text = `${head}\n${'⭐'.repeat(r.st)}${'☆'.repeat(3 - r.st)}${r.perfect ? ' 👑' : ''} ${r.moves} ${L('hamle', pl(r.moves, 'move', 'moves'))} · ${fmtT(r.time)}${r.daily && save.streak > 1 ? L(`\n🔥 ${save.streak} gün seri`, `\n🔥 ${save.streak}-day streak`) : ''}\n${L('Sen kaç hamlede bağlarsın?', 'How few moves can you do it in?')}\n${url}`;
   try {
     const P = window.Capacitor?.Plugins?.Share;
     if (P) return await P.share({ text });
     if (navigator.share) return await navigator.share({ text });
-    await navigator.clipboard.writeText(text); toast('Panoya kopyalandı');
+    await navigator.clipboard.writeText(text); toast(L('Panoya kopyalandı', 'Copied to clipboard'));
   } catch {}
 }
 
@@ -1264,10 +1283,12 @@ const Remind = (() => {
       const h = (save.remindAt ?? 1110) / 60 | 0, m = (save.remindAt ?? 1110) % 60, now = new Date();
       const at = d => { const x = new Date(now); x.setDate(x.getDate() + d); x.setHours(h, m, 0, 0); return x; };
       const done = save.dailyDone === today(), sk = save.streak, list = [];
-      if (!done && at(0) - now > 20 * 60e3) list.push([1, at(0), save.lost?.day === today() ? 'Serin kopmak üzere 💔' : 'Günün Hattı seni bekliyor 🚇', save.lost?.day === today() ? `${save.lost.n} günlük serini bugün hâlâ kurtarabilirsin` : sk ? `🔥 ${sk} günlük serin bugün sönmesin` : 'Bir dakikalık bulmaca · hattı bağla, şehri canlandır']);
-      list.push([2, at(1), 'Yeni Günün Hattı açıldı 🚇', done && sk ? `🔥 Serin ${sk} gün · bugün bir gün daha ekle` : 'Bugünün bulmacası hazır · yolculuğa bir hat bağla']);
-      list.push([3, at(3), 'Şehir seni özledi 🌃', `Bölüm ${save.level} seni bekliyor · ★ topla, yeni hat aç`]);
-      list.push([4, at(7), 'Hatlar durdu 🚦', 'Bir dakikanı ayır, şehri yeniden canlandır']);
+      const lost = save.lost?.day === today();
+      if (!done && at(0) - now > 20 * 60e3) list.push([1, at(0), lost ? L('Serin kopmak üzere 💔', 'Your streak is about to break 💔') : L('Günün Hattı seni bekliyor 🚇', 'Your Daily Line is waiting 🚇'),
+        lost ? L(`${save.lost.n} günlük serini bugün hâlâ kurtarabilirsin`, `You can still save your ${save.lost.n}-day streak today`) : sk ? L(`🔥 ${sk} günlük serin bugün sönmesin`, `🔥 Don’t let your ${sk}-day streak go out today`) : L('Bir dakikalık bulmaca · hattı bağla, şehri canlandır', 'A one-minute puzzle · connect the line, light up the city')]);
+      list.push([2, at(1), L('Yeni Günün Hattı açıldı 🚇', 'A new Daily Line is open 🚇'), done && sk ? L(`🔥 Serin ${sk} gün · bugün bir gün daha ekle`, `🔥 ${sk}-day streak · add one more today`) : L('Bugünün bulmacası hazır · yolculuğa bir hat bağla', 'Today’s puzzle is ready · connect a line for the trip')]);
+      list.push([3, at(3), L('Şehir seni özledi 🌃', 'The city misses you 🌃'), L(`Bölüm ${save.level} seni bekliyor · ★ topla, yeni hat aç`, `Level ${save.level} is waiting · earn ★, open new lines`)]);
+      list.push([4, at(7), L('Hatlar durdu 🚦', 'The lines have stopped 🚦'), L('Bir dakikanı ayır, şehri yeniden canlandır', 'Spare a minute and bring the city back to life')]);
       // isExactNotification:false → LocalNotifications 8.3+ her planlamada "Alarmlar ve hatırlatıcılar" ayar ekranını açmasın (birkaç dk kayması sorun değil)
       await P.schedule({ notifications: list.map(([id, when, title, body]) => ({ id, title, body, schedule: { at: when, allowWhileIdle: true }, isExactNotification: false, smallIcon: 'ic_stat_ray', iconColor: '#ffb35c', extra: { go: 'daily' } })) });
     } catch {}
@@ -1281,39 +1302,45 @@ const Remind = (() => {
   LN()?.addListener?.('localNotificationActionPerformed', a => { if (a?.notification?.extra?.go === 'daily' && save.dailyDone !== today()) setTimeout(() => start('daily'), 400); });
   return { avail: () => !!LN(), plan, enable, habit };
 })();
+const NO_PERM = L('Bildirim izni verilmedi', 'Notifications not allowed');
 // ilk Günün Hattı'ndan (ya da birkaç bölümden) sonra ana sayfada bir kez, kibarca sorulur
 function remindAsk() {
   save.remindAsked = true; persist();
-  modal(`<div class="bell">🔔</div><h2>Hatırlatayım mı?</h2>
+  modal(L(`<div class="bell">🔔</div><h2>Hatırlatayım mı?</h2>
     <p>Her gün yeni bir <b>Günün Hattı</b> geliyor. Serin bozulmasın diye günde bir kez, kısa bir hatırlatma.</p>
     <button id="mYes" class="btn primary"><span>Evet, hatırlat</span><small>Ayarlardan kapatabilirsin</small></button>
-    <button id="mClose" class="btn glassbtn">Şimdi değil</button>`, {
-    mYes: async () => { closeModal(); toast(await Remind.enable() ? 'Tamam! Oynadığın saatte hatırlatacağım 🔔' : 'Bildirim izni verilmedi'); },
+    <button id="mClose" class="btn glassbtn">Şimdi değil</button>`, `<div class="bell">🔔</div><h2>Want a reminder?</h2>
+    <p>A new <b>Daily Line</b> arrives every day. One short reminder a day keeps your streak alive.</p>
+    <button id="mYes" class="btn primary"><span>Yes, remind me</span><small>You can turn it off in Settings</small></button>
+    <button id="mClose" class="btn glassbtn">Not now</button>`), {
+    mYes: async () => { closeModal(); toast(await Remind.enable() ? L('Tamam! Oynadığın saatte hatırlatacağım 🔔', 'Done! I’ll remind you at the time you play 🔔') : NO_PERM); },
     mClose: closeModal });
 }
 
 // ---------- reklamsız paket ----------
 function shopSheet() {
   const owned = save.noAds, price = Shop.price();
-  modal(`<div class="bell">💛</div><h2>Reklamsız paket</h2>
-    <div class="perks"><div><i>🚫</i><span>Bölüm aralarındaki reklamlar kalkar</span></div><div><i>💡</i><span><b>+20 ipucu</b> hediye</span></div><div><i>🎨</i><span><b>3 özel tema:</b> Altın, Elmas, Yakut</span></div><div><i>🚇</i><span>Tek seferlik · ömür boyu</span></div></div>
-    ${owned ? '<span class="badge">AKTİF ✓ · Teşekkürler!</span>' : `<button id="mBuy" class="btn primary"><span>${price ? `Satın al · ${price}` : 'Satın al'}</span><small>${Shop.ready() ? `${Shop.name()} ile güvenli ödeme` : 'Mağazaya bağlanılıyor…'}</small></button>`}
-    <p class="tip">İpucu videoları isteğe bağlı kalır.</p>
-    ${owned ? '' : '<button id="mRestore" class="link">Satın alımı geri yükle</button>'}
-    <button id="mClose" class="btn glassbtn">Kapat</button>`, {
+  const buy = L('Satın al', 'Buy'), vip = SKINS.filter(k => k.vip).map(k => k.name).join(', ');
+  modal(`<div class="bell">💛</div><h2>${L('Reklamsız paket', 'Ad-free pack')}</h2>
+    <div class="perks">${L(`<div><i>🚫</i><span>Bölüm aralarındaki reklamlar kalkar</span></div><div><i>💡</i><span><b>+20 ipucu</b> hediye</span></div><div><i>🎨</i><span><b>3 özel tema:</b> ${vip}</span></div><div><i>🚇</i><span>Tek seferlik · ömür boyu</span></div>`,
+      `<div><i>🚫</i><span>No more ads between levels</span></div><div><i>💡</i><span><b>+20 hints</b> as a gift</span></div><div><i>🎨</i><span><b>3 special themes:</b> ${vip}</span></div><div><i>🚇</i><span>One-time · yours for life</span></div>`)}</div>
+    ${owned ? `<span class="badge">${L('AKTİF ✓ · Teşekkürler!', 'ACTIVE ✓ · Thank you!')}</span>` : `<button id="mBuy" class="btn primary"><span>${price ? `${buy} · ${price}` : buy}</span><small>${Shop.ready() ? L(`${Shop.name()} ile güvenli ödeme`, `Secure payment via ${Shop.name()}`) : L('Mağazaya bağlanılıyor…', 'Connecting to store…')}</small></button>`}
+    <p class="tip">${L('İpucu videoları isteğe bağlı kalır.', 'Hint videos stay optional.')}</p>
+    ${owned ? '' : `<button id="mRestore" class="link">${L('Satın alımı geri yükle', 'Restore purchase')}</button>`}
+    <button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, {
     mBuy: async () => {
-      if (!Shop.ready()) { toast(Shop.avail() ? 'Mağaza şu an kullanılamıyor · sonra dene' : 'Satın alma mağazadan indirilen sürümde açılır'); return; }
+      if (!Shop.ready()) { toast(Shop.avail() ? L('Mağaza şu an kullanılamıyor · sonra dene', 'Store unavailable right now · try later') : L('Satın alma mağazadan indirilen sürümde açılır', 'Purchases work in the store version')); return; }
       const r = await Shop.buy();
-      if (r === 'hata') toast('Satın alma tamamlanamadı');
+      if (r === 'hata') toast(L('Satın alma tamamlanamadı', 'Purchase couldn’t be completed'));
     },
-    mRestore: async () => { toast('Kontrol ediliyor…'); await Shop.restore(); setTimeout(() => { if (!save.noAds) toast('Bu hesapta satın alım bulunamadı'); }, 2500); },
+    mRestore: async () => { toast(L('Kontrol ediliyor…', 'Checking…')); await Shop.restore(); setTimeout(() => { if (!save.noAds) toast(L('Bu hesapta satın alım bulunamadı', 'No purchase found on this account')); }, 2500); },
     mClose: closeModal });
 }
 function grantNoAds() {
   if (save.noAds) return;
   save.noAds = true; SKINS.forEach(k => { if (k.vip) save.owned[k.id] = 1; }); save.hints += 20; persist();
   $('gHints').textContent = save.hints; refreshHome();
-  haptic('win'); toast('Reklamsız paket aktif 💛 +20 ipucu · 3 özel tema açıldı');
+  haptic('win'); toast(L('Reklamsız paket aktif 💛 +20 ipucu · 3 özel tema açıldı', 'Ad-free pack active 💛 +20 hints · 3 special themes'));
   if (modalOpen() && $('mBuy')) shopSheet();
 }
 
@@ -1321,8 +1348,8 @@ async function hint() {
   if (!G || G.won) return;
   dayTick();
   if (save.hints <= 0) {
-    if (!Ads.online()) { toast('İpucu kalmadı · yarın +3 hediye'); return; }
-    if (Ads.busy()) { toast('Reklam yükleniyor…'); return; }
+    if (!Ads.online()) { toast(L('İpucu kalmadı · yarın +3 hediye', 'Out of hints · +3 free tomorrow')); return; }
+    if (Ads.busy()) { toast(AD_LOAD); return; }
     adSheet();
     return;
   }
@@ -1341,37 +1368,38 @@ async function hint() {
   hud(); kick();
   if (G.L.solved) win(); else saveRun();
 }
+const AD_LOAD = L('Reklam yükleniyor…', 'Loading ad…');
 // Ödüllü reklam: aynı bölümde ipucu istedikçe izlenecek video sayısı artar. Her video oyuncunun basışıyla açılır.
 function adSheet() {
   const key = G.daily ? 'd' + G.day : 'l' + G.lvl;
   if (save.adProg?.key !== key) save.adProg = { key, n: 0, part: 0 };
   const P = save.adProg, need = AD_TIERS[Math.min(P.n, AD_TIERS.length - 1)], sec = need * 15;
   const dots = need > 1 ? `<div class="vids">${Array.from({ length: need }, (_, k) => `<i class="${k < P.part ? 'on' : ''}"></i>`).join('')}</div>` : '';
-  modal(`<h2>${P.part ? 'Bir video kaldı' + (need - P.part > 1 ? '' : '!') : 'İpucun bitti'}</h2>
-    <p>${need === 1 ? 'Kısa bir video izle' : `${need} kısa video izle`} (~${sec} sn), <b>2 ipucu</b> kazan.${P.part ? `<br>${P.part}/${need} izlendi.` : ''}</p>${dots}
-    <button id="mAd" class="btn primary"><span>${P.part ? `Devam · ${P.part + 1}. video` : 'İzle · +2 ipucu'}</span><small>~${sec} sn${need > 1 ? ` · ${need} video` : ''}</small></button>
-    <button id="mNo" class="btn glassbtn">Vazgeç</button>`, {
+  modal(`<h2>${P.part ? L('Bir video kaldı', need - P.part > 1 ? 'More videos to go' : 'One video left') + (need - P.part > 1 ? '' : '!') : L('İpucun bitti', 'Out of hints')}</h2>
+    <p>${L(need === 1 ? 'Kısa bir video izle' : `${need} kısa video izle`, need === 1 ? 'Watch a short video' : `Watch ${need} short videos`)} (~${sec} ${L('sn', 's')}), ${L('<b>2 ipucu</b> kazan.', 'earn <b>2 hints</b>.')}${P.part ? `<br>${P.part}/${need} ${L('izlendi', 'watched')}.` : ''}</p>${dots}
+    <button id="mAd" class="btn primary"><span>${P.part ? L(`Devam · ${P.part + 1}. video`, `Continue · video ${P.part + 1}`) : L('İzle · +2 ipucu', 'Watch · +2 hints')}</span><small>~${sec} ${L('sn', 's')}${need > 1 ? ` · ${need} video${L('', 's')}` : ''}</small></button>
+    <button id="mNo" class="btn glassbtn">${L('Vazgeç', 'Cancel')}</button>`, {
     mAd: async () => {
       if (Ads.busy()) return;
-      closeModal(); pause(); toast('Reklam yükleniyor…'); Music.stop();
+      closeModal(); pause(); toast(AD_LOAD); Music.stop();
       const ok = await Ads.rewarded();
       Music.start(); if (active('game')) resume();
-      if (!ok) { toast(Ads.online() ? 'Ödül alınamadı · video sonuna kadar izlenmeli' : 'Bağlantı yok · sonra dene'); return; }
+      if (!ok) { toast(Ads.online() ? NO_REWARD : NO_NET); return; }
       P.part++;
       if (P.part < need) { persist(); adSheet(); return; }
       P.n++; P.part = 0; save.hints += 2; persist();
-      $('gHints').textContent = save.hints; bump($('gHints')); haptic('heavy'); toast('+2 ipucu kazandın');
+      $('gHints').textContent = save.hints; bump($('gHints')); haptic('heavy'); toast(L('+2 ipucu kazandın', 'You earned +2 hints'));
     },
     mNo: closeModal });
 }
 // Yeni kural kartı: hattın ilk girişinde bir kez, kart açıkken süre durur
 function ruleCard(c) {
   pause();
-  modal(`<span class="badge">YENİ KURAL · ${lineName(c)}</span>
+  modal(`<span class="badge">${L('YENİ KURAL', 'NEW RULE')} · ${lineName(c)}</span>
     ${RULES[c].demo}
     <h2>${RULES[c].name}</h2>
     <p>${RULES[c].text}</p>
-    <button id="mGo" class="btn primary"><span>Anladım</span></button>`,
+    <button id="mGo" class="btn primary"><span>${L('Anladım', 'Got it')}</span></button>`,
     { mGo: () => { save.seen[c] = 1; persist(); closeModal(); if (active('game')) resume(); } }, true);
 }
 function nearLit(i) { const x = i % G.cols, y = i / G.cols | 0; let n = 0; for (const [, dx, dy] of DIRS) { const nx = x + dx, ny = y + dy; if (nx >= 0 && ny >= 0 && nx < G.cols && ny < G.rows && G.L.d[ny * G.cols + nx] >= 0) n++; } return n; }
@@ -1385,33 +1413,34 @@ function reset() {
   keep.forEach(i => { G.cur[i] = G.sol[i]; G.fixed[i] = true; });
   G.L = lit(G); litAt = G.L.d.map(v => v >= 0 ? -1e9 : 0); reveal(true);
   hud(); draw(); saveRun();
-  toast('Baştan başladı');
+  toast(L('Baştan başladı', 'Restarted'));
 }
 
 const FLAME = '<svg class="flame" viewBox="0 0 24 24"><path d="M12 2c1 4 5 5.5 5 11a5 5 0 0 1-10 0c0-2.5 1.2-4 2.5-5 .2 1.8 1 3 2.2 3.3C11 8.6 11.3 5 12 2z"/></svg>';
 // ---------- seriyi kurtar: dün kaçan Günün Hattı → bugün isteğe bağlı video (7+ gün seride 2 video) ----------
 const rescueOk = () => save.lost?.day === today();
 function rescueSheet() {
-  const L = save.lost; if (!rescueOk()) return streakSheet();
-  const need = L.n >= 7 ? 2 : 1, dots = need > 1 ? `<div class="vids">${Array.from({ length: need }, (_, k) => `<i class="${k < L.part ? 'on' : ''}"></i>`).join('')}</div>` : '';
-  modal(`${FLAME.replace('class="flame"', 'class="flame cold"')}<h2>${L.n} günlük serin koptu</h2>
-    <p>Dün Günün Hattı'nı kaçırdın. ${need === 1 ? 'Kısa bir video' : `${need} kısa video`} izle, serin <b>${L.n} günden</b> devam etsin.<br>Bu hak yalnızca <b>bugün</b> geçerli.</p>${dots}
-    <button id="mSave" class="btn primary"><span>${L.part ? `Devam · ${L.part + 1}. video` : '▶ Seriyi kurtar'}</span><small>~${need * 15} sn${need > 1 ? ` · ${need} video` : ''}</small></button>
-    <button id="mClose" class="btn glassbtn">Vazgeç</button>`, {
+  const lo = save.lost; if (!rescueOk()) return streakSheet();
+  const need = lo.n >= 7 ? 2 : 1, dots = need > 1 ? `<div class="vids">${Array.from({ length: need }, (_, k) => `<i class="${k < lo.part ? 'on' : ''}"></i>`).join('')}</div>` : '';
+  modal(`${FLAME.replace('class="flame"', 'class="flame cold"')}<h2>${L(`${lo.n} günlük serin koptu`, `Your ${lo.n}-day streak broke`)}</h2>
+    <p>${L(`Dün Günün Hattı'nı kaçırdın. ${need === 1 ? 'Kısa bir video' : `${need} kısa video`} izle, serin <b>${lo.n} günden</b> devam etsin.<br>Bu hak yalnızca <b>bugün</b> geçerli.`,
+      `You missed yesterday’s Daily Line. Watch ${need === 1 ? 'a short video' : `${need} short videos`} to keep your <b>${lo.n}-day</b> streak.<br>This offer is good <b>today only</b>.`)}</p>${dots}
+    <button id="mSave" class="btn primary"><span>${lo.part ? L(`Devam · ${lo.part + 1}. video`, `Continue · video ${lo.part + 1}`) : L('▶ Seriyi kurtar', '▶ Save streak')}</span><small>~${need * 15} ${L('sn', 's')}${need > 1 ? ` · ${need} video${L('', 's')}` : ''}</small></button>
+    <button id="mClose" class="btn glassbtn">${L('Vazgeç', 'Cancel')}</button>`, {
     mSave: async () => {
       if (Ads.busy()) return;
-      if (!Ads.online()) { toast('İnternete bağlan · bugün içinde kurtarabilirsin'); return; }
-      closeModal(); toast('Reklam yükleniyor…'); Music.stop();
+      if (!Ads.online()) { toast(L('İnternete bağlan · bugün içinde kurtarabilirsin', 'Go online · you can save it today')); return; }
+      closeModal(); toast(AD_LOAD); Music.stop();
       const ok = await Ads.rewarded(); Music.start();
-      if (!ok || !rescueOk()) { toast('Ödül alınamadı · video sonuna kadar izlenmeli'); return; }
-      if (++L.part < need) { persist(); rescueSheet(); return; }
+      if (!ok || !rescueOk()) { toast(NO_REWARD); return; }
+      if (++lo.part < need) { persist(); rescueSheet(); return; }
       const t = today(), y = dayBefore(t), done = save.dailyDone === t;
-      save.streak = L.n + (done ? 1 : 0); save.lastDaily = done ? t : y;
+      save.streak = lo.n + (done ? 1 : 0); save.lastDaily = done ? t : y;
       save.dailyLog = [...save.dailyLog.filter(d => d !== y), y].sort().slice(-90);
       save.rescued = [...(save.rescued || []), y].slice(-30);
       save.best = Math.max(save.best || 0, save.streak); save.lost = null; persist();
       refreshHome(); bump($('streakChip')); haptic('win'); [0, 4, 7].forEach((k, j) => tone(note(k + 5), .35, .045, 'sine', j * .09));
-      toast(`🔥 Serin kurtarıldı · ${save.streak} gün`);
+      toast(L(`🔥 Serin kurtarıldı · ${save.streak} gün`, `🔥 Streak saved · ${save.streak} ${pl(save.streak, 'day', 'days')}`));
     },
     mClose: closeModal });
 }
@@ -1422,36 +1451,38 @@ function maybeRescue() {
 }
 function streakSheet() {
   dayTick();
-  const log = new Set(save.dailyLog), names = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'], done = save.dailyDone === today();
+  const log = new Set(save.dailyLog), names = L(['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'], ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']), done = save.dailyDone === today();
   let week = '';
   for (let k = 6; k >= 0; k--) {
     const d = new Date(); d.setDate(d.getDate() - k); const on = log.has(ymd(d)), ice = on && save.rescued?.includes(ymd(d));
-    week += `<div><i class="${on ? 'on' : ''} ${ice ? 'ice' : ''} ${k ? '' : 'today'}">${ice ? '❄' : on ? '✓' : ''}</i>${k ? names[(d.getDay() + 6) % 7] : 'Bugün'}</div>`;
+    week += `<div><i class="${on ? 'on' : ''} ${ice ? 'ice' : ''} ${k ? '' : 'today'}">${ice ? '❄' : on ? '✓' : ''}</i>${k ? names[(d.getDay() + 6) % 7] : L('Bugün', 'Today')}</div>`;
   }
-  modal(`${FLAME}<h2>${save.streak} gün seri</h2>
-    <p>${done ? 'Bugünün hattı tamam.' : save.streak ? 'Bugünün hattını bitir, serini koru!' : 'Günün Hattı\'nı bitir, serini başlat!'}</p>
+  modal(`${FLAME}<h2>${L(`${save.streak} gün seri`, `${save.streak}-day streak`)}</h2>
+    <p>${done ? L('Bugünün hattı tamam.', 'Today’s line is done.') : save.streak ? L('Bugünün hattını bitir, serini koru!', 'Finish today’s line to keep your streak!') : L('Günün Hattı\'nı bitir, serini başlat!', 'Finish the Daily Line to start a streak!')}</p>
     <div class="week">${week}</div>
-    <div class="statrow"><div><b>${Math.max(save.best || 0, save.streak)}</b><span>en iyi seri</span></div><div><b>${save.dailyLog.length}</b><span>toplam gün</span></div></div>
-    ${done ? '<p id="mClock"></p><button id="mClose" class="btn glassbtn">Tamam</button>' : '<button id="mPlayD" class="btn primary"><span>Günün Hattı</span><small>Seriyi koru</small></button>'}`,
+    <div class="statrow"><div><b>${Math.max(save.best || 0, save.streak)}</b><span>${L('en iyi seri', 'best streak')}</span></div><div><b>${save.dailyLog.length}</b><span>${L('toplam gün', 'total days')}</span></div></div>
+    ${done ? `<p id="mClock"></p><button id="mClose" class="btn glassbtn">${L('Tamam', 'OK')}</button>` : `<button id="mPlayD" class="btn primary"><span>${L('Günün Hattı', 'Daily Line')}</span><small>${L('Seriyi koru', 'Keep your streak')}</small></button>`}`,
     { mClose: closeModal, mPlayD: () => start('daily') });
   dailyClock();
 }
 function settings() {
-  const seg = ['auto', 'dark', 'light'].map(t => `<button data-t="${t}" class="${save.theme === t ? 'on' : ''}">${{ auto: 'Oto', dark: 'Koyu', light: 'Açık' }[t]}</button>`).join('');
-  modal(`<h2>Ayarlar</h2>
-    <div class="opt">Müzik <button id="oM" class="tog ${save.music ? 'on' : ''}" aria-label="Müzik"></button></div>
-    <div class="opt">Efekt sesleri <button id="oS" class="tog ${save.sound ? 'on' : ''}" aria-label="Efekt sesleri"></button></div>
-    <div class="opt">Titreşim <button id="oV" class="tog ${save.vib ? 'on' : ''}" aria-label="Titreşim"></button></div>
-    ${Remind.avail() ? `<div class="opt">Günlük hatırlatma <button id="oR" class="tog ${save.remind ? 'on' : ''}" aria-label="Günlük hatırlatma"></button></div>
-` : ''}
-    <div class="opt">Görünüm <div class="seg" id="oT">${seg}</div></div>
-    <button class="opt row" id="oSkin"><span>Renk temaları</span><small>${skin().name} · 👑 ${crownBal()} ›</small></button>
-    <button class="opt row" id="oShop"><span>Reklamsız paket</span><small>${save.noAds ? 'Aktif ✓' : (Shop.price() || '💛') + ' ›'}</small></button>
-    <button class="opt row" id="oPriv"><span>Gizlilik</span><small>Politika · veriler ›</small></button>
-    <button id="mClose" class="btn glassbtn">Tamam</button>`, {
+  const seg = ['auto', 'dark', 'light'].map(t => `<button data-t="${t}" class="${save.theme === t ? 'on' : ''}">${{ auto: L('Oto', 'Auto'), dark: L('Koyu', 'Dark'), light: L('Açık', 'Light') }[t]}</button>`).join('');
+  const lang = [['tr', 'Türkçe'], ['en', 'English']].map(([k, n]) => `<button data-g="${k}" lang="${k}" class="${RAY_LANG === k ? 'on' : ''}">${n}</button>`).join('');
+  const opt = (id, on, tr, en) => `<div class="opt">${L(tr, en)} <button id="${id}" class="tog ${on ? 'on' : ''}" aria-label="${L(tr, en)}"></button></div>`;
+  modal(`<h2>${L('Ayarlar', 'Settings')}</h2>
+    ${opt('oM', save.music, 'Müzik', 'Music')}
+    ${opt('oS', save.sound, 'Efekt sesleri', 'Sound effects')}
+    ${opt('oV', save.vib, 'Titreşim', 'Vibration')}
+    ${Remind.avail() ? opt('oR', save.remind, 'Günlük hatırlatma', 'Daily reminder') : ''}
+    <div class="opt">${L('Görünüm', 'Theme')} <div class="seg" id="oT">${seg}</div></div>
+    <div class="opt">${L('Dil', 'Language')} <div class="seg" id="oL">${lang}</div></div>
+    <button class="opt row" id="oSkin"><span>${L('Renk temaları', 'Color themes')}</span><small>${skin().name} · 👑 ${crownBal()} ›</small></button>
+    <button class="opt row" id="oShop"><span>${L('Reklamsız paket', 'Ad-free pack')}</span><small>${save.noAds ? L('Aktif ✓', 'Active ✓') : (Shop.price() || '💛') + ' ›'}</small></button>
+    <button class="opt row" id="oPriv"><span>${L('Gizlilik', 'Privacy')}</span><small>${L('Politika · veriler', 'Policy · data')} ›</small></button>
+    <button id="mClose" class="btn glassbtn">${L('Tamam', 'Done')}</button>`, {
     oR: async () => {
       if (save.remind) { save.remind = false; persist(); Remind.plan(); }
-      else if (!await Remind.enable()) toast('Bildirim izni verilmedi');
+      else if (!await Remind.enable()) toast(NO_PERM);
       $('oR').classList.toggle('on', save.remind);
     },
     oSkin: skinSheet, oShop: shopSheet, oPriv: privacySheet,
@@ -1460,31 +1491,38 @@ function settings() {
     oV: () => { save.vib = !save.vib; persist(); $('oV').classList.toggle('on', save.vib); haptic(); },
     mClose: closeModal });
   $('oT').onclick = e => { const t = e.target.dataset.t; if (!t) return; save.theme = t; persist(); applyTheme(); refreshHome(); $('oT').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.t === t)); };
+  // dil: metinler yüklemede seçilir → kaydet ve yenile (yarım oyun kayıtta, kaldığı yerden sürer)
+  $('oL').onclick = e => { const g = e.target.dataset.g; if (!g || g === RAY_LANG) return; pause(); save.lang = g; persist(); location.reload(); };
 }
 // ---------- gizlilik: kısa özet, politika, reklam rıza seçenekleri, verileri sil ----------
-const POLICY = 'https://osmanadali.github.io/mobil-oyun/gizlilik.html';
+const POLICY = 'https://osmanadali.github.io/mobil-oyun/gizlilik.html#' + RAY_LANG;   // sayfa iki dilli: oyunun dilindeki bölüme açılır
 // uygulamada sistem tarayıcısında (Capacitor dış adresi uygulama içinde açmaz), web'de yeni sekmede yerel kopya (çevrimdışı da açılır)
 function openPolicy() {
   const C = window.Capacitor, B = C?.Plugins?.Browser;
-  if (!C?.isNativePlatform?.()) { window.open('gizlilik.html', '_blank', 'noopener'); return; }
+  if (!C?.isNativePlatform?.()) { window.open('gizlilik.html#' + RAY_LANG, '_blank', 'noopener'); return; }
   if (B?.open) B.open({ url: POLICY }).catch(() => window.open(POLICY, '_system')); else window.open(POLICY, '_system');
 }
 function privacySheet() {
-  modal(`<h2>Gizlilik</h2>
-    <div class="perks"><div><i>📱</i><span><b>Hesap yok</b> · ilerlemen yalnız bu cihazda</span></div><div><i>🔔</i><span>Hatırlatmalar cihazında planlanır</span></div><div><i>📺</i><span>Reklamlar <b>Google AdMob</b> ile · reklam kimliği ve cihaz bilgisi işlenir</span></div><div><i>🚫</i><span>Analitik yok · ödeme mağaza üzerinden</span></div></div>
-    <button id="mPol" class="btn glassbtn">Gizlilik politikası ↗</button>
-    ${Ads.privacy() ? '<button id="mAdP" class="btn glassbtn">Reklam gizlilik seçenekleri</button>' : ''}
-    <button id="mWipe" class="link">Verilerimi sil</button>
-    <button id="mClose" class="btn glassbtn">Kapat</button>`, {
+  modal(`<h2>${L('Gizlilik', 'Privacy')}</h2>
+    <div class="perks">${L(`<div><i>📱</i><span><b>Hesap yok</b> · ilerlemen yalnız bu cihazda</span></div><div><i>🔔</i><span>Hatırlatmalar cihazında planlanır</span></div><div><i>📺</i><span>Reklamlar <b>Google AdMob</b> ile · reklam kimliği ve cihaz bilgisi işlenir</span></div><div><i>🚫</i><span>Analitik yok · ödeme mağaza üzerinden</span></div>`,
+      `<div><i>📱</i><span><b>No account</b> · your progress stays on this device</span></div><div><i>🔔</i><span>Reminders are scheduled on your device</span></div><div><i>📺</i><span>Ads by <b>Google AdMob</b> · ad ID and device info are processed</span></div><div><i>🚫</i><span>No analytics · payments via the store</span></div>`)}</div>
+    <button id="mPol" class="btn glassbtn">${L('Gizlilik politikası', 'Privacy policy')} ↗</button>
+    ${Ads.privacy() ? `<button id="mAdP" class="btn glassbtn">${L('Reklam gizlilik seçenekleri', 'Ad privacy options')}</button>` : ''}
+    <button id="mWipe" class="link">${L('Verilerimi sil', 'Delete my data')}</button>
+    <button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, {
     mPol: openPolicy, mAdP: () => { closeModal(); Ads.privacyForm(); }, mWipe: wipeSheet, mClose: closeModal });
 }
 // iki adım: önce onay; sonra planlı bildirimler iptal, kayıt silinir, oyun baştan açılır (reklamsız paket mağazadan geri gelir)
 function wipeSheet() {
-  modal(`<h2>Verilerin silinsin mi?</h2>
+  modal(L(`<h2>Verilerin silinsin mi?</h2>
     <p>Bu cihazdaki bütün ilerlemen silinir: bölümler, ★, 👑, seri, temalar ve ayarlar. <b>Geri alınamaz.</b></p>
     <p class="tip">Reklamsız paketi aldıysan mağaza hesabından geri gelir.</p>
     <button id="mNo" class="btn primary"><span>Vazgeç</span></button>
-    <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">Evet, hepsini sil</button>`, {
+    <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">Evet, hepsini sil</button>`, `<h2>Delete your data?</h2>
+    <p>All progress on this device will be erased: levels, ★, 👑, streak, themes and settings. <b>This can’t be undone.</b></p>
+    <p class="tip">If you bought the Ad-free pack, it comes back from your store account.</p>
+    <button id="mNo" class="btn primary"><span>Cancel</span></button>
+    <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">Yes, delete it all</button>`), {
     mNo: privacySheet,
     mWipeOk: async () => { save.remind = false; await Promise.race([Remind.plan(), new Promise(r => setTimeout(r, 1500))]); wiped = true; try { localStorage.removeItem('ray'); } catch {} location.reload(); } });
 }
@@ -1497,17 +1535,17 @@ function skinSheet() {
   const card = k => {
     const own = skinOpen(k), can = !own && bal >= k.need;
     return `<button class="skin ${own ? '' : 'lockd'} ${can ? 'can' : ''} ${k.id === cur ? 'on' : ''}" data-k="${k.id}" style="${skinVars(k)}">${skinSvg}
-      <b>${k.name}</b><small>${k.id === cur ? 'Seçili ✓' : own ? 'Seç' : k.vip ? '💛 Reklamsız' : `👑 ${k.need}`}</small></button>`;
+      <b>${k.name}</b><small>${k.id === cur ? L('Seçili ✓', 'Selected ✓') : own ? L('Seç', 'Select') : k.vip ? L('💛 Reklamsız', '💛 Ad-free') : `👑 ${k.need}`}</small></button>`;
   };
   const nx = SKINS.filter(k => !k.vip && !skinOpen(k)).sort((a, b) => a.need - b.need)[0], hn = huntList().length;   // en ucuz alınmamış tema · taç bekleyen bölüm
-  modal(`<h2>Renk temaları</h2><p>Bölümleri <b>kusursuz</b> bitir (⏱ ve ↻ hedefi), 👑 kazan, temayı <b>satın al</b>. Harcanan 👑 geri gelmez, seçimini iyi yap!</p>
-    <div class="nexts"><small>Bakiye</small><b class="bal">👑 ${bal}</b></div>
-    <button id="mChest" class="chestrow ${bal >= CHEST ? 'can' : ''}"><i>${CHEST_SVG}</i><span><b>Sürpriz sandık</b><small>İpucu · 🛡 seri kalkanı · 🚆 tren kaplaması</small></span><em>👑 ${CHEST}</em></button>
+  modal(`<h2>${L('Renk temaları', 'Color themes')}</h2><p>${L('Bölümleri <b>kusursuz</b> bitir (⏱ ve ↻ hedefi), 👑 kazan, temayı <b>satın al</b>. Harcanan 👑 geri gelmez, seçimini iyi yap!', 'Finish levels <b>perfect</b> (⏱ and ↻ targets), earn 👑 and <b>buy</b> themes. Spent 👑 don’t come back, so choose well!')}</p>
+    <div class="nexts"><small>${L('Bakiye', 'Balance')}</small><b class="bal">👑 ${bal}</b></div>
+    <button id="mChest" class="chestrow ${bal >= CHEST ? 'can' : ''}"><i>${CHEST_SVG}</i><span><b>${L('Sürpriz sandık', 'Surprise chest')}</b><small>${L('İpucu · 🛡 seri kalkanı · 🚆 tren kaplaması', 'Hints · 🛡 shield · 🚆 train livery')}</small></span><em>👑 ${CHEST}</em></button>
     <div class="skins" id="skins">${SKINS.filter(k => !k.vip).map(card).join('')}
-      <small class="vipk">💛 Reklamsız pakete özel</small>${SKINS.filter(k => k.vip).map(card).join('')}</div>
-    ${nx ? `<div class="nexts"><small>Sonraki: <b>${nx.name}</b></small><small>👑 ${Math.min(bal, nx.need)} / ${nx.need}</small></div><div class="pb"><i style="width:${Math.max(4, Math.min(100, bal / nx.need * 100))}%"></i></div>
-    <button id="mHunt" class="btn primary"><span>Taç topla 👑</span><small>${hn ? `${hn} bölüm kusursuz bitmeyi bekliyor` : 'Yeni bölümleri ⏱ ve ↻ hedefiyle bitir'}</small></button>` : ''}
-    <button id="mClose" class="btn glassbtn">Tamam</button>`, { mClose: closeModal, mHunt: () => crownHunt(nx), mChest: chestSheet });
+      <small class="vipk">${L('💛 Reklamsız pakete özel', '💛 Ad-free pack only')}</small>${SKINS.filter(k => k.vip).map(card).join('')}</div>
+    ${nx ? `<div class="nexts"><small>${L('Sonraki', 'Next')}: <b>${nx.name}</b></small><small>👑 ${Math.min(bal, nx.need)} / ${nx.need}</small></div><div class="pb"><i style="width:${Math.max(4, Math.min(100, bal / nx.need * 100))}%"></i></div>
+    <button id="mHunt" class="btn primary"><span>${L('Taç topla', 'Earn crowns')} 👑</span><small>${hn ? L(`${hn} bölüm kusursuz bitmeyi bekliyor`, `${hn} ${pl(hn, 'level awaits', 'levels await')} a perfect finish`) : L('Yeni bölümleri ⏱ ve ↻ hedefiyle bitir', 'Beat new levels within ⏱ and ↻ targets')}</small></button>` : ''}
+    <button id="mClose" class="btn glassbtn">${L('Tamam', 'Done')}</button>`, { mClose: closeModal, mHunt: () => crownHunt(nx), mChest: chestSheet });
   $('skins').onclick = e => {
     const b = e.target.closest('.skin'); if (!b) return;
     const k = SKINS.find(x => x.id === b.dataset.k);
@@ -1521,28 +1559,28 @@ function skinSheet() {
 function buySheet(k) {
   const bal = crownBal(), left = bal - k.need, nx = SKINS.filter(x => !x.vip && !skinOpen(x) && x !== k).sort((a, b) => a.need - b.need)[0];
   modal(`<div class="skin big" style="${skinVars(k)}">${skinSvg}</div><h2>${k.name}</h2>
-    <p><b class="nw">👑 ${k.need}</b> harcanacak. Sende <span class="nw">👑 ${bal}</span> → kalan <b class="nw">👑 ${left}</b>.${nx && left < nx.need ? `<br>Sonra ${nx.name} için ${nx.need - left} 👑 daha toplaman gerekecek.` : ''}</p>
-    <button id="mBuy" class="btn primary"><span>Satın al · 👑 ${k.need}</span><small>Temayı hemen kullan</small></button>
-    <button id="mBack" class="btn glassbtn">Vazgeç</button>`, {
+    <p>${L(`<b class="nw">👑 ${k.need}</b> harcanacak. Sende <span class="nw">👑 ${bal}</span> → kalan <b class="nw">👑 ${left}</b>.`, `This costs <b class="nw">👑 ${k.need}</b>. You have <span class="nw">👑 ${bal}</span> → <b class="nw">👑 ${left}</b> left.`)}${nx && left < nx.need ? L(`<br>Sonra ${nx.name} için ${nx.need - left} 👑 daha toplaman gerekecek.`, `<br>Then you’ll need ${nx.need - left} more 👑 for ${nx.name}.`) : ''}</p>
+    <button id="mBuy" class="btn primary"><span>${L('Satın al', 'Buy')} · 👑 ${k.need}</span><small>${L('Temayı hemen kullan', 'Use it right away')}</small></button>
+    <button id="mBack" class="btn glassbtn">${L('Vazgeç', 'Cancel')}</button>`, {
     mBuy: () => {
       if (crownBal() < k.need || skinOpen(k)) return skinSheet();
       save.spent = (save.spent || 0) + k.need; save.owned[k.id] = 1; save.skin = k.id; persist();
       applyTheme(); refreshHome(); haptic('win'); [0, 4, 7, 12].forEach((q, j) => tone(note(q + 3), .35, .045, 'sine', j * .08));
-      toast(`🎨 ${k.name} senin!`); skinSheet();
+      toast(L(`🎨 ${k.name} senin!`, `🎨 ${k.name} is yours!`)); skinSheet();
     },
     mBack: skinSheet });
 }
 // Taç avı: kusursuz bitmemiş bölümler, yıldızlarıyla. En çok yıldızlı (kusursuza en yakın) önce; dokun → oyna.
-const missTxt = l => { const [t, m] = save.miss[l] || [0, 0]; return [t ? `⏱ ${t} sn geç` : '', m ? `↻ ${m} hamle fazla` : ''].filter(Boolean).join(' · '); };
+const missTxt = l => { const [t, m] = save.miss[l] || [0, 0]; return [t ? L(`⏱ ${t} sn geç`, `⏱ ${t} s late`) : '', m ? L(`↻ ${m} hamle fazla`, `↻ ${m} ${pl(m, 'move', 'moves')} over`) : ''].filter(Boolean).join(' · '); };
 const huntList = () => { const L = []; for (let l = 1; l < save.level; l++) if (!save.crowns[l] && unlocked(lineOf(l))) L.push(l); return L.sort((a, b) => (save.stars[b] || 0) - (save.stars[a] || 0) || a - b); };
 function crownHunt(k) {
-  const n = crownBal(), L = huntList();
-  modal(`<h2>Taç topla 👑</h2>
-    <p>${k && k.need > n ? `<b>${k.name}</b> için <b>${k.need - n} 👑</b> daha gerekli. ` : ''}${L.length ? 'Aşağıdaki bölümleri' : 'Bölümleri'} <b>⏱ süre</b> ve <b>↻ hamle</b> hedefiyle bitir: her biri 1 👑.</p>
-    ${L.length ? `<div class="hunt" id="hunt">${L.map(l => `<button class="hrow" data-l="${l}"><b>${l}</b><span>${starTxt(save.stars[l] || 0)}</span><small>${missTxt(l)}</small></button>`).join('')}</div>
-    <p class="tip">★★☆ olanlar kusursuza en yakın · Günün Hattı'nı kusursuz bitirmek de 1 👑</p>`
-    : `<p class="tip">${save.level > 1 ? 'Oynadığın her bölüm kusursuz! 🎉 ' : ''}Yeni bölümler ve Günün Hattı yeni 👑 getirir.</p><button id="mPlay" class="btn primary"><span>Oyna</span><small>Bölüm ${save.level}</small></button>`}
-    <button id="mBack" class="btn glassbtn">Temalara dön</button>`, { mBack: skinSheet, mPlay: () => start('level') });
+  const n = crownBal(), list = huntList();
+  modal(`<h2>${L('Taç topla', 'Earn crowns')} 👑</h2>
+    <p>${k && k.need > n ? L(`<b>${k.name}</b> için <b>${k.need - n} 👑</b> daha gerekli. `, `You need <b>${k.need - n} more 👑</b> for <b>${k.name}</b>. `) : ''}${L(`${list.length ? 'Aşağıdaki bölümleri' : 'Bölümleri'} <b>⏱ süre</b> ve <b>↻ hamle</b> hedefiyle bitir: her biri 1 👑.`, `Beat ${list.length ? 'the levels below' : 'levels'} within the <b>⏱ time</b> and <b>↻ move</b> targets: 1 👑 each.`)}</p>
+    ${list.length ? `<div class="hunt" id="hunt">${list.map(l => `<button class="hrow" data-l="${l}"><b>${l}</b><span>${starTxt(save.stars[l] || 0)}</span><small>${missTxt(l)}</small></button>`).join('')}</div>
+    <p class="tip">${L('★★☆ olanlar kusursuza en yakın · Günün Hattı\'nı kusursuz bitirmek de 1 👑', '★★☆ levels are closest to perfect · a perfect Daily Line also gives 1 👑')}</p>`
+    : `<p class="tip">${save.level > 1 ? L('Oynadığın her bölüm kusursuz! 🎉 ', 'Every level you’ve played is perfect! 🎉 ') : ''}${L('Yeni bölümler ve Günün Hattı yeni 👑 getirir.', 'New levels and the Daily Line bring new 👑.')}</p><button id="mPlay" class="btn primary"><span>${L('Oyna', 'Play')}</span><small>${L('Bölüm', 'Level')} ${save.level}</small></button>`}
+    <button id="mBack" class="btn glassbtn">${L('Temalara dön', 'Back to themes')}</button>`, { mBack: skinSheet, mPlay: () => start('level') });
   if ($('hunt')) $('hunt').onclick = e => { const b = e.target.closest('.hrow'); if (b) start('level', +b.dataset.l); };
 }
 
@@ -1550,18 +1588,18 @@ function crownHunt(k) {
 // Algoritma: oyuncuya özel tohum (ilk sandıkta bir kez) + sandık sırası → ağırlıklı çekiliş. Sonuç taç harcandığı an
 // kaydedilir; uygulamayı kapatıp açmak sonucu değiştirmez. Şanssızlık koruması: 7 sandık destansısız → 8. destansı.
 const CHEST = 10, PITY = 8, SHIELD_MAX = 3;
-const RARITY = { c: ['Sıradan', .60], r: ['Nadir', .28], e: ['Destansı', .12] };
+const RARITY = { c: [L('Sıradan', 'Common'), .60], r: [L('Nadir', 'Rare'), .28], e: [L('Destansı', 'Epic'), .12] };
 // tren kaplamaları: sefer şeridindeki trenin görünüşü. 'hat' = trenin rengi hattın rengi (herkeste var)
 const LIVERIES = [
-  { id: 'hat', name: 'Hat rengi' },
-  { id: 'ekspres', name: 'Kırmızı Ekspres', b: ['#e8475b', '#e8475b'], w: '#fff' },
-  { id: 'gece', name: 'Gece Treni', b: ['#34449a', '#34449a'], w: '#ffd36b' },
-  { id: 'nane', name: 'Nane', b: ['#5fd6b0', '#5fd6b0'], w: '#0f3b30' },
+  { id: 'hat', name: L('Hat rengi', 'Line color') },
+  { id: 'ekspres', name: L('Kırmızı Ekspres', 'Red Express'), b: ['#e8475b', '#e8475b'], w: '#fff' },
+  { id: 'gece', name: L('Gece Treni', 'Night Train'), b: ['#34449a', '#34449a'], w: '#ffd36b' },
+  { id: 'nane', name: L('Nane', 'Mint'), b: ['#5fd6b0', '#5fd6b0'], w: '#0f3b30' },
   { id: 'retro', name: 'Retro', b: ['#f3e3c3', '#c8423b'], w: '#3a2a20' },
-  { id: 'gunbatimi', name: 'Gün Batımı', b: ['#ff8a5c', '#ffcf5c'], w: '#fff' },
-  { id: 'buz', name: 'Buz', b: ['#bfe9ff', '#bfe9ff'], w: '#2b6e99' },
-  { id: 'lavanta', name: 'Lavanta', b: ['#b394ff', '#ff9ad5'], w: '#fff' },
-  { id: 'altin', name: 'Altın Ekspres', b: ['#e9b949', '#e9b949'], w: '#fff6d6' },
+  { id: 'gunbatimi', name: L('Gün Batımı', 'Sunset'), b: ['#ff8a5c', '#ffcf5c'], w: '#fff' },
+  { id: 'buz', name: L('Buz', 'Ice'), b: ['#bfe9ff', '#bfe9ff'], w: '#2b6e99' },
+  { id: 'lavanta', name: L('Lavanta', 'Lavender'), b: ['#b394ff', '#ff9ad5'], w: '#fff' },
+  { id: 'altin', name: L('Altın Ekspres', 'Gold Express'), b: ['#e9b949', '#e9b949'], w: '#fff6d6' },
 ];
 const TRAIN = '<svg class="trn" viewBox="0 0 40 14"><path class="tb1" d="M3 3h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path class="tb2" d="M22 3h10c4 0 7 3 7 6v1a2 2 0 0 1-2 2H22a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path class="tw" d="M4 5h12v2.6H4zm19 0h9.5c1.6 0 3 1 3.6 2.6H23z"/><circle class="tl" cx="36.6" cy="9.8" r="1.1"/></svg>';
 const livVars = v => v?.b ? `--tb1:${v.b[0]};--tb2:${v.b[1]};--tw:${v.w}` : '';
@@ -1605,16 +1643,17 @@ const RW_ICON = {
   hint: '<svg class="rwi" viewBox="-1 -3 26 26"><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1.1 1.2 1.1 2.2h5c0-1 .5-1.7 1.1-2.2A6 6 0 0 0 12 3z" fill="url(#cgB)"/><path d="M9 18h6M10 21h4"/><path class="ry" d="M12 .6v-2M17.9 3.1l1.4-1.4M6.1 3.1 4.7 1.7M20.4 9h2M3.6 9h-2"/></svg>',
   shield: '<svg class="rwi" viewBox="0 0 24 24"><path d="M12 2.6 19.4 5.4v5.4c0 4.7-3 8.6-7.4 10.6-4.4-2-7.4-5.9-7.4-10.6V5.4z" fill="url(#cgS)"/><path d="M12 8.2c.5 2 2.5 2.75 2.5 5.5a2.5 2.5 0 0 1-5 0c0-1.25.6-2 1.25-2.5.1.9.5 1.5 1.1 1.65C11.5 11.5 11.65 9.7 12 8.2z" fill="url(#cgF)" stroke="none"/></svg>',
 };
-const LOOT = [['c', '💡 ipucu ×2'], ['r', '💡 ipucu ×4 <i>ya da</i> 🛡 seri kalkanı ×1'], ['e', '🚆 yeni tren kaplaması']];
+const LOOT = L([['c', '💡 ipucu ×2'], ['r', '💡 ipucu ×4 <i>ya da</i> 🛡 seri kalkanı ×1'], ['e', '🚆 yeni tren kaplaması']],
+  [['c', '💡 hint ×2'], ['r', '💡 hint ×4 <i>or</i> 🛡 streak shield ×1'], ['e', '🚆 new train livery']]);
 function chestSheet() {
   const bal = crownBal(), can = bal >= CHEST, own = LIVERIES.filter(v => ownsLiv(v.id)).length, cur = save.train || 'hat';
-  modal(`<h2>Sürpriz sandık</h2>
-    <div class="cbox ${can ? 'can' : ''}" id="chestBox">${CHEST_SVG}<div class="loot">${LOOT.map(([t, s]) => `<b class="tier-${t}">${RARITY[t][0]}</b><span>${s}</span>`).join('')}<small>${PITY} sandıkta destansı çıkmazsa ${PITY}.si garanti</small></div></div>
-    <div class="odds">${Object.entries(RARITY).map(([t, [n, p]]) => `<b class="tier-${t}">${n} %${Math.round(p * 100)}</b>`).join('<i>·</i>')}<button id="mOdds" class="qm" aria-label="Sandıktan ne çıkar?">?</button></div>
-    <button id="mOpen" class="btn primary cbtn">${can ? `<span>Aç · 👑 ${CHEST}</span>` : `<span>Taç topla</span><small>👑 ${CHEST} gerekli</small>`}</button>
-    <div class="nexts"><small>Trenin</small><small>🚆 ${own} / ${LIVERIES.length}</small></div>
+  modal(`<h2>${L('Sürpriz sandık', 'Surprise chest')}</h2>
+    <div class="cbox ${can ? 'can' : ''}" id="chestBox">${CHEST_SVG}<div class="loot">${LOOT.map(([t, s]) => `<b class="tier-${t}">${RARITY[t][0]}</b><span>${s}</span>`).join('')}<small>${L(`${PITY} sandıkta destansı çıkmazsa ${PITY}.si garanti`, `No epic in ${PITY - 1} chests? The ${PITY}th is guaranteed`)}</small></div></div>
+    <div class="odds">${Object.entries(RARITY).map(([t, [n, p]]) => `<b class="tier-${t}">${n} ${L('%' + Math.round(p * 100), Math.round(p * 100) + '%')}</b>`).join('<i>·</i>')}<button id="mOdds" class="qm" aria-label="${L('Sandıktan ne çıkar?', 'What’s inside?')}">?</button></div>
+    <button id="mOpen" class="btn primary cbtn">${can ? `<span>${L('Aç', 'Open')} · 👑 ${CHEST}</span>` : `<span>${L('Taç topla', 'Earn crowns')}</span><small>${L(`👑 ${CHEST} gerekli`, `👑 ${CHEST} needed`)}</small>`}</button>
+    <div class="nexts"><small>${L('Trenin', 'Your train')}</small><small>🚆 ${own} / ${LIVERIES.length}</small></div>
     <div class="trains" id="trains">${LIVERIES.map(v => `<button data-v="${v.id}" class="${ownsLiv(v.id) ? '' : 'lockd'} ${v.id === cur ? 'on' : ''}" style="${livVars(v)}">${TRAIN}<span>${ownsLiv(v.id) ? v.name : '?'}</span></button>`).join('')}</div>
-    <button id="mBack" class="btn glassbtn">Temalara dön</button>`, { mOpen: () => can ? openChest() : crownHunt(), mBack: skinSheet });
+    <button id="mBack" class="btn glassbtn">${L('Temalara dön', 'Back to themes')}</button>`, { mOpen: () => can ? openChest() : crownHunt(), mBack: skinSheet });
   // "?": sandık çiziminin yerinde içindekiler; tekrar "?" ya da kartın kendisi → geri
   const box = $('chestBox'), info = () => {
     const on = box.classList.toggle('info'), sh = $('mCard'); $('mOdds').classList.toggle('on', on); haptic();
@@ -1623,7 +1662,7 @@ function chestSheet() {
   $('mOdds').onclick = info; box.onclick = () => box.classList.contains('info') && info();
   $('trains').onclick = e => {
     const b = e.target.closest('button'); if (!b) return;
-    if (!ownsLiv(b.dataset.v)) { haptic('light'); toast('Sandıktan destansı olarak çıkar'); return; }
+    if (!ownsLiv(b.dataset.v)) { haptic('light'); toast(L('Sandıktan destansı olarak çıkar', 'Comes from a chest as an epic')); return; }
     save.train = b.dataset.v; persist(); applyLivery(); haptic(); tone(note(7), .2, .04); chestSheet();
   };
 }
@@ -1640,14 +1679,15 @@ function openChest() {
 // açılış sahnesi (tam ekran): sandık düşer ve sallanır → dokun → kapak açılır, ışık patlar, ödül sandıktan fırlar → dokun → pencereye dön
 function chestScene(r) {
   const calm = calmMotion.matches, v = LIVERIES.find(x => x.id === r.id), n = r.kind === 'hint' ? r.n : r.kind === 'shield' ? 1 : 0;
-  const [name, sub] = r.kind === 'hint' ? ['İpucu', `Şimdi ${save.hints} ipucun var`] : r.kind === 'shield' ? ['Seri kalkanı', `Kırılan seriyi bir kez korur · sende ${save.shield}/${SHIELD_MAX}`] : [v.name, 'Yeni tren kaplaması'];
+  const [name, sub] = r.kind === 'hint' ? [L('İpucu', pl(r.n, 'Hint', 'Hints')), L(`Şimdi ${save.hints} ipucun var`, `You now have ${save.hints} ${pl(save.hints, 'hint', 'hints')}`)]
+    : r.kind === 'shield' ? [L('Seri kalkanı', 'Streak shield'), L(`Kırılan seriyi bir kez korur · sende ${save.shield}/${SHIELD_MAX}`, `Saves a broken streak once · ${save.shield}/${SHIELD_MAX} owned`)] : [v.name, L('Yeni tren kaplaması', 'New train livery')];
   const el = document.createElement('div');
-  el.id = 'chestScene'; el.className = `cscene t-${r.tier}${calm ? ' calm' : ''}`; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Sürpriz sandık');
-  el.innerHTML = `<div class="cs-col"><span class="badge tier-${r.tier} cs-tier">${RARITY[r.tier][0].toLocaleUpperCase('tr')}</span>
+  el.id = 'chestScene'; el.className = `cscene t-${r.tier}${calm ? ' calm' : ''}`; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', L('Sürpriz sandık', 'Surprise chest'));
+  el.innerHTML = `<div class="cs-col"><span class="badge tier-${r.tier} cs-tier">${RARITY[r.tier][0].toLocaleUpperCase(RAY_LANG)}</span>
     <div class="cs-rw"><i class="cs-glow"></i><i class="cs-rays"></i><div class="cs-ic rw-${r.kind}" style="${livVars(v)}">${v ? TRAIN : RW_ICON[r.kind]}${n ? `<b class="cs-n">${n}</b>` : ''}</div></div>
     <div class="cs-name"><h2>${name}</h2><p>${sub}</p></div>
-    <div class="cs-box"><div class="cs-ch"><i class="cs-sh"></i><div class="cs-chest">${CHEST_SVG}<i class="cs-flash"></i><i class="cs-sp">${[...Array(8)].map((_, k) => `<i style="--a:${k * 45 + 22}deg"></i>`).join('')}</i></div></div><small class="cs-tap">Dokun → aç</small></div>
-    <div class="cs-foot">${v ? '<button id="csUse" class="btn primary cbtn"><span>Trenine tak</span></button>' : ''}<small class="cs-go">Devam için dokun</small></div></div>`;
+    <div class="cs-box"><div class="cs-ch"><i class="cs-sh"></i><div class="cs-chest">${CHEST_SVG}<i class="cs-flash"></i><i class="cs-sp">${[...Array(8)].map((_, k) => `<i style="--a:${k * 45 + 22}deg"></i>`).join('')}</i></div></div><small class="cs-tap">${L('Dokun → aç', 'Tap → open')}</small></div>
+    <div class="cs-foot">${v ? `<button id="csUse" class="btn primary cbtn"><span>${L('Trenine tak', 'Put on your train')}</span></button>` : ''}<small class="cs-go">${L('Devam için dokun', 'Tap to continue')}</small></div></div>`;
   $('app').appendChild(el);
   // kapalı sandık ekranın ortasında durur, açılınca yerine iner; ödül sandığın ağzından kendi yerine uçar
   const col = el.firstChild, box = el.querySelector('.cs-box'), rw = el.querySelector('.cs-rw');
@@ -1676,13 +1716,13 @@ function chestScene(r) {
 // ---------- nasıl oynanır: sayfalı, kendi kendine oynayan demo (video yerine: keskin, birkaç KB, internetsiz) ----------
 // [sahne başlangıcı (sn), yazı]. Her sayfa kendi sahnesini oynar (+0,5 sn okuma payı), sonra kendiliğinden geçer; parmakla kaydırılır.
 const DEMO_STEPS = [
-  [0, 'Karoya dokun → <b>döner</b>'],
-  [2.6, 'Ortadaki istasyondan çıkan <b>hattı uzat</b>'],
-  [4.4, 'Bütün <b>durakları yak</b>'],
-  [7.2, 'Hepsi bağlandı → <b>kazandın!</b> 🎉'],
-  [9.4, '<b>Hızlı</b> bitir + <b>az</b> dokun = ★★★'],
-  [12, 'Bölümler gittikçe <b>büyür ve zorlaşır</b>'],
-  [15, 'Her gün yeni <b>Günün Hattı</b> 🔥'],
+  [0, L('Karoya dokun → <b>döner</b>', 'Tap a tile → it <b>turns</b>')],
+  [2.6, L('Ortadaki istasyondan çıkan <b>hattı uzat</b>', '<b>Extend the line</b> from the hub in the middle')],
+  [4.4, L('Bütün <b>durakları yak</b>', '<b>Light up</b> every station')],
+  [7.2, L('Hepsi bağlandı → <b>kazandın!</b> 🎉', 'All connected → <b>you win!</b> 🎉')],
+  [9.4, L('<b>Hızlı</b> bitir + <b>az</b> dokun = ★★★', 'Finish <b>fast</b> + tap <b>less</b> = ★★★')],
+  [12, L('Bölümler gittikçe <b>büyür ve zorlaşır</b>', 'Levels grow <b>bigger and harder</b>')],
+  [15, L('Her gün yeni <b>Günün Hattı</b> 🔥', 'A new <b>Daily Line</b> every day 🔥')],
 ];
 const DEMO_END = 18, DEMO_PAD = .5;
 function demo(cv2, onPage) {
@@ -1760,7 +1800,7 @@ function demo(cv2, onPage) {
         c2.fillStyle = col; c2.shadowColor = col; c2.shadowBlur = 12; c2.fill(new Path2D('m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z')); c2.restore();
       });
       c2.fillStyle = pal.fg; c2.font = '600 13px Outfit, system-ui'; c2.textAlign = 'center';
-      c2.fillText('bitir  ·  ⏱ süre  ·  ↻ hamle', D / 2, D / 2 + 52);
+      c2.fillText(L('bitir  ·  ⏱ süre  ·  ↻ hamle', 'finish  ·  ⏱ time  ·  ↻ moves'), D / 2, D / 2 + 52);
     } else if (t < 15) {
       const k2 = t < 13.5 ? 0 : 1, P = big[k2], q = Math.min(1, (t - (k2 ? 13.5 : 12)) / .35);
       grid(P.cols, P.cur, { scale: (.6 + .4 * back(q)) * .84 });
@@ -1785,20 +1825,20 @@ function demo(cv2, onPage) {
 }
 // Anlatıcı: son sayfaya gelmeden kapanmaz (dışarı dokunma ve geri tuşu da kapatmaz).
 function how() {
-  const last = DEMO_STEPS.length - 1, endTxt = save.played ? 'Tamam' : 'Hadi oynayalım!';
+  const last = DEMO_STEPS.length - 1, endTxt = save.played ? L('Tamam', 'Done') : L('Hadi oynayalım!', 'Let’s play!');
   let done = false;
-  modal(`<h2>Nasıl oynanır?</h2>
+  modal(`<h2>${L('Nasıl oynanır?', 'How to play?')}</h2>
     <div class="pgs" id="demoDots">${'<i><b></b></i>'.repeat(DEMO_STEPS.length)}</div>
-    <div class="demobox"><canvas id="demoCv" class="demo" aria-label="Oynanış demosu"></canvas></div>
+    <div class="demobox"><canvas id="demoCv" class="demo" aria-label="${L('Oynanış demosu', 'Gameplay demo')}"></canvas></div>
     <p id="demoTxt" class="demotxt">${DEMO_STEPS[0][1]}</p>
-    <small class="swipe" id="demoSwipe">‹ kaydır ›</small>
-    <button id="mClose" class="btn primary"><span>İleri ›</span><small>1 / ${DEMO_STEPS.length}</small></button>`, {}, true);
+    <small class="swipe" id="demoSwipe">${L('‹ kaydır ›', '‹ swipe ›')}</small>
+    <button id="mClose" class="btn primary"><span>${L('İleri ›', 'Next ›')}</span><small>1 / ${DEMO_STEPS.length}</small></button>`, {}, true);
   const btn = $('mClose'), close = closeModal;
   mOnClose = () => { if (save.played === 0 && !G) start('level'); };
   const D = demo($('demoCv'), k => {
     if (k === last && !done) { done = true; mLocked = false; $('demoSwipe').style.visibility = 'hidden'; }
     btn.classList.toggle('fin', done && k === last);
-    btn.innerHTML = k === last ? `<span>${endTxt}</span>` : `<span>İleri ›</span><small>${k + 1} / ${DEMO_STEPS.length}</small>`;
+    btn.innerHTML = k === last ? `<span>${endTxt}</span>` : `<span>${L('İleri ›', 'Next ›')}</span><small>${k + 1} / ${DEMO_STEPS.length}</small>`;
   });
   btn.onclick = () => D.page === last ? close() : D.next();
   howBack = () => { if (done) close(); else if (D.page > 0) D.prev(); };
@@ -1868,9 +1908,9 @@ const q = new URLSearchParams(location.search), qd = q.get('d'), qm = +q.get('m'
 if (qd) {
   history.replaceState(null, '', location.pathname);
   if (qd === today()) {
-    if (save.dailyDone === today()) toast(qm ? `Arkadaşın ${qm} hamlede bitirdi · sen ${save.dailyStats?.moves ?? '?'}` : 'Bugünün hattını zaten bitirdin');
-    else { start('daily'); if (qm) setTimeout(() => toast(`Arkadaşın ${qm} hamlede bitirdi · geçebilir misin?`), 700); }
-  } else toast('Bu meydan okuma eski · bugünün hattı seni bekliyor');
+    if (save.dailyDone === today()) toast(qm ? L(`Arkadaşın ${qm} hamlede bitirdi · sen ${save.dailyStats?.moves ?? '?'}`, `Your friend took ${qm} ${pl(qm, 'move', 'moves')} · you ${save.dailyStats?.moves ?? '?'}`) : L('Bugünün hattını zaten bitirdin', 'You already finished today’s line'));
+    else { start('daily'); if (qm) setTimeout(() => toast(L(`Arkadaşın ${qm} hamlede bitirdi · geçebilir misin?`, `Your friend took ${qm} ${pl(qm, 'move', 'moves')} · can you beat that?`)), 700); }
+  } else toast(L('Bu meydan okuma eski · bugünün hattı seni bekliyor', 'That challenge has expired · today’s line awaits'));
 }
 const intro = $('intro');
 let introOn = !(window.__noIntro || qd || matchMedia('(prefers-reduced-motion: reduce)').matches);

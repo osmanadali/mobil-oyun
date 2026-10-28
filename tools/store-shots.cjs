@@ -94,17 +94,17 @@ const play = (page, l) => page.evaluate(() => document.getElementById('bMap').cl
 const bal = (s, n) => Object.assign(s, { cc: n + s.spent - Object.keys(s.crowns).length - s.dCrowns });
 const seenTo = c => Object.fromEntries(Array.from({ length: c }, (_, k) => [k, 1]));   // c'den önceki hatların kural kartları görülmüş
 const SCENES = [
-  { id: '01-ana', t: ['Hatları bağla,', 'şehri canlandır'], s: 'Tek elle · internetsiz · her gün yeni bir Günün Hattı',
+  { id: '01-ana', t: ['Hatları bağla,', 'şehri canlandır'], s: 'Tek elle · internetsiz · her gün yeni bir Günün Hattı', te: ['Connect the lines,', 'light up the city'], se: 'One hand · offline · a new Daily Line every day',
     save: saveAt(241), go: async page => { await page.waitForTimeout(900); } },
   // M8 iki merkez: iki renkli hat, yarısı yanmış
-  { id: '02-oyun', t: ['Dokun, döndür,', 'hattı yak'], s: 'Bütün durakları merkeze bağla, açık uç kalmasın',
+  { id: '02-oyun', t: ['Dokun, döndür,', 'hattı yak'], s: 'Bütün durakları merkeze bağla, açık uç kalmasın', te: ['Tap, turn,', 'light the line'], se: 'Link every station to the hub, leave no open ends',
     save: saveAt(183), go: async page => { await play(page, 180); await page.waitForTimeout(900); await clock(page, 47); await solveTo(page, .42); await page.waitForTimeout(1400); } },
   // kusursuz bitiş: 3 yıldız + taç + 5'li seri bonusu
-  { id: '03-kazan', t: ['Kusursuz bitir,', 'taç kazan'], s: 'Süre ve hamle hedefini tuttur, üç yıldızı topla',
+  { id: '03-kazan', t: ['Kusursuz bitir,', 'taç kazan'], s: 'Süre ve hamle hedefini tuttur, üç yıldızı topla', te: ['Finish perfect,', 'earn crowns'], se: 'Beat the time and move targets, collect three stars',
     save: saveAt(46, { combo: 4 }), go: async page => { await play(page, 45); await page.waitForTimeout(900); await clock(page, 38); await solveTo(page, 1); await page.waitForTimeout(3200); } },
   // harita gerçek ilerlemeyle (test açık değil): şimdiki hattın (M10, karma) başlığı üstte, bitmiş M9 sonu üstünde;
   // ekranın altı satır arasına denk gelir (yarım kesik sayı kalmasın, ev çizgisi yazının üstüne binmesin)
-  { id: '04-harita', t: ['20 hat,', 'sonu gelmeyen bölüm'], s: 'Her bölüm bir öncekinden biraz daha zor', test: false,
+  { id: '04-harita', t: ['20 hat,', 'sonu gelmeyen bölüm'], s: 'Her bölüm bir öncekinden biraz daha zor', te: ['20 lines,', 'endless levels'], se: 'Each level a little harder than the last', test: false,
     save: saveAt(270), go: async page => {
       await page.evaluate(() => document.getElementById('bMap').click()); await page.waitForTimeout(700);
       await page.evaluate(() => {
@@ -115,10 +115,10 @@ const SCENES = [
       });
       await page.waitForTimeout(400);
     } },
-  { id: '05-kural', t: ['Hat ilerledikçe', 'yeni kurallar'], s: 'Makas, köprü, tabela, döner tabla, halka, tünel ağzı…',
+  { id: '05-kural', t: ['Hat ilerledikçe', 'yeni kurallar'], s: 'Makas, köprü, tabela, döner tabla, halka, tünel ağzı…', te: ['New rules', 'as the line grows'], se: 'Switches, bridges, signposts, turntables, loops, tunnel portals…',
     save: saveAt(829, { seen: seenTo(18) }), go: async page => { await play(page, 829); await page.waitForTimeout(2200); } },
   // tema penceresi: alt kenar bir yazıyı kesmesin. Pencere başta (başlıkla) ya da tema ızgarası en üstte durur; temiz olan ilk kaydırma seçilir.
-  { id: '06-tema', t: ['Taç topla,', '25 renk teması aç'], s: 'Kusursuz bitirdiğin her bölüm bir taç kazandırır',
+  { id: '06-tema', t: ['Taç topla,', '25 renk teması aç'], s: 'Kusursuz bitirdiğin her bölüm bir taç kazandırır', te: ['Collect crowns,', 'unlock 25 themes'], se: 'Every level you finish perfectly earns a crown',
     save: bal(saveAt(241, { skin: 'ocean', owned: { metro: 1, sunset: 1, ocean: 1, forest: 1, desert: 1, sakura: 1, neon: 1, aurora: 1 }, spent: 395 }), 38),
     go: async page => {
       await page.evaluate(() => document.getElementById('crownChip').click()); await page.waitForTimeout(1200);
@@ -133,7 +133,7 @@ const SCENES = [
       await page.waitForTimeout(300);
     } },
   // sandık açılışı: 7 sandıktır destansı çıkmadı → 8. destansı (şanssızlık koruması); sabit tohumla hep aynı kaplama (Lavanta)
-  { id: '07-sandik', t: ['Sürpriz sandık,', 'yeni trenler'], s: 'İpucu, seri kalkanı ya da yeni bir tren kaplaması',
+  { id: '07-sandik', t: ['Sürpriz sandık,', 'yeni trenler'], s: 'İpucu, seri kalkanı ya da yeni bir tren kaplaması', te: ['Surprise chest,', 'new trains'], se: 'Hints, a streak shield or a new train livery',
     save: bal(saveAt(241, { skin: 'ocean', seed: 9, chests: 7, dry: 7, trains: { ekspres: 1, gece: 1 } }), 24),
     go: async page => {
       await page.evaluate(() => document.getElementById('crownChip').click()); await page.waitForTimeout(800);
@@ -150,8 +150,8 @@ const safeCss = ([t, b]) => `.screen{padding-top:${t}px!important}#home{padding-
   .cscene{padding-top:${Math.max(16, t)}px!important;padding-bottom:${Math.max(16, b)}px!important}
   #toast{top:${t + 128}px!important}body.test .hero p::after{content:none!important}`;
 
-async function capture(browser, url, sc, d, k) {
-  const ctx = await browser.newContext({ viewport: { width: d.vp[0], height: d.vp[1] }, deviceScaleFactor: k, colorScheme: 'dark', hasTouch: true, isMobile: true, locale: 'tr-TR' });
+async function capture(browser, url, sc, d, k, en = false) {
+  const ctx = await browser.newContext({ viewport: { width: d.vp[0], height: d.vp[1] }, deviceScaleFactor: k, colorScheme: 'dark', hasTouch: true, isMobile: true, locale: en ? 'en-US' : 'tr-TR' });
   await ctx.addInitScript(`window.__noIntro = true; window.__rayTest = ${sc.test === false ? 0 : 1}; try { localStorage.setItem('ray', ${JSON.stringify(JSON.stringify(sc.save))}); } catch {}
     addEventListener('DOMContentLoaded', () => { const s = document.createElement('style'); s.textContent = ${JSON.stringify(safeCss(d.safe))}; document.head.append(s); });`);
   const page = await ctx.newPage(), errors = [];
@@ -169,7 +169,8 @@ const ICONS = `<svg viewBox="0 0 74 14" fill="#eef0f7"><rect x="0" y="9" width="
   <path d="M31.5 3.2a12 12 0 0 1 8.6 3.5l1.3-1.4a14 14 0 0 0-19.8 0l1.3 1.4a12 12 0 0 1 8.6-3.5zm0 4a8 8 0 0 1 5.7 2.3l1.4-1.4a10 10 0 0 0-14.2 0l1.4 1.4a8 8 0 0 1 5.7-2.3zm0 4a4 4 0 0 1 2.9 1.2l-2.9 2.9-2.9-2.9a4 4 0 0 1 2.9-1.2z"/>
   <rect x="47" y="1.5" width="23" height="11" rx="3.2" fill="none" stroke="#eef0f7" stroke-opacity=".45" stroke-width="1.1"/><rect x="49" y="3.5" width="16" height="7" rx="1.8"/><path d="M71.6 5.5v3.2c.8-.3 1.3-.9 1.3-1.6s-.5-1.3-1.3-1.6z" fill-opacity=".45"/></svg>`;
 const BG = `background:radial-gradient(60% 40% at 12% 6%,rgba(255,159,90,.30),transparent 70%),radial-gradient(70% 45% at 92% 96%,rgba(109,123,255,.32),transparent 70%),radial-gradient(45% 30% at 85% 30%,rgba(255,111,145,.14),transparent 70%),linear-gradient(165deg,#161b33,#0d1020 62%)`;
-function frameHtml(d, sc, png) {
+function frameHtml(d, sc, png, en = false) {
+  const [t, sub] = en ? [sc.te, sc.se] : [sc.t, sc.s];
   const L = layout(d), f = Math.round(d.W * .074), k = L.k, rad = Math.round(L.sw * .12), [st, sb] = d.safe;
   return `<!doctype html><html><head><meta charset="utf-8"><style>${FACE}
 *{margin:0;box-sizing:border-box}html,body{width:${d.W}px;height:${d.H}px;overflow:hidden}
@@ -187,13 +188,14 @@ header p{margin-top:${Math.round(f * .34)}px;font-size:${Math.round(f * .4)}px;f
 .sb svg{height:${Math.round(11.5 * k)}px}
 .hb{position:absolute;left:50%;bottom:${Math.round(Math.max(6, sb * .24) * k)}px;width:${Math.round(128 * k)}px;height:${Math.round(4.6 * k)}px;margin-left:-${Math.round(64 * k)}px;border-radius:99px;background:rgba(238,240,247,.6)}
 </style></head><body><div class="map"></div>
-<header><h1>${sc.t[0]}<em>${sc.t[1]}</em></h1><p>${sc.s}</p></header>
+<header><h1>${t[0]}<em>${t[1]}</em></h1><p>${sub}</p></header>
 <div class="ph"><div class="sc"><img src="data:image/png;base64,${png.toString('base64')}"><div class="sb"><span>9:41</span>${ICONS}</div><i class="hb"></i></div></div>
 </body></html>`;
 }
 
 // ---------- Play öne çıkan görsel (1024×500) ----------
-function featureHtml() {
+function featureHtml(en = false) {
+  const [sub, chips] = en ? ['Connect the lines · Light up the city', ['One hand', 'Offline', 'Metro puzzle']] : ['Hatları bağla · Şehri canlandır', ['Tek elle', 'İnternetsiz', 'Metro bulmacası']];
   const icon = rIcon({ size: 1000, round: 440 }).replace('<svg ', '<svg style="width:300px;height:300px" ');
   return `<!doctype html><html><head><meta charset="utf-8"><style>${FACE}
 *{margin:0;box-sizing:border-box}html,body{width:1024px;height:500px;overflow:hidden}
@@ -204,14 +206,16 @@ body{background:radial-gradient(55% 75% at 20% 45%,rgba(125,162,253,.20),transpa
 .ic svg{display:block;border-radius:66px}
 .tx{position:relative}
 h1{display:inline-block;font-size:150px;line-height:.9;font-weight:800;letter-spacing:-.04em;background:linear-gradient(115deg,#eef0f7 35%,#ffb35c 72%,#ff7a8a);-webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:.08em}
-p{font-size:36px;font-weight:600;color:#c3c8dd;margin-top:6px;letter-spacing:.005em}
+p{font-size:${en ? 30 : 36}px;font-weight:600;color:#c3c8dd;margin-top:6px;letter-spacing:.005em}
 small{display:flex;gap:12px;margin-top:26px}
 small b{font-size:21px;font-weight:600;color:#dfe3f2;padding:9px 18px;border-radius:99px;background:rgba(40,46,82,.55);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.09)}
 </style></head><body><div class="map"></div><div class="ic">${icon}</div>
-<div class="tx"><h1>Ray</h1><p>Hatları bağla · Şehri canlandır</p><small><b>Tek elle</b><b>İnternetsiz</b><b>Metro bulmacası</b></small></div></body></html>`;
+<div class="tx"><h1>Ray</h1><p>${sub}</p><small>${chips.map(c => `<b>${c}</b>`).join('')}</small></div></body></html>`;
 }
 
 async function main(args, scenes = SCENES, dir = OUT) {
+  // 'en' → İngilizce oyun (en-US) ve İngilizce başlıklar: store/screens-en/, store/feature-graphic-en.png
+  const en = args.includes('en'), sfx = en ? '-en' : '';
   const devs = args.filter(a => DEVICES[a] || a === 'feature'), only = args.filter(a => /^\d\d$/.test(a));
   const want = id => !devs.length || devs.includes(id), wantSc = sc => !only.length || only.includes(sc.id.slice(0, 2));
   const srv = await serve(), url = `http://127.0.0.1:${srv.address().port}/index.html`, browser = await chromium.launch(), out = [];
@@ -226,11 +230,11 @@ async function main(args, scenes = SCENES, dir = OUT) {
       if (!want(id)) continue;
       const L = layout(d);
       for (const sc of scenes.filter(wantSc)) {
-        const png = await capture(browser, url, sc, d, L.k);
-        await render(path.join(dir, 'screens', id, sc.id + '.png'), d.W, d.H, frameHtml(d, sc, png));
+        const png = await capture(browser, url, sc, d, L.k, en);
+        await render(path.join(dir, 'screens' + sfx, id, sc.id + '.png'), d.W, d.H, frameHtml(d, sc, png, en));
       }
     }
-    if (want('feature')) await render(path.join(dir, 'feature-graphic.png'), 1024, 500, featureHtml());
+    if (want('feature')) await render(path.join(dir, `feature-graphic${sfx}.png`), 1024, 500, featureHtml(en));
   } finally { await browser.close(); srv.close(); }
   return out;
 }

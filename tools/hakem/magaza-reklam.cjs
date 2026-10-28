@@ -5,7 +5,7 @@ module.exports = async T => {
   const G = (page, f, a) => page.evaluate(f, a);
   const h2 = page => G(page, () => document.querySelector('.sheet h2')?.textContent || '');
   const base = { played: 5, level: 30, stars: starsUpTo(30), remindAsked: true };
-  const POLICY = 'https://osmanadali.github.io/mobil-oyun/gizlilik.html';
+  const POLICY = 'https://osmanadali.github.io/mobil-oyun/gizlilik.html#tr';
   const TEST_IOS = { interstitial: 'ca-app-pub-3940256099942544/4411468910', rewarded: 'ca-app-pub-3940256099942544/1712485313' };
   // AdMob 8.x sahtesi: rıza (UMP), ATT, Browser. Çağrılar sırayla __consent.calls'a yazılır.
   const CAP = ({ os = 'ios', c = {}, ids = null } = {}) => `${ids ? `window.RAY_ADS = ${JSON.stringify(ids)};` : ''}

@@ -88,7 +88,8 @@ module.exports = async T => {
   // ---------- 2. Tanıtım bölümünde kural kartı 320 ve 360 px'te taşmıyor (en-US) ----------
   {
     const { ctx, page } = await open(browser, URL, { save: { played: 1 } });
-    const rules = await page.evaluate(() => window.__ray.MODS.map(m => ({ key: m.key, line: m.line, lvl: window.__ray.lineStart(m.line) })));
+    // eklentiler + çekirdek kuralları (M3–M8, hat 2–7): kartın tamamı (rozet, ad, metin, düğme) burada açılıp denetlenir
+    const rules = await page.evaluate(() => [...[2, 3, 4, 5, 6, 7].map(c => ({ key: 'M' + (c + 1), line: c })), ...window.__ray.MODS.map(m => ({ key: m.key, line: m.line }))].map(q => ({ ...q, lvl: window.__ray.lineStart(q.line) })));
     await ctx.close();
     const bad = [], seen = [];
     for (const vp of [[320, 568], [360, 640]]) for (const q of rules) {
@@ -98,14 +99,14 @@ module.exports = async T => {
         const sh = document.querySelector('#modal.open .sheet'); if (!sh) return { open: false };
         const box = sh.getBoundingClientRect(), wide = [...sh.querySelectorAll('*')].filter(e => { const b = e.getBoundingClientRect(); return b.width && (b.left < box.left - 1 || b.right > box.right + 1); }).map(e => e.tagName + '.' + e.className);
         const h2 = sh.querySelector('h2'), lh = parseFloat(getComputedStyle(h2).lineHeight) || parseFloat(getComputedStyle(h2).fontSize) * 1.3, go = document.getElementById('mGo').getBoundingClientRect();
-        return { open: true, h2: h2.textContent, lines: Math.round(h2.getBoundingClientRect().height / lh), scrollY: sh.scrollHeight - sh.clientHeight, scrollX: sh.scrollWidth - sh.clientWidth, wide, go: go.bottom <= innerHeight + 1 && go.top >= 0, page: document.documentElement.scrollWidth - innerWidth };
+        return { open: true, tr: (sh.innerText.match(/\S*[ğüşıöçĞÜŞİÖÇ]\S*/g) || []).slice(0, 3), h2: h2.textContent, lines: Math.round(h2.getBoundingClientRect().height / lh), scrollY: sh.scrollHeight - sh.clientHeight, scrollX: sh.scrollWidth - sh.clientWidth, wide, go: go.bottom <= innerHeight + 1 && go.top >= 0, page: document.documentElement.scrollWidth - innerWidth };
       });
-      const ok = c.open && c.lines <= 1 && c.scrollY <= 1 && c.scrollX <= 0 && !c.wide.length && c.go && c.page <= 0 && !errors.length;
+      const ok = c.open && !c.tr.length && c.lines <= 1 && c.scrollY <= 1 && c.scrollX <= 0 && !c.wide.length && c.go && c.page <= 0 && !errors.length;
       seen.push(`${vp[0]}:${q.key}`);
       if (!ok) bad.push({ vp: vp[0], key: q.key, ...c, errors });
       errs.push(...errors); await ctx.close();
     }
-    check('i18n.rules.fit', `en-US: ${rules.length} kuralın tanıtım kartı 320×568 ve 360×640'ta taşmıyor (başlık tek satır, kaydırma yok, "Anladım" ekranda)`, seen.length === rules.length * 2 && !bad.length, JSON.stringify(bad.slice(0, 4)));
+    check('i18n.rules.fit', `en-US: ${rules.length} kuralın (M3–M20) tanıtım kartı İngilizce (Türkçe harf yok) ve 320×568 ile 360×640'ta taşmıyor (başlık tek satır, kaydırma yok, "Got it" ekranda)`, seen.length === rules.length * 2 && !bad.length, JSON.stringify(bad.slice(0, 4)));
   }
 
   // ---------- 3. tr-TR ve en-US: kurallı bölümlerin tahtaları aynı ----------
