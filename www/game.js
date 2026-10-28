@@ -630,7 +630,7 @@ function show(id) {
   document.body.classList.toggle('playing', id === 'game');
   if (id === 'game') resume(); else pause();
   Music.setMode(id === 'game' ? 'game' : 'menu');
-  if (id === 'home') { refreshHome(); setTimeout(maybeRescue, 600); if (G && Remind.avail() && !save.remindAsked && (save.dailyDone || save.played >= 6)) setTimeout(() => { if (active('home') && !modalOpen()) remindAsk(); }, 700); }
+  if (id === 'home') { refreshHome(); setTimeout(maybeRescue, 600); if (G && Remind.avail() && !save.remindAsked && (save.dailyDone || save.level > lineEnd(0))) setTimeout(() => { if (active('home') && !modalOpen()) remindAsk(); }, 700); }
   if (id === 'map') renderMap();
   clearInterval(clockT); if (id === 'home') clockT = setInterval(dailyClock, 1000);
 }
@@ -1288,13 +1288,23 @@ const Remind = (() => {
       const at = d => { const x = new Date(now); x.setDate(x.getDate() + d); x.setHours(h, m, 0, 0); return x; };
       const done = save.dailyDone === today(), sk = save.streak, list = [];
       const lost = save.lost?.day === today();
+      // yeni oyuncu (hiç Günün Hattı bitirmemiş, Bölüm 61'e gelmemiş): 7×9'luk Günün Hattı yerine kaldığı bölüme çağrılır
+      const fresh = !save.dailyDone && save.level < 61;
+      if (fresh) {
+        const N = save.level, c = lineOf(N), k = need(unlocked(c) ? c + 1 : c) - totalStars();
+        const body = k > 0 && !TEST ? L(`Bölüm ${N} seni bekliyor · yeni hatta ${k} ★ kaldı`, `Level ${N} is waiting · ${k} ★ to the next line`) : L(`Bölüm ${N} seni bekliyor · bir dakikalık bulmaca`, `Level ${N} is waiting · a one-minute puzzle`);
+        if (at(0) - now > 20 * 60e3) list.push([1, at(0), L('Kaldığın yerden devam 🚇', 'Pick up where you left off 🚇'), body, 'level']);
+        list.push([2, at(1), L('Hatlar seni bekliyor 🚇', 'The lines are waiting 🚇'), body, 'level']);
+      } else {
       if (!done && at(0) - now > 20 * 60e3) list.push([1, at(0), lost ? L('Serin kopmak üzere 💔', 'Your streak is about to break 💔') : L('Günün Hattı seni bekliyor 🚇', 'Your Daily Line is waiting 🚇'),
         lost ? L(`${save.lost.n} günlük serini bugün hâlâ kurtarabilirsin`, `You can still save your ${save.lost.n}-day streak today`) : sk ? L(`🔥 ${sk} günlük serin bugün sönmesin`, `🔥 Don’t let your ${sk}-day streak go out today`) : L('Bir dakikalık bulmaca · hattı bağla, şehri canlandır', 'A one-minute puzzle · connect the line, light up the city')]);
       list.push([2, at(1), L('Yeni Günün Hattı açıldı 🚇', 'A new Daily Line is open 🚇'), done && sk ? L(`🔥 Serin ${sk} gün · bugün bir gün daha ekle`, `🔥 ${sk}-day streak · add one more today`) : L('Bugünün bulmacası hazır · yolculuğa bir hat bağla', 'Today’s puzzle is ready · connect a line for the trip')]);
-      list.push([3, at(3), L('Şehir seni özledi 🌃', 'The city misses you 🌃'), L(`Bölüm ${save.level} seni bekliyor · ★ topla, yeni hat aç`, `Level ${save.level} is waiting · earn ★, open new lines`)]);
+      }
+      list.push([3, at(3), L('Şehir seni özledi 🌃', 'The city misses you 🌃'), L(`Bölüm ${save.level} seni bekliyor · ★ topla, yeni hat aç`, `Level ${save.level} is waiting · earn ★, open new lines`), 'level']);
       list.push([4, at(7), L('Hatlar durdu 🚦', 'The lines have stopped 🚦'), L('Bir dakikanı ayır, şehri yeniden canlandır', 'Spare a minute and bring the city back to life')]);
       // isExactNotification:false → LocalNotifications 8.3+ her planlamada "Alarmlar ve hatırlatıcılar" ayar ekranını açmasın (birkaç dk kayması sorun değil)
-      await P.schedule({ notifications: list.map(([id, when, title, body]) => ({ id, title, body, schedule: { at: when, allowWhileIdle: true }, isExactNotification: false, smallIcon: 'ic_stat_ray', iconColor: '#ffb35c', extra: { go: 'daily' } })) });
+      // extra.go: bildirime dokununca açılacak ekran ('level' sıradaki bölüm, 'daily' Günün Hattı); yeni oyuncuda hepsi bölüme
+      await P.schedule({ notifications: list.map(([id, when, title, body, go = fresh ? 'level' : 'daily']) => ({ id, title, body, schedule: { at: when, allowWhileIdle: true }, isExactNotification: false, smallIcon: 'ic_stat_ray', iconColor: '#ffb35c', extra: { go } })) });
     } catch {}
   }
   // izin istenip verilirse açılır
@@ -1303,14 +1313,28 @@ const Remind = (() => {
     if (!save.dailyDone) habit();
     save.remind = true; persist(); plan(); return true;
   }
-  LN()?.addListener?.('localNotificationActionPerformed', a => { if (a?.notification?.extra?.go === 'daily' && save.dailyDone !== today()) setTimeout(() => start('daily'), 400); });
-  return { avail: () => !!LN(), plan, enable, habit };
+  // bildirime dokunuldu: 'daily' → Günün Hattı (bugün bittiyse ana sayfa), 'level' → sıradaki bölüm. Yarım oyun açıksa ona dokunulmaz.
+  function open(go) {
+    if (G && !G.won && active('game')) return;
+    if (go === 'daily' && save.dailyDone !== today()) start('daily');
+    else if (go === 'level') start('level');
+    else if (!active('home')) show('home');
+  }
+  LN()?.addListener?.('localNotificationActionPerformed', a => { const go = a?.notification?.extra?.go; if (go) setTimeout(() => open(go), 400); });
+  return { avail: () => !!LN(), plan, enable, habit, open };
 })();
 const NO_PERM = L('Bildirim izni verilmedi', 'Notifications not allowed');
-// ilk Günün Hattı'ndan (ya da birkaç bölümden) sonra ana sayfada bir kez, kibarca sorulur
+// ilk Günün Hattı'ndan ya da ilk hattın sonundan (Bölüm 12) sonra ana sayfada bir kez, kibarca sorulur
 function remindAsk() {
   save.remindAsked = true; persist();
-  modal(L(`<div class="bell">🔔</div><h2>Hatırlatayım mı?</h2>
+  const sk = save.streak > 0 && (save.lastDaily === today() || save.lastDaily === dayBefore(today()));
+  modal(!sk ? L(`<div class="bell">🔔</div><h2>Kaldığın yeri hatırlatayım mı?</h2>
+    <p>Günde bir kez, oynadığın saatte kısa bir hatırlatma. Bildirime dokununca kaldığın bölüm açılır.</p>
+    <button id="mYes" class="btn primary"><span>Evet, hatırlat</span><small>Ayarlardan kapatabilirsin</small></button>
+    <button id="mClose" class="btn glassbtn">Şimdi değil</button>`, `<div class="bell">🔔</div><h2>Remind you where you left off?</h2>
+    <p>One short reminder a day, at the time you play. Tap it to jump back to your level.</p>
+    <button id="mYes" class="btn primary"><span>Yes, remind me</span><small>You can turn it off in Settings</small></button>
+    <button id="mClose" class="btn glassbtn">Not now</button>`) : L(`<div class="bell">🔔</div><h2>Hatırlatayım mı?</h2>
     <p>Her gün yeni bir <b>Günün Hattı</b> geliyor. Serin bozulmasın diye günde bir kez, kısa bir hatırlatma.</p>
     <button id="mYes" class="btn primary"><span>Evet, hatırlat</span><small>Ayarlardan kapatabilirsin</small></button>
     <button id="mClose" class="btn glassbtn">Şimdi değil</button>`, `<div class="bell">🔔</div><h2>Want a reminder?</h2>
@@ -1906,7 +1930,12 @@ show('home');
 Ads.init();
 Shop.init(grantNoAds);
 Remind.plan();
-if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
+// servis çalışanı yalnız web/PWA'da. Uygulamada (Capacitor şeması da https) önbellek Play güncellemesinden sonra eski game.js'i
+// yeni yerel eklentilerle açardı → eski kayıt ve 'ray-' önbellekleri bir kez, sessizce silinir.
+if (window.Capacitor?.isNativePlatform?.()) {
+  try { navigator.serviceWorker?.getRegistrations?.().then(rs => rs.forEach(r => r.unregister())).catch(() => {}); } catch {}
+  try { window.caches?.keys?.().then(ks => Promise.all(ks.filter(k => k.startsWith('ray-')).map(k => caches.delete(k)))).catch(() => {}); } catch {}
+} else if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
 // paylaşılan Günün Hattı bağlantısı: ?d=YYYY-MM-DD&m=hamle
 const q = new URLSearchParams(location.search), qd = q.get('d'), qm = +q.get('m');
 if (qd) {
