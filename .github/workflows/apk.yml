@@ -2,7 +2,8 @@
 # https://github.com/osmanadali/mobil-oyun/releases/download/test/ray-test.apk
 # https://github.com/osmanadali/mobil-oyun/releases/download/test-acik/ray-test-acik.apk  (her şey açık, ayrı uygulama "Ray Test")
 name: Android APK (test)
-# Yalnızca elle: Actions → "Android APK (test)" → Run workflow (ya da: gh workflow run apk.yml [-f unlocked=true])
+# Yalnızca elle: Actions → "Android APK (test)" → Run workflow (ya da: gh workflow run apk.yml [-f unlocked=true] [-f yayin=false])
+# yayin=false: yalnız artifact yüklenir, sabit test sürümüne dokunulmaz (dal denemeleri için)
 on:
   workflow_dispatch:
     inputs:
@@ -10,8 +11,12 @@ on:
         description: 'Her şey açık test sürümü (ayrı uygulama: Ray Test)'
         type: boolean
         default: false
+      yayin:
+        description: 'Sabit test sürümünü (Releases) güncelle'
+        type: boolean
+        default: true
 permissions: { contents: write }
-concurrency: { group: 'apk-${{ inputs.unlocked }}', cancel-in-progress: true }
+concurrency: { group: 'apk-${{ github.ref }}-${{ inputs.unlocked }}', cancel-in-progress: true }
 jobs:
   apk:
     runs-on: ubuntu-latest
@@ -19,35 +24,38 @@ jobs:
       TAG: ${{ inputs.unlocked && 'test-acik' || 'test' }}
       APK: ${{ inputs.unlocked && 'ray-test-acik.apk' || 'ray-test.apk' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Her şey açık (ayrı paket adı → normal test sürümünün yanına kurulur, kayıtlar karışmaz)
         if: inputs.unlocked
         run: |
           sed -i 's/"appId": "com.osmanadali.ray"/"appId": "com.osmanadali.ray.test"/; s/"appName": "Ray"/"appName": "Ray Test"/' capacitor.config.json
           sed -i 's#<script src="ads.js"></script>#<script>window.__rayTest = 1</script><script src="ads.js"></script>#' www/index.html
           grep -c '__rayTest' www/index.html && grep -c 'ray.test' capacitor.config.json
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - uses: actions/setup-java@v4
-        with: { distribution: temurin, java-version: 17 }
-      - run: npm install --no-audit --no-fund
+      # Capacitor 8: Node 22+, JDK 21 (capacitor-android Java 21 ile derlenir)
+      - uses: actions/setup-node@v5
+        with: { node-version: 22, cache: npm }
+      - uses: actions/setup-java@v5
+        with: { distribution: temurin, java-version: 21 }
+      - run: npm ci --no-audit --no-fund
       - run: npx cap add android
       - name: İkon ve açılış ekranı (assets/)
         run: npx @capacitor/assets generate --android --iconBackgroundColor '#0d1020' --iconBackgroundColorDark '#0d1020' --splashBackgroundColor '#0d1020' --splashBackgroundColorDark '#0d1020'
-      - name: AdMob test App ID
-        run: sed -i 's#</application>#<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713"/></application>#' android/app/src/main/AndroidManifest.xml
-      - name: Bildirim simgesi + minSdk 23 (Play Billing 8 gereği)
-        run: |
-          mkdir -p android/app/src/main/res/drawable
-          cp tools/android/ic_stat_ray.xml android/app/src/main/res/drawable/
-          sed -i 's/minSdkVersion = 22/minSdkVersion = 23/' android/variables.gradle
-          grep -n minSdkVersion android/variables.gradle
+      - name: Yerel projeyi hazırla (AdMob test App ID, dikey, bildirim simgesi, kenardan kenara, SDK denetimi)
+        run: node tools/android/hazirla.cjs
       - run: npx cap sync android
       - run: cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon -q
+      - name: APK'daki SDK düzeyleri (Play hedef API ≥ 35 ister)
+        run: |
+          AA=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)/aapt2
+          "$AA" dump badging android/app/build/outputs/apk/debug/app-debug.apk | grep -E "^package:|sdkVersion|targetSdkVersion"
+          T=$("$AA" dump badging android/app/build/outputs/apk/debug/app-debug.apk | sed -n "s/^targetSdkVersion:'\([0-9]*\)'.*/\1/p")
+          [ "$T" -ge 35 ] || { echo "::error::targetSdk $T < 35"; exit 1; }
+          echo "::notice::targetSdk $T"
       - run: cp android/app/build/outputs/apk/debug/app-debug.apk "$APK"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with: { name: '${{ env.TAG }}-apk', path: '${{ env.APK }}' }
       - name: Sabit test sürümünü güncelle
+        if: inputs.yayin
         env: { GH_TOKEN: '${{ github.token }}', TITLE: "${{ inputs.unlocked && 'Test sürümü · her şey açık' || 'Test sürümü' }}" }
         run: |
           gh release delete "$TAG" --yes --cleanup-tag || true
