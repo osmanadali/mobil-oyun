@@ -39,6 +39,7 @@ Bu not, işi yeni bir sohbete taşırken bağlam kaybolmasın diye yazıldı. Ye
 |---|---|
 | `www/game.js` | Çekirdek: üretim, çözücü (`difficulty`), çizim, ekonomi, sandık, temalar, sefer şeridi |
 | `www/rules/*.js` | M9 sonrası kural eklentileri (`window.RAY_RULES`) |
+| `www/ads.js`, `www/shop.js`, `www/gizlilik.html` | Reklam (UMP rızası, ATT), reklamsız paket (Play + App Store), gizlilik politikası |
 | `www/index.html`, `www/style.css`, `www/sw.js` | Kabuk. Yeni kural dosyası eklenince `index.html`'e `<script>` satırı ve `sw.js` önbellek listesine girdi eklenir. |
 | `tools/hakem.cjs` | Test robotu (Playwright). `tools/hakem/*.cjs` kural testlerini K bölümünde yükler. |
 | `.claude/workflows/hakem.js` | 4 kişilik yapay zekâ jürisi iş akışı ("tur bitti" deyince) |
@@ -47,6 +48,11 @@ Bu not, işi yeni bir sohbete taşırken bağlam kaybolmasın diye yazıldı. Ye
 | `.github/workflows/apk.yml` | Test APK'sı, yalnız elle çalışır. `gh workflow run apk.yml` normal sürümü, `-f unlocked=true` "her şey açık" sürümü üretir (ayrı uygulama: Ray Test). |
 | `.github/workflows/web.yml` | Pages yayını. Pages açık olmadığından şimdilik yalnız elle çalışır; yayın hazırlığında push tetikleyicisi geri açılacak. |
 | `.github/workflows/hakem.yml` | Robotu CI'da koşar |
+| `.github/workflows/release.yml` | İmzalı AAB + APK (yalnız elle; imza gizli değerleri ve AdMob değişkenleri gerekir) |
+| `.github/workflows/ios.yml` | iOS simülatör derlemesi (imzasız, elle) |
+| `tools/ikon.cjs`, `tools/make-assets.cjs` | Uygulama ikonu (R) ve bütün ikon/açılış/mağaza görselleri |
+| `tools/store-shots.cjs`, `store/` | Mağaza ekran görüntüleri, öne çıkan görsel, mağaza ikonları |
+| `docs/MAGAZA.md`, `docs/YAYIN.md`, `docs/KALITE.md` | Mağaza metinleri ve formlar · yayın adımları · kalite raporu |
 
 APK indirme linkleri (sabit):
 
@@ -66,29 +72,55 @@ APK indirme linkleri (sabit):
 ## 5. Durum
 
 <!-- DURUM:BAŞ -->
-- Son kararlı commit `b157a91`, robot 174/174.
-- Süre/hamle sınırları kısıldı. Mevcut 6 kurala zorluk payı eklendi:
-  - makas 1,5
-  - köprü 2
-  - tabela 1,5
-  - tabla 2
-  - halka 1,5
-  - tünel 1
-- Yeni zorluk merdiveni: M8 12,3 → M9 14,6, M11 16,3, M13 16,8, M15 17,6, M17 17,8, M19 17,6.
-- **Süren iş:** çift hatlara (M10, M12, M14, M16, M18, M20) gerçekten zorluk katan 6 yeni kural tasarlanıyor (kullanıcının isteği: "yeni kurallar zorluk katmalı"). Ölçümle en çok zorluk katan adaylar gizli bilgi türünden:
-  - kapalı durak (+5,0)
-  - gizli depo (+4,3)
-  - silik kol (+3,1)
+Durum 28 Ekim 2026 sabahı itibarıyla:
+
+- **18 kural, 20 hat tamam.** Çift hatların zor kuralları eklendi:
+
+  | Hat | Kural | Anahtar |
+  |---|---|---|
+  | M10 | Kapak | `cover` |
+  | M12 | Silik kol | `faint` |
+  | M14 | Gizli depo | `depot` |
+  | M16 | Kapalı durak | `closed` |
+  | M18 | Nehir | `river` |
+  | M20 | Tarife bölgesi | `zone` |
+
+  - Hepsi gizli bilgi ya da küresel sayım üzerine kurulu ve ölçümle zorluk katıyor: 7×9'da +3 ile +8 arası.
+  - Çekirdek kancaları: `cands`, `open` (+ `L.openBy`), `prune`, `P.void`, `P.self`, `P.reject`, `api.difficulty(P, leaf, cap)`.
+- **Zorluk merdiveni (hat ortalaması):** M8 12,3 · M10 16,3 · M12 17,8 · M14 19,0 · M16 19,5 · M18 20,8 · M20 20,5 · M21+ ~19,6–20.
+  - M21 ve sonrasında kurallar eşit sıklıkta gelir ve hedefe +2 pay eklenir.
+  - 1–252. bölümler ve Günün Hattı değişmedi.
+- **Uygulama ikonu:** kullanıcının "R" metro tasarımı vektöre çevrildi (`tools/ikon.cjs`). Android adaptif ikonu, açılış ekranı, PWA ikonları ve mağaza ikonları (`store/`) bundan üretilir.
+- **Mağaza hazırlığı:**
+  - Capacitor 8, hedef API 36, kenardan kenara ekran.
+  - UMP rızası, iOS izleme izni (ATT), gizlilik politikası (`www/gizlilik.html`) ve "Verilerimi sil".
+  - İmzalı AAB iş akışı (`release.yml`) ve iOS simülatör derlemesi (`ios.yml`); satın alma iOS'ta da çalışıyor.
+  - Mağaza metinleri ve formlar (`docs/MAGAZA.md`), ekran görüntüleri ve öne çıkan görsel (`store/`), yayın adımları (`docs/YAYIN.md`), kalite raporu (`docs/KALITE.md`).
+- Robot hepsi birlikte geçiyor (sonuç commit mesajında). APK linkleri bölüm 3'te.
 <!-- DURUM:SON -->
 
 ## 6. Sıradaki işler
 
-1. Çift hatlar için 6 zor kuralı bitir (eklenti, test, belge). Her biri robotta geçmeli. `docs/BOLUM_TASARIMI.md` §5 güncellenmeli.
-2. Kullanıcı "APK çıkar" derse normal ve her şey açık APK'ları derle.
-3. Kullanıcı "tur bitti" derse jüriyi çalıştır.
-4. Yayın hazırlığı (en son):
-   - gerçek AdMob kimlikleri ve UMP onayı
-   - gizlilik metni
-   - imzalı AAB
-   - mağaza sayfası
-   - Pages'i açıp `web.yml` push tetikleyicisini geri getirmek
+**Kullanıcının yapacakları (mağaza):** ayrıntı `docs/MAGAZA.md` §12 ve `docs/YAYIN.md` içinde.
+
+1. **Hesaplar:** Play Console (25 $) ve Apple Developer (99 $/yıl).
+   - Kişisel Play hesabında üretimden önce 12 testçiyle 14 gün kapalı test şartı var.
+2. **AdMob:** Android ve iOS uygulamaları, 4 reklam birimi, AB/BK ve ABD rıza mesajları.
+   - Kimlikler GitHub değişkenlerine girilir: `ADMOB_APP_ID_ANDROID`, `ADMOB_INTERSTITIAL_ANDROID`, `ADMOB_REWARDED_ANDROID` (iOS karşılıkları isteğe bağlı).
+3. **İmza anahtarı:** `keytool` ile üretilir ve yedeklenir. Dört gizli değer GitHub'a girilir: `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`.
+4. **Gizlilik politikası:** `www/gizlilik.html` içindeki `[iletişim e-postası]` ve `[geliştirici adı]` doldurulur.
+5. **GitHub Pages:** açılmalı (gizlilik adresi bunu bekliyor). `web.yml` push tetikleyicisi geri getirilir.
+6. **Mağaza ürünü ve formlar:** `ray_reklamsiz` ürünü iki mağazada tanımlanır, formlar doldurulur, metin ve görseller yüklenir.
+
+**Geliştirme (öneriler, `docs/KALITE.md` §3):**
+
+- Birkaç 7×9 karma bölümün üretimi telefonda 1–2 sn sürebiliyor (nehir/bölge + kapak/kapalı durak). Ana ekranda sıradaki bölüm boşta önceden hazırlanıyor; kalıcı çözüm üretimi Web Worker'a taşımak.
+- 320 px ekranda karolar 39 px kalıyor.
+- Ekran okuyucu desteği sınırlı.
+- Anlatıcıya "Geç" bağlantısı eklenebilir.
+- Oyun yalnız Türkçe; İngilizce yerelleştirme mağaza erişimini büyütür.
+
+**Kalıcı kurallar geçerli:**
+
+- APK yalnız "APK çıkar" denince derlenir.
+- Jüri yalnız "tur bitti" denince çalışır.
