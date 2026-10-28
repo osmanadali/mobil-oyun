@@ -50,7 +50,7 @@ module.exports = async T => {
 
     // ---------- d) şehir canlanır: bitişte harita parlar ve tren geçer; ana sayfaya dönünce söner ----------
     const op = await page.evaluate(() => +getComputedStyle(document.querySelector('.map')).opacity);
-    await page.evaluate(() => document.getElementById('mHome')?.click()); await page.waitForTimeout(300);
+    await page.waitForSelector('#mHome', { timeout: 5000 }).catch(() => {}); await page.click('#mHome').catch(() => {}); await page.waitForTimeout(300);
     const c2 = await city(page);
     errs.push(...errors); await ctx.close();
     const r = await open(browser, URL, { rm: true, save: { played: 30, level: 19, stars: starsUpTo(19), seen: { 2: 1 }, remindAsked: true } });

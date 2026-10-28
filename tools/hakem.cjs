@@ -425,7 +425,7 @@ async function inViewport(page, sel) {
     const sizes = await page.evaluate(() => [28, 29, 31, 32, 40, 41].map(l => window.__ray.sizeFor(l).join('x')).join(' '));
     check('rule.card', 'M3 ilk girişte "YENİ KURAL · Sabit karo" kartı, kart açıkken süre durur', card.open && /Sabit karo/.test(card.txt || '') && card.timerPaused && sv.seen?.[2] === 1, JSON.stringify(card));
     check('rule.pins', 'Sabit karolar dönmez, hamle saymaz; bölüm çözülür', g.pins >= 5 && before.m === after.m && before.v === after.v && won, JSON.stringify({ ...g, before, after, won }), 'high');
-    check('rule.saw', 'Testere dişi: M3 ilk 3 bölüm bir küçük ızgara (5×6), sonra 5×7', sizes === '5x7 5x6 5x6 5x7 5x7 6x8', sizes, 'medium');
+    check('rule.saw', 'Testere dişi: M3 ilk 3 bölüm bir küçük ızgara (5×6), sonra 5×7 (40 mola bölümü: 5×6)', sizes === '5x7 5x6 5x6 5x7 5x6 6x8', sizes, 'medium');
     check('e4.errors', 'Sabit karo senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
     await ctx.close();
   }
@@ -558,7 +558,7 @@ async function inViewport(page, sel) {
     const hf = await page.evaluate(([a, b]) => { const G = window.__ray.G; return G.fixed[a] && G.fixed[b] && G.cur[a] === G.sol[a] && G.cur[b] === G.sol[b]; }, [g.a, g.b]);
     check('rule.pairs.hint', 'İpucu eşli karoyu seçince ikisini birden oturtur', hf && won, `${hf} · ${won}`, 'medium');
     const sizes = await page.evaluate(() => [49, 51, 52, 60, 61].map(l => window.__ray.sizeFor(l).join('x')).join(' '));
-    check('rule.pairs.win', 'Eşli karolu bölüm çözülüp kazanılıyor · testere dişi (49–51: 5×7)', won && sizes === '5x7 5x7 6x8 6x8 7x9', `${won} · ${sizes}`, 'medium');
+    check('rule.pairs.win', 'Eşli karolu bölüm çözülüp kazanılıyor · testere dişi (49–51: 5×7, 60 mola: 5×7)', won && sizes === '5x7 5x7 6x8 5x7 7x9', `${won} · ${sizes}`, 'medium');
     check('e7.errors', 'Eşli karo senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
     await ctx.close();
   }
