@@ -25,9 +25,10 @@
   return {
     key: 'faint', line: 11, boost: 2.5,
     clash: ['cover'],   // şekil gizleyen iki kural birlikte fazla ağır (tasarım ölçümü Δ +14,6)
-    card: { name: 'Silik kol', tag: 'Yeni: silik kol',
+    card: { name: L('Silik kol', 'Faint arm'), tag: L('Yeni: silik kol', 'New: faint arm'),
       demo: '<div class="rd-faint" aria-hidden="true"><i class="rd-fs"></i><i class="rd-ft"><b class="rd-fr"><u class="rd-fv"></u><u class="rd-ff"></u><u class="rd-fx"><u class="rd-fg"></u><em class="rd-fq">?</em></u></b></i></div>',
-      text: '<b>Silik kolun (?)</b> altında ray <b>olabilir de, olmayabilir de</b>. Karo dönünce ? de döner. Kol gerçekte var mı, <b>komşulardan</b> çıkar.' },
+      text: L('<b>Silik kolun (?)</b> altında ray <b>olabilir de, olmayabilir de</b>. Karo dönünce ? de döner. Kol gerçekte var mı, <b>komşulardan</b> çıkar.',
+        'Under a <b>faint arm (?)</b> there <b>may or may not</b> be track. The ? turns with the tile. Read the <b>neighbors</b> to tell if the arm is real.') },
     // demo: tek karo; yukarı dolu kol, sola soluk kol + "?". Karo döner ("?" yukarı bakar). Önce üstten ışık gelir, noktalar dolu raya döner (kol vardı);
     // sonra aynı sahnede ışık geçmez, "?" solar (kol yoktu). Yalnız transform/opacity canlanır. Hareketi azalt: canlanma yok.
     css: `.rd-faint{align-self:center;display:flex;flex-direction:column;align-items:center;margin:6px 0 2px}
@@ -84,7 +85,7 @@
     cands(P, i) { const f = P.faint[i]; if (!f) return null; const q = qNow(P, i), V = P.cur[i] & ~q; return [...new Set([...orbit(V), ...orbit(V | q)])].sort((a, b) => a - b); },
     // oyunda hep 0 (karo yalnız döner); çözücü yaprağında yanlış sınıf inancını eler
     check(P) { let bad = 0; for (const i of list(P.faint)) if (!orbit(P.faint[i][0]).includes(P.cur[i])) bad++; return bad; },
-    after(G, i) { if (G.faint[i] && !api.save.faintTold) { api.save.faintTold = 1; api.persist(); api.toast('Silik kol · ? altında ray olabilir de olmayabilir de'); } },
+    after(G, i) { if (G.faint[i] && !api.save.faintTold) { api.save.faintTold = 1; api.persist(); api.toast(L('Silik kol · ? altında ray olabilir de olmayabilir de', 'Faint arm · there may or may not be track under ?')); } },
     // çekirdek silik karoyu çizmez (P.self). Görünen kısım çekirdekle aynı stilde (sönük → ışıma → yanan); "?" kolu: soluk şerit + iri "?" (makasın kesik çizgi + boş halkasından ayrı).
     // İpucuyla sabitlenen, kazanılan ya da "?" kolundan gerçekten ışık geçen karoda gerçek karo düz çizilir.
     rails({ G, s, X, vis, own, OC, cx, pal, railPath, rgba }) {

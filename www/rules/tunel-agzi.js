@@ -7,9 +7,10 @@
   const used = (m, p) => (m[p.a] & bit(p.ka)) && (m[p.b] & bit(p.kb)), lit2 = (G, p) => used(G.cur, p) && G.L.d[p.a] >= 0 && G.L.d[p.b] >= 0;
   return {
     key: 'portal', line: 18, boost: 2,
-    card: { name: 'Tünel ağzı', tag: 'Yeni: tünel ağzı',
+    card: { name: L('Tünel ağzı', 'Tunnel portal'), tag: L('Yeni: tünel ağzı', 'New: tunnel portal'),
       demo: '<div class="rd-portal" aria-hidden="true"><i class="rd-pm">A</i><i class="ft on"><b></b></i><i class="ft on"><b></b></i><i class="ft on"><b></b></i><i class="rd-pm r">A</i><i class="rd-pt"></i></div>',
-      text: 'Kenardaki <b>aynı harfli</b> iki tünel ağzı bağlıdır: birine giren ray <b>öbüründen çıkar</b>. Tüneli kullanmak zorunlu değil; harfsiz kenar <b>kapalıdır</b>.' },
+      text: L('Kenardaki <b>aynı harfli</b> iki tünel ağzı bağlıdır: birine giren ray <b>öbüründen çıkar</b>. Tüneli kullanmak zorunlu değil; harfsiz kenar <b>kapalıdır</b>.',
+        'Two edge portals with the <b>same letter</b> are linked: track entering one <b>exits the other</b>. The tunnel is optional; an edge with no letter is <b>closed</b>.') },
     css: `.rd-portal{position:relative;align-self:center;display:flex;align-items:center;gap:4px;margin:6px 0 2px}.rd-portal .ft{width:56px;height:56px}.rd-portal .ft b{top:21px}
 .rd-pm{width:18px;height:44px;border-radius:22px 0 0 22px;background:var(--acc);color:var(--onacc);font-style:normal;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;text-align:center;padding-left:3px}.rd-pm.r{border-radius:0 22px 22px 0;padding:0 3px 0 0}
 .rd-pt{position:absolute;left:0;top:50%;width:12px;height:12px;margin-top:-6px;border-radius:50%;background:#fff;box-shadow:0 0 10px #fff;animation:rdpt 2.8s linear infinite}
@@ -52,7 +53,7 @@
         if (G.ptOk?.[p.id] || !lit2(G, p)) continue;
         (G.ptOk ||= [])[p.id] = 1; api.tone(api.note(9), .28, .04, 'sine'); api.tone(api.note(11), .3, .03, 'sine', .09);
         api.burst(p.a, 6, 0, api.G.color); api.burst(p.b, 6, 90, api.G.color);
-        if (!G.ptTold) { G.ptTold = 1; api.toast(`Tünel ${ABC[p.id]} · bir ağızdan girdi, öbüründen çıktı`); }
+        if (!G.ptTold) { G.ptTold = 1; api.toast(L(`Tünel ${ABC[p.id]} · bir ağızdan girdi, öbüründen çıktı`, `Tunnel ${ABC[p.id]} · in one portal, out the other`)); }
       }
     },
     // tahta dışına taşan yuvarlak köşeli sekme + tek harf. Boşlar tek yol; bağlı tünel (iki kol + iki uç yanıyor) hat renginde

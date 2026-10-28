@@ -9,9 +9,10 @@
   const ICON = '<svg class="rd-depot-i" viewBox="0 0 20 20"><path d="M3 9 10 3l7 6v8H3z"/></svg>';
   return {
     key: 'depot', line: 13, tOrder: 30, boost: 3, clash: [],
-    card: { name: 'Gizli depo', tag: 'Yeni: gizli depo',
+    card: { name: L('Gizli depo', 'Hidden depot'), tag: L('Yeni: gizli depo', 'New: hidden depot'),
       demo: '<div class="rd-depot" aria-hidden="true"><i class="ft"><b></b></i><i class="ft rd-dm"><b></b><u></u></i><i class="ft"><b></b></i><i class="rd-db"></i><i class="rd-dh"></i></div>',
-      text: `Kenardaki <b>ayraç</b>: altındaki üç karodan <b>tam biri</b> dışarı, depoya ${ICON} çıkar. Hangisi olduğu <b>gizli</b>; ayraç dışında kenar yine duvardır.` },
+      text: L(`Kenardaki <b>ayraç</b>: altındaki üç karodan <b>tam biri</b> dışarı, depoya ${ICON} çıkar. Hangisi olduğu <b>gizli</b>; ayraç dışında kenar yine duvardır.`,
+        `An edge <b>bracket</b>: <b>exactly one</b> of its three tiles runs out to the depot ${ICON}. Which one is <b>hidden</b>; elsewhere the edge is still a wall.`) },
     // demo: ortadaki karo döner, kolu aşağı (ayraca) bakar, ray yanar ve depo dolar. Hareketi azalt: son hâl (dolu depo) durur.
     css: `.rd-depot{position:relative;align-self:center;display:grid;grid-template-columns:repeat(3,52px);gap:4px;padding-bottom:34px;margin:6px 0 2px}
 .rd-depot .ft{width:52px;height:52px;border-radius:15px}.rd-depot .ft b{top:19px;height:14px}
@@ -100,11 +101,11 @@
     block(G) { G.dpWas = (G.L.dpN || []).slice(); G.dpFull0 = G.depot.map(V => full(G, V)); },
     after(G, i) {
       const N = G.L.dpN || [];
-      if (!api.save.depotTold && G.depot.some(V => V.cells.includes(i))) { api.save.depotTold = 1; api.persist(); api.toast('Depo · ayraçtaki karolardan yalnız biri dışarı çıkar'); }
+      if (!api.save.depotTold && G.depot.some(V => V.cells.includes(i))) { api.save.depotTold = 1; api.persist(); api.toast(L('Depo · ayraçtaki karolardan yalnız biri dışarı çıkar', 'Depot · only one tile at the bracket runs out')); }
       G.depot.forEach((V, j) => {
         if (N[j] > 1 && !(G.dpWas?.[j] > 1)) {   // iki çıkış: ayraç uyarı renginde kesik çizgi + bölümde bir kez bildirim
           api.haptic('light');
-          if (!G.dpWarn) { G.dpWarn = 1; api.toast('Bir ayraçtan yalnız bir ray çıkar'); }
+          if (!G.dpWarn) { G.dpWarn = 1; api.toast(L('Bir ayraçtan yalnız bir ray çıkar', 'Only one track can leave a bracket')); }
         } else if (full(G, V) && !G.dpFull0?.[j] && !G.L.solved) {
           api.tone(api.note(7), .26, .03, 'sine'); api.tone(api.note(11), .3, .025, 'sine', .08);
         }

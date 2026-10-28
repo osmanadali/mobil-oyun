@@ -1,12 +1,15 @@
 // M13 · Yön tabelası (sign): tabelalı karodan merkeze giden yol okun kenarından çıkmalı. Ok hücrede sabit, karo döner. Ayrıntı: docs/kurallar/tabela.md
 (window.RAY_RULES = window.RAY_RULES || []).push(api => {
+  // bildirimler (L burada küresel çeviri; aşağıda after içinde L = G.L gölgeler)
+  const MSG = { path: L('Tabela: merkeze giden yol okun kenarından geçmeli', `Signpost: the path to the hub must use the arrow's edge`), stuck: L(' · ↺ baştan ya da 💡', ' · ↺ restart or 💡'), tip: L('Tabela · karo döner, ok yerinde kalır', 'Signpost · the tile turns, the arrow stays') };
   const { popc, nb, ob } = api, K = { 1: 0, 2: 1, 4: 2, 8: 3 }, V = { 1: [0, -1], 2: [1, 0], 4: [0, 1], 8: [-1, 0] };
   const idx = new WeakMap(), list = g => { let a = idx.get(g); if (!a) idx.set(g, a = g.flatMap((b, i) => b ? [i] : [])); return a; };   // tabelalı karolar
   return {
     key: 'sign', line: 12, boost: 1.5, clash: ['ring'],
-    card: { name: 'Yön tabelası', tag: 'Yeni: yön tabelası',
+    card: { name: L('Yön tabelası', 'Signpost'), tag: L('Yeni: yön tabelası', 'New: signpost'),
       demo: '<div class="rd-sign" aria-hidden="true"><i class="rd-sign-h"></i><i class="rd-sign-t"><b></b><svg class="rd-sign-a" viewBox="0 0 76 76"><path d="M6 38 22.8 26.6v22.8z"/></svg><i class="rd-sign-p"></i></i></div>',
-      text: '<b>Tabelalı</b> karodan merkeze giden yol <b>okun gösterdiği kenardan</b> çıkmalı. Ok yere sabittir: <b>karo döner, ok dönmez</b>.' },
+      text: L('<b>Tabelalı</b> karodan merkeze giden yol <b>okun gösterdiği kenardan</b> çıkmalı. Ok yere sabittir: <b>karo döner, ok dönmez</b>.',
+        `A <b>signpost</b> tile's path to the hub must leave <b>where the arrow points</b>. The arrow is fixed: <b>the tile turns, the arrow doesn't</b>.`) },
     // demo: köşe ray döner; batı kolu merkeze değerken (%50–90) ray yanar, ok dolar
     css: `.rd-sign{align-self:center;display:flex;align-items:center;margin:6px 0 2px}
 .rd-sign-h{position:relative;width:30px;height:30px;border-radius:9px;background:var(--acc);box-shadow:0 0 12px var(--accGlow)}
@@ -59,8 +62,8 @@
         for (const k of bad) api.press.set(k, now);
         if (G.signTold) return;
         G.signTold = 1; api.tone(330, .12, .02, 'sine', .1);
-        api.toast('Tabela: merkeze giden yol okun kenarından geçmeli' + (G.cnt.some((c, k) => c === 0 && G.cur[k] !== G.sol[k]) ? ' · ↺ baştan ya da 💡' : ''));
-      } else if (G.sign[i] && !api.save.signTip) { api.save.signTip = 1; api.persist(); api.toast('Tabela · karo döner, ok yerinde kalır'); }
+        api.toast(MSG.path + (G.cnt.some((c, k) => c === 0 && G.cur[k] !== G.sol[k]) ? MSG.stuck : ''));
+      } else if (G.sign[i] && !api.save.signTip) { api.save.signTip = 1; api.persist(); api.toast(MSG.tip); }
     },
     // hücreye sabit üçgen (açı kullanılmaz). Sağlanmış ve yanan: hat rengi + beyaz kenar; diğerleri içi boş. İpucuyla sabitlenen doğru ok soluk.
     over(D) {

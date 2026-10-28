@@ -6,10 +6,11 @@
   const CELLS = new WeakMap(), cells = sw => { let L = CELLS.get(sw); if (!L) CELLS.set(sw, L = sw.reduce((a, m, i) => (m && a.push(i), a), [])); return L; };
   return {
     key: 'sw', line: 8, boost: 1.5,
-    card: { name: 'Makas', tag: 'Yeni: makas',
+    card: { name: L('Makas', 'Switch'), tag: L('Yeni: makas', 'New: switch'),
       // .pt içinde <b> yok (.pt b döner): karo durur, yalnız kollar değişir
       demo: '<div class="rdemo2 rd-sw" aria-hidden="true"><i class="pt"><u class="rd-swa"><u class="rd-swo"></u><u class="rd-swl"></u><u class="rd-swr"></u></u><u class="rd-swa rd-sw2"><u class="rd-swo"></u><u class="rd-swl"></u><u class="rd-swr"></u></u><u class="rd-swt"></u></i><i class="rtap2"></i></div>',
-      text: '<b>Makas</b> dönmez: dokununca yol <b>düz</b> ile <b>sapak</b> arasında değişir. <b>Kesik çizgi</b> öbür yolu gösterir.' },
+      text: L('<b>Makas</b> dönmez: dokununca yol <b>düz</b> ile <b>sapak</b> arasında değişir. <b>Kesik çizgi</b> öbür yolu gösterir.',
+        `A <b>switch</b> doesn't turn: tap to flip between <b>straight</b> and <b>branch</b>. The <b>dashed line</b> shows the other route.`) },
     // düz kol (yukarı) ve sapak (aynı kol 90° çevrik) sırayla dolu ↔ kesik, dokunuş halkası geçişte · hareketsiz: düz dolu, sapak kesik
     css: `.rd-sw u{position:absolute;display:block}.rd-swa{inset:0}.rd-sw2{transform:rotate(90deg)}
 .rd-swt,.rd-swo{left:31px;width:14px;height:45px;border-radius:8px;background:var(--acc)}.rd-swt{top:31px}.rd-swo{top:0}
@@ -47,7 +48,7 @@
     // çekirdek tap, hamle, basma, dalgayı yaptı; dönme yok. Kısa tık + ilk bildirim.
     onTap() {
       api.tone(1480, .03, .014, 'triangle');
-      const sv = api.save; if (!sv.swTold) { sv.swTold = 1; api.persist(); api.toast('Makas · düz ↔ sapak'); }
+      const sv = api.save; if (!sv.swTold) { sv.swTold = 1; api.persist(); api.toast(L('Makas · düz ↔ sapak', 'Switch · straight ↔ branch')); }
     },
     // ipucunun başlattığı dönme animasyonu makasta silinir
     xform({ G, X }) { const A = api.anim; if (A.size) for (const i of A.keys()) if (G.sw[i]) { A.delete(i); X[i][2] = 0; } },

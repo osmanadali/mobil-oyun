@@ -71,6 +71,8 @@ M20 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanes
 }));
 ```
 
+Oyuncuya görünen bütün metinler (kart adı, etiketi ve metni, `block()` mesajı, bildirimler, çizime yazılan etiketler) iki dilli yazılır: `L('Türkçe', 'English')`. Ayrıntı, yazım ilkeleri ve sözlük: [`docs/CEVIRI.md`](../CEVIRI.md). `L` küreseldir; bir işlevin içinde `const L = G.L` gibi bir ad onu gölgeliyorsa metinler eklentinin başında bir `MSG` nesnesine alınır. Robot (`tools/hakem/ceviri-kurallar.cjs`) Türkçe harfli her dizginin `L()` içinde olduğunu, kartların İngilizcede taşmadığını ve iki dilde tahtaların aynı olduğunu denetler.
+
 Yalnız gereken alanlar yazılır. `api` çekirdeğin yardımcılarını taşır: `N, E, S, W, DIRS, FOG_R, PAIR_COLS, rot, unrot, popc, nb, ob, tree, hashStr, rgba, shade, lum, hueRot, okl, oklch, toast, tone, note, haptic, persist, kick, burst, rrp, rr, railPath, ease, back, anim, press, lineName` ve canlı değerler için alıcılar: `api.G, api.pal, api.save, api.geo, api.vg, api.cx`.
 
 Karo maskesi 4 bittir: `N = 1, E = 2, S = 4, W = 8`. `DIRS[k] = [bit, dx, dy, karşı bit]`, sıra K, D, G, B. `rot` saat yönünde 90°, `unrot` tersi.

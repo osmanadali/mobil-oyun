@@ -2,6 +2,9 @@
 // Bazı duraklar kapalıdır ama sıradan durak gibi görünür; merkezdeki ⊘ rozeti kaç tane olduğunu söyler. Kapalı durağa ray bağlanmaz.
 // Kapalı karo çözüm ağacının bir yaprağıdır, kolu ebeveynden silinir (mark); lit onu P.void ile yok sayar. Çözücü her durağı "4 yön ya da kapalı" görür (cands), sayımı prune yapar.
 (window.RAY_RULES = window.RAY_RULES || []).push(api => {
+  // bildirimler (L burada küresel çeviri; after içinde L = G.L gölgeler)
+  const MSG = { block: L('Kapalı durak · ray bağlama', `Closed station · don't connect it`), warn: L('Kapalı durağa ray bağlanmaz', `A closed station can't be connected`),
+    told: k => L(`⊘ ${k} durak kapalı · ona ray bağlama`, k === 1 ? `⊘ 1 station is closed · don't connect it` : `⊘ ${k} stations are closed · don't connect them`) };
   const { DIRS, rot, popc, nb, ob } = api, TAU = Math.PI * 2;
   const orbit = m => { const o = []; for (let r = 0, v = m; r < 4; r++, v = rot(v)) if (!o.includes(v)) o.push(v); return o; };
   // oyuncunun gözünde kapalı olabilecek durak: tek kollu, merkez değil, sabit/eşli/birim değil (baştan gösterilen kapalı ayrıca elenir)
@@ -81,13 +84,13 @@
       return out;
     },
     // baştan gösterilen kapalı durak dönmez (bilgi zaten açık)
-    block: (G, i) => !!G.closedShown?.[i] && 'Kapalı durak · ray bağlama',
+    block: (G, i) => !!G.closedShown?.[i] && MSG.block,
     after(G, i, now) {
       const L = G.L;
       if (L.solved) { G.clWin = G.clWin || now; return; }
-      if (!api.save.closedTold) { api.save.closedTold = 1; api.persist(); api.toast(`⊘ ${hidden(G)} durak kapalı · ona ray bağlama`); }
+      if (!api.save.closedTold) { api.save.closedTold = 1; api.persist(); api.toast(MSG.told(hidden(G))); }
       // hepsi yanıyor ama bir ray kapalı durağa bakıyor: bölümde bir kez söylenir
-      if (!G.clWarn && L.n === G.cur.length && into(G, L) >= 0) { G.clWarn = 1; api.haptic('light'); api.toast('Kapalı durağa ray bağlanmaz'); }
+      if (!G.clWarn && L.n === G.cur.length && into(G, L) >= 0) { G.clWarn = 1; api.haptic('light'); api.toast(MSG.warn); }
     },
     // merkez rozeti "⊘k" (sağ üst, hap) · kazanınca kapalı durakların üstüne ⊘ iner. Kare başına 3–5 çağrı.
     over(D) {
@@ -112,9 +115,10 @@
       return busy;
     },
     card: {
-      name: 'Kapalı durak', tag: 'Yeni: kapalı durak',
+      name: L('Kapalı durak', 'Closed station'), tag: L('Yeni: kapalı durak', 'New: closed station'),
       demo: '<div class="rd-closed" aria-hidden="true"><i class="rd-cl-s"><b></b></i><i class="rd-cl-h"><u>' + ICON + '1</u></i><i class="rd-cl-s rd-cl-x"><b></b><s>' + ICON + '</s></i></div>',
-      text: `Bazı duraklar <b>kapalı</b> ama sıradan görünür; merkezdeki <b>${ICON} sayısı</b> kaç tane olduğunu söyler. Kapalı durağa <b>ray bağlama</b>, açıkların hepsini bağla.`,
+      text: L(`Bazı duraklar <b>kapalı</b> ama sıradan görünür; merkezdeki <b>${ICON} sayısı</b> kaç tane olduğunu söyler. Kapalı durağa <b>ray bağlama</b>, açıkların hepsini bağla.`,
+        `Some stations are <b>closed</b> but look normal; the <b>${ICON} number</b> on the hub says how many. <b>Don't connect</b> a closed one; connect every open one.`),
     },
     // demo: soldaki durağa ray uzanır ve yanar; sağdakine uzanır, yanmaz, titrer, geri çekilir, ⊘ damgası iner. Azaltılmış harekette son hâl durur.
     css: `.rd-closed{align-self:center;display:flex;align-items:center;gap:6px;margin:6px 0 2px}

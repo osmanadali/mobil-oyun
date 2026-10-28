@@ -16,9 +16,10 @@
   };
   return {
     key: 'cover', line: 9, boost: 2.5, clash: ['fog', 'faint'],
-    card: { name: 'Kapak', tag: 'Yeni: kapak',
+    card: { name: L('Kapak', 'Cover'), tag: L('Yeni: kapak', 'New: cover'),
       demo: '<div class="rd-cover" aria-hidden="true"><i class="ft"><b></b></i><i class="rd-cv"><em class="w"></em><em class="e"></em><s></s></i><i class="rd-cvs"><b></b><u></u></i></div>',
-      text: '<b>Kapaklı</b> karonun rayı görünmez ve <b>dönmez</b>; altındaki ray zaten doğru yönde. Komşulara bakıp <b>hangi yönlere açıldığını</b> çıkar.' },
+      text: L('<b>Kapaklı</b> karonun rayı görünmez ve <b>dönmez</b>; altındaki ray zaten doğru yönde. Komşulara bakıp <b>hangi yönlere açıldığını</b> çıkar.',
+        `A <b>covered</b> tile hides its track and <b>won't turn</b>; the track below already faces right. Use the neighbors to find <b>which ways it opens</b>.`) },
     // demo: sol ray yanar → kapağın sol yarığı → sağ yarık ve durak (ışık kapağın altından geçti) → söner
     css: `.rd-cover{align-self:center;display:flex;align-items:center;gap:4px;margin:6px 0 2px}.rd-cover .ft{width:56px;height:56px}.rd-cover .ft b{top:21px;animation:rdcv1 4s infinite}
 .rd-cv{position:relative;width:56px;height:56px;border-radius:16px;background:var(--tile);box-shadow:inset 0 0 0 1px var(--stroke)}
@@ -49,10 +50,10 @@
     },
     cands: (P, i) => P.cover[i] ? ALL : null,   // oyuncu kapağın altını bilmez: 15 maskeden biri
     check: (P) => { let b = 0; for (const i of list(P.cover)) if (P.cur[i] !== P.cover[i]) b++; return b; },   // oyunda hep 0 (dönmez); çözücü yaprağında yanlış inancı eler
-    block: (G, i) => !!G.cover[i] && 'Kapak · altındaki ray sabit ve doğru yönde, dönmez',
+    block: (G, i) => !!G.cover[i] && L('Kapak · altındaki ray sabit ve doğru yönde, dönmez', 'Cover · the track below is fixed and already right'),
     after(G, i, now) {
       if (G.L.solved && !G.cvWin) G.cvWin = now;   // kazanınca kapak açılır (rails)
-      if (!api.save.coverTip && list(G.cover).some(j => G.L.d[j] >= 0)) { api.save.coverTip = 1; api.persist(); api.toast('Kapak · ışık altından geçti, parlayan kollar açık'); }
+      if (!api.save.coverTip && list(G.cover).some(j => G.L.d[j] >= 0)) { api.save.coverTip = 1; api.persist(); api.toast(L('Kapak · ışık altından geçti, parlayan kollar açık', 'Cover · light passed under it, glowing arms are open')); }
     },
     // kapak: hücreye sabit daire + 3 yatay yarık (biçim). Işığın geçtiği kol: daireden karo kenarına hat renginde kısa ray (biçim + renk).
     // Kazanınca kapak 420 ms'de solar, altındaki ray görünür.

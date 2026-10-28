@@ -16,9 +16,10 @@
   return {
     key: 'bridge', line: 10, boost: 2,
     clash: ['ring'],   // halka 2-çekirdeği bölünmüş düğümü bilmez (halka dosyası da tanımlar; simetrik)
-    card: { name: 'Köprü', tag: 'Yeni: köprü',
+    card: { name: L('Köprü', 'Bridge'), tag: L('Yeni: köprü', 'New: bridge'),
       demo: '<div class="rd-bridge" aria-hidden="true"><i class="rd-bridge-w"><b></b></i><i class="rd-bridge-e"><b></b></i><i class="rd-bridge-ns"><b></b></i><i class="rd-bridge-g"></i><i class="rd-bridge-g rd-bridge-r"></i></div>',
-      text: '<b>Köprüde</b> iki hat üst üste geçer ama <b>birleşmez</b>: soldan gelen sağa, üstten gelen alta gider. Köprü dönmez; <b>dört ucuna</b> da ray bağla.' },
+      text: L('<b>Köprüde</b> iki hat üst üste geçer ama <b>birleşmez</b>: soldan gelen sağa, üstten gelen alta gider. Köprü dönmez; <b>dört ucuna</b> da ray bağla.',
+        `On a <b>bridge</b> two lines cross but <b>never join</b>: left goes to right, top goes to bottom. It doesn't turn; connect <b>all four ends</b>.`) },
     // kart demosu: önce alt geçit (D–B) soldan sağa yanar, tren köprünün altından geçer; sonra üst hat (K–G) başka renkte yukarıdan aşağı. İki renk hiç karışmaz.
     // Yalnız transform/opacity canlanır (ucuz). Hareketi azalt: canlanma yok, iki yarı yanık durur.
     css: `.rd-bridge{position:relative;align-self:center;width:96px;height:96px;margin:6px 0 2px;border-radius:24px;background:var(--tile);box-shadow:inset 0 0 0 1px var(--stroke)}
@@ -57,7 +58,7 @@
       C.onTake.push(j => { const g = grp.get(j); if (g && !inT[g[0]]) { sol[j] |= g[1]; sol[g[0]] |= g[2]; C.take(g[0]); } });
       C.out.split = split; C.out.bridge = B;
     },
-    block: (G, i) => !!G.split[i] && 'Köprü · dönmez',   // hamle saymaz, karo dönmez
+    block: (G, i) => !!G.split[i] && L('Köprü · dönmez', `Bridge · doesn't turn`),   // hamle saymaz, karo dönmez
     // köprü karosu yalnız D–B yarısıyla yanıyorsa zemin o hattın tonunu alır (çekirdek K–G sahibine göre boyar)
     under({ G, OC, cx, pal, rgba, tiles }) {
       const { own, ownB } = G.L;

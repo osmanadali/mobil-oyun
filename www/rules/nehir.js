@@ -3,6 +3,8 @@
 // yalnız biri kollu → ray kıyıda TAMPONLA biter (açık uç sayılmaz, open kancası). Kıyıda tam T tampon olmalı (check).
 // Sayım: kol toplamı = 2(n − h) + T. Açık uç yok, hepsi bağlı ve karışmamışsa tampon sayısı T − 2·(döngü sayısı) olur → eksik tampon = döngü.
 (window.RAY_RULES = window.RAY_RULES || []).push(api => {
+  // bildirimler (L burada küresel çeviri; after içinde L = G.L gölgeler)
+  const MSG = { warn: T => L(`Kıyıda ${T} tampon olmalı · eksikse bir yerde döngü var`, `The bank needs ${T} ${T === 1 ? 'buffer' : 'buffers'} · fewer means a loop`), told: L('Tampon · ray kıyıda bitti', 'Buffer · the track ended on the bank') };
   const { DIRS, popc, nb } = api, TAU = Math.PI * 2;
   const bit = k => DIRS[k][0];
   // nehir kenarı çiftleri [i, k, j]: i solda/üstte, k = D (1) ya da G (2), j karşı kıyı. P.river.a: sınır (dikeyde sütun, yatayda satır)
@@ -107,10 +109,10 @@
       // her şey bağlı, açık uç yok ama tampon eksik → döngü var. Rozet nabız atar, bölümde bir kez bildirim.
       if (L.rvNear && !G.rvNear0) {
         G.rvPulse = now; api.kick();
-        if (!G.rvWarn) { G.rvWarn = 1; api.haptic('light'); api.toast(`Kıyıda ${T} tampon olmalı · eksikse bir yerde döngü var`); }
+        if (!G.rvWarn) { G.rvWarn = 1; api.haptic('light'); api.toast(MSG.warn(T)); }
       } else if (shore(G).t.length > G.rvWas && !L.solved) {
         api.tone(api.note(5), .22, .022, 'triangle');
-        if (!api.save.riverTold) { api.save.riverTold = 1; api.persist(); api.toast('Tampon · ray kıyıda bitti'); }
+        if (!api.save.riverTold) { api.save.riverTold = 1; api.persist(); api.toast(MSG.told); }
       }
     },
     // rozet nehrin bir ucunda, tahta dışında
@@ -164,13 +166,14 @@
       return busy;
     },
     card: {
-      name: 'Nehir', tag: 'Yeni: nehir',
+      name: L('Nehir', 'River'), tag: L('Yeni: nehir', 'New: river'),
       demo: '<div class="rd-river" aria-hidden="true"><svg viewBox="0 0 100 100">' + [[3, 3], [53, 3], [3, 53], [53, 53]].map(([x, y]) => `<rect class="rd-river-t" x="${x}" y="${y}" width="44" height="44" rx="11"/>`).join('') +
         '<path class="rd-river-w" d="M50 -2c-4 6 4 10 0 16s4 10 0 16s4 10 0 16s4 10 0 16s4 10 0 16s4 10 0 16s4 10 0 16"/>' +
         '<rect class="rd-river-g" x="43" y="18" width="14" height="14" rx="3"/>' +
         '<path class="rd-river-r" d="M25 25H50"/><path class="rd-river-r rd-river-a" d="M50 25H75"/>' +
         '<path class="rd-river-r rd-river-b" d="M25 75H46"/><path class="rd-river-s" d="M44 66v18"/></svg><b class="rd-river-c">1/1</b></div>',
-      text: `Ray <b>nehri</b> geçitten geçer ya da kıyıda <b>tamponla</b> ${ICON} biter. Kıyıda tam <b>rozetteki sayı</b> kadar tampon olmalı; eksikse bir yerde <b>döngü</b> vardır.`,
+      text: L(`Ray <b>nehri</b> geçitten geçer ya da kıyıda <b>tamponla</b> ${ICON} biter. Kıyıda tam <b>rozetteki sayı</b> kadar tampon olmalı; eksikse bir yerde <b>döngü</b> vardır.`,
+        `Track crosses the <b>river</b> at a ford or ends at a bank <b>buffer</b> ${ICON}. Bank buffers must equal <b>the badge number</b>; fewer means a <b>loop</b> somewhere.`),
     },
     // temel (animasyonsuz) stil son hâli gösterir: geçit kurulmuş, tampon yerinde, rozet 1/1
     css: `.rd-river{position:relative;align-self:center;width:100px;height:100px;margin:6px 0 2px}

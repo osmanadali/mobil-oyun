@@ -2,6 +2,8 @@
 // Çözüm ağaç değil: ağaca bir kenar eklenir → tek döngü (halka). Halka kesik çemberli karo(lar)dan geçmeli.
 // Kazanma: yanan çizgenin 2-çekirdeği (uçlar soyulunca kalan) işaretleri içermeli. Açık ucu olmayan, karışmamış her dizilimde tam bir döngü vardır.
 (window.RAY_RULES = window.RAY_RULES || []).push(api => {
+  // bildirimler (L burada küresel çeviri; after içinde L = G.L gölgeler)
+  const MSG = { warn: L('Halka kesik çemberli karodan geçmeli', 'The loop must pass the dashed-ring tile'), told: L('Halka çemberli karodan geçti · çember doldu', 'The loop passed the ring tile · the ring fills') };
   const { DIRS, rot, nb, ob, tree, popc } = api, TAU = Math.PI * 2;
   const per = m => rot(m) === m ? 1 : rot(rot(m)) === m ? 2 : 4;
   // i karosunun j komşusuna karşılıklı bağlı kolları (f(j) süzgeci)
@@ -76,11 +78,11 @@
       const L = G.L;
       if (L.ringNear && !G.ringNear0) {   // her şey bağlı ama halka işaretten geçmiyor: işaret nabız atar, bölümde bir kez bildirim
         G.ringPulse = now; G.ring.mark.forEach((v, j) => v && !L.rc?.[j] && api.press.set(j, now)); api.kick();
-        if (!G.ringWarn) { G.ringWarn = 1; api.haptic('light'); api.toast('Halka kesik çemberli karodan geçmeli'); }
+        if (!G.ringWarn) { G.ringWarn = 1; api.haptic('light'); api.toast(MSG.warn); }
       } else if ((L.rOn | 0) > G.ringWas && !L.solved) {
         // işaret halkaya girdi: çember dolar + yumuşak ton. Kutlama yok (asıl halka henüz bu olmayabilir; kutlama kazanınca), açıklama ömürde bir kez.
         api.tone(api.note(10), .3, .026, 'sine', .1);
-        if (!api.save.ringTold) { api.save.ringTold = 1; api.persist(); api.toast('Halka çemberli karodan geçti · çember doldu'); }
+        if (!api.save.ringTold) { api.save.ringTold = 1; api.persist(); api.toast(MSG.told); }
       }
     },
     // çift ray: işaretli halkanın kollarına ince zemin çizgisi (tek yol)
@@ -113,11 +115,12 @@
       return busy;
     },
     card: {
-      name: 'Halka hat', tag: 'Yeni: halka hat',
+      name: L('Halka hat', 'Loop line'), tag: L('Yeni: halka hat', 'New: loop line'),
       demo: '<div class="rd-ring" aria-hidden="true"><svg viewBox="0 0 100 100">' + [[3, 3], [53, 3], [3, 53], [53, 53]].map(([x, y]) => `<rect class="rd-ring-t" x="${x}" y="${y}" width="44" height="44" rx="11"/>`).join('') +
         ['r', 'p', 'in'].map(c => `<path class="rd-ring-${c}"${c === 'p' ? ' pathLength="100"' : ''} d="M50 75H25V25H75V75Z"/>`).join('') +
         ['m0', 'h', 'm1'].map(c => `<circle class="rd-ring-${c}" cx="75" cy="25" r="18"/>`).join('') + '</svg></div>',
-      text: `Bu hatta raylar <b>bir kez</b> kendi üstüne kapanır ve <b>halka</b> olur. Halka <b>kesik çemberli</b> ${ICON} karodan geçmeli: geçince çember dolar.`,
+      text: L(`Bu hatta raylar <b>bir kez</b> kendi üstüne kapanır ve <b>halka</b> olur. Halka <b>kesik çemberli</b> ${ICON} karodan geçmeli: geçince çember dolar.`,
+        `On this line the track closes on itself <b>once</b> and forms a <b>loop</b>. The loop must pass the <b>dashed-ring</b> ${ICON} tile: then the ring fills.`),
     },
     // temel (animasyonsuz) stil KAPALI hâli gösterir → azaltılmış harekette de kart boş kalmaz
     css: `.rd-ring{align-self:center;width:100px;height:100px;margin:6px 0 2px}

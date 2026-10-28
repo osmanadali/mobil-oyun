@@ -2,6 +2,9 @@
 // Merkezi saran kesikli kare (Chebyshev yarıçap 1): sınır kenarında ray ya GEÇER (iki yan kollu) ya TAMPONLA biter (tek yan kollu).
 // Kazanma: lit (sınır kenarı open → gevşek sayılmaz) + sınırdan tam B geçiş ve tam T tampon (ikisi de rozette yazılı).
 (window.RAY_RULES = window.RAY_RULES || []).push(api => {
+  // bildirimler (L burada küresel çeviri; after içinde L = G.L gölgeler)
+  const MSG = { warn: (B, T) => L(`Sınırdan ${B} hat geçmeli, ${T} tampon olmalı`, `The border needs ${B} ${B === 1 ? 'crossing' : 'crossings'} and ${T} ${T === 1 ? 'buffer' : 'buffers'}`),
+    told: L('Sınırda biten ray tampon olur · rozetteki sayıya bak', 'Track ending at the border is a buffer · check the badge') };
   const { DIRS, popc } = api, ZD = 1;
   // P.zone.pr: sınır kenarları [i, k, j]: j = i'nin k (D ya da G) geometrik komşusu; her kenar bir kez
   const arm = (P, m, i, b) => !P.void?.[i] && !!(m[i] & b);
@@ -94,9 +97,9 @@
       const L = G.L;
       if (L.zNear && !G.zNear0) {   // her şey bağlı ama sayılar tutmuyor: rozet nabız atar, bölümde bir kez bildirim
         G.zPulse = now; api.kick();
-        if (!G.zWarn) { G.zWarn = 1; api.haptic('light'); api.toast(`Sınırdan ${G.zone.B} hat geçmeli, ${G.zone.T} tampon olmalı`); }
+        if (!G.zWarn) { G.zWarn = 1; api.haptic('light'); api.toast(MSG.warn(G.zone.B, G.zone.T)); }
       } else if ((L.zt | 0) > G.zt0 && !api.save.zoneTold) {   // ilk tampon: ömürde bir kez açıklama
-        api.save.zoneTold = 1; api.persist(); api.toast('Sınırda biten ray tampon olur · rozetteki sayıya bak');
+        api.save.zoneTold = 1; api.persist(); api.toast(MSG.told);
       }
     },
     // rozet tahtanın üstünde (karoların üstünde değil): kenar payı
@@ -163,12 +166,13 @@
       return t < 1;
     },
     card: {
-      name: 'Tarife bölgesi', tag: 'Yeni: tarife bölgesi',
+      name: L('Tarife bölgesi', 'Fare zone'), tag: L('Yeni: tarife bölgesi', 'New: fare zone'),
       demo: '<div class="rd-zone" aria-hidden="true"><svg viewBox="0 0 100 100"><rect class="rd-zone-b" x="20" y="20" width="60" height="60" rx="3"/>' +
         '<path class="rd-zone-r" d="M50 50H100M50 50V20"/><path class="rd-zone-x" pathLength="10" d="M50 50H100"/><path class="rd-zone-y" pathLength="10" d="M50 50V20"/>' +
         '<path class="rd-zone-g" d="M74 41H86M74 59H86"/><path class="rd-zone-t" d="M42 23H58"/><rect class="rd-zone-h" x="43" y="43" width="14" height="14" rx="4"/></svg>' +
         '<i class="rd-zone-c">⇄ 1/1</i><i class="rd-zone-c rd-zone-c2">⊣ 1/1</i></div>',
-      text: 'Merkezi saran <b>kesikli karenin</b> sınırında ray ya <b>geçer</b> ya <b>tamponla biter</b>. Geçiş ve tampon sayısı <b>rozettekiyle</b> aynı olmalı.',
+      text: L('Merkezi saran <b>kesikli karenin</b> sınırında ray ya <b>geçer</b> ya <b>tamponla biter</b>. Geçiş ve tampon sayısı <b>rozettekiyle</b> aynı olmalı.',
+        'At the <b>dashed square</b> around the hub, track either <b>crosses</b> or <b>ends at a buffer</b>. Crossings and buffers must match <b>the badge</b>.'),
     },
     // temel (animasyonsuz) stil bitmiş hâli gösterir → azaltılmış harekette kart boş kalmaz
     css: `.rd-zone{position:relative;align-self:center;width:100px;height:124px;margin:6px 0 2px}

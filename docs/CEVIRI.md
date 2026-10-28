@@ -109,3 +109,32 @@ Hat adları yer adıdır ve çevrilir:
 | Saray | Palace | | |
 
 Önekler: Yeni New · Eski Old · Kuzey North · Güney South · Doğu East · Batı West · Yukarı Upper · Aşağı Lower · Büyük Great · Küçük Little. "Hat" → "Line" (ör. `M1 · Liman Hattı` → `M1 · Harbor Line`).
+
+### Kural metinleri
+
+Kural kartlarında, `block()` mesajlarında ve bildirimlerde kullanılan terimler (`www/rules/*.js`):
+
+| Türkçe | İngilizce |
+|---|---|
+| düz · sapak (makas yolu) | straight · branch |
+| kesik çizgi | dashed line |
+| kapaklı karo | covered tile |
+| silik kol (?) | faint arm (?) |
+| tabelalı karo · ok | signpost tile · arrow |
+| ayraç (gizli depo) | bracket |
+| depo | depot |
+| tabla | table |
+| halka | loop |
+| kesik çemberli karo · çember | dashed-ring tile · ring |
+| nehir · kıyı · geçit | river · bank · ford |
+| tampon | buffer |
+| rozet (sayı rozeti) | badge |
+| tünel ağzı · harf | portal · letter |
+| kesikli kare · sınır | dashed square · border |
+| geçiş (sınırdan geçen hat) | crossing |
+| baştan (↺) | restart |
+| dönmez | doesn't turn |
+| ray bağlama | don't connect |
+
+- Kart etiketi küçük harfle: `Yeni: tünel ağzı` → `New: tunnel portal`.
+- Sayılı bildirimler tekil/çoğul ayrılır: `⊘ 1 station is closed` / `⊘ 2 stations are closed`, `1 buffer` / `2 buffers`, `1 crossing` / `2 crossings`.

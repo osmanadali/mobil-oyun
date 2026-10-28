@@ -7,8 +7,9 @@
   const disc = (D, r) => { D.cx.beginPath(); for (const Q of D.G.table.plates) if (D.vis(Q[0])) { const [x, y] = mid(D.X, Q); D.cx.moveTo(x + r, y); D.cx.arc(x, y, r, 0, 7); } };
   return {
     key: 'table', line: 14, boost: 2,
-    card: { name: 'Döner tabla', tag: 'Yeni: döner tabla', demo: '<div class="rd-table" aria-hidden="true"><div><i></i><i></i><i></i><i></i><b></b></div><s></s><em></em></div>',
-      text: 'Yuvarlak <b>döner tabla</b> dört karoyu taşır: birine dokun, tabla bütünüyle <b>90° döner</b>. Karolar yer değiştirir, raylar <b>kopmaz</b>.' },
+    card: { name: L('Döner tabla', 'Turntable'), tag: L('Yeni: döner tabla', 'New: turntable'), demo: '<div class="rd-table" aria-hidden="true"><div><i></i><i></i><i></i><i></i><b></b></div><s></s><em></em></div>',
+      text: L('Yuvarlak <b>döner tabla</b> dört karoyu taşır: birine dokun, tabla bütünüyle <b>90° döner</b>. Karolar yer değiştirir, raylar <b>kopmaz</b>.',
+        'A round <b>turntable</b> carries four tiles: tap one and the whole table <b>turns 90°</b>. Tiles swap places, tracks <b>stay joined</b>.') },
     css: `.rd-table,.rd-table *{position:absolute;box-sizing:border-box}.rd-table{position:relative;align-self:center;width:104px;height:104px;margin:6px 0 2px}
 .rd-table div{inset:0;border-radius:50%;background:var(--pin);box-shadow:inset 0 0 0 2px var(--mut);animation:spin4 4s cubic-bezier(.3,1.4,.5,1) infinite}
 .rd-table i{left:6px;top:6px;width:44px;height:44px;border-radius:12px;background:var(--tile);box-shadow:inset 0 0 0 1px var(--stroke)}.rd-table i+i{left:54px}.rd-table i+i+i{top:54px}.rd-table i+i+i+i{left:6px}
