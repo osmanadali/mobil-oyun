@@ -32,7 +32,8 @@ if (!save.seen || typeof save.seen !== 'object') save.seen = {};
 if (!save.miss || typeof save.miss !== 'object') save.miss = {};
 if (!save.owned || typeof save.owned !== 'object') save.owned = { metro: 1, ...(save.skin && save.skin !== 'metro' ? { [save.skin]: 1 } : {}) };   // eski kayıtta seçili tema korunur
 if (!Array.isArray(save.dailyLog)) save.dailyLog = save.lastDaily ? [save.lastDaily] : [];
-const persist = () => { try { localStorage.setItem('ray', JSON.stringify(save)); } catch {} };
+let wiped = false;   // "Verilerimi sil" → sayfa yenilenene dek kayıt yazılmaz
+const persist = () => { if (wiped) return; try { localStorage.setItem('ray', JSON.stringify(save)); } catch {} };
 // gün değişimi: ücretsiz ipucu, kopan seri
 function dayTick() {
   const t = today();
@@ -1443,18 +1444,46 @@ function settings() {
     <div class="opt">Görünüm <div class="seg" id="oT">${seg}</div></div>
     <button class="opt row" id="oSkin"><span>Renk temaları</span><small>${skin().name} · 👑 ${crownBal()} ›</small></button>
     <button class="opt row" id="oShop"><span>Reklamsız paket</span><small>${save.noAds ? 'Aktif ✓' : (Shop.price() || '💛') + ' ›'}</small></button>
+    <button class="opt row" id="oPriv"><span>Gizlilik</span><small>Politika · veriler ›</small></button>
     <button id="mClose" class="btn glassbtn">Tamam</button>`, {
     oR: async () => {
       if (save.remind) { save.remind = false; persist(); Remind.plan(); }
       else if (!await Remind.enable()) toast('Bildirim izni verilmedi');
       $('oR').classList.toggle('on', save.remind);
     },
-    oSkin: skinSheet, oShop: shopSheet,
+    oSkin: skinSheet, oShop: shopSheet, oPriv: privacySheet,
     oM: () => { save.music = !save.music; persist(); $('oM').classList.toggle('on', save.music); save.music ? Music.start() : Music.stop(); },
     oS: () => { save.sound = !save.sound; persist(); $('oS').classList.toggle('on', save.sound); },
     oV: () => { save.vib = !save.vib; persist(); $('oV').classList.toggle('on', save.vib); haptic(); },
     mClose: closeModal });
   $('oT').onclick = e => { const t = e.target.dataset.t; if (!t) return; save.theme = t; persist(); applyTheme(); refreshHome(); $('oT').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.t === t)); };
+}
+// ---------- gizlilik: kısa özet, politika, reklam rıza seçenekleri, verileri sil ----------
+const POLICY = 'https://osmanadali.github.io/mobil-oyun/gizlilik.html';
+// uygulamada sistem tarayıcısında (Capacitor dış adresi uygulama içinde açmaz), web'de yeni sekmede yerel kopya (çevrimdışı da açılır)
+function openPolicy() {
+  const C = window.Capacitor, B = C?.Plugins?.Browser;
+  if (!C?.isNativePlatform?.()) { window.open('gizlilik.html', '_blank', 'noopener'); return; }
+  if (B?.open) B.open({ url: POLICY }).catch(() => window.open(POLICY, '_system')); else window.open(POLICY, '_system');
+}
+function privacySheet() {
+  modal(`<h2>Gizlilik</h2>
+    <div class="perks"><div><i>📱</i><span><b>Hesap yok</b> · ilerlemen yalnız bu cihazda</span></div><div><i>🔔</i><span>Hatırlatmalar cihazında planlanır</span></div><div><i>📺</i><span>Reklamlar <b>Google AdMob</b> ile · reklam kimliği ve cihaz bilgisi işlenir</span></div><div><i>🚫</i><span>Analitik yok · ödeme mağaza üzerinden</span></div></div>
+    <button id="mPol" class="btn glassbtn">Gizlilik politikası ↗</button>
+    ${Ads.privacy() ? '<button id="mAdP" class="btn glassbtn">Reklam gizlilik seçenekleri</button>' : ''}
+    <button id="mWipe" class="link">Verilerimi sil</button>
+    <button id="mClose" class="btn glassbtn">Kapat</button>`, {
+    mPol: openPolicy, mAdP: () => { closeModal(); Ads.privacyForm(); }, mWipe: wipeSheet, mClose: closeModal });
+}
+// iki adım: önce onay; sonra planlı bildirimler iptal, kayıt silinir, oyun baştan açılır (reklamsız paket mağazadan geri gelir)
+function wipeSheet() {
+  modal(`<h2>Verilerin silinsin mi?</h2>
+    <p>Bu cihazdaki bütün ilerlemen silinir: bölümler, ★, 👑, seri, temalar ve ayarlar. <b>Geri alınamaz.</b></p>
+    <p class="tip">Reklamsız paketi aldıysan mağaza hesabından geri gelir.</p>
+    <button id="mNo" class="btn primary"><span>Vazgeç</span></button>
+    <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">Evet, hepsini sil</button>`, {
+    mNo: privacySheet,
+    mWipeOk: async () => { save.remind = false; await Promise.race([Remind.plan(), new Promise(r => setTimeout(r, 1500))]); wiped = true; try { localStorage.removeItem('ray'); } catch {} location.reload(); } });
 }
 // ---------- renk temaları ----------
 const skinSvg = '<svg viewBox="0 0 120 60"><path d="M10 46H40L60 28H110"/><path d="M60 6V28L80 46H110"/><path d="M10 14H36L60 28"/><rect x="52" y="20" width="16" height="16" rx="5"/></svg>';
