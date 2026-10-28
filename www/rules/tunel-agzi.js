@@ -6,7 +6,7 @@
   const ends = p => [[p.a, p.ka], [p.b, p.kb]];
   const used = (m, p) => (m[p.a] & bit(p.ka)) && (m[p.b] & bit(p.kb)), lit2 = (G, p) => used(G.cur, p) && G.L.d[p.a] >= 0 && G.L.d[p.b] >= 0;
   return {
-    key: 'portal', line: 18, boost: 1,   // zorluk payı: hedef puana eklenir (docs/kurallar/README.md)
+    key: 'portal', line: 18, boost: 1,
     card: { name: 'Tünel ağzı', tag: 'Yeni: tünel ağzı',
       demo: '<div class="rd-portal" aria-hidden="true"><i class="rd-pm">A</i><i class="ft on"><b></b></i><i class="ft on"><b></b></i><i class="ft on"><b></b></i><i class="rd-pm r">A</i><i class="rd-pt"></i></div>',
       text: 'Kenardaki <b>aynı harfli</b> iki tünel ağzı bağlıdır: birine giren ray <b>öbüründen çıkar</b>. Tüneli kullanmak zorunlu değil; harfsiz kenar <b>kapalıdır</b>.' },
