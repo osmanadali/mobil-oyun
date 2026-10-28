@@ -49,10 +49,10 @@ jobs:
           echo "$VERSION_CODE" | grep -Eq '^[1-9][0-9]{0,9}$' || hata="$hata\n  • versionCode pozitif tam sayı olmalı: $VERSION_CODE"
           if [ -n "$hata" ]; then printf "Ayar hatası:$hata\n"; echo "::error title=Ayar hatası::AdMob kimliği ya da versionCode yanlış. Günlüğe bak."; exit 1; fi
           echo "Ayarlar tamam."
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with: { node-version: 22, cache: npm }
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with: { distribution: temurin, java-version: 21 }
       - run: npm ci --no-audit --no-fund
       - run: npx cap add android
@@ -82,8 +82,10 @@ jobs:
           BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
           AAB=android/app/build/outputs/bundle/release/app-release.aab
           APKR=android/app/build/outputs/apk/release/app-release.apk
-          "$BT/apksigner" verify --print-certs "$APKR" | grep -E "Signer #1 certificate (DN|SHA-256)"
-          keytool -printcert -jarfile "$AAB" | grep -E "Owner|SHA256" | head -2
+          "$BT/apksigner" verify --print-certs -v "$APKR" > imza.txt 2>&1 || { cat imza.txt; echo "::error::APK imzası doğrulanamadı"; exit 1; }
+          grep -iE "verified using|certificate (DN|SHA-256)" imza.txt || cat imza.txt
+          keytool -printcert -jarfile "$AAB" > aab-imza.txt 2>&1 || { cat aab-imza.txt; echo "::error::AAB imzası okunamadı"; exit 1; }
+          grep -iE "owner|sahibi|SHA256:" aab-imza.txt | head -3 || cat aab-imza.txt
           "$BT/aapt2" dump badging "$APKR" | grep -E "^package:|sdkVersion|targetSdkVersion"
           T=$("$BT/aapt2" dump badging "$APKR" | sed -n "s/^targetSdkVersion:'\([0-9]*\)'.*/\1/p")
           [ "$T" -ge 35 ] || { echo "::error::targetSdk $T < 35: Play kabul etmez"; exit 1; }
@@ -103,7 +105,7 @@ jobs:
           cp android/app/build/outputs/bundle/release/app-release.aab "out/ray-$VERSION_NAME-$VERSION_CODE.aab"
           cp android/app/build/outputs/apk/release/app-release.apk "out/ray-$VERSION_NAME-$VERSION_CODE.apk"
           ls -la out
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with: { name: 'ray-${{ env.VERSION_NAME }}-${{ env.VERSION_CODE }}', path: out/, retention-days: 30 }
       - name: Anahtar deposunu sil
         if: always()
