@@ -87,9 +87,9 @@ async function tapTile(page, i) {
 }
 // En kısa çözüm: her karoyu çözüm yönüne getirecek kadar dokun. Eşli karo: biri çevrilir (eşi de döner).
 // Karanlık tünel: yalnızca aydınlık karolara dokunulur; hat ilerledikçe yeni tur (ışığı takip eder).
-async function solve(page, gap = 25) {
+async function solve(page, gap = 25, rounds = 40) {
   let total = 0;
-  for (let round = 0; round < 40; round++) {
+  for (let round = 0; round < rounds; round++) {
     const taps = await page.evaluate(() => {
       const { G, rot } = window.__ray, out = [], lit = i => !G.seen || G.seen[i], unrot = m => ((m >> 1) | (m << 3)) & 15;
       if (!G || G.won) return out;
@@ -575,11 +575,29 @@ async function inViewport(page, sel) {
     const st = () => page.evaluate(i => ({ m: window.__ray.G.moves, v: window.__ray.G.cur[i] }), f0.idx);
     const b0 = await st(); await tapTile(page, f0.idx); await page.waitForTimeout(200); const b1 = await st();
     await shot(page, 'fog');
+    // geri kararma: hat biraz ilerler; yanan bir bağlantı karosu çevrilince arkasındaki bölge kararır, geri çevrilince yeniden aydınlanır
+    await solve(page, 8, 3); await page.waitForTimeout(500);
+    const dk = () => page.evaluate(() => window.__ray.G.seen.filter(v => !v).length);
+    const br = await page.evaluate(() => {   // çevrilince en çok karoyu karartan yanan karo (görünürlük: yananın 2 karo yakını + sabitlenen)
+      const { G, rot, lit } = window.__ray, c = G.cols;
+      const dark = d => G.cur.filter((_, i) => !G.fixed[i] && !d.some((v, j) => v >= 0 && Math.abs(i % c - j % c) + Math.abs((i / c | 0) - (j / c | 0)) <= 2)).length;
+      const k0 = dark(G.L.d); let best = -1, gain = 0;
+      G.cur.forEach((v, i) => {
+        if (G.L.d[i] <= 0 || G.fixed[i] || G.pinned[i] || G.link[i] >= 0 || G.rev[i] || G.cnt[i] >= 0 || G.unitOf?.[i] >= 0) return;
+        G.cur[i] = rot(v); const g = dark(lit(G).d) - k0; G.cur[i] = v;
+        if (g > gain) { gain = g; best = i; }
+      });
+      return { i: best, gain, dark: k0 };
+    });
+    const d0 = await dk(); await tapTile(page, br.i); await page.waitForTimeout(150); const dMid = await dk(); await page.waitForTimeout(400);
+    await shot(page, 'fog-back');
+    const d1 = await dk(); for (let k = 0; k < 3; k++) await tapTile(page, br.i); await page.waitForTimeout(500); const d2 = await dk();
     const taps = await solve(page, 8); const won = await waitModal(page);
     const all = await page.evaluate(() => window.__ray.G.seen.every(Boolean));
     const sizes = await page.evaluate(() => [100, 101, 103, 104].map(l => window.__ray.sizeFor(l).join('x')).join(' '));
     check('rule.fog.card', 'M6 ilk girişte "YENİ KURAL · Karanlık tünel" kartı (animasyonlu)', card.open && /Karanlık tünel/.test(card.txt || '') && card.demo, JSON.stringify(card), 'medium');
     check('rule.fog', 'Karanlık tünel: başta karanlık karolar var, dokunulmaz, hamle saymaz; ışığı takip ederek çözülür', f0.fog && f0.dark > 10 && b0.m === b1.m && b0.v === b1.v && won && all, JSON.stringify({ ...f0, b0, b1, taps, won, all }));
+    check('rule.fog.back', 'Karanlık tünel: bağlantı kopunca arkadaki bölge yeniden kararır, geri bağlanınca aydınlanır', br.i >= 0 && br.gain > 0 && d1 === d0 + br.gain && d2 === d0, JSON.stringify({ br, d0, dMid, d1, d2 }));
     check('rule.fog.saw', 'Testere dişi: M6 ilk 3 bölüm 6×8, sonra 7×9', sizes === '7x9 6x8 6x8 7x9', sizes, 'medium');
     check('e8.errors', 'Karanlık tünel senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
     await ctx.close();

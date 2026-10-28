@@ -213,8 +213,8 @@ const RULES = {
     text: L('Koyu, cıvatalı karolar <b>dönmez</b>. Zaten doğru yöndeler: etrafındaki hattı <b>onlara göre</b> bağla. Hamle saymazlar.',
       'Dark, bolted tiles <b>don’t turn</b>. They already face the right way: build the line around them <b>to fit</b>. They never cost a move.') },
   5: { name: L('Karanlık tünel', 'Dark tunnel'), tag: L('Yeni: karanlık tünel', 'New: dark tunnel'), demo: '<div class="rdemo3" aria-hidden="true"><i class="ft on"><b></b></i><i class="ft mid"><b></b></i><i class="ft dk"><b></b><s></s></i></div>',
-    text: L('Hattın ulaşmadığı yerler <b>karanlık</b>: rayları görünmez, dokunulmaz. Hat ilerledikçe çevresi <b>aydınlanır</b> ve açık kalır. Işığı takip et!',
-      'Where the line hasn’t reached is <b>dark</b>: tracks are hidden and can’t be tapped. As the line grows, the area <b>lights up</b> and stays lit. Follow the light!') },
+    text: L('Hattın ulaşmadığı yerler <b>karanlık</b>: rayları görünmez, dokunulmaz. Hat ilerledikçe çevresi <b>aydınlanır</b>, bağlantı kopunca yeniden <b>kararır</b>. Işığı takip et!',
+      'Where the line hasn’t reached is <b>dark</b>: tracks are hidden and can’t be tapped. As the line grows, the area <b>lights up</b>; break the line and it goes <b>dark</b> again. Follow the light!') },
   4: { name: L('Ters karo', 'Reverse tile'), tag: L('Yeni: ters karo', 'New: reverse tile'), demo: '<div class="rdemo2" aria-hidden="true"><i class="pt rv"><b></b><em>↺</em></i><i class="rtap2"></i></div>',
     text: L('Oklu (↺) karolar <b>ters yöne</b>, saat yönünün tersine döner. Parmağının alışkanlığına güvenme!',
       'Arrow (↺) tiles turn the <b>other way</b>, counterclockwise. Don’t trust your finger’s habit!') },
@@ -258,6 +258,7 @@ function loadRules(api) {
   if (css) { const st = document.createElement('style'); st.textContent = css; document.head.append(st); }
 }
 const FOG_R = 2;                                        // yanan hattın bu kadar karo yakını aydınlanır
+const FOG_T = 420;                                      // karanlık örtünün açılma/kapanma süresi (ms)
 const PAIR_COLS = ['#ff7ab6', '#4cc9ff', '#ffc94d', '#8fe388', '#c39bff'];
 const TIERS = [[3, 3], [4, 4], [4, 5], [5, 6], [5, 7], [6, 8], [7, 9]], CAPS = [3, 8, 15, 25, 40, 60, 1e9];
 function sizeFor(l) {
@@ -775,7 +776,7 @@ function setLineColor() {
 const runKey = () => G.daily ? 'daily' : 'level';
 function saveRun() {
   if (!G || G.won) return;
-  save.runs[runKey()] = { lvl: G.lvl, day: G.day, cur: G.cur, fixed: G.fixed, moves: G.moves, last: G.lastTile, ms: elapsed(), pv: 4, sig: G.sig, ...(G.fog ? { seen: G.seen } : {}), ...(G.cnt.some(v => v >= 0) ? { cnt: G.cnt } : {}) };
+  save.runs[runKey()] = { lvl: G.lvl, day: G.day, cur: G.cur, fixed: G.fixed, moves: G.moves, last: G.lastTile, ms: elapsed(), pv: 4, sig: G.sig, ...(G.cnt.some(v => v >= 0) ? { cnt: G.cnt } : {}) };
   persist();
 }
 function start(mode, lvl = save.level) {
@@ -791,14 +792,13 @@ function start(mode, lvl = save.level) {
   G.sig = hashStr(G.sol.join() + '|' + G.cur.join());
   if (run && (daily ? run.day === day : run.lvl === lvl) && run.cur?.length === G.cur.length && (run.sig ? run.sig === G.sig : run.pv === 4 && (daily || lvl < lineStart(8)))) {
     G.cur = run.cur.slice(); G.fixed = run.fixed.slice(); G.moves = run.moves; G.lastTile = run.last ?? -1; G.ms = run.ms || 0;
-    if (run.seen?.length === G.cur.length) G.seen = run.seen.slice();
     if (run.cnt?.length === G.cur.length) G.cnt = run.cnt.slice();
   }
   setLineColor();
   G.L = lit(G); anim.clear(); press.clear(); ripples = []; parts = []; links = []; winT = 0;
   litAt = G.L.d.map(v => v >= 0 ? -1e9 : 0);
-  if (!G.seen) G.seen = G.cur.map(() => !G.fog);
-  seenAt = G.seen.map(() => -1e9); reveal(true);
+  G.seen = G.cur.map(() => !G.fog);
+  seenAt = G.seen.map(() => -1e9); hidAt = seenAt.slice(); reveal(true);
   G.tOk = timeOk(G.ms / 1000); G.mOk = movesOk();
   $('gTitle').textContent = daily ? (G.practice ? L('Günün Hattı · pratik', 'Daily Line · practice') : L('Günün Hattı', 'Daily Line')) : `${L('Bölüm', 'Level')} ${lvl}${G.final ? L(' · 🏁 Son durak', ' · 🏁 Last stop') : ''}`;
   $('game').classList.toggle('final', !!G.final);
@@ -814,21 +814,19 @@ function start(mode, lvl = save.level) {
   else if (G.final && !save.crowns[lvl] && !G.moves) setTimeout(() => toast(L('🏁 Son durak · kusursuz bitir → +1 bonus 👑', '🏁 Last stop · finish perfect → +1 bonus 👑')), 600);
   else if (!daily && save.miss[lvl] && !save.crowns[lvl] && !G.moves) setTimeout(() => toast(L(`Geçen sefer: ${missTxt(lvl)}`, `Last time: ${missTxt(lvl)}`)), 600);
 }
-// karanlık tünel: yanan karoların FOG_R yakını (ve ipucuyla sabitlenen) aydınlanır; aydınlanan bir daha kararmaz
-let seenAt = [];
+// karanlık tünel: yanan karoların FOG_R yakını, ipucuyla sabitlenenler ve eklentilerin açtıkları görünür.
+// Her hamlede baştan hesaplanır: bağlantı kopunca o bölge yeniden kararır (seenAt: aydınlanma, hidAt: kararma anı → geçiş)
+let seenAt = [], hidAt = [];
 function reveal(quiet) {
   if (!G.fog) return;
-  const now = performance.now(), { cols, rows } = G;
-  const on = i => { if (!G.seen[i]) { G.seen[i] = true; seenAt[i] = quiet ? -1e9 : now; } };
-  G.L.d.forEach((v, i) => {
-    if (v < 0) return;
-    const x = i % cols, y = i / cols | 0;
-    for (let dy = -FOG_R; dy <= FOG_R; dy++) for (let dx = -FOG_R; dx <= FOG_R; dx++) { const nx = x + dx, ny = y + dy; if (Math.abs(dx) + Math.abs(dy) <= FOG_R && nx >= 0 && ny >= 0 && nx < cols && ny < rows) on(ny * cols + nx); }
-  });
-  G.fixed.forEach((f, i) => f && on(i));
-  // eklenti: tünelin öbür ağzı, tablanın dört karosu… (area: bir karonun FOG_R çevresi)
+  const now = quiet ? -1e9 : performance.now(), { cols, rows } = G, prev = G.seen, vis = G.seen = G.cur.map(() => false);
+  const on = i => { vis[i] = true; };
   const area = i => { const x = i % cols, y = i / cols | 0; for (let dy = -FOG_R; dy <= FOG_R; dy++) for (let dx = -FOG_R; dx <= FOG_R; dx++) { const nx = x + dx, ny = y + dy; if (Math.abs(dx) + Math.abs(dy) <= FOG_R && nx >= 0 && ny >= 0 && nx < cols && ny < rows) on(ny * cols + nx); } };
-  for (const m of MODS) if (m.reveal && G[m.key]) m.reveal(G, on, area);
+  G.L.d.forEach((v, i) => { if (v >= 0) area(i); });
+  G.fixed.forEach((f, i) => f && on(i));
+  // eklenti: tünelin öbür ağzı, tablanın dört karosu… Biri ötekinin açtığına bağlı olabilir → değişmeyene dek
+  for (let k = 0, c = -1, m = 0; k < 4 && c !== m; k++) { c = m; for (const mod of MODS) if (mod.reveal && G[mod.key]) mod.reveal(G, on, area); m = vis.filter(Boolean).length; }
+  vis.forEach((v, i) => { if (v && !prev[i]) seenAt[i] = now; else if (!v && prev[i]) hidAt[i] = now; });
 }
 function hud() {
   const ok = movesOk();
@@ -933,7 +931,7 @@ function draw() {
     if (winT) { const t = (now - winT - G.L.d[i] * 45) / 320; if (t > 0 && t < 1) sc *= 1 + Math.sin(t * Math.PI) * .1; if (t < 1) busy = true; }
     X.push([ox + (i % G.cols) * s + s / 2, oy + (i / G.cols | 0) * s + s / 2, a, sc]);
   }
-  const on = i => G.L.d[i] >= 0, vis = i => !G.fog || G.won || G.seen[i];   // vis: karanlık karonun rayı/durağı hiç çizilmez (uçlar taşmasın)
+  const on = i => G.L.d[i] >= 0, vis = i => !G.fog || G.won || G.seen[i] || now - hidAt[i] < FOG_T;   // vis: karanlık karonun rayı/durağı çizilmez (uçlar taşmasın); kararan, örtü kapanana dek görünür
   // iki merkez: her hat kendi renginde, karışan hat kırmızı (OC[3])
   const own = i => G.L.own[i], OC = [null, col, G.color2 || col, G.warn], tags = [1, 2, 3].filter(t => G.L.own.includes(t));
   // eklenti çizim kancaları: xform (karo konum/açısı; X[i][4] = zemin çizilmesin) · base (zeminden önce) · under (raydan önce)
@@ -1030,19 +1028,20 @@ function draw() {
     cx.textBaseline = 'alphabetic';
   }
   hook('over');
-  // 6c) karanlık tünel: aydınlanmamış karonun üstü örtülür; aydınlanınca örtü yavaşça kalkar
+  // 6c) karanlık tünel: aydınlanmamış karonun üstü örtülür; aydınlanınca örtü yavaşça kalkar, kararınca yavaşça iner
   if (G.fog && !G.won) {
     // örtü tüm hücreyi kaplar (karolar arası boşluktan ray sızmasın); üstte silik karo çizgisi
     const cell = (i, f) => { const [x, y] = X[i]; f(x - s / 2 - .5, y - s / 2 - .5, s + 1, s + 1, s * .2); };
     const dark = pal.light ? 'rgba(46,48,70,' : 'rgba(8,10,20,', A = pal.light ? .93 : .97;
-    cx.beginPath(); let fading = [], any = false;
+    cx.beginPath(); let fading = [], closing = [], any = false;
     for (let i = 0; i < n; i++) {
-      if (!G.seen[i]) { cell(i, rrp); any = true; }
-      else if (now - seenAt[i] < 420) fading.push(i);
+      if (!G.seen[i]) { if (now - hidAt[i] < FOG_T) closing.push(i); else cell(i, rrp); any = true; }
+      else if (now - seenAt[i] < FOG_T) fading.push(i);
     }
     cx.fillStyle = dark + A + ')'; cx.fill();
     if (any) { cx.beginPath(); for (let i = 0; i < n; i++) if (!G.seen[i]) { const [x, y] = X[i], w = s - 8; rrp(x - w / 2, y - w / 2, w, w, s * .22); } cx.lineWidth = 1; cx.strokeStyle = 'rgba(255,255,255,.06)'; cx.stroke(); }
-    for (const i of fading) { const t = (now - seenAt[i]) / 420; cx.fillStyle = dark + (A * (1 - ease(t))) + ')'; cx.beginPath(); cell(i, rrp); cx.fill(); busy = true; }
+    for (const i of fading) { const t = (now - seenAt[i]) / FOG_T; cx.fillStyle = dark + (A * (1 - ease(t))) + ')'; cx.beginPath(); cell(i, rrp); cx.fill(); busy = true; }
+    for (const i of closing) { const t = (now - hidAt[i]) / FOG_T; cx.fillStyle = dark + (A * ease(t)) + ')'; cx.beginPath(); cell(i, rrp); cx.fill(); busy = true; }
   }
   hook('top');
   // 7) dokunma dalgaları
