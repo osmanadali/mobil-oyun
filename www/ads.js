@@ -4,6 +4,7 @@
 //   window.RAY_ADS = { android: { interstitial, rewarded }, ios: { interstitial, rewarded } }
 // Yoksa (ya da o platformunki eksikse) Google test kimlikleri ve test kipi.
 // Açılış sırası: UMP rıza bilgisi → gerekiyorsa rıza formu → (iOS) izleme izni → canRequestAds ise initialize.
+// Rıza sorgusu hata verse ya da reklam izni çıkmasa da iOS izleme izni sorulur (App Store 5.1.2).
 window.Ads = (() => {
   const TEST_IDS = {
     android: { interstitial: 'ca-app-pub-3940256099942544/1033173712', rewarded: 'ca-app-pub-3940256099942544/5224354917' },
@@ -16,6 +17,7 @@ window.Ads = (() => {
   const online = () => navigator.onLine !== false;
   let ready = false, allowed = false, privacy = false, starting = null;
   let interReady = false, rewardReady = false, busy = false, lastShown = 0;
+  let interAt = 0, rewardAt = 0, loadingI = false, loadingR = false, tries = 0, retryT = 0, asking = null;
   const ok = () => ready && allowed && online();   // rıza alınmadan, başlatılmadan reklam isteği yok
   const within = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
   // UMP yanıtı → reklam izni + ayarlardaki "Reklam gizlilik seçenekleri" görünürlüğü
@@ -23,30 +25,51 @@ window.Ads = (() => {
 
   async function start() {
     const A = plug(); if (!A || ready) return;
+    let c = null, failed = false;
     if (A.requestConsentInfo) {
-      let c = await A.requestConsentInfo();
-      if (c?.isConsentFormAvailable && c.status === 'REQUIRED' && A.showConsentForm) try { c = await A.showConsentForm(); } catch {}   // form açılamazsa önceki rıza geçerli
-      if (!consent(c)) return;
+      // Rıza sorgusu hata verebilir (internet yok, AdMob uygulaması henüz mağazaya bağlı değil) → ATT yine sorulur.
+      try {
+        c = await A.requestConsentInfo();
+        if (c?.isConsentFormAvailable && c.status === 'REQUIRED' && A.showConsentForm) try { c = await A.showConsentForm(); } catch {}   // form açılamazsa önceki rıza geçerli
+      } catch { failed = true; }
+      consent(c);
     } else allowed = true;   // rıza API'si olmayan eski eklenti
-    // iOS izleme izni: UMP'nin IDFA mesajı zaten sorduysa durum 'notDetermined' değildir → ikinci kez sorulmaz.
-    // İzin verilmezse reklamlar kişiselleştirilmeden gelir.
-    if (OS === 'ios' && A.requestTrackingAuthorization) {
-      try { const t = await A.trackingAuthorizationStatus?.(); if (!t || t.status === 'notDetermined') await A.requestTrackingAuthorization(); } catch {}
-    }
+    // iOS izleme izni: rıza sonucundan bağımsız, sayfa görünürken ve durum 'notDetermined' iken bir kez.
+    // UMP'nin IDFA mesajı zaten sorduysa durum 'notDetermined' değildir → ikinci kez sorulmaz. İzin yoksa reklamlar kişiselleştirilmez.
+    await att();
+    if (failed) throw new Error('consent');   // init() yutar; bağlantı / ön plan dönüşünde yeniden denenir
+    if (!allowed) return;
     await A.initialize({ initializeForTesting: TESTING, maxAdContentRating: 'ParentalGuidance', tagForChildDirectedTreatment: false, tagForUnderAgeOfConsent: false });
-    ready = true; preload(); preloadReward();
+    ready = true; warm();
+  }
+  // iOS izleme izni (ATT): yalnız sayfa görünürken (arka planda sorulan pencere görünmeden reddedilir); aynı anda tek sorgu
+  function att() {
+    const A = plug(); if (OS !== 'ios' || !A?.requestTrackingAuthorization || document.hidden) return;
+    return asking ||= (async () => {
+      try { const t = await A.trackingAuthorizationStatus?.(); if (!t || t.status === 'notDetermined') await A.requestTrackingAuthorization(); } catch {}
+    })().finally(() => { asking = null; });
   }
   // tek seferde bir başlatma; hata (çoğu kez internetsiz rıza sorgusu) → bağlantı gelince yeniden
   function init() { return starting ||= start().catch(() => {}).finally(() => { starting = null; }); }
+  // Yüklü reklam 55 dakikadan eskiyse yenilenir (AdMob ~1 saatte geçersiz sayar).
+  const fresh = at => Date.now() - at < 55 * 60e3;
   async function preload() {
-    const A = plug(); if (!A || !ok() || interReady) return;
-    try { await A.prepareInterstitial({ adId: IDS.interstitial, isTesting: TESTING }); interReady = true; } catch {}
+    const A = plug(); if (!A || !ok() || loadingI || (interReady && fresh(interAt))) return;
+    interReady = false; loadingI = true;
+    try { await A.prepareInterstitial({ adId: IDS.interstitial, isTesting: TESTING }); interReady = true; interAt = Date.now(); tries = 0; } catch {}
+    loadingI = false;
+    if (!interReady) retry();
   }
   // ödüllü reklamı önceden yükle → "İzle"ye basınca hemen açılır
   async function preloadReward() {
-    const A = plug(); if (!A || !ok() || rewardReady || busy) return;
-    try { await A.prepareRewardVideoAd({ adId: IDS.rewarded, isTesting: TESTING }); rewardReady = true; } catch {}
+    const A = plug(); if (!A || !ok() || busy || loadingR || (rewardReady && fresh(rewardAt))) return;
+    rewardReady = false; loadingR = true;
+    try { await A.prepareRewardVideoAd({ adId: IDS.rewarded, isTesting: TESTING }); rewardReady = true; rewardAt = Date.now(); } catch {}
+    loadingR = false;
   }
+  // Geçiş reklamı yüklenemedi → 30, 60, sonra 120 sn arayla yeniden dene (ön plana dönüş de dener)
+  function retry() { clearTimeout(retryT); retryT = setTimeout(warm, [30, 60, 120][Math.min(tries++, 2)] * 1e3); }
+  function warm() { if (!ready) { init(); return; } preload(); preloadReward(); }
   // Tam ekran reklam kapanana (ya da hata / zaman aşımı) kadar bekle.
   function closed(A, okEvents, failEvents, ms) {
     return new Promise(res => {
@@ -65,8 +88,8 @@ window.Ads = (() => {
   // true: reklam gösterildi ve kapandı
   async function interstitial() {
     const A = plug();
-    if (!A || !ok() || Date.now() - lastShown < 90e3) return false;   // en az 90 sn arayla
-    if (!interReady) { preload(); return false; }
+    if (!A || !ok() || Date.now() - lastShown < 90e3) return false;   // en az 90 sn arayla (ödüllü video da sayılır)
+    if (!interReady || !fresh(interAt)) { preload(); return false; }
     let shown = false;
     try {
       const wait = closed(A, ['interstitialAdDismissed'], ['interstitialAdFailedToShow'], 60e3);
@@ -77,24 +100,26 @@ window.Ads = (() => {
     preload();
     return shown;
   }
-  // true yalnızca ödül hak edildiyse (video sonuna kadar izlendi). Aynı anda tek reklam.
+  // 'earned': ödül hak edildi (video sonuna kadar izlendi) · 'closed': video açıldı, erken kapandı · 'nofill': video yok / açılamadı.
+  // Aynı anda tek reklam.
   async function rewarded() {
-    const A = plug(); if (!A || !ok() || busy) return false;
+    const A = plug(); if (!A || !ok() || busy) return 'nofill';
     busy = true;
-    let earned = false;
+    let earned = false, shown = false;
     const h = A.addListener('onRewardedVideoAdReward', () => { earned = true; });
     try {
-      if (!rewardReady) await within(A.prepareRewardVideoAd({ adId: IDS.rewarded, isTesting: TESTING }), 10e3);
+      if (!rewardReady || !fresh(rewardAt)) await within(A.prepareRewardVideoAd({ adId: IDS.rewarded, isTesting: TESTING }), 10e3);
       rewardReady = false;
       const wait = closed(A, ['onRewardedVideoAdDismissed'], ['onRewardedVideoAdFailedToShow', 'onRewardedVideoAdFailedToLoad'], 180e3);
       A.showRewardVideoAd().then(r => { if (r) earned = true; }).catch(() => {});
-      await wait;
+      shown = await wait;
       await new Promise(r => setTimeout(r, 300));   // ödül olayı kapanıştan hemen sonra gelebilir
     } catch {}
     Promise.resolve(h).then(x => x?.remove?.()).catch(() => {});
     busy = false;
+    if (earned || shown) lastShown = Date.now();   // videonun hemen ardından geçiş reklamı gelmesin
     preloadReward();
-    return earned;
+    return earned ? 'earned' : shown ? 'closed' : 'nofill';
   }
   // Ayarlar › Gizlilik › Reklam gizlilik seçenekleri (UMP gerekli dediyse görünür). Seçim değişince izin yenilenir.
   async function privacyForm() {
@@ -103,6 +128,8 @@ window.Ads = (() => {
     if (!allowed) interReady = rewardReady = false;
     else if (!ready) init();
   }
-  addEventListener('online', () => { if (!ready) init(); else { preload(); preloadReward(); } });
-  return { init, interstitial, rewarded, privacyForm, busy: () => busy, online: () => !!plug() && ok(), privacy: () => !!plug() && privacy };
+  addEventListener('online', warm);
+  // ön plana dönüş: açılışta arka plandaysak ATT şimdi sorulur; eksik / bayat reklam yeniden yüklenir
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { if (ready) att(); warm(); } });
+  return { init, warm, interstitial, rewarded, privacyForm, busy: () => busy, online: () => !!plug() && ok(), privacy: () => !!plug() && privacy };
 })();

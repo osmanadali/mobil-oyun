@@ -191,6 +191,9 @@ html:lang(en) body.test .hero p::after{content:' · 🧪 TEST: all unlocked'}
 #game.mini .wp-more,#game.mini .winp .row2{display:none}
 #game.won #bReset{visibility:hidden;pointer-events:none}
 .winp .statrow{margin:2px 0 0}.winp .tip{font-size:13px;color:var(--mut);text-align:center}
+.adfree{margin:-6px 0;text-align:center;line-height:1}
+.adfree button{position:relative;max-width:100%;border:0;background:none;padding:8px 6px;color:var(--mut);font:inherit;font-size:12.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--stroke);white-space:nowrap}
+.adfree button:after{content:"";position:absolute;inset:-4px 0}   /* dokunma alanı ~40 px; alttaki düğmeye taşmaz */
 .winp .primary{height:62px}.winp .row2 .glassbtn{height:48px}
 /* dar ekran (≤ 380 px): yıldızlar ve düğme biraz küçülür → başlık ve rozet sığar; ≤ 340 px: düğmede yalnız ok */
 @media (max-width:380px){.wp-sum{gap:9px}.winp .stars svg{width:24px;height:24px}.winp .stars svg:nth-child(2){width:29px;height:29px;margin-top:-7px}.winp .badge{letter-spacing:.5px;padding:3px 7px}.wp-tog{padding:0 9px}}

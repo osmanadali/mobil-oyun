@@ -756,7 +756,7 @@ let G = null;
 const cv = $('cv'), cx = cv.getContext('2d');
 let geo = { s: 0, ox: 0, oy: 0, dpr: 1 }, vg = geo, geoFrom = null, geoT0 = 0;
 const anim = new Map(), press = new Map();   // i -> başlangıç zamanı
-let litAt = [], ripples = [], parts = [], links = [], winT = 0, raf = 0, winTimer = 0, tickT = 0, howT = 0, sessionWins = 0;
+let litAt = [], ripples = [], parts = [], links = [], winT = 0, raf = 0, winTimer = 0, tickT = 0, howT = 0, sessionWins = 0, interDue = false;   // interDue: geçiş reklamı sırası (gösterilene kadar korunur)
 
 // süre yalnızca oyun ekranı açıkken ve uygulama öndeyken akar
 const elapsed = () => G ? G.ms + (G.runAt ? performance.now() - G.runAt : 0) : 0;
@@ -1160,7 +1160,7 @@ function win() {
       shard = perfect; if (perfect) save.dCrowns = (save.dCrowns || 0) + 1;
     }
   } else {
-    sessionWins++;
+    if (++sessionWins % INTER_EVERY === 0 && !save.noAds && save.played >= 5) interDue = true;
     const before = totalStars(), old = save.stars[G.lvl] || 0, firstClear = G.lvl >= save.level;
     save.stars[G.lvl] = Math.max(old, st);
     if (!save.crowns[G.lvl]) {
@@ -1207,6 +1207,8 @@ function winSheet(g, { st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, combo
   const miss = [tOk ? '' : `⏱ ${late} ${L('sn', 's')}`, mOk ? '' : `↻ ${over} ${L('hamle', pl(over, 'move', 'moves'))}`].filter(Boolean).join(' · ');
   const tip = perfect ? '' : `<p class="tip">${L('Kusursuz için', 'For perfect')}: ${[tOk ? '' : `⏱ ≤ ${fmtT(lim.t * 1000)}`, mOk ? '' : `↻ ≤ ${lim.m} ${L('hamle', 'moves')}`].filter(Boolean).join(L(' ve ', ' and '))}</p>`;
   const B = { share: L('Paylaş', 'Share'), home: L('Ana sayfa', 'Home'), close: L('Kıl payı', 'So close') };
+  // geçiş reklamı sırası gelmişse: Sonraki'den önce tek, sessiz bir bağlantı (reklamsız paketi olana hiç çıkmaz)
+  const pr = Shop.price(), adFree = !g.daily && interDue && !save.noAds ? `<p class="adfree"><button id="mAdFree">${pr ? L(`Reklamsız oyna · ${pr}`, `Play ad-free · ${pr}`) : L('Reklamsız oyna', 'Play ad-free')}</button></p>` : '';
   const primary = g.daily
     ? `<button id="mShare" class="btn primary"><span>${B.share}</span><small>${L('Arkadaşına meydan oku', 'Challenge a friend')}</small></button><button id="mHome" class="btn glassbtn">${B.home}</button>`
     : again
@@ -1216,20 +1218,29 @@ function winSheet(g, { st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, combo
        <div class="row2"><button id="mRetry" class="btn glassbtn">${L('Tekrar', 'Retry')}</button><button id="mShare" class="btn glassbtn">${B.share}</button><button id="mHome" class="btn glassbtn">${B.home}</button></div>`;
   $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml([true, tOk, mOk])}<div class="wp-t"><h2>${g.practice ? L('Pratik tamam!', 'Practice done!') : g.daily ? L('Günün Hattı tamam!', 'Daily Line done!') : L('Hat açıldı!', 'Connected!')}</h2>${badge}</div></div>
       <button id="wTog" class="wp-tog" aria-label="${L('Hattı gör', 'See the line')}"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg><span>${L('Hattı gör', 'See line')}</span></button></div>
-    <div class="wp-more"><div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(lim.t * 1000)}</small></b><span>${tOk ? L('⏱ tam vaktinde ★', '⏱ on time ★') : L('⏱ rötar ✗', '⏱ late ✗')}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${lim.m}</small></b><span>↻ ${L('hamle', 'moves')} ${mOk ? '★' : '✗'}</span></div></div>${tip}${extra ? `<p class="tip">${extra}${dbl && Ads.online() ? ` <button id="mDbl" class="dbl">${L('▶ 2 katı', '▶ Double')}</button>` : ''}</p>` : ''}</div>
+    <div class="wp-more"><div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(lim.t * 1000)}</small></b><span>${tOk ? L('⏱ tam vaktinde ★', '⏱ on time ★') : L('⏱ rötar ✗', '⏱ late ✗')}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${lim.m}</small></b><span>↻ ${L('hamle', 'moves')} ${mOk ? '★' : '✗'}</span></div></div>${tip}${extra ? `<p class="tip">${extra}${dbl && Ads.online() ? ` <button id="mDbl" class="dbl">${L('▶ 2 katı', '▶ Double')}</button>` : ''}</p>` : ''}${adFree}</div>
     ${primary}`;
   $('game').classList.add('won');
-  bind({ wTog: toggleMini, mNext: next, mDbl: () => doubleReward(dbl), mMap: () => show('map'), mRetry: () => start('level', g.lvl), mHome: () => show('home'),
+  bind({ wTog: toggleMini, mNext: next, mDbl: () => doubleReward(dbl), mAdFree: shopSheet, mMap: () => show('map'), mRetry: () => start('level', g.lvl), mHome: () => show('home'),
     // pratikte paylaşılan, günün resmî (ilk) sonucudur
     mShare: () => share(g.practice && save.dailyStats ? { ...save.dailyStats, daily: true } : { daily: g.daily, lvl: g.lvl, day: g.day, moves: g.moves, time: g.time, st, perfect }) });
 }
 const NO_REWARD = L('Ödül alınamadı · video sonuna kadar izlenmeli', 'No reward · watch the video to the end'), NO_NET = L('Bağlantı yok · sonra dene', 'No connection · try later');
+const NO_FILL = L('Şu an video yok · biraz sonra dene', 'No video right now · try again soon');
+// Ödüllü video: true yalnız ödül hak edildiyse. Video hiç açılmadıysa oyuncu suçlanmaz (video yok / bağlantı yok).
+// Bu turda video izlendiyse sıradaki geçiş reklamı bir sonraki "Sonraki"ye kayar.
+async function video() {
+  const g = G, r = await Ads.rewarded();
+  if (r !== 'nofill' && g) g.vid = 1;
+  if (r !== 'earned') toast(r === 'closed' ? NO_REWARD : Ads.online() ? NO_FILL : NO_NET);
+  return r === 'earned';
+}
 // hat sonu / Günün Hattı ödülü: isteğe bağlı bir video → ödül bir kez daha
 async function doubleReward(n) {
   const b = $('mDbl'); if (!b || Ads.busy()) return;
   b.disabled = true; b.textContent = L('Yükleniyor…', 'Loading…'); Music.stop();
-  const ok = await Ads.rewarded(); Music.start();
-  if (!ok) { b.disabled = false; b.textContent = L('▶ 2 katı', '▶ Double'); toast(Ads.online() ? NO_REWARD : NO_NET); return; }
+  const ok = await video(); Music.start();
+  if (!ok) { b.disabled = false; b.textContent = L('▶ 2 katı', '▶ Double'); return; }
   save.hints += n; persist(); $('gHints').textContent = save.hints;
   b.outerHTML = `<b class="dblok">✓ +${n}</b>`; haptic('heavy'); tone(note(9), .3, .045); toast(L(`+${n} ipucu daha 🎁`, `+${n} more ${pl(n, 'hint', 'hints')} 🎁`));
 }
@@ -1241,9 +1252,9 @@ function toggleMini() {
 function closePanel() { $('game').classList.remove('won', 'mini'); $('winPanel').innerHTML = ''; }
 async function next() {
   const g = G; if (g.going) return; g.going = 1;   // çift dokunuş tek geçiş: reklam sürerken ikinci basış bölüm atlatmasın
-  if (!g.daily && !save.noAds && save.played >= 5 && sessionWins % INTER_EVERY === 0) {
-    Music.stop(); const shown = await Ads.interstitial(); Music.start();
-    if (shown && (save.interN = (save.interN || 0) + 1) % 3 === 0) { persist(); setTimeout(() => toast(L('Reklamsız oyna → Ayarlar · Reklamsız paket', 'Play ad-free → Settings · Ad-free pack')), 900); }
+  // sıra gelmiş, bu turda ödüllü video izlenmemiş → geçiş reklamı; gösterilemezse (hazır değil, 90 sn dolmadı) sıra korunur
+  if (interDue && !g.daily && !save.noAds && !g.vid) {
+    Music.stop(); if (await Ads.interstitial()) interDue = false; Music.start();
   }
   if (G === g) start('level', g.lvl + 1);
 }
@@ -1368,6 +1379,7 @@ function grantNoAds() {
   if (save.noAds) return;
   save.noAds = true; SKINS.forEach(k => { if (k.vip) save.owned[k.id] = 1; }); save.hints += 20; persist();
   $('gHints').textContent = save.hints; refreshHome();
+  $('mAdFree')?.parentNode.remove();
   haptic('win'); toast(L('Reklamsız paket aktif 💛 +20 ipucu · 3 özel tema açıldı', 'Ad-free pack active 💛 +20 hints · 3 special themes'));
   if (modalOpen() && $('mBuy')) shopSheet();
 }
@@ -1410,9 +1422,9 @@ function adSheet() {
     mAd: async () => {
       if (Ads.busy()) return;
       closeModal(); pause(); toast(AD_LOAD); Music.stop();
-      const ok = await Ads.rewarded();
+      const ok = await video();
       Music.start(); if (active('game')) resume();
-      if (!ok) { toast(Ads.online() ? NO_REWARD : NO_NET); return; }
+      if (!ok) return;
       P.part++;
       if (P.part < need) { persist(); adSheet(); return; }
       P.n++; P.part = 0; save.hints += 2; persist();
@@ -1459,8 +1471,9 @@ function rescueSheet() {
       if (Ads.busy()) return;
       if (!Ads.online()) { toast(L('İnternete bağlan · bugün içinde kurtarabilirsin', 'Go online · you can save it today')); return; }
       closeModal(); toast(AD_LOAD); Music.stop();
-      const ok = await Ads.rewarded(); Music.start();
-      if (!ok || !rescueOk()) { toast(NO_REWARD); return; }
+      const ok = await video(); Music.start();
+      if (!ok) return;
+      if (!rescueOk()) { toast(NO_REWARD); return; }
       if (++lo.part < need) { persist(); rescueSheet(); return; }
       const t = today(), y = dayBefore(t), done = save.dailyDone === t;
       save.streak = lo.n + (done ? 1 : 0); save.lastDaily = done ? t : y;
