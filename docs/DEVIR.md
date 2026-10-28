@@ -51,7 +51,7 @@ Bu not, işi yeni bir sohbete taşırken bağlam kaybolmasın diye yazıldı. Ye
 | `.github/workflows/hakem.yml` | Robotu CI'da koşar |
 | `.github/workflows/release.yml` | İmzalı AAB + APK (yalnız elle; imza gizli değerleri ve AdMob değişkenleri gerekir) |
 | `.github/workflows/ios.yml` | iOS simülatör derlemesi (imzasız, elle) |
-| `tools/ikon.cjs`, `tools/make-assets.cjs` | Uygulama ikonu (R) ve bütün ikon/açılış/mağaza görselleri |
+| `tools/ikon.cjs`, `tools/make-assets.cjs` | Uygulama ikonu ("Gece Işığı"; eski "R" `rIconR` olarak durur) ve bütün ikon/açılış/mağaza görselleri |
 | `tools/store-shots.cjs`, `store/` | Mağaza ekran görüntüleri, öne çıkan görsel, mağaza ikonları |
 | `docs/MAGAZA.md`, `docs/YAYIN.md`, `docs/KALITE.md` | Mağaza metinleri ve formlar · yayın adımları · kalite raporu |
 
@@ -91,7 +91,7 @@ Durum 28 Ekim 2026 sabahı itibarıyla:
 - **Zorluk merdiveni (hat ortalaması):** M8 12,3 · M10 16,3 · M12 17,8 · M14 19,0 · M16 19,5 · M18 20,8 · M20 20,5 · M21+ ~19,6–20.
   - M21 ve sonrasında kurallar eşit sıklıkta gelir ve hedefe +2 pay eklenir.
   - 1–252. bölümler ve Günün Hattı değişmedi.
-- **Uygulama ikonu:** kullanıcının "R" metro tasarımı vektöre çevrildi (`tools/ikon.cjs`). Android adaptif ikonu, açılış ekranı, PWA ikonları ve mağaza ikonları (`store/`) bundan üretilir.
+- **Uygulama ikonu "Gece Işığı" (28 Ekim):** halkalı duraktan çıkan turuncu L ray, içinden yanan kare merkeze varıyor. 5 konsept + 3 hakemle seçildi, kullanıcı onayladı. Kaynak `tools/ikon.cjs` (`rIcon`); `node tools/make-assets.cjs` Android adaptif ikonu (ön plan ölçeği 0,70, bütün maskelerde güvenli), açılış ekranı, PWA ve mağaza ikonlarını, `node tools/store-shots.cjs feature` / `en feature` öne çıkan görselleri üretir. Kullanıcının ilk "R" tasarımı `rIconR` olarak duruyor (mağazada ikon A/B testi için).
 - **Mağaza hazırlığı:**
   - Capacitor 8, hedef API 36, kenardan kenara ekran.
   - UMP rızası, iOS izleme izni (ATT), gizlilik politikası (`www/gizlilik.html`) ve "Verilerimi sil".

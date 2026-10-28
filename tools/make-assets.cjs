@@ -28,7 +28,7 @@ svg{display:block}</style></head><body>${body}</body></html>`;
     await p.close(); out.push(file);
   }
   const logo = pct => LOGO.replace('<svg ', `<svg style="width:${pct}%" `);
-  // uygulama ikonu: "R" metro hattı (tools/ikon.cjs). Adaptif ikonda ön plan güvenli dairede, arka plan ayrı katman.
+  // uygulama ikonu: "Gece Işığı" (tools/ikon.cjs). Adaptif ikonda ön plan güvenli dairede, arka plan ayrı katman.
   const svgPage = (w, svg, bg = 'transparent') => `<!doctype html><html><head><style>*{margin:0}html,body{width:${w}px;height:${w}px;overflow:hidden;background:${bg}}svg{display:block}</style></head><body>${svg}</body></html>`;
   await render('assets/icon-only.png', 1024, 1024, svgPage(1024, rIcon({ size: 1024 })));
   await render('assets/icon-foreground.png', 1024, 1024, svgPage(1024, rIcon({ size: 1024, bg: false, mark: ADAPTIVE })), true);
@@ -49,7 +49,7 @@ svg{display:block}</style></head><body>${body}</body></html>`;
     </div>`));
   // favicon / manifest ikonu
   const min = s => s.replace(/\n\s*/g, '').replace(/ width="\d+" height="\d+"/, '');
-  fs.writeFileSync(path.join(R, 'www/icon.svg'), min(rIcon({ round: 440 })));
+  fs.writeFileSync(path.join(R, 'www/icon.svg'), min(rIcon({ round: 229 })));
   fs.writeFileSync(path.join(R, 'www/icon-maskable.svg'), min(rIcon({ mark: MASKABLE })));
   await b.close();
   console.log('üretildi:', out.join(', '), '+ www/icon.svg, www/icon-maskable.svg');

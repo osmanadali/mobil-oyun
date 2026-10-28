@@ -196,7 +196,7 @@ header p{margin-top:${Math.round(f * .34)}px;font-size:${Math.round(f * .4)}px;f
 // ---------- Play öne çıkan görsel (1024×500) ----------
 function featureHtml(en = false) {
   const [sub, chips] = en ? ['Connect the lines · Light up the city', ['One hand', 'Offline', 'Metro puzzle']] : ['Hatları bağla · Şehri canlandır', ['Tek elle', 'İnternetsiz', 'Metro bulmacası']];
-  const icon = rIcon({ size: 1000, round: 440 }).replace('<svg ', '<svg style="width:300px;height:300px" ');
+  const icon = rIcon({ size: 1000, round: 229 }).replace('<svg ', '<svg style="width:300px;height:300px" ');
   return `<!doctype html><html><head><meta charset="utf-8"><style>${FACE}
 *{margin:0;box-sizing:border-box}html,body{width:1024px;height:500px;overflow:hidden}
 body{background:radial-gradient(55% 75% at 20% 45%,rgba(125,162,253,.20),transparent 70%),radial-gradient(50% 70% at 95% 100%,rgba(255,159,90,.20),transparent 70%),linear-gradient(160deg,#171e3a,#0e1226 55%,#0b0e1d);
