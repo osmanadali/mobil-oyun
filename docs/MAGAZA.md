@@ -112,7 +112,7 @@ NASIL OYNANIR
 Her metro hattı bir öncekinden uzundur, her bölüm bir öncekinden biraz daha zordur. İlk 20 hattan sonra oyun karma hatlarla sonsuza dek sürer. Bölümler cihazında üretilir, hepsi çözülebilir ve herkes aynı numaralı bölümde aynı bulmacayı görür.
 
 HAT İLERLEDİKÇE YENİ KURALLAR
-Sabit karo, eşli karo, ters karo, karanlık tünel, sayaçlı karo, iki merkez, makas, köprü, yön tabelası, döner tabla, halka hat ve tünel ağzı. Her yeni kural kısa, canlandırmalı bir kartla anlatılır. Tahta hiçbir zaman kalabalıklaşmaz.
+Sabit karo, eşli karo, ters karo, karanlık tünel, sayaçlı karo, iki merkez, makas, kapak, köprü, silik kol, yön tabelası, gizli depo, döner tabla, kapalı durak, halka hat, nehir, tünel ağzı ve tarife bölgesi: 18 kural. Her yeni kural kısa, canlandırmalı bir kartla anlatılır. Tahta hiçbir zaman kalabalıklaşmaz.
 
 GÜNÜN HATTI
 Her gün herkes aynı bulmacayı çözer. Bulmaca hafta boyunca zorlaşır, Pazar büyük bulmaca günüdür. Gün serini koru, sonucunu paylaş, arkadaşlarına meydan oku.
@@ -148,7 +148,7 @@ HOW TO PLAY
 Each metro line is longer than the last and every level is a little harder than the one before. After the first 20 lines the game continues forever with mixed lines. Levels are generated on your device, every one is solvable, and everyone gets the same puzzle on the same level number.
 
 NEW RULES AS YOU TRAVEL
-Fixed tiles, paired tiles, reverse tiles, dark tunnels, counter tiles, two hubs, switches, bridges, direction signs, turntables, loop lines and tunnel portals. Each new rule is introduced with a short animated card, and the board never gets cluttered.
+Fixed tiles, paired tiles, reverse tiles, dark tunnels, counter tiles, two hubs, switches, manhole covers, bridges, faded arms, direction signs, hidden depots, turntables, closed stations, loop lines, rivers, tunnel portals and fare zones: 18 rules. Each new rule is introduced with a short animated card, and the board never gets cluttered.
 
 DAILY LINE
 Every day everyone solves the same puzzle. It gets harder through the week, and Sunday is big puzzle day. Keep your daily streak, share your result and challenge your friends.
@@ -401,7 +401,7 @@ Mağaza
 ## 13. Bilinen sınırlar
 
 - **Oyun yalnız Türkçe.** İngilizce mağaza metni bu yüzden "Note: the in-game text is currently in Turkish only." satırıyla biter. İngilizce arayüz gelene dek İngilizce girişi açmamak da bir seçenek.
-- **Kural sayısı.** Açıklama şu anki 12 kuralı sayar. Çift hatlara yeni kurallar gelince "HAT İLERLEDİKÇE YENİ KURALLAR" paragrafı ve 5. ekran görüntüsünün alt satırı güncellenmeli (`tools/store-shots.cjs` sahne listesi).
+- **Kural sayısı.** Açıklama 18 kuralın hepsini sayar (çift hatların zor kuralları 28 Ekim'de eklendi; tam açıklama ~90 karakter uzadı, 4000 sınırının yine altında). 5. ekran görüntüsünün alt satırı eski 12 kurallı listeyi gösterir; istenirse `tools/store-shots.cjs` ile yeniden üretilir.
 - **Görseller çalışan koda bağlı.** Arayüz değişince `node tools/store-shots.cjs` yeniden çalıştırılmalı. Sahneler bölüm numarasıyla kurulur (180, 45, 829…); üretim değişirse aynı numara farklı bir tahta verebilir, çıktı gözle kontrol edilmeli.
 - **Veri ve gizlilik yanıtları** AdMob'un Ekim 2026 itibarıyla bilinen davranışına göredir. Gönderimden önce §6 ve §7'deki Google bağlantılarıyla karşılaştırılmalı.
 - **Silme düğmesi ve rıza penceresi** `magaza-reklam` dalında, iOS projesi ve imzalı derleme `magaza-yerel` dalındadır; bu belge o dallar `main`e birleşmiş gibi yazıldı.
