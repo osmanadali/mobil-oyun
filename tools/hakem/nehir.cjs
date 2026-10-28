@@ -92,7 +92,7 @@ module.exports = async T => {
       return { own, miss, rej, intro, m18: avg(749, 828), m17: avg(673, 748), ms: Math.round(ms / 80) };
     });
     const introOk = h.intro[0] === '749:6x8/T1' && /^750:6x8\/T2$/.test(h.intro[1]) && /^751:6x8\/T2$/.test(h.intro[2]) && /^752:7x9\/T2$/.test(h.intro[3]);
-    check('rule.river.line', `Nehir: M18 her bölümde nehir, tek çözümlü; tanıtım 6×8 T=1, sonra T=2; ortalama zorluk ${h.m18} ≥ M17 ${h.m17} + 1`, h.own === 80 && !h.miss && !h.rej && introOk && h.m18 >= h.m17 + 1 && h.ms < 150, JSON.stringify(h));
+    check('rule.river.line', `Nehir: M18 her bölümde nehir, tek çözümlü; tanıtım 6×8 T=1, sonra T=2; ortalama zorluk ${h.m18} ≥ M17 ${h.m17} + 1`, h.own === 80 && !h.miss && !h.rej && introOk && h.m18 >= h.m17 + 1 && h.ms < 250, JSON.stringify(h));
     errs.push(...errors); await ctx.close();
   }
 

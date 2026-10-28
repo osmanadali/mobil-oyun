@@ -228,8 +228,8 @@ function rulesFor(l) {
   if (!learned.length || (own && l - lineStart(c) < 3)) return set;   // yeni kuralın ilk 3 bölümü yalın
   const h = hashStr('kural' + l), extra = own ? (h % 100 < 55 ? 1 : 0) : (h % 100 < 65 ? 1 : 2);
   for (let k = 0; k < extra; k++) {
-    // M9+: ek kuralın yarısı en yeni 3 kuraldan → yeni öğrenilen kural karma hatlarda sık tekrar eder (M1–M8 aynen)
-    const rec = c >= 8 && (hashStr('kip' + h + k) & 3) < 2, pool = rec ? learned.slice(-3) : learned, at = (rec ? hashStr('yeni' + h + k) : h >>> (7 + k * 6)) % pool.length;
+    // M9–M20: ek kuralın yarısı en yeni 3 kuraldan → yeni öğrenilen kural sık tekrar eder (M1–M8 aynen); M21+ sınırsız karmada bütün kurallar eşit
+    const rec = c >= 8 && c < 20 && (hashStr('kip' + h + k) & 3) < 2, pool = rec ? learned.slice(-3) : learned, at = (rec ? hashStr('yeni' + h + k) : h >>> (7 + k * 6)) % pool.length;
     for (let t = 0; t < pool.length; t++) { const r = pool[(at + t) % pool.length]; if (![...set].some(q => clash(q, r))) { set.add(r); break; } }   // çakışan kural sıradaki uyumluyla değişir
   }
   if (!set.size) set.add(learned[h % learned.length]);
@@ -445,6 +445,7 @@ function puzzleFor(l) {
     // Kuralın kendi hattındaki ilk 3 öğrenme bölümünde pay yok (testere dişi).
     let boost = 0;
     for (const m of MODS) if (U.has(m.key)) { x[m.key] = m.amount(n, intro && ln === m.line, z, fin, c, r); if (ln !== m.line || l - lineStart(ln) >= 3) boost += m.boost || 0; }
+    if (ln >= 20) boost += 2;   // M21+ sınırsız karma: eski kuralların payı küçük, hedef M20 düzeyinde kalsın
     // hat finali (SON DURAK): hedef +2 puan, en çok aday taranır · zorluk paylı bölümde de geniş tarama
     const P = pick(c, r, l * 7919 + 13, pins, pairs, z, (intro ? 3 : 5) + 11 * z + (fin ? 2 : 0) + boost, x, fin ? 32 : boost ? Math.max(24, 6 + Math.round(26 * z)) : undefined);
     P.fog = U.has('fog'); P.final = fin; P.rules = [...U]; return P;

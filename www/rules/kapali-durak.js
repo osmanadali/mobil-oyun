@@ -14,7 +14,7 @@
   const into = (G, L) => { for (let v = 0; v < G.cur.length; v++) if (G.void[v]) for (let k = 0; k < 4; k++) { const j = nb(G, v, k); if (j >= 0 && L.d[j] >= 0 && (G.cur[j] & ob(G, v, k))) return v; } return -1; };
   const ICON = '<svg class="rd-closed-i" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7"/><path d="M5 15 15 5"/></svg>';
   return {
-    key: 'closed', line: 15, boost: 3,
+    key: 'closed', line: 15, boost: 3.5,
     clash: ['cover', 'faint', 'depot'],   // öteki gizli bilgi kuralları: cands kancası karo başına tek eklentiyi dinler, adillik denetimleri birbirini görmez
     // tanıtım ve 6×8: 1 kapalı durak · 7×9 hat finali: 2
     amount: (n, intro, z, fin) => fin && n >= 63 ? 2 : 1,
