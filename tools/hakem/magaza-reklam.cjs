@@ -77,7 +77,7 @@ module.exports = async T => {
     });
     await page.click('#bSettings'); await page.waitForTimeout(400); await page.click('#oPriv'); await page.waitForTimeout(400);
     const adp = await G(page, () => !!document.getElementById('mAdP'));
-    check('ads.web', 'Web\'de reklam katmanı sessiz: reklam yok, hata yok, gizlilik seçeneği gizli', !r.i && !r.r && !r.on && !r.p && !r.busy && !adp && !errors.length, JSON.stringify({ ...r, adp, errors }));
+    check('ads.web', 'Web\'de reklam katmanı sessiz: reklam yok, hata yok, gizlilik seçeneği gizli', !r.i && r.r === 'nofill' && !r.on && !r.p && !r.busy && !adp && !errors.length, JSON.stringify({ ...r, adp, errors }));
     await ctx.close();
   }
 
@@ -99,7 +99,7 @@ module.exports = async T => {
     check('ads.privacy', 'Gizlilik seçenekleri gerekliyse ayarlarda "Reklam gizlilik seçenekleri" → UMP formu; politika sistem tarayıcısında açılır', adp && c2.calls.includes('privacy') && c2.calls.includes('browser:' + POLICY) && c2.online, c2.calls.slice(-4).join(' → '), 'medium');
     // ödüllü reklam rızayla çalışır
     const rw = await G(page, () => Ads.rewarded());
-    check('ads.consent.errors', 'Rıza verilmiş iOS akışında ödüllü reklam çalışır, konsol hatası yok', rw && !errors.length, `ödül ${rw} · ${errors.join(' | ')}`);
+    check('ads.consent.errors', 'Rıza verilmiş iOS akışında ödüllü reklam çalışır, konsol hatası yok', rw === 'earned' && !errors.length, `ödül ${rw} · ${errors.join(' | ')}`);
     await ctx.close();
   }
 
@@ -111,7 +111,7 @@ module.exports = async T => {
     const ad = await G(page, async () => ({ i: await Ads.interstitial(), r: await Ads.rewarded() }));
     await page.click('#bPlay'); await page.waitForTimeout(500); await solve(page, 10);
     const won = await waitModal(page) && await G(page, () => window.__ray.G.won);
-    const none = !c.calls.some(k => /^(init|prep|show|att)/.test(k)) && !ad.i && !ad.r && !c.online;
+    const none = !c.calls.some(k => /^(init|prep|show|att)/.test(k)) && !ad.i && ad.r === 'nofill' && !c.online;
     await page.click('#mNext').catch(() => {}); await page.waitForTimeout(400);
     await G(page, () => { window.__consent.status = 'OBTAINED'; dispatchEvent(new Event('online')); }); await page.waitForTimeout(300);
     const c2 = await consentOf(page);
