@@ -46,11 +46,12 @@ Bu not, işi yeni bir sohbete taşırken bağlam kaybolmasın diye yazıldı. Ye
 | `.claude/workflows/hakem.js` | 4 kişilik yapay zekâ jürisi iş akışı ("tur bitti" deyince) |
 | `docs/BOLUM_TASARIMI.md` | Zorluk merdiveni, kurallar, ekonomi, temalar, sandık, sefer şeridi |
 | `docs/kurallar/` | Eklenti sözleşmesi (`README.md`) ve her kuralın tasarım belgesi |
-| `.github/workflows/apk.yml` | Test APK'sı, yalnız elle çalışır. `gh workflow run apk.yml` normal sürümü, `-f unlocked=true` "her şey açık" sürümü üretir (ayrı uygulama: Ray Test). |
+| `.github/workflows/apk.yml` | Test APK'sı, yalnız elle çalışır. `gh workflow run apk.yml` normal sürümü (ayrı uygulama: Ray Dev, `com.osmanadali.ray.dev`), `-f unlocked=true` "her şey açık" sürümü üretir (ayrı uygulama: Ray Test). Mağaza sürümüyle aynı paket adını taşımaz. |
 | `.github/workflows/web.yml` | Pages yayını. Pages açık olmadığından şimdilik yalnız elle çalışır; yayın hazırlığında push tetikleyicisi geri açılacak. |
 | `.github/workflows/hakem.yml` | Robotu CI'da koşar |
 | `.github/workflows/release.yml` | İmzalı AAB + APK (yalnız elle; imza gizli değerleri ve AdMob değişkenleri gerekir) |
-| `.github/workflows/ios.yml` | iOS simülatör derlemesi (imzasız, elle) |
+| `.github/workflows/ios.yml` | iOS simülatör derlemesi (imzasız, elle); en+tr dil paketlerini denetler |
+| `.github/workflows/ios-release.yml` | İmzalı iOS arşivi + App Store Connect yüklemesi (yalnız elle; Apple gizli değerleri ve iOS AdMob değişkenleri gerekir, test reklam kimliği görürse durur) |
 | `tools/ikon.cjs`, `tools/make-assets.cjs` | Uygulama ikonu ("Gece Işığı"; eski "R" `rIconR` olarak durur) ve bütün ikon/açılış/mağaza görselleri |
 | `tools/store-shots.cjs`, `store/` | Mağaza ekran görüntüleri, öne çıkan görsel, mağaza ikonları |
 | `docs/MAGAZA.md`, `docs/YAYIN.md`, `docs/KALITE.md` | Mağaza metinleri ve formlar · yayın adımları · kalite raporu |

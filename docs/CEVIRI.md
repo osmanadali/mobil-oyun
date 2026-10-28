@@ -151,6 +151,10 @@ Hat adları yer adıdır ve çevrilir:
 | Verilerin silinsin mi? · Evet, hepsini sil | Delete your data? · Yes, delete it all |
 | Satın alımı geri yükle | Restore purchase |
 | Hatırlatayım mı? · Evet, hatırlat · Şimdi değil | Want a reminder? · Yes, remind me · Not now |
+| Kaldığın yeri hatırlatayım mı? | Remind you where you left off? |
+| Bölüm 12 seni bekliyor · bir dakikalık bulmaca | Level 12 is waiting · a one-minute puzzle |
+| Reklamsız oyna · {fiyat} | Play ad-free · {price} |
+| Şu an video yok · biraz sonra dene | No video right now · try again soon |
 | Nasıl oynanır? · İleri › · ‹ kaydır › · Hadi oynayalım! | How to play? · Next › · ‹ swipe › · Let’s play! |
 
 Renk temaları: Metro · Sunset · Ocean · Forest · Desert · Sakura · Neon Night · Northern Lights · Lava · Cosmos · Glacier · Spring · Autumn · Coral Reef · Tea Garden · Tulip · Storm · Midnight · Rainbow · Retro Wave · Pastel · Dawn · (reklamsız) Gold · Diamond · Ruby.
