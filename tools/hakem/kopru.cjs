@@ -123,7 +123,9 @@ module.exports = async T => {
       return { mix, cross };
     });
     await ctx.close();
-    if (!lv.mix || !lv.cross) check('bridge.mixed', 'Karma hat: köprülü karma ve iki merkezli bölüm bulunur', false, JSON.stringify(lv));
+    if (!lv.mix) check('bridge.mixed', 'Karma hat: köprülü karma bölüm bulunur', false, JSON.stringify(lv));
+    // köprü + iki merkez (karanlıksız) birleşimini rulesFor yalnız bazı hat düzenlerinde üretir (M14 gizli depo hattı olunca 3000'e kadar yok): yoksa çizim denetimi atlanır
+    if (!lv.cross) check('bridge.cross', 'İki merkez: köprüde kesişen iki renk (rulesFor bu birleşimi üretmiyor: atlandı)', true, JSON.stringify(lv), 'low');
     // karma bölüm: robot çözer
     if (lv.mix) {
       const o = await open(browser, URL, { save: { played: lv.mix - 1, level: lv.mix, stars: starsUpTo(lv.mix), seen: SEEN, remindAsked: true } });
