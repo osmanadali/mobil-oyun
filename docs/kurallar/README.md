@@ -64,7 +64,7 @@ M20 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanes
   cands(P, i) { return null; },              // gizli karo: oyuncunun bu karo için düşünebileceği maskeler dizisi (null = karo normal)
   open(P, i, k) { return 0; },               // i karosunun k kolu eşi olmadan bitebilir mi (tampon, depo çıkışı); lit ve çözücü
   prune(P, C, M, unit, units) { return []; },// çözücünün her turunda küresel süzgeç (sayım): daralttığı birimler ya da −1 (çelişki)
-  reveal(G, on, area) {},                    // karanlık tünel: on(i) karoyu açar, area(i) onun FOG_R çevresini açar
+  reveal(G, on, area) {},                    // karanlık tünel: on(i) karoyu açar, area(i) onun FOG_R çevresini açar (ayrıntı aşağıda)
   pad(G, p) {},                              // tahta dışı pay (karo cinsinden): p.l, p.r, p.t, p.b artırılır
   // çizim kancaları (D aşağıda); true dönerse animasyon sürüyor demektir
   xform(D) {}, base(D) {}, under(D) {}, rails(D) {}, over(D) {}, top(D) {},
@@ -172,6 +172,10 @@ Birden çok durum taşıyan, dönmeyen ya da birlikte hareket eden karolar için
 - Tabela köprü komşusuna konmaz.
 - Halka, tabela ve köprü ile aynı bölümde olmaz: `clash: ['sign', 'bridge']` halka dosyasında tanımlanır.
 - Karanlık tünelde tabla dört karosuyla birlikte aydınlanır; tünel ağzı aydınlanınca eşi de aydınlanır (`reveal`).
+- Karanlık tünelde görünürlük her hamlede baştan hesaplanır; bağlantı kopunca bölge yeniden kararır. Bu yüzden `reveal`:
+  - saf olmalı (bildirim, ses, sayaç yok), çünkü bir hamlede değişiklik kalmayana dek 2–4 kez çağrılır;
+  - görünürlüğü yalnız `on`/`area` ile vermeli. İçinde okunan `G.seen` yapım aşamasındaki yeni dizidir: yanan karoların çevresi, sabitlenenler ve sırada önce gelen kancaların açtıkları;
+  - `G.seen`'e başka bir yerde yazılmamalı, bir sonraki hamlede silinir.
 
 ## Çözücü ve seçim yardımcıları
 

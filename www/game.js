@@ -826,7 +826,12 @@ function reveal(quiet) {
   G.fixed.forEach((f, i) => f && on(i));
   // eklenti: tünelin öbür ağzı, tablanın dört karosu… Biri ötekinin açtığına bağlı olabilir → değişmeyene dek
   for (let k = 0, c = -1, m = 0; k < 4 && c !== m; k++) { c = m; for (const mod of MODS) if (mod.reveal && G[mod.key]) mod.reveal(G, on, area); m = vis.filter(Boolean).length; }
-  vis.forEach((v, i) => { if (v && !prev[i]) seenAt[i] = now; else if (!v && prev[i]) hidAt[i] = now; });
+  // yarıda tersine dönen geçiş o anki örtüden sürer: başlangıç anı geriye kaydırılır (ease = 1−(1−t)³)
+  const t = a => quiet ? 1 : Math.min(1, (now - a) / FOG_T);
+  vis.forEach((v, i) => {
+    if (v && !prev[i]) seenAt[i] = quiet ? now : now - (1 - Math.cbrt(ease(t(hidAt[i])))) * FOG_T;            // 1−ease(t0) = kapanmadaki örtü ease(tc)
+    else if (!v && prev[i]) hidAt[i] = quiet ? now : now - (1 - Math.cbrt(1 - Math.pow(1 - t(seenAt[i]), 3))) * FOG_T;   // ease(t0) = açılmadaki örtü (1−tf)³
+  });
 }
 function hud() {
   const ok = movesOk();
@@ -1039,9 +1044,9 @@ function draw() {
       else if (now - seenAt[i] < FOG_T) fading.push(i);
     }
     cx.fillStyle = dark + A + ')'; cx.fill();
-    if (any) { cx.beginPath(); for (let i = 0; i < n; i++) if (!G.seen[i]) { const [x, y] = X[i], w = s - 8; rrp(x - w / 2, y - w / 2, w, w, s * .22); } cx.lineWidth = 1; cx.strokeStyle = 'rgba(255,255,255,.06)'; cx.stroke(); }
     for (const i of fading) { const t = (now - seenAt[i]) / FOG_T; cx.fillStyle = dark + (A * (1 - ease(t))) + ')'; cx.beginPath(); cell(i, rrp); cx.fill(); busy = true; }
     for (const i of closing) { const t = (now - hidAt[i]) / FOG_T; cx.fillStyle = dark + (A * ease(t)) + ')'; cx.beginPath(); cell(i, rrp); cx.fill(); busy = true; }
+    if (any) { cx.beginPath(); for (let i = 0; i < n; i++) if (!G.seen[i]) { const [x, y] = X[i], w = s - 8; rrp(x - w / 2, y - w / 2, w, w, s * .22); } cx.lineWidth = 1; cx.strokeStyle = 'rgba(255,255,255,.06)'; cx.stroke(); }
   }
   hook('top');
   // 7) dokunma dalgaları

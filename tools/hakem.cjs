@@ -576,10 +576,10 @@ async function inViewport(page, sel) {
     const b0 = await st(); await tapTile(page, f0.idx); await page.waitForTimeout(200); const b1 = await st();
     await shot(page, 'fog');
     // geri kararma: hat biraz ilerler; yanan bir bağlantı karosu çevrilince arkasındaki bölge kararır, geri çevrilince yeniden aydınlanır
-    await solve(page, 8, 3); await page.waitForTimeout(500);
+    await solve(page, 8, 1); await page.waitForTimeout(500);   // tek tur: hat ilerler ama bölüm bitmez
     const dk = () => page.evaluate(() => window.__ray.G.seen.filter(v => !v).length);
     const br = await page.evaluate(() => {   // çevrilince en çok karoyu karartan yanan karo (görünürlük: yananın 2 karo yakını + sabitlenen)
-      const { G, rot, lit } = window.__ray, c = G.cols;
+      const { G, rot, lit } = window.__ray, c = G.cols; if (G.won) return { i: -1, won: true };
       const dark = d => G.cur.filter((_, i) => !G.fixed[i] && !d.some((v, j) => v >= 0 && Math.abs(i % c - j % c) + Math.abs((i / c | 0) - (j / c | 0)) <= 2)).length;
       const k0 = dark(G.L.d); let best = -1, gain = 0;
       G.cur.forEach((v, i) => {
