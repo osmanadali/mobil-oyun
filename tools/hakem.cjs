@@ -60,8 +60,8 @@ const SHOP_MOCK = `window.CdvPurchase = (() => { let owned = false; const cb = {
   return { ProductType: { NON_CONSUMABLE: 'nc' }, Platform: { GOOGLE_PLAY: 'gp' }, ErrorCode: { PAYMENT_CANCELLED: 1 },
     store: { register() {}, when: () => when, initialize: async () => { (cb.p || []).forEach(f => f(product)); return []; }, get: () => product, owned: () => owned, restorePurchases: async () => {} } }; })();`;
 
-async function open(browser, url, { vp = [390, 844], scheme = 'dark', save = null, cap = true, init = '', rm = false } = {}) {
-  const ctx = await browser.newContext({ viewport: { width: vp[0], height: vp[1] }, deviceScaleFactor: 2, colorScheme: scheme, hasTouch: true, isMobile: true, reducedMotion: rm ? 'reduce' : 'no-preference' });
+async function open(browser, url, { vp = [390, 844], scheme = 'dark', save = null, cap = true, init = '', rm = false, locale } = {}) {
+  const ctx = await browser.newContext({ viewport: { width: vp[0], height: vp[1] }, deviceScaleFactor: 2, colorScheme: scheme, hasTouch: true, isMobile: true, reducedMotion: rm ? 'reduce' : 'no-preference', ...(locale ? { locale } : {}) });
   if (!cap) await ctx.addInitScript('window.__noCap = true');
   if (init) await ctx.addInitScript(init);
   await ctx.addInitScript(MOCK);
@@ -819,6 +819,95 @@ async function inViewport(page, sel) {
   {
     const T = { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, modalOpen, inViewport, starsUpTo };
     for (const f of fs.readdirSync(path.join(__dirname, 'hakem')).filter(f => f.endsWith('.cjs')).sort()) await require(path.join(__dirname, 'hakem', f))(T);
+  }
+
+  // ---------- L. İngilizce (cihaz dili en-US): ekranlar, dar ekranda taşma, dil seçimi, aynı bölümler ----------
+  {
+    const TR_CH = /[ğüşıöçĞÜŞİÖÇ]/;
+    const seen = Object.fromEntries(Array.from({ length: 20 }, (_, c) => [c, 1]));   // kural kartları araya girmesin (kurallar ayrı çevriliyor)
+    const SAVE = { played: 9, level: 61, stars: starsUpTo(61), streak: 2, lastDaily: YDAY, seen, remindAsked: true, hints: 3 };
+    // görünen yazı + aria-label + title; dil seçeneğindeki "Türkçe" kendi adıyla yazılır (hariç). Taşma: sayfa yatay kayıyor mu,
+    // yazılı bir öğe ekrandan taşıyor mu, gizlenen (overflow) yazı kesiliyor mu
+    const probe = (page, sel) => page.evaluate(sel => {
+      const roots = sel.split(',').map(q => document.querySelector(q)).filter(Boolean), W = innerWidth;
+      const text = roots.map(r => r.innerText + ' ' + [...r.querySelectorAll('[aria-label]')].map(e => e.getAttribute('aria-label')).join(' ')).join(' ').replace(/Türkçe/g, '') + ' ' + document.title;
+      const cut = [];
+      for (const r of roots) for (const el of r.querySelectorAll('*')) {
+        if (el.closest('[lang=tr]') || ![...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) continue;
+        const b = el.getBoundingClientRect(), cs = getComputedStyle(el); if (!b.width || cs.visibility === 'hidden' || cs.opacity === '0') continue;
+        const clip = cs.overflowX !== 'visible' && !/auto|scroll/.test(cs.overflowX);
+        let a = el.parentElement; while (a && a !== document.body && getComputedStyle(a).overflowX === 'visible') a = a.parentElement;   // kesen ata (kart, düğme)
+        const ab = a && a !== document.body && !/auto|scroll/.test(getComputedStyle(a).overflowX) ? a.getBoundingClientRect() : null;
+        if (b.right > W + 1 || b.left < -1 || (clip && el.scrollWidth > el.clientWidth + 1) || (ab && (b.right > ab.right + 1 || b.left < ab.left - 1))) cut.push(`${el.id || el.className || el.tagName}:${el.textContent.trim().slice(0, 24)}`);
+      }
+      return { tr: (text.match(/\S*[ğüşıöçĞÜŞİÖÇ]\S*/g) || []).slice(0, 4), ov: document.documentElement.scrollWidth > W || document.body.scrollWidth > W, cut };
+    }, sel);
+    const tours = {};
+    for (const w of [390, 360, 320]) {
+      const { ctx, page, errors } = await open(browser, URL, { vp: [w, w === 390 ? 844 : 640], locale: 'en-US', save: SAVE });
+      const R = tours[w] = {}, sheet = '#mCard', gap = () => page.waitForTimeout(650);
+      await page.waitForTimeout(900);
+      R.home = await probe(page, '#home'); R.home.play = await page.textContent('#bPlay');
+      await page.click('#bSettings'); await gap(); R.settings = await probe(page, sheet); if (w === 320) await shot(page, 'en-settings-320');
+      await page.click('#oShop'); await gap(); R.shop = await probe(page, sheet);
+      await page.click('#mClose'); await gap(); await page.click('#bSettings'); await gap();
+      await page.click('#oPriv'); await gap(); R.privacy = await probe(page, sheet);
+      await page.click('#mWipe'); await gap(); R.wipe = await probe(page, sheet);
+      await page.click('#mNo'); await gap(); await page.click('#mClose'); await gap();
+      await page.click('#crownChip'); await gap(); R.themes = await probe(page, sheet); if (w === 320) await shot(page, 'en-themes-320');
+      await page.click('#mClose'); await gap();
+      await page.click('#bHow'); await gap();
+      R.how = { tr: [], ov: false, cut: [] };
+      for (let k = 0; k < 7; k++) {
+        await page.waitForTimeout(300);
+        const p = await probe(page, sheet); R.how.tr.push(...p.tr); R.how.ov ||= p.ov; R.how.cut.push(...p.cut);
+        if (k === 0) R.how.first = await page.textContent('#demoTxt');
+        await page.click('#mClose', { timeout: 3000 }).catch(() => {});
+      }
+      await gap();
+      await page.click('#bPlay'); await page.waitForTimeout(700); R.game = await probe(page, '#game,#toast'); if (w === 320) await shot(page, 'en-game-320');
+      await solve(page, 10); await waitModal(page); R.win = await probe(page, '#game'); if (w === 320) await shot(page, 'en-win-320');
+      R.errors = errors.slice(0, 3);
+      await ctx.close();
+    }
+    const SCR = ['home', 'settings', 'shop', 'privacy', 'wipe', 'themes', 'how', 'game', 'win'];
+    const trBad = Object.entries(tours).flatMap(([w, R]) => SCR.filter(k => R[k]?.tr.length).map(k => `${w}/${k}: ${R[k].tr.join(' ')}`));
+    const t = tours[390];
+    check('en.text', 'İngilizce cihaz: ana ekran, oyun, kazanma paneli, ayarlar, gizlilik, verileri sil, reklamsız paket, renk temaları ve öğretici İngilizce; görünen yazıda Türkçe harf yok', !trBad.length && /Play/.test(t.home.play) && /Tap a tile/.test(t.how.first || '') && Object.values(tours).every(R => !R.errors.length), trBad.join(' · ') || JSON.stringify({ play: t.home.play, how: t.how.first, err: Object.values(tours).flatMap(R => R.errors) }), 'medium');
+    const fit = [320, 360].flatMap(w => SCR.filter(k => tours[w][k].ov || tours[w][k].cut.length).map(k => `${w}/${k}: ${tours[w][k].ov ? 'yatay taşma ' : ''}${tours[w][k].cut.slice(0, 3).join(', ')}`));
+    check('en.fit', 'İngilizce 320 ve 360 px: bu ekranlarda yatay taşma ve kesilen yazı yok', !fit.length, fit.join(' · '), 'medium');
+  }
+  {
+    // dil seçimi: Ayarlar › Language › Türkçe → yenilenir, Türkçe açılır, seçim kalıcı; cihaz diline göre varsayılan
+    const { ctx, page, errors } = await open(browser, URL, { locale: 'en-US', save: { played: 3 } });
+    const ui = () => page.evaluate(() => ({ lang: document.documentElement.lang, play: document.querySelector('#bPlay span').textContent, how: document.getElementById('bHow').textContent, saved: JSON.parse(localStorage.getItem('ray') || '{}').lang }));
+    const u0 = await ui();
+    await page.click('#bSettings'); await page.waitForTimeout(500);
+    const row = await page.evaluate(() => document.getElementById('oL')?.parentElement.firstChild.textContent.trim());
+    await Promise.all([page.waitForNavigation(), page.click('#oL [data-g=tr]')]); await page.waitForTimeout(500);
+    const u1 = await ui();
+    await page.reload(); await page.waitForTimeout(500);
+    const u2 = await ui();
+    await page.click('#bSettings'); await page.waitForTimeout(500);
+    const row2 = await page.evaluate(() => document.getElementById('oL')?.parentElement.firstChild.textContent.trim());
+    await ctx.close();
+    const dflt = {};
+    for (const locale of ['tr-TR', 'en-US']) { const o = await open(browser, URL, { locale, save: { played: 3 } }); dflt[locale] = await o.page.evaluate(() => [window.RAY_LANG, document.querySelector('#bPlay span').textContent]); await o.ctx.close(); }
+    check('en.lang', 'Ayarlar › Language › Türkçe: sayfa yenilenir, Türkçe açılır, seçim kalıcı; tr-TR cihazda varsayılan Türkçe, en-US cihazda İngilizce', u0.lang === 'en' && u0.play === 'Play' && row === 'Language' && u1.lang === 'tr' && u1.play === 'Oyna' && u1.saved === 'tr' && u2.lang === 'tr' && /Nasıl/.test(u2.how) && row2 === 'Dil' && dflt['tr-TR'].join() === 'tr,Oyna' && dflt['en-US'].join() === 'en,Play' && !errors.length, JSON.stringify({ u0, row, u1, u2, row2, dflt, err: errors[0] }), 'medium');
+  }
+  {
+    // aynı bölüm ve Günün Hattı iki dilde bit bit aynı tahta
+    const board = {};
+    for (const locale of ['tr-TR', 'en-US']) {
+      const { ctx, page } = await open(browser, URL, { locale, save: { played: 3 } });
+      board[locale] = await page.evaluate(days => {
+        const R = window.__ray, sig = P => JSON.stringify([P.cols, P.rows, P.sol, P.cur, P.hub, P.hub2, P.par, P.pinned, P.link, P.rev, P.cnt, P.rules || []]);
+        return { lv: [1, 120, 900].map(l => sig(R.puzzleFor(l))), d: days.map(d => sig(R.dailyFor(d))), name: R.lineName(0), lang: window.RAY_LANG };
+      }, [TODAY, YDAY, '2026-12-31']);
+      await ctx.close();
+    }
+    const a = board['tr-TR'], b = board['en-US'];
+    check('en.same', 'Bölüm 1, 120, 900 ve Günün Hattı Türkçe ve İngilizcede aynı tahtayı üretir; hat adı "M1 · Harbor Line"', a.lang === 'tr' && b.lang === 'en' && a.lv.every((x, i) => x === b.lv[i]) && a.d.every((x, i) => x === b.d[i]) && b.name === 'M1 · Harbor Line' && a.name === 'M1 · Liman Hattı', JSON.stringify({ names: [a.name, b.name], lv: a.lv.map((x, i) => x === b.lv[i]), d: a.d.map((x, i) => x === b.d[i]) }));
   }
 
   // ---------- F. Boşta CPU: animasyon döngüsü durmalı ----------
