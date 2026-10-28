@@ -71,7 +71,7 @@
     },
     open: (P, i, k) => onRiver(P.river, i, k),
     // L.rvNear: temel denetim tamam (hepsi bağlı, açık uç yok, karışma yok) ama tampon sayısı tutmuyor → döngü var
-    check(P, L) { const bad = L.open === P.river.T ? 0 : 1; L.rvNear = !!bad && L.solved; return bad; },
+    check(P, L) { const bad = (L.openBy.river || 0) === P.river.T ? 0 : 1; L.rvNear = !!bad && L.solved; return bad; },
     // çözücü: her kıyı kenarı ya geçit/boş (eşleşir) ya tampon (eşleşmez). Σ zorunlu tampon ≤ T ≤ Σ olası tampon;
     // alt sınır T'ye eşitse olası tamponlar eşleşmeli, üst sınır T'ye eşitse olası tamponların hepsi tampon olmalı.
     prune(P, C, M, unit) {
@@ -133,7 +133,7 @@
         cx.fillStyle = pal.tile; cx.fill(); cx.lineWidth = Math.max(1, s * .03); cx.strokeStyle = pal.mut; cx.stroke();
       }
     },
-    // tampon: kolun kıyıdaki ucunda dik çubuk + iki cıvata (rayın üstünde). Rozet: ⊣ görünen tampon / T (kazanınca hepsi yanar, sayı L.open'a eşit).
+    // tampon: kolun kıyıdaki ucunda dik çubuk + iki cıvata (rayın üstünde). Rozet: ⊣ görünen tampon / T (kazanınca hepsi yanar, sayı L.openBy.river'a eşit).
     over(D) {
       const { G, s, X, cx, pal, vis, on, own, OC, now } = D, R = G.river, S = G.rvS || shore(G), T = R.T;
       let busy = false;

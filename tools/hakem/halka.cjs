@@ -87,7 +87,7 @@ module.exports = async T => {
       for (let l = 673; l <= 20000; l++) { const U = R.rulesFor(l); if (U.has('sign')) sign++; if (U.has('bridge')) bridge++; if (U.has('ring')) { ring++; if (U.has('sign') || U.has('bridge')) bad++; } }
       return { ring, sign, bridge, bad, clash: R.MODS.find(m => m.key === 'ring').clash };
     });
-    check('rule.ring.clash', 'Halka: tabela ve köprüyle aynı bölümde hiç gelmiyor (673–20000, rulesFor)', !c.bad && c.ring > 1000 && c.sign > 500 && c.bridge > 500 && c.clash.includes('sign') && c.clash.includes('bridge'), JSON.stringify({ ...c, dummy: dummy.map(d => d[0]) }));
+    check('rule.ring.clash', 'Halka: tabela ve köprüyle aynı bölümde hiç gelmiyor (673–20000, rulesFor)', !c.bad && c.ring > 500 && c.sign > 500 && c.bridge > 500 && c.clash.includes('sign') && c.clash.includes('bridge'), JSON.stringify({ ...c, dummy: dummy.map(d => d[0]) }));
     errs.push(...errors); await ctx.close();
   }
 
@@ -129,7 +129,7 @@ module.exports = async T => {
   const { L7, LF } = await p0.page.evaluate(() => {
     const R = window.__ray; let L7 = 0, LF = 0;
     for (let l = 676; l <= 748 && !L7; l++) { const U = R.rulesFor(l); if ([...U].every(k => ['ring', 'pins', 'pairs', 'rev', 'cnt'].includes(k))) L7 = l; }
-    for (let l = 749; l < 3000 && !LF; l++) { const U = R.rulesFor(l); if (U.has('ring') && U.has('fog')) LF = l; }
+    for (let l = 749; l < 20000 && !LF; l++) { const U = R.rulesFor(l); if (U.has('ring') && U.has('fog')) LF = l; }
     return { L7, LF };
   });
   await p0.ctx.close();

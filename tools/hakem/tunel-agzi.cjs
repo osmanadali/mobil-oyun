@@ -83,7 +83,7 @@ module.exports = async T => {
   // 3) M19 hattında karanlık tünelli bir bölüm (2 tünel): gerçek oyunda robot ışığı izleyerek kazanır
   {
     const p0 = await open(browser, URL, { save: { played: 4 } });
-    const lvl = await p0.page.evaluate(() => { const R = window.__ray; for (let l = R.lineStart(18) + 3; l < R.lineStart(19) - 1; l++) if (R.rulesFor(l).has('fog')) return l; return 0; });
+    const lvl = await p0.page.evaluate(() => { const R = window.__ray; for (let l = R.lineStart(18) + 3; l < R.lineStart(19) - 1; l++) if (R.rulesFor(l).has('fog')) return l; for (let l = R.lineStart(20); l < 20000; l++) { const U = R.rulesFor(l); if (U.has('portal') && U.has('fog')) return l; } return 0; });   // M19'da karanlık çıkmazsa (havuz büyüdü) karma hatta tünel + karanlık
     await p0.ctx.close();
     const { ctx, page, errors } = await open(browser, URL, { save: { played: lvl - 1, level: lvl, stars: starsUpTo(lvl), seen, remindAsked: true } });
     await page.click('#bPlay'); await page.waitForTimeout(700);

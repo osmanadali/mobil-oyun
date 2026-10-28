@@ -84,7 +84,7 @@ module.exports = async T => {
       });
       gms = (performance.now() - t) / (b - a + 1);
       const m15 = avg(R.lineStart(14), a - 1);
-      let LF = 0; for (let l = a; l < 5000 && !LF; l++) { const U = R.rulesFor(l); if (U.has('closed') && U.has('fog')) LF = l; }
+      let LF = 0; for (let l = a; l < 20000 && !LF; l++) { const U = R.rulesFor(l); if (U.has('closed') && U.has('fog')) LF = l; }
       return { a, b, m16, m15, miss, shown, intro, genMs: Math.round(gms), L7, LF };
     });
     L7 = h.L7; LF = h.LF;
@@ -166,7 +166,7 @@ module.exports = async T => {
     const s = await page.evaluate(() => {
       const R = window.__ray, keys = R.MODS.map(m => m.key), cl = R.MODS.find(m => m.key === 'closed').clash;
       let n = 0, miss = 0, solBad = 0, rej = 0, clash = 0; const co = {};
-      for (let l = 601; n < 320 && l < 5000; l++) {
+      for (let l = 601; n < 320 && l < 12000; l++) {
         const U = R.rulesFor(l); if (!U.has('closed')) continue; n++;
         if ([...U].some(k => cl.includes(k))) clash++;
         const P = R.puzzleFor(l); if (!P.closed) miss++; if (!R.lit({ ...P, cur: P.sol }).solved || R.lit(P).solved) solBad++; if (P.reject || P.closedShown) rej++;

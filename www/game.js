@@ -465,7 +465,7 @@ function lit(P) {
   const { hub, hub2 = -1, split } = P, cur = P.void ? P.cur.map((v, i) => P.void[i] ? 0 : v) : P.cur, n = cur.length, d = new Array(n).fill(-1), own = new Array(n).fill(0);
   const opm = MODS.filter(m => m.open && P[m.key]);   // eklenti: eşi olmadan bitebilen kol (tampon, depo çıkışı) → gevşek sayılmaz, L.open sayar
   const dB = split ? new Array(n).fill(-1) : null, ownB = split ? new Array(n).fill(0) : null;
-  let loose = 0, opn = 0;
+  let loose = 0, opn = 0; const by = {};   // by: eklentiye göre eşsiz biten kol sayısı (nehir tamponu, depo çıkışı ayrı sayılır)
   for (const [h, tag] of hub2 >= 0 ? [[hub, 1], [hub2, 2]] : [[hub, 1]]) {
     const dd = new Array(split ? 2 * n : n).fill(-1), q = [h]; dd[h] = 0;
     while (q.length) {
@@ -476,7 +476,7 @@ function lit(P) {
         const b = DIRS[k][0];
         if (!(cur[i] & b & half)) continue;
         const j = nb(P, i, k), o = j < 0 ? 0 : ob(P, i, k);
-        if (j < 0 || !(cur[j] & o)) { if (opm.length && opm.some(m => m.open(P, i, k))) opn++; else loose++; continue; }
+        if (j < 0 || !(cur[j] & o)) { const m = opm.length ? opm.find(m => m.open(P, i, k)) : null; if (m) { opn++; by[m.key] = (by[m.key] || 0) + 1; } else loose++; continue; }
         const v = split?.[j] && (o & 10) ? n + j : j;
         if (dd[v] < 0) { dd[v] = dd[u] + 1; q.push(v); }
       }
@@ -485,7 +485,7 @@ function lit(P) {
   const merged = own.includes(3) || !!ownB?.includes(3);
   let ok = loose === 0 && !merged && d.every((v, i) => v >= 0 || P.void?.[i]);
   if (split) for (let i = 0; i < n; i++) if (split[i]) { ok = ok && dB[i] >= 0; if (dB[i] >= 0 && (d[i] < 0 || dB[i] < d[i])) d[i] = dB[i]; }   // çizim için: iki yarının yanan küçüğü
-  const L = { d, own, merged, open: opn, n: d.filter((v, i) => v >= 0 || P.void?.[i]).length, solved: ok, ...(split ? { dB, ownB } : {}) };
+  const L = { d, own, merged, open: opn, openBy: by, n: d.filter((v, i) => v >= 0 || P.void?.[i]).length, solved: ok, ...(split ? { dB, ownB } : {}) };
   for (const m of MODS) if (m.check && P[m.key]) { const bad = m.check(P, L); if (bad) L.solved = false; }
   return L;
 }

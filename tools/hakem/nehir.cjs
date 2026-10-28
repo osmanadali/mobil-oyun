@@ -33,7 +33,7 @@ module.exports = async T => {
         if (!P.river) { none++; continue; }
         const L = R.lit({ ...P, cur: P.sol }), Rv = P.river;
         if (!L.solved) B('solÇözülmedi');
-        if (L.open !== Rv.T || Rv.T !== Math.abs(x.river)) B('tamponSayısı');
+        if ((L.openBy.river || 0) !== Rv.T || Rv.T !== Math.abs(x.river)) B('tamponSayısı');
         if (R.lit(P).solved) B('hazırÇözülü');
         // tamponlar: kıyıda, merkez değil, karşı karo o kenarda kolsuz
         for (const [i, k] of Rv.at) { const j = R.nb(P, i, k); if (!m.open(P, i, k) || i === P.hub || i === P.hub2 || j < 0 || (P.sol[j] & [4, 8, 1, 2][k])) B('tamponYeri'); }
@@ -140,7 +140,7 @@ module.exports = async T => {
     const s2 = await st();
     await page.click('#bReset'); await page.waitForTimeout(400); const s3 = await st();
     const taps = await solve(page, 8), won = await waitModal(page);
-    const w = await page.evaluate(() => { const G = window.__ray.G; return { won: G.won, open: G.L.open, T: G.river.T }; });
+    const w = await page.evaluate(() => { const G = window.__ray.G; return { won: G.won, open: G.L.openBy.river || 0, T: G.river.T }; });
     await shot(page, 'river-win');
     check('rule.river.card', 'M18 ilk girişte "YENİ KURAL · Nehir" kartı ("geçit" sözcüğü, dalgalı nehir demosu, satır içi tampon simgesi)', card.open && /Nehir/.test(card.txt || '') && /geçit/.test(card.p || '') && /tampon/.test(card.p || '') && card.demo && card.icon && s0.seen === 1, JSON.stringify(card));
     check('rule.river.play', 'Nehir 749: 6×8, T=1; ilk tampon bildirimi (ömürde bir kez); yarım oyun aynı durumla sürer; ↺ başa döner; robot (solve) kazanır, kıyıda tam T tampon',
@@ -189,7 +189,7 @@ module.exports = async T => {
       }, f.cfg);
       await tapTile(page, s.t); await page.waitForTimeout(200);
       await shot(page, 'river-loop');
-      const w1 = await page.evaluate(() => { const G = window.__ray.G; return { near: G.L.rvNear, solved: G.L.solved, won: G.won, open: G.L.open, T: G.river.T, pulse: !!G.rvPulse, warn: G.rvWarn }; });
+      const w1 = await page.evaluate(() => { const G = window.__ray.G; return { near: G.L.rvNear, solved: G.L.solved, won: G.won, open: G.L.openBy.river || 0, T: G.river.T, pulse: !!G.rvPulse, warn: G.rvWarn }; });
       for (let k = 0; k < 4; k++) { await tapTile(page, s.t); await page.waitForTimeout(120); }
       await page.waitForTimeout(400);
       const w2 = await page.evaluate(() => ({ near: window.__ray.G.L.rvNear, won: window.__ray.G.won, n: window.__toasts.filter(x => /döngü/.test(x)).length }));
@@ -207,7 +207,7 @@ module.exports = async T => {
         const U = R.rulesFor(l); if (!U.has('river')) continue; n++;
         if (X.some(q => U.has(q))) cl++;
         const P = R.puzzleFor(l), L = R.lit({ ...P, cur: P.sol });
-        if (!P.river || !L.solved || L.open !== P.river.T || R.lit(P).solved) bad++; if (P.reject) rej++;
+        if (!P.river || !L.solved || (L.openBy.river || 0) !== P.river.T || R.lit(P).solved) bad++; if (P.reject) rej++;
         const o = [...U].filter(q => q !== 'river').join('+') || '-'; mix[o] = (mix[o] || 0) + 1;
         if (U.has('fog') && !fog && !P.units) fog = l;
       }
