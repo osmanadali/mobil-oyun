@@ -127,6 +127,8 @@ async function inViewport(page, sel) {
   const server = await serve();
   const URL = `http://127.0.0.1:${server.address().port}/`;
   const browser = await chromium.launch();
+  // varsayılan dil Türkçe: oyun cihaz dili tr değilse İngilizce açılır; İngilizce testi locale'i açıkça verir
+  const newCtx = browser.newContext.bind(browser); browser.newContext = (o = {}) => newCtx({ locale: 'tr-TR', ...o });
   const FRESH_DONE = { played: 1 };   // nasıl oynanır penceresi kendiliğinden açılmasın
 
   // ---------- A. Üretici: çözülebilirlik + zorluk eğrisi ----------

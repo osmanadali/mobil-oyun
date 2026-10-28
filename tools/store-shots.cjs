@@ -151,7 +151,7 @@ const safeCss = ([t, b]) => `.screen{padding-top:${t}px!important}#home{padding-
   #toast{top:${t + 128}px!important}body.test .hero p::after{content:none!important}`;
 
 async function capture(browser, url, sc, d, k) {
-  const ctx = await browser.newContext({ viewport: { width: d.vp[0], height: d.vp[1] }, deviceScaleFactor: k, colorScheme: 'dark', hasTouch: true, isMobile: true });
+  const ctx = await browser.newContext({ viewport: { width: d.vp[0], height: d.vp[1] }, deviceScaleFactor: k, colorScheme: 'dark', hasTouch: true, isMobile: true, locale: 'tr-TR' });
   await ctx.addInitScript(`window.__noIntro = true; window.__rayTest = ${sc.test === false ? 0 : 1}; try { localStorage.setItem('ray', ${JSON.stringify(JSON.stringify(sc.save))}); } catch {}
     addEventListener('DOMContentLoaded', () => { const s = document.createElement('style'); s.textContent = ${JSON.stringify(safeCss(d.safe))}; document.head.append(s); });`);
   const page = await ctx.newPage(), errors = [];
