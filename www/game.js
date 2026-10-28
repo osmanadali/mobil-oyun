@@ -179,8 +179,8 @@ function applyTheme() {
   pal = { tile: v('--tile'), pin: v('--pin'), stroke: v('--stroke'), rail: v('--railC'), mut: v('--mut'), bg: v('--bg0'), fg: v('--fg'), warn: v('--warn') || '#ff7a8a', light: isLight() };
   const bar = pal.light ? '#f7f2ec' : '#0d1020';
   document.querySelector('meta[name=theme-color]').content = bar;
-  const SB = window.Capacitor?.Plugins?.StatusBar;
-  if (SB) { SB.setBackgroundColor?.({ color: bar })?.catch?.(() => {}); SB.setStyle?.({ style: pal.light ? 'LIGHT' : 'DARK' })?.catch?.(() => {}); }
+  // Capacitor 8 SystemBars: kenardan kenara, çubuklar saydam (arkada oyunun zemini); yalnız simge rengi ayarlanır
+  window.Capacitor?.Plugins?.SystemBars?.setStyle?.({ style: pal.light ? 'LIGHT' : 'DARK' })?.catch?.(() => {});
   if (G) { setLineColor(); draw(); }
 }
 matchMedia('(prefers-color-scheme: light)').addEventListener?.('change', applyTheme);
@@ -1263,7 +1263,8 @@ const Remind = (() => {
       list.push([2, at(1), 'Yeni Günün Hattı açıldı 🚇', done && sk ? `🔥 Serin ${sk} gün · bugün bir gün daha ekle` : 'Bugünün bulmacası hazır · yolculuğa bir hat bağla']);
       list.push([3, at(3), 'Şehir seni özledi 🌃', `Bölüm ${save.level} seni bekliyor · ★ topla, yeni hat aç`]);
       list.push([4, at(7), 'Hatlar durdu 🚦', 'Bir dakikanı ayır, şehri yeniden canlandır']);
-      await P.schedule({ notifications: list.map(([id, when, title, body]) => ({ id, title, body, schedule: { at: when, allowWhileIdle: true }, smallIcon: 'ic_stat_ray', iconColor: '#ffb35c', extra: { go: 'daily' } })) });
+      // isExactNotification:false → LocalNotifications 8.3+ her planlamada "Alarmlar ve hatırlatıcılar" ayar ekranını açmasın (birkaç dk kayması sorun değil)
+      await P.schedule({ notifications: list.map(([id, when, title, body]) => ({ id, title, body, schedule: { at: when, allowWhileIdle: true }, isExactNotification: false, smallIcon: 'ic_stat_ray', iconColor: '#ffb35c', extra: { go: 'daily' } })) });
     } catch {}
   }
   // izin istenip verilirse açılır
@@ -1291,12 +1292,12 @@ function shopSheet() {
   const owned = save.noAds, price = Shop.price();
   modal(`<div class="bell">💛</div><h2>Reklamsız paket</h2>
     <div class="perks"><div><i>🚫</i><span>Bölüm aralarındaki reklamlar kalkar</span></div><div><i>💡</i><span><b>+20 ipucu</b> hediye</span></div><div><i>🎨</i><span><b>3 özel tema:</b> Altın, Elmas, Yakut</span></div><div><i>🚇</i><span>Tek seferlik · ömür boyu</span></div></div>
-    ${owned ? '<span class="badge">AKTİF ✓ · Teşekkürler!</span>' : `<button id="mBuy" class="btn primary"><span>${price ? `Satın al · ${price}` : 'Satın al'}</span><small>${Shop.ready() ? 'Google Play ile güvenli ödeme' : 'Mağazaya bağlanılıyor…'}</small></button>`}
+    ${owned ? '<span class="badge">AKTİF ✓ · Teşekkürler!</span>' : `<button id="mBuy" class="btn primary"><span>${price ? `Satın al · ${price}` : 'Satın al'}</span><small>${Shop.ready() ? `${Shop.name()} ile güvenli ödeme` : 'Mağazaya bağlanılıyor…'}</small></button>`}
     <p class="tip">İpucu videoları isteğe bağlı kalır.</p>
     ${owned ? '' : '<button id="mRestore" class="link">Satın alımı geri yükle</button>'}
     <button id="mClose" class="btn glassbtn">Kapat</button>`, {
     mBuy: async () => {
-      if (!Shop.ready()) { toast(Shop.avail() ? 'Mağaza şu an kullanılamıyor · sonra dene' : 'Satın alma Play Store sürümünde açılır'); return; }
+      if (!Shop.ready()) { toast(Shop.avail() ? 'Mağaza şu an kullanılamıyor · sonra dene' : 'Satın alma mağazadan indirilen sürümde açılır'); return; }
       const r = await Shop.buy();
       if (r === 'hata') toast('Satın alma tamamlanamadı');
     },

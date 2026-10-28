@@ -1,0 +1,110 @@
+# Google Play için imzalı sürüm: AAB (Play'e yüklenen) + imzalı APK (elle kurup denemek için). Ayrıntı: docs/YAYIN.md
+# Yalnızca elle: Actions → "Android yayın (imzalı AAB)" → Run workflow (ya da: gh workflow run release.yml [-f versionCode=12])
+# Gizli değerler (Settings → Secrets and variables → Actions → Secrets): ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
+# Değişkenler (aynı yer → Variables): ADMOB_APP_ID_ANDROID, ADMOB_INTERSTITIAL_ANDROID, ADMOB_REWARDED_ANDROID
+name: Android yayın (imzalı AAB)
+on:
+  workflow_dispatch:
+    inputs:
+      versionCode:
+        description: 'versionCode (boş: çalıştırma numarası). Play her yüklemede öncekinden büyük ister.'
+        type: string
+        default: ''
+permissions: { contents: read }
+concurrency: { group: release-android, cancel-in-progress: false }
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      VERSION_CODE: ${{ inputs.versionCode || github.run_number }}
+      ADMOB_APP_ID: ${{ vars.ADMOB_APP_ID_ANDROID }}
+      ADMOB_INTERSTITIAL: ${{ vars.ADMOB_INTERSTITIAL_ANDROID }}
+      ADMOB_REWARDED: ${{ vars.ADMOB_REWARDED_ANDROID }}
+    steps:
+      - name: Gizli değerleri ve değişkenleri denetle
+        env:
+          KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KSP: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KA: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KP: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          eksik=""
+          [ -n "$KS" ]  || eksik="$eksik\n  • ANDROID_KEYSTORE_BASE64 (gizli değer: anahtar deposunun base64 hâli)"
+          [ -n "$KSP" ] || eksik="$eksik\n  • ANDROID_KEYSTORE_PASSWORD (gizli değer)"
+          [ -n "$KA" ]  || eksik="$eksik\n  • ANDROID_KEY_ALIAS (gizli değer)"
+          [ -n "$KP" ]  || eksik="$eksik\n  • ANDROID_KEY_PASSWORD (gizli değer)"
+          [ -n "$ADMOB_APP_ID" ]       || eksik="$eksik\n  • ADMOB_APP_ID_ANDROID (değişken, ör. ca-app-pub-1234567890123456~1234567890)"
+          [ -n "$ADMOB_INTERSTITIAL" ] || eksik="$eksik\n  • ADMOB_INTERSTITIAL_ANDROID (değişken, ör. ca-app-pub-1234567890123456/1234567890)"
+          [ -n "$ADMOB_REWARDED" ]     || eksik="$eksik\n  • ADMOB_REWARDED_ANDROID (değişken)"
+          if [ -n "$eksik" ]; then
+            printf "Eksik ayar var, imzalı sürüm üretilmedi:$eksik\nNasıl eklenir: docs/YAYIN.md (Settings → Secrets and variables → Actions)\n"
+            echo "::error title=Eksik ayar::İmzalı sürüm için gizli değer/değişken eksik. Günlükteki listeye ve docs/YAYIN.md'ye bak."
+            exit 1
+          fi
+          hata=""
+          echo "$ADMOB_APP_ID" | grep -Eq '^ca-app-pub-[0-9]{16}~[0-9]{10}$' || hata="$hata\n  • ADMOB_APP_ID_ANDROID biçimi yanlış (ca-app-pub-…~… olmalı, '/' değil '~')"
+          echo "$ADMOB_INTERSTITIAL" | grep -Eq '^ca-app-pub-[0-9]{16}/[0-9]{10}$' || hata="$hata\n  • ADMOB_INTERSTITIAL_ANDROID biçimi yanlış (ca-app-pub-…/… olmalı)"
+          echo "$ADMOB_REWARDED" | grep -Eq '^ca-app-pub-[0-9]{16}/[0-9]{10}$' || hata="$hata\n  • ADMOB_REWARDED_ANDROID biçimi yanlış (ca-app-pub-…/… olmalı)"
+          echo "$ADMOB_APP_ID $ADMOB_INTERSTITIAL $ADMOB_REWARDED" | grep -q 3940256099942544 && hata="$hata\n  • Google test kimliği verilmiş: yayın sürümü gerçek AdMob kimlikleri ister"
+          echo "$VERSION_CODE" | grep -Eq '^[1-9][0-9]{0,9}$' || hata="$hata\n  • versionCode pozitif tam sayı olmalı: $VERSION_CODE"
+          if [ -n "$hata" ]; then printf "Ayar hatası:$hata\n"; echo "::error title=Ayar hatası::AdMob kimliği ya da versionCode yanlış. Günlüğe bak."; exit 1; fi
+          echo "Ayarlar tamam."
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - run: npm ci --no-audit --no-fund
+      - run: npx cap add android
+      - name: İkon ve açılış ekranı (assets/)
+        run: npx @capacitor/assets generate --android --iconBackgroundColor '#0d1020' --iconBackgroundColorDark '#0d1020' --splashBackgroundColor '#0d1020' --splashBackgroundColorDark '#0d1020'
+      - name: Anahtar deposunu çöz (yalnız bu makinede, iş bitince silinir)
+        env: { KS: '${{ secrets.ANDROID_KEYSTORE_BASE64 }}' }
+        run: |
+          echo "$KS" | base64 -d > "$RUNNER_TEMP/ray-upload.jks"
+          [ -s "$RUNNER_TEMP/ray-upload.jks" ] || { echo "::error::ANDROID_KEYSTORE_BASE64 çözülemedi (base64 -w0 ile mi kodlandı?)"; exit 1; }
+          echo "RAY_KEYSTORE=$RUNNER_TEMP/ray-upload.jks" >> "$GITHUB_ENV"
+      - name: Yerel projeyi hazırla (gerçek AdMob kimlikleri, sürüm, imza, kenardan kenara, SDK denetimi)
+        run: |
+          export VERSION_NAME=$(node -p "require('./package.json').version")
+          echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
+          node tools/android/hazirla.cjs
+          grep -c 'window.RAY_ADS' www/index.html
+      - run: npx cap sync android
+      - name: Derle (AAB + APK, release)
+        env:
+          RAY_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          RAY_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          RAY_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: cd android && chmod +x gradlew && ./gradlew bundleRelease assembleRelease --no-daemon -q
+      - name: Denetle (imza, SDK düzeyleri, sürüm, 16 KB sayfa uyumu)
+        run: |
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          AAB=android/app/build/outputs/bundle/release/app-release.aab
+          APKR=android/app/build/outputs/apk/release/app-release.apk
+          "$BT/apksigner" verify --print-certs "$APKR" | grep -E "Signer #1 certificate (DN|SHA-256)"
+          keytool -printcert -jarfile "$AAB" | grep -E "Owner|SHA256" | head -2
+          "$BT/aapt2" dump badging "$APKR" | grep -E "^package:|sdkVersion|targetSdkVersion"
+          T=$("$BT/aapt2" dump badging "$APKR" | sed -n "s/^targetSdkVersion:'\([0-9]*\)'.*/\1/p")
+          [ "$T" -ge 35 ] || { echo "::error::targetSdk $T < 35: Play kabul etmez"; exit 1; }
+          "$BT/aapt2" dump xmltree --file AndroidManifest.xml "$APKR" | grep -q "ca-app-pub-3940256099942544" && { echo "::error::Test AdMob App ID yayın paketinde"; exit 1; }
+          unzip -p "$APKR" assets/public/index.html | grep -q 'window.RAY_ADS' || { echo "::error::window.RAY_ADS yayın paketinde yok"; exit 1; }
+          SO=$(unzip -Z1 "$APKR" | grep '\.so$' || true)
+          if [ -z "$SO" ]; then echo "Yerel (.so) kitaplık yok → 16 KB sayfa boyutu sorunu yok."
+          else mkdir -p so && unzip -qo "$APKR" 'lib/*' -d so
+            for f in $(find so -name '*.so' -path '*64*'); do
+              readelf -lW "$f" | awk '$1=="LOAD"{print $NF}' | grep -qv '0x4000\|0x10000' && echo "::warning::16 KB hizalı değil: $f" || echo "16 KB tamam: $f"
+            done
+          fi
+          echo "::notice::Ray $VERSION_NAME ($VERSION_CODE) · targetSdk $T · imzalı AAB hazır"
+      - name: Dosyaları adlandır
+        run: |
+          mkdir out
+          cp android/app/build/outputs/bundle/release/app-release.aab "out/ray-$VERSION_NAME-$VERSION_CODE.aab"
+          cp android/app/build/outputs/apk/release/app-release.apk "out/ray-$VERSION_NAME-$VERSION_CODE.apk"
+          ls -la out
+      - uses: actions/upload-artifact@v4
+        with: { name: 'ray-${{ env.VERSION_NAME }}-${{ env.VERSION_CODE }}', path: out/, retention-days: 30 }
+      - name: Anahtar deposunu sil
+        if: always()
+        run: rm -f "$RUNNER_TEMP/ray-upload.jks"

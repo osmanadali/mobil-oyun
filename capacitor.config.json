@@ -2,18 +2,16 @@
   "appId": "com.osmanadali.ray",
   "appName": "Ray",
   "webDir": "www",
-  "android": {
-    "backgroundColor": "#0d1020"
-  },
+  "backgroundColor": "#0d1020",
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 600,
       "backgroundColor": "#0d1020",
       "showSpinner": false
     },
-    "StatusBar": {
-      "backgroundColor": "#0d1020",
-      "style": "DARK"
+    "SystemBars": {
+      "insetsHandling": "css",
+      "initialViewportFitValueHint": "cover"
     },
     "LocalNotifications": {
       "smallIcon": "ic_stat_ray",
