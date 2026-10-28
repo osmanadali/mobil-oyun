@@ -47,7 +47,7 @@ module.exports = async T => {
       // karma hatlar: rulesFor'da bölge taşıyan ≥ 300 bölüm (M21+) üretilir, çözüm geçerli, çakışanlar dışlanmış
       const L0 = R.lineStart(19), s0 = R.lineStart(20), mix = { n: 0, bad: 0, clash: 0, with: {} };
       for (let l = 1; l < L0; l++) if (R.rulesFor(l).has('zone')) mix.early = (mix.early || 0) + 1;
-      for (let l = s0; mix.n < 300 && l < s0 + 4000; l++) {
+      for (let l = s0; mix.n < 300 && l < s0 + 12000; l++) {
         const U = R.rulesFor(l); if (!U.has('zone')) continue; mix.n++;
         if (['two', 'river'].some(k => U.has(k))) mix.clash++;
         const P = R.puzzleFor(l); if (!P.zone || !R.lit({ ...P, cur: P.sol }).solved) mix.bad++;
