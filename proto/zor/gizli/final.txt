@@ -1,0 +1,20 @@
+
+7×9 · N=160 · KURAL KAPALI: puan 13.56 · ilk turda kesin %21.5 · tahminsiz kesin %97.6 · tahmin düğümü 1.36
+  A kapak k=2: puan 16.83 · Δ ort +3.27 medyan +3.0 p90 +8.0 · artan %73 · ilk turda kesin %20.6 · tahminsiz kesin %94.5 · düğüm 1.95 · adillik reddi/bölüm 0.11 · üretilemeyen 0
+  A kapak k=3: puan 19.78 · Δ ort +6.22 medyan +4.0 p90 +14.0 · artan %88 · ilk turda kesin %20.3 · tahminsiz kesin %91.3 · düğüm 2.94 · adillik reddi/bölüm 0.28 · üretilemeyen 0
+  B silik k=4: puan 16.43 · Δ ort +2.87 medyan +2.0 p90 +7.0 · artan %68 · ilk turda kesin %20.9 · tahminsiz kesin %95.1 · düğüm 1.85 · adillik reddi/bölüm 0.16 · üretilemeyen 0
+  B silik k=5: puan 17.29 · Δ ort +3.73 medyan +3.0 p90 +8.0 · artan %76 · ilk turda kesin %20.7 · tahminsiz kesin %94.0 · düğüm 2.07 · adillik reddi/bölüm 0.31 · üretilemeyen 0
+  C kapalı durak k=1: puan 19.88 · Δ ort +6.32 medyan +4.5 p90 +15.5 · artan %81 · ilk turda kesin %21.0 · tahminsiz kesin %91.4 · düğüm 3.13 · adillik reddi/bölüm 0.32 · üretilemeyen 0
+  C kapalı durak k=2: puan 23.97 · Δ ort +10.41 medyan +5.0 p90 +24.1 · artan %75 · ilk turda kesin %21.1 · tahminsiz kesin %90.6 · düğüm 4.59 · adillik reddi/bölüm 0.84 · üretilemeyen 0
+  D gizli depo k=1: puan 15.92 · Δ ort +2.36 medyan +1.4 p90 +6.3 · artan %96 · ilk turda kesin %20.4 · tahminsiz kesin %96.0 · düğüm 1.61 · adillik reddi/bölüm 0.03 · üretilemeyen 0
+  D gizli depo k=2: puan 18.02 · Δ ort +4.47 medyan +3.5 p90 +10.0 · artan %96 · ilk turda kesin %19.3 · tahminsiz kesin %93.8 · düğüm 2.01 · adillik reddi/bölüm 0.09 · üretilemeyen 0
+
+6×8 · N=160 · KURAL KAPALI: puan 12.82 · ilk turda kesin %22.4 · tahminsiz kesin %97.0 · tahmin düğümü 1.49
+  A kapak k=1: puan 14.39 · Δ ort +1.57 medyan +1.0 p90 +5.0 · artan %50 · ilk turda kesin %21.7 · tahminsiz kesin %96.0 · düğüm 1.62 · adillik reddi/bölüm 0.01 · üretilemeyen 0
+  A kapak k=2: puan 16.73 · Δ ort +3.91 medyan +2.0 p90 +8.0 · artan %77 · ilk turda kesin %21.1 · tahminsiz kesin %93.5 · düğüm 2.19 · adillik reddi/bölüm 0.14 · üretilemeyen 0
+  B silik k=3: puan 15.03 · Δ ort +2.21 medyan +1.0 p90 +6.0 · artan %59 · ilk turda kesin %21.5 · tahminsiz kesin %95.0 · düğüm 1.79 · adillik reddi/bölüm 0.07 · üretilemeyen 0
+  B silik k=4: puan 15.93 · Δ ort +3.11 medyan +2.0 p90 +7.0 · artan %69 · ilk turda kesin %21.4 · tahminsiz kesin %93.9 · düğüm 2.04 · adillik reddi/bölüm 0.17 · üretilemeyen 0
+  C kapalı durak k=1: puan 15.94 · Δ ort +3.12 medyan +1.5 p90 +15.4 · artan %59 · ilk turda kesin %23.7 · tahminsiz kesin %94.0 · düğüm 2.41 · adillik reddi/bölüm 0.30 · üretilemeyen 0
+  C kapalı durak k=2: puan 17.01 · Δ ort +4.19 medyan +2.4 p90 +16.7 · artan %63 · ilk turda kesin %23.2 · tahminsiz kesin %92.3 · düğüm 2.73 · adillik reddi/bölüm 0.82 · üretilemeyen 0
+  D gizli depo k=1: puan 15.22 · Δ ort +2.40 medyan +1.4 p90 +6.6 · artan %90 · ilk turda kesin %21.3 · tahminsiz kesin %95.7 · düğüm 1.76 · adillik reddi/bölüm 0.02 · üretilemeyen 0
+  D gizli depo k=2: puan 17.34 · Δ ort +4.52 medyan +4.0 p90 +11.0 · artan %91 · ilk turda kesin %20.2 · tahminsiz kesin %92.3 · düğüm 2.16 · adillik reddi/bölüm 0.09 · üretilemeyen 0

@@ -1,0 +1,20 @@
+
+7×9 N=160 · kural kapalı ortalama 13.56
+  M10 Kapak (normal, miktar 2): puan 17.23 · Δ ort +3.67 medyan +2.0 · artan %71 · çözülebilir ve çözülmüş gelmeyen 160/160 · bölüm başına gizli öğe 2.00 · adillik reddi %5
+  M10 Kapak (tanıtım, miktar 1): puan 15.17 · Δ ort +1.61 medyan +0.0 · artan %43 · çözülebilir ve çözülmüş gelmeyen 160/160 · bölüm başına gizli öğe 1.00 · adillik reddi %2
+  M12 Silik kol (normal, miktar 4): puan 16.63 · Δ ort +3.08 medyan +2.0 · artan %65 · çözülebilir ve çözülmüş gelmeyen 160/160 · bölüm başına gizli öğe 4.00 · adillik reddi %2
+  M12 Silik kol (tanıtım, miktar 2): puan 14.89 · Δ ort +1.33 medyan +0.0 · artan %43 · çözülebilir ve çözülmüş gelmeyen 160/160 · bölüm başına gizli öğe 2.00 · adillik reddi %0
+  M14 Kapalı durak (normal, miktar 1): puan 18.60 · Δ ort +5.04 medyan +3.8 · artan %78 · çözülebilir ve çözülmüş gelmeyen 160/160 · bölüm başına gizli öğe 1.00 · adillik reddi %24
+  M14 Kapalı durak (tanıtım, miktar 1): puan 18.60 · Δ ort +5.04 medyan +3.8 · artan %78 · çözülebilir ve çözülmüş gelmeyen 160/160 · bölüm başına gizli öğe 1.00 · adillik reddi %24
+  M16 Gizli depo (normal, miktar 2): puan 17.85 · Δ ort +4.29 medyan +3.7 · artan %96 · çözülebilir ve çözülmüş gelmeyen 160/160 · bölüm başına gizli öğe 1.96 · adillik reddi %2
+  M16 Gizli depo (tanıtım, miktar 1): puan 15.83 · Δ ort +2.27 medyan +0.5 · artan %97 · çözülebilir ve çözülmüş gelmeyen 160/160 · bölüm başına gizli öğe 0.99 · adillik reddi %1
+
+6×8 N=160 · kural kapalı ortalama 12.82
+  M10 Kapak (normal, miktar 2): puan 16.53 · Δ ort +3.71 medyan +3.0 · artan %81 · çözülebilir ve çözülmüş gelmeyen 160/160 · bölüm başına gizli öğe 2.00 · adillik reddi %6
+  M10 Kapak (tanıtım, miktar 1): puan 14.25 · Δ ort +1.43 medyan +1.0 · artan %51 · çözülebilir ve çözülmüş gelmeyen 160/160 · bölüm başına gizli öğe 1.00 · adillik reddi %0
+  M12 Silik kol (normal, miktar 3): puan 14.91 · Δ ort +2.09 medyan +1.0 · artan %56 · çözülebilir ve çözülmüş gelmeyen 160/160 · bölüm başına gizli öğe 3.00 · adillik reddi %3
+  M12 Silik kol (tanıtım, miktar 2): puan 14.19 · Δ ort +1.38 medyan +0.0 · artan %45 · çözülebilir ve çözülmüş gelmeyen 160/160 · bölüm başına gizli öğe 2.00 · adillik reddi %1
+  M14 Kapalı durak (normal, miktar 1): puan 17.21 · Δ ort +4.39 medyan +1.7 · artan %62 · çözülebilir ve çözülmüş gelmeyen 160/160 · bölüm başına gizli öğe 1.00 · adillik reddi %26
+  M14 Kapalı durak (tanıtım, miktar 1): puan 17.21 · Δ ort +4.39 medyan +1.7 · artan %62 · çözülebilir ve çözülmüş gelmeyen 160/160 · bölüm başına gizli öğe 1.00 · adillik reddi %26
+  M16 Gizli depo (normal, miktar 2): puan 17.48 · Δ ort +4.66 medyan +3.8 · artan %92 · çözülebilir ve çözülmüş gelmeyen 160/160 · bölüm başına gizli öğe 1.99 · adillik reddi %0
+  M16 Gizli depo (tanıtım, miktar 1): puan 15.06 · Δ ort +2.24 medyan +1.4 · artan %91 · çözülebilir ve çözülmüş gelmeyen 160/160 · bölüm başına gizli öğe 0.99 · adillik reddi %1
