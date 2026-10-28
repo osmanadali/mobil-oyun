@@ -101,6 +101,8 @@ Durum 28 Ekim 2026 sabahı itibarıyla:
   - Yeni metin her zaman `L('Türkçe', 'English')` ile yazılır; terimler `docs/CEVIRI.md` sözlüğünden.
   - Robot varsayılan olarak `tr-TR` koşar; İngilizce testleri (`en.*`, `i18n.rules.*`) metin, taşma (320/360 px), dil değiştirme ve iki dilde aynı bölümü denetler.
   - İngilizce mağaza görselleri: `node tools/store-shots.cjs en` → `store/screens-en/`, `store/feature-graphic-en.png`.
+- **Karanlık tünel geri kararır (28 Ekim):** görünürlük her hamlede baştan hesaplanır; bağlantı kopunca bölge 420 ms'de yeniden kararır, geri bağlanınca açılır. Bölüm üretimi değişmedi. Eklenti `reveal` kancası saf olmalı (`docs/kurallar/README.md`).
+- **Hız eşiği testleri bulut makinesinde oynak:** halka/nehir üretim süresi ve nehir çizim kancası (`rule.ring.line`, `rule.river.line`, nehir 4× CPU) makine yüklüyken main'de de kalabiliyor; değişiklik üretime dokunmuyorsa önce main'le aynı makinede karşılaştır.
 - Robot hepsi birlikte geçiyor (sonuç commit mesajında). APK linkleri bölüm 3'te.
 <!-- DURUM:SON -->
 
