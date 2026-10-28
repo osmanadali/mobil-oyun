@@ -459,11 +459,11 @@ async function inViewport(page, sel) {
     check('skin.pick', 'Seçilen tema oyuna yansır; oyunda düğme/yıldız rengi oynanan hattın rengi', sk.acc !== acc0 && lineCol.c === '#4fa3ff' && lineCol.acc === lineCol.c, JSON.stringify({ acc0, acc: sk.acc, ...lineCol }), 'medium');
     // hatırlatma: oyundan ana sayfaya dönünce bir kez sorulur → izin → bildirimler planlanır
     await page.click('#bBack'); await page.waitForTimeout(1300);
-    const asked = await page.evaluate(() => /Hatırlatayım/.test(document.querySelector('.sheet h2')?.textContent || '') && document.getElementById('modal').classList.contains('open'));
+    const asked = await page.evaluate(() => /[Hh]atırlatayım mı/.test(document.querySelector('.sheet h2')?.textContent || '') && document.getElementById('modal').classList.contains('open'));
     await shot(page, 'remind-ask');
     if (asked) { await page.click('#mYes'); await page.waitForTimeout(500); }
     const nt = await page.evaluate(() => ({ n: window.__log.notif?.length || 0, titles: (window.__log.notif || []).map(x => x.title), on: JSON.parse(localStorage.getItem('ray')).remind }));
-    check('remind', 'Günlük hatırlatma: ana sayfada bir kez sorulur, izinle 3–4 bildirim planlanır', asked && nt.on && nt.n >= 3, JSON.stringify(nt), 'medium');
+    check('remind', 'Günlük hatırlatma: ilk hat bitince (Bölüm 12) ana sayfada bir kez sorulur, izinle 3–4 bildirim planlanır', asked && nt.on && nt.n >= 3, JSON.stringify(nt), 'medium');
     // reklamsız paket: ayarlar → satın al → +20 ipucu, Altın tema, geçiş reklamı yok
     const dragClose = async () => { const b = await page.locator('.sheet h2').boundingBox(); await page.mouse.move(b.x + b.width / 2, b.y + 10); await page.mouse.down(); await page.mouse.move(b.x + b.width / 2, b.y + 250, { steps: 8 }); await page.mouse.up(); await page.waitForTimeout(600); return !(await page.evaluate(() => document.getElementById('modal').classList.contains('open'))); };
     await page.click('#bSettings'); await page.waitForTimeout(500); const c1 = await dragClose();

@@ -1,5 +1,5 @@
 # Test APK (AdMob test reklamları). Sabit indirme linkleri:
-# https://github.com/osmanadali/mobil-oyun/releases/download/test/ray-test.apk
+# https://github.com/osmanadali/mobil-oyun/releases/download/test/ray-test.apk  (ayrı uygulama "Ray Dev": com.osmanadali.ray.dev)
 # https://github.com/osmanadali/mobil-oyun/releases/download/test-acik/ray-test-acik.apk  (her şey açık, ayrı uygulama "Ray Test")
 name: Android APK (test)
 # Yalnızca elle: Actions → "Android APK (test)" → Run workflow (ya da: gh workflow run apk.yml [-f unlocked=true] [-f yayin=false])
@@ -25,6 +25,13 @@ jobs:
       APK: ${{ inputs.unlocked && 'ray-test-acik.apk' || 'ray-test.apk' }}
     steps:
       - uses: actions/checkout@v5
+      # Test APK'ları Play sürümünden (com.osmanadali.ray, yükleme anahtarıyla imzalı) ayrı pakettir: aynı paket farklı imzayla
+      # kurulamaz, kapalı testteki Play sürümü engellenirdi. Normal → "Ray Dev", her şey açık → "Ray Test"; üçü yan yana kurulur.
+      - name: Normal test sürümü (ayrı paket adı → Play sürümünün yanına kurulur)
+        if: ${{ !inputs.unlocked }}
+        run: |
+          sed -i 's/"appId": "com.osmanadali.ray"/"appId": "com.osmanadali.ray.dev"/; s/"appName": "Ray"/"appName": "Ray Dev"/' capacitor.config.json
+          grep -c 'ray.dev' capacitor.config.json
       - name: Her şey açık (ayrı paket adı → normal test sürümünün yanına kurulur, kayıtlar karışmaz)
         if: inputs.unlocked
         run: |

@@ -124,6 +124,7 @@ Actions → **Android yayın (imzalı AAB)** → Run workflow. Komut satırında
    - 1024×500 öne çıkan görsel
    - en az 2 telefon ekran görüntüsü
 7. **Üretime geçiş:** 2023-11'den sonra açılan kişisel hesaplarda önce kapalı test gerekir. En az 12 test eden 14 gün boyunca kesintisiz katılmış olmalı. Ancak bundan sonra "Üretime erişim" başvurusu açılır.
+8. **Test APK'ları ayrı pakettir:** `apk.yml` normal test sürümünü `com.osmanadali.ray.dev` ("Ray Dev"), her şey açık sürümü `com.osmanadali.ray.test` ("Ray Test") kimliğiyle derler. Play sürümü (`com.osmanadali.ray`) yükleme anahtarıyla imzalıdır; aynı paket adı farklı imzayla aynı telefona kurulamaz. Bu yüzden üçü yan yana kurulur, kayıtları da ayrıdır. Eski (bu değişiklikten önceki) `ray-test.apk` hâlâ `com.osmanadali.ray` paketindedir: kapalı teste katılan, telefonunda bu eski APK varsa Play sürümünü kurmadan önce onu **kaldırmalı**. Testçi davetine bu notu ekle.
 
 ### 2.3 Sonraki güncellemeler
 

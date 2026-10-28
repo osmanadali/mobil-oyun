@@ -346,10 +346,18 @@ Gizlilik politikası da "13 yaş ve üzeri" der; hedef kitle ve politika uyumlud
 | Ad (TR / EN) | Reklamsız paket / Ad-free Pack | Reklamsız paket / Ad-free Pack (12) |
 | Açıklama TR | `Bölüm aralarındaki reklamları kaldırır, 20 ipucu hediye eder ve 3 özel temayı (Altın, Elmas, Yakut) açar. Tek seferlik, ömür boyu.` | `Reklamlar kalkar, 20 ipucu ve 3 özel tema` (45) |
 | Açıklama EN | `Removes the ads between levels, gives you 20 hints and unlocks 3 exclusive themes (Gold, Diamond, Ruby). One-time purchase, yours forever.` | `No ads between levels, 20 hints, 3 themes` (45) |
-| Fiyat önerisi | ₺59,99 · 2,99 $ (öteki ülkeler otomatik) | Taban ülke Türkiye, ₺59,99'a en yakın fiyat noktası; öteki ülkeler otomatik |
+| Fiyat önerisi | Varsayılan ₺59,99; ABD 2,99 $ · AB 2,99 € · BK 2,49 £ elle (ya da USD tabanlı şablon) | Taban ülke **ABD, 2,99 $**; Türkiye elle **₺59,99**; öteki ülkeler ABD'den otomatik |
 | İnceleme için | Lisans test hesabıyla dene | İnceleme ekran görüntüsü: Ayarlar › Reklamsız paket penceresi (cihazdan alınır) |
 
 Fiyat gerekçesi: benzer bulmaca oyunlarında reklam kaldırma 2–5 $ arasıdır. Paket yalnız geçiş reklamlarını kaldırır (ödüllü videolar isteğe bağlı kalır), üstüne 20 ipucu ve 3 tema verir; alt uçta bir fiyat ilk satın almayı kolaylaştırır.
+
+Neden taban Türkiye değil: ₺59,99'dan KDV düşülünce kalan yaklaşık 1 $ eder. Taban Türkiye olursa mağazalar öteki ülkeleri bu tutardan çevirir; İngilizce konuşulan ana pazarlarda (ABD, BK, AB) fiyat 2–5 $ bandının altına düşer ve gelir 2–2,5 kat az kalır. Bu yüzden fiyat ABD'ye göre kurulur, Türkiye ayrıca elle girilir.
+
+Fiyat planı:
+
+- **App Store Connect:** Uygulama içi satın alma › `ray_reklamsiz` › Fiyatlandırma › taban ülke **Amerika Birleşik Devletleri**, fiyat **2,99 $**. Öteki ülkeler otomatik gelir. Sonra Türkiye satırını elle **₺59,99** yap.
+- **Google Play:** Ürünün varsayılan fiyatı ₺59,99 kalabilir. Ama Play öteki ülkeleri bu tutardan çevirdiği için ABD **2,99 $**, Euro bölgesi **2,99 €** ve Birleşik Krallık **2,49 £** elle girilir. İstersen 2,99 $ tabanlı bir fiyatlandırma şablonu (Ayarlar › Fiyatlandırma şablonları) kurup ürüne bağla, Türkiye'yi orada ₺59,99'a çek.
+- Kayıttan sonra iki mağazada ülke listesini gözden geçir: ABD 2,99 $, Türkiye ₺59,99, Almanya 2,99 €, BK 2,49 £ görünmeli.
 
 Geri yükleme: pencerede "Satın alımı geri yükle" düğmesi var (Apple bunu ister).
 
@@ -397,6 +405,7 @@ Mağaza
 
 - [ ] Play'de ve App Store Connect'te uygulama kaydı (paket `com.osmanadali.ray`, birincil dil Türkçe, ikinci dil İngilizce).
 - [ ] Uygulama içi ürün `ray_reklamsiz` (§10) iki mağazada oluşturulup etkinleştirilmeli.
+- [ ] Fiyat (§10): App Store'da taban ülke ABD 2,99 $, Türkiye elle ₺59,99. Play'de ABD 2,99 $ · AB 2,99 € · BK 2,49 £ elle (ya da USD tabanlı şablon). Taban Türkiye bırakılmaz.
 - [ ] Metinleri (§4, §5) ve görselleri (§2) yükle.
 - [ ] Formlar: Veri güvenliği (§6), App Privacy (§7), yaş derecelendirmesi (§8), hedef kitle ve öteki beyanlar (§9), inceleme notları (§11).
 - [ ] Gerçek cihazda son deneme: rıza penceresi, iOS ATT penceresi, reklam, satın alma ve geri yükleme (Play lisans test hesabı, Apple Sandbox).
