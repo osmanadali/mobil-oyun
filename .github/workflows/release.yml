@@ -1,7 +1,8 @@
 # Google Play için imzalı sürüm: AAB (Play'e yüklenen) + imzalı APK (elle kurup denemek için). Ayrıntı: docs/YAYIN.md
 # Yalnızca elle: Actions → "Android yayın (imzalı AAB)" → Run workflow (ya da: gh workflow run release.yml [-f versionCode=12])
 # Gizli değerler (Settings → Secrets and variables → Actions → Secrets): ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
-# Değişkenler (aynı yer → Variables): ADMOB_APP_ID_ANDROID, ADMOB_INTERSTITIAL_ANDROID, ADMOB_REWARDED_ANDROID
+# Değişkenler (aynı yer → Variables): ADMOB_APP_ID_ANDROID, ADMOB_INTERSTITIAL_ANDROID, ADMOB_REWARDED_ANDROID.
+# Girilmezse AdMob'daki "Ray (Android)" kayıtlı kimlikleri kullanılır (gizli değildir, uygulamaya gömülür); değişken girilirse o geçer.
 name: Android yayın (imzalı AAB)
 on:
   workflow_dispatch:
@@ -17,9 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VERSION_CODE: ${{ inputs.versionCode || github.run_number }}
-      ADMOB_APP_ID: ${{ vars.ADMOB_APP_ID_ANDROID }}
-      ADMOB_INTERSTITIAL: ${{ vars.ADMOB_INTERSTITIAL_ANDROID }}
-      ADMOB_REWARDED: ${{ vars.ADMOB_REWARDED_ANDROID }}
+      ADMOB_APP_ID: ${{ vars.ADMOB_APP_ID_ANDROID || 'ca-app-pub-1478688740631972~8621751038' }}
+      ADMOB_INTERSTITIAL: ${{ vars.ADMOB_INTERSTITIAL_ANDROID || 'ca-app-pub-1478688740631972/2829660461' }}
+      ADMOB_REWARDED: ${{ vars.ADMOB_REWARDED_ANDROID || 'ca-app-pub-1478688740631972/5430491817' }}
     steps:
       - name: Gizli değerleri ve değişkenleri denetle
         env:

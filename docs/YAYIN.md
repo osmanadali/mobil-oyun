@@ -63,6 +63,14 @@ Depo → **Settings → Secrets and variables → Actions**.
 
 App ID'de `~`, reklam biriminde `/` bulunur. Karıştırılırsa `release.yml` açık bir hata verip durur.
 
+AdMob Android kaydı açıldı ("Ray (Android)", 29 Ekim 2026). Kimlikler `release.yml`'de varsayılan olarak yazılı, değişken girmek gerekmez (girilirse değişken geçer):
+
+- Uygulama: `ca-app-pub-1478688740631972~8621751038`
+- Geçiş: `ca-app-pub-1478688740631972/2829660461` ("Ray Android geçiş")
+- Ödüllü: `ca-app-pub-1478688740631972/5430491817` ("Ray Android ödüllü", ödül 1 ipucu)
+
+Test APK'sı (`apk.yml`) bilerek Google test kimlikleriyle kalır: testçilerin gerçek reklama dokunması AdMob'da geçersiz trafik sayılabilir.
+
 Base64 üretmek:
 
 - Linux: `base64 -w0 ray-upload.jks`

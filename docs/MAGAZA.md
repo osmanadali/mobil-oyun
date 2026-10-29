@@ -393,7 +393,7 @@ AdMob
 - [ ] Kimlikleri GitHub › Settings › Variables'a gir: `ADMOB_APP_ID_ANDROID`, `ADMOB_INTERSTITIAL_ANDROID`, `ADMOB_REWARDED_ANDROID` ve iOS karşılıkları `ADMOB_APP_ID_IOS`, `ADMOB_INTERSTITIAL_IOS`, `ADMOB_REWARDED_IOS` (yayın iş akışları `magaza-yerel` dalında). Derleme bunları `window.RAY_ADS` olarak `index.html`'e yazar; yoksa test reklamı çıkar.
 - [ ] AdMob › Gizlilik ve mesajlaşma: AB/BK rıza mesajı (GDPR), ABD eyalet mesajı ve iOS için IDFA açıklama mesajı oluştur ve yayınla.
 - [ ] AdMob › Engelleme denetimleri: en yüksek reklam içeriği derecesi PG (uygulamadaki ayarla aynı; iOS için §8'deki nota bak).
-- [ ] app-ads.txt: AdMob'un verdiği satırı `https://osmanadali.github.io/app-ads.txt` adresine koy (alan adının kökünde olmalı; bunun için `osmanadali.github.io` adlı ayrı bir depo gerekir). Mağaza girişlerinde web sitesi olarak `https://osmanadali.github.io` yaz. Yoksa AdMob uyarı verir ve reklam geliri düşebilir.
+- [ ] app-ads.txt: AdMob'un verdiği satırı (`google.com, pub-1478688740631972, DIRECT, f08c47fec0942fa0`) `https://osmanadali.github.io/app-ads.txt` adresine koy (alan adının kökünde olmalı; bunun için `osmanadali.github.io` adlı ayrı bir depo gerekir). Mağaza girişlerinde web sitesi olarak `https://osmanadali.github.io` yaz. Yoksa AdMob uyarı verir ve reklam geliri düşebilir.
 
 Gizlilik ve yayın sayfası
 
