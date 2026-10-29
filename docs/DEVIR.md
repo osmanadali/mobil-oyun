@@ -116,7 +116,7 @@ Durum 28 Ekim 2026 sabahı itibarıyla:
 1. **Hesaplar:** Play Console (25 $) ve Apple Developer (99 $/yıl).
    - Kişisel Play hesabında üretimden önce 12 testçiyle 14 gün kapalı test şartı var.
 2. **AdMob:** Android ve iOS uygulamaları, 4 reklam birimi, AB/BK ve ABD rıza mesajları.
-   - Kimlikler GitHub değişkenlerine girilir: `ADMOB_APP_ID_ANDROID`, `ADMOB_INTERSTITIAL_ANDROID`, `ADMOB_REWARDED_ANDROID`; iOS karşılıkları `ADMOB_APP_ID_IOS`, `ADMOB_INTERSTITIAL_IOS`, `ADMOB_REWARDED_IOS` **iOS yayınında zorunlu** (`ios-release.yml` eksik ya da test kimliği görürse durur).
+   - Kimlikler GitHub değişkenlerine girilir: `ADMOB_APP_ID_ANDROID`, `ADMOB_INTERSTITIAL_ANDROID`, `ADMOB_REWARDED_ANDROID`; iOS karşılıkları `ADMOB_APP_ID_IOS`, `ADMOB_INTERSTITIAL_IOS`, `ADMOB_REWARDED_IOS` **iOS yayınında zorunlu** (`ios-release.yml` eksik ya da test kimliği görürse durur). iOS kimlikleri AdMob'da açıldı ve `ios-release.yml`'de varsayılan olarak yazılı (YAYIN §3); Android kaydı henüz yok.
 3. **İmza anahtarı:** `keytool` ile üretilir ve yedeklenir. Dört gizli değer GitHub'a girilir: `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`.
 4. **Gizlilik politikası:** `www/gizlilik.html` içindeki `[iletişim e-postası]` ve `[geliştirici adı]` doldurulur.
 5. **GitHub Pages:** açılmalı (gizlilik adresi bunu bekliyor). `web.yml` push tetikleyicisi geri getirilir.

@@ -1,7 +1,8 @@
 # iOS yayın: imzalı arşiv + App Store Connect'e yükleme (TestFlight'a düşer). Ayrıntı: docs/YAYIN.md §3.2-A
 # Yalnızca elle: Actions → "iOS yayın (App Store Connect)" → Run workflow (ya da: gh workflow run ios-release.yml [-f buildNumber=12])
 # Gizli değerler (Settings → Secrets and variables → Actions → Secrets): APPSTORE_API_KEY_ID, APPSTORE_API_ISSUER_ID, APPSTORE_API_KEY_P8_BASE64, APPLE_TEAM_ID
-# Değişkenler (aynı yer → Variables): ADMOB_APP_ID_IOS, ADMOB_INTERSTITIAL_IOS, ADMOB_REWARDED_IOS (Google test kimliği verilirse durur)
+# Değişkenler (aynı yer → Variables): ADMOB_APP_ID_IOS, ADMOB_INTERSTITIAL_IOS, ADMOB_REWARDED_IOS (Google test kimliği verilirse durur).
+# Girilmezse AdMob'daki "Ray (iOS)" kayıtlı kimlikleri kullanılır (gizli değildir, uygulamaya gömülür); değişken girilirse o geçer.
 name: iOS yayın (App Store Connect)
 on:
   workflow_dispatch:
@@ -17,9 +18,9 @@ jobs:
     runs-on: macos-latest
     env:
       VERSION_CODE: ${{ inputs.buildNumber || github.run_number }}
-      ADMOB_APP_ID_IOS: ${{ vars.ADMOB_APP_ID_IOS }}
-      ADMOB_INTERSTITIAL_IOS: ${{ vars.ADMOB_INTERSTITIAL_IOS }}
-      ADMOB_REWARDED_IOS: ${{ vars.ADMOB_REWARDED_IOS }}
+      ADMOB_APP_ID_IOS: ${{ vars.ADMOB_APP_ID_IOS || 'ca-app-pub-1478688740631972~9395068810' }}
+      ADMOB_INTERSTITIAL_IOS: ${{ vars.ADMOB_INTERSTITIAL_IOS || 'ca-app-pub-1478688740631972/5351882023' }}
+      ADMOB_REWARDED_IOS: ${{ vars.ADMOB_REWARDED_IOS || 'ca-app-pub-1478688740631972/8249508106' }}
       APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
       APPSTORE_API_ISSUER_ID: ${{ secrets.APPSTORE_API_ISSUER_ID }}
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}

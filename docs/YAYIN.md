@@ -174,7 +174,11 @@ App Store'a göndermek için Apple hesabı ve imza gerekir: `ios-release.yml` (�
    - İnceleme için satın alma ekranının görüntüsünü ekle.
    - İlk uygulama sürümüyle birlikte incelemeye gönder.
    - Oyunda "Satın alımı geri yükle" düğmesi var. Apple bunu tüketilemez ürünlerde zorunlu tutar.
-6. **AdMob:** iOS için ayrı bir uygulama kaydı aç. Sonra GitHub değişkenlerine şunları ekle:
+6. **AdMob:** iOS kaydı açıldı ("Ray (iOS)", 29 Ekim 2026). Kimlikler `ios-release.yml`'de varsayılan olarak yazılı, değişken girmek gerekmez:
+   - Uygulama: `ca-app-pub-1478688740631972~9395068810`
+   - Geçiş: `ca-app-pub-1478688740631972/5351882023` ("Ray iOS geçiş")
+   - Ödüllü: `ca-app-pub-1478688740631972/8249508106` ("Ray iOS ödüllü", ödül 1 ipucu)
+   Değiştirmek istersen GitHub değişkenlerine şunları ekle (değişken varsayılanın önüne geçer):
    - `ADMOB_APP_ID_IOS` (`ca-app-pub-…~…`)
    - `ADMOB_INTERSTITIAL_IOS`
    - `ADMOB_REWARDED_IOS`
