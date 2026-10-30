@@ -210,10 +210,10 @@ Bu iki sistemin amacı oyuncuya "bir bölüm daha" dedirtmektir. Hiçbiri oyunu 
 - Aynı anda **şehir canlanır**: arkaplandaki metro haritası parlar, duraklar sarı yanar, ekran dışından ekran dışına bir tren bir hattan geçer (`cityUp`). Sonraki bölümde ya da menüye dönünce söner. "Hareketi azalt" açıksa tren geçmez, yalnız ışık yanar.
 - Telefonda "hareketi azalt" ayarı açıksa tren akarak değil, 8 kademede ilerler.
 
-**Kusursuz seri (🔥):**
+**Kusursuz seri (✨):**
 
 - Tacı olmayan bir bölümü kusursuz bitirmek seriyi 1 artırır; kusursuz olmadan bitirmek seriyi sıfırlar. Taçlı bölümleri yeniden oynamak seriyi etkilemez, bu yüzden seri eski bölümlerde biriktirilemez.
-- Seri 2 ve üstündeyken saatin yanında 🔥 sayısı görünür. Hedeflerden biri kaçarsa 🔥 sönükleşir ve "↺ baştan → seri sürer" bildirimi çıkar (baştan başlamak süreyi de sıfırlar).
+- Seri 2 ve üstündeyken saatin yanında ✨ sayısı görünür. Hedeflerden biri kaçarsa ✨ sönükleşir ve "↺ baştan → seri sürer" bildirimi çıkar (baştan başlamak süreyi de sıfırlar).
 - Ödüller: 3. kusursuz bölüm +1 ipucu; 5, 10, 15… kusursuz bölüm +1 bonus 👑.
 - Seri kırılınca oyuncu aynı bölümü kusursuz bitirirse seri kaldığı yerden sürer. Başka bir bölümü bitirince bu hak düşer.
 

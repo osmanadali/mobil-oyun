@@ -809,12 +809,12 @@ function start(mode, lvl = save.level) {
   $('gMoves').textContent = `${daily ? new Date().toLocaleDateString(LOC, { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl))} · ${!daily && breath(lvl) ? L('☕ mola', '☕ breather') : `⚡${L('%' + (daily ? dPct(day) : zPct(lvl)), (daily ? dPct(day) : zPct(lvl)) + '%')}`}`;
   $('gHints').textContent = save.hints;
   clearTimeout(bubT); $('gBub').classList.remove('show');
-  const stake = comboStake(); $('gCombo').hidden = stake < 2; $('gCombo').textContent = `🔥${stake}`;
+  const stake = comboStake(); $('gCombo').hidden = stake < 2; $('gCombo').textContent = `✨${stake}`;
   show('game'); resize(); hud(); tick();
   const rc = daily ? null : (G.rules || []).map(k => RULE_LINE[k]).filter(c => RULES[c] && !save.seen[c]).sort((a, b) => a - b)[0];
   if (rc != null) ruleCard(rc);
   if (save.played === 0) setTimeout(() => toast(L('Karoya dokun → döner', 'Tap a tile → it turns')), 500);
-  else if (save.comboLost?.lvl === lvl && !daily && !G.moves) setTimeout(() => toast(L(`🔥 Kusursuz bitir → ${save.comboLost.n} seri geri gelir`, `🔥 Finish perfect → get your ${save.comboLost.n} streak back`)), 600);
+  else if (save.comboLost?.lvl === lvl && !daily && !G.moves) setTimeout(() => toast(L(`✨ Kusursuz bitir → ${save.comboLost.n} seri geri gelir`, `✨ Finish perfect → get your ${save.comboLost.n} streak back`)), 600);
   else if (G.final && !save.crowns[lvl] && !G.moves) setTimeout(() => toast(L('🏁 Son durak · kusursuz bitir → +1 bonus 👑', '🏁 Last stop · finish perfect → +1 bonus 👑')), 600);
   else if (!daily && save.miss[lvl] && !save.crowns[lvl] && !G.moves) setTimeout(() => toast(L(`Geçen sefer: ${missTxt(lvl)}`, `Last time: ${missTxt(lvl)}`)), 600);
 }
@@ -858,7 +858,7 @@ function tick() {
   trip(sec, tOk, left);
   if (!G.won) {
     // kusursuz seri bu bölümde tehlikede → baştan başlamak seriyi korur (↺ süreyi de sıfırlar)
-    const s = comboStake(), keep = s >= 2 ? L(` · ↺ baştan → 🔥${s} sürer`, ` · ↺ restart → keep 🔥${s}`) : '';
+    const s = comboStake(), keep = s >= 2 ? L(` · ↺ baştan → ✨${s} sürer`, ` · ↺ restart → keep ✨${s}`) : '';
     if (G.tOk && !tOk) lose(L('⏱ Tren rötarda · ★ söndü', '⏱ Train is late · ★ lost') + keep);
     if (G.mOk && !mOk) lose(L('↻ Hamle hedefi aşıldı · ★ söndü', '↻ Move target passed · ★ lost') + keep);
   }
@@ -1182,11 +1182,11 @@ function win() {
       const lost = save.comboLost; delete save.comboLost;
       if (perfect) {
         combo = save.combo = (lost?.lvl === G.lvl ? lost.n : save.combo || 0) + 1; save.comboBest = Math.max(save.comboBest || 0, combo);
-        if (combo % 5 === 0) { save.cc = (save.cc || 0) + 1; cmsg = L(`🔥 ${combo} kusursuz seri · +1 bonus 👑`, `🔥 ${combo} perfect in a row · +1 bonus 👑`); }
-        else if (combo === 3) { save.hints++; cmsg = L('🔥 3 kusursuz seri · +1 ipucu', '🔥 3 perfect in a row · +1 hint'); }
-        else if (lost?.lvl === G.lvl) cmsg = L(`🔥 Seri geri geldi · ${combo}`, `🔥 Streak is back · ${combo}`);
+        if (combo % 5 === 0) { save.cc = (save.cc || 0) + 1; cmsg = L(`✨ ${combo} kusursuz seri · +1 bonus 👑`, `✨ ${combo} perfect in a row · +1 bonus 👑`); }
+        else if (combo === 3) { save.hints++; cmsg = L('✨ 3 kusursuz seri · +1 ipucu', '✨ 3 perfect in a row · +1 hint'); }
+        else if (lost?.lvl === G.lvl) cmsg = L(`✨ Seri geri geldi · ${combo}`, `✨ Streak is back · ${combo}`);
       } else {
-        if ((save.combo || 0) >= 2 && save.shield > 0) { save.shield--; combo = save.combo; cmsg = L(`🛡 Kalkan seriyi korudu · 🔥${combo}`, `🛡 Shield saved your streak · 🔥${combo}`); }   // sandıktan
+        if ((save.combo || 0) >= 2 && save.shield > 0) { save.shield--; combo = save.combo; cmsg = L(`🛡 Kalkan seriyi korudu · ✨${combo}`, `🛡 Shield saved your streak · ✨${combo}`); }   // sandıktan
         else { if ((save.combo || 0) >= 2) save.comboLost = { n: broke = save.combo, lvl: G.lvl }; save.combo = 0; }
         near = (tOk || late <= 5) && (mOk || G.moves - G.lim.m <= 2);
       }
@@ -1208,7 +1208,7 @@ function win() {
   const ns = SKINS.find(k => !k.vip && !skinOpen(k) && k.need > cr0 && k.need <= crownBal());   // bakiye bir temaya yetti
   if (ns) { save.newSkin = 1; extra = [extra, L(`🎨 ${ns.name} alınabilir (👑 ${ns.need})`, `🎨 ${ns.name} available (👑 ${ns.need})`)].filter(Boolean).join(' · '); }
   persist();
-  $('gCombo').hidden = combo < 2; $('gCombo').textContent = `🔥${combo}`; $('gCombo').classList.remove('off');
+  $('gCombo').hidden = combo < 2; $('gCombo').textContent = `✨${combo}`; $('gCombo').classList.remove('off');
   const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { st, tOk, mOk, perfect, extra: [cmsg, shardMsg, extra].filter(Boolean).join(' · '), unlockedNow, ns, dbl, combo, broke, near };
   winTimer = setTimeout(() => { if (G === g && active('game')) winSheet(g, info); }, wait);
   if (!g.daily) setTimeout(() => puzzleFor(g.lvl + 1), wait + 900);   // sonraki bölüm hazır olsun (geçişte takılma olmasın)
@@ -1227,7 +1227,7 @@ function winSheet(g, { st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, combo
   const primary = g.daily
     ? `<button id="mShare" class="btn primary"><span>${B.share}</span><small>${L('Arkadaşına meydan oku', 'Challenge a friend')}</small></button><button id="mHome" class="btn glassbtn">${B.home}</button>`
     : again
-      ? `<button id="mRetry" class="btn primary"><span>${L('Tekrar dene', 'Try again')}</span><small>${broke >= 2 ? `${near ? B.close + ' · ' : ''}${L(`🔥 ${broke} seri geri gelsin`, `🔥 Win back your ${broke} streak`)}` : `${B.close} · ${miss}`}</small></button>
+      ? `<button id="mRetry" class="btn primary"><span>${L('Tekrar dene', 'Try again')}</span><small>${broke >= 2 ? `${near ? B.close + ' · ' : ''}${L(`✨ ${broke} seri geri gelsin`, `✨ Win back your ${broke} streak`)}` : `${B.close} · ${miss}`}</small></button>
        <div class="row2">${nxLocked ? `<button id="mMap" class="btn glassbtn">${L('Hatlar', 'Lines')}</button>` : `<button id="mNext" class="btn glassbtn">${L('Sonraki', 'Next')}</button>`}<button id="mShare" class="btn glassbtn">${B.share}</button><button id="mHome" class="btn glassbtn">${B.home}</button></div>`
       : `${nxLocked ? `<button id="mMap" class="btn primary"><span>${L('Yeni hat kilitli', 'Next line locked')}</span><small>★ ${totalStars()} / ${need(lineOf(nx))} · ${L('yıldız topla', 'earn stars')}</small></button>` : `<button id="mNext" class="btn primary"><span>${L('Sonraki', 'Next')}</span><small>${L('Bölüm', 'Level')} ${nx}</small></button>`}
        <div class="row2"><button id="mRetry" class="btn glassbtn">${L('Tekrar', 'Retry')}</button><button id="mShare" class="btn glassbtn">${B.share}</button><button id="mHome" class="btn glassbtn">${B.home}</button></div>`;
@@ -1594,7 +1594,7 @@ function skinSheet() {
       <b>${k.name}</b><small>${k.id === cur ? L('Seçili ✓', 'Selected ✓') : own ? L('Seç', 'Select') : k.vip ? L('💛 Reklamsız', '💛 Ad-free') : `👑 ${k.need}`}</small></button>`;
   };
   const nx = SKINS.filter(k => !k.vip && !skinOpen(k)).sort((a, b) => a.need - b.need)[0], hn = huntList().length;   // en ucuz alınmamış tema · taç bekleyen bölüm
-  modal(`<h2>${L('Renk temaları', 'Color themes')}</h2><p>${L('Bölümleri <b>kusursuz</b> bitir (⏱ ve ↻ hedefi), 👑 kazan, temayı <b>satın al</b>. Harcanan 👑 geri gelmez, seçimini iyi yap!', 'Finish levels <b>perfect</b> (⏱ and ↻ targets), earn 👑 and <b>buy</b> themes. Spent 👑 don’t come back, so choose well!')}</p>
+  modal(`<h2>${L('Renk temaları', 'Color themes')}</h2><p>${L('Her <b>kusursuz</b> bölüm (⏱ ve ↻ hedefi) 1 👑 verir. 👑 ile tema ve sandık açılır.', 'Every <b>perfect</b> level (⏱ and ↻ targets) gives 1 👑. Spend 👑 on themes and chests.')}</p>
     <div class="nexts"><small>${L('Bakiye', 'Balance')}</small><b class="bal">👑 ${bal}</b></div>
     <button id="mChest" class="chestrow ${bal >= CHEST ? 'can' : ''}"><i>${CHEST_SVG}</i><span><b>${L('Sürpriz sandık', 'Surprise chest')}</b><small>${L('İpucu · 🛡 seri kalkanı · 🚆 tren kaplaması', 'Hints · 🛡 shield · 🚆 train livery')}</small></span><em>👑 ${CHEST}</em></button>
     <div class="skins" id="skins">${SKINS.filter(k => !k.vip).map(card).join('')}

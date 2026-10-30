@@ -46,7 +46,7 @@ Oyun Türkçe ve İngilizce oynanır. Bu belge altyapıyı ve ortak sözlüğü 
 | yıldız (★) | star |
 | taç (👑) | crown |
 | kusursuz | perfect |
-| kusursuz seri | perfect streak |
+| kusursuz seri (✨; günlük seri 🔥 ayrıdır) | perfect streak |
 | seri (günlük) | streak |
 | seri kalkanı (🛡) | streak shield |
 | sefer şeridi | trip bar |

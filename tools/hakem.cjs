@@ -661,7 +661,7 @@ async function inViewport(page, sel) {
     const t0 = await trip();
     await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.t + 3.2) * 1000; }); await page.waitForTimeout(450);
     const t1 = await trip(), toast1 = await page.textContent('#toast');
-    check('trip.run', 'Sefer şeridi: tren süreyle ilerler; süre dolunca sinyalde bekler, "+rötar" sayar, yolcu laf atar; seri 🔥 göstergesi sönükleşir', t0.p < .1 && /^⏱/.test(t0.next) && t0.combo === '🔥2' && /late/.test(t1.cls) && Math.abs(t1.p - .84) < .001 && /rötar/.test(t1.next) && t1.bub && t1.off && /baştan/.test(toast1), `${JSON.stringify(t0)} → ${JSON.stringify(t1)} · "${toast1}"`, 'medium');
+    check('trip.run', 'Sefer şeridi: tren süreyle ilerler; süre dolunca sinyalde bekler, "+rötar" sayar, yolcu laf atar; seri ✨ göstergesi sönükleşir', t0.p < .1 && /^⏱/.test(t0.next) && t0.combo === '✨2' && /late/.test(t1.cls) && Math.abs(t1.p - .84) < .001 && /rötar/.test(t1.next) && t1.bub && t1.off && /baştan/.test(toast1), `${JSON.stringify(t0)} → ${JSON.stringify(t1)} · "${toast1}"`, 'medium');
     await shot(page, 'trip-late');
     await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.t + 1) * 1000; });   // kıl payı: ~1–3 sn rötar
     await solve(page, 10); await waitModal(page);
@@ -674,7 +674,7 @@ async function inViewport(page, sel) {
     await solve(page, 10); await waitModal(page);
     const w2 = await page.evaluate(() => ({ prim: document.querySelector('#winPanel .primary')?.id, txt: document.getElementById('winPanel').textContent, next: document.getElementById('gNext').textContent }));
     const s2 = await getSave(page);
-    check('combo.restore', 'Kırılan seri aynı bölümü kusursuz bitirince geri gelir; 3. kusursuz → +1 ipucu, rozet 🔥3', /geri gelir/.test(toast2) && chip === '🔥2' && s2.combo === 3 && s2.hints === base.hints + 1 && !s2.comboLost && /🔥3/.test(w2.txt) && /3 kusursuz seri/.test(w2.txt) && w2.prim === 'mNext' && w2.next === 'Tam vaktinde', JSON.stringify({ toast2, chip, combo: s2.combo, hints: s2.hints, prim: w2.prim, next: w2.next }), 'medium');
+    check('combo.restore', 'Kırılan seri aynı bölümü kusursuz bitirince geri gelir; 3. kusursuz → +1 ipucu, rozet ✨3', /geri gelir/.test(toast2) && chip === '✨2' && s2.combo === 3 && s2.hints === base.hints + 1 && !s2.comboLost && /✨3/.test(w2.txt) && /3 kusursuz seri/.test(w2.txt) && w2.prim === 'mNext' && w2.next === 'Tam vaktinde', JSON.stringify({ toast2, chip, combo: s2.combo, hints: s2.hints, prim: w2.prim, next: w2.next }), 'medium');
     check('trip.errors', 'Sefer şeridi + seri: konsol hatası yok', errors.length === 0, errors.slice(0, 3).join(' | '));
     await ctx.close();
   }
