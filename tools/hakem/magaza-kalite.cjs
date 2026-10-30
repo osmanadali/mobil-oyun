@@ -55,7 +55,7 @@ module.exports = async T => {
       vars[w] = await page.evaluate(() => {
         const h = document.querySelector('#winPanel h2'), t = document.querySelector('#winPanel .wp-t'), tog = document.getElementById('wTog'), out = [];
         let bd = t.querySelector('.badge'); if (!bd) { bd = document.createElement('span'); bd.className = 'badge'; t.appendChild(bd); }
-        for (const title of ['Hat açıldı!', 'Günün Hattı tamam!', 'Pratik tamam!']) for (const b of ['YENİ HAT AÇILDI · M12', 'TEMA ALINABİLİR 🎨', 'KUSURSUZ 👑 · 🔥15']) for (const lab of ['Hattı gör', 'Sonuç']) {
+        for (const title of ['Hat açıldı!', 'Günün Hattı tamam!', 'Pratik tamam!']) for (const b of ['YENİ HAT AÇILDI · M12', 'TEMA ALINABİLİR 🎨', 'KUSURSUZ 👑 · ✨15']) for (const lab of ['Hattı gör', 'Sonuç']) {
           h.textContent = title; bd.textContent = b; tog.querySelector('span').textContent = lab;
           const lines = Math.round(h.getBoundingClientRect().height / parseFloat(getComputedStyle(h).lineHeight)), br = bd.getBoundingClientRect(), tr = tog.getBoundingClientRect();
           if (h.scrollWidth > h.clientWidth + 1 || lines > 2 || br.right > tr.left || bd.scrollWidth > bd.clientWidth + 1 || tr.height < 43.5 || tr.width < 43.5) out.push(`${title}|${b}|${lab}`);

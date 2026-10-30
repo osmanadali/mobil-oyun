@@ -1217,7 +1217,7 @@ function win() {
 // Kıl payı ya da kırılan seri → "Tekrar dene" büyük düğmeye geçer, Sonraki küçük sıraya iner (düğme sayısı aynı kalır).
 function winSheet(g, { st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, combo, broke, near }) {
   const lim = g.lim, nx = g.lvl + 1, nxLocked = !g.daily && !unlocked(lineOf(nx)), again = !g.daily && (near || broke >= 2);
-  const badge = unlockedNow ? `<span class="badge">${L('YENİ HAT AÇILDI', 'NEW LINE OPEN')} · M${unlockedNow + 1}</span>` : ns ? `<span class="badge">${L('TEMA ALINABİLİR', 'NEW THEME')} 🎨</span>` : perfect ? `<span class="badge">${L('KUSURSUZ', 'PERFECT')} 👑${combo >= 2 ? ` · 🔥${combo}` : ''}</span>` : '';
+  const badge = unlockedNow ? `<span class="badge">${L('YENİ HAT AÇILDI', 'NEW LINE OPEN')} · M${unlockedNow + 1}</span>` : ns ? `<span class="badge">${L('TEMA ALINABİLİR', 'NEW THEME')} 🎨</span>` : perfect ? `<span class="badge">${L('KUSURSUZ', 'PERFECT')} 👑${combo >= 2 ? ` · ✨${combo}` : ''}</span>` : '';
   const late = Math.ceil(g.time / 1000 - lim.t), over = g.moves - lim.m;
   const miss = [tOk ? '' : `⏱ ${late} ${L('sn', 's')}`, mOk ? '' : `↻ ${over} ${L('hamle', pl(over, 'move', 'moves'))}`].filter(Boolean).join(' · ');
   const tip = perfect ? '' : `<p class="tip">${L('Kusursuz için', 'For perfect')}: ${[tOk ? '' : `⏱ ≤ ${fmtT(lim.t * 1000)}`, mOk ? '' : `↻ ≤ ${lim.m} ${L('hamle', 'moves')}`].filter(Boolean).join(L(' ve ', ' and '))}</p>`;
