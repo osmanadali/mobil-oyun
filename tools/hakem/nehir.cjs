@@ -203,7 +203,7 @@ module.exports = async T => {
     const { ctx, page, errors } = await open(browser, URL, { save: { played: 1 } });
     const k = await page.evaluate(() => {
       const R = window.__ray, X = ['bridge', 'table', 'ring', 'zone'], mix = {}; let n = 0, bad = 0, rej = 0, cl = 0, fog = 0, l = 829;
-      for (; n < 300 && l < 6000; l++) {
+      for (; n < 300 && l < 9000; l++) {   // M21–M23 karma havuzunu seyreltti: arama 9000e dek
         const U = R.rulesFor(l); if (!U.has('river')) continue; n++;
         if (X.some(q => U.has(q))) cl++;
         const P = R.puzzleFor(l), L = R.lit({ ...P, cur: P.sol });
