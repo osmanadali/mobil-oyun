@@ -69,7 +69,7 @@ module.exports = async T => {
         const R = window.__ray, H = [], h = P => JSON.stringify([P.cols, P.rows, P.sol, P.cur, P.pinned, P.link, P.rev, P.cnt, P.hub, P.hub2, P.par, P.taps, P.diff, P.rules, 'sign' in P]);
         for (let l = 1; l <= 408; l++) H.push(h(R.puzzleFor(l)));
         const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        for (let k = 0; k < 14; k++) H.push(h(R.dailyFor(ymd(new Date(2026, 9, 1 + k * 9)))));
+        for (let k = 0; k < 14; k++) H.push(h(R.dailyBase(ymd(new Date(2026, 9, 1 + k * 9)))));
         return { H, sign: R.MODS.some(m => m.key === 'sign') };
       });
       await ctx.close(); return r;

@@ -38,7 +38,7 @@ module.exports = async T => {
       for (let s = 1; s <= 60; s++) { const a = R.generate(7, 9, s, 3, 2, { portal: 0, rev: 3, two: s % 2 }), b = R.generate(7, 9, s, 3, 2, { rev: 3, two: s % 2 }); if (!a.adj && JSON.stringify(a) === JSON.stringify(b) && R.difficulty(a) === R.difficulty(b)) same++; }
       // eski bölümler ve Günün Hattı: kural eklenmeden önce ölçülen imza (1–208 hiçbir eklentiye bağlı değil) · 209–828'de tünel yok
       const pz = P => P.sol.join('') + '|' + P.cur.join('') + '|' + P.diff + '|' + P.par;
-      const old = H([1, 13, 29, 49, 73, 101, 150, 208].map(l => pz(R.puzzleFor(l))).join(';')), day = H(['2026-01-01', '2026-10-27'].map(d => pz(R.dailyFor(d))).join(';'));
+      const old = H([1, 13, 29, 49, 73, 101, 150, 208].map(l => pz(R.puzzleFor(l))).join(';')), day = H(['2026-01-01', '2026-10-27'].map(d => pz(R.dailyBase(d))).join(';'));
       let mid = 0; for (let l = 1; l <= 828; l++) if (R.rulesFor(l).has('portal')) mid++;
       const L0 = R.lineStart(18), P829 = R.puzzleFor(L0);
       const d = k => { let a = 0; for (let s = 0; s < 150; s++) a += R.difficulty(R.generate(7, 9, s * 31, 0, 0, { portal: k })); return +(a / 150).toFixed(2); };

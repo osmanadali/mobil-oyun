@@ -64,7 +64,7 @@ module.exports = async T => {
   const sig = p => p.evaluate(() => {
     const R = window.__ray, L = [1, 2, 13, 29, 49, 73, 101, 133, 169, 200, 208, 209, 240, 300, 301, 360, 408, 409, 470, 531, 532];
     const h = P => [P.cols, P.rows, P.sol, P.cur, P.pinned, P.link, P.rev, P.cnt, P.par, P.taps, P.diff, P.rules || ''].join('|');
-    return { has: !!R.MODS.find(m => m.key === 'table'), lv: L.map(l => h(R.puzzleFor(l))), d: ['2026-10-27', '2026-11-01', '2027-03-14'].map(d => h(R.dailyFor(d))) };
+    return { has: !!R.MODS.find(m => m.key === 'table'), lv: L.map(l => h(R.puzzleFor(l))), d: ['2026-10-27', '2026-11-01', '2027-03-14'].map(d => h(R.dailyBase(d))) };
   });
   const A = await open(browser, URL, { save: { played: 1 } }), B = await open(browser, URL, { save: { played: 1 }, init: NO_TABLE }); errs.push(A.errors, B.errors);
   const sa = await sig(A.page), sb = await sig(B.page);

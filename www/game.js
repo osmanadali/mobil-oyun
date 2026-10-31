@@ -475,9 +475,10 @@ const dayDate = s => { const [y, m, d] = s.split('-').map(Number); return new Da
 const weekNo = day => Math.floor((Math.max(0, Math.round((dayDate(day) - DAILY_EPOCH) / 864e5)) + 3) / 7);   // pazartesi başlar (dailyZ ile aynı)
 function weekRule(day) { const a = WEEK_RULES.filter(k => k in RULE_LINE); return a[weekNo(day) % a.length]; }
 const dailyRule = day => dayDate(day).getDay() === 0 ? weekRule(day) : null;
-function dailyFor(day) {
-  return cached('d' + day, () => {
-    const z = dailyZ(day), c = z < .35 ? 6 : 7, r = z < .35 ? 8 : 9, k = dailyRule(day);
+// base: haftanın kuralı olmadan (pazar dışında dailyFor ile aynı) · robotun eski parmak izi testleri bunu kullanır
+function dailyFor(day, base = false) {
+  return cached((base ? 'b' : 'd') + day, () => {
+    const z = dailyZ(day), c = z < .35 ? 6 : 7, r = z < .35 ? 8 : 9, k = base ? null : dailyRule(day);
     if (!k) return pick(c, r, hashStr('ray' + day), 0, 0, z, 5 + 11 * z);
     const n = c * r, x = { rev: k === 'rev' ? Math.round(n * .15) : 0, cnt: k === 'cnt' ? Math.round(n * .12) : 0, two: k === 'two', fog: k === 'fog' };
     const m = MODS.find(m => m.key === k); if (m) x[k] = m.amount(n, false, z, false, c, r);
@@ -2209,5 +2210,5 @@ if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { plan, breath, dailyRule, weekOf, weekQ: () => weekQ(), RULE_LINE, RULES,  review: maybeReview, BST, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
+window.__ray = { plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), RULE_LINE, RULES,  review: maybeReview, BST, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();

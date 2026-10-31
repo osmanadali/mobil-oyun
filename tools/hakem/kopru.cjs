@@ -60,7 +60,7 @@ module.exports = async T => {
       const R = window.__ray, sig = P => P.cur.join() + '|' + P.sol.join(), fnv = s => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
       let s208 = '', leak = 0; const rest = [];
       for (let l = 1; l <= 300; l++) { const P = R.puzzleFor(l); if (l <= 208) s208 += sig(P) + ';'; else rest.push(sig(P)); if (R.rulesFor(l).has('bridge') || P.bridge || P.split) leak++; }
-      const daily = ['2026-10-27', '2027-03-14'].map(d => fnv(sig(R.dailyFor(d))));
+      const daily = ['2026-10-27', '2027-03-14'].map(d => fnv(sig(R.dailyBase(d))));
       // 209–300 köprü eklentisi çıkarılınca da aynı (önbellek 4 bölüm tutar; sırayla yeniden üretilir)
       const k = R.MODS.findIndex(m => m.key === 'bridge'), M = R.MODS.splice(k, 1)[0];
       let diff = 0; for (let l = 209; l <= 300; l++) if (sig(R.puzzleFor(l)) !== rest[l - 209]) diff++;

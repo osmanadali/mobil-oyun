@@ -37,7 +37,7 @@ module.exports = async T => {
       const h = s => { let x = 2166136261; for (const c of s) x = Math.imul(x ^ c.charCodeAt(0), 16777619); return x >>> 0; };
       const sig = P => [P.cols, P.rows, P.sol.join(), P.cur.join(), P.par, P.taps, P.diff, (P.rules || []).join(), P.pinned.map(Number).join(''), P.link.join(), P.rev.map(Number).join(''), P.cnt.join(), P.hub, P.hub2].join('|');
       let a = ''; for (let l = 1; l <= 208; l++) a += sig(R.puzzleFor(l));
-      let d = ''; for (let k = 0; k < 40; k++) { const dt = new Date(2026, 9, 1 + k * 9); d += sig(R.dailyFor(`${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`)); }
+      let d = ''; for (let k = 0; k < 40; k++) { const dt = new Date(2026, 9, 1 + k * 9); d += sig(R.dailyBase(`${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`)); }
       out.legacy = { lv: h(a), daily: h(d) };
       // giriş bölümü ve testere dişi; M10'da makası başka bir kuralla taşıyan ilk bölüm
       const p = R.puzzleFor(209); out.intro = { size: p.cols + 'x' + p.rows, rules: p.rules.join('+'), sw: p.sw.filter(Boolean).length, wrong: p.sw.filter((m, i) => m && p.cur[i] !== p.sol[i]).length };

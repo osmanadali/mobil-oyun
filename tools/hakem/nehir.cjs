@@ -9,7 +9,7 @@ const FP = () => {
   const R = window.__ray, fnv = s => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return (h >>> 0).toString(36); };
   const sum = P => JSON.stringify([P.cols, P.rows, P.sol, P.cur, P.pinned, P.link, P.rev, P.cnt, P.hub2, P.par, P.taps, P.diff, P.rules, Object.keys(P).sort()]);
   let a = ''; for (let l = 1; l <= 748; l++) a += fnv(sum(R.puzzleFor(l)));
-  let d = ''; for (let k = 0; k < 30; k++) { const t = new Date(2026, 9, 1 + k * 11), s = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`; d += fnv(sum(R.dailyFor(s))); }
+  let d = ''; for (let k = 0; k < 30; k++) { const t = new Date(2026, 9, 1 + k * 11), s = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`; d += fnv(sum(R.dailyBase(s))); }
   return { levels: fnv(a), daily: fnv(d) };
 };
 
@@ -65,7 +65,7 @@ module.exports = async T => {
       for (const h of ['tree', 'mark', 'open', 'check', 'prune']) { wrap[h] = m[h]; m[h] = function (...x) { calls.n++; return wrap[h].apply(this, x); }; }
       let old = 0, early = 0; for (let l = 1; l < 749; l += 7) if (R.puzzleFor(l).river) old++;
       for (let l = 1; l < 749; l++) if (R.rulesFor(l).has('river')) early++;
-      ['2026-10-01', '2026-10-28'].forEach(d => { if (R.dailyFor(d).river) old++; });
+      ['2026-10-01', '2026-10-28'].forEach(d => { if (R.dailyBase(d).river) old++; });
       Object.assign(m, wrap);
       let zero = 0; for (let s = 1; s <= 40; s++) { const x = R.generate(7, 9, s, 3, 1, { rev: 3, river: 0 }), y = R.generate(7, 9, s, 3, 1, { rev: 3 }); if (JSON.stringify([x.sol, x.cur, x.river]) !== JSON.stringify([y.sol, y.cur, y.river])) zero++; }
       return { calls: calls.n, old, early, zero };

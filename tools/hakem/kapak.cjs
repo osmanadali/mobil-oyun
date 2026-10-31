@@ -49,7 +49,7 @@ module.exports = async T => {
       const pz = P => JSON.stringify([P.sol, P.cur, P.pinned, P.link, P.rev, P.cnt, P.hub2, P.par, P.taps, P.diff, P.units?.map(u => u.cells), P.sw, P.rules]);
       let fp = '', early = 0; for (let l = 1; l < R.lineStart(9); l++) { const P = R.puzzleFor(l); fp = H(fp + pz(P)); if (P.cover || R.rulesFor(l).has('cover')) early++; }
       const days = []; for (let k = 0; k < 40; k++) days.push(new Date(Date.UTC(2026, 0, 1) + k * 9 * 864e5).toISOString().slice(0, 10));
-      const day = H(days.map(d => pz(R.dailyFor(d))).join());
+      const day = H(days.map(d => pz(R.dailyBase(d))).join());
       Object.assign(m, wrap);
       // zorluk: aynı tohum ve boyut, kural kapalı → açık (2 kapak)
       const dd = {}; for (const [c, r] of [[7, 9], [6, 8]]) { let a = 0, b = 0; for (let s = 0; s < 150; s++) { const seed = s * 7919 + 17; a += R.difficulty(R.generate(c, r, seed, 0, 0, {})); b += R.difficulty(R.generate(c, r, seed, 0, 0, { cover: 2 })); } dd[c + 'x' + r] = +((b - a) / 150).toFixed(2); }
