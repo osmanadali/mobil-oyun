@@ -122,8 +122,10 @@ const SKINS = [
   { id: 'kurban', sea: '🌤', name: L('Bayram Sabahı', 'Eid Morning'), lines: ['#8fe388', '#ffd6a5', '#6ec6ff', '#ffb38a', '#c9f2a0', '#a8b8ff'], acc: ['#8fe388', '#6ec6ff'], glow: ['#3f9f5f', '#ffb36b', '#3a7bd5'] },
 ];
 const crownCount = () => Object.keys(save.crowns).length + (save.dCrowns || 0) + (save.fc || 0) + (save.cc || 0) + (save.qc || 0) + (save.aCrowns || 0) + (save.dt || 0);   // toplam kazanılan 🎫 (bölüm + günlük kusursuz + final + seri bonusu + haftalık görev + arşiv + Günün Hattı bitişi)
-const crownBal = () => crownCount() - (save.spent || 0);                             // harcanabilir bakiye
-const skinOpen = k => !!save.owned[k.id] || !!(k.vip && save.noAds);
+const crownBal = () => crownCount() + (save.bCrowns || 0) - (save.spent || 0);       // harcanabilir bakiye (satın alınan 🎫 dahil)
+// sandık yalnız kazanılan 🎫 ile açılır: satın alınan bilet (bCrowns, harcanan kısmı bSpent) yalnız temaya → parayla rastgele ödül yok
+const chestBal = () => crownCount() - ((save.spent || 0) - (save.bSpent || 0));
+const skinOpen = k => !!save.owned[k.id] || !!(k.vip && save.noAds) || !!(!k.vip && save.allThemes);   // allThemes: Tema paketi
 const skin = () => { const k = SKINS.find(x => x.id === save.skin); return k && skinOpen(k) ? k : SKINS[0]; };
 const shade = (hex, f) => '#' + [16, 8, 0].map(b => Math.round((parseInt(hex.slice(1), 16) >> b & 255) * f).toString(16).padStart(2, '0')).join('');
 // ---------- hat renkleri: OKLCH (algısal) uzayda üretilir → bütün hatlar eşit parlaklıkta, koyu/açık zeminde okunur ----------
@@ -1497,6 +1499,63 @@ function grantNoAds() {
   haptic('win'); toast(L('Reklamsız paket aktif 💛 +20 ipucu · 3 özel tema açıldı', 'Ad-free pack active 💛 +20 hints · 3 special themes'));
   if (modalOpen() && $('mBuy')) shopSheet();
 }
+// ---------- mağaza: tek pencere (Ayarlar › Mağaza, ipucu bitince "İpucu paketleri"). Satış sade: rozet, geri sayım, açılır pencere yok ----------
+const STORE = [
+  ['noads', '💛', () => L('Reklamsız paket', 'Ad-free pack'), () => L('Reklam yok · 20 ipucu · 3 özel tema', 'No ads · 20 hints · 3 special themes')],
+  ['themes', '🎨', () => L('Tema paketi', 'Theme pack'), () => L(`${SKINS.filter(k => !k.vip).length} renk temasının hepsi · tek seferlik`, `All ${SKINS.filter(k => !k.vip).length} color themes · one-time`)],
+  ['hint10', '💡', () => L('10 ipucu', '10 hints'), () => L('Takıldığın karoyu yerine oturtur', 'Puts a tricky tile in place')],
+  ['hint30', '💡', () => L('30 ipucu', '30 hints'), () => ''],
+  ['hint80', '💡', () => L('80 ipucu', '80 hints'), () => ''],
+  ['bst', '🧰', () => L('Güçlendirici paketi', 'Booster pack'), () => BST.map(b => `${b.ic}×3`).join(' ')],
+  ['crown', '🎫', () => L('Bilet paketi · 50 bilet', 'Ticket pack · 50 tickets'), () => L('Yalnız temalar için (sandık kazanılan 🎫 ile açılır)', 'For themes only (chests use earned 🎫)')],
+];
+function storeSheet(focus) {
+  const live = Shop.avail(), owns = k => k === 'noads' ? save.noAds : k === 'themes' && save.allThemes;
+  const rows = STORE.filter(([k]) => live || k === 'noads').filter(([k]) => !(k === 'themes' && SKINS.every(x => x.vip || skinOpen(x)) && !save.allThemes))
+    .map(([k, ic, name, sub]) => `<button class="opt row prod ${focus === k.slice(0, 4) ? 'on' : ''}" data-p="${k}"><span>${ic} ${name()}${sub() ? `<small>${sub()}</small>` : ''}</span><b>${owns(k) ? L('Sende ✓', 'Owned ✓') : (Shop.price(k) || '') + ' ›'}</b></button>`).join('');
+  modal(`<h2>${L('Mağaza', 'Shop')}</h2>
+    <p>${L(`Sende 💡 ${save.hints} · 🎫 ${crownBal()}`, `You have 💡 ${save.hints} · 🎫 ${crownBal()}`)}</p>
+    <div class="store" id="store">${rows}</div>
+    <p class="tip">${live ? L('Oyunun tamamı ücretsiz oynanır; paketler isteğe bağlı.', 'The whole game is free to play; packs are optional.') : L('Paketler mağazadan indirilen sürümde açılır.', 'Packs are available in the store version.')}</p>
+    ${live ? `<button id="mRestore" class="link">${L('Satın alımı geri yükle', 'Restore purchase')}</button>` : ''}
+    <button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, { mRestore: restoreBuys, mClose: closeModal });
+  $('store').onclick = async e => {
+    const b = e.target.closest('[data-p]'), k = b?.dataset.p; if (!k) return;
+    if (k === 'noads') return shopSheet();
+    if (owns(k)) return k === 'themes' && skinSheet();
+    if (!Shop.ready(k)) { toast(Shop.avail() ? L('Mağaza şu an kullanılamıyor · sonra dene', 'Store unavailable right now · try later') : L('Satın alma mağazadan indirilen sürümde açılır', 'Purchases work in the store version')); return; }
+    const r = await Shop.buy(k);
+    if (r === 'hata') toast(L('Satın alma tamamlanamadı', 'Purchase couldn’t be completed'));
+  };
+}
+async function restoreBuys() {
+  const had = [save.noAds, save.allThemes];
+  toast(L('Kontrol ediliyor…', 'Checking…')); await Shop.restore();
+  setTimeout(() => { if (had[0] === save.noAds && had[1] === save.allThemes) toast(save.noAds || save.allThemes ? L('Satın alımların güncel ✓', 'Your purchases are up to date ✓') : L('Bu hesapta satın alım bulunamadı', 'No purchase found on this account')); }, 2500);
+}
+function grantThemes() {
+  if (save.allThemes) return;
+  save.allThemes = true; persist(); refreshHome();
+  haptic('win'); toast(L('🎨 Tema paketi açıldı · bütün renk temaları senin', '🎨 Theme pack unlocked · every color theme is yours'));
+  if (modalOpen() && $('store')) storeSheet();
+}
+// Tüketilebilir ödül: kayda yazılır, sonra (Shop) işlem bitirilir. Aynı işlem kimliği ikinci kez ödül vermez.
+function grantItem(it, tx) {
+  if (wiped) return false;
+  const key = `${tx}:${it.id}`;
+  if (tx && (save.iapTx || []).includes(key)) return true;
+  const g = it.give;
+  if (g.hints) save.hints += g.hints;
+  if (g.bst) save.bst = Object.fromEntries(BST.map(b => [b.id, bst(b.id) + (g.bst[b.id] || 0)]));
+  if (g.crowns) save.bCrowns = (save.bCrowns || 0) + g.crowns;
+  if (tx) save.iapTx = [...(save.iapTx || []), key].slice(-50);
+  persist();
+  if (tx) try { if (!JSON.parse(localStorage.getItem('ray')).iapTx?.includes(key)) return false; } catch { return false; }   // kayıt gerçekten yazıldı mı (yazılmadıysa işlem açık kalır)
+  $('gHints').textContent = save.hints; refreshHome(); haptic('win');
+  toast(g.hints ? L(`+${g.hints} ipucu 💡`, `+${g.hints} hints 💡`) : g.bst ? L('🧰 Güçlendiriciler çantanda', '🧰 Boosters added') : L(`+${g.crowns} 🎫 bilet · temalarda kullan`, `+${g.crowns} 🎫 tickets · spend them on themes`));
+  if (modalOpen() && $('store')) storeSheet();
+  return true;
+}
 
 async function hint() {
   if (!G || G.won) return;
@@ -1533,7 +1592,9 @@ function adSheet() {
   modal(`<h2>${P.part ? L('Bir video kaldı', need - P.part > 1 ? 'More videos to go' : 'One video left') + (need - P.part > 1 ? '' : '!') : L('İpucun bitti', 'Out of hints')}</h2>
     <p>${L(need === 1 ? 'Kısa bir video izle' : `${need} kısa video izle`, need === 1 ? 'Watch a short video' : `Watch ${need} short videos`)} (~${sec} ${L('sn', 's')}), ${L('<b>2 ipucu</b> kazan.', 'earn <b>2 hints</b>.')}${P.part ? `<br>${P.part}/${need} ${L('izlendi', 'watched')}.` : ''}</p>${dots}
     <button id="mAd" class="btn primary"><span>${P.part ? L(`Devam · ${P.part + 1}. video`, `Continue · video ${P.part + 1}`) : L('İzle · +2 ipucu', 'Watch · +2 hints')}</span><small>~${sec} ${L('sn', 's')}${need > 1 ? ` · ${need} video${L('', 's')}` : ''}</small></button>
+    ${Shop.avail() ? `<button id="mPack" class="link">${L('💡 İpucu paketleri', '💡 Hint packs')}</button>` : ''}
     <button id="mNo" class="btn glassbtn">${L('Vazgeç', 'Cancel')}</button>`, {
+    mPack: () => storeSheet('hint'),
     mAd: async () => {
       if (Ads.busy()) return;
       closeModal(); pause(); toast(AD_LOAD); Music.stop();
@@ -1713,7 +1774,7 @@ function settings() {
     <div class="opt">${L('Görünüm', 'Theme')} <div class="seg" id="oT">${seg}</div></div>
     <div class="opt">${L('Dil', 'Language')} <div class="seg" id="oL">${lang}</div></div>
     <button class="opt row" id="oSkin"><span>${L('Renk temaları', 'Color themes')}</span><small>${skin().name} · 🎫 ${crownBal()} ›</small></button>
-    <button class="opt row" id="oShop"><span>${L('Reklamsız paket', 'Ad-free pack')}</span><small>${save.noAds ? L('Aktif ✓', 'Active ✓') : (Shop.price() || '💛') + ' ›'}</small></button>
+    <button class="opt row" id="oShop"><span>${L('Mağaza', 'Shop')}</span><small>💡 🧰 🎨 🎫 ›</small></button>
     <button class="opt row" id="oHow"><span>${L('Nasıl oynanır?', 'How to play?')}</span><small>›</small></button>
     <button class="opt row" id="oMove"><span>${L('İlerlemeyi taşı', 'Move progress')}</span><small>${L('Yeni telefona', 'To a new phone')} ›</small></button>
     ${SUPPORT_MAIL ? `<button class="opt row" id="oMail"><span>${L('Bize yaz', 'Contact us')}</span><small>${L('Öneri · hata', 'Ideas · bugs')} ›</small></button>` : ''}
@@ -1724,7 +1785,7 @@ function settings() {
       else if (!await Remind.enable()) toast(NO_PERM);
       $('oR').classList.toggle('on', save.remind);
     },
-    oSkin: skinSheet, oShop: shopSheet, oPriv: privacySheet, oHow: () => { closeModal(); how(); }, oMove: moveSheet, oMail: () => { location.href = `mailto:${SUPPORT_MAIL}?subject=${encodeURIComponent('Ray · ' + (window.Capacitor?.getPlatform?.() || 'web') + ' · ' + RAY_LANG)}`; },
+    oSkin: skinSheet, oShop: () => storeSheet(), oPriv: privacySheet, oHow: () => { closeModal(); how(); }, oMove: moveSheet, oMail: () => { location.href = `mailto:${SUPPORT_MAIL}?subject=${encodeURIComponent('Ray · ' + (window.Capacitor?.getPlatform?.() || 'web') + ' · ' + RAY_LANG)}`; },
     oM: () => { save.music = !save.music; persist(); $('oM').classList.toggle('on', save.music); save.music ? Music.start() : Music.stop(); },
     oS: () => { save.sound = !save.sound; persist(); $('oS').classList.toggle('on', save.sound); },
     oV: () => { save.vib = !save.vib; persist(); $('oV').classList.toggle('on', save.vib); haptic(); },
@@ -1758,7 +1819,7 @@ function privacySheet() {
 // Kod: RAY1.<base64 JSON>.<sağlama>. Reklamsız paket kodla taşınmaz (mağazadan "Satın alımı geri yükle"); yarım oyunlar taşınmaz.
 const VIP = () => SKINS.filter(k => k.vip).map(k => k.id);
 function moveCode() {
-  const s = { ...save }; delete s.noAds; delete s.runs; s.owned = { ...s.owned }; VIP().forEach(id => delete s.owned[id]);
+  const s = { ...save }; delete s.noAds; delete s.allThemes; delete s.iapTx; delete s.runs; s.owned = { ...s.owned }; VIP().forEach(id => delete s.owned[id]);
   const b = btoa(unescape(encodeURIComponent(JSON.stringify(s))));
   return `RAY1.${b}.${hashStr(b + 'ray').toString(36)}`;
 }
@@ -1770,7 +1831,7 @@ function moveRead(code) {
 function moveSheet() {
   const n = Object.keys(save.stars).length;
   modal(`<h2>${L('İlerlemeyi taşı', 'Move progress')}</h2>
-    <p>${L('Yeni telefonda oyunu aç, <b>Ayarlar › İlerlemeyi taşı</b>’ya bu kodu yapıştır. Reklamsız paket kodla taşınmaz, mağazadan geri yüklenir.', 'On your new phone, open <b>Settings › Move progress</b> and paste this code. The ad-free pack doesn’t move with the code; restore it from the store.')}</p>
+    <p>${L('Yeni telefonda oyunu aç, <b>Ayarlar › İlerlemeyi taşı</b>’ya bu kodu yapıştır. Reklamsız ve tema paketi kodla taşınmaz, mağazadan geri yüklenir.', 'On your new phone, open <b>Settings › Move progress</b> and paste this code. The ad-free and theme packs don’t move with the code; restore them from the store.')}</p>
     <button id="mCopy" class="btn primary"><span>${L('Kodu kopyala', 'Copy code')}</span><small>${L(`Bölüm ${save.level} · ★ ${totalStars()}`, `Level ${save.level} · ★ ${totalStars()}`)}</small></button>
     <textarea id="mCode" class="code" rows="3" spellcheck="false" autocomplete="off" placeholder="${L('Öteki telefondaki kodu buraya yapıştır', 'Paste the code from your other phone')}"></textarea>
     <button id="mLoad" class="btn glassbtn">${L('Kodu yükle', 'Load code')}</button>
@@ -1784,7 +1845,7 @@ function moveSheet() {
       const b = $('mLoad'), s = moveRead($('mCode').value);
       if (!s) { toast(L('Kod geçersiz · tamamını yapıştır', 'Invalid code · paste all of it')); return; }
       if (!b.dataset.ok && n) { b.dataset.ok = 1; b.textContent = L(`Bu cihazdaki ilerleme silinir · Bölüm ${s.level} yüklensin mi?`, `This phone’s progress will be replaced · load Level ${s.level}?`); return; }
-      s.noAds = save.noAds; s.owned = { ...s.owned }; VIP().forEach(id => { if (save.owned?.[id]) s.owned[id] = 1; else delete s.owned[id]; });
+      s.noAds = save.noAds; s.allThemes = save.allThemes; s.iapTx = save.iapTx; s.owned = { ...s.owned }; VIP().forEach(id => { if (save.owned?.[id]) s.owned[id] = 1; else delete s.owned[id]; });
       wiped = true;   // yenilenirken eski kayıt üstüne yazılmasın (persist susar)
       try { localStorage.setItem('ray', JSON.stringify(s)); } catch {}
       location.reload();
@@ -1821,7 +1882,7 @@ function skinSheet() {
   const sea = SKINS.filter(k => k.sea && (seaWin(k.id) || skinOpen(k))), seaOn = sea.filter(k => seaWin(k.id) && !skinOpen(k));
   modal(`<h2>${L('Renk temaları', 'Color themes')}</h2><p>${L('Her <b>kusursuz</b> bölüm (⏱ ve ↻ hedefi) 1 🎫 verir. 🎫 ile tema ve sandık açılır.', 'Every <b>perfect</b> level (⏱ and ↻ targets) gives 1 🎫. Spend 🎫 on themes and chests.')}</p>
     <div class="nexts"><small>${L('Bakiye', 'Balance')}</small><b class="bal">🎫 ${bal}</b></div>
-    <button id="mChest" class="chestrow ${bal >= CHEST ? 'can' : ''}"><i>${CHEST_SVG}</i><span><b>${L('Sürpriz sandık', 'Surprise chest')}</b><small>${L('İpucu · 🛡 seri kalkanı · 🚆 tren kaplaması', 'Hints · 🛡 shield · 🚆 train livery')}</small></span><em>🎫 ${CHEST}</em></button>
+    <button id="mChest" class="chestrow ${chestBal() >= CHEST ? 'can' : ''}"><i>${CHEST_SVG}</i><span><b>${L('Sürpriz sandık', 'Surprise chest')}</b><small>${L('İpucu · 🛡 seri kalkanı · 🚆 tren kaplaması', 'Hints · 🛡 shield · 🚆 train livery')}</small></span><em>🎫 ${CHEST}</em></button>
     ${nx ? `<div class="nexts"><small>${L('Sıradaki', 'Next up')}: <b>${nx.name}</b></small><small>🎫 ${Math.min(bal, nx.need)} / ${nx.need}</small></div><div class="pb"><i style="width:${Math.max(4, Math.min(100, bal / nx.need * 100))}%"></i></div>` : ''}
     <div class="skins" id="skins">${sea.length ? `<small class="vipk sea">${seaOn.length ? L(`${seaOn[0].sea} Mevsim teması · ${seaTill(seaOn[0])} tarihine dek ücretsiz`, `${seaOn[0].sea} Seasonal theme · free until ${seaTill(seaOn[0])}`) : L('🍂 Mevsim temaları', '🍂 Seasonal themes')}</small>${sea.map(card).join('')}<small class="vipk">${L('🎫 Bilet temaları', '🎫 Ticket themes')}</small>` : ''}${SKINS.filter(k => !k.vip && !k.sea).map(card).join('')}
       <small class="vipk">${L('💛 Reklamsız pakete özel', '💛 Ad-free pack only')}</small>${SKINS.filter(k => k.vip).map(card).join('')}</div>
@@ -1846,6 +1907,7 @@ function buySheet(k) {
     <button id="mBack" class="btn glassbtn">${L('Vazgeç', 'Cancel')}</button>`, {
     mBuy: () => {
       if (crownBal() < k.need || skinOpen(k)) return skinSheet();
+      save.bSpent = (save.bSpent || 0) + Math.min(k.need, (save.bCrowns || 0) - (save.bSpent || 0));   // önce satın alınan 👑 harcanır
       save.spent = (save.spent || 0) + k.need; save.owned[k.id] = 1; save.skin = k.id; persist();
       applyTheme(); refreshHome(); haptic('win'); [0, 4, 7, 12].forEach((q, j) => tone(note(q + 3), .35, .045, 'sine', j * .08));
       toast(L(`🎨 ${k.name} senin!`, `🎨 ${k.name} is yours!`)); skinSheet();
@@ -1943,10 +2005,11 @@ const RW_ICON = {
 const LOOT = L([['c', '💡 ipucu ×2 <i>ya da</i> 1 güçlendirici'], ['r', '💡 ipucu ×4, 🛡 seri kalkanı, 2 güçlendirici <i>ya da</i> ❤️∞ 15 dk'], ['e', '🚆 yeni tren kaplaması <i>ya da</i> ❤️∞ 30 dk']],
   [['c', '💡 hint ×2 <i>or</i> 1 booster'], ['r', '💡 hint ×4, 🛡 streak shield, 2 boosters <i>or</i> ❤️∞ 15 min'], ['e', '🚆 new train livery <i>or</i> ❤️∞ 30 min']]);
 function chestSheet() {
-  const bal = crownBal(), can = bal >= CHEST, own = LIVERIES.filter(v => ownsLiv(v.id)).length, cur = save.train || 'hat';
+  const can = chestBal() >= CHEST, own = LIVERIES.filter(v => ownsLiv(v.id)).length, cur = save.train || 'hat';
   modal(`<h2>${L('Sürpriz sandık', 'Surprise chest')}</h2>
     <div class="cbox ${can ? 'can' : ''}" id="chestBox">${CHEST_SVG}<div class="loot">${LOOT.map(([t, s]) => `<b class="tier-${t}">${RARITY[t][0]}</b><span>${s}</span>`).join('')}<small>${L(`${PITY} sandıkta destansı çıkmazsa ${PITY}.si garanti`, `No epic in ${PITY - 1} chests? The ${PITY}th is guaranteed`)}</small></div></div>
     <div class="odds">${Object.entries(RARITY).map(([t, [n, p]]) => `<b class="tier-${t}">${n} ${L('%' + Math.round(p * 100), Math.round(p * 100) + '%')}</b>`).join('<i>·</i>')}<button id="mOdds" class="qm" aria-label="${L('Sandıktan ne çıkar?', 'What’s inside?')}">?</button></div>
+    ${(save.bCrowns || 0) > (save.bSpent || 0) ? `<p class="tip">${L(`Sandık kazanılan 🎫 bilet ile açılır · sende 🎫 ${Math.max(0, chestBal())}`, `Chests use earned 🎫 tickets · you have 🎫 ${Math.max(0, chestBal())}`)}</p>` : ''}
     ${BST.some(b => bst(b.id)) ? `<div class="bstinv">${BST.filter(b => bst(b.id)).map(b => `<span title="${b.name}">${b.ic} <b>${bst(b.id)}</b></span>`).join('')}</div>` : ''}
     <button id="mOpen" class="btn primary cbtn">${can ? `<span>${L('Aç', 'Open')} · 🎫 ${CHEST}</span>` : `<span>${L('Bilet topla', 'Earn tickets')}</span><small>${L(`🎫 ${CHEST} gerekli`, `🎫 ${CHEST} needed`)}</small>`}</button>
     <div class="nexts"><small>${L('Trenin', 'Your train')}</small><small>🚆 ${own} / ${LIVERIES.length}</small></div>
@@ -1965,7 +2028,7 @@ function chestSheet() {
   };
 }
 function openChest() {
-  if (crownBal() < CHEST) return chestSheet();
+  if (chestBal() < CHEST) return chestSheet();
   const r = chestRoll();
   // sonuç ödülle birlikte hemen kaydedilir (animasyon yarıda kesilse de)
   save.spent = (save.spent || 0) + CHEST; save.chests = (save.chests || 0) + 1; save.dry = r.tier === 'e' ? 0 : (save.dry || 0) + 1;
@@ -2231,7 +2294,7 @@ document.body.classList.toggle('test', TEST);
 applyTheme();
 show('home');
 Ads.init();
-Shop.init(grantNoAds);
+Shop.init({ owned: k => k === 'noads' ? grantNoAds() : grantThemes(), grant: grantItem });
 Remind.plan();
 // servis çalışanı yalnız web/PWA'da. Uygulamada (Capacitor şeması da https) önbellek Play güncellemesinden sonra eski game.js'i
 // yeni yerel eklentilerle açardı → eski kayıt ve 'ray-' önbellekleri bir kez, sessizce silinir.

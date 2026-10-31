@@ -34,7 +34,7 @@ module.exports = async T => {
     const product = { id: 'ray_reklamsiz', canPurchase: true, pricing: { price: '${price}' }, getOffer: () => ({ order: async () => { owned = true; (cb.r || []).forEach(f => f({})); } }) };
     const when = { approved() { return when; }, verified() { return when; }, productUpdated(f) { cb.p = [f]; return when; }, receiptUpdated(f) { cb.r = [f]; return when; } };
     return { ProductType: { NON_CONSUMABLE: 'nc' }, Platform: { GOOGLE_PLAY: 'gp', APPLE_APPSTORE: 'as' }, ErrorCode: { PAYMENT_CANCELLED: 1 },
-      store: { register() {}, when: () => when, initialize: async () => { (cb.p || []).forEach(f => f(product)); return []; }, get: () => product, owned: () => owned, restorePurchases: async () => {} } }; })();`;
+      store: { register() {}, when: () => when, initialize: async () => { (cb.p || []).forEach(f => f(product)); return []; }, get: () => product, owned: id => owned && id === 'ray_reklamsiz', restorePurchases: async () => {} } }; })();`;
   const calls = page => G(page, () => window.__ad.calls.slice());
   const ads = page => G(page, () => window.__log.ads.slice());
   // bölümü çöz, sonuç paneli gelsin (yeni hat kartı çıkarsa geç)

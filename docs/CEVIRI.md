@@ -64,6 +64,11 @@ Oyun Türkçe ve İngilizce oynanır. Bu belge altyapıyı ve ortak sözlüğü 
 | Günün Hattı arşivi | Daily Line archive |
 | haftanın kuralı | rule of the week |
 | Reklamsız paket | Ad-free pack |
+| Mağaza | Shop |
+| Tema paketi | Theme pack |
+| Güçlendirici paketi | Booster pack |
+| İpucu paketleri | Hint packs |
+| Bilet paketi · 50 bilet | Ticket pack · 50 tickets |
 | ızgara | grid |
 | Oyna | Play |
 | Nasıl oynanır? | How to play? |

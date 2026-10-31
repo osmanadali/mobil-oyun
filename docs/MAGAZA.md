@@ -306,8 +306,8 @@ Google'ın iOS tablosu: https://developers.google.com/admob/ios/privacy/data-dis
 | Ayrımcılık, nefret | Hayır |
 | Kullanıcılar birbiriyle iletişim kuruyor mu (sohbet, içerik paylaşma) | Hayır. "Paylaş" yalnız sonuç metnini sistemin paylaşma penceresine verir. |
 | Kullanıcının konumu paylaşılıyor mu | Hayır |
-| Dijital ürün satın alma | Evet (Reklamsız paket) |
-| Parayla satın alınan rastgele ödül (ganimet kutusu) | Hayır. Sürpriz sandık yalnız oyunda kazanılan biletle açılır; bilet gerçek parayla satılmaz, sandıktan bilet çıkmaz. |
+| Dijital ürün satın alma | Evet (Mağaza: 2 tüketilemez, 5 tüketilebilir ürün; §10) |
+| Parayla satın alınan rastgele ödül (ganimet kutusu) | Hayır. Sürpriz sandık yalnız oyunda **kazanılan** biletle açılır. Mağazadaki bilet paketi (`ray_bilet_50`, 🎫; taç para birimi bilet olarak yeniden adlandırıldı) ayrı sayılır ve yalnız renk temasına harcanır, sandıkta kullanılamaz (`chestBal`, robot: `gelir.tac`); sandıktan taç çıkmaz. Bütün paketlerin içeriği sabittir. |
 | Sınırsız internet erişimi (uygulama içi tarayıcı) | Hayır |
 
 Beklenen sonuç: PEGI 3, ESRB Everyone, USK 0, IARC 3+ (satın alma nedeniyle "Oyun içi satın alma" notu eklenir).
@@ -339,9 +339,11 @@ Beklenen sonuç: PEGI 3, ESRB Everyone, USK 0, IARC 3+ (satın alma nedeniyle "O
 
 Gizlilik politikası da "13 yaş ve üzeri" der; hedef kitle ve politika uyumludur.
 
-## 10. Uygulama içi ürün: Reklamsız paket
+## 10. Uygulama içi ürünler
 
-Oyun iki mağazada da **ücretsiz indirilir**. Aşağıdaki fiyat yalnız oyunun içinden isteğe bağlı alınan Reklamsız paketin fiyatıdır; uygulamanın kendisine fiyat girilmez.
+Oyun iki mağazada da **ücretsiz indirilir**. Aşağıdaki fiyatlar yalnız oyunun içinden isteğe bağlı alınan paketlerin fiyatıdır; uygulamanın kendisine fiyat girilmez. Bütün ürünler tek **Mağaza** penceresindedir (Ayarlar › Mağaza; ipucu bitince açılan pencerede "💡 İpucu paketleri" bağlantısı). Satış sade: rozet, geri sayım, kendiliğinden açılan teklif yok.
+
+### 10.1 Reklamsız paket
 
 | Alan | Google Play | App Store Connect |
 |---|---|---|
@@ -365,6 +367,47 @@ Fiyat planı:
 
 Geri yükleme: pencerede "Satın alımı geri yükle" düğmesi var (Apple bunu ister).
 
+### 10.2 Öteki ürünler (31 Ekim)
+
+Kimlikler iki mağazada aynıdır (`www/shop.js` › `ITEMS`). Tüketilebilir ürünler Play'de "tüketilebilir uygulama içi ürün" olarak kalır (uygulama her alışta işlemi `finish` ile tüketir), App Store Connect'te **Consumable** seçilir. Tüketilemezler Play'de tek seferlik ürün, App Store'da **Non-Consumable**.
+
+| Kimlik | Tür | Ad TR / EN | İçerik | ABD (taban) | Türkiye (elle) |
+|---|---|---|---|---|---|
+| `ray_temalar` | Tüketilemez | Tema paketi / Theme Pack | Taçla açılan 22 renk temasının hepsi (Altın, Elmas, Yakut hariç; onlar Reklamsız pakette) | 3,99 $ | ₺79,99 |
+| `ray_ipucu_10` | Tüketilebilir | 10 ipucu / 10 Hints | 10 💡 | 0,99 $ | ₺19,99 |
+| `ray_ipucu_30` | Tüketilebilir | 30 ipucu / 30 Hints | 30 💡 | 1,99 $ | ₺39,99 |
+| `ray_ipucu_80` | Tüketilebilir | 80 ipucu / 80 Hints | 80 💡 | 3,99 $ | ₺79,99 |
+| `ray_guclendirici` | Tüketilebilir | Güçlendirici paketi / Booster Pack | 🔄 ek tur ×3, 🔦 fener ×3, ⏱ +15 sn ×3, ↶ geri al ×3 | 1,99 $ | ₺39,99 |
+| `ray_bilet_50` | Tüketilebilir | Bilet paketi / Ticket Pack | 50 🎫 bilet, yalnız renk temasında harcanır (sandıkta kullanılamaz) | 1,99 $ | ₺39,99 |
+
+Mağaza açıklamaları (App Store görünen ad ≤ 30, açıklama ≤ 45 karakter):
+
+| Kimlik | Açıklama TR | Açıklama EN |
+|---|---|---|
+| `ray_temalar` | `Taçla açılan 22 renk temasının hepsi` | `All 22 crown color themes, one-time` |
+| `ray_ipucu_10` / `_30` / `_80` | `10 (30, 80) ipucu: takıldığın karo yerine oturur` (Play) · `10 ipucu` (App Store) | `10 (30, 80) hints: puts a tricky tile in place` (Play) · `10 hints` (App Store) |
+| `ray_guclendirici` | `Her güçlendiriciden 3: ek tur, fener, +15 sn, geri al` | `3 of each booster: turn, lantern, +15 s, undo` |
+| `ray_bilet_50` | `50 bilet, renk temaları için` | `50 tickets to spend on color themes` |
+
+Fiyat gerekçesi (§10.1 ile aynı mantık): fiyatlar ABD'ye göre kurulur, öteki ülkeler mağazanın ABD'den çevirisiyle gelir, Türkiye elle girilir. Türkiye oranı Reklamsız paketteki gibidir (2,99 $ ↔ ₺59,99, yani 1 $ ≈ ₺20): ₺19,99 / 39,99 / 79,99.
+
+- İpucu üç boyda, büyük paket adet başına ucuzlar (0,099 → 0,066 → 0,050 $). Oyun cömert kalır: her gün 3 ipucu, seri, hat sonu ve sandık ipucu verir, ödüllü video +2; paketler acele edenler için.
+- Güçlendirici paketi 12 güçlendirici verir; sandığın sıradan ödülü 1 güçlendirici olduğundan 1,99 $ yaklaşık 10 sandıklık güçlendiriciye denk gelir ama sandığın asıl ödülü (tren kaplaması, kalkan) parayla satılmaz.
+- Bilet paketi 50 🎫 ≈ 50 kusursuz bölüm. Temalar 5–560 bilet arasında olduğundan bir paket bir-iki orta tema eder; bütün temaları isteyen için Tema paketi (3,99 $) daha uygundur. Satın alınan bilet ayrı sayılır, sandık açmaz (BOLUM_TASARIMI › Taç ekonomisi).
+- Tema paketi (3,99 $) Reklamsız paketten (2,99 $) pahalıdır: 22 temayı biletle toplamak yüzlerce kusursuz bölüm ister.
+
+Uygulamanın davranışı (robot: `tools/hakem/gelir-olcum.cjs`):
+
+- Tüketilebilir: mağaza işlemi onaylayınca ödül kayda yazılır, kaydın yazıldığı doğrulanır, **sonra** işlem bitirilir (Play'de consume, iOS'ta finish). Aynı işlem yeniden gelirse (uygulama arada kapandıysa) işlem kimliği kayıtta olduğundan ödül ikinci kez verilmez, işlem yine bitirilir. Kayıt yazılamazsa işlem açık kalır ve sonraki açılışta yeniden gelir.
+- Geri yükleme yalnız tüketilemezleri getirir (Reklamsız paket, Tema paketi).
+- İlerlemeyi taşı kodu iki tüketilemez paketi taşımaz; satın alınan ipucu/güçlendirici/bilet kayıttaki sayılarla taşınır.
+- Web'de ya da mağaza dışı APK'da yalnız Reklamsız paket satırı ve "Paketler mağazadan indirilen sürümde açılır" notu görünür.
+
+Kayıt adımları:
+
+- **Play Console:** Para kazanma › Ürünler › Uygulama içi ürünler › Ürün oluştur. Kimlik, ad, açıklama, varsayılan fiyat; sonra ülke fiyatları (ABD tabanlı şablon kullanıyorsan ürünleri o şablona bağla, Türkiye'yi elle düzelt). Etkinleştir.
+- **App Store Connect:** Uygulama › Uygulama İçi Satın Almalar › +. Tür (Consumable / Non-Consumable), Referans adı, Ürün kimliği, Fiyat (taban ABD), Türkiye elle, iki dilde görünen ad ve açıklama, inceleme ekran görüntüsü (Ayarlar › Mağaza penceresi). İlk sürümde ürünleri sürümle birlikte incelemeye gönder.
+
 ## 11. İnceleme notları
 
 **App Store › Uygulama inceleme bilgileri**
@@ -373,7 +416,7 @@ Geri yükleme: pencerede "Satın alımı geri yükle" düğmesi var (Apple bunu 
 - Not (İngilizce yaz):
 
 ```text
-No account or sign-in. The game works fully offline; ads (Google AdMob) only load when online. Levels unlock with stars, so the first levels are enough to review the core loop. The Ad-free Pack in-app purchase (ray_reklamsiz) is in Settings (top right on the home screen) > "Ad-free pack", with a restore button in the same sheet. The UI follows the device language (English or Turkish) and can be changed in Settings > Language. The ATT prompt appears on first launch after the consent step.
+No account or sign-in. The game works fully offline; ads (Google AdMob) only load when online. Levels unlock with stars, so the first levels are enough to review the core loop. All in-app purchases are in Settings (top right on the home screen) > "Shop": Ad-free Pack (ray_reklamsiz) and Theme Pack (ray_temalar) are non-consumable and can be restored with the button in the same sheet; hint packs (ray_ipucu_10/30/80), Booster Pack (ray_guclendirici) and Ticket Pack (ray_bilet_50) are consumable. Purchased tickets can only be spent on color themes, never on the surprise chest. The UI follows the device language (English or Turkish) and can be changed in Settings > Language. The ATT prompt appears on first launch after the consent step.
 ```
 
 **Google Play › Uygulama erişimi**: "Tüm işlevler herhangi bir özel erişim olmadan kullanılabilir."
@@ -408,12 +451,13 @@ Gizlilik ve yayın sayfası
 Mağaza
 
 - [ ] Play'de ve App Store Connect'te uygulama kaydı (paket `com.osmanadali.ray`, birincil dil Türkçe, ikinci dil İngilizce).
-- [ ] Uygulama içi ürün `ray_reklamsiz` (§10) iki mağazada oluşturulup etkinleştirilmeli.
+- [ ] Uygulama içi ürünler (§10) iki mağazada oluşturulup etkinleştirilmeli: `ray_reklamsiz`, `ray_temalar` (tüketilemez) ve `ray_ipucu_10`, `ray_ipucu_30`, `ray_ipucu_80`, `ray_guclendirici`, `ray_bilet_50` (tüketilebilir). Kimlikler iki mağazada aynı yazılmalı.
+- [ ] Öteki ürünlerin fiyatları (§10.2): ABD taban 0,99 / 1,99 / 3,99 $, Türkiye elle ₺19,99 / 39,99 / 79,99.
 - [ ] Uygulama fiyatı: iki mağazada **Ücretsiz** (Play'de "Ücretsiz", App Store'da 0,00 $).
-- [ ] Reklamsız paket fiyatı (§10): App Store'da taban ülke ABD 2,99 $, Türkiye elle ₺59,99. Play'de ABD 2,99 $ · AB 2,99 € · BK 2,49 £ elle (ya da USD tabanlı şablon). Taban Türkiye bırakılmaz.
+- [ ] Reklamsız paket fiyatı (§10.1): App Store'da taban ülke ABD 2,99 $, Türkiye elle ₺59,99. Play'de ABD 2,99 $ · AB 2,99 € · BK 2,49 £ elle (ya da USD tabanlı şablon). Taban Türkiye bırakılmaz.
 - [ ] Metinleri (§4, §5) ve görselleri (§2) yükle.
 - [ ] Formlar: Veri güvenliği (§6), App Privacy (§7), yaş derecelendirmesi (§8), hedef kitle ve öteki beyanlar (§9), inceleme notları (§11).
-- [ ] Gerçek cihazda son deneme: rıza penceresi, iOS ATT penceresi, reklam, satın alma ve geri yükleme (Play lisans test hesabı, Apple Sandbox).
+- [ ] Gerçek cihazda son deneme: rıza penceresi, iOS ATT penceresi, reklam, satın alma ve geri yükleme (Play lisans test hesabı, Apple Sandbox). Tüketilebilir bir paketi iki kez al (ikisi de verilmeli), uygulamayı satın alma sırasında kapatıp aç (ödül bir kez gelmeli);
 - [ ] Yayın: Play'de iç test → kapalı test (14 gün) → üretim. iOS'ta TestFlight → incelemeye gönder.
 
 ## 13. Bilinen sınırlar

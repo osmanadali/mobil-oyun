@@ -40,7 +40,7 @@ Bu not, işi yeni bir sohbete taşırken bağlam kaybolmasın diye yazıldı. Ye
 | `www/game.js` | Çekirdek: üretim, çözücü (`difficulty`), çizim, ekonomi, sandık, temalar, sefer şeridi |
 | `www/rules/*.js` | M9 sonrası kural eklentileri (`window.RAY_RULES`) |
 | `www/i18n.js`, `docs/CEVIRI.md` | Türkçe/İngilizce: `L(tr, en)`, cihaz diline göre seçim, Ayarlar › Dil; sözlük ve yazım ilkeleri |
-| `www/ads.js`, `www/shop.js`, `www/gizlilik.html` | Reklam (UMP rızası, ATT), reklamsız paket (Play + App Store), gizlilik politikası |
+| `www/ads.js`, `www/shop.js`, `www/gizlilik.html` | Reklam (UMP rızası, ATT), mağaza ürünleri (Play + App Store), gizlilik politikası |
 | `www/index.html`, `www/style.css`, `www/sw.js` | Kabuk. Yeni kural dosyası eklenince `index.html`'e `<script>` satırı ve `sw.js` önbellek listesine girdi eklenir. |
 | `tools/hakem.cjs` | Test robotu (Playwright). `tools/hakem/*.cjs` kural testlerini K bölümünde yükler. |
 | `.claude/workflows/hakem.js` | 4 kişilik yapay zekâ jürisi iş akışı ("tur bitti" deyince) |
@@ -76,6 +76,7 @@ APK indirme linkleri (sabit):
 <!-- DURUM:BAŞ -->
 Durum 28 Ekim 2026 sabahı itibarıyla:
 
+- **Mağaza (31 Ekim, `gelir-olcum` dalı):** Ayarlar › **Mağaza** tek pencere: Reklamsız paket, Tema paketi (`ray_temalar`, tüketilemez), 10/30/80 ipucu, Güçlendirici paketi (her birinden 3), Bilet paketi (`ray_bilet_50`, 50 🎫; tüketilebilir; ürünler ve fiyatlar MAGAZA §10). Tüketilebilirde ödül kayda yazılır, sonra işlem bitirilir; işlem kimliğiyle tekrar ödül yok. Satın alınan bilet ayrı sayılır (`bCrowns`/`bSpent`), yalnız temaya; sandık yalnız kazanılanla (`chestBal`). Robot: `--only=gelir-olcum`. **Salıya kalanlar:** Firebase Analytics (hazır kod `0536e22` commit'inde duruyor: `git show 0536e22 --stat`; `www/olcum.js`, `tools/olcum-hazirla.cjs`, `@capacitor-firebase/analytics` 8.5.2, ads.js/game.js/shop.js olay çağrıları, CI gizli değerleri `FIREBASE_ANDROID_JSON`/`FIREBASE_IOS_PLIST`, YAYIN §5 rıza kararı ve olay tablosu, gizlilik ve MAGAZA §6–§7 Firebase metinleri, robot ölçüm testleri; eklenecek olaylar: life_lost, life_refill_ad, offer_shown, offer_buy) ve özel teklif penceresi.
 - **Meta katmanı (31 Ekim, `meta` dalı):** Ayarlar › 🍃 Zen modu (`save.zen`; hedefler gizli, bitiş 3 ★, 🎫 ve ✨ yok; Günün Hattı etkilenmez) ve 6 mevsim teması (kış, erguvan, yaz, hazan, iki bayram; mevsiminde ücretsiz, sonra sahibinde kalır; bayram tablosu 2026–2035). Şehir haritası ve rozetler salıya kaldı (tasarım BOLUM_TASARIMI §10 sonunda, kod `564893d`). Robot `--only=meta`.
 - **🎫 Bilet, haftalık görev, arşiv, haftanın kuralı (31 Ekim):** 👑 taç para birimi 🎫 bilet olarak yeniden adlandırıldı (kayıtta `crowns`/`crownBal` adları kaldı; haritada kusursuz bölüm 🎫). Her pazartesi 3 haftalık görev (basamağa göre miktar, herkeste aynı tohum), ödül 🎫 + 💡/❤️∞ sınırsız can; Günün Hattı'nı bitirmek +1 🎫 (kusursuzsa +1 daha); seri penceresinden son 30 günün Günün Hattı arşivi (gün başına 3 🎫, seriyi etkilemez); sandığa ❤️∞ 15/30 dk eklendi (`save.infUntil`, can sistemi hat-yapisi'nde); pazar Günün Hattı haftanın kuralını taşır (öteki günler bit bit aynı). Ana sayfada yalnız Günün Hattı kartının altında ince bir görev satırı. Ayrıntı BOLUM_TASARIMI §6, §8; robot `--only=gunluk-gorev`. Robotun `solve()` yardımcısı açık kural kartını önce kapatır. Mağaza görselleri yeni metinle yeniden üretilmeli (birleştirmede).
 - **Hedefler %25 sıkı (31 Ekim, `hat-yapisi`):** ↻ hamle hedefi par × 1,3–1,4 (en az +2), ⏱ süre hedefi × ¾ (en az 11 sn), kıl payı 4 sn. Hat boyu tavanı (28) ve yeni kural sırası hazırlandı, salıya (3 Kasım) bırakıldı: hazır hâli `hat-yapisi` geçmişinde 8a88d20 commit'inde (testler kurala göre yazılmış: `AT('fog')`, `RL`, `seenTo`; boost ayarı; eklentilerde `ord`).
@@ -135,7 +136,7 @@ Durum 28 Ekim 2026 sabahı itibarıyla:
 3. **İmza anahtarı:** `keytool` ile üretilir ve yedeklenir. Dört gizli değer GitHub'a girilir: `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`.
 4. **Gizlilik politikası:** `www/gizlilik.html` içindeki `[iletişim e-postası]` ve `[geliştirici adı]` doldurulur.
 5. **GitHub Pages:** açılmalı (gizlilik adresi bunu bekliyor). `web.yml` push tetikleyicisi geri getirilir.
-6. **Mağaza ürünü ve formlar:** `ray_reklamsiz` ürünü iki mağazada tanımlanır, formlar doldurulur, metin ve görseller yüklenir.
+6. **Mağaza ürünleri ve formlar:** yedi ürün (MAGAZA §10: `ray_reklamsiz`, `ray_temalar`, `ray_ipucu_10/30/80`, `ray_guclendirici`, `ray_bilet_50`) iki mağazada tanımlanır, formlar doldurulur, metin ve görseller yüklenir.
 
 **Geliştirme (öneriler, `docs/KALITE.md` §3):**
 

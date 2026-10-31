@@ -1,32 +1,59 @@
-// Reklamsız paket: tek seferlik satın alma (cordova-plugin-purchase). Android: Google Play, iOS: App Store.
+// Mağaza: uygulama içi ürünler (cordova-plugin-purchase 13). Android: Google Play, iOS: App Store.
 // Mağaza yoksa (web, mağaza dışından kurulan test APK'sı) sessizce devre dışı kalır; oyun etkilenmez.
-// Ürün kimliği iki mağazada da aynı: ray_reklamsiz (Play: uygulama içi ürün; App Store Connect: Non-Consumable / tüketilemez).
+// Kimlikler iki mağazada da aynı (docs/MAGAZA.md §10). Tüketilemez (nc): geri yüklenir. Tüketilebilir: her alışta ödül verilir,
+// ödül kayda yazıldıktan SONRA işlem bitirilir (finish → Play'de consume). Ödül yazılamazsa işlem açık kalır, sonraki açılışta yeniden gelir.
+// Aynı işlem iki kez gelirse (uygulama ödülle bitirme arasında kapandıysa) işlem kimliği kayıtta olduğundan ikinci ödül verilmez (game.js grantItem).
 window.Shop = (() => {
-  const ID = 'ray_reklamsiz';
+  const ITEMS = [
+    { key: 'noads', id: 'ray_reklamsiz', nc: true },
+    { key: 'themes', id: 'ray_temalar', nc: true },
+    { key: 'hint10', id: 'ray_ipucu_10', give: { hints: 10 } },
+    { key: 'hint30', id: 'ray_ipucu_30', give: { hints: 30 } },
+    { key: 'hint80', id: 'ray_ipucu_80', give: { hints: 80 } },
+    { key: 'bst', id: 'ray_guclendirici', give: { bst: { tur: 3, fener: 3, sure: 3, geri: 3 } } },
+    { key: 'crown', id: 'ray_bilet_50', give: { crowns: 50 } },   // 🎫 bilet (eski adıyla 👑 taç; kayıtta crown adları korunur)
+  ];
+  const byKey = Object.fromEntries(ITEMS.map(x => [x.key, x])), byId = Object.fromEntries(ITEMS.map(x => [x.id, x]));
   const C = () => window.CdvPurchase;
   const ios = () => window.Capacitor?.getPlatform?.() === 'ios';
-  let product = null, started = false, plat = null, onOwned = () => {};
+  const prods = {};
+  let started = false, plat = null, H = { owned() {}, grant() { return false; } };
+  const keep = p => { if (p && byId[p.id]) prods[p.id] = p; };
+  // tüketilemezler: sahiplik mağazadan (satın alma, geri yükleme, yeni cihaz)
+  function owned() { const S = C()?.store; if (!S) return; ITEMS.forEach(x => { if (x.nc && S.owned(x.id)) H.owned(x.key); }); }
+  // onaylanan işlem: tüketilebilir ürün → önce ödül (kayda yazılır), sonra finish. Tüketilemez → doğrula → bitir.
+  function approved(t) {
+    const cons = (t.products || []).map(p => byId[p.id]).filter(x => x && !x.nc);
+    if (!cons.length) return t.verify();
+    const tx = String(t.transactionId || t.purchaseId || '');
+    if (cons.every(x => H.grant(x, tx))) t.finish();
+  }
   function setup() {
     const P = C(); if (!P || started) return;
     started = true;
     const { store, ProductType, Platform } = P;
     plat = ios() ? Platform.APPLE_APPSTORE : Platform.GOOGLE_PLAY;
-    store.register([{ id: ID, type: ProductType.NON_CONSUMABLE, platform: plat }]);
+    store.register(ITEMS.map(x => ({ id: x.id, type: x.nc ? ProductType.NON_CONSUMABLE : ProductType.CONSUMABLE, platform: plat })));
     store.when()
-      .approved(t => t.verify())
+      .approved(approved)
       .verified(r => r.finish())
-      .productUpdated(p => { if (p.id === ID) product = p; })
-      .receiptUpdated(() => { if (store.owned(ID)) onOwned(); });
-    store.initialize([plat]).then(() => { product = store.get(ID, plat) || product; if (store.owned(ID)) onOwned(); }).catch(() => {});
+      .productUpdated(keep)
+      .receiptUpdated(owned);
+    store.initialize([plat]).then(() => { ITEMS.forEach(x => keep(store.get(x.id, plat))); owned(); }).catch(() => {});
   }
-  function init(cb) { onOwned = cb; document.addEventListener('deviceready', setup, { once: true }); setup(); }
+  // h: { owned(key), grant(item, txId) → true yalnız ödül kayda yazıldıysa }
+  function init(h) { H = { ...H, ...h }; document.addEventListener('deviceready', setup, { once: true }); setup(); }
+  const prod = key => prods[byKey[key || 'noads']?.id];
   // 'ok' | 'iptal' | 'hata'
-  async function buy() {
-    const o = product?.getOffer?.(); if (!o) return 'hata';
-    try { const err = await o.order(); return !err ? 'ok' : err.code === C().ErrorCode.PAYMENT_CANCELLED ? 'iptal' : 'hata'; } catch { return 'hata'; }
+  async function buy(key = 'noads') {
+    const p = prod(key), o = p?.getOffer?.(); if (!o) return 'hata';
+    try {
+      const err = await o.order();
+      return !err ? 'ok' : err.code === C().ErrorCode.PAYMENT_CANCELLED ? 'iptal' : 'hata';
+    } catch { return 'hata'; }
   }
-  // Geri yükleme (iki mağazada da): Play satın alımları yeniden sorgular, App Store tamamlanmış işlemleri geri getirir → receiptUpdated → onOwned
-  async function restore() { try { const S = C()?.store; if (!S) return; await S.restorePurchases(); if (S.owned(ID)) onOwned(); } catch {} }
-  return { init, buy, restore, avail: () => !!C(), ready: () => !!product?.canPurchase, price: () => product?.pricing?.price || '',
+  // Geri yükleme (iki mağazada da) yalnız tüketilemezleri getirir: Play satın alımları yeniden sorgular, App Store tamamlanmış işlemleri geri getirir → receiptUpdated → owned
+  async function restore() { try { const S = C()?.store; if (!S) return; await S.restorePurchases(); owned(); } catch {} }
+  return { init, buy, restore, ITEMS, item: k => byKey[k], avail: () => !!C(), ready: k => !!prod(k)?.canPurchase, price: k => prod(k)?.pricing?.price || '',
     name: () => ios() ? 'App Store' : 'Google Play' };
 })();

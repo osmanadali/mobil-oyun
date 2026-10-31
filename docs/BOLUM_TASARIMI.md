@@ -195,7 +195,9 @@ Test robotu (`tools/hakem.cjs`) her değişiklikte şunları kontrol eder:
 | Şafak | 🎫 560 |
 | Altın, Elmas, Yakut | Yalnızca Reklamsız paketle |
 
-Toplam 25 renk teması vardır: 22'si biletle, 3'ü Reklamsız paketle açılır. Bunlara ek olarak 6 **mevsim teması** yalnız kendi tarihinde gelir (bölüm 10).
+Toplam 25 renk teması vardır: 22'si biletle, 3'ü Reklamsız paketle açılır. Mağazadaki **Tema paketi** (`ray_temalar`, tüketilemez) 22 biletli temanın hepsini birden açar (`save.allThemes`; 3 özel tema yine Reklamsız pakette kalır). Bunlara ek olarak 6 **mevsim teması** yalnız kendi tarihinde gelir (bölüm 10).
+
+**Satın alınan bilet (31 Ekim):** taç para birimi 🎫 bilet olarak yeniden adlandırıldı (kodda `crown` adları aynı). Mağazadaki **Bilet paketi** (`ray_bilet_50`) 50 bilet verir. Bunlar ayrı sayılır (`save.bCrowns`, harcanan kısmı `save.bSpent`): bakiyeye (`crownBal`) eklenir ve **yalnız temada** harcanır; tema alınırken önce satın alınan bilet düşer. Sandık yalnız kazanılan biletle açılır (`chestBal` = kazanılan − sandığa/temaya giden kazanılmış taç). Böylece gerçek parayla rastgele ödül (ganimet kutusu) alınamaz. Kazanılan sayı (`crownCount`) satın almadan etkilenmez. Bunlara ek olarak 6 **mevsim teması** yalnız kendi tarihinde gelir (bölüm 10).
 
 ### Hat adları ve renkleri
 
@@ -210,7 +212,7 @@ Robot her temada ilk 60 hattı, koyu ve açık görünümde ayrı ayrı denetler
 
 ### Sürpriz sandık
 
-Biletlerin temalar dışındaki tek harcama yeri. Oyun içinde kendiliğinden çıkmaz; oyuncu Renk temaları sayfasından **🎫 10** harcayarak açar. İçinden asla bilet çıkmaz, böylece biletle bilet kazanma kumarı oluşmaz. Bilet gerçek parayla satılmadığı için sandık da parayla açılamaz.
+Biletlerin temalar dışındaki tek harcama yeri. Oyun içinde kendiliğinden çıkmaz; oyuncu Renk temaları sayfasından **🎫 10** harcayarak açar. İçinden asla bilet çıkmaz, böylece biletle bilet kazanma kumarı oluşmaz. Satın alınan bilet (Mağaza › Bilet paketi) sandıkta kullanılamaz; sandık yalnız kazanılan biletle açılır, bu yüzden sandık parayla açılamaz.
 
 | Nadirlik | Olasılık | İçerik |
 |---|---|---|

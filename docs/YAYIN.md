@@ -336,3 +336,4 @@ LocalNotifications 8.3, varsayılan olarak kesin alarm ister. Bu izin yoksa her 
 - En düşük iOS sürümü 15'tir.
 - Yalnız iPhone (`TARGETED_DEVICE_FAMILY = 1`) ve yalnız dikey.
 - SKAdNetwork listesi `tools/ios/skadnetwork.txt` dosyasındadır. Google'ın sayfası güncellenirse bu dosya da güncellenmeli.
+

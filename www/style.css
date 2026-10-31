@@ -357,6 +357,8 @@ body.introing .screen *{animation-play-state:paused!important}
 
 .opt.row{width:100%;min-height:48px;border:0;background:none;font:inherit;color:var(--fg);font-weight:600;text-align:left}
 .opt.row small,.opt.sub span{font-weight:500;color:var(--mut)}
+.store{display:flex;flex-direction:column}.store .prod{gap:10px;border-top:1px solid var(--stroke)}.store .prod:first-child{border-top:0}
+.store .prod span{display:flex;flex-direction:column;gap:2px;min-width:0}.store .prod small{font-size:12.5px}.store .prod b{flex:none;font-weight:700;color:var(--acc)}.store .prod.on b{text-decoration:underline;text-underline-offset:4px}
 .opt.sub{padding-top:0;transition:opacity .25s}.opt.sub.off{opacity:.35;pointer-events:none}
 .opt .seg button{padding:7px 10px}
 /* renk temaları */
