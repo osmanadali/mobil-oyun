@@ -95,6 +95,11 @@ button.chip{height:44px;margin:0 -3px;border:3px solid transparent;background-cl
 .hub{fill:var(--fg);transform-origin:98px 56px;animation:pop .5s .1s cubic-bezier(.3,1.6,.5,1) both,breathe 3.2s 1.6s ease-in-out infinite}
 .st{fill:var(--bg0);stroke:var(--fg);stroke-width:4;transform-box:fill-box;transform-origin:center;animation:pop .45s cubic-bezier(.3,1.6,.5,1) both}
 .s1{animation-delay:.9s}.s2{animation-delay:1s}.s3{animation-delay:1.1s}.s4{animation-delay:1.2s}.s5{animation-delay:1.3s}
+.mark{width:min(34vw,136px)}
+.mark .lr{stroke:var(--ln1,var(--acc));stroke-width:20}
+.mark .hub{fill:#ffd59a;transform-origin:80px 42px;filter:drop-shadow(0 0 9px rgba(255,179,92,.8))}
+.mark .st{stroke:#fff8ec;stroke-width:6.5}
+.mark .hc{fill:#fff;transform-box:fill-box;transform-origin:center;animation:pop .45s .45s cubic-bezier(.3,1.6,.5,1) both}
 @keyframes draw{to{stroke-dashoffset:0}}
 @keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
 @keyframes breathe{50%{opacity:.75}}
@@ -343,6 +348,8 @@ body.introing .screen *{animation-play-state:paused!important}
 .skin b{font-size:13px;white-space:nowrap}.skin small{font-size:11px;color:var(--mut);white-space:nowrap}
 .skin.on{box-shadow:inset 0 0 0 2px var(--acc),0 6px 22px -8px var(--accGlow)}.skin.on small{color:var(--acc);font-weight:700}
 .skin.lockd svg{opacity:.32;filter:grayscale(.6)}
+.sheet textarea.code{width:100%;margin:10px 0 0;padding:10px 12px;border:0;border-radius:14px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--stroke);color:var(--fg);font:12px/1.35 ui-monospace,Menlo,monospace;resize:none;word-break:break-all}
+.skin.nx{box-shadow:inset 0 0 0 1.5px var(--stroke),0 0 0 1px var(--acc)}.skin.nx svg{opacity:.7;filter:none}.skin.nx small{color:var(--fg);font-weight:700}
 .skin.can{box-shadow:inset 0 0 0 1.5px var(--acc)}.skin.can svg{opacity:.75;filter:none}.skin.can small{color:var(--acc);font-weight:700}
 .skin.big{align-self:center;width:200px;padding:14px;pointer-events:none}.skin.big svg{max-width:170px;height:84px}
 .nexts .bal{font-size:17px}
@@ -366,7 +373,7 @@ body.introing .screen *{animation-play-state:paused!important}
 @media (max-height:720px){.status{flex-direction:row;gap:10px;margin:0 0 4px}.pill{height:36px}#board{margin-top:12px}.top{height:56px}.bottom{padding-top:6px}}
 /* uzun bildirim dar ekranda iki satıra iner, ekrandan taşmaz (tek satırda görünüş aynı) */
 #toast{width:max-content;max-width:calc(100% - 32px);white-space:normal;text-align:center;border-radius:24px}
-@media (max-height:640px){.logo{width:42vw}h1{font-size:48px}.cards{gap:8px}.card{padding:12px 16px}.primary{height:64px}}
+@media (max-height:640px){.logo{width:42vw}.logo.mark{width:24vw}h1{font-size:48px}.cards{gap:8px}.card{padding:12px 16px}.primary{height:64px}}
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01s!important;animation-iteration-count:1!important;transition-duration:.01s!important}}
 /* sürpriz sandık */
 .chestrow{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:10px;width:100%;min-height:56px;padding:6px 14px;border:0;border-radius:18px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--stroke);color:var(--fg);font:inherit;text-align:left}

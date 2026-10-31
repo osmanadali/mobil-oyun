@@ -76,10 +76,10 @@ module.exports = async T => {
     const r = await page.evaluate(() => {
       const ch = [...document.querySelectorAll('#home .top button.chip')].map(c => { const b = c.getBoundingClientRect(), x = b.left + b.width / 2; return { h: Math.round(b.height), vis: c.clientHeight, clip: getComputedStyle(c).backgroundClip, edge: document.elementFromPoint(x, b.top + 1)?.closest('.chip') === c && document.elementFromPoint(x, b.bottom - 1)?.closest('.chip') === c, l: b.left, r: b.right }; });
       const sep = ch.every((c, i) => !i || c.l >= ch[i - 1].r);
-      return { ch: ch.map(({ h, vis, clip, edge }) => ({ h, vis, clip, edge })), sep, how: Math.round(document.getElementById('bHow').getBoundingClientRect().height) };
+      return { ch: ch.map(({ h, vis, clip, edge }) => ({ h, vis, clip, edge })), sep };
     });
-    check('kalite.chips', 'Ana ekran: 🔥 ★ 👑 çipleri görünüşte 38 px, dokunma alanı 44 px (saydam kenar), alanlar birbirine binmez; "Nasıl oynanır?" ≥ 44 px',
-      r.ch.length === 3 && r.ch.every(c => c.h >= 44 && c.vis === 38 && c.clip === 'padding-box' && c.edge) && r.sep && r.how >= 44, JSON.stringify(r), 'medium');
+    check('kalite.chips', 'Ana ekran: 🔥 ★ 👑 çipleri görünüşte 38 px, dokunma alanı 44 px (saydam kenar), alanlar birbirine binmez',
+      r.ch.length === 3 && r.ch.every(c => c.h >= 44 && c.vis === 38 && c.clip === 'padding-box' && c.edge) && r.sep, JSON.stringify(r), 'medium');
     // bildirim: uzun yazı 320 px'te ekrandan taşmaz (iki satır), kısa yazı tek satır kalır
     await page.setViewportSize({ width: 320, height: 640 }); await page.waitForTimeout(150);
     const t = await page.evaluate(() => {

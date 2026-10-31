@@ -37,13 +37,12 @@
     </header>
 
     <div class="hero">
-      <svg class="logo" viewBox="0 0 200 120" aria-hidden="true">
-        <path class="ln l1" d="M14 92H62L98 56H186"/>
-        <path class="ln l2" d="M98 10V56L134 92H186"/>
-        <path class="ln l3" d="M14 30H54L98 56"/>
-        <rect class="hub" x="86" y="44" width="24" height="24" rx="7"/>
-        <circle class="st s1" cx="14" cy="92" r="7"/><circle class="st s2" cx="186" cy="56" r="7"/>
-        <circle class="st s3" cx="98" cy="10" r="7"/><circle class="st s4" cx="186" cy="92" r="7"/><circle class="st s5" cx="14" cy="30" r="7"/>
+      <!-- uygulama ikonunun işareti (Gece Işığı): duraktan L ray, yanan kare merkez; ray rengi temayı izler -->
+      <svg class="logo mark" viewBox="0 0 120 120" aria-hidden="true">
+        <path class="ln lr" d="M34 88V42H80"/>
+        <circle class="st s1" cx="34" cy="88" r="10"/>
+        <rect class="hub" x="61" y="23" width="38" height="38" rx="11"/>
+        <circle class="hc" cx="80" cy="42" r="5.5"/>
       </svg>
       <h1>Ray</h1>
       <p data-en="Connect the lines · Light up the city">Hatları bağla · Şehri canlandır</p>
@@ -66,7 +65,6 @@
 
     <div class="actions">
       <button id="bPlay" class="btn primary"><span data-en="Play">Oyna</span><small id="hLvl">Bölüm <span id="hLevel">1</span></small></button>
-      <button id="bHow" class="link" data-en="How to play?">Nasıl oynanır?</button>
     </div>
   </section>
 
@@ -77,7 +75,7 @@
       <button id="bReset" class="ic" aria-label="Baştan" data-en-label="Restart"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4.5h4.5"/></svg></button>
     </header>
     <div class="status">
-      <div class="pill" id="gPill"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></svg><b id="gTime">0:00</b><span id="gStars"><i>★</i><i>★</i><i>★</i></span><em id="gCombo" class="cmb" hidden></em></div>
+      <div class="pill" id="gPill"><span id="gStars"><i>★</i><i>★</i><i>★</i></span><em id="gCombo" class="cmb" hidden></em></div>
       <div class="trip" id="gTrip"><div class="trk" aria-hidden="true"><i class="done"></i><i class="peron"></i><i class="sig"></i><div class="mv" id="gTrain"></div></div><small id="gNext">⏱ 0:30</small><span class="bub" id="gBub" role="status"></span></div>
     </div>
     <div id="board"><canvas id="cv" role="img" aria-label="Oyun tahtası: karolara dokunarak döndür, bütün durakları merkeze bağla" data-en-label="Game board: tap tiles to turn them and connect every station to the hub"></canvas></div>

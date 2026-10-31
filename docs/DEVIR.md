@@ -76,6 +76,7 @@ APK indirme linkleri (sabit):
 <!-- DURUM:BAŞ -->
 Durum 28 Ekim 2026 sabahı itibarıyla:
 
+- **Tasarım turu 2 (31 Ekim):** oyunda tek süre (kalan süre şeritte, çipte yalnız yıldızlar), oyun başlığında ⚡% yok; 💎 parça birimi kalktı (3 yeni taçta +1 ipucu, sayaç gösterilmez); "Nasıl oynanır?" Ayarlar'a taşındı; ana sayfa logosu uygulama ikonunun işareti; renk temalarında sıradaki tema renkli ve ilerleme çubuğu ızgaranın üstünde; mağaza puanı (`@capacitor-community/in-app-review` 8.0.0, 12. bölümden sonra 3 ★'lı bir bitişte bir kez, sonra 60 gün + 40 bölüm); Ayarlar › İlerlemeyi taşı (RAY1 kodu; reklamsız paket kodla taşınmaz); "Bize yaz" satırı `SUPPORT_MAIL` doldurulunca görünür (gizlilik.html İletişim'deki yer tutucularla birlikte doldurulmalı); ikinci merkezin hattı kesik açık çizgili, merkezi halkalı (renk körlüğü); 7×9 hatlarında kısa bölüm (`short`).
 - **Eleştiri turu (28 Ekim gecesi):** mola bölümleri (`breath`, her hattın 6./12./18.… bölümü kısa ve kolay); oyun ekranında ayrı "%" çubuğu kalktı, sefer şeridinin rayı bağlantıyla yanar; bölüm bitince arkaplan şehir haritası parlar ve bir tren geçer (`cityUp`); ana sayfa hat kartında toplam ★ yerine sıradaki hatta kalan ★, ızgara boyu kalktı; mağaza görsellerinde ilk sıra oynanış (`01-oyun`).
 
 - **18 kural, 20 hat tamam.** Çift hatların zor kuralları eklendi:

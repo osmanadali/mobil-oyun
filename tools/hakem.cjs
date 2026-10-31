@@ -165,7 +165,7 @@ async function inViewport(page, sel) {
     await page.waitForTimeout(1600);
     await shot(page, `home-${key}`);
     const ov = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth || document.documentElement.scrollHeight > innerHeight);
-    const homeEls = {}; for (const s of ['#bPlay', '#bDaily', '#bSettings', '#bHow']) homeEls[s] = await inViewport(page, s);
+    const homeEls = {}; for (const s of ['#bPlay', '#bDaily', '#bSettings']) homeEls[s] = await inViewport(page, s);
     await page.click('#bPlay'); await page.waitForTimeout(700);
     await shot(page, `game7x9-${key}`);
     const gameEls = {}; for (const s of ['#bHint', '#bBack', '#bReset']) gameEls[s] = await inViewport(page, s);
@@ -874,7 +874,7 @@ async function inViewport(page, sel) {
       await page.click('#mNo'); await gap(); await page.click('#mClose'); await gap();
       await page.click('#crownChip'); await gap(); R.themes = await probe(page, sheet); if (w === 320) await shot(page, 'en-themes-320');
       await page.click('#mClose'); await gap();
-      await page.click('#bHow'); await gap();
+      await page.click('#bSettings'); await gap(); await page.click('#oHow'); await gap();   // Nasıl oynanır? artık Ayarlar'da
       R.how = { tr: [], ov: false, cut: [] };
       for (let k = 0; k < 7; k++) {
         await page.waitForTimeout(300);
@@ -898,7 +898,7 @@ async function inViewport(page, sel) {
   {
     // dil seçimi: Ayarlar › Language › Türkçe → yenilenir, Türkçe açılır, seçim kalıcı; cihaz diline göre varsayılan
     const { ctx, page, errors } = await open(browser, URL, { locale: 'en-US', save: { played: 3 } });
-    const ui = () => page.evaluate(() => ({ lang: document.documentElement.lang, play: document.querySelector('#bPlay span').textContent, how: document.getElementById('bHow').textContent, saved: JSON.parse(localStorage.getItem('ray') || '{}').lang }));
+    const ui = () => page.evaluate(() => ({ lang: document.documentElement.lang, play: document.querySelector('#bPlay span').textContent, how: document.querySelector('#bMap .k').textContent, saved: JSON.parse(localStorage.getItem('ray') || '{}').lang }));
     const u0 = await ui();
     await page.click('#bSettings'); await page.waitForTimeout(500);
     const row = await page.evaluate(() => document.getElementById('oL')?.parentElement.firstChild.textContent.trim());
@@ -911,7 +911,7 @@ async function inViewport(page, sel) {
     await ctx.close();
     const dflt = {};
     for (const locale of ['tr-TR', 'en-US']) { const o = await open(browser, URL, { locale, save: { played: 3 } }); dflt[locale] = await o.page.evaluate(() => [window.RAY_LANG, document.querySelector('#bPlay span').textContent]); await o.ctx.close(); }
-    check('en.lang', 'Ayarlar › Language › Türkçe: sayfa yenilenir, Türkçe açılır, seçim kalıcı; tr-TR cihazda varsayılan Türkçe, en-US cihazda İngilizce', u0.lang === 'en' && u0.play === 'Play' && row === 'Language' && u1.lang === 'tr' && u1.play === 'Oyna' && u1.saved === 'tr' && u2.lang === 'tr' && /Nasıl/.test(u2.how) && row2 === 'Dil' && dflt['tr-TR'].join() === 'tr,Oyna' && dflt['en-US'].join() === 'en,Play' && !errors.length, JSON.stringify({ u0, row, u1, u2, row2, dflt, err: errors[0] }), 'medium');
+    check('en.lang', 'Ayarlar › Language › Türkçe: sayfa yenilenir, Türkçe açılır, seçim kalıcı; tr-TR cihazda varsayılan Türkçe, en-US cihazda İngilizce', u0.lang === 'en' && u0.play === 'Play' && row === 'Language' && u1.lang === 'tr' && u1.play === 'Oyna' && u1.saved === 'tr' && u2.lang === 'tr' && /HATLAR/.test(u2.how) && row2 === 'Dil' && dflt['tr-TR'].join() === 'tr,Oyna' && dflt['en-US'].join() === 'en,Play' && !errors.length, JSON.stringify({ u0, row, u1, u2, row2, dflt, err: errors[0] }), 'medium');
   }
   {
     // aynı bölüm ve Günün Hattı iki dilde bit bit aynı tahta

@@ -263,10 +263,12 @@ const PAIR_COLS = ['#ff7ab6', '#4cc9ff', '#ffc94d', '#8fe388', '#c39bff'];
 const TIERS = [[3, 3], [4, 4], [4, 5], [5, 6], [5, 7], [6, 8], [7, 9]], CAPS = [3, 8, 15, 25, 40, 60, 1e9];
 // mola bölümü: M2'den sonra her hattın 6., 12., 18.… bölümü (öğrenme bölümleri ve son durak hariç) kısa ve kolay → zorluk dalga dalga artar, oyuncu nefes alır
 const breath = l => { const c = lineOf(l), o = l - lineStart(c); return c > 0 && o >= 3 && o % 6 === 5 && l !== lineEnd(c); };
+// kısa bölüm: 7×9 hatlarında her 6 bölümün biri (hattın 3., 9., 15.… bölümü) 6×8 — zorluk hedefi aynı, yalnız daha kısa (büyük ızgara yorgunluğu)
+const short = l => { const c = lineOf(l), o = l - lineStart(c); return o >= 3 && o % 6 === 2 && l !== lineEnd(c); };
 function sizeFor(l) {
   let k = CAPS.findIndex(m => l <= m);
   // testere dişi: yeni kural gelen hattın ilk 3 bölümü ve mola bölümleri bir küçük ızgara → kural rahat öğrenilir
-  if ((RULES[lineOf(l)] && l - lineStart(lineOf(l)) < 3) || breath(l)) k = Math.max(0, k - 1);
+  if ((RULES[lineOf(l)] && l - lineStart(lineOf(l)) < 3) || breath(l) || (k === TIERS.length - 1 && short(l))) k = Math.max(0, k - 1);
   return TIERS[k];
 }
 
@@ -806,7 +808,7 @@ function start(mode, lvl = save.level) {
   G.tOk = timeOk(G.ms / 1000); G.mOk = movesOk();
   $('gTitle').textContent = daily ? (G.practice ? L('Günün Hattı · pratik', 'Daily Line · practice') : L('Günün Hattı', 'Daily Line')) : `${L('Bölüm', 'Level')} ${lvl}${G.final ? L(' · 🏁 Son durak', ' · 🏁 Last stop') : ''}`;
   $('game').classList.toggle('final', !!G.final);
-  $('gMoves').textContent = `${daily ? new Date().toLocaleDateString(LOC, { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl))} · ${!daily && breath(lvl) ? L('☕ mola', '☕ breather') : `⚡${L('%' + (daily ? dPct(day) : zPct(lvl)), (daily ? dPct(day) : zPct(lvl)) + '%')}`}`;
+  $('gMoves').textContent = `${daily ? new Date().toLocaleDateString(LOC, { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl))}${!daily && breath(lvl) ? ' · ' + L('☕ mola', '☕ breather') : ''}`;
   $('gHints').textContent = save.hints;
   clearTimeout(bubT); $('gBub').classList.remove('show');
   const stake = comboStake(); $('gCombo').hidden = stake < 2; $('gCombo').textContent = `✨${stake}`;
@@ -849,7 +851,6 @@ function hud() {
 function tick() {
   if (!G) return;
   const ms = elapsed(), sec = ms / 1000, tOk = timeOk(sec), mOk = movesOk(), left = G.lim.t - sec;
-  $('gTime').textContent = fmtT(ms);
   const [s1, s2, s3] = $('gStars').children;
   s1.classList.add('on'); s2.classList.toggle('on', tOk); s3.classList.toggle('on', mOk);
   if (!G.won) setNext(tOk ? `⏱ ${fmtT(left * 1000 + 999)}` : `<span class="miss">+${fmtT(-left * 1000)} ${L('rötar', 'late')}</span>`);
@@ -970,6 +971,8 @@ function draw() {
   cx.lineWidth = s * .17; cx.strokeStyle = pal.rail; rails(i => !on(i));
   for (const t of tags) { cx.lineWidth = s * .38; cx.strokeStyle = rgba(OC[t], pal.light ? .16 : .22); rails(i => own(i) === t); }
   for (const t of tags) { cx.lineWidth = s * .17; cx.strokeStyle = OC[t]; rails(i => own(i) === t); }
+  // ikinci hat yalnız renkle ayrılmasın (renk körlüğü): ortasında kesik açık çizgi → çift raylı görünüm
+  if (tags.includes(2)) { cx.save(); cx.lineWidth = s * .045; cx.strokeStyle = 'rgba(255,255,255,.8)'; cx.setLineDash([s * .1, s * .1]); rails(i => own(i) === 2); cx.restore(); }
   hook('rails');
   // 3) yeni yanan karoda parlama (karo sınırına kırpılır → komşuya taşmaz)
   for (let i = 0; i < n; i++) {
@@ -995,7 +998,9 @@ function draw() {
     cx.fillStyle = rgba(col, .25); cx.beginPath(); cx.arc(x, y, k * .36, 0, 7); cx.fill();
     const g = cx.createLinearGradient(x - k * .2, y - k * .2, x + k * .2, y + k * .2); g.addColorStop(0, rgba(col, 1)); g.addColorStop(1, rgba(col, .78));
     cx.fillStyle = g; rr(x - k * .22, y - k * .22, k * .44, k * .44, k * .12); cx.fill();
-    cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(x, y, k * .075, 0, 7); cx.fill();
+    // ikinci merkez: dolu nokta yerine halka (renkten bağımsız ayrım)
+    if (h === G.hub2) { cx.strokeStyle = '#fff'; cx.lineWidth = k * .045; cx.beginPath(); cx.arc(x, y, k * .08, 0, 7); cx.stroke(); }
+    else { cx.fillStyle = '#fff'; cx.beginPath(); cx.arc(x, y, k * .075, 0, 7); cx.fill(); }
   }
   // 6) ipucu kilidi rozeti
   if (anyFixed) { cx.fillStyle = col; cx.beginPath(); for (let i = 0; i < n; i++) if (G.fixed[i]) { const [x, y] = X[i]; cx.moveTo(x + s * .3 + s * .055, y - s * .3); cx.arc(x + s * .3, y - s * .3, s * .055, 0, 7); } cx.fill(); }
@@ -1203,14 +1208,14 @@ function win() {
   let shardMsg = '';
   if (shard) {
     save.shards = (save.shards || 0) + 1;
-    if (save.shards >= 3) { save.shards -= 3; save.hints++; shardMsg = L('💎 3 parça birleşti · +1 ipucu', '💎 3 pieces joined · +1 hint'); } else shardMsg = L(`💎 İpucu parçası ${save.shards}/3`, `💎 Hint piece ${save.shards}/3`);
+    if (save.shards >= 3) { save.shards -= 3; save.hints++; shardMsg = L('👑 3 yeni taç · +1 ipucu', '👑 3 new crowns · +1 hint'); }   // ara sayaç gösterilmez (💎 parça birimi kaldırıldı)
   }
   const ns = SKINS.find(k => !k.vip && !skinOpen(k) && k.need > cr0 && k.need <= crownBal());   // bakiye bir temaya yetti
   if (ns) { save.newSkin = 1; extra = [extra, L(`🎨 ${ns.name} alınabilir (👑 ${ns.need})`, `🎨 ${ns.name} available (👑 ${ns.need})`)].filter(Boolean).join(' · '); }
   persist();
   $('gCombo').hidden = combo < 2; $('gCombo').textContent = `✨${combo}`; $('gCombo').classList.remove('off');
   const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { st, tOk, mOk, perfect, extra: [cmsg, shardMsg, extra].filter(Boolean).join(' · '), unlockedNow, ns, dbl, combo, broke, near };
-  winTimer = setTimeout(() => { if (G === g && active('game')) winSheet(g, info); }, wait);
+  winTimer = setTimeout(() => { if (G === g && active('game')) { winSheet(g, info); if (!g.daily && !g.practice) setTimeout(() => { if (G === g && active('game')) maybeReview(st); }, 1100); } }, wait);
   if (!g.daily) setTimeout(() => puzzleFor(g.lvl + 1), wait + 900);   // sonraki bölüm hazır olsun (geçişte takılma olmasın)
 }
 // Sonuç paneli tahtanın altına yerleşir; tahta küçülüp üstte görünür kalır.
@@ -1349,6 +1354,16 @@ const Remind = (() => {
   LN()?.addListener?.('localNotificationActionPerformed', a => { const go = a?.notification?.extra?.go; if (go) setTimeout(() => open(go), 400); });
   return { avail: () => !!LN(), plan, enable, habit, open };
 })();
+// ---------- mağaza puanı: sistemin kendi penceresi (oyun puan sormaz; Apple/Google gösterimi kendi kotasıyla sınırlar) ----------
+// İlk kez: ilk hat bitmiş (Bölüm 13+) ve 3 ★ kazanılmış bir bölüm sonunda. Sonra en erken 60 gün ve 40 bölüm geçince yeniden.
+function maybeReview(st) {
+  const R = window.Capacitor?.Plugins?.InAppReview;
+  if (!R?.requestReview || st < 3 || save.level <= lineEnd(0)) return false;
+  const r = save.rv; if (r && (Date.now() - r.at < 60 * 864e5 || save.level - r.lvl < 40)) return false;
+  save.rv = { at: Date.now(), lvl: save.level }; persist();
+  try { Promise.resolve(R.requestReview()).catch(() => {}); } catch {}
+  return true;
+}
 const NO_PERM = L('Bildirim izni verilmedi', 'Notifications not allowed');
 // ilk Günün Hattı'ndan ya da ilk hattın sonundan (Bölüm 12) sonra ana sayfada bir kez, kibarca sorulur
 function remindAsk() {
@@ -1534,6 +1549,9 @@ function settings() {
     <div class="opt">${L('Dil', 'Language')} <div class="seg" id="oL">${lang}</div></div>
     <button class="opt row" id="oSkin"><span>${L('Renk temaları', 'Color themes')}</span><small>${skin().name} · 👑 ${crownBal()} ›</small></button>
     <button class="opt row" id="oShop"><span>${L('Reklamsız paket', 'Ad-free pack')}</span><small>${save.noAds ? L('Aktif ✓', 'Active ✓') : (Shop.price() || '💛') + ' ›'}</small></button>
+    <button class="opt row" id="oHow"><span>${L('Nasıl oynanır?', 'How to play?')}</span><small>›</small></button>
+    <button class="opt row" id="oMove"><span>${L('İlerlemeyi taşı', 'Move progress')}</span><small>${L('Yeni telefona', 'To a new phone')} ›</small></button>
+    ${SUPPORT_MAIL ? `<button class="opt row" id="oMail"><span>${L('Bize yaz', 'Contact us')}</span><small>${L('Öneri · hata', 'Ideas · bugs')} ›</small></button>` : ''}
     <button class="opt row" id="oPriv"><span>${L('Gizlilik', 'Privacy')}</span><small>${L('Politika · veriler', 'Policy · data')} ›</small></button>
     <button id="mClose" class="btn glassbtn">${L('Tamam', 'Done')}</button>`, {
     oR: async () => {
@@ -1541,7 +1559,7 @@ function settings() {
       else if (!await Remind.enable()) toast(NO_PERM);
       $('oR').classList.toggle('on', save.remind);
     },
-    oSkin: skinSheet, oShop: shopSheet, oPriv: privacySheet,
+    oSkin: skinSheet, oShop: shopSheet, oPriv: privacySheet, oHow: () => { closeModal(); how(); }, oMove: moveSheet, oMail: () => { location.href = `mailto:${SUPPORT_MAIL}?subject=${encodeURIComponent('Ray · ' + (window.Capacitor?.getPlatform?.() || 'web') + ' · ' + RAY_LANG)}`; },
     oM: () => { save.music = !save.music; persist(); $('oM').classList.toggle('on', save.music); save.music ? Music.start() : Music.stop(); },
     oS: () => { save.sound = !save.sound; persist(); $('oS').classList.toggle('on', save.sound); },
     oV: () => { save.vib = !save.vib; persist(); $('oV').classList.toggle('on', save.vib); haptic(); },
@@ -1551,6 +1569,8 @@ function settings() {
   $('oL').onclick = e => { const g = e.target.dataset.g; if (!g || g === RAY_LANG) return; pause(); save.lang = g; persist(); location.reload(); };
 }
 // ---------- gizlilik: kısa özet, politika, reklam rıza seçenekleri, verileri sil ----------
+// Ayarlar › Bize yaz: destek e-postası (gizlilik.html İletişim ile aynı olmalı). Boşken satır gösterilmez.
+const SUPPORT_MAIL = '';
 const POLICY = 'https://osmanadali.github.io/mobil-oyun/gizlilik.html#' + RAY_LANG;   // sayfa iki dilli: oyunun dilindeki bölüme açılır
 // uygulamada sistem tarayıcısında (Capacitor dış adresi uygulama içinde açmaz), web'de yeni sekmede yerel kopya (çevrimdışı da açılır)
 function openPolicy() {
@@ -1567,6 +1587,43 @@ function privacySheet() {
     <button id="mWipe" class="link">${L('Verilerimi sil', 'Delete my data')}</button>
     <button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, {
     mPol: openPolicy, mAdP: () => { closeModal(); Ads.privacyForm(); }, mWipe: wipeSheet, mClose: closeModal });
+}
+// ---------- ilerlemeyi taşı: hesap yok → kayıt bir kod olarak kopyalanır, öteki cihazda yapıştırılır (Android ↔ iPhone da olur) ----------
+// Kod: RAY1.<base64 JSON>.<sağlama>. Reklamsız paket kodla taşınmaz (mağazadan "Satın alımı geri yükle"); yarım oyunlar taşınmaz.
+const VIP = () => SKINS.filter(k => k.vip).map(k => k.id);
+function moveCode() {
+  const s = { ...save }; delete s.noAds; delete s.runs; s.owned = { ...s.owned }; VIP().forEach(id => delete s.owned[id]);
+  const b = btoa(unescape(encodeURIComponent(JSON.stringify(s))));
+  return `RAY1.${b}.${hashStr(b + 'ray').toString(36)}`;
+}
+function moveRead(code) {
+  const m = String(code || '').replace(/\s+/g, '').match(/^RAY1\.([A-Za-z0-9+/=]+)\.([0-9a-z]+)$/);
+  if (!m || hashStr(m[1] + 'ray').toString(36) !== m[2]) return null;
+  try { const s = JSON.parse(decodeURIComponent(escape(atob(m[1])))); return s && typeof s.level === 'number' && s.stars && typeof s.stars === 'object' ? s : null; } catch { return null; }
+}
+function moveSheet() {
+  const n = Object.keys(save.stars).length;
+  modal(`<h2>${L('İlerlemeyi taşı', 'Move progress')}</h2>
+    <p>${L('Yeni telefonda oyunu aç, <b>Ayarlar › İlerlemeyi taşı</b>’ya bu kodu yapıştır. Reklamsız paket kodla taşınmaz, mağazadan geri yüklenir.', 'On your new phone, open <b>Settings › Move progress</b> and paste this code. The ad-free pack doesn’t move with the code; restore it from the store.')}</p>
+    <button id="mCopy" class="btn primary"><span>${L('Kodu kopyala', 'Copy code')}</span><small>${L(`Bölüm ${save.level} · ★ ${totalStars()}`, `Level ${save.level} · ★ ${totalStars()}`)}</small></button>
+    <textarea id="mCode" class="code" rows="3" spellcheck="false" autocomplete="off" placeholder="${L('Öteki telefondaki kodu buraya yapıştır', 'Paste the code from your other phone')}"></textarea>
+    <button id="mLoad" class="btn glassbtn">${L('Kodu yükle', 'Load code')}</button>
+    <button id="mClose" class="link">${L('Kapat', 'Close')}</button>`, {
+    mCopy: async () => {
+      const c = moveCode();
+      try { await navigator.clipboard.writeText(c); toast(L('Kod kopyalandı · yeni telefona yapıştır', 'Code copied · paste it on your new phone')); }
+      catch { const t = $('mCode'); t.value = c; t.select(); toast(L('Kodu seçip kopyala', 'Select and copy the code')); }
+    },
+    mLoad: () => {
+      const b = $('mLoad'), s = moveRead($('mCode').value);
+      if (!s) { toast(L('Kod geçersiz · tamamını yapıştır', 'Invalid code · paste all of it')); return; }
+      if (!b.dataset.ok && n) { b.dataset.ok = 1; b.textContent = L(`Bu cihazdaki ilerleme silinir · Bölüm ${s.level} yüklensin mi?`, `This phone’s progress will be replaced · load Level ${s.level}?`); return; }
+      s.noAds = save.noAds; s.owned = { ...s.owned }; VIP().forEach(id => { if (save.owned?.[id]) s.owned[id] = 1; else delete s.owned[id]; });
+      wiped = true;   // yenilenirken eski kayıt üstüne yazılmasın (persist susar)
+      try { localStorage.setItem('ray', JSON.stringify(s)); } catch {}
+      location.reload();
+    },
+    mClose: closeModal });
 }
 // iki adım: önce onay; sonra planlı bildirimler iptal, kayıt silinir, oyun baştan açılır (reklamsız paket mağazadan geri gelir)
 function wipeSheet() {
@@ -1588,19 +1645,19 @@ const skinVars = k => { const c = skinCols(k); return `--s1:${c[0]};--s2:${c[1]}
 function skinSheet() {
   const bal = crownBal(), cur = skin().id;
   if (save.newSkin) { save.newSkin = 0; persist(); refreshHome(); }
+  const nx = SKINS.filter(k => !k.vip && !skinOpen(k)).sort((a, b) => a.need - b.need)[0], hn = huntList().length;   // en ucuz alınmamış tema · taç bekleyen bölüm
   const card = k => {
     const own = skinOpen(k), can = !own && bal >= k.need;
-    return `<button class="skin ${own ? '' : 'lockd'} ${can ? 'can' : ''} ${k.id === cur ? 'on' : ''}" data-k="${k.id}" style="${skinVars(k)}">${skinSvg}
+    return `<button class="skin ${own ? '' : 'lockd'} ${can ? 'can' : ''} ${k === nx && !can ? 'nx' : ''} ${k.id === cur ? 'on' : ''}" data-k="${k.id}" style="${skinVars(k)}">${skinSvg}
       <b>${k.name}</b><small>${k.id === cur ? L('Seçili ✓', 'Selected ✓') : own ? L('Seç', 'Select') : k.vip ? L('💛 Reklamsız', '💛 Ad-free') : `👑 ${k.need}`}</small></button>`;
   };
-  const nx = SKINS.filter(k => !k.vip && !skinOpen(k)).sort((a, b) => a.need - b.need)[0], hn = huntList().length;   // en ucuz alınmamış tema · taç bekleyen bölüm
   modal(`<h2>${L('Renk temaları', 'Color themes')}</h2><p>${L('Her <b>kusursuz</b> bölüm (⏱ ve ↻ hedefi) 1 👑 verir. 👑 ile tema ve sandık açılır.', 'Every <b>perfect</b> level (⏱ and ↻ targets) gives 1 👑. Spend 👑 on themes and chests.')}</p>
     <div class="nexts"><small>${L('Bakiye', 'Balance')}</small><b class="bal">👑 ${bal}</b></div>
     <button id="mChest" class="chestrow ${bal >= CHEST ? 'can' : ''}"><i>${CHEST_SVG}</i><span><b>${L('Sürpriz sandık', 'Surprise chest')}</b><small>${L('İpucu · 🛡 seri kalkanı · 🚆 tren kaplaması', 'Hints · 🛡 shield · 🚆 train livery')}</small></span><em>👑 ${CHEST}</em></button>
+    ${nx ? `<div class="nexts"><small>${L('Sıradaki', 'Next up')}: <b>${nx.name}</b></small><small>👑 ${Math.min(bal, nx.need)} / ${nx.need}</small></div><div class="pb"><i style="width:${Math.max(4, Math.min(100, bal / nx.need * 100))}%"></i></div>` : ''}
     <div class="skins" id="skins">${SKINS.filter(k => !k.vip).map(card).join('')}
       <small class="vipk">${L('💛 Reklamsız pakete özel', '💛 Ad-free pack only')}</small>${SKINS.filter(k => k.vip).map(card).join('')}</div>
-    ${nx ? `<div class="nexts"><small>${L('Sonraki', 'Next')}: <b>${nx.name}</b></small><small>👑 ${Math.min(bal, nx.need)} / ${nx.need}</small></div><div class="pb"><i style="width:${Math.max(4, Math.min(100, bal / nx.need * 100))}%"></i></div>
-    <button id="mHunt" class="btn primary"><span>${L('Taç topla', 'Earn crowns')} 👑</span><small>${hn ? L(`${hn} bölüm kusursuz bitmeyi bekliyor`, `${hn} ${pl(hn, 'level awaits', 'levels await')} a perfect finish`) : L('Yeni bölümleri ⏱ ve ↻ hedefiyle bitir', 'Beat new levels within ⏱ and ↻ targets')}</small></button>` : ''}
+    ${nx ? `<button id="mHunt" class="btn primary"><span>${L('Taç topla', 'Earn crowns')} 👑</span><small>${hn ? L(`${hn} bölüm kusursuz bitmeyi bekliyor`, `${hn} ${pl(hn, 'level awaits', 'levels await')} a perfect finish`) : L('Yeni bölümleri ⏱ ve ↻ hedefiyle bitir', 'Beat new levels within ⏱ and ↻ targets')}</small></button>` : ''}
     <button id="mClose" class="btn glassbtn">${L('Tamam', 'Done')}</button>`, { mClose: closeModal, mHunt: () => crownHunt(nx), mChest: chestSheet });
   $('skins').onclick = e => {
     const b = e.target.closest('.skin'); if (!b) return;
@@ -1911,7 +1968,6 @@ $('bSettings').onclick = settings;
 $('streakChip').onclick = () => rescueOk() ? rescueSheet() : streakSheet();
 $('starsChip').onclick = () => show('map');
 $('crownChip').onclick = skinSheet;
-$('bHow').onclick = how;
 // arka plan ↔ ön plan: süre ve ses durur. İki kaynak (ikisi birden gelebilir, iş tekrarı zararsız): visibilitychange ve Capacitor appStateChange
 function front(on) {
   if (!on) { pause(); ac?.suspend?.(); Remind.plan(); return; }
@@ -1984,5 +2040,5 @@ if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { plan, breath, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
+window.__ray = { plan, breath, review: maybeReview, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();

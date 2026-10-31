@@ -131,6 +131,10 @@ Hat adları yer adıdır ve çevrilir:
 | YENİ KURAL · Anladım | NEW RULE · Got it |
 | ⚡ zorluk %30 | ⚡ 30% hard |
 | ☕ mola · ☕ mola bölümü | ☕ breather · ☕ breather level |
+| Sıradaki (tema) | Next up |
+| 👑 3 yeni taç · +1 ipucu | 👑 3 new crowns · +1 hint |
+| İlerlemeyi taşı · Kodu kopyala · Kodu yükle | Move progress · Copy code · Load code |
+| Bize yaz · Öneri · hata | Contact us · Ideas · bugs |
 | ★ 11 kaldı → M3 | ★ 11 to go → M3 |
 | Tamamlandı ✓ · Hazır | Done ✓ · Ready |
 | 5 günlük seri | 5-day streak |
