@@ -46,13 +46,13 @@ module.exports = async T => {
       const m = R.MODS.find(q => q.key === 'ring'), calls = { n: 0 }, wrap = {};
       for (const h of ['tree', 'mark', 'check']) { wrap[h] = m[h]; m[h] = function (...a) { calls.n++; return wrap[h].apply(this, a); }; }
       let old = 0; for (let l = 1; l < 673; l += 11) if (R.puzzleFor(l).ring) old++;
-      ['2026-10-01', '2026-10-27'].forEach(d => { if (R.dailyFor(d).ring) old++; });
+      ['2026-10-01', '2026-10-27'].forEach(d => { if (R.dailyBase(d).ring) old++; });
       Object.assign(m, wrap);
       let zero = 0; for (let s = 1; s <= 40; s++) { const a = R.generate(7, 9, s, 3, 1, { rev: 3, ring: 0 }), b = R.generate(7, 9, s, 3, 1, { rev: 3 }); if (JSON.stringify([a.sol, a.cur, a.ring]) !== JSON.stringify([b.sol, b.cur, b.ring])) zero++; }
       const fnv = s => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return (h >>> 0).toString(36); };
       const sum = P => fnv(JSON.stringify([P.sol, P.cur, P.pinned, P.link, P.rev, P.cnt, P.hub2, P.par, P.taps, P.diff]));
       const hash = {}; for (const l of [1, 29, 77, 133, 169, 208]) hash['l' + l] = sum(R.puzzleFor(l));
-      for (const d of ['2026-10-01', '2026-10-27', '2027-03-14']) hash[d] = sum(R.dailyFor(d));
+      for (const d of ['2026-10-01', '2026-10-27', '2027-03-14']) hash[d] = sum(R.dailyBase(d));
       // hat: 1–672'de halka yok, M17'nin (673–748) her bölümünde var; ilk 3 bölüm 6×8, halka ≤ 12, 1 işaret
       let early = 0, own = 0, miss = 0, gt = 0, gms = 0; const intro = [];
       for (let l = 1; l < 673; l++) if (R.rulesFor(l).has('ring')) early++;

@@ -52,15 +52,15 @@ Hepsi 24 bit PNG'dir, saydamlık (alfa) içermez; iki mağazanın kuralına uyar
 |---|---|---|---|---|
 | 1 | `01-oyun` | Dokun, döndür, hattı yak | Bütün durakları merkeze bağla, açık uç kalmasın | Bölüm 181 (M8, iki merkez), hat yarıya kadar yanmış. Mağazada ilk bakılan görsel oynanıştır. |
 | 2 | `02-ana` | Hatları bağla, şehri canlandır | Tek elle · internetsiz · her gün yeni bir Günün Hattı | Ana ekran: 12 günlük seri, Günün Hattı, M9 |
-| 3 | `03-kazan` | Kusursuz bitir, taç kazan | Süre ve hamle hedefini tuttur, üç yıldızı topla | Bölüm 45 kusursuz: 3 yıldız, taç, 5'li seri bonusu |
+| 3 | `03-kazan` | Kusursuz bitir, bilet kazan | Süre ve hamle hedefini tuttur, üç yıldızı topla | Bölüm 45 kusursuz: 3 yıldız, bilet, 5'li seri bonusu |
 | 4 | `04-harita` | 20 hat, sonu gelmeyen bölüm | Zorluk dalga dalga artar, arada mola var | Hat haritası: biten M9, süren M10 |
 | 5 | `05-kural` | Hat ilerledikçe yeni kurallar | Makas, köprü, tabela, döner tabla, halka, tünel ağzı… | Tünel ağzı kural kartı (M19) |
-| 6 | `06-tema` | Taç topla, 25 renk teması aç | Kusursuz bitirdiğin her bölüm bir taç kazandırır | Renk temaları penceresi |
+| 6 | `06-tema` | Bilet topla, 25 renk teması aç | Kusursuz bitirdiğin her bölüm bir bilet kazandırır | Renk temaları penceresi |
 | 7 | `07-sandik` | Sürpriz sandık, yeni trenler | İpucu, seri kalkanı ya da yeni bir tren kaplaması | Sandık açılışı: destansı Lavanta kaplaması |
 
 Öne çıkan görsel: koyu lacivert zemin, uygulama ikonu (Gece Işığı: turuncu L ray, yanan kare merkez), "Ray", "Hatları bağla · Şehri canlandır" ve üç rozet (Tek elle, İnternetsiz, Metro bulmacası).
 
-İngilizce sahne başlıkları (`en`): 1 Connect the lines, light up the city · 2 Tap, turn, light the line · 3 Finish perfect, earn crowns · 4 20 lines, endless levels · 5 New rules as the line grows · 6 Collect crowns, unlock 25 themes · 7 Surprise chest, new trains. Öne çıkan görselde "Connect the lines · Light up the city" ve One hand, Offline, Metro puzzle rozetleri.
+İngilizce sahne başlıkları (`en`): 1 Connect the lines, light up the city · 2 Tap, turn, light the line · 3 Finish perfect, earn tickets · 4 20 lines, endless levels · 5 New rules as the line grows · 6 Collect tickets, unlock 25 themes · 7 Surprise chest, new trains. Öne çıkan görselde "Connect the lines · Light up the city" ve One hand, Offline, Metro puzzle rozetleri.
 
 ## 3. Karakter sayıları
 
@@ -110,7 +110,7 @@ NASIL OYNANIR
 • Karoya dokun, ray döner.
 • Bütün durakları merkeze bağla, açık uç bırakma.
 • Üç yıldız: bölümü bitir, süre hedefini tuttur, hamle hedefini tuttur.
-• Süreyi ve hamleyi birlikte tutturursan bölüm kusursuz olur, taç kazanırsın.
+• Süreyi ve hamleyi birlikte tutturursan bölüm kusursuz olur, bilet kazanırsın.
 
 20 HAT, SONU GELMEYEN BÖLÜMLER
 Her metro hattı bir öncekinden uzundur, her bölüm bir öncekinden biraz daha zordur. İlk 20 hattan sonra oyun karma hatlarla sonsuza dek sürer. Bölümler cihazında üretilir, hepsi çözülebilir ve herkes aynı numaralı bölümde aynı bulmacayı görür.
@@ -122,10 +122,10 @@ GÜNÜN HATTI
 Her gün herkes aynı bulmacayı çözer. Bulmaca hafta boyunca zorlaşır, Pazar büyük bulmaca günüdür. Gün serini koru, sonucunu paylaş, arkadaşlarına meydan oku.
 
 TAÇLAR, TEMALAR VE SÜRPRİZ SANDIK
-Kusursuz bitirdiğin her bölüm bir taç kazandırır. Taçlarla 25 renk temasının 22'sini açabilir ya da sürpriz sandığı açabilirsin: içinden ipucu, seri kalkanı ya da yeni bir tren kaplaması çıkar. Sandık yalnız oyunda kazanılan taçla açılır, olasılıklar sandık ekranında yazılıdır.
+Kusursuz bitirdiğin her bölüm bir bilet kazandırır. Biletlerle 25 renk temasının 22'sini açabilir ya da sürpriz sandığı açabilirsin: içinden ipucu, seri kalkanı ya da yeni bir tren kaplaması çıkar. Sandık yalnız oyunda kazanılan biletle açılır, olasılıklar sandık ekranında yazılıdır.
 
 SEFER ŞERİDİ VE KUSURSUZ SERİ
-Saatin altındaki küçük tren süre hedefine doğru ilerler. Süre dolsa da oyun bitmez; tren yalnız rötar yapar, peronda bekleyen yolcular da nazikçe takılır. Kusursuz bölümleri art arda bitir, seriyi büyüt, bonus taç kazan.
+Saatin altındaki küçük tren süre hedefine doğru ilerler. Süre dolsa da oyun bitmez; tren yalnız rötar yapar, peronda bekleyen yolcular da nazikçe takılır. Kusursuz bölümleri art arda bitir, seriyi büyüt, bonus bilet kazan.
 
 GÖZ DOSTU, PİL DOSTU
 Koyu, açık ve otomatik görünüm. Yumuşak renkler. Animasyonlar yalnız hareket olduğunda çalışır. Müzik, ses ve titreşim ayrı ayrı kapatılabilir. İstersen günlük hatırlatma kurabilirsin.
@@ -146,7 +146,7 @@ HOW TO PLAY
 • Tap a tile to rotate the rail.
 • Connect every station to the hub, leave no open ends.
 • Three stars: finish the level, beat the time target, beat the move target.
-• Hit both targets in one go and the level is flawless: you earn a crown.
+• Hit both targets in one go and the level is flawless: you earn a ticket.
 
 20 LINES, ENDLESS LEVELS
 Each metro line is longer than the last and every level is a little harder than the one before. After the first 20 lines the game continues forever with mixed lines. Levels are generated on your device, every one is solvable, and everyone gets the same puzzle on the same level number.
@@ -158,10 +158,10 @@ DAILY LINE
 Every day everyone solves the same puzzle. It gets harder through the week, and Sunday is big puzzle day. Keep your daily streak, share your result and challenge your friends.
 
 CROWNS, THEMES AND THE SURPRISE CHEST
-Every level you finish flawlessly earns a crown. Spend crowns on 22 of the 25 color themes or open the surprise chest for a hint, a streak shield or a new train livery. The chest only opens with crowns earned in the game, and its odds are shown on the chest screen.
+Every level you finish flawlessly earns a ticket. Spend tickets on 22 of the 25 color themes or open the surprise chest for a hint, a streak shield or a new train livery. The chest only opens with tickets earned in the game, and its odds are shown on the chest screen.
 
 TRAIN STRIP AND FLAWLESS STREAK
-A little train below the clock rolls toward your time target. When time runs out the game does not end; the train is just running late, and the passengers on the platform tease you gently. Finish flawless levels in a row, grow your streak and earn bonus crowns.
+A little train below the clock rolls toward your time target. When time runs out the game does not end; the train is just running late, and the passengers on the platform tease you gently. Finish flawless levels in a row, grow your streak and earn bonus tickets.
 
 EASY ON THE EYES AND THE BATTERY
 Dark, light and automatic appearance. Soft colors. Animations only run while something is moving. Music, sound effects and vibration can each be turned off. Set a daily reminder if you like.
@@ -215,10 +215,10 @@ Calm, one-handed and offline
 **Tanıtım metni** (170). Sürüm göndermeden değiştirilebilir; kampanya ve yeni kural duyurusu için kullanılır.
 
 ```text
-Her gün yeni bir Günün Hattı! Rayları döndür, durakları bağla, kusursuz bitir, taç topla. 20 hat, yeni kurallar ve sonu gelmeyen bölümler seni bekliyor.
+Her gün yeni bir Günün Hattı! Rayları döndür, durakları bağla, kusursuz bitir, bilet topla. 20 hat, yeni kurallar ve sonu gelmeyen bölümler seni bekliyor.
 ```
 ```text
-A new Daily Line every day! Rotate the rails, connect every station, finish flawlessly and collect crowns. 20 lines, new rules and endless levels await.
+A new Daily Line every day! Rotate the rails, connect every station, finish flawlessly and collect tickets. 20 lines, new rules and endless levels await.
 ```
 
 **Açıklama** (4000): §4'teki tam açıklamanın aynısı.
@@ -307,7 +307,7 @@ Google'ın iOS tablosu: https://developers.google.com/admob/ios/privacy/data-dis
 | Kullanıcılar birbiriyle iletişim kuruyor mu (sohbet, içerik paylaşma) | Hayır. "Paylaş" yalnız sonuç metnini sistemin paylaşma penceresine verir. |
 | Kullanıcının konumu paylaşılıyor mu | Hayır |
 | Dijital ürün satın alma | Evet (Reklamsız paket) |
-| Parayla satın alınan rastgele ödül (ganimet kutusu) | Hayır. Sürpriz sandık yalnız oyunda kazanılan taçla açılır; taç gerçek parayla satılmaz, sandıktan taç çıkmaz. |
+| Parayla satın alınan rastgele ödül (ganimet kutusu) | Hayır. Sürpriz sandık yalnız oyunda kazanılan biletle açılır; bilet gerçek parayla satılmaz, sandıktan bilet çıkmaz. |
 | Sınırsız internet erişimi (uygulama içi tarayıcı) | Hayır |
 
 Beklenen sonuç: PEGI 3, ESRB Everyone, USK 0, IARC 3+ (satın alma nedeniyle "Oyun içi satın alma" notu eklenir).

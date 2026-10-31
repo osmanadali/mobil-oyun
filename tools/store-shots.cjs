@@ -90,7 +90,7 @@ const play = (page, l) => page.evaluate(() => document.getElementById('bMap').cl
 
 // ---------- sahneler ----------
 // t: başlık (iki satır; ikinci satır vurgu rengiyle) · s: alt satır · save: kayıt · go: sahneyi kur
-// harcanabilir taç bakiyesini n'ye ayarla (görünmeyen seri bonusuyla)
+// harcanabilir bilet (eski taç) bakiyesini n'ye ayarla (görünmeyen seri bonusuyla)
 const bal = (s, n) => Object.assign(s, { cc: n + s.spent - Object.keys(s.crowns).length - s.dCrowns });
 const seenTo = c => Object.fromEntries(Array.from({ length: c }, (_, k) => [k, 1]));   // c'den önceki hatların kural kartları görülmüş
 const SCENES = [
@@ -99,8 +99,8 @@ const SCENES = [
     save: saveAt(183), go: async page => { await play(page, 181); await page.waitForTimeout(900); await clock(page, 47); await solveTo(page, .42); await page.waitForTimeout(1400); } },
   { id: '02-ana', t: ['Hatları bağla,', 'şehri canlandır'], s: 'Tek elle · internetsiz · her gün yeni bir Günün Hattı', te: ['Connect the lines,', 'light up the city'], se: 'One hand · offline · a new Daily Line every day',
     save: saveAt(241), go: async page => { await page.waitForTimeout(900); } },
-  // kusursuz bitiş: 3 yıldız + taç + 5'li seri bonusu
-  { id: '03-kazan', t: ['Kusursuz bitir,', 'taç kazan'], s: 'Süre ve hamle hedefini tuttur, üç yıldızı topla', te: ['Finish perfect,', 'earn crowns'], se: 'Beat the time and move targets, collect three stars',
+  // kusursuz bitiş: 3 yıldız + bilet + 5'li seri bonusu
+  { id: '03-kazan', t: ['Kusursuz bitir,', 'bilet kazan'], s: 'Süre ve hamle hedefini tuttur, üç yıldızı topla', te: ['Finish perfect,', 'earn tickets'], se: 'Beat the time and move targets, collect three stars',
     save: saveAt(46, { combo: 4 }), go: async page => { await play(page, 45); await page.waitForTimeout(900); await clock(page, 38); await solveTo(page, 1); await page.waitForTimeout(3200); } },
   // harita gerçek ilerlemeyle (test açık değil): şimdiki hattın (M10, karma) başlığı üstte, bitmiş M9 sonu üstünde;
   // ekranın altı satır arasına denk gelir (yarım kesik sayı kalmasın, ev çizgisi yazının üstüne binmesin)
@@ -118,7 +118,7 @@ const SCENES = [
   { id: '05-kural', t: ['Hat ilerledikçe', 'yeni kurallar'], s: 'Makas, köprü, tabela, döner tabla, halka, tünel ağzı…', te: ['New rules', 'as the line grows'], se: 'Switches, bridges, signposts, turntables, loops, tunnel portals…',
     save: saveAt(829, { seen: seenTo(18) }), go: async page => { await play(page, 829); await page.waitForTimeout(2200); } },
   // tema penceresi: alt kenar bir yazıyı kesmesin. Pencere başta (başlıkla) ya da tema ızgarası en üstte durur; temiz olan ilk kaydırma seçilir.
-  { id: '06-tema', t: ['Taç topla,', '25 renk teması aç'], s: 'Kusursuz bitirdiğin her bölüm bir taç kazandırır', te: ['Collect crowns,', 'unlock 25 themes'], se: 'Every level you finish perfectly earns a crown',
+  { id: '06-tema', t: ['Bilet topla,', '25 renk teması aç'], s: 'Kusursuz bitirdiğin her bölüm bir bilet kazandırır', te: ['Collect tickets,', 'unlock 25 themes'], se: 'Every level you finish perfectly earns a ticket',
     save: bal(saveAt(241, { skin: 'ocean', owned: { metro: 1, sunset: 1, ocean: 1, forest: 1, desert: 1, sakura: 1, neon: 1, aurora: 1 }, spent: 395 }), 38),
     go: async page => {
       await page.evaluate(() => document.getElementById('crownChip').click()); await page.waitForTimeout(1200);

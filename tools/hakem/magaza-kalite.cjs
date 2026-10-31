@@ -55,7 +55,7 @@ module.exports = async T => {
       vars[w] = await page.evaluate(() => {
         const h = document.querySelector('#winPanel h2'), t = document.querySelector('#winPanel .wp-t'), tog = document.getElementById('wTog'), out = [];
         let bd = t.querySelector('.badge'); if (!bd) { bd = document.createElement('span'); bd.className = 'badge'; t.appendChild(bd); }
-        for (const title of ['Hat açıldı!', 'Günün Hattı tamam!', 'Pratik tamam!']) for (const b of ['YENİ HAT AÇILDI · M12', 'TEMA ALINABİLİR 🎨', 'KUSURSUZ 👑 · ✨15']) for (const lab of ['Hattı gör', 'Sonuç']) {
+        for (const title of ['Hat açıldı!', 'Günün Hattı tamam!', 'Pratik tamam!']) for (const b of ['YENİ HAT AÇILDI · M12', 'TEMA ALINABİLİR 🎨', 'KUSURSUZ 🎫 · ✨15']) for (const lab of ['Hattı gör', 'Sonuç']) {
           h.textContent = title; bd.textContent = b; tog.querySelector('span').textContent = lab;
           const lines = Math.round(h.getBoundingClientRect().height / parseFloat(getComputedStyle(h).lineHeight)), br = bd.getBoundingClientRect(), tr = tog.getBoundingClientRect();
           if (h.scrollWidth > h.clientWidth + 1 || lines > 2 || br.right > tr.left || bd.scrollWidth > bd.clientWidth + 1 || tr.height < 43.5 || tr.width < 43.5) out.push(`${title}|${b}|${lab}`);
@@ -78,7 +78,7 @@ module.exports = async T => {
       const sep = ch.every((c, i) => !i || c.l >= ch[i - 1].r);
       return { ch: ch.map(({ h, vis, clip, edge }) => ({ h, vis, clip, edge })), sep };
     });
-    check('kalite.chips', 'Ana ekran: 🔥 ★ 👑 çipleri görünüşte 38 px, dokunma alanı 44 px (saydam kenar), alanlar birbirine binmez',
+    check('kalite.chips', 'Ana ekran: 🔥 ★ 🎫 çipleri görünüşte 38 px, dokunma alanı 44 px (saydam kenar), alanlar birbirine binmez',
       r.ch.length === 3 && r.ch.every(c => c.h >= 44 && c.vis === 38 && c.clip === 'padding-box' && c.edge) && r.sep, JSON.stringify(r), 'medium');
     // bildirim: uzun yazı 320 px'te ekrandan taşmaz (iki satır), kısa yazı tek satır kalır
     await page.setViewportSize({ width: 320, height: 640 }); await page.waitForTimeout(150);
@@ -170,7 +170,7 @@ module.exports = async T => {
     errs.push(...errors); await ctx.close();
   }
 
-  // ---------- h) metinler: taç avında "0 👑 daha gerekli" yok; ★/👑 sayısından satır sonunda kopmaz ----------
+  // ---------- h) metinler: taç avında "0 🎫 daha gerekli" yok; ★/🎫 sayısından satır sonunda kopmaz ----------
   {
     const { ctx, page, errors } = await open(browser, URL, { vp: [360, 740], save: { played: 30, level: 20, stars: starsUpTo(20, 2), cc: 12 } });
     await page.click('#crownChip'); await page.waitForTimeout(400); await page.click('#mHunt'); await page.waitForTimeout(400);
@@ -187,8 +187,8 @@ module.exports = async T => {
     await c2.page.click('#bPlay'); await c2.page.waitForTimeout(450);   // M6 kilitli (★ 200 / 220)
     const lock = await c2.page.textContent('#mCard p');
     nw.lock = await nwOf(c2.page);
-    check('kalite.texts', 'Taç avı: bakiye yetiyorsa "0 👑 daha gerekli" yazmaz, yetmiyorsa eksik sayıyı yazar; kilitli hat ve tema satın alma: ★/👑 sayısından kopmaz',
-      !/daha gerekli/.test(rich) && /Gün Batımı için 5 👑 daha gerekli/.test(poor) && nw.lock.join() === '★ 220,★ 200' && nw.buy.join() === '👑 5,👑 12,👑 7',
+    check('kalite.texts', 'Bilet avı: bakiye yetiyorsa "0 🎫 daha gerekli" yazmaz, yetmiyorsa eksik sayıyı yazar; kilitli hat ve tema satın alma: ★/🎫 sayısından kopmaz',
+      !/daha gerekli/.test(rich) && /Gün Batımı için 5 🎫 daha gerekli/.test(poor) && nw.lock.join() === '★ 220,★ 200' && nw.buy.join() === '🎫 5,🎫 12,🎫 7',
       JSON.stringify({ rich: rich.slice(0, 40), poor: poor.slice(0, 40), nw }), 'low');
     errs.push(...errors, ...c2.errors); await c2.ctx.close();
     // yeni oyuncu: "0 bölüm kusursuz bitmeyi bekliyor" ve "Oynadığın her bölüm kusursuz! 🎉" yazmaz

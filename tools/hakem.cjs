@@ -89,6 +89,7 @@ async function tapTile(page, i) {
 // Karanlık tünel: yalnızca aydınlık karolara dokunulur; hat ilerledikçe yeni tur (ışığı takip eder).
 async function solve(page, gap = 25, rounds = 40) {
   let total = 0;
+  if (await page.evaluate(() => document.getElementById('modal').classList.contains('open') && !!document.getElementById('mGo'))) { await page.click('#mGo'); await page.waitForTimeout(300); }   // kural kartı (ör. pazar Günün Hattı'nda haftanın kuralı) açıksa önce kapat
   for (let round = 0; round < rounds; round++) {
     const taps = await page.evaluate(() => {
       const { G, rot } = window.__ray, out = [], lit = i => !G.seen || G.seen[i], unrot = m => ((m >> 1) | (m << 3)) & 15;
@@ -245,7 +246,7 @@ async function inViewport(page, sel) {
       }
       if (L === 12) {   // M1 sonu = hat finali (SON DURAK)
         const fin = await page.evaluate(() => ({ title: document.getElementById('gTitle').textContent, cls: document.getElementById('game').classList.contains('final'), fc: JSON.parse(localStorage.getItem('ray')).fc, tip: document.getElementById('winPanel').textContent }));
-        check('final', 'Hat finali: son bölüm "🏁 Son durak", altın çerçeve; kusursuz → +1 bonus 👑', /Son durak/.test(fin.title) && fin.cls && fin.fc === 1 && /bonus/.test(fin.tip), JSON.stringify({ ...fin, tip: undefined }), 'medium');
+        check('final', 'Hat finali: son bölüm "🏁 Son durak", altın çerçeve; kusursuz → +1 bonus 🎫', /Son durak/.test(fin.title) && fin.cls && fin.fc === 1 && /bonus/.test(fin.tip), JSON.stringify({ ...fin, tip: undefined }), 'medium');
         const h0 = (await getSave(page)).hints, has = await page.$('#mDbl');
         if (has) { await page.click('#mDbl'); await page.waitForTimeout(900); }
         const h1 = (await getSave(page)).hints, ok = await page.$('.dblok');
@@ -257,7 +258,7 @@ async function inViewport(page, sel) {
     const s = await getSave(page), log = await page.evaluate(() => window.__log);
     metrics.playthrough = { levels: lv, ads: log.ads, haptics: log.hap };
     check('play.12', '12 bölüm art arda çözülüp kazanılıyor', lv.length === 12 && lv.every(l => l.won), `${lv.filter(l => l.won).length}/12`);
-    check('play.perfect', 'Kusursuz çözüm: 3★ + 👑 + ipucu parçası', Object.keys(s.crowns || {}).length === 12 && (s.shards || 0) === 0, `👑 ${Object.keys(s.crowns || {}).length} · parça ${s.shards}`, 'medium');
+    check('play.perfect', 'Kusursuz çözüm: 3★ + 🎫 + ipucu parçası', Object.keys(s.crowns || {}).length === 12 && (s.shards || 0) === 0, `🎫 ${Object.keys(s.crowns || {}).length} · parça ${s.shards}`, 'medium');
     check('play.stars', 'Hedef hamlede çözünce 3 yıldız', lv.every(l => l.stars === 3), lv.map(l => l.stars).join(''), 'medium');
     check('play.save', 'İlerleme kaydediliyor (seviye 13)', s.level === 13, `level=${s.level}`);
     check('ads.inter', 'Geçiş reklamı 8. bölüm sonrası 1 kez (90 sn aralık kuralı)', log.ads.filter(a => a === 'interstitial').length === 1, JSON.stringify(log.ads), 'medium');
@@ -438,17 +439,17 @@ async function inViewport(page, sel) {
     await ctx.close();
   }
 
-  // ---------- E5. Renk temaları (👑), günlük hatırlatma, reklamsız paket ----------
+  // ---------- E5. Renk temaları (🎫), günlük hatırlatma, reklamsız paket ----------
   {
     const { ctx, page, errors } = await open(browser, URL, { save: { played: 12, level: 13, stars: { ...starsUpTo(10), 10: 2, 11: 1, 12: 2 }, crowns: starsUpTo(10, 1), dCrowns: 18, miss: { 10: [4, 0], 11: [3, 2], 12: [0, 5] } }, init: 'window.__withNotif = true;\n' + SHOP_MOCK });
-    // temalar: 👑 para birimi. Bakiye 27 (9 bölüm + 18 günlük) → Okyanus (25) alınır, kalan 2 Gün Batımı'na (5) yetmez
+    // temalar: 🎫 para birimi. Bakiye 27 (9 bölüm + 18 günlük) → Okyanus (25) alınır, kalan 2 Gün Batımı'na (5) yetmez
     await page.click('#crownChip'); await page.waitForTimeout(500);
     const acc0 = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--acc').trim());
     await page.click('.skin[data-k=neon]'); await page.waitForTimeout(350);
-    // kilitli tema → "Taç topla": kusursuz olmayan bölümler yıldızlarıyla, kusursuza en yakın önce
+    // kilitli tema → "Bilet topla": kusursuz olmayan bölümler yıldızlarıyla, kusursuza en yakın önce
     const hunt = await page.evaluate(() => [...document.querySelectorAll('#hunt .hrow')].map(b => b.textContent));
     await shot(page, 'crown-hunt');
-    check('skin.hunt', 'Taç yetmeyince kusursuz olmayan bölümler yıldızları ve kaçan hedefiyle listeleniyor (en yakın önce)', hunt.join(',') === '10★★☆⏱ 4 sn geç,12★★☆↻ 5 hamle fazla,11★☆☆⏱ 3 sn geç · ↻ 2 hamle fazla', hunt.join(','), 'medium');
+    check('skin.hunt', 'Bilet yetmeyince kusursuz olmayan bölümler yıldızları ve kaçan hedefiyle listeleniyor (en yakın önce)', hunt.join(',') === '10★★☆⏱ 4 sn geç,12★★☆↻ 5 hamle fazla,11★☆☆⏱ 3 sn geç · ↻ 2 hamle fazla', hunt.join(','), 'medium');
     await page.click('#mBack'); await page.waitForTimeout(350);
     const neonLocked = await page.evaluate(() => !document.querySelector('.skin[data-k=neon]').classList.contains('on'));
     await page.click('.skin[data-k=ocean]'); await page.waitForTimeout(400);
@@ -457,13 +458,13 @@ async function inViewport(page, sel) {
     await page.click('#mBuy'); await page.waitForTimeout(450);
     await shot(page, 'skins');
     const sk = await page.evaluate(() => { const v = JSON.parse(localStorage.getItem('ray')); return { acc: getComputedStyle(document.documentElement).getPropertyValue('--acc').trim(), sel: v.skin, spent: v.spent, chip: document.getElementById('sCrowns').textContent, own: document.querySelectorAll('.skin:not(.lockd)').length }; });
-    await page.click('.skin[data-k=sunset]'); await page.waitForTimeout(400);   // kalan 2 👑 → 5'lik temaya yetmez → Taç topla
-    const poor = await page.evaluate(() => /Taç topla/.test(document.querySelector('.sheet h2')?.textContent || '') && /3 👑/.test(document.querySelector('.sheet p')?.textContent || '') && JSON.parse(localStorage.getItem('ray')).skin === 'ocean');
+    await page.click('.skin[data-k=sunset]'); await page.waitForTimeout(400);   // kalan 2 🎫 → 5'lik temaya yetmez → Bilet topla
+    const poor = await page.evaluate(() => /Bilet topla/.test(document.querySelector('.sheet h2')?.textContent || '') && /3 🎫/.test(document.querySelector('.sheet p')?.textContent || '') && JSON.parse(localStorage.getItem('ray')).skin === 'ocean');
     await page.click('#mBack'); await page.waitForTimeout(350); await page.click('#mClose'); await page.waitForTimeout(400);
     await page.click('#bPlay'); await page.waitForTimeout(600);
     const lineCol = await page.evaluate(() => ({ c: window.__ray.G.color, acc: getComputedStyle(document.getElementById('game')).getPropertyValue('--acc').trim() }));
     await shot(page, 'skin-game');
-    check('skin.buy', 'Temalar 👑 ile satın alınır: onayda kalan bakiye, harcanan düşer, kalan diğerine yetmez', /kalan 👑 2/.test(buy) && sk.sel === 'ocean' && sk.spent === 25 && sk.chip === '2' && sk.own === 2 && poor && neonLocked, JSON.stringify({ ...sk, poor, buy: buy.slice(0, 60) }), 'medium');
+    check('skin.buy', 'Temalar 🎫 ile satın alınır: onayda kalan bakiye, harcanan düşer, kalan diğerine yetmez', /kalan 🎫 2/.test(buy) && sk.sel === 'ocean' && sk.spent === 25 && sk.chip === '2' && sk.own === 2 && poor && neonLocked, JSON.stringify({ ...sk, poor, buy: buy.slice(0, 60) }), 'medium');
     check('skin.pick', 'Seçilen tema oyuna yansır; oyunda düğme/yıldız rengi oynanan hattın rengi', sk.acc !== acc0 && lineCol.c === '#4fa3ff' && lineCol.acc === lineCol.c, JSON.stringify({ acc0, acc: sk.acc, ...lineCol }), 'medium');
     // hatırlatma: oyundan ana sayfaya dönünce bir kez sorulur → izin → bildirimler planlanır
     await page.click('#bBack'); await page.waitForTimeout(1300);
@@ -696,13 +697,13 @@ async function inViewport(page, sel) {
     await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.t + 1) * 1000; });
     await solve(page, 10); await waitModal(page);
     const s2 = await getSave(page), prim = await page.evaluate(() => document.querySelector('#winPanel .primary')?.id);
-    check('combo.crown', '5. kusursuz → +1 bonus 👑 (bakiyeye eklenir); taçlı bölüm seriyi bozmaz, Tekrar öne çıkmaz', s1.combo === 5 && s1.cc === 1 && /bonus 👑/.test(cr) && chip && s2.combo === 5 && !s2.comboLost && prim === 'mNext', JSON.stringify({ c1: s1.combo, cc: s1.cc, chipHidden: chip, c2: s2.combo, prim }), 'medium');
+    check('combo.crown', '5. kusursuz → +1 bonus 🎫 (bakiyeye eklenir); taçlı bölüm seriyi bozmaz, Tekrar öne çıkmaz', s1.combo === 5 && s1.cc === 1 && /bonus 🎫/.test(cr) && chip && s2.combo === 5 && !s2.comboLost && prim === 'mNext', JSON.stringify({ c1: s1.combo, cc: s1.cc, chipHidden: chip, c2: s2.combo, prim }), 'medium');
     await ctx.close();
   }
 
-  // ---------- E11. Sürpriz sandık (👑 ile): açılış sahnesi, tren kaplaması, seri kalkanı ----------
+  // ---------- E11. Sürpriz sandık (🎫 ile): açılış sahnesi, tren kaplaması, seri kalkanı ----------
   // Sahne gözle de kontrol edilir: chest-closed (kapalı sandık), chest-open-* (açılmış sandık + ödül)
-  const chestCrowns = Object.fromEntries(Array.from({ length: 12 }, (_, k) => [k + 1, 1]));   // bakiye 👑 12
+  const chestCrowns = Object.fromEntries(Array.from({ length: 12 }, (_, k) => [k + 1, 1]));   // bakiye 🎫 12
   const chestScene = page => page.evaluate(() => {
     const s = document.getElementById('chestScene'); if (!s) return null;
     const q = c => s.querySelector(c), ic = q('.cs-ic'), n = q('.cs-n'), r = ic.getBoundingClientRect(), nb = n?.getBoundingClientRect();
@@ -725,7 +726,7 @@ async function inViewport(page, sel) {
     const loot = await page.evaluate(() => { const l = document.querySelector('.loot'); return { vis: l.offsetHeight > 0, txt: l.textContent }; });
     await shot(page, 'chest-info');
     check('chest.sheet', 'Sandık penceresi: çizilmiş sandık; oranlar tek satırda + "?" sandıktan ne çıkacağını gösterir; eski uzun ipucu satırı yok; Aç düğmesi küçük ve bakiye yazmaz',
-      sh.svg && sh.row && /Sıradan %60/.test(sh.odds) && /Nadir %28/.test(sh.odds) && /Destansı %12/.test(sh.odds) && sh.q === '?' && !sh.tip && sh.btn === 'Aç · 👑 10' && sh.btnH < 76
+      sh.svg && sh.row && /Sıradan %60/.test(sh.odds) && /Nadir %28/.test(sh.odds) && /Destansı %12/.test(sh.odds) && sh.q === '?' && !sh.tip && sh.btn === 'Aç · 🎫 10' && sh.btnH < 76
       && loot.vis && /💡 ipucu ×2/.test(loot.txt) && /💡 ipucu ×4/.test(loot.txt) && /🛡 seri kalkanı/.test(loot.txt) && /güçlendirici/.test(loot.txt) && /🚆 yeni tren kaplaması/.test(loot.txt) && /8 sandıkta destansı çıkmazsa 8\.si garanti/.test(loot.txt), JSON.stringify({ ...sh, loot: loot.txt }), 'medium');
     await page.click('#mOdds'); await page.waitForTimeout(200);
     await page.click('#mOpen'); await page.waitForTimeout(900);
@@ -735,7 +736,7 @@ async function inViewport(page, sel) {
     const c1 = await chestScene(page);
     await shot(page, 'chest-open-epic');
     const id = Object.keys(s1.trains || {})[0];
-    check('chest.pity', 'Sandık 👑10 ile açılır; ödül sahne başlamadan kaydedilir; 7 destansısız sandıktan sonra 8.si destansı (tren kaplaması)', s1.spent === 10 && s1.chests === 1 && s1.dry === 0 && !!id && s1.hints === 3 && !!c0 && !c0.open && c1?.tier === 'DESTANSI', JSON.stringify({ spent: s1.spent, chests: s1.chests, dry: s1.dry, trains: s1.trains, tier: c1?.tier }), 'medium');
+    check('chest.pity', 'Sandık 🎫10 ile açılır; ödül sahne başlamadan kaydedilir; 7 destansısız sandıktan sonra 8.si destansı (tren kaplaması)', s1.spent === 10 && s1.chests === 1 && s1.dry === 0 && !!id && s1.hints === 3 && !!c0 && !c0.open && c1?.tier === 'DESTANSI', JSON.stringify({ spent: s1.spent, chests: s1.chests, dry: s1.dry, trains: s1.trains, tier: c1?.tier }), 'medium');
     check('chest.scene', 'Açılış sahnesi: kapalı sandık "Dokun → aç", dokununca açılır; kaplama treni kendi renginde ve adıyla, rozetsiz; "Trenine tak" + "Devam için dokun"', c0?.tap === 'Dokun → aç' && c1.open && c1.done && c1.op === 1 && c1.kind === 'rw-liv' && c1.trn && /^#/.test(c1.tb1) && c1.n === null && c1.name === 'Nane' && c1.use && c1.go === 'Devam için dokun', JSON.stringify(c1), 'medium');
     await page.click('#csUse'); await page.waitForTimeout(500);
     const back = await sheetBack(page);
@@ -745,7 +746,7 @@ async function inViewport(page, sel) {
     await page.click('#bPlay'); await page.waitForTimeout(450);
     const liv = await page.evaluate(() => document.getElementById('gTrip').style.getPropertyValue('--tb1'));
     const s2 = await getSave(page);
-    check('chest.livery', '"Trenine tak" → sahne kapanır, sandık penceresine dönülür; oyundaki tren o renge bürünür; taç bakiyesi 12 → 2', back && s2.train === id && /^#/.test(liv) && bal === '2', `${s2.train} · ${liv} · bakiye ${bal} · dönüş ${back}`, 'medium');
+    check('chest.livery', '"Trenine tak" → sahne kapanır, sandık penceresine dönülür; oyundaki tren o renge bürünür; bilet bakiyesi 12 → 2', back && s2.train === id && /^#/.test(liv) && bal === '2', `${s2.train} · ${liv} · bakiye ${bal} · dönüş ${back}`, 'medium');
     check('chest.errors', 'Sandık senaryosunda konsol hatası yok', errors.length === 0, errors.slice(0, 3).join(' | '));
     await ctx.close();
   }
@@ -796,7 +797,7 @@ async function inViewport(page, sel) {
     await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.t + 20) * 1000; });
     await solve(page, 10); await waitModal(page);
     const s = await getSave(page), w = await page.evaluate(() => ({ prim: document.querySelector('#winPanel .primary')?.id, txt: document.getElementById('winPanel').textContent }));
-    check('chest.shield', 'Bakiye yetmezse "Taç topla · 👑 10 gerekli" (bakiye yazmaz); 🛡 kalkan kırılan seriyi bir kez korur (Tekrar öne çıkmaz)', /Taç topla/.test(poor) && /👑 10 gerekli/.test(poor) && !/akiye/.test(poor) && s.combo === 3 && s.shield === 0 && !s.comboLost && w.prim === 'mNext' && /Kalkan/.test(w.txt), JSON.stringify({ poor, combo: s.combo, shield: s.shield, prim: w.prim }), 'medium');
+    check('chest.shield', 'Bakiye yetmezse "Bilet topla · 🎫 10 gerekli" (bakiye yazmaz); 🛡 kalkan kırılan seriyi bir kez korur (Tekrar öne çıkmaz)', /Bilet topla/.test(poor) && /🎫 10 gerekli/.test(poor) && !/akiye/.test(poor) && s.combo === 3 && s.shield === 0 && !s.comboLost && w.prim === 'mNext' && /Kalkan/.test(w.txt), JSON.stringify({ poor, combo: s.combo, shield: s.shield, prim: w.prim }), 'medium');
     await ctx.close();
   }
 
@@ -809,7 +810,7 @@ async function inViewport(page, sel) {
     await page.click('.lv[data-l="200"]'); await page.waitForTimeout(500);
     const lvl = await page.evaluate(() => window.__ray.G?.lvl);
     const s = await getSave(page);
-    check('test.open', 'Test sürümü: bütün hatlar ve 408 bölüm açık, temalar/kaplamalar sende, bol 👑', home.test && home.crowns >= 999 && map.locked === 0 && map.on >= 408 && map.l200 && lvl === 200 && Object.keys(s.owned).length >= 13 && Object.keys(s.trains).length === 9 && errors.length === 0, JSON.stringify({ ...home, ...map, lvl }), 'medium');
+    check('test.open', 'Test sürümü: bütün hatlar ve 408 bölüm açık, temalar/kaplamalar sende, bol 🎫', home.test && home.crowns >= 999 && map.locked === 0 && map.on >= 408 && map.l200 && lvl === 200 && Object.keys(s.owned).length >= 13 && Object.keys(s.trains).length === 9 && errors.length === 0, JSON.stringify({ ...home, ...map, lvl }), 'medium');
     await ctx.close();
   }
 

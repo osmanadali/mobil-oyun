@@ -84,7 +84,7 @@ module.exports = async T => {
         const R = window.__ray, H = s => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return (h >>> 0).toString(36); };
         const pz = P => P.sol.join('') + '|' + P.cur.join('') + '|' + P.diff + '|' + P.par + '|' + P.taps + '|' + (P.rules || []).join();
         const a = []; for (let l = 1; l < R.lineStart(19); l++) a.push(pz(R.puzzleFor(l)));
-        const d = []; for (let k = 0; k < 20; k++) d.push(pz(R.dailyFor(new Date(Date.UTC(2026, 0, 1) + k * 17 * 864e5).toISOString().slice(0, 10))));
+        const d = []; for (let k = 0; k < 20; k++) d.push(pz(R.dailyBase(new Date(Date.UTC(2026, 0, 1) + k * 17 * 864e5).toISOString().slice(0, 10))));
         return { lv: H(a.join(';')), day: H(d.join(';')), n: a.length, zone: R.MODS.some(m => m.key === 'zone') };
       });
       await ctx.close(); return r;

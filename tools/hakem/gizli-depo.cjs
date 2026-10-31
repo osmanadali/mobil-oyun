@@ -85,7 +85,7 @@ module.exports = async T => {
       const R = window.__ray, fnv = s => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return (h >>> 0).toString(36); };
       const sum = P => JSON.stringify([P.sol, P.cur, P.pinned, P.link, P.rev, P.cnt, P.hub2, P.par, P.taps, P.diff, P.rules, Object.keys(P).sort()]);
       let lv = ''; for (let l = 1; l < R.lineStart(13); l++) lv += fnv(sum(R.puzzleFor(l)));
-      let day = ''; for (let d = 0; d < 40; d++) { const t = new Date(2026, 9, 1 + d * 9); day += fnv(sum(R.dailyFor(`${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`))); }
+      let day = ''; for (let d = 0; d < 40; d++) { const t = new Date(2026, 9, 1 + d * 9); day += fnv(sum(R.dailyBase(`${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`))); }
       return { lv: fnv(lv), day: fnv(day), last: R.lineStart(13) - 1, keys: R.MODS.map(m => m.key).join() };
     };
     const a = await open(browser, URL, { save: { played: 1 } }), b = await open(browser, URL, { save: { played: 1 }, init: NO_DEPOT });

@@ -69,7 +69,7 @@ module.exports = async T => {
       const R = window.__ray, H = s => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return (h >>> 0).toString(36); };
       const pz = P => P.sol.join('') + '|' + P.cur.join('') + '|' + P.diff + '|' + P.par + '|' + P.taps + '|' + (P.rules || []).join();
       const L = []; for (let l = 1; l < 353; l++) L.push(pz(R.puzzleFor(l)));
-      const D = []; for (let d = 1; d <= 28; d++) D.push(pz(R.dailyFor('2026-10-' + String(d).padStart(2, '0'))));
+      const D = []; for (let d = 1; d <= 28; d++) D.push(pz(R.dailyBase('2026-10-' + String(d).padStart(2, '0'))));
       return { lv: H(L.join(';')), day: H(D.join(';')), faint: R.MODS.some(m => m.key === 'faint') };
     };
     // servis çalışanı kapalı (önbellekten sunmasın), ikinci bağlamda kural dosyası engellenir

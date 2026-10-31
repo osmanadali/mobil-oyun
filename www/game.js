@@ -28,7 +28,7 @@ const today = () => ymd(new Date());
 const dayBefore = s => { const [y, m, d] = s.split('-').map(Number); return ymd(new Date(y, m - 1, d - 1)); };
 
 // ---------- kayıt ----------
-const def = { level: 1, stars: {}, hints: DAILY_FREE_HINTS, hintDay: '', streak: 0, lastDaily: '', dailyDone: '', dailyStats: null, runs: {}, crowns: {}, miss: {}, shards: 0, seen: {}, sound: true, music: true, vib: true, theme: 'auto', played: 0, skin: 'metro', spent: 0, dCrowns: 0, newSkin: 0, remind: false, remindAt: 1110, remindAsked: false, noAds: false };
+const def = { level: 1, stars: {}, hints: DAILY_FREE_HINTS, hintDay: '', streak: 0, lastDaily: '', dailyDone: '', dailyStats: null, runs: {}, crowns: {}, miss: {}, shards: 0, seen: {}, sound: true, music: true, vib: true, theme: 'auto', played: 0, skin: 'metro', spent: 0, dCrowns: 0, newSkin: 0, remind: false, remindAt: 1110, remindAsked: false, noAds: false, arch: {}, archDone: {} };
 let save;
 try { save = Object.assign({}, def, JSON.parse(localStorage.getItem('ray') || '{}')); } catch { save = { ...def }; }
 if (!save.runs || typeof save.runs !== 'object') save.runs = {};
@@ -83,8 +83,8 @@ const unlocked = c => TEST || totalStars() >= need(c);
 // ---------- tema / palet ----------
 let pal = {};
 const isLight = () => save.theme === 'light' || (save.theme === 'auto' && matchMedia('(prefers-color-scheme: light)').matches);
-// ---------- hat temaları: kusursuz bitirilen bölümlerin taçlarıyla (👑) açılır ----------
-// Taç (👑) bir para birimidir: tema satın alınınca harcanır. Her tema bir renk ailesidir: 6 temel ton, sonraki hatlarda tonu
+// ---------- hat temaları: kusursuz bitirilen bölümlerin taçlarıyla (🎫) açılır ----------
+// Bilet (🎫, eski adı taç) bir para birimidir: tema satın alınınca harcanır. Her tema bir renk ailesidir: 6 temel ton, sonraki hatlarda tonu
 // ve parlaklığı kayan çeşitlemeleri (famCol) → 6 hatta bir birebir tekrar yok. 22 taç teması + 3 reklamsız paket teması = 25.
 const SKINS = [
   { id: 'metro', name: 'Metro', need: 0 },
@@ -114,7 +114,7 @@ const SKINS = [
   { id: 'diamond', name: L('Elmas', 'Diamond'), vip: true, lines: ['#d6f1ff', '#bae6fd', '#c7d2fe', '#e9e4ff', '#a5f3fc', '#ddd6fe'], acc: ['#bae6fd', '#c7d2fe'], glow: ['#7dd3fc', '#a78bfa', '#e0f2fe'] },
   { id: 'ruby', name: L('Yakut', 'Ruby'), vip: true, lines: ['#ff4d6d', '#ff758f', '#e0245e', '#ff8fab', '#f43f5e', '#ff5c8a'], acc: ['#ff4d6d', '#e0245e'], glow: ['#c9184a', '#ff4d6d', '#7b2cbf'] },
 ];
-const crownCount = () => Object.keys(save.crowns).length + (save.dCrowns || 0) + (save.fc || 0) + (save.cc || 0);   // toplam kazanılan (bölüm + günlük + final + seri bonusu)
+const crownCount = () => Object.keys(save.crowns).length + (save.dCrowns || 0) + (save.fc || 0) + (save.cc || 0) + (save.qc || 0) + (save.aCrowns || 0) + (save.dt || 0);   // toplam kazanılan 🎫 (bölüm + günlük kusursuz + final + seri bonusu + haftalık görev + arşiv + Günün Hattı bitişi)
 const crownBal = () => crownCount() - (save.spent || 0);                             // harcanabilir bakiye
 const skinOpen = k => !!save.owned[k.id] || !!(k.vip && save.noAds);
 const skin = () => { const k = SKINS.find(x => x.id === save.skin); return k && skinOpen(k) ? k : SKINS[0]; };
@@ -469,10 +469,22 @@ function puzzleFor(l) {
     P.fog = U.has('fog'); P.final = fin; P.rules = [...U]; P.breath = breath(l); return P;
   });
 }
-function dailyFor(day) {
-  return cached('d' + day, () => {
-    const z = dailyZ(day);
-    return pick(z < .35 ? 6 : 7, z < .35 ? 8 : 9, hashStr('ray' + day), 0, 0, z, 5 + 11 * z);
+// Haftanın kuralı: pazar günkü Günün Hattı o haftanın kuralını taşır (erken kurallardan, haftaya göre döner; listede olup
+// henüz tanımlı olmayan kural atlanır). Pazartesi–cumartesi kuralsız ve bit bit eskisi gibi; herkeste aynı.
+const WEEK_RULES = ['pins', 'pairs', 'rev', 'slide', 'fog', 'cnt', 'ice', 'two'];
+const dayDate = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const weekNo = day => Math.floor((Math.max(0, Math.round((dayDate(day) - DAILY_EPOCH) / 864e5)) + 3) / 7);   // pazartesi başlar (dailyZ ile aynı)
+function weekRule(day) { const a = WEEK_RULES.filter(k => k in RULE_LINE); return a[weekNo(day) % a.length]; }
+const dailyRule = day => dayDate(day).getDay() === 0 ? weekRule(day) : null;
+// base: haftanın kuralı olmadan (pazar dışında dailyFor ile aynı) · robotun eski parmak izi testleri bunu kullanır
+function dailyFor(day, base = false) {
+  return cached((base ? 'b' : 'd') + day, () => {
+    const z = dailyZ(day), c = z < .35 ? 6 : 7, r = z < .35 ? 8 : 9, k = base ? null : dailyRule(day);
+    if (!k) return pick(c, r, hashStr('ray' + day), 0, 0, z, 5 + 11 * z);
+    const n = c * r, x = { rev: k === 'rev' ? Math.round(n * .15) : 0, cnt: k === 'cnt' ? Math.round(n * .12) : 0, two: k === 'two', fog: k === 'fog' };
+    const m = MODS.find(m => m.key === k); if (m) x[k] = m.amount(n, false, z, false, c, r);
+    const P = pick(c, r, hashStr('ray' + day), k === 'pins' ? Math.round(n * .08) : 0, k === 'pairs' ? Math.round(n * .07) : 0, z, 5 + 11 * z, x);
+    P.fog = k === 'fog'; P.rules = [k]; P.week = k; return P;
   });
 }
 
@@ -510,7 +522,7 @@ function lit(P) {
 }
 
 // ---------- yıldızlar: her yıldız bir hedef ----------
-// ★ bitir · ★ ⏱ süre hedefi · ★ ↻ hamle hedefi (aynı karoya art arda dokunuş = 1 hamle). İkisi birden → KUSURSUZ 👑
+// ★ bitir · ★ ⏱ süre hedefi · ★ ↻ hamle hedefi (aynı karoya art arda dokunuş = 1 hamle). İkisi birden → KUSURSUZ 🎫
 // hamle toleransı ızgarayla büyür: küçük ızgara +%30 → 7×9 +%40 (en az +2). Oyuncu karoları denerken gidip gelir; hedef bunu biraz kaldırmalı.
 const moveTol = n => .3 + .1 * Math.min(1, Math.max(0, (n - 9) / 54));
 function limits(P) {
@@ -723,6 +735,7 @@ function refreshHome() {
   $('sSize').textContent = breath(save.level) ? L('☕ mola bölümü', '☕ breather level') : L(`⚡ zorluk %${zPct(save.level)}`, `⚡ ${zPct(save.level)}% hard`);
   $('dailyK').textContent = L(`GÜNÜN HATTI · ⚡%${dPct(today())}`, `DAILY LINE · ⚡${dPct(today())}%`);
   $('bPlay').classList.toggle('locked', !unlocked(c));
+  questRow();
   // sıradaki bölümü boşta önceden üret: zor kurallı 7×9 bölüm telefonda 1–2 sn sürebilir, "Oyna"da beklenmesin (çıktı aynı, yalnız önbellek)
   if (unlocked(c)) { const l = save.level, go = () => { if (active('home')) puzzleFor(l); }; window.requestIdleCallback ? requestIdleCallback(go, { timeout: 1500 }) : setTimeout(go, 600); }
 }
@@ -740,7 +753,7 @@ function renderMap() {
       <div class="lh"><i class="dot"></i><b>${lineName(c)}${RULES[c] ? `<em>${RULES[c].tag}</em>` : ''}</b><small>${open ? `★ ${got} / ${len * 3} · ⚡${L('%' + zPct(first), zPct(first) + '%')}` : `🔒 ★ ${tot} / ${need(c)}`}</small></div>
       <div class="lvs">${Array.from({ length: len }, (_, k) => {
         const l = first + k, st = save.stars[l] || 0, can = open && (TEST || l <= save.level);
-        return `<button class="lv ${can ? '' : 'off'} ${l === save.level && can ? 'cur' : ''} ${l === lineEnd(c) ? 'fin' : ''}" data-l="${l}" ${can ? '' : 'disabled'}><b>${l}</b><i>${can ? (save.crowns[l] ? '👑' : starTxt(st)) : ''}</i></button>`;
+        return `<button class="lv ${can ? '' : 'off'} ${l === save.level && can ? 'cur' : ''} ${l === lineEnd(c) ? 'fin' : ''}" data-l="${l}" ${can ? '' : 'disabled'}><b>${l}</b><i>${can ? (save.crowns[l] ? '🎫' : starTxt(st)) : ''}</i></button>`;
       }).join('')}</div></div>`;
   }
   $('mapList').innerHTML = html;
@@ -780,25 +793,26 @@ function setLineColor() {
   st.setProperty('--acc', G.color); st.setProperty('--acc2', shade(G.color, .8)); st.setProperty('--onacc', lum(G.color) > .5 ? '#16182a' : '#ffffff');
   st.setProperty('--accGlow', rgba(G.color, .55)); st.setProperty('--starGlow', rgba(G.color, .6)); st.setProperty('--warn', G.warn);
 }
-const runKey = () => G.daily ? 'daily' : 'level';
+const runKey = () => G.arch ? 'arch' : G.daily ? 'daily' : 'level';
 function saveRun() {
   if (!G || G.won) return;
-  save.runs[runKey()] = { lvl: G.lvl, day: G.day, cur: G.cur, fixed: G.fixed, moves: G.moves, last: G.lastTile, ms: elapsed(), pv: 4, sig: G.sig, ...(G.xt ? { xt: G.xt } : {}), ...(G.cnt.some(v => v >= 0) ? { cnt: G.cnt } : {}) };
+  save.runs[runKey()] = { lvl: G.lvl, day: G.day, cur: G.cur, fixed: G.fixed, moves: G.moves, last: G.lastTile, ms: elapsed(), pv: 4, sig: G.sig, ...(G.hinted ? { hn: 1 } : {}), ...(G.xt ? { xt: G.xt } : {}), ...(G.cnt.some(v => v >= 0) ? { cnt: G.cnt } : {}) };
   persist();
 }
+// mode 'arch': arşivden geçmiş bir günün Günün Hattı'nı oynar (lvl = gün)
 function start(mode, lvl = save.level) {
   clearTimeout(howT); clearTimeout(winTimer); closeModal(); closePanel(); cityDown();
-  const daily = mode === 'daily', day = today();
+  const arch = mode === 'arch', daily = mode === 'daily' || arch, day = arch ? lvl : today();
   if (!daily && !unlocked(lineOf(lvl))) { lockedSheet(lineOf(lvl)); return; }
-  G = { ...(daily ? dailyFor(day) : puzzleFor(lvl)), daily, lvl: daily ? 0 : lvl, day: daily ? day : null, practice: daily && save.dailyDone === day, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0, bub: 0 };
+  G = { ...(daily ? dailyFor(day) : puzzleFor(lvl)), daily, arch, lvl: daily ? 0 : lvl, day: daily ? day : null, practice: arch ? archPlayed(day) : daily && save.dailyDone === day, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0, bub: 0 };
   G.lim = limits(G);
   // yarım kalan oyunu sürdür
-  const run = save.runs[daily ? 'daily' : 'level'];
+  const run = save.runs[arch ? 'arch' : daily ? 'daily' : 'level'];
   // yarım oyun yalnız aynı bulmacaya: imza = çözüm + başlangıç dizilimi (makas/tabla çözümü değil başlangıcı değiştirir);
   // imzasız eski kayıt yalnız eklentilerden etkilenmeyen bölümlerde (M9 öncesi, Günün Hattı)
   G.sig = hashStr(G.sol.join() + '|' + G.cur.join());
   if (run && (daily ? run.day === day : run.lvl === lvl) && run.cur?.length === G.cur.length && (run.sig ? run.sig === G.sig : run.pv === 4 && (daily || lvl < lineStart(8)))) {
-    G.cur = run.cur.slice(); G.fixed = run.fixed.slice(); G.moves = run.moves; G.lastTile = run.last ?? -1; G.ms = run.ms || 0;
+    G.cur = run.cur.slice(); G.fixed = run.fixed.slice(); G.moves = run.moves; G.lastTile = run.last ?? -1; G.ms = run.ms || 0; G.hinted = !!run.hn;
     if (run.cnt?.length === G.cur.length) G.cnt = run.cnt.slice();
     if (run.xt) { G.xt = run.xt; G.lim.t += run.xt; }   // ⏱ +15 güçlendiricisi yarım oyunla korunur
   }
@@ -808,18 +822,19 @@ function start(mode, lvl = save.level) {
   G.seen = G.cur.map(() => !G.fog);
   seenAt = G.seen.map(() => -1e9); hidAt = seenAt.slice(); reveal(true);
   G.tOk = timeOk(G.ms / 1000); G.mOk = movesOk();
-  $('gTitle').textContent = daily ? (G.practice ? L('Günün Hattı · pratik', 'Daily Line · practice') : L('Günün Hattı', 'Daily Line')) : `${L('Bölüm', 'Level')} ${lvl}${G.final ? L(' · 🏁 Son durak', ' · 🏁 Last stop') : ''}`;
+  $('gTitle').textContent = daily ? (arch ? L('Günün Hattı · geçmiş gün', 'Daily Line · past day') : G.practice ? L('Günün Hattı · pratik', 'Daily Line · practice') : L('Günün Hattı', 'Daily Line')) : `${L('Bölüm', 'Level')} ${lvl}${G.final ? L(' · 🏁 Son durak', ' · 🏁 Last stop') : ''}`;
   $('game').classList.toggle('final', !!G.final);
-  $('gMoves').textContent = `${daily ? new Date().toLocaleDateString(LOC, { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl))}${!daily && breath(lvl) ? ' · ' + L('☕ mola', '☕ breather') : ''}`;
+  $('gMoves').textContent = `${daily ? dayDate(day).toLocaleDateString(LOC, { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl))}${!daily && breath(lvl) ? ' · ' + L('☕ mola', '☕ breather') : ''}${G.week ? ' · ' + RULES[RULE_LINE[G.week]].name : ''}`;
   $('gHints').textContent = save.hints;
   clearTimeout(bubT); $('gBub').classList.remove('show');
   const stake = comboStake(); $('gCombo').hidden = stake < 2; $('gCombo').textContent = `✨${stake}`;
   show('game'); resize(); hud(); tick();
-  const rc = daily ? null : (G.rules || []).map(k => RULE_LINE[k]).filter(c => RULES[c] && !save.seen[c]).sort((a, b) => a - b)[0];
-  if (rc != null) ruleCard(rc);
+  // Günün Hattı yalnız pazar günü kural taşır (haftanın kuralı): oyuncu o kuralı henüz görmediyse kartı açılır
+  const rc = (G.rules || []).map(k => RULE_LINE[k]).filter(c => RULES[c] && !save.seen[c]).sort((a, b) => a - b)[0];
+  if (rc != null) ruleCard(rc, !!G.week);
   if (save.played === 0) setTimeout(() => toast(L('Karoya dokun → döner', 'Tap a tile → it turns')), 500);
   else if (save.comboLost?.lvl === lvl && !daily && !G.moves) setTimeout(() => toast(L(`✨ Kusursuz bitir → ${save.comboLost.n} seri geri gelir`, `✨ Finish perfect → get your ${save.comboLost.n} streak back`)), 600);
-  else if (G.final && !save.crowns[lvl] && !G.moves) setTimeout(() => toast(L('🏁 Son durak · kusursuz bitir → +1 bonus 👑', '🏁 Last stop · finish perfect → +1 bonus 👑')), 600);
+  else if (G.final && !save.crowns[lvl] && !G.moves) setTimeout(() => toast(L('🏁 Son durak · kusursuz bitir → +1 bonus 🎫', '🏁 Last stop · finish perfect → +1 bonus 🎫')), 600);
   else if (!daily && save.miss[lvl] && !save.crowns[lvl] && !G.moves) setTimeout(() => toast(L(`Geçen sefer: ${missTxt(lvl)}`, `Last time: ${missTxt(lvl)}`)), 600);
 }
 // karanlık tünel: yanan karoların FOG_R yakını, ipucuyla sabitlenenler ve eklentilerin açtıkları görünür.
@@ -1219,23 +1234,34 @@ function win() {
   const late = Math.ceil(G.time / 1000 - G.lim.t);
   setNext(tOk ? L('Tam vaktinde', 'On time') : `<span class="miss">+${fmtT(late * 1000)} ${L('rötar', 'late')}</span>`); trip(G.time / 1000, tOk, 0);
   if (!tOk) setTimeout(() => { if (G?.won) pax(L('Nihayet! 👏', 'Finally! 👏')); }, 700);
-  if (G.daily) {
+  let qmsg = '';   // haftalık görev tamamlandı
+  if (G.arch) {
+    // arşiv: seriyi etkilemez; o günün ilk bitişi kusursuzsa 1 🎫 (normal Günün Hattı kuralı), görevde Günün Hattı sayılır
+    if (!archPlayed(G.day)) {
+      save.archDone = { ...save.archDone, [G.day]: perfect ? 2 : 1 };
+      if (perfect) { save.aCrowns = (save.aCrowns || 0) + 1; shard = true; extra = L('📅 Geçmiş gün kusursuz · +1 🎫', '📅 Perfect past day · +1 🎫'); }
+      qmsg = questStep('daily');
+    }
+  } else if (G.daily) {
     if (save.dailyDone !== G.day) {
       save.streak = save.lastDaily === dayBefore(G.day) ? save.streak + 1 : 1; save.lastDaily = save.dailyDone = G.day;
       save.dailyLog = [...save.dailyLog.filter(d => d !== G.day), G.day].slice(-90); save.best = Math.max(save.best || 0, save.streak);
-      save.hints++; dbl = 1; extra = L(`🔥 ${save.streak} gün seri · +1 ipucu`, `🔥 ${save.streak}-day streak · +1 hint`); Remind.habit(); Remind.plan();
+      save.hints++; save.dt = (save.dt || 0) + 1; dbl = 1; extra = L(`🔥 ${save.streak} gün seri · +1 ipucu · +1 🎫`, `🔥 ${save.streak}-day streak · +1 hint · +1 🎫`); Remind.habit(); Remind.plan();
       save.dailyStats = { day: G.day, moves: G.moves, time: G.time, st, perfect };
       shard = perfect; if (perfect) save.dCrowns = (save.dCrowns || 0) + 1;
+      qmsg = questStep('daily');
     }
   } else {
     if (++sessionWins % INTER_EVERY === 0 && !save.noAds && save.played >= 5) interDue = true;
     const before = totalStars(), old = save.stars[G.lvl] || 0, firstClear = G.lvl >= save.level;
+    // haftalık görev: taçlı bölümü yeniden oynamak sayılmaz (kolay bölümde biriktirilmesin)
+    if (firstClear || !save.crowns[G.lvl]) qmsg = [questStep('win'), G.hinted ? '' : questStep('nohint'), perfect ? questStep('perfect') : ''].filter(Boolean).join(' · ');
     save.stars[G.lvl] = Math.max(old, st);
     if (!save.crowns[G.lvl]) {
       const lost = save.comboLost; delete save.comboLost;
       if (perfect) {
         combo = save.combo = (lost?.lvl === G.lvl ? lost.n : save.combo || 0) + 1; save.comboBest = Math.max(save.comboBest || 0, combo);
-        if (combo % 5 === 0) { save.cc = (save.cc || 0) + 1; cmsg = L(`✨ ${combo} kusursuz seri · +1 bonus 👑`, `✨ ${combo} perfect in a row · +1 bonus 👑`); }
+        if (combo % 5 === 0) { save.cc = (save.cc || 0) + 1; cmsg = L(`✨ ${combo} kusursuz seri · +1 bonus 🎫`, `✨ ${combo} perfect in a row · +1 bonus 🎫`); }
         else if (combo === 3) { save.hints++; cmsg = L('✨ 3 kusursuz seri · +1 ipucu', '✨ 3 perfect in a row · +1 hint'); }
         else if (lost?.lvl === G.lvl) cmsg = L(`✨ Seri geri geldi · ${combo}`, `✨ Streak is back · ${combo}`);
       } else {
@@ -1249,20 +1275,20 @@ function win() {
     if (st > old && old) extra = L(`Yeni rekor: ${starTxt(st)}`, `New best: ${starTxt(st)}`);
     save.level = Math.max(save.level, G.lvl + 1);
     if (G.lvl === lineEnd(lineOf(G.lvl)) && firstClear) { save.hints += 2; dbl = 2; extra = L('🎁 Hat tamam · +2 ipucu', '🎁 Line complete · +2 hints'); }
-    if (perfect && G.final && !save.crowns[G.lvl]) { save.fc = (save.fc || 0) + 1; extra = [extra, L('🏁 Son durak kusursuz · +1 bonus 👑', '🏁 Perfect last stop · +1 bonus 👑')].filter(Boolean).join(' · '); }
+    if (perfect && G.final && !save.crowns[G.lvl]) { save.fc = (save.fc || 0) + 1; extra = [extra, L('🏁 Son durak kusursuz · +1 bonus 🎫', '🏁 Perfect last stop · +1 bonus 🎫')].filter(Boolean).join(' · '); }
     if (perfect && !save.crowns[G.lvl]) { save.crowns[G.lvl] = 1; shard = true; }   // parça bölüm başına bir kez
     for (let c = 1; c <= lineOf(save.level) + 1; c++) if (need(c) > before && unlocked(c)) unlockedNow = c;
   }
   let shardMsg = '';
   if (shard) {
     save.shards = (save.shards || 0) + 1;
-    if (save.shards >= 3) { save.shards -= 3; save.hints++; shardMsg = L('👑 3 yeni taç · +1 ipucu', '👑 3 new crowns · +1 hint'); }   // ara sayaç gösterilmez (💎 parça birimi kaldırıldı)
+    if (save.shards >= 3) { save.shards -= 3; save.hints++; shardMsg = L('🎫 3 yeni bilet · +1 ipucu', '🎫 3 new tickets · +1 hint'); }   // ara sayaç gösterilmez (💎 parça birimi kaldırıldı)
   }
   const ns = SKINS.find(k => !k.vip && !skinOpen(k) && k.need > cr0 && k.need <= crownBal());   // bakiye bir temaya yetti
-  if (ns) { save.newSkin = 1; extra = [extra, L(`🎨 ${ns.name} alınabilir (👑 ${ns.need})`, `🎨 ${ns.name} available (👑 ${ns.need})`)].filter(Boolean).join(' · '); }
+  if (ns) { save.newSkin = 1; extra = [extra, L(`🎨 ${ns.name} alınabilir (🎫 ${ns.need})`, `🎨 ${ns.name} available (🎫 ${ns.need})`)].filter(Boolean).join(' · '); }
   persist();
   $('gCombo').hidden = combo < 2; $('gCombo').textContent = `✨${combo}`; $('gCombo').classList.remove('off');
-  const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { st, tOk, mOk, perfect, extra: [cmsg, shardMsg, extra].filter(Boolean).join(' · '), unlockedNow, ns, dbl, combo, broke, near };
+  const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { st, tOk, mOk, perfect, extra: [cmsg, shardMsg, extra, qmsg].filter(Boolean).join(' · '), unlockedNow, ns, dbl, combo, broke, near };
   winTimer = setTimeout(() => { if (G === g && active('game')) { winSheet(g, info); if (!g.daily && !g.practice) setTimeout(() => { if (G === g && active('game')) maybeReview(st); }, 1100); } }, wait);
   if (!g.daily) setTimeout(() => puzzleFor(g.lvl + 1), wait + 900);   // sonraki bölüm hazır olsun (geçişte takılma olmasın)
 }
@@ -1270,7 +1296,7 @@ function win() {
 // Kıl payı ya da kırılan seri → "Tekrar dene" büyük düğmeye geçer, Sonraki küçük sıraya iner (düğme sayısı aynı kalır).
 function winSheet(g, { st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, combo, broke, near }) {
   const lim = g.lim, nx = g.lvl + 1, nxLocked = !g.daily && !unlocked(lineOf(nx)), again = !g.daily && (near || broke >= 2);
-  const badge = unlockedNow ? `<span class="badge">${L('YENİ HAT AÇILDI', 'NEW LINE OPEN')} · M${unlockedNow + 1}</span>` : ns ? `<span class="badge">${L('TEMA ALINABİLİR', 'NEW THEME')} 🎨</span>` : perfect ? `<span class="badge">${L('KUSURSUZ', 'PERFECT')} 👑${combo >= 2 ? ` · ✨${combo}` : ''}</span>` : '';
+  const badge = unlockedNow ? `<span class="badge">${L('YENİ HAT AÇILDI', 'NEW LINE OPEN')} · M${unlockedNow + 1}</span>` : ns ? `<span class="badge">${L('TEMA ALINABİLİR', 'NEW THEME')} 🎨</span>` : perfect ? `<span class="badge">${L('KUSURSUZ', 'PERFECT')} 🎫${combo >= 2 ? ` · ✨${combo}` : ''}</span>` : '';
   const late = Math.ceil(g.time / 1000 - lim.t), over = g.moves - lim.m;
   const miss = [tOk ? '' : `⏱ ${late} ${L('sn', 's')}`, mOk ? '' : `↻ ${over} ${L('hamle', pl(over, 'move', 'moves'))}`].filter(Boolean).join(' · ');
   const tip = perfect ? '' : `<p class="tip">${L('Kusursuz için', 'For perfect')}: ${[tOk ? '' : `⏱ ≤ ${fmtT(lim.t * 1000)}`, mOk ? '' : `↻ ≤ ${lim.m} ${L('hamle', 'moves')}`].filter(Boolean).join(L(' ve ', ' and '))}</p>`;
@@ -1278,20 +1304,20 @@ function winSheet(g, { st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, combo
   // geçiş reklamı sırası gelmişse: Sonraki'den önce tek, sessiz bir bağlantı (reklamsız paketi olana hiç çıkmaz)
   const pr = Shop.price(), adFree = !g.daily && interDue && !save.noAds ? `<p class="adfree"><button id="mAdFree">${pr ? L(`Reklamsız oyna · ${pr}`, `Play ad-free · ${pr}`) : L('Reklamsız oyna', 'Play ad-free')}</button></p>` : '';
   const primary = g.daily
-    ? `<button id="mShare" class="btn primary"><span>${B.share}</span><small>${L('Arkadaşına meydan oku', 'Challenge a friend')}</small></button><button id="mHome" class="btn glassbtn">${B.home}</button>`
+    ? `<button id="mShare" class="btn primary"><span>${B.share}</span><small>${L('Arkadaşına meydan oku', 'Challenge a friend')}</small></button>${g.arch ? `<button id="mArch" class="btn glassbtn">📅 ${L('Arşiv', 'Archive')}</button>` : `<button id="mHome" class="btn glassbtn">${B.home}</button>`}`
     : again
       ? `<button id="mRetry" class="btn primary"><span>${L('Tekrar dene', 'Try again')}</span><small>${broke >= 2 ? `${near ? B.close + ' · ' : ''}${L(`✨ ${broke} seri geri gelsin`, `✨ Win back your ${broke} streak`)}` : `${B.close} · ${miss}`}</small></button>
        <div class="row2">${nxLocked ? `<button id="mMap" class="btn glassbtn">${L('Hatlar', 'Lines')}</button>` : `<button id="mNext" class="btn glassbtn">${L('Sonraki', 'Next')}</button>`}<button id="mShare" class="btn glassbtn">${B.share}</button><button id="mHome" class="btn glassbtn">${B.home}</button></div>`
       : `${nxLocked ? `<button id="mMap" class="btn primary"><span>${L('Yeni hat kilitli', 'Next line locked')}</span><small>★ ${totalStars()} / ${need(lineOf(nx))} · ${L('yıldız topla', 'earn stars')}</small></button>` : `<button id="mNext" class="btn primary"><span>${L('Sonraki', 'Next')}</span><small>${L('Bölüm', 'Level')} ${nx}</small></button>`}
        <div class="row2"><button id="mRetry" class="btn glassbtn">${L('Tekrar', 'Retry')}</button><button id="mShare" class="btn glassbtn">${B.share}</button><button id="mHome" class="btn glassbtn">${B.home}</button></div>`;
-  $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml([true, tOk, mOk])}<div class="wp-t"><h2>${g.practice ? L('Pratik tamam!', 'Practice done!') : g.daily ? L('Günün Hattı tamam!', 'Daily Line done!') : L('Hat açıldı!', 'Connected!')}</h2>${badge}</div></div>
+  $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml([true, tOk, mOk])}<div class="wp-t"><h2>${g.arch ? L('Geçmiş gün tamam!', 'Past day done!') : g.practice ? L('Pratik tamam!', 'Practice done!') : g.daily ? L('Günün Hattı tamam!', 'Daily Line done!') : L('Hat açıldı!', 'Connected!')}</h2>${badge}</div></div>
       <button id="wTog" class="wp-tog" aria-label="${L('Hattı gör', 'See the line')}"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg><span>${L('Hattı gör', 'See line')}</span></button></div>
     <div class="wp-more"><div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(lim.t * 1000)}</small></b><span>${tOk ? L('⏱ tam vaktinde ★', '⏱ on time ★') : L('⏱ rötar ✗', '⏱ late ✗')}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${lim.m}</small></b><span>↻ ${L('hamle', 'moves')} ${mOk ? '★' : '✗'}</span></div></div>${tip}${extra ? `<p class="tip">${extra}${dbl && Ads.online() ? ` <button id="mDbl" class="dbl">${L('▶ 2 katı', '▶ Double')}</button>` : ''}</p>` : ''}${adFree}</div>
     ${primary}`;
   $('game').classList.add('won');
-  bind({ wTog: toggleMini, mNext: next, mDbl: () => doubleReward(dbl), mAdFree: shopSheet, mMap: () => show('map'), mRetry: () => start('level', g.lvl), mHome: () => show('home'),
+  bind({ wTog: toggleMini, mNext: next, mArch: () => { show('home'); archSheet(); }, mDbl: () => doubleReward(dbl), mAdFree: shopSheet, mMap: () => show('map'), mRetry: () => start('level', g.lvl), mHome: () => show('home'),
     // pratikte paylaşılan, günün resmî (ilk) sonucudur
-    mShare: () => share(g.practice && save.dailyStats ? { ...save.dailyStats, daily: true } : { daily: g.daily, lvl: g.lvl, day: g.day, moves: g.moves, time: g.time, st, perfect }) });
+    mShare: () => share(g.practice && !g.arch && save.dailyStats ? { ...save.dailyStats, daily: true } : { daily: g.daily, arch: g.arch, lvl: g.lvl, day: g.day, moves: g.moves, time: g.time, st, perfect }) });
 }
 const NO_REWARD = L('Ödül alınamadı · video sonuna kadar izlenmeli', 'No reward · watch the video to the end'), NO_NET = L('Bağlantı yok · sonra dene', 'No connection · try later');
 const NO_FILL = L('Şu an video yok · biraz sonra dene', 'No video right now · try again soon');
@@ -1337,9 +1363,9 @@ function dailyResult() {
 }
 async function share(r) {
   const [, m, d] = (r.day || today()).split('-');
-  const head = r.daily ? L(`Ray 🚇 Günün Hattı ${d}.${m}`, `Ray 🚇 Daily Line ${+m}/${+d}`) : `Ray 🚇 ${L('Bölüm', 'Level')} ${r.lvl}`;
-  const url = r.daily ? `${SHARE_URL}?d=${r.day}&m=${r.moves}` : SHARE_URL;
-  const text = `${head}\n${'⭐'.repeat(r.st)}${'☆'.repeat(3 - r.st)}${r.perfect ? ' 👑' : ''} ${r.moves} ${L('hamle', pl(r.moves, 'move', 'moves'))} · ${fmtT(r.time)}${r.daily && save.streak > 1 ? L(`\n🔥 ${save.streak} gün seri`, `\n🔥 ${save.streak}-day streak`) : ''}\n${L('Sen kaç hamlede bağlarsın?', 'How few moves can you do it in?')}\n${url}`;
+  const head = r.daily ? L(`Ray 🚇 Günün Hattı ${d}.${m}`, `Ray 🚇 Daily Line ${+m}/${+d}`) + (r.arch ? L(' · geçmiş gün', ' · past day') : '') : `Ray 🚇 ${L('Bölüm', 'Level')} ${r.lvl}`;
+  const url = r.daily && !r.arch ? `${SHARE_URL}?d=${r.day}&m=${r.moves}` : SHARE_URL;   // geçmiş gün bağlantısı arkadaşa "eski" der → düz bağlantı
+  const text = `${head}\n${'⭐'.repeat(r.st)}${'☆'.repeat(3 - r.st)}${r.perfect ? ' 🎫' : ''} ${r.moves} ${L('hamle', pl(r.moves, 'move', 'moves'))} · ${fmtT(r.time)}${r.daily && !r.arch && save.streak > 1 ? L(`\n🔥 ${save.streak} gün seri`, `\n🔥 ${save.streak}-day streak`) : ''}\n${L('Sen kaç hamlede bağlarsın?', 'How few moves can you do it in?')}\n${url}`;
   try {
     const P = window.Capacitor?.Plugins?.Share;
     if (P) return await P.share({ text });
@@ -1480,7 +1506,7 @@ async function hint() {
   const i = wrong[0], now = performance.now(), prev = G.L.d, ui = G.unitOf?.[i] ?? -1;
   G.hist = [];   // ipucunun sabitlediği karo geri alınmasın
   for (const k of ui >= 0 ? G.units[ui].cells : G.link[i] >= 0 ? [i, G.link[i]] : [i]) { G.cur[k] = G.sol[k]; G.fixed[k] = true; anim.set(k, now); press.set(k, now); }   // eşli karo / eklenti birimi: hepsi birden
-  save.hints--; persist(); $('gHints').textContent = save.hints; bump($('gHints'));
+  save.hints--; G.hinted = true; persist(); $('gHints').textContent = save.hints; bump($('gHints'));
   G.L = lit(G); reveal();
   G.L.d.forEach((v, j) => { if (v >= 0 && prev[j] < 0) litAt[j] = now + v * 12; });
   burst(i, 10, 0, pal.light ? '#ffc56b' : '#ffffff'); tone(note(9), .35, .05); tone(note(12), .35, .04, 'sine', .08); haptic('heavy');
@@ -1490,7 +1516,7 @@ async function hint() {
 const AD_LOAD = L('Reklam yükleniyor…', 'Loading ad…');
 // Ödüllü reklam: aynı bölümde ipucu istedikçe izlenecek video sayısı artar. Her video oyuncunun basışıyla açılır.
 function adSheet() {
-  const key = G.daily ? 'd' + G.day : 'l' + G.lvl;
+  const key = G.daily ? (G.arch ? 'a' : 'd') + G.day : 'l' + G.lvl;
   if (save.adProg?.key !== key) save.adProg = { key, n: 0, part: 0 };
   const P = save.adProg, need = AD_TIERS[Math.min(P.n, AD_TIERS.length - 1)], sec = need * 15;
   const dots = need > 1 ? `<div class="vids">${Array.from({ length: need }, (_, k) => `<i class="${k < P.part ? 'on' : ''}"></i>`).join('')}</div>` : '';
@@ -1512,9 +1538,9 @@ function adSheet() {
     mNo: closeModal });
 }
 // Yeni kural kartı: hattın ilk girişinde bir kez, kart açıkken süre durur
-function ruleCard(c) {
+function ruleCard(c, week) {
   pause();
-  modal(`<span class="badge">${L('YENİ KURAL', 'NEW RULE')} · ${lineName(c)}</span>
+  modal(`<span class="badge">${week ? L('HAFTANIN KURALI', 'RULE OF THE WEEK') : `${L('YENİ KURAL', 'NEW RULE')} · ${lineName(c)}`}</span>
     ${RULES[c].demo}
     <h2>${RULES[c].name}</h2>
     <p>${RULES[c].text}</p>
@@ -1525,10 +1551,11 @@ function nearLit(i) { const x = i % G.cols, y = i / G.cols | 0; let n = 0; for (
 // baştan: süre ve hamle sıfırlanır, ipucuyla açılan karolar korunur
 function reset() {
   if (!G || G.won) return;
-  const keep = G.fixed.map((f, i) => f ? i : -1).filter(i => i >= 0), mode = G.daily ? 'daily' : 'level', lvl = G.lvl;
+  const keep = G.fixed.map((f, i) => f ? i : -1).filter(i => i >= 0), mode = G.arch ? 'arch' : G.daily ? 'daily' : 'level', lvl = G.arch ? G.day : G.lvl, hn = G.hinted;
   delete save.runs[runKey()];
   start(mode, lvl || save.level);
   if (!G) return;
+  G.hinted = hn;
   keep.forEach(i => { G.cur[i] = G.sol[i]; G.fixed[i] = true; });
   G.L = lit(G); litAt = G.L.d.map(v => v >= 0 ? -1e9 : 0); reveal(true);
   hud(); draw(); saveRun();
@@ -1581,9 +1608,87 @@ function streakSheet() {
     <p>${done ? L('Bugünün hattı tamam.', 'Today’s line is done.') : save.streak ? L('Bugünün hattını bitir, serini koru!', 'Finish today’s line to keep your streak!') : L('Günün Hattı\'nı bitir, serini başlat!', 'Finish the Daily Line to start a streak!')}</p>
     <div class="week">${week}</div>
     <div class="statrow"><div><b>${Math.max(save.best || 0, save.streak)}</b><span>${L('en iyi seri', 'best streak')}</span></div><div><b>${save.dailyLog.length}</b><span>${L('toplam gün', 'total days')}</span></div></div>
-    ${done ? `<p id="mClock"></p><button id="mClose" class="btn glassbtn">${L('Tamam', 'OK')}</button>` : `<button id="mPlayD" class="btn primary"><span>${L('Günün Hattı', 'Daily Line')}</span><small>${L('Seriyi koru', 'Keep your streak')}</small></button>`}`,
-    { mClose: closeModal, mPlayD: () => start('daily') });
+    ${done ? `<p id="mClock"></p><button id="mClose" class="btn glassbtn">${L('Tamam', 'OK')}</button>` : `<button id="mPlayD" class="btn primary"><span>${L('Günün Hattı', 'Daily Line')}</span><small>${L('Seriyi koru', 'Keep your streak')}</small></button>`}
+    ${questVis() ? `<button id="mArch" class="btn glassbtn">📅 ${L('Geçmiş günler', 'Past days')}</button>` : ''}`,
+    { mClose: closeModal, mPlayD: () => start('daily'), mArch: archSheet });
   dailyClock();
+}
+// ---------- haftalık görevler · 🎫 bilet · Günün Hattı arşivi ----------
+// Her hafta (pazartesi, yerel takvim) 3 görev: herkeste aynı tohum (hafta), miktar oyuncunun basamağına göre (yeni oyuncuya ağır görev yok).
+// 🎫 bilet oyunun tek para birimidir (eski adı taç; kayıtta crowns/crownBal adları kaldı). Her görev +1 🎫 ve küçük ödül
+// (💡 ya da ❤️∞ sınırsız can), üçü birden +1 🎫 ek. Günün Hattı'nı bitirmek de +1 🎫 (günde bir; win içinde).
+// Arşiv: son 30 günün Günün Hattı'ndan biri ARCH_COST 🎫 ile kalıcı açılır.
+const weekOf = s => { const d = dayDate(s); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return ymd(d); };
+const QUESTS = {
+  win: { n: [5, 10, 20], rw: 'hint', txt: n => L(`${n} bölüm bitir`, `Finish ${n} levels`) },
+  perfect: { n: [3, 5, 8], rw: 'inf30', txt: n => L(`${n} bölümü kusursuz bitir`, `Finish ${n} levels perfect`) },
+  nohint: { n: [3, 5, 8], rw: 'inf15', txt: n => L(`İpucusuz ${n} bölüm bitir`, `Finish ${n} levels without hints`) },
+  daily: { n: [0, 3, 4], rw: 'inf30', txt: n => L(`${n} Günün Hattı bitir`, `Finish ${n} Daily Lines`) },
+  bst: { n: [0, 2, 3], rw: 'hint', txt: n => L(`${n} güçlendirici kullan`, `Use ${n} boosters`) },
+};
+const RW_TXT = { hint: '💡', inf15: L('❤️∞ 15 dk', '❤️∞ 15 min'), inf30: L('❤️∞ 30 dk', '❤️∞ 30 min') };
+// sınırsız can: can sistemiyle ortak kayıt sözleşmesi (save.lives 0–5, save.lifeT, save.infUntil ms); burada yalnız süre eklenir
+const giveInf = min => { save.infUntil = Math.max(save.infUntil || 0, Date.now()) + min * 60e3; };
+function weekQ() {
+  const id = weekOf(today());
+  if (save.wk?.id === id) return save.wk;
+  const t = save.level < lineStart(2) ? 0 : save.level < lineStart(5) ? 1 : 2, R = rng(hashStr('gorev' + id));
+  const ok = k => QUESTS[k].n[t] > 0 && (k !== 'daily' || save.dailyDone || save.level >= 61) && (k !== 'bst' || BST.reduce((a, b) => a + bst(b.id), 0) >= QUESTS[k].n[t]);
+  const keys = Object.keys(QUESTS).map(k => [k, R()]).sort((a, b) => a[1] - b[1]).map(a => a[0]).filter(ok).slice(0, 3);
+  return save.wk = { id, q: keys.map(k => ({ t: k, n: QUESTS[k].n[t], p: 0 })), all: 0 };
+}
+// ilerleme: tamamlanan görevin ödülü hemen verilir; dönen metin sonuç paneline/bildirime yazılır (persist çağırana kalır)
+function questStep(type) {
+  const w = weekQ(), out = [];
+  for (const q of w.q) if (q.t === type && q.p < q.n && ++q.p === q.n) {
+    const rw = QUESTS[q.t].rw; save.qc = (save.qc || 0) + 1;
+    if (rw === 'hint') save.hints++; else giveInf(rw === 'inf15' ? 15 : 30);
+    out.push(L(`🎯 Görev tamam · +1 🎫 +1 ${RW_TXT[QUESTS[q.t].rw]}`, `🎯 Quest done · +1 🎫 +1 ${RW_TXT[QUESTS[q.t].rw]}`));
+  }
+  if (!w.all && w.q.every(q => q.p >= q.n)) { w.all = 1; save.qc = (save.qc || 0) + 1; out.push(L('🎯 Haftanın görevleri tamam · +1 🎫', '🎯 All weekly quests done · +1 🎫')); }
+  return out.join(' · ');
+}
+const questVis = () => save.level > lineEnd(0) || !!save.dailyDone;   // ilk hat bitmeden ana sayfa sade kalsın
+function questRow() {
+  const el = $('bQuest'); el.hidden = !questVis(); if (el.hidden) return;
+  const w = weekQ(), d = w.q.filter(q => q.p >= q.n).length;
+  $('qState').textContent = `${d}/${w.q.length}`; el.classList.toggle('done', d === w.q.length);
+}
+function questSheet() {
+  const w = weekQ(), left = Math.round((dayDate(w.id).getTime() + 7 * 864e5 - dayDate(today()).getTime()) / 864e5), sun = (() => { const d = dayDate(w.id); d.setDate(d.getDate() + 6); return ymd(d); })(), wr = dailyRule(sun);
+  modal(`<h2>🎯 ${L('Haftalık görevler', 'Weekly quests')}</h2>
+    <p class="tip">${left <= 1 ? L('Yarın yenilenir', 'New quests tomorrow') : L(`${left} gün sonra yenilenir`, `New quests in ${left} days`)}</p>
+    <div class="quests">${w.q.map(q => `<div class="${q.p >= q.n ? 'ok' : ''}"><span>${QUESTS[q.t].txt(q.n)}</span><b>${q.p >= q.n ? '✓' : `${q.p}/${q.n}`}</b><i style="width:${Math.round(q.p / q.n * 100)}%"></i><small>+1 🎫 · +1 ${RW_TXT[QUESTS[q.t].rw]}</small></div>`).join('')}</div>
+    <p class="tip">${L('Üçü birden → +1 🎫 ek · Günün Hattı → +1 🎫', 'All three → +1 extra 🎫 · Daily Line → +1 🎫')}${wr ? `<br>${L('Pazar', 'Sunday')}: ${L('haftanın kuralı', 'rule of the week')} · <b>${RULES[RULE_LINE[wr]].name}</b>` : ''}</p>
+    <button id="mArch" class="btn primary"><span>📅 ${L('Geçmiş günler', 'Past days')}</span><small>🎫 ${crownBal()} · ${L(`${ARCH_COST} bilet = 1 gün`, `${ARCH_COST} tickets = 1 day`)}</small></button>
+    <button id="mClose" class="btn glassbtn">${L('Tamam', 'OK')}</button>`, { mArch: archSheet, mClose: closeModal });
+}
+const ARCH_DAYS = 30, ARCH_COST = 3;
+const archPlayed = day => new Set(save.dailyLog).has(day) || !!save.archDone?.[day];   // o gün oynanmış: ödül yok, açmak bedava
+const archOpen = day => archPlayed(day) || !!save.arch?.[day];
+function archSheet() {
+  // 40 günden eski açılış kayıtları atılır (kayıt küçük kalsın)
+  const t = today(), cut = (() => { const d = dayDate(t); d.setDate(d.getDate() - 40); return ymd(d); })();
+  for (const k of ['arch', 'archDone']) save[k] = Object.fromEntries(Object.entries(save[k] || {}).filter(([d]) => d >= cut));
+  const days = []; for (let k = 1, d = t; k <= ARCH_DAYS; k++) days.push(d = dayBefore(d));
+  const cell = d => { const dt = dayDate(d), a = save.archDone?.[d], st = archPlayed(d) ? (a === 2 ? '🎫' : '✓') : archOpen(d) ? '▶' : '🔒';
+    return `<button data-d="${d}" class="${archPlayed(d) ? 'on' : archOpen(d) ? 'op' : ''} ${dt.getDay() ? '' : 'sun'}" aria-label="${dt.toLocaleDateString(LOC, { day: 'numeric', month: 'long' })}"><b>${dt.getDate()}</b><i>${st}</i></button>`; };
+  modal(`<h2>📅 ${L('Günün Hattı arşivi', 'Daily Line archive')}</h2>
+    <p class="tip">${L(`Son 30 gün · her gün ${ARCH_COST} 🎫 ile kalıcı açılır · seriyi etkilemez, kusursuz → +1 🎫`, `Last 30 days · each day opens for good with ${ARCH_COST} 🎫 · no effect on streak, perfect → +1 🎫`)}</p>
+    <div class="arch" id="archGrid">${days.map(cell).join('')}</div>
+    <div class="nexts"><small>🎫 <b id="archTk">${crownBal()}</b> ${L('bilet', pl(crownBal(), 'ticket', 'tickets'))}</small><small>${L('Kusursuz bölüm ve görevlerden', 'From perfect levels and quests')}</small></div>
+    <button id="mQuest" class="btn glassbtn">🎯 ${L('Haftalık görevler', 'Weekly quests')}</button>`, { mQuest: questSheet });
+  $('archGrid').onclick = e => {
+    const d = e.target.closest('button')?.dataset.d; if (!d) return;
+    if (archOpen(d)) { start('arch', d); return; }
+    if (crownBal() < ARCH_COST) { toast(L(`${ARCH_COST} 🎫 gerekli · kusursuz bitir, görev tamamla`, `${ARCH_COST} 🎫 needed · finish perfect, complete quests`)); return; }
+    const name = dayDate(d).toLocaleDateString(LOC, { day: 'numeric', month: 'long', weekday: 'long' });
+    modal(`<h2>📅 ${name}</h2><p>${L(`Bu günün Günün Hattı ${ARCH_COST} 🎫 ile açılır ve açık kalır.`, `This day’s Daily Line opens with ${ARCH_COST} 🎫 and stays open.`)}</p>
+      <button id="mYes" class="btn primary"><span>${L('Aç', 'Open')} · 🎫 ${ARCH_COST}</span><small>${L(`Sende ${crownBal()} bilet`, `You have ${crownBal()} ${pl(crownBal(), 'ticket', 'tickets')}`)}</small></button>
+      <button id="mNo" class="btn glassbtn">${L('Vazgeç', 'Cancel')}</button>`,
+      { mYes: () => { if (crownBal() < ARCH_COST) return archSheet(); save.spent = (save.spent || 0) + ARCH_COST; save.arch = { ...save.arch, [d]: 1 }; persist(); start('arch', d); }, mNo: archSheet });
+  };
+  persist();
 }
 function settings() {
   const seg = ['auto', 'dark', 'light'].map(t => `<button data-t="${t}" class="${save.theme === t ? 'on' : ''}">${{ auto: L('Oto', 'Auto'), dark: L('Koyu', 'Dark'), light: L('Açık', 'Light') }[t]}</button>`).join('');
@@ -1596,7 +1701,7 @@ function settings() {
     ${Remind.avail() ? opt('oR', save.remind, 'Günlük hatırlatma', 'Daily reminder') : ''}
     <div class="opt">${L('Görünüm', 'Theme')} <div class="seg" id="oT">${seg}</div></div>
     <div class="opt">${L('Dil', 'Language')} <div class="seg" id="oL">${lang}</div></div>
-    <button class="opt row" id="oSkin"><span>${L('Renk temaları', 'Color themes')}</span><small>${skin().name} · 👑 ${crownBal()} ›</small></button>
+    <button class="opt row" id="oSkin"><span>${L('Renk temaları', 'Color themes')}</span><small>${skin().name} · 🎫 ${crownBal()} ›</small></button>
     <button class="opt row" id="oShop"><span>${L('Reklamsız paket', 'Ad-free pack')}</span><small>${save.noAds ? L('Aktif ✓', 'Active ✓') : (Shop.price() || '💛') + ' ›'}</small></button>
     <button class="opt row" id="oHow"><span>${L('Nasıl oynanır?', 'How to play?')}</span><small>›</small></button>
     <button class="opt row" id="oMove"><span>${L('İlerlemeyi taşı', 'Move progress')}</span><small>${L('Yeni telefona', 'To a new phone')} ›</small></button>
@@ -1677,11 +1782,11 @@ function moveSheet() {
 // iki adım: önce onay; sonra planlı bildirimler iptal, kayıt silinir, oyun baştan açılır (reklamsız paket mağazadan geri gelir)
 function wipeSheet() {
   modal(L(`<h2>Verilerin silinsin mi?</h2>
-    <p>Bu cihazdaki bütün ilerlemen silinir: bölümler, ★, 👑, seri, temalar ve ayarlar. <b>Geri alınamaz.</b></p>
+    <p>Bu cihazdaki bütün ilerlemen silinir: bölümler, ★, 🎫, seri, temalar ve ayarlar. <b>Geri alınamaz.</b></p>
     <p class="tip">Reklamsız paketi aldıysan mağaza hesabından geri gelir.</p>
     <button id="mNo" class="btn primary"><span>Vazgeç</span></button>
     <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">Evet, hepsini sil</button>`, `<h2>Delete your data?</h2>
-    <p>All progress on this device will be erased: levels, ★, 👑, streak, themes and settings. <b>This can’t be undone.</b></p>
+    <p>All progress on this device will be erased: levels, ★, 🎫, streak, themes and settings. <b>This can’t be undone.</b></p>
     <p class="tip">If you bought the Ad-free pack, it comes back from your store account.</p>
     <button id="mNo" class="btn primary"><span>Cancel</span></button>
     <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">Yes, delete it all</button>`), {
@@ -1698,15 +1803,15 @@ function skinSheet() {
   const card = k => {
     const own = skinOpen(k), can = !own && bal >= k.need;
     return `<button class="skin ${own ? '' : 'lockd'} ${can ? 'can' : ''} ${k === nx && !can ? 'nx' : ''} ${k.id === cur ? 'on' : ''}" data-k="${k.id}" style="${skinVars(k)}">${skinSvg}
-      <b>${k.name}</b><small>${k.id === cur ? L('Seçili ✓', 'Selected ✓') : own ? L('Seç', 'Select') : k.vip ? L('💛 Reklamsız', '💛 Ad-free') : `👑 ${k.need}`}</small></button>`;
+      <b>${k.name}</b><small>${k.id === cur ? L('Seçili ✓', 'Selected ✓') : own ? L('Seç', 'Select') : k.vip ? L('💛 Reklamsız', '💛 Ad-free') : `🎫 ${k.need}`}</small></button>`;
   };
-  modal(`<h2>${L('Renk temaları', 'Color themes')}</h2><p>${L('Her <b>kusursuz</b> bölüm (⏱ ve ↻ hedefi) 1 👑 verir. 👑 ile tema ve sandık açılır.', 'Every <b>perfect</b> level (⏱ and ↻ targets) gives 1 👑. Spend 👑 on themes and chests.')}</p>
-    <div class="nexts"><small>${L('Bakiye', 'Balance')}</small><b class="bal">👑 ${bal}</b></div>
-    <button id="mChest" class="chestrow ${bal >= CHEST ? 'can' : ''}"><i>${CHEST_SVG}</i><span><b>${L('Sürpriz sandık', 'Surprise chest')}</b><small>${L('İpucu · 🛡 seri kalkanı · 🚆 tren kaplaması', 'Hints · 🛡 shield · 🚆 train livery')}</small></span><em>👑 ${CHEST}</em></button>
-    ${nx ? `<div class="nexts"><small>${L('Sıradaki', 'Next up')}: <b>${nx.name}</b></small><small>👑 ${Math.min(bal, nx.need)} / ${nx.need}</small></div><div class="pb"><i style="width:${Math.max(4, Math.min(100, bal / nx.need * 100))}%"></i></div>` : ''}
+  modal(`<h2>${L('Renk temaları', 'Color themes')}</h2><p>${L('Her <b>kusursuz</b> bölüm (⏱ ve ↻ hedefi) 1 🎫 verir. 🎫 ile tema ve sandık açılır.', 'Every <b>perfect</b> level (⏱ and ↻ targets) gives 1 🎫. Spend 🎫 on themes and chests.')}</p>
+    <div class="nexts"><small>${L('Bakiye', 'Balance')}</small><b class="bal">🎫 ${bal}</b></div>
+    <button id="mChest" class="chestrow ${bal >= CHEST ? 'can' : ''}"><i>${CHEST_SVG}</i><span><b>${L('Sürpriz sandık', 'Surprise chest')}</b><small>${L('İpucu · 🛡 seri kalkanı · 🚆 tren kaplaması', 'Hints · 🛡 shield · 🚆 train livery')}</small></span><em>🎫 ${CHEST}</em></button>
+    ${nx ? `<div class="nexts"><small>${L('Sıradaki', 'Next up')}: <b>${nx.name}</b></small><small>🎫 ${Math.min(bal, nx.need)} / ${nx.need}</small></div><div class="pb"><i style="width:${Math.max(4, Math.min(100, bal / nx.need * 100))}%"></i></div>` : ''}
     <div class="skins" id="skins">${SKINS.filter(k => !k.vip).map(card).join('')}
       <small class="vipk">${L('💛 Reklamsız pakete özel', '💛 Ad-free pack only')}</small>${SKINS.filter(k => k.vip).map(card).join('')}</div>
-    ${nx ? `<button id="mHunt" class="btn primary"><span>${L('Taç topla', 'Earn crowns')} 👑</span><small>${hn ? L(`${hn} bölüm kusursuz bitmeyi bekliyor`, `${hn} ${pl(hn, 'level awaits', 'levels await')} a perfect finish`) : L('Yeni bölümleri ⏱ ve ↻ hedefiyle bitir', 'Beat new levels within ⏱ and ↻ targets')}</small></button>` : ''}
+    ${nx ? `<button id="mHunt" class="btn primary"><span>${L('Bilet topla', 'Earn tickets')} 🎫</span><small>${hn ? L(`${hn} bölüm kusursuz bitmeyi bekliyor`, `${hn} ${pl(hn, 'level awaits', 'levels await')} a perfect finish`) : L('Yeni bölümleri ⏱ ve ↻ hedefiyle bitir', 'Beat new levels within ⏱ and ↻ targets')}</small></button>` : ''}
     <button id="mClose" class="btn glassbtn">${L('Tamam', 'Done')}</button>`, { mClose: closeModal, mHunt: () => crownHunt(nx), mChest: chestSheet });
   $('skins').onclick = e => {
     const b = e.target.closest('.skin'); if (!b) return;
@@ -1721,8 +1826,8 @@ function skinSheet() {
 function buySheet(k) {
   const bal = crownBal(), left = bal - k.need, nx = SKINS.filter(x => !x.vip && !skinOpen(x) && x !== k).sort((a, b) => a.need - b.need)[0];
   modal(`<div class="skin big" style="${skinVars(k)}">${skinSvg}</div><h2>${k.name}</h2>
-    <p>${L(`<b class="nw">👑 ${k.need}</b> harcanacak. Sende <span class="nw">👑 ${bal}</span> → kalan <b class="nw">👑 ${left}</b>.`, `This costs <b class="nw">👑 ${k.need}</b>. You have <span class="nw">👑 ${bal}</span> → <b class="nw">👑 ${left}</b> left.`)}${nx && left < nx.need ? L(`<br>Sonra ${nx.name} için ${nx.need - left} 👑 daha toplaman gerekecek.`, `<br>Then you’ll need ${nx.need - left} more 👑 for ${nx.name}.`) : ''}</p>
-    <button id="mBuy" class="btn primary"><span>${L('Satın al', 'Buy')} · 👑 ${k.need}</span><small>${L('Temayı hemen kullan', 'Use it right away')}</small></button>
+    <p>${L(`<b class="nw">🎫 ${k.need}</b> harcanacak. Sende <span class="nw">🎫 ${bal}</span> → kalan <b class="nw">🎫 ${left}</b>.`, `This costs <b class="nw">🎫 ${k.need}</b>. You have <span class="nw">🎫 ${bal}</span> → <b class="nw">🎫 ${left}</b> left.`)}${nx && left < nx.need ? L(`<br>Sonra ${nx.name} için ${nx.need - left} 🎫 daha toplaman gerekecek.`, `<br>Then you’ll need ${nx.need - left} more 🎫 for ${nx.name}.`) : ''}</p>
+    <button id="mBuy" class="btn primary"><span>${L('Satın al', 'Buy')} · 🎫 ${k.need}</span><small>${L('Temayı hemen kullan', 'Use it right away')}</small></button>
     <button id="mBack" class="btn glassbtn">${L('Vazgeç', 'Cancel')}</button>`, {
     mBuy: () => {
       if (crownBal() < k.need || skinOpen(k)) return skinSheet();
@@ -1737,16 +1842,16 @@ const missTxt = l => { const [t, m] = save.miss[l] || [0, 0]; return [t ? L(`⏱
 const huntList = () => { const L = []; for (let l = 1; l < save.level; l++) if (!save.crowns[l] && unlocked(lineOf(l))) L.push(l); return L.sort((a, b) => (save.stars[b] || 0) - (save.stars[a] || 0) || a - b); };
 function crownHunt(k) {
   const n = crownBal(), list = huntList();
-  modal(`<h2>${L('Taç topla', 'Earn crowns')} 👑</h2>
-    <p>${k && k.need > n ? L(`<b>${k.name}</b> için <b>${k.need - n} 👑</b> daha gerekli. `, `You need <b>${k.need - n} more 👑</b> for <b>${k.name}</b>. `) : ''}${L(`${list.length ? 'Aşağıdaki bölümleri' : 'Bölümleri'} <b>⏱ süre</b> ve <b>↻ hamle</b> hedefiyle bitir: her biri 1 👑.`, `Beat ${list.length ? 'the levels below' : 'levels'} within the <b>⏱ time</b> and <b>↻ move</b> targets: 1 👑 each.`)}</p>
+  modal(`<h2>${L('Bilet topla', 'Earn tickets')} 🎫</h2>
+    <p>${k && k.need > n ? L(`<b>${k.name}</b> için <b>${k.need - n} 🎫</b> daha gerekli. `, `You need <b>${k.need - n} more 🎫</b> for <b>${k.name}</b>. `) : ''}${L(`${list.length ? 'Aşağıdaki bölümleri' : 'Bölümleri'} <b>⏱ süre</b> ve <b>↻ hamle</b> hedefiyle bitir: her biri 1 🎫.`, `Beat ${list.length ? 'the levels below' : 'levels'} within the <b>⏱ time</b> and <b>↻ move</b> targets: 1 🎫 each.`)}</p>
     ${list.length ? `<div class="hunt" id="hunt">${list.map(l => `<button class="hrow" data-l="${l}"><b>${l}</b><span>${starTxt(save.stars[l] || 0)}</span><small>${missTxt(l)}</small></button>`).join('')}</div>
-    <p class="tip">${L('★★☆ olanlar kusursuza en yakın · Günün Hattı\'nı kusursuz bitirmek de 1 👑', '★★☆ levels are closest to perfect · a perfect Daily Line also gives 1 👑')}</p>`
-    : `<p class="tip">${save.level > 1 ? L('Oynadığın her bölüm kusursuz! 🎉 ', 'Every level you’ve played is perfect! 🎉 ') : ''}${L('Yeni bölümler ve Günün Hattı yeni 👑 getirir.', 'New levels and the Daily Line bring new 👑.')}</p><button id="mPlay" class="btn primary"><span>${L('Oyna', 'Play')}</span><small>${L('Bölüm', 'Level')} ${save.level}</small></button>`}
+    <p class="tip">${L('★★☆ olanlar kusursuza en yakın · Günün Hattı\'nı bitirmek de 1 🎫, kusursuzsa 2', '★★☆ levels are closest to perfect · the Daily Line also gives 1 🎫, 2 if perfect')}</p>`
+    : `<p class="tip">${save.level > 1 ? L('Oynadığın her bölüm kusursuz! 🎉 ', 'Every level you’ve played is perfect! 🎉 ') : ''}${L('Yeni bölümler ve Günün Hattı yeni 🎫 getirir.', 'New levels and the Daily Line bring new 🎫.')}</p><button id="mPlay" class="btn primary"><span>${L('Oyna', 'Play')}</span><small>${L('Bölüm', 'Level')} ${save.level}</small></button>`}
     <button id="mBack" class="btn glassbtn">${L('Temalara dön', 'Back to themes')}</button>`, { mBack: skinSheet, mPlay: () => start('level') });
   if ($('hunt')) $('hunt').onclick = e => { const b = e.target.closest('.hrow'); if (b) start('level', +b.dataset.l); };
 }
 
-// ---------- sürpriz sandık: 👑 ile açılır (temaya alternatif harcama). İçinden asla 👑 çıkmaz → taçla taç kumarı yok ----------
+// ---------- sürpriz sandık: 🎫 ile açılır (temaya alternatif harcama). İçinden asla 🎫 çıkmaz → taçla taç kumarı yok ----------
 // Algoritma: oyuncuya özel tohum (ilk sandıkta bir kez) + sandık sırası → ağırlıklı çekiliş. Sonuç taç harcandığı an
 // kaydedilir; uygulamayı kapatıp açmak sonucu değiştirmez. Şanssızlık koruması: 7 sandık destansısız → 8. destansı.
 const CHEST = 10, PITY = 8, SHIELD_MAX = 3;
@@ -1774,13 +1879,16 @@ function chestRoll() {
   const R = rng(save.seed + (save.chests || 0) * 7919);
   let x = R(), tier = 'e';
   for (const t of ['c', 'r']) { if (x < RARITY[t][1]) { tier = t; break; } x -= RARITY[t][1]; }
-  if ((save.dry || 0) >= PITY - 1) tier = 'e';
+  const pity = (save.dry || 0) >= PITY - 1; if (pity) tier = 'e';   // korumayla gelen destansı her zaman kaplama
   const y = R(), free = LIVERIES.filter(v => !ownsLiv(v.id));
-  // sıradan: 💡×2 ya da 1 güçlendirici · nadir: 💡×4, 🛡 ya da 2 güçlendirici · destansı: tren kaplaması (hepsi varsa 3 güçlendirici)
+  // sıradan: 💡×2 ya da 1 güçlendirici · nadir: 💡×4 / ❤️∞ 15 dk, 🛡 ya da 2 güçlendirici · destansı: tren kaplaması ya da ❤️∞ 30 dk (kaplama bitince ❤️∞ ya da 3 güçlendirici)
   const pool = BST.filter(b => lineOf(save.level) >= b.line), b = pool[R() * pool.length | 0];
   if (tier === 'c') return y < .5 ? { tier, kind: 'hint', n: 2 } : { tier, kind: 'bst', id: b.id, n: 1 };
-  if (tier === 'r') { const z = y * 3 | 0; return z === 2 ? { tier, kind: 'bst', id: b.id, n: 2 } : z === 1 && (save.shield || 0) < SHIELD_MAX ? { tier, kind: 'shield' } : { tier, kind: 'hint', n: 4 }; }
-  return free.length ? { tier, kind: 'liv', id: free[y * free.length | 0].id } : { tier, kind: 'bst', id: b.id, n: 3 };
+  // ❤️∞ eski çekilişi bozmadan dilimlerin içine yerleşir (kalkan, güçlendirici, kaplama seçimi eskisiyle aynı):
+  // nadirde 💡×4 diliminin dörtte üçü ❤️∞ 15 dk; destansıda her kaplama diliminin %30'u ❤️∞ 30 dk (korumayla gelen destansı hep kaplama)
+  if (tier === 'r') { const z = y * 3 | 0; return z === 2 ? { tier, kind: 'bst', id: b.id, n: 2 } : z === 1 && (save.shield || 0) < SHIELD_MAX ? { tier, kind: 'shield' } : z === 0 && y * 3 % 1 < .75 ? { tier, kind: 'inf', n: 15 } : { tier, kind: 'hint', n: 4 }; }
+  if (!free.length) return y < .5 ? { tier, kind: 'inf', n: 30 } : { tier, kind: 'bst', id: b.id, n: 3 };
+  return !pity && y * free.length % 1 < .3 ? { tier, kind: 'inf', n: 30 } : { tier, kind: 'liv', id: free[y * free.length | 0].id };
 }
 // çizilmiş sandık, üç katman: arkada açık kapağın içi, ortada gövde, önde kapalı kapak. Menteşe arkada: açılırken dış kapak
 // yukarı kalkıp incelir, iç yüzü menteşeden büyür. Yalnız transform (SVG yeniden çizilmez) → düşük donanımda da akıcı.
@@ -1812,20 +1920,20 @@ const BST = [
   { id: 'geri', ic: '↶', name: L('Geri al', 'Undo'), sub: L('Son 5 hamle silinir, sayaç da geri gider', 'Takes back your last 5 moves'), line: 0 },
 ];
 const bst = id => save.bst?.[id] || 0;
-function useBst(id) { save.bst = { ...save.bst, [id]: bst(id) - 1 }; persist(); }
+function useBst(id) { save.bst = { ...save.bst, [id]: bst(id) - 1 }; const m = questStep('bst'); persist(); if (m) setTimeout(() => toast(m), 900); }
 const RW_ICON = {
   hint: '<svg class="rwi" viewBox="-1 -3 26 26"><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1.1 1.2 1.1 2.2h5c0-1 .5-1.7 1.1-2.2A6 6 0 0 0 12 3z" fill="url(#cgB)"/><path d="M9 18h6M10 21h4"/><path class="ry" d="M12 .6v-2M17.9 3.1l1.4-1.4M6.1 3.1 4.7 1.7M20.4 9h2M3.6 9h-2"/></svg>',
   shield: '<svg class="rwi" viewBox="0 0 24 24"><path d="M12 2.6 19.4 5.4v5.4c0 4.7-3 8.6-7.4 10.6-4.4-2-7.4-5.9-7.4-10.6V5.4z" fill="url(#cgS)"/><path d="M12 8.2c.5 2 2.5 2.75 2.5 5.5a2.5 2.5 0 0 1-5 0c0-1.25.6-2 1.25-2.5.1.9.5 1.5 1.1 1.65C11.5 11.5 11.65 9.7 12 8.2z" fill="url(#cgF)" stroke="none"/></svg>',
 };
-const LOOT = L([['c', '💡 ipucu ×2 <i>ya da</i> 1 güçlendirici'], ['r', '💡 ipucu ×4, 🛡 seri kalkanı <i>ya da</i> 2 güçlendirici'], ['e', '🚆 yeni tren kaplaması']],
-  [['c', '💡 hint ×2 <i>or</i> 1 booster'], ['r', '💡 hint ×4, 🛡 streak shield <i>or</i> 2 boosters'], ['e', '🚆 new train livery']]);
+const LOOT = L([['c', '💡 ipucu ×2 <i>ya da</i> 1 güçlendirici'], ['r', '💡 ipucu ×4, 🛡 seri kalkanı, 2 güçlendirici <i>ya da</i> ❤️∞ 15 dk'], ['e', '🚆 yeni tren kaplaması <i>ya da</i> ❤️∞ 30 dk']],
+  [['c', '💡 hint ×2 <i>or</i> 1 booster'], ['r', '💡 hint ×4, 🛡 streak shield, 2 boosters <i>or</i> ❤️∞ 15 min'], ['e', '🚆 new train livery <i>or</i> ❤️∞ 30 min']]);
 function chestSheet() {
   const bal = crownBal(), can = bal >= CHEST, own = LIVERIES.filter(v => ownsLiv(v.id)).length, cur = save.train || 'hat';
   modal(`<h2>${L('Sürpriz sandık', 'Surprise chest')}</h2>
     <div class="cbox ${can ? 'can' : ''}" id="chestBox">${CHEST_SVG}<div class="loot">${LOOT.map(([t, s]) => `<b class="tier-${t}">${RARITY[t][0]}</b><span>${s}</span>`).join('')}<small>${L(`${PITY} sandıkta destansı çıkmazsa ${PITY}.si garanti`, `No epic in ${PITY - 1} chests? The ${PITY}th is guaranteed`)}</small></div></div>
     <div class="odds">${Object.entries(RARITY).map(([t, [n, p]]) => `<b class="tier-${t}">${n} ${L('%' + Math.round(p * 100), Math.round(p * 100) + '%')}</b>`).join('<i>·</i>')}<button id="mOdds" class="qm" aria-label="${L('Sandıktan ne çıkar?', 'What’s inside?')}">?</button></div>
     ${BST.some(b => bst(b.id)) ? `<div class="bstinv">${BST.filter(b => bst(b.id)).map(b => `<span title="${b.name}">${b.ic} <b>${bst(b.id)}</b></span>`).join('')}</div>` : ''}
-    <button id="mOpen" class="btn primary cbtn">${can ? `<span>${L('Aç', 'Open')} · 👑 ${CHEST}</span>` : `<span>${L('Taç topla', 'Earn crowns')}</span><small>${L(`👑 ${CHEST} gerekli`, `👑 ${CHEST} needed`)}</small>`}</button>
+    <button id="mOpen" class="btn primary cbtn">${can ? `<span>${L('Aç', 'Open')} · 🎫 ${CHEST}</span>` : `<span>${L('Bilet topla', 'Earn tickets')}</span><small>${L(`🎫 ${CHEST} gerekli`, `🎫 ${CHEST} needed`)}</small>`}</button>
     <div class="nexts"><small>${L('Trenin', 'Your train')}</small><small>🚆 ${own} / ${LIVERIES.length}</small></div>
     <div class="trains" id="trains">${LIVERIES.map(v => `<button data-v="${v.id}" class="${ownsLiv(v.id) ? '' : 'lockd'} ${v.id === cur ? 'on' : ''}" style="${livVars(v)}">${TRAIN}<span>${ownsLiv(v.id) ? v.name : '?'}</span></button>`).join('')}</div>
     <button id="mBack" class="btn glassbtn">${L('Temalara dön', 'Back to themes')}</button>`, { mOpen: () => can ? openChest() : crownHunt(), mBack: skinSheet });
@@ -1849,18 +1957,19 @@ function openChest() {
   if (r.kind === 'hint') save.hints += r.n;
   else if (r.kind === 'shield') save.shield = (save.shield || 0) + 1;
   else if (r.kind === 'bst') save.bst = { ...save.bst, [r.id]: bst(r.id) + r.n };
+  else if (r.kind === 'inf') giveInf(r.n);
   else save.trains = { ...save.trains, [r.id]: 1 };
   persist(); refreshHome(); chestScene(r);
 }
 // açılış sahnesi (tam ekran): sandık düşer ve sallanır → dokun → kapak açılır, ışık patlar, ödül sandıktan fırlar → dokun → pencereye dön
 function chestScene(r) {
   const calm = calmMotion.matches, v = r.kind === 'liv' ? LIVERIES.find(x => x.id === r.id) : null, b = r.kind === 'bst' ? BST.find(x => x.id === r.id) : null, n = r.kind === 'hint' || b ? r.n : r.kind === 'shield' ? 1 : 0;
-  const [name, sub] = b ? [b.name, `${b.sub} · ${L(`sende ${bst(b.id)}`, `${bst(b.id)} owned`)}`] : r.kind === 'hint' ? [L('İpucu', pl(r.n, 'Hint', 'Hints')), L(`Şimdi ${save.hints} ipucun var`, `You now have ${save.hints} ${pl(save.hints, 'hint', 'hints')}`)]
+  const [name, sub] = r.kind === 'inf' ? [L(`Sınırsız can · ${r.n} dk`, `Unlimited lives · ${r.n} min`), L(`${r.n} dakika boyunca can azalmaz`, `No lives lost for ${r.n} minutes`)] : b ? [b.name, `${b.sub} · ${L(`sende ${bst(b.id)}`, `${bst(b.id)} owned`)}`] : r.kind === 'hint' ? [L('İpucu', pl(r.n, 'Hint', 'Hints')), L(`Şimdi ${save.hints} ipucun var`, `You now have ${save.hints} ${pl(save.hints, 'hint', 'hints')}`)]
     : r.kind === 'shield' ? [L('Seri kalkanı', 'Streak shield'), L(`Kırılan seriyi bir kez korur · sende ${save.shield}/${SHIELD_MAX}`, `Saves a broken streak once · ${save.shield}/${SHIELD_MAX} owned`)] : [v.name, L('Yeni tren kaplaması', 'New train livery')];
   const el = document.createElement('div');
   el.id = 'chestScene'; el.className = `cscene t-${r.tier}${calm ? ' calm' : ''}`; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', L('Sürpriz sandık', 'Surprise chest'));
   el.innerHTML = `<div class="cs-col"><span class="badge tier-${r.tier} cs-tier">${RARITY[r.tier][0].toLocaleUpperCase(RAY_LANG)}</span>
-    <div class="cs-rw"><i class="cs-glow"></i><i class="cs-rays"></i><div class="cs-ic rw-${r.kind}" style="${livVars(v)}">${v ? TRAIN : b ? `<span class="rwe">${b.ic}</span>` : RW_ICON[r.kind]}${n ? `<b class="cs-n">${n}</b>` : ''}</div></div>
+    <div class="cs-rw"><i class="cs-glow"></i><i class="cs-rays"></i><div class="cs-ic rw-${r.kind}" style="${livVars(v)}">${v ? TRAIN : b ? `<span class="rwe">${b.ic}</span>` : r.kind === 'inf' ? '<span class="rwe">❤️</span>' : RW_ICON[r.kind]}${n ? `<b class="cs-n">${n}</b>` : ''}</div></div>
     <div class="cs-name"><h2>${name}</h2><p>${sub}</p></div>
     <div class="cs-box"><div class="cs-ch"><i class="cs-sh"></i><div class="cs-chest">${CHEST_SVG}<i class="cs-flash"></i><i class="cs-sp">${[...Array(8)].map((_, k) => `<i style="--a:${k * 45 + 22}deg"></i>`).join('')}</i></div></div><small class="cs-tap">${L('Dokun → aç', 'Tap → open')}</small></div>
     <div class="cs-foot">${v ? `<button id="csUse" class="btn primary cbtn"><span>${L('Trenine tak', 'Put on your train')}</span></button>` : ''}<small class="cs-go">${L('Devam için dokun', 'Tap to continue')}</small></div></div>`;
@@ -2023,6 +2132,7 @@ function how() {
 $('bPlay').onclick = () => start('level');
 $('bDaily').onclick = () => (save.dailyDone === today() && save.dailyStats?.day === today()) ? dailyResult() : start('daily');
 $('bMap').onclick = () => show('map');
+$('bQuest').onclick = questSheet;
 $('pBack').onclick = () => show('home');
 $('bBack').onclick = () => show('home');
 $('bReset').onclick = reset;
@@ -2068,7 +2178,7 @@ function plan() {
   for (const m of MODS) if (m.plan && G?.[m.key]) out.push(...m.plan(G, out));
   return out;
 }
-// "her şey açık" test sürümü: bütün temalar ve tren kaplamaları sende; bol 👑 (sandık için), 💡 ve 🛡 (bir kez verilir)
+// "her şey açık" test sürümü: bütün temalar ve tren kaplamaları sende; bol 🎫 (sandık için), 💡 ve 🛡 (bir kez verilir)
 if (TEST && !save.testOpen) {
   save.testOpen = 1; SKINS.forEach(k => { save.owned[k.id] = 1; }); save.trains = Object.fromEntries(LIVERIES.map(v => [v.id, 1]));
   save.cc = (save.cc || 0) + 999; save.hints = Math.max(save.hints, 99); save.shield = SHIELD_MAX; persist();
@@ -2105,5 +2215,5 @@ if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { plan, breath, review: maybeReview, BST, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
+window.__ray = { plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), RULE_LINE, RULES,  review: maybeReview, BST, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();
