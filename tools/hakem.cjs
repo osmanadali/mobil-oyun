@@ -89,6 +89,7 @@ async function tapTile(page, i) {
 // Karanlık tünel: yalnızca aydınlık karolara dokunulur; hat ilerledikçe yeni tur (ışığı takip eder).
 async function solve(page, gap = 25, rounds = 40) {
   let total = 0;
+  if (await page.$('#mGo')) { await page.click('#mGo'); await page.waitForTimeout(300); }   // kural kartı (ör. pazar Günün Hattı'nda haftanın kuralı) açıksa önce kapat
   for (let round = 0; round < rounds; round++) {
     const taps = await page.evaluate(() => {
       const { G, rot } = window.__ray, out = [], lit = i => !G.seen || G.seen[i], unrot = m => ((m >> 1) | (m << 3)) & 15;

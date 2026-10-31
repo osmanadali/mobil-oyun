@@ -117,6 +117,35 @@ M9 ve sonrasının kuralları çekirdekte değil, eklenti dosyalarındadır (`ww
 | 2 Kasım 2026 | %52 | %56 | %62 | %69 | %76 | %84 | %92 |
 | 6 Eylül 2027 | %66 | %70 | %76 | %82 | %89 | %96 | %100 |
 
+**Haftanın kuralı (pazar):** Pazar günkü Günün Hattı o haftanın kuralını taşır; pazartesi–cumartesi kuralsızdır ve bit bit eskisi gibidir. Kural yalnız erken kurallardan seçilir ve haftaya göre döner: sabit karo, eşli karo, ters karo, (kayar karo), karanlık tünel, sayaçlı karo, (buz), iki merkez. Listede olup oyunda henüz tanımlı olmayan kural atlanır; tanımlanınca dönüş sırası kayar. Miktar bölümlerdeki gibidir (ör. 7×9'da 5 sabit karo, 4 çift eşli karo, %15 ters, %12 sayaçlı). Tohum ve kural herkeste aynıdır. Oyuncu o kuralı henüz görmediyse oyun "Haftanın kuralı" kartıyla açılır; başlığın alt satırında kuralın adı yazar, haftalık görev penceresi de pazarın kuralını önceden söyler. Kod: `WEEK_RULES`, `weekRule`, `dailyRule`, `dailyFor`.
+
+### Haftalık görevler ve 🎫 bilet
+
+- **Görevler:** Her hafta (pazartesi başlar, yerel takvim) 3 görev gelir. Seçim haftanın tohumuyla yapılır, bu yüzden aynı basamaktaki herkes aynı görevleri görür. Miktar oyuncunun basamağına göre değişir:
+
+  | Görev | M1–M2 | M3–M5 | M6+ | Ödül |
+  |---|---|---|---|---|
+  | Bölüm bitir | 5 | 10 | 20 | +1 🎫 +1 💡 |
+  | Bölümü kusursuz bitir | 3 | 5 | 8 | +1 🎫 +1 👑 |
+  | İpucusuz bölüm bitir | 3 | 5 | 8 | +1 🎫 +1 💡 |
+  | Günün Hattı bitir | — | 3 | 4 | +1 🎫 +1 👑 |
+  | Güçlendirici kullan | — | 2 | 3 | +1 🎫 +1 💡 |
+
+  - Günün Hattı görevi yalnız Günün Hattı'nı bir kez bitirmiş ya da 61. bölüme gelmiş oyuncuya çıkar; güçlendirici görevi yalnız elinde o kadar güçlendirici olana. Görevler haftanın ilk açılışında o anki duruma göre seçilir ve hafta boyunca değişmez.
+  - Taçlı bir bölümü yeniden oynamak sayılmaz (kolay bölümde biriktirilmesin). İpucu kullanılan bölüm "ipucusuz" görevine sayılmaz (yarım oyunla ve baştan başlamayla korunur).
+  - Ödül görev tamamlandığı an verilir ve sonuç panelinde yazar. Üç görev birden bitince +1 🎫 ek.
+  - Giriş: ana sayfada Günün Hattı kartının altında tek ince satır ("🎯 Haftalık görevler · 1/3 · 🎫 2"). Satır ilk hat bitene ya da ilk Günün Hattı'na dek gizlidir.
+- **🎫 Bilet:** Ayrı bir para birimidir (`save.tickets`), ana sayfada çipi yoktur; görev ve arşiv pencerelerinde görünür. Kazanma: her tamamlanan görev 1, üçü birden 1 ek, Günün Hattı'nı bitirmek 1 (günde bir; pratik ve arşiv vermez). Harcama yalnız arşivdir. Haftada en çok 4 + 7 = 11 bilet.
+- Kod: `QUESTS`, `weekQ`, `questStep`, `questRow`, `questSheet`; kayıt `save.wk = { id: pazartesi, q: [{ t, n, p }], all }`, görev tacı `save.qc`.
+
+### Günün Hattı arşivi
+
+- Seri penceresinden ("📅 Geçmiş günler") ya da görev penceresinden açılır. Son 30 günün Günün Hattı'nı listeler (pazarlar alt çizgili).
+- Oynanmış günler (✓, kusursuzsa 👑) bedava açıktır ama ödül vermez. Kapalı bir gün 1 🎫 ile **kalıcı** açılır (`save.arch`).
+- Arşiv seriyi, günlük kaydı ve bugünün sonucunu etkilemez. O günün ilk bitişi kusursuzsa 1 👑 verir (normal Günün Hattı kuralı; `save.aCrowns`) ve Günün Hattı görevine sayılır (`save.archDone`).
+- Paylaşım "Günün Hattı 12.10 · geçmiş gün" diye yazar ve meydan okuma bağlantısı taşımaz (arkadaşın açınca "eski" görmesin).
+- Yarım oyun ayrı tutulur (`runs.arch`), bugünün yarım Günün Hattı'nı ezmez. Kod: `archSheet`, `start('arch', gün)`.
+
 ## 7. Doğrulama
 
 Test robotu (`tools/hakem.cjs`) her değişiklikte şunları kontrol eder:
@@ -131,7 +160,7 @@ Test robotu (`tools/hakem.cjs`) her değişiklikte şunları kontrol eder:
 
 ## 8. Taç ekonomisi (renk temaları)
 
-Kusursuz bitirilen her bölüm (⏱ ve ↻ hedefi aynı oyunda) bir kez 1 👑 verir; Günün Hattı'nı kusursuz bitirmek de 1 👑. Hat finalini kusursuz bitirmek ve kusursuz serinin her 5 adımı birer bonus 👑 daha verir (bkz. bölüm 9). Taç bir para birimidir: tema satın alınınca bakiyeden düşer ve geri gelmez. Fiyatlar hızla artar, oyuncu bölümleri daha başarılı geçmeye zorlanır.
+Kusursuz bitirilen her bölüm (⏱ ve ↻ hedefi aynı oyunda) bir kez 1 👑 verir; Günün Hattı'nı (ya da arşivden geçmiş bir günü) kusursuz bitirmek de 1 👑. Haftalık görevlerin bir kısmı da 1 👑 verir (bkz. bölüm 6). Hat finalini kusursuz bitirmek ve kusursuz serinin her 5 adımı birer bonus 👑 daha verir (bkz. bölüm 9). Taç bir para birimidir: tema satın alınınca bakiyeden düşer ve geri gelmez. Fiyatlar hızla artar, oyuncu bölümleri daha başarılı geçmeye zorlanır.
 
 | Tema | Fiyat |
 |---|---|
