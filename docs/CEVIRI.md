@@ -135,6 +135,8 @@ Hat adları yer adıdır ve çevrilir:
 | 👑 3 yeni taç · +1 ipucu | 👑 3 new crowns · +1 hint |
 | İlerlemeyi taşı · Kodu kopyala · Kodu yükle | Move progress · Copy code · Load code |
 | Bize yaz · Öneri · hata | Contact us · Ideas · bugs |
+| güçlendirici | booster |
+| 🔄 Ek tur · 🔦 Fener · ⏱ +15 sn · ↶ Geri al | 🔄 Extra turn · 🔦 Lantern · ⏱ +15 s · ↶ Undo |
 | ★ 11 kaldı → M3 | ★ 11 to go → M3 |
 | Tamamlandı ✓ · Hazır | Done ✓ · Ready |
 | 5 günlük seri | 5-day streak |

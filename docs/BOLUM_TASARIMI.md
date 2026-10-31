@@ -178,9 +178,20 @@ Taçların temalar dışındaki tek harcama yeri. Oyun içinde kendiliğinden ç
 
 | Nadirlik | Olasılık | İçerik |
 |---|---|---|
-| Sıradan | %60 | +2 💡 ipucu |
-| Nadir | %28 | +4 💡 ya da 🛡 seri kalkanı (yarı yarıya; en çok 3 kalkan birikir) |
-| Destansı | %12 | 🚆 sahip olunmayan bir tren kaplaması (hepsi varsa +6 💡) |
+| Sıradan | %60 | +2 💡 ipucu ya da 1 güçlendirici (yarı yarıya) |
+| Nadir | %28 | +4 💡, 🛡 seri kalkanı ya da 2 güçlendirici (üçte bir; en çok 3 kalkan birikir, doluysa 💡) |
+| Destansı | %12 | 🚆 sahip olunmayan bir tren kaplaması (hepsi varsa 3 güçlendirici) |
+
+**Güçlendiriciler** (31 Ekim). Sandıktan çıkar; oyunda kalıcı düğmeleri yoktur, yalnız işe yaradığı an alt çubukta belirir (sağ üstte kalan sayı). İlgili kural açılmadan sandıktan çıkmaz. Ölçülen dağılım (600 sandık, M8): 💡 %38, güçlendirici %40, 🛡 %9, kaplama %12.
+
+| Güçlendirici | Ne zaman görünür | Ne yapar | Sandıktan çıkmaya başlar |
+|---|---|---|---|
+| 🔄 Ek tur | Hakkı biten sayılı karoya (yanlış yöndeyken) dokununca sorulur | Karo bir kez daha döner | M7 |
+| 🔦 Fener | Karanlık tünel bölümünde | 5 sn bütün tahta aydınlık, sonra yeniden kararır | M6 |
+| ⏱ +15 sn | Son 10 saniyede, ⏱ yıldızı yanarken | Süre hedefi 15 sn uzar (yarım oyunla birlikte kaydedilir) | baştan |
+| ↶ Geri al | Hamle yapılmışken | Son 5 hamle silinir, hamle sayacı geri gider (ipucu kullanılınca geçmiş sıfırlanır) | baştan |
+
+Kod: `BST`, `bstUi`, `undo`, `lamp`, `plus15`, `turSheet`; test: `tools/hakem/guclendirici.cjs`.
 
 **Algoritma:**
 

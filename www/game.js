@@ -782,7 +782,7 @@ function setLineColor() {
 const runKey = () => G.daily ? 'daily' : 'level';
 function saveRun() {
   if (!G || G.won) return;
-  save.runs[runKey()] = { lvl: G.lvl, day: G.day, cur: G.cur, fixed: G.fixed, moves: G.moves, last: G.lastTile, ms: elapsed(), pv: 4, sig: G.sig, ...(G.cnt.some(v => v >= 0) ? { cnt: G.cnt } : {}) };
+  save.runs[runKey()] = { lvl: G.lvl, day: G.day, cur: G.cur, fixed: G.fixed, moves: G.moves, last: G.lastTile, ms: elapsed(), pv: 4, sig: G.sig, ...(G.xt ? { xt: G.xt } : {}), ...(G.cnt.some(v => v >= 0) ? { cnt: G.cnt } : {}) };
   persist();
 }
 function start(mode, lvl = save.level) {
@@ -799,6 +799,7 @@ function start(mode, lvl = save.level) {
   if (run && (daily ? run.day === day : run.lvl === lvl) && run.cur?.length === G.cur.length && (run.sig ? run.sig === G.sig : run.pv === 4 && (daily || lvl < lineStart(8)))) {
     G.cur = run.cur.slice(); G.fixed = run.fixed.slice(); G.moves = run.moves; G.lastTile = run.last ?? -1; G.ms = run.ms || 0;
     if (run.cnt?.length === G.cur.length) G.cnt = run.cnt.slice();
+    if (run.xt) { G.xt = run.xt; G.lim.t += run.xt; }   // ⏱ +15 güçlendiricisi yarım oyunla korunur
   }
   setLineColor();
   G.L = lit(G); anim.clear(); press.clear(); ripples = []; parts = []; links = []; winT = 0;
@@ -830,6 +831,7 @@ function reveal(quiet) {
   const area = i => { const x = i % cols, y = i / cols | 0; for (let dy = -FOG_R; dy <= FOG_R; dy++) for (let dx = -FOG_R; dx <= FOG_R; dx++) { const nx = x + dx, ny = y + dy; if (Math.abs(dx) + Math.abs(dy) <= FOG_R && nx >= 0 && ny >= 0 && nx < cols && ny < rows) on(ny * cols + nx); } };
   G.L.d.forEach((v, i) => { if (v >= 0) area(i); });
   G.fixed.forEach((f, i) => f && on(i));
+  if (G.lamp > performance.now()) vis.fill(true);   // 🔦 fener: 5 sn bütün tünel aydınlık
   // eklenti: tünelin öbür ağzı, tablanın dört karosu… Biri ötekinin açtığına bağlı olabilir → değişmeyene dek
   for (let k = 0, c = -1, m = 0; k < 4 && c !== m; k++) { c = m; for (const mod of MODS) if (mod.reveal && G[mod.key]) mod.reveal(G, on, area); m = vis.filter(Boolean).length; }
   // yarıda tersine dönen geçiş o anki örtüden sürer: başlangıç anı geriye kaydırılır (ease = 1−(1−t)³)
@@ -846,6 +848,7 @@ function hud() {
   $('gParLbl').textContent = ok ? L('↻ HAMLE HEDEFİ', '↻ MOVE TARGET') : L('↻ HEDEF AŞILDI', '↻ OVER TARGET');
   // sefer şeridinin rayı bağlantıyla döşenir (yanan karo oranı): tren süreyle ilerler, ray önünden yetişmeli
   $('gTrip').style.setProperty('--b', (G.L.n / G.cur.length).toFixed(3));
+  bstUi();
 }
 // üst gösterge: süre + üç yıldız (bitir · ⏱ süre · ↻ hamle)
 function tick() {
@@ -856,7 +859,7 @@ function tick() {
   if (!G.won) setNext(tOk ? `⏱ ${fmtT(left * 1000 + 999)}` : `<span class="miss">+${fmtT(-left * 1000)} ${L('rötar', 'late')}</span>`);
   $('gPill').classList.toggle('warn', tOk && left <= 10 && !G.won);
   $('gCombo').classList.toggle('off', !(tOk && mOk));
-  trip(sec, tOk, left);
+  trip(sec, tOk, left); bstUi(left);
   if (!G.won) {
     // kusursuz seri bu bölümde tehlikede → baştan başlamak seriyi korur (↺ süreyi de sıfırlar)
     const s = comboStake(), keep = s >= 2 ? L(` · ↺ baştan → ✨${s} sürer`, ` · ↺ restart → keep ✨${s}`) : '';
@@ -866,6 +869,45 @@ function tick() {
   G.tOk = tOk; G.mOk = mOk;
   // gerilim: süre hedefinin %30'undan sonra 8 kademede artar; hedef geçince de 2 katına kadar artmaya devam eder
   if (!G.won) { const r = sec / G.lim.t, T = r < .3 ? 0 : r <= 1 ? (r - .3) / .7 * .8 : .8 + Math.min(1, r - 1) * .2; Music.setTension(Math.round(T * 8) / 8, tOk && left <= 10); }
+}
+// güçlendirici düğmeleri: yalnız işe yaradığı an (geri al: geçmiş varken · fener: karanlık tünelde · +15: son 10 sn, ⏱ yıldızı yanarken)
+function bstUi(left = G ? G.lim.t - elapsed() / 1000 : 0) {
+  const live = G && !G.won, set = (id, k, on) => { const b = $(id); b.hidden = !on; if (on) b.lastChild.textContent = bst(k); };
+  set('gUndo', 'geri', live && bst('geri') > 0 && G.hist?.length > 0);
+  set('gLamp', 'fener', live && bst('fener') > 0 && G.fog && !(G.lamp > performance.now()));
+  set('gPlus', 'sure', live && bst('sure') > 0 && left > 0 && left <= 10);
+  document.querySelector('#game .bottom').classList.toggle('bx', ['gUndo', 'gLamp', 'gPlus'].some(id => !$(id).hidden));
+}
+function undo() {
+  if (!G || G.won || !G.hist?.length || bst('geri') < 1) return;
+  const k = Math.min(5, G.hist.length), s = G.hist[G.hist.length - k], now = performance.now();
+  G.hist.length -= k;
+  G.cur.forEach((v, i) => { if (v !== s.cur[i]) anim.set(i, now); G.cur[i] = s.cur[i]; });
+  s.cnt.forEach((v, i) => { G.cnt[i] = v; });
+  G.moves = s.moves; G.lastTile = s.last; useBst('geri');
+  G.L = lit(G); reveal(); hud(); tick(); kick(); saveRun();
+  haptic('heavy'); tone(note(4), .2, .04); toast(L(`↶ ${k} hamle geri alındı`, `↶ ${k} ${pl(k, 'move', 'moves')} undone`));
+}
+function lamp() {
+  if (!G?.fog || G.won || bst('fener') < 1) return;
+  const g = G; G.lamp = performance.now() + 5000; useBst('fener'); reveal(); kick(); bstUi();
+  haptic('heavy'); tone(note(7), .3, .04); toast(L('🔦 Fener yandı · 5 sn', '🔦 Lantern on · 5 s'));
+  setTimeout(() => { if (G === g && !g.won) { reveal(); kick(); bstUi(); } }, 5000);
+}
+function plus15() {
+  if (!G || G.won || bst('sure') < 1) return;
+  G.lim.t += 15; G.xt = (G.xt || 0) + 15; useBst('sure'); saveRun(); tick(); bump($('gPill'));
+  haptic('heavy'); tone(note(5), .25, .04); toast(L('⏱ +15 sn · tren biraz daha bekliyor', '⏱ +15 s · the train waits a bit longer'));
+}
+// 🔄 ek tur: kilitlenen sayılı karo bir kez daha döner (süre pencere açıkken durur)
+function turSheet(i) {
+  const g = G; pause();
+  modal(`<div class="bell">🔄</div><h2>${L('Ek tur', 'Extra turn')}</h2><p>${L('Bu sayılı karonun hakkı bitti. Bir ek turla <b>bir kez daha</b> döner.', 'This counter tile is used up. An extra turn lets it turn <b>once more</b>.')}</p>
+    <button id="mYes" class="btn primary"><span>${L('Ek turu kullan', 'Use extra turn')}</span><small>${L(`${bst('tur')} ek tur var`, `${bst('tur')} left`)}</small></button>
+    <button id="mClose" class="btn glassbtn">${L('Vazgeç', 'Cancel')}</button>`, {
+    mYes: () => { if (G === g && G.cnt[i] === 0) { G.cnt[i] = 1; useBst('tur'); saveRun(); kick(); toast(L('🔄 Ek tur · karo bir kez daha döner', '🔄 Extra turn · the tile turns once more')); } closeModal(); },
+    mClose: closeModal });
+  mOnClose = () => { if (G === g && active('game')) resume(); };
 }
 function lose(msg) { bump($('gPill')); tone(294, .2, .012); haptic('light'); toast(msg); }
 const setNext = h => { if (h !== G.nxHtml) { $('gNext').innerHTML = h; G.nxHtml = h; } };
@@ -1095,6 +1137,7 @@ cv.addEventListener('pointerdown', e => {
   if (G.fixed[i]) { haptic('light'); tone(440, .06, .02); toast(L('Bu karo ipucuyla sabitlendi', 'This tile was set by a hint')); press.set(i, now); kick(); return; }
   if (G.fog && !G.seen[i]) { haptic('light'); tone(196, .05, .012); press.set(i, now); kick(); if (!G.fogTold) { toast(L('Karanlık tünel · hat yaklaşınca aydınlanır', 'Dark tunnel · lights up as the line nears')); G.fogTold = true; } return; }
   if (G.pinned[i]) { haptic('light'); tone(220, .05, .015); press.set(i, now); kick(); if (!G.pinTold) { toast(L('Sabit karo · dönmez', 'Fixed tile · doesn’t turn')); G.pinTold = true; } return; }
+  if (G.cnt[i] === 0 && G.cur[i] !== G.sol[i] && bst('tur') > 0) { haptic('light'); press.set(i, now); kick(); turSheet(i); return; }
   if (G.cnt[i] === 0) { haptic('light'); tone(196, .05, .012); press.set(i, now); kick(); toast(G.cur[i] === G.sol[i] ? L('Sayaç bitti · bu karo yerinde', 'Counter used up · tile is in place') : L('Sayaç bitti · ↺ baştan ya da 💡 ipucu', 'Counter used up · ↺ restart or 💡 hint')); return; }
   // eklenti engeli (ör. köprü dönmez): m.block(G, i) → bildirim metni ya da true
   for (const m of MODS) {
@@ -1104,6 +1147,8 @@ cv.addEventListener('pointerdown', e => {
     return;
   }
   const u = G.unitOf?.[i] ?? -1;
+  // ↶ geri al için: yeni hamle başlıyorsa (başka karo/birim) önceki durum saklanır (en çok 30)
+  if (G.lastTile !== (u >= 0 ? 'u' + u : G.link[i] >= 0 ? Math.min(i, G.link[i]) : i)) { (G.hist ||= []).push({ cur: G.cur.slice(), cnt: G.cnt.slice(), moves: G.moves, last: G.lastTile }); if (G.hist.length > 30) G.hist.shift(); }
   if (u >= 0) {   // eklenti birimi (makas, tabla…): birimin kendi dokunuşu; art arda aynı birim = 1 hamle
     const U = G.units[u];
     U.tap(G.cur);
@@ -1430,6 +1475,7 @@ async function hint() {
   const usz = i => G.units?.[G.unitOf[i]]?.cells.length || 1;   // eklenti birimi (tabla: 4 karo) sona
   wrong.sort((a, b) => (G.seen[b] - G.seen[a]) || usz(a) - usz(b) || nearLit(b) - nearLit(a));
   const i = wrong[0], now = performance.now(), prev = G.L.d, ui = G.unitOf?.[i] ?? -1;
+  G.hist = [];   // ipucunun sabitlediği karo geri alınmasın
   for (const k of ui >= 0 ? G.units[ui].cells : G.link[i] >= 0 ? [i, G.link[i]] : [i]) { G.cur[k] = G.sol[k]; G.fixed[k] = true; anim.set(k, now); press.set(k, now); }   // eşli karo / eklenti birimi: hepsi birden
   save.hints--; persist(); $('gHints').textContent = save.hints; bump($('gHints'));
   G.L = lit(G); reveal();
@@ -1727,9 +1773,11 @@ function chestRoll() {
   for (const t of ['c', 'r']) { if (x < RARITY[t][1]) { tier = t; break; } x -= RARITY[t][1]; }
   if ((save.dry || 0) >= PITY - 1) tier = 'e';
   const y = R(), free = LIVERIES.filter(v => !ownsLiv(v.id));
-  if (tier === 'c') return { tier, kind: 'hint', n: 2 };
-  if (tier === 'r') return y < .5 || (save.shield || 0) >= SHIELD_MAX ? { tier, kind: 'hint', n: 4 } : { tier, kind: 'shield' };
-  return free.length ? { tier, kind: 'liv', id: free[y * free.length | 0].id } : { tier, kind: 'hint', n: 6 };
+  // sıradan: 💡×2 ya da 1 güçlendirici · nadir: 💡×4, 🛡 ya da 2 güçlendirici · destansı: tren kaplaması (hepsi varsa 3 güçlendirici)
+  const pool = BST.filter(b => lineOf(save.level) >= b.line), b = pool[R() * pool.length | 0];
+  if (tier === 'c') return y < .5 ? { tier, kind: 'hint', n: 2 } : { tier, kind: 'bst', id: b.id, n: 1 };
+  if (tier === 'r') { const z = y * 3 | 0; return z === 2 ? { tier, kind: 'bst', id: b.id, n: 2 } : z === 1 && (save.shield || 0) < SHIELD_MAX ? { tier, kind: 'shield' } : { tier, kind: 'hint', n: 4 }; }
+  return free.length ? { tier, kind: 'liv', id: free[y * free.length | 0].id } : { tier, kind: 'bst', id: b.id, n: 3 };
 }
 // çizilmiş sandık, üç katman: arkada açık kapağın içi, ortada gövde, önde kapalı kapak. Menteşe arkada: açılırken dış kapak
 // yukarı kalkıp incelir, iç yüzü menteşeden büyür. Yalnız transform (SVG yeniden çizilmez) → düşük donanımda da akıcı.
@@ -1752,17 +1800,28 @@ const CHEST_SVG = `<div class="chx"><svg class="chi" viewBox="0 0 120 104"><path
   + `<svg class="chb" viewBox="0 0 120 104"><rect x="15" y="49" width="90" height="11" rx="5.5" fill="url(#cgM)"/><path d="${CH_BODY}" fill="url(#cgW)"/><path d="M13 70h94M13 83h94" ${CH_O} stroke-opacity=".4" stroke-width="1.4"/><path d="M13 71.6h94M13 84.6h94" stroke="#fff" stroke-opacity=".12"/>${chStrap(57, 39)}<path d="${CH_BODY}" fill="url(#cgE)"/><g fill="#fff6d0"><circle cx="31" cy="64" r="1.6"/><circle cx="31" cy="89" r="1.6"/><circle cx="89" cy="64" r="1.6"/><circle cx="89" cy="89" r="1.6"/></g><rect x="49" y="58" width="22" height="20" rx="5" fill="url(#cgP)" ${CH_O} stroke-width="1.6"/><path d="M60 63a2.6 2.6 0 0 0-1.4 4.8l-.8 4.2h4.4l-.8-4.2A2.6 2.6 0 0 0 60 63z" fill="#3a1c0c"/><path d="${CH_BODY}" fill="none" ${CH_O} stroke-width="2"/></svg>`
   + `<svg class="chl" viewBox="0 0 120 104"><path d="${CH_LID}" fill="url(#cgL)"/><path d="M13 44h94" ${CH_O} stroke-opacity=".35" stroke-width="1.4"/><path d="M27 31c9-4 20-5.5 33-5.5s24 1.5 33 5.5" fill="none" stroke="#fff" stroke-opacity=".32" stroke-width="2.4" stroke-linecap="round"/><g clip-path="url(#cgC)">${chStrap(16, 42)}</g><path d="${CH_LID}" fill="url(#cgE)"/><rect x="12" y="51" width="96" height="7" fill="url(#cgP)"/><path d="M12 51h96" ${CH_O} stroke-opacity=".45"/><g fill="#fff6d0"><circle cx="31" cy="33" r="1.6"/><circle cx="89" cy="33" r="1.6"/></g><path d="M52 48h16v9a4 4 0 0 1-4 4h-8a4 4 0 0 1-4-4z" fill="url(#cgP)" ${CH_O} stroke-width="1.6"/><path d="${CH_LID}" fill="none" ${CH_O} stroke-width="2"/></svg></div>`;
 // ödül simgeleri (oyunun çizgi simgeleriyle aynı dil): ampul = #bHint yolu + ışık çizgileri, kalkanın içinde seri alevi
+// ---------- güçlendiriciler: sandıktan çıkar, işe yaradığı an kendiliğinden belirir (oyunda kalıcı düğme yok) ----------
+// line: düşmeye başladığı hat (ilgili kural açılmadan sandıktan çıkmaz)
+const BST = [
+  { id: 'tur', ic: '🔄', name: L('Ek tur', 'Extra turn'), sub: L('Kilitlenen sayılı karo bir kez daha döner', 'A locked counter tile turns once more'), line: RULE_LINE.cnt },
+  { id: 'fener', ic: '🔦', name: L('Fener', 'Lantern'), sub: L('Karanlık tünel 5 sn aydınlanır', 'Lights up the dark tunnel for 5 s'), line: RULE_LINE.fog },
+  { id: 'sure', ic: '⏱', name: L('+15 sn', '+15 s'), sub: L('Son 10 saniyede ⏱ yıldızını kurtarır', 'Saves the ⏱ star in the last 10 s'), line: 0 },
+  { id: 'geri', ic: '↶', name: L('Geri al', 'Undo'), sub: L('Son 5 hamle silinir, sayaç da geri gider', 'Takes back your last 5 moves'), line: 0 },
+];
+const bst = id => save.bst?.[id] || 0;
+function useBst(id) { save.bst = { ...save.bst, [id]: bst(id) - 1 }; persist(); }
 const RW_ICON = {
   hint: '<svg class="rwi" viewBox="-1 -3 26 26"><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1.1 1.2 1.1 2.2h5c0-1 .5-1.7 1.1-2.2A6 6 0 0 0 12 3z" fill="url(#cgB)"/><path d="M9 18h6M10 21h4"/><path class="ry" d="M12 .6v-2M17.9 3.1l1.4-1.4M6.1 3.1 4.7 1.7M20.4 9h2M3.6 9h-2"/></svg>',
   shield: '<svg class="rwi" viewBox="0 0 24 24"><path d="M12 2.6 19.4 5.4v5.4c0 4.7-3 8.6-7.4 10.6-4.4-2-7.4-5.9-7.4-10.6V5.4z" fill="url(#cgS)"/><path d="M12 8.2c.5 2 2.5 2.75 2.5 5.5a2.5 2.5 0 0 1-5 0c0-1.25.6-2 1.25-2.5.1.9.5 1.5 1.1 1.65C11.5 11.5 11.65 9.7 12 8.2z" fill="url(#cgF)" stroke="none"/></svg>',
 };
-const LOOT = L([['c', '💡 ipucu ×2'], ['r', '💡 ipucu ×4 <i>ya da</i> 🛡 seri kalkanı ×1'], ['e', '🚆 yeni tren kaplaması']],
-  [['c', '💡 hint ×2'], ['r', '💡 hint ×4 <i>or</i> 🛡 streak shield ×1'], ['e', '🚆 new train livery']]);
+const LOOT = L([['c', '💡 ipucu ×2 <i>ya da</i> 1 güçlendirici'], ['r', '💡 ipucu ×4, 🛡 seri kalkanı <i>ya da</i> 2 güçlendirici'], ['e', '🚆 yeni tren kaplaması']],
+  [['c', '💡 hint ×2 <i>or</i> 1 booster'], ['r', '💡 hint ×4, 🛡 streak shield <i>or</i> 2 boosters'], ['e', '🚆 new train livery']]);
 function chestSheet() {
   const bal = crownBal(), can = bal >= CHEST, own = LIVERIES.filter(v => ownsLiv(v.id)).length, cur = save.train || 'hat';
   modal(`<h2>${L('Sürpriz sandık', 'Surprise chest')}</h2>
     <div class="cbox ${can ? 'can' : ''}" id="chestBox">${CHEST_SVG}<div class="loot">${LOOT.map(([t, s]) => `<b class="tier-${t}">${RARITY[t][0]}</b><span>${s}</span>`).join('')}<small>${L(`${PITY} sandıkta destansı çıkmazsa ${PITY}.si garanti`, `No epic in ${PITY - 1} chests? The ${PITY}th is guaranteed`)}</small></div></div>
     <div class="odds">${Object.entries(RARITY).map(([t, [n, p]]) => `<b class="tier-${t}">${n} ${L('%' + Math.round(p * 100), Math.round(p * 100) + '%')}</b>`).join('<i>·</i>')}<button id="mOdds" class="qm" aria-label="${L('Sandıktan ne çıkar?', 'What’s inside?')}">?</button></div>
+    ${BST.some(b => bst(b.id)) ? `<div class="bstinv">${BST.filter(b => bst(b.id)).map(b => `<span title="${b.name}">${b.ic} <b>${bst(b.id)}</b></span>`).join('')}</div>` : ''}
     <button id="mOpen" class="btn primary cbtn">${can ? `<span>${L('Aç', 'Open')} · 👑 ${CHEST}</span>` : `<span>${L('Taç topla', 'Earn crowns')}</span><small>${L(`👑 ${CHEST} gerekli`, `👑 ${CHEST} needed`)}</small>`}</button>
     <div class="nexts"><small>${L('Trenin', 'Your train')}</small><small>🚆 ${own} / ${LIVERIES.length}</small></div>
     <div class="trains" id="trains">${LIVERIES.map(v => `<button data-v="${v.id}" class="${ownsLiv(v.id) ? '' : 'lockd'} ${v.id === cur ? 'on' : ''}" style="${livVars(v)}">${TRAIN}<span>${ownsLiv(v.id) ? v.name : '?'}</span></button>`).join('')}</div>
@@ -1786,18 +1845,19 @@ function openChest() {
   save.spent = (save.spent || 0) + CHEST; save.chests = (save.chests || 0) + 1; save.dry = r.tier === 'e' ? 0 : (save.dry || 0) + 1;
   if (r.kind === 'hint') save.hints += r.n;
   else if (r.kind === 'shield') save.shield = (save.shield || 0) + 1;
+  else if (r.kind === 'bst') save.bst = { ...save.bst, [r.id]: bst(r.id) + r.n };
   else save.trains = { ...save.trains, [r.id]: 1 };
   persist(); refreshHome(); chestScene(r);
 }
 // açılış sahnesi (tam ekran): sandık düşer ve sallanır → dokun → kapak açılır, ışık patlar, ödül sandıktan fırlar → dokun → pencereye dön
 function chestScene(r) {
-  const calm = calmMotion.matches, v = LIVERIES.find(x => x.id === r.id), n = r.kind === 'hint' ? r.n : r.kind === 'shield' ? 1 : 0;
-  const [name, sub] = r.kind === 'hint' ? [L('İpucu', pl(r.n, 'Hint', 'Hints')), L(`Şimdi ${save.hints} ipucun var`, `You now have ${save.hints} ${pl(save.hints, 'hint', 'hints')}`)]
+  const calm = calmMotion.matches, v = r.kind === 'liv' ? LIVERIES.find(x => x.id === r.id) : null, b = r.kind === 'bst' ? BST.find(x => x.id === r.id) : null, n = r.kind === 'hint' || b ? r.n : r.kind === 'shield' ? 1 : 0;
+  const [name, sub] = b ? [b.name, `${b.sub} · ${L(`sende ${bst(b.id)}`, `${bst(b.id)} owned`)}`] : r.kind === 'hint' ? [L('İpucu', pl(r.n, 'Hint', 'Hints')), L(`Şimdi ${save.hints} ipucun var`, `You now have ${save.hints} ${pl(save.hints, 'hint', 'hints')}`)]
     : r.kind === 'shield' ? [L('Seri kalkanı', 'Streak shield'), L(`Kırılan seriyi bir kez korur · sende ${save.shield}/${SHIELD_MAX}`, `Saves a broken streak once · ${save.shield}/${SHIELD_MAX} owned`)] : [v.name, L('Yeni tren kaplaması', 'New train livery')];
   const el = document.createElement('div');
   el.id = 'chestScene'; el.className = `cscene t-${r.tier}${calm ? ' calm' : ''}`; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', L('Sürpriz sandık', 'Surprise chest'));
   el.innerHTML = `<div class="cs-col"><span class="badge tier-${r.tier} cs-tier">${RARITY[r.tier][0].toLocaleUpperCase(RAY_LANG)}</span>
-    <div class="cs-rw"><i class="cs-glow"></i><i class="cs-rays"></i><div class="cs-ic rw-${r.kind}" style="${livVars(v)}">${v ? TRAIN : RW_ICON[r.kind]}${n ? `<b class="cs-n">${n}</b>` : ''}</div></div>
+    <div class="cs-rw"><i class="cs-glow"></i><i class="cs-rays"></i><div class="cs-ic rw-${r.kind}" style="${livVars(v)}">${v ? TRAIN : b ? `<span class="rwe">${b.ic}</span>` : RW_ICON[r.kind]}${n ? `<b class="cs-n">${n}</b>` : ''}</div></div>
     <div class="cs-name"><h2>${name}</h2><p>${sub}</p></div>
     <div class="cs-box"><div class="cs-ch"><i class="cs-sh"></i><div class="cs-chest">${CHEST_SVG}<i class="cs-flash"></i><i class="cs-sp">${[...Array(8)].map((_, k) => `<i style="--a:${k * 45 + 22}deg"></i>`).join('')}</i></div></div><small class="cs-tap">${L('Dokun → aç', 'Tap → open')}</small></div>
     <div class="cs-foot">${v ? `<button id="csUse" class="btn primary cbtn"><span>${L('Trenine tak', 'Put on your train')}</span></button>` : ''}<small class="cs-go">${L('Devam için dokun', 'Tap to continue')}</small></div></div>`;
@@ -1963,7 +2023,7 @@ $('bMap').onclick = () => show('map');
 $('pBack').onclick = () => show('home');
 $('bBack').onclick = () => show('home');
 $('bReset').onclick = reset;
-$('bHint').onclick = hint;
+$('bHint').onclick = hint; $('gUndo').onclick = undo; $('gLamp').onclick = lamp; $('gPlus').onclick = plus15;
 $('bSettings').onclick = settings;
 $('streakChip').onclick = () => rescueOk() ? rescueSheet() : streakSheet();
 $('starsChip').onclick = () => show('map');
@@ -2040,5 +2100,5 @@ if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { plan, breath, review: maybeReview, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
+window.__ray = { plan, breath, review: maybeReview, BST, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();

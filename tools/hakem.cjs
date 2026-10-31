@@ -1,6 +1,6 @@
 // Ray — otomatik hakem (test robotu).
 // Oyunu gerçek tarayıcıda oynar, ölçer, ekran görüntüsü alır.
-// Kullanım: node tools/hakem.cjs [--strict]
+// Kullanım: node tools/hakem.cjs [--strict] [--only=<tools/hakem dosya adı parçası>]
 // Çıktı: hakem-out/metrics.json, hakem-out/ozet.md, hakem-out/shots/*.png
 'use strict';
 const { chromium } = require('playwright');
@@ -130,6 +130,14 @@ async function inViewport(page, sel) {
   // varsayılan dil Türkçe: oyun cihaz dili tr değilse İngilizce açılır; İngilizce testi locale'i açıkça verir
   const newCtx = browser.newContext.bind(browser); browser.newContext = (o = {}) => newCtx({ locale: 'tr-TR', ...o });
   const FRESH_DONE = { played: 1 };   // nasıl oynanır penceresi kendiliğinden açılmasın
+  // geliştirirken yalnız bir eklenti dosyası: node tools/hakem.cjs --only=guclendirici (birleştirmeden önceki tam koşunun yerini tutmaz)
+  const only = process.argv.find(a => a.startsWith('--only='))?.slice(7);
+  if (only) {
+    const T = { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, modalOpen, inViewport, starsUpTo };
+    for (const f of fs.readdirSync(path.join(__dirname, 'hakem')).filter(f => f.endsWith('.cjs') && f.includes(only)).sort()) await require(path.join(__dirname, 'hakem', f))(T);
+    await browser.close(); server.close();
+    console.log(`\n${checks.filter(c => c.pass).length}/${checks.length} geçti (yalnız ${only})`); return;
+  }
 
   // ---------- A. Üretici: çözülebilirlik + zorluk eğrisi ----------
   {
