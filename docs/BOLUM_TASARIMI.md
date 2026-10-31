@@ -117,13 +117,33 @@ M9 ve sonrasının kuralları çekirdekte değil, eklenti dosyalarındadır (`ww
 | 2 Kasım 2026 | %52 | %56 | %62 | %69 | %76 | %84 | %92 |
 | 6 Eylül 2027 | %66 | %70 | %76 | %82 | %89 | %96 | %100 |
 
-**Haftanın kuralı (pazar):** Pazar günkü Günün Hattı o haftanın kuralını taşır; pazartesi–cumartesi kuralsızdır ve bit bit eskisi gibidir. Kural yalnız erken kurallardan seçilir ve haftaya göre döner: sabit karo, eşli karo, ters karo, (kayar karo), karanlık tünel, sayaçlı karo, (buz), iki merkez. Listede olup oyunda henüz tanımlı olmayan kural atlanır; tanımlanınca dönüş sırası kayar. Miktar bölümlerdeki gibidir (ör. 7×9'da 5 sabit karo, 4 çift eşli karo, %15 ters, %12 sayaçlı). Tohum ve kural herkeste aynıdır. Oyuncu o kuralı henüz görmediyse oyun "Haftanın kuralı" kartıyla açılır; başlığın alt satırında kuralın adı yazar, Kod: `WEEK_RULES`, `weekRule`, `dailyRule`, `dailyFor`.
+**Haftanın kuralı (pazar):** Pazar günkü Günün Hattı o haftanın kuralını taşır; pazartesi–cumartesi kuralsızdır ve bit bit eskisi gibidir. Kural yalnız erken kurallardan seçilir ve haftaya göre döner: sabit karo, eşli karo, ters karo, (kayar karo), karanlık tünel, sayaçlı karo, (buz), iki merkez. Listede olup oyunda henüz tanımlı olmayan kural atlanır; tanımlanınca dönüş sırası kayar. Miktar bölümlerdeki gibidir (ör. 7×9'da 5 sabit karo, 4 çift eşli karo, %15 ters, %12 sayaçlı). Tohum ve kural herkeste aynıdır. Oyuncu o kuralı henüz görmediyse oyun "Haftanın kuralı" kartıyla açılır; başlığın alt satırında kuralın adı yazar, haftalık görev penceresi de pazarın kuralını önceden söyler. Kod: `WEEK_RULES`, `weekRule`, `dailyRule`, `dailyFor`.
+
+### Haftalık görevler ve 🎫 bilet
+
+- **Görevler:** Her hafta (pazartesi başlar, yerel takvim) 3 görev gelir. Seçim haftanın tohumuyla yapılır, bu yüzden aynı basamaktaki herkes aynı görevleri görür. Miktar oyuncunun basamağına göre değişir:
+
+  | Görev | M1–M2 | M3–M5 | M6+ | Ödül |
+  |---|---|---|---|---|
+  | Bölüm bitir | 5 | 10 | 20 | +1 🎫 +1 💡 |
+  | Bölümü kusursuz bitir | 3 | 5 | 8 | +1 🎫 + ❤️∞ 30 dk |
+  | İpucusuz bölüm bitir | 3 | 5 | 8 | +1 🎫 + ❤️∞ 15 dk |
+  | Günün Hattı bitir | — | 3 | 4 | +1 🎫 + ❤️∞ 30 dk |
+  | Güçlendirici kullan | — | 2 | 3 | +1 🎫 +1 💡 |
+
+  - Günün Hattı görevi yalnız Günün Hattı'nı bir kez bitirmiş ya da 61. bölüme gelmiş oyuncuya çıkar; güçlendirici görevi yalnız elinde o kadar güçlendirici olana. Görevler haftanın ilk açılışında o anki duruma göre seçilir ve hafta boyunca değişmez.
+  - Kusursuz bitirilmiş (bileti alınmış) bir bölümü yeniden oynamak sayılmaz (kolay bölümde biriktirilmesin). İpucu kullanılan bölüm "ipucusuz" görevine sayılmaz (yarım oyunla ve baştan başlamayla korunur).
+  - Ödül görev tamamlandığı an verilir ve sonuç panelinde yazar. Üç görev birden bitince +1 🎫 ek.
+  - Giriş: ana sayfada Günün Hattı kartının altında tek ince satır ("🎯 Haftalık görevler · 1/3"). Satır ilk hat bitene ya da ilk Günün Hattı'na dek gizlidir.
+- **🎫 Bilet:** Oyunun tek para birimidir (eski adı taç 👑; kayıtta `crowns`, `crownBal` adları uyum için kaldı). Ana sayfadaki çip bakiyeyi gösterir. Görevler bilete ek olarak **❤️∞ sınırsız can** verebilir: `save.infUntil = max(infUntil, şimdi) + süre` (can sistemiyle ortak kayıt: `save.lives` 0–5, `save.lifeT`, `save.infUntil` ms; can göstergesi hat-yapisi işidir).
+- **Günün Hattı:** bitirmek +1 🎫 (günde bir; pratik ve arşiv vermez, `save.dt`), kusursuz bitirmek +1 🎫 daha (eskiden yalnız kusursuz 1 taç veriyordu). Günde en çok 2 🎫: bir kusursuz bölüm (1 🎫) ile seri bonusu (5 kusursuzda +1) arasında, temalar hızlanmadan Günün Hattı'nı oynamaya değer kılar. Haftada görevlerden en çok 4 🎫, Günün Hattı'ndan en çok 14 🎫.
+- Kod: `QUESTS`, `weekQ`, `questStep`, `questRow`, `questSheet`; kayıt `save.wk = { id: pazartesi, q: [{ t, n, p }], all }`, görev bileti `save.qc`, sınırsız can `giveInf`.
 
 ### Günün Hattı arşivi
 
-- Seri penceresinden ("📅 Geçmiş günler") açılır; ilk hat bitene ya da ilk Günün Hattı'na dek düğme görünmez. Ana sayfaya yeni düğme eklenmedi. Son 30 günün Günün Hattı'nı listeler (pazarlar alt çizgili).
+- Seri penceresinden ("📅 Geçmiş günler") ya da görev penceresinden açılır. Son 30 günün Günün Hattı'nı listeler (pazarlar alt çizgili).
 - Oynanmış günler (✓, kusursuzsa 🎫) bedava açıktır ama ödül vermez. Kapalı bir gün (🔒) **3 🎫** ile **kalıcı** açılır (`ARCH_COST`, `save.arch`). Bedel bir sandığın (10 🎫) üçte biri, bir kusursuz geçmiş günün getirisinin (1 🎫) üç katıdır: arşiv bilet kazanma yolu değil, kaçırılan günü oynama hakkıdır.
-- Arşiv seriyi, günlük kaydı ve bugünün sonucunu etkilemez. O günün ilk bitişi kusursuzsa 1 🎫 verir (normal Günün Hattı kuralı; `save.aCrowns`) (`save.archDone`).
+- Arşiv seriyi, günlük kaydı ve bugünün sonucunu etkilemez. O günün ilk bitişi kusursuzsa 1 🎫 verir (normal Günün Hattı kuralı; `save.aCrowns`) ve Günün Hattı görevine sayılır (`save.archDone`).
 - Paylaşım "Günün Hattı 12.10 · geçmiş gün" diye yazar ve meydan okuma bağlantısı taşımaz (arkadaşın açınca "eski" görmesin).
 - Yarım oyun ayrı tutulur (`runs.arch`), bugünün yarım Günün Hattı'nı ezmez. Kod: `archSheet`, `start('arch', gün)`.
 
@@ -141,7 +161,7 @@ Test robotu (`tools/hakem.cjs`) her değişiklikte şunları kontrol eder:
 
 ## 8. Bilet ekonomisi (renk temaları)
 
-🎫 bilet oyunun para birimidir (31 Ekim'e dek adı taç 👑 idi; kayıtta `crowns`, `crownBal`, `dCrowns` adları uyum için kaldı). Kusursuz bitirilen her bölüm (⏱ ve ↻ hedefi aynı oyunda) bir kez 1 🎫 verir; Günün Hattı'nı ya da arşivden geçmiş bir günü kusursuz bitirmek de 1 🎫. Harcama: temalar, sandık (10 🎫) ve arşiv (gün başına 3 🎫; bkz. bölüm 6). Hat finalini kusursuz bitirmek ve kusursuz serinin her 5 adımı birer bonus 🎫 daha verir (bkz. bölüm 9). Taç bir para birimidir: tema satın alınınca bakiyeden düşer ve geri gelmez. Fiyatlar hızla artar, oyuncu bölümleri daha başarılı geçmeye zorlanır.
+🎫 bilet oyunun para birimidir (31 Ekim'e dek adı taç 👑 idi). Kusursuz bitirilen her bölüm (⏱ ve ↻ hedefi aynı oyunda) bir kez 1 🎫 verir; Günün Hattı'nı bitirmek 1 🎫, kusursuz bitirmek 1 🎫 daha; arşivden geçmiş bir günü kusursuz bitirmek 1 🎫; her haftalık görev 1 🎫, üçü birden 1 🎫 ek (bkz. bölüm 6). Harcama: temalar, sandık (10 🎫) ve arşiv (gün başına 3 🎫). Hat finalini kusursuz bitirmek ve kusursuz serinin her 5 adımı birer bonus 🎫 daha verir (bkz. bölüm 9). Taç bir para birimidir: tema satın alınınca bakiyeden düşer ve geri gelmez. Fiyatlar hızla artar, oyuncu bölümleri daha başarılı geçmeye zorlanır.
 
 | Tema | Fiyat |
 |---|---|
@@ -189,8 +209,8 @@ Biletlerin temalar dışındaki tek harcama yeri. Oyun içinde kendiliğinden ç
 | Nadirlik | Olasılık | İçerik |
 |---|---|---|
 | Sıradan | %60 | +2 💡 ipucu ya da 1 güçlendirici (yarı yarıya) |
-| Nadir | %28 | +4 💡, 🛡 seri kalkanı ya da 2 güçlendirici (üçte bir; en çok 3 kalkan birikir, doluysa 💡) |
-| Destansı | %12 | 🚆 sahip olunmayan bir tren kaplaması (hepsi varsa 3 güçlendirici) |
+| Nadir | %28 | +4 💡, 🛡 seri kalkanı, 2 güçlendirici ya da ❤️∞ 15 dk sınırsız can (dörtte bir; en çok 3 kalkan birikir, doluysa 💡) |
+| Destansı | %12 | %30 ❤️∞ 30 dk sınırsız can, %70 sahip olunmayan bir tren kaplaması (hepsi varsa yarı yarıya ❤️∞ 30 dk ya da 3 güçlendirici) |
 
 **Güçlendiriciler** (31 Ekim). Sandıktan çıkar; oyunda kalıcı düğmeleri yoktur, yalnız işe yaradığı an alt çubukta belirir (sağ üstte kalan sayı). İlgili kural açılmadan sandıktan çıkmaz. Ölçülen dağılım (600 sandık, M8): 💡 %38, güçlendirici %40, 🛡 %9, kaplama %12.
 

@@ -114,7 +114,7 @@ const SKINS = [
   { id: 'diamond', name: L('Elmas', 'Diamond'), vip: true, lines: ['#d6f1ff', '#bae6fd', '#c7d2fe', '#e9e4ff', '#a5f3fc', '#ddd6fe'], acc: ['#bae6fd', '#c7d2fe'], glow: ['#7dd3fc', '#a78bfa', '#e0f2fe'] },
   { id: 'ruby', name: L('Yakut', 'Ruby'), vip: true, lines: ['#ff4d6d', '#ff758f', '#e0245e', '#ff8fab', '#f43f5e', '#ff5c8a'], acc: ['#ff4d6d', '#e0245e'], glow: ['#c9184a', '#ff4d6d', '#7b2cbf'] },
 ];
-const crownCount = () => Object.keys(save.crowns).length + (save.dCrowns || 0) + (save.fc || 0) + (save.cc || 0) + (save.aCrowns || 0);   // toplam kazanılan 🎫 (bölüm + günlük + final + seri bonusu + arşiv)
+const crownCount = () => Object.keys(save.crowns).length + (save.dCrowns || 0) + (save.fc || 0) + (save.cc || 0) + (save.qc || 0) + (save.aCrowns || 0) + (save.dt || 0);   // toplam kazanılan 🎫 (bölüm + günlük kusursuz + final + seri bonusu + haftalık görev + arşiv + Günün Hattı bitişi)
 const crownBal = () => crownCount() - (save.spent || 0);                             // harcanabilir bakiye
 const skinOpen = k => !!save.owned[k.id] || !!(k.vip && save.noAds);
 const skin = () => { const k = SKINS.find(x => x.id === save.skin); return k && skinOpen(k) ? k : SKINS[0]; };
@@ -733,6 +733,7 @@ function refreshHome() {
   $('sSize').textContent = breath(save.level) ? L('☕ mola bölümü', '☕ breather level') : L(`⚡ zorluk %${zPct(save.level)}`, `⚡ ${zPct(save.level)}% hard`);
   $('dailyK').textContent = L(`GÜNÜN HATTI · ⚡%${dPct(today())}`, `DAILY LINE · ⚡${dPct(today())}%`);
   $('bPlay').classList.toggle('locked', !unlocked(c));
+  questRow();
   // sıradaki bölümü boşta önceden üret: zor kurallı 7×9 bölüm telefonda 1–2 sn sürebilir, "Oyna"da beklenmesin (çıktı aynı, yalnız önbellek)
   if (unlocked(c)) { const l = save.level, go = () => { if (active('home')) puzzleFor(l); }; window.requestIdleCallback ? requestIdleCallback(go, { timeout: 1500 }) : setTimeout(go, 600); }
 }
@@ -793,7 +794,7 @@ function setLineColor() {
 const runKey = () => G.arch ? 'arch' : G.daily ? 'daily' : 'level';
 function saveRun() {
   if (!G || G.won) return;
-  save.runs[runKey()] = { lvl: G.lvl, day: G.day, cur: G.cur, fixed: G.fixed, moves: G.moves, last: G.lastTile, ms: elapsed(), pv: 4, sig: G.sig, ...(G.xt ? { xt: G.xt } : {}), ...(G.cnt.some(v => v >= 0) ? { cnt: G.cnt } : {}) };
+  save.runs[runKey()] = { lvl: G.lvl, day: G.day, cur: G.cur, fixed: G.fixed, moves: G.moves, last: G.lastTile, ms: elapsed(), pv: 4, sig: G.sig, ...(G.hinted ? { hn: 1 } : {}), ...(G.xt ? { xt: G.xt } : {}), ...(G.cnt.some(v => v >= 0) ? { cnt: G.cnt } : {}) };
   persist();
 }
 // mode 'arch': arşivden geçmiş bir günün Günün Hattı'nı oynar (lvl = gün)
@@ -809,7 +810,7 @@ function start(mode, lvl = save.level) {
   // imzasız eski kayıt yalnız eklentilerden etkilenmeyen bölümlerde (M9 öncesi, Günün Hattı)
   G.sig = hashStr(G.sol.join() + '|' + G.cur.join());
   if (run && (daily ? run.day === day : run.lvl === lvl) && run.cur?.length === G.cur.length && (run.sig ? run.sig === G.sig : run.pv === 4 && (daily || lvl < lineStart(8)))) {
-    G.cur = run.cur.slice(); G.fixed = run.fixed.slice(); G.moves = run.moves; G.lastTile = run.last ?? -1; G.ms = run.ms || 0;
+    G.cur = run.cur.slice(); G.fixed = run.fixed.slice(); G.moves = run.moves; G.lastTile = run.last ?? -1; G.ms = run.ms || 0; G.hinted = !!run.hn;
     if (run.cnt?.length === G.cur.length) G.cnt = run.cnt.slice();
     if (run.xt) { G.xt = run.xt; G.lim.t += run.xt; }   // ⏱ +15 güçlendiricisi yarım oyunla korunur
   }
@@ -1229,23 +1230,28 @@ function win() {
   const late = Math.ceil(G.time / 1000 - G.lim.t);
   setNext(tOk ? L('Tam vaktinde', 'On time') : `<span class="miss">+${fmtT(late * 1000)} ${L('rötar', 'late')}</span>`); trip(G.time / 1000, tOk, 0);
   if (!tOk) setTimeout(() => { if (G?.won) pax(L('Nihayet! 👏', 'Finally! 👏')); }, 700);
+  let qmsg = '';   // haftalık görev tamamlandı
   if (G.arch) {
-    // arşiv: seriyi etkilemez; o günün ilk bitişi kusursuzsa 1 🎫 (normal Günün Hattı kuralı)
+    // arşiv: seriyi etkilemez; o günün ilk bitişi kusursuzsa 1 🎫 (normal Günün Hattı kuralı), görevde Günün Hattı sayılır
     if (!archPlayed(G.day)) {
       save.archDone = { ...save.archDone, [G.day]: perfect ? 2 : 1 };
       if (perfect) { save.aCrowns = (save.aCrowns || 0) + 1; shard = true; extra = L('📅 Geçmiş gün kusursuz · +1 🎫', '📅 Perfect past day · +1 🎫'); }
+      qmsg = questStep('daily');
     }
   } else if (G.daily) {
     if (save.dailyDone !== G.day) {
       save.streak = save.lastDaily === dayBefore(G.day) ? save.streak + 1 : 1; save.lastDaily = save.dailyDone = G.day;
       save.dailyLog = [...save.dailyLog.filter(d => d !== G.day), G.day].slice(-90); save.best = Math.max(save.best || 0, save.streak);
-      save.hints++; dbl = 1; extra = L(`🔥 ${save.streak} gün seri · +1 ipucu`, `🔥 ${save.streak}-day streak · +1 hint`); Remind.habit(); Remind.plan();
+      save.hints++; save.dt = (save.dt || 0) + 1; dbl = 1; extra = L(`🔥 ${save.streak} gün seri · +1 ipucu · +1 🎫`, `🔥 ${save.streak}-day streak · +1 hint · +1 🎫`); Remind.habit(); Remind.plan();
       save.dailyStats = { day: G.day, moves: G.moves, time: G.time, st, perfect };
       shard = perfect; if (perfect) save.dCrowns = (save.dCrowns || 0) + 1;
+      qmsg = questStep('daily');
     }
   } else {
     if (++sessionWins % INTER_EVERY === 0 && !save.noAds && save.played >= 5) interDue = true;
     const before = totalStars(), old = save.stars[G.lvl] || 0, firstClear = G.lvl >= save.level;
+    // haftalık görev: taçlı bölümü yeniden oynamak sayılmaz (kolay bölümde biriktirilmesin)
+    if (firstClear || !save.crowns[G.lvl]) qmsg = [questStep('win'), G.hinted ? '' : questStep('nohint'), perfect ? questStep('perfect') : ''].filter(Boolean).join(' · ');
     save.stars[G.lvl] = Math.max(old, st);
     if (!save.crowns[G.lvl]) {
       const lost = save.comboLost; delete save.comboLost;
@@ -1278,7 +1284,7 @@ function win() {
   if (ns) { save.newSkin = 1; extra = [extra, L(`🎨 ${ns.name} alınabilir (🎫 ${ns.need})`, `🎨 ${ns.name} available (🎫 ${ns.need})`)].filter(Boolean).join(' · '); }
   persist();
   $('gCombo').hidden = combo < 2; $('gCombo').textContent = `✨${combo}`; $('gCombo').classList.remove('off');
-  const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { st, tOk, mOk, perfect, extra: [cmsg, shardMsg, extra].filter(Boolean).join(' · '), unlockedNow, ns, dbl, combo, broke, near };
+  const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { st, tOk, mOk, perfect, extra: [cmsg, shardMsg, extra, qmsg].filter(Boolean).join(' · '), unlockedNow, ns, dbl, combo, broke, near };
   winTimer = setTimeout(() => { if (G === g && active('game')) { winSheet(g, info); if (!g.daily && !g.practice) setTimeout(() => { if (G === g && active('game')) maybeReview(st); }, 1100); } }, wait);
   if (!g.daily) setTimeout(() => puzzleFor(g.lvl + 1), wait + 900);   // sonraki bölüm hazır olsun (geçişte takılma olmasın)
 }
@@ -1496,7 +1502,7 @@ async function hint() {
   const i = wrong[0], now = performance.now(), prev = G.L.d, ui = G.unitOf?.[i] ?? -1;
   G.hist = [];   // ipucunun sabitlediği karo geri alınmasın
   for (const k of ui >= 0 ? G.units[ui].cells : G.link[i] >= 0 ? [i, G.link[i]] : [i]) { G.cur[k] = G.sol[k]; G.fixed[k] = true; anim.set(k, now); press.set(k, now); }   // eşli karo / eklenti birimi: hepsi birden
-  save.hints--; persist(); $('gHints').textContent = save.hints; bump($('gHints'));
+  save.hints--; G.hinted = true; persist(); $('gHints').textContent = save.hints; bump($('gHints'));
   G.L = lit(G); reveal();
   G.L.d.forEach((v, j) => { if (v >= 0 && prev[j] < 0) litAt[j] = now + v * 12; });
   burst(i, 10, 0, pal.light ? '#ffc56b' : '#ffffff'); tone(note(9), .35, .05); tone(note(12), .35, .04, 'sine', .08); haptic('heavy');
@@ -1541,10 +1547,11 @@ function nearLit(i) { const x = i % G.cols, y = i / G.cols | 0; let n = 0; for (
 // baştan: süre ve hamle sıfırlanır, ipucuyla açılan karolar korunur
 function reset() {
   if (!G || G.won) return;
-  const keep = G.fixed.map((f, i) => f ? i : -1).filter(i => i >= 0), mode = G.arch ? 'arch' : G.daily ? 'daily' : 'level', lvl = G.arch ? G.day : G.lvl;
+  const keep = G.fixed.map((f, i) => f ? i : -1).filter(i => i >= 0), mode = G.arch ? 'arch' : G.daily ? 'daily' : 'level', lvl = G.arch ? G.day : G.lvl, hn = G.hinted;
   delete save.runs[runKey()];
   start(mode, lvl || save.level);
   if (!G) return;
+  G.hinted = hn;
   keep.forEach(i => { G.cur[i] = G.sol[i]; G.fixed[i] = true; });
   G.L = lit(G); litAt = G.L.d.map(v => v >= 0 ? -1e9 : 0); reveal(true);
   hud(); draw(); saveRun();
@@ -1598,11 +1605,60 @@ function streakSheet() {
     <div class="week">${week}</div>
     <div class="statrow"><div><b>${Math.max(save.best || 0, save.streak)}</b><span>${L('en iyi seri', 'best streak')}</span></div><div><b>${save.dailyLog.length}</b><span>${L('toplam gün', 'total days')}</span></div></div>
     ${done ? `<p id="mClock"></p><button id="mClose" class="btn glassbtn">${L('Tamam', 'OK')}</button>` : `<button id="mPlayD" class="btn primary"><span>${L('Günün Hattı', 'Daily Line')}</span><small>${L('Seriyi koru', 'Keep your streak')}</small></button>`}
-    ${save.level > lineEnd(0) || save.dailyDone ? `<button id="mArch" class="btn glassbtn">📅 ${L('Geçmiş günler', 'Past days')}</button>` : ''}`,
+    ${questVis() ? `<button id="mArch" class="btn glassbtn">📅 ${L('Geçmiş günler', 'Past days')}</button>` : ''}`,
     { mClose: closeModal, mPlayD: () => start('daily'), mArch: archSheet });
   dailyClock();
 }
-// ---------- Günün Hattı arşivi: son 30 günün Günün Hattı'ndan biri ARCH_COST 🎫 ile kalıcı açılır (seri penceresinden) ----------
+// ---------- haftalık görevler · 🎫 bilet · Günün Hattı arşivi ----------
+// Her hafta (pazartesi, yerel takvim) 3 görev: herkeste aynı tohum (hafta), miktar oyuncunun basamağına göre (yeni oyuncuya ağır görev yok).
+// 🎫 bilet oyunun tek para birimidir (eski adı taç; kayıtta crowns/crownBal adları kaldı). Her görev +1 🎫 ve küçük ödül
+// (💡 ya da ❤️∞ sınırsız can), üçü birden +1 🎫 ek. Günün Hattı'nı bitirmek de +1 🎫 (günde bir; win içinde).
+// Arşiv: son 30 günün Günün Hattı'ndan biri ARCH_COST 🎫 ile kalıcı açılır.
+const weekOf = s => { const d = dayDate(s); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return ymd(d); };
+const QUESTS = {
+  win: { n: [5, 10, 20], rw: 'hint', txt: n => L(`${n} bölüm bitir`, `Finish ${n} levels`) },
+  perfect: { n: [3, 5, 8], rw: 'inf30', txt: n => L(`${n} bölümü kusursuz bitir`, `Finish ${n} levels perfect`) },
+  nohint: { n: [3, 5, 8], rw: 'inf15', txt: n => L(`İpucusuz ${n} bölüm bitir`, `Finish ${n} levels without hints`) },
+  daily: { n: [0, 3, 4], rw: 'inf30', txt: n => L(`${n} Günün Hattı bitir`, `Finish ${n} Daily Lines`) },
+  bst: { n: [0, 2, 3], rw: 'hint', txt: n => L(`${n} güçlendirici kullan`, `Use ${n} boosters`) },
+};
+const RW_TXT = { hint: '💡', inf15: L('❤️∞ 15 dk', '❤️∞ 15 min'), inf30: L('❤️∞ 30 dk', '❤️∞ 30 min') };
+// sınırsız can: can sistemiyle ortak kayıt sözleşmesi (save.lives 0–5, save.lifeT, save.infUntil ms); burada yalnız süre eklenir
+const giveInf = min => { save.infUntil = Math.max(save.infUntil || 0, Date.now()) + min * 60e3; };
+function weekQ() {
+  const id = weekOf(today());
+  if (save.wk?.id === id) return save.wk;
+  const t = save.level < lineStart(2) ? 0 : save.level < lineStart(5) ? 1 : 2, R = rng(hashStr('gorev' + id));
+  const ok = k => QUESTS[k].n[t] > 0 && (k !== 'daily' || save.dailyDone || save.level >= 61) && (k !== 'bst' || BST.reduce((a, b) => a + bst(b.id), 0) >= QUESTS[k].n[t]);
+  const keys = Object.keys(QUESTS).map(k => [k, R()]).sort((a, b) => a[1] - b[1]).map(a => a[0]).filter(ok).slice(0, 3);
+  return save.wk = { id, q: keys.map(k => ({ t: k, n: QUESTS[k].n[t], p: 0 })), all: 0 };
+}
+// ilerleme: tamamlanan görevin ödülü hemen verilir; dönen metin sonuç paneline/bildirime yazılır (persist çağırana kalır)
+function questStep(type) {
+  const w = weekQ(), out = [];
+  for (const q of w.q) if (q.t === type && q.p < q.n && ++q.p === q.n) {
+    const rw = QUESTS[q.t].rw; save.qc = (save.qc || 0) + 1;
+    if (rw === 'hint') save.hints++; else giveInf(rw === 'inf15' ? 15 : 30);
+    out.push(L(`🎯 Görev tamam · +1 🎫 +1 ${RW_TXT[QUESTS[q.t].rw]}`, `🎯 Quest done · +1 🎫 +1 ${RW_TXT[QUESTS[q.t].rw]}`));
+  }
+  if (!w.all && w.q.every(q => q.p >= q.n)) { w.all = 1; save.qc = (save.qc || 0) + 1; out.push(L('🎯 Haftanın görevleri tamam · +1 🎫', '🎯 All weekly quests done · +1 🎫')); }
+  return out.join(' · ');
+}
+const questVis = () => save.level > lineEnd(0) || !!save.dailyDone;   // ilk hat bitmeden ana sayfa sade kalsın
+function questRow() {
+  const el = $('bQuest'); el.hidden = !questVis(); if (el.hidden) return;
+  const w = weekQ(), d = w.q.filter(q => q.p >= q.n).length;
+  $('qState').textContent = `${d}/${w.q.length}`; el.classList.toggle('done', d === w.q.length);
+}
+function questSheet() {
+  const w = weekQ(), left = Math.round((dayDate(w.id).getTime() + 7 * 864e5 - dayDate(today()).getTime()) / 864e5), sun = (() => { const d = dayDate(w.id); d.setDate(d.getDate() + 6); return ymd(d); })(), wr = dailyRule(sun);
+  modal(`<h2>🎯 ${L('Haftalık görevler', 'Weekly quests')}</h2>
+    <p class="tip">${left <= 1 ? L('Yarın yenilenir', 'New quests tomorrow') : L(`${left} gün sonra yenilenir`, `New quests in ${left} days`)}</p>
+    <div class="quests">${w.q.map(q => `<div class="${q.p >= q.n ? 'ok' : ''}"><span>${QUESTS[q.t].txt(q.n)}</span><b>${q.p >= q.n ? '✓' : `${q.p}/${q.n}`}</b><i style="width:${Math.round(q.p / q.n * 100)}%"></i><small>+1 🎫 · +1 ${RW_TXT[QUESTS[q.t].rw]}</small></div>`).join('')}</div>
+    <p class="tip">${L('Üçü birden → +1 🎫 ek · Günün Hattı → +1 🎫', 'All three → +1 extra 🎫 · Daily Line → +1 🎫')}${wr ? `<br>${L('Pazar', 'Sunday')}: ${L('haftanın kuralı', 'rule of the week')} · <b>${RULES[RULE_LINE[wr]].name}</b>` : ''}</p>
+    <button id="mArch" class="btn primary"><span>📅 ${L('Geçmiş günler', 'Past days')}</span><small>🎫 ${crownBal()} · ${L(`${ARCH_COST} bilet = 1 gün`, `${ARCH_COST} tickets = 1 day`)}</small></button>
+    <button id="mClose" class="btn glassbtn">${L('Tamam', 'OK')}</button>`, { mArch: archSheet, mClose: closeModal });
+}
 const ARCH_DAYS = 30, ARCH_COST = 3;
 const archPlayed = day => new Set(save.dailyLog).has(day) || !!save.archDone?.[day];   // o gün oynanmış: ödül yok, açmak bedava
 const archOpen = day => archPlayed(day) || !!save.arch?.[day];
@@ -1616,12 +1672,12 @@ function archSheet() {
   modal(`<h2>📅 ${L('Günün Hattı arşivi', 'Daily Line archive')}</h2>
     <p class="tip">${L(`Son 30 gün · her gün ${ARCH_COST} 🎫 ile kalıcı açılır · seriyi etkilemez, kusursuz → +1 🎫`, `Last 30 days · each day opens for good with ${ARCH_COST} 🎫 · no effect on streak, perfect → +1 🎫`)}</p>
     <div class="arch" id="archGrid">${days.map(cell).join('')}</div>
-    <div class="nexts"><small>🎫 <b id="archTk">${crownBal()}</b> ${L('bilet', pl(crownBal(), 'ticket', 'tickets'))}</small><small>${L('Kusursuz bitir → +1 🎫', 'Finish perfect → +1 🎫')}</small></div>
-    <button id="mClose" class="btn glassbtn">${L('Tamam', 'OK')}</button>`, { mClose: closeModal });
+    <div class="nexts"><small>🎫 <b id="archTk">${crownBal()}</b> ${L('bilet', pl(crownBal(), 'ticket', 'tickets'))}</small><small>${L('Kusursuz bölüm ve görevlerden', 'From perfect levels and quests')}</small></div>
+    <button id="mQuest" class="btn glassbtn">🎯 ${L('Haftalık görevler', 'Weekly quests')}</button>`, { mQuest: questSheet });
   $('archGrid').onclick = e => {
     const d = e.target.closest('button')?.dataset.d; if (!d) return;
     if (archOpen(d)) { start('arch', d); return; }
-    if (crownBal() < ARCH_COST) { toast(L(`${ARCH_COST} 🎫 gerekli · bölümleri kusursuz bitir`, `${ARCH_COST} 🎫 needed · finish levels perfect`)); return; }
+    if (crownBal() < ARCH_COST) { toast(L(`${ARCH_COST} 🎫 gerekli · kusursuz bitir, görev tamamla`, `${ARCH_COST} 🎫 needed · finish perfect, complete quests`)); return; }
     const name = dayDate(d).toLocaleDateString(LOC, { day: 'numeric', month: 'long', weekday: 'long' });
     modal(`<h2>📅 ${name}</h2><p>${L(`Bu günün Günün Hattı ${ARCH_COST} 🎫 ile açılır ve açık kalır.`, `This day’s Daily Line opens with ${ARCH_COST} 🎫 and stays open.`)}</p>
       <button id="mYes" class="btn primary"><span>${L('Aç', 'Open')} · 🎫 ${ARCH_COST}</span><small>${L(`Sende ${crownBal()} bilet`, `You have ${crownBal()} ${pl(crownBal(), 'ticket', 'tickets')}`)}</small></button>
@@ -1785,7 +1841,7 @@ function crownHunt(k) {
   modal(`<h2>${L('Bilet topla', 'Earn tickets')} 🎫</h2>
     <p>${k && k.need > n ? L(`<b>${k.name}</b> için <b>${k.need - n} 🎫</b> daha gerekli. `, `You need <b>${k.need - n} more 🎫</b> for <b>${k.name}</b>. `) : ''}${L(`${list.length ? 'Aşağıdaki bölümleri' : 'Bölümleri'} <b>⏱ süre</b> ve <b>↻ hamle</b> hedefiyle bitir: her biri 1 🎫.`, `Beat ${list.length ? 'the levels below' : 'levels'} within the <b>⏱ time</b> and <b>↻ move</b> targets: 1 🎫 each.`)}</p>
     ${list.length ? `<div class="hunt" id="hunt">${list.map(l => `<button class="hrow" data-l="${l}"><b>${l}</b><span>${starTxt(save.stars[l] || 0)}</span><small>${missTxt(l)}</small></button>`).join('')}</div>
-    <p class="tip">${L('★★☆ olanlar kusursuza en yakın · Günün Hattı\'nı kusursuz bitirmek de 1 🎫', '★★☆ levels are closest to perfect · a perfect Daily Line also gives 1 🎫')}</p>`
+    <p class="tip">${L('★★☆ olanlar kusursuza en yakın · Günün Hattı\'nı bitirmek de 1 🎫, kusursuzsa 2', '★★☆ levels are closest to perfect · the Daily Line also gives 1 🎫, 2 if perfect')}</p>`
     : `<p class="tip">${save.level > 1 ? L('Oynadığın her bölüm kusursuz! 🎉 ', 'Every level you’ve played is perfect! 🎉 ') : ''}${L('Yeni bölümler ve Günün Hattı yeni 🎫 getirir.', 'New levels and the Daily Line bring new 🎫.')}</p><button id="mPlay" class="btn primary"><span>${L('Oyna', 'Play')}</span><small>${L('Bölüm', 'Level')} ${save.level}</small></button>`}
     <button id="mBack" class="btn glassbtn">${L('Temalara dön', 'Back to themes')}</button>`, { mBack: skinSheet, mPlay: () => start('level') });
   if ($('hunt')) $('hunt').onclick = e => { const b = e.target.closest('.hrow'); if (b) start('level', +b.dataset.l); };
@@ -1821,11 +1877,13 @@ function chestRoll() {
   for (const t of ['c', 'r']) { if (x < RARITY[t][1]) { tier = t; break; } x -= RARITY[t][1]; }
   if ((save.dry || 0) >= PITY - 1) tier = 'e';
   const y = R(), free = LIVERIES.filter(v => !ownsLiv(v.id));
-  // sıradan: 💡×2 ya da 1 güçlendirici · nadir: 💡×4, 🛡 ya da 2 güçlendirici · destansı: tren kaplaması (hepsi varsa 3 güçlendirici)
+  // sıradan: 💡×2 ya da 1 güçlendirici · nadir: 💡×4, 🛡, 2 güçlendirici ya da ❤️∞ 15 dk · destansı: tren kaplaması ya da ❤️∞ 30 dk (kaplama bitince 3 güçlendirici)
   const pool = BST.filter(b => lineOf(save.level) >= b.line), b = pool[R() * pool.length | 0];
   if (tier === 'c') return y < .5 ? { tier, kind: 'hint', n: 2 } : { tier, kind: 'bst', id: b.id, n: 1 };
-  if (tier === 'r') { const z = y * 3 | 0; return z === 2 ? { tier, kind: 'bst', id: b.id, n: 2 } : z === 1 && (save.shield || 0) < SHIELD_MAX ? { tier, kind: 'shield' } : { tier, kind: 'hint', n: 4 }; }
-  return free.length ? { tier, kind: 'liv', id: free[y * free.length | 0].id } : { tier, kind: 'bst', id: b.id, n: 3 };
+  // nadirde dörtte bir ❤️∞ 15 dk; destansıda %30 (kaplamalar bitince yarı yarıya) ❤️∞ 30 dk
+  if (tier === 'r') { const z = y * 4 | 0; return z === 3 ? { tier, kind: 'inf', n: 15 } : z === 2 ? { tier, kind: 'bst', id: b.id, n: 2 } : z === 1 && (save.shield || 0) < SHIELD_MAX ? { tier, kind: 'shield' } : { tier, kind: 'hint', n: 4 }; }
+  if (y < (free.length ? .3 : .5)) return { tier, kind: 'inf', n: 30 };
+  return free.length ? { tier, kind: 'liv', id: free[(y - .3) / .7 * free.length | 0].id } : { tier, kind: 'bst', id: b.id, n: 3 };
 }
 // çizilmiş sandık, üç katman: arkada açık kapağın içi, ortada gövde, önde kapalı kapak. Menteşe arkada: açılırken dış kapak
 // yukarı kalkıp incelir, iç yüzü menteşeden büyür. Yalnız transform (SVG yeniden çizilmez) → düşük donanımda da akıcı.
@@ -1857,13 +1915,13 @@ const BST = [
   { id: 'geri', ic: '↶', name: L('Geri al', 'Undo'), sub: L('Son 5 hamle silinir, sayaç da geri gider', 'Takes back your last 5 moves'), line: 0 },
 ];
 const bst = id => save.bst?.[id] || 0;
-function useBst(id) { save.bst = { ...save.bst, [id]: bst(id) - 1 }; persist(); }
+function useBst(id) { save.bst = { ...save.bst, [id]: bst(id) - 1 }; const m = questStep('bst'); persist(); if (m) setTimeout(() => toast(m), 900); }
 const RW_ICON = {
   hint: '<svg class="rwi" viewBox="-1 -3 26 26"><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1.1 1.2 1.1 2.2h5c0-1 .5-1.7 1.1-2.2A6 6 0 0 0 12 3z" fill="url(#cgB)"/><path d="M9 18h6M10 21h4"/><path class="ry" d="M12 .6v-2M17.9 3.1l1.4-1.4M6.1 3.1 4.7 1.7M20.4 9h2M3.6 9h-2"/></svg>',
   shield: '<svg class="rwi" viewBox="0 0 24 24"><path d="M12 2.6 19.4 5.4v5.4c0 4.7-3 8.6-7.4 10.6-4.4-2-7.4-5.9-7.4-10.6V5.4z" fill="url(#cgS)"/><path d="M12 8.2c.5 2 2.5 2.75 2.5 5.5a2.5 2.5 0 0 1-5 0c0-1.25.6-2 1.25-2.5.1.9.5 1.5 1.1 1.65C11.5 11.5 11.65 9.7 12 8.2z" fill="url(#cgF)" stroke="none"/></svg>',
 };
-const LOOT = L([['c', '💡 ipucu ×2 <i>ya da</i> 1 güçlendirici'], ['r', '💡 ipucu ×4, 🛡 seri kalkanı <i>ya da</i> 2 güçlendirici'], ['e', '🚆 yeni tren kaplaması']],
-  [['c', '💡 hint ×2 <i>or</i> 1 booster'], ['r', '💡 hint ×4, 🛡 streak shield <i>or</i> 2 boosters'], ['e', '🚆 new train livery']]);
+const LOOT = L([['c', '💡 ipucu ×2 <i>ya da</i> 1 güçlendirici'], ['r', '💡 ipucu ×4, 🛡 seri kalkanı, 2 güçlendirici <i>ya da</i> ❤️∞ 15 dk'], ['e', '🚆 yeni tren kaplaması <i>ya da</i> ❤️∞ 30 dk']],
+  [['c', '💡 hint ×2 <i>or</i> 1 booster'], ['r', '💡 hint ×4, 🛡 streak shield, 2 boosters <i>or</i> ❤️∞ 15 min'], ['e', '🚆 new train livery <i>or</i> ❤️∞ 30 min']]);
 function chestSheet() {
   const bal = crownBal(), can = bal >= CHEST, own = LIVERIES.filter(v => ownsLiv(v.id)).length, cur = save.train || 'hat';
   modal(`<h2>${L('Sürpriz sandık', 'Surprise chest')}</h2>
@@ -1894,18 +1952,19 @@ function openChest() {
   if (r.kind === 'hint') save.hints += r.n;
   else if (r.kind === 'shield') save.shield = (save.shield || 0) + 1;
   else if (r.kind === 'bst') save.bst = { ...save.bst, [r.id]: bst(r.id) + r.n };
+  else if (r.kind === 'inf') giveInf(r.n);
   else save.trains = { ...save.trains, [r.id]: 1 };
   persist(); refreshHome(); chestScene(r);
 }
 // açılış sahnesi (tam ekran): sandık düşer ve sallanır → dokun → kapak açılır, ışık patlar, ödül sandıktan fırlar → dokun → pencereye dön
 function chestScene(r) {
   const calm = calmMotion.matches, v = r.kind === 'liv' ? LIVERIES.find(x => x.id === r.id) : null, b = r.kind === 'bst' ? BST.find(x => x.id === r.id) : null, n = r.kind === 'hint' || b ? r.n : r.kind === 'shield' ? 1 : 0;
-  const [name, sub] = b ? [b.name, `${b.sub} · ${L(`sende ${bst(b.id)}`, `${bst(b.id)} owned`)}`] : r.kind === 'hint' ? [L('İpucu', pl(r.n, 'Hint', 'Hints')), L(`Şimdi ${save.hints} ipucun var`, `You now have ${save.hints} ${pl(save.hints, 'hint', 'hints')}`)]
+  const [name, sub] = r.kind === 'inf' ? [L(`Sınırsız can · ${r.n} dk`, `Unlimited lives · ${r.n} min`), L(`${r.n} dakika boyunca can azalmaz`, `No lives lost for ${r.n} minutes`)] : b ? [b.name, `${b.sub} · ${L(`sende ${bst(b.id)}`, `${bst(b.id)} owned`)}`] : r.kind === 'hint' ? [L('İpucu', pl(r.n, 'Hint', 'Hints')), L(`Şimdi ${save.hints} ipucun var`, `You now have ${save.hints} ${pl(save.hints, 'hint', 'hints')}`)]
     : r.kind === 'shield' ? [L('Seri kalkanı', 'Streak shield'), L(`Kırılan seriyi bir kez korur · sende ${save.shield}/${SHIELD_MAX}`, `Saves a broken streak once · ${save.shield}/${SHIELD_MAX} owned`)] : [v.name, L('Yeni tren kaplaması', 'New train livery')];
   const el = document.createElement('div');
   el.id = 'chestScene'; el.className = `cscene t-${r.tier}${calm ? ' calm' : ''}`; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', L('Sürpriz sandık', 'Surprise chest'));
   el.innerHTML = `<div class="cs-col"><span class="badge tier-${r.tier} cs-tier">${RARITY[r.tier][0].toLocaleUpperCase(RAY_LANG)}</span>
-    <div class="cs-rw"><i class="cs-glow"></i><i class="cs-rays"></i><div class="cs-ic rw-${r.kind}" style="${livVars(v)}">${v ? TRAIN : b ? `<span class="rwe">${b.ic}</span>` : RW_ICON[r.kind]}${n ? `<b class="cs-n">${n}</b>` : ''}</div></div>
+    <div class="cs-rw"><i class="cs-glow"></i><i class="cs-rays"></i><div class="cs-ic rw-${r.kind}" style="${livVars(v)}">${v ? TRAIN : b ? `<span class="rwe">${b.ic}</span>` : r.kind === 'inf' ? '<span class="rwe">❤️</span>' : RW_ICON[r.kind]}${n ? `<b class="cs-n">${n}</b>` : ''}</div></div>
     <div class="cs-name"><h2>${name}</h2><p>${sub}</p></div>
     <div class="cs-box"><div class="cs-ch"><i class="cs-sh"></i><div class="cs-chest">${CHEST_SVG}<i class="cs-flash"></i><i class="cs-sp">${[...Array(8)].map((_, k) => `<i style="--a:${k * 45 + 22}deg"></i>`).join('')}</i></div></div><small class="cs-tap">${L('Dokun → aç', 'Tap → open')}</small></div>
     <div class="cs-foot">${v ? `<button id="csUse" class="btn primary cbtn"><span>${L('Trenine tak', 'Put on your train')}</span></button>` : ''}<small class="cs-go">${L('Devam için dokun', 'Tap to continue')}</small></div></div>`;
@@ -2068,6 +2127,7 @@ function how() {
 $('bPlay').onclick = () => start('level');
 $('bDaily').onclick = () => (save.dailyDone === today() && save.dailyStats?.day === today()) ? dailyResult() : start('daily');
 $('bMap').onclick = () => show('map');
+$('bQuest').onclick = questSheet;
 $('pBack').onclick = () => show('home');
 $('bBack').onclick = () => show('home');
 $('bReset').onclick = reset;
@@ -2148,5 +2208,5 @@ if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { plan, breath, dailyRule, RULE_LINE, RULES, review: maybeReview, BST, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
+window.__ray = { plan, breath, dailyRule, weekOf, weekQ: () => weekQ(), RULE_LINE, RULES,  review: maybeReview, BST, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();
