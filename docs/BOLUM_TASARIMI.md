@@ -159,7 +159,7 @@ Kusursuz bitirilen her bölüm (⏱ ve ↻ hedefi aynı oyunda) bir kez 1 👑 v
 | Şafak | 👑 560 |
 | Altın, Elmas, Yakut | Yalnızca Reklamsız paketle |
 
-Toplam 25 renk teması vardır: 22'si taçla, 3'ü Reklamsız paketle açılır.
+Toplam 25 renk teması vardır: 22'si taçla, 3'ü Reklamsız paketle açılır. Bunlara ek olarak 6 **mevsim teması** yalnız kendi tarihinde gelir (bölüm 10).
 
 ### Hat adları ve renkleri
 
@@ -234,3 +234,72 @@ Bu iki sistemin amacı oyuncuya "bir bölüm daha" dedirtmektir. Hiçbiri oyunu 
 - Hedef az farkla kaçtıysa (en çok 5 sn rötar ve en çok 2 hamle fazla) ya da seri kırıldıysa, sonuç panelinde büyük düğme "Tekrar dene" olur ve Sonraki alttaki küçük sıraya iner. Düğme sayısı değişmez, panel kalabalıklaşmaz.
 - Büyük düğmenin alt satırı nedenini söyler: "Kıl payı · ⏱ 2 sn" ya da "🔥 4 seri geri gelsin".
 
+
+## 10. Şehir haritası, rozetler, zen modu, mevsim temaları
+
+Bu dört sistem oyunun "meta" katmanıdır: bulmacaya dokunmaz, oyuncuya geri dönmek için sebep verir. Menüler sade kalsın diye yeni büyük düğme yoktur. Kod: `www/game.js` › "meta" bölümü; test: `tools/hakem/meta.cjs` (`node tools/hakem.cjs --only=meta`).
+
+### Şehir haritası
+
+- **Giriş:** ana sayfadaki logo (dokununca) ya da Hatlar ekranının başlığındaki şehir simgesi. Ekranda iki sekme vardır: **Şehir** ve **Rozetler**.
+- **Semt:** her hat şehrin bir semtidir; semt hattın adını (M5 · Bahçe Hattı) ve rengini taşır.
+  - Hat baştan sona bitince semt **yanar**: hat renginde dolgu, ışıltı ve göz kırpan pencere ışıkları, merkeze uzanan metro kolu ve durak.
+  - Hattın bütün bölümleri kusursuzsa (👑) semt **altın** parlar.
+  - Sıradaki hat kesik çizgiyle "yapımda" görünür; ötekiler sönük kalır.
+  - Semte dokununca altta bilgi kartı çıkar: ad, ★ ve 👑 sayısı, durum (Semt yandı ✓ · ✨ Altın semt · N bölüm kaldı · 🔒 Kilitli).
+- **Düzen (sonsuz hat):** bir şehir 24 semttir ve **halka halka büyür**: merkez halkada 6 (M1–M6), orta halkada 8 (M7–M14), dış halkada 10 (M15–M24) semt. 24. hattan sonra yeni şehir açılır (sayfa: Işık Kent, Liman Kent, Yıldız Kent, Gece Kent, Pınar Kent, Kuzey Kent, Ufuk Kent, Gökkent, sonra numaralı). Sayfa okları yalnız ikinci şehir açılınca görünür. Merkezdeki ışık halesi yanan semt oranıyla güçlenir.
+- **Açılış:** son ziyaretten beri yanan semtler ekran açılınca sırayla yanar (`save.cityLit`).
+- **Performans:** tek SVG; animasyonlar yalnız `transform` ve `opacity` (semt başına iki ışık grubu). "Hareketi azalt" açıksa ışıklar sabit yanar, açılış animasyonu olmaz. Ekran kapalıyken animasyonlar durur.
+
+### Rozetler
+
+Yerel ve sunucusuzdur; **ödül yoktur** (taç ve ipucu ekonomisi değişmez). Kazanılınca ekranın üstünde küçük bir bildirim çıkar (dokunmayı engellemez); liste Şehir ekranının Rozetler sekmesindedir, kazanılmayanlarda ilerleme çubuğu görünür. Güncellemeden önce hak edilmiş rozetler ilk açılışta sessizce işlenir (bildirimsiz, tarihsiz).
+
+| Rozet | Koşul |
+|---|---|
+| 👑 İlk kusursuz · Kusursuz 10 · Kusursuz 100 | 1 / 10 / 100 bölüm kusursuz |
+| 🏙 İlk semt | Bir hattı baştan sona bitir |
+| ✨ Altın semt | Bir hattın bütün bölümleri 👑 |
+| 🧭 Kural ustası | Her kuralın hattını bitir (M3–M20, kural sayısı canlı okunur) |
+| 🚇 100 bölüm · 500 bölüm | Bitirilen bölüm sayısı |
+| 🔥 7 gün seri · 30 gün seri | Günün Hattı serisi (en iyi seri sayılır) |
+| 🎁 İlk sandık · Sandık avcısı | 1 / 25 sürpriz sandık |
+| ⚡ Güçlendirici | 10 güçlendirici kullan |
+| 🍃 Zen yolcusu | Zen modunda 10 bölüm |
+
+### Zen modu
+
+- **Ayarlar › 🍃 Zen modu** (tek anahtar).
+- Açıkken bölümlerde süre ve hamle hedefi gizlidir: tren şeridi, yıldız çipi, hamle hedefi, rötar ve "hedef aşıldı" uyarıları, kıl payı tekrar, ⏱ +15 güçlendiricisi yoktur; müzik gerilimi artmaz. Üstte yalnız "🍃 Zen" yazar.
+- Her bitiş **3 ★** sayılır (hat kilitleri ilerler); **👑 taç verilmez**, ✨ kusursuz seri ne artar ne kırılır, kaçan hedef kaydı (`miss`) tutulmaz. Böylece taç ekonomisi korunur: taç isteyen oyuncu zen'i kapatıp aynı bölümü yeniden oynar.
+- **Günün Hattı zen'den etkilenmez**: herkes aynı koşulda oynar, 👑 ve seri her zamanki gibi.
+
+### Mevsim temaları
+
+Tarihe bağlı, kendiliğinden gelen sınırlı süreli renk temalarıdır. **Öneri ve uygulanan: mevsimindeyken ücretsiz alınır**, mevsim bitince sahibinde kalır ve seçilebilir; mevsimi kaçıran oyuncu temayı göremez (bir sonraki yıl yine gelir). Taçla satılmaz: taç ekonomisi değişmez, geri dönen oyuncuya küçük bir hediye olur. Yeni mevsim teması gelince 👑 çipinde nokta yanar; temalar sayfasında en üstte "Mevsim teması · … tarihine dek ücretsiz" başlığıyla görünür.
+
+| Tema | Dönem |
+|---|---|
+| ❄️ Kar Feneri (kış / yılbaşı) | 1 Aralık – 31 Ocak |
+| 🌸 Erguvan (bahar) | 20 Mart – 20 Mayıs |
+| ☀️ Yaz Gecesi | 15 Haziran – 31 Ağustos |
+| 🍂 Hazan (sonbahar) | 1 Ekim – 30 Kasım |
+| 🌙 Bayram Fenerleri | Ramazan Bayramı: ilk günden 2 gün önce – 6 gün sonra |
+| 🌤 Bayram Sabahı | Kurban Bayramı: ilk günden 2 gün önce – 6 gün sonra |
+
+Bayramların ilk günü (Diyanet takvimi; Ümmü'l-Kurâ hesabıyla 2026'da birebir aynı, sonraki yıllarda en çok 1 gün fark olabilir, pencere bunu karşılar). Tablo `BAYRAM` sabitindedir; 2035'ten sonrası eklenmelidir.
+
+| Yıl | Ramazan Bayramı | Kurban Bayramı |
+|---|---|---|
+| 2026 | 20 Mart | 27 Mayıs |
+| 2027 | 9 Mart | 16 Mayıs |
+| 2028 | 26 Şubat | 5 Mayıs |
+| 2029 | 14 Şubat | 24 Nisan |
+| 2030 | 4 Şubat | 13 Nisan |
+| 2031 | 24 Ocak | 2 Nisan |
+| 2032 | 14 Ocak | 22 Mart |
+| 2033 | 3 Ocak · 23 Aralık | 12 Mart |
+| 2034 | 12 Aralık | 1 Mart |
+| 2035 | 1 Aralık | 19 Şubat |
+
+Mevsim temaları da öteki temalar gibi robotta 60 hat boyunca renk ayrışması ve uyarı rengi için denetlenir. Robot tarihi `window.__rayDate` ile değiştirir.

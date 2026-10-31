@@ -62,6 +62,12 @@ Oyun Türkçe ve İngilizce oynanır. Bu belge altyapıyı ve ortak sözlüğü 
 | Ayarlar | Settings |
 | Gizlilik | Privacy |
 | Verilerimi sil | Delete my data |
+| Şehir (haritası) | City (map) |
+| semt · yanan semt · altın semt | district · lit district · golden district |
+| rozet · Rozetler · YENİ ROZET | badge · Badges · NEW BADGE |
+| Zen modu (🍃) | Zen mode |
+| mevsim teması | seasonal theme |
+| Ücretsiz | Free |
 
 ### Kurallar
 
@@ -166,6 +172,12 @@ Hat adları yer adıdır ve çevrilir:
 | Nasıl oynanır? · İleri › · ‹ kaydır › · Hadi oynayalım! | How to play? · Next › · ‹ swipe › · Let’s play! |
 
 Renk temaları: Metro · Sunset · Ocean · Forest · Desert · Sakura · Neon Night · Northern Lights · Lava · Cosmos · Glacier · Spring · Autumn · Coral Reef · Tea Garden · Tulip · Storm · Midnight · Rainbow · Retro Wave · Pastel · Dawn · (reklamsız) Gold · Diamond · Ruby.
+
+Mevsim temaları: Kar Feneri = Snow Lights · Erguvan = Redbud · Yaz Gecesi = Summer Night · Hazan = Harvest · Bayram Fenerleri = Eid Lanterns · Bayram Sabahı = Eid Morning.
+
+Rozetler: İlk kusursuz = First perfect · Kusursuz 10/100 = Perfect 10/100 · İlk semt = First district · Altın semt = Golden district · Kural ustası = Rule master · 100/500 bölüm = 100/500 levels · 7/30 gün seri = 7/30-day streak · İlk sandık = First chest · Sandık avcısı = Chest hunter · Güçlendirici = Power-up · Zen yolcusu = Zen rider.
+
+Şehir adları: Işık Kent = Light City · Liman Kent = Harbor City · Yıldız Kent = Star City · Gece Kent = Night City · Pınar Kent = Spring City · Kuzey Kent = North City · Ufuk Kent = Horizon City · Gökkent = Sky City.
 
 Tren kaplamaları: Line color · Red Express · Night Train · Mint · Retro · Sunset · Ice · Lavender · Gold Express.
 

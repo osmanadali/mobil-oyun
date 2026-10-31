@@ -829,7 +829,7 @@ async function inViewport(page, sel) {
           if (cols.some((c, i) => i >= 6 && dE(c, cols[i - 6]) < .04)) bad.push(k.id + ':6');
           if (cols.some(c => dE(c, R.warnFor(c)) < .08)) bad.push(k.id + ':uyarı');
         }
-        const crown = R.SKINS.filter(k => !k.vip), prices = crown.map(k => k.need);
+        const crown = R.SKINS.filter(k => !k.vip && !k.sea), prices = crown.map(k => k.need);
         const names = Array.from({ length: 300 }, (_, c) => R.lineName(c));
         return { skins: R.SKINS.length, rising: prices.every((v, i) => !i || v > prices[i - 1]), names: new Set(names).size, n25: new Set(names.slice(0, 25).map(n => n.split(' · ')[1])).size, bad };
       });
