@@ -1877,13 +1877,14 @@ function chestRoll() {
   for (const t of ['c', 'r']) { if (x < RARITY[t][1]) { tier = t; break; } x -= RARITY[t][1]; }
   const pity = (save.dry || 0) >= PITY - 1; if (pity) tier = 'e';   // korumayla gelen destansı her zaman kaplama
   const y = R(), free = LIVERIES.filter(v => !ownsLiv(v.id));
-  // sıradan: 💡×2 ya da 1 güçlendirici · nadir: 💡×4, 🛡, 2 güçlendirici ya da ❤️∞ 15 dk · destansı: tren kaplaması ya da ❤️∞ 30 dk (kaplama bitince 3 güçlendirici)
+  // sıradan: 💡×2 ya da 1 güçlendirici · nadir: 💡×4 / ❤️∞ 15 dk, 🛡 ya da 2 güçlendirici · destansı: tren kaplaması ya da ❤️∞ 30 dk (kaplama bitince ❤️∞ ya da 3 güçlendirici)
   const pool = BST.filter(b => lineOf(save.level) >= b.line), b = pool[R() * pool.length | 0];
   if (tier === 'c') return y < .5 ? { tier, kind: 'hint', n: 2 } : { tier, kind: 'bst', id: b.id, n: 1 };
-  // nadirde dörtte bir ❤️∞ 15 dk; destansıda %30 (kaplamalar bitince yarı yarıya) ❤️∞ 30 dk
-  if (tier === 'r') { const z = y * 4 | 0; return z === 3 ? { tier, kind: 'inf', n: 15 } : z === 2 ? { tier, kind: 'bst', id: b.id, n: 2 } : z === 1 && (save.shield || 0) < SHIELD_MAX ? { tier, kind: 'shield' } : { tier, kind: 'hint', n: 4 }; }
-  if (!(pity && free.length) && y < (free.length ? .3 : .5)) return { tier, kind: 'inf', n: 30 };
-  return free.length ? { tier, kind: 'liv', id: free[(pity ? y : (y - .3) / .7) * free.length | 0].id } : { tier, kind: 'bst', id: b.id, n: 3 };
+  // ❤️∞ eski çekilişi bozmadan dilimlerin içine yerleşir (kalkan, güçlendirici, kaplama seçimi eskisiyle aynı):
+  // nadirde 💡×4 diliminin dörtte üçü ❤️∞ 15 dk; destansıda her kaplama diliminin %30'u ❤️∞ 30 dk (korumayla gelen destansı hep kaplama)
+  if (tier === 'r') { const z = y * 3 | 0; return z === 2 ? { tier, kind: 'bst', id: b.id, n: 2 } : z === 1 && (save.shield || 0) < SHIELD_MAX ? { tier, kind: 'shield' } : z === 0 && y * 3 % 1 < .75 ? { tier, kind: 'inf', n: 15 } : { tier, kind: 'hint', n: 4 }; }
+  if (!free.length) return y < .5 ? { tier, kind: 'inf', n: 30 } : { tier, kind: 'bst', id: b.id, n: 3 };
+  return !pity && y * free.length % 1 < .3 ? { tier, kind: 'inf', n: 30 } : { tier, kind: 'liv', id: free[y * free.length | 0].id };
 }
 // çizilmiş sandık, üç katman: arkada açık kapağın içi, ortada gövde, önde kapalı kapak. Menteşe arkada: açılırken dış kapak
 // yukarı kalkıp incelir, iç yüzü menteşeden büyür. Yalnız transform (SVG yeniden çizilmez) → düşük donanımda da akıcı.

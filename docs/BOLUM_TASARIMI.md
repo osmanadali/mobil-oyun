@@ -209,7 +209,7 @@ Biletlerin temalar dışındaki tek harcama yeri. Oyun içinde kendiliğinden ç
 | Nadirlik | Olasılık | İçerik |
 |---|---|---|
 | Sıradan | %60 | +2 💡 ipucu ya da 1 güçlendirici (yarı yarıya) |
-| Nadir | %28 | +4 💡, 🛡 seri kalkanı, 2 güçlendirici ya da ❤️∞ 15 dk sınırsız can (dörtte bir; en çok 3 kalkan birikir, doluysa 💡) |
+| Nadir | %28 | üçte bir 🛡 seri kalkanı, üçte bir 2 güçlendirici, kalanın dörtte üçü ❤️∞ 15 dk sınırsız can, dörtte biri +4 💡 (en çok 3 kalkan birikir, doluysa 💡) |
 | Destansı | %12 | %30 ❤️∞ 30 dk sınırsız can, %70 sahip olunmayan bir tren kaplaması (hepsi varsa yarı yarıya ❤️∞ 30 dk ya da 3 güçlendirici). Şanssızlık korumasıyla gelen destansı her zaman kaplamadır. |
 
 **Güçlendiriciler** (31 Ekim). Sandıktan çıkar; oyunda kalıcı düğmeleri yoktur, yalnız işe yaradığı an alt çubukta belirir (sağ üstte kalan sayı). İlgili kural açılmadan sandıktan çıkmaz. Ölçülen dağılım (600 sandık, M8): 💡 %38, güçlendirici %40, 🛡 %9, kaplama %12.
