@@ -245,9 +245,7 @@ pipes,net,subway,train,station,logic,brain,daily,relaxing,rotate,connect,tiles,r
 
 ## 6. Google Play "Veri güvenliği" formu
 
-Hesap yok, çökme raporu aracı yok, ilerleme yalnız cihazdaki depoda. Formda beyan edilecek veriyi iki SDK toplar: **Google Mobile Ads SDK (AdMob)** ve **Google Analytics for Firebase** (31 Ekim'den beri; oyun olayları, reklam kimliği olmadan, rıza gereken bölgelerde kapalı; ayrıntı `docs/YAYIN.md` §5). Satın almayı Google Play yürütür; uygulama ödeme bilgisi görmez.
-
-Firebase, geliştirici adına çalışan bir hizmet sağlayıcıdır; Play tanımına göre bu "paylaşma" sayılmaz, "toplama" sayılır. Ölçüm derlemeye yalnız `FIREBASE_ANDROID_JSON` gizli değeri verilince girer; vermeden yayımlarsan Firebase satırlarını forma ekleme.
+Uygulamanın kendisi hiçbir veriyi sunucuya göndermez: hesap yok, analitik yok, çökme raporu aracı yok, ilerleme yalnız cihazdaki depoda. Formda beyan edilecek veriyi yalnız **Google Mobile Ads SDK (AdMob)** toplar. Satın almayı Google Play yürütür; uygulama ödeme bilgisi görmez.
 
 | Soru | Yanıt |
 |---|---|
@@ -264,27 +262,21 @@ Beyan edilecek veri türleri (Google'ın AdMob için yayımladığı eşleşmeye
 | Uygulama etkinliği › Uygulama etkileşimleri | Reklam gösterimi, dokunma, video izleme | Evet | Evet | Hayır | Zorunlu | aynı |
 | Uygulama bilgileri ve performans › Kilitlenme günlükleri, Teşhis | SDK'nın teşhis bilgisi | Evet | Evet | Hayır | Zorunlu | aynı |
 | Cihaz veya diğer kimlikler | Android reklam kimliği, uygulama grubu kimliği | Evet | Evet | Hayır | Zorunlu | aynı |
-| Uygulama etkinliği › Uygulama etkileşimleri | **Firebase:** bölüm başlama/bitiş/bırakma, Günün Hattı, anlatım, reklam gösterimi, güçlendirici olayları | Evet | Hayır | Hayır | Zorunlu | Analiz |
-| Cihaz veya diğer kimlikler | **Firebase:** uygulama örneği kimliği (reklam kimliği toplanmaz) | Evet | Hayır | Hayır | Zorunlu | Analiz |
-| Finansal bilgiler › Satın alma geçmişi | **Firebase:** satın alınan ürünün kimliği (`purchase` olayı, tutar yok) | Evet | Hayır | Hayır | Zorunlu | Analiz |
-| Konum › Yaklaşık konum | **Firebase:** IP'den ülke/şehir tahmini | Evet | Hayır | Hayır | Zorunlu | Analiz |
 
-Aynı veri türü iki satırda geçiyorsa formda tek kez işaretlenir; amaçlar ve "paylaşılıyor" yanıtı birleştirilir (AdMob paylaşır → Evet). "Zorunlu": oyuncu ölçümü uygulama içinden ayrıca kapatamaz (rıza bölgelerinde zaten kapalı; Verilerimi sil kapatır).
+Toplanmayanlar: kişisel bilgiler (ad, e-posta, adres, telefon), finansal bilgiler ve satın alma geçmişi (Google Play yürütür), sağlık, mesajlar, fotoğraf ve video, ses, dosyalar, takvim, kişiler, web tarama, kesin konum.
 
-Toplanmayanlar: kişisel bilgiler (ad, e-posta, adres, telefon), ödeme bilgileri (Google Play yürütür), sağlık, mesajlar, fotoğraf ve video, ses, dosyalar, takvim, kişiler, web tarama, kesin konum.
-
-Gönderimden önce Google'ın güncel tablolarıyla son kez karşılaştır: https://developers.google.com/admob/android/privacy/play-data-disclosure · https://firebase.google.com/docs/android/play-data-disclosure
+Gönderimden önce Google'ın güncel tablosuyla son kez karşılaştır: https://developers.google.com/admob/android/privacy/play-data-disclosure
 
 **Silme yolu** (gizlilik politikasıyla aynı):
 
-- Oyun verisi: Ayarlar › Gizlilik › Verilerimi sil (bu düğme `magaza-reklam` dalıyla gelir) ya da uygulamayı kaldırmak. Aynı düğme ölçümü kapatır ve Firebase'in cihazdaki kimliğini sıfırlar (`resetAnalyticsData`).
+- Oyun verisi: Ayarlar › Gizlilik › Verilerimi sil (bu düğme `magaza-reklam` dalıyla gelir) ya da uygulamayı kaldırmak.
 - Reklam verisi: Android ayarlarından reklam kimliğini sıfırlamak ya da silmek; AB/BK/İsviçre ve ilgili ABD eyaletlerinde rıza seçimini Ayarlar › Gizlilik › Reklam gizlilik seçenekleri ile değiştirmek.
 
 **Reklam kimliği beyanı** (Uygulama içeriği › Reklam kimliği): Evet, kullanıyor. Amaç: Reklam veya pazarlama, Analiz, Dolandırıcılığı önleme. `AD_ID` izni AdMob kitaplığıyla bildirime kendiliğinden eklenir; yayın derlemesinde birleşik bildirimde göründüğünü doğrula.
 
 ## 7. Apple "App Privacy" etiketleri
 
-Etiketler AdMob SDK ve Firebase Analytics içindir (Firebase yalnız `FIREBASE_IOS_PLIST` verilen derlemede; IDFA'sız `AnalyticsWithoutAdIdSupport` sürümü, IDFV de kapalı). iOS'ta izleme (IDFA) yalnız kullanıcı ATT penceresinde izin verirse olur, bu yüzden izleme beyan edilir ve ATT penceresi gösterilir (`magaza-reklam` dalı).
+Geliştirici veri toplamaz; etiketler AdMob SDK içindir. iOS'ta izleme (IDFA) yalnız kullanıcı ATT penceresinde izin verirse olur, bu yüzden izleme beyan edilir ve ATT penceresi gösterilir (`magaza-reklam` dalı).
 
 | Apple veri türü | Amaç | Kimliğe bağlı mı | İzleme için mi |
 |---|---|---|---|
@@ -293,16 +285,10 @@ Etiketler AdMob SDK ve Firebase Analytics içindir (Firebase yalnız `FIREBASE_I
 | Kullanım verileri › Ürün etkileşimi | Üçüncü taraf reklam · Analiz | Hayır | Evet |
 | Konum › Yaklaşık konum (IP'den) | Üçüncü taraf reklam · Analiz | Hayır | Hayır |
 | Tanılama › Çökme verileri, Performans verileri, Diğer tanılama verileri | Üçüncü taraf reklam · Analiz | Hayır | Hayır |
-| Tanımlayıcılar › Aygıt kimliği (Firebase uygulama örneği kimliği) | Analiz | Hayır | Hayır |
-| Kullanım verileri › Ürün etkileşimi (Firebase oyun olayları) | Analiz | Hayır | Hayır |
-| Satın alımlar › Satın alma geçmişi (Firebase `purchase`: ürün kimliği) | Analiz | Hayır | Hayır |
-| Konum › Yaklaşık konum (Firebase, IP'den) | Analiz | Hayır | Hayır |
 
-Aynı tür iki satırda geçerse App Store Connect'te bir kez seçilir, amaçlar birleştirilir. Firebase verisi izleme için kullanılmaz (reklam kimliği yok, başka şirketlerin verisiyle birleştirilmez); "izleme" yanıtı yalnız AdMob satırlarından gelir.
+Ürün sayfasında beklenen görünüm: "Sizi izlemek için kullanılan veriler: Tanımlayıcılar, Kullanım verileri" ve "Sizinle ilişkilendirilmeyen veriler: Konum, Tanılama, Kullanım verileri, Tanımlayıcılar". "Sizinle ilişkilendirilen veri" bölümü çıkmaz.
 
-Ürün sayfasında beklenen görünüm: "Sizi izlemek için kullanılan veriler: Tanımlayıcılar, Kullanım verileri" ve "Sizinle ilişkilendirilmeyen veriler: Konum, Tanılama, Kullanım verileri, Tanımlayıcılar, Satın Alımlar". "Sizinle ilişkilendirilen veri" bölümü çıkmaz.
-
-Google'ın iOS tabloları: https://developers.google.com/admob/ios/privacy/data-disclosure · https://firebase.google.com/docs/ios/app-store-data-collection. Google Mobile Ads SDK kendi gizlilik bildirimini (`PrivacyInfo.xcprivacy`) taşır; Capacitor da öyle.
+Google'ın iOS tablosu: https://developers.google.com/admob/ios/privacy/data-disclosure. Google Mobile Ads SDK kendi gizlilik bildirimini (`PrivacyInfo.xcprivacy`) taşır; Capacitor da öyle.
 
 ## 8. Yaş derecelendirmesi
 
@@ -321,7 +307,7 @@ Google'ın iOS tabloları: https://developers.google.com/admob/ios/privacy/data-
 | Kullanıcılar birbiriyle iletişim kuruyor mu (sohbet, içerik paylaşma) | Hayır. "Paylaş" yalnız sonuç metnini sistemin paylaşma penceresine verir. |
 | Kullanıcının konumu paylaşılıyor mu | Hayır |
 | Dijital ürün satın alma | Evet (Mağaza: 2 tüketilemez, 5 tüketilebilir ürün; §10) |
-| Parayla satın alınan rastgele ödül (ganimet kutusu) | Hayır. Sürpriz sandık yalnız oyunda **kazanılan** taçla açılır. Mağazadaki taç paketi (`ray_tac_50`) ayrı sayılır ve yalnız renk temasına harcanır, sandıkta kullanılamaz (`chestBal`, robot: `gelir.tac`); sandıktan taç çıkmaz. Bütün paketlerin içeriği sabittir. |
+| Parayla satın alınan rastgele ödül (ganimet kutusu) | Hayır. Sürpriz sandık yalnız oyunda **kazanılan** taçla açılır. Mağazadaki bilet paketi (`ray_bilet_50`, 🎫; taç para birimi bilet olarak yeniden adlandırılıyor) ayrı sayılır ve yalnız renk temasına harcanır, sandıkta kullanılamaz (`chestBal`, robot: `gelir.tac`); sandıktan taç çıkmaz. Bütün paketlerin içeriği sabittir. |
 | Sınırsız internet erişimi (uygulama içi tarayıcı) | Hayır |
 
 Beklenen sonuç: PEGI 3, ESRB Everyone, USK 0, IARC 3+ (satın alma nedeniyle "Oyun içi satın alma" notu eklenir).
@@ -392,7 +378,7 @@ Kimlikler iki mağazada aynıdır (`www/shop.js` › `ITEMS`). Tüketilebilir ü
 | `ray_ipucu_30` | Tüketilebilir | 30 ipucu / 30 Hints | 30 💡 | 1,99 $ | ₺39,99 |
 | `ray_ipucu_80` | Tüketilebilir | 80 ipucu / 80 Hints | 80 💡 | 3,99 $ | ₺79,99 |
 | `ray_guclendirici` | Tüketilebilir | Güçlendirici paketi / Booster Pack | 🔄 ek tur ×3, 🔦 fener ×3, ⏱ +15 sn ×3, ↶ geri al ×3 | 1,99 $ | ₺39,99 |
-| `ray_tac_50` | Tüketilebilir | 50 taç / 50 Crowns | 50 👑, yalnız renk temasında harcanır (sandıkta kullanılamaz) | 1,99 $ | ₺39,99 |
+| `ray_bilet_50` | Tüketilebilir | Bilet paketi / Ticket Pack | 50 🎫 bilet, yalnız renk temasında harcanır (sandıkta kullanılamaz) | 1,99 $ | ₺39,99 |
 
 Mağaza açıklamaları (App Store görünen ad ≤ 30, açıklama ≤ 45 karakter):
 
@@ -401,20 +387,20 @@ Mağaza açıklamaları (App Store görünen ad ≤ 30, açıklama ≤ 45 karakt
 | `ray_temalar` | `Taçla açılan 22 renk temasının hepsi` | `All 22 crown color themes, one-time` |
 | `ray_ipucu_10` / `_30` / `_80` | `10 (30, 80) ipucu: takıldığın karo yerine oturur` (Play) · `10 ipucu` (App Store) | `10 (30, 80) hints: puts a tricky tile in place` (Play) · `10 hints` (App Store) |
 | `ray_guclendirici` | `Her güçlendiriciden 3: ek tur, fener, +15 sn, geri al` | `3 of each booster: turn, lantern, +15 s, undo` |
-| `ray_tac_50` | `50 taç, renk temaları için` | `50 crowns to spend on color themes` |
+| `ray_bilet_50` | `50 bilet, renk temaları için` | `50 tickets to spend on color themes` |
 
 Fiyat gerekçesi (§10.1 ile aynı mantık): fiyatlar ABD'ye göre kurulur, öteki ülkeler mağazanın ABD'den çevirisiyle gelir, Türkiye elle girilir. Türkiye oranı Reklamsız paketteki gibidir (2,99 $ ↔ ₺59,99, yani 1 $ ≈ ₺20): ₺19,99 / 39,99 / 79,99.
 
 - İpucu üç boyda, büyük paket adet başına ucuzlar (0,099 → 0,066 → 0,050 $). Oyun cömert kalır: her gün 3 ipucu, seri, hat sonu ve sandık ipucu verir, ödüllü video +2; paketler acele edenler için.
 - Güçlendirici paketi 12 güçlendirici verir; sandığın sıradan ödülü 1 güçlendirici olduğundan 1,99 $ yaklaşık 10 sandıklık güçlendiriciye denk gelir ama sandığın asıl ödülü (tren kaplaması, kalkan) parayla satılmaz.
-- Taç paketi 50 👑 ≈ 50 kusursuz bölüm. Temalar 5–560 👑 arasında olduğundan bir paket bir-iki orta tema eder; bütün temaları isteyen için Tema paketi (3,99 $) daha uygundur. Satın alınan taç ayrı sayılır, sandık açmaz (BOLUM_TASARIMI › Taç ekonomisi).
-- Tema paketi (3,99 $) Reklamsız paketten (2,99 $) pahalıdır: 22 temayı taçla toplamak yüzlerce kusursuz bölüm ister.
+- Bilet paketi 50 🎫 ≈ 50 kusursuz bölüm. Temalar 5–560 bilet arasında olduğundan bir paket bir-iki orta tema eder; bütün temaları isteyen için Tema paketi (3,99 $) daha uygundur. Satın alınan bilet ayrı sayılır, sandık açmaz (BOLUM_TASARIMI › Taç ekonomisi).
+- Tema paketi (3,99 $) Reklamsız paketten (2,99 $) pahalıdır: 22 temayı biletle toplamak yüzlerce kusursuz bölüm ister.
 
 Uygulamanın davranışı (robot: `tools/hakem/gelir-olcum.cjs`):
 
 - Tüketilebilir: mağaza işlemi onaylayınca ödül kayda yazılır, kaydın yazıldığı doğrulanır, **sonra** işlem bitirilir (Play'de consume, iOS'ta finish). Aynı işlem yeniden gelirse (uygulama arada kapandıysa) işlem kimliği kayıtta olduğundan ödül ikinci kez verilmez, işlem yine bitirilir. Kayıt yazılamazsa işlem açık kalır ve sonraki açılışta yeniden gelir.
 - Geri yükleme yalnız tüketilemezleri getirir (Reklamsız paket, Tema paketi).
-- İlerlemeyi taşı kodu iki tüketilemez paketi taşımaz; satın alınan ipucu/güçlendirici/taç kayıttaki sayılarla taşınır.
+- İlerlemeyi taşı kodu iki tüketilemez paketi taşımaz; satın alınan ipucu/güçlendirici/bilet kayıttaki sayılarla taşınır.
 - Web'de ya da mağaza dışı APK'da yalnız Reklamsız paket satırı ve "Paketler mağazadan indirilen sürümde açılır" notu görünür.
 
 Kayıt adımları:
@@ -430,7 +416,7 @@ Kayıt adımları:
 - Not (İngilizce yaz):
 
 ```text
-No account or sign-in. The game works fully offline; ads (Google AdMob) only load when online. Levels unlock with stars, so the first levels are enough to review the core loop. All in-app purchases are in Settings (top right on the home screen) > "Shop": Ad-free Pack (ray_reklamsiz) and Theme Pack (ray_temalar) are non-consumable and can be restored with the button in the same sheet; hint packs (ray_ipucu_10/30/80), Booster Pack (ray_guclendirici) and 50 Crowns (ray_tac_50) are consumable. Purchased crowns can only be spent on color themes, never on the surprise chest. Gameplay analytics (Firebase, no advertising ID) is off in regions where consent is required. The UI follows the device language (English or Turkish) and can be changed in Settings > Language. The ATT prompt appears on first launch after the consent step.
+No account or sign-in. The game works fully offline; ads (Google AdMob) only load when online. Levels unlock with stars, so the first levels are enough to review the core loop. All in-app purchases are in Settings (top right on the home screen) > "Shop": Ad-free Pack (ray_reklamsiz) and Theme Pack (ray_temalar) are non-consumable and can be restored with the button in the same sheet; hint packs (ray_ipucu_10/30/80), Booster Pack (ray_guclendirici) and Ticket Pack (ray_bilet_50) are consumable. Purchased tickets can only be spent on color themes, never on the surprise chest. The UI follows the device language (English or Turkish) and can be changed in Settings > Language. The ATT prompt appears on first launch after the consent step.
 ```
 
 **Google Play › Uygulama erişimi**: "Tüm işlevler herhangi bir özel erişim olmadan kullanılabilir."
@@ -452,13 +438,6 @@ AdMob
 - [ ] AdMob › Engelleme denetimleri: en yüksek reklam içeriği derecesi PG (uygulamadaki ayarla aynı; iOS için §8'deki nota bak).
 - [ ] app-ads.txt: AdMob'un verdiği satırı (`google.com, pub-1478688740631972, DIRECT, f08c47fec0942fa0`) `https://osmanadali.github.io/app-ads.txt` adresine koy (alan adının kökünde olmalı; bunun için `osmanadali.github.io` adlı ayrı bir depo gerekir). Mağaza girişlerinde web sitesi olarak `https://osmanadali.github.io` yaz. Yoksa AdMob uyarı verir ve reklam geliri düşebilir.
 
-Ölçüm (Firebase Analytics, isteğe bağlı; ayrıntı `docs/YAYIN.md` §5)
-
-- [ ] Firebase projesi; Android uygulaması `com.osmanadali.ray` (test APK'ları için ayrıca `com.osmanadali.ray.dev`, `com.osmanadali.ray.test`) ve iOS uygulaması `com.osmanadali.ray`.
-- [ ] GitHub gizli değerleri: `FIREBASE_ANDROID_JSON` (google-services.json, base64), `FIREBASE_IOS_PLIST` (GoogleService-Info.plist, base64). Yoksa ölçüm kapalı derlenir.
-- [ ] Veri saklama süresi 14 ay; Google sinyalleri ve reklam bağlantıları kapalı; AdMob–Firebase bağlantısı yapılırsa `ad_impression` olaylarının ikiye katlanmadığını DebugView'da kontrol et.
-- [ ] Ölçümle yayımlarsan Veri güvenliği (§6) ve App Privacy (§7) Firebase satırları eklenmeli; ölçümsüz yayımlarsan eklenmez.
-
 Gizlilik ve yayın sayfası
 
 - [ ] `www/gizlilik.html` içindeki `[geliştirici adı]` ve `[iletişim e-postası]` yer tutucularını doldur (`magaza-reklam` dalı).
@@ -472,13 +451,13 @@ Gizlilik ve yayın sayfası
 Mağaza
 
 - [ ] Play'de ve App Store Connect'te uygulama kaydı (paket `com.osmanadali.ray`, birincil dil Türkçe, ikinci dil İngilizce).
-- [ ] Uygulama içi ürünler (§10) iki mağazada oluşturulup etkinleştirilmeli: `ray_reklamsiz`, `ray_temalar` (tüketilemez) ve `ray_ipucu_10`, `ray_ipucu_30`, `ray_ipucu_80`, `ray_guclendirici`, `ray_tac_50` (tüketilebilir). Kimlikler iki mağazada aynı yazılmalı.
+- [ ] Uygulama içi ürünler (§10) iki mağazada oluşturulup etkinleştirilmeli: `ray_reklamsiz`, `ray_temalar` (tüketilemez) ve `ray_ipucu_10`, `ray_ipucu_30`, `ray_ipucu_80`, `ray_guclendirici`, `ray_bilet_50` (tüketilebilir). Kimlikler iki mağazada aynı yazılmalı.
 - [ ] Öteki ürünlerin fiyatları (§10.2): ABD taban 0,99 / 1,99 / 3,99 $, Türkiye elle ₺19,99 / 39,99 / 79,99.
 - [ ] Uygulama fiyatı: iki mağazada **Ücretsiz** (Play'de "Ücretsiz", App Store'da 0,00 $).
 - [ ] Reklamsız paket fiyatı (§10.1): App Store'da taban ülke ABD 2,99 $, Türkiye elle ₺59,99. Play'de ABD 2,99 $ · AB 2,99 € · BK 2,49 £ elle (ya da USD tabanlı şablon). Taban Türkiye bırakılmaz.
 - [ ] Metinleri (§4, §5) ve görselleri (§2) yükle.
 - [ ] Formlar: Veri güvenliği (§6), App Privacy (§7), yaş derecelendirmesi (§8), hedef kitle ve öteki beyanlar (§9), inceleme notları (§11).
-- [ ] Gerçek cihazda son deneme: rıza penceresi, iOS ATT penceresi, reklam, satın alma ve geri yükleme (Play lisans test hesabı, Apple Sandbox). Tüketilebilir bir paketi iki kez al (ikisi de verilmeli), uygulamayı satın alma sırasında kapatıp aç (ödül bir kez gelmeli); Firebase DebugView'da `level_start`/`level_end` görünmeli.
+- [ ] Gerçek cihazda son deneme: rıza penceresi, iOS ATT penceresi, reklam, satın alma ve geri yükleme (Play lisans test hesabı, Apple Sandbox). Tüketilebilir bir paketi iki kez al (ikisi de verilmeli), uygulamayı satın alma sırasında kapatıp aç (ödül bir kez gelmeli);
 - [ ] Yayın: Play'de iç test → kapalı test (14 gün) → üretim. iOS'ta TestFlight → incelemeye gönder.
 
 ## 13. Bilinen sınırlar
@@ -486,5 +465,5 @@ Mağaza
 - **İki dil.** Oyun Türkçe ve İngilizcedir (28 Ekim 2026). İngilizce mağaza girişi İngilizce ekran görüntüleriyle (`store/screens-en/`) yüklenir. Altyapı ve sözlük: `docs/CEVIRI.md`.
 - **Kural sayısı.** Açıklama 18 kuralın hepsini sayar (çift hatların zor kuralları 28 Ekim'de eklendi; tam açıklama ~90 karakter uzadı, 4000 sınırının yine altında). 5. ekran görüntüsünün alt satırı eski 12 kurallı listeyi gösterir; istenirse `tools/store-shots.cjs` ile yeniden üretilir.
 - **Görseller çalışan koda bağlı.** Arayüz değişince `node tools/store-shots.cjs` yeniden çalıştırılmalı. Sahneler bölüm numarasıyla kurulur (180, 45, 829…); üretim değişirse aynı numara farklı bir tahta verebilir, çıktı gözle kontrol edilmeli.
-- **Veri ve gizlilik yanıtları** AdMob'un ve Firebase Analytics'in Ekim 2026 itibarıyla bilinen davranışına göredir. Gönderimden önce §6 ve §7'deki Google bağlantılarıyla karşılaştırılmalı.
+- **Veri ve gizlilik yanıtları** AdMob'un Ekim 2026 itibarıyla bilinen davranışına göredir. Gönderimden önce §6 ve §7'deki Google bağlantılarıyla karşılaştırılmalı.
 - **Silme düğmesi ve rıza penceresi** `magaza-reklam` dalında, iOS projesi ve imzalı derleme `magaza-yerel` dalındadır; bu belge o dallar `main`e birleşmiş gibi yazıldı.

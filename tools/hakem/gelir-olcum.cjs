@@ -1,5 +1,4 @@
-// Gelir ve ölçüm: mağaza penceresi, tüketilebilir/tüketilemez ürünler (sahte cordova-plugin-purchase), Firebase Analytics olayları
-// ve rıza (sahte @capacitor-firebase/analytics + AdMob UMP) — robot testleri (hakem.cjs K bölümü çağırır; tek başına: --only=gelir-olcum)
+// Gelir: mağaza penceresi, tüketilebilir/tüketilemez ürünler (sahte cordova-plugin-purchase) — robot testleri (hakem.cjs K bölümü çağırır; tek başına: --only=gelir-olcum)
 module.exports = async T => {
   const { browser, URL, open, check, solve, shot, getSave, waitModal, starsUpTo } = T;
   const G = (page, f, a) => page.evaluate(f, a);
@@ -8,7 +7,7 @@ module.exports = async T => {
   // sahte mağaza: v13 olay zinciri (approved → verify → verified → finish), tüketilemez sahiplik, geri yükleme, aynı işlemin yeniden gelmesi
   const STORE = (o = {}) => `window.CdvPurchase = (() => {
     const L = window.__iap = Object.assign({ reg: [], fin: [], atFin: [], ver: 0, owned: {}, orders: [], restore: 0, restorable: {}, cancel: false }, ${JSON.stringify(o)});
-    const cb = { a: [], v: [], p: [], r: [] }, PR = { ray_reklamsiz: '$2.99', ray_temalar: '$3.99', ray_ipucu_10: '$0.99', ray_ipucu_30: '$1.99', ray_ipucu_80: '$3.99', ray_guclendirici: '$1.99', ray_tac_50: '$1.99' };
+    const cb = { a: [], v: [], p: [], r: [] }, PR = { ray_reklamsiz: '$2.99', ray_temalar: '$3.99', ray_ipucu_10: '$0.99', ray_ipucu_30: '$1.99', ray_ipucu_80: '$3.99', ray_guclendirici: '$1.99', ray_bilet_50: '$1.99' };
     const NC = { ray_reklamsiz: 1, ray_temalar: 1 }, prods = {}; let n = 0;
     const tx = (id, txid) => { const t = { transactionId: txid || 'GPA.' + (++n), products: [{ id }],
       verify() { L.ver++; cb.v.forEach(f => f({ finish: () => t.finish() })); },
@@ -21,10 +20,10 @@ module.exports = async T => {
           getOffer: () => ({ order: async () => { if (L.cancel) return { code: 6777006 }; L.orders.push(r.id); const t = tx(r.id); setTimeout(() => cb.a.forEach(f => f(t)), 20); } }) }; cb.p.forEach(f => f(prods[r.id])); }); return []; },
         get: id => prods[id], owned: id => !!L.owned[id],
         restorePurchases: async () => { L.restore++; Object.assign(L.owned, L.restorable); cb.r.forEach(f => f({})); } } }; })();`;
-  // Capacitor sahtesi: AdMob (UMP durumu verilir), Firebase Analytics (çağrılar __fa'ya)
-  const CAP = (ump = 'NOT_REQUIRED', fa = true) => `window.__noCap = true;
+  // Capacitor sahtesi: AdMob (UMP), titreşim
+  const CAP = (ump = 'NOT_REQUIRED') => `window.__noCap = true;
   (() => {
-    const F = window.__fa = { ev: [], en: [], consent: [], reset: 0 }, Lst = {}, emit = e => (Lst[e] || []).slice().forEach(f => f({}));
+    const Lst = {}, emit = e => (Lst[e] || []).slice().forEach(f => f({}));
     window.Capacitor = { getPlatform: () => 'android', isNativePlatform: () => true, Plugins: {
       Haptics: { impact() {}, notification() {} },
       AdMob: { addListener: (e, f) => { (Lst[e] = Lst[e] || []).push(f); return Promise.resolve({ remove() { Lst[e] = Lst[e].filter(x => x !== f); } }); },
@@ -32,7 +31,6 @@ module.exports = async T => {
         initialize: async () => {}, prepareInterstitial: async () => {}, prepareRewardVideoAd: async () => {},
         showInterstitial: async () => { setTimeout(() => emit('interstitialAdDismissed'), 50); },
         showRewardVideoAd: async () => { setTimeout(() => { emit('onRewardedVideoAdReward'); emit('onRewardedVideoAdDismissed'); }, 50); return { type: 'hint', amount: 2 }; } },
-      ${fa ? `FirebaseAnalytics: { logEvent: async o => { F.ev.push(o); }, setEnabled: async o => { F.en.push(o.enabled); }, setConsent: async o => { F.consent.push(o.type + '=' + o.status); }, resetAnalyticsData: async () => { F.reset++; sessionStorage.setItem('faReset', F.en.join()); } },` : ''}
     } };
   })();`;
   const base = { played: 5, level: 3, stars: starsUpTo(3), remindAsked: true };
@@ -49,7 +47,7 @@ module.exports = async T => {
     await page.reload(); await wait(page, 500);
     const reg = (await iap(page)).reg.map(r => `${r.id}:${r.type}`).sort().join(',');
     check('gelir.kayit', 'Yedi ürün iki mağazada aynı ray_ kimliğiyle kaydolur: 2 tüketilemez (reklamsız, tema), 5 tüketilebilir',
-      reg === 'ray_guclendirici:c,ray_ipucu_10:c,ray_ipucu_30:c,ray_ipucu_80:c,ray_reklamsiz:nc,ray_tac_50:c,ray_temalar:nc', reg, 'medium');
+      reg === 'ray_bilet_50:c,ray_guclendirici:c,ray_ipucu_10:c,ray_ipucu_30:c,ray_ipucu_80:c,ray_reklamsiz:nc,ray_temalar:nc', reg, 'medium');
     const row = await G(page, () => document.querySelector('#bSettings') && 1);
     await openStore(page);
     const rows = await storeRows(page), sh = await G(page, () => { const s = document.getElementById('mCard'); return { h: s.querySelector('h2')?.textContent, ov: s.scrollWidth > s.clientWidth + 1, rs: !!document.getElementById('mRestore') }; });
@@ -67,7 +65,7 @@ module.exports = async T => {
     await openStore(page); await buy(page, 'bst', 700);
     v = await getSave(page);
     check('gelir.guclendirici', 'Güçlendirici paketi: 🔄 tur, 🔦 fener, ⏱ süre, ↶ geri her biri +3', ['tur', 'fener', 'sure', 'geri'].every(k => v.bst?.[k] === 3), JSON.stringify(v.bst), 'medium');
-    // taç paketi: bakiye +50, ayrı sayılır; sandık yalnız kazanılan taçla; temada önce satın alınan harcanır
+    // bilet paketi: bakiye +50, ayrı sayılır; sandık yalnız kazanılanla; temada önce satın alınan harcanır
     await openStore(page); await buy(page, 'crown', 700);
     v = await getSave(page);
     await page.click('#mClose').catch(() => {}); await wait(page);
@@ -78,8 +76,8 @@ module.exports = async T => {
     await page.click('#mBack'); await wait(page);
     await page.click('.skin[data-k=ocean]'); await wait(page); await page.click('#mBuy'); await wait(page);
     const v2 = await getSave(page);
-    check('gelir.tac', 'Taç paketi: satın alınan 👑 ayrı sayılır (bCrowns) ve bakiyeye eklenir; sandık açılmaz (yalnız kazanılan 👑); tema alınca önce satın alınan harcanır',
-      v.bCrowns === 50 && /50/.test(chip.bal) && !chip.chest && /Taç topla/.test(chestTxt.btn) && /kazanılan 👑/.test(chestTxt.tip) && v2.owned.ocean && v2.bSpent === 25 && v2.spent === 25,
+    check('gelir.tac', 'Bilet paketi: satın alınan 🎫 ayrı sayılır (bCrowns) ve bakiyeye eklenir; sandık açılmaz (yalnız kazanılan); tema alınca önce satın alınan harcanır',
+      v.bCrowns === 50 && /50/.test(chip.bal) && !chip.chest && /Taç topla/.test(chestTxt.btn) && /kazanılan 🎫/.test(chestTxt.tip) && v2.owned.ocean && v2.bSpent === 25 && v2.spent === 25,
       JSON.stringify({ b: v.bCrowns, chip, chestTxt, bSpent: v2.bSpent, spent: v2.spent }), 'high');
     // iptal: ödül yok
     await G(page, () => { window.__iap.cancel = true; });
@@ -116,10 +114,9 @@ module.exports = async T => {
   {
     const { ctx, page, errors } = await open(browser, URL, { cap: false, save: base });
     await openStore(page);
-    const r = await G(page, () => ({ rows: [...document.querySelectorAll('#store [data-p]')].map(b => b.dataset.p), tip: document.querySelector('#mCard .tip')?.textContent, rs: !!document.getElementById('mRestore'), st: Olcum.state() }));
-    await G(page, () => { Olcum.ev('level_start', { level: 1 }); Olcum.consent({ status: 'NOT_REQUIRED' }); return Olcum.reset(); });
-    check('gelir.web', 'Web\'de mağaza yok: yalnız Reklamsız paket satırı, "mağazadan indirilen sürümde" notu, geri yükleme yok; ölçüm sessiz no-op',
-      r.rows.join() === 'noads' && /mağazadan indirilen/.test(r.tip) && !r.rs && r.st === null && !errors.length, JSON.stringify({ ...r, errors }), 'medium');
+    const r = await G(page, () => ({ rows: [...document.querySelectorAll('#store [data-p]')].map(b => b.dataset.p), tip: document.querySelector('#mCard .tip')?.textContent, rs: !!document.getElementById('mRestore') }));
+    check('gelir.web', 'Web\'de mağaza yok: yalnız Reklamsız paket satırı, "mağazadan indirilen sürümde" notu, geri yükleme yok',
+      r.rows.join() === 'noads' && /mağazadan indirilen/.test(r.tip) && !r.rs && !errors.length, JSON.stringify({ ...r, errors }), 'medium');
     await ctx.close();
   }
 
@@ -129,83 +126,22 @@ module.exports = async T => {
     await openStore(page);
     const rows = await storeRows(page), sh = await G(page, () => { const s = document.getElementById('mCard'); return { h: s.querySelector('h2')?.textContent, ov: s.scrollWidth > s.clientWidth + 1, txt: s.textContent }; });
     await shot(page, 'magaza-en-320');
-    check('gelir.en', 'EN: "Shop" penceresi İngilizce (ipucu, güçlendirici, tema, taç), 320 px\'te taşmaz', sh.h === 'Shop' && rows.length === 7 && !sh.ov && /Booster pack/.test(sh.txt) && /Theme pack/.test(sh.txt) && /50 crowns/.test(sh.txt) && !/ipucu|Tema paketi|taç/.test(sh.txt) && rows.every(r => r.r <= 320) && !errors.length, JSON.stringify({ sh: { ...sh, txt: sh.txt.slice(0, 200) }, rows, errors }), 'medium');
+    check('gelir.en', 'EN: "Shop" penceresi İngilizce (ipucu, güçlendirici, tema, bilet), 320 px\'te taşmaz', sh.h === 'Shop' && rows.length === 7 && !sh.ov && /Booster pack/.test(sh.txt) && /Theme pack/.test(sh.txt) && /50 tickets/.test(sh.txt) && !/ipucu|Tema paketi|bilet/.test(sh.txt) && rows.every(r => r.r <= 320) && !errors.length, JSON.stringify({ sh: { ...sh, txt: sh.txt.slice(0, 200) }, rows, errors }), 'medium');
     await ctx.close();
   }
 
-  // ---- 5) Ölçüm: rıza gerekmiyor → açık; olaylar ve parametreleri ----
+  // ---- 5) ipucu bitince açılan pencerede sade "İpucu paketleri" bağlantısı ----
   {
-    const { ctx, page, errors } = await open(browser, URL, { init: CAP('NOT_REQUIRED') + STORE(), save: base });
-    await wait(page, 400);
-    await page.click('#bPlay'); await wait(page, 600);
-    await solve(page, 10); await waitModal(page);
-    await page.click('#mNext'); await wait(page, 600);
-    await page.click('#bHint'); await wait(page, 300);
-    await page.click('#bBack'); await wait(page, 500);   // yarım bırak
-    await page.click('#bSettings'); await wait(page); await page.click('#oHow'); await wait(page, 500);
-    for (let k = 0; k < 8 && await G(page, () => document.getElementById('modal').classList.contains('open')); k++) { await page.click('#mClose', { timeout: 3000 }).catch(() => {}); await wait(page, 350); }
-    await openStore(page); await buy(page, 'hint10', 700);
-    const F = await G(page, () => window.__fa), ev = n => F.ev.filter(e => e.name === n).map(e => e.params);
-    const end = ev('level_end')[0], st = ev('level_start'), quit = ev('level_quit')[0], tut = ev('tutorial'), pur = ev('purchase')[0];
-    const allP = F.ev.flatMap(e => Object.entries(e.params)), bad = allP.filter(([k, v]) => !(typeof v === 'number' || (typeof v === 'string' && v.length <= 100)) || k.length > 40 || /@/.test(String(v)));
-    check('olcum.riza', 'UMP "rıza gerekmiyor": toplama açılır, analytics_storage verilir, reklam rızaları (ad_storage, ad_user_data, ad_personalization) reddedilir',
-      F.en.at(-1) === true && F.consent.includes('ANALYTICS_STORAGE=GRANTED') && ['AD_STORAGE', 'AD_USER_DATA', 'AD_PERSONALIZATION'].every(k => F.consent.includes(k + '=DENIED')), JSON.stringify({ en: F.en, c: F.consent }), 'high');
-    check('olcum.bolum', 'level_start (bölüm, hat) → level_end (bölüm, hat, yıldız, süre, hamle, ipucu, kusursuz) → level_quit (yarım bırakınca)',
-      st.length >= 2 && st[0].level === 3 && st[0].line === 1 && end && end.level === 3 && end.line === 1 && end.stars >= 1 && end.time_s >= 0 && end.moves > 0 && end.hints === 0 && 'perfect' in end && quit?.level === 4 && quit.hints === 1,
-      JSON.stringify({ st, end, quit }), 'high');
-    check('olcum.diger', 'tutorial (başla/bitir), purchase (ürün, tür; değer yok → gelir çift sayılmaz); parametreler kısa, sayı ya da metin, e-posta yok',
-      tut[0]?.step === 'begin' && /complete|skip/.test(tut[1]?.step) && pur?.item_id === 'ray_ipucu_10' && pur.kind === 'consumable' && !('value' in pur) && !bad.length, JSON.stringify({ tut, pur, bad }), 'medium');
-    check('olcum.errors', 'Ölçüm senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
-    await ctx.close();
-  }
-
-  // ---- 6) Ödüllü reklam + güçlendirici + Günün Hattı olayları; ipucu bitince "İpucu paketleri" ----
-  {
-    const { ctx, page, errors } = await open(browser, URL, { init: CAP('NOT_REQUIRED') + STORE(), save: { ...base, bst: { geri: 1 } } });
+    const { ctx, page, errors } = await open(browser, URL, { init: CAP() + STORE(), save: base });
     await G(page, d => { const s = JSON.parse(localStorage.getItem('ray')); s.hintDay = d; s.hints = 0; localStorage.setItem('ray', JSON.stringify(s)); }, await G(page, today));
     await page.reload(); await wait(page, 500);
     await page.click('#bPlay'); await wait(page, 600);
-    const { tapTile } = T;
-    const i = await G(page, () => window.__ray.G.cur.findIndex((v, i) => !window.__ray.G.fixed[i] && v !== 0));
-    await tapTile(page, i); await wait(page, 120); await tapTile(page, (i + 1) % 9 === 0 ? i - 1 : i + 1); await wait(page, 300);
-    const undoOn = await G(page, () => !document.getElementById('gUndo').hidden);
-    if (undoOn) { await page.click('#gUndo'); await wait(page, 300); }
     await page.click('#bHint'); await wait(page, 500);
     const pack = await G(page, () => !!document.getElementById('mPack'));
     await page.click('#mPack'); await wait(page, 500);
     const foc = await G(page, () => [...document.querySelectorAll('#store .prod.on')].map(b => b.dataset.p));
     await shot(page, 'magaza-ipucu');
-    await page.click('#mClose'); await wait(page, 400);
-    await page.click('#bHint'); await wait(page, 500); await page.click('#mAd'); await wait(page, 1200);
-    const F = await G(page, () => window.__fa), ev = n => F.ev.filter(e => e.name === n).map(e => e.params);
-    check('olcum.reklam', 'ad_impression (ödüllü, admob) ve booster_use (geri, bölüm) olayları',
-      ev('ad_impression').some(p => p.ad_format === 'rewarded' && p.ad_platform === 'admob') && undoOn && ev('booster_use')[0]?.booster === 'geri' && ev('booster_use')[0].level === 3,
-      JSON.stringify({ ad: ev('ad_impression'), b: ev('booster_use'), undoOn }), 'medium');
-    check('gelir.ipucu.bitti', 'İpucu bitince açılan pencerede sade "İpucu paketleri" bağlantısı → Mağaza, ipucu satırları öne çıkar', pack && foc.join() === 'hint10,hint30,hint80', JSON.stringify({ pack, foc }), 'medium');
-    // Günün Hattı
-    await page.click('#bBack'); await wait(page, 500);
-    await page.click('#bDaily'); await wait(page, 600);
-    await solve(page, 10); await waitModal(page);
-    const d = (await G(page, () => window.__fa.ev.filter(e => e.name === 'daily_end').map(e => e.params)))[0];
-    check('olcum.gunluk', 'daily_end: yıldız, süre, hamle, ipucu, kusursuz, seri', d && d.stars >= 1 && d.moves > 0 && d.streak === 1 && 'perfect' in d, JSON.stringify(d), 'medium');
-    check('olcum.reklam.errors', 'Reklam / günlük ölçüm senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
-    await ctx.close();
-  }
-
-  // ---- 7) Rıza gerekli bölge (AB/BK): toplama kapalı, hiçbir olay gönderilmez; Verilerimi sil ölçümü sıfırlar ----
-  {
-    const { ctx, page, errors } = await open(browser, URL, { init: CAP('REQUIRED') + STORE(), save: base });
-    await wait(page, 400);
-    await page.click('#bPlay'); await wait(page, 600);
-    await solve(page, 10); await waitModal(page);
-    const F = await G(page, () => window.__fa);
-    check('olcum.ab', 'UMP rıza gerektiren bölge: toplama kapalı (setEnabled false, analytics_storage reddedilir), hiç olay gönderilmez',
-      F.en.at(-1) === false && F.consent.includes('ANALYTICS_STORAGE=DENIED') && !F.ev.length && !errors.length, JSON.stringify({ en: F.en, c: F.consent, n: F.ev.length, errors }), 'high');
-    await page.click('#mHome').catch(() => {}); await wait(page, 500);
-    await page.click('#bSettings'); await wait(page); await page.click('#oPriv'); await wait(page); await page.click('#mWipe'); await wait(page);
-    await Promise.all([page.waitForNavigation({ timeout: 8000 }).catch(() => {}), page.click('#mWipeOk')]); await wait(page, 400);
-    const reset = await G(page, () => sessionStorage.getItem('faReset'));
-    check('olcum.sil', 'Verilerimi sil ölçüm verisini de sıfırlar (resetAnalyticsData) ve toplamayı kapatır', reset != null && /false$/.test(reset), String(reset), 'medium');
+    check('gelir.ipucu.bitti', 'İpucu bitince açılan pencerede sade "İpucu paketleri" bağlantısı → Mağaza, ipucu satırları öne çıkar', pack && foc.join() === 'hint10,hint30,hint80' && !errors.length, JSON.stringify({ pack, foc, errors }), 'medium');
     await ctx.close();
   }
 };

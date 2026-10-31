@@ -38,7 +38,6 @@ jobs:
       - name: İkon ve açılış ekranı (assets/)
         run: npx @capacitor/assets generate --ios --iconBackgroundColor '#0d1020' --splashBackgroundColor '#0d1020' --splashBackgroundColorDark '#0d1020'
       - name: Yerel projeyi hazırla (Info.plist, yalnız iPhone + dikey, sürüm, simge)
-        env: { FIREBASE_IOS_PLIST: '${{ secrets.FIREBASE_IOS_PLIST }}' }   # isteğe bağlı: yoksa ölçüm kapalı derlenir (docs/YAYIN.md §5)
         run: tools/ios/hazirla.sh
       - run: npx cap sync ios
       - name: Derle (simülatör, imzasız)
@@ -53,7 +52,6 @@ jobs:
           plutil -p "$A/Info.plist" | grep -E 'CFBundleDisplayName|CFBundleShortVersionString|CFBundleVersion|MinimumOSVersion|UIDeviceFamily|GADApplicationIdentifier|ITSAppUses|NSUserTracking' -A2 | grep -v '^--'
           plutil -extract UIDeviceFamily json -o - "$A/Info.plist" | grep -qx '\[1\]' || { echo "::error::Yalnız iPhone (UIDeviceFamily [1]) değil"; exit 1; }
           echo "SKAdNetwork: $(plutil -extract SKAdNetworkItems json -o - "$A/Info.plist" | grep -o skadnetwork | wc -l | tr -d ' ')"
-          [ -f "$A/GoogleService-Info.plist" ] && echo "Ölçüm: GoogleService-Info.plist pakette" || echo "Ölçüm kapalı (FIREBASE_IOS_PLIST yok)"
           grep -q 'cordova-plugin-purchase' "$A/public/cordova_plugins.js" && nm -gU "$A/App" 2>/dev/null | grep -q 'InAppPurchase' \
             && echo "Satın alma eklentisi (StoreKit) pakette" || { echo "::error::cordova-plugin-purchase iOS paketine girmemiş"; exit 1; }
           echo "Diller: geliştirme $(plutil -extract CFBundleDevelopmentRegion raw -o - "$A/Info.plist"), CFBundleLocalizations $(plutil -extract CFBundleLocalizations json -o - "$A/Info.plist")"

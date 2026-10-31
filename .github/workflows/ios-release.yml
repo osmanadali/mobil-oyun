@@ -66,7 +66,6 @@ jobs:
       - name: İkon ve açılış ekranı (assets/)
         run: npx @capacitor/assets generate --ios --iconBackgroundColor '#0d1020' --splashBackgroundColor '#0d1020' --splashBackgroundColorDark '#0d1020'
       - name: Yerel projeyi hazırla (gerçek AdMob kimlikleri, diller, yalnız iPhone + dikey, sürüm, simge)
-        env: { FIREBASE_IOS_PLIST: '${{ secrets.FIREBASE_IOS_PLIST }}' }   # isteğe bağlı: yoksa ölçüm kapalı derlenir (docs/YAYIN.md §5)
         run: |
           VERSION_NAME=$(node -p "require('./package.json').version"); export VERSION_NAME
           echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"

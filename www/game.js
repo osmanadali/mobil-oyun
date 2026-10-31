@@ -116,7 +116,7 @@ const SKINS = [
 ];
 const crownCount = () => Object.keys(save.crowns).length + (save.dCrowns || 0) + (save.fc || 0) + (save.cc || 0);   // toplam kazanılan (bölüm + günlük + final + seri bonusu)
 const crownBal = () => crownCount() + (save.bCrowns || 0) - (save.spent || 0);       // harcanabilir bakiye (satın alınan 👑 dahil)
-// sandık yalnız kazanılan 👑 ile açılır: satın alınan 👑 (bCrowns, harcanan kısmı bSpent) yalnız temaya → parayla rastgele ödül yok
+// sandık yalnız kazanılan 👑/🎫 ile açılır: satın alınan bilet (bCrowns, harcanan kısmı bSpent) yalnız temaya → parayla rastgele ödül yok
 const chestBal = () => crownCount() - ((save.spent || 0) - (save.bSpent || 0));
 const skinOpen = k => !!save.owned[k.id] || !!(k.vip && save.noAds) || !!(!k.vip && save.allThemes);   // allThemes: Tema paketi
 const skin = () => { const k = SKINS.find(x => x.id === save.skin); return k && skinOpen(k) ? k : SKINS[0]; };
@@ -633,7 +633,6 @@ let toastT, mLocked = false, howBack = null, mOnClose = null;   // mOnClose: pen
 function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2200); }
 const active = id => $(id).classList.contains('active');
 function show(id) {
-  if (id !== 'game' && active('game')) quitEv();
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
   document.body.classList.toggle('playing', id === 'game');
   if (id === 'game') resume(); else { pause(); cityDown(); }
@@ -788,11 +787,7 @@ function saveRun() {
   save.runs[runKey()] = { lvl: G.lvl, day: G.day, cur: G.cur, fixed: G.fixed, moves: G.moves, last: G.lastTile, ms: elapsed(), pv: 4, sig: G.sig, ...(G.xt ? { xt: G.xt } : {}), ...(G.cnt.some(v => v >= 0) ? { cnt: G.cnt } : {}) };
   persist();
 }
-// ölçüm (olcum.js): yalnız oyun olayları, kişisel veri yok
-const lvlP = () => G ? (G.daily ? { mode: 'daily' } : { mode: 'level', level: G.lvl, line: lineOf(G.lvl) + 1 }) : {};
-const quitEv = () => { if (G && !G.won && (G.moves || G.hu)) Olcum.ev('level_quit', { ...lvlP(), time_s: elapsed() / 1000 | 0, moves: G.moves, hints: G.hu || 0 }); };
 function start(mode, lvl = save.level) {
-  if (G && active('game')) quitEv();
   clearTimeout(howT); clearTimeout(winTimer); closeModal(); closePanel(); cityDown();
   const daily = mode === 'daily', day = today();
   if (!daily && !unlocked(lineOf(lvl))) { lockedSheet(lineOf(lvl)); return; }
@@ -821,7 +816,6 @@ function start(mode, lvl = save.level) {
   clearTimeout(bubT); $('gBub').classList.remove('show');
   const stake = comboStake(); $('gCombo').hidden = stake < 2; $('gCombo').textContent = `✨${stake}`;
   show('game'); resize(); hud(); tick();
-  Olcum.ev('level_start', { ...lvlP(), resumed: !!G.moves });
   const rc = daily ? null : (G.rules || []).map(k => RULE_LINE[k]).filter(c => RULES[c] && !save.seen[c]).sort((a, b) => a - b)[0];
   if (rc != null) ruleCard(rc);
   if (save.played === 0) setTimeout(() => toast(L('Karoya dokun → döner', 'Tap a tile → it turns')), 500);
@@ -1220,7 +1214,7 @@ function win() {
   save.played++;
   const cr0 = crownBal();
   let extra = '', unlockedNow = null, shard = false, dbl = 0;   // dbl: videoyla ikiye katlanabilecek ipucu
-  let cmsg = '', combo = 0, broke = 0, near = false, firstWin = false;   // kusursuz seri · kıl payı (tekrar öne çıkar) · ölçüm: ilk geçiş
+  let cmsg = '', combo = 0, broke = 0, near = false;               // kusursuz seri · kıl payı (tekrar öne çıkar)
   const late = Math.ceil(G.time / 1000 - G.lim.t);
   setNext(tOk ? L('Tam vaktinde', 'On time') : `<span class="miss">+${fmtT(late * 1000)} ${L('rötar', 'late')}</span>`); trip(G.time / 1000, tOk, 0);
   if (!tOk) setTimeout(() => { if (G?.won) pax(L('Nihayet! 👏', 'Finally! 👏')); }, 700);
@@ -1234,7 +1228,7 @@ function win() {
     }
   } else {
     if (++sessionWins % INTER_EVERY === 0 && !save.noAds && save.played >= 5) interDue = true;
-    const before = totalStars(), old = save.stars[G.lvl] || 0, firstClear = G.lvl >= save.level; firstWin = firstClear;
+    const before = totalStars(), old = save.stars[G.lvl] || 0, firstClear = G.lvl >= save.level;
     save.stars[G.lvl] = Math.max(old, st);
     if (!save.crowns[G.lvl]) {
       const lost = save.comboLost; delete save.comboLost;
@@ -1263,8 +1257,6 @@ function win() {
     save.shards = (save.shards || 0) + 1;
     if (save.shards >= 3) { save.shards -= 3; save.hints++; shardMsg = L('👑 3 yeni taç · +1 ipucu', '👑 3 new crowns · +1 hint'); }   // ara sayaç gösterilmez (💎 parça birimi kaldırıldı)
   }
-  const sum = { stars: st, time_s: G.time / 1000 | 0, moves: G.moves, hints: G.hu || 0, perfect };
-  if (G.daily) Olcum.ev('daily_end', { ...sum, practice: !!G.practice, streak: save.streak }); else Olcum.ev('level_end', { ...lvlP(), ...sum, first: firstWin });
   const ns = SKINS.find(k => !k.vip && !skinOpen(k) && k.need > cr0 && k.need <= crownBal());   // bakiye bir temaya yetti
   if (ns) { save.newSkin = 1; extra = [extra, L(`🎨 ${ns.name} alınabilir (👑 ${ns.need})`, `🎨 ${ns.name} available (👑 ${ns.need})`)].filter(Boolean).join(' · '); }
   persist();
@@ -1476,14 +1468,14 @@ const STORE = [
   ['hint30', '💡', () => L('30 ipucu', '30 hints'), () => ''],
   ['hint80', '💡', () => L('80 ipucu', '80 hints'), () => ''],
   ['bst', '🧰', () => L('Güçlendirici paketi', 'Booster pack'), () => BST.map(b => `${b.ic}×3`).join(' ')],
-  ['crown', '👑', () => L('50 taç', '50 crowns'), () => L('Yalnız temalar için (sandık kazanılan 👑 ile açılır)', 'For themes only (chests use earned 👑)')],
+  ['crown', '🎫', () => L('Bilet paketi · 50 bilet', 'Ticket pack · 50 tickets'), () => L('Yalnız temalar için (sandık kazanılan 🎫 ile açılır)', 'For themes only (chests use earned 🎫)')],
 ];
 function storeSheet(focus) {
   const live = Shop.avail(), owns = k => k === 'noads' ? save.noAds : k === 'themes' && save.allThemes;
   const rows = STORE.filter(([k]) => live || k === 'noads').filter(([k]) => !(k === 'themes' && SKINS.every(x => x.vip || skinOpen(x)) && !save.allThemes))
     .map(([k, ic, name, sub]) => `<button class="opt row prod ${focus === k.slice(0, 4) ? 'on' : ''}" data-p="${k}"><span>${ic} ${name()}${sub() ? `<small>${sub()}</small>` : ''}</span><b>${owns(k) ? L('Sende ✓', 'Owned ✓') : (Shop.price(k) || '') + ' ›'}</b></button>`).join('');
   modal(`<h2>${L('Mağaza', 'Shop')}</h2>
-    <p>${L(`Sende 💡 ${save.hints} · 👑 ${crownBal()}`, `You have 💡 ${save.hints} · 👑 ${crownBal()}`)}</p>
+    <p>${L(`Sende 💡 ${save.hints} · 🎫 ${crownBal()}`, `You have 💡 ${save.hints} · 🎫 ${crownBal()}`)}</p>
     <div class="store" id="store">${rows}</div>
     <p class="tip">${live ? L('Oyunun tamamı ücretsiz oynanır; paketler isteğe bağlı.', 'The whole game is free to play; packs are optional.') : L('Paketler mağazadan indirilen sürümde açılır.', 'Packs are available in the store version.')}</p>
     ${live ? `<button id="mRestore" class="link">${L('Satın alımı geri yükle', 'Restore purchase')}</button>` : ''}
@@ -1521,7 +1513,7 @@ function grantItem(it, tx) {
   persist();
   if (tx) try { if (!JSON.parse(localStorage.getItem('ray')).iapTx?.includes(key)) return false; } catch { return false; }   // kayıt gerçekten yazıldı mı (yazılmadıysa işlem açık kalır)
   $('gHints').textContent = save.hints; refreshHome(); haptic('win');
-  toast(g.hints ? L(`+${g.hints} ipucu 💡`, `+${g.hints} hints 💡`) : g.bst ? L('🧰 Güçlendiriciler çantanda', '🧰 Boosters added') : L(`+${g.crowns} 👑 · temalarda kullan`, `+${g.crowns} 👑 · spend them on themes`));
+  toast(g.hints ? L(`+${g.hints} ipucu 💡`, `+${g.hints} hints 💡`) : g.bst ? L('🧰 Güçlendiriciler çantanda', '🧰 Boosters added') : L(`+${g.crowns} 🎫 bilet · temalarda kullan`, `+${g.crowns} 🎫 tickets · spend them on themes`));
   if (modalOpen() && $('store')) storeSheet();
   return true;
 }
@@ -1544,7 +1536,7 @@ async function hint() {
   const i = wrong[0], now = performance.now(), prev = G.L.d, ui = G.unitOf?.[i] ?? -1;
   G.hist = [];   // ipucunun sabitlediği karo geri alınmasın
   for (const k of ui >= 0 ? G.units[ui].cells : G.link[i] >= 0 ? [i, G.link[i]] : [i]) { G.cur[k] = G.sol[k]; G.fixed[k] = true; anim.set(k, now); press.set(k, now); }   // eşli karo / eklenti birimi: hepsi birden
-  save.hints--; G.hu = (G.hu || 0) + 1; persist(); $('gHints').textContent = save.hints; bump($('gHints'));
+  save.hints--; persist(); $('gHints').textContent = save.hints; bump($('gHints'));
   G.L = lit(G); reveal();
   G.L.d.forEach((v, j) => { if (v >= 0 && prev[j] < 0) litAt[j] = now + v * 12; });
   burst(i, 10, 0, pal.light ? '#ffc56b' : '#ffffff'); tone(note(9), .35, .05); tone(note(12), .35, .04, 'sine', .08); haptic('heavy');
@@ -1695,8 +1687,8 @@ function openPolicy() {
 }
 function privacySheet() {
   modal(`<h2>${L('Gizlilik', 'Privacy')}</h2>
-    <div class="perks">${L(`<div><i>📱</i><span><b>Hesap yok</b> · ilerlemen yalnız bu cihazda</span></div><div><i>🔔</i><span>Hatırlatmalar cihazında planlanır</span></div><div><i>📺</i><span>Reklamlar <b>Google AdMob</b> ile · reklam kimliği ve cihaz bilgisi işlenir</span></div><div><i>📊</i><span>Adsız oyun istatistikleri <b>Firebase</b> ile · reklam kimliği yok · rıza gereken bölgede kapalı</span></div><div><i>💳</i><span>Ödeme mağaza üzerinden</span></div>`,
-      `<div><i>📱</i><span><b>No account</b> · your progress stays on this device</span></div><div><i>🔔</i><span>Reminders are scheduled on your device</span></div><div><i>📺</i><span>Ads by <b>Google AdMob</b> · ad ID and device info are processed</span></div><div><i>📊</i><span>Anonymous game stats via <b>Firebase</b> · no ad ID · off where consent is required</span></div><div><i>💳</i><span>Payments via the store</span></div>`)}</div>
+    <div class="perks">${L(`<div><i>📱</i><span><b>Hesap yok</b> · ilerlemen yalnız bu cihazda</span></div><div><i>🔔</i><span>Hatırlatmalar cihazında planlanır</span></div><div><i>📺</i><span>Reklamlar <b>Google AdMob</b> ile · reklam kimliği ve cihaz bilgisi işlenir</span></div><div><i>🚫</i><span>Analitik yok · ödeme mağaza üzerinden</span></div>`,
+      `<div><i>📱</i><span><b>No account</b> · your progress stays on this device</span></div><div><i>🔔</i><span>Reminders are scheduled on your device</span></div><div><i>📺</i><span>Ads by <b>Google AdMob</b> · ad ID and device info are processed</span></div><div><i>🚫</i><span>No analytics · payments via the store</span></div>`)}</div>
     <button id="mPol" class="btn glassbtn">${L('Gizlilik politikası', 'Privacy policy')} ↗</button>
     ${Ads.privacy() ? `<button id="mAdP" class="btn glassbtn">${L('Reklam gizlilik seçenekleri', 'Ad privacy options')}</button>` : ''}
     <button id="mWipe" class="link">${L('Verilerimi sil', 'Delete my data')}</button>
@@ -1752,7 +1744,7 @@ function wipeSheet() {
     <button id="mNo" class="btn primary"><span>Cancel</span></button>
     <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">Yes, delete it all</button>`), {
     mNo: privacySheet,
-    mWipeOk: async () => { save.remind = false; await Promise.race([Promise.all([Remind.plan(), Olcum.reset()]), new Promise(r => setTimeout(r, 1500))]); wiped = true; try { localStorage.removeItem('ray'); } catch {} location.reload(); } });
+    mWipeOk: async () => { save.remind = false; await Promise.race([Remind.plan(), new Promise(r => setTimeout(r, 1500))]); wiped = true; try { localStorage.removeItem('ray'); } catch {} location.reload(); } });
 }
 // ---------- renk temaları ----------
 const skinSvg = '<svg viewBox="0 0 120 60"><path d="M10 46H40L60 28H110"/><path d="M60 6V28L80 46H110"/><path d="M10 14H36L60 28"/><rect x="52" y="20" width="16" height="16" rx="5"/></svg>';
@@ -1879,7 +1871,7 @@ const BST = [
   { id: 'geri', ic: '↶', name: L('Geri al', 'Undo'), sub: L('Son 5 hamle silinir, sayaç da geri gider', 'Takes back your last 5 moves'), line: 0 },
 ];
 const bst = id => save.bst?.[id] || 0;
-function useBst(id) { save.bst = { ...save.bst, [id]: bst(id) - 1 }; persist(); Olcum.ev('booster_use', { booster: id, ...lvlP() }); }
+function useBst(id) { save.bst = { ...save.bst, [id]: bst(id) - 1 }; persist(); }
 const RW_ICON = {
   hint: '<svg class="rwi" viewBox="-1 -3 26 26"><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1.1 1.2 1.1 2.2h5c0-1 .5-1.7 1.1-2.2A6 6 0 0 0 12 3z" fill="url(#cgB)"/><path d="M9 18h6M10 21h4"/><path class="ry" d="M12 .6v-2M17.9 3.1l1.4-1.4M6.1 3.1 4.7 1.7M20.4 9h2M3.6 9h-2"/></svg>',
   shield: '<svg class="rwi" viewBox="0 0 24 24"><path d="M12 2.6 19.4 5.4v5.4c0 4.7-3 8.6-7.4 10.6-4.4-2-7.4-5.9-7.4-10.6V5.4z" fill="url(#cgS)"/><path d="M12 8.2c.5 2 2.5 2.75 2.5 5.5a2.5 2.5 0 0 1-5 0c0-1.25.6-2 1.25-2.5.1.9.5 1.5 1.1 1.65C11.5 11.5 11.65 9.7 12 8.2z" fill="url(#cgF)" stroke="none"/></svg>',
@@ -1891,7 +1883,7 @@ function chestSheet() {
   modal(`<h2>${L('Sürpriz sandık', 'Surprise chest')}</h2>
     <div class="cbox ${can ? 'can' : ''}" id="chestBox">${CHEST_SVG}<div class="loot">${LOOT.map(([t, s]) => `<b class="tier-${t}">${RARITY[t][0]}</b><span>${s}</span>`).join('')}<small>${L(`${PITY} sandıkta destansı çıkmazsa ${PITY}.si garanti`, `No epic in ${PITY - 1} chests? The ${PITY}th is guaranteed`)}</small></div></div>
     <div class="odds">${Object.entries(RARITY).map(([t, [n, p]]) => `<b class="tier-${t}">${n} ${L('%' + Math.round(p * 100), Math.round(p * 100) + '%')}</b>`).join('<i>·</i>')}<button id="mOdds" class="qm" aria-label="${L('Sandıktan ne çıkar?', 'What’s inside?')}">?</button></div>
-    ${(save.bCrowns || 0) > (save.bSpent || 0) ? `<p class="tip">${L(`Sandık kazanılan 👑 ile açılır · sende 👑 ${Math.max(0, chestBal())}`, `Chests use earned 👑 · you have 👑 ${Math.max(0, chestBal())}`)}</p>` : ''}
+    ${(save.bCrowns || 0) > (save.bSpent || 0) ? `<p class="tip">${L(`Sandık kazanılan 🎫 bilet ile açılır · sende 🎫 ${Math.max(0, chestBal())}`, `Chests use earned 🎫 tickets · you have 🎫 ${Math.max(0, chestBal())}`)}</p>` : ''}
     ${BST.some(b => bst(b.id)) ? `<div class="bstinv">${BST.filter(b => bst(b.id)).map(b => `<span title="${b.name}">${b.ic} <b>${bst(b.id)}</b></span>`).join('')}</div>` : ''}
     <button id="mOpen" class="btn primary cbtn">${can ? `<span>${L('Aç', 'Open')} · 👑 ${CHEST}</span>` : `<span>${L('Taç topla', 'Earn crowns')}</span><small>${L(`👑 ${CHEST} gerekli`, `👑 ${CHEST} needed`)}</small>`}</button>
     <div class="nexts"><small>${L('Trenin', 'Your train')}</small><small>🚆 ${own} / ${LIVERIES.length}</small></div>
@@ -2077,9 +2069,8 @@ function how() {
     <p id="demoTxt" class="demotxt">${DEMO_STEPS[0][1]}</p>
     <small class="swipe" id="demoSwipe">${L('‹ kaydır ›', '‹ swipe ›')}</small>
     <button id="mClose" class="btn primary"><span>${L('İleri ›', 'Next ›')}</span><small>1 / ${DEMO_STEPS.length}</small></button>`, {}, true);
-  const btn = $('mClose'), close = closeModal, first = !save.played;
-  Olcum.ev('tutorial', { step: 'begin', first });
-  mOnClose = () => { Olcum.ev('tutorial', { step: done ? 'complete' : 'skip', first }); if (save.played === 0 && !G) start('level'); };
+  const btn = $('mClose'), close = closeModal;
+  mOnClose = () => { if (save.played === 0 && !G) start('level'); };
   const D = demo($('demoCv'), k => {
     if (k === last && !done) { done = true; mLocked = false; $('demoSwipe').style.visibility = 'hidden'; }
     btn.classList.toggle('fin', done && k === last);

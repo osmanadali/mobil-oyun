@@ -11,7 +11,7 @@ window.Shop = (() => {
     { key: 'hint30', id: 'ray_ipucu_30', give: { hints: 30 } },
     { key: 'hint80', id: 'ray_ipucu_80', give: { hints: 80 } },
     { key: 'bst', id: 'ray_guclendirici', give: { bst: { tur: 3, fener: 3, sure: 3, geri: 3 } } },
-    { key: 'crown', id: 'ray_tac_50', give: { crowns: 50 } },
+    { key: 'crown', id: 'ray_bilet_50', give: { crowns: 50 } },   // 🎫 bilet (eski adıyla 👑 taç; kayıtta crown adları korunur)
   ];
   const byKey = Object.fromEntries(ITEMS.map(x => [x.key, x])), byId = Object.fromEntries(ITEMS.map(x => [x.id, x]));
   const C = () => window.CdvPurchase;
@@ -49,10 +49,7 @@ window.Shop = (() => {
     const p = prod(key), o = p?.getOffer?.(); if (!o) return 'hata';
     try {
       const err = await o.order();
-      if (err) return err.code === C().ErrorCode.PAYMENT_CANCELLED ? 'iptal' : 'hata';
-      // gelir otomatik in_app_purchase olayında; burada değer (value) gönderilmez, çift sayılmasın
-      window.Olcum?.ev('purchase', { item_id: p.id, kind: byKey[key].nc ? 'non_consumable' : 'consumable', currency: p.pricing?.currency || '' });
-      return 'ok';
+      return !err ? 'ok' : err.code === C().ErrorCode.PAYMENT_CANCELLED ? 'iptal' : 'hata';
     } catch { return 'hata'; }
   }
   // Geri yükleme (iki mağazada da) yalnız tüketilemezleri getirir: Play satın alımları yeniden sorgular, App Store tamamlanmış işlemleri geri getirir → receiptUpdated → owned

@@ -161,7 +161,7 @@ Kusursuz bitirilen her bölüm (⏱ ve ↻ hedefi aynı oyunda) bir kez 1 👑 v
 
 Toplam 25 renk teması vardır: 22'si taçla, 3'ü Reklamsız paketle açılır. Mağazadaki **Tema paketi** (`ray_temalar`, tüketilemez) 22 taçlı temanın hepsini birden açar (`save.allThemes`; 3 özel tema yine Reklamsız pakette kalır).
 
-**Satın alınan taç (31 Ekim):** Mağazadaki taç paketi (`ray_tac_50`) 50 👑 verir. Bu taçlar ayrı sayılır (`save.bCrowns`, harcanan kısmı `save.bSpent`): bakiyeye (`crownBal`) eklenir ve **yalnız temada** harcanır; tema alınırken önce satın alınan taç düşer. Sandık yalnız kazanılan taçla açılır (`chestBal` = kazanılan − sandığa/temaya giden kazanılmış taç). Böylece gerçek parayla rastgele ödül (ganimet kutusu) alınamaz. Kazanılan taç sayısı (`crownCount`) satın almadan etkilenmez.
+**Satın alınan bilet (31 Ekim):** taç para birimi 🎫 bilet olarak yeniden adlandırılıyor (kodda `crown` adları aynı). Mağazadaki **Bilet paketi** (`ray_bilet_50`) 50 bilet verir. Bunlar ayrı sayılır (`save.bCrowns`, harcanan kısmı `save.bSpent`): bakiyeye (`crownBal`) eklenir ve **yalnız temada** harcanır; tema alınırken önce satın alınan taç düşer. Sandık yalnız kazanılan taçla açılır (`chestBal` = kazanılan − sandığa/temaya giden kazanılmış taç). Böylece gerçek parayla rastgele ödül (ganimet kutusu) alınamaz. Kazanılan sayı (`crownCount`) satın almadan etkilenmez.
 
 ### Hat adları ve renkleri
 
@@ -176,7 +176,7 @@ Robot her temada ilk 60 hattı, koyu ve açık görünümde ayrı ayrı denetler
 
 ### Sürpriz sandık
 
-Taçların temalar dışındaki tek harcama yeri. Oyun içinde kendiliğinden çıkmaz; oyuncu Renk temaları sayfasından **👑 10** harcayarak açar. İçinden asla taç çıkmaz, böylece taçla taç kazanma kumarı oluşmaz. Satın alınan taç (Mağaza › 50 taç) sandıkta kullanılamaz; sandık yalnız kazanılan taçla açılır, bu yüzden sandık parayla açılamaz.
+Taçların temalar dışındaki tek harcama yeri. Oyun içinde kendiliğinden çıkmaz; oyuncu Renk temaları sayfasından **👑 10** harcayarak açar. İçinden asla taç çıkmaz, böylece taçla taç kazanma kumarı oluşmaz. Satın alınan bilet (Mağaza › Bilet paketi) sandıkta kullanılamaz; sandık yalnız kazanılan taçla açılır, bu yüzden sandık parayla açılamaz.
 
 | Nadirlik | Olasılık | İçerik |
 |---|---|---|

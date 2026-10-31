@@ -60,7 +60,7 @@ Oyun Türkçe ve İngilizce oynanır. Bu belge altyapıyı ve ortak sözlüğü 
 | Tema paketi | Theme pack |
 | Güçlendirici paketi | Booster pack |
 | İpucu paketleri | Hint packs |
-| 50 taç | 50 crowns |
+| Bilet paketi · 50 bilet | Ticket pack · 50 tickets |
 | ızgara | grid |
 | Oyna | Play |
 | Nasıl oynanır? | How to play? |

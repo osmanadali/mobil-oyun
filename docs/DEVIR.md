@@ -40,8 +40,7 @@ Bu not, işi yeni bir sohbete taşırken bağlam kaybolmasın diye yazıldı. Ye
 | `www/game.js` | Çekirdek: üretim, çözücü (`difficulty`), çizim, ekonomi, sandık, temalar, sefer şeridi |
 | `www/rules/*.js` | M9 sonrası kural eklentileri (`window.RAY_RULES`) |
 | `www/i18n.js`, `docs/CEVIRI.md` | Türkçe/İngilizce: `L(tr, en)`, cihaz diline göre seçim, Ayarlar › Dil; sözlük ve yazım ilkeleri |
-| `www/ads.js`, `www/shop.js`, `www/olcum.js`, `www/gizlilik.html` | Reklam (UMP rızası, ATT), mağaza ürünleri (Play + App Store), ölçüm (Firebase Analytics), gizlilik politikası |
-| `tools/olcum-hazirla.cjs` | CI: Firebase yapılandırmasını gizli değerden yazar ya da eklentiyi çıkarır |
+| `www/ads.js`, `www/shop.js`, `www/gizlilik.html` | Reklam (UMP rızası, ATT), mağaza ürünleri (Play + App Store), gizlilik politikası |
 | `www/index.html`, `www/style.css`, `www/sw.js` | Kabuk. Yeni kural dosyası eklenince `index.html`'e `<script>` satırı ve `sw.js` önbellek listesine girdi eklenir. |
 | `tools/hakem.cjs` | Test robotu (Playwright). `tools/hakem/*.cjs` kural testlerini K bölümünde yükler. |
 | `.claude/workflows/hakem.js` | 4 kişilik yapay zekâ jürisi iş akışı ("tur bitti" deyince) |
@@ -77,7 +76,7 @@ APK indirme linkleri (sabit):
 <!-- DURUM:BAŞ -->
 Durum 28 Ekim 2026 sabahı itibarıyla:
 
-- **Gelir ve ölçüm (31 Ekim, `gelir-olcum` dalı):** Ayarlar › **Mağaza** tek pencere: Reklamsız paket, Tema paketi (`ray_temalar`, tüketilemez), 10/30/80 ipucu, Güçlendirici paketi (her birinden 3), 50 taç (tüketilebilir; ürünler ve fiyatlar MAGAZA §10). Tüketilebilirde ödül kayda yazılır, sonra işlem bitirilir; işlem kimliğiyle tekrar ödül yok. Satın alınan taç ayrı sayılır (`bCrowns`/`bSpent`), yalnız temaya; sandık yalnız kazanılan taçla (`chestBal`). Firebase Analytics (`www/olcum.js`, `@capacitor-firebase/analytics` 8.5.2): 8 olay, UMP rıza gerekmeyen bölgede açık, rıza bölgesinde kapalı, reklam kimliği yok; yapılandırma GitHub gizli değerlerinden (`FIREBASE_ANDROID_JSON`, `FIREBASE_IOS_PLIST`), yoksa eklenti CI'da çıkarılır (YAYIN §5). Robot: `--only=gelir-olcum`.
+- **Mağaza (31 Ekim, `gelir-olcum` dalı):** Ayarlar › **Mağaza** tek pencere: Reklamsız paket, Tema paketi (`ray_temalar`, tüketilemez), 10/30/80 ipucu, Güçlendirici paketi (her birinden 3), Bilet paketi (`ray_bilet_50`, 50 🎫; tüketilebilir; ürünler ve fiyatlar MAGAZA §10). Tüketilebilirde ödül kayda yazılır, sonra işlem bitirilir; işlem kimliğiyle tekrar ödül yok. Satın alınan bilet ayrı sayılır (`bCrowns`/`bSpent`), yalnız temaya; sandık yalnız kazanılanla (`chestBal`). Robot: `--only=gelir-olcum`. **Salıya kalanlar:** Firebase Analytics (hazır kod `0536e22` commit'inde duruyor: `git show 0536e22 --stat`; `www/olcum.js`, `tools/olcum-hazirla.cjs`, `@capacitor-firebase/analytics` 8.5.2, ads.js/game.js/shop.js olay çağrıları, CI gizli değerleri `FIREBASE_ANDROID_JSON`/`FIREBASE_IOS_PLIST`, YAYIN §5 rıza kararı ve olay tablosu, gizlilik ve MAGAZA §6–§7 Firebase metinleri, robot ölçüm testleri; eklenecek olaylar: life_lost, life_refill_ad, offer_shown, offer_buy) ve özel teklif penceresi.
 
 - **Güçlendiriciler (31 Ekim):** sandıktan 🔄 ek tur, 🔦 fener, ⏱ +15 sn, ↶ geri al çıkar; yalnız işe yaradığı an alt çubukta belirir (BOLUM_TASARIMI › Sürpriz sandık). Sandıkta ipucu payı %60'tan %38'e indi. Robotta tek dosya: `node tools/hakem.cjs --only=guclendirici` (birleştirmeden önce tam koşu yine şart).
 - **Tasarım turu 2 (31 Ekim):** oyunda tek süre (kalan süre şeritte, çipte yalnız yıldızlar), oyun başlığında ⚡% yok; 💎 parça birimi kalktı (3 yeni taçta +1 ipucu, sayaç gösterilmez); "Nasıl oynanır?" Ayarlar'a taşındı; ana sayfa logosu uygulama ikonunun işareti; renk temalarında sıradaki tema renkli ve ilerleme çubuğu ızgaranın üstünde; mağaza puanı (`@capacitor-community/in-app-review` 8.0.0, 12. bölümden sonra 3 ★'lı bir bitişte bir kez, sonra 60 gün + 40 bölüm); Ayarlar › İlerlemeyi taşı (RAY1 kodu; reklamsız paket kodla taşınmaz); "Bize yaz" satırı `SUPPORT_MAIL` doldurulunca görünür (gizlilik.html İletişim'deki yer tutucularla birlikte doldurulmalı); ikinci merkezin hattı kesik açık çizgili, merkezi halkalı (renk körlüğü); 7×9 hatlarında kısa bölüm (`short`).
@@ -125,8 +124,7 @@ Durum 28 Ekim 2026 sabahı itibarıyla:
 3. **İmza anahtarı:** `keytool` ile üretilir ve yedeklenir. Dört gizli değer GitHub'a girilir: `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`.
 4. **Gizlilik politikası:** `www/gizlilik.html` içindeki `[iletişim e-postası]` ve `[geliştirici adı]` doldurulur.
 5. **GitHub Pages:** açılmalı (gizlilik adresi bunu bekliyor). `web.yml` push tetikleyicisi geri getirilir.
-6. **Mağaza ürünleri ve formlar:** yedi ürün (MAGAZA §10: `ray_reklamsiz`, `ray_temalar`, `ray_ipucu_10/30/80`, `ray_guclendirici`, `ray_tac_50`) iki mağazada tanımlanır, formlar doldurulur, metin ve görseller yüklenir.
-7. **Firebase (isteğe bağlı):** proje, Android/iOS uygulamaları, `FIREBASE_ANDROID_JSON` ve `FIREBASE_IOS_PLIST` gizli değerleri (YAYIN §5).
+6. **Mağaza ürünleri ve formlar:** yedi ürün (MAGAZA §10: `ray_reklamsiz`, `ray_temalar`, `ray_ipucu_10/30/80`, `ray_guclendirici`, `ray_bilet_50`) iki mağazada tanımlanır, formlar doldurulur, metin ve görseller yüklenir.
 
 **Geliştirme (öneriler, `docs/KALITE.md` §3):**
 
