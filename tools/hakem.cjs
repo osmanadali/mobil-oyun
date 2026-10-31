@@ -726,7 +726,7 @@ async function inViewport(page, sel) {
     await shot(page, 'chest-info');
     check('chest.sheet', 'Sandık penceresi: çizilmiş sandık; oranlar tek satırda + "?" sandıktan ne çıkacağını gösterir; eski uzun ipucu satırı yok; Aç düğmesi küçük ve bakiye yazmaz',
       sh.svg && sh.row && /Sıradan %60/.test(sh.odds) && /Nadir %28/.test(sh.odds) && /Destansı %12/.test(sh.odds) && sh.q === '?' && !sh.tip && sh.btn === 'Aç · 👑 10' && sh.btnH < 76
-      && loot.vis && /💡 ipucu ×2/.test(loot.txt) && /💡 ipucu ×4/.test(loot.txt) && /🛡 seri kalkanı ×1/.test(loot.txt) && /🚆 yeni tren kaplaması/.test(loot.txt) && /8 sandıkta destansı çıkmazsa 8\.si garanti/.test(loot.txt), JSON.stringify({ ...sh, loot: loot.txt }), 'medium');
+      && loot.vis && /💡 ipucu ×2/.test(loot.txt) && /💡 ipucu ×4/.test(loot.txt) && /🛡 seri kalkanı/.test(loot.txt) && /güçlendirici/.test(loot.txt) && /🚆 yeni tren kaplaması/.test(loot.txt) && /8 sandıkta destansı çıkmazsa 8\.si garanti/.test(loot.txt), JSON.stringify({ ...sh, loot: loot.txt }), 'medium');
     await page.click('#mOdds'); await page.waitForTimeout(200);
     await page.click('#mOpen'); await page.waitForTimeout(900);
     const s1 = await getSave(page), c0 = await chestScene(page);
