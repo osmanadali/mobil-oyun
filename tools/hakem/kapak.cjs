@@ -3,7 +3,7 @@
 // ipucu, ↺ baştan, yarım oyun, karma hatlar (≥ 300 bölüm), çakışma (karanlık tünel).
 const SEEN = Object.fromEntries(Array.from({ length: 30 }, (_, k) => [k + 2, 1]));   // bütün kural kartları görülmüş
 // kapak eklentisi yokken ölçülen parmak izi (1–252 bölümleri ve 40 Günün Hattı; FNV-1a, JSON). Kapak yalnız M10'dan başlar → hiç değişmemeli.
-const FP = { old: '1f30c0k', day: '109kff2' };   // old: mola bölümleriyle (28 Ekim) yenilendi
+const FP = { old: '1kfx3ni', day: '109kff2' };   // old: mola (28 Ekim) ve kısa bölümlerle (31 Ekim) yenilendi
 
 module.exports = async T => {
   const { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, starsUpTo } = T;

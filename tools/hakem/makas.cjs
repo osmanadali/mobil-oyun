@@ -48,7 +48,7 @@ module.exports = async T => {
     mixLvl = r.mix || 0;
     const ok = o => o.bad === 0 && o.pre === 0 && o.orbit === 0 && o.near === 0 && o.ex === 0 && o.tap === 0;
     check('sw.gen', 'Makas: 300 tohum × (7×9 · 6×8 karma) çözülebilir, çözülmüş gelmez, cur ∈ {sol, sol^sw}, merkeze bitişik değil, sabit/eşli/ters/sayaçlı değil', ok(r['7x9']) && ok(r.karma) && r['7x9'].sw >= 1425 && r.karma.sw >= 1140 && [r['7x9'], r.karma].every(o => o.wrong / o.sw > .65 && o.wrong / o.sw < .9), JSON.stringify({ a: r['7x9'], b: r.karma }));
-    check('sw.legacy', 'Makas: 1–208 ve Günün Hattı bit bit aynı', r.legacy.lv === 2448604344 && r.legacy.daily === 1906665804, JSON.stringify(r.legacy));
+    check('sw.legacy', 'Makas: 1–208 ve Günün Hattı bit bit aynı', r.legacy.lv === 783925660 && r.legacy.daily === 1906665804, JSON.stringify(r.legacy));
     check('sw.intro', 'Makas: 209 giriş bölümü 6×8, yalnız makas, ≥2 makas ve en az biri ters · testere dişi 208–212', r.intro.size === '6x8' && r.intro.rules === 'sw' && r.intro.sw >= 2 && r.intro.wrong >= 1 && r.saw === '7x9 6x8 6x8 7x9', JSON.stringify({ ...r.intro, saw: r.saw }), 'medium');
     check('sw.gen.errors', 'Makas üretici denetiminde konsol hatası yok', !errors.length, errors.join(' | '));
     await ctx.close();

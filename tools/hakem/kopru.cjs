@@ -2,7 +2,7 @@
 // Üretici (çözülebilirlik, yerleşim kuralları), bölünmüş lit regresyonları, eski bölümler bit bit aynı, oyunda dokunma/çizim/kazanma, kayıt.
 const SEEN = Object.fromEntries(Array.from({ length: 40 }, (_, c) => [c, 1]));   // bütün kural kartları görülmüş
 // eski bölümlerin parmak izi (köprüden ÖNCE ölçüldü): puzzleFor(1..208) ve iki Günün Hattı için cur|sol FNV-1a. 209–300 makasa göre değişebilir → köprülü/köprüsüz karşılaştırılır.
-const H208 = 1004146822,   // mola bölümleriyle (28 Ekim) yenilendi
+const H208 = 3554394182,   // mola (28 Ekim) ve kısa bölümlerle (31 Ekim) yenilendi
       DAILY = [['2026-10-27', 3956970903], ['2027-03-14', 476147362]];
 const fnv = s => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
 
