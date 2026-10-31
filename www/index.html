@@ -38,7 +38,7 @@
 
     <div class="hero">
       <!-- uygulama ikonunun işareti (Gece Işığı): duraktan L ray, yanan kare merkez; ray rengi temayı izler -->
-      <svg class="logo mark" viewBox="0 0 120 120" role="button" aria-label="Şehir haritası" data-en-label="City map">
+      <svg class="logo mark" viewBox="0 0 120 120" aria-hidden="true">
         <path class="ln lr" d="M34 88V42H80"/>
         <circle class="st s1" cx="34" cy="88" r="10"/>
         <rect class="hub" x="61" y="23" width="38" height="38" rx="11"/>
@@ -92,26 +92,13 @@
     <header class="top">
       <button id="pBack" class="ic" aria-label="Geri" data-en-label="Back"><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg></button>
       <div class="title"><b data-en="Lines">Hatlar</b><small id="pSub"></small></div>
-      <button id="pCity" class="ic" aria-label="Şehir haritası" data-en-label="City map"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V10l4-3v14M9 21V4l6 3v14M15 21v-9l4 2v7"/></svg></button>
       <div class="chip"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z"/></svg><b id="pStars">0</b></div>
     </header>
     <div class="mapList" id="mapList"></div>
   </section>
 
-  <!-- şehir haritası ve rozetler (ana sayfa logosundan · Hatlar başlığından) -->
-  <section id="city" class="screen">
-    <header class="top">
-      <button id="cBack" class="ic" aria-label="Geri" data-en-label="Back"><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg></button>
-      <div class="title"><b id="cTitle">Şehir</b><small id="cSub"></small></div>
-      <i class="tsp"></i>
-    </header>
-    <div class="seg ctabs" id="cTabs"></div>
-    <div class="cityBody" id="cityBody"></div>
-  </section>
-
   <div id="modal" class="modal"><div class="sheet" id="mCard"></div></div>
   <div id="toast"></div>
-  <div id="achPop" class="achpop" role="status"></div>
 </div>
 <script src="i18n.js"></script>
 <script src="ads.js"></script>

@@ -235,48 +235,21 @@ Bu iki sistemin amacı oyuncuya "bir bölüm daha" dedirtmektir. Hiçbiri oyunu 
 - Büyük düğmenin alt satırı nedenini söyler: "Kıl payı · ⏱ 2 sn" ya da "🔥 4 seri geri gelsin".
 
 
-## 10. Şehir haritası, rozetler, zen modu, mevsim temaları
+## 10. Zen modu ve mevsim temaları
 
-Bu dört sistem oyunun "meta" katmanıdır: bulmacaya dokunmaz, oyuncuya geri dönmek için sebep verir. Menüler sade kalsın diye yeni büyük düğme yoktur. Kod: `www/game.js` › "meta" bölümü; test: `tools/hakem/meta.cjs` (`node tools/hakem.cjs --only=meta`).
-
-### Şehir haritası
-
-- **Giriş:** ana sayfadaki logo (dokununca) ya da Hatlar ekranının başlığındaki şehir simgesi. Ekranda iki sekme vardır: **Şehir** ve **Rozetler**.
-- **Semt:** her hat şehrin bir semtidir; semt hattın adını (M5 · Bahçe Hattı) ve rengini taşır.
-  - Hat baştan sona bitince semt **yanar**: hat renginde dolgu, ışıltı ve göz kırpan pencere ışıkları, merkeze uzanan metro kolu ve durak.
-  - Hattın bütün bölümleri kusursuzsa (👑) semt **altın** parlar.
-  - Sıradaki hat kesik çizgiyle "yapımda" görünür; ötekiler sönük kalır.
-  - Semte dokununca altta bilgi kartı çıkar: ad, ★ ve 👑 sayısı, durum (Semt yandı ✓ · ✨ Altın semt · N bölüm kaldı · 🔒 Kilitli).
-- **Düzen (sonsuz hat):** bir şehir 24 semttir ve **halka halka büyür**: merkez halkada 6 (M1–M6), orta halkada 8 (M7–M14), dış halkada 10 (M15–M24) semt. 24. hattan sonra yeni şehir açılır (sayfa: Işık Kent, Liman Kent, Yıldız Kent, Gece Kent, Pınar Kent, Kuzey Kent, Ufuk Kent, Gökkent, sonra numaralı). Sayfa okları yalnız ikinci şehir açılınca görünür. Merkezdeki ışık halesi yanan semt oranıyla güçlenir.
-- **Açılış:** son ziyaretten beri yanan semtler ekran açılınca sırayla yanar (`save.cityLit`).
-- **Performans:** tek SVG; animasyonlar yalnız `transform` ve `opacity` (semt başına iki ışık grubu). "Hareketi azalt" açıksa ışıklar sabit yanar, açılış animasyonu olmaz. Ekran kapalıyken animasyonlar durur.
-
-### Rozetler
-
-Yerel ve sunucusuzdur; **ödül yoktur** (taç ve ipucu ekonomisi değişmez). Kazanılınca ekranın üstünde küçük bir bildirim çıkar (dokunmayı engellemez); liste Şehir ekranının Rozetler sekmesindedir, kazanılmayanlarda ilerleme çubuğu görünür. Güncellemeden önce hak edilmiş rozetler ilk açılışta sessizce işlenir (bildirimsiz, tarihsiz).
-
-| Rozet | Koşul |
-|---|---|
-| 👑 İlk kusursuz · Kusursuz 10 · Kusursuz 100 | 1 / 10 / 100 bölüm kusursuz |
-| 🏙 İlk semt | Bir hattı baştan sona bitir |
-| ✨ Altın semt | Bir hattın bütün bölümleri 👑 |
-| 🧭 Kural ustası | Her kuralın hattını bitir (M3–M20, kural sayısı canlı okunur) |
-| 🚇 100 bölüm · 500 bölüm | Bitirilen bölüm sayısı |
-| 🔥 7 gün seri · 30 gün seri | Günün Hattı serisi (en iyi seri sayılır) |
-| 🎁 İlk sandık · Sandık avcısı | 1 / 25 sürpriz sandık |
-| ⚡ Güçlendirici | 10 güçlendirici kullan |
-| 🍃 Zen yolcusu | Zen modunda 10 bölüm |
+Oyunun "meta" katmanı: bulmacaya dokunmaz. Kod: `www/game.js` › "meta" bölümü ve `G.zen` kancaları; test: `tools/hakem/meta.cjs` (`node tools/hakem.cjs --only=meta`). Para birimi 🎫 bilet olarak yeniden adlandırılıyor (eski adı 👑 taç; kayıt alanları aynı).
 
 ### Zen modu
 
 - **Ayarlar › 🍃 Zen modu** (tek anahtar).
 - Açıkken bölümlerde süre ve hamle hedefi gizlidir: tren şeridi, yıldız çipi, hamle hedefi, rötar ve "hedef aşıldı" uyarıları, kıl payı tekrar, ⏱ +15 güçlendiricisi yoktur; müzik gerilimi artmaz. Üstte yalnız "🍃 Zen" yazar.
-- Her bitiş **3 ★** sayılır (hat kilitleri ilerler); **👑 taç verilmez**, ✨ kusursuz seri ne artar ne kırılır, kaçan hedef kaydı (`miss`) tutulmaz. Böylece taç ekonomisi korunur: taç isteyen oyuncu zen'i kapatıp aynı bölümü yeniden oynar.
-- **Günün Hattı zen'den etkilenmez**: herkes aynı koşulda oynar, 👑 ve seri her zamanki gibi.
+- Her bitiş **3 ★** sayılır (hat kilitleri ilerler); **🎫 bilet verilmez**, ✨ kusursuz seri ne artar ne kırılır, kaçan hedef kaydı (`miss`) tutulmaz. Böylece bilet ekonomisi korunur: bilet isteyen oyuncu zen'i kapatıp aynı bölümü yeniden oynar.
+- Anahtar `save.zen`'dir (can sistemi bunu okuyacak: zen'de can harcanmaz, süre başarısızlığı olmaz).
+- **Günün Hattı zen'den etkilenmez**: herkes aynı koşulda oynar, 🎫 ve seri her zamanki gibi.
 
 ### Mevsim temaları
 
-Tarihe bağlı, kendiliğinden gelen sınırlı süreli renk temalarıdır. **Öneri ve uygulanan: mevsimindeyken ücretsiz alınır**, mevsim bitince sahibinde kalır ve seçilebilir; mevsimi kaçıran oyuncu temayı göremez (bir sonraki yıl yine gelir). Taçla satılmaz: taç ekonomisi değişmez, geri dönen oyuncuya küçük bir hediye olur. Yeni mevsim teması gelince 👑 çipinde nokta yanar; temalar sayfasında en üstte "Mevsim teması · … tarihine dek ücretsiz" başlığıyla görünür.
+Tarihe bağlı, kendiliğinden gelen sınırlı süreli renk temalarıdır. **Öneri ve uygulanan: mevsimindeyken ücretsiz alınır**, mevsim bitince sahibinde kalır ve seçilebilir; mevsimi kaçıran oyuncu temayı göremez (bir sonraki yıl yine gelir). Biletle satılmaz: bilet ekonomisi değişmez, geri dönen oyuncuya küçük bir hediye olur. Yeni mevsim teması gelince bilet (👑) çipinde nokta yanar; temalar sayfasında en üstte "Mevsim teması · … tarihine dek ücretsiz" başlığıyla görünür.
 
 | Tema | Dönem |
 |---|---|
@@ -303,3 +276,10 @@ Bayramların ilk günü (Diyanet takvimi; Ümmü'l-Kurâ hesabıyla 2026'da bire
 | 2035 | 1 Aralık | 19 Şubat |
 
 Mevsim temaları da öteki temalar gibi robotta 60 hat boyunca renk ayrışması ve uyarı rengi için denetlenir. Robot tarihi `window.__rayDate` ile değiştirir.
+
+### Planlanan (salı): şehir haritası ve rozetler
+
+Tasarım hazır, kod `meta` dalının `564893d` commit'inde duruyor (geri almak için oradan alınır):
+
+- **Şehir haritası:** ana sayfa logosundan ya da Hatlar başlığındaki şehir simgesinden açılır (Şehir · Rozetler sekmeleri). Her biten hat, adı ve rengiyle bir semti yakar (ışıklar, merkeze metro kolu); hattın bütün bölümleri kusursuzsa (🎫 kazanılmış) semt altın parlar; sıradaki hat kesik çizgiyle "yapımda". Bir şehir 24 semt, halka halka büyür (6 + 8 + 10); 25. hattan sonra yeni şehir sayfası. Tek SVG, yalnız transform/opacity animasyonu.
+- **Rozetler (14, yerel, ödülsüz):** ilk kusursuz, kusursuz 10/100, ilk semt, altın semt, kural ustası (her kuralın hattı), 100/500 bölüm, 7/30 gün seri, ilk sandık, 25 sandık, 10 güçlendirici, zen'de 10 bölüm. Kazanınca üstte küçük bildirim; güncelleme öncesi hak edilenler sessizce işlenir. Zen bitişleri `save.zenWins` ile şimdiden sayılıyor.
