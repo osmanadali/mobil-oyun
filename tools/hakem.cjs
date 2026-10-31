@@ -983,7 +983,7 @@ async function inViewport(page, sel) {
   {
     let bytes = 0; const walk = d => fs.readdirSync(d).forEach(f => { const p = path.join(d, f); fs.statSync(p).isDirectory() ? walk(p) : bytes += fs.statSync(p).size; });
     walk(ROOT); metrics.webBytes = bytes;
-    check('size', 'Web paketi < 560 KB (12 kural eklentisi dahil)', bytes < 560 * 1024, `${(bytes / 1024).toFixed(0)} KB`, 'low');
+    check('size', 'Web paketi < 640 KB (15 kural eklentisi, mağaza, görev ve meta katmanı dahil)', bytes < 640 * 1024, `${(bytes / 1024).toFixed(0)} KB`, 'low');
   }
 
   await browser.close(); server.close();
