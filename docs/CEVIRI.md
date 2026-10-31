@@ -55,10 +55,6 @@ Oyun Türkçe ve İngilizce oynanır. Bu belge altyapıyı ve ortak sözlüğü 
 | tren kaplaması | train livery |
 | sürpriz sandık | surprise chest |
 | Sıradan · Nadir · Destansı | Common · Rare · Epic |
-| sınırsız can (❤️∞) | unlimited lives |
-| haftalık görevler (🎯) | weekly quests |
-| görev tamam | quest done |
-| ipucusuz | without hints |
 | güçlendirici | booster |
 | geçmiş gün · geçmiş günler | past day · past days |
 | Günün Hattı arşivi | Daily Line archive |
