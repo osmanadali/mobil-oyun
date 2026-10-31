@@ -1,7 +1,8 @@
 // 'npx cap add android' ile üretilen projeyi Ray için hazırlar (CI: apk.yml, release.yml). android/ depoda yok, her derlemede yeniden üretilir.
 // Her yama kalıbı bulunamazsa durur: Capacitor şablonu değişirse derleme sessizce yanlış çıkmasın.
 // Ortam: ADMOB_APP_ID (yoksa Google test App ID), ADMOB_INTERSTITIAL + ADMOB_REWARDED (varsa index.html'e window.RAY_ADS),
-//        VERSION_CODE, VERSION_NAME (yoksa package.json), RAY_KEYSTORE (+ _PASSWORD, RAY_KEY_ALIAS, RAY_KEY_PASSWORD: imzalı sürüm).
+//        VERSION_CODE, VERSION_NAME (yoksa package.json), RAY_KEYSTORE (+ _PASSWORD, RAY_KEY_ALIAS, RAY_KEY_PASSWORD: imzalı sürüm),
+//        FIREBASE_ANDROID_JSON (gizli değer, isteğe bağlı: ölçüm).
 const fs = require('fs'), path = require('path');
 const R = path.join(__dirname, '..', '..'), A = path.join(R, 'android'), E = process.env;
 const TEST_APP = 'ca-app-pub-3940256099942544~3347511713';
@@ -64,3 +65,6 @@ if (E.ADMOB_INTERSTITIAL || E.ADMOB_REWARDED) {
   const ads = { android: { interstitial: E.ADMOB_INTERSTITIAL, rewarded: E.ADMOB_REWARDED } };
   yama(path.join(R, 'www/index.html'), '<script src="ads.js"></script>', `<script>window.RAY_ADS = ${JSON.stringify(ads)}</script><script src="ads.js"></script>`, 'window.RAY_ADS (Android)');
 }
+
+// 8) Ölçüm (Firebase Analytics): FIREBASE_ANDROID_JSON gizli değeri varsa google-services.json yazılır, yoksa eklenti çıkarılır (tools/olcum-hazirla.cjs)
+require('child_process').execFileSync(process.execPath, [path.join(R, 'tools/olcum-hazirla.cjs'), 'android'], { stdio: 'inherit' });

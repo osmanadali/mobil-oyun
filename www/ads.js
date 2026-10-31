@@ -21,7 +21,7 @@ window.Ads = (() => {
   const ok = () => ready && allowed && online();   // rıza alınmadan, başlatılmadan reklam isteği yok
   const within = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
   // UMP yanıtı → reklam izni + ayarlardaki "Reklam gizlilik seçenekleri" görünürlüğü
-  const consent = c => { privacy = c?.privacyOptionsRequirementStatus === 'REQUIRED'; return allowed = !!c?.canRequestAds; };
+  const consent = c => { privacy = c?.privacyOptionsRequirementStatus === 'REQUIRED'; window.Olcum?.consent(c); return allowed = !!c?.canRequestAds; };   // ölçüm de aynı karara uyar (olcum.js)
 
   async function start() {
     const A = plug(); if (!A || ready) return;
@@ -95,7 +95,7 @@ window.Ads = (() => {
       const wait = closed(A, ['interstitialAdDismissed'], ['interstitialAdFailedToShow'], 60e3);
       interReady = false;
       await A.showInterstitial();
-      if (shown = await wait) lastShown = Date.now();
+      if (shown = await wait) { lastShown = Date.now(); window.Olcum?.ev('ad_impression', { ad_platform: 'admob', ad_format: 'interstitial' }); }
     } catch {}
     preload();
     return shown;
@@ -118,6 +118,7 @@ window.Ads = (() => {
     Promise.resolve(h).then(x => x?.remove?.()).catch(() => {});
     busy = false;
     if (earned || shown) lastShown = Date.now();   // videonun hemen ardından geçiş reklamı gelmesin
+    if (earned || shown) window.Olcum?.ev('ad_impression', { ad_platform: 'admob', ad_format: 'rewarded', earned });
     preloadReward();
     return earned ? 'earned' : shown ? 'closed' : 'nofill';
   }

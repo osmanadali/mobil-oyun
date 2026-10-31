@@ -16,6 +16,7 @@ Ortak noktalar:
 - Capacitor 8 kullanılır: Node 22+, JDK 21, Xcode 26+. Android hedef API düzeyi 36'dır (Play 2025-08'den beri en az 35 istiyor), en düşük API 24'tür.
 - Sürüm adı (`versionName`, iOS'ta `MARKETING_VERSION`) `package.json` içindeki `version` alanından gelir. Yeni sürümden önce orayı artır (ör. `0.4.0` → `1.0.0`).
 - Gerçek reklam kimlikleri yalnız derleme sırasında girer: `index.html`'de `ads.js`'ten önce `window.RAY_ADS = { android: {…}, ios: {…} }` betiği. Yoksa `ads.js` Google'ın test kimliklerini kullanır.
+- Ölçüm (Firebase Analytics) isteğe bağlıdır: `FIREBASE_ANDROID_JSON` / `FIREBASE_IOS_PLIST` gizli değerleri yoksa derleme ölçümsüz çıkar (§5).
 - Gizlilik politikası adresi: `https://osmanadali.github.io/mobil-oyun/gizlilik.html`. Bu adres GitHub Pages açılınca yayına girer. Pages'i açmak senin onayını ister; iki mağaza da bu adresi zorunlu tutar.
 
 ## 1. Android: yükleme anahtarı
@@ -336,3 +337,67 @@ LocalNotifications 8.3, varsayılan olarak kesin alarm ister. Bu izin yoksa her 
 - En düşük iOS sürümü 15'tir.
 - Yalnız iPhone (`TARGETED_DEVICE_FAMILY = 1`) ve yalnız dikey.
 - SKAdNetwork listesi `tools/ios/skadnetwork.txt` dosyasındadır. Google'ın sayfası güncellenirse bu dosya da güncellenmeli.
+
+## 5. Ölçüm (Firebase Analytics)
+
+Oyun, bölüm ve ekonomi kararlarını veriye dayandırmak için **Google Analytics for Firebase** kullanır (`@capacitor-firebase/analytics` 8.5.2, `www/olcum.js`). Ölçüm isteğe bağlıdır: yapılandırma dosyası verilmezse derleme yine çalışır, eklenti o derlemeden çıkarılır ve ölçüm kapalı kalır. Web'de ölçüm yoktur.
+
+### 5.1 Senin yapacakların
+
+1. https://console.firebase.google.com › **Proje ekle** (ör. `ray-metro`). Google Analytics'i aç; hesap olarak yeni bir Analytics hesabı seç. Kullanıcının e-postası ya da başka kişisel bilgi hiçbir yere girilmez.
+2. Projeye **Android uygulaması** ekle: paket adı `com.osmanadali.ray`. Test APK'larında da ölçüm istersen aynı projeye `com.osmanadali.ray.dev` ve `com.osmanadali.ray.test` adlı iki Android uygulaması daha ekle (verileri ayrı uygulama akışlarında görünür). Sonra **google-services.json** indir; bu dosya projedeki bütün Android uygulamalarını içerir.
+3. Projeye **iOS uygulaması** ekle: bundle kimliği `com.osmanadali.ray`. **GoogleService-Info.plist** indir.
+4. İki dosyayı base64'e çevirip GitHub'a **gizli değer** olarak gir (Settings › Secrets and variables › Actions › New repository secret). Dosyaları depoya koyma.
+
+   ```bash
+   base64 -w0 google-services.json        # macOS: base64 -i google-services.json
+   base64 -w0 GoogleService-Info.plist
+   ```
+
+   | Gizli değer | İçerik | Kullanan |
+   |---|---|---|
+   | `FIREBASE_ANDROID_JSON` | google-services.json (base64 ya da ham JSON) | `apk.yml`, `release.yml` |
+   | `FIREBASE_IOS_PLIST` | GoogleService-Info.plist (base64 ya da ham XML) | `ios.yml`, `ios-release.yml` |
+
+5. Firebase/Analytics ayarları:
+   - Analytics › Yönetici › Veri saklama: **14 ay**.
+   - **Google sinyalleri kapalı** kalsın; Google Ads/AdMob bağlantısı ve reklam kişiselleştirmesi kapalı kalsın (uygulama zaten `ad_*` rızalarını reddeder).
+   - AdMob uygulamasını Firebase'e bağlarsan AdMob kendi `ad_impression` olayını da yazabilir; DebugView'da çift olay görürsen `ads.js`'teki iki `ad_impression` satırını kaldır ya da Firebase bağlantısını yapma.
+6. Ölçümle yayımlıyorsan mağaza formlarını güncelle: Veri güvenliği (`docs/MAGAZA.md` §6) ve App Privacy (§7) Firebase satırları.
+7. Deneme: Android'de `adb shell setprop debug.firebase.analytics.app com.osmanadali.ray`, iOS'ta Xcode şemasına `-FIRDebugEnabled`; Firebase › DebugView'da olaylar görünür.
+
+### 5.2 Derleme ne yapar
+
+`tools/olcum-hazirla.cjs` (`tools/android/hazirla.cjs` ve `tools/ios/hazirla.sh` çağırır, `cap add` ile `cap sync` arasında):
+
+- Gizli değer yoksa, çözülemezse ya da içindeki paket/bundle kimliği o derlemenin `appId`'siyle eşleşmezse `npm uninstall @capacitor-firebase/analytics` (yalnız CI kopyasında) → eklenti derlemeye girmez, günlükte "Ölçüm kapalı" notu çıkar.
+- Android: `android/app/google-services.json` yazılır (Capacitor şablonu dosya varsa `com.google.gms.google-services` eklentisini kendiliğinden uygular), bildirge varsayılanları: `firebase_analytics_collection_enabled=false`, `google_analytics_adid_collection_enabled=false`, `google_analytics_ssaid_collection_enabled=false`, `google_analytics_default_allow_{analytics_storage,ad_storage,ad_user_data,ad_personalization_signals}=false`.
+- iOS: `GoogleService-Info.plist` yazılır ve Xcode projesine kaynak olarak eklenir (xcodeproj gem'i); Info.plist: `FIREBASE_ANALYTICS_COLLECTION_ENABLED`, `GOOGLE_ANALYTICS_IDFV_COLLECTION_ENABLED` ve dört `GOOGLE_ANALYTICS_DEFAULT_ALLOW_*` anahtarı `NO`. SPM'de IDFA'sız `AnalyticsWithoutAdIdSupport` özelliği ve paket kimliği çakışmasına karşı `symlink` (capacitor.config.json CI kopyasına yazılır; Capacitor CLI 8.4+, Xcode 16.3+). `ios.yml` paket denetiminde "Ölçüm: GoogleService-Info.plist pakette" ya da "Ölçüm kapalı" yazar.
+
+### 5.3 Rıza kararı ("temel" consent mode)
+
+Google'ın uygulama rıza modu belgesine göre iki yol var: SDK'yı rıza gelene dek hiç çalıştırmamak (temel) ya da rıza durumunu `setConsent` ile bildirip SDK'yı çalıştırmak (gelişmiş; rıza yokken kimliksiz sinyaller gider). Ray **temel** yolu seçer, çünkü AdMob'un UMP penceresi TCF reklam amaçlarını sorar, ayrı bir analitik onayı toplamaz ve uygulama TCF dizesini JS'ten okuyamaz:
+
+- Yerel projede toplama varsayılan **kapalı**. Her açılışta `ads.js` UMP sonucunu `Olcum.consent()`'e verir; o ana kadar olaylar bellekte bekler (en çok 60).
+- UMP `NOT_REQUIRED` (rıza mesajı gerekmeyen bölge) → `setEnabled(true)`, `analytics_storage` verilir, bekleyen olaylar gönderilir.
+- UMP `REQUIRED`/`OBTAINED` (AB/AEA, BK, İsviçre, rıza mesajı gösterilen ABD eyaletleri) → toplama kapalı kalır, bekleyen olaylar atılır. Bu bölgelerden veri gelmez; ileride ayrı bir analitik onay satırı eklenirse açılabilir.
+- Sorgu sonuçsuz (internet yok) → karar değişmez, sonraki denemede verilir.
+- `ad_storage`, `ad_user_data`, `ad_personalization` her zaman reddedilir; reklam kimliği (AAID/IDFA/IDFV) ölçüme girmez. Bu yüzden ölçüm iOS'ta "izleme" sayılmaz ve ATT kararından bağımsızdır: ATT reddedilse de ölçüm reklam kimliği kullanmadığından aynı kalır.
+- Ayarlar › Gizlilik › Verilerimi sil → `setEnabled(false)` + `resetAnalyticsData()`.
+
+Belge: https://developers.google.com/tag-platform/security/guides/app-consent
+
+### 5.4 Olaylar
+
+| Olay | Ne zaman | Parametreler |
+|---|---|---|
+| `level_start` | Bölüm ya da Günün Hattı açılınca | `mode` (level/daily), `level`, `line`, `resumed` |
+| `level_end` | Bölüm bitince | `level`, `line`, `stars`, `time_s`, `moves`, `hints`, `perfect`, `first` (ilk geçiş) |
+| `level_quit` | En az bir hamle ya da ipucuyla başlanmış bölümden çıkınca | `level`, `line`, `time_s`, `moves`, `hints` |
+| `daily_end` | Günün Hattı bitince | `stars`, `time_s`, `moves`, `hints`, `perfect`, `practice`, `streak` |
+| `tutorial` | Nasıl oynanır? açılınca / kapanınca | `step` (begin/complete/skip), `first` |
+| `ad_impression` | Geçiş reklamı kapanınca, ödüllü video gösterilince | `ad_platform` (admob), `ad_format` (interstitial/rewarded), `earned` |
+| `purchase` | Mağaza ödemesi başarıyla bitince | `item_id`, `kind` (consumable/non_consumable), `currency` — **tutar (`value`) yok**: gelir Firebase'in kendiliğinden yazdığı `in_app_purchase` olayında, çift sayılmasın |
+| `booster_use` | Güçlendirici kullanılınca | `booster` (tur/fener/sure/geri), `level`, `line` |
+
+Parametreler sayı ya da en çok 100 karakterlik metindir; kullanıcı kimliği, e-posta, serbest metin gönderilmez. Robot: `node tools/hakem.cjs --only=gelir-olcum` (sahte eklentiyle olaylar, rıza ve silme).

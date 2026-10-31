@@ -66,6 +66,7 @@ jobs:
           [ -s "$RUNNER_TEMP/ray-upload.jks" ] || { echo "::error::ANDROID_KEYSTORE_BASE64 çözülemedi (base64 -w0 ile mi kodlandı?)"; exit 1; }
           echo "RAY_KEYSTORE=$RUNNER_TEMP/ray-upload.jks" >> "$GITHUB_ENV"
       - name: Yerel projeyi hazırla (gerçek AdMob kimlikleri, sürüm, imza, kenardan kenara, SDK denetimi)
+        env: { FIREBASE_ANDROID_JSON: '${{ secrets.FIREBASE_ANDROID_JSON }}' }   # isteğe bağlı: yoksa ölçüm kapalı derlenir (docs/YAYIN.md §5)
         run: |
           export VERSION_NAME=$(node -p "require('./package.json').version")
           echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"

@@ -56,6 +56,11 @@ Oyun Türkçe ve İngilizce oynanır. Bu belge altyapıyı ve ortak sözlüğü 
 | sürpriz sandık | surprise chest |
 | Sıradan · Nadir · Destansı | Common · Rare · Epic |
 | Reklamsız paket | Ad-free pack |
+| Mağaza | Shop |
+| Tema paketi | Theme pack |
+| Güçlendirici paketi | Booster pack |
+| İpucu paketleri | Hint packs |
+| 50 taç | 50 crowns |
 | ızgara | grid |
 | Oyna | Play |
 | Nasıl oynanır? | How to play? |

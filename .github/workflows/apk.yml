@@ -48,6 +48,7 @@ jobs:
       - name: İkon ve açılış ekranı (assets/)
         run: npx @capacitor/assets generate --android --iconBackgroundColor '#0d1020' --iconBackgroundColorDark '#0d1020' --splashBackgroundColor '#0d1020' --splashBackgroundColorDark '#0d1020'
       - name: Yerel projeyi hazırla (AdMob test App ID, dikey, bildirim simgesi, kenardan kenara, SDK denetimi)
+        env: { FIREBASE_ANDROID_JSON: '${{ secrets.FIREBASE_ANDROID_JSON }}' }   # isteğe bağlı: yoksa ölçüm kapalı derlenir (docs/YAYIN.md §5)
         run: node tools/android/hazirla.cjs
       - run: npx cap sync android
       - run: cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon -q
