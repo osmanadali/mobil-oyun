@@ -1,6 +1,4 @@
-# M22 · Kapalı durak (anahtar: `closed`)
-
-> **Hat düzeni 31 Ekim'de değişti:** bu kural artık **M22** (ilk bölüm 549). Aşağıdaki hat ve bölüm numaraları ve ölçümler eski düzene aittir; güncel tablo `docs/kurallar/README.md`.
+# M16 · Kapalı durak (anahtar: `closed`)
 
 > Tasarım başvurusu: `proto-zor` dalında `proto/zor/tasarimlar.json` (id `kapali-durak`) ve `proto/zor/gizli/plugins.cjs` (CLOSED). Prototip pre aşamasında delik açıyordu ve adil olmayan adayları reddediyordu. Bu uygulama yerleştirmeyi değiştirdi (aşağıda "Prototipten farklar").
 

@@ -1,18 +1,17 @@
-// Halka hat (RL.ring hattı) — robot testleri (hakem.cjs K bölümü çağırır). Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/halka.md
+// M17 · Halka hat — robot testleri (hakem.cjs K bölümü çağırır). Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/halka.md
 // Üretim (600+ bulmaca), işaret kayınca ret, eski bölümler bit bit aynı, çakışma (tabela/köprü), kural kartı, kapanma, yakın kazanç uyarısı, karma bölüm, kare süresi.
-// Eklentisiz tabanın özeti (FNV-1a, JSON): örnek bölümler ve Günün Hattı (133/169/208: 31 Ekim hat düzeniyle yenilendi).
-const BASE = { l1: 'dukhsf', l29: '1ucs2l5', l77: '1notwly', l133: 's1mvix', l169: 've660k', l208: 'rn02th', '2026-10-01': '1npbt0', '2026-10-27': 'qx5s5f', '2027-03-14': '1s6o7ll' };
+// Eklentisiz tabanın özeti (FNV-1a, JSON): 1–208 ve Günün Hattı hiçbir eklentiden etkilenmez → bu değerler hiç değişmemeli.
+const BASE = { l1: 'dukhsf', l29: '1ucs2l5', l77: '1notwly', l133: 'xho41m', l169: '11dirt9', l208: '1m5fjur', '2026-10-01': '1npbt0', '2026-10-27': 'qx5s5f', '2027-03-14': '1s6o7ll' };
 const SEEN = Object.fromEntries(Array.from({ length: 30 }, (_, k) => [k + 2, 1]));   // bütün kural kartları görülmüş
 
 module.exports = async T => {
-  const { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, starsUpTo, RL, AT, LE } = T;
-  const RG = RL.ring, A = AT('ring'), Z = LE(RG);   // halka hattı · ilk ve son bölümü
+  const { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, starsUpTo } = T;
   const errs = [];
 
   // ---------- 1. Üretim, kazanma denetimi, eski bölümler ----------
   {
     const { ctx, page, errors } = await open(browser, URL, { save: { played: 1 } });
-    const g = await page.evaluate(([A, Z]) => {
+    const g = await page.evaluate(() => {
       const R = window.__ray, rot = R.rot, per = m => rot(m) === m ? 1 : rot(rot(m)) === m ? 2 : 4;
       const mixes = [[0, 0, { ring: 1 }], [0, 0, { ring: 2 }], [8, 0, { ring: 2 }], [0, 3, { ring: 2 }], [0, 0, { ring: 2, rev: 9 }], [0, 0, { ring: 2, cnt: 7 }],
         [0, 0, { ring: 2, two: true }], [0, 0, { ring: 2, fog: true }], [0, 0, { ring: 2, two: true, fog: true }], [5, 2, { ring: 2, rev: 5, cnt: 4, two: true, fog: true }]];
@@ -46,7 +45,7 @@ module.exports = async T => {
       // eski bölümler: halka kancaları hiç çağrılmaz, R() tüketilmez
       const m = R.MODS.find(q => q.key === 'ring'), calls = { n: 0 }, wrap = {};
       for (const h of ['tree', 'mark', 'check']) { wrap[h] = m[h]; m[h] = function (...a) { calls.n++; return wrap[h].apply(this, a); }; }
-      let old = 0; for (let l = 1; l < A; l += 11) if (R.puzzleFor(l).ring) old++;
+      let old = 0; for (let l = 1; l < 673; l += 11) if (R.puzzleFor(l).ring) old++;
       ['2026-10-01', '2026-10-27'].forEach(d => { if (R.dailyFor(d).ring) old++; });
       Object.assign(m, wrap);
       let zero = 0; for (let s = 1; s <= 40; s++) { const a = R.generate(7, 9, s, 3, 1, { rev: 3, ring: 0 }), b = R.generate(7, 9, s, 3, 1, { rev: 3 }); if (JSON.stringify([a.sol, a.cur, a.ring]) !== JSON.stringify([b.sol, b.cur, b.ring])) zero++; }
@@ -54,24 +53,24 @@ module.exports = async T => {
       const sum = P => fnv(JSON.stringify([P.sol, P.cur, P.pinned, P.link, P.rev, P.cnt, P.hub2, P.par, P.taps, P.diff]));
       const hash = {}; for (const l of [1, 29, 77, 133, 169, 208]) hash['l' + l] = sum(R.puzzleFor(l));
       for (const d of ['2026-10-01', '2026-10-27', '2027-03-14']) hash[d] = sum(R.dailyFor(d));
-      // hat: halka hattından önce halka yok, halka hattının her bölümünde var; ilk 3 bölüm 6×8, halka ≤ 12, 1 işaret
+      // hat: 1–672'de halka yok, M17'nin (673–748) her bölümünde var; ilk 3 bölüm 6×8, halka ≤ 12, 1 işaret
       let early = 0, own = 0, miss = 0, gt = 0, gms = 0; const intro = [];
-      for (let l = 1; l < A; l++) if (R.rulesFor(l).has('ring')) early++;
-      for (let l = A; l <= Z; l++) if (R.rulesFor(l).has('ring')) own++;
-      for (let l = A; l <= Z + 12; l++) {
+      for (let l = 1; l < 673; l++) if (R.rulesFor(l).has('ring')) early++;
+      for (let l = 673; l <= 748; l++) if (R.rulesFor(l).has('ring')) own++;
+      for (let l = 673; l <= 760; l++) {
         if (!R.rulesFor(l).has('ring')) continue;
         const t0 = performance.now(), P = R.puzzleFor(l); gms += performance.now() - t0; gt++;
         if (!P.ring || !R.lit({ ...P, cur: P.sol }).solved) miss++;
-        if (l <= A + 3 && P.ring) intro.push(`${l}:${P.cols}x${P.rows}/${P.ring.cyc.length}/${P.ring.mark.filter(Boolean).length}`);
+        if (l <= 676 && P.ring) intro.push(`${l}:${P.cols}x${P.rows}/${P.ring.cyc.length}/${P.ring.mark.filter(Boolean).length}`);
       }
       return { n, bad, moved, ms, avgLen: +(lens.reduce((a, b) => a + b, 0) / lens.length).toFixed(1), calls: calls.n, old, zero, hash, early, own, miss, intro, genMs: +(gms / gt).toFixed(1), mixes: mixes.length };
-    }, [A, Z]);
+    });
     const hashOk = Object.keys(BASE).every(k => g.hash[k] === BASE[k]);
     const introOk = g.intro.length === 4 && g.intro.slice(0, 3).every(s => { const [, sz, len, mk] = s.match(/:(\w+)\/(\d+)\/(\d+)/); return sz === '6x8' && +len <= 12 && +mk === 1; }) && /7x9\/\d+\/2$/.test(g.intro[3]);
     check('rule.ring.gen', `Halka: ${g.n} üretimde lit(sol) çözülü, 2-çekirdek tam tek döngü ve işaretleri içeriyor; işaret çıplak, döngüde; hazır çözülü yok`, g.n >= 600 && !Object.keys(g.bad).length, JSON.stringify({ n: g.n, mixes: g.mixes, bad: g.bad, avgLen: g.avgLen, ms: g.ms }));
     check('rule.ring.move', 'Halka: işaret döngü dışına kayınca sol reddediliyor (yakın kazanç)', g.moved === g.n && !g.bad.kayanİşaretKabul, `${g.moved}/${g.n}`);
-    check('rule.ring.old', `Halka: 1–${A - 1} ve Günün Hattı bit bit aynı (kanca hiç çağrılmıyor, {ring:0} ≡ {}, eklentisiz özet tutuyor)`, !g.calls && !g.old && !g.zero && !g.early && hashOk, JSON.stringify({ calls: g.calls, old: g.old, zero: g.zero, early: g.early, hash: hashOk ? 'ok' : g.hash }));
-    check('rule.ring.line', `Halka: M${RG + 1} (${A}–${Z}) her bölümde halka var; ilk 3 bölüm 6×8, halka ≤ 12 karo, 1 işaret; sonra 7×9, 2 işaret`, g.own === Z - A + 1 && !g.miss && introOk && g.genMs < 60, JSON.stringify({ own: g.own, miss: g.miss, intro: g.intro, genMs: g.genMs }));
+    check('rule.ring.old', 'Halka: 1–672 ve Günün Hattı bit bit aynı (kanca hiç çağrılmıyor, {ring:0} ≡ {}, eklentisiz özet tutuyor)', !g.calls && !g.old && !g.zero && !g.early && hashOk, JSON.stringify({ calls: g.calls, old: g.old, zero: g.zero, early: g.early, hash: hashOk ? 'ok' : g.hash }));
+    check('rule.ring.line', 'Halka: M17 (673–748) her bölümde halka var; ilk 3 bölüm 6×8, halka ≤ 12 karo, 1 işaret; sonra 7×9, 2 işaret', g.own === 76 && !g.miss && introOk && g.genMs < 60, JSON.stringify({ own: g.own, miss: g.miss, intro: g.intro, genMs: g.genMs }));
     errs.push(...errors); await ctx.close();
   }
 
@@ -83,24 +82,24 @@ module.exports = async T => {
     const dummy = [['bridge', 10, 'Köprü'], ['sign', 12, 'Yön tabelası']].filter(([k]) => !keys.includes(k));
     const init = dummy.length ? `window.RAY_RULES = (window.RAY_RULES || []).concat(${JSON.stringify(dummy)}.map(([key, line, name]) => () => ({ key, line, card: { name, tag: name, demo: '', text: '' }, amount: () => 0 })));` : '';
     const { ctx, page, errors } = await open(browser, URL, { save: { played: 1 }, init });
-    const c = await page.evaluate(A => {
+    const c = await page.evaluate(() => {
       const R = window.__ray; let ring = 0, sign = 0, bridge = 0, bad = 0;
-      for (let l = A; l <= 20000; l++) { const U = R.rulesFor(l); if (U.has('sign')) sign++; if (U.has('bridge')) bridge++; if (U.has('ring')) { ring++; if (U.has('sign') || U.has('bridge')) bad++; } }
+      for (let l = 673; l <= 20000; l++) { const U = R.rulesFor(l); if (U.has('sign')) sign++; if (U.has('bridge')) bridge++; if (U.has('ring')) { ring++; if (U.has('sign') || U.has('bridge')) bad++; } }
       return { ring, sign, bridge, bad, clash: R.MODS.find(m => m.key === 'ring').clash };
-    }, A);
-    check('rule.ring.clash', `Halka: tabela ve köprüyle aynı bölümde hiç gelmiyor (${A}–20000, rulesFor)`, !c.bad && c.ring > 500 && c.sign > 500 && c.bridge > 500 && c.clash.includes('sign') && c.clash.includes('bridge'), JSON.stringify({ ...c, dummy: dummy.map(d => d[0]) }));
+    });
+    check('rule.ring.clash', 'Halka: tabela ve köprüyle aynı bölümde hiç gelmiyor (673–20000, rulesFor)', !c.bad && c.ring > 500 && c.sign > 500 && c.bridge > 500 && c.clash.includes('sign') && c.clash.includes('bridge'), JSON.stringify({ ...c, dummy: dummy.map(d => d[0]) }));
     errs.push(...errors); await ctx.close();
   }
 
   // ---------- 3. Oyun: kural kartı, açık halka, kapanma (çember dolar), kazanma ----------
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: { played: A - 1, level: A, stars: starsUpTo(A), seen: Object.fromEntries(Object.values(RL).filter(c => c < RG).map(c => [c, 1])), remindAsked: true } });
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 672, level: 673, stars: starsUpTo(673), remindAsked: true } });
     await page.click('#bPlay'); await page.waitForTimeout(700);
     const card = await page.evaluate(() => ({ open: document.getElementById('modal').classList.contains('open'), txt: document.querySelector('.sheet h2')?.textContent, p: document.querySelector('.sheet p')?.textContent, demo: !!document.querySelector('.rd-ring svg'), icon: !!document.querySelector('.sheet p .rd-ring-i') }));
     await page.waitForTimeout(1600); await shot(page, 'rule-ring');
     if (card.open) await page.click('#mGo');
     await page.waitForTimeout(400);
-    const g0 = await page.evaluate(() => { const G = window.__ray.G; return { size: G.cols + 'x' + G.rows, cyc: G.ring?.cyc.length, marks: G.ring?.mark.filter(Boolean).length, rOn: G.L.rOn, seen: JSON.parse(localStorage.getItem('ray')).seen?.[window.__ray.RULE_LINE.ring] }; });
+    const g0 = await page.evaluate(() => { const G = window.__ray.G; return { size: G.cols + 'x' + G.rows, cyc: G.ring?.cyc.length, marks: G.ring?.mark.filter(Boolean).length, rOn: G.L.rOn, seen: JSON.parse(localStorage.getItem('ray')).seen?.[16] }; });
     await shot(page, 'ring-open');
     // halkayı kapat, bir durağı (tek kollu, döngü dışı) bozuk bırak → hat bağlı kalır, bölüm bitmez (gerçek dokunuşlar)
     const plan = await page.evaluate(() => {
@@ -119,20 +118,20 @@ module.exports = async T => {
     const taps = await solve(page, 8), won = await waitModal(page);
     const g2 = await page.evaluate(() => { const G = window.__ray.G; return { won: G.won, rOn: G.L.rOn, inCore: G.ring.mark.every((v, i) => !v || G.L.core[i]) }; });
     await shot(page, 'ring-win');
-    check('rule.ring.card', `M${RG + 1} ilk girişte "YENİ KURAL · Halka hat" kartı (animasyonlu demo, satır içi kesik çember simgesi)`, card.open && /Halka hat/.test(card.txt || '') && /kesik çemberli/.test(card.p || '') && card.demo && card.icon && g0.seen === 1, JSON.stringify(card));
-    check('rule.ring.play', `Halka: ${A} 6×8, 1 işaret, kesik başlar; döngü işaretten kapanınca çember dolar (bir kez açıklama), kazanmaz; kalan karo çözülünce kazanır`, g0.size === '6x8' && g0.marks === 1 && g0.cyc <= 12 && g0.rOn === 0 && g1.rOn === 1 && !g1.won && g1.toasts.some(s => /çember doldu/.test(s)) && sv.ringTold === 1 && won && g2.won && g2.rOn === 1 && g2.inCore,
+    check('rule.ring.card', 'M17 ilk girişte "YENİ KURAL · Halka hat" kartı (animasyonlu demo, satır içi kesik çember simgesi)', card.open && /Halka hat/.test(card.txt || '') && /kesik çemberli/.test(card.p || '') && card.demo && card.icon && g0.seen === 1, JSON.stringify(card));
+    check('rule.ring.play', 'Halka: 673 6×8, 1 işaret, kesik başlar; döngü işaretten kapanınca çember dolar (bir kez açıklama), kazanmaz; kalan karo çözülünce kazanır', g0.size === '6x8' && g0.marks === 1 && g0.cyc <= 12 && g0.rOn === 0 && g1.rOn === 1 && !g1.won && g1.toasts.some(s => /çember doldu/.test(s)) && sv.ringTold === 1 && won && g2.won && g2.rOn === 1 && g2.inCore,
       JSON.stringify({ g0, g1, taps: plan.taps.length + taps, won, g2 }));
     errs.push(...errors); await ctx.close();
   }
 
-  // 7×9, 2 işaretli, karanlıksız ve birimsiz bir halka hattı bölümü (4 ve 6 için)
+  // 7×9, 2 işaretli, karanlıksız ve birimsiz bir M17 bölümü (4 ve 6 için)
   const p0 = await open(browser, URL, { save: { played: 1 } });
-  const { L7, LF } = await p0.page.evaluate(([A, Z]) => {
+  const { L7, LF } = await p0.page.evaluate(() => {
     const R = window.__ray; let L7 = 0, LF = 0;
-    for (let l = A + 3; l <= Z && !L7; l++) { const U = R.rulesFor(l); if ([...U].every(k => ['ring', 'pins', 'pairs', 'rev', 'cnt'].includes(k))) L7 = l; }
-    for (let l = Z + 1; l < 20000 && !LF; l++) { const U = R.rulesFor(l); if (U.has('ring') && U.has('fog')) LF = l; }
+    for (let l = 676; l <= 748 && !L7; l++) { const U = R.rulesFor(l); if ([...U].every(k => ['ring', 'pins', 'pairs', 'rev', 'cnt'].includes(k))) L7 = l; }
+    for (let l = 749; l < 20000 && !LF; l++) { const U = R.rulesFor(l); if (U.has('ring') && U.has('fog')) LF = l; }
     return { L7, LF };
-  }, [A, Z]);
+  });
   await p0.ctx.close();
 
   // ---------- 4. Yakın kazanç: her şey bağlı ama halka işaretten geçmiyor → uyarı (bir kez), nabız, kazanma yok · açık tema ----------

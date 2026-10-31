@@ -1,6 +1,4 @@
-# M19 · Silik kol (anahtar: `faint`)
-
-> **Hat düzeni 31 Ekim'de değişti:** bu kural artık **M19** (ilk bölüm 465). Aşağıdaki hat ve bölüm numaraları ve ölçümler eski düzene aittir; güncel tablo `docs/kurallar/README.md`.
+# M12 · Silik kol (anahtar: `faint`)
 
 > Tasarım başvurusu: `proto-zor` dalı, `proto/zor/tasarimlar.json` (id `silik-kol`) ve `proto/zor/gizli/plugins.cjs` (FAINT). Prototip eski kanca imzalarıyla yazılmıştı; eklenti main'deki birleşik kancalarla (`cands`, `P.self`, `api.difficulty(P, leaf, cap)`, `api.lit`, `P.reject`) yeniden yazıldı, çizim ve kart eklendi, ölçümler gerçek kodla yenilendi.
 

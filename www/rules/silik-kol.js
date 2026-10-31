@@ -1,4 +1,4 @@
-// M19 · Silik kol (anahtar: faint) — kuralın tamamı bu dosyada. Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/silik-kol.md
+// M12 · Silik kol (anahtar: faint) — kuralın tamamı bu dosyada. Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/silik-kol.md
 // Birkaç karonun bir kolu silinmiştir: o kenarda iki nokta ve "?" görünür, altında ray ya vardır ya yoktur. Karo normal döner, "?" onunla döner.
 // faint[i] = [c0, q0]: üretimdeki görünen karo (cur) ve "?" biti. Gerçek karo simetrisiz (uç/köşe/T) → anlık "?" = q0'ın c0'dan cur'a dönmüşü.
 // Görünen kısım V = cur & ~q her zaman uç ya da köşedir, q ona 90° → gerçek karo "uç ↔ köşe" ya da "köşe ↔ T"; ikisi de gerçekten çıkar (sızıntı yok).
@@ -23,7 +23,7 @@
   // "?" kolunun gerçekten ışık taşıdığı an (karo yanıyor, kol var, komşu o kola bağlı ve yanıyor): oyuncu zaten görüyor → dolu ray
   const through = (G, i, q) => { if (!(G.cur[i] & q) || G.L.d[i] < 0) return false; const k = kOf(q), j = nb(G, i, k); return j >= 0 && (G.cur[j] & ob(G, i, k)) && G.L.d[j] >= 0; };
   return {
-    key: 'faint', line: 18, ord: 11, boost: 3,
+    key: 'faint', line: 11, boost: 2.5,
     clash: ['cover'],   // şekil gizleyen iki kural birlikte fazla ağır (tasarım ölçümü Δ +14,6)
     card: { name: L('Silik kol', 'Faint arm'), tag: L('Yeni: silik kol', 'New: faint arm'),
       demo: '<div class="rd-faint" aria-hidden="true"><i class="rd-fs"></i><i class="rd-ft"><b class="rd-fr"><u class="rd-fv"></u><u class="rd-ff"></u><u class="rd-fx"><u class="rd-fg"></u><em class="rd-fq">?</em></u></b></i></div>',

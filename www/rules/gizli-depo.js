@@ -1,4 +1,4 @@
-// M20 · Gizli depo (anahtar: depot) — kuralın tamamı bu dosyada. Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/gizli-depo.md
+// M14 · Gizli depo (anahtar: depot) — kuralın tamamı bu dosyada. Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/gizli-depo.md
 // Tahta kenarındaki ayraç (3 karo): altındaki karolardan TAM BİRİ dışarı, depoya kol uzatır; hangisi olduğu gizli. Ayraç dışında kenar duvardır.
 // Çekirdek: open() ayraç karolarının dışa bakan kolunu gevşek saymaz (lit + çözücü), check() her ayraçta tam bir çıkış ister, prune() çözücüde aynı sayımı yapar.
 (window.RAY_RULES = window.RAY_RULES || []).push(api => {
@@ -8,7 +8,7 @@
   const count = (P, V, cur = P.cur) => { let c = 0; for (const i of V.cells) if (cur[i] & bit(V.k)) c++; return c; };
   const ICON = '<svg class="rd-depot-i" viewBox="0 0 20 20"><path d="M3 9 10 3l7 6v8H3z"/></svg>';
   return {
-    key: 'depot', line: 19, ord: 13, tOrder: 30, boost: 3.5, clash: [],
+    key: 'depot', line: 13, tOrder: 30, boost: 3, clash: [],
     card: { name: L('Gizli depo', 'Hidden depot'), tag: L('Yeni: gizli depo', 'New: hidden depot'),
       demo: '<div class="rd-depot" aria-hidden="true"><i class="ft"><b></b></i><i class="ft rd-dm"><b></b><u></u></i><i class="ft"><b></b></i><i class="rd-db"></i><i class="rd-dh"></i></div>',
       text: L(`Kenardaki <b>ayraç</b>: altındaki üç karodan <b>tam biri</b> dışarı, depoya ${ICON} çıkar. Hangisi olduğu <b>gizli</b>; ayraç dışında kenar yine duvardır.`,

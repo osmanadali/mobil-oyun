@@ -25,7 +25,7 @@ module.exports = async T => {
       return { n, bad, avgs, up };
     });
     check('mola.gen', 'Mola bölümleri: M2–M9 her hattın 6., 12.… bölümü, bir boy küçük ızgara, hat ortalamasından kolay; hat ortalamaları yine her hatta artar',
-      g.n >= 20 && !g.bad.length && g.up, `${g.n} mola · ortalamalar ${g.avgs.join(' → ')}${g.bad.length ? ' · ' + g.bad.slice(0, 4).join(', ') : ''}`);
+      g.n >= 25 && !g.bad.length && g.up, `${g.n} mola · ortalamalar ${g.avgs.join(' → ')}${g.bad.length ? ' · ' + g.bad.slice(0, 4).join(', ') : ''}`);
     errs.push(...errors); await ctx.close();
   }
 

@@ -1,21 +1,20 @@
-// Nehir (RL.river hattı) — robot testleri (hakem.cjs K bölümü çağırır). Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/nehir.md
+// M18 · Nehir — robot testleri (hakem.cjs K bölümü çağırır). Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/nehir.md
 // Üretim (sayım, tek çözüm, prune sağlamlığı), zorluk farkı, eski bölümler bit bit aynı, hat ortalaması, çakışma, kart, oyun (kazanma, ipucu, ↺, kayıt),
 // döngü uyarısı, karma hatlar (≥300 bölüm), kare süresi.
 const SEEN = Object.fromEntries(Array.from({ length: 30 }, (_, k) => [k + 2, 1]));   // bütün kural kartları görülmüş
 // nehir eklentisini yüklemeden açmak için: fabrika sarılır, key 'river' olan kural düşer (loadRules key'siz nesneyi atlar)
 const NO_RIVER = `window.RAY_RULES = []; { const p = window.RAY_RULES.push.bind(window.RAY_RULES); window.RAY_RULES.push = f => p(api => { const m = f(api); return m && m.key === 'river' ? null : m; }); }`;
-// nehir hattından önceki bölümler ve Günün Hattı özeti (FNV-1a): iki bağlamda (nehirli / nehirsiz) aynı olmalı
-const FP = A => {
+// 1–748 ve Günün Hattı özeti (FNV-1a): iki bağlamda (nehirli / nehirsiz) aynı olmalı
+const FP = () => {
   const R = window.__ray, fnv = s => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return (h >>> 0).toString(36); };
   const sum = P => JSON.stringify([P.cols, P.rows, P.sol, P.cur, P.pinned, P.link, P.rev, P.cnt, P.hub2, P.par, P.taps, P.diff, P.rules, Object.keys(P).sort()]);
-  let a = ''; for (let l = 1; l < A; l++) a += fnv(sum(R.puzzleFor(l)));
+  let a = ''; for (let l = 1; l <= 748; l++) a += fnv(sum(R.puzzleFor(l)));
   let d = ''; for (let k = 0; k < 30; k++) { const t = new Date(2026, 9, 1 + k * 11), s = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`; d += fnv(sum(R.dailyFor(s))); }
   return { levels: fnv(a), daily: fnv(d) };
 };
 
 module.exports = async T => {
-  const { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, starsUpTo, RL, AT, LE } = T;
-  const RV = RL.river, A = AT('river'), Z = LE(RV);   // nehir hattı · ilk ve son bölümü
+  const { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, starsUpTo } = T;
   const errs = [], lvlSave = (l, x = {}) => ({ played: l - 1, level: l, stars: starsUpTo(l), seen: SEEN, remindAsked: true, ...x });
 
   // ---------- 1. Üretim, sayım, tek çözüm, prune sağlamlığı, zorluk farkı ----------
@@ -58,42 +57,42 @@ module.exports = async T => {
     errs.push(...errors); await ctx.close();
   }
 
-  // ---------- 2. Eski bölümler bit bit aynı: nehir hattından öncesi ve Günün Hattı, nehir dosyası yüklü / yüksüz ----------
+  // ---------- 2. Eski bölümler bit bit aynı: 1–748 ve Günün Hattı, nehir dosyası yüklü / yüksüz ----------
   {
     const a = await open(browser, URL, { save: { played: 1 } });
-    const on = await a.page.evaluate(A => {
+    const on = await a.page.evaluate(() => {
       const R = window.__ray, m = R.MODS.find(q => q.key === 'river'), calls = { n: 0 }, wrap = {};
       for (const h of ['tree', 'mark', 'open', 'check', 'prune']) { wrap[h] = m[h]; m[h] = function (...x) { calls.n++; return wrap[h].apply(this, x); }; }
-      let old = 0, early = 0; for (let l = 1; l < A; l += 7) if (R.puzzleFor(l).river) old++;
-      for (let l = 1; l < A; l++) if (R.rulesFor(l).has('river')) early++;
+      let old = 0, early = 0; for (let l = 1; l < 749; l += 7) if (R.puzzleFor(l).river) old++;
+      for (let l = 1; l < 749; l++) if (R.rulesFor(l).has('river')) early++;
       ['2026-10-01', '2026-10-28'].forEach(d => { if (R.dailyFor(d).river) old++; });
       Object.assign(m, wrap);
       let zero = 0; for (let s = 1; s <= 40; s++) { const x = R.generate(7, 9, s, 3, 1, { rev: 3, river: 0 }), y = R.generate(7, 9, s, 3, 1, { rev: 3 }); if (JSON.stringify([x.sol, x.cur, x.river]) !== JSON.stringify([y.sol, y.cur, y.river])) zero++; }
       return { calls: calls.n, old, early, zero };
-    }, A);
-    const fpOn = await a.page.evaluate(FP, A); errs.push(...a.errors); await a.ctx.close();
+    });
+    const fpOn = await a.page.evaluate(FP); errs.push(...a.errors); await a.ctx.close();
     const b = await open(browser, URL, { save: { played: 1 }, init: NO_RIVER });
-    const fpOff = await b.page.evaluate(FP, A), keysOff = await b.page.evaluate(() => window.__ray.MODS.map(m => m.key)); errs.push(...b.errors); await b.ctx.close();
-    check('rule.river.old', `Nehir: 1–${A - 1} ve Günün Hattı bit bit aynı (nehir dosyası yüklü/yüksüz özet eşit, kanca hiç çağrılmıyor, {river:0} ≡ {})`,
+    const fpOff = await b.page.evaluate(FP), keysOff = await b.page.evaluate(() => window.__ray.MODS.map(m => m.key)); errs.push(...b.errors); await b.ctx.close();
+    check('rule.river.old', 'Nehir: 1–748 ve Günün Hattı bit bit aynı (nehir dosyası yüklü/yüksüz özet eşit, kanca hiç çağrılmıyor, {river:0} ≡ {})',
       !on.calls && !on.old && !on.early && !on.zero && !keysOff.includes('river') && fpOn.levels === fpOff.levels && fpOn.daily === fpOff.daily, JSON.stringify({ ...on, fpOn, fpOff }));
   }
 
-  // ---------- 3. Hat: nehir hattının her bölümünde nehir; tanıtım 6×8 T=1, sonra T=2; ortalama zorluk önceki hattan yüksek ----------
+  // ---------- 3. Hat: M18 (749–828) her bölümde nehir; tanıtım 6×8 T=1, sonra T=2; ortalama zorluk M17'den ≥ 1 yüksek ----------
   {
     const { ctx, page, errors } = await open(browser, URL, { save: { played: 1 } });
-    const h = await page.evaluate(([A, Z, P0]) => {
+    const h = await page.evaluate(() => {
       const R = window.__ray, avg = (a, b) => { let s = 0; for (let l = a; l <= b; l++) s += R.puzzleFor(l).diff; return +(s / (b - a + 1)).toFixed(2); };
       let own = 0, miss = 0, rej = 0, ms = 0; const intro = [];
-      for (let l = A; l <= Z; l++) {
+      for (let l = 749; l <= 828; l++) {
         if (R.rulesFor(l).has('river')) own++;
         const t = performance.now(), P = R.puzzleFor(l); ms += performance.now() - t;
         if (!P.river || !R.lit({ ...P, cur: P.sol }).solved) miss++; if (P.reject) rej++;
-        if (l <= A + 3) intro.push(`${l}:${P.cols}x${P.rows}/T${P.river?.T}`);
+        if (l <= 752) intro.push(`${l}:${P.cols}x${P.rows}/T${P.river?.T}`);
       }
-      return { own, miss, rej, intro, m18: avg(A, Z), m17: avg(P0, A - 1), ms: Math.round(ms / (Z - A + 1)) };
-    }, [A, Z, AT('river') - (Z - A + 1)]);
-    const introOk = h.intro.join() === [`${A}:6x8/T1`, `${A + 1}:6x8/T2`, `${A + 2}:6x8/T2`, `${A + 3}:7x9/T2`].join();
-    check('rule.river.line', `Nehir: M${RV + 1} her bölümde nehir, tek çözümlü; tanıtım 6×8 T=1, sonra T=2; ortalama zorluk ${h.m18} > M${RV} ${h.m17}`, h.own === Z - A + 1 && !h.miss && !h.rej && introOk && h.m18 > h.m17 && h.ms < 250, JSON.stringify(h));
+      return { own, miss, rej, intro, m18: avg(749, 828), m17: avg(673, 748), ms: Math.round(ms / 80) };
+    });
+    const introOk = h.intro[0] === '749:6x8/T1' && /^750:6x8\/T2$/.test(h.intro[1]) && /^751:6x8\/T2$/.test(h.intro[2]) && /^752:7x9\/T2$/.test(h.intro[3]);
+    check('rule.river.line', `Nehir: M18 her bölümde nehir, tek çözümlü; tanıtım 6×8 T=1, sonra T=2; ortalama zorluk ${h.m18} ≥ M17 ${h.m17} + 1`, h.own === 80 && !h.miss && !h.rej && introOk && h.m18 >= h.m17 + 1 && h.ms < 250, JSON.stringify(h));
     errs.push(...errors); await ctx.close();
   }
 
@@ -102,27 +101,27 @@ module.exports = async T => {
     // eklentisi henüz olmayan kural (tarife bölgesi, ayrı dal) yerine miktarı 0 olan kukla kural konur → rulesFor gerçek çakışmayı sınar
     const probe = await open(browser, URL, { save: { played: 1 } });
     const keys = await probe.page.evaluate(() => window.__ray.MODS.map(m => m.key)); await probe.ctx.close();
-    const dummy = [['bridge', 12, 'Köprü'], ['table', 11, 'Döner tabla'], ['ring', 17, 'Halka hat'], ['zone', 22, 'Tarife bölgesi']].filter(([k]) => !keys.includes(k));
+    const dummy = [['bridge', 10, 'Köprü'], ['table', 14, 'Döner tabla'], ['ring', 16, 'Halka hat'], ['zone', 19, 'Tarife bölgesi']].filter(([k]) => !keys.includes(k));
     const init = dummy.length ? `window.RAY_RULES = (window.RAY_RULES || []).concat(${JSON.stringify(dummy)}.map(([key, line, name]) => () => ({ key, line, card: { name, tag: name, demo: '', text: '' }, amount: () => 0 })));` : '';
     const { ctx, page, errors } = await open(browser, URL, { save: { played: 1 }, init });
-    const c = await page.evaluate(A => {
+    const c = await page.evaluate(() => {
       const R = window.__ray, X = ['bridge', 'table', 'ring', 'zone'], cnt = { river: 0, bad: 0 };
-      for (let l = A; l <= 20000; l++) { const U = R.rulesFor(l); for (const k of X) if (U.has(k)) cnt[k] = (cnt[k] || 0) + 1; if (U.has('river')) { cnt.river++; if (X.some(k => U.has(k))) cnt.bad++; } }
+      for (let l = 749; l <= 20000; l++) { const U = R.rulesFor(l); for (const k of X) if (U.has(k)) cnt[k] = (cnt[k] || 0) + 1; if (U.has('river')) { cnt.river++; if (X.some(k => U.has(k))) cnt.bad++; } }
       return { ...cnt, clash: R.MODS.find(m => m.key === 'river').clash };
-    }, A);
-    check('rule.river.clash', `Nehir: köprü, döner tabla, halka ve tarife bölgesiyle aynı bölümde hiç gelmiyor (${A}–20000, rulesFor)`, !c.bad && c.river > 1000 && ['bridge', 'table', 'ring', 'zone'].every(k => c[k] > 300 && c.clash.includes(k)), JSON.stringify({ ...c, dummy: dummy.map(d => d[0]) }));
+    });
+    check('rule.river.clash', 'Nehir: köprü, döner tabla, halka ve tarife bölgesiyle aynı bölümde hiç gelmiyor (749–20000, rulesFor)', !c.bad && c.river > 1000 && ['bridge', 'table', 'ring', 'zone'].every(k => c[k] > 300 && c.clash.includes(k)), JSON.stringify({ ...c, dummy: dummy.map(d => d[0]) }));
     errs.push(...errors); await ctx.close();
   }
 
   // ---------- 5. Oyun: kural kartı, ilk tampon bildirimi, kayıt/sürdürme, ↺ baştan, robot kazanır ----------
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: { played: A - 1, level: A, stars: starsUpTo(A), seen: Object.fromEntries(Object.values(RL).filter(c => c < RV).map(c => [c, 1])), remindAsked: true } });
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 748, level: 749, stars: starsUpTo(749), remindAsked: true } });
     await page.click('#bPlay'); await page.waitForTimeout(700);
     const card = await page.evaluate(() => ({ open: document.getElementById('modal').classList.contains('open'), txt: document.querySelector('.sheet h2')?.textContent, p: document.querySelector('.sheet p')?.textContent, demo: !!document.querySelector('.rd-river svg .rd-river-w'), icon: !!document.querySelector('.sheet p .rd-river-i') }));
     await page.waitForTimeout(1800); await shot(page, 'rule-river');
     if (card.open) await page.click('#mGo');
     await page.waitForTimeout(400);
-    const st = () => page.evaluate(() => { const G = window.__ray.G; return { cur: G.cur.join(), moves: G.moves, size: G.cols + 'x' + G.rows, T: G.river?.T, seen: JSON.parse(localStorage.getItem('ray')).seen?.[window.__ray.RULE_LINE.river] }; });
+    const st = () => page.evaluate(() => { const G = window.__ray.G; return { cur: G.cur.join(), moves: G.moves, size: G.cols + 'x' + G.rows, T: G.river?.T, seen: JSON.parse(localStorage.getItem('ray')).seen?.[17] }; });
     const s0 = await st();
     await shot(page, 'river');
     // ilk tampon: kıyıya bakan kolu boşa düşen karoyu oluşturacak dokunuş (karşı karo kolsuz)
@@ -143,8 +142,8 @@ module.exports = async T => {
     const taps = await solve(page, 8), won = await waitModal(page);
     const w = await page.evaluate(() => { const G = window.__ray.G; return { won: G.won, open: G.L.openBy.river || 0, T: G.river.T }; });
     await shot(page, 'river-win');
-    check('rule.river.card', `M${RV + 1} ilk girişte "YENİ KURAL · Nehir" kartı ("geçit" sözcüğü, dalgalı nehir demosu, satır içi tampon simgesi)`, card.open && /Nehir/.test(card.txt || '') && /geçit/.test(card.p || '') && /tampon/.test(card.p || '') && card.demo && card.icon && s0.seen === 1, JSON.stringify(card));
-    check('rule.river.play', `Nehir ${A}: 6×8, T=1; ilk tampon bildirimi (ömürde bir kez); yarım oyun aynı durumla sürer; ↺ başa döner; robot (solve) kazanır, kıyıda tam T tampon`,
+    check('rule.river.card', 'M18 ilk girişte "YENİ KURAL · Nehir" kartı ("geçit" sözcüğü, dalgalı nehir demosu, satır içi tampon simgesi)', card.open && /Nehir/.test(card.txt || '') && /geçit/.test(card.p || '') && /tampon/.test(card.p || '') && card.demo && card.icon && s0.seen === 1, JSON.stringify(card));
+    check('rule.river.play', 'Nehir 749: 6×8, T=1; ilk tampon bildirimi (ömürde bir kez); yarım oyun aynı durumla sürer; ↺ başa döner; robot (solve) kazanır, kıyıda tam T tampon',
       s0.size === '6x8' && s0.T === 1 && tap >= 0 && told === 1 && toasts.some(x => /Tampon/.test(x)) && s1.moves === 1 && s2.cur === s1.cur && s2.moves === 1 && s3.cur === s0.cur && s3.moves === 0 && won && w.won && w.open === w.T,
       JSON.stringify({ s0: { ...s0, cur: 0 }, tap, told, toasts, resume: s2.cur === s1.cur, reset: s3.cur === s0.cur, taps, won, w }));
     errs.push(...errors); await ctx.close();
@@ -152,7 +151,7 @@ module.exports = async T => {
 
   // ---------- 6. İpucu: yalnız tampon karosu yanlışken 💡 onu oturtur, sabitler, bölüm biter ----------
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: { ...lvlSave(A + 11), hints: 3 } });
+    const { ctx, page, errors } = await open(browser, URL, { save: { ...lvlSave(760), hints: 3 } });
     await page.click('#bPlay'); await page.waitForTimeout(600);
     const i = await page.evaluate(() => {
       const R = window.__ray, G = R.G, i = G.river.at.map(a => a[0]).find(c => !G.pinned[c] && G.link[c] < 0 && (G.unitOf?.[c] ?? -1) < 0 && R.rot(G.sol[c]) !== G.sol[c]);
@@ -167,20 +166,18 @@ module.exports = async T => {
   // ---------- 7. Döngü uyarısı: hepsi bağlı, açık uç yok ama tampon eksik → kazanılmaz, rozet nabız atar, bir kez bildirim ----------
   {
     const p0 = await open(browser, URL, { save: { played: 1 } });
-    const f = await p0.page.evaluate(([A, Z]) => {
+    const f = await p0.page.evaluate(() => {
       // süzgeçsiz çözücüyle döngülü (tampon eksik) bir dizilim ara
       const R = window.__ray, m = R.MODS.find(q => q.key === 'river'), pr = m.prune;
-      // kendi hattında yoksa (sonraki kurallar çoğu bölüme birim/karanlık katar) karma hatlarda da aranır
-      for (let l = A + 3; l <= Z + 600; l++) {
-        if (!R.rulesFor(l).has('river')) continue;
-        const P = R.puzzleFor(l); if (P.fog || P.units || P.gear || P.ice || P.pinned.some(Boolean) || P.link.some(v => v >= 0)) continue; let hit = null;
+      for (let l = 752; l <= 828; l++) {
+        const P = R.puzzleFor(l); if (P.fog || P.units || P.pinned.some(Boolean) || P.link.some(v => v >= 0)) continue; let hit = null;
         m.prune = null; R.difficulty(P, cfg => { if (R.lit({ ...P, cur: cfg }).rvNear) { hit = cfg; return true; } return false; }, 3000); m.prune = pr;
         if (hit) return { l, cfg: hit };
       }
       return null;
-    }, [A, Z]);
+    });
     await p0.ctx.close();
-    if (!f) check('rule.river.loop', 'Nehir: döngülü dizilim bulundu', false, `${A}–${Z + 600} içinde bulunamadı`);
+    if (!f) check('rule.river.loop', 'Nehir: döngülü dizilim bulundu', false, 'M18 içinde bulunamadı');
     else {
       const { ctx, page, errors } = await open(browser, URL, { save: lvlSave(f.l, { riverTold: 1 }) });
       await page.click('#bPlay'); await page.waitForTimeout(600);
@@ -201,11 +198,11 @@ module.exports = async T => {
     }
   }
 
-  // ---------- 8. Karma hatlar: ≥ 300 nehirli bölüm (nehir hattından sonra) üretilir, çözüm geçerli, çakışan kural yok; nehir + karanlık tünel robotla kazanılır ----------
+  // ---------- 8. Karma hatlar: ≥ 300 nehirli bölüm (829+) üretilir, çözüm geçerli, çakışan kural yok; nehir + karanlık tünel robotla kazanılır ----------
   {
     const { ctx, page, errors } = await open(browser, URL, { save: { played: 1 } });
-    const k = await page.evaluate(N => {
-      const R = window.__ray, X = ['bridge', 'table', 'ring', 'zone'], mix = {}; let n = 0, bad = 0, rej = 0, cl = 0, fog = 0, l = N;
+    const k = await page.evaluate(() => {
+      const R = window.__ray, X = ['bridge', 'table', 'ring', 'zone'], mix = {}; let n = 0, bad = 0, rej = 0, cl = 0, fog = 0, l = 829;
       for (; n < 300 && l < 6000; l++) {
         const U = R.rulesFor(l); if (!U.has('river')) continue; n++;
         if (X.some(q => U.has(q))) cl++;
@@ -215,8 +212,8 @@ module.exports = async T => {
         if (U.has('fog') && !fog && !P.units) fog = l;
       }
       return { n, bad, rej, cl, last: l - 1, fog, kinds: Object.keys(mix).length, mix };
-    }, Z + 1);
-    check('rule.river.mix', `Nehir: karma hatlarda ${k.n} nehirli bölüm (${Z + 1}–${k.last}) üretiliyor, çözüm geçerli, çakışan kural yok`, k.n >= 300 && !k.bad && !k.cl && k.kinds >= 6, JSON.stringify(k));
+    });
+    check('rule.river.mix', `Nehir: karma hatlarda ${k.n} nehirli bölüm (829–${k.last}) üretiliyor, çözüm geçerli, çakışan kural yok`, k.n >= 300 && !k.bad && !k.cl && k.kinds >= 6, JSON.stringify(k));
     errs.push(...errors); await ctx.close();
     if (k.fog) {
       const o = await open(browser, URL, { save: lvlSave(k.fog, { riverTold: 1 }) });
@@ -231,7 +228,7 @@ module.exports = async T => {
 
   // ---------- 9. Düşük donanım: nehirli 7×9, 4× yavaş CPU, çizim süresi ----------
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: lvlSave(A + 11, { riverTold: 1 }) });
+    const { ctx, page, errors } = await open(browser, URL, { save: lvlSave(760, { riverTold: 1 }) });
     await page.click('#bPlay'); await page.waitForTimeout(500);
     const tiles = await page.evaluate(() => {
       const R = window.__ray, G = R.G, m = R.MODS.find(q => q.key === 'river'), raf = window.requestAnimationFrame; let hk = 0;

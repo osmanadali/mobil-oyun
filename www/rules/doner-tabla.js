@@ -1,4 +1,4 @@
-// M12 · Döner tabla (table): 2×2 karo bir tablada birlikte döner. Ayrıntı: docs/kurallar/doner-tabla.md
+// M15 · Döner tabla (table): 2×2 karo bir tablada birlikte döner. Ayrıntı: docs/kurallar/doner-tabla.md
 (window.RAY_RULES = window.RAY_RULES || []).push(api => {
   const T0 = new Map(), calm = matchMedia('(prefers-reduced-motion: reduce)');   // tabla → dönüş başlangıcı
   // saat yönü, Q = [sol-üst, sağ-üst, sağ-alt, sol-alt]: karo sonraki köşeye taşınır ve 90° döner
@@ -6,7 +6,7 @@
   const mid = (X, [a, , b]) => [(X[a][0] + X[b][0]) / 2, (X[a][1] + X[b][1]) / 2];
   const disc = (D, r) => { D.cx.beginPath(); for (const Q of D.G.table.plates) if (D.vis(Q[0])) { const [x, y] = mid(D.X, Q); D.cx.moveTo(x + r, y); D.cx.arc(x, y, r, 0, 7); } };
   return {
-    key: 'table', line: 11, ord: 14, boost: 2,
+    key: 'table', line: 14, boost: 2,
     card: { name: L('Döner tabla', 'Turntable'), tag: L('Yeni: döner tabla', 'New: turntable'), demo: '<div class="rd-table" aria-hidden="true"><div><i></i><i></i><i></i><i></i><b></b></div><s></s><em></em></div>',
       text: L('Yuvarlak <b>döner tabla</b> dört karoyu taşır: birine dokun, tabla bütünüyle <b>90° döner</b>. Karolar yer değiştirir, raylar <b>kopmaz</b>.',
         'A round <b>turntable</b> carries four tiles: tap one and the whole table <b>turns 90°</b>. Tiles swap places, tracks <b>stay joined</b>.') },

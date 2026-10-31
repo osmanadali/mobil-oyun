@@ -1,6 +1,4 @@
-# M21 · Nehir (anahtar: `river`)
-
-> **Hat düzeni 31 Ekim'de değişti:** bu kural artık **M21** (ilk bölüm 521). Aşağıdaki hat ve bölüm numaraları ve ölçümler eski düzene aittir; güncel tablo `docs/kurallar/README.md`.
+# M18 · Nehir (anahtar: `river`)
 
 > **Durum: uygulandı.** Kod `www/rules/nehir.js`, robot testleri `tools/hakem/nehir.cjs`. Çekirdekte değişiklik yok: main'deki `open`, `check`, `prune`, `P.reject` ve `api.difficulty(P, leaf)` kancaları yetti. Tasarım başvurusu: `proto-zor` dalı, `river-nehir` (`proto/zor/tasarimlar.json`, `proto/zor/kisit/nehir.cjs`).
 

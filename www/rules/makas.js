@@ -1,11 +1,11 @@
-// M11 · Makas (sw). Sözleşme: docs/kurallar/README.md · tasarım ve kanıt: docs/kurallar/makas.md
+// M9 · Makas (sw). Sözleşme: docs/kurallar/README.md · tasarım ve kanıt: docs/kurallar/makas.md
 // Karo dönmez: gövde sabit, öbür uç düz ↔ sapak. sw[i] = iki kolun maskesi, dokunuş cur ^= sw (kendi tersi → bölüm kilitlenemez).
 (window.RAY_RULES = window.RAY_RULES || []).push(api => {
   const { DIRS, rot, unrot, popc } = api;
   const kOf = b => 31 - Math.clz32(b);   // tek bit → DIRS sırası
   const CELLS = new WeakMap(), cells = sw => { let L = CELLS.get(sw); if (!L) CELLS.set(sw, L = sw.reduce((a, m, i) => (m && a.push(i), a), [])); return L; };
   return {
-    key: 'sw', line: 10, ord: 8, boost: 1.5,
+    key: 'sw', line: 8, boost: 1.5,
     card: { name: L('Makas', 'Switch'), tag: L('Yeni: makas', 'New: switch'),
       // .pt içinde <b> yok (.pt b döner): karo durur, yalnız kollar değişir
       demo: '<div class="rdemo2 rd-sw" aria-hidden="true"><i class="pt"><u class="rd-swa"><u class="rd-swo"></u><u class="rd-swl"></u><u class="rd-swr"></u></u><u class="rd-swa rd-sw2"><u class="rd-swo"></u><u class="rd-swl"></u><u class="rd-swr"></u></u><u class="rd-swt"></u></i><i class="rtap2"></i></div>',

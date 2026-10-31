@@ -1,4 +1,4 @@
-// M21 · Nehir (anahtar: river) — kuralın tamamı bu dosyada. Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/nehir.md
+// M18 · Nehir (anahtar: river) — kuralın tamamı bu dosyada. Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/nehir.md
 // Tahtayı baştan başa kesen bir nehir çizgisi (karo aralığı). Nehir kenarında iki karo da kollu → ray GEÇİTTEN geçer;
 // yalnız biri kollu → ray kıyıda TAMPONLA biter (açık uç sayılmaz, open kancası). Kıyıda tam T tampon olmalı (check).
 // Sayım: kol toplamı = 2(n − h) + T. Açık uç yok, hepsi bağlı ve karışmamışsa tampon sayısı T − 2·(döngü sayısı) olur → eksik tampon = döngü.
@@ -30,7 +30,7 @@
   };
   const ICON = '<svg class="rd-river-i" viewBox="0 0 20 20"><path d="M3 4v12M3 10h9M16 3c-3 3 3 4 0 7s3 4 0 7"/></svg>';
   return {
-    key: 'river', line: 20, ord: 17, boost: 3.5,
+    key: 'river', line: 17, boost: 3.5,
     // köprü: bölünmüş düğüm kıyıda belirsiz · tabla: karoları iki yaka arasında taşır · tarife bölgesi: aynı mekanizma (yumuşak sınır + sayım) · halka: iki kart zıt sezgi verir ("bir kez kapan" ↔ "eksik tampon = döngü")
     clash: ['bridge', 'table', 'zone', 'ring'],
     // tanıtım (749, 6×8): 1 tampon · sonra 2

@@ -28,10 +28,6 @@ function serve() {
 const checks = [], metrics = {};
 const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const TODAY = ymd(new Date()), YDAY = ymd(new Date(Date.now() - 864e5)), DAY2 = ymd(new Date(Date.now() - 2 * 864e5));
-// hat düzeni oyundan okunur (başlangıçta bir kez): RL = kural → hat (0 tabanlı), LS(c) = hattın ilk bölümü. Bölüm numarası yazmak yerine AT('fog', 2) gibi kurala göre.
-let RL = {}, HS = [], KR = 0;   // KR: ilk karma hat (0 tabanlı) = son kural hattı + 1
-const LS = c => HS[c], LE = c => HS[c + 1] - 1, AT = (k, o = 0) => HS[RL[k]] + o;
-const seenTo = c => Object.fromEntries(Object.values(RL).filter(v => v < c).map(v => [v, 1]));   // c hattından önceki bütün kural kartları görülmüş
 const starsUpTo = (l, v = 3) => Object.fromEntries(Array.from({ length: l - 1 }, (_, k) => [k + 1, v]));   // 1..l-1 bölümleri
 function check(id, name, pass, detail = '', severity = 'high') {
   checks.push({ id, name, pass: !!pass, detail: String(detail), severity });
@@ -134,16 +130,10 @@ async function inViewport(page, sel) {
   // varsayılan dil Türkçe: oyun cihaz dili tr değilse İngilizce açılır; İngilizce testi locale'i açıkça verir
   const newCtx = browser.newContext.bind(browser); browser.newContext = (o = {}) => newCtx({ locale: 'tr-TR', ...o });
   const FRESH_DONE = { played: 1 };   // nasıl oynanır penceresi kendiliğinden açılmasın
-  {
-    const { ctx, page } = await open(browser, URL, { save: FRESH_DONE });
-    ({ RL, HS } = await page.evaluate(() => ({ RL: { ...window.__ray.RULE_LINE }, HS: Array.from({ length: 120 }, (_, c) => window.__ray.lineStart(c)) })));
-    KR = Math.max(...Object.values(RL)) + 1;
-    await ctx.close();
-  }
   // geliştirirken yalnız bir eklenti dosyası: node tools/hakem.cjs --only=guclendirici (birleştirmeden önceki tam koşunun yerini tutmaz)
   const only = process.argv.find(a => a.startsWith('--only='))?.slice(7);
   if (only) {
-    const T = { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, modalOpen, inViewport, starsUpTo, RL, LS, LE, AT, seenTo, KR };
+    const T = { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, modalOpen, inViewport, starsUpTo };
     for (const f of fs.readdirSync(path.join(__dirname, 'hakem')).filter(f => f.endsWith('.cjs') && f.includes(only)).sort()) await require(path.join(__dirname, 'hakem', f))(T);
     await browser.close(); server.close();
     console.log(`\n${checks.filter(c => c.pass).length}/${checks.length} geçti (yalnız ${only})`); return;
@@ -525,7 +515,7 @@ async function inViewport(page, sel) {
 
   // ---------- E7. Yeni kural: eşli karolar (M4, bölüm 49+) + zorluk merdiveni ----------
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: { played: AT('pairs') - 1, level: AT('pairs'), stars: starsUpTo(AT('pairs')), seen: seenTo(RL.pairs), remindAsked: true } });
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 48, level: 49, stars: starsUpTo(49), seen: { 2: 1 }, remindAsked: true } });
     // çözülebilirlik: eşli + sabit karolu 600 bölüm, eşleri birlikte çevirerek çözülmeli
     const gen = await page.evaluate(() => {
       const { generate, lit, rot } = window.__ray; let bad = 0, pairs = 0, pre = 0;
@@ -540,7 +530,7 @@ async function inViewport(page, sel) {
       }
       return { bad, pairs, pre };
     });
-    // zorluk merdiveni: hat uzunluğu 12, 16, 20, 24, sonra hep 28; her hattın ortalama zorluğu bir öncekinden yüksek; Günün Hattı da her gün zorlaşır
+    // zorluk merdiveni: hat uzunluğu doğrusal (12, 16, 20…), her hattın ortalama zorluğu bir öncekinden yüksek; Günün Hattı da her gün zorlaşır
     const cv = await page.evaluate(() => {
       const R = window.__ray, lines = [], lens = [];
       for (let c = 0; c < 9; c++) { const a = R.lineStart(c), z = R.lineStart(c + 1) - 1; let d = 0; for (let l = a; l <= z; l++) d += R.puzzleFor(l).diff; lines.push(Math.round(d / (z - a + 1) * 10) / 10); lens.push(z - a + 1); }
@@ -554,7 +544,7 @@ async function inViewport(page, sel) {
       return { lines, lens, ms, daily, far: R.zPct(5000) };
     });
     metrics.difficulty = cv;
-    check('difficulty.ladder', 'Zorluk merdiveni: hat uzunluğu 12→28 (M5+ tavan), her hat bir öncekinden zor, sonsuzda %99', cv.lens.every((v, k) => v === Math.min(12 + 4 * k, 28)) && cv.lines.every((v, k) => !k || v > cv.lines[k - 1]) && cv.far === 99 && cv.ms < 60, `${cv.lines.join(' → ')} · ${cv.ms} ms/bölüm`, 'medium');
+    check('difficulty.ladder', 'Zorluk merdiveni: hat uzunluğu doğrusal artıyor, her hat bir öncekinden zor, sonsuzda %99', cv.lens.every((v, k) => v === 12 + 4 * k) && cv.lines.every((v, k) => !k || v > cv.lines[k - 1]) && cv.far === 99 && cv.ms < 60, `${cv.lines.join(' → ')} · ${cv.ms} ms/bölüm`, 'medium');
     check('difficulty.daily', 'Günün Hattı haftalık dalga: Pzt→Paz zorlaşır, %40 altına düşmez, tepe %85+, zamanla yükselir', cv.daily.wave && cv.daily.min >= 40 && cv.daily.peak >= 85 && cv.daily.late > cv.daily.early, JSON.stringify(cv.daily), 'medium');
     check('pairs.solvable', 'Eşli karolu 600 bölümün hepsi çözülebilir, eşler simetrik, sabit karoyla çakışmaz', gen.bad === 0 && gen.pairs > 1000 && gen.pre === 0, JSON.stringify(gen));
     await page.click('#bPlay'); await page.waitForTimeout(700);
@@ -575,15 +565,15 @@ async function inViewport(page, sel) {
     await page.click('#bHint'); const won = await waitModal(page);
     const hf = await page.evaluate(([a, b]) => { const G = window.__ray.G; return G.fixed[a] && G.fixed[b] && G.cur[a] === G.sol[a] && G.cur[b] === G.sol[b]; }, [g.a, g.b]);
     check('rule.pairs.hint', 'İpucu eşli karoyu seçince ikisini birden oturtur', hf && won, `${hf} · ${won}`, 'medium');
-    const sizes = await page.evaluate(a => [a, a + 2, a + 3, a + 11, a + 12].map(l => window.__ray.sizeFor(l).join('x')).join(' '), AT('pairs'));
+    const sizes = await page.evaluate(() => [49, 51, 52, 60, 61].map(l => window.__ray.sizeFor(l).join('x')).join(' '));
     check('rule.pairs.win', 'Eşli karolu bölüm çözülüp kazanılıyor · testere dişi (49–51: 5×7, 60 mola: 5×7)', won && sizes === '5x7 5x7 6x8 5x7 7x9', `${won} · ${sizes}`, 'medium');
     check('e7.errors', 'Eşli karo senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
     await ctx.close();
   }
 
-  // ---------- E8. Yeni kural: karanlık tünel (RL.fog hattı) ----------
+  // ---------- E8. Yeni kural: karanlık tünel (M6, bölüm 101+) ----------
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: { played: AT('fog') - 1, level: AT('fog'), stars: starsUpTo(AT('fog')), seen: seenTo(RL.fog), remindAsked: true } });
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 100, level: 101, stars: starsUpTo(101), seen: { 2: 1, 3: 1 }, remindAsked: true } });
     await page.click('#bPlay'); await page.waitForTimeout(700);
     const card = await page.evaluate(() => ({ open: document.getElementById('modal').classList.contains('open'), txt: document.querySelector('.sheet h2')?.textContent, demo: !!document.querySelector('.rdemo3') }));
     await shot(page, 'rule-fog');
@@ -612,42 +602,42 @@ async function inViewport(page, sel) {
     const d1 = await dk(); for (let k = 0; k < 3; k++) await tapTile(page, br.i); await page.waitForTimeout(500); const d2 = await dk();
     const taps = await solve(page, 8); const won = await waitModal(page);
     const all = await page.evaluate(() => window.__ray.G.seen.every(Boolean));
-    const sizes = await page.evaluate(a => [a - 1, a, a + 2, a + 3].map(l => window.__ray.sizeFor(l).join('x')).join(' '), AT('fog'));
-    check('rule.fog.card', `M${RL.fog + 1} ilk girişte "YENİ KURAL · Karanlık tünel" kartı (animasyonlu)`, card.open && /Karanlık tünel/.test(card.txt || '') && card.demo, JSON.stringify(card), 'medium');
+    const sizes = await page.evaluate(() => [100, 101, 103, 104].map(l => window.__ray.sizeFor(l).join('x')).join(' '));
+    check('rule.fog.card', 'M6 ilk girişte "YENİ KURAL · Karanlık tünel" kartı (animasyonlu)', card.open && /Karanlık tünel/.test(card.txt || '') && card.demo, JSON.stringify(card), 'medium');
     check('rule.fog', 'Karanlık tünel: başta karanlık karolar var, dokunulmaz, hamle saymaz; ışığı takip ederek çözülür', f0.fog && f0.dark > 10 && b0.m === b1.m && b0.v === b1.v && won && all, JSON.stringify({ ...f0, b0, b1, taps, won, all }));
     check('rule.fog.back', 'Karanlık tünel: bağlantı kopunca arkadaki bölge yeniden kararır, geri bağlanınca aydınlanır', br.i >= 0 && br.gain > 0 && d1 === d0 + br.gain && d2 === d0, JSON.stringify({ br, d0, dMid, d1, d2 }));
-    check('rule.fog.saw', `Testere dişi: M${RL.fog + 1} ilk 3 bölüm 6×8, sonra 7×9`, sizes === '7x9 6x8 6x8 7x9', sizes, 'medium');
+    check('rule.fog.saw', 'Testere dişi: M6 ilk 3 bölüm 6×8, sonra 7×9', sizes === '7x9 6x8 6x8 7x9', sizes, 'medium');
     check('e8.errors', 'Karanlık tünel senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
     await ctx.close();
   }
 
-  // ---------- E9. Ters karo, sayaçlı karo, iki merkez (RL.rev/cnt/two hatları), kural dönüşümü ----------
+  // ---------- E9. Ters karo (M5), sayaçlı karo (M7), iki merkez (M8), kural dönüşümü ----------
   {
-    const ruleIntro = async key => {
-      const lvl = AT(key), seen = seenTo(RL[key]);
+    const ruleIntro = async (lvl, seenUpTo) => {
+      const seen = Object.fromEntries(Array.from({ length: seenUpTo - 1 }, (_, k) => [k + 2, 1]));
       const o = await open(browser, URL, { save: { played: lvl - 1, level: lvl, stars: starsUpTo(lvl), seen, remindAsked: true } });
       await o.page.click('#bPlay'); await o.page.waitForTimeout(700);
       o.card = await o.page.evaluate(() => ({ open: document.getElementById('modal').classList.contains('open'), txt: document.querySelector('.sheet h2')?.textContent }));
       return o;
     };
     // ters karo
-    const A = await ruleIntro('rev'); await shot(A.page, 'rule-rev'); if (A.card.open) await A.page.click('#mGo'); await A.page.waitForTimeout(400);
+    const A = await ruleIntro(73, 3); await shot(A.page, 'rule-rev'); if (A.card.open) await A.page.click('#mGo'); await A.page.waitForTimeout(400);
     const ra = await A.page.evaluate(() => { const G = window.__ray.G, i = G.rev.indexOf(true); return { n: G.rev.filter(Boolean).length, i, v: G.cur[i] }; });
     await tapTile(A.page, ra.i); await A.page.waitForTimeout(250);
     const rb = await A.page.evaluate(i => window.__ray.G.cur[i], ra.i); await shot(A.page, 'rev');
     await solve(A.page, 8); const wA = await waitModal(A.page);
-    check('rule.rev', `M${RL.rev + 1} ters karo: kural kartı, ↺ karo saat yönünün tersine döner, bölüm çözülür`, /Ters karo/.test(A.card.txt || '') && ra.n >= 2 && rb === (((ra.v >> 1) | (ra.v << 3)) & 15) && wA, JSON.stringify({ ...A.card, ...ra, rb, wA }));
+    check('rule.rev', 'M5 ters karo: kural kartı, ↺ karo saat yönünün tersine döner, bölüm çözülür', /Ters karo/.test(A.card.txt || '') && ra.n >= 2 && rb === (((ra.v >> 1) | (ra.v << 3)) & 15) && wA, JSON.stringify({ ...A.card, ...ra, rb, wA }));
     // sayaçlı karo: 3 dokunuştan sonra kilitlenir, baştan alınca sayaç geri gelir
-    const B = await ruleIntro('cnt'); await shot(B.page, 'rule-cnt'); if (B.card.open) await B.page.click('#mGo'); await B.page.waitForTimeout(400);
+    const B = await ruleIntro(133, 5); await shot(B.page, 'rule-cnt'); if (B.card.open) await B.page.click('#mGo'); await B.page.waitForTimeout(400);
     const ca = await B.page.evaluate(() => { const G = window.__ray.G, i = G.cnt.indexOf(3); return { n: G.cnt.filter(v => v >= 0).length, i }; });
     for (let k = 0; k < 4; k++) { await tapTile(B.page, ca.i); await B.page.waitForTimeout(160); }
     const cb = await B.page.evaluate(i => ({ c: window.__ray.G.cnt[i] }), ca.i); await shot(B.page, 'cnt');
     await B.page.click('#bReset'); await B.page.waitForTimeout(400);
     const cc = await B.page.evaluate(i => window.__ray.G.cnt[i], ca.i);
     await solve(B.page, 8); const wB = await waitModal(B.page);
-    check('rule.cnt', `M${RL.cnt + 1} sayaçlı karo: 3 dönüşten sonra kilitlenir, ↺ baştan sayacı yeniler, bölüm çözülür`, /Sayaçlı karo/.test(B.card.txt || '') && ca.n >= 2 && cb.c === 0 && cc === 3 && wB, JSON.stringify({ ...B.card, ...ca, ...cb, cc, wB }));
+    check('rule.cnt', 'M7 sayaçlı karo: 3 dönüşten sonra kilitlenir, ↺ baştan sayacı yeniler, bölüm çözülür', /Sayaçlı karo/.test(B.card.txt || '') && ca.n >= 2 && cb.c === 0 && cc === 3 && wB, JSON.stringify({ ...B.card, ...ca, ...cb, cc, wB }));
     // iki merkez: ikinci merkez var; hatlar değerse "karıştı" ve çözülmüş sayılmaz; 300 bölüm çözülebilir
-    const C2 = await ruleIntro('two'); await shot(C2.page, 'rule-two'); if (C2.card.open) await C2.page.click('#mGo'); await C2.page.waitForTimeout(400);
+    const C2 = await ruleIntro(169, 6); await shot(C2.page, 'rule-two'); if (C2.card.open) await C2.page.click('#mGo'); await C2.page.waitForTimeout(400);
     const tw = await C2.page.evaluate(() => {
       const R = window.__ray; let bad = 0, merge = 0;
       for (let sd = 1; sd <= 300; sd++) {
@@ -662,7 +652,7 @@ async function inViewport(page, sel) {
     });
     await shot(C2.page, 'two');
     await solve(C2.page, 8); const wC = await waitModal(C2.page);
-    check('rule.two', `M${RL.two + 1} iki merkez: kural kartı, iki ayrı hat; değince karışır (çözülmez); 300 bölüm çözülebilir`, /İki merkez/.test(C2.card.txt || '') && tw.two && tw.bad === 0 && tw.merge > 200 && wC, JSON.stringify({ ...C2.card, ...tw, wC }));
+    check('rule.two', 'M8 iki merkez: kural kartı, iki ayrı hat; değince karışır (çözülmez); 300 bölüm çözülebilir', /İki merkez/.test(C2.card.txt || '') && tw.two && tw.bad === 0 && tw.merge > 200 && wC, JSON.stringify({ ...C2.card, ...tw, wC }));
     // kural dönüşümü: M23 sonrası ilk karma hat M24'ün ilk 48 bölümü (M9–M23 kural hatları) her bölüm 1–2 kural, karışım bölümden bölüme değişir
     const mix = await C2.page.evaluate(() => { const R = window.__ray, a = R.lineStart(23), L = []; for (let l = a; l < a + 48; l++) L.push(R.puzzleFor(l).rules.sort().join('+')); return { from: a, sizes: [...new Set(L.map(x => x.split('+').length))], kinds: new Set(L).size, sample: L.slice(0, 6) }; });
     check('rule.mix', 'Karma hatlar (M24+): her bölümde 1–2 kural, karışım çeşitli', mix.sizes.every(k => k >= 1 && k <= 2) && mix.kinds >= 6, JSON.stringify(mix), 'medium');
@@ -819,7 +809,7 @@ async function inViewport(page, sel) {
     await page.click('.lv[data-l="200"]'); await page.waitForTimeout(500);
     const lvl = await page.evaluate(() => window.__ray.G?.lvl);
     const s = await getSave(page);
-    check('test.open', `Test sürümü: bütün kural hatları ve ilk karma hat (${LE(KR)} bölüm) açık, temalar/kaplamalar sende, bol 👑`, home.test && home.crowns >= 999 && map.locked === 0 && map.on >= LE(KR) && map.l200 && lvl === 200 && Object.keys(s.owned).length >= 13 && Object.keys(s.trains).length === 9 && errors.length === 0, JSON.stringify({ ...home, ...map, lvl }), 'medium');
+    check('test.open', 'Test sürümü: bütün hatlar ve 408 bölüm açık, temalar/kaplamalar sende, bol 👑', home.test && home.crowns >= 999 && map.locked === 0 && map.on >= 408 && map.l200 && lvl === 200 && Object.keys(s.owned).length >= 13 && Object.keys(s.trains).length === 9 && errors.length === 0, JSON.stringify({ ...home, ...map, lvl }), 'medium');
     await ctx.close();
   }
 
@@ -853,7 +843,7 @@ async function inViewport(page, sel) {
 
   // ---------- K. Eklenti kuralları: her kuralın testi kendi dosyasında (tools/hakem/*.cjs) ----------
   {
-    const T = { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, modalOpen, inViewport, starsUpTo, RL, LS, LE, AT, seenTo, KR };
+    const T = { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, modalOpen, inViewport, starsUpTo };
     for (const f of fs.readdirSync(path.join(__dirname, 'hakem')).filter(f => f.endsWith('.cjs')).sort()) await require(path.join(__dirname, 'hakem', f))(T);
   }
 

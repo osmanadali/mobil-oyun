@@ -1,4 +1,4 @@
-// Gizli depo (RL.depot hattı) — robot testleri (hakem.cjs K bölümü çağırır). Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/gizli-depo.md
+// M14 · Gizli depo — robot testleri (hakem.cjs K bölümü çağırır). Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/gizli-depo.md
 // Üretim, kazanma denetimi, adillik (bağımsız sayım), çözücü süzgeci, zorluk ölçümü, eski bölümler (kural yüklü/yüksüz parmak izi),
 // karma hatlar (rulesFor taraması), kural kartı, bildirimler, yarım oyun, ↺ baştan, ipucu, robotun kazanması.
 const SEEN = Object.fromEntries(Array.from({ length: 30 }, (_, k) => [k + 2, 1]));   // bütün kural kartları görülmüş
@@ -6,11 +6,9 @@ const SEEN = Object.fromEntries(Array.from({ length: 30 }, (_, k) => [k + 2, 1])
 const NO_DEPOT = `(() => { const a = window.RAY_RULES || []; a.push = function (...f) { return Array.prototype.push.apply(this, f.filter(x => !String(x).includes("key: 'depot'"))); }; window.RAY_RULES = a; })();`;
 
 module.exports = async T => {
-  const { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, starsUpTo, RL, AT } = T;
-  const DL = RL.depot, A = AT('depot');
+  const { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, starsUpTo } = T;
   const errs = [];
-  // her toast() çağrısı ayrı kaydedilir (aynı dokunuşta iki bildirim gelirse MutationObserver yalnız sonuncuyu görür)
-  const toasts = page => page.evaluate(() => { const t = document.getElementById('toast'), d = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent'); window.__toasts = []; Object.defineProperty(t, 'textContent', { configurable: true, get() { return d.get.call(this); }, set(v) { window.__toasts.push(v); d.set.call(this, v); } }); });
+  const toasts = page => page.evaluate(() => { const t = document.getElementById('toast'); window.__toasts = []; new MutationObserver(() => window.__toasts.push(t.textContent)).observe(t, { childList: true, characterData: true, subtree: true }); });
 
   // ---------- 1. Üretim, kazanma denetimi, adillik, çözücü, zorluk ----------
   {
@@ -81,31 +79,31 @@ module.exports = async T => {
     errs.push(...errors); await ctx.close();
   }
 
-  // ---------- 2. Eski bölümler bit bit aynı: kural yüklü/yüksüz, depo hattından öncesi ve Günün Hattı ----------
+  // ---------- 2. Eski bölümler bit bit aynı: kural yüklü/yüksüz, 1–468 ve Günün Hattı ----------
   {
-    const fp = DL => {
+    const fp = () => {
       const R = window.__ray, fnv = s => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return (h >>> 0).toString(36); };
       const sum = P => JSON.stringify([P.sol, P.cur, P.pinned, P.link, P.rev, P.cnt, P.hub2, P.par, P.taps, P.diff, P.rules, Object.keys(P).sort()]);
-      let lv = ''; for (let l = 1; l < R.lineStart(DL); l++) lv += fnv(sum(R.puzzleFor(l)));
+      let lv = ''; for (let l = 1; l < R.lineStart(13); l++) lv += fnv(sum(R.puzzleFor(l)));
       let day = ''; for (let d = 0; d < 40; d++) { const t = new Date(2026, 9, 1 + d * 9); day += fnv(sum(R.dailyFor(`${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`))); }
-      return { lv: fnv(lv), day: fnv(day), last: R.lineStart(DL) - 1, keys: R.MODS.map(m => m.key).join() };
+      return { lv: fnv(lv), day: fnv(day), last: R.lineStart(13) - 1, keys: R.MODS.map(m => m.key).join() };
     };
     const a = await open(browser, URL, { save: { played: 1 } }), b = await open(browser, URL, { save: { played: 1 }, init: NO_DEPOT });
-    const [x, y] = await Promise.all([a.page.evaluate(fp, DL), b.page.evaluate(fp, DL)]);
-    check('rule.depot.old', `Gizli depo: 1–${x.last} ve Günün Hattı (40 gün) kural yüklü/yüksüz bit bit aynı`, x.last === A - 1 && x.lv === y.lv && x.day === y.day && /depot/.test(x.keys) && !/depot/.test(y.keys), JSON.stringify({ x, y }));
+    const [x, y] = await Promise.all([a.page.evaluate(fp), b.page.evaluate(fp)]);
+    check('rule.depot.old', `Gizli depo: 1–${x.last} ve Günün Hattı (40 gün) kural yüklü/yüksüz bit bit aynı`, x.last === 468 && x.lv === y.lv && x.day === y.day && /depot/.test(x.keys) && !/depot/.test(y.keys), JSON.stringify({ x, y }));
     errs.push(...a.errors, ...b.errors); await a.ctx.close(); await b.ctx.close();
   }
 
   // ---------- 3. Hat ve karma hatlar ----------
   {
     const { ctx, page, errors } = await open(browser, URL, { save: { played: 1 } });
-    const h = await page.evaluate(DL => {
-      const R = window.__ray, L0 = R.lineStart(DL), L1 = R.lineStart(DL + 1), avg = c => { let a = 0, n = 0; for (let l = R.lineStart(c); l < R.lineStart(c + 1); l++) { a += R.puzzleFor(l).diff; n++; } return +(a / n).toFixed(2); };
+    const h = await page.evaluate(() => {
+      const R = window.__ray, L0 = R.lineStart(13), L1 = R.lineStart(14), avg = c => { let a = 0, n = 0; for (let l = R.lineStart(c); l < R.lineStart(c + 1); l++) { a += R.puzzleFor(l).diff; n++; } return +(a / n).toFixed(2); };
       let early = 0, own = 0, miss = 0; const intro = [];
       for (let l = 1; l < L0; l++) if (R.rulesFor(l).has('depot')) early++;
       for (let l = L0; l < L1; l++) { if (R.rulesFor(l).has('depot')) own++; const P = R.puzzleFor(l); if (!P.depot) miss++; if (l < L0 + 4) intro.push(`${l}:${P.cols}x${P.rows}/${P.depot?.length}`); }
-      const m13 = avg(DL - 1), m14 = avg(DL);
-      // karma: depo hattı sonrası depo taşıyan ilk 300 bölüm → hepsi üretilir, sol çözülü, başlangıç çözülmemiş, çakışmalı kural yok
+      const m13 = avg(12), m14 = avg(13);
+      // karma: M14 sonrası depo taşıyan ilk 300 bölüm → hepsi üretilir, sol çözülü, başlangıç çözülmemiş, çakışmalı kural yok
       const clashOf = k => R.MODS.find(m => m.key === k)?.clash || [];
       let n = 0, bad = 0, noDep = 0, clash = 0, mixed = 0; const with_ = {};
       for (let l = L1; n < 300 && l < 20000; l++) {
@@ -117,16 +115,16 @@ module.exports = async T => {
         if (U.size > 1) mixed++; for (const k of U) if (k !== 'depot') with_[k] = (with_[k] || 0) + 1;
       }
       return { L0, L1, early, own, miss, intro, m13, m14, n, bad, noDep, clash, mixed, with_ };
-    }, DL);
-    check('rule.depot.line', `Gizli depo: 1–${h.L0 - 1} depo yok; M${DL + 1}'in her bölümünde var; ${h.L0} tanıtım 6×8 + 1 depo`, !h.early && h.own === h.L1 - h.L0 && !h.miss && h.intro[0] === `${A}:6x8/1`, JSON.stringify({ early: h.early, own: h.own, miss: h.miss, intro: h.intro }));
-    check('rule.depot.ladder', `Gizli depo: M${DL + 1} ortalama zorluğu ${h.m14}, önceki hattın (${h.m13}) üstünde`, h.m14 > h.m13, `M${DL} ${h.m13} → M${DL + 1} ${h.m14}`, 'medium');
+    });
+    check('rule.depot.line', `Gizli depo: 1–${h.L0 - 1} depo yok; M14'ün her bölümünde var; ${h.L0} tanıtım 6×8 + 1 depo`, !h.early && h.own === h.L1 - h.L0 && !h.miss && /^469:6x8\/1$/.test(h.intro[0]), JSON.stringify({ early: h.early, own: h.own, miss: h.miss, intro: h.intro }));
+    check('rule.depot.ladder', `Gizli depo: M14 ortalama zorluğu ${h.m14}, M13'ün (${h.m13}) en az 1 üstünde`, h.m14 >= h.m13 + 1, `M13 ${h.m13} → M14 ${h.m14}`, 'medium');
     check('rule.depot.mix', `Gizli depo karma hatlarda: ${h.n} bölüm (${h.mixed} tanesi öteki kurallarla) üretilir, sol çözülü, başlangıç çözülmemiş, çakışmalı kural yok`, h.n === 300 && !h.bad && !h.noDep && !h.clash && h.mixed > 100, JSON.stringify({ bad: h.bad, noDep: h.noDep, clash: h.clash, with: h.with_ }));
     errs.push(...errors); await ctx.close();
   }
 
-  // ---------- 4. Depo hattının ilk bölümü: kural kartı, ilk dokunuş bildirimi, iki çıkış uyarısı, yarım oyun, ↺ baştan, robot kazanır ----------
+  // ---------- 4. Bölüm 469: kural kartı, ilk dokunuş bildirimi, iki çıkış uyarısı, yarım oyun, ↺ baştan, robot kazanır ----------
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: { played: A - 1, level: A, stars: starsUpTo(A), seen: { ...SEEN, [DL]: 0 }, remindAsked: true } });
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 468, level: 469, stars: starsUpTo(469), seen: { ...SEEN, 13: 0 }, remindAsked: true } });
     await page.click('#bPlay'); await page.waitForTimeout(900);
     const card = await page.evaluate(() => ({ open: document.getElementById('modal').classList.contains('open'), txt: document.querySelector('.sheet h2')?.textContent, p: document.querySelector('.sheet p')?.textContent, demo: !!document.querySelector('.rd-depot .rd-dh'), icon: !!document.querySelector('.sheet p .rd-depot-i'), anim: getComputedStyle(document.querySelector('.rd-dh') || document.body).animationName }));
     await shot(page, 'rule-depot');
@@ -134,7 +132,7 @@ module.exports = async T => {
     await page.waitForTimeout(400);
     await toasts(page);
     const g0 = await page.evaluate(() => { const { G, geo } = window.__ray, r = document.getElementById('cv').getBoundingClientRect(), V = G.depot[0];
-      return { lvl: G.lvl, size: G.cols + 'x' + G.rows, n: G.depot.length, cells: V.cells, k: V.k, s: geo.s, W: r.width, ox: geo.ox, right: geo.ox + G.cols * geo.s, seen: JSON.parse(localStorage.getItem('ray')).seen?.[window.__ray.RULE_LINE.depot] }; });
+      return { lvl: G.lvl, size: G.cols + 'x' + G.rows, n: G.depot.length, cells: V.cells, k: V.k, s: geo.s, W: r.width, ox: geo.ox, right: geo.ox + G.cols * geo.s, seen: JSON.parse(localStorage.getItem('ray')).seen?.[13] }; });
     await shot(page, 'depot');
     // iki çıkış (gerçek dokunuşlar): önce ayraçta yalnız gerçek çıkış dışa bakar, sonra ikinci bir karo da dışa çevrilir → uyarı bir kez
     const plan = await page.evaluate(() => {
@@ -153,12 +151,12 @@ module.exports = async T => {
     await page.reload(); await page.waitForTimeout(400); await page.click('#bPlay'); await page.waitForTimeout(600);
     const s2 = await st();
     await page.click('#bReset'); await page.waitForTimeout(400);
-    const s3 = await page.evaluate(A => { const { G, puzzleFor } = window.__ray; return { same: G.cur.join() === puzzleFor(A).cur.join(), m: G.moves }; }, A);
+    const s3 = await page.evaluate(() => { const { G, puzzleFor } = window.__ray; return { same: G.cur.join() === puzzleFor(469).cur.join(), m: G.moves }; });
     const taps = await solve(page, 8), won = await waitModal(page);
     const g2 = await page.evaluate(() => { const G = window.__ray.G; return { won: G.won, dpN: G.L.dpN }; });
     await shot(page, 'depot-win');
-    check('rule.depot.card', `M${DL + 1} ilk girişte "YENİ KURAL · Gizli depo" kartı (animasyonlu demo, satır içi depo simgesi)`, card.open && /Gizli depo/.test(card.txt || '') && /tam biri/.test(card.p || '') && card.demo && card.icon && card.anim === 'rd-df' && g0.seen === 1, JSON.stringify(card), 'medium');
-    check('rule.depot.screen', `Bölüm ${A}: 6×8, 1 depo, ayraç ve depo tahtanın dışında, ekranda`, g0.lvl === A && g0.size === '6x8' && g0.n === 1 && g0.cells.length === 3 && (g0.k !== 3 || g0.ox - .46 * g0.s >= 0) && (g0.k !== 1 || g0.right + .46 * g0.s <= g0.W), JSON.stringify(g0), 'medium');
+    check('rule.depot.card', 'M14 ilk girişte "YENİ KURAL · Gizli depo" kartı (animasyonlu demo, satır içi depo simgesi)', card.open && /Gizli depo/.test(card.txt || '') && /tam biri/.test(card.p || '') && card.demo && card.icon && card.anim === 'rd-df' && g0.seen === 1, JSON.stringify(card), 'medium');
+    check('rule.depot.screen', 'Bölüm 469: 6×8, 1 depo, ayraç ve depo tahtanın dışında, ekranda', g0.lvl === 469 && g0.size === '6x8' && g0.n === 1 && g0.cells.length === 3 && (g0.k !== 3 || g0.ox - .46 * g0.s >= 0) && (g0.k !== 1 || g0.right + .46 * g0.s <= g0.W), JSON.stringify(g0), 'medium');
     check('rule.depot.warn', 'Gizli depo: ayraçta iki çıkış → uyarı bir kez, ilk dokunuşta depo bildirimi (ömürde bir kez)', plan.ok && g1.dpN[0] === 2 && g1.warn === 1 && g1.toasts.some(t => /yalnız bir ray/.test(t)) && g1.toasts.some(t => /Depo/.test(t)) && g1.told === 1, JSON.stringify(g1));
     check('rule.depot.run', 'Gizli depo: yarım oyun aynı dizilimle sürer, ↺ baştan ilk duruma döner, robot (solve + plan) kazanır', s2.cur === s1.cur && s2.m === s1.m && s3.same && s3.m === 0 && won && g2.won && g2.dpN[0] === 1, JSON.stringify({ s1m: s1.m, s2m: s2.m, s3, taps, won, g2 }));
     errs.push(...errors); await ctx.close();
@@ -167,7 +165,7 @@ module.exports = async T => {
   // ---------- 5. İpucu: yalnız depo karosu yanlış → ipucu onu oturtup sabitler, bölüm biter (7×9, 2 depo) ----------
   {
     const p0 = await open(browser, URL, { save: { played: 1 } });
-    const lvl = await p0.page.evaluate(DL => { const R = window.__ray; for (let l = R.lineStart(DL) + 3; l < R.lineStart(DL + 1); l++) { const U = R.rulesFor(l); if ([...U].every(k => ['depot', 'pins', 'pairs', 'rev', 'cnt'].includes(k))) return l; } return 0; }, DL);
+    const lvl = await p0.page.evaluate(() => { const R = window.__ray; for (let l = R.lineStart(13) + 3; l < R.lineStart(14); l++) { const U = R.rulesFor(l); if ([...U].every(k => ['depot', 'pins', 'pairs', 'rev', 'cnt'].includes(k))) return l; } return 0; });
     await p0.ctx.close();
     const { ctx, page, errors } = await open(browser, URL, { save: { played: lvl - 1, level: lvl, stars: starsUpTo(lvl), seen: SEEN, remindAsked: true, depotTold: 1, hints: 3 } });
     await page.click('#bPlay'); await page.waitForTimeout(700);

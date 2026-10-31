@@ -1,6 +1,4 @@
-# M20 · Gizli depo (anahtar: `depot`)
-
-> **Hat düzeni 31 Ekim'de değişti:** bu kural artık **M20** (ilk bölüm 493). Aşağıdaki hat ve bölüm numaraları ve ölçümler eski düzene aittir; güncel tablo `docs/kurallar/README.md`.
+# M14 · Gizli depo (anahtar: `depot`)
 
 > Tasarım başvurusu: `proto-zor` dalındaki `gizli-depo` önerisi (`proto/zor/tasarimlar.json`) ve `proto/zor/gizli/plugins.cjs` içindeki `DEPOT` taslağı. Taslak eski kancalarla (`P.exit` + `edge`, H5 `prune → bool`) yazılmıştı. Bu eklenti main'deki birleşik `open` ve `prune` kancalarını kullanır ve ölçümle yeniden ayarlandı. Kod: `www/rules/gizli-depo.js`, testler: `tools/hakem/gizli-depo.cjs`.
 

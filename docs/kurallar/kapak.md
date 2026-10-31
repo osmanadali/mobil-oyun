@@ -1,6 +1,4 @@
-# M15 · Kapak (anahtar: `cover`)
-
-> **Hat düzeni 31 Ekim'de değişti:** bu kural artık **M15** (ilk bölüm 353). Aşağıdaki hat ve bölüm numaraları ve ölçümler eski düzene aittir; güncel tablo `docs/kurallar/README.md`.
+# M10 · Kapak (anahtar: `cover`)
 
 İlk çift hat kuralı (gizli bilgi). Kod: `www/rules/kapak.js` · testler: `tools/hakem/kapak.cjs` · tasarım başvurusu: `proto-zor` dalı, `proto/zor/tasarimlar.json` (id `kapak`) ve `proto/zor/gizli/plugins.cjs` (`COVER`).
 

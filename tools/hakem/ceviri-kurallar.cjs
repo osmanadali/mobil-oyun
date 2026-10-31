@@ -89,7 +89,7 @@ module.exports = async T => {
   {
     const { ctx, page } = await open(browser, URL, { save: { played: 1 } });
     // eklentiler + çekirdek kuralları (M3–M8, hat 2–7): kartın tamamı (rozet, ad, metin, düğme) burada açılıp denetlenir
-    const rules = await page.evaluate(() => [...['pins', 'pairs', 'rev', 'fog', 'cnt', 'two'].map(k => ({ key: k, line: window.__ray.RULE_LINE[k] })), ...window.__ray.MODS.map(m => ({ key: m.key, line: m.line }))].map(q => ({ ...q, lvl: window.__ray.lineStart(q.line) })));
+    const rules = await page.evaluate(() => [...[2, 3, 4, 5, 6, 7].map(c => ({ key: 'M' + (c + 1), line: c })), ...window.__ray.MODS.map(m => ({ key: m.key, line: m.line }))].map(q => ({ ...q, lvl: window.__ray.lineStart(q.line) })));
     await ctx.close();
     const bad = [], seen = [];
     for (const vp of [[320, 568], [360, 640]]) for (const q of rules) {
@@ -106,7 +106,7 @@ module.exports = async T => {
       if (!ok) bad.push({ vp: vp[0], key: q.key, ...c, errors });
       errs.push(...errors); await ctx.close();
     }
-    check('i18n.rules.fit', `en-US: ${rules.length} kuralın (M3–M23) tanıtım kartı İngilizce (Türkçe harf yok) ve 320×568 ile 360×640'ta taşmıyor (başlık tek satır, kaydırma yok, "Got it" ekranda)`, seen.length === rules.length * 2 && !bad.length, JSON.stringify(bad.slice(0, 4)));
+    check('i18n.rules.fit', `en-US: ${rules.length} kuralın (M3–M20) tanıtım kartı İngilizce (Türkçe harf yok) ve 320×568 ile 360×640'ta taşmıyor (başlık tek satır, kaydırma yok, "Got it" ekranda)`, seen.length === rules.length * 2 && !bad.length, JSON.stringify(bad.slice(0, 4)));
   }
 
   // ---------- 3. tr-TR ve en-US: kurallı bölümlerin tahtaları aynı ----------

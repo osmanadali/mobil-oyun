@@ -1,6 +1,4 @@
-# M18 · Halka hat (anahtar: `ring`)
-
-> **Hat düzeni 31 Ekim'de değişti:** bu kural artık **M18** (ilk bölüm 437). Aşağıdaki hat ve bölüm numaraları ve ölçümler eski düzene aittir; güncel tablo `docs/kurallar/README.md`.
+# M17 · Halka hat (anahtar: `ring`)
 
 > **Durum: uygulandı.** Kod `www/rules/halka.js`, robot testleri `tools/hakem/halka.cjs`. Çekirdekte değişiklik yok. Aşağıdaki bölümler uygulanan hâli anlatır. Tasarım iş akışının (üç tasarımcı, seçici, şüpheci doğrulayıcı) kaydı en altta korunur; doğrulayıcının zorunlu düzeltmelerinin her biri orada işaretlidir.
 
