@@ -47,8 +47,14 @@ Her bölüm için birden çok aday bulmaca üretilir; zorluk puanı hedefe (**5 
 | Izgara boyu | 3×3 | 7×9 (telefonda başparmak sınırı) | Daha çok karo, daha uzun zincir |
 | Sabit karo oranı | %16 (M3'ten itibaren) | 0'a iner | Sabit karolar ipucu gibidir; azaldıkça bulmaca zorlaşır |
 | Taranan aday | 6 | 32 | Hedefe daha yakın (daha zor) bulmaca bulunur |
-| Hamle toleransı | Bol (par'ın ~2 katı) | z %30'u geçince yavaşça yarıya iner | ↻ yıldızı ve taç zorlaşır |
-| Süre hedefi | Gereken dokunuşa göre | Zor bulmacaya düşünme payı eklenir (+3 sn/puan) | Zor bölüm haksız olmaz |
+| Hamle toleransı | par × 1,3–1,4 (en az +2) | z %30'u geçince pay yavaşça %60'ına iner (sonsuzda ≈ par × 1,2) | ↻ yıldızı ve taç zorlaşır |
+| Süre hedefi | Gereken dokunuşa göre | Zor bulmacaya düşünme payı eklenir (+3 sn/puan); hepsi × 0,75 | Zor bölüm haksız olmaz |
+
+**Hedef formülleri (`limits`, 31 Ekim'de %25 sıkılaştı):**
+
+- ↻ hamle hedefi = par + max(2, round(par · tol · sıkılık)); tol = 0,30 (küçük ızgara) → 0,40 (7×9), sıkılık = 1 − 0,4·max(0, (z − 0,3)/0,7). Önceden tol 0,60–0,75 ve en az +3 idi (par × 1,6–1,75).
+- ⏱ süre hedefi = max(11, round(0,75 · (dokunuş·1,3 + karo·0,5 + 3·max(0, puan − 8)))) saniye. Önceden çarpan yoktu, taban 15 sn idi.
+- Kusursuz oynayan (par hamle, hızlı dokunuş) her bölümü yine iki yıldızla bitirir; robot bunu kural tanıtım bölümlerinde denetler.
 
 Izgara boyu bölüme göre büyür: 1–3 3×3 · 4–8 4×4 · 9–15 4×5 · 16–25 5×6 · 26–40 5×7 · 41–60 6×8 · 61+ 7×9.
 
@@ -231,6 +237,6 @@ Bu iki sistemin amacı oyuncuya "bir bölüm daha" dedirtmektir. Hiçbiri oyunu 
 
 **Kıl payı tekrar:**
 
-- Hedef az farkla kaçtıysa (en çok 5 sn rötar ve en çok 2 hamle fazla) ya da seri kırıldıysa, sonuç panelinde büyük düğme "Tekrar dene" olur ve Sonraki alttaki küçük sıraya iner. Düğme sayısı değişmez, panel kalabalıklaşmaz.
+- Hedef az farkla kaçtıysa (en çok 4 sn rötar ve en çok 2 hamle fazla; süre hedefi ¾'e inince 5 sn'den indi) ya da seri kırıldıysa, sonuç panelinde büyük düğme "Tekrar dene" olur ve Sonraki alttaki küçük sıraya iner. Düğme sayısı değişmez, panel kalabalıklaşmaz.
 - Büyük düğmenin alt satırı nedenini söyler: "Kıl payı · ⏱ 2 sn" ya da "🔥 4 seri geri gelsin".
 

@@ -511,13 +511,13 @@ function lit(P) {
 
 // ---------- yıldızlar: her yıldız bir hedef ----------
 // ★ bitir · ★ ⏱ süre hedefi · ★ ↻ hamle hedefi (aynı karoya art arda dokunuş = 1 hamle). İkisi birden → KUSURSUZ 👑
-// hamle toleransı ızgarayla büyür: küçük ızgara +%60 → 7×9 +%75 (en az +3). Oyuncu karoları denerken gidip gelir; hedef bunu kaldırmalı.
-const moveTol = n => .6 + .15 * Math.min(1, Math.max(0, (n - 9) / 54));
+// hamle toleransı ızgarayla büyür: küçük ızgara +%30 → 7×9 +%40 (en az +2). Oyuncu karoları denerken gidip gelir; hedef bunu biraz kaldırmalı.
+const moveTol = n => .3 + .1 * Math.min(1, Math.max(0, (n - 9) / 54));
 function limits(P) {
-  // ↻ hamle payı: par'ın %60'ı (küçük ızgara) – %75'i (7×9); z %30'dan sonra yavaşça %60'ına iner → 1–200 ≈ par × 1,6–1,75, sonsuzda ≈ × 1,45
-  // ⏱ süre: dokunuş başına 1,3 sn + karo başına ,5 sn + zor bölüme düşünme payı (puanın 8'i aşan her birimi +3 sn)
+  // ↻ hamle payı: par'ın %30'u (küçük ızgara) – %40'ı (7×9); z %30'dan sonra yavaşça %60'ına iner → 1–200 ≈ par × 1,3–1,4, sonsuzda ≈ × 1,2 (en az +2)
+  // ⏱ süre: ¾ × (dokunuş başına 1,3 sn + karo başına ,5 sn + zor bölüme düşünme payı: puanın 8'i aşan her birimi +3 sn), en az 11 sn
   const tight = 1 - .4 * Math.max(0, ((P.z || 0) - .3) / .7);
-  return { m: P.par + Math.max(Math.round(3 * tight), Math.round(P.par * moveTol(P.cur.length) * tight)), t: Math.max(15, Math.round(P.taps * 1.3 + P.cur.length * .5 + Math.max(0, (P.diff || 0) - 8) * 3)) };
+  return { m: P.par + Math.max(2, Math.round(P.par * moveTol(P.cur.length) * tight)), t: Math.max(11, Math.round(.75 * (P.taps * 1.3 + P.cur.length * .5 + Math.max(0, (P.diff || 0) - 8) * 3))) };
 }
 const timeOk = sec => sec <= G.lim.t;
 const movesOk = () => G.moves <= G.lim.m;
@@ -1241,7 +1241,7 @@ function win() {
       } else {
         if ((save.combo || 0) >= 2 && save.shield > 0) { save.shield--; combo = save.combo; cmsg = L(`🛡 Kalkan seriyi korudu · ✨${combo}`, `🛡 Shield saved your streak · ✨${combo}`); }   // sandıktan
         else { if ((save.combo || 0) >= 2) save.comboLost = { n: broke = save.combo, lvl: G.lvl }; save.combo = 0; }
-        near = (tOk || late <= 5) && (mOk || G.moves - G.lim.m <= 2);
+        near = (tOk || late <= 4) && (mOk || G.moves - G.lim.m <= 2);   // kıl payı: hedefler ¾'e sıkılınca 5 sn → 4 sn
       }
     }
     // hangi hedef ne kadar kaçtı: [⏱ sn geç, ↻ hamle fazla]. Taç topla listesi ve tekrar oynarken gösterilir.

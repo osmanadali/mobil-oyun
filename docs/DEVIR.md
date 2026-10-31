@@ -67,14 +67,16 @@ APK indirme linkleri (sabit):
 - **Zorluk puanı:** `difficulty()` = dalga + 3·(düğüm−1) + 10·(1−ilk/n). `pick()` hedef puana en yakın adayı seçer: hedef = (tanıtım?3:5) + 11z + (final?2:0) + Σboost.
 - **Kural zorluk payı (`boost`):** Her eklentide bir `boost` alanı vardır. Kuralın kendi hattındaki ilk 3 bölüm dışında hedefe eklenir. Böylece kurallı bölümler gerçekten daha zor tabanlardan seçilir.
 - **Süre ve hamle sınırları (`limits()`):**
-  - Hamle sınırı = par + par·(0,6…0,75)·sıkılık.
-  - Süre sınırı = dokunuş·1,3 + n·0,5 + 3·max(0, zorluk−8) saniye.
+  - Hamle sınırı = par + max(2, par·(0,3…0,4)·sıkılık) → par × 1,3–1,4 (31 Ekim'de %25 sıkılaştı).
+  - Süre sınırı = max(11, ¾·(dokunuş·1,3 + n·0,5 + 3·max(0, zorluk−8))) saniye. Kıl payı: en çok 4 sn rötar, 2 hamle.
 - **Yarım oyun imzası:** hash(çözüm + başlangıç dizilimi). Üretim değişirse eski yarım oyunlar kendiliğinden düşer.
 
 ## 5. Durum
 
 <!-- DURUM:BAŞ -->
 Durum 28 Ekim 2026 sabahı itibarıyla:
+
+- **Hedefler %25 sıkı (31 Ekim, `hat-yapisi`):** ↻ hamle hedefi par × 1,3–1,4 (en az +2), ⏱ süre hedefi × ¾ (en az 11 sn), kıl payı 4 sn. Hat boyu tavanı (28) ve yeni kural sırası hazırlandı, salıya (3 Kasım) bırakıldı: hazır hâli `hat-yapisi` geçmişinde 8a88d20 commit'inde (testler kurala göre yazılmış: `AT('fog')`, `RL`, `seenTo`; boost ayarı; eklentilerde `ord`).
 
 - **Yeni kurallar M21–M23 (31 Ekim):** ❄ soğuyan karo (`ice`), ⚙ bakım karosu (`gear`, her 2 hamlede bir kendi döner; ilke 4 kullanıcı kararıyla gevşetildi), ↔ kayan sıra (`slide`). Karma hatlar artık M24'ten (`KARMA = 23`). Çekirdeğe üç küçük kanca: `after(…, moved)`, `undo`, `plan`. Belgeler: `docs/kurallar/`.
 - **Güçlendiriciler (31 Ekim):** sandıktan 🔄 ek tur, 🔦 fener, ⏱ +15 sn, ↶ geri al çıkar; yalnız işe yaradığı an alt çubukta belirir (BOLUM_TASARIMI › Sürpriz sandık). Sandıkta ipucu payı %60'tan %38'e indi. Robotta tek dosya: `node tools/hakem.cjs --only=guclendirici` (birleştirmeden önce tam koşu yine şart).
