@@ -44,7 +44,7 @@ module.exports = async T => {
       // {zone:0} → üretim ve zorluk birebir (R() tüketilmez)
       let same = 0;
       for (let s = 1; s <= 60; s++) { const a = R.generate(7, 9, s, 3, 2, { zone: 0, rev: 3, two: s % 2 }), b = R.generate(7, 9, s, 3, 2, { rev: 3, two: s % 2 }); if (!a.zone && JSON.stringify(a) === JSON.stringify(b) && R.difficulty(a) === R.difficulty(b)) same++; }
-      // karma hatlar: rulesFor'da bölge taşıyan ≥ 300 bölüm (M21+) üretilir, çözüm geçerli, çakışanlar dışlanmış
+      // karma hatlar: rulesFor'da bölge taşıyan ≥ 300 bölüm (M21+; M21–M23 kendi kuralına ek olarak) üretilir, çözüm geçerli, çakışanlar dışlanmış
       const L0 = R.lineStart(19), s0 = R.lineStart(20), mix = { n: 0, bad: 0, clash: 0, with: {} };
       for (let l = 1; l < L0; l++) if (R.rulesFor(l).has('zone')) mix.early = (mix.early || 0) + 1;
       for (let l = s0; mix.n < 300 && l < s0 + 12000; l++) {

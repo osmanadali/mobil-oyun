@@ -30,14 +30,22 @@ M9'dan sonraki yeni kurallar çekirdeğe (`www/game.js`) dağılmaz. Her kural �
 | M18 | 749 | Nehir | `river` | `nehir` |
 | M20 | 913 | Tarife bölgesi | `zone` | `tarife-bolgesi` |
 
-M20 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`).
+Zamanlama ve konum kuralları (31 Ekim; bilgi eklemez, deneme-yanılmayı ve hamle planını zorlar):
+
+| Hat | İlk bölüm | Kural | Anahtar | Dosya adı |
+|---|---|---|---|---|
+| M21 | 1001 | Soğuyan karo | `ice` | `soguyan-karo` |
+| M22 | 1093 | Bakım karosu | `gear` | `bakim-karosu` |
+| M23 | 1189 | Kayan sıra | `slide` | `kayan-sira` |
+
+M23 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`, `KARMA = 23`).
 
 ## Temel ilkeler
 
 1. **Eski bölümler bit bit aynı kalır.** Eklenti `R()` rastgele sayısını yalnız kendi miktarı sıfırdan farklıyken tüketir. Çekirdek, eklentisi olmayan bölümde hiçbir kancayı çağırmaz.
 2. **Yapı gereği çözülebilir.** Üretim çözümden (`sol`) başlar. Karıştırma yalnız oyuncunun geri alabileceği işlemlerle yapılır. Kanıt `docs/kurallar/<ad>.md` içine yazılır.
 3. **Bölüm verisi `P[key]`'de durur.** Eklentinin bölüme özgü verisi üretimde `C.out[key]` alanına yazılır, dönüş nesnesinde `P[key]` olur. Bu alan doluysa (truthy) eklentinin bütün oyun ve çizim kancaları o bölümde çalışır, boşsa hiçbiri çalışmaz.
-4. **Tek dokunuş, gerçek zamanlı baskı yok, kendi kendine hareket eden karo yok.**
+4. **Tek dokunuş, gerçek zamanlı baskı yok.** Kendi kendine hareket eden karo yalnız hamleye bağlı olabilir (⚙ bakım karosu: her 2 hamlede bir); oyuncu düşünürken hiçbir şey kıpırdamaz.
 5. **Renk körü dostu:** işaretler yalnız renge dayanmaz, biçim de taşır.
 6. **Ucuz çizim:** aynı stildeki her şey tek yolda toplanır, kare başına birkaç çağrı.
 
@@ -57,7 +65,9 @@ M20 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanes
   // oyun
   block(G, i) {},                            // dokunuşu reddet: bildirim metni ya da true döndür
   onTap(G, U, i, now) {},                    // bu kuralın birimine dokunuldu (animasyon, ilk dokunuş bildirimi)
-  after(G, i, now) {},                       // her dokunuştan sonra, lit hesaplandıktan sonra (geri bildirim)
+  after(G, i, now, moved) {},                // her dokunuştan sonra, lit hesaplandıktan sonra (geri bildirim); moved: bu dokunuş yeni hamle başlattı
+  undo(G) {},                                // ↶ geri al güçlendiricisinden sonra: eklentinin oyun içi durumunu düzelt
+  plan(G, out) { return []; },               // robot planı (__ray.plan): bu eklentinin birimleri çekirdek planına girmez; out = o ana dek planlanan dokunuşlar
   check(P, L) { return 0; },                 // kazanma denetimi: bozuk sayısı (0 = tamam); L'ye çizim verisi yazılabilir
   allow(P, i, mask) { return true; },        // zorluk çözücüsü için yerel süzgeç: bu maske i karosunda olabilir mi
   // gizli bilgi ve küresel koşullar (M10–M20 zor kuralları)

@@ -233,14 +233,15 @@ const RULES = {
 const RULE_LINE = { pins: 2, pairs: 3, rev: 4, fog: 5, cnt: 6, two: 7 };
 const MODS = [], CLASH = {};   // eklentiler · birlikte gelemeyen kurallar (simetrik)
 const clash = (a, b) => !!(CLASH[a]?.includes(b) || CLASH[b]?.includes(a));
+const KARMA = 23;   // 0 tabanlı: M24 ve sonrası sınırsız karma (son kural M23 · kayan sıra)
 function rulesFor(l) {
   const c = lineOf(l), own = Object.keys(RULE_LINE).find(k => RULE_LINE[k] === c), set = new Set(own ? [own] : []);
   const learned = Object.keys(RULE_LINE).filter(k => RULE_LINE[k] < c);
   if (!learned.length || (own && l - lineStart(c) < 3)) return set;   // yeni kuralın ilk 3 bölümü yalın
   const h = hashStr('kural' + l), extra = own ? (h % 100 < 55 ? 1 : 0) : (h % 100 < 65 ? 1 : 2);
   for (let k = 0; k < extra; k++) {
-    // M9–M20: ek kuralın yarısı en yeni 3 kuraldan → yeni öğrenilen kural sık tekrar eder (M1–M8 aynen); M21+ sınırsız karmada bütün kurallar eşit
-    const rec = c >= 8 && c < 20 && (hashStr('kip' + h + k) & 3) < 2, pool = rec ? learned.slice(-3) : learned, at = (rec ? hashStr('yeni' + h + k) : h >>> (7 + k * 6)) % pool.length;
+    // M9–M23: ek kuralın yarısı en yeni 3 kuraldan → yeni öğrenilen kural sık tekrar eder (M1–M8 aynen); M24+ sınırsız karmada bütün kurallar eşit
+    const rec = c >= 8 && c < KARMA && (hashStr('kip' + h + k) & 3) < 2, pool = rec ? learned.slice(-3) : learned, at = (rec ? hashStr('yeni' + h + k) : h >>> (7 + k * 6)) % pool.length;
     for (let t = 0; t < pool.length; t++) { const r = pool[(at + t) % pool.length]; if (![...set].some(q => clash(q, r))) { set.add(r); break; } }   // çakışan kural sıradaki uyumluyla değişir
   }
   if (!set.size) set.add(learned[h % learned.length]);
@@ -461,7 +462,7 @@ function puzzleFor(l) {
     // Kuralın kendi hattındaki ilk 3 öğrenme bölümünde pay yok (testere dişi).
     let boost = 0;
     for (const m of MODS) if (U.has(m.key)) { x[m.key] = m.amount(n, intro && ln === m.line, z, fin, c, r); if (ln !== m.line || l - lineStart(ln) >= 3) boost += m.boost || 0; }
-    if (ln >= 20) boost += 2;   // M21+ sınırsız karma: eski kuralların payı küçük, hedef M20 düzeyinde kalsın
+    if (ln >= KARMA) boost += 2;   // M24+ sınırsız karma: eski kuralların payı küçük, hedef M23 düzeyinde kalsın
     if (breath(l)) boost = 0;   // mola: kural payı yok, hedef aşağıda yarıya yakın
     // hat finali (SON DURAK): hedef +2 puan, en çok aday taranır · zorluk paylı bölümde de geniş tarama
     const P = pick(c, r, l * 7919 + 13, pins, pairs, z, (intro ? 3 : 5) + 11 * z * (breath(l) ? .55 : 1) + (fin ? 2 : 0) + boost, x, fin ? 32 : boost ? Math.max(24, 6 + Math.round(26 * z)) : undefined);
@@ -885,6 +886,7 @@ function undo() {
   G.cur.forEach((v, i) => { if (v !== s.cur[i]) anim.set(i, now); G.cur[i] = s.cur[i]; });
   s.cnt.forEach((v, i) => { G.cnt[i] = v; });
   G.moves = s.moves; G.lastTile = s.last; useBst('geri');
+  for (const m of MODS) if (m.undo && G[m.key]) m.undo(G);
   G.L = lit(G); reveal(); hud(); tick(); kick(); saveRun();
   haptic('heavy'); tone(note(4), .2, .04); toast(L(`↶ ${k} hamle geri alındı`, `↶ ${k} ${pl(k, 'move', 'moves')} undone`));
 }
@@ -1147,6 +1149,7 @@ cv.addEventListener('pointerdown', e => {
     return;
   }
   const u = G.unitOf?.[i] ?? -1;
+  const m0 = G.moves;   // eklenti after(): bu dokunuş yeni hamle mi
   // ↶ geri al için: yeni hamle başlıyorsa (başka karo/birim) önceki durum saklanır (en çok 30)
   if (G.lastTile !== (u >= 0 ? 'u' + u : G.link[i] >= 0 ? Math.min(i, G.link[i]) : i)) { (G.hist ||= []).push({ cur: G.cur.slice(), cnt: G.cnt.slice(), moves: G.moves, last: G.lastTile }); if (G.hist.length > 30) G.hist.shift(); }
   if (u >= 0) {   // eklenti birimi (makas, tabla…): birimin kendi dokunuşu; art arda aynı birim = 1 hamle
@@ -1171,7 +1174,7 @@ cv.addEventListener('pointerdown', e => {
   let gained = 0, stations = 0;
   G.L.d.forEach((v, j) => { if (v >= 0 && prev[j] < 0) { litAt[j] = now + v * 12; gained++; if (popc(G.cur[j]) === 1) { stations++; burst(j, 7, v * 12, ownCol(j)); } } });
   if (G.L.merged && !wasMerged) { haptic('heavy'); toast(L('İki hat birbirine değdi · ayır!', 'The two lines touch · split them!')); }
-  for (const m of MODS) if (m.after && G[m.key]) m.after(G, i, now);   // eklenti geri bildirimi (halka kapandı, tabela…)
+  for (const m of MODS) if (m.after && G[m.key]) m.after(G, i, now, G.moves !== m0);   // eklenti geri bildirimi (halka kapandı, tabela…)
   const k = Math.round(G.L.n / G.cur.length * (PENTA.length - 1));
   if (gained) { tone(note(k), .22, .05); if (stations) tone(note(k + 2), .3, .035, 'sine', .06); haptic(stations ? 'heavy' : 'light'); }
   else { tone(G.L.n < prev.filter(v => v >= 0).length ? 294 : 523, .05, .022); haptic('light'); }
@@ -2058,9 +2061,11 @@ loadRules(API);
 function plan() {
   const out = [];
   (G?.units || []).forEach(U => {
+    if (MODS.find(m => m.key === U.kind)?.plan) return;
     const i = U.cells.find(c => G.seen[c] && !G.fixed[c]); if (i == null) return;
     for (let k = unitTaps(U, G.cur, G.sol); k > 0; k--) out.push(i);
   });
+  for (const m of MODS) if (m.plan && G?.[m.key]) out.push(...m.plan(G, out));
   return out;
 }
 // "her şey açık" test sürümü: bütün temalar ve tren kaplamaları sende; bol 👑 (sandık için), 💡 ve 🛡 (bir kez verilir)

@@ -85,6 +85,9 @@ Oyun Türkçe ve İngilizce oynanır. Bu belge altyapıyı ve ortak sözlüğü 
 | M18 | Nehir | River |
 | M19 | Tünel ağzı | Tunnel portal |
 | M20 | Tarife bölgesi | Fare zone |
+| M21 | Soğuyan karo | Cooling tile |
+| M22 | Bakım karosu | Gear tile |
+| M23 | Kayan sıra | Sliding row |
 
 Kart etiketi: `Yeni: kapak` → `New: cover`.
 
