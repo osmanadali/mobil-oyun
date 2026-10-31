@@ -1,10 +1,10 @@
-// M23 · Kayan sıra (slide): raylı sıranın karoları dönmez; sıraya dokununca bütün sıra bir kare sağa kayar. Ayrıntı: docs/kurallar/kayan-sira.md
+// M6 · Kayan sıra (slide): raylı sıranın karoları dönmez; sıraya dokununca bütün sıra bir kare sağa kayar. Ayrıntı: docs/kurallar/kayan-sira.md
 (window.RAY_RULES = window.RAY_RULES || []).push(api => {
   const T0 = new Map(), calm = matchMedia('(prefers-reduced-motion: reduce)');   // sıra → kayma başlangıcı
   // sağa bir kare: her karo bir sağa, en sağdaki başa (yönler değişmez)
   const shift = cells => c => { const v = cells.map(q => c[q]); cells.forEach((q, p) => { c[q] = v[(p + cells.length - 1) % cells.length]; }); };
   return {
-    key: 'slide', line: 22, boost: 2,
+    key: 'slide', line: 5, ord: 22, boost: 1,
     clash: ['closed', 'river', 'zone', 'depot'],   // konuma bağlı sayım/kıyı kurallarıyla aynı bölümde gelmez
     card: { name: L('Kayan sıra', 'Sliding row'), tag: L('Yeni: kayan sıra', 'New: sliding row'),
       demo: '<div class="rd-slide" aria-hidden="true"><div><i></i><i></i><i></i></div><b>›</b></div>',

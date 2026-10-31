@@ -1,4 +1,6 @@
-# M20 · Tarife bölgesi (anahtar: `zone`)
+# M23 · Tarife bölgesi (anahtar: `zone`)
+
+> **Hat düzeni 31 Ekim'de değişti:** bu kural artık **M23** (ilk bölüm 577). Aşağıdaki hat ve bölüm numaraları ve ölçümler eski düzene aittir; güncel tablo `docs/kurallar/README.md`.
 
 Oyunun son tanıtılan kuralı ve en zor hattı. Tasarım başvurusu: `proto-zor` dalı, `zone-tarife-bolgesi` (`proto/zor/tasarimlar.json`), prototip `proto/zor/kisit/bolge2.cjs`. Prototip eski kanca imzalarıyla yazılmıştı. Bu eklenti main'deki birleşik `open(P, i, k)`, `check`, `prune` kancalarını kullanır; `P.openAny` artık gerekmez.
 

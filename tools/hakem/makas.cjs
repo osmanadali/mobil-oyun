@@ -1,15 +1,17 @@
-// M9 · Makas — robot testleri (hakem.cjs K bölümü çağırır). Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/makas.md
+// Makas (RL.sw hattı) — robot testleri (hakem.cjs K bölümü çağırır). Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/makas.md
+const FP = { lv: 4112808689, daily: 1906665804 };   // parmak izi: makas hattından önceki bölümler · Günün Hattı (eklentisiz, hat düzeninden bağımsız)
 module.exports = async T => {
-  const { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, starsUpTo } = T;
-  const seen = { 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1 }, base = (l, s = seen) => ({ played: l - 1, level: l, stars: starsUpTo(l), seen: s, remindAsked: true });
+  const { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, starsUpTo, RL, LS, LE, AT, seenTo } = T;
+  const A = AT('sw'), NX = RL.sw + 1;   // giriş bölümü · sonraki hat (karma denemesi)
+  const seen = seenTo(RL.sw), base = (l, s = seen) => ({ played: l - 1, level: l, stars: starsUpTo(l), seen: s, remindAsked: true });
   const G = (page, f, a) => page.evaluate(f, a);
   const toastTxt = page => G(page, () => document.getElementById('toast').textContent);
 
-  // ---- 1) üretici: 300 tohum × (7×9 makas 5 · 6×8 karma), eski bölümler bit bit aynı, M10'da makaslı karma bölüm ----
+  // ---- 1) üretici: 300 tohum × (7×9 makas 5 · 6×8 karma), eski bölümler bit bit aynı, sonraki hatta makaslı karma bölüm ----
   let mixLvl = 0;
   {
     const { ctx, page, errors } = await open(browser, URL, { save: { played: 1 } });
-    const r = await G(page, () => {
+    const r = await G(page, ([A, N0, N1]) => {
       const R = window.__ray, popc = m => (m & 1) + (m >> 1 & 1) + (m >> 2 & 1) + (m >> 3 & 1);
       const md = (P, a, b) => b < 0 ? 99 : Math.abs(a % P.cols - b % P.cols) + Math.abs((a / P.cols | 0) - (b / P.cols | 0));
       const out = {};
@@ -33,30 +35,30 @@ module.exports = async T => {
           });
         }
       }
-      // 1–208 ve Günün Hattı: makas kuralından önceki üretimle bit bit aynı (imza, eklentisiz iskelette ölçüldü)
+      // makas hattından önceki bölümler ve Günün Hattı: parmak izi sabit (31 Ekim hat düzeniyle ölçüldü; hat/kural sırası değişince kasıtlı yenilenir)
       const h = s => { let x = 2166136261; for (const c of s) x = Math.imul(x ^ c.charCodeAt(0), 16777619); return x >>> 0; };
       const sig = P => [P.cols, P.rows, P.sol.join(), P.cur.join(), P.par, P.taps, P.diff, (P.rules || []).join(), P.pinned.map(Number).join(''), P.link.join(), P.rev.map(Number).join(''), P.cnt.join(), P.hub, P.hub2].join('|');
-      let a = ''; for (let l = 1; l <= 208; l++) a += sig(R.puzzleFor(l));
+      let a = ''; for (let l = 1; l < A; l++) a += sig(R.puzzleFor(l));
       let d = ''; for (let k = 0; k < 40; k++) { const dt = new Date(2026, 9, 1 + k * 9); d += sig(R.dailyFor(`${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`)); }
       out.legacy = { lv: h(a), daily: h(d) };
-      // giriş bölümü ve testere dişi; M10'da makası başka bir kuralla taşıyan ilk bölüm
-      const p = R.puzzleFor(209); out.intro = { size: p.cols + 'x' + p.rows, rules: p.rules.join('+'), sw: p.sw.filter(Boolean).length, wrong: p.sw.filter((m, i) => m && p.cur[i] !== p.sol[i]).length };
-      out.saw = [208, 209, 211, 212].map(l => R.sizeFor(l).join('x')).join(' ');
-      for (let l = 253; l <= 300 && !out.mix; l++) { const q = R.puzzleFor(l); if (q.rules.includes('sw') && q.rules.length > 1) out.mix = l; }
+      // giriş bölümü ve testere dişi; sonraki hatta makası başka bir kuralla taşıyan ilk bölüm
+      const p = R.puzzleFor(A); out.intro = { size: p.cols + 'x' + p.rows, rules: p.rules.join('+'), sw: p.sw.filter(Boolean).length, wrong: p.sw.filter((m, i) => m && p.cur[i] !== p.sol[i]).length };
+      out.saw = [A - 1, A, A + 2, A + 3].map(l => R.sizeFor(l).join('x')).join(' ');
+      for (let l = N0; l <= N1 && !out.mix; l++) { const q = R.puzzleFor(l); if (q.rules.includes('sw') && q.rules.length > 1) out.mix = l; }
       return out;
-    });
+    }, [A, LS(NX), LE(NX)]);
     mixLvl = r.mix || 0;
     const ok = o => o.bad === 0 && o.pre === 0 && o.orbit === 0 && o.near === 0 && o.ex === 0 && o.tap === 0;
     check('sw.gen', 'Makas: 300 tohum × (7×9 · 6×8 karma) çözülebilir, çözülmüş gelmez, cur ∈ {sol, sol^sw}, merkeze bitişik değil, sabit/eşli/ters/sayaçlı değil', ok(r['7x9']) && ok(r.karma) && r['7x9'].sw >= 1425 && r.karma.sw >= 1140 && [r['7x9'], r.karma].every(o => o.wrong / o.sw > .65 && o.wrong / o.sw < .9), JSON.stringify({ a: r['7x9'], b: r.karma }));
-    check('sw.legacy', 'Makas: 1–208 ve Günün Hattı bit bit aynı', r.legacy.lv === 783925660 && r.legacy.daily === 1906665804, JSON.stringify(r.legacy));
-    check('sw.intro', 'Makas: 209 giriş bölümü 6×8, yalnız makas, ≥2 makas ve en az biri ters · testere dişi 208–212', r.intro.size === '6x8' && r.intro.rules === 'sw' && r.intro.sw >= 2 && r.intro.wrong >= 1 && r.saw === '7x9 6x8 6x8 7x9', JSON.stringify({ ...r.intro, saw: r.saw }), 'medium');
+    check('sw.legacy', `Makas: 1–${A - 1} ve Günün Hattı bit bit aynı`, r.legacy.lv === FP.lv && r.legacy.daily === FP.daily, JSON.stringify(r.legacy));
+    check('sw.intro', `Makas: ${A} giriş bölümü 6×8, yalnız makas, ≥2 makas ve en az biri ters · testere dişi ${A - 1}–${A + 3}`, r.intro.size === '6x8' && r.intro.rules === 'sw' && r.intro.sw >= 2 && r.intro.wrong >= 1 && r.saw === '7x9 6x8 6x8 7x9', JSON.stringify({ ...r.intro, saw: r.saw }), 'medium');
     check('sw.gen.errors', 'Makas üretici denetiminde konsol hatası yok', !errors.length, errors.join(' | '));
     await ctx.close();
   }
 
-  // ---- 2) 209: kural kartı, dokunuş (dönmez, cur ^= sw, art arda = 1 hamle), bildirim, yarım kayıt, baştan, robot çözer ----
+  // ---- 2) giriş bölümü: kural kartı, dokunuş (dönmez, cur ^= sw, art arda = 1 hamle), bildirim, yarım kayıt, baştan, robot çözer ----
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: base(209) });
+    const { ctx, page, errors } = await open(browser, URL, { save: base(A) });
     await page.click('#bPlay'); await page.waitForTimeout(900);
     const card = await G(page, () => ({ open: document.getElementById('modal').classList.contains('open'), txt: document.querySelector('.sheet h2')?.textContent, demo: !!document.querySelector('.rd-sw .pt u'), noB: !document.querySelector('.rd-sw .pt b') }));
     await shot(page, 'rule-sw');
@@ -86,7 +88,7 @@ module.exports = async T => {
 
   // ---- 3) ipucu: yalnız bir makas ters → ipucu onu oturtur ve sabitler, bölüm biter ----
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: { ...base(210, { ...seen, 8: 1 }), hints: 3 } });
+    const { ctx, page, errors } = await open(browser, URL, { save: { ...base(A + 1, { ...seen, [RL.sw]: 1 }), hints: 3 } });
     await page.click('#bPlay'); await page.waitForTimeout(700);
     const i = await G(page, () => { const G = window.__ray.G, i = G.sw.findIndex(Boolean); G.cur.forEach((v, j) => { G.cur[j] = j === i ? G.sol[j] ^ G.sw[j] : G.sol[j]; }); return i; });
     await page.click('#bHint'); const won = await waitModal(page);
@@ -96,14 +98,14 @@ module.exports = async T => {
     await ctx.close();
   }
 
-  // ---- 4) M10 karma: makas başka bir kuralla aynı bölümde; robot çözer ----
+  // ---- 4) sonraki hat karma: makas başka bir kuralla aynı bölümde; robot çözer ----
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: base(mixLvl || 253, { ...seen, 8: 1, 9: 1 }) });   // M10 artık kapak hattı: kapak kartı da görülmüş
+    const { ctx, page, errors } = await open(browser, URL, { save: base(mixLvl || LS(NX), seenTo(NX + 1)) });   // sonraki hattın kendi kural kartı da görülmüş
     await page.click('#bPlay'); await page.waitForTimeout(700);
     const g = await G(page, () => { const G = window.__ray.G; return { lvl: G.lvl, rules: G.rules.join('+'), sw: G.sw?.filter(Boolean).length || 0, card: document.getElementById('modal').classList.contains('open') }; });
     await shot(page, 'sw-mix');
     await solve(page, 8); const won = await waitModal(page);
-    check('rule.sw.mix', 'M10 karma bölümde makas başka bir kuralla birlikte geliyor ve çözülüyor', mixLvl >= 253 && g.sw >= 2 && /\+/.test(g.rules) && !g.card && won, JSON.stringify({ ...g, won }), 'medium');
+    check('rule.sw.mix', `M${NX + 1} karma bölümde makas başka bir kuralla birlikte geliyor ve çözülüyor`, mixLvl >= LS(NX) && g.sw >= 2 && /\+/.test(g.rules) && !g.card && won, JSON.stringify({ ...g, won }), 'medium');
     check('sw.mix.errors', 'Makas karma senaryosunda konsol hatası yok', !errors.length, errors.join(' | '));
     await ctx.close();
   }

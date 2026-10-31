@@ -1,4 +1,6 @@
-# M22 · Bakım karosu (`gear`)
+# M14 · Bakım karosu (`gear`)
+
+> **Hat düzeni 31 Ekim'de değişti:** bu kural artık **M14** (ilk bölüm 325). Aşağıdaki hat ve bölüm numaraları ve ölçümler eski düzene aittir; güncel tablo `docs/kurallar/README.md`.
 
 **Kural.** Dişli (⚙) karoya dokunulmaz. Hamle sayacı her 2'nin katına geldiğinde (2, 4, 6…) dişli kendiliğinden saat yönünde 90° döner. Hattı, dişli doğru yöne geldiği hamlede tamamlamak gerekir. Köşedeki iki nokta sıradaki dönüşe kalan hamleyi gösterir.
 

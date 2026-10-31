@@ -1,14 +1,14 @@
-// M15 · Döner tabla — robot testleri (hakem.cjs K bölümü çağırır). Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/doner-tabla.md
+// Döner tabla (RL.table hattı) — robot testleri (hakem.cjs K bölümü çağırır). Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/doner-tabla.md
 module.exports = async T => {
-  const { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, starsUpTo } = T;
+  const { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, starsUpTo, RL, AT, LE, seenTo } = T;
+  const TL = RL.table, A = AT('table');   // tabla hattı · ilk bölümü
   const rot = m => ((m << 1) | (m >> 3)) & 15, spin = c => c.map((_, p) => rot(c[(p + 3) % 4]));   // tabla dönüşü (Q sırasındaki 4 değer)
-  const seenTo = c => Object.fromEntries(Array.from({ length: c - 1 }, (_, k) => [k + 2, 1]));   // 2..c hatlarının kartı görülmüş
-  const lvlSave = (l, x = {}) => ({ played: l - 1, level: l, stars: starsUpTo(l), seen: seenTo(13), remindAsked: true, hints: 3, ...x });
+  const lvlSave = (l, x = {}) => ({ played: l - 1, level: l, stars: starsUpTo(l), seen: seenTo(TL), remindAsked: true, hints: 3, ...x });
   const errs = [];
 
   // ---------- 1. Üretici: çözülebilirlik, yörünge, merkez/çakışma dışlaması, miktar ----------
   const { ctx, page, errors } = await open(browser, URL, { save: { played: 1 } }); errs.push(errors);
-  const gen = await page.evaluate(() => {
+  const gen = await page.evaluate(([A, Z]) => {
     const R = window.__ray, out = { n: 0, bad: 0, pre: 0, orbit: 0, hub: 0, clash: 0, gap: 0, short: 0, taps: 0, play: 0, plates: 0, why: [] };
     // [sütun, satır, sabit, eşli, x, tohum, 2 tabla şart mı]. Bölümde en çok 2 kural olur; aşırı yüklü 6×8 karışımında (iki merkez +
     // sabit + eşli + ters + sayaç + karanlık) aday azalır, orada yalnız çözülebilirlik aranır
@@ -46,42 +46,42 @@ module.exports = async T => {
       if (!R.lit({ ...P, cur }).solved) out.play++;
       if (taps !== P.taps) out.taps++;
     }
-    // bölüm merdiveni: M15 girişi tek tabla, sonra 2; tablalı her bölümde istenen kadar tabla; ilk 3 bölüm 6×8
+    // bölüm merdiveni: tabla hattının girişi tek tabla, sonra 2; tablalı her bölümde istenen kadar tabla; ilk 3 bölüm 6×8
     const lv = [];
-    for (let l = 533; l <= 572; l++) { const P = R.puzzleFor(l); if (P.rules.includes('table')) lv.push([l, P.table?.plates.length || 0, P.cols + 'x' + P.rows, P.diff]); }
-    out.lv = { n: lv.length, intro: lv[0], miss: lv.filter(([l, k]) => k !== (l === 533 ? 1 : 2)).map(v => v[0]), saw: lv.slice(0, 4).map(v => v[2]).join(' ') };
+    for (let l = A; l <= Z; l++) { const P = R.puzzleFor(l); if (P.rules.includes('table')) lv.push([l, P.table?.plates.length || 0, P.cols + 'x' + P.rows, P.diff]); }
+    out.lv = { n: lv.length, intro: lv[0], miss: lv.filter(([l, k]) => k !== (l === A ? 1 : 2)).map(v => v[0]), saw: lv.slice(0, 4).map(v => v[2]).join(' ') };
     // karanlık + tablalı bölüm (arayüz testi için)
-    for (let l = 536; l <= 3000 && !out.fogLvl; l++) { const U = R.rulesFor(l); if (!U.has('fog') || !U.has('table')) continue; const P = R.puzzleFor(l); if (P.fog && P.table) out.fogLvl = l; }   // karma hatlar yeni kurallara ağırlık verir → aralık geniş
+    for (let l = A + 3; l <= 3000 && !out.fogLvl; l++) { const U = R.rulesFor(l); if (!U.has('fog') || !U.has('table')) continue; const P = R.puzzleFor(l); if (P.fog && P.table) out.fogLvl = l; }   // karma hatlar yeni kurallara ağırlık verir → aralık geniş
     return out;
-  });
+  }, [A, LE(TL)]);
   check('rule.table.gen', `Döner tabla: ${gen.n} üretim (7×9, 6×8, 5×6; sabit, eşli, ters/sayaçlı, iki merkez, karanlık, hepsi) çözülebilir, hazır çözülü gelmez; her tabla 2×2 tek birim, dokunuş yalnız dört karoyu çevirir`, gen.bad === 0 && gen.pre === 0 && gen.play === 0 && gen.taps === 0, JSON.stringify({ n: gen.n, plates: gen.plates, bad: gen.bad, pre: gen.pre, play: gen.play, taps: gen.taps, why: gen.why }));
   check('rule.table.orbit', 'Döner tabla: her tablanın 4 karosu çözümün yörüngesinde (1–3 dokunuş); merkeze bitişik değil; sabit/eşli/ters/sayaçlı ile çakışmaz; iki tabla arasında en az 1 karo; 6×8 ve 7×9 karışımlarında 2 tabla eksiksiz', gen.orbit === 0 && gen.hub === 0 && gen.clash === 0 && gen.gap === 0 && gen.short === 0, JSON.stringify({ orbit: gen.orbit, hub: gen.hub, clash: gen.clash, gap: gen.gap, short: gen.short }));
-  check('rule.table.ladder', 'M15 bölümleri: giriş (533) tek tabla, sonra 2; tablalı her bölümde tabla eksiksiz; ilk 3 bölüm 6×8 (testere dişi)', gen.lv.n >= 30 && gen.lv.intro?.[0] === 533 && gen.lv.intro?.[1] === 1 && !gen.lv.miss.length && /^6x8 6x8 6x8 7x9/.test(gen.lv.saw), JSON.stringify(gen.lv), 'medium');
+  check('rule.table.ladder', `M${TL + 1} bölümleri: giriş (${A}) tek tabla, sonra 2; tablalı her bölümde tabla eksiksiz; ilk 3 bölüm 6×8 (testere dişi)`, gen.lv.n >= 25 && gen.lv.intro?.[0] === A && gen.lv.intro?.[1] === 1 && !gen.lv.miss.length && /^6x8 6x8 6x8 7x9/.test(gen.lv.saw), JSON.stringify(gen.lv), 'medium');
   await ctx.close();
 
-  // ---------- 2. Eski bölümler bit bit aynı: tabla eklentisi olmadan açılan sayfayla 1–532 ve Günün Hattı karşılaştırılır ----------
+  // ---------- 2. Eski bölümler bit bit aynı: tabla eklentisi olmadan açılan sayfayla tabla hattından öncesi ve Günün Hattı karşılaştırılır ----------
   const NO_TABLE = `window.RAY_RULES = []; { const push = window.RAY_RULES.push.bind(window.RAY_RULES); window.RAY_RULES.push = f => push(api => { const m = f(api); return m?.key === 'table' ? null : m; }); }`;
-  const sig = p => p.evaluate(() => {
-    const R = window.__ray, L = [1, 2, 13, 29, 49, 73, 101, 133, 169, 200, 208, 209, 240, 300, 301, 360, 408, 409, 470, 531, 532];
+  const sig = p => p.evaluate(([TL, A]) => {
+    const R = window.__ray, L = [...Array.from({ length: TL }, (_, c) => R.lineStart(c)), ...Array.from({ length: TL - 1 }, (_, c) => R.lineStart(c + 1) - 1), 2, 200, A - 2];   // her hattın ilk ve son bölümü
     const h = P => [P.cols, P.rows, P.sol, P.cur, P.pinned, P.link, P.rev, P.cnt, P.par, P.taps, P.diff, P.rules || ''].join('|');
     return { has: !!R.MODS.find(m => m.key === 'table'), lv: L.map(l => h(R.puzzleFor(l))), d: ['2026-10-27', '2026-11-01', '2027-03-14'].map(d => h(R.dailyFor(d))) };
-  });
-  const A = await open(browser, URL, { save: { played: 1 } }), B = await open(browser, URL, { save: { played: 1 }, init: NO_TABLE }); errs.push(A.errors, B.errors);
-  const sa = await sig(A.page), sb = await sig(B.page);
+  }, [TL, A]);
+  const PA = await open(browser, URL, { save: { played: 1 } }), PB = await open(browser, URL, { save: { played: 1 }, init: NO_TABLE }); errs.push(PA.errors, PB.errors);
+  const sa = await sig(PA.page), sb = await sig(PB.page);
   const diff = sa.lv.map((v, k) => v === sb.lv[k] ? 0 : 1).reduce((a, b) => a + b, 0) + sa.d.map((v, k) => v === sb.d[k] ? 0 : 1).reduce((a, b) => a + b, 0);
-  check('rule.table.compat', 'Döner tabla: 1–532 bölümleri (21 örnek) ve Günün Hattı (3 gün) eklentili ve eklentisiz sayfada bit bit aynı', sa.has && !sb.has && diff === 0, JSON.stringify({ with: sa.has, without: sb.has, diff }));
-  await A.ctx.close(); await B.ctx.close();
+  check('rule.table.compat', `Döner tabla: 1–${A - 1} bölümleri (${2 * TL + 2} örnek) ve Günün Hattı (3 gün) eklentili ve eklentisiz sayfada bit bit aynı`, sa.has && !sb.has && diff === 0, JSON.stringify({ with: sa.has, without: sb.has, diff }));
+  await PA.ctx.close(); await PB.ctx.close();
 
-  // ---------- 3. Arayüz (bölüm 533): kural kartı, dokunuş (4 karo yer değiştirir + döner, 1 hamle), kayıt, ipucu, robot ----------
+  // ---------- 3. Arayüz (tabla hattının ilk bölümü): kural kartı, dokunuş (4 karo yer değiştirir + döner, 1 hamle), kayıt, ipucu, robot ----------
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: lvlSave(533) }); errs.push(errors);
+    const { ctx, page, errors } = await open(browser, URL, { save: lvlSave(A) }); errs.push(errors);
     await page.click('#bPlay'); await page.waitForTimeout(800);
     const card = await page.evaluate(() => {
       const d = document.querySelector('.rd-table'), p = d?.firstElementChild;
       return { open: document.getElementById('modal').classList.contains('open'), badge: document.querySelector('.sheet .badge')?.textContent, txt: document.querySelector('.sheet h2')?.textContent, w: d?.offsetWidth, anim: p && getComputedStyle(p).animationName };
     });
     await shot(page, 'rule-table');
-    check('rule.table.card', 'M15 ilk girişte "YENİ KURAL · Döner tabla" kartı (dönen plaka demosu)', card.open && /YENİ KURAL/.test(card.badge || '') && card.txt === 'Döner tabla' && card.w === 104 && card.anim === 'spin4', JSON.stringify(card), 'medium');
+    check('rule.table.card', `M${TL + 1} ilk girişte "YENİ KURAL · Döner tabla" kartı (dönen plaka demosu)`, card.open && /YENİ KURAL/.test(card.badge || '') && card.txt === 'Döner tabla' && card.w === 104 && card.anim === 'spin4', JSON.stringify(card), 'medium');
     if (card.open) await page.click('#mGo');
     await page.waitForTimeout(400);
     const g = await page.evaluate(() => { const G = window.__ray.G; return { size: G.cols + 'x' + G.rows, n: G.table?.plates.length, Q: G.table?.plates[0] }; });
@@ -116,13 +116,13 @@ module.exports = async T => {
     await page.click('#mRetry'); await page.waitForTimeout(600);
     const taps = await solve(page, 15), won2 = await waitModal(page);
     const r = await page.evaluate(() => { const G = window.__ray.G; return { won: G.won, moves: G.moves, par: G.par }; });
-    check('rule.table.solve', 'Döner tabla: robot (solve + plan) 533. bölümü par hamlede kazanır', won2 && r.won && r.moves === r.par, JSON.stringify({ taps, ...r }));
+    check('rule.table.solve', `Döner tabla: robot (solve + plan) ${A}. bölümü par hamlede kazanır`, won2 && r.won && r.moves === r.par, JSON.stringify({ taps, ...r }));
     await ctx.close();
   }
 
   // ---------- 3b. Hareketi azalt: tabla anında yer değiştirir, animasyon döngüsü boşta durur ----------
   {
-    const { ctx, page, errors } = await open(browser, URL, { rm: true, save: lvlSave(533, { seen: seenTo(14) }) }); errs.push(errors);
+    const { ctx, page, errors } = await open(browser, URL, { rm: true, save: lvlSave(A, { seen: seenTo(TL + 1) }) }); errs.push(errors);
     await page.click('#bPlay'); await page.waitForTimeout(600);
     const Q = await page.evaluate(() => window.__ray.G.table.plates[0]), cur = () => page.evaluate(Q => Q.map(q => window.__ray.G.cur[q]), Q);
     const c0 = await cur(); await tapTile(page, Q[0]); await page.waitForTimeout(700);
@@ -132,10 +132,10 @@ module.exports = async T => {
   }
 
   // ---------- 4. Karanlık tünel + tabla (açık tema): dört karo birlikte aydınlanır, ışığı izleyerek çözülür ----------
-  // rulesFor karma hatlarda ek kuralın yarısını en yeni 3 kuraldan seçer; M15'ten sonra yeni kural gelince (ör. M16 kapalı durak) tabla bu havuzdan çıkar ve
-  // karanlıkla aynı bölüme hiç düşmeyebilir. O zaman tablalı bir M15 bölümünde karanlık açılır (başlangıç ışığı çekirdekteki reveal ile aynı kuralla).
+  // rulesFor karma hatlarda ek kuralın yarısını en yeni 3 kuraldan seçer; tabladan sonra yeni kurallar gelince tabla bu havuzdan çıkar ve
+  // karanlıkla aynı bölüme hiç düşmeyebilir. O zaman tabla hattının tablalı bir bölümünde karanlık açılır (başlangıç ışığı çekirdekteki reveal ile aynı kuralla).
   {
-    const l = gen.fogLvl || 540, { ctx, page, errors } = await open(browser, URL, { scheme: 'light', save: lvlSave(l, { seen: seenTo(15) }) }); errs.push(errors);
+    const l = gen.fogLvl || A + 7, { ctx, page, errors } = await open(browser, URL, { scheme: 'light', save: lvlSave(l, { seen: seenTo(99) }) }); errs.push(errors);
     await page.click('#bPlay'); await page.waitForTimeout(700);
     if (await page.evaluate(() => document.getElementById('modal').classList.contains('open'))) { await page.click('#mGo'); await page.waitForTimeout(400); }
     if (!gen.fogLvl) await page.evaluate(() => {

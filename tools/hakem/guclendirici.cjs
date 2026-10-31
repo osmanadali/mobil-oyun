@@ -1,29 +1,30 @@
 // Güçlendiriciler (🔄 ek tur · 🔦 fener · ⏱ +15 sn · ↶ geri al) ve yeni sandık dağılımı — hakem.cjs K bölümü çağırır
 module.exports = async T => {
-  const { browser, URL, open, check, tapTile, getSave, starsUpTo } = T;
+  const { browser, URL, open, check, tapTile, getSave, starsUpTo, RL, AT } = T;
+  const LATE = Math.max(AT('cnt'), AT('fog')) + 10;   // sayaçlı ve karanlık tünel öğrenilmiş
   const errs = [];
   const play = async (level, bst, x = {}) => {
-    const o = await open(browser, URL, { save: { played: 60, level, stars: starsUpTo(level), seen: Object.fromEntries(Array.from({ length: 20 }, (_, k) => [k, 1])), remindAsked: true, bst, ...x } });
+    const o = await open(browser, URL, { save: { played: 60, level, stars: starsUpTo(level), seen: Object.fromEntries(Array.from({ length: 30 }, (_, k) => [k, 1])), remindAsked: true, bst, ...x } });
     await o.page.click('#bPlay'); await o.page.waitForTimeout(800); return o;
   };
   const vis = (page, id) => page.evaluate(id => !document.getElementById(id).hidden, id);
 
   // ---------- a) sandık: ipucu artık baskın değil; güçlendirici yalnız kuralı açılmışsa çıkar ----------
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: { played: 60, level: 200, remindAsked: true } });
-    const r = await page.evaluate(() => {
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 60, level: LATE, remindAsked: true } });
+    const r = await page.evaluate(LATE => {
       const R = window.__ray, count = level => { const k = {}, ids = {}; for (let s = 1; s <= 600; s++) { const x = R.roll(s * 7919, s % 9, level); k[x.kind] = (k[x.kind] || 0) + 1; if (x.kind === 'bst') ids[x.id] = 1; } return { k, ids: Object.keys(ids).sort().join() }; };
-      return { late: count(200), early: count(20) };
-    });
+      return { late: count(LATE), early: count(20) };
+    }, LATE);
     const hint = r.late.k.hint / 600, b = r.late.k.bst / 600;
-    check('bst.chest', 'Sandık: ipucu payı %50\'nin altında, güçlendirici ~%35–45; M7\'ye gelmiş oyuncuya 4 güçlendirici de çıkar, M2\'de yalnız ⏱ ve ↶',
+    check('bst.chest', `Sandık: ipucu payı %50'nin altında, güçlendirici ~%35–45; M${Math.max(RL.cnt, RL.fog) + 1} sonrasına gelmiş oyuncuya 4 güçlendirici de çıkar, M2'de yalnız ⏱ ve ↶`,
       hint < .5 && b > .3 && b < .5 && r.late.ids === 'fener,geri,sure,tur' && r.early.ids === 'geri,sure', JSON.stringify(r));
     errs.push(...errors); await ctx.close();
   }
 
   // ---------- b) 🔄 ek tur: kilitlenen sayılı karoya dokununca sorulur, kabul edilince bir kez daha döner ----------
   {
-    const { ctx, page, errors } = await play(140, { tur: 2 });
+    const { ctx, page, errors } = await play(AT('cnt', 7), { tur: 2 });
     const i = await page.evaluate(() => { const G = window.__ray.G; const i = G.cnt.findIndex((v, k) => v >= 0 && G.cur[k] !== G.sol[k] && !G.fixed[k]); if (i >= 0) G.cnt[i] = 0; return i; });
     await tapTile(page, i); await page.waitForTimeout(400);
     const asked = await page.evaluate(() => document.getElementById('modal').classList.contains('open') && /Ek tur/.test(document.getElementById('mCard').textContent));
@@ -38,7 +39,7 @@ module.exports = async T => {
 
   // ---------- c) 🔦 fener: karanlık tünelde düğme görünür; 5 sn bütün tahta aydınlık, sonra yeniden kararır ----------
   {
-    const { ctx, page, errors } = await play(105, { fener: 1 });
+    const { ctx, page, errors } = await play(AT('fog', 4), { fener: 1 });
     const seen = () => page.evaluate(() => { const G = window.__ray.G; return [G.seen.filter(Boolean).length, G.cur.length]; });
     const b0 = await vis(page, 'gLamp'), [s0, n] = await seen();
     await page.click('#gLamp'); await page.waitForTimeout(400);

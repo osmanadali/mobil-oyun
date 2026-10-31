@@ -1,11 +1,11 @@
-// M21 · Soğuyan karo (ice): ❄ karoyu çevirip başka karoya geçince o karo 2 hamle donar. Ayrıntı: docs/kurallar/soguyan-karo.md
+// M9 · Soğuyan karo (ice): ❄ karoyu çevirip başka karoya geçince o karo 2 hamle donar. Ayrıntı: docs/kurallar/soguyan-karo.md
 (window.RAY_RULES = window.RAY_RULES || []).push(api => {
   const FREEZE = 2;   // bırakılan karo, sonraki 2 hamle boyunca dönmez
   // donmaya kalan hamle (0 = serbest). left[i]: karonun en son çevrildiği hamle; aynı hamlede (art arda dokunuş) donmaz
   const cold = (G, i) => { const t = G.iceLeft?.[i]; return t == null || G.lastTile === i ? 0 : Math.max(0, FREEZE - (G.moves - t)); };
   const flake = (cx, x, y, r) => { for (let k = 0; k < 3; k++) { const a = k * Math.PI / 3, dx = Math.cos(a) * r, dy = Math.sin(a) * r; cx.moveTo(x - dx, y - dy); cx.lineTo(x + dx, y + dy); } };
   return {
-    key: 'ice', line: 20, boost: 1,
+    key: 'ice', line: 8, ord: 20, boost: .5,
     card: { name: L('Soğuyan karo', 'Cooling tile'), tag: L('Yeni: soğuyan karo', 'New: cooling tile'),
       demo: '<div class="rd-ice" aria-hidden="true"><i></i><i></i><b>❄</b><em></em></div>',
       text: L('Kar taneli (❄) karoyu çevirip <b>başka karoya geçince</b> o karo <b>2 hamle donar</b>, dönmez. Bir karoya dönüp durmak yerine <b>önce düşün</b>.',

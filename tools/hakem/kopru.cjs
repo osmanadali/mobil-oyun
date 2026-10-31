@@ -1,13 +1,14 @@
-// M11 · Köprü — robot testleri (hakem.cjs K bölümü çağırır). Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/kopru.md
+// Köprü (RL.bridge hattı) — robot testleri (hakem.cjs K bölümü çağırır). Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/kopru.md
 // Üretici (çözülebilirlik, yerleşim kuralları), bölünmüş lit regresyonları, eski bölümler bit bit aynı, oyunda dokunma/çizim/kazanma, kayıt.
 const SEEN = Object.fromEntries(Array.from({ length: 40 }, (_, c) => [c, 1]));   // bütün kural kartları görülmüş
-// eski bölümlerin parmak izi (köprüden ÖNCE ölçüldü): puzzleFor(1..208) ve iki Günün Hattı için cur|sol FNV-1a. 209–300 makasa göre değişebilir → köprülü/köprüsüz karşılaştırılır.
-const H208 = 3554394182,   // mola (28 Ekim) ve kısa bölümlerle (31 Ekim) yenilendi
+// eski bölümlerin parmak izi: puzzleFor(1 … makas hattından önce) ve iki Günün Hattı için cur|sol FNV-1a. Makastan köprüye kadarki bölümler köprülü/köprüsüz karşılaştırılır.
+const H208 = 1790540080,   // mola (28 Ekim), kısa bölüm ve hat düzeniyle (31 Ekim: 28 bölüm tavanı, yeni kural sırası) yenilendi
       DAILY = [['2026-10-27', 3956970903], ['2027-03-14', 476147362]];
 const fnv = s => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
 
 module.exports = async T => {
-  const { browser, URL, open, check, solve, shot, tapTile, waitModal, starsUpTo } = T;
+  const { browser, URL, open, check, solve, shot, tapTile, waitModal, starsUpTo, RL, LS, AT } = T;
+  const A = AT('bridge'), SW = AT('sw');   // köprü hattının ilk bölümü · makas hattının ilk bölümü
   const allErr = [];
 
   // ---------- 1) Üretici + bölünmüş lit (sayfada) ----------
@@ -56,34 +57,34 @@ module.exports = async T => {
       g.twoN > 0 && g.cross > 0 && g.reg.two.solved && !g.reg.two.merged && g.reg.two.own4 === 1 && g.reg.two.ownB4 === 2, JSON.stringify({ twoN: g.twoN, cross: g.cross, ...g.reg.two }));
 
     // eski bölümler bit bit aynı · R() yalnız köprü miktarı > 0 iken tüketilir · süre
-    const b = await page.evaluate(() => {
+    const b = await page.evaluate(([A, SW]) => {
       const R = window.__ray, sig = P => P.cur.join() + '|' + P.sol.join(), fnv = s => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
       let s208 = '', leak = 0; const rest = [];
-      for (let l = 1; l <= 300; l++) { const P = R.puzzleFor(l); if (l <= 208) s208 += sig(P) + ';'; else rest.push(sig(P)); if (R.rulesFor(l).has('bridge') || P.bridge || P.split) leak++; }
+      for (let l = 1; l < A; l++) { const P = R.puzzleFor(l); if (l < SW) s208 += sig(P) + ';'; else rest.push(sig(P)); if (R.rulesFor(l).has('bridge') || P.bridge || P.split) leak++; }
       const daily = ['2026-10-27', '2027-03-14'].map(d => fnv(sig(R.dailyFor(d))));
-      // 209–300 köprü eklentisi çıkarılınca da aynı (önbellek 4 bölüm tutar; sırayla yeniden üretilir)
+      // makastan köprüye kadarki bölümler köprü eklentisi çıkarılınca da aynı (önbellek 4 bölüm tutar; sırayla yeniden üretilir)
       const k = R.MODS.findIndex(m => m.key === 'bridge'), M = R.MODS.splice(k, 1)[0];
-      let diff = 0; for (let l = 209; l <= 300; l++) if (sig(R.puzzleFor(l)) !== rest[l - 209]) diff++;
+      let diff = 0; for (let l = SW; l < A; l++) if (sig(R.puzzleFor(l)) !== rest[l - SW]) diff++;
       R.MODS.splice(k, 0, M);
-      // M11 süresi: 301–340 bölüm üretimi (pick + zorluk) ve lit
-      let t = performance.now(); for (let l = 301; l <= 340; l++) R.puzzleFor(l); const perLvl = (performance.now() - t) / 40;
+      // köprü hattı süresi: ilk 40 bölüm üretimi (pick + zorluk) ve lit
+      let t = performance.now(); for (let l = A; l < A + 40; l++) R.puzzleFor(l); const perLvl = (performance.now() - t) / 40;
       const P = R.generate(7, 9, 4242, 0, 0, { bridge: 2 }), Q = { ...P, split: undefined, bridge: undefined };
       t = performance.now(); for (let k2 = 0; k2 < 3000; k2++) R.lit(P); const litMs = (performance.now() - t) / 3000;
       t = performance.now(); for (let k2 = 0; k2 < 3000; k2++) R.lit(Q); const litOld = (performance.now() - t) / 3000;
       return { h208: fnv(s208), daily, leak, diff, perLvl: +perLvl.toFixed(1), litUs: Math.round(litMs * 1000), litOldUs: Math.round(litOld * 1000), nbr: P.bridge?.length };
-    });
+    }, [A, SW]);
     const dOk = DAILY.every(([, h], k) => b.daily[k] === h);
-    check('bridge.old', 'Köprüsüz bölümler bit bit aynı: 1–208 ve Günün Hattı parmak izi köprüden önceki sabite eşit, 209–300 köprü eklentisiyle/eklentisiz aynı, 1–300\'de köprü yok',
+    check('bridge.old', `Köprüsüz bölümler bit bit aynı: 1–${SW - 1} ve Günün Hattı parmak izi sabite eşit, ${SW}–${A - 1} köprü eklentisiyle/eklentisiz aynı, 1–${A - 1}'de köprü yok`,
       b.h208 === H208 && dOk && b.leak === 0 && b.diff === 0, JSON.stringify({ h208: b.h208, daily: b.daily, leak: b.leak, diff: b.diff }));
-    check('bridge.perf', 'Köprü hızlı: 301–340 bölüm üretimi < 60 ms/bölüm; bölünmüş lit 7×9 < 150 µs/çağrı', b.perLvl < 60 && b.litUs < 150 && b.nbr === 2,
+    check('bridge.perf', `Köprü hızlı: ${A}–${A + 39} bölüm üretimi < 60 ms/bölüm; bölünmüş lit 7×9 < 150 µs/çağrı`, b.perLvl < 60 && b.litUs < 150 && b.nbr === 2,
       `${b.perLvl} ms/bölüm · lit ${b.litUs} µs (köprüsüz ${b.litOldUs} µs)`, 'medium');
     allErr.push(...errors);
     await ctx.close();
   }
 
-  // ---------- 2) Bölüm 301: kural kartı, köprüye dokunmak hamle saymaz, çözülür ----------
+  // ---------- 2) Köprü hattının ilk bölümü: kural kartı, köprüye dokunmak hamle saymaz, çözülür ----------
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: { played: 300, level: 301, stars: starsUpTo(301), remindAsked: true } });
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: A - 1, level: A, stars: starsUpTo(A), seen: Object.fromEntries(Object.values(RL).filter(c => c < RL.bridge).map(c => [c, 1])), remindAsked: true } });
     await page.click('#bPlay'); await page.waitForTimeout(800);
     const card = await page.evaluate(() => ({ open: document.getElementById('modal').classList.contains('open'), txt: document.getElementById('mCard').textContent, demo: !!document.querySelector('#mCard .rd-bridge'), paused: !window.__ray.G.runAt }));
     await shot(page, 'kopru-kart');
@@ -96,7 +97,7 @@ module.exports = async T => {
     await shot(page, 'kopru-oyun');
     await solve(page, 12); const won = await waitModal(page);
     const w = await page.evaluate(() => ({ won: window.__ray.G.won, moves: window.__ray.G.moves }));
-    check('bridge.card', 'M11 bölüm 301: "YENİ KURAL · Köprü" kartı (canlı demo), kart açıkken süre durur; 6×8, tek köprü',
+    check('bridge.card', `M${RL.bridge + 1} bölüm ${A}: "YENİ KURAL · Köprü" kartı (canlı demo), kart açıkken süre durur; 6×8, tek köprü`,
       card.open && /Köprü/.test(card.txt) && card.demo && card.paused && g.size === '6x8' && g.br.length === 1 && g.rules.includes('bridge'), JSON.stringify({ ...card, txt: card.txt.slice(0, 60), ...g }));
     check('bridge.tap', 'Köprüye dokunmak hamle saymaz, karo dönmez; bir kez "Köprü · dönmez" bildirimi; bölüm robotla çözülür',
       B >= 0 && s1.m === s0.m && s2.m === s0.m && s1.v === 15 && s2.v === 15 && s1.last === s0.last && /Köprü · dönmez/.test(s1.toast) && won && w.won, JSON.stringify({ B, s0, s1, s2, won, ...w }));
@@ -107,12 +108,12 @@ module.exports = async T => {
   // ---------- 3) Karma hat: köprü öteki kurallarla; iki merkezde renk çaprazı çizilir ----------
   {
     const { ctx, page, errors } = await open(browser, URL, { save: { played: 1 } });
-    const lv = await page.evaluate(() => {
+    const lv = await page.evaluate(N => {
       const R = window.__ray; let mix = 0, cross = 0, tries = 0;
       // köprü + iki merkez karma hatta seyrek (rulesFor en yeni kurallara ağırlık verir): çaprazlı bölüm yoksa ilk köprü + iki merkez bölümü alınır,
       // aşağıda tahtası aynı boyutta çaprazlı bir üretimle değiştirilir (swap)
       let alt = 0;
-      for (let l = 353; l < 20000 && (!mix || !cross); l++) {
+      for (let l = N; l < 20000 && (!mix || !cross); l++) {
         const U = R.rulesFor(l); if (!U.has('bridge')) continue;
         if (!mix && U.size > 1) mix = l;
         if (!cross && U.has('two') && !U.has('fog') && tries++ < 30) {
@@ -122,10 +123,10 @@ module.exports = async T => {
       }
       if (!cross && alt) return { mix, cross: alt, swap: true };
       return { mix, cross };
-    });
+    }, LS(RL.bridge + 1));
     await ctx.close();
     if (!lv.mix) check('bridge.mixed', 'Karma hat: köprülü karma bölüm bulunur', false, JSON.stringify(lv));
-    // köprü + iki merkez (karanlıksız) birleşimini rulesFor yalnız bazı hat düzenlerinde üretir (M14 gizli depo hattı olunca 3000'e kadar yok): yoksa çizim denetimi atlanır
+    // köprü + iki merkez (karanlıksız) birleşimini rulesFor yalnız bazı hat düzenlerinde üretir (ör. gizli depo hattı gelince): yoksa çizim denetimi atlanır
     if (!lv.cross) check('bridge.cross', 'İki merkez: köprüde kesişen iki renk (rulesFor bu birleşimi üretmiyor: atlandı)', true, JSON.stringify(lv), 'low');
     // karma bölüm: robot çözer
     if (lv.mix) {
@@ -180,9 +181,9 @@ module.exports = async T => {
 
   // ---------- 4) Kayıt: imzasız (pv:4) ya da imzası tutmayan yarım oyun köprülü bölüme yüklenmez; doğru imzalı yüklenir ----------
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: { played: 300, level: 301, stars: starsUpTo(301), seen: SEEN, remindAsked: true } });
-    const P = await page.evaluate(() => { const P = window.__ray.puzzleFor(301); return { cur: P.cur, sol: P.sol, B: P.bridge[0] }; });
-    const run = (extra, cur = P.cur) => ({ lvl: 301, cur, fixed: cur.map(() => false), moves: 3, last: -1, ms: 1000, ...extra });
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: A - 1, level: A, stars: starsUpTo(A), seen: SEEN, remindAsked: true } });
+    const P = await page.evaluate(A => { const P = window.__ray.puzzleFor(A); return { cur: P.cur, sol: P.sol, B: P.bridge[0] }; }, A);
+    const run = (extra, cur = P.cur) => ({ lvl: A, cur, fixed: cur.map(() => false), moves: 3, last: -1, ms: 1000, ...extra });
     const bad = P.cur.slice(); bad[P.B] = 5;
     const res = [];
     for (const r of [run({ pv: 4 }, bad), run({ pv: 4, sig: 12345 }, bad), run({ pv: 4, sig: fnv(P.sol.join() + '|' + P.cur.join()) })]) {

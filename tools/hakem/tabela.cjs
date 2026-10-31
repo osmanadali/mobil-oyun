@@ -1,7 +1,7 @@
-// M13 · Yön tabelası — robot testleri (hakem.cjs K bölümü çağırır). Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/tabela.md
+// Yön tabelası (RL.sign hattı) — robot testleri (hakem.cjs K bölümü çağırır). Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/tabela.md
 module.exports = async T => {
-  const { browser, URL, open, check, solve, shot, tapTile, waitModal, modalOpen, starsUpTo } = T;
-  const seen = { 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1 };
+  const { browser, URL, open, check, solve, shot, tapTile, waitModal, modalOpen, starsUpTo, RL, AT, seenTo } = T;
+  const S = RL.sign, A = AT('sign'), seen = seenTo(S);
   const errs = [];
 
   // ---------- a) üretim: 600 bölüm × kural karışımları ----------
@@ -45,48 +45,48 @@ module.exports = async T => {
       g.parent === 0 && g.flipBad === 0 && g.flips === g.signs * 3 && g.allowBad === 0, JSON.stringify({ parent: g.parent, flips: g.flips, flipBad: g.flipBad, allowBad: g.allowBad }));
     check('sign.two', 'Tabela + iki merkez: ok kendi merkezinin hattına bakar; komşu öbür hatta ise reddedilir; halka ile çakışır',
       g.two > 100 && g.twoBad === 0 && g.ownBad === 0 && g.clash, JSON.stringify({ two: g.two, twoBad: g.twoBad, ownBad: g.ownBad, clash: g.clash }));
-    // zorluk merdiveni (M12 → M13 → M14) ve üretim süresi
-    const lad = await page.evaluate(() => {
+    // zorluk merdiveni (iki önceki hat → tabela hattı → sonraki hat) ve üretim süresi
+    const lad = await page.evaluate(([S, A]) => {
       const R = window.__ray, avg = c => { const a = R.lineStart(c), z = R.lineStart(c + 1) - 1; let d = 0; for (let l = a; l <= z; l++) d += R.puzzleFor(l).diff; return Math.round(d / (z - a + 1) * 100) / 100; };
-      const t0 = performance.now(); for (let l = 409; l <= 418; l++) R.puzzleFor(l); const ms = Math.round((performance.now() - t0) / 10);
-      const sz = [408, 409, 411, 412].map(l => R.sizeFor(l).join('x')).join(' ');
-      const rules = [409, 410, 411].map(l => R.puzzleFor(l).rules.join('+')).join(' ');
-      return { m11: avg(10), m12: avg(11), m13: avg(12), m14: avg(13), ms, sz, rules };
-    });
-    check('sign.ladder', 'Tabela: M13 ortalama zorluğu bir önceki tek hattan (M11) yüksek, M14\'ten düşük (M12 artık zor kural hattı); 409–411 6×8 yalın tabela; puzzleFor(409–418) < 60 ms',
-      lad.m13 > lad.m11 && lad.m14 > lad.m13 && lad.ms < 60 && lad.sz === '7x9 6x8 6x8 7x9' && lad.rules === 'sign sign sign', JSON.stringify(lad), 'medium');
+      const t0 = performance.now(); for (let l = A; l <= A + 9; l++) R.puzzleFor(l); const ms = Math.round((performance.now() - t0) / 10);
+      const sz = [A - 1, A, A + 2, A + 3].map(l => R.sizeFor(l).join('x')).join(' ');
+      const rules = [A, A + 1, A + 2].map(l => R.puzzleFor(l).rules.join('+')).join(' ');
+      return { m11: avg(S - 2), m12: avg(S - 1), m13: avg(S), m14: avg(S + 1), ms, sz, rules };
+    }, [S, A]);
+    check('sign.ladder', `Tabela: M${S + 1} ortalama zorluğu önceki hattan (M${S}) yüksek, sonraki hattan (M${S + 2}) düşük; ${A}–${A + 2} 6×8 yalın tabela; puzzleFor(${A}–${A + 9}) < 60 ms`,
+      lad.m13 > lad.m12 && lad.m14 > lad.m13 && lad.ms < 60 && lad.sz === '7x9 6x8 6x8 7x9' && lad.rules === 'sign sign sign', JSON.stringify(lad), 'medium');
     errs.push(...errors);
     await ctx.close();
   }
 
-  // ---------- b) eski bölümler bit bit aynı: 1–408 ve Günün Hattı, tabela eklentisi varken ve yokken ----------
+  // ---------- b) eski bölümler bit bit aynı: tabela hattından öncesi ve Günün Hattı, tabela eklentisi varken ve yokken ----------
   {
     const run = async block => {
       const ctx = await browser.newContext({ serviceWorkers: 'block' });
       if (block) await ctx.route('**/rules/tabela.js', r => r.fulfill({ contentType: 'text/javascript', body: '' }));
       const page = await ctx.newPage(); await page.goto(URL); await page.waitForTimeout(200);
-      const r = await page.evaluate(() => {
+      const r = await page.evaluate(A => {
         const R = window.__ray, H = [], h = P => JSON.stringify([P.cols, P.rows, P.sol, P.cur, P.pinned, P.link, P.rev, P.cnt, P.hub, P.hub2, P.par, P.taps, P.diff, P.rules, 'sign' in P]);
-        for (let l = 1; l <= 408; l++) H.push(h(R.puzzleFor(l)));
+        for (let l = 1; l < A; l++) H.push(h(R.puzzleFor(l)));
         const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         for (let k = 0; k < 14; k++) H.push(h(R.dailyFor(ymd(new Date(2026, 9, 1 + k * 9)))));
         return { H, sign: R.MODS.some(m => m.key === 'sign') };
-      });
+      }, A);
       await ctx.close(); return r;
     };
     const a = await run(false), b = await run(true), diff = a.H.map((x, i) => x === b.H[i] ? 0 : i + 1).filter(Boolean);
-    check('sign.identical', 'Tabela eklentisi 1–408. bölümleri ve Günün Hattını değiştirmiyor (eklentili/eklentisiz bit bit aynı)', a.sign && !b.sign && a.H.length === 422 && !diff.length, `${a.H.length} bulmaca · ${diff.length} fark${diff.length ? ' · ' + diff.slice(0, 8).join(',') : ''}`);
+    check('sign.identical', `Tabela eklentisi 1–${A - 1}. bölümleri ve Günün Hattını değiştirmiyor (eklentili/eklentisiz bit bit aynı)`, a.sign && !b.sign && a.H.length === A - 1 + 14 && !diff.length, `${a.H.length} bulmaca · ${diff.length} fark${diff.length ? ' · ' + diff.slice(0, 8).join(',') : ''}`);
   }
 
-  // ---------- c) bölüm 409: kural kartı, dokunuş, solve() ile kazanma ----------
+  // ---------- c) tabela hattının ilk bölümü: kural kartı, dokunuş, solve() ile kazanma ----------
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: { played: 408, level: 409, stars: starsUpTo(409), seen, remindAsked: true } });
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: A - 1, level: A, stars: starsUpTo(A), seen, remindAsked: true } });
     await page.click('#bPlay'); await page.waitForTimeout(700);
     const card = await page.evaluate(() => ({ open: document.getElementById('modal').classList.contains('open'), h: document.querySelector('.sheet h2')?.textContent, demo: !!document.querySelector('.sheet .rd-sign .rd-sign-a'), badge: document.querySelector('.sheet .badge')?.textContent }));
     await page.waitForTimeout(1500); await shot(page, 'sign-card');   // ok dolu evre (%50–90)
     await page.waitForTimeout(1600); await shot(page, 'sign-card-2');  // ok boş evre
     if (card.open) await page.click('#mGo'); await page.waitForTimeout(400);
-    const g0 = await page.evaluate(() => { const G = window.__ray.G, I = G.sign.map((b, i) => b ? i : -1).filter(i => i >= 0); return { size: G.cols + 'x' + G.rows, I, sign: I.map(i => G.sign[i]), cur: I.map(i => G.cur[i]), seen: JSON.parse(localStorage.getItem('ray')).seen?.[12] }; });
+    const g0 = await page.evaluate(() => { const G = window.__ray.G, I = G.sign.map((b, i) => b ? i : -1).filter(i => i >= 0); return { size: G.cols + 'x' + G.rows, I, sign: I.map(i => G.sign[i]), cur: I.map(i => G.cur[i]), seen: JSON.parse(localStorage.getItem('ray')).seen?.[window.__ray.RULE_LINE.sign] }; });
     await shot(page, 'sign-start');
     await page.emulateMedia({ colorScheme: 'light' }); await page.waitForTimeout(250); await shot(page, 'sign-start-light'); await page.emulateMedia({ colorScheme: 'dark' }); await page.waitForTimeout(150);
     const i0 = g0.I[0];
@@ -95,7 +95,7 @@ module.exports = async T => {
     const rotd = (((g0.cur[0] << 1) | (g0.cur[0] >> 3)) & 15);
     await solve(page, 8); const won = await waitModal(page);
     const g2 = await page.evaluate(() => { const G = window.__ray.G; return { won: G.won, bad: G.L.signBad.length, solved: G.L.solved }; });
-    check('sign.card', 'M13 bölüm 409: "Yön tabelası" kural kartı (canlı demo), 6×8, ≥ 2 tabela; dokununca karo döner, ok yerinde kalır; solve() ile bölüm biter',
+    check('sign.card', `M${S + 1} bölüm ${A}: "Yön tabelası" kural kartı (canlı demo), 6×8, ≥ 2 tabela; dokununca karo döner, ok yerinde kalır; solve() ile bölüm biter`,
       card.open && /Yön tabelası/.test(card.h || '') && card.demo && g0.seen === 1 && g0.size === '6x8' && g0.I.length >= 2 && g1.cur === rotd && g1.sign === g0.sign[0] && won && g2.won && !g2.bad,
       JSON.stringify({ ...card, size: g0.size, signs: g0.I.length, tap: [g0.cur[0], g1.cur, g1.sign === g0.sign[0]], toast: g1.toast, won, ...g2 }));
     errs.push(...errors);
@@ -104,7 +104,7 @@ module.exports = async T => {
 
   // ---------- d) hepsi bağlı ama tabela yanlış: bitmez, bildirim + nabız; sağlanmış ok dolu çizilir ----------
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: { played: 409, level: 410, stars: starsUpTo(410), seen: { ...seen, 12: 1 }, remindAsked: true, signTip: 1 } });
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: A, level: A + 1, stars: starsUpTo(A + 1), seen: { ...seen, [S]: 1 }, remindAsked: true, signTip: 1 } });
     await page.click('#bPlay'); await page.waitForTimeout(600);
     // durak karosu k: çözüm dışında 2 dokunuş uzak (tabelaların yolunu kesmez), geri kalan her şey çözümde
     const k = await page.evaluate(() => {

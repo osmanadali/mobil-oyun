@@ -1,4 +1,6 @@
-# M23 · Kayan sıra (`slide`)
+# M6 · Kayan sıra (`slide`)
+
+> **Hat düzeni 31 Ekim'de değişti:** bu kural artık **M6** (ilk bölüm 101). Aşağıdaki hat ve bölüm numaraları ve ölçümler eski düzene aittir; güncel tablo `docs/kurallar/README.md`.
 
 **Kural.** Raylı sıranın karoları dönmez. Sıranın herhangi bir karosuna dokununca bütün sıra bir kare sağa kayar, en sağdaki karo başa geçer. Karoların yönü değişmez; yalnız yerleri değişir. Art arda kaydırmak tek hamledir.
 

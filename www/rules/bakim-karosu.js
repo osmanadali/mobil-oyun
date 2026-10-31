@@ -1,4 +1,4 @@
-// M22 · Bakım karosu (gear): ⚙ karoya dokunulmaz, her 2 hamlede bir kendiliğinden 90° döner. Ayrıntı: docs/kurallar/bakim-karosu.md
+// M14 · Bakım karosu (gear): ⚙ karoya dokunulmaz, her 2 hamlede bir kendiliğinden 90° döner. Ayrıntı: docs/kurallar/bakim-karosu.md
 // Dönüş gerçek zamanlı değil, yalnız hamleye bağlı (süre akarken kendi kendine dönmez).
 (window.RAY_RULES = window.RAY_RULES || []).push(api => {
   const EVERY = 2;   // her 2 hamlede bir (hamle sayacı 2, 4, 6…)
@@ -9,7 +9,7 @@
     for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4, c = Math.cos(a), s = Math.sin(a); cx.moveTo(x + c * r, y + s * r); cx.lineTo(x + c * r * 1.28, y + s * r * 1.28); }
   };
   return {
-    key: 'gear', line: 21, boost: 1,
+    key: 'gear', line: 13, ord: 21, boost: 1,
     card: { name: L('Bakım karosu', 'Gear tile'), tag: L('Yeni: bakım karosu', 'New: gear tile'),
       demo: '<div class="rd-gear" aria-hidden="true"><i></i><b></b><s></s><em></em><em></em></div>',
       text: L('Dişli (⚙) karoya <b>dokunulmaz</b>: <b>her 2 hamlede bir</b> kendiliğinden 90° döner. Hattı, dişli <b>doğru yöne geldiği hamlede</b> tamamla.',

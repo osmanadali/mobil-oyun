@@ -50,17 +50,17 @@ Hepsi 24 bit PNG'dir, saydamlık (alfa) içermez; iki mağazanın kuralına uyar
 
 | # | Dosya | Başlık | Alt satır | Ekranda |
 |---|---|---|---|---|
-| 1 | `01-oyun` | Dokun, döndür, hattı yak | Bütün durakları merkeze bağla, açık uç kalmasın | Bölüm 181 (M8, iki merkez), hat yarıya kadar yanmış. Mağazada ilk bakılan görsel oynanıştır. |
-| 2 | `02-ana` | Hatları bağla, şehri canlandır | Tek elle · internetsiz · her gün yeni bir Günün Hattı | Ana ekran: 12 günlük seri, Günün Hattı, M9 |
+| 1 | `01-oyun` | Dokun, döndür, hattı yak | Bütün durakları merkeze bağla, açık uç kalmasın | Bölüm 225 (M10, iki merkez), hat yarıya kadar yanmış. Mağazada ilk bakılan görsel oynanıştır. |
+| 2 | `02-ana` | Hatları bağla, şehri canlandır | Tek elle · internetsiz · her gün yeni bir Günün Hattı | Ana ekran: 12 günlük seri, Günün Hattı, M11 |
 | 3 | `03-kazan` | Kusursuz bitir, taç kazan | Süre ve hamle hedefini tuttur, üç yıldızı topla | Bölüm 45 kusursuz: 3 yıldız, taç, 5'li seri bonusu |
-| 4 | `04-harita` | 20 hat, sonu gelmeyen bölüm | Zorluk dalga dalga artar, arada mola var | Hat haritası: biten M9, süren M10 |
-| 5 | `05-kural` | Hat ilerledikçe yeni kurallar | Makas, köprü, tabela, döner tabla, halka, tünel ağzı… | Tünel ağzı kural kartı (M19) |
+| 4 | `04-harita` | 23 kural, sonu gelmeyen bölüm | Zorluk dalga dalga artar, arada mola var | Hat haritası: biten M11, süren M12 |
+| 5 | `05-kural` | Hat ilerledikçe yeni kurallar | Makas, köprü, tabela, döner tabla, halka, tünel ağzı… | Tünel ağzı kural kartı (M16) |
 | 6 | `06-tema` | Taç topla, 25 renk teması aç | Kusursuz bitirdiğin her bölüm bir taç kazandırır | Renk temaları penceresi |
 | 7 | `07-sandik` | Sürpriz sandık, yeni trenler | İpucu, seri kalkanı ya da yeni bir tren kaplaması | Sandık açılışı: destansı Lavanta kaplaması |
 
 Öne çıkan görsel: koyu lacivert zemin, uygulama ikonu (Gece Işığı: turuncu L ray, yanan kare merkez), "Ray", "Hatları bağla · Şehri canlandır" ve üç rozet (Tek elle, İnternetsiz, Metro bulmacası).
 
-İngilizce sahne başlıkları (`en`): 1 Connect the lines, light up the city · 2 Tap, turn, light the line · 3 Finish perfect, earn crowns · 4 20 lines, endless levels · 5 New rules as the line grows · 6 Collect crowns, unlock 25 themes · 7 Surprise chest, new trains. Öne çıkan görselde "Connect the lines · Light up the city" ve One hand, Offline, Metro puzzle rozetleri.
+İngilizce sahne başlıkları (`en`): 1 Connect the lines, light up the city · 2 Tap, turn, light the line · 3 Finish perfect, earn crowns · 4 23 rules, endless levels · 5 New rules as the line grows · 6 Collect crowns, unlock 25 themes · 7 Surprise chest, new trains. Öne çıkan görselde "Connect the lines · Light up the city" ve One hand, Offline, Metro puzzle rozetleri.
 
 ## 3. Karakter sayıları
 
@@ -113,7 +113,7 @@ NASIL OYNANIR
 • Süreyi ve hamleyi birlikte tutturursan bölüm kusursuz olur, taç kazanırsın.
 
 20 HAT, SONU GELMEYEN BÖLÜMLER
-Her metro hattı bir öncekinden uzundur, her bölüm bir öncekinden biraz daha zordur. İlk 20 hattan sonra oyun karma hatlarla sonsuza dek sürer. Bölümler cihazında üretilir, hepsi çözülebilir ve herkes aynı numaralı bölümde aynı bulmacayı görür.
+Her metro hattı yeni bir kural getirir, her bölüm bir öncekinden biraz daha zordur. 23 kurallı hattan sonra oyun karma hatlarla sonsuza dek sürer. Bölümler cihazında üretilir, hepsi çözülebilir ve herkes aynı numaralı bölümde aynı bulmacayı görür.
 
 HAT İLERLEDİKÇE YENİ KURALLAR
 Sabit karo, eşli karo, ters karo, karanlık tünel, sayaçlı karo, iki merkez, makas, kapak, köprü, silik kol, yön tabelası, gizli depo, döner tabla, kapalı durak, halka hat, nehir, tünel ağzı ve tarife bölgesi: 18 kural. Her yeni kural kısa, canlandırmalı bir kartla anlatılır. Tahta hiçbir zaman kalabalıklaşmaz.
@@ -149,7 +149,7 @@ HOW TO PLAY
 • Hit both targets in one go and the level is flawless: you earn a crown.
 
 20 LINES, ENDLESS LEVELS
-Each metro line is longer than the last and every level is a little harder than the one before. After the first 20 lines the game continues forever with mixed lines. Levels are generated on your device, every one is solvable, and everyone gets the same puzzle on the same level number.
+Each metro line brings a new rule and every level is a little harder than the one before. After 23 rule lines the game continues forever with mixed lines. Levels are generated on your device, every one is solvable, and everyone gets the same puzzle on the same level number.
 
 NEW RULES AS YOU TRAVEL
 Fixed tiles, paired tiles, reverse tiles, dark tunnels, counter tiles, two hubs, switches, manhole covers, bridges, faded arms, direction signs, hidden depots, turntables, closed stations, loop lines, rivers, tunnel portals and fare zones: 18 rules. Each new rule is introduced with a short animated card, and the board never gets cluttered.
@@ -187,8 +187,8 @@ Available in English and Turkish.
 | Ücretli / ücretsiz | Ücretsiz (yayından sonra ücretliye çevrilemez) |
 | İletişim e-postası | [iletişim e-postası] |
 | Web sitesi | https://osmanadali.github.io (app-ads.txt için, bkz. §11) |
-| Sürüm notu (ilk sürüm) | `İlk sürüm. Tek elle, internetsiz metro bulmacası: 20 hat, Günün Hattı, renk temaları ve sürpriz sandık.` |
-| Sürüm notu (EN) | `First release. A one-handed, offline metro puzzle: 20 lines, a Daily Line, color themes and a surprise chest.` |
+| Sürüm notu (ilk sürüm) | `İlk sürüm. Tek elle, internetsiz metro bulmacası: 23 kural, Günün Hattı, renk temaları ve sürpriz sandık.` |
+| Sürüm notu (EN) | `First release. A one-handed, offline metro puzzle: 23 rules, a Daily Line, color themes and a surprise chest.` |
 
 ## 5. App Store girişi
 
@@ -215,10 +215,10 @@ Calm, one-handed and offline
 **Tanıtım metni** (170). Sürüm göndermeden değiştirilebilir; kampanya ve yeni kural duyurusu için kullanılır.
 
 ```text
-Her gün yeni bir Günün Hattı! Rayları döndür, durakları bağla, kusursuz bitir, taç topla. 20 hat, yeni kurallar ve sonu gelmeyen bölümler seni bekliyor.
+Her gün yeni bir Günün Hattı! Rayları döndür, durakları bağla, kusursuz bitir, taç topla. 23 kural ve sonu gelmeyen bölümler seni bekliyor.
 ```
 ```text
-A new Daily Line every day! Rotate the rails, connect every station, finish flawlessly and collect crowns. 20 lines, new rules and endless levels await.
+A new Daily Line every day! Rotate the rails, connect every station, finish flawlessly and collect crowns. 23 rules and endless levels await.
 ```
 
 **Açıklama** (4000): §4'teki tam açıklamanın aynısı.
