@@ -21,7 +21,7 @@ Oyun Türkçe ve İngilizce oynanır. Bu belge altyapıyı ve ortak sözlüğü 
 - Sayılı ifadelerde tekil/çoğul ayrılır: `1 move`, `2 moves`. Yardımcı: `n === 1 ? 'move' : 'moves'`.
 - Türkçe ekler (`'i`, `'e`, `-si`) İngilizcede kaldırılır; cümle yeniden kurulur, kelime kelime çevrilmez.
 - Tarihler `toLocaleDateString(RAY_LANG === 'en' ? 'en-US' : 'tr-TR', …)` ile, büyük harf `toLocaleUpperCase(RAY_LANG)` ile yazılır.
-- Simgeler (★, 👑, ⏱, ↻, 🔥) iki dilde aynıdır.
+- Simgeler (★, 🎫, ⏱, ↻, 🔥) iki dilde aynıdır.
 
 ## 3. Sözlük
 
@@ -44,7 +44,7 @@ Oyun Türkçe ve İngilizce oynanır. Bu belge altyapıyı ve ortak sözlüğü 
 | hedef (hamle hedefi) | target |
 | ipucu | hint |
 | yıldız (★) | star |
-| taç (👑) | crown |
+| bilet (🎫; eski adı taç 👑, kodda `crowns`) | ticket |
 | kusursuz | perfect |
 | kusursuz seri (✨; günlük seri 🔥 ayrıdır) | perfect streak |
 | seri (günlük) | streak |
@@ -55,7 +55,7 @@ Oyun Türkçe ve İngilizce oynanır. Bu belge altyapıyı ve ortak sözlüğü 
 | tren kaplaması | train livery |
 | sürpriz sandık | surprise chest |
 | Sıradan · Nadir · Destansı | Common · Rare · Epic |
-| bilet (🎫) | ticket |
+| sınırsız can (❤️∞) | unlimited lives |
 | haftalık görevler (🎯) | weekly quests |
 | görev tamam | quest done |
 | ipucusuz | without hints |
@@ -140,7 +140,7 @@ Hat adları yer adıdır ve çevrilir:
 | ⚡ zorluk %30 | ⚡ 30% hard |
 | ☕ mola · ☕ mola bölümü | ☕ breather · ☕ breather level |
 | Sıradaki (tema) | Next up |
-| 👑 3 yeni taç · +1 ipucu | 👑 3 new crowns · +1 hint |
+| 🎫 3 yeni bilet · +1 ipucu | 🎫 3 new tickets · +1 hint |
 | İlerlemeyi taşı · Kodu kopyala · Kodu yükle | Move progress · Copy code · Load code |
 | Bize yaz · Öneri · hata | Contact us · Ideas · bugs |
 | güçlendirici | booster |
@@ -154,7 +154,7 @@ Hat adları yer adıdır ve çevrilir:
 | ▶ 2 katı | ▶ Double |
 | İzle · +2 ipucu | Watch · +2 hints |
 | Vazgeç · Kapat · Tamam | Cancel · Close · Done (OK) |
-| Taç topla | Earn crowns |
+| Bilet topla | Earn tickets |
 | Bakiye · Satın al · Seç · Seçili | Balance · Buy · Select · Selected |
 | Temalara dön | Back to themes |
 | Trenin · Trenine tak | Your train · Put on your train |

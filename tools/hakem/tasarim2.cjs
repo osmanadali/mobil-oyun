@@ -20,13 +20,13 @@ module.exports = async T => {
     errs.push(...errors); await ctx.close();
   }
 
-  // ---------- b) 💎 yok: 3 yeni taçta +1 ipucu, ara sayaç yazılmaz ----------
+  // ---------- b) 💎 yok: 3 yeni biletta +1 ipucu, ara sayaç yazılmaz ----------
   {
     const { ctx, page, errors } = await open(browser, URL, { save: { played: 30, level: 5, stars: starsUpTo(5), shards: 2, hints: 3, remindAsked: true } });
     await page.click('#bPlay'); await page.waitForTimeout(700); await solve(page, 10); await page.waitForTimeout(2600);
     const r = await page.evaluate(() => ({ txt: document.getElementById('winPanel').textContent, s: JSON.parse(localStorage.getItem('ray')) }));
-    check('t2.shard', '💎 parça birimi yok: kusursuz 3. yeni taçta "👑 3 yeni taç · +1 ipucu", ara sayaç (1/3) yazılmaz',
-      !/💎|parça/.test(r.txt) && (r.s.crowns?.[5] ? /3 yeni taç/.test(r.txt) && r.s.hints === 4 : true), `${r.txt.slice(0, 120)} · ipucu ${r.s.hints}`);
+    check('t2.shard', '💎 parça birimi yok: kusursuz 3. yeni taçta "🎫 3 yeni bilet · +1 ipucu", ara sayaç (1/3) yazılmaz',
+      !/💎|parça/.test(r.txt) && (r.s.crowns?.[5] ? /3 yeni bilet/.test(r.txt) && r.s.hints === 4 : true), `${r.txt.slice(0, 120)} · ipucu ${r.s.hints}`);
     errs.push(...errors); await ctx.close();
   }
 
