@@ -70,6 +70,9 @@ Oyun Türkçe ve İngilizce oynanır. Bu belge altyapıyı ve ortak sözlüğü 
 | Ayarlar | Settings |
 | Gizlilik | Privacy |
 | Verilerimi sil | Delete my data |
+| Zen modu (🍃) | Zen mode |
+| mevsim teması | seasonal theme |
+| Ücretsiz | Free |
 
 ### Kurallar
 
@@ -177,6 +180,8 @@ Hat adları yer adıdır ve çevrilir:
 | Nasıl oynanır? · İleri › · ‹ kaydır › · Hadi oynayalım! | How to play? · Next › · ‹ swipe › · Let’s play! |
 
 Renk temaları: Metro · Sunset · Ocean · Forest · Desert · Sakura · Neon Night · Northern Lights · Lava · Cosmos · Glacier · Spring · Autumn · Coral Reef · Tea Garden · Tulip · Storm · Midnight · Rainbow · Retro Wave · Pastel · Dawn · (reklamsız) Gold · Diamond · Ruby.
+
+Mevsim temaları: Kar Feneri = Snow Lights · Erguvan = Redbud · Yaz Gecesi = Summer Night · Hazan = Harvest · Bayram Fenerleri = Eid Lanterns · Bayram Sabahı = Eid Morning.
 
 Tren kaplamaları: Line color · Red Express · Night Train · Mint · Retro · Sunset · Ice · Lavender · Gold Express.
 

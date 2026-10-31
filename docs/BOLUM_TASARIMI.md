@@ -195,7 +195,7 @@ Test robotu (`tools/hakem.cjs`) her değişiklikte şunları kontrol eder:
 | Şafak | 🎫 560 |
 | Altın, Elmas, Yakut | Yalnızca Reklamsız paketle |
 
-Toplam 25 renk teması vardır: 22'si biletle, 3'ü Reklamsız paketle açılır.
+Toplam 25 renk teması vardır: 22'si biletle, 3'ü Reklamsız paketle açılır. Bunlara ek olarak 6 **mevsim teması** yalnız kendi tarihinde gelir (bölüm 10).
 
 ### Hat adları ve renkleri
 
@@ -270,3 +270,52 @@ Bu iki sistemin amacı oyuncuya "bir bölüm daha" dedirtmektir. Hiçbiri oyunu 
 - Hedef az farkla kaçtıysa (en çok 4 sn rötar ve en çok 2 hamle fazla; süre hedefi ¾'e inince 5 sn'den indi) ya da seri kırıldıysa, sonuç panelinde büyük düğme "Tekrar dene" olur ve Sonraki alttaki küçük sıraya iner. Düğme sayısı değişmez, panel kalabalıklaşmaz.
 - Büyük düğmenin alt satırı nedenini söyler: "Kıl payı · ⏱ 2 sn" ya da "🔥 4 seri geri gelsin".
 
+
+## 10. Zen modu ve mevsim temaları
+
+Oyunun "meta" katmanı: bulmacaya dokunmaz. Kod: `www/game.js` › "meta" bölümü ve `G.zen` kancaları; test: `tools/hakem/meta.cjs` (`node tools/hakem.cjs --only=meta`). Para birimi 🎫 bilet olarak yeniden adlandırılıyor (eski adı 👑 taç; kayıt alanları aynı).
+
+### Zen modu
+
+- **Ayarlar › 🍃 Zen modu** (tek anahtar).
+- Açıkken bölümlerde süre ve hamle hedefi gizlidir: tren şeridi, yıldız çipi, hamle hedefi, rötar ve "hedef aşıldı" uyarıları, kıl payı tekrar, ⏱ +15 güçlendiricisi yoktur; müzik gerilimi artmaz. Üstte yalnız "🍃 Zen" yazar.
+- Her bitiş **3 ★** sayılır (hat kilitleri ilerler); **🎫 bilet verilmez**, ✨ kusursuz seri ne artar ne kırılır, kaçan hedef kaydı (`miss`) tutulmaz. Böylece bilet ekonomisi korunur: bilet isteyen oyuncu zen'i kapatıp aynı bölümü yeniden oynar.
+- Anahtar `save.zen`'dir (can sistemi bunu okuyacak: zen'de can harcanmaz, süre başarısızlığı olmaz).
+- **Günün Hattı zen'den etkilenmez**: herkes aynı koşulda oynar, 🎫 ve seri her zamanki gibi.
+
+### Mevsim temaları
+
+Tarihe bağlı, kendiliğinden gelen sınırlı süreli renk temalarıdır. **Öneri ve uygulanan: mevsimindeyken ücretsiz alınır**, mevsim bitince sahibinde kalır ve seçilebilir; mevsimi kaçıran oyuncu temayı göremez (bir sonraki yıl yine gelir). Biletle satılmaz: bilet ekonomisi değişmez, geri dönen oyuncuya küçük bir hediye olur. Yeni mevsim teması gelince bilet (👑) çipinde nokta yanar; temalar sayfasında en üstte "Mevsim teması · … tarihine dek ücretsiz" başlığıyla görünür.
+
+| Tema | Dönem |
+|---|---|
+| ❄️ Kar Feneri (kış / yılbaşı) | 1 Aralık – 31 Ocak |
+| 🌸 Erguvan (bahar) | 20 Mart – 20 Mayıs |
+| ☀️ Yaz Gecesi | 15 Haziran – 31 Ağustos |
+| 🍂 Hazan (sonbahar) | 1 Ekim – 30 Kasım |
+| 🌙 Bayram Fenerleri | Ramazan Bayramı: ilk günden 2 gün önce – 6 gün sonra |
+| 🌤 Bayram Sabahı | Kurban Bayramı: ilk günden 2 gün önce – 6 gün sonra |
+
+Bayramların ilk günü (Diyanet takvimi; Ümmü'l-Kurâ hesabıyla 2026'da birebir aynı, sonraki yıllarda en çok 1 gün fark olabilir, pencere bunu karşılar). Tablo `BAYRAM` sabitindedir; 2035'ten sonrası eklenmelidir.
+
+| Yıl | Ramazan Bayramı | Kurban Bayramı |
+|---|---|---|
+| 2026 | 20 Mart | 27 Mayıs |
+| 2027 | 9 Mart | 16 Mayıs |
+| 2028 | 26 Şubat | 5 Mayıs |
+| 2029 | 14 Şubat | 24 Nisan |
+| 2030 | 4 Şubat | 13 Nisan |
+| 2031 | 24 Ocak | 2 Nisan |
+| 2032 | 14 Ocak | 22 Mart |
+| 2033 | 3 Ocak · 23 Aralık | 12 Mart |
+| 2034 | 12 Aralık | 1 Mart |
+| 2035 | 1 Aralık | 19 Şubat |
+
+Mevsim temaları da öteki temalar gibi robotta 60 hat boyunca renk ayrışması ve uyarı rengi için denetlenir. Robot tarihi `window.__rayDate` ile değiştirir.
+
+### Planlanan (salı): şehir haritası ve rozetler
+
+Tasarım hazır, kod `meta` dalının `564893d` commit'inde duruyor (geri almak için oradan alınır):
+
+- **Şehir haritası:** ana sayfa logosundan ya da Hatlar başlığındaki şehir simgesinden açılır (Şehir · Rozetler sekmeleri). Her biten hat, adı ve rengiyle bir semti yakar (ışıklar, merkeze metro kolu); hattın bütün bölümleri kusursuzsa (🎫 kazanılmış) semt altın parlar; sıradaki hat kesik çizgiyle "yapımda". Bir şehir 24 semt, halka halka büyür (6 + 8 + 10); 25. hattan sonra yeni şehir sayfası. Tek SVG, yalnız transform/opacity animasyonu.
+- **Rozetler (14, yerel, ödülsüz):** ilk kusursuz, kusursuz 10/100, ilk semt, altın semt, kural ustası (her kuralın hattı), 100/500 bölüm, 7/30 gün seri, ilk sandık, 25 sandık, 10 güçlendirici, zen'de 10 bölüm. Kazanınca üstte küçük bildirim; güncelleme öncesi hak edilenler sessizce işlenir. Zen bitişleri `save.zenWins` ile şimdiden sayılıyor.

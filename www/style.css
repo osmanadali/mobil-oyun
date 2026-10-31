@@ -504,3 +504,9 @@ body.introing .screen *{animation-play-state:paused!important}
 .cscene.calm .cs-ic{transition:opacity .4s .1s}
 .cscene.calm .cs-tier,.cscene.calm .cs-name,.cscene.calm .cs-glow,.cscene.calm .cs-rays{transform:none}.cscene.calm .cs-tier,.cscene.calm .cs-name{transition-delay:.15s}
 @media (prefers-reduced-motion:reduce){.cscene,.cscene *{transition-duration:.35s!important}}
+
+/* ---------- zen modu · mevsim temaları (game.js meta bölümü) ---------- */
+.vipk.sea{color:var(--acc)}
+.skin.fr{box-shadow:inset 0 0 0 1.5px var(--acc),0 0 16px -4px var(--accGlow)}.skin.fr svg{opacity:.85;filter:none}.skin.fr small{color:var(--acc);font-weight:700}
+#game.zen .pill,#game.zen .trip,#game.zen .parInfo{visibility:hidden}
+#game.zen .status{position:relative}#game.zen .status:before{content:attr(data-zen);position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:14px;font-weight:600;color:var(--mut);letter-spacing:.5px}

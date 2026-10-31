@@ -113,6 +113,13 @@ const SKINS = [
   { id: 'gold', name: L('Altın', 'Gold'), vip: true, lines: ['#ffd36b', '#f5b942', '#ffe7a3', '#e9a93a', '#fff1b8', '#d9a520'], acc: ['#ffd36b', '#e9a23a'], glow: ['#ffcf6b', '#b8862b', '#ffe8a3'] },
   { id: 'diamond', name: L('Elmas', 'Diamond'), vip: true, lines: ['#d6f1ff', '#bae6fd', '#c7d2fe', '#e9e4ff', '#a5f3fc', '#ddd6fe'], acc: ['#bae6fd', '#c7d2fe'], glow: ['#7dd3fc', '#a78bfa', '#e0f2fe'] },
   { id: 'ruby', name: L('Yakut', 'Ruby'), vip: true, lines: ['#ff4d6d', '#ff758f', '#e0245e', '#ff8fab', '#f43f5e', '#ff5c8a'], acc: ['#ff4d6d', '#e0245e'], glow: ['#c9184a', '#ff4d6d', '#7b2cbf'] },
+  // 🍂 mevsim temaları: yalnız kendi tarihinde ücretsiz alınır, sonra sahibinde kalır (seaWin · BOLUM_TASARIMI §10)
+  { id: 'kis', sea: '❄️', name: L('Kar Feneri', 'Snow Lights'), lines: ['#8fd3ff', '#ff8a9a', '#9be8b9', '#ffd98a', '#d7ecff', '#c3a6ff'], acc: ['#8fd3ff', '#ff8a9a'], glow: ['#3d7bd9', '#c2405a', '#2f9e6e'] },
+  { id: 'erguvan', sea: '🌸', name: L('Erguvan', 'Redbud'), lines: ['#e07ad6', '#b98cff', '#ff9fc8', '#9fe08a', '#f3b4ff', '#ffc6e0'], acc: ['#e07ad6', '#b98cff'], glow: ['#a8329a', '#6f4bd8', '#ff8fc3'] },
+  { id: 'yaz', sea: '☀️', name: L('Yaz Gecesi', 'Summer Night'), lines: ['#ffcf5c', '#3fd6d0', '#ff8f6b', '#5fb4ff', '#fff08a', '#7ef0a8'], acc: ['#ffcf5c', '#3fd6d0'], glow: ['#ff9a3c', '#1f8fb8', '#ffd166'] },
+  { id: 'hazan', sea: '🍂', name: L('Hazan', 'Harvest'), lines: ['#ff9a3d', '#e0663f', '#ffd166', '#b5895a', '#f7b267', '#8fb36b'], acc: ['#ff9a3d', '#e0663f'], glow: ['#d9622b', '#7a3418', '#ffb347'] },
+  { id: 'fener', sea: '🌙', name: L('Bayram Fenerleri', 'Eid Lanterns'), lines: ['#ffd36b', '#4fd1c5', '#c39bff', '#ff9fb2', '#7fd0ff', '#f7b267'], acc: ['#ffd36b', '#4fd1c5'], glow: ['#b8862b', '#147d7a', '#7b4bff'] },
+  { id: 'kurban', sea: '🌤', name: L('Bayram Sabahı', 'Eid Morning'), lines: ['#8fe388', '#ffd6a5', '#6ec6ff', '#ffb38a', '#c9f2a0', '#a8b8ff'], acc: ['#8fe388', '#6ec6ff'], glow: ['#3f9f5f', '#ffb36b', '#3a7bd5'] },
 ];
 const crownCount = () => Object.keys(save.crowns).length + (save.dCrowns || 0) + (save.fc || 0) + (save.cc || 0) + (save.qc || 0) + (save.aCrowns || 0) + (save.dt || 0);   // toplam kazanılan 🎫 (bölüm + günlük kusursuz + final + seri bonusu + haftalık görev + arşiv + Günün Hattı bitişi)
 const crownBal = () => crownCount() - (save.spent || 0);                             // harcanabilir bakiye
@@ -719,7 +726,7 @@ function refreshHome() {
   const tot = totalStars();
   $('sStars').textContent = tot;
   $('sStreak').textContent = save.streak; $('streakChip').classList.toggle('new', rescueOk());
-  $('sCrowns').textContent = crownBal(); $('crownChip').classList.toggle('new', !!save.newSkin);
+  $('sCrowns').textContent = crownBal(); $('crownChip').classList.toggle('new', !!save.newSkin || seaNew());
   $('sHints').textContent = save.hints; $('sHintsL').textContent = L('ipucu', pl(save.hints, 'hint', 'hints'));
   $('hLevel').textContent = save.level; $('hLvl').firstChild.textContent = L('Bölüm ', 'Level ');
   const done = save.dailyDone === today();
@@ -805,7 +812,8 @@ function start(mode, lvl = save.level) {
   const arch = mode === 'arch', daily = mode === 'daily' || arch, day = arch ? lvl : today();
   if (!daily && !unlocked(lineOf(lvl))) { lockedSheet(lineOf(lvl)); return; }
   G = { ...(daily ? dailyFor(day) : puzzleFor(lvl)), daily, arch, lvl: daily ? 0 : lvl, day: daily ? day : null, practice: arch ? archPlayed(day) : daily && save.dailyDone === day, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0, bub: 0 };
-  G.lim = limits(G);
+  G.lim = limits(G); G.zen = !!save.zen && !daily;   // 🍃 zen: hedefler gizli (Günün Hattı herkes için aynı koşulda)
+  $('game').classList.toggle('zen', G.zen); $('game').querySelector('.status').dataset.zen = L('🍃 Zen', '🍃 Zen');
   // yarım kalan oyunu sürdür
   const run = save.runs[arch ? 'arch' : daily ? 'daily' : 'level'];
   // yarım oyun yalnız aynı bulmacaya: imza = çözüm + başlangıç dizilimi (makas/tabla çözümü değil başlangıcı değiştirir);
@@ -833,6 +841,7 @@ function start(mode, lvl = save.level) {
   const rc = (G.rules || []).map(k => RULE_LINE[k]).filter(c => RULES[c] && !save.seen[c]).sort((a, b) => a - b)[0];
   if (rc != null) ruleCard(rc, !!G.week);
   if (save.played === 0) setTimeout(() => toast(L('Karoya dokun → döner', 'Tap a tile → it turns')), 500);
+  else if (G.zen) {}
   else if (save.comboLost?.lvl === lvl && !daily && !G.moves) setTimeout(() => toast(L(`✨ Kusursuz bitir → ${save.comboLost.n} seri geri gelir`, `✨ Finish perfect → get your ${save.comboLost.n} streak back`)), 600);
   else if (G.final && !save.crowns[lvl] && !G.moves) setTimeout(() => toast(L('🏁 Son durak · kusursuz bitir → +1 bonus 🎫', '🏁 Last stop · finish perfect → +1 bonus 🎫')), 600);
   else if (!daily && save.miss[lvl] && !save.crowns[lvl] && !G.moves) setTimeout(() => toast(L(`Geçen sefer: ${missTxt(lvl)}`, `Last time: ${missTxt(lvl)}`)), 600);
@@ -876,7 +885,7 @@ function tick() {
   $('gPill').classList.toggle('warn', tOk && left <= 10 && !G.won);
   $('gCombo').classList.toggle('off', !(tOk && mOk));
   trip(sec, tOk, left); bstUi(left);
-  if (!G.won) {
+  if (!G.won && !G.zen) {
     // kusursuz seri bu bölümde tehlikede → baştan başlamak seriyi korur (↺ süreyi de sıfırlar)
     const s = comboStake(), keep = s >= 2 ? L(` · ↺ baştan → ✨${s} sürer`, ` · ↺ restart → keep ✨${s}`) : '';
     if (G.tOk && !tOk) lose(L('⏱ Tren rötarda · ★ söndü', '⏱ Train is late · ★ lost') + keep);
@@ -884,14 +893,14 @@ function tick() {
   }
   G.tOk = tOk; G.mOk = mOk;
   // gerilim: süre hedefinin %30'undan sonra 8 kademede artar; hedef geçince de 2 katına kadar artmaya devam eder
-  if (!G.won) { const r = sec / G.lim.t, T = r < .3 ? 0 : r <= 1 ? (r - .3) / .7 * .8 : .8 + Math.min(1, r - 1) * .2; Music.setTension(Math.round(T * 8) / 8, tOk && left <= 10); }
+  if (!G.won && !G.zen) { const r = sec / G.lim.t, T = r < .3 ? 0 : r <= 1 ? (r - .3) / .7 * .8 : .8 + Math.min(1, r - 1) * .2; Music.setTension(Math.round(T * 8) / 8, tOk && left <= 10); }
 }
 // güçlendirici düğmeleri: yalnız işe yaradığı an (geri al: geçmiş varken · fener: karanlık tünelde · +15: son 10 sn, ⏱ yıldızı yanarken)
 function bstUi(left = G ? G.lim.t - elapsed() / 1000 : 0) {
   const live = G && !G.won, set = (id, k, on) => { const b = $(id); b.hidden = !on; if (on) b.lastChild.textContent = bst(k); };
   set('gUndo', 'geri', live && bst('geri') > 0 && G.hist?.length > 0);
   set('gLamp', 'fener', live && bst('fener') > 0 && G.fog && !(G.lamp > performance.now()));
-  set('gPlus', 'sure', live && bst('sure') > 0 && left > 0 && left <= 10);
+  set('gPlus', 'sure', live && !G.zen && bst('sure') > 0 && left > 0 && left <= 10);
   document.querySelector('#game .bottom').classList.toggle('bx', ['gUndo', 'gLamp', 'gPlus'].some(id => !$(id).hidden));
 }
 function undo() {
@@ -1201,7 +1210,7 @@ cv.addEventListener('pointerdown', e => {
 // kusursuz seri: tacı olmayan bölümü kusursuz bitirmek seriyi +1 yapar, kusursuzsuz bitirmek sıfırlar; taçlı bölüm seriyi etkilemez.
 // Seri kırılınca aynı bölümü kusursuz bitiren oyuncu seriyi kaldığı yerden sürdürür (comboLost).
 function comboStake() {
-  if (!G || G.daily || save.crowns[G.lvl]) return 0;
+  if (!G || G.daily || G.zen || save.crowns[G.lvl]) return 0;
   return save.comboLost?.lvl === G.lvl ? save.comboLost.n : save.combo || 0;
 }
 const ownCol = i => G.L.own?.[i] === 2 ? G.color2 : G.L.own?.[i] === 3 ? G.warn : G.color;
@@ -1226,7 +1235,8 @@ function win() {
   [0, 2, 4, 5, 7].forEach((k, j) => tone(note(k + 3), .4, .05, 'sine', .12 + j * .09));
   haptic('win');
   Music.setMode('rest'); setTimeout(() => { if (G?.won) Music.setMode('menu'); }, 1600);
-  const tOk = timeOk(G.time / 1000), mOk = movesOk(), st = 1 + tOk + mOk, perfect = tOk && mOk;
+  const zen = G.zen, tOk = zen || timeOk(G.time / 1000), mOk = zen || movesOk(), st = 1 + tOk + mOk, perfect = tOk && mOk && !zen;   // zen: 3 ★, bilet (👑 kaydı) ve seri yok
+  if (zen) save.zenWins = (save.zenWins || 0) + 1;
   save.played++;
   const cr0 = crownBal();
   let extra = '', unlockedNow = null, shard = false, dbl = 0;   // dbl: videoyla ikiye katlanabilecek ipucu
@@ -1257,7 +1267,7 @@ function win() {
     // haftalık görev: taçlı bölümü yeniden oynamak sayılmaz (kolay bölümde biriktirilmesin)
     if (firstClear || !save.crowns[G.lvl]) qmsg = [questStep('win'), G.hinted ? '' : questStep('nohint'), perfect ? questStep('perfect') : ''].filter(Boolean).join(' · ');
     save.stars[G.lvl] = Math.max(old, st);
-    if (!save.crowns[G.lvl]) {
+    if (!save.crowns[G.lvl] && !zen) {
       const lost = save.comboLost; delete save.comboLost;
       if (perfect) {
         combo = save.combo = (lost?.lvl === G.lvl ? lost.n : save.combo || 0) + 1; save.comboBest = Math.max(save.comboBest || 0, combo);
@@ -1271,7 +1281,7 @@ function win() {
       }
     }
     // hangi hedef ne kadar kaçtı: [⏱ sn geç, ↻ hamle fazla]. Taç topla listesi ve tekrar oynarken gösterilir.
-    if (perfect) delete save.miss[G.lvl]; else if (st >= old) save.miss[G.lvl] = [tOk ? 0 : Math.ceil(G.time / 1000 - G.lim.t), mOk ? 0 : G.moves - G.lim.m];
+    if (perfect) delete save.miss[G.lvl]; else if (st >= old && !zen) save.miss[G.lvl] = [tOk ? 0 : Math.ceil(G.time / 1000 - G.lim.t), mOk ? 0 : G.moves - G.lim.m];
     if (st > old && old) extra = L(`Yeni rekor: ${starTxt(st)}`, `New best: ${starTxt(st)}`);
     save.level = Math.max(save.level, G.lvl + 1);
     if (G.lvl === lineEnd(lineOf(G.lvl)) && firstClear) { save.hints += 2; dbl = 2; extra = L('🎁 Hat tamam · +2 ipucu', '🎁 Line complete · +2 hints'); }
@@ -1288,18 +1298,18 @@ function win() {
   if (ns) { save.newSkin = 1; extra = [extra, L(`🎨 ${ns.name} alınabilir (🎫 ${ns.need})`, `🎨 ${ns.name} available (🎫 ${ns.need})`)].filter(Boolean).join(' · '); }
   persist();
   $('gCombo').hidden = combo < 2; $('gCombo').textContent = `✨${combo}`; $('gCombo').classList.remove('off');
-  const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { st, tOk, mOk, perfect, extra: [cmsg, shardMsg, extra, qmsg].filter(Boolean).join(' · '), unlockedNow, ns, dbl, combo, broke, near };
+  const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { zen, st, tOk, mOk, perfect, extra: [cmsg, shardMsg, extra, qmsg].filter(Boolean).join(' · '), unlockedNow, ns, dbl, combo, broke, near };
   winTimer = setTimeout(() => { if (G === g && active('game')) { winSheet(g, info); if (!g.daily && !g.practice) setTimeout(() => { if (G === g && active('game')) maybeReview(st); }, 1100); } }, wait);
   if (!g.daily) setTimeout(() => puzzleFor(g.lvl + 1), wait + 900);   // sonraki bölüm hazır olsun (geçişte takılma olmasın)
 }
 // Sonuç paneli tahtanın altına yerleşir; tahta küçülüp üstte görünür kalır.
 // Kıl payı ya da kırılan seri → "Tekrar dene" büyük düğmeye geçer, Sonraki küçük sıraya iner (düğme sayısı aynı kalır).
-function winSheet(g, { st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, combo, broke, near }) {
+function winSheet(g, { zen, st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, combo, broke, near }) {
   const lim = g.lim, nx = g.lvl + 1, nxLocked = !g.daily && !unlocked(lineOf(nx)), again = !g.daily && (near || broke >= 2);
-  const badge = unlockedNow ? `<span class="badge">${L('YENİ HAT AÇILDI', 'NEW LINE OPEN')} · M${unlockedNow + 1}</span>` : ns ? `<span class="badge">${L('TEMA ALINABİLİR', 'NEW THEME')} 🎨</span>` : perfect ? `<span class="badge">${L('KUSURSUZ', 'PERFECT')} 🎫${combo >= 2 ? ` · ✨${combo}` : ''}</span>` : '';
+  const badge = unlockedNow ? `<span class="badge">${L('YENİ HAT AÇILDI', 'NEW LINE OPEN')} · M${unlockedNow + 1}</span>` : ns ? `<span class="badge">${L('TEMA ALINABİLİR', 'NEW THEME')} 🎨</span>` : perfect ? `<span class="badge">${L('KUSURSUZ', 'PERFECT')} 🎫${combo >= 2 ? ` · ✨${combo}` : ''}</span>` : zen ? '<span class="badge">🍃 ZEN</span>' : '';
   const late = Math.ceil(g.time / 1000 - lim.t), over = g.moves - lim.m;
   const miss = [tOk ? '' : `⏱ ${late} ${L('sn', 's')}`, mOk ? '' : `↻ ${over} ${L('hamle', pl(over, 'move', 'moves'))}`].filter(Boolean).join(' · ');
-  const tip = perfect ? '' : `<p class="tip">${L('Kusursuz için', 'For perfect')}: ${[tOk ? '' : `⏱ ≤ ${fmtT(lim.t * 1000)}`, mOk ? '' : `↻ ≤ ${lim.m} ${L('hamle', 'moves')}`].filter(Boolean).join(L(' ve ', ' and '))}</p>`;
+  const tip = perfect || zen ? '' : `<p class="tip">${L('Kusursuz için', 'For perfect')}: ${[tOk ? '' : `⏱ ≤ ${fmtT(lim.t * 1000)}`, mOk ? '' : `↻ ≤ ${lim.m} ${L('hamle', 'moves')}`].filter(Boolean).join(L(' ve ', ' and '))}</p>`;
   const B = { share: L('Paylaş', 'Share'), home: L('Ana sayfa', 'Home'), close: L('Kıl payı', 'So close') };
   // geçiş reklamı sırası gelmişse: Sonraki'den önce tek, sessiz bir bağlantı (reklamsız paketi olana hiç çıkmaz)
   const pr = Shop.price(), adFree = !g.daily && interDue && !save.noAds ? `<p class="adfree"><button id="mAdFree">${pr ? L(`Reklamsız oyna · ${pr}`, `Play ad-free · ${pr}`) : L('Reklamsız oyna', 'Play ad-free')}</button></p>` : '';
@@ -1312,7 +1322,7 @@ function winSheet(g, { st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, combo
        <div class="row2"><button id="mRetry" class="btn glassbtn">${L('Tekrar', 'Retry')}</button><button id="mShare" class="btn glassbtn">${B.share}</button><button id="mHome" class="btn glassbtn">${B.home}</button></div>`;
   $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml([true, tOk, mOk])}<div class="wp-t"><h2>${g.arch ? L('Geçmiş gün tamam!', 'Past day done!') : g.practice ? L('Pratik tamam!', 'Practice done!') : g.daily ? L('Günün Hattı tamam!', 'Daily Line done!') : L('Hat açıldı!', 'Connected!')}</h2>${badge}</div></div>
       <button id="wTog" class="wp-tog" aria-label="${L('Hattı gör', 'See the line')}"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg><span>${L('Hattı gör', 'See line')}</span></button></div>
-    <div class="wp-more"><div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(lim.t * 1000)}</small></b><span>${tOk ? L('⏱ tam vaktinde ★', '⏱ on time ★') : L('⏱ rötar ✗', '⏱ late ✗')}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${lim.m}</small></b><span>↻ ${L('hamle', 'moves')} ${mOk ? '★' : '✗'}</span></div></div>${tip}${extra ? `<p class="tip">${extra}${dbl && Ads.online() ? ` <button id="mDbl" class="dbl">${L('▶ 2 katı', '▶ Double')}</button>` : ''}</p>` : ''}${adFree}</div>
+    <div class="wp-more">${zen ? `<div class="statrow"><div><b>${fmtT(g.time)}</b><span>⏱ ${L('süre', 'time')}</span></div><div><b>${g.moves}</b><span>↻ ${L('hamle', 'moves')}</span></div></div>` : `<div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(lim.t * 1000)}</small></b><span>${tOk ? L('⏱ tam vaktinde ★', '⏱ on time ★') : L('⏱ rötar ✗', '⏱ late ✗')}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${lim.m}</small></b><span>↻ ${L('hamle', 'moves')} ${mOk ? '★' : '✗'}</span></div></div>`}${tip}${extra ? `<p class="tip">${extra}${dbl && Ads.online() ? ` <button id="mDbl" class="dbl">${L('▶ 2 katı', '▶ Double')}</button>` : ''}</p>` : ''}${adFree}</div>
     ${primary}`;
   $('game').classList.add('won');
   bind({ wTog: toggleMini, mNext: next, mArch: () => { show('home'); archSheet(); }, mDbl: () => doubleReward(dbl), mAdFree: shopSheet, mMap: () => show('map'), mRetry: () => start('level', g.lvl), mHome: () => show('home'),
@@ -1699,6 +1709,7 @@ function settings() {
     ${opt('oS', save.sound, 'Efekt sesleri', 'Sound effects')}
     ${opt('oV', save.vib, 'Titreşim', 'Vibration')}
     ${Remind.avail() ? opt('oR', save.remind, 'Günlük hatırlatma', 'Daily reminder') : ''}
+    ${opt('oZ', save.zen, '🍃 Zen modu', '🍃 Zen mode')}
     <div class="opt">${L('Görünüm', 'Theme')} <div class="seg" id="oT">${seg}</div></div>
     <div class="opt">${L('Dil', 'Language')} <div class="seg" id="oL">${lang}</div></div>
     <button class="opt row" id="oSkin"><span>${L('Renk temaları', 'Color themes')}</span><small>${skin().name} · 🎫 ${crownBal()} ›</small></button>
@@ -1717,6 +1728,7 @@ function settings() {
     oM: () => { save.music = !save.music; persist(); $('oM').classList.toggle('on', save.music); save.music ? Music.start() : Music.stop(); },
     oS: () => { save.sound = !save.sound; persist(); $('oS').classList.toggle('on', save.sound); },
     oV: () => { save.vib = !save.vib; persist(); $('oV').classList.toggle('on', save.vib); haptic(); },
+    oZ: () => { save.zen = !save.zen; persist(); $('oZ').classList.toggle('on', save.zen); toast(save.zen ? L('🍃 Zen: süre ve hamle hedefi yok · her bitiş 3 ★ · 🎫 verilmez', '🍃 Zen: no timer or move target · every finish 3 ★ · no 🎫') : L('Zen kapalı · hedefler geri geldi', 'Zen off · targets are back')); },
     mClose: closeModal });
   $('oT').onclick = e => { const t = e.target.dataset.t; if (!t) return; save.theme = t; persist(); applyTheme(); refreshHome(); $('oT').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.t === t)); };
   // dil: metinler yüklemede seçilir → kaydet ve yenile (yarım oyun kayıtta, kaldığı yerden sürer)
@@ -1798,24 +1810,27 @@ const skinSvg = '<svg viewBox="0 0 120 60"><path d="M10 46H40L60 28H110"/><path 
 const skinVars = k => { const c = skinCols(k); return `--s1:${c[0]};--s2:${c[1]};--s3:${c[2]}`; };
 function skinSheet() {
   const bal = crownBal(), cur = skin().id;
-  if (save.newSkin) { save.newSkin = 0; persist(); refreshHome(); }
-  const nx = SKINS.filter(k => !k.vip && !skinOpen(k)).sort((a, b) => a.need - b.need)[0], hn = huntList().length;   // en ucuz alınmamış tema · taç bekleyen bölüm
+  if (save.newSkin || seaNew()) { save.newSkin = 0; seaNow().forEach(k => { save.seaSeen = { ...save.seaSeen, [k.id]: 1 }; }); persist(); refreshHome(); }
+  const nx = SKINS.filter(k => !k.vip && !k.sea && !skinOpen(k)).sort((a, b) => a.need - b.need)[0], hn = huntList().length;   // en ucuz alınmamış tema · taç bekleyen bölüm
   const card = k => {
-    const own = skinOpen(k), can = !own && bal >= k.need;
-    return `<button class="skin ${own ? '' : 'lockd'} ${can ? 'can' : ''} ${k === nx && !can ? 'nx' : ''} ${k.id === cur ? 'on' : ''}" data-k="${k.id}" style="${skinVars(k)}">${skinSvg}
-      <b>${k.name}</b><small>${k.id === cur ? L('Seçili ✓', 'Selected ✓') : own ? L('Seç', 'Select') : k.vip ? L('💛 Reklamsız', '💛 Ad-free') : `🎫 ${k.need}`}</small></button>`;
+    const own = skinOpen(k), can = !own && !k.sea && bal >= k.need, fr = !own && !!k.sea;   // fr: mevsim teması, ücretsiz alınır
+    return `<button class="skin ${own ? '' : 'lockd'} ${can ? 'can' : ''} ${fr ? 'fr' : ''} ${k === nx && !can ? 'nx' : ''} ${k.id === cur ? 'on' : ''}" data-k="${k.id}" style="${skinVars(k)}">${skinSvg}
+      <b>${k.name}</b><small>${k.id === cur ? L('Seçili ✓', 'Selected ✓') : own ? L('Seç', 'Select') : k.vip ? L('💛 Reklamsız', '💛 Ad-free') : k.sea ? L('🎁 Ücretsiz', '🎁 Free') : `🎫 ${k.need}`}</small></button>`;
   };
+  // mevsim temaları: tarihi gelmiş olanlar (ücretsiz alınır) ve sahip olunanlar; ötekiler görünmez (menü sade kalır)
+  const sea = SKINS.filter(k => k.sea && (seaWin(k.id) || skinOpen(k))), seaOn = sea.filter(k => seaWin(k.id) && !skinOpen(k));
   modal(`<h2>${L('Renk temaları', 'Color themes')}</h2><p>${L('Her <b>kusursuz</b> bölüm (⏱ ve ↻ hedefi) 1 🎫 verir. 🎫 ile tema ve sandık açılır.', 'Every <b>perfect</b> level (⏱ and ↻ targets) gives 1 🎫. Spend 🎫 on themes and chests.')}</p>
     <div class="nexts"><small>${L('Bakiye', 'Balance')}</small><b class="bal">🎫 ${bal}</b></div>
     <button id="mChest" class="chestrow ${bal >= CHEST ? 'can' : ''}"><i>${CHEST_SVG}</i><span><b>${L('Sürpriz sandık', 'Surprise chest')}</b><small>${L('İpucu · 🛡 seri kalkanı · 🚆 tren kaplaması', 'Hints · 🛡 shield · 🚆 train livery')}</small></span><em>🎫 ${CHEST}</em></button>
     ${nx ? `<div class="nexts"><small>${L('Sıradaki', 'Next up')}: <b>${nx.name}</b></small><small>🎫 ${Math.min(bal, nx.need)} / ${nx.need}</small></div><div class="pb"><i style="width:${Math.max(4, Math.min(100, bal / nx.need * 100))}%"></i></div>` : ''}
-    <div class="skins" id="skins">${SKINS.filter(k => !k.vip).map(card).join('')}
+    <div class="skins" id="skins">${sea.length ? `<small class="vipk sea">${seaOn.length ? L(`${seaOn[0].sea} Mevsim teması · ${seaTill(seaOn[0])} tarihine dek ücretsiz`, `${seaOn[0].sea} Seasonal theme · free until ${seaTill(seaOn[0])}`) : L('🍂 Mevsim temaları', '🍂 Seasonal themes')}</small>${sea.map(card).join('')}<small class="vipk">${L('🎫 Bilet temaları', '🎫 Ticket themes')}</small>` : ''}${SKINS.filter(k => !k.vip && !k.sea).map(card).join('')}
       <small class="vipk">${L('💛 Reklamsız pakete özel', '💛 Ad-free pack only')}</small>${SKINS.filter(k => k.vip).map(card).join('')}</div>
     ${nx ? `<button id="mHunt" class="btn primary"><span>${L('Bilet topla', 'Earn tickets')} 🎫</span><small>${hn ? L(`${hn} bölüm kusursuz bitmeyi bekliyor`, `${hn} ${pl(hn, 'level awaits', 'levels await')} a perfect finish`) : L('Yeni bölümleri ⏱ ve ↻ hedefiyle bitir', 'Beat new levels within ⏱ and ↻ targets')}</small></button>` : ''}
     <button id="mClose" class="btn glassbtn">${L('Tamam', 'Done')}</button>`, { mClose: closeModal, mHunt: () => crownHunt(nx), mChest: chestSheet });
   $('skins').onclick = e => {
     const b = e.target.closest('.skin'); if (!b) return;
     const k = SKINS.find(x => x.id === b.dataset.k);
+    if (!skinOpen(k) && k.sea) { seaClaim(k); return; }
     if (!skinOpen(k)) { haptic('light'); k.vip ? shopSheet() : bal >= k.need ? buySheet(k) : crownHunt(k); return; }
     if (k.id === cur) return;
     save.skin = k.id; persist(); applyTheme(); refreshHome(); haptic('heavy'); tone(note(7), .25, .045); tone(note(9), .3, .035, 'sine', .07);
@@ -1824,7 +1839,7 @@ function skinSheet() {
 }
 // satın alma onayı: kalan bakiye açıkça gösterilir
 function buySheet(k) {
-  const bal = crownBal(), left = bal - k.need, nx = SKINS.filter(x => !x.vip && !skinOpen(x) && x !== k).sort((a, b) => a.need - b.need)[0];
+  const bal = crownBal(), left = bal - k.need, nx = SKINS.filter(x => !x.vip && !x.sea && !skinOpen(x) && x !== k).sort((a, b) => a.need - b.need)[0];
   modal(`<div class="skin big" style="${skinVars(k)}">${skinSvg}</div><h2>${k.name}</h2>
     <p>${L(`<b class="nw">🎫 ${k.need}</b> harcanacak. Sende <span class="nw">🎫 ${bal}</span> → kalan <b class="nw">🎫 ${left}</b>.`, `This costs <b class="nw">🎫 ${k.need}</b>. You have <span class="nw">🎫 ${bal}</span> → <b class="nw">🎫 ${left}</b> left.`)}${nx && left < nx.need ? L(`<br>Sonra ${nx.name} için ${nx.need - left} 🎫 daha toplaman gerekecek.`, `<br>Then you’ll need ${nx.need - left} more 🎫 for ${nx.name}.`) : ''}</p>
     <button id="mBuy" class="btn primary"><span>${L('Satın al', 'Buy')} · 🎫 ${k.need}</span><small>${L('Temayı hemen kullan', 'Use it right away')}</small></button>
@@ -2160,6 +2175,35 @@ App?.addListener?.('backButton', () => {
   else App.minimizeApp?.();
 });
 
+// ---------- meta: mevsim temaları (zen modu: start/tick/win içinde G.zen) · BOLUM_TASARIMI §10 ----------
+const nowD = () => window.__rayDate ? new Date(window.__rayDate) : new Date();   // robot tarihi değiştirebilsin
+// Mevsim pencereleri (ay·gün, uçlar dahil). Bayramlar Diyanet takvimiyle (Ümmü'l-Kurâ hesabıyla aynı gün): ilk gün −2 … +6.
+const SEASON = { kis: [1201, 131], erguvan: [320, 520], yaz: [615, 831], hazan: [1001, 1130] };
+const BAYRAM = {
+  fener: ['2026-03-20', '2027-03-09', '2028-02-26', '2029-02-14', '2030-02-04', '2031-01-24', '2032-01-14', '2033-01-03', '2033-12-23', '2034-12-12', '2035-12-01'],   // Ramazan Bayramı
+  kurban: ['2026-05-27', '2027-05-16', '2028-05-05', '2029-04-24', '2030-04-13', '2031-04-02', '2032-03-22', '2033-03-12', '2034-03-01', '2035-02-19'],               // Kurban Bayramı
+};
+function seaWin(id, d = nowD()) {   // bugün mevsimindeyse [başlangıç, bitiş], değilse null
+  const day = new Date(d.getFullYear(), d.getMonth(), d.getDate()), y = day.getFullYear();
+  if (SEASON[id]) {
+    const [a, b] = SEASON[id], md = (day.getMonth() + 1) * 100 + day.getDate(), wrap = a > b;
+    if (wrap ? md < a && md > b : md < a || md > b) return null;
+    const y0 = wrap && md <= b ? y - 1 : y;
+    return [new Date(y0, (a / 100 | 0) - 1, a % 100), new Date(wrap ? y0 + 1 : y0, (b / 100 | 0) - 1, b % 100)];
+  }
+  for (const s of BAYRAM[id] || []) { const [yy, m, dd] = s.split('-').map(Number), A = new Date(yy, m - 1, dd - 2), B = new Date(yy, m - 1, dd + 6); if (day >= A && day <= B) return [A, B]; }
+  return null;
+}
+const seaNow = () => SKINS.filter(k => k.sea && seaWin(k.id));
+const seaNew = () => seaNow().some(k => !skinOpen(k) && !save.seaSeen?.[k.id]);   // 👑 çipinde nokta: yeni mevsim teması geldi
+const seaTill = k => seaWin(k.id)[1].toLocaleDateString(LOC, { day: 'numeric', month: 'long' });
+function seaClaim(k) {
+  if (!seaWin(k.id)) return skinSheet();
+  save.owned[k.id] = 1; save.skin = k.id; persist(); applyTheme(); refreshHome();
+  haptic('win'); [0, 4, 7, 12].forEach((q, j) => tone(note(q + 3), .35, .045, 'sine', j * .08));
+  toast(L(`${k.sea} ${k.name} senin · mevsim bitince de kalır`, `${k.sea} ${k.name} is yours · it stays after the season`)); skinSheet();
+}
+
 // ---------- kural eklentileri: www/rules/*.js (M9+ yeni kurallar). Ayrıntı: docs/kurallar/README.md ----------
 const API = {
   N, E, S, W, DIRS, FOG_R, PAIR_COLS, rot, unrot, popc, nb, ob, tree, hashStr, rgba, shade, lum, hueRot, okl, oklch,
@@ -2215,5 +2259,5 @@ if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), RULE_LINE, RULES,  review: maybeReview, BST, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
+window.__ray = { seaWin, plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), RULE_LINE, RULES,  review: maybeReview, BST, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();
