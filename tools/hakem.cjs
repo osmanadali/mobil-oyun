@@ -676,7 +676,7 @@ async function inViewport(page, sel) {
 
   // ---------- E10. Sefer şeridi (tren sayacı), kusursuz seri, kıl payı tekrar ----------
   {
-    const base = { played: 6, level: 14, stars: starsUpTo(14, 2), hints: 3 };   // 1–13 taçsız → 14 seriyi etkiler
+    const base = { played: 6, level: 14, stars: starsUpTo(14, 2), hints: 3, dq: { id: TODAY, q: [], all: 1 } };   // 1–13 taçsız → 14 seriyi etkiler · günlük görev yok (ipucu sayımı yalnız seriden)
     const { ctx, page, errors } = await open(browser, URL, { save: { ...base, combo: 2 } });
     await page.click('#bPlay'); await page.waitForTimeout(400);
     const trip = () => page.evaluate(() => { const t = document.getElementById('gTrip'); return { p: +t.style.getPropertyValue('--p'), cls: t.className, next: document.getElementById('gNext').textContent, bub: document.getElementById('gBub').classList.contains('show'), combo: document.getElementById('gCombo').hidden ? '' : document.getElementById('gCombo').textContent, off: document.getElementById('gCombo').classList.contains('off') }; });
