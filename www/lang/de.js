@@ -49,6 +49,7 @@ window.RAY_DICT={
 "Ad-free pack active 💛 +20 hints · 3 special themes":"Werbefrei-Paket aktiv 💛 +20 Tipps · 3 Sonderthemen",
 "All connected → <b>you win!</b> 🎉":"Alles verbunden → <b>gewonnen!</b> 🎉",
 "All of today’s quests done":"Alle heutigen Aufgaben geschafft",
+"All three":"Alle drei",
 "All weekly quests done":"Alle Wochenaufgaben geschafft",
 "All {0} color themes · one-time":"Alle {0} Farbthemen · einmalig",
 "Almost there? The light’s on 💡":"Fast da? Das Licht ist an 💡",

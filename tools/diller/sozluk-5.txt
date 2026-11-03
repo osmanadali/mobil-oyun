@@ -70,3 +70,8 @@ de: Tageslinie → +1 🎫
 es: Línea del día → +1 🎫
 pt: Linha do Dia → +1 🎫
 fr: Ligne du jour → +1 🎫
+@ All three
+de: Alle drei
+es: Las tres
+pt: As três
+fr: Les trois
