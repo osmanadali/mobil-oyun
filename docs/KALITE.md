@@ -146,3 +146,4 @@ Kanıt görüntüsü: [`docs/kalite/kalanlar.png`](kalite/kalanlar.png).
 - **120 Hz ekranda tuval ~60 kare/sn** (her iki karede bir; animasyonlar süreye bağlı, hızları aynı; 90 Hz'de sınır yok).
 - **Görünmeyen ekranlar boyanmaz** (`visibility: hidden`, geçiş bitince) → GPU belleği azalır.
 - Görev "Topla" nabzı boyama yaptırmaz (ayrı katmanda opaklık).
+- Capacitor köprü günlüğü kapalı (`loggingBehavior: none`): test (debug) APK'da her eklenti çağrısı (her dokunuştaki titreşim) konsola yazılıyordu.
