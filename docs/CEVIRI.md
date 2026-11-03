@@ -56,6 +56,11 @@ Oyun Türkçe ve İngilizce oynanır. Bu belge altyapıyı ve ortak sözlüğü 
 | sürpriz sandık | surprise chest |
 | Sıradan · Nadir · Destansı | Common · Rare · Epic |
 | sınırsız can (❤️∞) | unlimited lives |
+| can (❤️) · canın kalmadı | life · out of lives |
+| sıradaki can | next life |
+| son süre · son tren (🚉) | last train |
+| Son tren kaçtı | The last train left |
+| Tekrar dene | Try again |
 | haftalık görevler (🎯) | weekly quests |
 | görev tamam | quest done |
 | ipucusuz | without hints |

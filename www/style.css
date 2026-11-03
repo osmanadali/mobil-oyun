@@ -166,6 +166,10 @@ html:lang(en) body.test .hero p::after{content:' · 🧪 TEST: all unlocked'}
 .trk .sig{position:absolute;top:0;left:calc(.84 * (100% - 40px) + 43px);width:6px;height:6px;border-radius:50%;background:#4fc3a1;box-shadow:0 0 6px #4fc3a1;transition:background .3s,box-shadow .3s}
 .trip.soon .sig{background:#ffc94d;box-shadow:0 0 6px #ffc94d}
 .trip.late .sig{background:var(--warn);box-shadow:0 0 6px var(--warn)}
+/* 🚉 son süreye 10 sn: kırmızı sinyal sakince yanıp söner */
+.trip.last .sig{animation:sigBlink 1s ease-in-out infinite}
+@keyframes sigBlink{50%{opacity:.25;box-shadow:none}}
+@media (prefers-reduced-motion:reduce){.trip.last .sig{animation-duration:2s}}
 .mv{position:absolute;left:0;top:2px;width:calc(100% - 40px);height:14px;transform:translateX(calc(var(--p) * 100%));transition:transform .25s linear;will-change:transform}
 .trip.arr .mv{transition:transform .8s cubic-bezier(.2,.8,.2,1)}
 .trn{width:40px;height:14px}
@@ -502,3 +506,10 @@ body.introing .screen *{animation-play-state:paused!important}
 .skin.fr{box-shadow:inset 0 0 0 1.5px var(--acc),0 0 16px -4px var(--accGlow)}.skin.fr svg{opacity:.85;filter:none}.skin.fr small{color:var(--acc);font-weight:700}
 #game.zen .pill,#game.zen .trip,#game.zen .parInfo{visibility:hidden}
 #game.zen .status{position:relative}#game.zen .status:before{content:attr(data-zen);position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:14px;font-weight:600;color:var(--mut);letter-spacing:.5px}
+
+/* ❤️ can: başarısızlık ve can penceresi */
+.lifep{display:flex;flex-direction:column;align-items:center;gap:4px;margin:2px 0 6px}
+.lifep small{font-size:13px;color:var(--mut);font-variant-numeric:tabular-nums}
+.hearts{font-size:22px;letter-spacing:3px;line-height:1}.hearts i{font-style:normal;opacity:.35}
+.lifeact{display:contents}
+#bPlay small #hLife{font-size:13px;font-weight:600;letter-spacing:0;font-variant-numeric:tabular-nums}

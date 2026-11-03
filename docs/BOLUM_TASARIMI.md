@@ -162,7 +162,7 @@ Eşli, ters, karanlık tünel, sayaçlı ve iki merkez dışındaki kurallar çe
   - Kusursuz bitirilmiş (bileti alınmış) bir bölümü yeniden oynamak sayılmaz (kolay bölümde biriktirilmesin). İpucu kullanılan bölüm "ipucusuz" görevine sayılmaz (yarım oyunla ve baştan başlamayla korunur).
   - Ödül görev tamamlandığı an verilir ve sonuç panelinde yazar. Üç görev birden bitince +1 🎫 ek.
   - Giriş: ana sayfada Günün Hattı kartının altında tek ince satır ("🎯 Haftalık görevler · 1/3"). Satır ilk hat bitene ya da ilk Günün Hattı'na dek gizlidir.
-- **🎫 Bilet:** Oyunun tek para birimidir (eski adı taç 👑; kayıtta `crowns`, `crownBal` adları uyum için kaldı). Ana sayfadaki çip bakiyeyi gösterir. Görevler bilete ek olarak **❤️∞ sınırsız can** verebilir: `save.infUntil = max(infUntil, şimdi) + süre` (can sistemiyle ortak kayıt: `save.lives` 0–5, `save.lifeT`, `save.infUntil` ms; can göstergesi hat-yapisi işidir).
+- **🎫 Bilet:** Oyunun tek para birimidir (eski adı taç 👑; kayıtta `crowns`, `crownBal` adları uyum için kaldı). Ana sayfadaki çip bakiyeyi gösterir. Görevler bilete ek olarak **❤️∞ sınırsız can** verebilir: `save.infUntil = max(infUntil, şimdi) + süre` (can sistemiyle ortak kayıt: `save.lives` 0–5, `save.lifeT`, `save.infUntil` ms; can sistemi §9 › Son süre ve can).
 - **Günün Hattı:** bitirmek +1 🎫 (günde bir; pratik ve arşiv vermez, `save.dt`), kusursuz bitirmek +1 🎫 daha (eskiden yalnız kusursuz 1 taç veriyordu). Günde en çok 2 🎫: bir kusursuz bölüm (1 🎫) ile seri bonusu (5 kusursuzda +1) arasında, temalar hızlanmadan Günün Hattı'nı oynamaya değer kılar. Haftada görevlerden en çok 4 🎫, Günün Hattı'ndan en çok 14 🎫.
 - Kod: `QUESTS`, `weekQ`, `questStep`, `questRow`, `questSheet`; kayıt `save.wk = { id: pazartesi, q: [{ t, n, p }], all }`, görev bileti `save.qc`, sınırsız can `giveInf`.
 
@@ -268,7 +268,7 @@ Kod: `BST`, `bstUi`, `undo`, `lamp`, `plus15`, `turSheet`; test: `tools/hakem/gu
 
 ## 9. Sefer şeridi ve kusursuz seri
 
-Bu iki sistemin amacı oyuncuya "bir bölüm daha" dedirtmektir. Hiçbiri oyunu cezalandırmaz: süre dolunca oyun bitmez, yalnızca ⏱ yıldızı söner.
+Bu iki sistemin amacı oyuncuya "bir bölüm daha" dedirtmektir. Yıldız süresi dolunca oyun bitmez, yalnızca ⏱ yıldızı söner; bölüm ancak çok geç kalınınca, **son süre** dolunca biter (aşağıda › Can).
 
 **Sefer şeridi (tren sayacı):**
 
@@ -280,6 +280,23 @@ Bu iki sistemin amacı oyuncuya "bir bölüm daha" dedirtmektir. Hiçbiri oyunu 
 - Bulmaca bitince tren perona girer. Rötar varsa yolcular "Nihayet! 👏" der.
 - Aynı anda **şehir canlanır**: arkaplandaki metro haritası parlar, duraklar sarı yanar, ekran dışından ekran dışına bir tren bir hattan geçer (`cityUp`). Sonraki bölümde ya da menüye dönünce söner. "Hareketi azalt" açıksa tren geçmez, yalnız ışık yanar.
 - Telefonda "hareketi azalt" ayarı açıksa tren akarak değil, 8 kademede ilerler.
+
+**Son süre ve ❤️ can (3 Kasım):**
+
+- **Son süre** (`lastCall`) = max(2 × yıldız süresi, yıldız süresi + 60 sn). Yıldız süresi (`limits().t`) değişmedi.
+  - Gerekçe: yıldız süresi kusursuzluk hedefidir ve ¾'e sıkılaştı (en az 11 sn); "bitirememe" eşiği ondan çok daha gevşek olmalı. 2 kat, uzun bölümde düşünme payını orantılı büyütür; +60 sn tabanı kısa bölümlerde (11–30 sn hedef) takılan oyuncuya en az bir dakika rötar tanır. Robot ve kusursuz oynayan oyuncu buna hiç yaklaşmaz.
+  - Rötardayken son 10 sn: sinyal kırmızı, sakince yanıp söner; şeritte süre yerine "🚉 0:09" yazar ve bir kez "🚉 Son trene 10 sn" bildirimi çıkar. Ayrı gösterge yok.
+  - ⏱ +15 güçlendiricisi son süreyi de 15 sn uzatır ve son süreye 10 sn kala da belirir.
+  - Son süre dolarsa bölüm **başarısız**: tahta kilitlenir, yarım oyun silinir, "🚉 Son tren kaçtı" penceresi (kalan canlar kalp sırasıyla) · **Tekrar dene** (alt satırda kalan can) · Ana sayfa. 1 ❤️ gider.
+  - Eski bir yarım oyun son süreyi geçmişse açılışta son 10 sn'ye çekilir (uyarıyla sürer, anında düşmez).
+  - ↺ Baştan başlamak can harcamaz (süre de sıfırlanır); can yalnız son süre dolunca gider. Oyun sakin kalır: ceza bekleyene değil, takılıp bırakmayana.
+- **Can:** en çok 5, 30 dk'da 1 dolar. Dolum kayıttaki zaman damgasından hesaplanır (`lives()`), bu yüzden uygulama kapalıyken ve çevrimdışıyken de doğrudur; saat geri alınırsa sayaç şimdiye çekilir. Kayıt sözleşmesi (adlar sabit): `save.lives` (0–5, yoksa 5), `save.lifeT` (son dolum hesabı, ms; dolu candan düşünce başlar), `save.infUntil` (bu ana dek ❤️∞ sınırsız can, ms; haftalık görev ve sandık yazar).
+  - 0 canda yeni bölüm başlamaz (aynı bölümün yarım oyunu sürer): "Canın kalmadı" penceresi sıradaki cana geri sayar, **▶ Video izle → +1 ❤️** (ödüllü video), can dolunca ya da videodan sonra Oyna.
+  - ❤️∞ sınırsız can açıkken başarısızlıkta can gitmez, 0 canda da oynanır.
+  - **Günün Hattı, geçmiş gün arşivi ve 🍃 zen** can harcamaz ve son süreleri yoktur.
+  - Gösterge: ana sayfada yalnız Oyna düğmesinin alt satırı ("Bölüm 12 · ❤️ 4 · 23:10", sınırsızda "❤️∞ 14:59", zen'de yazmaz). Oyunda can gösterilmez; yalnız son süreye 10 sn kala sinyal.
+  - Ölçüm: `Olcum.event('life_lost', { lvl })` (can gerçekten gidince), `Olcum.event('life_refill_ad')`.
+  - Kod: `lastCall`, `lives`, `loseLife`, `addLife`, `fail`, `failSheet`, `lifeSheet`, `lifeRow`; test `tools/hakem/can.cjs` (`--only=can`).
 
 **Kusursuz seri (✨):**
 
@@ -303,7 +320,7 @@ Oyunun "meta" katmanı: bulmacaya dokunmaz. Kod: `www/game.js` › "meta" bölü
 - **Ayarlar › 🍃 Zen modu** (tek anahtar).
 - Açıkken bölümlerde süre ve hamle hedefi gizlidir: tren şeridi, yıldız çipi, hamle hedefi, rötar ve "hedef aşıldı" uyarıları, kıl payı tekrar, ⏱ +15 güçlendiricisi yoktur; müzik gerilimi artmaz. Üstte yalnız "🍃 Zen" yazar.
 - Her bitiş **3 ★** sayılır (hat kilitleri ilerler); **🎫 bilet verilmez**, ✨ kusursuz seri ne artar ne kırılır, kaçan hedef kaydı (`miss`) tutulmaz. Böylece bilet ekonomisi korunur: bilet isteyen oyuncu zen'i kapatıp aynı bölümü yeniden oynar.
-- Anahtar `save.zen`'dir (can sistemi bunu okuyacak: zen'de can harcanmaz, süre başarısızlığı olmaz).
+- Anahtar `save.zen`'dir (can sistemi okur: zen'de can harcanmaz, süre başarısızlığı olmaz).
 - **Günün Hattı zen'den etkilenmez**: herkes aynı koşulda oynar, 🎫 ve seri her zamanki gibi.
 
 ### Mevsim temaları

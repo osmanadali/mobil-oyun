@@ -535,6 +535,8 @@ function limits(P) {
   return { m: P.par + Math.max(2, Math.round(P.par * moveTol(P.cur.length) * tight)), t: Math.max(11, Math.round(.75 * (P.taps * 1.3 + P.cur.length * .5 + Math.max(0, (P.diff || 0) - 8) * 3))) };
 }
 const timeOk = sec => sec <= G.lim.t;
+// 🚉 son süre: yıldız süresinin 2 katı, en az +60 sn (BOLUM_TASARIMI › Can). Dolunca bölüm başarısız, 1 ❤️ gider.
+const lastCall = t => Math.max(2 * t, t + 60);
 const movesOk = () => G.moves <= G.lim.m;
 
 // ---------- ses / dokunsal ----------
@@ -653,7 +655,7 @@ function show(id) {
   Music.setMode(id === 'game' ? 'game' : 'menu');
   if (id === 'home') { refreshHome(); setTimeout(maybeRescue, 600); if (G && Remind.avail() && !save.remindAsked && (save.dailyDone || save.level > lineEnd(0))) setTimeout(() => { if (active('home') && !modalOpen()) remindAsk(); }, 700); }
   if (id === 'map') renderMap();
-  clearInterval(clockT); if (id === 'home') clockT = setInterval(dailyClock, 1000);
+  clearInterval(clockT); if (id === 'home') clockT = setInterval(() => { dailyClock(); lifeRow(); }, 1000);
 }
 const bind = binds => { for (const [id, fn] of Object.entries(binds)) { const el = $(id); if (el) el.onclick = fn; } };
 function modal(html, binds = {}, locked = false) {
@@ -724,7 +726,7 @@ function refreshHome() {
   $('sStreak').textContent = save.streak; $('streakChip').classList.toggle('new', rescueOk());
   $('sCrowns').textContent = crownBal(); $('crownChip').classList.toggle('new', !!save.newSkin || seaNew());
   $('sHints').textContent = save.hints; $('sHintsL').textContent = L('ipucu', pl(save.hints, 'hint', 'hints'));
-  $('hLevel').textContent = save.level; $('hLvl').firstChild.textContent = L('Bölüm ', 'Level ');
+  $('hLevel').textContent = save.level; $('hLvl').firstChild.textContent = L('Bölüm ', 'Level '); lifeRow();
   const done = save.dailyDone === today();
   $('bDaily').classList.toggle('done', done);
   $('dailyTitle').textContent = done ? L('Tamamlandı ✓', 'Done ✓') : L('Hazır', 'Ready');
@@ -784,7 +786,7 @@ let litAt = [], ripples = [], parts = [], links = [], winT = 0, raf = 0, winTime
 // süre yalnızca oyun ekranı açıkken ve uygulama öndeyken akar
 const elapsed = () => G ? G.ms + (G.runAt ? performance.now() - G.runAt : 0) : 0;
 function pause() { if (G?.runAt) { G.ms += performance.now() - G.runAt; G.runAt = 0; saveRun(); } clearInterval(tickT); }
-function resume() { if (G && !G.won && !G.runAt && !document.hidden) { G.runAt = performance.now(); clearInterval(tickT); tickT = setInterval(tick, 250); } }
+function resume() { if (G && !G.won && !G.over && !G.runAt && !document.hidden) { G.runAt = performance.now(); clearInterval(tickT); tickT = setInterval(tick, 250); } }
 
 function setLineColor() {
   G.color = lineCol(G.daily ? 2 : lineOf(G.lvl)); G.warn = warnFor(G.color);
@@ -798,7 +800,7 @@ function setLineColor() {
 }
 const runKey = () => G.arch ? 'arch' : G.daily ? 'daily' : 'level';
 function saveRun() {
-  if (!G || G.won) return;
+  if (!G || G.won || G.over) return;
   save.runs[runKey()] = { lvl: G.lvl, day: G.day, cur: G.cur, fixed: G.fixed, moves: G.moves, last: G.lastTile, ms: elapsed(), pv: 4, sig: G.sig, ...(G.hinted ? { hn: 1 } : {}), ...(G.xt ? { xt: G.xt } : {}), ...(G.cnt.some(v => v >= 0) ? { cnt: G.cnt } : {}) };
   persist();
 }
@@ -807,8 +809,11 @@ function start(mode, lvl = save.level) {
   clearTimeout(howT); clearTimeout(winTimer); closeModal(); closePanel(); cityDown();
   const arch = mode === 'arch', daily = mode === 'daily' || arch, day = arch ? lvl : today();
   if (!daily && !unlocked(lineOf(lvl))) { lockedSheet(lineOf(lvl)); return; }
+  // ❤️ 0 canda yeni bölüm başlamaz (yarım kalan aynı bölüm sürer; Günün Hattı, arşiv ve 🍃 zen can harcamaz)
+  if (!daily && !save.zen && !infOn() && lives() <= 0 && save.runs.level?.lvl !== lvl) { if (active('game')) show('home'); lifeSheet(lvl); return; }
   G = { ...(daily ? dailyFor(day) : puzzleFor(lvl)), daily, arch, lvl: daily ? 0 : lvl, day: daily ? day : null, practice: arch ? archPlayed(day) : daily && save.dailyDone === day, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0, bub: 0 };
-  G.lim = limits(G); G.zen = !!save.zen && !daily;   // 🍃 zen: hedefler gizli (Günün Hattı herkes için aynı koşulda)
+  G.lim = limits(G); G.zen = !!save.zen && !daily;
+  G.lim.dl = G.zen || daily ? 0 : lastCall(G.lim.t);   // son süre (0: yok)   // 🍃 zen: hedefler gizli (Günün Hattı herkes için aynı koşulda)
   $('game').classList.toggle('zen', G.zen); $('game').querySelector('.status').dataset.zen = L('🍃 Zen', '🍃 Zen');
   // yarım kalan oyunu sürdür
   const run = save.runs[arch ? 'arch' : daily ? 'daily' : 'level'];
@@ -818,7 +823,8 @@ function start(mode, lvl = save.level) {
   if (run && (daily ? run.day === day : run.lvl === lvl) && run.cur?.length === G.cur.length && (run.sig ? run.sig === G.sig : run.pv === 4 && (daily || lvl < lineStart(4)))) {
     G.cur = run.cur.slice(); G.fixed = run.fixed.slice(); G.moves = run.moves; G.lastTile = run.last ?? -1; G.ms = run.ms || 0; G.hinted = !!run.hn;
     if (run.cnt?.length === G.cur.length) G.cnt = run.cnt.slice();
-    if (run.xt) { G.xt = run.xt; G.lim.t += run.xt; }   // ⏱ +15 güçlendiricisi yarım oyunla korunur
+    if (run.xt) { G.xt = run.xt; G.lim.t += run.xt; if (G.lim.dl) G.lim.dl += run.xt; }   // ⏱ +15 güçlendiricisi yarım oyunla korunur
+    if (G.lim.dl) G.ms = Math.min(G.ms, (G.lim.dl - 10) * 1000);   // son süreyi geçmiş eski yarım oyun: son 10 sn uyarısıyla sürer
   }
   setLineColor();
   G.L = lit(G); anim.clear(); press.clear(); ripples = []; parts = []; links = []; winT = 0;
@@ -873,14 +879,18 @@ function hud() {
 }
 // üst gösterge: süre + üç yıldız (bitir · ⏱ süre · ↻ hamle)
 function tick() {
-  if (!G) return;
-  const ms = elapsed(), sec = ms / 1000, tOk = timeOk(sec), mOk = movesOk(), left = G.lim.t - sec;
+  if (!G || G.over) return;
+  const ms = elapsed(), sec = ms / 1000, tOk = timeOk(sec), mOk = movesOk(), left = G.lim.t - sec, dLeft = G.lim.dl ? G.lim.dl - sec : Infinity;
+  if (!G.won && dLeft <= 0) return fail();
   const [s1, s2, s3] = $('gStars').children;
   s1.classList.add('on'); s2.classList.toggle('on', tOk); s3.classList.toggle('on', mOk);
-  if (!G.won) setNext(tOk ? `⏱ ${fmtT(left * 1000 + 999)}` : `<span class="miss">+${fmtT(-left * 1000)} ${L('rötar', 'late')}</span>`);
+  if (!G.won) setNext(tOk ? `⏱ ${fmtT(left * 1000 + 999)}` : dLeft <= 10 ? `<span class="miss">🚉 ${fmtT(dLeft * 1000 + 999)}</span>` : `<span class="miss">+${fmtT(-left * 1000)} ${L('rötar', 'late')}</span>`);
+  $('gTrip').classList.toggle('last', !G.won && dLeft <= 10);
+  if (!G.won && dLeft <= 10 && !G.lastWarn) { G.lastWarn = 1; toast(L('🚉 Son trene 10 sn', '🚉 Last train in 10 s')); }
+  else if (dLeft > 10) G.lastWarn = 0;
   $('gPill').classList.toggle('warn', tOk && left <= 10 && !G.won);
   $('gCombo').classList.toggle('off', !(tOk && mOk));
-  trip(sec, tOk, left); bstUi(left);
+  trip(sec, tOk, left); bstUi(left, dLeft);
   if (!G.won && !G.zen) {
     // kusursuz seri bu bölümde tehlikede → baştan başlamak seriyi korur (↺ süreyi de sıfırlar)
     const s = comboStake(), keep = s >= 2 ? L(` · ↺ baştan → ✨${s} sürer`, ` · ↺ restart → keep ✨${s}`) : '';
@@ -892,15 +902,15 @@ function tick() {
   if (!G.won && !G.zen) { const r = sec / G.lim.t, T = r < .3 ? 0 : r <= 1 ? (r - .3) / .7 * .8 : .8 + Math.min(1, r - 1) * .2; Music.setTension(Math.round(T * 8) / 8, tOk && left <= 10); }
 }
 // güçlendirici düğmeleri: yalnız işe yaradığı an (geri al: geçmiş varken · fener: karanlık tünelde · +15: son 10 sn, ⏱ yıldızı yanarken)
-function bstUi(left = G ? G.lim.t - elapsed() / 1000 : 0) {
-  const live = G && !G.won, set = (id, k, on) => { const b = $(id); b.hidden = !on; if (on) b.lastChild.textContent = bst(k); };
+function bstUi(left = G ? G.lim.t - elapsed() / 1000 : 0, dLeft = G?.lim.dl ? G.lim.dl - elapsed() / 1000 : Infinity) {
+  const live = G && !G.won && !G.over, set = (id, k, on) => { const b = $(id); b.hidden = !on; if (on) b.lastChild.textContent = bst(k); };
   set('gUndo', 'geri', live && bst('geri') > 0 && G.hist?.length > 0);
   set('gLamp', 'fener', live && bst('fener') > 0 && G.fog && !(G.lamp > performance.now()));
-  set('gPlus', 'sure', live && !G.zen && bst('sure') > 0 && left > 0 && left <= 10);
+  set('gPlus', 'sure', live && !G.zen && bst('sure') > 0 && ((left > 0 && left <= 10) || (dLeft > 0 && dLeft <= 10)));   // son süreye 10 sn kala da
   document.querySelector('#game .bottom').classList.toggle('bx', ['gUndo', 'gLamp', 'gPlus'].some(id => !$(id).hidden));
 }
 function undo() {
-  if (!G || G.won || !G.hist?.length || bst('geri') < 1) return;
+  if (!G || G.won || G.over || !G.hist?.length || bst('geri') < 1) return;
   const k = Math.min(5, G.hist.length), s = G.hist[G.hist.length - k], now = performance.now();
   G.hist.length -= k;
   G.cur.forEach((v, i) => { if (v !== s.cur[i]) anim.set(i, now); G.cur[i] = s.cur[i]; });
@@ -917,7 +927,8 @@ function lamp() {
   setTimeout(() => { if (G === g && !g.won) { reveal(); kick(); bstUi(); } }, 5000);
 }
 function plus15() {
-  if (!G || G.won || bst('sure') < 1) return;
+  if (!G || G.won || G.over || bst('sure') < 1) return;
+  if (G.lim.dl) G.lim.dl += 15;   // son süre de uzar
   G.lim.t += 15; G.xt = (G.xt || 0) + 15; useBst('sure'); saveRun(); tick(); bump($('gPill'));
   haptic('heavy'); tone(note(5), .25, .04); toast(L('⏱ +15 sn · tren biraz daha bekliyor', '⏱ +15 s · the train waits a bit longer'));
 }
@@ -1144,7 +1155,7 @@ function burst(i, k = 9, delay = 0, color = G.color) {
 
 cv.addEventListener('pointerdown', e => {
   if (G?.won) { if ($('game').classList.contains('won')) toggleMini(); return; }
-  if (!G) return;
+  if (!G || G.over) return;
   const { s, ox, oy } = geo, px = e.offsetX, py = e.offsetY;   // offsetX: CSS dönüşümlerinden bağımsız
   const c = Math.floor((px - ox) / s), w = Math.floor((py - oy) / s);
   if (c < 0 || w < 0 || c >= G.cols || w >= G.rows) return;
@@ -1544,7 +1555,7 @@ function grantItem(it, tx) {
 }
 
 async function hint() {
-  if (!G || G.won) return;
+  if (!G || G.won || G.over) return;
   dayTick();
   if (save.hints <= 0) {
     if (!Ads.online()) { toast(L('İpucu kalmadı · yarın +3 hediye', 'Out of hints · +3 free tomorrow')); return; }
@@ -1607,7 +1618,7 @@ function ruleCard(c, week) {
 function nearLit(i) { const x = i % G.cols, y = i / G.cols | 0; let n = 0; for (const [, dx, dy] of DIRS) { const nx = x + dx, ny = y + dy; if (nx >= 0 && ny >= 0 && nx < G.cols && ny < G.rows && G.L.d[ny * G.cols + nx] >= 0) n++; } return n; }
 // baştan: süre ve hamle sıfırlanır, ipucuyla açılan karolar korunur
 function reset() {
-  if (!G || G.won) return;
+  if (!G || G.won || G.over) return;
   const keep = G.fixed.map((f, i) => f ? i : -1).filter(i => i >= 0), mode = G.arch ? 'arch' : G.daily ? 'daily' : 'level', lvl = G.arch ? G.day : G.lvl, hn = G.hinted;
   delete save.runs[runKey()];
   start(mode, lvl || save.level);
@@ -1686,6 +1697,78 @@ const QUESTS = {
 const RW_TXT = { hint: '💡', inf15: L('❤️∞ 15 dk', '❤️∞ 15 min'), inf30: L('❤️∞ 30 dk', '❤️∞ 30 min') };
 // sınırsız can: can sistemiyle ortak kayıt sözleşmesi (save.lives 0–5, save.lifeT, save.infUntil ms); burada yalnız süre eklenir
 const giveInf = min => { save.infUntil = Math.max(save.infUntil || 0, Date.now()) + min * 60e3; };
+
+// ---------- ❤️ can (BOLUM_TASARIMI › Can): en çok 5, 30 dk'da 1 dolar. Kayıt: save.lives (yoksa 5), save.lifeT (son dolum, ms), save.infUntil ----------
+// Dolum zaman damgasından hesaplanır: uygulama kapalıyken ve çevrimdışıyken de doğru. Can yalnız son süre dolunca gider.
+const LIFE_MAX = 5, LIFE_MS = 30 * 60e3;
+const infOn = () => (save.infUntil || 0) > Date.now();
+function lives() {
+  const now = Date.now(), raw = save.lives;
+  let n = Number.isFinite(raw) ? Math.max(0, Math.min(LIFE_MAX, Math.floor(raw))) : LIFE_MAX, t = Math.min(save.lifeT || now, now);   // saat geri alındıysa dolum takılmasın
+  if (n < LIFE_MAX) { const k = Math.floor((now - t) / LIFE_MS); if (k > 0) { n = Math.min(LIFE_MAX, n + k); t += k * LIFE_MS; } }
+  if (n !== raw || (n < LIFE_MAX && t !== save.lifeT)) { save.lives = n; save.lifeT = t; persist(); }
+  return n;
+}
+const lifeNext = () => lives() < LIFE_MAX ? save.lifeT + LIFE_MS - Date.now() : 0;   // sıradaki cana kalan ms
+function loseLife() {
+  const n = lives(); if (infOn() || !n) return false;
+  if (n === LIFE_MAX) save.lifeT = Date.now();   // dolum sayacı dolu candan düşünce başlar
+  save.lives = n - 1; persist(); return true;
+}
+function addLife() { const n = lives(); if (n >= LIFE_MAX) return false; save.lives = n + 1; persist(); return true; }
+const hearts = n => `<span class="hearts" aria-label="${n} / ${LIFE_MAX}">${'❤️'.repeat(n)}${'<i>🤍</i>'.repeat(LIFE_MAX - n)}</span>`;
+const lifeTxt = () => infOn() ? `❤️∞ ${fmtT(save.infUntil - Date.now())}` : lives() < LIFE_MAX ? `❤️ ${lives()} · ${fmtT(lifeNext() + 999)}` : `❤️ ${LIFE_MAX}`;
+// ana sayfa: Oyna düğmesinin alt satırında "Bölüm 12 · ❤️ 4 · 12:34" (zen'de can harcanmaz → gösterilmez)
+function lifeRow() { const el = $('hLife'); if (el) el.textContent = save.zen ? '' : ' · ' + lifeTxt(); }
+
+// 🚉 son süre doldu: bölüm başarısız, 1 ❤️ gider (sınırsız canda gitmez). Yarım oyun silinir.
+function fail() {
+  const g = G; pause(); g.over = true;
+  clearTimeout(toastT); $('toast').classList.remove('show');
+  delete save.runs.level;
+  const lost = loseLife(); persist();
+  if (lost) window.Olcum?.event?.('life_lost', { lvl: g.lvl });
+  setNext(`<span class="miss">${L('🚉 Son tren kaçtı', '🚉 Last train gone')}</span>`); $('gTrip').classList.remove('last'); bstUi();
+  Music.setTension(0, false); Music.setMode('rest');
+  [4, 2, 0].forEach((k, j) => tone(note(k), .35, .03, 'sine', j * .16)); haptic('heavy');
+  setTimeout(() => { if (G === g && active('game')) failSheet(g, lost); }, 650);
+}
+function failSheet(g, lost) {
+  const n = lives(), inf = infOn();
+  modal(`<div class="bell">🚉</div><h2>${L('Son tren kaçtı', 'The last train left')}</h2>
+    <p>${L(`Bölüm ${g.lvl} bu sefer bağlanamadı.`, `Level ${g.lvl} didn’t connect in time.`)} ${lost ? L('<b class="nw">1 ❤️</b> gitti.', '<b class="nw">1 ❤️</b> lost.') : inf ? L('Sınırsız can açık, can gitmedi.', 'Unlimited lives on, no life lost.') : ''}</p>
+    <p class="lifep">${inf ? `<b>${lifeTxt()}</b>` : hearts(n)}</p>
+    <button id="mRetry" class="btn primary"><span>${L('Tekrar dene', 'Try again')}</span><small>${inf ? L('❤️∞ sınırsız can', '❤️∞ unlimited lives') : n ? L(`${n} ❤️ kaldı`, `${n} ❤️ left`) : L(`Sıradaki can ${fmtT(lifeNext() + 999)}`, `Next life in ${fmtT(lifeNext() + 999)}`)}</small></button>
+    <button id="mHome" class="btn glassbtn">${L('Ana sayfa', 'Home')}</button>`,
+    { mRetry: () => start('level', g.lvl), mHome: () => { closeModal(); show('home'); } }, true);
+}
+// 0 can: sıradaki can için geri sayım · ödüllü video +1 ❤️ · can dolunca Oyna
+function lifeSheet(lvl) {
+  modal(`<div class="bell">❤️</div><h2>${L('Canın kalmadı', 'Out of lives')}</h2>
+    <p>${L('Her 30 dakikada 1 can dolar (en çok 5). Günün Hattı ve 🍃 Zen modu can harcamaz.', 'One life refills every 30 minutes (up to 5). The Daily Line and 🍃 Zen mode cost no lives.')}</p>
+    <p class="lifep" id="mLife"></p><div id="mLifeAct" class="lifeact"></div>
+    <button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, { mClose: closeModal });
+  let go = null;
+  const up = () => {
+    const n = lives(), ok = n > 0 || infOn(), box = $('mLifeAct'); if (!box) return;
+    $('mLife').innerHTML = `${hearts(n)}<small>${infOn() ? lifeTxt() : n < LIFE_MAX ? L(`Sıradaki can ${fmtT(lifeNext() + 999)}`, `Next life in ${fmtT(lifeNext() + 999)}`) : ''}</small>`;
+    if (go === ok) return; go = ok;
+    box.innerHTML = ok ? `<button id="mGo" class="btn primary"><span>${L('Oyna', 'Play')}</span><small>${L('Bölüm', 'Level')} ${lvl}</small></button>`
+      : `<button id="mVid" class="btn primary"><span>${L('▶ Video izle', '▶ Watch a video')}</span><small>+1 ❤️</small></button>`;
+    bind({ mGo: () => start('level', lvl), mVid: lifeVideo });
+  };
+  async function lifeVideo() {
+    const b = $('mVid'); if (!b || Ads.busy()) return;
+    b.disabled = true; b.querySelector('span').textContent = L('Yükleniyor…', 'Loading…'); Music.stop();
+    const ok = await video(); Music.start();
+    if (!ok) { b.disabled = false; b.querySelector('span').textContent = L('▶ Video izle', '▶ Watch a video'); return; }
+    addLife(); window.Olcum?.event?.('life_refill_ad');
+    haptic('heavy'); tone(note(9), .3, .045); toast(L('+1 ❤️ · iyi yolculuklar', '+1 ❤️ · have a good trip')); refreshHome();
+    if (modalOpen() && $('mLife')) up();
+  }
+  up(); const iv = setInterval(() => { if ($('mLife')) up(); else clearInterval(iv); }, 1000);
+  mOnClose = () => clearInterval(iv);
+}
 function weekQ() {
   const id = weekOf(today());
   if (save.wk?.id === id) return save.wk;
