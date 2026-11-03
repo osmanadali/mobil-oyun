@@ -1,11 +1,11 @@
-// M13 · Yön tabelası (sign): tabelalı karodan merkeze giden yol okun kenarından çıkmalı. Ok hücrede sabit, karo döner. Ayrıntı: docs/kurallar/tabela.md
+// M17 · Yön tabelası (sign): tabelalı karodan merkeze giden yol okun kenarından çıkmalı. Ok hücrede sabit, karo döner. Ayrıntı: docs/kurallar/tabela.md
 (window.RAY_RULES = window.RAY_RULES || []).push(api => {
   // bildirimler (L burada küresel çeviri; aşağıda after içinde L = G.L gölgeler)
   const MSG = { path: L('Tabela: merkeze giden yol okun kenarından geçmeli', `Signpost: the path to the hub must use the arrow's edge`), stuck: L(' · ↺ baştan ya da 💡', ' · ↺ restart or 💡'), tip: L('Tabela · karo döner, ok yerinde kalır', 'Signpost · the tile turns, the arrow stays') };
   const { popc, nb, ob } = api, K = { 1: 0, 2: 1, 4: 2, 8: 3 }, V = { 1: [0, -1], 2: [1, 0], 4: [0, 1], 8: [-1, 0] };
   const idx = new WeakMap(), list = g => { let a = idx.get(g); if (!a) idx.set(g, a = g.flatMap((b, i) => b ? [i] : [])); return a; };   // tabelalı karolar
   return {
-    key: 'sign', line: 12, boost: 1.5, clash: ['ring'],
+    key: 'sign', line: 16, ord: 12, boost: 3, clash: ['ring'],
     card: { name: L('Yön tabelası', 'Signpost'), tag: L('Yeni: yön tabelası', 'New: signpost'),
       demo: '<div class="rd-sign" aria-hidden="true"><i class="rd-sign-h"></i><i class="rd-sign-t"><b></b><svg class="rd-sign-a" viewBox="0 0 76 76"><path d="M6 38 22.8 26.6v22.8z"/></svg><i class="rd-sign-p"></i></i></div>',
       text: L('<b>Tabelalı</b> karodan merkeze giden yol <b>okun gösterdiği kenardan</b> çıkmalı. Ok yere sabittir: <b>karo döner, ok dönmez</b>.',

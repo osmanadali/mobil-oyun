@@ -1,4 +1,4 @@
-// M19 · Tünel ağzı (anahtar: portal) — kuralın tamamı bu dosyada. Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/tunel-agzi.md
+// M16 · Tünel ağzı (anahtar: portal) — kuralın tamamı bu dosyada. Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/tunel-agzi.md
 // Kenardaki iki geçit (hücre + dışa bakan yön) birbirinin komşusudur: C.adj/C.ao yalnız tünelli bölümde kurulur, çekirdek nb/ob ile okur.
 (window.RAY_RULES = window.RAY_RULES || []).push(api => {
   const { DIRS } = api, ABC = 'ABC', bit = k => DIRS[k][0];
@@ -6,7 +6,7 @@
   const ends = p => [[p.a, p.ka], [p.b, p.kb]];
   const used = (m, p) => (m[p.a] & bit(p.ka)) && (m[p.b] & bit(p.kb)), lit2 = (G, p) => used(G.cur, p) && G.L.d[p.a] >= 0 && G.L.d[p.b] >= 0;
   return {
-    key: 'portal', line: 18, boost: 2,
+    key: 'portal', line: 15, ord: 18, boost: 3,
     card: { name: L('Tünel ağzı', 'Tunnel portal'), tag: L('Yeni: tünel ağzı', 'New: tunnel portal'),
       demo: '<div class="rd-portal" aria-hidden="true"><i class="rd-pm">A</i><i class="ft on"><b></b></i><i class="ft on"><b></b></i><i class="ft on"><b></b></i><i class="rd-pm r">A</i><i class="rd-pt"></i></div>',
       text: L('Kenardaki <b>aynı harfli</b> iki tünel ağzı bağlıdır: birine giren ray <b>öbüründen çıkar</b>. Tüneli kullanmak zorunlu değil; harfsiz kenar <b>kapalıdır</b>.',

@@ -241,16 +241,6 @@ body.introing .screen *{animation-play-state:paused!important}
 /* reklam ilerlemesi */
 .vids{display:flex;justify-content:center;gap:8px}.vids i{width:12px;height:12px;border-radius:50%;background:var(--rail)}.vids i.on{background:var(--acc);box-shadow:0 0 10px var(--starGlow)}
 
-/* yeni kural kartı: sabit karo animasyonu */
-.rdemo{position:relative;align-self:center;width:96px;height:96px;margin:6px 0 2px}
-.rt{position:absolute;inset:0;border-radius:24px;background:var(--pin);box-shadow:inset 0 0 0 1px var(--stroke);
-  background-image:radial-gradient(circle,var(--mut) 3.5px,transparent 4.5px),radial-gradient(circle,var(--mut) 3.5px,transparent 4.5px),radial-gradient(circle,var(--mut) 3.5px,transparent 4.5px),radial-gradient(circle,var(--mut) 3.5px,transparent 4.5px);
-  background-size:20px 20px;background-repeat:no-repeat;background-position:8px 8px,68px 8px,8px 68px,68px 68px;animation:nope 2.2s ease-in-out infinite}
-.rt b{position:absolute;left:41px;top:0;width:14px;height:62px;border-radius:8px;background:var(--acc)}
-.rt b:after{content:"";position:absolute;left:0;top:48px;width:55px;height:14px;border-radius:8px;background:var(--acc)}
-.rtap{position:absolute;left:50%;top:50%;width:30px;height:30px;margin:-15px;border-radius:50%;border:2.5px solid var(--fg);opacity:0;animation:tap 2.2s ease-out infinite}
-@keyframes tap{0%,30%{opacity:0;transform:scale(.6)}38%{opacity:.9;transform:scale(1)}60%,100%{opacity:0;transform:scale(1.8)}}
-@keyframes nope{0%,38%,62%,100%{transform:none}42%{transform:translateX(-5px)}48%{transform:translateX(5px)}54%{transform:translateX(-3px)}}
 /* yeni kural kartı: karanlık tünel (ışık ilerler, karanlık karo aydınlanır) */
 .rdemo3{align-self:center;display:flex;gap:6px;margin:6px 0 2px}
 .ft{position:relative;width:64px;height:64px;border-radius:18px;background:var(--tile);box-shadow:inset 0 0 0 1px var(--stroke);overflow:hidden}

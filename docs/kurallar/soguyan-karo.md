@@ -1,4 +1,6 @@
-# M21 · Soğuyan karo (`ice`)
+# M8 · Soğuyan karo (`ice`)
+
+> **Hat düzeni 31 Ekim'de ve 3 Kasım'da (sabit karo kalktı, mühürlü karo ve sarmal tahta eklendi) değişti:** bu kural artık **M8** (ilk bölüm 157). Aşağıdaki hat ve bölüm numaraları ve ölçümler eski düzene aittir; güncel tablo `docs/kurallar/README.md`.
 
 **Kural.** Kar taneli (❄) karoyu çevirip başka bir karoya geçince o karo **2 hamle donar**: dokunuş yok sayılır, hamle sayılmaz. Aynı karoya art arda dokunmak tek hamledir ve donmaz.
 

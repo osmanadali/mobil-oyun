@@ -1,4 +1,4 @@
-// M10 · Kapak (anahtar: cover) — kuralın tamamı bu dosyada. Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/kapak.md
+// M15 · Kapak (anahtar: cover) — kuralın tamamı bu dosyada. Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/kapak.md
 // Kapaklı karo sabit ve çözüm yönündedir ama şekli görünmez (P.self: çekirdek rayını çizmez). Çözücü onu 15 maskeden biri sayar (cands).
 // Üretimde adillik: oyuncunun gördüğü bilgiyle bütün çözümlerde kapakların maskesi aynı değilse kapak oraya konmaz.
 (window.RAY_RULES = window.RAY_RULES || []).push(api => {
@@ -15,7 +15,7 @@
     return keys.size === 1 && sc < 3 * cap;
   };
   return {
-    key: 'cover', line: 9, boost: 2.5, clash: ['fog', 'faint'],
+    key: 'cover', line: 14, ord: 9, boost: 2.5, clash: ['fog', 'faint'],
     card: { name: L('Kapak', 'Cover'), tag: L('Yeni: kapak', 'New: cover'),
       demo: '<div class="rd-cover" aria-hidden="true"><i class="ft"><b></b></i><i class="rd-cv"><em class="w"></em><em class="e"></em><s></s></i><i class="rd-cvs"><b></b><u></u></i></div>',
       text: L('<b>Kapaklı</b> karonun rayı görünmez ve <b>dönmez</b>; altındaki ray zaten doğru yönde. Komşulara bakıp <b>hangi yönlere açıldığını</b> çıkar.',
@@ -32,7 +32,7 @@
 @keyframes rdcv2{0%,28%,88%,100%{opacity:0}35%,80%{opacity:1}}@keyframes rdcv3{0%,44%,88%,100%{opacity:0}50%,80%{opacity:1}}
 @keyframes rdcv3b{0%,44%,88%,100%{background:var(--rail)}50%,80%{background:var(--acc)}}@keyframes rdcv4{0%,46%,88%,100%{background:var(--bg0);border-color:var(--mut)}52%,80%{background:#fff;border-color:var(--acc)}}
 @media (prefers-reduced-motion:reduce){.rd-cover *{animation:none!important}}`,
-    // tanıtım (M10'un ilk 3 bölümü, 6×8): 1 kapak · 7×9 hat finali 3 · diğerleri 2 (karma hatlarda kapak hep 7×9'da gelir)
+    // tanıtım (M15'in ilk 3 bölümü, 6×8): 1 kapak · 7×9 hat finali 3 · diğerleri 2 (karma hatlarda kapak hep 7×9'da gelir)
     amount: (n, intro, z, fin) => intro || n < 63 ? 1 : fin ? 3 : 2,
     // sayaçlıdan sonra, karanlıktan önce; R() yalnız kapaklı bölümde. Aday: çıplak 2–3 kollu karo, merkezden ≥ 2, köprü/tünel ağzı değil, kapağa bitişik değil.
     mark(C) {

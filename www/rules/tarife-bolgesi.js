@@ -1,4 +1,4 @@
-// M20 · Tarife bölgesi (anahtar: zone) — kuralın tamamı bu dosyada. Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/tarife-bolgesi.md
+// M24 · Tarife bölgesi (anahtar: zone) — kuralın tamamı bu dosyada. Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/tarife-bolgesi.md
 // Merkezi saran kesikli kare (Chebyshev yarıçap 1): sınır kenarında ray ya GEÇER (iki yan kollu) ya TAMPONLA biter (tek yan kollu).
 // Kazanma: lit (sınır kenarı open → gevşek sayılmaz) + sınırdan tam B geçiş ve tam T tampon (ikisi de rozette yazılı).
 (window.RAY_RULES = window.RAY_RULES || []).push(api => {
@@ -18,7 +18,7 @@
   const iconX = (cx, x, y, r) => { const a = r * .42, h = r * .4; for (const e of [-1, 1]) { const yy = y + e * a, tip = x - e * r; cx.moveTo(x + e * r, yy); cx.lineTo(tip, yy); cx.moveTo(tip + e * h, yy - h); cx.lineTo(tip, yy); cx.lineTo(tip + e * h, yy + h); } };
   const iconT = (cx, x, y, r) => { cx.moveTo(x - r, y); cx.lineTo(x + r * .35, y); cx.moveTo(x + r * .35, y - r * .7); cx.lineTo(x + r * .35, y + r * .7); };
   return {
-    key: 'zone', line: 19, boost: 4,
+    key: 'zone', line: 23, ord: 19, boost: 5,
     // iki merkez: bölge yalnız birini sarardı · nehir: aynı mekanizma (yumuşak sınır + sayım), aynı bölümde iki rozet kalabalık.
     // Köprü ve döner tabla prototipte dışlanmıştı; ölçümde ikisiyle de çözüm geçerli ve çözücü sağlam (docs), dışlanmadı.
     clash: ['two', 'river'],
@@ -50,6 +50,8 @@
     // Çözüm sayımı çözücünün yaprağında, 2. çözümde durur. Karanlık ve "çözülmüş gelmesin" yalnız cur'u döndürür: çözüm kümesi değişmez. R() tüketmez.
     mark(C) {
       const Z = C.out.zone; if (!Z) return;
+      // kapalı durak (mark, ord 15) sınırdaki bir durağı yok saydıysa sayılar çözümden yeniden okunur (yoksa çözüm dizilimi çözülmezdi)
+      const [B2, T2] = count({ ...C.out, zone: Z }, C.sol); Z.B = B2; if (T2 !== Z.T) C.out.reject = true;
       const P = { ...C, ...C.out }; let k = 0;
       api.difficulty(P, cfg => (api.lit({ ...P, cur: cfg }).solved && k++, k > 1), 600);
       if (k !== 1 || Z.T !== C.x.zone) C.out.reject = true;
