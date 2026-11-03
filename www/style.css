@@ -361,6 +361,7 @@ body.introing .screen *{animation-play-state:paused!important}
 .store .prod span{display:flex;flex-direction:column;gap:2px;min-width:0}.store .prod small{font-size:12.5px}.store .prod b{flex:none;font-weight:700;color:var(--acc)}.store .prod.on b{text-decoration:underline;text-underline-offset:4px}
 .opt.sub{padding-top:0;transition:opacity .25s}.opt.sub.off{opacity:.35;pointer-events:none}
 .opt .seg button{padding:7px 10px}
+.opt.lang{flex-wrap:wrap;gap:6px}.opt.lang .seg{display:grid;grid-template-columns:repeat(3,1fr);width:100%}.opt.lang .seg button{padding:7px 4px;white-space:nowrap}   /* 6 dil: 3×2, her dil kendi adıyla */
 /* renk temaları */
 .skins{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .vipk{grid-column:1/-1;margin:6px 2px -2px;font-size:12px;font-weight:700;letter-spacing:.5px;color:var(--mut)}

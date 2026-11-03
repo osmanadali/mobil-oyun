@@ -1,13 +1,13 @@
-# İngilizce yerelleştirme
+# Yerelleştirme (6 dil)
 
-Oyun Türkçe ve İngilizce oynanır. Bu belge altyapıyı ve ortak sözlüğü anlatır; iki dildeki metinlerin tutarlı kalması için yeni metin yazan herkes buraya bakar.
+Oyun Türkçe, İngilizce, Almanca, İspanyolca, Portekizce (Brezilya) ve Fransızca oynanır. Bu belge altyapıyı ve ortak sözlüğü anlatır; iki dildeki metinlerin tutarlı kalması için yeni metin yazan herkes buraya bakar.
 
 ## 1. Altyapı (`www/i18n.js`)
 
 - `i18n.js` bütün betiklerden önce yüklenir ve iki küresel ad tanımlar:
-  - `RAY_LANG`: `'tr'` ya da `'en'`.
+  - `RAY_LANG`: `'tr'`, `'en'`, `'de'`, `'es'`, `'pt-BR'` ya da `'fr'` (öteki diller: §1b).
   - `L(tr, en)`: seçili dildeki metni döndürür. Örnek: `L('İpucu', 'Hint')`, `` L(`${n} hamle`, `${n} moves`) ``.
-- **Dil seçimi:** kayıtta `save.lang` (`'tr'` | `'en'`) varsa o kullanılır. Yoksa cihaz dili okunur: `tr` ile başlıyorsa Türkçe, öteki her dilde İngilizce.
+- **Dil seçimi:** kayıtta `save.lang` varsa o kullanılır. Yoksa cihaz dili okunur: `tr`, `de`, `es`, `pt`, `fr` ile başlıyorsa o dil, öteki her dilde İngilizce.
 - **Dil değişince sayfa yenilenir.** Metinler yüklemede bir kez seçilir; bu yüzden kural kartları gibi yükleme anında kurulan nesnelerde `L()` doğrudan kullanılabilir.
 - **Durağan HTML** (`index.html`): Türkçe metin yerinde kalır, İngilizcesi özniteliğe yazılır.
   - `data-en="…"` → öğenin yazısı (`textContent`); öğenin içinde başka öğe varsa yazı ayrı bir `<span>`'e alınır.
@@ -15,12 +15,33 @@ Oyun Türkçe ve İngilizce oynanır. Bu belge altyapıyı ve ortak sözlüğü 
 - **Robot:** `tools/hakem.cjs` bütün tarayıcı bağlamlarını `locale: 'tr-TR'` ile açar, yani testler varsayılan olarak Türkçe koşar. İngilizce testi bağlamı `locale: 'en-US'` ile açar.
 - **Bölüm üretimi dile bağlı değildir.** `L()` rastgele sayı tüketmez; çeviri bölümleri bit bit aynı bırakır.
 
+## 1b. Öteki diller: Almanca, İspanyolca, Portekizce (Brezilya), Fransızca
+
+- **Dil kodları:** `RAY_LANG` = `tr` · `en` · `de` · `es` · `pt-BR` · `fr`. Cihaz dili `de…`, `es…`, `pt…` (pt-PT de Brezilya Portekizcesine düşer), `fr…` ise o dil; desteklenmeyen her dil İngilizce. Ayarlar › Dil seçicisi 6 dili kendi adıyla gösterir (`RAY_LANGS`, 3×2 ızgara).
+- **Sözlük, anahtar İngilizce metin:** `L(tr, en)` imzası değişmedi. `de/es/pt-BR/fr`'de `L` İngilizce metni sözlükte arar; bulamazsa İngilizce gösterir (ve `window.__L_MISS`'e yazar, robot bunu denetler). Durağan HTML'de `data-en` değeri de aynı sözlükten çevrilir.
+- **Yer tutucular:** `${}` içeren metinler için çağrıları değiştirmek yerine kalıp anahtarı kullanılır. `tools/diller.cjs` kaynağı tarar, şablondaki her `${…}`'yi sırayla `{0}`, `{1}`… yapar: `` L(`${n} hamle geri alındı`, `↶ ${k} ${pl(k, 'move', 'moves')} undone`) `` → anahtar `↶ {0} {1} undone`. Çeviri yer tutucuları istediği sırada kullanabilir (`Ray 🚇 Daily Line {0}/{1}` → de `… {1}.{0}.`) ya da düşürebilir. Çalışırken `i18n.js` hazır İngilizce metni kalıplarla eşler (en uzun sabit metinli kalıp önce) ve yakalanan parçaları da sözlükten geçirir: `pl()` ile gelen `moves` gibi tekil/çoğul sözcükler böylece çevrilir (`move` → `Zug`, `moves` → `Züge`).
+  - **Neden bu yol:** ~500 çağrıyı elle `L('{n} bölüm', '{n} levels', { n })` biçimine dönüştürmek hem büyük, hem hataya açık bir değişiklik olurdu ve aynı anda çalışılan dosyalarla çakışırdı. Kalıp anahtarları kaynaktan otomatik çıkar, Türkçe/İngilizce davranış bit bit aynı kalır, yeni metin yazan kişi alışık olduğu `L(tr, en)`'i yazmaya devam eder; çeviri eksiği `node tools/diller.cjs` ve robotla hemen görünür. Bedeli: kalıp eşleme sözlükte bulunmayan metinde birkaç yüz düzenli ifade dener (sonuç önbelleğe alınır; ölçülebilir yük yok).
+- **Kaynak ve üretim:** çeviriler `tools/diller/sozluk-*.txt`'te, anahtar bir kez yazılır, ardından dört dil:
+  ```text
+  @ ↶ {0} {1} undone
+  de: ↶ {0} {1} zurückgenommen
+  es: ↶ {0} {1} deshechas
+  pt: ↶ {0} {1} desfeitas
+  fr: ↶ {0} {1} annulés
+  ```
+  Boşluklar tek boşluğa sıkıştırılır (çok satırlı HTML anahtarı tek satır yazılır); satır sonundaki boşluk `␣` ile yazılır. Fransızcada `: ; ! ? »` önüne bölünmez boşluk derleyici ekler. `node tools/diller.cjs` sözlükleri `www/lang/<dil>.js` olarak üretir, eksik ve artık anahtarı listeler (eksik varsa çıkış kodu 1). Üretilen dosya elle düzenlenmez.
+- **Yalnız seçili dilin sözlüğü yüklenir:** `i18n.js` seçili dil `de/es/pt-BR/fr` ise `lang/<dil>.js`'yi `document.write` ile eşzamanlı ekler (sonraki betikler yüklenirken sözlük hazırdır; tr/en'de hiçbir sözlük yüklenmez). Dört sözlük `sw.js` önbelleğindedir (çevrimdışı dil değişimi için). Web paketi boyut ölçümü (`hakem.cjs` I bölümü) sözlükleri ayrı sayar: oyuncu yalnız birini indirir.
+- **Yeni metin yazarken:** `L(tr, en)` yaz, sonra `node tools/diller.cjs --skeleton` eksik anahtarları boş kalıp olarak döker; uygun `sozluk-*.txt`'e ekle, `node tools/diller.cjs` çalıştır. `L(tr, değişken)` gibi değişkenle çağıran yardımcıyı (ör. ayarlardaki `opt`) `tools/diller.cjs` `WRAP` listesine ekle.
+- **Sayı, tarih, büyük harf:** tarih `toLocaleDateString(LOC)` (`LOC = RAY_LOCALE`: tr-TR, en-US, de-DE, es-ES, pt-BR, fr-FR; cihaz aynı dilde başka bölgedeyse onunki, ör. es-MX), yüzde `LP(n)` (`%30` · `30%` · `30 %`), büyük harf `toLocaleUpperCase(RAY_LANG)`.
+- **Hat adı:** `M1 · Liman Hattı` / `M1 · Harbor Line` / `M1 · Linie Hafen` / `M1 · Línea Puerto` / `M1 · Linha Porto` / `M1 · Ligne Port`. 26. hattan sonraki önekler: Almancada tireli önek (`Neu-Hafen`, `Nord-…`), İspanyolca/Portekizce/Fransızcada adın ardından, cinsiyetle değişmeyen sözcük (`Puerto Norte`, `Porto Central`, `Port d’Antan`); bu yüzden "New/Old/Upper…" bu dillerde bilerek serbest çevrilir.
+- **Robot:** `tools/hakem/diller.cjs` (K bölümü; tek başına `node tools/hakem.cjs --only=diller`): sözlükler eksiksiz ve güncel; cihaz dili ve dil seçici; dört dilde 320 px'te açılış, ana sayfa, ayarlar, mağaza, görevler, renk temaları, Hatlar, oyun, kazanma paneli ve 22 kural kartı — Türkçe harf, sözlükte bulunamayan metin, ekranda İngilizce sözcük, taşma ve iki satıra bölünen düğme yok; tarih/yüzde/hat adı biçimi.
+
 ## 2. Yazım ilkeleri
 
 - İngilizce metin Türkçe kadar kısa ve sakin olmalı. Düğme ve çip yazıları dar alanlara sığmalı; uzun gelirse kısaltılır, yazı küçültülmez.
 - Sayılı ifadelerde tekil/çoğul ayrılır: `1 move`, `2 moves`. Yardımcı: `n === 1 ? 'move' : 'moves'`.
 - Türkçe ekler (`'i`, `'e`, `-si`) İngilizcede kaldırılır; cümle yeniden kurulur, kelime kelime çevrilmez.
-- Tarihler `toLocaleDateString(RAY_LANG === 'en' ? 'en-US' : 'tr-TR', …)` ile, büyük harf `toLocaleUpperCase(RAY_LANG)` ile yazılır.
+- Tarihler `toLocaleDateString(LOC, …)` (`LOC = RAY_LOCALE`), yüzde `LP(n)`, büyük harf `toLocaleUpperCase(RAY_LANG)` ile yazılır.
 - Simgeler (★, 🎫, ⏱, ↻, 🔥) iki dilde aynıdır.
 
 ## 3. Sözlük
@@ -90,6 +111,84 @@ Oyun Türkçe ve İngilizce oynanır. Bu belge altyapıyı ve ortak sözlüğü 
 | Zen modu (🍃) | Zen mode |
 | mevsim teması | seasonal theme |
 | Ücretsiz | Free |
+
+### Dört dilin sözlüğü
+
+Oyun dili: kısa, sıcak, "sen/du/tú/você/tu" ile. "Ray" adı hiçbir dilde çevrilmez. Simgeler (★, 🎫, ⏱, ↻, 🔥, ✨, 💡) her dilde aynıdır.
+
+| Türkçe | İngilizce | Almanca | İspanyolca | Portekizce (BR) | Fransızca |
+|---|---|---|---|---|---|
+| Ray · Metro Bulmaca | Ray · Metro Puzzle | Ray · Metro-Rätsel | Ray · Puzle de metro | Ray · Quebra-cabeça do metrô | Ray · Puzzle de métro |
+| bölüm | level | Level | nivel | fase | niveau |
+| hat | line | Linie | línea | linha | ligne |
+| Günün Hattı | Daily Line | Tageslinie | Línea del día | Linha do Dia | Ligne du jour |
+| karo | tile | Kachel | pieza | peça | tuile |
+| ray | track | Gleis | vía | trilho | rail |
+| durak | station | Station | estación | estação | station |
+| merkez | hub | Zentrum | centro | centro | centre |
+| hamle | move | Zug | jugada | jogada | coup |
+| hedef | target | Ziel | objetivo | meta | objectif |
+| ipucu | hint | Tipp | pista | dica | indice |
+| yıldız | star | Stern | estrella | estrela | étoile |
+| bilet 🎫 | ticket | Ticket | billete | bilhete | ticket |
+| kusursuz | perfect | perfekt | perfecto | perfeito | parfait |
+| seri | streak | Serie | racha | sequência | série |
+| seri kalkanı 🛡 | streak shield | Serienschild | escudo de racha | escudo de sequência | bouclier de série |
+| son durak 🏁 | last stop | Endstation | última parada | última parada | terminus |
+| son tren 🚉 · rötar | last train · late | letzter Zug · Verspätung | último tren · retraso | último trem · atraso | dernier train · retard |
+| mola bölümü ☕ | breather level | Pausenlevel | nivel de respiro | fase de pausa | niveau détente |
+| can ❤️ · sınırsız can | life · unlimited lives | Leben · unendlich Leben | vida · vidas ilimitadas | vida · vidas ilimitadas | vie · vies illimitées |
+| güçlendirici | booster | Booster | potenciador | reforço | booster |
+| ek tur · fener · geri al | extra turn · lantern · undo | Extradrehung · Laterne · Rückgängig | giro extra · linterna · deshacer | giro extra · lanterna · desfazer | tour bonus · lanterne · annuler |
+| görevler 🎯 | quests | Aufgaben | misiones | missões | quêtes |
+| haftanın kuralı | rule of the week | Regel der Woche | regla de la semana | regra da semana | règle de la semaine |
+| renk temaları | color themes | Farbthemen | temas de color | temas de cores | thèmes de couleur |
+| tren kaplaması | train livery | Zuglack | diseño de tren | pintura de trem | livrée |
+| sürpriz sandık | surprise chest | Überraschungskiste | cofre sorpresa | baú surpresa | coffre surprise |
+| Sıradan · Nadir · Destansı | Common · Rare · Epic | Gewöhnlich · Selten · Episch | Común · Raro · Épico | Comum · Raro · Épico | Commun · Rare · Épique |
+| Mağaza | Shop | Shop | Tienda | Loja | Boutique |
+| Reklamsız paket | Ad-free pack | Werbefrei-Paket | Paquete sin anuncios | Pacote sem anúncios | Pack sans pub |
+| Tema paketi | Theme pack | Themenpaket | Paquete de temas | Pacote de temas | Pack de thèmes |
+| Başlangıç paketi | Starter pack | Starterpaket | Paquete inicial | Pacote inicial | Pack de départ |
+| Ayarlar | Settings | Einstellungen | Ajustes | Ajustes | Réglages |
+| Oyna | Play | Spielen | Jugar | Jogar | Jouer |
+| Zen modu 🍃 | Zen mode | Zen-Modus | modo zen | modo zen | mode zen |
+| Şehir · semt · rozet | City · district · badge | Stadt · Viertel · Abzeichen | Ciudad · barrio · insignia | Cidade · bairro · medalha | Ville · quartier · badge |
+| İlerlemeyi taşı | Move progress | Fortschritt übertragen | Pasar progreso | Transferir progresso | Transférer la partie |
+| Verilerimi sil | Delete my data | Meine Daten löschen | Borrar mis datos | Apagar meus dados | Effacer mes données |
+| Paylaş | Share | Teilen | Enviar | Enviar | Partager |
+| Kart etiketi "Yeni: …" | New: … | Neu: … | Nuevo: … | Novo: … | Nouveau : … |
+
+**Kural adları**
+
+| Hat | Türkçe | İngilizce | Almanca | İspanyolca | Portekizce (BR) | Fransızca |
+|---|---|---|---|---|---|---|
+| M3 | Eşli karo | Paired tiles | Paarkacheln | Piezas gemelas | Peças gêmeas | Tuiles jumelles |
+| M4 | Ters karo | Reverse tile | Umkehrkachel | Pieza inversa | Peça inversa | Tuile inverse |
+| M5 | Kayan sıra | Sliding row | Schiebereihe | Fila deslizante | Fileira deslizante | Rangée glissante |
+| M6 | Karanlık tünel | Dark tunnel | Dunkler Tunnel | Túnel oscuro | Túnel escuro | Tunnel sombre |
+| M7 | Sayaçlı karo | Counter tile | Zählkachel | Pieza contador | Peça contador | Tuile compteur |
+| M8 | Soğuyan karo | Cooling tile | Frostkachel | Pieza helada | Peça gelada | Tuile givrée |
+| M9 | İki merkez | Two hubs | Zwei Zentren | Dos centros | Dois centros | Deux centres |
+| M10 | Makas | Switch | Weiche | Desvío | Desvio | Aiguillage |
+| M11 | Mühürlü karo | Sealed tile | Siegelkachel | Pieza sellada | Peça lacrada | Tuile scellée |
+| M12 | Döner tabla | Turntable | Drehscheibe | Plataforma giratoria | Plataforma giratória | Plaque tournante |
+| M13 | Köprü | Bridge | Brücke | Puente | Ponte | Pont |
+| M14 | Bakım karosu | Gear tile | Zahnradkachel | Pieza engranaje | Peça engrenagem | Tuile engrenage |
+| M15 | Kapak | Cover | Abdeckung | Tapa | Tampa | Cache |
+| M16 | Tünel ağzı | Tunnel portal | Tunnelportal | Boca de túnel | Boca de túnel | Portail de tunnel |
+| M17 | Yön tabelası | Signpost | Wegweiser | Señal | Placa | Panneau |
+| M18 | Halka hat | Loop line | Ringlinie | Línea circular | Linha circular | Ligne circulaire |
+| M19 | Silik kol | Faint arm | Blasser Arm | Brazo tenue | Braço apagado | Bras pâle |
+| M20 | Gizli depo | Hidden depot | Verstecktes Depot | Depósito oculto | Depósito oculto | Dépôt caché |
+| M21 | Sarmal tahta | Wrap-around board | Endlosbrett | Tablero sin bordes | Tabuleiro sem bordas | Plateau sans bords |
+| M22 | Nehir | River | Fluss | Río | Rio | Rivière |
+| M23 | Kapalı durak | Closed station | Geschlossene Station | Estación cerrada | Estação fechada | Station fermée |
+| M24 | Tarife bölgesi | Fare zone | Tarifzone | Zona tarifaria | Zona tarifária | Zone tarifaire |
+
+Kural metinlerindeki ortak terimler: tampon = buffer = Prellbock · tope · para-choque · butoir; geçiş = crossing = Übergang · cruce · travessia · passage; düz/sapak = straight/branch = gerade/abzweigend · recto/ramal · reto/ramal · tout droit/bifurcation.
+
+Hat adları, tema, tren kaplaması, rozet ve şehir adlarının bütün karşılıkları `tools/diller/sozluk-*.txt`'tedir (yer adları çevrilir, "Ray" ve "Zen" çevrilmez).
 
 ### Kurallar
 

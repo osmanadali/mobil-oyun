@@ -1,0 +1,677 @@
+# Ray — çeviri sözlüğü (3/4): seri takvimi, can, görevler, arşiv, ayarlar, gizlilik, renk temaları
+
+@ Today
+de: Heute
+es: Hoy
+pt: Hoje
+fr: Aujourd’hui
+@ {0}-day streak
+de: {0}-Tage-Serie
+es: Racha de {0} días
+pt: Sequência de {0} dias
+fr: Série de {0} jours
+@ Today’s line is done.
+de: Die heutige Linie ist geschafft.
+es: La línea de hoy está hecha.
+pt: A linha de hoje está feita.
+fr: La ligne du jour est faite.
+@ Finish today’s line to keep your streak!
+de: Schaff die heutige Linie, um deine Serie zu halten!
+es: ¡Termina la línea de hoy para mantener tu racha!
+pt: Termine a linha de hoje para manter sua sequência!
+fr: Finis la ligne du jour pour garder ta série !
+@ Finish the Daily Line to start a streak!
+de: Schaff die Tageslinie, um eine Serie zu starten!
+es: ¡Termina la Línea del día para empezar una racha!
+pt: Termine a Linha do Dia para começar uma sequência!
+fr: Finis la Ligne du jour pour lancer une série !
+@ best streak
+de: beste Serie
+es: mejor racha
+pt: melhor sequência
+fr: meilleure série
+@ total days
+de: Tage gesamt
+es: días en total
+pt: dias no total
+fr: jours au total
+@ OK
+de: OK
+es: Vale
+pt: OK
+fr: OK
+@ Keep your streak
+de: Serie halten
+es: Mantén tu racha
+pt: Mantenha a sequência
+fr: Garde ta série
+@ Past days
+de: Vergangene Tage
+es: Días pasados
+pt: Dias passados
+fr: Jours passés
+@ Finish {0} levels
+de: Schaff {0} Level
+es: Completa {0} niveles
+pt: Complete {0} fases
+fr: Finis {0} niveaux
+@ Finish {0} levels perfect
+de: Schaff {0} Level perfekt
+es: Completa {0} niveles perfectos
+pt: Complete {0} fases perfeitas
+fr: Finis {0} niveaux parfaits
+@ Finish {0} levels without hints
+de: Schaff {0} Level ohne Tipps
+es: Completa {0} niveles sin pistas
+pt: Complete {0} fases sem dicas
+fr: Finis {0} niveaux sans indice
+@ Finish the Daily Line
+de: Schaff die Tageslinie
+es: Completa la Línea del día
+pt: Complete a Linha do Dia
+fr: Finis la Ligne du jour
+@ Finish {0} Daily Lines
+de: Schaff {0} Tageslinien
+es: Completa {0} Líneas del día
+pt: Complete {0} Linhas do Dia
+fr: Finis {0} Lignes du jour
+@ Use {0} {1}
+de: Nutze {0} {1}
+es: Usa {0} {1}
+pt: Use {0} {1}
+fr: Utilise {0} {1}
+@ booster
+de: Booster
+es: potenciador
+pt: reforço
+fr: booster
+@ boosters
+de: Booster
+es: potenciadores
+pt: reforços
+fr: boosters
+@ ❤️∞ 15 min
+de: ❤️∞ 15 Min.
+es: ❤️∞ 15 min
+pt: ❤️∞ 15 min
+fr: ❤️∞ 15 min
+@ ❤️∞ 30 min
+de: ❤️∞ 30 Min.
+es: ❤️∞ 30 min
+pt: ❤️∞ 30 min
+fr: ❤️∞ 30 min
+@ 🚉 Last train gone
+de: 🚉 Letzter Zug weg
+es: 🚉 Se fue el último tren
+pt: 🚉 O último trem partiu
+fr: 🚉 Dernier train parti
+@ The last train left
+de: Der letzte Zug ist weg
+es: Se fue el último tren
+pt: O último trem partiu
+fr: Le dernier train est parti
+@ Level {0} didn’t connect in time.
+de: Level {0} wurde nicht rechtzeitig verbunden.
+es: El nivel {0} no se conectó a tiempo.
+pt: A fase {0} não foi ligada a tempo.
+fr: Le niveau {0} n’a pas été relié à temps.
+@ <b class="nw">1 ❤️</b> lost.
+de: <b class="nw">1 ❤️</b> verloren.
+es: <b class="nw">1 ❤️</b> perdida.
+pt: <b class="nw">1 ❤️</b> perdida.
+fr: <b class="nw">1 ❤️</b> perdue.
+@ Unlimited lives on, no life lost.
+de: Unendlich Leben an, kein Leben verloren.
+es: Vidas ilimitadas activas, no pierdes vida.
+pt: Vidas ilimitadas ativas, nenhuma vida perdida.
+fr: Vies illimitées actives, aucune vie perdue.
+@ ❤️∞ unlimited lives
+de: ❤️∞ unendlich Leben
+es: ❤️∞ vidas ilimitadas
+pt: ❤️∞ vidas ilimitadas
+fr: ❤️∞ vies illimitées
+@ {0} ❤️ left
+de: noch {0} ❤️
+es: quedan {0} ❤️
+pt: restam {0} ❤️
+fr: il reste {0} ❤️
+@ Next life in {0}
+de: Nächstes Leben in {0}
+es: Próxima vida en {0}
+pt: Próxima vida em {0}
+fr: Prochaine vie dans {0}
+@ Out of lives
+de: Keine Leben mehr
+es: Sin vidas
+pt: Sem vidas
+fr: Plus de vies
+@ One life refills every 30 minutes (up to 5). The Daily Line and 🍃 Zen mode cost no lives.
+de: Alle 30 Minuten kommt ein Leben zurück (bis zu 5). Tageslinie und 🍃 Zen-Modus kosten keine Leben.
+es: Recuperas una vida cada 30 minutos (hasta 5). La Línea del día y el modo 🍃 Zen no gastan vidas.
+pt: Uma vida volta a cada 30 minutos (até 5). A Linha do Dia e o modo 🍃 Zen não gastam vidas.
+fr: Une vie revient toutes les 30 minutes (jusqu’à 5). La Ligne du jour et le mode 🍃 Zen ne coûtent rien.
+@ Play
+de: Spielen
+es: Jugar
+pt: Jogar
+fr: Jouer
+@ ▶ Watch a video
+de: ▶ Video ansehen
+es: ▶ Ver un vídeo
+pt: ▶ Ver um vídeo
+fr: ▶ Voir une vidéo
+@ +1 ❤️ · have a good trip
+de: +1 ❤️ · gute Fahrt
+es: +1 ❤️ · buen viaje
+pt: +1 ❤️ · boa viagem
+fr: +1 ❤️ · bon voyage
+@ ☀️ Daily quest · +1 💡
+de: ☀️ Tagesaufgabe · +1 💡
+es: ☀️ Misión diaria · +1 💡
+pt: ☀️ Missão diária · +1 💡
+fr: ☀️ Quête du jour · +1 💡
+@ ☀️ All daily quests done · +1 🎫
+de: ☀️ Alle Tagesaufgaben geschafft · +1 🎫
+es: ☀️ Misiones diarias completas · +1 🎫
+pt: ☀️ Missões diárias completas · +1 🎫
+fr: ☀️ Quêtes du jour finies · +1 🎫
+@ 🎯 Quest done · +1 🎫 +1 {0}
+de: 🎯 Aufgabe geschafft · +1 🎫 +1 {0}
+es: 🎯 Misión completa · +1 🎫 +1 {0}
+pt: 🎯 Missão completa · +1 🎫 +1 {0}
+fr: 🎯 Quête finie · +1 🎫 +1 {0}
+@ 🎯 All weekly quests done · +2 🎫
+de: 🎯 Alle Wochenaufgaben geschafft · +2 🎫
+es: 🎯 Misiones semanales completas · +2 🎫
+pt: 🎯 Missões semanais completas · +2 🎫
+fr: 🎯 Quêtes de la semaine finies · +2 🎫
+@ Quests
+de: Aufgaben
+es: Misiones
+pt: Missões
+fr: Quêtes
+@ Resets at midnight
+de: Neu um Mitternacht
+es: Se renuevan a medianoche
+pt: Renovam à meia-noite
+fr: Renouvelées à minuit
+@ All three → <b>+1 🎫</b> daily reward
+de: Alle drei → <b>+1 🎫</b> Tagesbelohnung
+es: Las tres → <b>+1 🎫</b> premio diario
+pt: As três → <b>+1 🎫</b> prêmio diário
+fr: Les trois → <b>+1 🎫</b> récompense du jour
+@ This week
+de: Diese Woche
+es: Esta semana
+pt: Esta semana
+fr: Cette semaine
+@ New quests tomorrow
+de: Neue Aufgaben morgen
+es: Misiones nuevas mañana
+pt: Missões novas amanhã
+fr: Nouvelles quêtes demain
+@ New quests in {0} days
+de: Neue Aufgaben in {0} Tagen
+es: Misiones nuevas en {0} días
+pt: Missões novas em {0} dias
+fr: Nouvelles quêtes dans {0} jours
+@ All three → <b>+2 🎫</b> weekly reward · Daily Line → +1 🎫
+de: Alle drei → <b>+2 🎫</b> Wochenbelohnung · Tageslinie → +1 🎫
+es: Las tres → <b>+2 🎫</b> premio semanal · Línea del día → +1 🎫
+pt: As três → <b>+2 🎫</b> prêmio semanal · Linha do Dia → +1 🎫
+fr: Les trois → <b>+2 🎫</b> récompense de la semaine · Ligne du jour → +1 🎫
+@ Sunday
+de: Sonntag
+es: Domingo
+pt: Domingo
+fr: Dimanche
+@ rule of the week
+de: Regel der Woche
+es: regla de la semana
+pt: regra da semana
+fr: règle de la semaine
+@ {0} tickets = 1 day
+de: {0} Tickets = 1 Tag
+es: {0} billetes = 1 día
+pt: {0} bilhetes = 1 dia
+fr: {0} tickets = 1 jour
+@ Daily Line archive
+de: Tageslinien-Archiv
+es: Archivo de Líneas del día
+pt: Arquivo da Linha do Dia
+fr: Archives de la Ligne du jour
+@ Last 30 days · each day opens for good with {0} 🎫 · no effect on streak, perfect → +1 🎫
+de: Letzte 30 Tage · jeder Tag öffnet dauerhaft mit {0} 🎫 · zählt nicht zur Serie, perfekt → +1 🎫
+es: Últimos 30 días · cada día se abre para siempre con {0} 🎫 · no cuenta para la racha, perfecto → +1 🎫
+pt: Últimos 30 dias · cada dia abre de vez com {0} 🎫 · não conta na sequência, perfeito → +1 🎫
+fr: 30 derniers jours · chaque jour s’ouvre pour de bon avec {0} 🎫 · sans effet sur la série, parfait → +1 🎫
+@ ticket
+de: Ticket
+es: billete
+pt: bilhete
+fr: ticket
+@ tickets
+de: Tickets
+es: billetes
+pt: bilhetes
+fr: tickets
+@ From perfect levels and quests
+de: Aus perfekten Leveln und Aufgaben
+es: De niveles perfectos y misiones
+pt: De fases perfeitas e missões
+fr: Des niveaux parfaits et des quêtes
+@ {0} 🎫 needed · finish perfect, complete quests
+de: {0} 🎫 nötig · perfekt beenden, Aufgaben erfüllen
+es: Necesitas {0} 🎫 · termina perfecto, completa misiones
+pt: Precisa de {0} 🎫 · termine perfeito, complete missões
+fr: {0} 🎫 requis · finis parfait, fais des quêtes
+@ This day’s Daily Line opens with {0} 🎫 and stays open.
+de: Die Tageslinie dieses Tages öffnet mit {0} 🎫 und bleibt offen.
+es: La Línea de este día se abre con {0} 🎫 y queda abierta.
+pt: A Linha deste dia abre com {0} 🎫 e fica aberta.
+fr: La Ligne de ce jour s’ouvre avec {0} 🎫 et reste ouverte.
+@ Open
+de: Öffnen
+es: Abrir
+pt: Abrir
+fr: Ouvrir
+@ You have {0} {1}
+de: Du hast {0} {1}
+es: Tienes {0} {1}
+pt: Você tem {0} {1}
+fr: Tu as {0} {1}
+@ Auto
+de: Auto
+es: Auto
+pt: Auto
+fr: Auto
+@ Dark
+de: Dunkel
+es: Oscuro
+pt: Escuro
+fr: Sombre
+@ Light
+de: Hell
+es: Claro
+pt: Claro
+fr: Clair
+@ Settings
+de: Einstellungen
+es: Ajustes
+pt: Ajustes
+fr: Réglages
+@ Music
+de: Musik
+es: Música
+pt: Música
+fr: Musique
+@ Sound effects
+de: Soundeffekte
+es: Efectos de sonido
+pt: Efeitos sonoros
+fr: Effets sonores
+@ Vibration
+de: Vibration
+es: Vibración
+pt: Vibração
+fr: Vibration
+@ Daily reminder
+de: Tägliche Erinnerung
+es: Aviso diario
+pt: Lembrete diário
+fr: Rappel quotidien
+@ 🍃 Zen mode
+de: 🍃 Zen-Modus
+es: 🍃 Modo zen
+pt: 🍃 Modo zen
+fr: 🍃 Mode zen
+@ Theme
+de: Design
+es: Tema
+pt: Tema
+fr: Thème
+@ Language
+de: Sprache
+es: Idioma
+pt: Idioma
+fr: Langue
+@ Color themes
+de: Farbthemen
+es: Temas de color
+pt: Temas de cores
+fr: Thèmes de couleur
+@ How to play?
+de: Wie spielt man?
+es: ¿Cómo se juega?
+pt: Como jogar?
+fr: Comment jouer ?
+@ Move progress
+de: Fortschritt übertragen
+es: Pasar progreso
+pt: Transferir progresso
+fr: Transférer la partie
+@ To a new phone
+de: Auf ein neues Handy
+es: A un móvil nuevo
+pt: Para um celular novo
+fr: Vers un nouveau téléphone
+@ Contact us
+de: Schreib uns
+es: Escríbenos
+pt: Fale conosco
+fr: Écris-nous
+@ Ideas · bugs
+de: Ideen · Fehler
+es: Ideas · errores
+pt: Ideias · erros
+fr: Idées · bugs
+@ Privacy
+de: Datenschutz
+es: Privacidad
+pt: Privacidade
+fr: Confidentialité
+@ Policy · data
+de: Richtlinie · Daten
+es: Política · datos
+pt: Política · dados
+fr: Règles · données
+@ Done
+de: Fertig
+es: Listo
+pt: Pronto
+fr: OK
+@ 🍃 Zen: no timer or move target · every finish 3 ★ · no 🎫
+de: 🍃 Zen: keine Zeit, kein Zugziel · jedes Ziel 3 ★ · keine 🎫
+es: 🍃 Zen: sin reloj ni objetivo · cada final 3 ★ · sin 🎫
+pt: 🍃 Zen: sem relógio nem meta · todo final 3 ★ · sem 🎫
+fr: 🍃 Zen : ni chrono ni objectif · chaque fin 3 ★ · pas de 🎫
+@ Zen off · targets are back
+de: Zen aus · Ziele sind zurück
+es: Zen desactivado · vuelven los objetivos
+pt: Zen desligado · as metas voltaram
+fr: Zen désactivé · les objectifs reviennent
+@ <div><i>📱</i><span><b>No account</b> · your progress stays on this device</span></div><div><i>🔔</i><span>Reminders are scheduled on your device</span></div><div><i>📺</i><span>Ads by <b>Google AdMob</b> · ad ID and device info are processed</span></div><div><i>📊</i><span>Anonymous game stats via <b>Firebase</b> · no ad ID · off where consent is required</span></div><div><i>💳</i><span>Payments via the store</span></div>
+de: <div><i>📱</i><span><b>Kein Konto</b> · dein Fortschritt bleibt auf diesem Gerät</span></div><div><i>🔔</i><span>Erinnerungen plant dein Gerät</span></div><div><i>📺</i><span>Werbung von <b>Google AdMob</b> · Werbe-ID und Geräteinfos werden verarbeitet</span></div><div><i>📊</i><span>Anonyme Spielstatistik über <b>Firebase</b> · keine Werbe-ID · aus, wo Einwilligung nötig ist</span></div><div><i>💳</i><span>Zahlungen über den Store</span></div>
+es: <div><i>📱</i><span><b>Sin cuenta</b> · tu progreso se queda en este dispositivo</span></div><div><i>🔔</i><span>Los avisos se programan en tu dispositivo</span></div><div><i>📺</i><span>Anuncios de <b>Google AdMob</b> · se procesan el ID de publicidad y datos del dispositivo</span></div><div><i>📊</i><span>Estadísticas anónimas con <b>Firebase</b> · sin ID de publicidad · desactivadas donde se pide consentimiento</span></div><div><i>💳</i><span>Pagos a través de la tienda</span></div>
+pt: <div><i>📱</i><span><b>Sem conta</b> · seu progresso fica neste aparelho</span></div><div><i>🔔</i><span>Os lembretes são agendados no seu aparelho</span></div><div><i>📺</i><span>Anúncios do <b>Google AdMob</b> · ID de publicidade e dados do aparelho são processados</span></div><div><i>📊</i><span>Estatísticas anônimas pelo <b>Firebase</b> · sem ID de publicidade · desligadas onde o consentimento é exigido</span></div><div><i>💳</i><span>Pagamentos pela loja</span></div>
+fr: <div><i>📱</i><span><b>Pas de compte</b> · ta progression reste sur cet appareil</span></div><div><i>🔔</i><span>Les rappels sont programmés sur ton appareil</span></div><div><i>📺</i><span>Pubs par <b>Google AdMob</b> · ID publicitaire et infos de l’appareil traités</span></div><div><i>📊</i><span>Stats de jeu anonymes via <b>Firebase</b> · sans ID publicitaire · désactivées là où le consentement est requis</span></div><div><i>💳</i><span>Paiements via le store</span></div>
+@ Privacy policy
+de: Datenschutzerklärung
+es: Política de privacidad
+pt: Política de privacidade
+fr: Politique de confidentialité
+@ Ad privacy options
+de: Werbe-Datenschutz
+es: Privacidad de anuncios
+pt: Privacidade de anúncios
+fr: Confidentialité des pubs
+@ Delete my data
+de: Meine Daten löschen
+es: Borrar mis datos
+pt: Apagar meus dados
+fr: Effacer mes données
+@ On your new phone, open <b>Settings › Move progress</b> and paste this code. The ad-free and theme packs don’t move with the code; restore them from the store.
+de: Öffne auf dem neuen Handy <b>Einstellungen › Fortschritt übertragen</b> und füge diesen Code ein. Werbefrei- und Themenpaket wandern nicht mit; stell sie über den Store wieder her.
+es: En tu móvil nuevo, abre <b>Ajustes › Pasar progreso</b> y pega este código. Los paquetes sin anuncios y de temas no pasan con el código; restáuralos desde la tienda.
+pt: No celular novo, abra <b>Ajustes › Transferir progresso</b> e cole este código. Os pacotes sem anúncios e de temas não vão junto; restaure-os pela loja.
+fr: Sur ton nouveau téléphone, ouvre <b>Réglages › Transférer la partie</b> et colle ce code. Les packs sans pub et de thèmes ne suivent pas le code ; restaure-les depuis le store.
+@ Copy code
+de: Code kopieren
+es: Copiar código
+pt: Copiar código
+fr: Copier le code
+@ Level {0} · ★ {1}
+de: Level {0} · ★ {1}
+es: Nivel {0} · ★ {1}
+pt: Fase {0} · ★ {1}
+fr: Niveau {0} · ★ {1}
+@ Paste the code from your other phone
+de: Füge den Code von deinem anderen Handy ein
+es: Pega el código de tu otro móvil
+pt: Cole o código do outro celular
+fr: Colle le code de ton autre téléphone
+@ Load code
+de: Code laden
+es: Cargar código
+pt: Carregar código
+fr: Charger le code
+@ Code copied · paste it on your new phone
+de: Code kopiert · füge ihn auf dem neuen Handy ein
+es: Código copiado · pégalo en tu móvil nuevo
+pt: Código copiado · cole no celular novo
+fr: Code copié · colle-le sur ton nouveau téléphone
+@ Select and copy the code
+de: Markiere und kopiere den Code
+es: Selecciona y copia el código
+pt: Selecione e copie o código
+fr: Sélectionne et copie le code
+@ Invalid code · paste all of it
+de: Ungültiger Code · füge ihn ganz ein
+es: Código no válido · pégalo entero
+pt: Código inválido · cole ele inteiro
+fr: Code invalide · colle-le en entier
+@ This phone’s progress will be replaced · load Level {0}?
+de: Der Fortschritt auf diesem Handy wird ersetzt · Level {0} laden?
+es: Se reemplazará el progreso de este móvil · ¿cargar el nivel {0}?
+pt: O progresso deste celular será substituído · carregar a fase {0}?
+fr: La progression de ce téléphone sera remplacée · charger le niveau {0} ?
+@ <h2>Delete your data?</h2> <p>All progress on this device will be erased: levels, ★, 🎫, streak, themes and settings. <b>This can’t be undone.</b></p> <p class="tip">If you bought the Ad-free pack, it comes back from your store account.</p> <button id="mNo" class="btn primary"><span>Cancel</span></button> <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">Yes, delete it all</button>
+de: <h2>Deine Daten löschen?</h2> <p>Der ganze Fortschritt auf diesem Gerät wird gelöscht: Level, ★, 🎫, Serie, Themen und Einstellungen. <b>Das lässt sich nicht rückgängig machen.</b></p> <p class="tip">Hast du das Werbefrei-Paket gekauft, kommt es über dein Store-Konto zurück.</p> <button id="mNo" class="btn primary"><span>Abbrechen</span></button> <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">Ja, alles löschen</button>
+es: <h2>¿Borrar tus datos?</h2> <p>Se borrará todo el progreso de este dispositivo: niveles, ★, 🎫, racha, temas y ajustes. <b>No se puede deshacer.</b></p> <p class="tip">Si compraste el Paquete sin anuncios, vuelve desde tu cuenta de la tienda.</p> <button id="mNo" class="btn primary"><span>Cancelar</span></button> <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">Sí, borrar todo</button>
+pt: <h2>Apagar seus dados?</h2> <p>Todo o progresso deste aparelho será apagado: fases, ★, 🎫, sequência, temas e ajustes. <b>Não dá para desfazer.</b></p> <p class="tip">Se você comprou o Pacote sem anúncios, ele volta pela sua conta da loja.</p> <button id="mNo" class="btn primary"><span>Cancelar</span></button> <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">Sim, apagar tudo</button>
+fr: <h2>Effacer tes données ?</h2> <p>Toute la progression de cet appareil sera effacée : niveaux, ★, 🎫, série, thèmes et réglages. <b>C’est irréversible.</b></p> <p class="tip">Si tu as acheté le Pack sans pub, il revient via ton compte du store.</p> <button id="mNo" class="btn primary"><span>Annuler</span></button> <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">Oui, tout effacer</button>
+@ Selected ✓
+de: Gewählt ✓
+es: Elegido ✓
+pt: Escolhido ✓
+fr: Choisi ✓
+@ Select
+de: Wählen
+es: Elegir
+pt: Escolher
+fr: Choisir
+@ 💛 Ad-free
+de: 💛 Werbefrei
+es: 💛 Sin anuncios
+pt: 💛 Sem anúncios
+fr: 💛 Sans pub
+@ 🎁 Free
+de: 🎁 Gratis
+es: 🎁 Gratis
+pt: 🎁 Grátis
+fr: 🎁 Gratuit
+@ Every <b>perfect</b> level (⏱ and ↻ targets) gives 1 🎫. Spend 🎫 on themes and chests.
+de: Jedes <b>perfekte</b> Level (⏱- und ↻-Ziel) gibt 1 🎫. Gib 🎫 für Themen und Kisten aus.
+es: Cada nivel <b>perfecto</b> (objetivos ⏱ y ↻) da 1 🎫. Gasta 🎫 en temas y cofres.
+pt: Cada fase <b>perfeita</b> (metas ⏱ e ↻) dá 1 🎫. Use 🎫 em temas e baús.
+fr: Chaque niveau <b>parfait</b> (objectifs ⏱ et ↻) donne 1 🎫. Dépense tes 🎫 en thèmes et coffres.
+@ Balance
+de: Guthaben
+es: Saldo
+pt: Saldo
+fr: Solde
+@ Surprise chest
+de: Überraschungskiste
+es: Cofre sorpresa
+pt: Baú surpresa
+fr: Coffre surprise
+@ Hints · 🛡 shield · 🚆 train livery
+de: Tipps · 🛡 Schild · 🚆 Zuglack
+es: Pistas · 🛡 escudo · 🚆 diseño de tren
+pt: Dicas · 🛡 escudo · 🚆 pintura de trem
+fr: Indices · 🛡 bouclier · 🚆 livrée
+@ Next up
+de: Als Nächstes
+es: Siguiente
+pt: Próximo
+fr: Prochain
+@ {0} Seasonal theme · free until {1}
+de: {0} Saisonthema · gratis bis {1}
+es: {0} Tema de temporada · gratis hasta el {1}
+pt: {0} Tema da estação · grátis até {1}
+fr: {0} Thème de saison · gratuit jusqu’au {1}
+@ 🍂 Seasonal themes
+de: 🍂 Saisonthemen
+es: 🍂 Temas de temporada
+pt: 🍂 Temas da estação
+fr: 🍂 Thèmes de saison
+@ 🎫 Ticket themes
+de: 🎫 Ticket-Themen
+es: 🎫 Temas con billetes
+pt: 🎫 Temas com bilhetes
+fr: 🎫 Thèmes à tickets
+@ 💛 Ad-free pack only
+de: 💛 Nur im Werbefrei-Paket
+es: 💛 Solo con el Paquete sin anuncios
+pt: 💛 Só no Pacote sem anúncios
+fr: 💛 Pack sans pub uniquement
+@ Earn tickets
+de: Tickets holen
+es: Gana billetes
+pt: Ganhe bilhetes
+fr: Gagne des tickets
+@ {0} {1} a perfect finish
+de: {0} {1} auf ein perfektes Ende
+es: {0} {1} un final perfecto
+pt: {0} {1} um final perfeito
+fr: {0} {1} une fin parfaite
+@ level awaits
+de: Level wartet
+es: nivel espera
+pt: fase espera
+fr: niveau attend
+@ levels await
+de: Level warten
+es: niveles esperan
+pt: fases esperam
+fr: niveaux attendent
+@ Beat new levels within ⏱ and ↻ targets
+de: Schaff neue Level mit ⏱- und ↻-Ziel
+es: Supera niveles nuevos con los objetivos ⏱ y ↻
+pt: Vença fases novas dentro das metas ⏱ e ↻
+fr: Finis de nouveaux niveaux dans les objectifs ⏱ et ↻
+@ This costs <b class="nw">🎫 {0}</b>. You have <span class="nw">🎫 {1}</span> → <b class="nw">🎫 {2}</b> left.
+de: Das kostet <b class="nw">🎫 {0}</b>. Du hast <span class="nw">🎫 {1}</span> → übrig bleiben <b class="nw">🎫 {2}</b>.
+es: Cuesta <b class="nw">🎫 {0}</b>. Tienes <span class="nw">🎫 {1}</span> → te quedan <b class="nw">🎫 {2}</b>.
+pt: Custa <b class="nw">🎫 {0}</b>. Você tem <span class="nw">🎫 {1}</span> → sobram <b class="nw">🎫 {2}</b>.
+fr: Ça coûte <b class="nw">🎫 {0}</b>. Tu as <span class="nw">🎫 {1}</span> → il restera <b class="nw">🎫 {2}</b>.
+@ <br>Then you’ll need {0} more 🎫 for {1}.
+de: <br>Für {1} brauchst du dann noch {0} 🎫.
+es: <br>Luego te faltarán {0} 🎫 para {1}.
+pt: <br>Depois faltarão {0} 🎫 para {1}.
+fr: <br>Ensuite il te faudra {0} 🎫 de plus pour {1}.
+@ Use it right away
+de: Gleich nutzen
+es: Usar ya
+pt: Usar agora
+fr: L’utiliser tout de suite
+@ 🎨 {0} is yours!
+de: 🎨 {0} gehört dir!
+es: 🎨 ¡{0} es tuyo!
+pt: 🎨 {0} é seu!
+fr: 🎨 {0} est à toi !
+@ ⏱ {0} s late
+de: ⏱ {0} s zu spät
+es: ⏱ {0} s tarde
+pt: ⏱ {0} s atrasado
+fr: ⏱ {0} s de retard
+@ ↻ {0} {1} over
+de: ↻ {0} {1} zu viel
+es: ↻ {0} {1} de más
+pt: ↻ {0} {1} a mais
+fr: ↻ {0} {1} de trop
+@ You need <b>{0} more 🎫</b> for <b>{1}</b>.␣
+de: Für <b>{1}</b> brauchst du <b>noch {0} 🎫</b>.␣
+es: Te faltan <b>{0} 🎫</b> para <b>{1}</b>.␣
+pt: Faltam <b>{0} 🎫</b> para <b>{1}</b>.␣
+fr: Il te faut <b>{0} 🎫 de plus</b> pour <b>{1}</b>.␣
+@ Beat {0} within the <b>⏱ time</b> and <b>↻ move</b> targets: 1 🎫 each.
+de: Schaff {0} mit <b>⏱ Zeit</b>- und <b>↻ Zug</b>-Ziel: je 1 🎫.
+es: Supera {0} con los objetivos de <b>⏱ tiempo</b> y <b>↻ jugadas</b>: 1 🎫 cada uno.
+pt: Vença {0} dentro das metas de <b>⏱ tempo</b> e <b>↻ jogadas</b>: 1 🎫 cada.
+fr: Finis {0} dans les objectifs <b>⏱ temps</b> et <b>↻ coups</b> : 1 🎫 chacun.
+@ the levels below
+de: die Level unten
+es: los niveles de abajo
+pt: as fases abaixo
+fr: les niveaux ci-dessous
+@ levels
+de: Level
+es: niveles
+pt: fases
+fr: niveaux
+@ ★★☆ levels are closest to perfect · the Daily Line also gives 1 🎫, 2 if perfect
+de: ★★☆-Level sind am nächsten an perfekt · auch die Tageslinie gibt 1 🎫, perfekt 2
+es: Los niveles ★★☆ están más cerca de perfecto · la Línea del día también da 1 🎫, 2 si es perfecta
+pt: Fases ★★☆ estão mais perto do perfeito · a Linha do Dia também dá 1 🎫, 2 se perfeita
+fr: Les niveaux ★★☆ sont les plus proches du parfait · la Ligne du jour donne aussi 1 🎫, 2 si parfaite
+@ Every level you’ve played is perfect! 🎉␣
+de: Jedes gespielte Level ist perfekt! 🎉␣
+es: ¡Todos tus niveles son perfectos! 🎉␣
+pt: Todas as fases que você jogou estão perfeitas! 🎉␣
+fr: Tous tes niveaux joués sont parfaits ! 🎉␣
+@ New levels and the Daily Line bring new 🎫.
+de: Neue Level und die Tageslinie bringen neue 🎫.
+es: Los niveles nuevos y la Línea del día traen más 🎫.
+pt: Fases novas e a Linha do Dia trazem mais 🎫.
+fr: Les nouveaux niveaux et la Ligne du jour rapportent des 🎫.
+@ Back to themes
+de: Zurück zu den Themen
+es: Volver a los temas
+pt: Voltar aos temas
+fr: Retour aux thèmes
+@ Common
+de: Gewöhnlich
+es: Común
+pt: Comum
+fr: Commun
+@ Rare
+de: Selten
+es: Raro
+pt: Raro
+fr: Rare
+@ Epic
+de: Episch
+es: Épico
+pt: Épico
+fr: Épique
+@ Line color
+de: Linienfarbe
+es: Color de línea
+pt: Cor da linha
+fr: Couleur de ligne
+@ Red Express
+de: Roter Express
+es: Expreso Rojo
+pt: Expresso Vermelho
+fr: Express Rouge
+@ Night Train
+de: Nachtzug
+es: Tren Nocturno
+pt: Trem Noturno
+fr: Train de Nuit
+@ Mint
+de: Minze
+es: Menta
+pt: Menta
+fr: Menthe
+@ Ice
+de: Eis
+es: Hielo
+pt: Gelo
+fr: Glace
+@ Lavender
+de: Lavendel
+es: Lavanda
+pt: Lavanda
+fr: Lavande
+@ Gold Express
+de: Gold-Express
+es: Expreso Dorado
+pt: Expresso Dourado
+fr: Express Doré
+@ A locked counter tile turns once more
+de: Eine gesperrte Zählkachel dreht sich noch einmal
+es: Una pieza contador bloqueada gira una vez más
+pt: Uma peça contador travada gira mais uma vez
+fr: Une tuile compteur bloquée tourne encore une fois

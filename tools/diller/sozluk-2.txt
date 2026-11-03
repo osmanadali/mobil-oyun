@@ -1,0 +1,752 @@
+# Ray — çeviri sözlüğü (2/4): kazanma paneli, paylaşım, bildirimler, mağaza, ödüllü video, seri
+
+@ Finally! 👏
+de: Endlich! 👏
+es: ¡Por fin! 👏
+pt: Finalmente! 👏
+fr: Enfin ! 👏
+@ 📅 Perfect past day · +1 🎫
+de: 📅 Vergangener Tag perfekt · +1 🎫
+es: 📅 Día pasado perfecto · +1 🎫
+pt: 📅 Dia passado perfeito · +1 🎫
+fr: 📅 Jour passé parfait · +1 🎫
+@ 🔥 {0}-day streak · +1 hint · +1 🎫
+de: 🔥 {0}-Tage-Serie · +1 Tipp · +1 🎫
+es: 🔥 Racha de {0} días · +1 pista · +1 🎫
+pt: 🔥 Sequência de {0} dias · +1 dica · +1 🎫
+fr: 🔥 Série de {0} jours · +1 indice · +1 🎫
+@ ✨ {0} perfect in a row · +1 bonus 🎫
+de: ✨ {0} perfekt in Folge · +1 Bonus-🎫
+es: ✨ {0} perfectos seguidos · +1 🎫 extra
+pt: ✨ {0} perfeitas seguidas · +1 🎫 bônus
+fr: ✨ {0} parfaits d’affilée · +1 🎫 bonus
+@ ✨ 3 perfect in a row · +1 hint
+de: ✨ 3 perfekt in Folge · +1 Tipp
+es: ✨ 3 perfectos seguidos · +1 pista
+pt: ✨ 3 perfeitas seguidas · +1 dica
+fr: ✨ 3 parfaits d’affilée · +1 indice
+@ ✨ Streak is back · {0}
+de: ✨ Serie ist zurück · {0}
+es: ✨ Racha recuperada · {0}
+pt: ✨ Sequência de volta · {0}
+fr: ✨ Série retrouvée · {0}
+@ 🛡 Shield saved your streak · ✨{0}
+de: 🛡 Schild hat deine Serie gerettet · ✨{0}
+es: 🛡 El escudo salvó tu racha · ✨{0}
+pt: 🛡 O escudo salvou sua sequência · ✨{0}
+fr: 🛡 Le bouclier a sauvé ta série · ✨{0}
+@ New best: {0}
+de: Neuer Rekord: {0}
+es: Nuevo récord: {0}
+pt: Novo recorde: {0}
+fr: Nouveau record : {0}
+@ 🎁 Line complete · +2 hints
+de: 🎁 Linie komplett · +2 Tipps
+es: 🎁 Línea completa · +2 pistas
+pt: 🎁 Linha completa · +2 dicas
+fr: 🎁 Ligne terminée · +2 indices
+@ 🏁 Perfect last stop · +1 bonus 🎫
+de: 🏁 Endstation perfekt · +1 Bonus-🎫
+es: 🏁 Última parada perfecta · +1 🎫 extra
+pt: 🏁 Última parada perfeita · +1 🎫 bônus
+fr: 🏁 Terminus parfait · +1 🎫 bonus
+@ 🎫 +1 ticket
+de: 🎫 +1 Ticket
+es: 🎫 +1 billete
+pt: 🎫 +1 bilhete
+fr: 🎫 +1 ticket
+@ 🎫 3 new tickets · +1 hint
+de: 🎫 3 neue Tickets · +1 Tipp
+es: 🎫 3 billetes nuevos · +1 pista
+pt: 🎫 3 bilhetes novos · +1 dica
+fr: 🎫 3 nouveaux tickets · +1 indice
+@ 🎨 {0} available (🎫 {1})
+de: 🎨 {0} verfügbar (🎫 {1})
+es: 🎨 {0} disponible (🎫 {1})
+pt: 🎨 {0} disponível (🎫 {1})
+fr: 🎨 {0} disponible (🎫 {1})
+@ NEW LINE OPEN
+de: NEUE LINIE OFFEN
+es: LÍNEA NUEVA ABIERTA
+pt: NOVA LINHA ABERTA
+fr: NOUVELLE LIGNE
+@ NEW THEME
+de: NEUES THEMA
+es: TEMA NUEVO
+pt: TEMA NOVO
+fr: NOUVEAU THÈME
+@ PERFECT
+de: PERFEKT
+es: PERFECTO
+pt: PERFEITO
+fr: PARFAIT
+@ For perfect
+de: Für perfekt
+es: Para perfecto
+pt: Para perfeito
+fr: Pour un parfait
+@  and␣
+de:  und␣
+es:  y␣
+pt:  e␣
+fr:  et␣
+@ Share
+de: Teilen
+es: Enviar
+pt: Enviar
+fr: Partager
+@ Home
+de: Start
+es: Inicio
+pt: Início
+fr: Accueil
+@ So close
+de: Knapp daneben
+es: Casi
+pt: Por pouco
+fr: Presque
+@ Play ad-free · {0}
+de: Werbefrei spielen · {0}
+es: Juega sin anuncios · {0}
+pt: Jogue sem anúncios · {0}
+fr: Jouer sans pub · {0}
+@ Play ad-free
+de: Werbefrei spielen
+es: Juega sin anuncios
+pt: Jogue sem anúncios
+fr: Jouer sans pub
+@ Challenge a friend
+de: Freund herausfordern
+es: Reta a un amigo
+pt: Desafie um amigo
+fr: Défie un ami
+@ Archive
+de: Archiv
+es: Archivo
+pt: Arquivo
+fr: Archives
+@ Try again
+de: Nochmal
+es: Reintentar
+pt: Tentar de novo
+fr: Réessayer
+@ ✨ Win back your {0} streak
+de: ✨ Hol deine {0}er-Serie zurück
+es: ✨ Recupera tu racha de {0}
+pt: ✨ Recupere sua sequência de {0}
+fr: ✨ Récupère ta série de {0}
+@ Lines
+de: Linien
+es: Líneas
+pt: Linhas
+fr: Lignes
+@ Next
+de: Weiter
+es: Siguiente
+pt: Próxima
+fr: Suivant
+@ Next line locked
+de: Nächste Linie gesperrt
+es: Siguiente línea bloqueada
+pt: Próxima linha bloqueada
+fr: Ligne suivante verrouillée
+@ earn stars
+de: Sterne sammeln
+es: gana estrellas
+pt: ganhe estrelas
+fr: gagne des étoiles
+@ Retry
+de: Nochmal
+es: Repetir
+pt: Repetir
+fr: Rejouer
+@ Past day done!
+de: Vergangener Tag geschafft!
+es: ¡Día pasado completado!
+pt: Dia passado concluído!
+fr: Jour passé réussi !
+@ Practice done!
+de: Übung geschafft!
+es: ¡Práctica completada!
+pt: Treino concluído!
+fr: Entraînement réussi !
+@ Daily Line done!
+de: Tageslinie geschafft!
+es: ¡Línea del día completada!
+pt: Linha do Dia concluída!
+fr: Ligne du jour réussie !
+@ Connected!
+de: Verbunden!
+es: ¡Conectado!
+pt: Conectado!
+fr: Connecté !
+@ See the line
+de: Linie ansehen
+es: Ver la línea
+pt: Ver a linha
+fr: Voir la ligne
+@ See line
+de: Linie ansehen
+es: Ver línea
+pt: Ver linha
+fr: Voir la ligne
+@ time
+de: Zeit
+es: tiempo
+pt: tempo
+fr: temps
+@ ⏱ on time ★
+de: ⏱ pünktlich ★
+es: ⏱ a tiempo ★
+pt: ⏱ no horário ★
+fr: ⏱ à l’heure ★
+@ ⏱ late ✗
+de: ⏱ verspätet ✗
+es: ⏱ tarde ✗
+pt: ⏱ atrasado ✗
+fr: ⏱ en retard ✗
+@ ▶ Double
+de: ▶ Doppelt
+es: ▶ Doble
+pt: ▶ Dobro
+fr: ▶ Double
+@ No reward · watch the video to the end
+de: Keine Belohnung · schau das Video bis zum Ende
+es: Sin premio · mira el vídeo hasta el final
+pt: Sem prêmio · assista ao vídeo até o fim
+fr: Pas de récompense · regarde la vidéo jusqu’au bout
+@ No connection · try later
+de: Keine Verbindung · später nochmal
+es: Sin conexión · prueba más tarde
+pt: Sem conexão · tente mais tarde
+fr: Pas de connexion · réessaie plus tard
+@ No video right now · try again soon
+de: Gerade kein Video · gleich nochmal
+es: Ahora no hay vídeo · prueba pronto
+pt: Sem vídeo agora · tente daqui a pouco
+fr: Pas de vidéo pour l’instant · réessaie bientôt
+@ Loading…
+de: Lädt…
+es: Cargando…
+pt: Carregando…
+fr: Chargement…
+@ +{0} more {1} 🎁
+de: +{0} {1} extra 🎁
+es: +{0} {1} más 🎁
+pt: +{0} {1} a mais 🎁
+fr: +{0} {1} en plus 🎁
+@ Results
+de: Ergebnis
+es: Resultado
+pt: Resultado
+fr: Résultat
+@ Daily Line done
+de: Tageslinie geschafft
+es: Línea del día completada
+pt: Linha do Dia concluída
+fr: Ligne du jour réussie
+@ day streak
+de: Tage Serie
+es: días de racha
+pt: dias seguidos
+fr: jours de série
+@ Replay · practice
+de: Nochmal · Übung
+es: Repetir · práctica
+pt: Jogar de novo · treino
+fr: Rejouer · entraînement
+@ Practice won’t change your result or streak
+de: Übung ändert weder Ergebnis noch Serie
+es: La práctica no cambia tu resultado ni tu racha
+pt: O treino não muda seu resultado nem sua sequência
+fr: L’entraînement ne change ni ton résultat ni ta série
+@ Ray 🚇 Daily Line {0}/{1}
+de: Ray 🚇 Tageslinie {1}.{0}.
+es: Ray 🚇 Línea del día {1}/{0}
+pt: Ray 🚇 Linha do Dia {1}/{0}
+fr: Ray 🚇 Ligne du jour {1}/{0}
+@  · past day
+de:  · vergangener Tag
+es:  · día pasado
+pt:  · dia passado
+fr:  · jour passé
+@  🔥 {0}-day streak
+de:  🔥 {0}-Tage-Serie
+es:  🔥 racha de {0} días
+pt:  🔥 sequência de {0} dias
+fr:  🔥 série de {0} jours
+@ How few moves can you do it in?
+de: Mit wie wenigen Zügen schaffst du es?
+es: ¿En cuántas jugadas lo logras?
+pt: Em quantas jogadas você consegue?
+fr: En combien de coups tu y arrives ?
+@ Copied to clipboard
+de: In die Zwischenablage kopiert
+es: Copiado al portapapeles
+pt: Copiado para a área de transferência
+fr: Copié dans le presse-papiers
+@ Level {0} is waiting · {1} ★ to the next line
+de: Level {0} wartet · noch {1} ★ bis zur nächsten Linie
+es: El nivel {0} te espera · {1} ★ para la próxima línea
+pt: A fase {0} te espera · {1} ★ para a próxima linha
+fr: Le niveau {0} t’attend · {1} ★ avant la prochaine ligne
+@ Level {0} is waiting · a one-minute puzzle
+de: Level {0} wartet · ein Rätsel für eine Minute
+es: El nivel {0} te espera · un puzle de un minuto
+pt: A fase {0} te espera · um quebra-cabeça de um minuto
+fr: Le niveau {0} t’attend · un puzzle d’une minute
+@ Pick up where you left off 🚇
+de: Mach weiter, wo du warst 🚇
+es: Sigue donde lo dejaste 🚇
+pt: Continue de onde parou 🚇
+fr: Reprends là où tu en étais 🚇
+@ The lines are waiting 🚇
+de: Die Linien warten 🚇
+es: Las líneas te esperan 🚇
+pt: As linhas estão esperando 🚇
+fr: Les lignes t’attendent 🚇
+@ Your streak is about to break 💔
+de: Deine Serie reißt gleich 💔
+es: Tu racha está a punto de romperse 💔
+pt: Sua sequência está quase acabando 💔
+fr: Ta série va se briser 💔
+@ Your Daily Line is waiting 🚇
+de: Deine Tageslinie wartet 🚇
+es: Tu Línea del día te espera 🚇
+pt: Sua Linha do Dia está esperando 🚇
+fr: Ta Ligne du jour t’attend 🚇
+@ You can still save your {0}-day streak today
+de: Heute kannst du deine {0}-Tage-Serie noch retten
+es: Hoy aún puedes salvar tu racha de {0} días
+pt: Hoje você ainda pode salvar sua sequência de {0} dias
+fr: Tu peux encore sauver ta série de {0} jours aujourd’hui
+@ 🔥 Don’t let your {0}-day streak go out today
+de: 🔥 Lass deine {0}-Tage-Serie heute nicht erlöschen
+es: 🔥 No dejes que tu racha de {0} días se apague hoy
+pt: 🔥 Não deixe sua sequência de {0} dias apagar hoje
+fr: 🔥 Ne laisse pas ta série de {0} jours s’éteindre
+@ A one-minute puzzle · connect the line, light up the city
+de: Ein Rätsel für eine Minute · Linie verbinden, Stadt erleuchten
+es: Un puzle de un minuto · conecta la línea, ilumina la ciudad
+pt: Um quebra-cabeça de um minuto · ligue a linha, ilumine a cidade
+fr: Un puzzle d’une minute · relie la ligne, illumine la ville
+@ A new Daily Line is open 🚇
+de: Eine neue Tageslinie ist offen 🚇
+es: Hay una nueva Línea del día 🚇
+pt: Uma nova Linha do Dia chegou 🚇
+fr: Une nouvelle Ligne du jour est ouverte 🚇
+@ 🔥 {0}-day streak · add one more today
+de: 🔥 {0}-Tage-Serie · heute einen Tag mehr
+es: 🔥 Racha de {0} días · suma uno más hoy
+pt: 🔥 Sequência de {0} dias · some mais um hoje
+fr: 🔥 Série de {0} jours · ajoute un jour aujourd’hui
+@ Today’s puzzle is ready · connect a line for the trip
+de: Das heutige Rätsel ist bereit · verbinde eine Linie für die Fahrt
+es: El puzle de hoy está listo · conecta una línea para el viaje
+pt: O quebra-cabeça de hoje está pronto · ligue uma linha para a viagem
+fr: Le puzzle du jour est prêt · relie une ligne pour le trajet
+@ The city misses you 🌃
+de: Die Stadt vermisst dich 🌃
+es: La ciudad te echa de menos 🌃
+pt: A cidade sente sua falta 🌃
+fr: La ville s’ennuie de toi 🌃
+@ Level {0} is waiting · earn ★, open new lines
+de: Level {0} wartet · sammle ★, öffne neue Linien
+es: El nivel {0} te espera · gana ★, abre líneas nuevas
+pt: A fase {0} te espera · ganhe ★, abra linhas novas
+fr: Le niveau {0} t’attend · gagne des ★, ouvre des lignes
+@ The lines have stopped 🚦
+de: Die Linien stehen still 🚦
+es: Las líneas se han parado 🚦
+pt: As linhas pararam 🚦
+fr: Les lignes sont à l’arrêt 🚦
+@ Spare a minute and bring the city back to life
+de: Nimm dir eine Minute und erweck die Stadt wieder zum Leben
+es: Dedica un minuto y devuelve la vida a la ciudad
+pt: Tire um minuto e traga a cidade de volta à vida
+fr: Prends une minute et rends vie à la ville
+@ Notifications not allowed
+de: Benachrichtigungen nicht erlaubt
+es: Notificaciones no permitidas
+pt: Notificações não permitidas
+fr: Notifications non autorisées
+@ <div class="bell">🔔</div><h2>Remind you where you left off?</h2> <p>One short reminder a day, at the time you play. Tap it to jump back to your level.</p> <button id="mYes" class="btn primary"><span>Yes, remind me</span><small>You can turn it off in Settings</small></button> <button id="mClose" class="btn glassbtn">Not now</button>
+de: <div class="bell">🔔</div><h2>Soll ich dich erinnern?</h2> <p>Eine kurze Erinnerung am Tag, zu deiner Spielzeit. Antippen und du bist zurück in deinem Level.</p> <button id="mYes" class="btn primary"><span>Ja, erinnern</span><small>In den Einstellungen abschaltbar</small></button> <button id="mClose" class="btn glassbtn">Jetzt nicht</button>
+es: <div class="bell">🔔</div><h2>¿Te recuerdo dónde lo dejaste?</h2> <p>Un aviso corto al día, a la hora en que juegas. Tócalo y vuelves a tu nivel.</p> <button id="mYes" class="btn primary"><span>Sí, recuérdame</span><small>Puedes quitarlo en Ajustes</small></button> <button id="mClose" class="btn glassbtn">Ahora no</button>
+pt: <div class="bell">🔔</div><h2>Quer um lembrete de onde parou?</h2> <p>Um lembrete curto por dia, na hora em que você joga. Toque e volte direto para sua fase.</p> <button id="mYes" class="btn primary"><span>Sim, me lembre</span><small>Dá para desligar nos Ajustes</small></button> <button id="mClose" class="btn glassbtn">Agora não</button>
+fr: <div class="bell">🔔</div><h2>Un rappel pour reprendre ?</h2> <p>Un petit rappel par jour, à l’heure où tu joues. Touche-le pour retrouver ton niveau.</p> <button id="mYes" class="btn primary"><span>Oui, rappelle-moi</span><small>Désactivable dans Réglages</small></button> <button id="mClose" class="btn glassbtn">Pas maintenant</button>
+@ <div class="bell">🔔</div><h2>Want a reminder?</h2> <p>A new <b>Daily Line</b> arrives every day. One short reminder a day keeps your streak alive.</p> <button id="mYes" class="btn primary"><span>Yes, remind me</span><small>You can turn it off in Settings</small></button> <button id="mClose" class="btn glassbtn">Not now</button>
+de: <div class="bell">🔔</div><h2>Erinnerung gefällig?</h2> <p>Jeden Tag kommt eine neue <b>Tageslinie</b>. Eine kurze Erinnerung am Tag hält deine Serie am Leben.</p> <button id="mYes" class="btn primary"><span>Ja, erinnern</span><small>In den Einstellungen abschaltbar</small></button> <button id="mClose" class="btn glassbtn">Jetzt nicht</button>
+es: <div class="bell">🔔</div><h2>¿Quieres un aviso?</h2> <p>Cada día llega una nueva <b>Línea del día</b>. Un aviso corto al día mantiene viva tu racha.</p> <button id="mYes" class="btn primary"><span>Sí, recuérdame</span><small>Puedes quitarlo en Ajustes</small></button> <button id="mClose" class="btn glassbtn">Ahora no</button>
+pt: <div class="bell">🔔</div><h2>Quer um lembrete?</h2> <p>Todo dia chega uma nova <b>Linha do Dia</b>. Um lembrete curto por dia mantém sua sequência viva.</p> <button id="mYes" class="btn primary"><span>Sim, me lembre</span><small>Dá para desligar nos Ajustes</small></button> <button id="mClose" class="btn glassbtn">Agora não</button>
+fr: <div class="bell">🔔</div><h2>Un petit rappel ?</h2> <p>Une nouvelle <b>Ligne du jour</b> arrive chaque jour. Un petit rappel par jour garde ta série en vie.</p> <button id="mYes" class="btn primary"><span>Oui, rappelle-moi</span><small>Désactivable dans Réglages</small></button> <button id="mClose" class="btn glassbtn">Pas maintenant</button>
+@ Done! I’ll remind you at the time you play 🔔
+de: Erledigt! Ich erinnere dich zu deiner Spielzeit 🔔
+es: ¡Hecho! Te aviso a la hora en que juegas 🔔
+pt: Pronto! Vou te lembrar na hora em que você joga 🔔
+fr: C’est noté ! Je te le rappelle à l’heure où tu joues 🔔
+@ Buy
+de: Kaufen
+es: Comprar
+pt: Comprar
+fr: Acheter
+@ Ad-free pack
+de: Werbefrei-Paket
+es: Paquete sin anuncios
+pt: Pacote sem anúncios
+fr: Pack sans pub
+@ <div><i>🚫</i><span>No more ads between levels</span></div><div><i>💡</i><span><b>+20 hints</b> as a gift</span></div><div><i>🎨</i><span><b>3 special themes:</b> {0}</span></div><div><i>🚇</i><span>One-time · yours for life</span></div>
+de: <div><i>🚫</i><span>Keine Werbung mehr zwischen Leveln</span></div><div><i>💡</i><span><b>+20 Tipps</b> geschenkt</span></div><div><i>🎨</i><span><b>3 Sonderthemen:</b> {0}</span></div><div><i>🚇</i><span>Einmalig · gehört dir für immer</span></div>
+es: <div><i>🚫</i><span>Sin anuncios entre niveles</span></div><div><i>💡</i><span><b>+20 pistas</b> de regalo</span></div><div><i>🎨</i><span><b>3 temas especiales:</b> {0}</span></div><div><i>🚇</i><span>Pago único · tuyo para siempre</span></div>
+pt: <div><i>🚫</i><span>Sem anúncios entre as fases</span></div><div><i>💡</i><span><b>+20 dicas</b> de presente</span></div><div><i>🎨</i><span><b>3 temas especiais:</b> {0}</span></div><div><i>🚇</i><span>Pagamento único · seu para sempre</span></div>
+fr: <div><i>🚫</i><span>Plus de pub entre les niveaux</span></div><div><i>💡</i><span><b>+20 indices</b> offerts</span></div><div><i>🎨</i><span><b>3 thèmes spéciaux :</b> {0}</span></div><div><i>🚇</i><span>Achat unique · à toi pour toujours</span></div>
+@ ACTIVE ✓ · Thank you!
+de: AKTIV ✓ · Danke!
+es: ACTIVO ✓ · ¡Gracias!
+pt: ATIVO ✓ · Obrigado!
+fr: ACTIF ✓ · Merci !
+@ Secure payment via {0}
+de: Sichere Zahlung über {0}
+es: Pago seguro con {0}
+pt: Pagamento seguro pelo {0}
+fr: Paiement sécurisé via {0}
+@ Connecting to store…
+de: Verbinde mit dem Store…
+es: Conectando con la tienda…
+pt: Conectando à loja…
+fr: Connexion au store…
+@ Hint videos stay optional.
+de: Tipp-Videos bleiben freiwillig.
+es: Los vídeos de pistas siguen siendo opcionales.
+pt: Os vídeos de dicas continuam opcionais.
+fr: Les vidéos d’indices restent facultatives.
+@ Restore purchase
+de: Kauf wiederherstellen
+es: Restaurar compra
+pt: Restaurar compra
+fr: Restaurer l’achat
+@ Store unavailable right now · try later
+de: Store gerade nicht erreichbar · später nochmal
+es: Tienda no disponible · prueba más tarde
+pt: Loja indisponível agora · tente mais tarde
+fr: Store indisponible · réessaie plus tard
+@ Purchases work in the store version
+de: Käufe gehen in der Store-Version
+es: Las compras funcionan en la versión de la tienda
+pt: Compras funcionam na versão da loja
+fr: Les achats marchent dans la version du store
+@ Purchase couldn’t be completed
+de: Kauf konnte nicht abgeschlossen werden
+es: No se pudo completar la compra
+pt: Não foi possível concluir a compra
+fr: L’achat n’a pas pu aboutir
+@ Checking…
+de: Prüfe…
+es: Comprobando…
+pt: Verificando…
+fr: Vérification…
+@ No purchase found on this account
+de: Kein Kauf auf diesem Konto gefunden
+es: No hay compras en esta cuenta
+pt: Nenhuma compra nesta conta
+fr: Aucun achat sur ce compte
+@ Ad-free pack active 💛 +20 hints · 3 special themes
+de: Werbefrei-Paket aktiv 💛 +20 Tipps · 3 Sonderthemen
+es: Paquete sin anuncios activo 💛 +20 pistas · 3 temas especiales
+pt: Pacote sem anúncios ativo 💛 +20 dicas · 3 temas especiais
+fr: Pack sans pub actif 💛 +20 indices · 3 thèmes spéciaux
+@ No ads · 20 hints · 3 special themes
+de: Keine Werbung · 20 Tipps · 3 Sonderthemen
+es: Sin anuncios · 20 pistas · 3 temas especiales
+pt: Sem anúncios · 20 dicas · 3 temas especiais
+fr: Sans pub · 20 indices · 3 thèmes spéciaux
+@ Theme pack
+de: Themenpaket
+es: Paquete de temas
+pt: Pacote de temas
+fr: Pack de thèmes
+@ All {0} color themes · one-time
+de: Alle {0} Farbthemen · einmalig
+es: Los {0} temas de color · pago único
+pt: Todos os {0} temas de cores · pagamento único
+fr: Les {0} thèmes de couleur · achat unique
+@ 10 hints
+de: 10 Tipps
+es: 10 pistas
+pt: 10 dicas
+fr: 10 indices
+@ Puts a tricky tile in place
+de: Setzt eine knifflige Kachel richtig
+es: Coloca una pieza difícil
+pt: Encaixa uma peça difícil
+fr: Place une tuile difficile
+@ 30 hints
+de: 30 Tipps
+es: 30 pistas
+pt: 30 dicas
+fr: 30 indices
+@ 80 hints
+de: 80 Tipps
+es: 80 pistas
+pt: 80 dicas
+fr: 80 indices
+@ Booster pack
+de: Booster-Paket
+es: Paquete de potenciadores
+pt: Pacote de reforços
+fr: Pack de boosters
+@ Ticket pack · 50 tickets
+de: Ticketpaket · 50 Tickets
+es: Paquete de billetes · 50 billetes
+pt: Pacote de bilhetes · 50 bilhetes
+fr: Pack de tickets · 50 tickets
+@ For themes only (chests use earned 🎫)
+de: Nur für Themen (Kisten nutzen verdiente 🎫)
+es: Solo para temas (los cofres usan 🎫 ganados)
+pt: Só para temas (baús usam 🎫 ganhos)
+fr: Pour les thèmes (les coffres prennent les 🎫 gagnés)
+@ Starter pack
+de: Starterpaket
+es: Paquete inicial
+pt: Pacote inicial
+fr: Pack de départ
+@ Owned ✓
+de: Gekauft ✓
+es: Comprado ✓
+pt: Comprado ✓
+fr: Acheté ✓
+@ Shop
+de: Shop
+es: Tienda
+pt: Loja
+fr: Boutique
+@ You have 💡 {0} · 🎫 {1}
+de: Du hast 💡 {0} · 🎫 {1}
+es: Tienes 💡 {0} · 🎫 {1}
+pt: Você tem 💡 {0} · 🎫 {1}
+fr: Tu as 💡 {0} · 🎫 {1}
+@ The whole game is free to play; packs are optional.
+de: Das ganze Spiel ist kostenlos; Pakete sind freiwillig.
+es: Todo el juego es gratis; los paquetes son opcionales.
+pt: O jogo todo é grátis; os pacotes são opcionais.
+fr: Tout le jeu est gratuit ; les packs sont facultatifs.
+@ Packs are available in the store version.
+de: Pakete gibt es in der Store-Version.
+es: Los paquetes están en la versión de la tienda.
+pt: Os pacotes estão na versão da loja.
+fr: Les packs sont dans la version du store.
+@ <div><i>💡</i><span><b>{0} hints</b></span></div><div><i>🧰</i><span>Boosters · {1}</span></div><div><i>❤️</i><span><b>1 hour of unlimited lives</b></span></div><div><i>🎫</i><span><b>{2} tickets</b> · for themes</span></div>
+de: <div><i>💡</i><span><b>{0} Tipps</b></span></div><div><i>🧰</i><span>Booster · {1}</span></div><div><i>❤️</i><span><b>1 Stunde unendlich Leben</b></span></div><div><i>🎫</i><span><b>{2} Tickets</b> · für Themen</span></div>
+es: <div><i>💡</i><span><b>{0} pistas</b></span></div><div><i>🧰</i><span>Potenciadores · {1}</span></div><div><i>❤️</i><span><b>1 hora de vidas ilimitadas</b></span></div><div><i>🎫</i><span><b>{2} billetes</b> · para temas</span></div>
+pt: <div><i>💡</i><span><b>{0} dicas</b></span></div><div><i>🧰</i><span>Reforços · {1}</span></div><div><i>❤️</i><span><b>1 hora de vidas ilimitadas</b></span></div><div><i>🎫</i><span><b>{2} bilhetes</b> · para temas</span></div>
+fr: <div><i>💡</i><span><b>{0} indices</b></span></div><div><i>🧰</i><span>Boosters · {1}</span></div><div><i>❤️</i><span><b>1 heure de vies illimitées</b></span></div><div><i>🎫</i><span><b>{2} tickets</b> · pour les thèmes</span></div>
+@ Special offer
+de: Sonderangebot
+es: Oferta especial
+pt: Oferta especial
+fr: Offre spéciale
+@ No, thanks
+de: Nein, danke
+es: No, gracias
+pt: Não, obrigado
+fr: Non merci
+@ This pack is always in Settings › Shop.
+de: Dieses Paket findest du immer unter Einstellungen › Shop.
+es: Este paquete siempre está en Ajustes › Tienda.
+pt: Este pacote fica sempre em Ajustes › Loja.
+fr: Ce pack est toujours dans Réglages › Boutique.
+@ Your purchases are up to date ✓
+de: Deine Käufe sind aktuell ✓
+es: Tus compras están al día ✓
+pt: Suas compras estão em dia ✓
+fr: Tes achats sont à jour ✓
+@ 🎨 Theme pack unlocked · every color theme is yours
+de: 🎨 Themenpaket frei · alle Farbthemen gehören dir
+es: 🎨 Paquete de temas activado · todos los temas son tuyos
+pt: 🎨 Pacote de temas liberado · todos os temas são seus
+fr: 🎨 Pack de thèmes débloqué · tous les thèmes sont à toi
+@ 🎁 Starter pack added · ❤️∞ 1 hour
+de: 🎁 Starterpaket hinzugefügt · ❤️∞ 1 Stunde
+es: 🎁 Paquete inicial añadido · ❤️∞ 1 hora
+pt: 🎁 Pacote inicial adicionado · ❤️∞ 1 hora
+fr: 🎁 Pack de départ ajouté · ❤️∞ 1 heure
+@ +{0} hints 💡
+de: +{0} Tipps 💡
+es: +{0} pistas 💡
+pt: +{0} dicas 💡
+fr: +{0} indices 💡
+@ 🧰 Boosters added
+de: 🧰 Booster hinzugefügt
+es: 🧰 Potenciadores añadidos
+pt: 🧰 Reforços adicionados
+fr: 🧰 Boosters ajoutés
+@ +{0} 🎫 tickets · spend them on themes
+de: +{0} 🎫 Tickets · gib sie für Themen aus
+es: +{0} 🎫 billetes · gástalos en temas
+pt: +{0} 🎫 bilhetes · use em temas
+fr: +{0} 🎫 tickets · à dépenser en thèmes
+@ Out of hints · +3 free tomorrow
+de: Keine Tipps mehr · morgen +3 gratis
+es: Sin pistas · mañana +3 gratis
+pt: Sem dicas · amanhã +3 grátis
+fr: Plus d’indices · +3 gratuits demain
+@ Loading ad…
+de: Werbung lädt…
+es: Cargando anuncio…
+pt: Carregando anúncio…
+fr: Chargement de la pub…
+@ More videos to go
+de: Noch mehr Videos
+es: Faltan más vídeos
+pt: Faltam mais vídeos
+fr: Encore des vidéos
+@ One video left
+de: Noch ein Video
+es: Queda un vídeo
+pt: Falta um vídeo
+fr: Plus qu’une vidéo
+@ Out of hints
+de: Keine Tipps mehr
+es: Sin pistas
+pt: Sem dicas
+fr: Plus d’indices
+@ Watch a short video
+de: Schau ein kurzes Video
+es: Mira un vídeo corto
+pt: Assista a um vídeo curto
+fr: Regarde une courte vidéo
+@ Watch {0} short videos
+de: Schau {0} kurze Videos
+es: Mira {0} vídeos cortos
+pt: Assista a {0} vídeos curtos
+fr: Regarde {0} courtes vidéos
+@ earn <b>2 hints</b>.
+de: hol dir <b>2 Tipps</b>.
+es: gana <b>2 pistas</b>.
+pt: ganhe <b>2 dicas</b>.
+fr: gagne <b>2 indices</b>.
+@ watched
+de: angesehen
+es: vistos
+pt: assistidos
+fr: vues
+@ Continue · video {0}
+de: Weiter · Video {0}
+es: Seguir · vídeo {0}
+pt: Continuar · vídeo {0}
+fr: Continuer · vidéo {0}
+@ Watch · +2 hints
+de: Ansehen · +2 Tipps
+es: Ver · +2 pistas
+pt: Assistir · +2 dicas
+fr: Regarder · +2 indices
+@ 💡 Hint packs
+de: 💡 Tipp-Pakete
+es: 💡 Paquetes de pistas
+pt: 💡 Pacotes de dicas
+fr: 💡 Packs d’indices
+@ You earned +2 hints
+de: Du hast +2 Tipps bekommen
+es: Ganaste +2 pistas
+pt: Você ganhou +2 dicas
+fr: Tu as gagné +2 indices
+@ RULE OF THE WEEK
+de: REGEL DER WOCHE
+es: REGLA DE LA SEMANA
+pt: REGRA DA SEMANA
+fr: RÈGLE DE LA SEMAINE
+@ NEW RULE
+de: NEUE REGEL
+es: REGLA NUEVA
+pt: REGRA NOVA
+fr: NOUVELLE RÈGLE
+@ Got it
+de: Verstanden
+es: Entendido
+pt: Entendi
+fr: Compris
+@ Restarted
+de: Neu gestartet
+es: Reiniciado
+pt: Reiniciado
+fr: Recommencé
+@ Your {0}-day streak broke
+de: Deine {0}-Tage-Serie ist gerissen
+es: Tu racha de {0} días se rompió
+pt: Sua sequência de {0} dias acabou
+fr: Ta série de {0} jours s’est brisée
+@ You missed yesterday’s Daily Line. Watch {0} to keep your <b>{1}-day</b> streak.<br>This offer is good <b>today only</b>.
+de: Du hast die gestrige Tageslinie verpasst. Schau {0}, um deine <b>{1}-Tage</b>-Serie zu halten.<br>Das Angebot gilt <b>nur heute</b>.
+es: Te perdiste la Línea del día de ayer. Mira {0} para mantener tu racha de <b>{1} días</b>.<br>Esta oferta vale <b>solo hoy</b>.
+pt: Você perdeu a Linha do Dia de ontem. Assista a {0} para manter sua sequência de <b>{1} dias</b>.<br>Esta oferta vale <b>só hoje</b>.
+fr: Tu as raté la Ligne du jour d’hier. Regarde {0} pour garder ta série de <b>{1} jours</b>.<br>Offre valable <b>aujourd’hui seulement</b>.
+@ a short video
+de: ein kurzes Video
+es: un vídeo corto
+pt: um vídeo curto
+fr: une courte vidéo
+@ {0} short videos
+de: {0} kurze Videos
+es: {0} vídeos cortos
+pt: {0} vídeos curtos
+fr: {0} courtes vidéos
+@ ▶ Save streak
+de: ▶ Serie retten
+es: ▶ Salvar racha
+pt: ▶ Salvar sequência
+fr: ▶ Sauver la série
+@ Go online · you can save it today
+de: Geh online · heute kannst du sie retten
+es: Conéctate · hoy puedes salvarla
+pt: Fique online · dá para salvar hoje
+fr: Connecte-toi · tu peux la sauver aujourd’hui
+@ 🔥 Streak saved · {0} {1}
+de: 🔥 Serie gerettet · {0} {1}
+es: 🔥 Racha salvada · {0} {1}
+pt: 🔥 Sequência salva · {0} {1}
+fr: 🔥 Série sauvée · {0} {1}
+@ day
+de: Tag
+es: día
+pt: dia
+fr: jour
+@ days
+de: Tage
+es: días
+pt: dias
+fr: jours
+@ Mon
+de: Mo
+es: Lu
+pt: Seg
+fr: Lun
+@ Tue
+de: Di
+es: Ma
+pt: Ter
+fr: Mar
+@ Wed
+de: Mi
+es: Mi
+pt: Qua
+fr: Mer
+@ Thu
+de: Do
+es: Ju
+pt: Qui
+fr: Jeu
+@ Fri
+de: Fr
+es: Vi
+pt: Sex
+fr: Ven
+@ Sat
+de: Sa
+es: Sá
+pt: Sáb
+fr: Sam
+@ Sun
+de: So
+es: Do
+pt: Dom
+fr: Dim
