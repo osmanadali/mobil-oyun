@@ -1,4 +1,4 @@
-// Mağaza: uygulama içi ürünler (cordova-plugin-purchase 13). Android: Google Play, iOS: App Store.
+// Mağaza: uygulama içi ürünler (8) (cordova-plugin-purchase 13). Android: Google Play, iOS: App Store.
 // Mağaza yoksa (web, mağaza dışından kurulan test APK'sı) sessizce devre dışı kalır; oyun etkilenmez.
 // Kimlikler iki mağazada da aynı (docs/MAGAZA.md §10). Tüketilemez (nc): geri yüklenir. Tüketilebilir: her alışta ödül verilir,
 // ödül kayda yazıldıktan SONRA işlem bitirilir (finish → Play'de consume). Ödül yazılamazsa işlem açık kalır, sonraki açılışta yeniden gelir.
@@ -12,6 +12,8 @@ window.Shop = (() => {
     { key: 'hint80', id: 'ray_ipucu_80', give: { hints: 80 } },
     { key: 'bst', id: 'ray_guclendirici', give: { bst: { tur: 3, fener: 3, sure: 3, geri: 3 } } },
     { key: 'crown', id: 'ray_bilet_50', give: { crowns: 50 } },   // 🎫 bilet (eski adıyla 👑 taç; kayıtta crown adları korunur)
+    // Başlangıç paketi: özel teklif penceresinde öne çıkar (game.js offer), mağazada da her zaman satılır
+    { key: 'starter', id: 'ray_baslangic', give: { hints: 10, bst: { tur: 2, fener: 2, sure: 2, geri: 2 }, inf: 60, crowns: 20 } },
   ];
   const byKey = Object.fromEntries(ITEMS.map(x => [x.key, x])), byId = Object.fromEntries(ITEMS.map(x => [x.id, x]));
   const C = () => window.CdvPurchase;
@@ -49,7 +51,10 @@ window.Shop = (() => {
     const p = prod(key), o = p?.getOffer?.(); if (!o) return 'hata';
     try {
       const err = await o.order();
-      return !err ? 'ok' : err.code === C().ErrorCode.PAYMENT_CANCELLED ? 'iptal' : 'hata';
+      if (err) return err.code === C().ErrorCode.PAYMENT_CANCELLED ? 'iptal' : 'hata';
+      // gelir Firebase'in otomatik in_app_purchase olayında; burada değer (value) gönderilmez, çift sayılmasın
+      window.Olcum?.event('purchase', { item_id: p.id, kind: byKey[key].nc ? 'non_consumable' : 'consumable', currency: p.pricing?.currency || '' });
+      return 'ok';
     } catch { return 'hata'; }
   }
   // Geri yükleme (iki mağazada da) yalnız tüketilemezleri getirir: Play satın alımları yeniden sorgular, App Store tamamlanmış işlemleri geri getirir → receiptUpdated → owned

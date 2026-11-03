@@ -220,6 +220,19 @@ Toplam 25 renk teması vardır: 22'si biletle, 3'ü Reklamsız paketle açılır
 
 **Satın alınan bilet (31 Ekim):** taç para birimi 🎫 bilet olarak yeniden adlandırıldı (kodda `crown` adları aynı). Mağazadaki **Bilet paketi** (`ray_bilet_50`) 50 bilet verir. Bunlar ayrı sayılır (`save.bCrowns`, harcanan kısmı `save.bSpent`): bakiyeye (`crownBal`) eklenir ve **yalnız temada** harcanır; tema alınırken önce satın alınan bilet düşer. Sandık yalnız kazanılan biletle açılır (`chestBal` = kazanılan − sandığa/temaya giden kazanılmış taç). Böylece gerçek parayla rastgele ödül (ganimet kutusu) alınamaz. Kazanılan sayı (`crownCount`) satın almadan etkilenmez. Bunlara ek olarak 6 **mevsim teması** yalnız kendi tarihinde gelir (bölüm 10).
 
+### Özel teklif (3 Kasım)
+
+Satın alma ürünleri seyrek bir **Özel teklif** penceresiyle de önerilir. Oyunun temposunu bozmasın diye kurallar sıkıdır:
+
+- Yalnız bir **bölüm kazanıldıktan** sonra (sonuç paneli açıldıktan ~1,5 sn sonra); başka pencere ya da puan isteği varsa o tur yok.
+- En çok **48 saatte bir**; ilk açılıştan sonraki **ilk 2 günde** ve **ilk 15 bölümde** hiç (16. bölümden itibaren).
+- **Günün Hattı**, arşiv, pratik ve zen bitişlerinde yok.
+- Aynı turda **geçiş reklamıyla birlikte çıkmaz**: o turun "Sonraki"sinde geçiş reklamı varsa teklif ertelenir.
+- İçerik gerçek mağaza ürünüdür (sıra: 🎁 Başlangıç paketi `ray_baslangic` → Reklamsız paket → Güçlendirici paketi → 30 ipucu); reklamsız sahibine Reklamsız paket gösterilmez.
+- Sahte indirim, üstü çizili fiyat ya da geri sayım yoktur; "Hayır, teşekkürler" belirgindir.
+
+Başlangıç paketi: 10 💡 + her güçlendiriciden 2 + ❤️∞ 1 saat sınırsız can (`save.infUntil = max(infUntil, şimdi) + 60 dk`) + 20 🎫 satın alınan bilet (yalnız temada; sandık açmaz). Ayrıntı ve mağaza kuralları: `docs/MAGAZA.md` §10.3.
+
 ### Hat adları ve renkleri
 
 Sonsuz bölümlerde hiçbir hat bir öncekinin kopyası olmaz:

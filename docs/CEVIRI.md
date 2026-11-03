@@ -74,6 +74,10 @@ Oyun Türkçe ve İngilizce oynanır. Bu belge altyapıyı ve ortak sözlüğü 
 | Güçlendirici paketi | Booster pack |
 | İpucu paketleri | Hint packs |
 | Bilet paketi · 50 bilet | Ticket pack · 50 tickets |
+| Başlangıç paketi | Starter pack |
+| Özel teklif | Special offer |
+| Hayır, teşekkürler | No, thanks |
+| sınırsız can | unlimited lives |
 | ızgara | grid |
 | Oyna | Play |
 | Nasıl oynanır? | How to play? |
