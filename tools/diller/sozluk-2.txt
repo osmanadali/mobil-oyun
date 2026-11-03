@@ -96,7 +96,7 @@ es: Enviar
 pt: Enviar
 fr: Partager
 @ Home
-de: Start
+de: Startseite
 es: Inicio
 pt: Início
 fr: Accueil

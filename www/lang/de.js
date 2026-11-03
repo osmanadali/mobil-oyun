@@ -196,7 +196,7 @@ window.RAY_DICT={
 "Hint videos stay optional.":"Tipp-Videos bleiben freiwillig.",
 "Hints":"Tipps",
 "Hints · 🛡 shield · 🚆 train livery":"Tipps · 🛡 Schild · 🚆 Zuglack",
-"Home":"Start",
+"Home":"Startseite",
 "Hope the boss is patient today.":"Hoffentlich ist der Chef heute geduldig.",
 "Horizon City":"Horizontstadt",
 "How few moves can you do it in?":"Mit wie wenigen Zügen schaffst du es?",
