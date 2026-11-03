@@ -147,3 +147,8 @@ Kanıt görüntüsü: [`docs/kalite/kalanlar.png`](kalite/kalanlar.png).
 - **Görünmeyen ekranlar boyanmaz** (`visibility: hidden`, geçiş bitince) → GPU belleği azalır.
 - Görev "Topla" nabzı boyama yaptırmaz (ayrı katmanda opaklık).
 - Capacitor köprü günlüğü kapalı (`loggingBehavior: none`): test (debug) APK'da her eklenti çağrısı (her dokunuştaki titreşim) konsola yazılıyordu.
+
+## Sağlamlık (3 Kasım)
+- **Kalıcı kayıt yedeği** (`Kasa`, `@capacitor/preferences`): kayıt değişince 1,5 sn sonra (arka plana geçince hemen) telefonun kalıcı deposuna da yazılır. Açılışta önce yedek okunur: tarayıcı belleği silinmiş (yerel kayıt yedekten sonra sıfırdan açılmış) ya da aynı kaydın yedeği daha yeniyse geri yüklenir. İlerlemeyi taşı kodu yedeği de günceller; Verilerimi sil yedeği de siler. Test: tools/hakem/saglam.cjs.
+- **Hata bildirimi** (`js_error`): yakalanmayan hata ve söz reddi; ileti, dosya:satır, ekran, bölüm; oturumda en çok 5.
+- **Akıcılık ölçümü**: 50 ms'yi aşan kareler (long-animation-frame / longtask) `level_end`/`daily_end`'e `jank`, `jank_ms`; arka plana geçince `perf_session` (en kötü kare, çekirdek, bellek, ekran ölçeği). Firebase'te cihaz modeline göre bakılır → uyarlanır kalite kararı bu veriyle.

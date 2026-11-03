@@ -40,7 +40,59 @@ if (!save.born) { save.born = Date.now(); try { localStorage.setItem('ray', JSON
 let wiped = false;   // "Verilerimi sil" → sayfa yenilenene dek kayıt yazılmaz
 // boşta çalıştır: after ms sonra, ana iş parçacığı boşalınca (animasyonu kesmesin). Bölüm üretimi telefonda 100–300 ms sürebilir.
 const idle = (fn, after = 0) => setTimeout(() => (window.requestIdleCallback || (f => setTimeout(f, 1)))(fn, { timeout: 2500 }), after);
-const persist = () => { if (wiped) return; try { localStorage.setItem('ray', JSON.stringify(save)); } catch {} };
+// Kalıcı yedek (yalnız uygulamada): kayıt telefonun kalıcı deposuna da yazılır (Capacitor Preferences → Android SharedPreferences,
+// iOS UserDefaults; Android otomatik yedeklemesi de taşır). Tarayıcı belleği (localStorage) silinir ya da bozulursa açılışta
+// yedekten geri gelir. Yazma 1,5 sn birikir (her dokunuşta köprü çağrısı olmasın), arka plana geçince hemen.
+// Açılışta önce yedek okunur, sonra yazılır (boş açılış kaydı yedeği ezmesin).
+// Geri yükleme: yerel kayıt yedekten sonra sıfırdan açılmışsa (born daha yeni, ilerleme daha az) ya da aynı kaydın yedeği daha yeniyse (ts).
+const Kasa = (() => {
+  const P = () => window.Capacitor?.isNativePlatform?.() ? window.Capacitor.Plugins?.Preferences : null;
+  let t = 0, ok = false;
+  const write = async v => { const p = P(); if (!p) return; try { await p.set({ key: 'ray', value: JSON.stringify(v) }); } catch {} };
+  const put = () => { if (!P() || wiped) return; clearTimeout(t); t = setTimeout(() => { t = 0; if (!wiped && ok) write(save); }, 1500); };
+  const flush = () => { if (!P() || wiped || !t || !ok) return; clearTimeout(t); t = 0; write(save); };
+  async function check() {
+    const p = P(); if (!p) return;
+    try {
+      const { value } = await p.get({ key: 'ray' }), b = value ? JSON.parse(value) : null;
+      const reborn = b?.born && (!save.born || save.born > b.born) && (b.played || 0) > (save.played || 0);
+      if (b && (reborn || (save.born === b.born && (b.ts || 0) > (save.ts || 0)))) { wiped = true; localStorage.setItem('ray', value); location.reload(); return; }
+      ok = true;
+      if (!b || (save.ts || 0) > (b.ts || 0)) write(save);
+    } catch { ok = true; }
+  }
+  const wipe = async () => { clearTimeout(t); t = 0; try { await P()?.remove({ key: 'ray' }); } catch {} };
+  return { put, flush, check, write, wipe };
+})();
+// Akıcılık ölçümü (gerçek telefonlarda takılma): 50 ms'yi aşan kareler (long-animation-frame; eski WebView'da longtask).
+// Sürekli kare döngüsü yok (pil). Bölüm sonunda level_end / daily_end'e jank (sayı) ve jank_ms (toplam) eklenir;
+// uygulama arka plana geçince oturum özeti perf_session (en kötü kare, çekirdek, bellek, ekran ölçeği). Kimlik ya da metin yok.
+const Jank = (() => {
+  let n = 0, ms = 0, sn = 0, sms = 0, worst = 0, t0 = performance.now();
+  try {
+    const type = PerformanceObserver.supportedEntryTypes?.includes('long-animation-frame') ? 'long-animation-frame' : 'longtask';
+    new PerformanceObserver(l => { if (document.hidden) return; for (const e of l.getEntries()) { const d = e.duration; n++; ms += d; sn++; sms += d; worst = Math.max(worst, d); } }).observe({ type, buffered: false });
+  } catch {}
+  const take = () => { const r = { jank: n, jank_ms: Math.round(ms) }; n = ms = 0; return r; };
+  function report(force) {
+    const mins = (performance.now() - t0) / 6e4; t0 = performance.now();
+    if (mins >= .5 || force) window.Olcum?.event('perf_session', { jank: sn, jank_ms: Math.round(sms), worst: Math.round(worst), mins: Math.round(mins * 10) / 10, cores: navigator.hardwareConcurrency || 0, mem: navigator.deviceMemory || 0, dpr: Math.round((devicePixelRatio || 1) * 100) / 100 });
+    sn = sms = worst = 0;
+  }
+  return { take, report };
+})();
+// JavaScript hatası → ölçüm (js_error): kısa ileti, dosya:satır, ekran, bölüm. Oturumda en çok 5, aynısı bir kez.
+{
+  const seen = new Set(), rep = (msg, src) => {
+    msg = String(msg || '?').replace(/^Uncaught /, ''); const k = msg + src;
+    if (msg === 'Script error.' || seen.has(k) || seen.size >= 5) return; seen.add(k);
+    let lvl = 0; try { lvl = G?.lvl || 0; } catch {}   // yükleme sırasında G henüz tanımlı değilse
+    window.Olcum?.event('js_error', { msg: msg.slice(0, 100), src: String(src).slice(0, 60), scr: document.querySelector('.screen.active')?.id || '-', lvl });
+  };
+  addEventListener('error', e => rep(e.message, `${(e.filename || '').split('/').pop()}:${e.lineno}:${e.colno}`));
+  addEventListener('unhandledrejection', e => rep(e.reason?.message || e.reason, 'promise'));
+}
+const persist = () => { if (wiped) return; save.ts = Date.now(); try { localStorage.setItem('ray', JSON.stringify(save)); } catch {} Kasa.put(); };
 // gün değişimi: ücretsiz ipucu, kopan seri
 function dayTick() {
   const t = today();
@@ -855,7 +907,7 @@ function start(mode, lvl = save.level) {
   clearTimeout(bubT); $('gBub').classList.remove('show');
   const stake = comboStake(); $('gCombo').hidden = stake < 2; $('gCombo').textContent = `✨${stake}`;
   show('game'); resize(); hud(); tick();
-  Olcum.event('level_start', { ...lvlP(), resumed: !!G.moves });
+  Olcum.event('level_start', { ...lvlP(), resumed: !!G.moves }); Jank.take();   // takılma sayacı bu bölüm için sıfırlanır
   // Günün Hattı yalnız pazar günü kural taşır (haftanın kuralı): oyuncu o kuralı henüz görmediyse kartı açılır
   const rc = (G.rules || []).map(k => RULE_LINE[k]).filter(c => RULES[c] && !save.seen[c]).sort((a, b) => a - b)[0];
   if (rc != null) ruleCard(rc, !!G.week);
@@ -1319,6 +1371,7 @@ function win() {
   persist(); achCheck();
   $('gCombo').hidden = combo < 2; $('gCombo').textContent = `✨${combo}`; $('gCombo').classList.remove('off');
   const sum = { stars: st, time_s: G.time / 1000 | 0, moves: G.moves, hints: G.hu || 0, perfect, zen };
+  Object.assign(sum, Jank.take());   // bu bölümde takılan kare sayısı ve toplam süresi
   if (G.daily) Olcum.event('daily_end', { ...sum, mode: G.arch ? 'archive' : 'daily', practice: !!G.practice, streak: save.streak }); else Olcum.event('level_end', { ...lvlP(), ...sum });
   const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { zen, st, tOk, mOk, perfect, extra: [tkMsg, cmsg, shardMsg, extra].filter(Boolean).join(' · '), unlockedNow, ns, dbl, combo, broke, near };
   winTimer = setTimeout(() => { if (G === g && active('game')) { winSheet(g, info); let rv = false; if (!g.daily && !g.practice) setTimeout(() => { if (G === g && active('game')) rv = maybeReview(st); }, 1100);
@@ -2045,8 +2098,9 @@ function moveSheet() {
       if (!b.dataset.ok && n) { b.dataset.ok = 1; b.textContent = L(`Bu cihazdaki ilerleme silinir · Bölüm ${s.level} yüklensin mi?`, `This phone’s progress will be replaced · load Level ${s.level}?`); return; }
       s.noAds = save.noAds; s.allThemes = save.allThemes; s.iapTx = save.iapTx; s.owned = { ...s.owned }; VIP().forEach(id => { if (save.owned?.[id]) s.owned[id] = 1; else delete s.owned[id]; });
       wiped = true;   // yenilenirken eski kayıt üstüne yazılmasın (persist susar)
+      s.ts = Date.now();   // kalıcı yedekten yeni say (açılışta eskisi geri gelmesin)
       try { localStorage.setItem('ray', JSON.stringify(s)); } catch {}
-      location.reload();
+      Kasa.write(s).finally(() => location.reload());
     },
     mClose: closeModal });
 }
@@ -2062,7 +2116,7 @@ function wipeSheet() {
     <button id="mNo" class="btn primary"><span>Cancel</span></button>
     <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">Yes, delete it all</button>`), {
     mNo: privacySheet,
-    mWipeOk: async () => { save.remind = false; await Promise.race([Promise.all([Remind.plan(), Olcum.reset()]), new Promise(r => setTimeout(r, 1500))]); wiped = true; try { localStorage.removeItem('ray'); } catch {} location.reload(); } });
+    mWipeOk: async () => { save.remind = false; await Promise.race([Promise.all([Remind.plan(), Olcum.reset()]), new Promise(r => setTimeout(r, 1500))]); wiped = true; await Kasa.wipe(); try { localStorage.removeItem('ray'); } catch {} location.reload(); } });
 }
 // ---------- renk temaları ----------
 const skinSvg = '<svg viewBox="0 0 120 60"><path d="M10 46H40L60 28H110"/><path d="M60 6V28L80 46H110"/><path d="M10 14H36L60 28"/><rect x="52" y="20" width="16" height="16" rx="5"/></svg>';
@@ -2425,7 +2479,7 @@ $('starsChip').onclick = () => show('map');
 $('crownChip').onclick = skinSheet;
 // arka plan ↔ ön plan: süre ve ses durur. İki kaynak (ikisi birden gelebilir, iş tekrarı zararsız): visibilitychange ve Capacitor appStateChange
 function front(on) {
-  if (!on) { pause(); ac?.suspend?.(); Remind.plan(); return; }
+  if (!on) { pause(); Kasa.flush(); ac?.suspend?.(); Remind.plan(); Jank.report(); return; }
   ac?.resume?.(); dayTick();
   if (active('game') && !(modalOpen() && mLocked)) resume();   // kural kartı açıkken süre durgun kalır (Anladım'la akar)
   if (active('home')) { refreshHome(); setTimeout(maybeRescue, 600); }
@@ -2662,6 +2716,7 @@ show('home');
 // reklam kendiliğinden yalnız sakin anda yüklenir (ads.js soft): ana sayfa ya da sonuç paneli, intro bitmiş, uygulama önde
 window.__rayCalm = () => !document.hidden && !document.body.classList.contains('introing') && (!active('game') || !!G?.won);
 Ads.init();
+Kasa.check();   // tarayıcı belleği silinmiş / eskiyse kalıcı yedekten geri yükle
 Shop.init({ owned: k => k === 'noads' ? grantNoAds() : grantThemes(), grant: grantItem });
 Remind.plan();
 // servis çalışanı yalnız web/PWA'da. Uygulamada (Capacitor şeması da https) önbellek Play güncellemesinden sonra eski game.js'i
@@ -2690,5 +2745,5 @@ if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { seaWin, popLog, popUp: (...a) => popUp(...a), ACH, achCheck, linesDone, goldLine, plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), dayQ: () => dayQ(), RULE_LINE, RULES,  review: maybeReview, BST, offer: { MIN: OFFER_MIN, GAP: OFFER_GAP, AGE: OFFER_AGE, list: offerList, due: () => offerDue(G), inter: v => { interDue = v; } }, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, lineOf, lineEnd, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
+window.__ray = { jank: Jank, seaWin, popLog, popUp: (...a) => popUp(...a), ACH, achCheck, linesDone, goldLine, plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), dayQ: () => dayQ(), RULE_LINE, RULES,  review: maybeReview, BST, offer: { MIN: OFFER_MIN, GAP: OFFER_GAP, AGE: OFFER_AGE, list: offerList, due: () => offerDue(G), inter: v => { interDue = v; } }, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, lineOf, lineEnd, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();

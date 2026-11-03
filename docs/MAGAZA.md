@@ -507,7 +507,7 @@ Première version. Un puzzle de métro à une main et hors ligne : 22 règles, u
 
 ## 6. Google Play "Veri güvenliği" formu
 
-Hesap yok, çökme raporu aracı yok, ilerleme yalnız cihazdaki depoda. Formda beyan edilecek veriyi iki SDK toplar: **Google Mobile Ads SDK (AdMob)** ve **Google Analytics for Firebase** (oyun olayları, reklam kimliği olmadan, rıza gereken bölgelerde kapalı; ayrıntı `docs/YAYIN.md` §5). Satın almayı Google Play yürütür; uygulama ödeme bilgisi görmez.
+Hesap yok, ayrı çökme raporu aracı yok (hata ve akıcılık bilgisi Firebase olayı olarak gider, aşağıda), ilerleme yalnız cihazda (tarayıcı deposu + kalıcı yedek, Capacitor Preferences). Formda beyan edilecek veriyi iki SDK toplar: **Google Mobile Ads SDK (AdMob)** ve **Google Analytics for Firebase** (oyun olayları, reklam kimliği olmadan, rıza gereken bölgelerde kapalı; ayrıntı `docs/YAYIN.md` §5). Satın almayı Google Play yürütür; uygulama ödeme bilgisi görmez.
 
 Firebase, geliştirici adına çalışan bir hizmet sağlayıcıdır; Play tanımına göre bu "paylaşma" sayılmaz, "toplama" sayılır. Ölçüm derlemeye yalnız `FIREBASE_ANDROID_JSON` gizli değeri verilince girer; vermeden yayımlarsan Firebase satırlarını forma ekleme.
 
@@ -528,6 +528,7 @@ Beyan edilecek veri türleri (Google'ın AdMob için yayımladığı eşleşmeye
 | Cihaz veya diğer kimlikler | Android reklam kimliği, uygulama grubu kimliği | Evet | Evet | Hayır | Zorunlu | aynı |
 | Uygulama etkinliği › Uygulama etkileşimleri | **Firebase:** bölüm başlama/bitiş/bırakma, Günün Hattı, anlatım, reklam gösterimi, güçlendirici, özel teklif gösterimi/satın alımı, can olayları | Evet | Hayır | Hayır | Zorunlu | Analiz |
 | Cihaz veya diğer kimlikler | **Firebase:** uygulama örneği kimliği (reklam kimliği toplanmaz) | Evet | Hayır | Hayır | Zorunlu | Analiz |
+| Uygulama bilgileri ve performans › Teşhis | **Firebase:** JavaScript hata iletisi ve yeri (`js_error`, oturumda en çok 5), takılan kare sayısı/süresi (`level_end` `jank`, `perf_session`: çekirdek sayısı, bellek, ekran ölçeği). Kişisel veri, metin girişi yok | Evet | Hayır | Hayır | Zorunlu | Analiz |
 | Finansal bilgiler › Satın alma geçmişi | **Firebase:** satın alınan ürünün kimliği (`purchase`, `offer_buy` olayları; tutar yok, Firebase'in kendi `in_app_purchase` olayı tutarı içerir) | Evet | Hayır | Hayır | Zorunlu | Analiz |
 | Konum › Yaklaşık konum | **Firebase:** IP'den ülke/şehir tahmini | Evet | Hayır | Hayır | Zorunlu | Analiz |
 
