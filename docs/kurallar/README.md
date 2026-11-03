@@ -36,10 +36,12 @@ Hat sırası (3 Kasım; göze çarpan/kolay kurallar önce, gizli bilgili ve inc
 | M22 | 549 | Nehir | `river` | `nehir` |
 | M23 | 577 | Kapalı durak | `closed` | `kapali-durak` |
 | M24 | 605 | Tarife bölgesi | `zone` | `tarife-bolgesi` |
+| M25 | 633 | Son sefer | `last` | `son-sefer` |
+| M26 | 661 | Kayan sütun | `column` | `kayan-sutun` |
 
 Bağımlılıklar yeni sırada da korunur: köprü (M13) tünel ağzından (M16) önce; tabela (M17) halkadan (M18) önce (halka ikisiyle `clash`, `CLASH` simetrik ve sırasız). Mühürlü karo bakım karosuyla, sarmal tahta tünel ağzı, gizli depo, nehir ve tarife bölgesiyle aynı bölümde gelmez (`clash`). Eklentilerin üretim/kanca sırası `ord` alanıyla sabittir (sarmal tahta `ord: 7` ile `pre` aşamalarının önünde, mühürlü karo `ord: 23` ile işaretlerin en sonunda). Güçlendiriciler kuralın hattını `RULE_LINE`'dan okur (🔦 fener → `fog`, 🔄 ek tur → `cnt`).
 
-M24 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`, `KARMA = 24`).
+M26 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`, `KARMA = 26`). Son sefer ve kayan sütun 3 Kasım'da (`kurallar-3`) sona eklendi: 1–632. bölümler bit bit aynı kaldı, yalnız karma (eskiden 633'ten, şimdi 689'dan) yeniden üretildi. Kayan sütun kayan sırayla aynı bölümde gelmez (`clash`); son sefer bakım karosuyla gelmez.
 
 ## Temel ilkeler
 
@@ -61,7 +63,8 @@ M24 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanes
   css: `.rd-sw{…}`,                          // kural kartı demosu ve gerekirse başka stiller (sınıf adları rd-<anahtar> ile başlar)
   amount: (n, intro, z, fin, cols, rows) => 0,   // bu bölümdeki miktar (0 → kural yok; sıfırdan farklı her değer kuralı açar, ör. tanıtım işareti −1)
   // üretim aşamaları (aşağıda C)
-  pre(C) {}, tree(C) {}, shape(C) {}, mark(C) {},
+  pre(C) {}, tree(C) {}, shape(C) {}, mark(C) {}, fin(C) {},
+  scan: 48,                                  // isteğe bağlı: kendi hattında (ilk 3 bölümden sonra) en az bu kadar aday taranır (çözücü puanını kendisi artırmayan kural)
   tOrder: 8,                                 // isteğe bağlı: tree aşamasında sıra (varsayılan ord ?? line)
   // oyun
   block(G, i) {},                            // dokunuşu reddet: bildirim metni ya da true döndür
@@ -69,6 +72,7 @@ M24 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanes
   after(G, i, now, moved) {},                // her dokunuştan sonra, lit hesaplandıktan sonra (geri bildirim); moved: bu dokunuş yeni hamle başlattı
   undo(G) {},                                // ↶ geri al güçlendiricisinden sonra: eklentinin oyun içi durumunu düzelt
   plan(G, out) { return []; },               // robot planı (__ray.plan): bu eklentinin birimleri çekirdek planına girmez; out = o ana dek planlanan dokunuşlar
+  prio(G) { return []; },                    // öncelik (__ray.prio): ipucu ve robot önce bu karoları, bu sırayla çözer (son sefer: saatli durağın yolu)
   check(P, L) { return 0; },                 // kazanma denetimi: bozuk sayısı (0 = tamam); L'ye çizim verisi yazılabilir
   allow(P, i, mask) { return true; },        // zorluk çözücüsü için yerel süzgeç: bu maske i karosunda olabilir mi
   // gizli bilgi ve küresel koşullar (son hatların zor kuralları)
@@ -84,7 +88,7 @@ M24 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanes
 
 Oyuncuya görünen bütün metinler (kart adı, etiketi ve metni, `block()` mesajı, bildirimler, çizime yazılan etiketler) iki dilli yazılır: `L('Türkçe', 'English')`. Ayrıntı, yazım ilkeleri ve sözlük: [`docs/CEVIRI.md`](../CEVIRI.md). `L` küreseldir; bir işlevin içinde `const L = G.L` gibi bir ad onu gölgeliyorsa metinler eklentinin başında bir `MSG` nesnesine alınır. Robot (`tools/hakem/ceviri-kurallar.cjs`) Türkçe harfli her dizginin `L()` içinde olduğunu, kartların İngilizcede taşmadığını ve iki dilde tahtaların aynı olduğunu denetler.
 
-Yalnız gereken alanlar yazılır. `api` çekirdeğin yardımcılarını taşır: `N, E, S, W, DIRS, FOG_R, PAIR_COLS, rot, unrot, popc, nb, ob, tree, hashStr, rgba, shade, lum, hueRot, okl, oklch, toast, tone, note, haptic, persist, kick, burst, rrp, rr, railPath, ease, back, anim, press, lineName` ve canlı değerler için alıcılar: `api.G, api.pal, api.save, api.geo, api.vg, api.cx`.
+Yalnız gereken alanlar yazılır. `api` çekirdeğin yardımcılarını taşır: `N, E, S, W, DIRS, FOG_R, PAIR_COLS, rot, unrot, popc, nb, ob, tree, hashStr, rgba, shade, lum, hueRot, okl, oklch, toast, tone, note, haptic, persist, kick, burst, rrp, rr, railPath, ease, back, anim, press, lineName, difficulty, lit, unitTaps` ve canlı değerler için alıcılar: `api.G, api.pal, api.save, api.geo, api.vg, api.cx`.
 
 Karo maskesi 4 bittir: `N = 1, E = 2, S = 4, W = 8`. `DIRS[k] = [bit, dx, dy, karşı bit]`, sıra K, D, G, B. `rot` saat yönünde 90°, `unrot` tersi.
 
@@ -99,7 +103,9 @@ Aşamalar ve sırası:
 5. **`shape(C)`:** Eşliden sonra, ters/sayaçlıdan önce. Makas, döner tabla burada `C.unit(...)` ile birim kurar.
 6. Ters ve sayaçlı karo (`C.free(i)` bu aşamada kurulan birimleri dışlar).
 7. **`mark(C)`:** Sayaçlıdan sonra, karanlıktan önce. Tabela ve halka işareti burada konur.
-8. Karanlık tünel, "çözülmüş gelmesin", par ve dokunuş sayısı (birimler dahil).
+8. Karanlık tünel, "çözülmüş gelmesin".
+9. **`fin(C)`:** başlangıç dizilimi kesinleştikten sonra (son sefer hamle payını burada hesaplar). `C.cur` artık değişmez.
+10. Par ve dokunuş sayısı (birimler dahil).
 
 C alanları:
 
@@ -148,6 +154,7 @@ Birden çok durum taşıyan, dönmeyen ya da birlikte hareket eden karolar için
 - `G` = bölüm (`P`) + oyun durumu (`G.cur`, `G.fixed`, `G.seen`, `G.L`, `G.moves`…).
 - `block(G, i)`: ipucu/karanlık/sayaç denetimlerinden sonra çağrılır. Metin dönerse ilk seferde bildirim gösterilir.
 - `after(G, i, now)`: her dokunuşta, yeni `G.L` hesaplandıktan sonra çağrılır.
+- `G.mLost`: eklenti ↻ hamle yıldızını söndürmek için doldurur (bildirim metni; boşsa yıldız yalnız hamle hedefine bakar). Çekirdek `movesOk()`, gösterge, bildirim ve kazanma kaydı (`miss[l][1] = −1`) bunu okur. Son sefer kullanır.
 - Çizim nesnesi `D`: `G, s (karo boyu), n, X, now, col, on(i), vis(i), own(i), OC, cx, pal, railPath, rrp, rr, rgba, tiles(f)`.
   - `X[i] = [x, y, açı, ölçek]`. `xform` X'i değiştirebilir (tabla dönüş animasyonu); `X[i][4] = true` o karonun zeminini çizdirmez.
   - `on(i)` yanıyor mu, `vis(i)` karanlıkta görünür mü, `own(i)` hangi merkeze bağlı (1, 2; 3 = karışmış), `OC[own]` o hattın rengi.

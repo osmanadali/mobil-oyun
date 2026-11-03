@@ -34,7 +34,7 @@ Oyun Türkçe, İngilizce, Almanca, İspanyolca, Portekizce (Brezilya) ve Frans�
 - **Yeni metin yazarken:** `L(tr, en)` yaz, sonra `node tools/diller.cjs --skeleton` eksik anahtarları boş kalıp olarak döker; uygun `sozluk-*.txt`'e ekle, `node tools/diller.cjs` çalıştır. `L(tr, değişken)` gibi değişkenle çağıran yardımcıyı (ör. ayarlardaki `opt`) `tools/diller.cjs` `WRAP` listesine ekle.
 - **Sayı, tarih, büyük harf:** tarih `toLocaleDateString(LOC)` (`LOC = RAY_LOCALE`: tr-TR, en-US, de-DE, es-ES, pt-BR, fr-FR; cihaz aynı dilde başka bölgedeyse onunki, ör. es-MX), yüzde `LP(n)` (`%30` · `30%` · `30 %`), büyük harf `toLocaleUpperCase(RAY_LANG)`.
 - **Hat adı:** `M1 · Liman Hattı` / `M1 · Harbor Line` / `M1 · Linie Hafen` / `M1 · Línea Puerto` / `M1 · Linha Porto` / `M1 · Ligne Port`. 26. hattan sonraki önekler: Almancada tireli önek (`Neu-Hafen`, `Nord-…`), İspanyolca/Portekizce/Fransızcada adın ardından, cinsiyetle değişmeyen sözcük (`Puerto Norte`, `Porto Central`, `Port d’Antan`); bu yüzden "New/Old/Upper…" bu dillerde bilerek serbest çevrilir.
-- **Robot:** `tools/hakem/diller.cjs` (K bölümü; tek başına `node tools/hakem.cjs --only=diller`): sözlükler eksiksiz ve güncel; cihaz dili ve dil seçici; dört dilde 320 px'te açılış, ana sayfa, ayarlar, mağaza, görevler, renk temaları, Hatlar, oyun, kazanma paneli ve 22 kural kartı — Türkçe harf, sözlükte bulunamayan metin, ekranda İngilizce sözcük, taşma ve iki satıra bölünen düğme yok; tarih/yüzde/hat adı biçimi.
+- **Robot:** `tools/hakem/diller.cjs` (K bölümü; tek başına `node tools/hakem.cjs --only=diller`): sözlükler eksiksiz ve güncel; cihaz dili ve dil seçici; dört dilde 320 px'te açılış, ana sayfa, ayarlar, mağaza, görevler, renk temaları, Hatlar, oyun, kazanma paneli ve 24 kural kartı — Türkçe harf, sözlükte bulunamayan metin, ekranda İngilizce sözcük, taşma ve iki satıra bölünen düğme yok; tarih/yüzde/hat adı biçimi.
 
 ## 2. Yazım ilkeleri
 
@@ -185,6 +185,10 @@ Oyun dili: kısa, sıcak, "sen/du/tú/você/tu" ile. "Ray" adı hiçbir dilde ç
 | M22 | Nehir | River | Fluss | Río | Rio | Rivière |
 | M23 | Kapalı durak | Closed station | Geschlossene Station | Estación cerrada | Estação fechada | Station fermée |
 | M24 | Tarife bölgesi | Fare zone | Tarifzone | Zona tarifaria | Zona tarifária | Zone tarifaire |
+| M25 | Son sefer | Timed station | Zeitstation | Estación con reloj | Estação com relógio | Station minutée |
+| M26 | Kayan sütun | Sliding column | Schiebespalte | Columna deslizante | Coluna deslizante | Colonne glissante |
+
+Son sefer İngilizcede bilerek "Timed station": "last train" son süre (🚉) için ayrılmış. Saatli durak = timed station = Zeitstation · estación con reloj · estação com relógio · station minutée.
 
 Kural metinlerindeki ortak terimler: tampon = buffer = Prellbock · tope · para-choque · butoir; geçiş = crossing = Übergang · cruce · travessia · passage; düz/sapak = straight/branch = gerade/abzweigend · recto/ramal · reto/ramal · tout droit/bifurcation.
 
@@ -216,6 +220,8 @@ Hat adları, tema, tren kaplaması, rozet ve şehir adlarının bütün karşıl
 | M22 | Nehir | River |
 | M23 | Kapalı durak | Closed station |
 | M24 | Tarife bölgesi | Fare zone |
+| M25 | Son sefer | Timed station |
+| M26 | Kayan sütun | Sliding column |
 
 Kart etiketi: `Yeni: kapak` → `New: cover`.
 

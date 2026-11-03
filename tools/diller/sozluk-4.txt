@@ -930,3 +930,63 @@ de: Spielbrett: tippe Kacheln an, um sie zu drehen, und verbinde jede Station mi
 es: Tablero: toca las piezas para girarlas y conecta cada estación al centro
 pt: Tabuleiro: toque nas peças para girar e ligue cada estação ao centro
 fr: Plateau : touche les tuiles pour les tourner et relie chaque station au centre
+@ Timed station
+de: Zeitstation
+es: Estación con reloj
+pt: Estação com relógio
+fr: Station minutée
+@ New: timed station
+de: Neu: Zeitstation
+es: Nuevo: estación con reloj
+pt: Novo: estação com relógio
+fr: Nouveau : station minutée
+@ A ⏳ timed station must reach the hub <b>within the moves</b> shown on it. Miss it and the <b>↻ move star goes out</b>; the level goes on, no life lost.
+de: Eine ⏳ Zeitstation muss das Zentrum <b>in so vielen Zügen</b> erreichen, wie auf ihr steht. Schaffst du es nicht, <b>erlischt der ↻ Zug-Stern</b>; das Level läuft weiter, kein Leben weg.
+es: Una ⏳ estación con reloj debe llegar al centro <b>en las jugadas</b> que indica. Si no llegas, <b>se apaga la ★ de ↻ jugadas</b>; el nivel sigue y no pierdes vida.
+pt: Uma ⏳ estação com relógio deve chegar ao centro <b>dentro das jogadas</b> mostradas nela. Se não der, <b>a ★ de ↻ jogadas se apaga</b>; a fase continua, sem perder vida.
+fr: Une ⏳ station minutée doit rejoindre le centre <b>en autant de coups</b> qu’indiqué dessus. Sinon, <b>l’étoile ↻ coups s’éteint</b> ; le niveau continue, sans perdre de vie.
+@ ⏳ Timed station missed · ↻ ★ lost
+de: ⏳ Zeitstation verpasst · ↻ ★ weg
+es: ⏳ Estación con reloj perdida · ↻ ★ perdida
+pt: ⏳ Estação com relógio perdida · ↻ ★ perdida
+fr: ⏳ Station minutée ratée · ↻ ★ perdue
+@ ⏳ Timed station reached
+de: ⏳ Zeitstation erreicht
+es: ⏳ Estación con reloj a tiempo
+pt: ⏳ Estação com relógio a tempo
+fr: ⏳ Station minutée atteinte
+@ ⏳ STATION MISSED
+de: ⏳ STATION VERPASST
+es: ⏳ ESTACIÓN PERDIDA
+pt: ⏳ ESTAÇÃO PERDIDA
+fr: ⏳ STATION RATÉE
+@ ⏳ timed station
+de: ⏳ Zeitstation
+es: ⏳ estación con reloj
+pt: ⏳ estação com relógio
+fr: ⏳ station minutée
+@ ⏳ reach the timed station
+de: ⏳ Zeitstation rechtzeitig erreichen
+es: ⏳ llega a tiempo a la estación con reloj
+pt: ⏳ chegue a tempo à estação com relógio
+fr: ⏳ atteins la station minutée à temps
+@ ⏳ timed station missed
+de: ⏳ Zeitstation verpasst
+es: ⏳ estación con reloj perdida
+pt: ⏳ estação com relógio perdida
+fr: ⏳ station minutée ratée
+@ Sliding column
+de: Schiebespalte
+es: Columna deslizante
+pt: Coluna deslizante
+fr: Colonne glissante
+@ New: sliding column
+de: Neu: Schiebespalte
+es: Nuevo: columna deslizante
+pt: Novo: coluna deslizante
+fr: Nouveau : colonne glissante
+@ Tiles in a railed column <b>don’t turn</b>: tap the column and the whole column <b>slides one step down</b>; the bottom tile wraps to the top.
+de: Kacheln in einer Schienenspalte <b>drehen sich nicht</b>: Tippst du die Spalte an, <b>rutscht sie einen Schritt nach unten</b>; die unterste Kachel kommt nach oben.
+es: Las piezas de una columna con raíles <b>no giran</b>: toca la columna y toda ella <b>baja un paso</b>; la pieza de abajo pasa arriba.
+pt: Peças numa coluna com trilhos <b>não giram</b>: toque na coluna e ela toda <b>desce uma casa</b>; a peça de baixo vai para o topo.
+fr: Les tuiles d’une colonne à rails <b>ne tournent pas</b> : touche la colonne et elle <b>descend d’un cran</b> ; la tuile du bas remonte en haut.

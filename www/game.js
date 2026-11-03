@@ -244,7 +244,7 @@ const RULES = {
 const RULE_LINE = { pairs: 2, rev: 3, fog: 5, cnt: 6, two: 8 };
 const MODS = [], CLASH = {};   // eklentiler · birlikte gelemeyen kurallar (simetrik)
 const clash = (a, b) => !!(CLASH[a]?.includes(b) || CLASH[b]?.includes(a));
-const KARMA = 24;   // 0 tabanlı: M25 ve sonrası sınırsız karma (son kural M24 · tarife bölgesi, 605. bölüm)
+const KARMA = 26;   // 0 tabanlı: M27 ve sonrası sınırsız karma (son kural M26 · kayan sütun, 661. bölüm)
 function rulesFor(l) {
   const c = lineOf(l), own = Object.keys(RULE_LINE).find(k => RULE_LINE[k] === c), set = new Set(own ? [own] : []);
   const learned = Object.keys(RULE_LINE).filter(k => RULE_LINE[k] < c).sort((a, b) => RULE_LINE[a] - RULE_LINE[b]);   // hat sırasıyla: slice(-3) = en yeni 3 kural
@@ -346,6 +346,7 @@ function generate(cols, rows, seed, _pins = 0, pairs = 0, x = {}) {   // _pins: 
   }
   // çözülmüş hâlde gelmesin
   if (cur.every((v, i) => v === sol[i])) { const i = cur.findIndex((v, j) => !pinned[j] && link[j] < 0 && !C.busy[j] && rot(v) !== v); cur[i] = rot(cur[i]); }
+  stage('fin');   // eklenti: son dizilim kesinleştikten sonra (ör. son sefer hamle payı)
   // par: döndürülmesi gereken karo (eş = 1, eklenti birimi = 1) sayısı · taps: gereken en az dokunuş (süre hedefi için)
   let par = 0, taps = 0;
   cur.forEach((v, i) => {
@@ -466,12 +467,12 @@ function puzzleFor(l) {
     const x = { rev: U.has('rev') ? Math.max(2, Math.round(n * (intro ? .08 : .15))) : 0, cnt: U.has('cnt') ? Math.max(2, Math.round(n * (intro ? .06 : .12))) : 0, two: U.has('two'), fog: U.has('fog') };
     // eklenti kuralı: bu bölümdeki miktar + zorluk payı (boost). Pay hedefe eklenir: seçici kuralın zorluğunu kolay tabanla silmesin.
     // Kuralın kendi hattındaki ilk 3 öğrenme bölümünde pay yok (testere dişi).
-    let boost = 0;
-    for (const m of MODS) if (U.has(m.key)) { x[m.key] = m.amount(n, intro && ln === m.line, z, fin, c, r); if (ln !== m.line || l - lineStart(ln) >= 3) boost += m.boost || 0; }
-    if (ln >= KARMA) boost += 3;   // M25+ sınırsız karma: eski kuralların payı küçük, hedef M24 düzeyinde kalsın
+    let boost = 0, scan = 0;   // scan: kendi hattında taranacak en az aday (çözücü puanını kendisi artırmayan kural, ör. son sefer)
+    for (const m of MODS) if (U.has(m.key)) { x[m.key] = m.amount(n, intro && ln === m.line, z, fin, c, r); if (ln !== m.line || l - lineStart(ln) >= 3) { boost += m.boost || 0; if (ln === m.line) scan = m.scan || 0; } }
+    if (ln >= KARMA) boost += 3.5;   // M27+ sınırsız karma: eski kuralların payı küçük, hedef M24 düzeyinde kalsın
     if (breath(l)) boost = 0;   // mola: kural payı yok, hedef aşağıda yarıya yakın
     // hat finali (SON DURAK): hedef +2 puan, en çok aday taranır · zorluk paylı bölümde de geniş tarama
-    const P = pick(c, r, l * 7919 + 13, 0, pairs, z, (intro ? 3 : 5) + 11 * z * (breath(l) ? .55 : 1) + (fin ? 2 : 0) + boost, x, fin ? 32 : boost ? Math.max(24, 6 + Math.round(26 * z)) : undefined);
+    const P = pick(c, r, l * 7919 + 13, 0, pairs, z, (intro ? 3 : 5) + 11 * z * (breath(l) ? .55 : 1) + (fin ? 2 : 0) + boost, x, fin ? Math.max(32, scan) : boost ? Math.max(24, 6 + Math.round(26 * z), scan) : undefined);
     P.fog = U.has('fog'); P.final = fin; P.rules = [...U]; P.breath = breath(l); return P;
   });
 }
@@ -540,7 +541,7 @@ function limits(P) {
 const timeOk = sec => sec <= G.lim.t;
 // 🚉 son süre: yıldız süresinin 2 katı, en az +60 sn (BOLUM_TASARIMI › Can). Dolunca bölüm başarısız, 1 ❤️ gider.
 const lastCall = t => Math.max(2 * t, t + 60);
-const movesOk = () => G.moves <= G.lim.m;
+const movesOk = () => G.moves <= G.lim.m && !G.mLost;   // G.mLost: eklenti ↻ yıldızını söndürdü (son sefer kaçtı; bildirim metni)
 
 // ---------- ses / dokunsal ----------
 let ac;
@@ -887,7 +888,7 @@ function hud() {
   const ok = movesOk();
   $('gPar').innerHTML = `${G.moves}<small> / ${G.lim.m}</small>`;
   $('gPar').classList.toggle('miss', !ok);
-  $('gParLbl').textContent = ok ? L('↻ HAMLE HEDEFİ', '↻ MOVE TARGET') : L('↻ HEDEF AŞILDI', '↻ OVER TARGET');
+  $('gParLbl').textContent = ok ? L('↻ HAMLE HEDEFİ', '↻ MOVE TARGET') : G.mLost && G.moves <= G.lim.m ? L('⏳ SEFER KAÇTI', '⏳ STATION MISSED') : L('↻ HEDEF AŞILDI', '↻ OVER TARGET');
   bstUi();
 }
 // üst gösterge: süre + üç yıldız (bitir · ⏱ süre · ↻ hamle)
@@ -908,7 +909,7 @@ function tick() {
     // kusursuz seri bu bölümde tehlikede → baştan başlamak seriyi korur (↺ süreyi de sıfırlar)
     const s = comboStake(), keep = s >= 2 ? L(` · ↺ baştan → ✨${s} sürer`, ` · ↺ restart → keep ✨${s}`) : '';
     if (G.tOk && !tOk) lose(L('⏱ Tren rötarda · ★ söndü', '⏱ Train is late · ★ lost') + keep);
-    if (G.mOk && !mOk) lose(L('↻ Hamle hedefi aşıldı · ★ söndü', '↻ Move target passed · ★ lost') + keep);
+    if (G.mOk && !mOk) lose((G.mLost && G.moves <= G.lim.m ? G.mLost : L('↻ Hamle hedefi aşıldı · ★ söndü', '↻ Move target passed · ★ lost')) + keep);
   }
   G.tOk = tOk; G.mOk = mOk;
   // gerilim: süre hedefinin %30'undan sonra 8 kademede artar; hedef geçince de 2 katına kadar artmaya devam eder
@@ -1291,7 +1292,7 @@ function win() {
       }
     }
     // hangi hedef ne kadar kaçtı: [⏱ sn geç, ↻ hamle fazla]. Taç topla listesi ve tekrar oynarken gösterilir.
-    if (perfect) delete save.miss[G.lvl]; else if (st >= old && !zen) save.miss[G.lvl] = [tOk ? 0 : Math.ceil(G.time / 1000 - G.lim.t), mOk ? 0 : G.moves - G.lim.m];
+    if (perfect) delete save.miss[G.lvl]; else if (st >= old && !zen) save.miss[G.lvl] = [tOk ? 0 : Math.ceil(G.time / 1000 - G.lim.t), mOk ? 0 : G.moves > G.lim.m ? G.moves - G.lim.m : -1];   // −1: hamle hedefinde ama son sefer kaçtı
     if (st > old && old) extra = L(`Yeni rekor: ${starTxt(st)}`, `New best: ${starTxt(st)}`);
     save.level = Math.max(save.level, G.lvl + 1);
     if (G.lvl === lineEnd(lineOf(G.lvl)) && firstClear) { save.hints += 2; dbl = 2; extra = L('🎁 Hat tamam · +2 ipucu', '🎁 Line complete · +2 hints'); }
@@ -1322,8 +1323,8 @@ function winSheet(g, { zen, st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, 
   const lim = g.lim, nx = g.lvl + 1, nxLocked = !g.daily && !unlocked(lineOf(nx)), again = !g.daily && (near || broke >= 2);
   const badge = unlockedNow ? `<span class="badge">${L('YENİ HAT AÇILDI', 'NEW LINE OPEN')} · M${unlockedNow + 1}</span>` : ns ? `<span class="badge">${L('TEMA ALINABİLİR', 'NEW THEME')} 🎨</span>` : perfect ? `<span class="badge">${L('KUSURSUZ', 'PERFECT')}${combo >= 2 ? ` · ✨${combo}` : ''}</span>` : zen ? '<span class="badge">🍃 ZEN</span>' : '';
   const late = Math.ceil(g.time / 1000 - lim.t), over = g.moves - lim.m;
-  const miss = [tOk ? '' : `⏱ ${late} ${L('sn', 's')}`, mOk ? '' : `↻ ${over} ${L('hamle', pl(over, 'move', 'moves'))}`].filter(Boolean).join(' · ');
-  const tip = perfect || zen ? '' : `<p class="tip">${L('Kusursuz için', 'For perfect')}: ${[tOk ? '' : `⏱ ≤ ${fmtT(lim.t * 1000)}`, mOk ? '' : `↻ ≤ ${lim.m} ${L('hamle', 'moves')}`].filter(Boolean).join(L(' ve ', ' and '))}</p>`;
+  const miss = [tOk ? '' : `⏱ ${late} ${L('sn', 's')}`, mOk ? '' : over > 0 ? `↻ ${over} ${L('hamle', pl(over, 'move', 'moves'))}` : L('⏳ son sefer', '⏳ timed station')].filter(Boolean).join(' · ');
+  const tip = perfect || zen ? '' : `<p class="tip">${L('Kusursuz için', 'For perfect')}: ${[tOk ? '' : `⏱ ≤ ${fmtT(lim.t * 1000)}`, mOk ? '' : over > 0 ? `↻ ≤ ${lim.m} ${L('hamle', 'moves')}` : L('⏳ saatli durağa yetiş', '⏳ reach the timed station')].filter(Boolean).join(L(' ve ', ' and '))}</p>`;
   const B = { close: L('Kıl payı', 'So close') };
   // geçiş reklamı sırası gelmişse: Sonraki'den önce tek, sessiz bir bağlantı (reklamsız paketi olana hiç çıkmaz)
   const pr = Shop.price(), adFree = !g.daily && interDue && !save.noAds ? `<p class="adfree"><button id="mAdFree">${pr ? L(`Reklamsız oyna · ${pr}`, `Play ad-free · ${pr}`) : L('Reklamsız oyna', 'Play ad-free')}</button></p>` : '';
@@ -1625,7 +1626,8 @@ async function hint() {
   if (!wrong.length) return;
   // ışıklı bölgeye komşu olanı seç → daha anlamlı ipucu
   const usz = i => G.units?.[G.unitOf[i]]?.cells.length || 1;   // eklenti birimi (tabla: 4 karo) sona
-  wrong.sort((a, b) => (G.seen[b] - G.seen[a]) || usz(a) - usz(b) || nearLit(b) - nearLit(a));
+  const pri = prio(), rk = i => { const k = pri.indexOf(i); return k < 0 ? 1e9 : k; };   // eklenti önceliği (son sefer: bekleyen saatli durağın yolu, merkezden dışa)
+  wrong.sort((a, b) => (G.seen[b] - G.seen[a]) || rk(a) - rk(b) || usz(a) - usz(b) || nearLit(b) - nearLit(a));
   const i = wrong[0], now = performance.now(), prev = G.L.d, ui = G.unitOf?.[i] ?? -1;
   G.hist = [];   // ipucunun sabitlediği karo geri alınmasın
   for (const k of ui >= 0 ? G.units[ui].cells : G.link[i] >= 0 ? [i, G.link[i]] : [i]) { G.cur[k] = G.sol[k]; G.fixed[k] = true; anim.set(k, now); press.set(k, now); }   // eşli karo / eklenti birimi: hepsi birden
@@ -2107,7 +2109,7 @@ function buySheet(k) {
     mBack: skinSheet });
 }
 // Taç avı: kusursuz bitmemiş bölümler, yıldızlarıyla. En çok yıldızlı (kusursuza en yakın) önce; dokun → oyna.
-const missTxt = l => { const [t, m] = save.miss[l] || [0, 0]; return [t ? L(`⏱ ${t} sn geç`, `⏱ ${t} s late`) : '', m ? L(`↻ ${m} hamle fazla`, `↻ ${m} ${pl(m, 'move', 'moves')} over`) : ''].filter(Boolean).join(' · '); };
+const missTxt = l => { const [t, m] = save.miss[l] || [0, 0]; return [t ? L(`⏱ ${t} sn geç`, `⏱ ${t} s late`) : '', m < 0 ? L('⏳ son sefer kaçtı', '⏳ timed station missed') : m ? L(`↻ ${m} hamle fazla`, `↻ ${m} ${pl(m, 'move', 'moves')} over`) : ''].filter(Boolean).join(' · '); };
 const huntList = () => { const L = []; for (let l = 1; l < save.level; l++) if (!save.crowns[l] && unlocked(lineOf(l))) L.push(l); return L.sort((a, b) => (save.stars[b] || 0) - (save.stars[a] || 0) || a - b); };
 function crownHunt(k) {
   const n = crownBal(), list = huntList();
@@ -2624,7 +2626,7 @@ document.querySelector('#home .logo').onclick = () => openCity();
 // ---------- kural eklentileri: www/rules/*.js (M9+ yeni kurallar). Ayrıntı: docs/kurallar/README.md ----------
 const API = {
   N, E, S, W, DIRS, FOG_R, PAIR_COLS, rot, unrot, popc, nb, ob, tree, hashStr, rgba, shade, lum, hueRot, okl, oklch,
-  toast, tone, note, haptic, persist, kick, burst, rrp, rr, railPath, ease, back, anim, press, lineName, difficulty, lit,
+  toast, tone, note, haptic, persist, kick, burst, rrp, rr, railPath, ease, back, anim, press, lineName, difficulty, lit, unitTaps,
   get G() { return G; }, get pal() { return pal; }, get save() { return save; }, get geo() { return geo; }, get vg() { return vg; }, get cx() { return cx; },
 };
 loadRules(API);
@@ -2639,6 +2641,8 @@ function plan() {
   for (const m of MODS) if (m.plan && G?.[m.key]) out.push(...m.plan(G, out));
   return out;
 }
+// eklenti öncelik sırası (ipucu ve robot): karolar bu sırayla önce çözülür (ör. son sefer: saatli durağın yolu)
+function prio() { const out = []; for (const m of MODS) if (m.prio && G?.[m.key]) out.push(...m.prio(G)); return out; }
 // "her şey açık" test sürümü: bütün temalar ve tren kaplamaları sende; bol 🎫 (sandık için), 💡 ve 🛡 (bir kez verilir)
 if (TEST && !save.testOpen) {
   save.testOpen = 1; SKINS.forEach(k => { save.owned[k.id] = 1; }); save.trains = Object.fromEntries(LIVERIES.map(v => [v.id, 1]));
@@ -2677,5 +2681,5 @@ if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { seaWin, popLog, popUp: (...a) => popUp(...a), ACH, achCheck, linesDone, goldLine, plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), dayQ: () => dayQ(), RULE_LINE, RULES,  review: maybeReview, BST, offer: { MIN: OFFER_MIN, GAP: OFFER_GAP, AGE: OFFER_AGE, list: offerList, due: () => offerDue(G), inter: v => { interDue = v; } }, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, lineOf, lineEnd, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
+window.__ray = { seaWin, popLog, popUp: (...a) => popUp(...a), ACH, achCheck, linesDone, goldLine, plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), dayQ: () => dayQ(), RULE_LINE, RULES, prio, review: maybeReview, BST, offer: { MIN: OFFER_MIN, GAP: OFFER_GAP, AGE: OFFER_AGE, list: offerList, due: () => offerDue(G), inter: v => { interDue = v; } }, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, lineOf, lineEnd, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();

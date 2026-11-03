@@ -10,7 +10,7 @@ Bu belge, bölümlerin nasıl üretildiğini, hatların nasıl uzadığını ve 
 
 ## 2. Hatlar: hat boyu 28 bölümde durur
 
-Hat boyu M1'den M5'e 4'er bölüm uzar (12, 16, 20, 24, 28), sonra **28'de sabit kalır**: `lineLen(c) = min(12 + 4c, 28)`. Böylece 22 kuralın hepsi ~600. bölüme kadar tanıtılır (son kural M24 605. bölümde; 31 Ekim'den önce M23 1189. bölümdeydi ve oyuncuların çoğu M10'un ötesini görmüyordu). Yeni hattın kilidi, önceki bütün bölümlerden ortalama **2,2 yıldız** toplayınca açılır. Zorluk z(l) yine bölüm numarasına bağlıdır; hatlar kısaldığı için her kural daha düşük bir z'de gelir.
+Hat boyu M1'den M5'e 4'er bölüm uzar (12, 16, 20, 24, 28), sonra **28'de sabit kalır**: `lineLen(c) = min(12 + 4c, 28)`. Böylece 24 kuralın hepsi ~660. bölüme kadar tanıtılır (son kural M26 661. bölümde; 31 Ekim'den önce M23 1189. bölümdeydi ve oyuncuların çoğu M10'un ötesini görmüyordu). Yeni hattın kilidi, önceki bütün bölümlerden ortalama **2,2 yıldız** toplayınca açılır. Zorluk z(l) yine bölüm numarasına bağlıdır; hatlar kısaldığı için her kural daha düşük bir z'de gelir.
 
 | Hat | Bölümler | Bölüm sayısı | Kilidi açmak için | Zorluk | Kural | Ortalama zorluk puanı |
 |---|---|---|---|---|---|---|
@@ -38,9 +38,18 @@ Hat boyu M1'den M5'e 4'er bölüm uzar (12, 16, 20, 24, 28), sonra **28'de sabit
 | M22 | 549–576 | 28 | ★ 1206 | %96–97 | ≈ Nehir | 19,0 |
 | M23 | 577–604 | 28 | ★ 1267 | %97 | ⊘ Kapalı durak | 19,5 |
 | M24 | 605–632 | 28 | ★ 1329 | %97–98 | ⇄ Tarife bölgesi | 20,1 |
-| M25+ | 633– | 28 | ★ 1390… | %98 → %100 | karma | ~19,7–20,5 |
+| M25 | 633–660 | 28 | ★ 1390 | %98 | ⏳ Son sefer | 20,5 |
+| M26 | 661–688 | 28 | ★ 1452 | %98 | ↕ Kayan sütun | 20,9 |
+| M27+ | 689– | 28 | ★ 1514… | %98 → %100 | karma | ~19,6–21,3 |
 
 Kod: `LINE_MAX`, `lineLen`, `lineStart`, `lineOf` (tavandan sonra kapalı biçim, döngü yok). 3 Kasım'da sabit karo kalktı ve iki kural eklendi (🔒 mühürlü karo M11, 🌐 sarmal tahta M21): 1–28. bölümler (M1–M2) eskisi gibidir, 29. bölümden sonrası yeni kural sırasıyla yeniden üretilir (kasıtlı; parmak izi testleri yenilendi).
+
+**İki kuralın yerleşimi (3 Kasım, `kurallar-3`): sona, M25 ⏳ son sefer ve M26 ↕ kayan sütun.** Gerekçe:
+
+- **Eski bölümler bit bit aynı.** Araya eklemek 101. bölümden sonraki her bölümü yeniden üretirdi (oyuncunun yarım bölümü, yıldızları ve kayıtlı kaçırmaları başka haritaya düşerdi). Sona eklemek 1–632'yi olduğu gibi bırakır; yalnız eski karma (633+) yeniden üretilir. Karma artık 689'da başlar.
+- **Merdiven.** İki kural da çözücü puanını kendisi artırmıyor (son sefer: değiştirmez; kayan şerit: biraz düşürür, 14,5 → 12,7). Erken bir hatta konsalar, M24'e dek uzanan "her hat bir öncekinden zor" zincirini ancak sonraki bütün hatların paylarını yeniden ayarlayarak korurdu. Sonda yalnız kendi payları (`boost`) ayarlanır: M24 20,1 < M25 20,5 < M26 20,9.
+- **Sıra: önce son sefer, sonra kayan sütun.** Kayan sütunun mekanizması M5'ten tanıdık, son hatta bile hızlı öğrenilir ve son hatta çözücü puanına gerçek bir şerit ekler. Son sefer bütün öğrenilmiş kuralların üstüne "hangi durağı önce bağlamalıyım" planlamasını koyar; M25'te bir eski kural eşliğinde gelir.
+- **Sıra × sütun:** birlikte gelmez (`clash`). Kesişen karo iki birime giremez ve ikisi birlikte bulmacayı ölçülemeyecek ölçüde zorlaştırırdı (Netslide).
 
 Hattın son bölümünü ilk kez bitiren oyuncu +2 ipucu kazanır (videoyla +4).
 
@@ -101,9 +110,11 @@ Sıra ilkesi (31 Ekim): **göze çarpan ve kolay kurallar önce, gizli bilgili v
 | M22 | 549 | ≈ **Nehir** | Ray nehri geçitten geçer ya da kıyıda tamponla biter; kıyıda tam rozetteki sayı kadar tampon olmalı (eksikse döngü var). |
 | M23 | 577 | ⊘ **Kapalı durak** | Bazı duraklar kapalı ama sıradan görünür; merkezdeki ⊘ sayısı kaç tane olduğunu söyler. Kapalıya ray bağlanmaz. |
 | M24 | 605 | ⇄ **Tarife bölgesi** | Merkezi saran bölge sınırında ray geçer ya da tamponla biter; geçiş ve tampon sayıları rozetle aynı olmalı. |
-| M25+ | 633 | Karma hatlar | Yeni kural yok; her bölümde öğrenilmiş kurallardan 1–2 tanesi. |
+| M25 | 633 | ⏳ **Son sefer** | Saatli durak, üstündeki sayı kadar hamle içinde merkeze bağlanmalı; yetişmezse ↻ hamle yıldızı söner (oyun sürer, can gitmez). Sırayı dayatır. |
+| M26 | 661 | ↕ **Kayan sütun** | Raylı sütunun karoları dönmez; sütuna dokununca bütün sütun bir kare aşağı kayar. Kayan sırayla aynı bölümde gelmez. |
+| M27+ | 689 | Karma hatlar | Yeni kural yok; her bölümde öğrenilmiş kurallardan 1–2 tanesi. |
 
-**Zor kurallar (M15'ten sonra):** Oyuncu geri bildirimi "yeni kurallar zorluk katmıyor" oldu. Son hatların kuralları bu yüzden gizli bilgi (kapak, silik kol, gizli depo, kapalı durak) ya da küresel sayım (nehir, tarife bölgesi) üzerine kuruludur: yerel çıkarım çıpalarını bozar, oyuncuyu komşulardan ve sayılardan akıl yürütmeye zorlar. Her biri aynı tohum ve boyutta zorluk puanını ölçülerek artırır (7×9'da +3 ile +8 arası) ve gördüğün bilgiyle tek çözüme iner (üretimde çözüm sayımıyla denetlenir). Ayrıca her kuralın bir **zorluk payı** (`boost`) vardır: kuralın kendi hattının ilk 3 bölümü dışında seçicinin hedef puanına eklenir, böylece kurallı bölüm kolay tabandan seçilip fark silinmez. Paylar (31 Ekim'de yeni sırada hat ortalamaları her hatta artsın diye ayarlandı): kayan sıra 1 · soğuyan karo 0,5 · makas 1,5 · tabla 2 · köprü 2 · bakım karosu 1 · kapak 2,5 · tünel 3 · tabela 3 · halka 3,5 · silik kol 3 · gizli depo 3,5 · nehir 3,5 · kapalı durak 3,5 · tarife bölgesi 4,5. Karma hatlarda (M24+) hedefe ayrıca +3.
+**Zor kurallar (M15'ten sonra):** Oyuncu geri bildirimi "yeni kurallar zorluk katmıyor" oldu. Son hatların kuralları bu yüzden gizli bilgi (kapak, silik kol, gizli depo, kapalı durak) ya da küresel sayım (nehir, tarife bölgesi) üzerine kuruludur: yerel çıkarım çıpalarını bozar, oyuncuyu komşulardan ve sayılardan akıl yürütmeye zorlar. Her biri aynı tohum ve boyutta zorluk puanını ölçülerek artırır (7×9'da +3 ile +8 arası) ve gördüğün bilgiyle tek çözüme iner (üretimde çözüm sayımıyla denetlenir). Ayrıca her kuralın bir **zorluk payı** (`boost`) vardır: kuralın kendi hattının ilk 3 bölümü dışında seçicinin hedef puanına eklenir, böylece kurallı bölüm kolay tabandan seçilip fark silinmez. Paylar (31 Ekim'de yeni sırada hat ortalamaları her hatta artsın diye ayarlandı): kayan sıra 1 · soğuyan karo 0,5 · makas 1,5 · tabla 2 · köprü 2 · bakım karosu 1 · kapak 2,5 · tünel 3 · tabela 3 · halka 3,5 · silik kol 3 · gizli depo 3,5 · nehir 3,5 · kapalı durak 3,5 · tarife bölgesi 4,5 · son sefer 7 · kayan sütun 7,5 (güncel değerler kural dosyalarında). Son sefer ayrıca kendi hattında en az 48 aday tarar (`scan`). Karma hatlarda (M27+) hedefe ayrıca +3,5.
 
 Eşli, ters, karanlık tünel, sayaçlı ve iki merkez dışındaki kurallar çekirdekte değil, eklenti dosyalarındadır (`www/rules/*.js`; hattı `line`, üretim aşamalarındaki sırası `ord` alanı). Her kuralın tasarımı, çözülebilirlik kanıtı ve ölçümleri `docs/kurallar/` altındadır; eklenti sözleşmesi `docs/kurallar/README.md`'dedir.
 
@@ -118,9 +129,9 @@ Eşli, ters, karanlık tünel, sayaçlı ve iki merkez dışındaki kurallar çe
 
 - Kurallar üst üste yığılmaz. Bir kural kendi hattında her bölümde vardır.
 - Sonraki hatlarda kendi kuralına ek olarak bölüm bölüm değişen en fazla 1 eski kural gelir.
-- M24 sonrası karma hatlardır: her bölüm 1–2 kuralın farklı bir karışımıdır. Kurallı hatlarda da bölümlerin yaklaşık yarısına bir eski kural eklenir. M9–M24 arasında ek kuralın yarısı en yeni 3 kuraldan (hat sırasıyla) seçilir, böylece yeni öğrenilen kural sık tekrar eder. M25 ve sonrasında bütün kurallar eşit sıklıkta gelir ve hedef puana sabit +3 pay eklenir; sınırsız karma M24 düzeyinde kalır.
-- Ölçülen merdiven (hat ortalaması, zorluk puanı) §2 tablosundadır: M1 5,6'dan M24 20,1'e her hat bir öncekinden zor; M25+ ~19,7–20,5. 3 Kasım ayarı: sarmal tahta `boost: 3.5`, silik kol 3 → 3,5, nehir ve kapalı durak 3,5 → 4, tarife bölgesi 4,5 → 5 (yeni sırada merdiven kesintisiz kalsın).
-- Birlikte gelemeyen kurallar vardır (çakışan kural sıradaki uyumlu kuralla değişir): halka ↔ tabela, köprü; kapak ↔ karanlık tünel, silik kol; kapalı durak ↔ kapak, silik kol, gizli depo; nehir ↔ köprü, tabla, halka, tarife bölgesi; tarife bölgesi ↔ iki merkez; mühürlü karo ↔ bakım karosu; sarmal tahta ↔ tünel ağzı, gizli depo, nehir, tarife bölgesi; kayan sıra ↔ kapalı durak, nehir, tarife bölgesi, gizli depo.
+- M26 sonrası karma hatlardır: her bölüm 1–2 kuralın farklı bir karışımıdır. Kurallı hatlarda da bölümlerin yaklaşık yarısına bir eski kural eklenir. M9–M26 arasında ek kuralın yarısı en yeni 3 kuraldan (hat sırasıyla) seçilir, böylece yeni öğrenilen kural sık tekrar eder. M27 ve sonrasında bütün kurallar eşit sıklıkta gelir ve hedef puana sabit +3,5 pay eklenir (3 Kasım'a dek +3; son kural hattı yükselince karma da onun düzeyinde kalsın diye); sınırsız karma son kural hatları düzeyinde kalır.
+- Ölçülen merdiven (hat ortalaması, zorluk puanı) §2 tablosundadır: M1 5,6'dan M26 20,9'a her hat bir öncekinden zor; M27+ ~19,6–21,3. 3 Kasım ayarı: sarmal tahta `boost: 3.5`, silik kol 3 → 3,5, nehir ve kapalı durak 3,5 → 4, tarife bölgesi 4,5 → 5 (yeni sırada merdiven kesintisiz kalsın).
+- Birlikte gelemeyen kurallar vardır (çakışan kural sıradaki uyumlu kuralla değişir): halka ↔ tabela, köprü; kapak ↔ karanlık tünel, silik kol; kapalı durak ↔ kapak, silik kol, gizli depo; nehir ↔ köprü, tabla, halka, tarife bölgesi; tarife bölgesi ↔ iki merkez; mühürlü karo ↔ bakım karosu; sarmal tahta ↔ tünel ağzı, gizli depo, nehir, tarife bölgesi; kayan sıra ↔ kapalı durak, nehir, tarife bölgesi, gizli depo; kayan sütun ↔ kayan sıra, kapalı durak, nehir, tarife bölgesi, gizli depo; son sefer ↔ bakım karosu.
 - Böylece tahta kalabalıklaşmaz ve her bölüm biraz farklı hissettirir.
 
 **Hat finali (🏁 Son durak):**

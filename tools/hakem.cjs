@@ -106,7 +106,10 @@ async function solve(page, gap = 25, rounds = 40) {
         while ((t !== G.sol[i] || (j >= 0 && u !== G.sol[j])) && k < 4) { t = step(t); if (j >= 0) u = rot(u); k++; }
         for (let q = 0; q < k; q++) out.push(i);
       });
-      return out.concat(window.__ray.plan());
+      const all = out.concat(window.__ray.plan()), pr = window.__ray.prio?.() || [];
+      // eklenti önceliği (son sefer: saatli durağın yolu): varsa bu turda yalnız o karolar, merkezden dışa sırayla
+      if (pr.length) { const rk = new Map(pr.map((c, k) => [c, k])), hot = all.filter(i => rk.has(i)); if (hot.length) return hot.sort((a, b) => rk.get(a) - rk.get(b)); }
+      return all;
     });
     if (!taps.length) break;
     for (const i of taps) { await tapTile(page, i); if (gap) await page.waitForTimeout(gap); }
