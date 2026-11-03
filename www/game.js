@@ -2057,7 +2057,7 @@ function wipeSheet() {
 const skinSvg = '<svg viewBox="0 0 120 60"><path d="M10 46H40L60 28H110"/><path d="M60 6V28L80 46H110"/><path d="M10 14H36L60 28"/><rect x="52" y="20" width="16" height="16" rx="5"/></svg>';
 const skinVars = k => { const c = skinCols(k); return `--s1:${c[0]};--s2:${c[1]};--s3:${c[2]}`; };
 function skinSheet() {
-  const bal = crownBal(), cur = skin().id;
+  const bal = crownBal(); let cur = skin().id;
   if (save.newSkin || seaNew()) { save.newSkin = 0; seaNow().forEach(k => { save.seaSeen = { ...save.seaSeen, [k.id]: 1 }; }); persist(); refreshHome(); }
   const nx = SKINS.filter(k => !k.vip && !k.sea && !skinOpen(k)).sort((a, b) => a.need - b.need)[0], hn = huntList().length;   // en ucuz alınmamış tema · taç bekleyen bölüm
   const card = k => {
@@ -2082,7 +2082,12 @@ function skinSheet() {
     if (!skinOpen(k)) { haptic('light'); k.vip ? shopSheet() : bal >= k.need ? buySheet(k) : crownHunt(k); return; }
     if (k.id === cur) return;
     save.skin = k.id; persist(); applyTheme(); refreshHome(); haptic('heavy'); tone(note(7), .25, .045); tone(note(9), .3, .035, 'sine', .07);
-    skinSheet();
+    // pencere yeniden çizilmez (kaydırma yerinde kalır, ✕ kıpırdamaz): yalnız seçim işareti taşınır
+    cur = k.id;
+    for (const x of $('skins').querySelectorAll('.skin')) {
+      const on = x.dataset.k === cur; x.classList.toggle('on', on);
+      if (skinOpen(SKINS.find(z => z.id === x.dataset.k))) x.querySelector('small').textContent = on ? L('Seçili ✓', 'Selected ✓') : L('Seç', 'Select');
+    }
   };
 }
 // satın alma onayı: kalan bakiye açıkça gösterilir
