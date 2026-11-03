@@ -161,12 +161,16 @@ module.exports = async T => {
     r.cardOpen = await mOpen(page); await back(page); await page.waitForTimeout(350);
     r.card = !(await mOpen(page)) && await active(page, 'home') && !(await getSave(page)).seen?.[2];
     await page.click('#bPlay'); await page.waitForTimeout(500); await page.click('#mGo'); await page.waitForTimeout(300);
+    await back(page); await page.waitForTimeout(350);   // oyunda: duraklat açılır, ikinci basış kapatır (oyun sürer)
+    r.pause = await mOpen(page) && await page.evaluate(() => !!document.getElementById('pGo') && document.getElementById('game').classList.contains('paused'));
     await back(page); await page.waitForTimeout(350);
+    r.resume = !(await mOpen(page)) && await active(page, 'game') && await page.evaluate(() => window.__ray.G.runAt > 0);
+    await page.evaluate(() => { document.getElementById('bBack').click(); document.getElementById('pHome')?.click(); }); await page.waitForTimeout(350);
     r.game = await active(page, 'home');
     await back(page); await page.waitForTimeout(200);
     r.min = await page.evaluate(() => window.__app.min);
-    check('kalite.back', 'Geri tuşu: pencere kapanır; harita/oyun → ana sayfa; kural kartı → ana sayfa (kart sonra yine gelir); ana sayfada uygulama arka plana alınır',
-      r.modal && r.map && r.cardOpen && r.card && r.game && r.min === 1, JSON.stringify(r), 'medium');
+    check('kalite.back', 'Geri tuşu: pencere kapanır; harita → ana sayfa; oyunda duraklat açılır, ikinci basış kapatır (oyun sürer); kural kartı → ana sayfa (kart sonra yine gelir); ana sayfada uygulama arka plana alınır',
+      r.modal && r.map && r.cardOpen && r.card && r.pause && r.resume && r.game && r.min === 1, JSON.stringify(r), 'medium');
     errs.push(...errors); await ctx.close();
   }
 
