@@ -866,11 +866,11 @@ async function inViewport(page, sel) {
     const TR_CH = /[ğüşıöçĞÜŞİÖÇ]/;
     const seen = Object.fromEntries(Array.from({ length: 20 }, (_, c) => [c, 1]));   // kural kartları araya girmesin (kurallar ayrı çevriliyor)
     const SAVE = { played: 9, level: 61, stars: starsUpTo(61), streak: 2, lastDaily: YDAY, seen, remindAsked: true, hints: 3 };
-    // görünen yazı + aria-label + title; dil seçeneğindeki "Türkçe" kendi adıyla yazılır (hariç). Taşma: sayfa yatay kayıyor mu,
+    // görünen yazı + aria-label + title; dil seçeneklerindeki adlar (Türkçe, Español, Português, Français) kendi dilinde yazılır (hariç). Taşma: sayfa yatay kayıyor mu,
     // yazılı bir öğe ekrandan taşıyor mu, gizlenen (overflow) yazı kesiliyor mu
     const probe = (page, sel) => page.evaluate(sel => {
       const roots = sel.split(',').map(q => document.querySelector(q)).filter(Boolean), W = innerWidth;
-      const text = roots.map(r => r.innerText + ' ' + [...r.querySelectorAll('[aria-label]')].map(e => e.getAttribute('aria-label')).join(' ')).join(' ').replace(/Türkçe/g, '') + ' ' + document.title;
+      const text = roots.map(r => r.innerText + ' ' + [...r.querySelectorAll('[aria-label]')].map(e => e.getAttribute('aria-label')).join(' ')).join(' ').replace(/Türkçe|Español|Português|Français/g, '') + ' ' + document.title;
       const cut = [];
       for (const r of roots) for (const el of r.querySelectorAll('*')) {
         if (el.closest('[lang=tr]') || ![...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) continue;
