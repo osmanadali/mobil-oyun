@@ -52,8 +52,8 @@ body.playing .glow,body.playing .map,body.playing .primary:after{animation-play-
 @keyframes float{to{transform:translate3d(6vmax,4vmax,0)}}
 
 #app{position:fixed;inset:0;max-width:520px;margin:auto;overflow:hidden;overflow:clip}
-.screen{position:absolute;inset:0;padding:var(--sat) 18px 0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:scale(.985);transition:opacity .35s ease,transform .45s cubic-bezier(.2,.8,.2,1)}
-.screen.active{opacity:1;pointer-events:auto;transform:none}
+.screen{position:absolute;inset:0;padding:var(--sat) 18px 0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:scale(.985);visibility:hidden;transition:opacity .35s ease,transform .45s cubic-bezier(.2,.8,.2,1),visibility 0s .45s}
+.screen.active{opacity:1;pointer-events:auto;transform:none;visibility:visible;transition:opacity .35s ease,transform .45s cubic-bezier(.2,.8,.2,1),visibility 0s}   /* gizli ekran geçiş bitince boyanmaz (telefonda GPU belleği, akıcılık) */
 .screen:not(.active) *,.screen:not(.active) *:after{animation-play-state:paused!important}
 
 /* ---------- ortak ---------- */
@@ -124,8 +124,8 @@ html:lang(en) body.test .hero p::after{content:' · 🧪 TEST: all unlocked'}
 
 /* ---------- oyun ekranı ---------- */
 .title{flex:1;text-align:center}.title b{font-size:19px;font-weight:700}.title small{display:block;color:var(--mut);font-size:13px}
-#board{flex:1;position:relative;min-height:0;margin-top:22px}
-#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+#board{flex:1;position:relative;min-height:0;margin-top:22px;overflow:hidden;contain:layout paint}
+#cv{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:none}   /* yüksekliği resize() verir (bitişte küçülmez) */
 .bottom{display:flex;align-items:center;gap:12px;padding:12px 0 max(18px,var(--sab));flex:none}
 .bsts{display:flex;gap:6px}.bst{position:relative;display:flex;align-items:center;justify-content:center;gap:2px;height:46px;min-width:44px;padding:0 10px;border:0;border-radius:16px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--acc);color:var(--fg);font:inherit;font-size:20px;animation:bstIn .35s cubic-bezier(.3,1.6,.5,1)}
 .bst i{font-style:normal;font-size:13px;font-weight:700}.bst b{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--acc);color:#16182a;font-size:12px;line-height:20px;text-align:center}
@@ -309,14 +309,16 @@ body.introing .screen *{animation-play-state:paused!important}
 /* görev ödülü: bitince bekler, "Topla" ile alınır; alınan ödül düğmenin üstünden büyüyüp yükselerek kaybolur */
 .quests .qall{display:flex;align-items:center;min-height:46px;padding:8px 14px}.quests .qall span{flex:1;font-weight:500;color:var(--mut)}.quests .qall span b{color:var(--fg)}
 .quests .pend small{grid-column:1}.quests .pend{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--acc) 70%,transparent),0 0 18px -6px var(--acc)}
-.qget{position:relative;grid-row:1/3;grid-column:2;align-self:center;border:0;height:34px;padding:0 14px;border-radius:99px;font:inherit;font-size:13.5px;font-weight:800;color:#1b1206;background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 4px 14px -4px var(--acc);animation:qget 1.6s ease-in-out infinite}
+.qget{position:relative;grid-row:1/3;grid-column:2;align-self:center;border:0;height:34px;padding:0 14px;border-radius:99px;font:inherit;font-size:13.5px;font-weight:800;color:#1b1206;background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 4px 14px -4px var(--acc)}
+.qget:before{content:"";position:absolute;inset:-5px;border-radius:99px;box-shadow:0 0 0 5px color-mix(in srgb,var(--acc) 22%,transparent),0 4px 18px -4px var(--acc);opacity:0;animation:qglow 1.6s ease-in-out infinite;pointer-events:none}
 .qget:after{content:"";position:absolute;inset:-6px -4px}   /* dokunma alanı ≥ 44 px */
 .qget:active{transform:scale(.94)}
-@keyframes qget{50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--acc) 22%,transparent),0 4px 18px -4px var(--acc)}}   /* nabız gölgede: düğme yerinde durur */
+@keyframes qglow{50%{opacity:1}}   /* nabız ayrı katmanda yalnız opaklıkla (telefonda boyama yok); düğme yerinde durur */
+@keyframes qget{50%{transform:scale(1.08)}}
 .quests .qok{animation:qok .45s cubic-bezier(.2,.9,.3,1.5)}@keyframes qok{from{transform:scale(0)}}
 .quests .got{animation:qgot .7s ease-out}@keyframes qgot{from{background:color-mix(in srgb,#4fc3a1 32%,var(--glass))}}
-.qfly{position:fixed;z-index:80;pointer-events:none;white-space:nowrap;font-size:19px;font-weight:800;padding:8px 16px;border-radius:99px;color:var(--fg);background:var(--toastBg);box-shadow:inset 0 0 0 1.5px var(--acc),0 8px 30px -6px var(--acc);transform:translate(-50%,-50%);animation:qfly 1.25s cubic-bezier(.2,.9,.3,1) forwards}
-@keyframes qfly{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}22%{opacity:1;transform:translate(-50%,-60%) scale(1.25)}40%{transform:translate(-50%,-80%) scale(1)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-240%) scale(.9)}}
+.qfly{position:fixed;z-index:80;pointer-events:none;white-space:nowrap;font-size:24px;font-weight:800;padding:12px 22px;border-radius:99px;color:var(--fg);background:var(--toastBg);box-shadow:inset 0 0 0 1.5px var(--acc),0 8px 30px -6px var(--acc);transform:translate(-50%,-50%);animation:qfly 1.1s cubic-bezier(.2,.9,.3,1) forwards}
+@keyframes qfly{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}22%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}40%{transform:translate(-50%,-50%) scale(1)}72%{opacity:1}100%{opacity:0;transform:translate(-50%,-90%) scale(.96)}}   /* ekranın ortasında */
 .qrow.gift em{font-style:normal;font-weight:800;color:#1b1206;padding:2px 9px;border-radius:99px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:inline-block;animation:qget 1.6s ease-in-out infinite}
 .arch{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:8px 0}
 .arch button{display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 0;border:0;border-radius:12px;background:var(--rail);color:var(--fg);font:inherit;cursor:pointer}

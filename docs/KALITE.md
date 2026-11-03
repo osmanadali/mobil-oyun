@@ -137,3 +137,18 @@ Kanıt görüntüsü: [`docs/kalite/kalanlar.png`](kalite/kalanlar.png).
 
 - `node tools/hakem.cjs` komutu bütün robotu koşar. Bu dalın testleri `kalite.*` adıyla geçer (12 kontrol).
 - Görüntüler `hakem-out/shots/kalite-*.png` dosyalarına yazılır.
+
+## Android akıcılığı (3 Kasım, Galaxy A52s geri bildirimi)
+Ölçüm: masaüstü Chromium, işlemci 4× yavaşlatılmış, 412×915 (tools/hakem/performans.cjs kalıcı denetimler).
+- **Reklam yükleme sakin anda** (`ads.js` `soft` / `warm`): Android'de uygulamanın bütün WebView'ları tek tarayıcı sürecini paylaşır; reklam yüklenirken oyun takılır. Eskiden açılışta, her reklamdan hemen sonra (yeni bölüm açılırken) ve ön plana dönüşte yükleniyordu. Şimdi yalnız sonuç panelinde ve ana sayfada (`window.__rayCalm`), reklam kapandıktan sonra 5 sn hiç yüklenmez.
+- **Bölüm boşta üretilir** (`idle`): ana sayfa açılınca Oyna'nın bölümü ve Günün Hattı, bitişte sıradaki bölüm (panel oturunca). Geç bölümlerde üretim telefonda 100–300 ms sürüyordu; artık geçişte değil boşta.
+- **Tuval belleği yeniden ayrılmaz**: yalnız boyut değişince; sonuç paneli tahtayı küçültünce tuval küçülmez (#board keser).
+- **120 Hz ekranda tuval ~60 kare/sn** (her iki karede bir; animasyonlar süreye bağlı, hızları aynı; 90 Hz'de sınır yok).
+- **Görünmeyen ekranlar boyanmaz** (`visibility: hidden`, geçiş bitince) → GPU belleği azalır.
+- Görev "Topla" nabzı boyama yaptırmaz (ayrı katmanda opaklık).
+- Capacitor köprü günlüğü kapalı (`loggingBehavior: none`): test (debug) APK'da her eklenti çağrısı (her dokunuştaki titreşim) konsola yazılıyordu.
+
+## Sağlamlık (3 Kasım)
+- **Kalıcı kayıt yedeği** (`Kasa`, `@capacitor/preferences`): kayıt değişince 1,5 sn sonra (arka plana geçince hemen) telefonun kalıcı deposuna da yazılır. Açılışta önce yedek okunur: tarayıcı belleği silinmiş (yerel kayıt yedekten sonra sıfırdan açılmış) ya da aynı kaydın yedeği daha yeniyse geri yüklenir. İlerlemeyi taşı kodu yedeği de günceller; Verilerimi sil yedeği de siler. Test: tools/hakem/saglam.cjs.
+- **Hata bildirimi** (`js_error`): yakalanmayan hata ve söz reddi; ileti, dosya:satır, ekran, bölüm; oturumda en çok 5.
+- **Akıcılık ölçümü**: 50 ms'yi aşan kareler (long-animation-frame / longtask) `level_end`/`daily_end`'e `jank`, `jank_ms`; arka plana geçince `perf_session` (en kötü kare, çekirdek, bellek, ekran ölçeği). Firebase'te cihaz modeline göre bakılır → uyarlanır kalite kararı bu veriyle.

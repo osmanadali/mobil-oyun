@@ -26,6 +26,21 @@ module.exports = async T => {
   // dokun → gider
   await page.mouse.click(x, y); await page.waitForTimeout(700);
   const p5 = await pop();
+  // görev bildirimi: dokununca Görevler penceresi açılır; bölüm oynanırken süre durur, pencere kapanınca akar
+  await page.evaluate(() => window.__ray.popUp(['☀️', 'GÜNLÜK GÖREV TAMAM', 'Dört', '🎁', 'q'])); await page.waitForTimeout(700);
+  [x, y] = await box(); await page.mouse.click(x, y); await page.waitForTimeout(600);
+  const q1 = await page.evaluate(() => ({ open: document.getElementById('modal').classList.contains('open'), h: document.querySelector('#mCard h2')?.textContent, pop: document.getElementById('achPop').classList.contains('show') }));
+  await page.evaluate(() => document.getElementById('mClose')?.click()); await page.waitForTimeout(300);
+  await page.click('#bPlay'); await page.waitForTimeout(700);
+  await page.evaluate(() => window.__ray.popUp(['🎯', 'HAFTALIK GÖREV TAMAM', 'Beş', '🎁', 'q'])); await page.waitForTimeout(700);
+  [x, y] = await box(); await page.mouse.click(x, y); await page.waitForTimeout(500);
+  const g1 = await page.evaluate(() => ({ open: document.getElementById('modal').classList.contains('open'), run: window.__ray.G.runAt > 0, ms: window.__ray.G.ms }));
+  await page.waitForTimeout(600);
+  const ms2 = await page.evaluate(() => window.__ray.G.ms);
+  await page.evaluate(() => document.getElementById('mClose')?.click()); await page.waitForTimeout(300);
+  const g2 = await page.evaluate(() => window.__ray.G.runAt > 0);
+  check('pop.quests', 'Görev bildirimine dokununca Görevler penceresi açılır (kaydırınca yalnız gider); oyun sırasında açılırsa süre durur, kapanınca akar',
+    q1.open && /Görevler/.test(q1.h) && !q1.pop && g1.open && !g1.run && ms2 === g1.ms && g2 && !errors.length, JSON.stringify({ q1, g1, ms2, g2, errors }));
   check('pop.swipe', 'Üst bildirim: yukarı ya da yana kaydırınca gider ve sıradaki hemen düşer; az çekip bırakınca yerine döner; dokununca da gider. Görev satırı 4. bölümden görünür',
     row && p1.show && p1.t === 'Bir' && p2.show && p2.t === 'İki' && p3.show && p3.t === 'Üç' && p4.show && p4.t === 'Üç' && !p5.show && !errors.length, JSON.stringify({ row, p1, p2, p3, p4, p5, errors }));
   await ctx.close();
