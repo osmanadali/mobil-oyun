@@ -146,22 +146,24 @@ Eşli, ters, karanlık tünel, sayaçlı ve iki merkez dışındaki kurallar çe
 
 **Haftanın kuralı (pazar):** Pazar günkü Günün Hattı o haftanın kuralını taşır; pazartesi–cumartesi kuralsızdır ve bit bit eskisi gibidir. Kural yalnız erken kurallardan (M3–M9) seçilir ve haftaya göre döner: eşli karo, ters karo, kayan sıra, karanlık tünel, sayaçlı karo, soğuyan karo, iki merkez (sabit karo 3 Kasım'da listeden çıktı). Listede olup oyunda henüz tanımlı olmayan kural atlanır; tanımlanınca dönüş sırası kayar. Miktar bölümlerdeki gibidir (ör. 7×9'da 4 çift eşli karo, %15 ters, %12 sayaçlı). Tohum ve kural herkeste aynıdır. Oyuncu o kuralı henüz görmediyse oyun "Haftanın kuralı" kartıyla açılır; başlığın alt satırında kuralın adı yazar, haftalık görev penceresi de pazarın kuralını önceden söyler. Kod: `WEEK_RULES`, `weekRule`, `dailyRule`, `dailyFor`.
 
-### Haftalık görevler ve 🎫 bilet
+### Günlük ve haftalık görevler, 🎫 bilet
 
 - **Görevler:** Her hafta (pazartesi başlar, yerel takvim) 3 görev gelir. Seçim haftanın tohumuyla yapılır, bu yüzden aynı basamaktaki herkes aynı görevleri görür. Miktar oyuncunun basamağına göre değişir:
 
-  | Görev | M1–M2 | M3–M5 | M6+ | Ödül |
+  Kullanıcı testi (3 Kasım) sonrası iki katman: **☀️ günlük** (gece yarısı yenilenir, her görev +1 💡, üçü birden +1 🎫 günlük ödül, `save.dq`, `save.dqc`) ve **📅 haftalık** (pazartesi, aşağıdaki ödüller, üçü birden +2 🎫 haftalık ödül, `save.wk`). Sayılar günlük / haftalık:
+
+  | Görev | M1–M2 | M3–M5 | M6+ | Haftalık ödül |
   |---|---|---|---|---|
-  | Bölüm bitir | 5 | 10 | 20 | +1 🎫 +1 💡 |
-  | Bölümü kusursuz bitir | 3 | 5 | 8 | +1 🎫 + ❤️∞ 30 dk |
-  | İpucusuz bölüm bitir | 3 | 5 | 8 | +1 🎫 + ❤️∞ 15 dk |
-  | Günün Hattı bitir | — | 3 | 4 | +1 🎫 + ❤️∞ 30 dk |
-  | Güçlendirici kullan | — | 2 | 3 | +1 🎫 +1 💡 |
+  | Bölüm bitir | 3 / 15 | 5 / 25 | 5 / 40 | +1 🎫 +1 💡 |
+  | Bölümü kusursuz bitir | 2 / 6 | 3 / 12 | 3 / 20 | +1 🎫 + ❤️∞ 30 dk |
+  | İpucusuz bölüm bitir | 2 / 6 | 3 / 12 | 3 / 20 | +1 🎫 + ❤️∞ 15 dk |
+  | Günün Hattı bitir | — | 1 / 4 | 1 / 5 | +1 🎫 + ❤️∞ 30 dk |
+  | Güçlendirici kullan | — | 1 / 3 | 1 / 4 | +1 🎫 +1 💡 |
 
   - Günün Hattı görevi yalnız Günün Hattı'nı bir kez bitirmiş ya da 61. bölüme gelmiş oyuncuya çıkar; güçlendirici görevi yalnız elinde o kadar güçlendirici olana. Görevler haftanın ilk açılışında o anki duruma göre seçilir ve hafta boyunca değişmez.
   - Kusursuz bitirilmiş (bileti alınmış) bir bölümü yeniden oynamak sayılmaz (kolay bölümde biriktirilmesin). İpucu kullanılan bölüm "ipucusuz" görevine sayılmaz (yarım oyunla ve baştan başlamayla korunur).
-  - Ödül görev tamamlandığı an verilir ve sonuç panelinde yazar. Üç görev birden bitince +1 🎫 ek.
-  - Giriş: ana sayfada Günün Hattı kartının altında tek ince satır ("🎯 Haftalık görevler · 1/3"). Satır ilk hat bitene ya da ilk Günün Hattı'na dek gizlidir.
+  - Ödül görev tamamlandığı an verilir ve sonuç panelinde yazar. Haftalık üç görev birden bitince +2 🎫 (haftalık ödül); günlük üç görev birden +1 🎫 (günlük ödül).
+  - Giriş: ana sayfada Günün Hattı kartının altında tek ince satır ("🎯 Görevler · ☀️ 1/3 · 📅 2/3"). Satır ilk hat bitene ya da ilk Günün Hattı'na dek gizlidir.
 - **🎫 Bilet:** Oyunun tek para birimidir (eski adı taç 👑; kayıtta `crowns`, `crownBal` adları uyum için kaldı). Ana sayfadaki çip bakiyeyi gösterir. Görevler bilete ek olarak **❤️∞ sınırsız can** verebilir: `save.infUntil = max(infUntil, şimdi) + süre` (can sistemiyle ortak kayıt: `save.lives` 0–5, `save.lifeT`, `save.infUntil` ms; can sistemi §9 › Son süre ve can).
 - **Günün Hattı:** bitirmek +1 🎫 (günde bir; pratik ve arşiv vermez, `save.dt`), kusursuz bitirmek +1 🎫 daha (eskiden yalnız kusursuz 1 taç veriyordu). Günde en çok 2 🎫: bir kusursuz bölüm (1 🎫) ile seri bonusu (5 kusursuzda +1) arasında, temalar hızlanmadan Günün Hattı'nı oynamaya değer kılar. Haftada görevlerden en çok 4 🎫, Günün Hattı'ndan en çok 14 🎫.
 - Kod: `QUESTS`, `weekQ`, `questStep`, `questRow`, `questSheet`; kayıt `save.wk = { id: pazartesi, q: [{ t, n, p }], all }`, görev bileti `save.qc`, sınırsız can `giveInf`.
