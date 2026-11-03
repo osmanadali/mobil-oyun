@@ -1835,41 +1835,74 @@ function qSet(f, id, salt) {
   const keys = Object.keys(QUESTS).map(k => [k, R()]).sort((a, b) => a[1] - b[1]).map(a => a[0]).filter(ok).slice(0, 3);
   return { id, q: keys.map(k => ({ t: k, n: QUESTS[k][f][t], p: 0 })), all: 0 };
 }
-function weekQ() { const id = weekOf(today()); return save.wk?.id === id ? save.wk : (save.wk = qSet('w', id, 'gorev')); }
-function dayQ() { const id = today(); return save.dq?.id === id ? save.dq : (save.dq = qSet('d', id, 'gunluk')); }
-// ilerleme: tamamlanan görevin ödülü hemen verilir; dönen metin sonuç paneline/bildirime yazılır (persist çağırana kalır)
+// Görev bitince ödül bekler (q.r / set.ar = 1): Görevler penceresinde "Topla" ile tek tek alınır.
+// Toplanmadan gün/hafta dönerse bekleyen ödüller kaybolmaz, sessizce verilir. Eski kayıtta r yok → alınmış sayılır.
+function weekQ() { const id = weekOf(today()); if (save.wk?.id === id) return save.wk; qFlush(save.wk, 'w'); return (save.wk = qSet('w', id, 'gorev')); }
+function dayQ() { const id = today(); if (save.dq?.id === id) return save.dq; qFlush(save.dq, 'd'); return (save.dq = qSet('d', id, 'gunluk')); }
+// ödül: k = 'd' günlük görev · 'w' haftalık görev · 'da' / 'wa' üçü birden. Dönen yazı toplama animasyonunda uçar.
+function qGrant(k, q) {
+  if (k === 'd') { save.hints++; return '+1 💡'; }
+  if (k === 'da') { save.dqc = (save.dqc || 0) + 1; return '+1 🎫'; }
+  if (k === 'wa') { save.wqAll = (save.wqAll || 0) + 1; save.qc = (save.qc || 0) + 2; return '+2 🎫'; }
+  const rw = QUESTS[q.t].rw; save.qc = (save.qc || 0) + 1;
+  if (rw === 'hint') save.hints++; else giveInf(rw === 'inf15' ? 15 : 30);
+  return `+1 🎫 +1 ${RW_TXT[rw]}`;
+}
+function qFlush(set, f) {
+  if (!set || !(set.ar || set.q.some(q => q.r))) return;
+  for (const q of set.q) if (q.r) { delete q.r; qGrant(f, q); }
+  if (set.ar) { delete set.ar; qGrant(f + 'a'); }
+  persist();
+}
+const qPend = () => { const d = dayQ(), w = weekQ(); return [d, w].reduce((n, x) => n + x.q.filter(q => q.r).length + (x.ar ? 1 : 0), 0); };
+// ilerleme: biten görev ödülü bekletir ve üstten bildirim düşer (persist çağırana kalır)
 function questStep(type) {
   const w = weekQ(), d = dayQ(), out = [];
   // günlük: her görev +1 💡, üçü birden +1 🎫 (günlük ödül)
-  for (const q of d.q) if (q.t === type && q.p < q.n && ++q.p === q.n) { save.hints++; out.push(['☀️', L('GÜNLÜK GÖREV TAMAM', 'DAILY QUEST DONE'), QUESTS[q.t].txt(q.n), '+1 💡']); }
-  if (!d.all && d.q.every(q => q.p >= q.n)) { d.all = 1; save.dqc = (save.dqc || 0) + 1; out.push(['☀️', L('GÜNLÜK ÖDÜL', 'DAILY REWARD'), L('Bugünün görevleri tamam', 'All of today’s quests done'), '+1 🎫']); }
-  for (const q of w.q) if (q.t === type && q.p < q.n && ++q.p === q.n) {
-    const rw = QUESTS[q.t].rw; save.qc = (save.qc || 0) + 1;
-    if (rw === 'hint') save.hints++; else giveInf(rw === 'inf15' ? 15 : 30);
-    out.push(['🎯', L('HAFTALIK GÖREV TAMAM', 'WEEKLY QUEST DONE'), QUESTS[q.t].txt(q.n), `+1 🎫 +1 ${RW_TXT[rw]}`]);
-  }
-  if (!w.all && w.q.every(q => q.p >= q.n)) { w.all = 1; save.wqAll = (save.wqAll || 0) + 1; save.qc = (save.qc || 0) + 2; out.push(['🎯', L('HAFTALIK ÖDÜL', 'WEEKLY REWARD'), L('Haftanın görevleri tamam', 'All weekly quests done'), '+2 🎫']); }
-  popUp(...out);   // ekrana üstten düşer; sonuç paneline yazılmaz
+  const gift = L('🎁 Görevlerde', '🎁 In Quests');
+  for (const q of d.q) if (q.t === type && q.p < q.n && ++q.p === q.n) { q.r = 1; out.push(['☀️', L('GÜNLÜK GÖREV TAMAM', 'DAILY QUEST DONE'), QUESTS[q.t].txt(q.n), gift]); }
+  if (!d.all && d.q.every(q => q.p >= q.n)) { d.all = d.ar = 1; out.push(['☀️', L('GÜNLÜK ÖDÜL', 'DAILY REWARD'), L('Bugünün görevleri tamam', 'All of today’s quests done'), gift]); }
+  for (const q of w.q) if (q.t === type && q.p < q.n && ++q.p === q.n) { q.r = 1; out.push(['🎯', L('HAFTALIK GÖREV TAMAM', 'WEEKLY QUEST DONE'), QUESTS[q.t].txt(q.n), gift]); }
+  if (!w.all && w.q.every(q => q.p >= q.n)) { w.all = w.ar = 1; out.push(['🎯', L('HAFTALIK ÖDÜL', 'WEEKLY REWARD'), L('Haftanın görevleri tamam', 'All weekly quests done'), gift]); }
+  popUp(...out);   // ekrana üstten düşer; ödül Görevler penceresinde toplanır
   return out.length;
 }
 const questVis = () => save.level > lineEnd(0) || !!save.dailyDone;   // ilk hat bitmeden ana sayfa sade kalsın
 function questRow() {
   const el = $('bQuest'); el.hidden = !questVis(); if (el.hidden) return;
   const w = weekQ(), dq = dayQ(), n = s => s.q.filter(q => q.p >= q.n).length, a = n(dq), b = n(w);
-  $('qState').textContent = `☀️ ${a}/${dq.q.length} · 📅 ${b}/${w.q.length}`; el.classList.toggle('done', a === dq.q.length && b === w.q.length);
+  const p = qPend();
+  $('qState').innerHTML = p ? `<em>🎁 ${p}</em>` : `☀️ ${a}/${dq.q.length} · 📅 ${b}/${w.q.length}`;
+  el.classList.toggle('done', !p && a === dq.q.length && b === w.q.length); el.classList.toggle('gift', !!p);
 }
 function questSheet() {
   const w = weekQ(), dq = dayQ(), left = Math.round((dayDate(w.id).getTime() + 7 * 864e5 - dayDate(today()).getTime()) / 864e5), sun = (() => { const d = dayDate(w.id); d.setDate(d.getDate() + 6); return ymd(d); })(), wr = dailyRule(sun);
-  const row = (q, rw) => `<div class="${q.p >= q.n ? 'ok' : ''}"><span>${QUESTS[q.t].txt(q.n)}</span><b>${q.p >= q.n ? '✓' : `${q.p}/${q.n}`}</b><i style="width:${Math.round(q.p / q.n * 100)}%"></i><small>${rw}</small></div>`;
+  const got = `<b>✓</b>`, take = id => `<button class="qget" data-q="${id}">${L('Topla', 'Collect')}</button>`;
+  const row = (q, rw, id) => `<div class="${q.p >= q.n ? 'ok' : ''}${q.r ? ' pend' : ''}"><span>${QUESTS[q.t].txt(q.n)}</span>${q.r ? take(id) : q.p >= q.n ? got : `<b>${q.p}/${q.n}</b>`}<i style="width:${Math.round(q.p / q.n * 100)}%"></i><small>${rw}</small></div>`;
+  const bonus = (x, id, tr, en, rw) => `<div class="qall${x.ar ? ' pend' : x.all ? ' ok' : ''}"><span>${L(tr, en)} → <b>${rw}</b></span>${x.ar ? take(id) : x.all ? got : ''}</div>`;
   modal(`<h2>🎯 ${L('Görevler', 'Quests')}</h2>
     <div class="nexts"><small><b>☀️ ${L('Bugün', 'Today')}</b></small><small>${L('Gece yarısı yenilenir', 'Resets at midnight')}</small></div>
-    <div class="quests">${dq.q.map(q => row(q, '+1 💡')).join('')}</div>
-    <p class="tip">${L('Üçü birden → <b>+1 🎫</b> günlük ödül', 'All three → <b>+1 🎫</b> daily reward')}</p>
+    <div class="quests">${dq.q.map((q, i) => row(q, '+1 💡', 'd' + i)).join('')}${bonus(dq, 'da', 'Üçü birden', 'All three', '+1 🎫')}</div>
     <div class="nexts"><small><b>📅 ${L('Bu hafta', 'This week')}</b></small><small>${left <= 1 ? L('Yarın yenilenir', 'New quests tomorrow') : L(`${left} gün sonra yenilenir`, `New quests in ${left} days`)}</small></div>
-    <div class="quests">${w.q.map(q => row(q, `+1 🎫 · +1 ${RW_TXT[QUESTS[q.t].rw]}`)).join('')}</div>
-    <p class="tip">${L('Üçü birden → <b>+2 🎫</b> haftalık ödül · Günün Hattı → +1 🎫', 'All three → <b>+2 🎫</b> weekly reward · Daily Line → +1 🎫')}${wr ? `<br>${L('Pazar', 'Sunday')}: ${L('haftanın kuralı', 'rule of the week')} · <b>${RULES[RULE_LINE[wr]].name}</b>` : ''}</p>
+    <div class="quests">${w.q.map((q, i) => row(q, `+1 🎫 · +1 ${RW_TXT[QUESTS[q.t].rw]}`, 'w' + i)).join('')}${bonus(w, 'wa', 'Üçü birden', 'All three', '+2 🎫')}</div>
+    <p class="tip">${L('Günün Hattı → +1 🎫', 'Daily Line → +1 🎫')}${wr ? `<br>${L('Pazar', 'Sunday')}: ${L('haftanın kuralı', 'rule of the week')} · <b>${RULES[RULE_LINE[wr]].name}</b>` : ''}</p>
     <button id="mArch" class="btn primary"><span>📅 ${L('Geçmiş günler', 'Past days')}</span><small>${L(`${ARCH_COST} bilet = 1 gün`, `${ARCH_COST} tickets = 1 day`)}</small></button>
     <button id="mClose" class="btn glassbtn">${L('Tamam', 'OK')}</button>`, { mArch: archSheet, mClose: closeModal });
+  $('mCard').querySelectorAll('.qget').forEach(b => b.onclick = () => qClaim(b));
+}
+// Topla: ödül verilir, düğmenin üstünden ödül yazısı büyüyüp yükselerek kaybolur, satır ✓ olur
+function qClaim(b) {
+  const id = b.dataset.q, f = id[0], set = f === 'd' ? dayQ() : weekQ(), q = id[1] === 'a' ? null : set.q[+id.slice(1)];
+  if (q ? !q?.r : !set.ar) return;
+  if (q) delete q.r; else delete set.ar;
+  const txt = qGrant(q ? f : id, q);
+  persist(); achCheck(); if (active('home')) refreshHome(); questRow();
+  const r = b.getBoundingClientRect(), fx = document.createElement('div');
+  fx.className = 'qfly'; fx.textContent = txt; fx.style.left = `${r.left + r.width / 2}px`; fx.style.top = `${r.top + r.height / 2}px`;
+  document.body.appendChild(fx); fx.addEventListener('animationend', () => fx.remove()); setTimeout(() => fx.remove(), 2000);
+  const row = b.parentElement; b.outerHTML = '<b class="qok">✓</b>'; row.classList.remove('pend'); row.classList.add('ok', 'got');
+  haptic('heavy'); tone(note(9), .25, .04); tone(note(14), .3, .035, 'sine', .09);
+  Olcum.event('quest_claim', { kind: q ? `${f}_${q.t}` : id });
 }
 const ARCH_DAYS = 30, ARCH_COST = 3;
 const archPlayed = day => new Set(save.dailyLog).has(day) || !!save.archDone?.[day];   // o gün oynanmış: ödül yok, açmak bedava

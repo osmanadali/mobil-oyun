@@ -156,6 +156,7 @@ Hat adları yer adıdır ve çevrilir:
 | Hat açıldı! (bölüm bitti) | Connected! |
 | Bölümlere devam (Günün Hattı sonucu) | Back to levels |
 | Duraklat · Duraklatıldı · Devam et | Pause · Paused · Resume |
+| Topla (görev ödülü) · 🎁 Görevlerde · Üçü birden | Collect · 🎁 In Quests · All three |
 | GÜNLÜK GÖREV TAMAM · HAFTALIK GÖREV TAMAM | DAILY QUEST DONE · WEEKLY QUEST DONE |
 | GÜNLÜK ÖDÜL · HAFTALIK ÖDÜL | DAILY REWARD · WEEKLY REWARD |
 | tam vaktinde · rötar | on time · late |
