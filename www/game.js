@@ -1969,8 +1969,8 @@ function qClaim(b) {
   if (q) delete q.r; else delete set.ar;
   const txt = qGrant(q ? f : id, q);
   persist(); achCheck(); if (active('home')) refreshHome(); questRow();
-  const r = b.parentElement.getBoundingClientRect(), fx = document.createElement('div');   // satırın ortasında belirir, satırında kalır (üstteki Topla düğmesini örtmez)
-  fx.className = 'qfly'; fx.textContent = txt; fx.style.left = `${r.left + r.width * .42}px`; fx.style.top = `${r.top + r.height / 2}px`;
+  const fx = document.createElement('div');   // ekranın ortasında büyüyüp söner (düğmelerin üstünde durmaz, dokunuşu engellemez)
+  fx.className = 'qfly'; fx.textContent = txt; fx.style.left = '50%'; fx.style.top = '46%';
   document.body.appendChild(fx); fx.addEventListener('animationend', () => fx.remove()); setTimeout(() => fx.remove(), 2000);
   const row = b.parentElement; b.outerHTML = '<b class="qok">✓</b>'; row.classList.remove('pend'); row.classList.add('ok', 'got');
   haptic('heavy'); tone(note(9), .25, .04); tone(note(14), .3, .035, 'sine', .09);
