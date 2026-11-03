@@ -62,7 +62,7 @@ module.exports = async T => {
     const n = await notifs(page), go = Object.fromEntries(n.map(x => [x.id, x.go]));
     await tap(page, 'daily'); const w1 = await where(page);
     await tap(page, 'level'); const w2 = await where(page);   // Günün Hattı yarımken: dokunmaz
-    await page.click('#bBack'); await page.waitForTimeout(500);
+    await page.evaluate(() => { document.getElementById('bBack').click(); document.getElementById('pHome')?.click(); }); await page.waitForTimeout(500);
     await tap(page, 'level'); const w3 = await where(page);
     check('notif.daily', 'Hatırlatma (Günün Hattı oyuncusu): 1–2 go=daily, 3. gün go=level; daily → Günün Hattı, level → sıradaki bölüm, yarım oyun bölünmez',
       go[2] === 'daily' && go[3] === 'level' && (go[1] ?? 'daily') === 'daily' && w1.game && w1.daily && w2.daily && w3.game && !w3.daily && w3.lvl === 31, JSON.stringify({ go, w1, w2, w3 }), 'medium');
@@ -79,18 +79,18 @@ module.exports = async T => {
   // ---------- e) izin sorusu: Bölüm 7'de sorulmaz; Bölüm 12 bitince "Kaldığın yeri…", ilk Günün Hattı'ndan sonra seri metni ----------
   {
     const { ctx, page, errors } = await open(browser, URL, { init: NOTIF, save: { played: 6, level: 7, stars: starsUpTo(7) } });
-    await page.click('#bPlay'); await page.waitForTimeout(500); await page.click('#bBack'); await page.waitForTimeout(1300);
+    await page.click('#bPlay'); await page.waitForTimeout(500); await page.evaluate(() => { document.getElementById('bBack').click(); document.getElementById('pHome')?.click(); }); await page.waitForTimeout(1300);
     const early = await sheetH(page);
     errs.push(...errors); await ctx.close();
     const o = await open(browser, URL, { init: NOTIF, save: { played: 11, level: 12, stars: starsUpTo(12) } });
     await o.page.click('#bPlay'); await o.page.waitForTimeout(500); await solve(o.page, 10); await waitModal(o.page);
-    await o.page.click('#mHome'); await o.page.waitForTimeout(1400);
+    await o.page.evaluate(() => { document.getElementById('bBack').click(); document.getElementById('pHome')?.click(); }); await o.page.waitForTimeout(1400);
     const h12 = await sheetH(o.page), p12 = await o.page.evaluate(() => document.querySelector('.sheet p')?.textContent || '');
     await shot(o.page, 'remind-ask-level');
     errs.push(...o.errors); await o.ctx.close();
     const d = await open(browser, URL, { init: NOTIF, save: { played: 3, level: 4, stars: starsUpTo(4) } });
     await d.page.click('#bDaily'); await d.page.waitForTimeout(500); await solve(d.page, 10); await waitModal(d.page);
-    await d.page.click('#mHome'); await d.page.waitForTimeout(1400);
+    await d.page.evaluate(() => { document.getElementById('bBack').click(); document.getElementById('pHome')?.click(); }); await d.page.waitForTimeout(1400);
     const hd = await sheetH(d.page), pd = await d.page.evaluate(() => document.querySelector('.sheet p')?.textContent || '');
     errs.push(...d.errors); await d.ctx.close();
     check('remind.when', 'İzin sorusu: Bölüm 7\'de sorulmaz; Bölüm 12 bitince "Kaldığın yeri hatırlatayım mı?", ilk Günün Hattı\'ndan sonra seri metniyle',

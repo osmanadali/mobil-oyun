@@ -1,0 +1,72 @@
+# Ray — çeviri sözlüğü (5/5): duraklat penceresi, görev ödülü toplama, sade sonuç paneli
+
+@ Back to the archive
+de: Zurück zum Archiv
+es: Volver al archivo
+pt: Voltar ao arquivo
+fr: Retour aux archives
+@ Back to levels
+de: Weiter mit Leveln
+es: Seguir con niveles
+pt: Voltar às fases
+fr: Retour aux niveaux
+@ Pause
+de: Pause
+es: Pausa
+pt: Pausar
+fr: Pause
+@ Paused
+de: Pausiert
+es: En pausa
+pt: Pausado
+fr: En pause
+@ Resume
+de: Weiter
+es: Continuar
+pt: Continuar
+fr: Reprendre
+@ 🎁 In Quests
+de: 🎁 In Aufgaben
+es: 🎁 En Misiones
+pt: 🎁 Em Missões
+fr: 🎁 Dans Quêtes
+@ DAILY QUEST DONE
+de: TAGESAUFGABE GESCHAFFT
+es: MISIÓN DIARIA HECHA
+pt: MISSÃO DIÁRIA FEITA
+fr: QUÊTE DU JOUR FINIE
+@ DAILY REWARD
+de: TAGESBELOHNUNG
+es: PREMIO DIARIO
+pt: PRÊMIO DIÁRIO
+fr: RÉCOMPENSE DU JOUR
+@ All of today’s quests done
+de: Alle heutigen Aufgaben geschafft
+es: Todas las misiones de hoy hechas
+pt: Todas as missões de hoje feitas
+fr: Toutes les quêtes du jour finies
+@ WEEKLY QUEST DONE
+de: WOCHENAUFGABE GESCHAFFT
+es: MISIÓN SEMANAL HECHA
+pt: MISSÃO SEMANAL FEITA
+fr: QUÊTE DE LA SEMAINE FINIE
+@ WEEKLY REWARD
+de: WOCHENBELOHNUNG
+es: PREMIO SEMANAL
+pt: PRÊMIO SEMANAL
+fr: RÉCOMPENSE DE LA SEMAINE
+@ All weekly quests done
+de: Alle Wochenaufgaben geschafft
+es: Todas las misiones semanales hechas
+pt: Todas as missões semanais feitas
+fr: Toutes les quêtes de la semaine finies
+@ Collect
+de: Holen
+es: Recoger
+pt: Pegar
+fr: Prendre
+@ Daily Line → +1 🎫
+de: Tageslinie → +1 🎫
+es: Línea del día → +1 🎫
+pt: Linha do Dia → +1 🎫
+fr: Ligne du jour → +1 🎫

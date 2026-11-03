@@ -120,11 +120,6 @@ de: Freund herausfordern
 es: Reta a un amigo
 pt: Desafie um amigo
 fr: Défie un ami
-@ Archive
-de: Archiv
-es: Archivo
-pt: Arquivo
-fr: Archives
 @ Try again
 de: Nochmal
 es: Reintentar
@@ -155,11 +150,6 @@ de: Sterne sammeln
 es: gana estrellas
 pt: ganhe estrelas
 fr: gagne des étoiles
-@ Retry
-de: Nochmal
-es: Repetir
-pt: Repetir
-fr: Rejouer
 @ Past day done!
 de: Vergangener Tag geschafft!
 es: ¡Día pasado completado!
@@ -180,16 +170,6 @@ de: Verbunden!
 es: ¡Conectado!
 pt: Conectado!
 fr: Connecté !
-@ See the line
-de: Linie ansehen
-es: Ver la línea
-pt: Ver a linha
-fr: Voir la ligne
-@ See line
-de: Linie ansehen
-es: Ver línea
-pt: Ver linha
-fr: Voir la ligne
 @ time
 de: Zeit
 es: tiempo
@@ -235,11 +215,6 @@ de: +{0} {1} extra 🎁
 es: +{0} {1} más 🎁
 pt: +{0} {1} a mais 🎁
 fr: +{0} {1} en plus 🎁
-@ Results
-de: Ergebnis
-es: Resultado
-pt: Resultado
-fr: Résultat
 @ Daily Line done
 de: Tageslinie geschafft
 es: Línea del día completada

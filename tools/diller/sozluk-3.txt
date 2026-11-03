@@ -165,26 +165,6 @@ de: +1 ❤️ · gute Fahrt
 es: +1 ❤️ · buen viaje
 pt: +1 ❤️ · boa viagem
 fr: +1 ❤️ · bon voyage
-@ ☀️ Daily quest · +1 💡
-de: ☀️ Tagesaufgabe · +1 💡
-es: ☀️ Misión diaria · +1 💡
-pt: ☀️ Missão diária · +1 💡
-fr: ☀️ Quête du jour · +1 💡
-@ ☀️ All daily quests done · +1 🎫
-de: ☀️ Alle Tagesaufgaben geschafft · +1 🎫
-es: ☀️ Misiones diarias completas · +1 🎫
-pt: ☀️ Missões diárias completas · +1 🎫
-fr: ☀️ Quêtes du jour finies · +1 🎫
-@ 🎯 Quest done · +1 🎫 +1 {0}
-de: 🎯 Aufgabe geschafft · +1 🎫 +1 {0}
-es: 🎯 Misión completa · +1 🎫 +1 {0}
-pt: 🎯 Missão completa · +1 🎫 +1 {0}
-fr: 🎯 Quête finie · +1 🎫 +1 {0}
-@ 🎯 All weekly quests done · +2 🎫
-de: 🎯 Alle Wochenaufgaben geschafft · +2 🎫
-es: 🎯 Misiones semanales completas · +2 🎫
-pt: 🎯 Missões semanais completas · +2 🎫
-fr: 🎯 Quêtes de la semaine finies · +2 🎫
 @ Quests
 de: Aufgaben
 es: Misiones
@@ -195,11 +175,6 @@ de: Neu um Mitternacht
 es: Se renuevan a medianoche
 pt: Renovam à meia-noite
 fr: Renouvelées à minuit
-@ All three → <b>+1 🎫</b> daily reward
-de: Alle drei → <b>+1 🎫</b> Tagesbelohnung
-es: Las tres → <b>+1 🎫</b> premio diario
-pt: As três → <b>+1 🎫</b> prêmio diário
-fr: Les trois → <b>+1 🎫</b> récompense du jour
 @ This week
 de: Diese Woche
 es: Esta semana
@@ -215,11 +190,6 @@ de: Neue Aufgaben in {0} Tagen
 es: Misiones nuevas en {0} días
 pt: Missões novas em {0} dias
 fr: Nouvelles quêtes dans {0} jours
-@ All three → <b>+2 🎫</b> weekly reward · Daily Line → +1 🎫
-de: Alle drei → <b>+2 🎫</b> Wochenbelohnung · Tageslinie → +1 🎫
-es: Las tres → <b>+2 🎫</b> premio semanal · Línea del día → +1 🎫
-pt: As três → <b>+2 🎫</b> prêmio semanal · Linha do Dia → +1 🎫
-fr: Les trois → <b>+2 🎫</b> récompense de la semaine · Ligne du jour → +1 🎫
 @ Sunday
 de: Sonntag
 es: Domingo

@@ -2,7 +2,7 @@
 // 1) sözlükler kaynakla eşit: her L() anahtarının 4 dilde çevirisi var, www/lang/*.js sözlük kaynağından üretilmiş hâliyle aynı
 // 2) cihaz dili: de-AT → de, es-MX → es, pt-PT → pt-BR, fr-CA → fr, it-IT → en; Ayarlar › Dil seçicide 6 dil kendi adıyla, seçim kalıcı
 // 3) her dilde 320 px: açılış (nasıl oynanır), ana sayfa, oyun, kazanma paneli, ayarlar, mağaza, görevler, renk temaları, Hatlar —
-//    Türkçe harf (ğ ı ş İ) yok, çevrilmemiş İngilizce yok (sözlükte bulunamayan L() metni + ekranda İngilizce sözcük), taşma ve
+//    duraklat penceresi; Türkçe harf (ğ ı ş İ) yok, çevrilmemiş İngilizce yok (sözlükte bulunamayan L() metni + ekranda İngilizce sözcük), taşma ve
 //    iki satıra bölünen düğme yok, konsol hatası yok; tarih, yüzde ve büyük harf dile göre
 const path = require('path'), fs = require('fs');
 const D = require(path.join(__dirname, '..', 'diller.cjs'));
@@ -109,12 +109,13 @@ module.exports = async T => {
     await page.click('#mClose').catch(() => {}); await gap();
     await page.click('#bMap'); await gap(); R.scr.lines = await probe(page, '#map'); await page.click('#pBack').catch(() => {}); await gap();
     await page.click('#bPlay'); await page.waitForTimeout(800); R.scr.game = await probe(page, '#game,#toast'); await shot(page, `${lang}-game-320`);
+    await page.click('#bBack'); await page.waitForTimeout(500); R.scr.pause = await probe(page, sheet); await shot(page, `${lang}-pause-320`); await page.click('#pGo'); await page.waitForTimeout(700);
     await solve(page, 10); await waitModal(page); await page.waitForTimeout(500); R.scr.win = await probe(page, '#game'); await shot(page, `${lang}-win-320`);
     R.fmt = await page.evaluate(() => ({ loc: window.RAY_LOCALE, pct: window.LP(30), up: 'i'.toLocaleUpperCase(window.RAY_LANG), date: new Date(2026, 0, 5).toLocaleDateString(window.RAY_LOCALE, { day: 'numeric', month: 'long' }), line: window.__ray.lineName(0), line30: window.__ray.lineName(30) }));
     R.miss.push(...await page.evaluate(() => [...(window.__L_MISS || [])]));
     errs.push(...o.errors.map(e => `${lang}: ${e}`)); await o.ctx.close();
   }
-  const SCR = ['intro', 'home', 'settings', 'shop', 'quests', 'themes', 'lines', 'game', 'win'];
+  const SCR = ['intro', 'home', 'settings', 'shop', 'quests', 'themes', 'lines', 'game', 'pause', 'win'];
   const bad = { tr: [], miss: [], en: [], fit: [], wrap: [] };
   for (const [lang] of LANGS) {
     const R = res[lang];
@@ -129,7 +130,7 @@ module.exports = async T => {
     if (R.miss.length) bad.miss.push(`${lang}: ${[...new Set(R.miss)].slice(0, 4).map(s => s.slice(0, 50)).join(' | ')}`);
   }
   const lg = LANGS.map(([l]) => res[l].lang.split('|').slice(0, 2).join('/')).join(' ');
-  check('lang.text', `4 dilde açılış, ana sayfa, ayarlar, mağaza, görevler, renk temaları, Hatlar, oyun ve kazanma paneli: Türkçe harf yok, sözlükte bulunamayan metin yok, ekranda çevrilmemiş İngilizce sözcük yok (${lg})`,
+  check('lang.text', `4 dilde açılış, ana sayfa, ayarlar, mağaza, görevler, renk temaları, Hatlar, oyun, duraklat penceresi ve kazanma paneli: Türkçe harf yok, sözlükte bulunamayan metin yok, ekranda çevrilmemiş İngilizce sözcük yok (${lg})`,
     LANGS.every(([l]) => res[l].lang.startsWith(`${l}|${l}|`)) && !bad.tr.length && !bad.miss.length && !bad.en.length, [...bad.tr, ...bad.miss, ...bad.en].join(' · ').slice(0, 900) || lg);
   check('lang.fit', '4 dilde 320 px: yatay taşma, kesilen yazı ve iki satıra bölünen düğme yok', !bad.fit.length && !bad.wrap.length, [...bad.fit, ...bad.wrap].join(' · ').slice(0, 900), 'medium');
   const f = Object.fromEntries(LANGS.map(([l]) => [l, res[l].fmt]));

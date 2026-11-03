@@ -210,19 +210,18 @@ html:lang(en) body.test .hero p::after{content:' · 🧪 TEST: all unlocked'}
 .winp .stars svg{width:28px;height:28px}.winp .stars svg:nth-child(2){width:34px;height:34px;margin-top:-8px}
 .winp h2{font-size:21px;font-weight:800;letter-spacing:-.3px;line-height:1.12}
 .winp .badge{align-self:flex-start;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-size:10.5px;padding:3px 9px;white-space:nowrap}
-.wp-tog{flex:none;border:0;height:44px;padding:0 12px;border-radius:14px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--stroke);color:var(--mut);font:inherit;font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px}
-.wp-tog svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .3s}
-#game.mini .wp-tog svg{transform:rotate(180deg)}
 #game.mini .wp-more,#game.mini .winp .row2{display:none}
-#game.won #bReset{visibility:hidden;pointer-events:none}
+/* sol üst: oyunda ‖ duraklat, sonuçta ‹ ana sayfa · duraklatınca tahta bulanır (süre dururken tahta incelenemesin) */
+#bBack .i-bk,#game.won #bBack .i-pz{display:none}#game.won #bBack .i-bk{display:block}
+#bBack .i-pz{stroke-width:2.6}
+#game #board canvas{transition:filter .25s,opacity .25s}#game.paused #board canvas{filter:blur(14px);opacity:.55}
 .winp .statrow{margin:2px 0 0}.winp .tip{font-size:13px;color:var(--mut);text-align:center}
 .adfree{margin:-6px 0;text-align:center;line-height:1}
 .adfree button{position:relative;max-width:100%;border:0;background:none;padding:8px 6px;color:var(--mut);font:inherit;font-size:12.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--stroke);white-space:nowrap}
 .adfree button:after{content:"";position:absolute;inset:-4px 0}   /* dokunma alanı ~40 px; alttaki düğmeye taşmaz */
 .winp .primary{height:62px}.winp .row2 .glassbtn{height:48px}
-/* dar ekran (≤ 380 px): yıldızlar ve düğme biraz küçülür → başlık ve rozet sığar; ≤ 340 px: düğmede yalnız ok */
-@media (max-width:380px){.wp-sum{gap:9px}.winp .stars svg{width:24px;height:24px}.winp .stars svg:nth-child(2){width:29px;height:29px;margin-top:-7px}.winp .badge{letter-spacing:.5px;padding:3px 7px}.wp-tog{padding:0 9px}}
-@media (max-width:340px){.wp-tog{width:44px;padding:0;justify-content:center}.wp-tog span{display:none}}
+/* dar ekran (≤ 380 px): yıldızlar biraz küçülür → başlık ve rozet sığar */
+@media (max-width:380px){.wp-sum{gap:9px}.winp .stars svg{width:24px;height:24px}.winp .stars svg:nth-child(2){width:29px;height:29px;margin-top:-7px}.winp .badge{letter-spacing:.5px;padding:3px 7px}}
 @media (max-height:720px){#game.won .winp{gap:8px;padding-top:10px}.winp .primary{height:54px}.winp .row2 .glassbtn{height:44px}.winp .statrow b{font-size:18px}}
 
 /* açılış intro'su */
@@ -308,6 +307,18 @@ body.introing .screen *{animation-play-state:paused!important}
 .quests span{font-weight:600}.quests b{font-variant-numeric:tabular-nums}.quests small{grid-column:1/3;font-size:12px;color:var(--mut)}
 .quests i{position:absolute;left:0;bottom:0;height:3px;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:2px}
 .quests .ok b{color:#4fc3a1}.quests .ok i{background:#4fc3a1}
+/* görev ödülü: bitince bekler, "Topla" ile alınır; alınan ödül düğmenin üstünden büyüyüp yükselerek kaybolur */
+.quests .qall{display:flex;align-items:center;min-height:46px;padding:8px 14px}.quests .qall span{flex:1;font-weight:500;color:var(--mut)}.quests .qall span b{color:var(--fg)}
+.quests .pend small{grid-column:1}.quests .pend{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--acc) 70%,transparent),0 0 18px -6px var(--acc)}
+.qget{position:relative;grid-row:1/3;grid-column:2;align-self:center;border:0;height:34px;padding:0 14px;border-radius:99px;font:inherit;font-size:13.5px;font-weight:800;color:#1b1206;background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 4px 14px -4px var(--acc);animation:qget 1.6s ease-in-out infinite}
+.qget:after{content:"";position:absolute;inset:-6px -4px}   /* dokunma alanı ≥ 44 px */
+.qget:active{transform:scale(.94)}
+@keyframes qget{50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--acc) 22%,transparent),0 4px 18px -4px var(--acc)}}   /* nabız gölgede: düğme yerinde durur */
+.quests .qok{animation:qok .45s cubic-bezier(.2,.9,.3,1.5)}@keyframes qok{from{transform:scale(0)}}
+.quests .got{animation:qgot .7s ease-out}@keyframes qgot{from{background:color-mix(in srgb,#4fc3a1 32%,var(--glass))}}
+.qfly{position:fixed;z-index:80;pointer-events:none;white-space:nowrap;font-size:19px;font-weight:800;padding:8px 16px;border-radius:99px;color:var(--fg);background:var(--toastBg);box-shadow:inset 0 0 0 1.5px var(--acc),0 8px 30px -6px var(--acc);transform:translate(-50%,-50%);animation:qfly 1.25s cubic-bezier(.2,.9,.3,1) forwards}
+@keyframes qfly{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}22%{opacity:1;transform:translate(-50%,-60%) scale(1.25)}40%{transform:translate(-50%,-80%) scale(1)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-240%) scale(.9)}}
+.qrow.gift em{font-style:normal;font-weight:800;color:#1b1206;padding:2px 9px;border-radius:99px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:inline-block;animation:qget 1.6s ease-in-out infinite}
 .arch{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:8px 0}
 .arch button{display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 0;border:0;border-radius:12px;background:var(--rail);color:var(--fg);font:inherit;cursor:pointer}
 .arch button b{font-size:15px;font-variant-numeric:tabular-nums}.arch button i{font-style:normal;font-size:12px;line-height:1.2;opacity:.75}
@@ -327,6 +338,14 @@ body.introing .screen *{animation-play-state:paused!important}
 .sheet{width:100%;border-radius:30px 30px 0 0;padding:14px 20px max(22px,var(--sab));background:var(--sheetBg);box-shadow:inset 0 1px 0 var(--stroke),0 -10px 40px rgba(0,0,0,.25);transform:translateY(105%);transition:transform .45s cubic-bezier(.2,.9,.2,1);display:flex;flex-direction:column;gap:12px}
 .sheet:before{content:"";width:40px;height:5px;border-radius:5px;background:var(--stroke);align-self:center;margin-bottom:8px;box-shadow:inset 0 0 0 9px var(--rail)}
 .modal.open .sheet{transform:none}
+/* ortada küçük pencere (duraklat): kenarlardan bağımsız, büyüyerek açılır */
+.modal.center{align-items:center;justify-content:center;padding:24px}
+.modal.center .sheet{width:min(318px,100%);max-height:none;border-radius:28px;padding:20px 18px 18px;gap:4px;box-shadow:inset 0 0 0 1px var(--stroke),0 24px 70px rgba(0,0,0,.5);transform:scale(.88);opacity:0;transition:transform .32s cubic-bezier(.2,.9,.3,1.25),opacity .2s}
+.modal.center.open .sheet{transform:none;opacity:1}
+.modal.center .sheet:before{display:none}
+.modal.center .sheet h2{font-size:23px;margin-bottom:6px}
+.modal.center .opt{padding:7px 4px;font-size:15px}
+.modal.center .btn.primary{height:52px;margin-top:10px}.modal.center .btn.glassbtn{height:44px;margin-top:4px}
 .sheet .mx{position:sticky;top:0;z-index:3;align-self:flex-end;width:40px;height:40px;margin:-34px -8px -6px 0;border:0;border-radius:50%;background:var(--glass2);box-shadow:inset 0 0 0 1px var(--stroke);color:var(--mut);font-size:16px;line-height:1}
 .sheet{max-height:96%;overflow-y:auto;overscroll-behavior:contain}.sheet>*{flex-shrink:0}
 .sheet.fit,.sheet h2{touch-action:none}.sheet.drag{transition:none}
@@ -549,10 +568,11 @@ body.introing .screen *{animation-play-state:paused!important}
 .ach.got>i{filter:none;opacity:1;background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 40%,transparent),color-mix(in srgb,var(--acc2) 30%,transparent));box-shadow:0 0 14px -2px var(--accGlow)}
 .ach span{flex:1;min-width:0}.ach b{display:block;font-size:14.5px}.ach small{display:block;color:var(--mut);font-size:12px;line-height:1.3}
 .ach .pb{height:5px;margin-top:6px}.ach em{flex:none;font-style:normal;font-size:12px;font-weight:700;color:var(--mut)}.ach.got em{color:var(--acc)}
-.achpop{position:absolute;left:50%;top:calc(var(--sat) + 10px);z-index:30;display:flex;align-items:center;gap:10px;padding:8px 16px 8px 8px;border-radius:99px;background:var(--toastBg);box-shadow:inset 0 0 0 1px var(--stroke),0 0 0 1px color-mix(in srgb,var(--acc) 30%,transparent),var(--shadow);transform:translate(-50%,-150%);opacity:0;transition:transform .5s cubic-bezier(.2,.9,.3,1.2),opacity .35s;pointer-events:none;max-width:calc(100% - 32px)}
+.achpop{position:absolute;left:50%;top:calc(var(--sat) + 10px);z-index:30;display:flex;align-items:center;gap:10px;padding:8px 16px 8px 8px;border-radius:26px;background:var(--toastBg);box-shadow:inset 0 0 0 1px var(--stroke),0 0 0 1px color-mix(in srgb,var(--acc) 30%,transparent),var(--shadow);transform:translate(-50%,-150%);opacity:0;transition:transform .5s cubic-bezier(.2,.9,.3,1.2),opacity .35s;pointer-events:none;max-width:calc(100% - 32px)}
 .achpop.show{transform:translate(-50%,0);opacity:1}
 .achpop i{flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:19px;background:linear-gradient(135deg,var(--acc),var(--acc2))}
-.achpop small{display:block;font-size:10px;font-weight:700;letter-spacing:1.4px;color:var(--acc)}.achpop b{display:block;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.achpop span{min-width:0}.achpop small{display:block;font-size:10px;font-weight:700;letter-spacing:1.4px;color:var(--acc);white-space:nowrap}.achpop b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:14.5px;line-height:1.2}
+.achpop em{flex:none;font-style:normal;font-size:12.5px;font-weight:800;white-space:nowrap;padding:5px 9px;border-radius:99px;background:color-mix(in srgb,var(--acc) 18%,transparent);color:var(--fg)}   /* görev ödülü */
 .vipk.sea{color:var(--acc)}
 .skin.fr{box-shadow:inset 0 0 0 1.5px var(--acc),0 0 16px -4px var(--accGlow)}.skin.fr svg{opacity:.85;filter:none}.skin.fr small{color:var(--acc);font-weight:700}
 #game.zen .pill,#game.zen .trip,#game.zen .parInfo{visibility:hidden}

@@ -71,7 +71,7 @@ function calls(src, file) {
 
 const LETTER = /\p{L}/u, INNER = new Set(), norm = k => k.replace(/\s+/g, ' ');   // i18n.js de boşlukları böyle sıkıştırır
 // L(tr, en)'yi değişkenle çağıran sarmalayıcılar: ad → İngilizce argümanın sırası
-const WRAP = { opt: 3 }, NOT_TEXT = new Set(['tur']);   // ${…} içinde metin olmayan dizgiler (kimlik)
+const WRAP = { opt: 3, optTog: 3 }, NOT_TEXT = new Set(['tur']);   // ${…} içinde metin olmayan dizgiler (kimlik)
 // İngilizce argümandan anahtarlar: dizgi → kendisi; şablon → ${…} yerine {0}, {1}…; dizi → her öğe; ?: → iki dal.
 // ${…} içindeki düz İngilizce dizgiler de (tekil/çoğul: pl(n, 'move', 'moves')) ayrı anahtar olur: yakalanan değer sözlükte varsa çevrilir.
 function keysOf(toks, where, keys, odd) {
