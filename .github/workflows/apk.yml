@@ -51,6 +51,10 @@ jobs:
         env: { FIREBASE_ANDROID_JSON: '${{ secrets.FIREBASE_ANDROID_JSON }}' }   # isteğe bağlı: yoksa ölçüm kapalı derlenir (docs/YAYIN.md §5)
         run: node tools/android/hazirla.cjs
       - run: npx cap sync android
+      # Sabit test imzası: her koşuda yeni debug anahtarı üretilirse telefondaki Ray Dev güncellenemez ("paket çakışıyor").
+      # Anahtar gizli değildir (yalnız test paketleri: .dev / .test); Play sürümü ayrı yükleme anahtarıyla imzalanır.
+      - name: Sabit test imzası
+        run: mkdir -p ~/.android && cp tools/android/test.keystore ~/.android/debug.keystore
       - run: cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon -q
       - name: APK'daki SDK düzeyleri (Play hedef API ≥ 35 ister)
         run: |
