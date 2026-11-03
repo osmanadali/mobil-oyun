@@ -1858,6 +1858,7 @@ function qFlush(set, f) {
 const qPend = () => { const d = dayQ(), w = weekQ(); return [d, w].reduce((n, x) => n + x.q.filter(q => q.r).length + (x.ar ? 1 : 0), 0); };
 // ilerleme: biten görev ödülü bekletir ve üstten bildirim düşer (persist çağırana kalır)
 function questStep(type) {
+  if (!questVis()) return 0;   // görev satırı görünmeden bildirim düşmesin
   const w = weekQ(), d = dayQ(), out = [];
   // günlük: her görev +1 💡, üçü birden +1 🎫 (günlük ödül)
   const gift = L('🎁 Görevlerde', '🎁 In Quests');
@@ -1868,7 +1869,7 @@ function questStep(type) {
   popUp(...out);   // ekrana üstten düşer; ödül Görevler penceresinde toplanır
   return out.length;
 }
-const questVis = () => save.level > lineEnd(0) || !!save.dailyDone;   // ilk hat bitmeden ana sayfa sade kalsın
+const questVis = () => save.level > 3 || !!save.dailyDone;   // ilk üç (öğretici) bölümde ana sayfa sade kalsın; görevler de o zamana dek saymaz
 function questRow() {
   const el = $('bQuest'); el.hidden = !questVis(); if (el.hidden) return;
   const w = weekQ(), dq = dayQ(), n = s => s.q.filter(q => q.p >= q.n).length, a = n(dq), b = n(w);
@@ -2501,7 +2502,31 @@ function achPop() {
   if (!a) { achT = 0; return; }
   el.innerHTML = `<i>${a[0]}</i><span><small>${a[1]}</small><b>${a[2]}</b></span>${a[3] ? `<em>${a[3]}</em>` : ''}`;
   el.classList.add('show'); tone(note(9), .3, .03, 'sine', .05); tone(note(12), .35, .025, 'sine', .16);
-  achT = setTimeout(() => { el.classList.remove('show'); achT = setTimeout(achPop, 450); }, 2600);
+  achT = setTimeout(achHide, 2600);
+}
+function achHide() { $('achPop').classList.remove('show'); achT = setTimeout(achPop, 450); }
+// bildirim kaydırınca (yukarı ya da yana) ya da dokununca gider; sıradaki hemen düşer
+{
+  const el = $('achPop'); let x0 = null, y0 = 0, dx = 0, dy = 0;
+  el.addEventListener('pointerdown', e => {
+    if (!el.classList.contains('show')) return;
+    x0 = e.clientX; y0 = e.clientY; dx = dy = 0; clearTimeout(achT); el.setPointerCapture?.(e.pointerId); el.style.transition = 'none';
+  });
+  el.addEventListener('pointermove', e => {
+    if (x0 == null) return;
+    dx = e.clientX - x0; dy = Math.min(0, e.clientY - y0) + Math.max(0, e.clientY - y0) * .2;   // aşağı çekmek esner
+    el.style.transform = `translate(calc(-50% + ${dx}px),${dy}px)`;
+  });
+  const up = () => {
+    if (x0 == null) return; x0 = null;
+    const side = Math.abs(dx) > 70, out = side || dy < -24 || (Math.abs(dx) < 6 && Math.abs(dy) < 6);
+    if (!out) { el.style.transition = el.style.transform = ''; achT = setTimeout(achHide, 1500); return; }
+    el.style.transition = 'transform .26s ease-in,opacity .26s';
+    el.style.transform = side ? `translate(calc(-50% + ${Math.sign(dx) * 120}vw),${dy}px)` : 'translate(-50%,-160%)'; el.style.opacity = '0';
+    haptic('light');
+    achT = setTimeout(() => { el.classList.remove('show'); el.style.transition = el.style.transform = el.style.opacity = ''; achT = setTimeout(achPop, 120); }, 270);
+  };
+  el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
 }
 
 // Şehir haritası: her biten hat bir semti yakar; bütün bölümleri kusursuz (🎫) olan semt altın parlar.
@@ -2653,5 +2678,5 @@ if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { seaWin, popLog, ACH, achCheck, linesDone, goldLine, plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), dayQ: () => dayQ(), RULE_LINE, RULES,  review: maybeReview, BST, offer: { MIN: OFFER_MIN, GAP: OFFER_GAP, AGE: OFFER_AGE, list: offerList, due: () => offerDue(G), inter: v => { interDue = v; } }, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, lineOf, lineEnd, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
+window.__ray = { seaWin, popLog, popUp: (...a) => popUp(...a), ACH, achCheck, linesDone, goldLine, plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), dayQ: () => dayQ(), RULE_LINE, RULES,  review: maybeReview, BST, offer: { MIN: OFFER_MIN, GAP: OFFER_GAP, AGE: OFFER_AGE, list: offerList, due: () => offerDue(G), inter: v => { interDue = v; } }, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, lineOf, lineEnd, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();
