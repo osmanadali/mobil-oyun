@@ -273,7 +273,7 @@ Bu iki sistemin amacı oyuncuya "bir bölüm daha" dedirtmektir. Hiçbiri oyunu 
 - Büyük düğmenin alt satırı nedenini söyler: "Kıl payı · ⏱ 2 sn" ya da "🔥 4 seri geri gelsin".
 
 
-## 10. Zen modu ve mevsim temaları
+## 10. Zen modu, mevsim temaları, şehir haritası, rozetler
 
 Oyunun "meta" katmanı: bulmacaya dokunmaz. Kod: `www/game.js` › "meta" bölümü ve `G.zen` kancaları; test: `tools/hakem/meta.cjs` (`node tools/hakem.cjs --only=meta`). Para birimi 🎫 bilet olarak yeniden adlandırılıyor (eski adı 👑 taç; kayıt alanları aynı).
 
@@ -315,9 +315,34 @@ Bayramların ilk günü (Diyanet takvimi; Ümmü'l-Kurâ hesabıyla 2026'da bire
 
 Mevsim temaları da öteki temalar gibi robotta 60 hat boyunca renk ayrışması ve uyarı rengi için denetlenir. Robot tarihi `window.__rayDate` ile değiştirir.
 
-### Planlanan (salı): şehir haritası ve rozetler
+### Şehir haritası
 
-Tasarım hazır, kod `meta` dalının `564893d` commit'inde duruyor (geri almak için oradan alınır):
+Kod: `www/game.js` › "meta" bölümü; test: `tools/hakem/meta-2.cjs` (`node tools/hakem.cjs --only=meta-2`). Menüler sade kalsın diye yeni büyük düğme yoktur.
 
-- **Şehir haritası:** ana sayfa logosundan ya da Hatlar başlığındaki şehir simgesinden açılır (Şehir · Rozetler sekmeleri). Her biten hat, adı ve rengiyle bir semti yakar (ışıklar, merkeze metro kolu); hattın bütün bölümleri kusursuzsa (🎫 kazanılmış) semt altın parlar; sıradaki hat kesik çizgiyle "yapımda". Bir şehir 24 semt, halka halka büyür (6 + 8 + 10); 25. hattan sonra yeni şehir sayfası. Tek SVG, yalnız transform/opacity animasyonu.
-- **Rozetler (14, yerel, ödülsüz):** ilk kusursuz, kusursuz 10/100, ilk semt, altın semt, kural ustası (her kuralın hattı), 100/500 bölüm, 7/30 gün seri, ilk sandık, 25 sandık, 10 güçlendirici, zen'de 10 bölüm. Kazanınca üstte küçük bildirim; güncelleme öncesi hak edilenler sessizce işlenir. Zen bitişleri `save.zenWins` ile şimdiden sayılıyor.
+- **Giriş:** ana sayfadaki logo (dokununca) ya da Hatlar ekranının başlığındaki şehir simgesi. Ekranda iki sekme vardır: **Şehir** ve **Rozetler**.
+- **Semt:** her hat şehrin bir semtidir; semt hattın adını (`lineName`, ör. "M5 · Bahçe Hattı") ve rengini (`lineCol`) taşır.
+  - Hat baştan sona bitince semt **yanar**: hat renginde dolgu, ışıltı ve göz kırpan pencere ışıkları, merkeze uzanan metro kolu ve durak.
+  - Hattın bütün bölümleri kusursuzsa (hepsinde 🎫 kazanılmış) semt **altın** parlar.
+  - Sıradaki hat kesik çizgiyle "yapımda" görünür; ötekiler sönük kalır.
+  - Semte dokununca altta bilgi kartı çıkar: ad, ★ ve 🎫 sayısı, durum (Semt yandı ✓ · ✨ Altın semt · N bölüm kaldı · 🔒 Kilitli).
+- **Hat sınırları:** yalnız `lineStart`/`lineEnd`/`lineOf` ile okunur (hat boyu ve kural sırası değişebilir; sabit sayı yok). Biten hat sayısı `lineOf(save.level)`.
+- **Düzen (sonsuz hat):** bir şehir 24 semttir ve **halka halka büyür**: merkez halkada 6, orta halkada 8, dış halkada 10 semt. 24. hattan sonra yeni şehir açılır (sayfa: Işık Kent, Liman Kent, Yıldız Kent, Gece Kent, Pınar Kent, Kuzey Kent, Ufuk Kent, Gökkent, sonra numaralı). Sayfa okları yalnız ikinci şehir açılınca görünür. Merkezdeki ışık halesi yanan semt oranıyla güçlenir.
+- **Açılış:** son ziyaretten beri yanan semtler ekran açılınca sırayla yanar (`save.cityLit`).
+- **Performans:** tek SVG; animasyonlar yalnız `transform` ve `opacity` (semt başına iki ışık grubu). "Hareketi azalt" açıksa ışıklar sabit yanar, açılış animasyonu olmaz.
+
+### Rozetler
+
+Yerel ve sunucusuzdur; **ödül yoktur** (🎫 ve ipucu ekonomisi değişmez). Kazanılınca ekranın üstünde küçük bir bildirim çıkar (dokunmayı engellemez); liste Şehir ekranının Rozetler sekmesindedir, kazanılmayanlarda ilerleme çubuğu görünür. Güncellemeden önce hak edilmiş rozetler ilk açılışta sessizce işlenir (bildirimsiz, tarihsiz). Kayıt: `save.ach` (kimlik → tarih), `save.bstUsed`, `save.wqAll`, `save.cityLit`.
+
+| Rozet | Koşul |
+|---|---|
+| 🎫 İlk kusursuz · Kusursuz 10 · Kusursuz 100 | 1 / 10 / 100 bölüm kusursuz |
+| 🏙 İlk semt | Bir hattı baştan sona bitir |
+| ✨ Altın semt | Bir hattın bütün bölümleri kusursuz |
+| 🧭 Kural ustası | Her kuralın hattını bitir (hatlar `RULE_LINE`'dan canlı okunur; eklenti kuralları dahil) |
+| 🚇 100 bölüm · 500 bölüm | Bitirilen bölüm sayısı |
+| 🔥 7 gün seri · 30 gün seri | Günün Hattı serisi (en iyi seri sayılır) |
+| 🎁 İlk sandık · Sandık avcısı | 1 / 25 sürpriz sandık |
+| ⚡ Güçlendirici | 10 güçlendirici kullan |
+| 🎯 Haftanın yolcusu | Bir haftanın üç görevini bitir |
+| 🍃 Zen yolcusu | Zen modunda 10 bölüm |
