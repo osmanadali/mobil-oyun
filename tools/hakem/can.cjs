@@ -78,34 +78,34 @@ module.exports = async T => {
     errs.push(...errors); await ctx.close();
   }
 
-  // ---------- d) 0 can: bölüm başlamaz; üstte can adası (❤️‍🩹 · yenilenmeye geri sayım · ▶ video +1 ❤️ · 🛒) → can gelince Oyna ----------
+  // ---------- d) 0 can: bölüm başlamaz; ortada can penceresi (❤️‍🩹 · yenilenmesine geri sayım · ▶ video +1 ❤️ · 🛒) → can gelince Oyna ----------
   {
     const { ctx, page, errors } = await go({ lives: 0, lifeT: Date.now() - 10 * MIN });
-    const pop = () => page.evaluate(() => { const e = document.getElementById('lifePop'); return { show: e.classList.contains('show'), txt: e.textContent.replace(/\s+/g, ' ').trim(), vid: !!document.getElementById('lpVid'), shop: !!document.getElementById('lpShop'), go: !!document.getElementById('lpGo'), r: e.getBoundingClientRect().toJSON() }; });
+    const box = () => page.evaluate(() => { const m = document.getElementById('modal'), r = document.getElementById('mCard').getBoundingClientRect(); return { center: m.classList.contains('center'), mid: Math.abs((r.top + r.bottom) / 2 - innerHeight / 2) < innerHeight * .2, vid: !!document.getElementById('lpVid'), shop: !!document.getElementById('lpShop'), go: !!document.getElementById('lpGo') }; });
     await page.click('#bPlay'); await page.waitForTimeout(700);
-    const a = await st(page), p0 = await pop();
+    const a = await st(page), b0 = await box();
     await shot(page, 'can-empty');
-    await page.waitForTimeout(1100); const p1 = await pop();   // geri sayım akıyor
+    await page.waitForTimeout(1100); const a1 = await st(page);   // geri sayım akıyor
     await page.click('#lpVid'); await page.waitForTimeout(900);
-    const s = await getSave(page), b = await st(page), p2 = await pop();
+    const s = await getSave(page), b = await st(page), b1 = await box();
     await page.click('#lpGo'); await page.waitForTimeout(700);
-    const c = await st(page), p3 = await pop();
-    check('can.empty', '0 canda Oyna bölümü açmaz: üstte can adası (❤️‍🩹 "CANIN BİTTİ", yenilenmesine ~20 dk geri sayım akar, ▶ +1 ❤️ ve 🛒 mağaza); video +1 ❤️ (life_refill_ad), ada "Oyna"ya döner, bölüm açılır',
-      !a.game && !a.modal && p0.show && /❤️‍🩹/.test(p0.txt) && /CANIN BİTTİ/.test(p0.txt) && /Yenilenmesine 1?[90]:\d\d|Yenilenmesine 20:00/.test(p0.txt) && p0.txt !== p1.txt && p0.vid && p0.shop && p0.r.top >= 0 && p0.r.right <= 391 &&
-      s.lives === 1 && JSON.stringify(b.ev) === JSON.stringify([['life_refill_ad', null]]) && p2.go && c.game && !c.modal && !p3.show && !errors.length,
-      JSON.stringify({ a: a.game, p0: p0.txt, p1: p1.txt, lives: s.lives, ev: b.ev, p2: p2.txt, c: c.game, errors }));
+    const c = await st(page);
+    check('can.empty', '0 canda Oyna bölümü açmaz: ekranın ortasında can penceresi (❤️‍🩹 "Canın bitti", yenilenmesine ~20 dk geri sayım akar, ▶ video +1 ❤️ ve 🛒 mağaza); video +1 ❤️ (life_refill_ad), pencere "Oyna"ya döner, bölüm açılır',
+      !a.game && b0.center && b0.mid && /❤️‍🩹/.test(a.modal) && /Canın bitti/.test(a.modal) && /Yenilenmesine 1?[90]:\d\d|Yenilenmesine 20:00/.test(a.modal) && a.modal !== a1.modal && b0.vid && b0.shop &&
+      s.lives === 1 && JSON.stringify(b.ev) === JSON.stringify([['life_refill_ad', null]]) && b1.go && c.game && !c.modal && !errors.length,
+      JSON.stringify({ a: a.modal.slice(0, 140), b0, lives: s.lives, ev: b.ev, b1, c: c.game, errors }));
     errs.push(...errors); await ctx.close();
   }
   {
-    // son can gidince: başarısızlık penceresi + üstte can adası; ada 🛒 mağazayı açar
+    // son can gidince: "Son tren kaçtı" yerine ortada can penceresi; 🛒 mağazayı açar
     const { ctx, page, errors } = await go({ lives: 1, lifeT: Date.now() - 2 * MIN });
     await page.click('#bPlay'); await page.waitForTimeout(700);
     await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.dl + .2) * 1000; }); await page.waitForTimeout(1500);
-    const f = await st(page), pop = await page.evaluate(() => document.getElementById('lifePop').classList.contains('show') && document.getElementById('lifePop').textContent);
+    const f = await st(page), center = await page.evaluate(() => document.getElementById('modal').classList.contains('center'));
     await shot(page, 'can-last');
     await page.click('#lpShop'); await page.waitForTimeout(500);
     const shop = await page.evaluate(() => !!document.getElementById('store'));
-    check('can.last', 'Son can gidince "Son tren kaçtı" penceresiyle birlikte üstte can adası çıkar; 🛒 mağazayı açar', f.over && /Son tren/.test(f.modal) && /CANIN BİTTİ/.test(pop || '') && shop && !errors.length, JSON.stringify({ over: f.over, pop, shop, errors }));
+    check('can.last', 'Son can gidince ortada can penceresi ("Son tren kaçtı, son canın gitti", ❤️‍🩹, geri sayım); 🛒 mağazayı açar', f.over && center && /Son tren kaçtı/.test(f.modal) && /Canın bitti/.test(f.modal) && shop && !errors.length, JSON.stringify({ over: f.over, center, m: f.modal.slice(0, 120), shop, errors }));
     errs.push(...errors); await ctx.close();
   }
 

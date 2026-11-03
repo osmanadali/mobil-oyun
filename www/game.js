@@ -1866,7 +1866,7 @@ function fail() {
   setNext(`<span class="miss">${L('🚉 Son tren kaçtı', '🚉 Last train gone')}</span>`); $('gTrip').classList.remove('last'); bstUi();
   Music.setTension(0, false); Music.setMode('rest');
   [4, 2, 0].forEach((k, j) => tone(note(k), .35, .03, 'sine', j * .16)); haptic('heavy');
-  setTimeout(() => { if (G === g && active('game')) { failSheet(g, lost); if (lost && !lives()) lifePop(g.lvl); } }, 650);   // son can gitti → üstte ada bildirimi
+  setTimeout(() => { if (G === g && active('game')) { if (lost && !lives()) lifePop(g.lvl, true); else failSheet(g, lost); } }, 650);   // son can gitti → ortada can penceresi
 }
 function failSheet(g, lost) {
   const n = lives(), inf = infOn();
@@ -1877,40 +1877,39 @@ function failSheet(g, lost) {
     <button id="mHome" class="btn glassbtn">${L('Ana sayfa', 'Home')}</button>`,
     { mRetry: () => start('level', g.lvl), mHome: () => { closeModal(); show('home'); } }, true);
 }
-// ❤️ can adası (üstte ada bildirimi, görev bildirimiyle aynı yer): can bitince sargılı kalp ❤️‍🩹 + yenilenmeye geri sayım,
-// ▶ video +1 ❤️ ve 🛒 mağaza (❤️∞ başlangıç paketi). Can gelince "Oyna". Can çipine dokununca da açılır (can doluysa kısa bilgi).
-// lvl: 0 canda Oyna'ya basılan bölüm (can gelince "Oyna" onu açar)
-let lpT = 0, lpLvl = 0;
-function lifePop(lvl = save.level) {
-  const el = $('lifePop'); lpLvl = lvl; clearInterval(lpT);
-  let mode = null, born = Date.now();
-  const hide = () => { clearInterval(lpT); lpT = 0; el.classList.remove('show'); };
+// ❤️ can penceresi (ekranın ortasında, duraklatma menüsü gibi): can bitince sargılı kalp ❤️‍🩹 + yenilenmesine geri sayım (saniye saniye),
+// ▶ video +1 ❤️ ve 🛒 mağaza (❤️∞ başlangıç paketi öne çıkar). Can gelince "Oyna". Can çipine dokununca da açılır.
+// lvl: açılacak bölüm · failed: son can bu başarısızlıkla gitti (pencere "Son tren kaçtı"nın yerini alır)
+function lifePop(lvl = save.level, failed = false) {
+  const home = () => { closeModal(); show('home'); };
+  modal(`<div class="bell" id="lpI">❤️</div><h2 id="lpH"></h2><p id="lpP"></p><p class="lifep" id="lpTxt"></p><div id="lpAct" class="lifeact"></div>
+    <button id="lpX" class="btn glassbtn">${failed ? L('Ana sayfa', 'Home') : L('Kapat', 'Close')}</button>`, { lpX: failed ? home : closeModal }, failed, true);
+  let mode = null;
   const up = () => {
-    if (!active('home') && !active('game')) return hide();
-    const n = lives(), inf = infOn(), m = inf ? 'inf' : n ? (n < LIFE_MAX ? 'some' : 'full') : 'empty';
-    const t = inf ? fmtT(save.infUntil - Date.now()) : n < LIFE_MAX ? fmtT(lifeNext() + 999) : '';
-    if (m !== mode) {
-      const was = mode; mode = m;
-      if (was === 'empty' && m !== 'empty') { haptic('heavy'); tone(note(9), .3, .045); born = Date.now(); }   // can geldi
-      const head = m === 'empty' ? L('CANIN BİTTİ', 'OUT OF LIVES') : m === 'inf' ? L('SINIRSIZ CAN', 'UNLIMITED LIVES') : `❤️ ${n} / ${LIFE_MAX}`;
-      const btn = m === 'empty' ? `${Ads.online() ? `<button id="lpVid">▶ +1 ❤️</button>` : ''}<button id="lpShop" class="${Ads.online() ? 'gl' : ''}">🛒</button>`
-        : was === 'empty' || lvl !== save.level || active('home') ? `<button id="lpGo">${L('Oyna', 'Play')}</button>` : '';
-      el.innerHTML = `<i>${m === 'empty' ? '❤️‍🩹' : '❤️'}</i><span><small>${head}</small><b id="lpTxt"></b></span><div class="lpb">${btn}<button class="x" id="lpX" aria-label="${L('Kapat', 'Close')}">✕</button></div>`;
-      bind({ lpVid: lifeVideo, lpShop: () => { hide(); storeSheet('star'); }, lpGo: () => { hide(); start('level', lpLvl); }, lpX: hide });
-    }
-    $('lpTxt').textContent = m === 'empty' ? L(`Yenilenmesine ${t}`, `Next life in ${t}`) : m === 'inf' ? t : m === 'some' ? L(`Sıradaki can ${t}`, `Next life in ${t}`) : L('Canların dolu', 'Lives are full');
-    if (m !== 'empty' && Date.now() - born > 6000) hide();   // can varken bilgi kısa kalır
+    if (!$('lpTxt')) return;
+    const n = lives(), inf = infOn(), m = inf ? 'inf' : n ? 'some' : 'empty';
+    $('lpTxt').innerHTML = `${hearts(n)}<small>${inf ? lifeTxt() : n < LIFE_MAX ? (m === 'empty' ? L(`Yenilenmesine <b class="lpt">${fmtT(lifeNext() + 999)}</b>`, `Refills in <b class="lpt">${fmtT(lifeNext() + 999)}</b>`) : L(`Sıradaki can ${fmtT(lifeNext() + 999)}`, `Next life in ${fmtT(lifeNext() + 999)}`)) : L('Canların dolu', 'Lives are full')}</small>`;
+    if (m === mode) return;
+    if (mode === 'empty') { haptic('heavy'); tone(note(9), .3, .045); }   // can geldi
+    mode = m;
+    $('lpI').textContent = m === 'empty' ? '❤️‍🩹' : '❤️';
+    $('lpH').textContent = m === 'empty' ? L('Canın bitti', 'Out of lives') : m === 'inf' ? L('Sınırsız can', 'Unlimited lives') : `❤️ ${n} / ${LIFE_MAX}`;
+    $('lpP').innerHTML = m === 'empty' ? (failed ? L('🚉 Son tren kaçtı, <b class="nw">son canın</b> gitti. ', '🚉 The last train left and took your <b class="nw">last life</b>. ') : '') + L('Her 30 dakikada 1 can dolar. Günün Hattı ve 🍃 Zen can harcamaz.', 'One life refills every 30 minutes. The Daily Line and 🍃 Zen cost no lives.') : '';
+    $('lpAct').innerHTML = m === 'empty'
+      ? `${Ads.online() ? `<button id="lpVid" class="btn primary"><span>${L('▶ Video izle', '▶ Watch a video')}</span><small>+1 ❤️</small></button>` : ''}<button id="lpShop" class="btn ${Ads.online() ? 'glassbtn' : 'primary'}"><span>🛒 ${L('Mağaza', 'Shop')}</span><small>${L('❤️∞ sınırsız can paketi', '❤️∞ unlimited lives pack')}</small></button>`
+      : `<button id="lpGo" class="btn primary"><span>${L('Oyna', 'Play')}</span><small>${L('Bölüm', 'Level')} ${lvl}</small></button>`;
+    bind({ lpVid: lifeVideo, lpShop: () => storeSheet('star'), lpGo: () => start('level', lvl) });
   };
   async function lifeVideo() {
     const b = $('lpVid'); if (!b || Ads.busy()) return;
-    b.disabled = true; b.textContent = L('Yükleniyor…', 'Loading…'); Music.stop();
+    b.disabled = true; b.querySelector('span').textContent = L('Yükleniyor…', 'Loading…'); Music.stop();
     const ok = await video(); Music.start();
-    if (!ok) { b.disabled = false; b.textContent = '▶ +1 ❤️'; return; }
+    if (!ok) { b.disabled = false; b.querySelector('span').textContent = L('▶ Video izle', '▶ Watch a video'); return; }
     addLife(); window.Olcum?.event?.('life_refill_ad');
     toast(L('+1 ❤️ · iyi yolculuklar', '+1 ❤️ · have a good trip')); refreshHome(); up();
   }
-  up(); el.classList.add('show'); tone(note(2), .3, .03, 'sine', .05);
-  lpT = setInterval(up, 1000);
+  up(); const iv = setInterval(() => { if ($('lpTxt')) up(); else clearInterval(iv); }, 1000);
+  mOnClose = () => clearInterval(iv);
 }
 // 3 görev; herkeste aynı tohum (basamağa göre). f: 'w' haftalık, 'd' günlük
 function qSet(f, id, salt) {

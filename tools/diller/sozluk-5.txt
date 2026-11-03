@@ -100,18 +100,43 @@ de: Leben
 es: Vidas
 pt: Vidas
 fr: Vies
-@ OUT OF LIVES
-de: KEINE LEBEN MEHR
-es: SIN VIDAS
-pt: SEM VIDAS
-fr: PLUS DE VIES
-@ UNLIMITED LIVES
-de: UNBEGRENZTE LEBEN
-es: VIDAS ILIMITADAS
-pt: VIDAS ILIMITADAS
-fr: VIES ILLIMITÉES
 @ Lives are full
 de: Alle Leben voll
 es: Vidas completas
 pt: Vidas cheias
 fr: Vies au complet
+@ Refills in <b class="lpt">{0}</b>
+de: Wieder voll in <b class="lpt">{0}</b>
+es: Se recarga en <b class="lpt">{0}</b>
+pt: Recarrega em <b class="lpt">{0}</b>
+fr: Rechargé dans <b class="lpt">{0}</b>
+@ Out of lives
+de: Keine Leben mehr
+es: Sin vidas
+pt: Sem vidas
+fr: Plus de vies
+@ Unlimited lives
+de: Unbegrenzte Leben
+es: Vidas ilimitadas
+pt: Vidas ilimitadas
+fr: Vies illimitées
+@ 🚉 The last train left and took your <b class="nw">last life</b>.␣
+de: 🚉 Der letzte Zug ist weg und hat dein <b class="nw">letztes Leben</b> mitgenommen.␣
+es: 🚉 El último tren se fue y se llevó tu <b class="nw">última vida</b>.␣
+pt: 🚉 O último trem partiu e levou sua <b class="nw">última vida</b>.␣
+fr: 🚉 Le dernier train est parti avec ta <b class="nw">dernière vie</b>.␣
+@ One life refills every 30 minutes. The Daily Line and 🍃 Zen cost no lives.
+de: Alle 30 Minuten kommt 1 Leben zurück. Tageslinie und 🍃 Zen kosten keine Leben.
+es: Cada 30 minutos se recarga 1 vida. La Línea del día y el modo 🍃 Zen no gastan vidas.
+pt: A cada 30 minutos 1 vida recarrega. A Linha do Dia e o 🍃 Zen não gastam vidas.
+fr: Une vie revient toutes les 30 minutes. La Ligne du jour et le mode 🍃 Zen ne coûtent aucune vie.
+@ ▶ Watch a video
+de: ▶ Video ansehen
+es: ▶ Ver un vídeo
+pt: ▶ Ver um vídeo
+fr: ▶ Regarder une vidéo
+@ ❤️∞ unlimited lives pack
+de: ❤️∞ Paket mit unbegrenzten Leben
+es: ❤️∞ paquete de vidas ilimitadas
+pt: ❤️∞ pacote de vidas ilimitadas
+fr: ❤️∞ pack de vies illimitées
