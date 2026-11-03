@@ -154,7 +154,7 @@ module.exports = async T => {
     await solve(page, 10); await waitModal(page);
     await page.click('#mNext'); await wait(page, 600);
     await page.click('#bHint'); await wait(page, 300);
-    await page.click('#bBack'); await wait(page, 500);   // yarım bırak
+    await page.evaluate(() => { document.getElementById('bBack').click(); document.getElementById('pHome')?.click(); }); await wait(page, 500);   // yarım bırak
     await page.click('#bSettings'); await wait(page); await page.click('#oHow'); await wait(page, 500);
     for (let k = 0; k < 8 && await G(page, () => document.getElementById('modal').classList.contains('open')); k++) { await page.click('#mClose', { timeout: 3000 }).catch(() => {}); await wait(page, 350); }
     await openStore(page); await buy(page, 'hint10', 700);
@@ -189,7 +189,7 @@ module.exports = async T => {
       ev('ad_impression').some(p => p.ad_format === 'rewarded' && p.ad_platform === 'admob') && undoOn && ev('booster_use')[0]?.booster === 'geri' && ev('booster_use')[0].level === base.level,
       JSON.stringify({ ad: ev('ad_impression'), b: ev('booster_use'), undoOn }), 'medium');
     // Günün Hattı
-    await page.click('#bBack'); await wait(page, 500);
+    await page.evaluate(() => { document.getElementById('bBack').click(); document.getElementById('pHome')?.click(); }); await wait(page, 500);
     await page.click('#bDaily'); await wait(page, 600);
     await solve(page, 10); await waitModal(page);
     const d = (await G(page, () => window.__fa.ev.filter(e => e.name === 'daily_end').map(e => e.params)))[0];
@@ -207,7 +207,7 @@ module.exports = async T => {
     const F = await G(page, () => window.__fa);
     check('olcum.ab', 'UMP rıza gerektiren bölge: toplama kapalı (setEnabled false, analytics_storage reddedilir), hiç olay gönderilmez',
       F.en.at(-1) === false && F.consent.includes('ANALYTICS_STORAGE=DENIED') && !F.ev.length && !errors.length, JSON.stringify({ en: F.en, c: F.consent, n: F.ev.length, errors }), 'high');
-    await page.click('#bBack').catch(() => {}); await wait(page, 500);
+    await page.evaluate(() => { document.getElementById('bBack').click(); document.getElementById('pHome')?.click(); }).catch(() => {}); await wait(page, 500);
     await page.click('#bSettings'); await wait(page); await page.click('#oPriv'); await wait(page); await page.click('#mWipe'); await wait(page);
     await Promise.all([page.waitForNavigation({ timeout: 8000 }).catch(() => {}), page.click('#mWipeOk')]); await wait(page, 400);
     const reset = await G(page, () => sessionStorage.getItem('faReset'));

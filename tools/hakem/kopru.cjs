@@ -188,7 +188,7 @@ module.exports = async T => {
     const res = [];
     for (const r of [run({ pv: 4 }, bad), run({ pv: 4, sig: 12345 }, bad), run({ pv: 4, sig: fnv(P.sol.join() + '|' + P.cur.join()) })]) {
       // önce ana sayfaya: oyun açıkken yeniden yüklemek pause() → saveRun() ile yazdığımız kaydı ezer
-      await page.evaluate(() => document.getElementById('bBack').click()); await page.waitForTimeout(200);
+      await page.evaluate(() => (document.getElementById('bBack').click(), document.getElementById('pHome')?.click())); await page.waitForTimeout(200);
       await page.evaluate(r => { const s = JSON.parse(localStorage.getItem('ray')); s.runs = { level: r }; localStorage.setItem('ray', JSON.stringify(s)); }, r);
       await page.reload(); await page.waitForTimeout(300);
       await page.click('#bPlay'); await page.waitForTimeout(400);

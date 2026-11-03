@@ -211,6 +211,10 @@ html:lang(en) body.test .hero p::after{content:' · 🧪 TEST: all unlocked'}
 .winp h2{font-size:21px;font-weight:800;letter-spacing:-.3px;line-height:1.12}
 .winp .badge{align-self:flex-start;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-size:10.5px;padding:3px 9px;white-space:nowrap}
 #game.mini .wp-more,#game.mini .winp .row2{display:none}
+/* sol üst: oyunda ‖ duraklat, sonuçta ‹ ana sayfa · duraklatınca tahta bulanır (süre dururken tahta incelenemesin) */
+#bBack .i-bk,#game.won #bBack .i-pz{display:none}#game.won #bBack .i-bk{display:block}
+#bBack .i-pz{stroke-width:2.6}
+#game #board canvas{transition:filter .25s,opacity .25s}#game.paused #board canvas{filter:blur(14px);opacity:.55}
 .winp .statrow{margin:2px 0 0}.winp .tip{font-size:13px;color:var(--mut);text-align:center}
 .adfree{margin:-6px 0;text-align:center;line-height:1}
 .adfree button{position:relative;max-width:100%;border:0;background:none;padding:8px 6px;color:var(--mut);font:inherit;font-size:12.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--stroke);white-space:nowrap}

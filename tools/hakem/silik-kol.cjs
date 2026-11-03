@@ -99,7 +99,7 @@ module.exports = async T => {
     const g1 = await page.evaluate(`(() => { const G = window.__ray.G, qOf = ${qOf}; return { q: qOf(G, ${g0.i}), cur: G.cur[${g0.i}], moves: G.moves }; })()`);
     await shot(page, 'faint');
     // yarım oyun: geri → yeniden aç → sürdür
-    await page.click('#bBack'); await page.waitForTimeout(300); await page.reload(); await page.waitForTimeout(300);
+    await page.evaluate(() => { document.getElementById('bBack').click(); document.getElementById('pHome')?.click(); }); await page.waitForTimeout(300); await page.reload(); await page.waitForTimeout(300);
     await page.click('#bPlay'); await page.waitForTimeout(500);
     const g2 = await page.evaluate(`(() => { const G = window.__ray.G, qOf = ${qOf}; return { lvl: G.lvl, q: qOf(G, ${g0.i}), cur: G.cur[${g0.i}], moves: G.moves }; })()`);
     // ↺ baştan: başlangıç dizilimi ve ? konumu geri gelir

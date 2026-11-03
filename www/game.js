@@ -1338,7 +1338,7 @@ function winSheet(g, { zen, st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, 
   $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml([true, tOk, mOk])}<div class="wp-t"><h2>${g.arch ? L('Geçmiş gün tamam!', 'Past day done!') : g.practice ? L('Pratik tamam!', 'Practice done!') : g.daily ? L('Günün Hattı tamam!', 'Daily Line done!') : L('Hat açıldı!', 'Connected!')}</h2>${badge}</div></div></div>
     <div class="wp-more">${zen ? `<div class="statrow"><div><b>${fmtT(g.time)}</b><span>⏱ ${L('süre', 'time')}</span></div><div><b>${g.moves}</b><span>↻ ${L('hamle', 'moves')}</span></div></div>` : `<div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(lim.t * 1000)}</small></b><span>${tOk ? L('⏱ tam vaktinde ★', '⏱ on time ★') : L('⏱ rötar ✗', '⏱ late ✗')}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${lim.m}</small></b><span>↻ ${L('hamle', 'moves')} ${mOk ? '★' : '✗'}</span></div></div>`}${tip}${extra ? `<p class="tip">${extra}${dbl && Ads.online() ? ` <button id="mDbl" class="dbl">${L('▶ 2 katı', '▶ Double')}</button>` : ''}</p>` : ''}${adFree}</div>
     ${primary}`;
-  $('game').classList.add('won');
+  $('game').classList.add('won'); $('bBack').setAttribute('aria-label', L('Ana sayfa', 'Home'));
   bind({ mNext: next, mGo: () => start('level'), mArch: () => { show('home'); archSheet(); }, mDbl: () => doubleReward(dbl), mAdFree: shopSheet, mMap: () => show('map'), mRetry: () => start('level', g.lvl) });
   $('winPanel').querySelector('.wp-top').onclick = () => { if ($('game').classList.contains('mini')) toggleMini(); };   // küçükken başlığa dokunmak da açar
 }
@@ -1365,7 +1365,7 @@ function toggleMini() {
   const mini = $('game').classList.toggle('mini');
   haptic(); tone(mini ? 440 : 587, .06, .02);
 }
-function closePanel() { $('game').classList.remove('won', 'mini'); $('winPanel').innerHTML = ''; }
+function closePanel() { $('game').classList.remove('won', 'mini', 'paused'); $('winPanel').innerHTML = ''; $('bBack').setAttribute('aria-label', L('Duraklat', 'Pause')); }
 async function next() {
   const g = G; if (g.going) return; g.going = 1;   // çift dokunuş tek geçiş: reklam sürerken ikinci basış bölüm atlatmasın
   // sıra gelmiş, bu turda ödüllü video izlenmemiş → geçiş reklamı; gösterilemezse (hazır değil, 90 sn dolmadı) sıra korunur
@@ -1898,14 +1898,32 @@ function archSheet() {
   };
   persist();
 }
+// ses / müzik / titreşim anahtarları: Ayarlar ve duraklatma penceresi ortak
+const optTog = (id, on, tr, en) => `<div class="opt">${L(tr, en)} <button id="${id}" class="tog ${on ? 'on' : ''}" aria-label="${L(tr, en)}"></button></div>`;
+const SND_TOGS = () => `${optTog('oM', save.music, 'Müzik', 'Music')}${optTog('oS', save.sound, 'Efekt sesleri', 'Sound effects')}${optTog('oV', save.vib, 'Titreşim', 'Vibration')}`;
+const SND_BINDS = {
+  oM: () => { save.music = !save.music; persist(); $('oM').classList.toggle('on', save.music); save.music ? Music.start() : Music.stop(); },
+  oS: () => { save.sound = !save.sound; persist(); $('oS').classList.toggle('on', save.sound); },
+  oV: () => { save.vib = !save.vib; persist(); $('oV').classList.toggle('on', save.vib); haptic(); },
+};
+// Duraklat (oyunda sol üst ‖, Android geri tuşu): süre durur, tahta bulanır; pencere nasıl kapanırsa kapansın oyun sürer
+function pauseSheet() {
+  if (!G || G.won || G.over || !active('game') || modalOpen()) return;
+  pause(); $('game').classList.add('paused'); haptic();
+  modal(`<h2>${L('Duraklatıldı', 'Paused')}</h2>
+    ${SND_TOGS()}
+    <button id="pGo" class="btn primary"><span>${L('Devam et', 'Resume')}</span></button>
+    <button id="pHome" class="btn glassbtn">${L('Ana sayfa', 'Home')}</button>`, {
+    ...SND_BINDS, pGo: closeModal,
+    pHome: () => { mOnClose = () => $('game').classList.remove('paused'); closeModal(); show('home'); } });   // yarım oyun kayıtta, Oyna'yla sürer
+  mOnClose = () => { $('game').classList.remove('paused'); if (active('game')) resume(); };
+}
 function settings() {
   const seg = ['auto', 'dark', 'light'].map(t => `<button data-t="${t}" class="${save.theme === t ? 'on' : ''}">${{ auto: L('Oto', 'Auto'), dark: L('Koyu', 'Dark'), light: L('Açık', 'Light') }[t]}</button>`).join('');
   const lang = [['tr', 'Türkçe'], ['en', 'English']].map(([k, n]) => `<button data-g="${k}" lang="${k}" class="${RAY_LANG === k ? 'on' : ''}">${n}</button>`).join('');
-  const opt = (id, on, tr, en) => `<div class="opt">${L(tr, en)} <button id="${id}" class="tog ${on ? 'on' : ''}" aria-label="${L(tr, en)}"></button></div>`;
+  const opt = optTog;
   modal(`<h2>${L('Ayarlar', 'Settings')}</h2>
-    ${opt('oM', save.music, 'Müzik', 'Music')}
-    ${opt('oS', save.sound, 'Efekt sesleri', 'Sound effects')}
-    ${opt('oV', save.vib, 'Titreşim', 'Vibration')}
+    ${SND_TOGS()}
     ${Remind.avail() ? opt('oR', save.remind, 'Günlük hatırlatma', 'Daily reminder') : ''}
     ${opt('oZ', save.zen, '🍃 Zen modu', '🍃 Zen mode')}
     <div class="opt">${L('Görünüm', 'Theme')} <div class="seg" id="oT">${seg}</div></div>
@@ -1923,9 +1941,7 @@ function settings() {
       $('oR').classList.toggle('on', save.remind);
     },
     oSkin: skinSheet, oShop: () => storeSheet(), oPriv: privacySheet, oHow: () => { closeModal(); how(); }, oMove: moveSheet, oMail: () => { location.href = `mailto:${SUPPORT_MAIL}?subject=${encodeURIComponent('Ray · ' + (window.Capacitor?.getPlatform?.() || 'web') + ' · ' + RAY_LANG)}`; },
-    oM: () => { save.music = !save.music; persist(); $('oM').classList.toggle('on', save.music); save.music ? Music.start() : Music.stop(); },
-    oS: () => { save.sound = !save.sound; persist(); $('oS').classList.toggle('on', save.sound); },
-    oV: () => { save.vib = !save.vib; persist(); $('oV').classList.toggle('on', save.vib); haptic(); },
+    ...SND_BINDS,
     oZ: () => { save.zen = !save.zen; persist(); $('oZ').classList.toggle('on', save.zen); toast(save.zen ? L('🍃 Zen: süre ve hamle hedefi yok · her bitiş 3 ★ · 🎫 verilmez', '🍃 Zen: no timer or move target · every finish 3 ★ · no 🎫') : L('Zen kapalı · hedefler geri geldi', 'Zen off · targets are back')); },
     mClose: closeModal });
   $('oT').onclick = e => { const t = e.target.dataset.t; if (!t) return; save.theme = t; persist(); applyTheme(); refreshHome(); $('oT').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.t === t)); };
@@ -2350,7 +2366,7 @@ $('bDaily').onclick = () => (save.dailyDone === today() && save.dailyStats?.day 
 $('bMap').onclick = () => show('map');
 $('bQuest').onclick = questSheet;
 $('pBack').onclick = () => show('home');
-$('bBack').onclick = () => show('home');
+$('bBack').onclick = () => G && !G.won && !G.over && active('game') && !modalOpen() ? pauseSheet() : show('home');
 $('bReset').onclick = reset;
 $('bHint').onclick = hint; $('gUndo').onclick = undo; $('gLamp').onclick = lamp; $('gPlus').onclick = plus15;
 $('bSettings').onclick = settings;
@@ -2365,13 +2381,14 @@ function front(on) {
   if (active('home')) { refreshHome(); setTimeout(maybeRescue, 600); }
 }
 document.addEventListener('visibilitychange', () => front(!document.hidden));
-// Android geri tuşu: pencere → kapat, oyun/harita → ana sayfa, ana sayfa → arka plana al
+// Android geri tuşu: pencere → kapat, oyun → duraklat (sonuçta ana sayfa), harita → ana sayfa, ana sayfa → arka plana al
 const App = window.Capacitor?.Plugins?.App;
 App?.addListener?.('appStateChange', s => front(!!s?.isActive));
 App?.addListener?.('backButton', () => {
   if (modalOpen() && howBack) howBack();
   else if (modalOpen()) { if (mLocked) show('home'); closeModal(); }
   else if (G?.won && active('game')) show('home');
+  else if (active('game') && G && !G.over) pauseSheet();
   else if (!active('home')) show('home');
   else App.minimizeApp?.();
 });

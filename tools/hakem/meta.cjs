@@ -36,7 +36,7 @@ module.exports = async T => {
       JSON.stringify({ on, hide, warn, st: s.stars[level], cr: s.crowns?.[level], combo: s.combo, miss: s.miss?.[level], zenWins: s.zenWins, errors }));
     await shot(page, 'meta-zen-win');
     // Günün Hattı zen'den etkilenmez
-    await page.evaluate(() => document.getElementById('bBack')?.click()); await page.waitForTimeout(500);
+    await page.evaluate(() => (document.getElementById('bBack')?.click(), document.getElementById('pHome')?.click())); await page.waitForTimeout(500);
     await page.click('#bDaily'); await page.waitForTimeout(800);
     const d = await page.evaluate(() => ({ zen: document.getElementById('game').classList.contains('zen'), pill: getComputedStyle(document.getElementById('gPill')).visibility, gz: window.__ray.G.zen }));
     check('meta.zen.daily', 'Zen açıkken Günün Hattı normal: hedefler görünür (herkes aynı koşulda)', !d.zen && d.pill === 'visible' && !d.gz, JSON.stringify(d));

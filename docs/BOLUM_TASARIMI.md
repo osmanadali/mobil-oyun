@@ -322,7 +322,7 @@ Bu iki sistemin amacı oyuncuya "bir bölüm daha" dedirtmektir. Yıldız süres
 
 **Kıl payı tekrar:**
 
-- Hedef az farkla kaçtıysa (en çok 4 sn rötar ve en çok 2 hamle fazla; süre hedefi ¾'e inince 5 sn'den indi) ya da seri kırıldıysa, sonuç panelinde büyük düğme "Tekrar dene" olur ve Sonraki altına küçük iner. Öteki durumda panelde tek ana düğme (Sonraki) vardır: tekrar sağ üstteki ↺, ana sayfa sol üstteki ‹; tahtaya dokunmak paneli küçültür. Boşalan yer bölüm sonu başarımlarına ayrıldı.
+- Hedef az farkla kaçtıysa (en çok 4 sn rötar ve en çok 2 hamle fazla; süre hedefi ¾'e inince 5 sn'den indi) ya da seri kırıldıysa, sonuç panelinde büyük düğme "Tekrar dene" olur ve Sonraki altına küçük iner. Öteki durumda panelde tek ana düğme (Sonraki) vardır: tekrar sağ üstteki ↺, ana sayfa sol üstteki ‹; tahtaya dokunmak paneli küçültür. Boşalan yer bölüm sonu başarımlarına ayrıldı. Oyun sırasında sol üst ‖ duraklatır (Android geri tuşu da): süre durur, tahta bulanır (süre dururken tahta incelenemesin); pencerede müzik / efekt / titreşim, Devam et, Ana sayfa. Sonuç ekranında aynı köşe ‹ ana sayfadır.
 - Büyük düğmenin alt satırı nedenini söyler: "Kıl payı · ⏱ 2 sn" ya da "🔥 4 seri geri gelsin".
 
 

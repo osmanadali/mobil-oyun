@@ -56,7 +56,7 @@ module.exports = async T => {
       won && s.dt === 1 && s.streak === 3 && s.dailyDone === '2026-11-01' && /🎫/.test(panel) && s.wk?.q.find(q => q.t === 'daily')?.p === 1, JSON.stringify({ won, dt: s.dt, streak: s.streak, wk: s.wk }));
     // pratik (ikinci kez): bilet yeniden verilmez
     const tk = s.dt;
-    await page.evaluate(() => window.__ray && document.getElementById('bBack').click()); await page.waitForTimeout(500);
+    await page.evaluate(() => window.__ray && (document.getElementById('bBack').click(), document.getElementById('pHome')?.click())); await page.waitForTimeout(500);
     await page.click('#bDaily'); await page.waitForTimeout(500);
     const res = await page.evaluate(() => document.getElementById('mReplay') ? (document.getElementById('mReplay').click(), 1) : 0); await page.waitForTimeout(500);
     const again = await page.evaluate(() => document.getElementById('modal').classList.contains('open'));   // kural görüldü → kart yok
@@ -100,7 +100,7 @@ module.exports = async T => {
     const startedOld = await o.page.evaluate(() => window.__ray.G?.lvl);
     if (startedOld === 3) { await solve(o.page, 8); await waitModal(o.page); }
     const sa = await getSave(o.page);
-    await o.page.click('#bBack').catch(() => {}); await o.page.waitForTimeout(400);
+    await o.page.evaluate(() => { document.getElementById('bBack').click(); document.getElementById('pHome')?.click(); }).catch(() => {}); await o.page.waitForTimeout(400);
     await o.page.click('#bPlay'); await o.page.waitForTimeout(600);
     await o.page.click('#bHint'); await o.page.waitForTimeout(300);
     await solve(o.page, 8); await waitModal(o.page);
@@ -151,7 +151,7 @@ module.exports = async T => {
     await page.click('#mArch'); await page.waitForTimeout(400);
     await page.click(`#archGrid [data-d="${DAY}"]`); await page.waitForTimeout(600);
     const again = await page.evaluate(() => ({ arch: window.__ray.G.arch, practice: window.__ray.G.practice, modal: document.getElementById('modal').classList.contains('open') }));
-    await page.evaluate(() => window.__ray.G && document.getElementById('bBack').click()); await page.waitForTimeout(300);
+    await page.evaluate(() => window.__ray.G && (document.getElementById('bBack').click(), document.getElementById('pHome')?.click())); await page.waitForTimeout(300);
     await page.click('#streakChip'); await page.waitForTimeout(300); await page.click('#mArch'); await page.waitForTimeout(300);
     await page.click('#archGrid [data-d="2026-10-20"]'); await page.waitForTimeout(400);
     const noTk = await page.evaluate(() => document.getElementById('toast').textContent);

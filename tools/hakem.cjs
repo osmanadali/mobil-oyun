@@ -288,7 +288,7 @@ async function inViewport(page, sel) {
     await shot(page, 'daily-win');
     const go = await page.evaluate(() => [...document.querySelectorAll('#winPanel button')].map(b => b.id).filter(i => i !== 'mDbl').join());
     // paylaşım ana sayfadaki günün sonucu penceresinde
-    if (won) { await page.click('#bBack'); await page.waitForTimeout(500); await page.click('#bDaily'); await page.waitForTimeout(500); await page.click('#mShare'); await page.waitForTimeout(200); }
+    if (won) { await page.evaluate(() => { document.getElementById('bBack').click(); document.getElementById('pHome')?.click(); }); await page.waitForTimeout(500); await page.click('#bDaily'); await page.waitForTimeout(500); await page.click('#mShare'); await page.waitForTimeout(200); }
     const s = await getSave(page), log = await page.evaluate(() => window.__log);
     check('daily.panel', 'Günün Hattı sonucu: tek ana düğme "Bölümlere devam" (paylaşım ana sayfadaki sonuç penceresinde)', go === 'mGo', go, 'medium');
     check('daily.win', 'Günün Hattı çözülüyor', won);
@@ -296,7 +296,7 @@ async function inViewport(page, sel) {
     check('daily.hint', 'Günlük ödül +1 ipucu', s.hints === 4, `hints=${s.hints}`, 'medium');
     check('share', 'Paylaşım metni oluşuyor', log.share.length === 1 && /Günün Hattı/.test(log.share[0]), (log.share[0] || '').replace(/\n/g, ' ⏎ '), 'medium');
     metrics.shareText = log.share[0] || null;
-    if (won) { await page.click('#mX'); await page.waitForTimeout(600); }
+    if (won) { await page.evaluate(() => document.getElementById('modal').click()); await page.waitForTimeout(600); }   // dışarı dokun → kapanır
     await shot(page, 'home-after-daily');
     await ctx.close();
   }
@@ -366,7 +366,7 @@ async function inViewport(page, sel) {
     const r = await open(browser, URL, { save: { played: 4, level: 12, stars: starsUpTo(12) } });
     await r.page.click('#bPlay'); await r.page.waitForTimeout(300);
     for (const i of [0, 1, 2]) await tapTile(r.page, i);
-    await r.page.click('#bBack'); await r.page.waitForTimeout(300);
+    await r.page.evaluate(() => { document.getElementById('bBack').click(); document.getElementById('pHome')?.click(); }); await r.page.waitForTimeout(300);
     const t1 = await r.page.evaluate(() => window.__ray.G.ms);
     await r.page.waitForTimeout(1500);
     const t2 = await r.page.evaluate(() => window.__ray.G.ms);
@@ -412,7 +412,7 @@ async function inViewport(page, sel) {
     await shot(page, 'streak-sheet');
     check('streak.sheet', 'Seri rozetine dokununca 7 günlük seri penceresi', w.cells === 7 && w.on === 3 && /3 gün/.test(w.title), JSON.stringify(w), 'medium');
     await page.click('#mPlayD').catch(() => {}); await page.waitForTimeout(300);
-    await page.click('#bBack').catch(() => {}); await page.waitForTimeout(300);
+    await page.evaluate(() => { document.getElementById('bBack').click(); document.getElementById('pHome')?.click(); }).catch(() => {}); await page.waitForTimeout(300);
     await page.click('#bSettings'); await page.waitForTimeout(500);
     const hasM = !!(await page.$('#oM')); if (hasM) await page.click('#oM');
     const mus = (await getSave(page)).music;
@@ -485,7 +485,7 @@ async function inViewport(page, sel) {
     check('skin.buy', 'Temalar 🎫 ile satın alınır: onayda kalan bakiye, harcanan düşer, kalan diğerine yetmez', /kalan 🎫 2/.test(buy) && sk.sel === 'ocean' && sk.spent === 25 && sk.chip === '2' && sk.own === 2 && poor && neonLocked, JSON.stringify({ ...sk, poor, buy: buy.slice(0, 60) }), 'medium');
     check('skin.pick', 'Seçilen tema oyuna yansır; oyunda düğme/yıldız rengi oynanan hattın rengi', sk.acc !== acc0 && lineCol.c === '#4fa3ff' && lineCol.acc === lineCol.c, JSON.stringify({ acc0, acc: sk.acc, ...lineCol }), 'medium');
     // hatırlatma: oyundan ana sayfaya dönünce bir kez sorulur → izin → bildirimler planlanır
-    await page.click('#bBack'); await page.waitForTimeout(1300);
+    await page.evaluate(() => { document.getElementById('bBack').click(); document.getElementById('pHome')?.click(); }); await page.waitForTimeout(1300);
     const asked = await page.evaluate(() => /[Hh]atırlatayım mı/.test(document.querySelector('.sheet h2')?.textContent || '') && document.getElementById('modal').classList.contains('open'));
     await shot(page, 'remind-ask');
     if (asked) { await page.click('#mYes'); await page.waitForTimeout(500); }
