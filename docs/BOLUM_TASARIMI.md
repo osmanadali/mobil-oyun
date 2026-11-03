@@ -162,7 +162,7 @@ Eşli, ters, karanlık tünel, sayaçlı ve iki merkez dışındaki kurallar çe
 
   - Günün Hattı görevi yalnız Günün Hattı'nı bir kez bitirmiş ya da 61. bölüme gelmiş oyuncuya çıkar; güçlendirici görevi yalnız elinde o kadar güçlendirici olana. Görevler haftanın ilk açılışında o anki duruma göre seçilir ve hafta boyunca değişmez.
   - Kusursuz bitirilmiş (bileti alınmış) bir bölümü yeniden oynamak sayılmaz (kolay bölümde biriktirilmesin). İpucu kullanılan bölüm "ipucusuz" görevine sayılmaz (yarım oyunla ve baştan başlamayla korunur).
-  - Ödül görev tamamlandığı an verilir ve sonuç panelinde yazar. Haftalık üç görev birden bitince +2 🎫 (haftalık ödül); günlük üç görev birden +1 🎫 (günlük ödül).
+  - Ödül görev tamamlandığı an verilir; ekrana üstten bildirim olarak düşer (rozet bildirimiyle aynı sıra, sonuç paneline yazılmaz). Haftalık üç görev birden bitince +2 🎫 (haftalık ödül); günlük üç görev birden +1 🎫 (günlük ödül).
   - Giriş: ana sayfada Günün Hattı kartının altında tek ince satır ("🎯 Görevler · ☀️ 1/3 · 📅 2/3"). Satır ilk hat bitene ya da ilk Günün Hattı'na dek gizlidir.
 - **🎫 Bilet:** Oyunun tek para birimidir (eski adı taç 👑; kayıtta `crowns`, `crownBal` adları uyum için kaldı). Ana sayfadaki çip bakiyeyi gösterir. Görevler bilete ek olarak **❤️∞ sınırsız can** verebilir: `save.infUntil = max(infUntil, şimdi) + süre` (can sistemiyle ortak kayıt: `save.lives` 0–5, `save.lifeT`, `save.infUntil` ms; can sistemi §9 › Son süre ve can).
 - **Günün Hattı:** bitirmek +1 🎫 (günde bir; pratik ve arşiv vermez, `save.dt`), kusursuz bitirmek +1 🎫 daha (eskiden yalnız kusursuz 1 taç veriyordu). Günde en çok 2 🎫: bir kusursuz bölüm (1 🎫) ile seri bonusu (5 kusursuzda +1) arasında, temalar hızlanmadan Günün Hattı'nı oynamaya değer kılar. Haftada görevlerden en çok 4 🎫, Günün Hattı'ndan en çok 14 🎫.
@@ -322,7 +322,7 @@ Bu iki sistemin amacı oyuncuya "bir bölüm daha" dedirtmektir. Yıldız süres
 
 **Kıl payı tekrar:**
 
-- Hedef az farkla kaçtıysa (en çok 4 sn rötar ve en çok 2 hamle fazla; süre hedefi ¾'e inince 5 sn'den indi) ya da seri kırıldıysa, sonuç panelinde büyük düğme "Tekrar dene" olur ve Sonraki alttaki küçük sıraya iner. Düğme sayısı değişmez, panel kalabalıklaşmaz.
+- Hedef az farkla kaçtıysa (en çok 4 sn rötar ve en çok 2 hamle fazla; süre hedefi ¾'e inince 5 sn'den indi) ya da seri kırıldıysa, sonuç panelinde büyük düğme "Tekrar dene" olur ve Sonraki altına küçük iner. Öteki durumda panelde tek ana düğme (Sonraki) vardır: tekrar sağ üstteki ↺, ana sayfa sol üstteki ‹; tahtaya dokunmak paneli küçültür. Boşalan yer bölüm sonu başarımlarına ayrıldı.
 - Büyük düğmenin alt satırı nedenini söyler: "Kıl payı · ⏱ 2 sn" ya da "🔥 4 seri geri gelsin".
 
 

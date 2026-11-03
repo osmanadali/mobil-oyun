@@ -113,7 +113,7 @@ module.exports = async T => {
     const won = await waitModal(page);
     check('rule.table.hint', 'Döner tabla: ipucu tablaya düşünce dört karoyu birden oturtur ve sabitler; bölüm kazanılır', hf.fixed && hf.sol && hf.others === 4 && won, JSON.stringify({ ...hf, won }));
     // robot: plan() tabla dokunuşlarını verir → bölüm en az hamleyle (par) çözülür
-    await page.click('#mRetry'); await page.waitForTimeout(600);
+    await page.click('#bReset'); await page.waitForTimeout(600);
     const taps = await solve(page, 15), won2 = await waitModal(page);
     const r = await page.evaluate(() => { const G = window.__ray.G; return { won: G.won, moves: G.moves, par: G.par }; });
     check('rule.table.solve', `Döner tabla: robot (solve + plan) ${A}. bölümü par hamlede kazanır`, won2 && r.won && r.moves === r.par, JSON.stringify({ taps, ...r }));

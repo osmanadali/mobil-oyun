@@ -1255,13 +1255,12 @@ function win() {
   const late = Math.ceil(G.time / 1000 - G.lim.t);
   setNext(tOk ? L('Tam vaktinde', 'On time') : `<span class="miss">+${fmtT(late * 1000)} ${L('rötar', 'late')}</span>`); trip(G.time / 1000, tOk, 0);
   if (!tOk) setTimeout(() => { if (G?.won) pax(L('Nihayet! 👏', 'Finally! 👏')); }, 700);
-  let qmsg = '';   // haftalık görev tamamlandı
   if (G.arch) {
     // arşiv: seriyi etkilemez; o günün ilk bitişi kusursuzsa 1 🎫 (normal Günün Hattı kuralı), görevde Günün Hattı sayılır
     if (!archPlayed(G.day)) {
       save.archDone = { ...save.archDone, [G.day]: perfect ? 2 : 1 };
       if (perfect) { save.aCrowns = (save.aCrowns || 0) + 1; shard = true; extra = L('📅 Geçmiş gün kusursuz · +1 🎫', '📅 Perfect past day · +1 🎫'); }
-      qmsg = questStep('daily');
+      questStep('daily');
     }
   } else if (G.daily) {
     if (save.dailyDone !== G.day) {
@@ -1270,13 +1269,13 @@ function win() {
       save.hints++; save.dt = (save.dt || 0) + 1; dbl = 1; extra = L(`🔥 ${save.streak} gün seri · +1 ipucu · +1 🎫`, `🔥 ${save.streak}-day streak · +1 hint · +1 🎫`); Remind.habit(); Remind.plan();
       save.dailyStats = { day: G.day, moves: G.moves, time: G.time, st, perfect };
       shard = perfect; if (perfect) save.dCrowns = (save.dCrowns || 0) + 1;
-      qmsg = questStep('daily');
+      questStep('daily');
     }
   } else {
     if (++sessionWins % INTER_EVERY === 0 && !save.noAds && save.played >= 5) interDue = true;
     const before = totalStars(), old = save.stars[G.lvl] || 0, firstClear = G.lvl >= save.level;
     // haftalık görev: taçlı bölümü yeniden oynamak sayılmaz (kolay bölümde biriktirilmesin)
-    if (firstClear || !save.crowns[G.lvl]) qmsg = [questStep('win'), G.hinted ? '' : questStep('nohint'), perfect ? questStep('perfect') : ''].filter(Boolean).join(' · ');
+    if (firstClear || !save.crowns[G.lvl]) { questStep('win'); if (!G.hinted) questStep('nohint'); if (perfect) questStep('perfect'); }
     save.stars[G.lvl] = Math.max(old, st);
     if (!save.crowns[G.lvl] && !zen) {
       const lost = save.comboLost; delete save.comboLost;
@@ -1311,37 +1310,37 @@ function win() {
   $('gCombo').hidden = combo < 2; $('gCombo').textContent = `✨${combo}`; $('gCombo').classList.remove('off');
   const sum = { stars: st, time_s: G.time / 1000 | 0, moves: G.moves, hints: G.hu || 0, perfect, zen };
   if (G.daily) Olcum.event('daily_end', { ...sum, mode: G.arch ? 'archive' : 'daily', practice: !!G.practice, streak: save.streak }); else Olcum.event('level_end', { ...lvlP(), ...sum });
-  const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { zen, st, tOk, mOk, perfect, extra: [tkMsg, cmsg, shardMsg, extra, qmsg].filter(Boolean).join(' · '), unlockedNow, ns, dbl, combo, broke, near };
+  const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { zen, st, tOk, mOk, perfect, extra: [tkMsg, cmsg, shardMsg, extra].filter(Boolean).join(' · '), unlockedNow, ns, dbl, combo, broke, near };
   winTimer = setTimeout(() => { if (G === g && active('game')) { winSheet(g, info); let rv = false; if (!g.daily && !g.practice) setTimeout(() => { if (G === g && active('game')) rv = maybeReview(st); }, 1100);
     setTimeout(() => { if (G === g && active('game') && !rv && !modalOpen()) maybeOffer(g); }, 1500); } }, wait);   // puan istendiyse teklif bu tur yok
   if (!g.daily) setTimeout(() => puzzleFor(g.lvl + 1), wait + 900);   // sonraki bölüm hazır olsun (geçişte takılma olmasın)
 }
-// Sonuç paneli tahtanın altına yerleşir; tahta küçülüp üstte görünür kalır.
-// Kıl payı ya da kırılan seri → "Tekrar dene" büyük düğmeye geçer, Sonraki küçük sıraya iner (düğme sayısı aynı kalır).
+// Sonuç paneli tahtanın altına yerleşir; tahta küçülüp üstte görünür kalır. Tahtaya dokununca panel küçülür / büyür.
+// Tekrar sağ üstteki ↺, ana sayfa sol üstteki ‹ → panelde tek ana düğme kalır (boşalan yer bölüm sonu başarımlarına).
+// Kıl payı ya da kırılan seri → "Tekrar dene" büyük düğmeye geçer, Sonraki altına küçük iner.
 function winSheet(g, { zen, st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, combo, broke, near }) {
   const lim = g.lim, nx = g.lvl + 1, nxLocked = !g.daily && !unlocked(lineOf(nx)), again = !g.daily && (near || broke >= 2);
   const badge = unlockedNow ? `<span class="badge">${L('YENİ HAT AÇILDI', 'NEW LINE OPEN')} · M${unlockedNow + 1}</span>` : ns ? `<span class="badge">${L('TEMA ALINABİLİR', 'NEW THEME')} 🎨</span>` : perfect ? `<span class="badge">${L('KUSURSUZ', 'PERFECT')}${combo >= 2 ? ` · ✨${combo}` : ''}</span>` : zen ? '<span class="badge">🍃 ZEN</span>' : '';
   const late = Math.ceil(g.time / 1000 - lim.t), over = g.moves - lim.m;
   const miss = [tOk ? '' : `⏱ ${late} ${L('sn', 's')}`, mOk ? '' : `↻ ${over} ${L('hamle', pl(over, 'move', 'moves'))}`].filter(Boolean).join(' · ');
   const tip = perfect || zen ? '' : `<p class="tip">${L('Kusursuz için', 'For perfect')}: ${[tOk ? '' : `⏱ ≤ ${fmtT(lim.t * 1000)}`, mOk ? '' : `↻ ≤ ${lim.m} ${L('hamle', 'moves')}`].filter(Boolean).join(L(' ve ', ' and '))}</p>`;
-  const B = { share: L('Paylaş', 'Share'), home: L('Ana sayfa', 'Home'), close: L('Kıl payı', 'So close') };
+  const B = { close: L('Kıl payı', 'So close') };
   // geçiş reklamı sırası gelmişse: Sonraki'den önce tek, sessiz bir bağlantı (reklamsız paketi olana hiç çıkmaz)
   const pr = Shop.price(), adFree = !g.daily && interDue && !save.noAds ? `<p class="adfree"><button id="mAdFree">${pr ? L(`Reklamsız oyna · ${pr}`, `Play ad-free · ${pr}`) : L('Reklamsız oyna', 'Play ad-free')}</button></p>` : '';
+  // Günün Hattı / arşiv: paylaşım ana sayfadaki günün sonucu penceresinde; burada oyuna devam (ya da arşive dönüş)
   const primary = g.daily
-    ? `<button id="mShare" class="btn primary"><span>${B.share}</span><small>${L('Arkadaşına meydan oku', 'Challenge a friend')}</small></button>${g.arch ? `<button id="mArch" class="btn glassbtn">📅 ${L('Arşiv', 'Archive')}</button>` : `<button id="mHome" class="btn glassbtn">${B.home}</button>`}`
+    ? g.arch ? `<button id="mArch" class="btn primary"><span>📅 ${L('Geçmiş günler', 'Past days')}</span><small>${L('Arşive dön', 'Back to the archive')}</small></button>`
+      : `<button id="mGo" class="btn primary"><span>${L('Bölümlere devam', 'Back to levels')}</span><small>${L('Bölüm', 'Level')} ${save.level}</small></button>`
     : again
       ? `<button id="mRetry" class="btn primary"><span>${L('Tekrar dene', 'Try again')}</span><small>${broke >= 2 ? `${near ? B.close + ' · ' : ''}${L(`✨ ${broke} seri geri gelsin`, `✨ Win back your ${broke} streak`)}` : `${B.close} · ${miss}`}</small></button>
-       <div class="row2">${nxLocked ? `<button id="mMap" class="btn glassbtn">${L('Hatlar', 'Lines')}</button>` : `<button id="mNext" class="btn glassbtn">${L('Sonraki', 'Next')}</button>`}<button id="mShare" class="btn glassbtn">${B.share}</button><button id="mHome" class="btn glassbtn">${B.home}</button></div>`
-      : `${nxLocked ? `<button id="mMap" class="btn primary"><span>${L('Yeni hat kilitli', 'Next line locked')}</span><small>★ ${totalStars()} / ${need(lineOf(nx))} · ${L('yıldız topla', 'earn stars')}</small></button>` : `<button id="mNext" class="btn primary"><span>${L('Sonraki', 'Next')}</span><small>${L('Bölüm', 'Level')} ${nx}</small></button>`}
-       <div class="row2"><button id="mRetry" class="btn glassbtn">${L('Tekrar', 'Retry')}</button><button id="mShare" class="btn glassbtn">${B.share}</button><button id="mHome" class="btn glassbtn">${B.home}</button></div>`;
-  $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml([true, tOk, mOk])}<div class="wp-t"><h2>${g.arch ? L('Geçmiş gün tamam!', 'Past day done!') : g.practice ? L('Pratik tamam!', 'Practice done!') : g.daily ? L('Günün Hattı tamam!', 'Daily Line done!') : L('Hat açıldı!', 'Connected!')}</h2>${badge}</div></div>
-      <button id="wTog" class="wp-tog" aria-label="${L('Hattı gör', 'See the line')}"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg><span>${L('Hattı gör', 'See line')}</span></button></div>
+       <div class="row2">${nxLocked ? `<button id="mMap" class="btn glassbtn">${L('Hatlar', 'Lines')}</button>` : `<button id="mNext" class="btn glassbtn">${L('Sonraki', 'Next')}</button>`}</div>`
+      : nxLocked ? `<button id="mMap" class="btn primary"><span>${L('Yeni hat kilitli', 'Next line locked')}</span><small>★ ${totalStars()} / ${need(lineOf(nx))} · ${L('yıldız topla', 'earn stars')}</small></button>` : `<button id="mNext" class="btn primary"><span>${L('Sonraki', 'Next')}</span><small>${L('Bölüm', 'Level')} ${nx}</small></button>`;
+  $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml([true, tOk, mOk])}<div class="wp-t"><h2>${g.arch ? L('Geçmiş gün tamam!', 'Past day done!') : g.practice ? L('Pratik tamam!', 'Practice done!') : g.daily ? L('Günün Hattı tamam!', 'Daily Line done!') : L('Hat açıldı!', 'Connected!')}</h2>${badge}</div></div></div>
     <div class="wp-more">${zen ? `<div class="statrow"><div><b>${fmtT(g.time)}</b><span>⏱ ${L('süre', 'time')}</span></div><div><b>${g.moves}</b><span>↻ ${L('hamle', 'moves')}</span></div></div>` : `<div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(lim.t * 1000)}</small></b><span>${tOk ? L('⏱ tam vaktinde ★', '⏱ on time ★') : L('⏱ rötar ✗', '⏱ late ✗')}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${lim.m}</small></b><span>↻ ${L('hamle', 'moves')} ${mOk ? '★' : '✗'}</span></div></div>`}${tip}${extra ? `<p class="tip">${extra}${dbl && Ads.online() ? ` <button id="mDbl" class="dbl">${L('▶ 2 katı', '▶ Double')}</button>` : ''}</p>` : ''}${adFree}</div>
     ${primary}`;
   $('game').classList.add('won');
-  bind({ wTog: toggleMini, mNext: next, mArch: () => { show('home'); archSheet(); }, mDbl: () => doubleReward(dbl), mAdFree: shopSheet, mMap: () => show('map'), mRetry: () => start('level', g.lvl), mHome: () => show('home'),
-    // pratikte paylaşılan, günün resmî (ilk) sonucudur
-    mShare: () => share(g.practice && !g.arch && save.dailyStats ? { ...save.dailyStats, daily: true } : { daily: g.daily, arch: g.arch, lvl: g.lvl, day: g.day, moves: g.moves, time: g.time, st, perfect }) });
+  bind({ mNext: next, mGo: () => start('level'), mArch: () => { show('home'); archSheet(); }, mDbl: () => doubleReward(dbl), mAdFree: shopSheet, mMap: () => show('map'), mRetry: () => start('level', g.lvl) });
+  $('winPanel').querySelector('.wp-top').onclick = () => { if ($('game').classList.contains('mini')) toggleMini(); };   // küçükken başlığa dokunmak da açar
 }
 const NO_REWARD = L('Ödül alınamadı · video sonuna kadar izlenmeli', 'No reward · watch the video to the end'), NO_NET = L('Bağlantı yok · sonra dene', 'No connection · try later');
 const NO_FILL = L('Şu an video yok · biraz sonra dene', 'No video right now · try again soon');
@@ -1364,7 +1363,6 @@ async function doubleReward(n) {
 }
 function toggleMini() {
   const mini = $('game').classList.toggle('mini');
-  $('wTog').querySelector('span').textContent = mini ? L('Sonuç', 'Results') : L('Hattı gör', 'See line');
   haptic(); tone(mini ? 440 : 587, .06, .02);
 }
 function closePanel() { $('game').classList.remove('won', 'mini'); $('winPanel').innerHTML = ''; }
@@ -1677,6 +1675,7 @@ function ruleCard(c, week) {
 function nearLit(i) { const x = i % G.cols, y = i / G.cols | 0; let n = 0; for (const [, dx, dy] of DIRS) { const nx = x + dx, ny = y + dy; if (nx >= 0 && ny >= 0 && nx < G.cols && ny < G.rows && G.L.d[ny * G.cols + nx] >= 0) n++; } return n; }
 // baştan: süre ve hamle sıfırlanır, ipucuyla açılan karolar korunur
 function reset() {
+  if (G?.won && $('game').classList.contains('won')) return start(G.arch ? 'arch' : G.daily ? 'daily' : 'level', G.arch ? G.day : G.lvl);   // sonuç ekranında ↺ = tekrar
   if (!G || G.won || G.over) return;
   const keep = G.fixed.map((f, i) => f ? i : -1).filter(i => i >= 0), mode = G.arch ? 'arch' : G.daily ? 'daily' : 'level', lvl = G.arch ? G.day : G.lvl, hn = G.hinted;
   delete save.runs[runKey()];
@@ -1842,15 +1841,16 @@ function dayQ() { const id = today(); return save.dq?.id === id ? save.dq : (sav
 function questStep(type) {
   const w = weekQ(), d = dayQ(), out = [];
   // günlük: her görev +1 💡, üçü birden +1 🎫 (günlük ödül)
-  for (const q of d.q) if (q.t === type && q.p < q.n && ++q.p === q.n) { save.hints++; out.push(L('☀️ Günlük görev · +1 💡', '☀️ Daily quest · +1 💡')); }
-  if (!d.all && d.q.every(q => q.p >= q.n)) { d.all = 1; save.dqc = (save.dqc || 0) + 1; out.push(L('☀️ Günün görevleri tamam · +1 🎫', '☀️ All daily quests done · +1 🎫')); }
+  for (const q of d.q) if (q.t === type && q.p < q.n && ++q.p === q.n) { save.hints++; out.push(['☀️', L('GÜNLÜK GÖREV TAMAM', 'DAILY QUEST DONE'), QUESTS[q.t].txt(q.n), '+1 💡']); }
+  if (!d.all && d.q.every(q => q.p >= q.n)) { d.all = 1; save.dqc = (save.dqc || 0) + 1; out.push(['☀️', L('GÜNLÜK ÖDÜL', 'DAILY REWARD'), L('Bugünün görevleri tamam', 'All of today’s quests done'), '+1 🎫']); }
   for (const q of w.q) if (q.t === type && q.p < q.n && ++q.p === q.n) {
     const rw = QUESTS[q.t].rw; save.qc = (save.qc || 0) + 1;
     if (rw === 'hint') save.hints++; else giveInf(rw === 'inf15' ? 15 : 30);
-    out.push(L(`🎯 Görev tamam · +1 🎫 +1 ${RW_TXT[QUESTS[q.t].rw]}`, `🎯 Quest done · +1 🎫 +1 ${RW_TXT[QUESTS[q.t].rw]}`));
+    out.push(['🎯', L('HAFTALIK GÖREV TAMAM', 'WEEKLY QUEST DONE'), QUESTS[q.t].txt(q.n), `+1 🎫 +1 ${RW_TXT[rw]}`]);
   }
-  if (!w.all && w.q.every(q => q.p >= q.n)) { w.all = 1; save.wqAll = (save.wqAll || 0) + 1; save.qc = (save.qc || 0) + 2; out.push(L('🎯 Haftanın görevleri tamam · +2 🎫', '🎯 All weekly quests done · +2 🎫')); }
-  return out.join(' · ');
+  if (!w.all && w.q.every(q => q.p >= q.n)) { w.all = 1; save.wqAll = (save.wqAll || 0) + 1; save.qc = (save.qc || 0) + 2; out.push(['🎯', L('HAFTALIK ÖDÜL', 'WEEKLY REWARD'), L('Haftanın görevleri tamam', 'All weekly quests done'), '+2 🎫']); }
+  popUp(...out);   // ekrana üstten düşer; sonuç paneline yazılmaz
+  return out.length;
 }
 const questVis = () => save.level > lineEnd(0) || !!save.dailyDone;   // ilk hat bitmeden ana sayfa sade kalsın
 function questRow() {
@@ -2134,7 +2134,7 @@ const BST = [
   { id: 'geri', ic: '↶', name: L('Geri al', 'Undo'), sub: L('Son 5 hamle silinir, sayaç da geri gider', 'Takes back your last 5 moves'), line: 0 },
 ];
 const bst = id => save.bst?.[id] || 0;
-function useBst(id) { save.bst = { ...save.bst, [id]: bst(id) - 1 }; save.bstUsed = (save.bstUsed || 0) + 1; const m = questStep('bst'); persist(); achCheck(); Olcum.event('booster_use', { booster: id, ...lvlP() }); if (m) setTimeout(() => toast(m), 900); }
+function useBst(id) { save.bst = { ...save.bst, [id]: bst(id) - 1 }; save.bstUsed = (save.bstUsed || 0) + 1; questStep('bst'); persist(); achCheck(); Olcum.event('booster_use', { booster: id, ...lvlP() }); }
 const RW_ICON = {
   hint: '<svg class="rwi" viewBox="-1 -3 26 26"><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1.1 1.2 1.1 2.2h5c0-1 .5-1.7 1.1-2.2A6 6 0 0 0 12 3z" fill="url(#cgB)"/><path d="M9 18h6M10 21h4"/><path class="ry" d="M12 .6v-2M17.9 3.1l1.4-1.4M6.1 3.1 4.7 1.7M20.4 9h2M3.6 9h-2"/></svg>',
   shield: '<svg class="rwi" viewBox="0 0 24 24"><path d="M12 2.6 19.4 5.4v5.4c0 4.7-3 8.6-7.4 10.6-4.4-2-7.4-5.9-7.4-10.6V5.4z" fill="url(#cgS)"/><path d="M12 8.2c.5 2 2.5 2.75 2.5 5.5a2.5 2.5 0 0 1-5 0c0-1.25.6-2 1.25-2.5.1.9.5 1.5 1.1 1.65C11.5 11.5 11.65 9.7 12 8.2z" fill="url(#cgF)" stroke="none"/></svg>',
@@ -2429,19 +2429,21 @@ const ACH = [
   ['z10', '🍃', L('Zen yolcusu', 'Zen rider'), L('Zen modunda 10 bölüm bitir', 'Finish 10 levels in zen mode'), 10, () => save.zenWins || 0],
 ];
 const achGoal = a => typeof a[4] === 'function' ? a[4]() : a[4];
-let achQ = [], achT = 0;
+let achQ = [], achT = 0; const popLog = [];
 // quiet: yüklemede, güncellemeden önce hak edilmiş rozetler sessizce işlenir (bildirim yok, tarih yok)
 function achCheck(quiet) {
   const got = save.ach || {}, fresh = ACH.filter(a => !got[a[0]] && a[5]() >= achGoal(a));
   if (!fresh.length) return;
   save.ach = { ...got, ...Object.fromEntries(fresh.map(a => [a[0], quiet ? 1 : Date.now()])) }; persist();
   if (quiet) return;
-  achQ.push(...fresh); if (!achT) achPop();
+  popUp(...fresh.map(a => [a[1], L('YENİ ROZET', 'NEW BADGE'), a[2]]));
 }
-function achPop() {   // küçük bildirim (yalnız transform/opacity), sırayla; dokunmayı engellemez
+// Üst bildirim: rozet, görev tamam… [simge, üst yazı, metin, ödül?]. Sırayla düşer; dokunmayı engellemez (yalnız transform/opacity).
+function popUp(...items) { if (!items.length) return; achQ.push(...items); popLog.push(...items.map(a => a.slice(1).join(' '))); popLog.splice(0, popLog.length - 20); if (!achT) achPop(); }
+function achPop() {
   const a = achQ.shift(), el = $('achPop');
   if (!a) { achT = 0; return; }
-  el.innerHTML = `<i>${a[1]}</i><span><small>${L('YENİ ROZET', 'NEW BADGE')}</small><b>${a[2]}</b></span>`;
+  el.innerHTML = `<i>${a[0]}</i><span><small>${a[1]}</small><b>${a[2]}</b></span>${a[3] ? `<em>${a[3]}</em>` : ''}`;
   el.classList.add('show'); tone(note(9), .3, .03, 'sine', .05); tone(note(12), .35, .025, 'sine', .16);
   achT = setTimeout(() => { el.classList.remove('show'); achT = setTimeout(achPop, 450); }, 2600);
 }
@@ -2595,5 +2597,5 @@ if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { seaWin, ACH, achCheck, linesDone, goldLine, plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), dayQ: () => dayQ(), RULE_LINE, RULES,  review: maybeReview, BST, offer: { MIN: OFFER_MIN, GAP: OFFER_GAP, AGE: OFFER_AGE, list: offerList, due: () => offerDue(G), inter: v => { interDue = v; } }, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, lineOf, lineEnd, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
+window.__ray = { seaWin, popLog, ACH, achCheck, linesDone, goldLine, plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), dayQ: () => dayQ(), RULE_LINE, RULES,  review: maybeReview, BST, offer: { MIN: OFFER_MIN, GAP: OFFER_GAP, AGE: OFFER_AGE, list: offerList, due: () => offerDue(G), inter: v => { interDue = v; } }, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, lineOf, lineEnd, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();

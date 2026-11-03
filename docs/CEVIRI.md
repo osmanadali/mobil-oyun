@@ -154,7 +154,9 @@ Hat adları yer adıdır ve çevrilir:
 | Paylaş · Ana sayfa | Share · Home |
 | Arkadaşına meydan oku | Challenge a friend |
 | Hat açıldı! (bölüm bitti) | Connected! |
-| Hattı gör · Sonuç | See line · Results |
+| Bölümlere devam (Günün Hattı sonucu) | Back to levels |
+| GÜNLÜK GÖREV TAMAM · HAFTALIK GÖREV TAMAM | DAILY QUEST DONE · WEEKLY QUEST DONE |
+| GÜNLÜK ÖDÜL · HAFTALIK ÖDÜL | DAILY REWARD · WEEKLY REWARD |
 | tam vaktinde · rötar | on time · late |
 | ↻ HAMLE HEDEFİ · ↻ HEDEF AŞILDI | ↻ MOVE TARGET · ↻ OVER TARGET |
 | Kıl payı | So close |

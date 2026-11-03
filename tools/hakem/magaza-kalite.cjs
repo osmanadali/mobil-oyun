@@ -41,11 +41,11 @@ module.exports = async T => {
     await page.click('#bDaily'); await page.waitForTimeout(500);
     await solve(page, 15); await waitModal(page);
     const real = await page.evaluate(() => {
-      const h = document.querySelector('#winPanel h2'), bd = document.querySelector('#winPanel .badge'), tg = document.getElementById('wTog').getBoundingClientRect(), d = document.getElementById('mDbl');
+      const h = document.querySelector('#winPanel h2'), bd = document.querySelector('#winPanel .badge'), tg = document.querySelector('#winPanel .wp-top').getBoundingClientRect(), d = document.getElementById('mDbl');
       const lines = Math.round(h.getBoundingClientRect().height / parseFloat(getComputedStyle(h).lineHeight));
       let hit = null;
       if (d) { const r = d.getBoundingClientRect(), x = r.left + r.width / 2; hit = { h: Math.round(r.height), up: document.elementFromPoint(x, r.top - 9)?.id, down: document.elementFromPoint(x, r.bottom + 9)?.id }; }
-      return { title: h.textContent, clip: h.scrollWidth > h.clientWidth + 1, lines, over: bd ? Math.round(bd.getBoundingClientRect().right - tg.left) : null, hit };
+      return { title: h.textContent, clip: h.scrollWidth > h.clientWidth + 1, lines, over: bd ? Math.round(bd.getBoundingClientRect().right - tg.right) : null, hit };
     });
     await shot(page, 'kalite-daily-win-360');
     // aynı (gerçek) panelde en uzun başlık × rozet × düğme yazısı, üç genişlikte
@@ -53,17 +53,17 @@ module.exports = async T => {
     for (const w of [320, 360, 412]) {
       await page.setViewportSize({ width: w, height: 740 }); await page.waitForTimeout(200);
       vars[w] = await page.evaluate(() => {
-        const h = document.querySelector('#winPanel h2'), t = document.querySelector('#winPanel .wp-t'), tog = document.getElementById('wTog'), out = [];
+        const h = document.querySelector('#winPanel h2'), t = document.querySelector('#winPanel .wp-t'), top = document.querySelector('#winPanel .wp-top'), out = [];
         let bd = t.querySelector('.badge'); if (!bd) { bd = document.createElement('span'); bd.className = 'badge'; t.appendChild(bd); }
-        for (const title of ['Hat açıldı!', 'Günün Hattı tamam!', 'Pratik tamam!']) for (const b of ['YENİ HAT AÇILDI · M12', 'TEMA ALINABİLİR 🎨', 'KUSURSUZ · ✨15']) for (const lab of ['Hattı gör', 'Sonuç']) {
-          h.textContent = title; bd.textContent = b; tog.querySelector('span').textContent = lab;
-          const lines = Math.round(h.getBoundingClientRect().height / parseFloat(getComputedStyle(h).lineHeight)), br = bd.getBoundingClientRect(), tr = tog.getBoundingClientRect();
-          if (h.scrollWidth > h.clientWidth + 1 || lines > 2 || br.right > tr.left || bd.scrollWidth > bd.clientWidth + 1 || tr.height < 43.5 || tr.width < 43.5) out.push(`${title}|${b}|${lab}`);
+        for (const title of ['Hat açıldı!', 'Günün Hattı tamam!', 'Pratik tamam!']) for (const b of ['YENİ HAT AÇILDI · M12', 'TEMA ALINABİLİR 🎨', 'KUSURSUZ · ✨15']) {
+          h.textContent = title; bd.textContent = b;
+          const lines = Math.round(h.getBoundingClientRect().height / parseFloat(getComputedStyle(h).lineHeight)), br = bd.getBoundingClientRect(), tr = top.getBoundingClientRect();
+          if (h.scrollWidth > h.clientWidth + 1 || lines > 2 || br.right > tr.right + .5 || bd.scrollWidth > bd.clientWidth + 1) out.push(`${title}|${b}`);
         }
         return out;
       });
     }
-    check('kalite.winHead', 'Sonuç paneli: "Günün Hattı tamam!" kesilmez (en çok 2 satır); en uzun başlık/rozet/düğme yazısı 320, 360, 412 px\'te sığar, rozet "Hattı gör"e binmez',
+    check('kalite.winHead', 'Sonuç paneli: "Günün Hattı tamam!" kesilmez (en çok 2 satır); en uzun başlık/rozet 320, 360, 412 px\'te sığar, rozet panelden taşmaz',
       real.title === 'Günün Hattı tamam!' && !real.clip && real.lines <= 2 && (real.over == null || real.over <= 0) && !vars[320].length && !vars[360].length && !vars[412].length, JSON.stringify({ real: { ...real, hit: undefined }, vars }), 'medium');
     check('kalite.dblHit', '"▶ 2 katı" küçük görünür ama dokunma alanı ≥ 44 px (üstünden ve altından 9 px dokunuş da düğmeye gider)',
       !!real.hit && real.hit.up === 'mDbl' && real.hit.down === 'mDbl', JSON.stringify(real.hit), 'medium');

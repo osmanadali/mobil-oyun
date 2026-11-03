@@ -84,13 +84,13 @@ module.exports = async T => {
     errs.push(...errors); await ctx.close();
     const o = await open(browser, URL, { init: NOTIF, save: { played: 11, level: 12, stars: starsUpTo(12) } });
     await o.page.click('#bPlay'); await o.page.waitForTimeout(500); await solve(o.page, 10); await waitModal(o.page);
-    await o.page.click('#mHome'); await o.page.waitForTimeout(1400);
+    await o.page.click('#bBack'); await o.page.waitForTimeout(1400);
     const h12 = await sheetH(o.page), p12 = await o.page.evaluate(() => document.querySelector('.sheet p')?.textContent || '');
     await shot(o.page, 'remind-ask-level');
     errs.push(...o.errors); await o.ctx.close();
     const d = await open(browser, URL, { init: NOTIF, save: { played: 3, level: 4, stars: starsUpTo(4) } });
     await d.page.click('#bDaily'); await d.page.waitForTimeout(500); await solve(d.page, 10); await waitModal(d.page);
-    await d.page.click('#mHome'); await d.page.waitForTimeout(1400);
+    await d.page.click('#bBack'); await d.page.waitForTimeout(1400);
     const hd = await sheetH(d.page), pd = await d.page.evaluate(() => document.querySelector('.sheet p')?.textContent || '');
     errs.push(...d.errors); await d.ctx.close();
     check('remind.when', 'İzin sorusu: Bölüm 7\'de sorulmaz; Bölüm 12 bitince "Kaldığın yeri hatırlatayım mı?", ilk Günün Hattı\'ndan sonra seri metniyle',

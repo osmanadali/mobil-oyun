@@ -207,7 +207,7 @@ module.exports = async T => {
     const F = await G(page, () => window.__fa);
     check('olcum.ab', 'UMP rıza gerektiren bölge: toplama kapalı (setEnabled false, analytics_storage reddedilir), hiç olay gönderilmez',
       F.en.at(-1) === false && F.consent.includes('ANALYTICS_STORAGE=DENIED') && !F.ev.length && !errors.length, JSON.stringify({ en: F.en, c: F.consent, n: F.ev.length, errors }), 'high');
-    await page.click('#mHome').catch(() => {}); await wait(page, 500);
+    await page.click('#bBack').catch(() => {}); await wait(page, 500);
     await page.click('#bSettings'); await wait(page); await page.click('#oPriv'); await wait(page); await page.click('#mWipe'); await wait(page);
     await Promise.all([page.waitForNavigation({ timeout: 8000 }).catch(() => {}), page.click('#mWipeOk')]); await wait(page, 400);
     const reset = await G(page, () => sessionStorage.getItem('faReset'));

@@ -112,7 +112,7 @@ module.exports = async T => {
     const d = await st(page);
     await solve(page, 10); await page.waitForTimeout(900);
     const dWon = await page.evaluate(() => !!window.__ray.G.won);
-    await page.evaluate(() => document.getElementById('mHome')?.click()); await page.waitForTimeout(500);
+    await page.evaluate(() => document.getElementById('bBack')?.click()); await page.waitForTimeout(500);
     await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('ray')); s.zen = true; localStorage.setItem('ray', JSON.stringify(s)); }); await page.reload(); await page.waitForTimeout(500);
     await page.evaluate(() => { window.__ev = []; window.Olcum = { event: (n, p) => window.__ev.push([n, p || null]) }; });
     const ztxt = await page.textContent('#hLvl');

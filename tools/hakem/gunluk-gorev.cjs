@@ -56,7 +56,7 @@ module.exports = async T => {
       won && s.dt === 1 && s.streak === 3 && s.dailyDone === '2026-11-01' && /🎫/.test(panel) && s.wk?.q.find(q => q.t === 'daily')?.p === 1, JSON.stringify({ won, dt: s.dt, streak: s.streak, wk: s.wk }));
     // pratik (ikinci kez): bilet yeniden verilmez
     const tk = s.dt;
-    await page.evaluate(() => window.__ray && document.getElementById('mHome').click()); await page.waitForTimeout(500);
+    await page.evaluate(() => window.__ray && document.getElementById('bBack').click()); await page.waitForTimeout(500);
     await page.click('#bDaily'); await page.waitForTimeout(500);
     const res = await page.evaluate(() => document.getElementById('mReplay') ? (document.getElementById('mReplay').click(), 1) : 0); await page.waitForTimeout(500);
     const again = await page.evaluate(() => document.getElementById('modal').classList.contains('open'));   // kural görüldü → kart yok
@@ -87,9 +87,9 @@ module.exports = async T => {
     const crown0 = await page.evaluate(() => +document.getElementById('sCrowns').textContent);
     await page.click('#bPlay'); await page.waitForTimeout(600);
     await solve(page, 8); await waitModal(page);
-    const s = await getSave(page), panel = await page.evaluate(() => document.getElementById('winPanel').textContent);
-    check('quest.reward', 'Haftalık görev: "bölüm bitir" +1 🎫 +1 💡, "ipucusuz" +1 🎫 + ❤️∞ 15 dk (save.infUntil); üçü bitince +2 🎫 haftalık ödül; sonuç panelinde yazar',
-      s.qc === 4 && s.wk.all === 1 && s.wk.q.every(q => q.p >= q.n) && s.hints >= 4 && s.infUntil > 0 && /Görev tamam/.test(panel) && /❤️∞ 15 dk/.test(panel), JSON.stringify({ qc: s.qc, inf: s.infUntil, hints: s.hints, wk: s.wk, panel: panel.slice(0, 160) }));
+    const s = await getSave(page), pops = await page.evaluate(() => window.__ray.popLog.join(' | ')), panel = await page.evaluate(() => document.getElementById('winPanel').textContent);
+    check('quest.reward', 'Haftalık görev: "bölüm bitir" +1 🎫 +1 💡, "ipucusuz" +1 🎫 + ❤️∞ 15 dk (save.infUntil); üçü bitince +2 🎫 haftalık ödül; üstten bildirim olarak düşer (sonuç paneline yazılmaz)',
+      s.qc === 4 && s.wk.all === 1 && s.wk.q.every(q => q.p >= q.n) && s.hints >= 4 && s.infUntil > 0 && /HAFTALIK GÖREV TAMAM/.test(pops) && /❤️∞ 15 dk/.test(pops) && /HAFTALIK ÖDÜL.*\+2 🎫/.test(pops) && !/görev/i.test(panel), JSON.stringify({ qc: s.qc, inf: s.infUntil, hints: s.hints, wk: s.wk, pops }));
     errs.push(...errors); await ctx.close();
     // taçlı eski bölüm + ipucu: görev ilerlemez / ipucusuz sayılmaz
     const wk2 = { id: wid, q: [{ t: 'win', n: 5, p: 0 }, { t: 'nohint', n: 5, p: 0 }, { t: 'perfect', n: 5, p: 0 }], all: 0 };
@@ -100,7 +100,7 @@ module.exports = async T => {
     const startedOld = await o.page.evaluate(() => window.__ray.G?.lvl);
     if (startedOld === 3) { await solve(o.page, 8); await waitModal(o.page); }
     const sa = await getSave(o.page);
-    await o.page.click('#mHome').catch(() => {}); await o.page.waitForTimeout(400);
+    await o.page.click('#bBack').catch(() => {}); await o.page.waitForTimeout(400);
     await o.page.click('#bPlay'); await o.page.waitForTimeout(600);
     await o.page.click('#bHint'); await o.page.waitForTimeout(300);
     await solve(o.page, 8); await waitModal(o.page);
@@ -138,15 +138,15 @@ module.exports = async T => {
     const g = await page.evaluate(() => ({ arch: window.__ray.G.arch, day: window.__ray.G.day, title: document.getElementById('gTitle').textContent, week: window.__ray.G.week }));
     const s0 = await getSave(page);
     await solve(page, 8); const won = await waitModal(page);
-    await page.click('#mShare').catch(() => {}); await page.waitForTimeout(200);
-    const s = await getSave(page), log = await page.evaluate(() => window.__log.share);
+    const prim = await page.evaluate(() => document.querySelector('#winPanel .primary')?.id);
+    const s = await getSave(page);
     check('arch.open', 'Arşiv: seri ekranından açılır, son 30 gün listelenir (oynanan günler ✓, kapalı günler 🔒); 3 🎫 ile açılan gün kalıcı, oyun "geçmiş gün" başlığıyla başlar',
       inStreak && grid.length === 30 && grid[0].startsWith('2026-11-09:on') && grid.some(c => c.startsWith(DAY + ':') && c.endsWith('🔒')) && /🎫 3/.test(ask) && s0.spent === 3 && s0.arch?.[DAY] === 1 && g.arch && g.day === DAY && /geçmiş gün/.test(g.title) && !!g.week,
       JSON.stringify({ inStreak, n: grid.length, g0: grid[0], g, spent: s0.spent }));
     const perfect = s.archDone?.[DAY] === 2;
-    check('arch.win', 'Arşiv: bitince seri, günlük kayıt ve bugünün sonucu değişmez; kusursuzsa +1 🎫; paylaşım "geçmiş gün" der, meydan okuma bağlantısı taşımaz',
-      won && s.archDone?.[DAY] >= 1 && s.streak === 4 && s.dailyDone === '2026-11-10' && !s.dailyLog.includes(DAY) && (s.aCrowns || 0) === (perfect ? 1 : 0) && log.length === 1 && /geçmiş gün/.test(log[0]) && !/\?d=/.test(log[0]),
-      JSON.stringify({ won, done: s.archDone, streak: s.streak, ac: s.aCrowns, share: (log[0] || '').replace(/\n/g, ' ⏎ ') }));
+    check('arch.win', 'Arşiv: bitince seri, günlük kayıt ve bugünün sonucu değişmez; kusursuzsa +1 🎫; ana düğme arşive döner',
+      won && s.archDone?.[DAY] >= 1 && s.streak === 4 && s.dailyDone === '2026-11-10' && !s.dailyLog.includes(DAY) && (s.aCrowns || 0) === (perfect ? 1 : 0) && prim === 'mArch',
+      JSON.stringify({ won, done: s.archDone, streak: s.streak, ac: s.aCrowns, prim }));
     // açılan gün yeniden bilet istemez; arşiv düğmesi arşive döner
     await page.click('#mArch'); await page.waitForTimeout(400);
     await page.click(`#archGrid [data-d="${DAY}"]`); await page.waitForTimeout(600);
@@ -197,13 +197,13 @@ module.exports = async T => {
     const { ctx, page, errors } = await open(browser, URL, { init: clock(2026, 10, 4), save: { played: 30, level: 40, stars: starsUpTo(40), seen: SEEN, remindAsked: true, hints: 3, hintDay: '2026-11-04', dq } });
     const gen = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('ray')); const keep = s.dq; delete s.dq; localStorage.setItem('ray', JSON.stringify(s)); return keep; });
     await page.click('#bPlay'); await page.waitForTimeout(600); await solve(page, 8); await waitModal(page);
-    const s = await getSave(page), panel = await page.evaluate(() => document.getElementById('winPanel').textContent);
+    const s = await getSave(page), panel = await page.evaluate(() => window.__ray.popLog.join(' | '));
     const o2 = await open(browser, URL, { init: clock(2026, 10, 5), save: { played: 30, level: 40, stars: starsUpTo(40), remindAsked: true, dq: s.dq } });
     const next = await o2.page.evaluate(() => window.__ray.dayQ());
     const o3 = await open(browser, URL, { init: clock(2026, 10, 5), save: { played: 30, level: 400, dailyDone: '2026-11-04', remindAsked: true } });
     const vet = await o3.page.evaluate(() => window.__ray.dayQ());
     check('quest.day', 'Günlük görev: 3 görev günlük ölçekte (en çok 5 bölüm / 3 kusursuz / 3 ipucusuz / 1 Günün Hattı); her biri +1 💡, üçü birden +1 🎫 günlük ödül; ertesi gün yenilenir',
-      s.dq.all === 1 && s.dqc === 1 && s.hints >= 6 && /Günün görevleri tamam/.test(panel) && next.id === '2026-11-05' && next.q.every(q => q.p === 0) && vet.q.length === 3 && vet.q.every(q => q.n <= 5),
+      s.dq.all === 1 && s.dqc === 1 && s.hints >= 6 && /GÜNLÜK GÖREV TAMAM/.test(panel) && /GÜNLÜK ÖDÜL.*\+1 🎫/.test(panel) && next.id === '2026-11-05' && next.q.every(q => q.p === 0) && vet.q.length === 3 && vet.q.every(q => q.n <= 5),
       JSON.stringify({ all: s.dq.all, dqc: s.dqc, hints: s.hints, next: next.q.map(q => q.t + q.n), vet: vet.q.map(q => q.t + q.n) }));
     errs.push(...errors, ...o2.errors, ...o3.errors); await ctx.close(); await o2.ctx.close(); await o3.ctx.close();
   }

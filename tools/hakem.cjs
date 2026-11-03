@@ -236,18 +236,20 @@ async function inViewport(page, sel) {
       lv.push({ ...st, taps, won, stars, ms: Date.now() - t });
       if (L === 1) {
         await shot(page, 'win-sheet');
-        // sonuç paneli tahtayı örtmemeli; "Hattı gör" tahtayı büyütmeli
+        // sonuç paneli tahtayı örtmemeli; tahtaya dokunmak paneli küçültüp tahtayı büyütmeli
         const vis = () => page.evaluate(() => { const { G, geo } = window.__ray, bd = document.getElementById('board').getBoundingClientRect(), wp = document.getElementById('winPanel').getBoundingClientRect();
           const bottom = bd.top + geo.oy + geo.s * G.rows; return { s: geo.s, boardBottom: Math.round(bottom), panelTop: Math.round(wp.top), top: Math.round(bd.top + geo.oy) }; });
         const v1 = await vis();
-        await page.click('#wTog'); await page.waitForTimeout(700);
+        const btns = await page.evaluate(() => ({ ids: [...document.querySelectorAll('#winPanel button')].map(b => b.id).filter(i => i !== 'mDbl' && i !== 'mAdFree'), reset: getComputedStyle(document.getElementById('bReset')).visibility }));
+        await page.click('#cv'); await page.waitForTimeout(700);
         const v2 = await vis(); await shot(page, 'win-mini');
-        const rowHidden = await page.evaluate(() => getComputedStyle(document.querySelector('#winPanel .row2')).display === 'none' && getComputedStyle(document.getElementById('bReset')).visibility === 'hidden');
-        check('win.miniRow', '"Hattı gör": Tekrar/Paylaş/Ana sayfa gizlenir, üstteki ↺ bitişte gizli', rowHidden, '', 'medium');
-        await page.click('#wTog'); await page.waitForTimeout(600);
+        const mini = await page.evaluate(() => document.getElementById('game').classList.contains('mini') && getComputedStyle(document.querySelector('#winPanel .wp-more')).display === 'none');
+        check('win.panel', 'Sonuç paneli sade: tek ana düğme (Sonraki), Paylaş / Ana sayfa / "Hattı gör" yok; Tekrar sağ üstte ↺ görünür; tahtaya dokununca panel küçülür',
+          btns.ids.join() === 'mNext' && btns.reset === 'visible' && mini, JSON.stringify({ ...btns, mini }), 'medium');
+        await page.click('#cv'); await page.waitForTimeout(600);
         metrics.winView = { full: v1, mini: v2 };
         check('win.visible', 'Kazanınca tamamlanan hat görünür (panel tahtayı örtmez)', v1.boardBottom <= v1.panelTop + 1 && v1.s >= 40, JSON.stringify(v1));
-        check('win.mini', '"Hattı gör" paneli küçültüp tahtayı büyütür', (v1.s >= 96 || v2.s > v1.s) && v2.boardBottom <= v2.panelTop + 1, `${v1.s} → ${v2.s} px`, 'medium');
+        check('win.mini', 'Tahtaya dokunmak paneli küçültüp tahtayı büyütür', (v1.s >= 96 || v2.s > v1.s) && v2.boardBottom <= v2.panelTop + 1, `${v1.s} → ${v2.s} px`, 'medium');
       }
       if (!won) {
         lv[lv.length - 1].diag = await page.evaluate(() => { const { G } = window.__ray; return { lvl: G.lvl, won: G.won, solved: G.L.solved, lit: G.L.n, tiles: G.cur.length, wrong: G.cur.filter((v, i) => v !== G.sol[i]).length, moves: G.moves, modal: document.getElementById('modal').className, active: document.querySelector('.screen.active').id }; });
@@ -284,14 +286,17 @@ async function inViewport(page, sel) {
     await solve(page, 10);
     const won = await waitModal(page);
     await shot(page, 'daily-win');
-    if (won) { await page.click('#mShare'); await page.waitForTimeout(200); }
+    const go = await page.evaluate(() => [...document.querySelectorAll('#winPanel button')].map(b => b.id).filter(i => i !== 'mDbl').join());
+    // paylaşım ana sayfadaki günün sonucu penceresinde
+    if (won) { await page.click('#bBack'); await page.waitForTimeout(500); await page.click('#bDaily'); await page.waitForTimeout(500); await page.click('#mShare'); await page.waitForTimeout(200); }
     const s = await getSave(page), log = await page.evaluate(() => window.__log);
+    check('daily.panel', 'Günün Hattı sonucu: tek ana düğme "Bölümlere devam" (paylaşım ana sayfadaki sonuç penceresinde)', go === 'mGo', go, 'medium');
     check('daily.win', 'Günün Hattı çözülüyor', won);
     check('daily.streak', 'Seri dün → bugün artıyor (3 → 4)', s.streak === 4, `streak=${s.streak}`);
     check('daily.hint', 'Günlük ödül +1 ipucu', s.hints === 4, `hints=${s.hints}`, 'medium');
     check('share', 'Paylaşım metni oluşuyor', log.share.length === 1 && /Günün Hattı/.test(log.share[0]), (log.share[0] || '').replace(/\n/g, ' ⏎ '), 'medium');
     metrics.shareText = log.share[0] || null;
-    if (won) { await page.click('#mHome'); await page.waitForTimeout(600); }
+    if (won) { await page.click('#mX'); await page.waitForTimeout(600); }
     await shot(page, 'home-after-daily');
     await ctx.close();
   }
@@ -687,10 +692,10 @@ async function inViewport(page, sel) {
     await shot(page, 'trip-late');
     await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.t + 1) * 1000; });   // kıl payı: ~1–3 sn rötar
     await solve(page, 10); await waitModal(page);
-    const w1 = await page.evaluate(() => ({ prim: document.querySelector('#winPanel .primary')?.id, ptxt: document.querySelector('#winPanel .primary')?.textContent, next: !!document.querySelector('#winPanel .row2 #mNext'), n: document.querySelectorAll('#winPanel button').length, trip: document.getElementById('gTrip').className }));
+    const w1 = await page.evaluate(() => ({ prim: document.querySelector('#winPanel .primary')?.id, ptxt: document.querySelector('#winPanel .primary')?.textContent, next: !!document.querySelector('#winPanel .row2 #mNext'), n: [...document.querySelectorAll('#winPanel button')].filter(b => b.id !== 'mAdFree').length, trip: document.getElementById('gTrip').className }));
     const s1 = await getSave(page);
     await shot(page, 'win-near');
-    check('near.retry', 'Kıl payı + kırılan seri: "Tekrar dene" büyük düğmeye geçer, Sonraki alt sıraya iner (düğme sayısı aynı)', w1.prim === 'mRetry' && /Kıl payı/.test(w1.ptxt) && /2 seri/.test(w1.ptxt) && w1.next && w1.n === 5 && /arr/.test(w1.trip) && s1.combo === 0 && s1.comboLost?.n === 2 && s1.comboLost?.lvl === 14, JSON.stringify({ ...w1, combo: s1.combo, lost: s1.comboLost }), 'medium');
+    check('near.retry', 'Kıl payı + kırılan seri: "Tekrar dene" büyük düğmeye geçer, Sonraki altına küçük iner', w1.prim === 'mRetry' && /Kıl payı/.test(w1.ptxt) && /2 seri/.test(w1.ptxt) && w1.next && w1.n === 2 && /arr/.test(w1.trip) && s1.combo === 0 && s1.comboLost?.n === 2 && s1.comboLost?.lvl === 14, JSON.stringify({ ...w1, combo: s1.combo, lost: s1.comboLost }), 'medium');
     await page.click('#mRetry'); await page.waitForTimeout(800);   // bildirim 600 ms sonra çıkar
     const toast2 = await page.textContent('#toast'), chip = await page.evaluate(() => document.getElementById('gCombo').textContent);
     await solve(page, 10); await waitModal(page);
@@ -705,7 +710,7 @@ async function inViewport(page, sel) {
     await page.click('#bPlay'); await page.waitForTimeout(400);
     await solve(page, 10); await waitModal(page);
     const s1 = await getSave(page), cr = await page.evaluate(() => document.getElementById('winPanel').textContent);
-    await page.click('#mRetry'); await page.waitForTimeout(450);   // artık taçlı → seri etkilenmez
+    await page.click('#bReset'); await page.waitForTimeout(450);   // sonuçta ↺ = tekrar · artık taçlı → seri etkilenmez
     const chip = await page.evaluate(() => document.getElementById('gCombo').hidden);
     await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.t + 1) * 1000; });
     await solve(page, 10); await waitModal(page);
