@@ -871,11 +871,11 @@ async function inViewport(page, sel) {
     const TR_CH = /[ğüşıöçĞÜŞİÖÇ]/;
     const seen = Object.fromEntries(Array.from({ length: 20 }, (_, c) => [c, 1]));   // kural kartları araya girmesin (kurallar ayrı çevriliyor)
     const SAVE = { played: 9, level: 61, stars: starsUpTo(61), streak: 2, lastDaily: YDAY, seen, remindAsked: true, hints: 3 };
-    // görünen yazı + aria-label + title; dil seçeneğindeki "Türkçe" kendi adıyla yazılır (hariç). Taşma: sayfa yatay kayıyor mu,
+    // görünen yazı + aria-label + title; dil seçeneklerindeki adlar (Türkçe, Español, Português, Français) kendi dilinde yazılır (hariç). Taşma: sayfa yatay kayıyor mu,
     // yazılı bir öğe ekrandan taşıyor mu, gizlenen (overflow) yazı kesiliyor mu
     const probe = (page, sel) => page.evaluate(sel => {
       const roots = sel.split(',').map(q => document.querySelector(q)).filter(Boolean), W = innerWidth;
-      const text = roots.map(r => r.innerText + ' ' + [...r.querySelectorAll('[aria-label]')].map(e => e.getAttribute('aria-label')).join(' ')).join(' ').replace(/Türkçe/g, '') + ' ' + document.title;
+      const text = roots.map(r => r.innerText + ' ' + [...r.querySelectorAll('[aria-label]')].map(e => e.getAttribute('aria-label')).join(' ')).join(' ').replace(/Türkçe|Español|Português|Français/g, '') + ' ' + document.title;
       const cut = [];
       for (const r of roots) for (const el of r.querySelectorAll('*')) {
         if (el.closest('[lang=tr]') || ![...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) continue;
@@ -999,9 +999,12 @@ async function inViewport(page, sel) {
 
   // ---------- I. Boyut ----------
   {
-    let bytes = 0; const walk = d => fs.readdirSync(d).forEach(f => { const p = path.join(d, f); fs.statSync(p).isDirectory() ? walk(p) : bytes += fs.statSync(p).size; });
-    walk(ROOT); metrics.webBytes = bytes;
-    check('size', 'Web paketi < 640 KB (15 kural eklentisi, mağaza, görev ve meta katmanı dahil)', bytes < 640 * 1024, `${(bytes / 1024).toFixed(0)} KB`, 'low');
+    // 6 dilli belgeler ayrı sayılır: dil sözlükleri (www/lang; oyuncu yalnız seçili dilinkini indirir) ve 6 dilli gizlilik sayfası (oyunun parçası değil, ayrı açılır)
+    const LANG = path.join(ROOT, 'lang'), PRIV = path.join(ROOT, 'gizlilik.html');
+    let bytes = 0; const walk = d => fs.readdirSync(d).forEach(f => { const p = path.join(d, f); if (p === LANG || p === PRIV) return; fs.statSync(p).isDirectory() ? walk(p) : bytes += fs.statSync(p).size; });
+    walk(ROOT); const dict = Math.max(0, ...fs.readdirSync(LANG).map(f => fs.statSync(path.join(LANG, f)).size)), priv = fs.statSync(PRIV).size;
+    metrics.webBytes = bytes; metrics.langBytes = dict; metrics.privacyBytes = priv;
+    check('size', 'Web paketi < 640 KB (15 kural eklentisi, mağaza, görev ve meta katmanı dahil); ayrı: en büyük dil sözlüğü < 64 KB, 6 dilli gizlilik sayfası < 64 KB', bytes < 640 * 1024 && dict < 64 * 1024 && priv < 64 * 1024, `${(bytes / 1024).toFixed(0)} KB · sözlük ${(dict / 1024).toFixed(0)} KB · gizlilik ${(priv / 1024).toFixed(0)} KB`, 'low');
   }
 
   await browser.close(); server.close();

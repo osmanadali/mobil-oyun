@@ -18,7 +18,7 @@ Bu belge Google Play ve App Store'a gönderim için gereken her şeyi tek yerde 
 | Pazarlama URL'si (isteğe bağlı) | https://osmanadali.github.io/mobil-oyun/ (oyunun web sürümü) |
 | Telif (App Store) | © 2026 [geliştirici adı] |
 | İletişim e-postası (iki mağaza, herkese açık) | [iletişim e-postası] |
-| Dil | Türkçe ve İngilizce (oyun cihaz diline göre açılır: Türkçe cihazda Türkçe, ötekilerde İngilizce; Ayarlar › Dil ile değişir) |
+| Dil | Türkçe, İngilizce, Almanca, İspanyolca, Portekizce (Brezilya), Fransızca (oyun cihaz diline göre açılır, desteklenmeyen dilde İngilizce; Ayarlar › Dil ile değişir; mağaza metinleri §4, §5, §5b) |
 | Cihaz | Android telefon, iPhone (yalnız dikey; iPad yok) |
 
 Gizlilik ve destek adresleri GitHub Pages açılınca yayına girer. Pages kullanıcının onayıyla açılacak (bkz. §11).
@@ -174,7 +174,7 @@ A one-time purchase. Removes the ads between levels, gives you 20 hints and unlo
 
 No account needed and no personal details asked. Your progress stays on your device.
 
-Available in English and Turkish.
+Available in English, German, Spanish, Portuguese, French and Turkish.
 ```
 
 **Diğer Play alanları**
@@ -242,6 +242,268 @@ pipes,net,subway,train,station,logic,brain,daily,relaxing,rotate,connect,tiles,r
 | Telif | © 2026 [geliştirici adı] |
 | Şifreleme (export compliance) | Muaf olmayan şifreleme yok (`ITSAppUsesNonExemptEncryption = false`, iOS hazırlık betiği yazar) |
 | Üçüncü taraf içerik | "Evet, gerekli haklara sahibim" (Outfit yazı tipi SIL OFL lisanslıdır; reklamlar AdMob'dan gelir) |
+
+## 5b. Almanca, İspanyolca, Portekizce (Brezilya), Fransızca
+
+Oyun bu dillerde de açılır (cihaz dili ya da Ayarlar › Dil). Play Console › Mağaza girişi › Çeviriler'e `de-DE`, `es-ES` (Latin Amerika için `es-419` aynı metinle), `pt-BR`, `fr-FR`; App Store Connect'te German, Spanish (Spain / Mexico), Portuguese (Brazil), French olarak eklenir. Terimler oyundakiyle aynıdır (docs/CEVIRI.md §3). Ekran görüntüleri şimdilik İngilizce sette kalır (`store/screens-en/`); dile özel görsel ileride `tools/store-shots.cjs` ile üretilebilir.
+
+| Metin | Sınır | DE | ES | PT-BR | FR |
+|---|---|---|---|---|---|
+| Uygulama adı / ad | 30 | 23 | 26 | 27 | 21 |
+| Play kısa açıklama | 80 | 78 | 80 | 80 | 80 |
+| App Store alt başlık | 30 | 28 | 30 | 28 | 29 |
+| App Store tanıtım metni | 170 | 150 | 146 | 141 | 163 |
+| Anahtar kelimeler | 100 | 98 | 93 | 91 | 90 |
+| Tam açıklama | 4000 | 2708 | 2645 | 2605 | 2819 |
+| Sürüm notu | 500 | 119 | 127 | 127 | 138 |
+
+### Deutsch (de-DE)
+
+**Name**
+```text
+Ray: Metro-Linienrätsel
+```
+**Kurzbeschreibung** (Play)
+```text
+Dreh die Gleise, verbinde jede Station. Ruhiges Rätsel für eine Hand, offline.
+```
+**Untertitel** (App Store)
+```text
+Ruhig, einhändig und offline
+```
+**Werbetext** (App Store)
+```text
+Jeden Tag eine neue Tageslinie! Dreh die Gleise, verbinde jede Station, spiel perfekt und sammle Tickets. 22 Regeln und endlose Level warten auf dich.
+```
+**Schlüsselwörter** (App Store)
+```text
+rohre,netz,ubahn,zug,bahnhof,logik,denkspiel,täglich,entspannen,drehen,verbinden,kacheln,karte,zen
+```
+**Beschreibung**
+```text
+Ray ist ein ruhiges Metro-Rätsel, das du mit einer Hand und ohne Internet spielst. Tippe eine Kachel an und das Gleis dreht sich um 90°. Führe die Linie von der Zentrale zu jeder Station und lass keine offenen Gleisenden übrig. Mit jeder Verbindung leuchtet die Stadt auf.
+
+SO WIRD GESPIELT
+• Tippe eine Kachel an, um das Gleis zu drehen.
+• Verbinde jede Station mit dem Zentrum, ohne offene Enden.
+• Drei Sterne: Level schaffen, Zeitziel schaffen, Zugziel schaffen.
+• Schaffst du beide Ziele auf einmal, ist das Level perfekt: Du bekommst ein Ticket.
+
+24 LINIEN, ENDLOSE LEVEL
+Jede Metrolinie bringt eine neue Regel, jedes Level ist etwas schwerer als das vorige. Nach 22 Regellinien geht es mit gemischten Linien endlos weiter. Die Level entstehen auf deinem Gerät, jedes ist lösbar, und alle bekommen bei derselben Levelnummer dasselbe Rätsel.
+
+NEUE REGELN UNTERWEGS
+Paarkacheln, Umkehrkacheln, Schiebereihen, dunkle Tunnel, Zählkacheln, Frostkacheln, zwei Zentren, Weichen, Siegelkacheln, Drehscheiben, Brücken, Zahnradkacheln, Abdeckungen, Tunnelportale, Wegweiser, Ringlinien, blasse Arme, versteckte Depots, Endlosbretter, Flüsse, geschlossene Stationen und Tarifzonen: 22 Regeln. Jede neue Regel stellt eine kurze animierte Karte vor, und das Brett wird nie unübersichtlich.
+
+TAGESLINIE
+Jeden Tag lösen alle dasselbe Rätsel. Es wird im Lauf der Woche schwerer, sonntags gibt es das große Rätsel. Halte deine Serie, teile dein Ergebnis und fordere Freunde heraus.
+
+TICKETS, THEMEN UND ÜBERRASCHUNGSKISTE
+Jedes perfekte Level bringt ein Ticket. Gib Tickets für 22 der 25 Farbthemen aus oder öffne die Überraschungskiste: Tipps, ein Serienschild oder ein neuer Zuglack. Die Kiste öffnet sich nur mit im Spiel verdienten Tickets, die Chancen stehen im Kistenbildschirm.
+
+ANGENEHM FÜR AUGEN UND AKKU
+Dunkles, helles und automatisches Design. Sanfte Farben. Animationen laufen nur, wenn sich etwas bewegt. Musik, Soundeffekte und Vibration lassen sich einzeln abschalten. Auf Wunsch gibt es eine tägliche Erinnerung.
+
+KOSTENLOS UND FAIR
+Ray ist kostenlos. Deine Tipps werden jeden Tag auf mindestens 3 aufgefüllt, am Ende jeder Linie gibt es Extratipps. Werbung erscheint nur online: ab und zu zwischen Leveln und als Belohnungsvideo nur, wenn du es willst (Extratipps, Belohnung verdoppeln, gerissene Serie retten). Die Tageslinie hat keine Zwischenwerbung.
+
+WERBEFREI-PAKET
+Einmaliger Kauf. Entfernt die Werbung zwischen Leveln, schenkt dir 20 Tipps und schaltet 3 exklusive Themen frei (Gold, Diamant, Rubin). Tipp-Videos bleiben freiwillig.
+
+Kein Konto nötig, keine persönlichen Daten. Dein Fortschritt bleibt auf deinem Gerät.
+
+Auf Deutsch, Englisch, Spanisch, Portugiesisch, Französisch und Türkisch.
+```
+**Versionshinweis**
+```text
+Erste Version. Ein einhändiges Offline-Metrorätsel: 22 Regeln, eine Tageslinie, Farbthemen und eine Überraschungskiste.
+```
+
+### Español (es-ES · es-419)
+
+**Nombre**
+```text
+Ray: Puzle de Líneas Metro
+```
+**Descripción breve** (Play)
+```text
+Gira las vías y conecta cada estación. Un puzle tranquilo, a una mano y sin red.
+```
+**Subtítulo** (App Store)
+```text
+Tranquilo, a una mano, sin red
+```
+**Texto promocional** (App Store)
+```text
+¡Una nueva Línea del día cada día! Gira las vías, conecta cada estación, termina perfecto y gana billetes. Te esperan 22 reglas y niveles sin fin.
+```
+**Palabras clave** (App Store)
+```text
+tuberías,red,subte,tren,estación,lógica,mente,diario,relajante,girar,conectar,piezas,mapa,zen
+```
+**Descripción**
+```text
+Ray es un puzle de metro tranquilo que se juega con una mano y sin conexión. Toca una pieza y la vía gira 90°. Lleva la línea desde la estación central hasta cada parada sin dejar extremos sueltos. Con cada conexión, la ciudad se ilumina.
+
+CÓMO SE JUEGA
+• Toca una pieza para girar la vía.
+• Conecta cada estación con el centro, sin extremos abiertos.
+• Tres estrellas: termina el nivel, cumple el objetivo de tiempo y el de jugadas.
+• Cumple los dos a la vez y el nivel es perfecto: ganas un billete.
+
+24 LÍNEAS, NIVELES SIN FIN
+Cada línea de metro trae una regla nueva y cada nivel es un poco más difícil que el anterior. Tras 22 líneas con reglas, el juego sigue para siempre con líneas mixtas. Los niveles se crean en tu dispositivo, todos tienen solución y todo el mundo juega el mismo puzle en el mismo número de nivel.
+
+REGLAS NUEVAS POR EL CAMINO
+Piezas gemelas, piezas inversas, filas deslizantes, túneles oscuros, piezas contador, piezas heladas, dos centros, desvíos, piezas selladas, plataformas giratorias, puentes, piezas engranaje, tapas, bocas de túnel, señales, líneas circulares, brazos tenues, depósitos ocultos, tableros sin bordes, ríos, estaciones cerradas y zonas tarifarias: 22 reglas. Cada regla nueva se presenta con una tarjeta animada corta y el tablero nunca se satura.
+
+LÍNEA DEL DÍA
+Cada día todos resuelven el mismo puzle. Se complica a lo largo de la semana y el domingo toca el gran puzle. Mantén tu racha, comparte tu resultado y reta a tus amigos.
+
+BILLETES, TEMAS Y COFRE SORPRESA
+Cada nivel perfecto te da un billete. Gástalos en 22 de los 25 temas de color o abre el cofre sorpresa: pistas, un escudo de racha o un nuevo diseño de tren. El cofre solo se abre con billetes ganados jugando y las probabilidades se ven en su pantalla.
+
+CUIDA TUS OJOS Y TU BATERÍA
+Tema oscuro, claro y automático. Colores suaves. Las animaciones solo funcionan cuando algo se mueve. Música, efectos y vibración se apagan por separado. Si quieres, activa un aviso diario.
+
+GRATIS Y JUSTO
+Ray es gratis. Tus pistas se recargan cada día hasta al menos 3 y ganas pistas extra al final de cada línea. Los anuncios solo salen con conexión: alguno entre niveles y vídeos con premio solo si tú quieres (pistas extra, doblar un premio, salvar una racha rota). La Línea del día no tiene anuncios intersticiales.
+
+PAQUETE SIN ANUNCIOS
+Compra única. Quita los anuncios entre niveles, te regala 20 pistas y desbloquea 3 temas exclusivos (Oro, Diamante, Rubí). Los vídeos de pistas siguen siendo opcionales.
+
+Sin cuenta y sin datos personales. Tu progreso se queda en tu dispositivo.
+
+En español, inglés, alemán, portugués, francés y turco.
+```
+**Notas de la versión**
+```text
+Primera versión. Un puzle de metro a una mano y sin conexión: 22 reglas, una Línea del día, temas de color y un cofre sorpresa.
+```
+
+### Português (pt-BR)
+
+**Nome**
+```text
+Ray: Quebra-Cabeça do Metrô
+```
+**Descrição curta** (Play)
+```text
+Gire os trilhos, ligue as estações. Quebra-cabeça calmo, para uma mão e offline.
+```
+**Subtítulo** (App Store)
+```text
+Calmo, com uma mão e offline
+```
+**Texto promocional** (App Store)
+```text
+Uma nova Linha do Dia todo dia! Gire os trilhos, ligue cada estação, termine perfeito e ganhe bilhetes. 22 regras e fases sem fim te esperam.
+```
+**Palavras-chave** (App Store)
+```text
+canos,rede,trem,estação,lógica,cérebro,diário,relaxar,girar,conectar,peças,mapa,offline,zen
+```
+**Descrição**
+```text
+Ray é um quebra-cabeça de metrô calmo, para jogar com uma mão e sem internet. Toque numa peça e o trilho gira 90°. Leve a linha da estação central até cada parada sem deixar pontas soltas. A cada ligação, a cidade se acende.
+
+COMO JOGAR
+• Toque numa peça para girar o trilho.
+• Ligue cada estação ao centro, sem pontas abertas.
+• Três estrelas: termine a fase, bata a meta de tempo e a meta de jogadas.
+• Bata as duas de uma vez e a fase fica perfeita: você ganha um bilhete.
+
+24 LINHAS, FASES SEM FIM
+Cada linha de metrô traz uma regra nova e cada fase é um pouco mais difícil que a anterior. Depois de 22 linhas com regras, o jogo continua para sempre com linhas mistas. As fases são criadas no seu aparelho, todas têm solução e todo mundo recebe o mesmo quebra-cabeça no mesmo número de fase.
+
+REGRAS NOVAS PELO CAMINHO
+Peças gêmeas, peças inversas, fileiras deslizantes, túneis escuros, peças contador, peças geladas, dois centros, desvios, peças lacradas, plataformas giratórias, pontes, peças engrenagem, tampas, bocas de túnel, placas, linhas circulares, braços apagados, depósitos ocultos, tabuleiros sem bordas, rios, estações fechadas e zonas tarifárias: 22 regras. Cada regra nova chega com um cartão animado curto, e o tabuleiro nunca fica poluído.
+
+LINHA DO DIA
+Todo dia todo mundo resolve o mesmo quebra-cabeça. Ele fica mais difícil ao longo da semana, e domingo é dia do desafio grande. Mantenha sua sequência, compartilhe o resultado e desafie os amigos.
+
+BILHETES, TEMAS E BAÚ SURPRESA
+Cada fase perfeita rende um bilhete. Use bilhetes em 22 dos 25 temas de cores ou abra o baú surpresa: dicas, um escudo de sequência ou uma nova pintura de trem. O baú só abre com bilhetes ganhos no jogo, e as chances aparecem na tela do baú.
+
+BOM PARA OS OLHOS E PARA A BATERIA
+Tema escuro, claro e automático. Cores suaves. As animações só rodam quando algo se mexe. Música, efeitos e vibração desligam separadamente. Se quiser, ative um lembrete diário.
+
+GRÁTIS E JUSTO
+Ray é grátis. Suas dicas voltam a pelo menos 3 todo dia, e você ganha dicas extras no fim de cada linha. Anúncios só aparecem com internet: um de vez em quando entre fases e vídeos premiados só se você quiser (dicas extras, dobrar o prêmio, salvar uma sequência perdida). A Linha do Dia não tem anúncios intersticiais.
+
+PACOTE SEM ANÚNCIOS
+Compra única. Tira os anúncios entre as fases, dá 20 dicas de presente e libera 3 temas exclusivos (Ouro, Diamante, Rubi). Os vídeos de dicas continuam opcionais.
+
+Sem conta e sem dados pessoais. Seu progresso fica no seu aparelho.
+
+Em português, inglês, espanhol, alemão, francês e turco.
+```
+**Notas da versão**
+```text
+Primeira versão. Um quebra-cabeça de metrô para uma mão e offline: 22 regras, a Linha do Dia, temas de cores e um baú surpresa.
+```
+
+### Français (fr-FR)
+
+**Nom**
+```text
+Ray : Puzzle de Métro
+```
+**Description courte** (Play)
+```text
+Tourne les rails, relie chaque station. Un puzzle calme, à une main, hors ligne.
+```
+**Sous-titre** (App Store)
+```text
+Calme, à une main, hors ligne
+```
+**Texte promotionnel** (App Store)
+```text
+Une nouvelle Ligne du jour chaque jour ! Tourne les rails, relie chaque station, finis parfait et gagne des tickets. 22 règles et des niveaux sans fin t’attendent.
+```
+**Mots-clés** (App Store)
+```text
+tuyaux,réseau,train,gare,logique,cerveau,quotidien,détente,tourner,relier,tuiles,carte,zen
+```
+**Description**
+```text
+Ray est un puzzle de métro calme, à jouer d’une main et sans connexion. Touche une tuile et le rail tourne de 90°. Prolonge la ligne depuis la station centrale jusqu’à chaque arrêt, sans laisser de bout de rail libre. À chaque connexion, la ville s’illumine.
+
+COMMENT JOUER
+• Touche une tuile pour tourner le rail.
+• Relie chaque station au centre, sans bout ouvert.
+• Trois étoiles : finis le niveau, tiens l’objectif de temps et l’objectif de coups.
+• Tiens les deux à la fois et le niveau est parfait : tu gagnes un ticket.
+
+24 LIGNES, DES NIVEAUX SANS FIN
+Chaque ligne de métro apporte une nouvelle règle et chaque niveau est un peu plus dur que le précédent. Après 22 lignes à règles, le jeu continue à l’infini avec des lignes mixtes. Les niveaux sont créés sur ton appareil, tous ont une solution et tout le monde a le même puzzle au même numéro de niveau.
+
+DE NOUVELLES RÈGLES EN ROUTE
+Tuiles jumelles, tuiles inverses, rangées glissantes, tunnels sombres, tuiles compteur, tuiles givrées, deux centres, aiguillages, tuiles scellées, plaques tournantes, ponts, tuiles engrenage, caches, portails de tunnel, panneaux, lignes circulaires, bras pâles, dépôts cachés, plateaux sans bords, rivières, stations fermées et zones tarifaires : 22 règles. Chaque nouvelle règle est présentée par une courte carte animée, et le plateau ne devient jamais surchargé.
+
+LIGNE DU JOUR
+Chaque jour, tout le monde résout le même puzzle. Il se corse au fil de la semaine, et le dimanche c’est le grand puzzle. Garde ta série, partage ton résultat et défie tes amis.
+
+TICKETS, THÈMES ET COFFRE SURPRISE
+Chaque niveau parfait rapporte un ticket. Dépense-les pour 22 des 25 thèmes de couleur ou ouvre le coffre surprise : des indices, un bouclier de série ou une nouvelle livrée de train. Le coffre ne s’ouvre qu’avec des tickets gagnés en jeu, et ses chances sont affichées sur son écran.
+
+DOUX POUR LES YEUX ET LA BATTERIE
+Thème sombre, clair et automatique. Couleurs douces. Les animations ne tournent que quand quelque chose bouge. Musique, effets sonores et vibration se coupent séparément. Un rappel quotidien si tu veux.
+
+GRATUIT ET ÉQUITABLE
+Ray est gratuit. Tes indices remontent à au moins 3 chaque jour, et tu gagnes des indices en plus à la fin de chaque ligne. Les pubs n’apparaissent qu’en ligne : de temps en temps entre deux niveaux, et des vidéos récompensées seulement si tu le choisis (indices en plus, récompense doublée, série brisée sauvée). La Ligne du jour n’a pas de pub interstitielle.
+
+PACK SANS PUB
+Achat unique. Supprime les pubs entre les niveaux, offre 20 indices et débloque 3 thèmes exclusifs (Or, Diamant, Rubis). Les vidéos d’indices restent facultatives.
+
+Pas de compte, aucune donnée personnelle. Ta progression reste sur ton appareil.
+
+En français, anglais, allemand, espagnol, portugais et turc.
+```
+**Notes de version**
+```text
+Première version. Un puzzle de métro à une main et hors ligne : 22 règles, une Ligne du jour, des thèmes de couleur et un coffre surprise.
+```
 
 ## 6. Google Play "Veri güvenliği" formu
 

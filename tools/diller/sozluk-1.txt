@@ -1,0 +1,755 @@
+# Ray — çeviri sözlüğü (1/4): hat adları, temalar, kural kartları, oyun içi bildirimler
+# Biçim: "@ İngilizce anahtar" + de/es/pt/fr satırları. {0} {1}: yer tutucu (sıra serbest). Terimler: docs/CEVIRI.md
+# Derleme: node tools/diller.cjs → www/lang/<dil>.js · satır sonundaki boşluk ␣ ile yazılır (düzenleyiciler sondaki boşluğu siler)
+
+@ Harbor
+de: Hafen
+es: Puerto
+pt: Porto
+fr: Port
+@ Bazaar
+de: Basar
+es: Bazar
+pt: Bazar
+fr: Bazar
+@ Shore
+de: Strand
+es: Costa
+pt: Praia
+fr: Rivage
+@ Tower
+de: Turm
+es: Torre
+pt: Torre
+fr: Tour
+@ Garden
+de: Garten
+es: Jardín
+pt: Jardim
+fr: Jardin
+@ Bridge
+de: Brücke
+es: Puente
+pt: Ponte
+fr: Pont
+@ Lighthouse
+de: Leuchtturm
+es: Faro
+pt: Farol
+fr: Phare
+@ Valley
+de: Tal
+es: Valle
+pt: Vale
+fr: Vallée
+@ Spring
+de: Quelle
+es: Manantial
+pt: Fonte
+fr: Source
+@ Square
+de: Platz
+es: Plaza
+pt: Praça
+fr: Place
+@ Hill
+de: Hügel
+es: Colina
+pt: Colina
+fr: Colline
+@ Island
+de: Insel
+es: Isla
+pt: Ilha
+fr: Île
+@ Palace
+de: Palast
+es: Palacio
+pt: Palácio
+fr: Palais
+@ Quay
+de: Kai
+es: Muelle
+pt: Cais
+fr: Quai
+@ Canal
+de: Kanal
+es: Canal
+pt: Canal
+fr: Canal
+@ Plane Tree
+de: Platane
+es: Álamo
+pt: Álamo
+fr: Platane
+@ Highland
+de: Hochland
+es: Meseta
+pt: Planalto
+fr: Plateau
+@ Grove
+de: Hain
+es: Arboleda
+pt: Bosque
+fr: Bosquet
+@ Caravan
+de: Karawane
+es: Caravana
+pt: Caravana
+fr: Caravane
+@ Mill
+de: Mühle
+es: Molino
+pt: Moinho
+fr: Moulin
+@ Lake
+de: See
+es: Lago
+pt: Lago
+fr: Lac
+@ Vineyard
+de: Weinberg
+es: Viñedo
+pt: Vinhedo
+fr: Vignoble
+@ Market
+de: Markt
+es: Mercado
+pt: Mercado
+fr: Marché
+@ Castle
+de: Burg
+es: Castillo
+pt: Castelo
+fr: Château
+@ Terminal
+de: Bahnhof
+es: Terminal
+pt: Terminal
+fr: Gare
+# hat adı önekleri: de "Neu-Hafen"; es/pt/fr adın ardından, cinsiyete göre değişmeyen sözcükler (bilerek serbest çeviri)
+@ New
+de: Neu
+es: Central
+pt: Central
+fr: Centre
+@ Old
+de: Alt
+es: Real
+pt: Real
+fr: d’Antan
+@ North
+de: Nord
+es: Norte
+pt: Norte
+fr: Nord
+@ South
+de: Süd
+es: Sur
+pt: Sul
+fr: Sud
+@ East
+de: Ost
+es: Este
+pt: Leste
+fr: Est
+@ West
+de: West
+es: Oeste
+pt: Oeste
+fr: Ouest
+@ Upper
+de: Ober
+es: de Arriba
+pt: de Cima
+fr: d’en Haut
+@ Lower
+de: Unter
+es: de Abajo
+pt: de Baixo
+fr: d’en Bas
+@ Great
+de: Groß
+es: Mayor
+pt: Maior
+fr: d’Or
+@ Little
+de: Klein
+es: Menor
+pt: Menor
+fr: d’Azur
+@ M{0} · {1} Line
+de: M{0} · Linie {1}
+es: M{0} · Línea {1}
+pt: M{0} · Linha {1}
+fr: M{0} · Ligne {1}
+@ Sunset
+de: Sonnenuntergang
+es: Atardecer
+pt: Pôr do Sol
+fr: Crépuscule
+@ Ocean
+de: Ozean
+es: Océano
+pt: Oceano
+fr: Océan
+@ Forest
+de: Wald
+es: Bosque
+pt: Floresta
+fr: Forêt
+@ Desert
+de: Wüste
+es: Desierto
+pt: Deserto
+fr: Désert
+@ Neon Night
+de: Neonnacht
+es: Noche Neón
+pt: Noite Neon
+fr: Nuit Néon
+@ Northern Lights
+de: Polarlicht
+es: Aurora Boreal
+pt: Aurora Boreal
+fr: Aurore Boréale
+@ Lava
+de: Lava
+es: Lava
+pt: Lava
+fr: Lave
+@ Cosmos
+de: Kosmos
+es: Cosmos
+pt: Cosmos
+fr: Cosmos
+@ Glacier
+de: Gletscher
+es: Glaciar
+pt: Geleira
+fr: Glacier
+@ Autumn
+de: Herbst
+es: Otoño
+pt: Outono
+fr: Automne
+@ Coral Reef
+de: Korallenriff
+es: Arrecife
+pt: Recife
+fr: Récif
+@ Tea Garden
+de: Teegarten
+es: Jardín de Té
+pt: Jardim de Chá
+fr: Jardin de Thé
+@ Tulip
+de: Tulpe
+es: Tulipán
+pt: Tulipa
+fr: Tulipe
+@ Storm
+de: Sturm
+es: Tormenta
+pt: Tempestade
+fr: Orage
+@ Midnight
+de: Mitternacht
+es: Medianoche
+pt: Meia-Noite
+fr: Minuit
+@ Rainbow
+de: Regenbogen
+es: Arcoíris
+pt: Arco-Íris
+fr: Arc-en-ciel
+@ Retro Wave
+de: Retrowelle
+es: Ola Retro
+pt: Onda Retrô
+fr: Vague Rétro
+@ Dawn
+de: Morgenrot
+es: Alba
+pt: Aurora
+fr: Aube
+@ Gold
+de: Gold
+es: Oro
+pt: Ouro
+fr: Or
+@ Diamond
+de: Diamant
+es: Diamante
+pt: Diamante
+fr: Diamant
+@ Ruby
+de: Rubin
+es: Rubí
+pt: Rubi
+fr: Rubis
+@ Snow Lights
+de: Schneelichter
+es: Luces de Nieve
+pt: Luzes de Neve
+fr: Lumières d’Hiver
+@ Redbud
+de: Judasbaum
+es: Árbol de Judas
+pt: Flor de Judas
+fr: Arbre de Judée
+@ Summer Night
+de: Sommernacht
+es: Noche de Verano
+pt: Noite de Verão
+fr: Nuit d’Été
+@ Harvest
+de: Erntezeit
+es: Cosecha
+pt: Colheita
+fr: Moisson
+@ Eid Lanterns
+de: Festlaternen
+es: Faroles del Eid
+pt: Lanternas do Eid
+fr: Lanternes de l’Aïd
+@ Eid Morning
+de: Festmorgen
+es: Mañana del Eid
+pt: Manhã do Eid
+fr: Matin de l’Aïd
+@ Dark tunnel
+de: Dunkler Tunnel
+es: Túnel oscuro
+pt: Túnel escuro
+fr: Tunnel sombre
+@ New: dark tunnel
+de: Neu: dunkler Tunnel
+es: Nuevo: túnel oscuro
+pt: Novo: túnel escuro
+fr: Nouveau : tunnel sombre
+@ Where the line hasn’t reached is <b>dark</b>: tracks are hidden and can’t be tapped. As the line grows, the area <b>lights up</b>; break the line and it goes <b>dark</b> again. Follow the light!
+de: Wo die Linie nicht hinreicht, ist es <b>dunkel</b>: Gleise sind unsichtbar und nicht antippbar. Wächst die Linie, wird es <b>hell</b>; reißt sie ab, wird es wieder <b>dunkel</b>. Folge dem Licht!
+es: Donde no llega la línea está <b>oscuro</b>: las vías no se ven ni se pueden tocar. Al crecer la línea, la zona se <b>ilumina</b>; si se corta, vuelve a <b>oscurecer</b>. ¡Sigue la luz!
+pt: Onde a linha não chega fica <b>escuro</b>: os trilhos somem e não dá para tocar. Conforme a linha cresce, tudo <b>se ilumina</b>; se ela se rompe, volta a <b>escurecer</b>. Siga a luz!
+fr: Là où la ligne n’arrive pas, tout est <b>sombre</b> : rails invisibles et intouchables. Quand la ligne avance, la zone <b>s’éclaire</b> ; si elle se coupe, tout redevient <b>sombre</b>. Suis la lumière !
+@ Reverse tile
+de: Umkehrkachel
+es: Pieza inversa
+pt: Peça inversa
+fr: Tuile inverse
+@ New: reverse tile
+de: Neu: Umkehrkachel
+es: Nuevo: pieza inversa
+pt: Novo: peça inversa
+fr: Nouveau : tuile inverse
+@ Arrow (↺) tiles turn the <b>other way</b>, counterclockwise. Don’t trust your finger’s habit!
+de: Pfeilkacheln (↺) drehen sich <b>andersherum</b>, gegen den Uhrzeigersinn. Trau nicht der Gewohnheit deines Fingers!
+es: Las piezas con flecha (↺) giran <b>al revés</b>, en sentido antihorario. ¡No te fíes de la costumbre de tu dedo!
+pt: Peças com seta (↺) giram <b>ao contrário</b>, no sentido anti-horário. Não confie no hábito do seu dedo!
+fr: Les tuiles fléchées (↺) tournent <b>dans l’autre sens</b>, à l’envers des aiguilles d’une montre. Méfie-toi de l’habitude de ton doigt !
+@ Counter tile
+de: Zählkachel
+es: Pieza contador
+pt: Peça contador
+fr: Tuile compteur
+@ New: counter tile
+de: Neu: Zählkachel
+es: Nuevo: pieza contador
+pt: Novo: peça contador
+fr: Nouveau : tuile compteur
+@ A numbered tile turns at most <b>3 times</b>, then locks. <b>Think first, then tap.</b> Stuck? ↺ restart or use a 💡 hint.
+de: Eine Zahlenkachel dreht sich höchstens <b>3-mal</b>, dann sperrt sie. <b>Erst denken, dann tippen.</b> Festgefahren? ↺ Neustart oder 💡 Tipp.
+es: Una pieza con número gira como mucho <b>3 veces</b> y se bloquea. <b>Piensa primero, toca después.</b> ¿Atascado? ↺ reinicia o usa una 💡 pista.
+pt: Uma peça numerada gira no máximo <b>3 vezes</b> e trava. <b>Pense antes, toque depois.</b> Travou? ↺ recomece ou use uma 💡 dica.
+fr: Une tuile numérotée tourne <b>3 fois</b> au plus, puis se bloque. <b>Réfléchis, puis touche.</b> Coincé ? ↺ recommence ou prends un 💡 indice.
+@ Two hubs
+de: Zwei Zentren
+es: Dos centros
+pt: Dois centros
+fr: Deux centres
+@ New: two hubs
+de: Neu: zwei Zentren
+es: Nuevo: dos centros
+pt: Novo: dois centros
+fr: Nouveau : deux centres
+@ <b>Two hubs, two colors.</b> Every station must reach its own hub. If the two lines touch, they glow <b>red</b>: split them!
+de: <b>Zwei Zentren, zwei Farben.</b> Jede Station muss ihr eigenes Zentrum erreichen. Berühren sich die Linien, leuchten sie <b>rot</b>: trenn sie!
+es: <b>Dos centros, dos colores.</b> Cada estación debe llegar a su propio centro. Si las dos líneas se tocan, brillan en <b>rojo</b>: ¡sepáralas!
+pt: <b>Dois centros, duas cores.</b> Cada estação precisa chegar ao seu centro. Se as duas linhas se tocam, ficam <b>vermelhas</b>: separe-as!
+fr: <b>Deux centres, deux couleurs.</b> Chaque station doit rejoindre son centre. Si les deux lignes se touchent, elles brillent en <b>rouge</b> : sépare-les !
+@ Paired tiles
+de: Paarkacheln
+es: Piezas gemelas
+pt: Peças gêmeas
+fr: Tuiles jumelles
+@ New: paired tiles
+de: Neu: Paarkacheln
+es: Nuevo: piezas gemelas
+pt: Novo: peças gêmeas
+fr: Nouveau : tuiles jumelles
+@ Two tiles with the same color and number <b>turn together</b>: tap one and the other turns too. Find a spot where both fit. One tap = <b>1 move</b>.
+de: Zwei Kacheln mit gleicher Farbe und Zahl <b>drehen sich zusammen</b>: Tippst du eine an, dreht sich die andere mit. Finde die Lage, in der beide passen. Ein Tippen = <b>1 Zug</b>.
+es: Dos piezas del mismo color y número <b>giran juntas</b>: toca una y la otra también gira. Busca la posición en la que encajen las dos. Un toque = <b>1 jugada</b>.
+pt: Duas peças com a mesma cor e número <b>giram juntas</b>: toque numa e a outra gira também. Ache a posição em que as duas encaixam. Um toque = <b>1 jogada</b>.
+fr: Deux tuiles de même couleur et même numéro <b>tournent ensemble</b> : touche l’une, l’autre tourne aussi. Trouve la position où les deux s’emboîtent. Une touche = <b>1 coup</b>.
+@ Close
+de: Schließen
+es: Cerrar
+pt: Fechar
+fr: Fermer
+@ New line in {0}
+de: Neue Linie in {0}
+es: Nueva línea en {0}
+pt: Nova linha em {0}
+fr: Nouvelle ligne dans {0}
+@ Next Daily Line: {0}
+de: Nächste Tageslinie: {0}
+es: Próxima Línea del día: {0}
+pt: Próxima Linha do Dia: {0}
+fr: Prochaine Ligne du jour : {0}
+@ hint
+de: Tipp
+es: pista
+pt: dica
+fr: indice
+@ hints
+de: Tipps
+es: pistas
+pt: dicas
+fr: indices
+@ Level␣
+de: Level␣
+es: Nivel␣
+pt: Fase␣
+fr: Niveau␣
+@ Done ✓
+de: Fertig ✓
+es: Hecho ✓
+pt: Feito ✓
+fr: Fait ✓
+@ Ready
+de: Bereit
+es: Lista
+pt: Pronta
+fr: Prête
+@ 💔 {0}-day streak lost · save it
+de: 💔 {0}-Tage-Serie gerissen · retten
+es: 💔 Racha de {0} días rota · sálvala
+pt: 💔 Sequência de {0} dias perdida · salve
+fr: 💔 Série de {0} jours perdue · sauve-la
+@ 🔥 Keep your {0}-day streak
+de: 🔥 Halte deine {0}-Tage-Serie
+es: 🔥 Mantén tu racha de {0} días
+pt: 🔥 Mantenha sua sequência de {0} dias
+fr: 🔥 Garde ta série de {0} jours
+@ A new line every day
+de: Jeden Tag eine neue Linie
+es: Una línea nueva cada día
+pt: Uma linha nova todo dia
+fr: Une nouvelle ligne chaque jour
+@ open
+de: offen
+es: abierta
+pt: aberta
+fr: ouverte
+@ ★ {0} to go → M{1}
+de: ★ noch {0} → M{1}
+es: ★ faltan {0} → M{1}
+pt: ★ faltam {0} → M{1}
+fr: ★ encore {0} → M{1}
+@ ☕ breather level
+de: ☕ Pausenlevel
+es: ☕ nivel de respiro
+pt: ☕ fase de pausa
+fr: ☕ niveau détente
+@ ⚡ {0} hard
+de: ⚡ {0} schwer
+es: ⚡ {0} difícil
+pt: ⚡ {0} difícil
+fr: ⚡ difficulté {0}
+@ DAILY LINE · ⚡{0}
+de: TAGESLINIE · ⚡{0}
+es: LÍNEA DEL DÍA · ⚡{0}
+pt: LINHA DO DIA · ⚡{0}
+fr: LIGNE DU JOUR · ⚡{0}
+@ Earn stars → open new lines
+de: Sterne sammeln → neue Linien öffnen
+es: Gana estrellas → abre líneas nuevas
+pt: Ganhe estrelas → abra linhas novas
+fr: Gagne des étoiles → ouvre des lignes
+@ <h2>{0} is locked</h2> <p>You need <b class="nw">★ {1}</b> to open this line. You have <b class="nw">★ {2}</b>.<br>Replay earlier levels <b>faster</b> and in <b>fewer moves</b> to earn more stars.</p>
+de: <h2>{0} ist gesperrt</h2> <p>Du brauchst <b class="nw">★ {1}</b>, um diese Linie zu öffnen. Du hast <b class="nw">★ {2}</b>.<br>Spiel frühere Level <b>schneller</b> und mit <b>weniger Zügen</b>, um mehr Sterne zu holen.</p>
+es: <h2>{0} está bloqueada</h2> <p>Necesitas <b class="nw">★ {1}</b> para abrir esta línea. Tienes <b class="nw">★ {2}</b>.<br>Repite niveles anteriores <b>más rápido</b> y con <b>menos jugadas</b> para ganar más estrellas.</p>
+pt: <h2>{0} está bloqueada</h2> <p>Você precisa de <b class="nw">★ {1}</b> para abrir esta linha. Você tem <b class="nw">★ {2}</b>.<br>Jogue fases anteriores <b>mais rápido</b> e com <b>menos jogadas</b> para ganhar mais estrelas.</p>
+fr: <h2>{0} est verrouillée</h2> <p>Il te faut <b class="nw">★ {1}</b> pour ouvrir cette ligne. Tu as <b class="nw">★ {2}</b>.<br>Rejoue des niveaux <b>plus vite</b> et en <b>moins de coups</b> pour gagner plus d’étoiles.</p>
+@ Go to lines
+de: Zu den Linien
+es: Ir a las líneas
+pt: Ir para as linhas
+fr: Voir les lignes
+@ {0} {1} short
+de: noch {0} {1}
+es: faltan {0} {1}
+pt: faltam {0} {1}
+fr: encore {0} {1}
+@ star
+de: Stern
+es: estrella
+pt: estrela
+fr: étoile
+@ stars
+de: Sterne
+es: estrellas
+pt: estrelas
+fr: étoiles
+@ 🍃 Zen
+de: 🍃 Zen
+es: 🍃 Zen
+pt: 🍃 Zen
+fr: 🍃 Zen
+@ Daily Line · past day
+de: Tageslinie · vergangener Tag
+es: Línea del día · día pasado
+pt: Linha do Dia · dia passado
+fr: Ligne du jour · jour passé
+@ Daily Line · practice
+de: Tageslinie · Übung
+es: Línea del día · práctica
+pt: Linha do Dia · treino
+fr: Ligne du jour · entraînement
+@ Daily Line
+de: Tageslinie
+es: Línea del día
+pt: Linha do Dia
+fr: Ligne du jour
+@ Level
+de: Level
+es: Nivel
+pt: Fase
+fr: Niveau
+@  · 🏁 Last stop
+de:  · 🏁 Endstation
+es:  · 🏁 Última parada
+pt:  · 🏁 Última parada
+fr:  · 🏁 Terminus
+@ ☕ breather
+de: ☕ Pause
+es: ☕ respiro
+pt: ☕ pausa
+fr: ☕ détente
+@ Tap a tile → it turns
+de: Tippe eine Kachel → sie dreht sich
+es: Toca una pieza → gira
+pt: Toque numa peça → ela gira
+fr: Touche une tuile → elle tourne
+@ ✨ Finish perfect → get your {0} streak back
+de: ✨ Perfekt beenden → deine {0}er-Serie kommt zurück
+es: ✨ Termina perfecto → recupera tu racha de {0}
+pt: ✨ Termine perfeito → recupere sua sequência de {0}
+fr: ✨ Finis parfait → récupère ta série de {0}
+@ 🏁 Last stop · finish perfect → +1 bonus 🎫
+de: 🏁 Endstation · perfekt beenden → +1 Bonus-🎫
+es: 🏁 Última parada · termina perfecto → +1 🎫 extra
+pt: 🏁 Última parada · termine perfeito → +1 🎫 bônus
+fr: 🏁 Terminus · finis parfait → +1 🎫 bonus
+@ Last time: {0}
+de: Letztes Mal: {0}
+es: La última vez: {0}
+pt: Da última vez: {0}
+fr: La dernière fois : {0}
+@ ↻ MOVE TARGET
+de: ↻ ZUGZIEL
+es: ↻ OBJETIVO
+pt: ↻ META DE JOGADAS
+fr: ↻ OBJECTIF COUPS
+@ ↻ OVER TARGET
+de: ↻ ZIEL VERFEHLT
+es: ↻ OBJETIVO SUPERADO
+pt: ↻ META ESTOURADA
+fr: ↻ OBJECTIF DÉPASSÉ
+@ late
+de: Verspätung
+es: de retraso
+pt: de atraso
+fr: de retard
+@ 🚉 Last train in 10 s
+de: 🚉 Letzter Zug in 10 s
+es: 🚉 Último tren en 10 s
+pt: 🚉 Último trem em 10 s
+fr: 🚉 Dernier train dans 10 s
+@  · ↺ restart → keep ✨{0}
+de:  · ↺ Neustart → ✨{0} bleibt
+es:  · ↺ reinicia → conservas ✨{0}
+pt:  · ↺ recomece → mantém ✨{0}
+fr:  · ↺ recommence → garde ✨{0}
+@ ⏱ Train is late · ★ lost
+de: ⏱ Zug verspätet · ★ weg
+es: ⏱ El tren va tarde · ★ perdida
+pt: ⏱ Trem atrasado · ★ perdida
+fr: ⏱ Train en retard · ★ perdue
+@ ↻ Move target passed · ★ lost
+de: ↻ Zugziel überschritten · ★ weg
+es: ↻ Objetivo superado · ★ perdida
+pt: ↻ Meta de jogadas estourada · ★ perdida
+fr: ↻ Objectif dépassé · ★ perdue
+@ ↶ {0} {1} undone
+de: ↶ {0} {1} zurückgenommen
+es: ↶ {0} {1} deshechas
+pt: ↶ {0} {1} desfeitas
+fr: ↶ {0} {1} annulés
+@ move
+de: Zug
+es: jugada
+pt: jogada
+fr: coup
+@ moves
+de: Züge
+es: jugadas
+pt: jogadas
+fr: coups
+@ 🔦 Lantern on · 5 s
+de: 🔦 Laterne an · 5 s
+es: 🔦 Linterna encendida · 5 s
+pt: 🔦 Lanterna acesa · 5 s
+fr: 🔦 Lanterne allumée · 5 s
+@ ⏱ +15 s · the train waits a bit longer
+de: ⏱ +15 s · der Zug wartet noch etwas
+es: ⏱ +15 s · el tren espera un poco más
+pt: ⏱ +15 s · o trem espera mais um pouco
+fr: ⏱ +15 s · le train attend un peu
+@ Extra turn
+de: Extradrehung
+es: Giro extra
+pt: Giro extra
+fr: Tour bonus
+@ This counter tile is used up. An extra turn lets it turn <b>once more</b>.
+de: Diese Zählkachel ist aufgebraucht. Mit einer Extradrehung dreht sie sich <b>noch einmal</b>.
+es: Esta pieza contador se agotó. Un giro extra la deja girar <b>una vez más</b>.
+pt: Esta peça contador acabou. Um giro extra deixa ela girar <b>mais uma vez</b>.
+fr: Cette tuile compteur est épuisée. Un tour bonus la fait tourner <b>une fois de plus</b>.
+@ Use extra turn
+de: Extradrehung nutzen
+es: Usar giro extra
+pt: Usar giro extra
+fr: Utiliser
+@ {0} left
+de: noch {0}
+es: quedan {0}
+pt: restam {0}
+fr: il en reste {0}
+@ Cancel
+de: Abbrechen
+es: Cancelar
+pt: Cancelar
+fr: Annuler
+@ 🔄 Extra turn · the tile turns once more
+de: 🔄 Extradrehung · die Kachel dreht sich noch einmal
+es: 🔄 Giro extra · la pieza gira una vez más
+pt: 🔄 Giro extra · a peça gira mais uma vez
+fr: 🔄 Tour bonus · la tuile tourne encore une fois
+@ ☕ Guess I’ll grab another coffee…
+de: ☕ Dann hol ich mir noch einen Kaffee…
+es: ☕ Pues me tomo otro café…
+pt: ☕ Então vou pegar mais um café…
+fr: ☕ Bon, je reprends un café…
+@ Hope the boss is patient today.
+de: Hoffentlich ist der Chef heute geduldig.
+es: Ojalá el jefe tenga paciencia hoy.
+pt: Tomara que o chefe tenha paciência hoje.
+fr: Pourvu que le patron soit patient aujourd’hui.
+@ Finished another chapter 📖
+de: Wieder ein Kapitel geschafft 📖
+es: Otro capítulo terminado 📖
+pt: Mais um capítulo lido 📖
+fr: Encore un chapitre de lu 📖
+@ Signal failure, maybe?
+de: Signalstörung, vielleicht?
+es: ¿Fallo de señal, quizá?
+pt: Falha de sinal, será?
+fr: Panne de signal, peut-être ?
+@ Walking would’ve been faster 🚶
+de: Zu Fuß wär ich schneller gewesen 🚶
+es: Andando habría llegado antes 🚶
+pt: A pé teria sido mais rápido 🚶
+fr: À pied, ça aurait été plus vite 🚶
+@ Oh well, nice view.
+de: Na ja, schöne Aussicht.
+es: Bueno, bonita vista.
+pt: Ah, pelo menos a vista é bonita.
+fr: Bah, la vue est belle.
+@ Mom texted “where are you” 📱
+de: Mama schreibt „wo bist du“ 📱
+es: Mamá escribió «¿dónde estás?» 📱
+pt: Minha mãe mandou “cadê você?” 📱
+fr: Maman a écrit « t’es où ? » 📱
+@ A whole album just ended 🎧
+de: Ein ganzes Album ist schon durch 🎧
+es: Se acabó un álbum entero 🎧
+pt: Um álbum inteiro acabou 🎧
+fr: Un album entier vient de finir 🎧
+@ Patience, patience… 🧘
+de: Geduld, Geduld… 🧘
+es: Paciencia, paciencia… 🧘
+pt: Paciência, paciência… 🧘
+fr: Patience, patience… 🧘
+@ I’ll clap when the train arrives 👏
+de: Ich klatsche, wenn der Zug kommt 👏
+es: Aplaudiré cuando llegue el tren 👏
+pt: Vou aplaudir quando o trem chegar 👏
+fr: J’applaudirai quand le train arrivera 👏
+@ I said “on my way”. They believed me 😅
+de: Ich schrieb „bin unterwegs“. Sie glaubten mir 😅
+es: Dije «voy de camino». Me creyeron 😅
+pt: Falei “tô chegando”. Acreditaram 😅
+fr: J’ai dit « j’arrive ». On m’a cru 😅
+@ My coffee went cold ☕
+de: Mein Kaffee ist kalt geworden ☕
+es: Se me enfrió el café ☕
+pt: Meu café esfriou ☕
+fr: Mon café a refroidi ☕
+@ This delay will go down in history.
+de: Diese Verspätung geht in die Geschichte ein.
+es: Este retraso pasará a la historia.
+pt: Esse atraso vai entrar para a história.
+fr: Ce retard restera dans l’histoire.
+@ Almost there? The light’s on 💡
+de: Fast da? Das Licht ist an 💡
+es: ¿Ya casi? La luz está encendida 💡
+pt: Quase lá? A luz acendeu 💡
+fr: Presque ? La lumière est allumée 💡
+@ This tile was set by a hint
+de: Diese Kachel hat ein Tipp gesetzt
+es: Una pista colocó esta pieza
+pt: Uma dica fixou esta peça
+fr: Un indice a placé cette tuile
+@ Dark tunnel · lights up as the line nears
+de: Dunkler Tunnel · wird hell, wenn die Linie naht
+es: Túnel oscuro · se ilumina al acercarse la línea
+pt: Túnel escuro · acende quando a linha chega perto
+fr: Tunnel sombre · s’éclaire quand la ligne approche
+@ Counter used up · tile is in place
+de: Zähler aufgebraucht · Kachel sitzt richtig
+es: Contador agotado · la pieza está bien
+pt: Contador esgotado · a peça está certa
+fr: Compteur épuisé · la tuile est en place
+@ Counter used up · ↺ restart or 💡 hint
+de: Zähler aufgebraucht · ↺ Neustart oder 💡 Tipp
+es: Contador agotado · ↺ reinicia o 💡 pista
+pt: Contador esgotado · ↺ recomece ou 💡 dica
+fr: Compteur épuisé · ↺ recommence ou 💡 indice
+@ Paired tiles · both turn together
+de: Paarkacheln · beide drehen sich zusammen
+es: Piezas gemelas · giran juntas
+pt: Peças gêmeas · giram juntas
+fr: Tuiles jumelles · elles tournent ensemble
+@ The two lines touch · split them!
+de: Die Linien berühren sich · trenn sie!
+es: Las dos líneas se tocan · ¡sepáralas!
+pt: As duas linhas se tocam · separe-as!
+fr: Les deux lignes se touchent · sépare-les !
+@ On time
+de: Pünktlich
+es: A tiempo
+pt: No horário
+fr: À l’heure

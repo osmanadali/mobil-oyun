@@ -1,0 +1,932 @@
+# Ray — çeviri sözlüğü (4/4): güçlendiriciler, sandık, öğretici, rozetler, şehir, meydan okuma, kural eklentileri, durağan HTML
+
+@ Lantern
+de: Laterne
+es: Linterna
+pt: Lanterna
+fr: Lanterne
+@ Lights up the dark tunnel for 5 s
+de: Erhellt den dunklen Tunnel 5 s lang
+es: Ilumina el túnel oscuro 5 s
+pt: Ilumina o túnel escuro por 5 s
+fr: Éclaire le tunnel sombre 5 s
+@ +15 s
+de: +15 s
+es: +15 s
+pt: +15 s
+fr: +15 s
+@ Saves the ⏱ star in the last 10 s
+de: Rettet den ⏱-Stern in den letzten 10 s
+es: Salva la estrella ⏱ en los últimos 10 s
+pt: Salva a estrela ⏱ nos últimos 10 s
+fr: Sauve l’étoile ⏱ dans les 10 dernières s
+@ Undo
+de: Rückgängig
+es: Deshacer
+pt: Desfazer
+fr: Annuler
+@ Takes back your last 5 moves
+de: Nimmt deine letzten 5 Züge zurück
+es: Deshace tus últimas 5 jugadas
+pt: Desfaz suas últimas 5 jogadas
+fr: Annule tes 5 derniers coups
+@ 💡 hint ×2 <i>or</i> 1 booster
+de: 💡 Tipp ×2 <i>oder</i> 1 Booster
+es: 💡 pista ×2 <i>o</i> 1 potenciador
+pt: 💡 dica ×2 <i>ou</i> 1 reforço
+fr: 💡 indice ×2 <i>ou</i> 1 booster
+@ 💡 hint ×4, 🛡 streak shield, 2 boosters <i>or</i> ❤️∞ 15 min
+de: 💡 Tipp ×4, 🛡 Serienschild, 2 Booster <i>oder</i> ❤️∞ 15 Min.
+es: 💡 pista ×4, 🛡 escudo de racha, 2 potenciadores <i>o</i> ❤️∞ 15 min
+pt: 💡 dica ×4, 🛡 escudo de sequência, 2 reforços <i>ou</i> ❤️∞ 15 min
+fr: 💡 indice ×4, 🛡 bouclier de série, 2 boosters <i>ou</i> ❤️∞ 15 min
+@ 🚆 new train livery <i>or</i> ❤️∞ 30 min
+de: 🚆 neuer Zuglack <i>oder</i> ❤️∞ 30 Min.
+es: 🚆 nuevo diseño de tren <i>o</i> ❤️∞ 30 min
+pt: 🚆 nova pintura de trem <i>ou</i> ❤️∞ 30 min
+fr: 🚆 nouvelle livrée <i>ou</i> ❤️∞ 30 min
+@ No epic in {0} chests? The {1}th is guaranteed
+de: Nichts Episches in {0} Kisten? Die {1}. ist sicher
+es: ¿Nada épico en {0} cofres? El {1}.º es seguro
+pt: Nada épico em {0} baús? O {1}º é garantido
+fr: Rien d’épique en {0} coffres ? Le {1}e est garanti
+@ What’s inside?
+de: Was ist drin?
+es: ¿Qué hay dentro?
+pt: O que tem dentro?
+fr: Qu’y a-t-il dedans ?
+@ Chests use earned 🎫 tickets · you have 🎫 {0}
+de: Kisten kosten verdiente 🎫 Tickets · du hast 🎫 {0}
+es: Los cofres usan 🎫 billetes ganados · tienes 🎫 {0}
+pt: Baús usam 🎫 bilhetes ganhos · você tem 🎫 {0}
+fr: Les coffres prennent les 🎫 gagnés · tu as 🎫 {0}
+@ 🎫 {0} needed
+de: 🎫 {0} nötig
+es: Necesitas 🎫 {0}
+pt: Precisa de 🎫 {0}
+fr: 🎫 {0} requis
+@ Your train
+de: Dein Zug
+es: Tu tren
+pt: Seu trem
+fr: Ton train
+@ Comes from a chest as an epic
+de: Kommt als Episch aus einer Kiste
+es: Sale de un cofre como épico
+pt: Sai de um baú como épico
+fr: Sort d’un coffre en épique
+@ Unlimited lives · {0} min
+de: Unendlich Leben · {0} Min.
+es: Vidas ilimitadas · {0} min
+pt: Vidas ilimitadas · {0} min
+fr: Vies illimitées · {0} min
+@ No lives lost for {0} minutes
+de: {0} Minuten lang kein Lebensverlust
+es: No pierdes vidas durante {0} minutos
+pt: Sem perder vidas por {0} minutos
+fr: Aucune vie perdue pendant {0} minutes
+@ {0} owned
+de: {0} im Besitz
+es: tienes {0}
+pt: você tem {0}
+fr: {0} en stock
+@ Hint
+de: Tipp
+es: Pista
+pt: Dica
+fr: Indice
+@ Hints
+de: Tipps
+es: Pistas
+pt: Dicas
+fr: Indices
+@ You now have {0} {1}
+de: Du hast jetzt {0} {1}
+es: Ahora tienes {0} {1}
+pt: Agora você tem {0} {1}
+fr: Tu as maintenant {0} {1}
+@ Streak shield
+de: Serienschild
+es: Escudo de racha
+pt: Escudo de sequência
+fr: Bouclier de série
+@ Saves a broken streak once · {0}/{1} owned
+de: Rettet eine gerissene Serie einmal · {0}/{1} im Besitz
+es: Salva una racha rota una vez · tienes {0}/{1}
+pt: Salva uma sequência perdida uma vez · você tem {0}/{1}
+fr: Sauve une série brisée une fois · {0}/{1} en stock
+@ New train livery
+de: Neuer Zuglack
+es: Nuevo diseño de tren
+pt: Nova pintura de trem
+fr: Nouvelle livrée
+@ Tap → open
+de: Tippen → öffnen
+es: Toca → abrir
+pt: Toque → abrir
+fr: Touche → ouvrir
+@ Put on your train
+de: Auf deinen Zug
+es: Ponlo en tu tren
+pt: Usar no seu trem
+fr: Mettre sur ton train
+@ Tap to continue
+de: Tippen zum Weitermachen
+es: Toca para seguir
+pt: Toque para continuar
+fr: Touche pour continuer
+@ Tap a tile → it <b>turns</b>
+de: Tippe eine Kachel → sie <b>dreht sich</b>
+es: Toca una pieza → <b>gira</b>
+pt: Toque numa peça → ela <b>gira</b>
+fr: Touche une tuile → elle <b>tourne</b>
+@ <b>Extend the line</b> from the hub in the middle
+de: <b>Verlängere die Linie</b> vom Zentrum in der Mitte
+es: <b>Alarga la línea</b> desde el centro
+pt: <b>Estenda a linha</b> a partir do centro
+fr: <b>Prolonge la ligne</b> depuis le centre
+@ <b>Light up</b> every station
+de: <b>Erleuchte</b> jede Station
+es: <b>Ilumina</b> cada estación
+pt: <b>Acenda</b> todas as estações
+fr: <b>Allume</b> chaque station
+@ All connected → <b>you win!</b> 🎉
+de: Alles verbunden → <b>gewonnen!</b> 🎉
+es: Todo conectado → <b>¡ganas!</b> 🎉
+pt: Tudo ligado → <b>você vence!</b> 🎉
+fr: Tout est relié → <b>gagné !</b> 🎉
+@ Finish <b>fast</b> + tap <b>less</b> = ★★★
+de: <b>Schnell</b> fertig + <b>wenig</b> tippen = ★★★
+es: Acaba <b>rápido</b> + toca <b>menos</b> = ★★★
+pt: Termine <b>rápido</b> + toque <b>menos</b> = ★★★
+fr: Finis <b>vite</b> + touche <b>moins</b> = ★★★
+@ Levels grow <b>bigger and harder</b>
+de: Level werden <b>größer und schwerer</b>
+es: Los niveles se vuelven <b>más grandes y difíciles</b>
+pt: As fases ficam <b>maiores e mais difíceis</b>
+fr: Les niveaux deviennent <b>plus grands et plus durs</b>
+@ A new <b>Daily Line</b> every day 🔥
+de: Jeden Tag eine neue <b>Tageslinie</b> 🔥
+es: Una nueva <b>Línea del día</b> cada día 🔥
+pt: Uma nova <b>Linha do Dia</b> todo dia 🔥
+fr: Une nouvelle <b>Ligne du jour</b> chaque jour 🔥
+@ finish · ⏱ time · ↻ moves
+de: Ziel · ⏱ Zeit · ↻ Züge
+es: meta · ⏱ tiempo · ↻ jugadas
+pt: final · ⏱ tempo · ↻ jogadas
+fr: fin · ⏱ temps · ↻ coups
+@ Let’s play!
+de: Los geht’s!
+es: ¡A jugar!
+pt: Vamos jogar!
+fr: C’est parti !
+@ Gameplay demo
+de: Spieldemo
+es: Demo de juego
+pt: Demonstração
+fr: Démo de jeu
+@ ‹ swipe ›
+de: ‹ wischen ›
+es: ‹ desliza ›
+pt: ‹ deslize ›
+fr: ‹ glisse ›
+@ Next ›
+de: Weiter ›
+es: Siguiente ›
+pt: Próximo ›
+fr: Suivant ›
+@ {0} {1} is yours · it stays after the season
+de: {0} {1} gehört dir · bleibt auch nach der Saison
+es: {0} {1} es tuyo · se queda tras la temporada
+pt: {0} {1} é seu · fica depois da estação
+fr: {0} {1} est à toi · il reste après la saison
+@ First perfect
+de: Erstes Perfekt
+es: Primer perfecto
+pt: Primeiro perfeito
+fr: Premier parfait
+@ Beat a level within ⏱ and ↻
+de: Schaff ein Level mit ⏱ und ↻
+es: Supera un nivel con ⏱ y ↻
+pt: Vença uma fase dentro de ⏱ e ↻
+fr: Finis un niveau dans ⏱ et ↻
+@ Perfect 10
+de: Perfekt 10
+es: Perfecto 10
+pt: Perfeito 10
+fr: Parfait 10
+@ Finish 10 levels perfectly
+de: Schaff 10 Level perfekt
+es: Completa 10 niveles perfectos
+pt: Complete 10 fases perfeitas
+fr: Finis 10 niveaux parfaits
+@ Perfect 100
+de: Perfekt 100
+es: Perfecto 100
+pt: Perfeito 100
+fr: Parfait 100
+@ Finish 100 levels perfectly
+de: Schaff 100 Level perfekt
+es: Completa 100 niveles perfectos
+pt: Complete 100 fases perfeitas
+fr: Finis 100 niveaux parfaits
+@ First district
+de: Erstes Viertel
+es: Primer barrio
+pt: Primeiro bairro
+fr: Premier quartier
+@ Finish a whole line
+de: Schaff eine ganze Linie
+es: Completa una línea entera
+pt: Complete uma linha inteira
+fr: Finis une ligne entière
+@ Golden district
+de: Goldenes Viertel
+es: Barrio dorado
+pt: Bairro dourado
+fr: Quartier doré
+@ Finish every level of a line perfectly
+de: Schaff jedes Level einer Linie perfekt
+es: Completa perfecto cada nivel de una línea
+pt: Complete perfeita cada fase de uma linha
+fr: Finis parfait chaque niveau d’une ligne
+@ Rule master
+de: Regelmeister
+es: Maestro de reglas
+pt: Mestre das regras
+fr: Maître des règles
+@ Finish the line of every rule
+de: Schaff die Linie jeder Regel
+es: Completa la línea de cada regla
+pt: Complete a linha de cada regra
+fr: Finis la ligne de chaque règle
+@ 100 levels
+de: 100 Level
+es: 100 niveles
+pt: 100 fases
+fr: 100 niveaux
+@ Finish 100 levels
+de: Schaff 100 Level
+es: Completa 100 niveles
+pt: Complete 100 fases
+fr: Finis 100 niveaux
+@ 500 levels
+de: 500 Level
+es: 500 niveles
+pt: 500 fases
+fr: 500 niveaux
+@ Finish 500 levels
+de: Schaff 500 Level
+es: Completa 500 niveles
+pt: Complete 500 fases
+fr: Finis 500 niveaux
+@ 7-day streak
+de: 7-Tage-Serie
+es: Racha de 7 días
+pt: 7 dias seguidos
+fr: Série de 7 jours
+@ Finish the Daily Line 7 days in a row
+de: Schaff die Tageslinie 7 Tage in Folge
+es: Completa la Línea del día 7 días seguidos
+pt: Complete a Linha do Dia 7 dias seguidos
+fr: Finis la Ligne du jour 7 jours d’affilée
+@ 30-day streak
+de: 30-Tage-Serie
+es: Racha de 30 días
+pt: 30 dias seguidos
+fr: Série de 30 jours
+@ Finish the Daily Line 30 days in a row
+de: Schaff die Tageslinie 30 Tage in Folge
+es: Completa la Línea del día 30 días seguidos
+pt: Complete a Linha do Dia 30 dias seguidos
+fr: Finis la Ligne du jour 30 jours d’affilée
+@ First chest
+de: Erste Kiste
+es: Primer cofre
+pt: Primeiro baú
+fr: Premier coffre
+@ Open a surprise chest
+de: Öffne eine Überraschungskiste
+es: Abre un cofre sorpresa
+pt: Abra um baú surpresa
+fr: Ouvre un coffre surprise
+@ Chest hunter
+de: Kistenjäger
+es: Cazacofres
+pt: Caçador de baús
+fr: Chasseur de coffres
+@ Open 25 chests
+de: Öffne 25 Kisten
+es: Abre 25 cofres
+pt: Abra 25 baús
+fr: Ouvre 25 coffres
+@ Power-up
+de: Power-up
+es: Potenciado
+pt: Turbinado
+fr: Survolté
+@ Use 10 power-ups
+de: Nutze 10 Booster
+es: Usa 10 potenciadores
+pt: Use 10 reforços
+fr: Utilise 10 boosters
+@ Weekly rider
+de: Wochenfahrgast
+es: Viajero semanal
+pt: Passageiro da semana
+fr: Voyageur de la semaine
+@ Finish all three quests of a week
+de: Schaff alle drei Aufgaben einer Woche
+es: Completa las tres misiones de una semana
+pt: Complete as três missões de uma semana
+fr: Finis les trois quêtes d’une semaine
+@ Zen rider
+de: Zen-Fahrgast
+es: Viajero zen
+pt: Passageiro zen
+fr: Voyageur zen
+@ Finish 10 levels in zen mode
+de: Schaff 10 Level im Zen-Modus
+es: Completa 10 niveles en modo zen
+pt: Complete 10 fases no modo zen
+fr: Finis 10 niveaux en mode zen
+@ NEW BADGE
+de: NEUES ABZEICHEN
+es: INSIGNIA NUEVA
+pt: NOVA MEDALHA
+fr: NOUVEAU BADGE
+@ Light City
+de: Lichtstadt
+es: Ciudad Luz
+pt: Cidade Luz
+fr: Ville Lumière
+@ Harbor City
+de: Hafenstadt
+es: Ciudad Puerto
+pt: Cidade Porto
+fr: Ville Port
+@ Star City
+de: Sternenstadt
+es: Ciudad Estrella
+pt: Cidade Estrela
+fr: Ville Étoile
+@ Night City
+de: Nachtstadt
+es: Ciudad Noche
+pt: Cidade Noite
+fr: Ville Nuit
+@ Spring City
+de: Quellstadt
+es: Ciudad Fuente
+pt: Cidade Fonte
+fr: Ville Source
+@ North City
+de: Nordstadt
+es: Ciudad Norte
+pt: Cidade Norte
+fr: Ville Nord
+@ Horizon City
+de: Horizontstadt
+es: Ciudad Horizonte
+pt: Cidade Horizonte
+fr: Ville Horizon
+@ Sky City
+de: Himmelsstadt
+es: Ciudad Cielo
+pt: Cidade Céu
+fr: Ville Ciel
+@ {0}/{1} districts · ✨ {2} golden
+de: {0}/{1} Viertel · ✨ {2} golden
+es: {0}/{1} barrios · ✨ {2} dorados
+pt: {0}/{1} bairros · ✨ {2} dourados
+fr: {0}/{1} quartiers · ✨ {2} dorés
+@ Previous city
+de: Vorige Stadt
+es: Ciudad anterior
+pt: Cidade anterior
+fr: Ville précédente
+@ Next city
+de: Nächste Stadt
+es: Ciudad siguiente
+pt: Próxima cidade
+fr: Ville suivante
+@ City map
+de: Stadtplan
+es: Mapa de la ciudad
+pt: Mapa da cidade
+fr: Plan de la ville
+@ Every finished line lights a district · all-perfect lines glow gold
+de: Jede fertige Linie erhellt ein Viertel · ganz perfekte Linien leuchten golden
+es: Cada línea completada ilumina un barrio · las perfectas brillan en oro
+pt: Cada linha completa acende um bairro · as perfeitas brilham em dourado
+fr: Chaque ligne finie éclaire un quartier · les lignes parfaites brillent d’or
+@ ✨ Golden district
+de: ✨ Goldenes Viertel
+es: ✨ Barrio dorado
+pt: ✨ Bairro dourado
+fr: ✨ Quartier doré
+@ District lit ✓
+de: Viertel erleuchtet ✓
+es: Barrio iluminado ✓
+pt: Bairro aceso ✓
+fr: Quartier éclairé ✓
+@ {0} {1} to go
+de: noch {0} {1}
+es: faltan {0} {1}
+pt: faltam {0} {1}
+fr: encore {0} {1}
+@ level
+de: Level
+es: nivel
+pt: fase
+fr: niveau
+@ 🔒 Locked
+de: 🔒 Gesperrt
+es: 🔒 Bloqueado
+pt: 🔒 Bloqueado
+fr: 🔒 Verrouillé
+@ Up next
+de: Als Nächstes
+es: A continuación
+pt: A seguir
+fr: Ensuite
+@ Badges live on this device · Move progress takes them to a new phone
+de: Abzeichen liegen auf diesem Gerät · „Fortschritt übertragen“ nimmt sie mit
+es: Las insignias viven en este dispositivo · «Pasar progreso» las lleva a otro móvil
+pt: As medalhas ficam neste aparelho · “Transferir progresso” leva para outro celular
+fr: Les badges restent sur cet appareil · « Transférer la partie » les emmène
+@ City
+de: Stadt
+es: Ciudad
+pt: Cidade
+fr: Ville
+@ Badges
+de: Abzeichen
+es: Insignias
+pt: Medalhas
+fr: Badges
+@ {0} / {1} badges
+de: {0} / {1} Abzeichen
+es: {0} / {1} insignias
+pt: {0} / {1} medalhas
+fr: {0} / {1} badges
+@ Your friend took {0} {1} · you {2}
+de: Dein Freund brauchte {0} {1} · du {2}
+es: Tu amigo hizo {0} {1} · tú {2}
+pt: Seu amigo fez {0} {1} · você {2}
+fr: Ton ami a fait {0} {1} · toi {2}
+@ You already finished today’s line
+de: Die heutige Linie hast du schon geschafft
+es: Ya completaste la línea de hoy
+pt: Você já completou a linha de hoje
+fr: Tu as déjà fini la ligne du jour
+@ Your friend took {0} {1} · can you beat that?
+de: Dein Freund brauchte {0} {1} · schaffst du’s besser?
+es: Tu amigo hizo {0} {1} · ¿lo superas?
+pt: Seu amigo fez {0} {1} · consegue bater?
+fr: Ton ami a fait {0} {1} · tu fais mieux ?
+@ That challenge has expired · today’s line awaits
+de: Diese Herausforderung ist abgelaufen · die heutige Linie wartet
+es: Ese reto caducó · te espera la línea de hoy
+pt: Esse desafio expirou · a linha de hoje te espera
+fr: Ce défi a expiré · la ligne du jour t’attend
+@ Gear tile
+de: Zahnradkachel
+es: Pieza engranaje
+pt: Peça engrenagem
+fr: Tuile engrenage
+@ New: gear tile
+de: Neu: Zahnradkachel
+es: Nuevo: pieza engranaje
+pt: Novo: peça engrenagem
+fr: Nouveau : tuile engrenage
+@ You <b>can’t tap</b> a gear (⚙) tile: it turns 90° by itself <b>every 2 moves</b>. Finish the line on the move when the gear <b>points the right way</b>.
+de: Eine Zahnradkachel (⚙) kannst du <b>nicht antippen</b>: sie dreht sich <b>alle 2 Züge</b> von selbst um 90°. Schließ die Linie in dem Zug, in dem das Zahnrad <b>richtig steht</b>.
+es: Una pieza engranaje (⚙) <b>no se toca</b>: gira 90° sola <b>cada 2 jugadas</b>. Cierra la línea en la jugada en que el engranaje <b>apunta bien</b>.
+pt: A peça engrenagem (⚙) <b>não pode ser tocada</b>: ela gira 90° sozinha <b>a cada 2 jogadas</b>. Feche a linha na jogada em que a engrenagem <b>estiver certa</b>.
+fr: Une tuile engrenage (⚙) <b>ne se touche pas</b> : elle tourne seule de 90° <b>tous les 2 coups</b>. Ferme la ligne au coup où l’engrenage <b>est dans le bon sens</b>.
+@ ⚙ Gear tile · can’t be tapped, it turns by itself every 2 moves
+de: ⚙ Zahnradkachel · nicht antippbar, dreht sich alle 2 Züge selbst
+es: ⚙ Pieza engranaje · no se toca, gira sola cada 2 jugadas
+pt: ⚙ Peça engrenagem · não dá para tocar, gira sozinha a cada 2 jogadas
+fr: ⚙ Tuile engrenage · intouchable, elle tourne seule tous les 2 coups
+@ ⚙ The gear turned · every 2 moves
+de: ⚙ Das Zahnrad hat gedreht · alle 2 Züge
+es: ⚙ El engranaje giró · cada 2 jugadas
+pt: ⚙ A engrenagem girou · a cada 2 jogadas
+fr: ⚙ L’engrenage a tourné · tous les 2 coups
+@ Turntable
+de: Drehscheibe
+es: Plataforma giratoria
+pt: Plataforma giratória
+fr: Plaque tournante
+@ New: turntable
+de: Neu: Drehscheibe
+es: Nuevo: plataforma giratoria
+pt: Novo: plataforma giratória
+fr: Nouveau : plaque tournante
+@ A round <b>turntable</b> carries four tiles: tap one and the whole table <b>turns 90°</b>. Tiles swap places, tracks <b>stay joined</b>.
+de: Eine runde <b>Drehscheibe</b> trägt vier Kacheln: Tippst du eine an, <b>dreht sich die ganze Scheibe um 90°</b>. Die Kacheln wechseln den Platz, die Gleise <b>bleiben verbunden</b>.
+es: Una <b>plataforma giratoria</b> lleva cuatro piezas: toca una y toda la plataforma <b>gira 90°</b>. Las piezas cambian de sitio y las vías <b>siguen unidas</b>.
+pt: Uma <b>plataforma giratória</b> leva quatro peças: toque numa e a plataforma toda <b>gira 90°</b>. As peças trocam de lugar e os trilhos <b>continuam ligados</b>.
+fr: Une <b>plaque tournante</b> porte quatre tuiles : touches-en une et toute la plaque <b>tourne de 90°</b>. Les tuiles changent de place, les rails <b>restent reliés</b>.
+@ Hidden depot
+de: Verstecktes Depot
+es: Depósito oculto
+pt: Depósito oculto
+fr: Dépôt caché
+@ New: hidden depot
+de: Neu: verstecktes Depot
+es: Nuevo: depósito oculto
+pt: Novo: depósito oculto
+fr: Nouveau : dépôt caché
+@ An edge <b>bracket</b>: <b>exactly one</b> of its three tiles runs out to the depot {0}. Which one is <b>hidden</b>; elsewhere the edge is still a wall.
+de: Eine <b>Klammer</b> am Rand: <b>genau eine</b> ihrer drei Kacheln führt hinaus zum Depot {0}. Welche, ist <b>geheim</b>; sonst bleibt der Rand eine Wand.
+es: Un <b>corchete</b> en el borde: <b>solo una</b> de sus tres piezas sale al depósito {0}. Cuál es un <b>secreto</b>; en el resto el borde sigue siendo un muro.
+pt: Um <b>colchete</b> na borda: <b>só uma</b> das três peças sai para o depósito {0}. Qual delas é <b>segredo</b>; no resto a borda continua sendo parede.
+fr: Un <b>crochet</b> au bord : <b>une seule</b> de ses trois tuiles sort vers le dépôt {0}. Laquelle reste <b>cachée</b> ; ailleurs le bord reste un mur.
+@ Depot · only one tile at the bracket runs out
+de: Depot · nur eine Kachel an der Klammer führt hinaus
+es: Depósito · solo una pieza del corchete sale
+pt: Depósito · só uma peça do colchete sai
+fr: Dépôt · une seule tuile du crochet sort
+@ Only one track can leave a bracket
+de: Nur ein Gleis darf eine Klammer verlassen
+es: Solo una vía puede salir de un corchete
+pt: Só um trilho pode sair do colchete
+fr: Un seul rail peut sortir d’un crochet
+@ The loop must pass the dashed-ring tile
+de: Der Ring muss über die Kachel mit dem gestrichelten Kreis
+es: El bucle debe pasar por la pieza del anillo
+pt: O laço precisa passar pela peça do anel
+fr: La boucle doit passer par la tuile à anneau
+@ The loop passed the ring tile · the ring fills
+de: Der Ring führt über die Kreiskachel · der Kreis füllt sich
+es: El bucle pasó por el anillo · el anillo se llena
+pt: O laço passou pelo anel · o anel se enche
+fr: La boucle passe par l’anneau · l’anneau se remplit
+@ Loop line
+de: Ringlinie
+es: Línea circular
+pt: Linha circular
+fr: Ligne circulaire
+@ New: loop line
+de: Neu: Ringlinie
+es: Nuevo: línea circular
+pt: Novo: linha circular
+fr: Nouveau : ligne circulaire
+@ On this line the track closes on itself <b>once</b> and forms a <b>loop</b>. The loop must pass the <b>dashed-ring</b> {0} tile: then the ring fills.
+de: Auf dieser Linie schließt sich das Gleis <b>einmal</b> zu einem <b>Ring</b>. Der Ring muss über die Kachel mit dem <b>gestrichelten Kreis</b> {0}: dann füllt sich der Kreis.
+es: En esta línea la vía se cierra <b>una vez</b> y forma un <b>bucle</b>. El bucle debe pasar por la pieza del <b>anillo punteado</b> {0}: así se llena el anillo.
+pt: Nesta linha o trilho se fecha <b>uma vez</b> e forma um <b>laço</b>. O laço precisa passar pela peça do <b>anel tracejado</b> {0}: aí o anel se enche.
+fr: Sur cette ligne, le rail se referme <b>une fois</b> en <b>boucle</b>. La boucle doit passer par la tuile à <b>anneau pointillé</b> {0} : l’anneau se remplit alors.
+@ Cover
+de: Abdeckung
+es: Tapa
+pt: Tampa
+fr: Cache
+@ New: cover
+de: Neu: Abdeckung
+es: Nuevo: tapa
+pt: Novo: tampa
+fr: Nouveau : cache
+@ A <b>covered</b> tile hides its track and <b>won't turn</b>; the track below already faces right. Use the neighbors to find <b>which ways it opens</b>.
+de: Eine <b>abgedeckte</b> Kachel verbirgt ihr Gleis und <b>dreht sich nicht</b>; darunter liegt es schon richtig. Finde mit den Nachbarn heraus, <b>wohin es führt</b>.
+es: Una pieza <b>tapada</b> oculta su vía y <b>no gira</b>; debajo ya está bien orientada. Usa las vecinas para saber <b>hacia dónde se abre</b>.
+pt: Uma peça <b>tampada</b> esconde o trilho e <b>não gira</b>; por baixo ele já está certo. Use as vizinhas para descobrir <b>para onde ele abre</b>.
+fr: Une tuile <b>cachée</b> masque son rail et <b>ne tourne pas</b> ; dessous, il est déjà bien placé. Sers-toi des voisines pour trouver <b>où il s’ouvre</b>.
+@ Cover · the track below is fixed and already right
+de: Abdeckung · das Gleis darunter ist fest und schon richtig
+es: Tapa · la vía de abajo está fija y bien
+pt: Tampa · o trilho embaixo é fixo e já está certo
+fr: Cache · le rail dessous est fixe et déjà bon
+@ Cover · light passed under it, glowing arms are open
+de: Abdeckung · Licht fließt darunter, leuchtende Arme sind offen
+es: Tapa · la luz pasó por debajo, los brazos que brillan están abiertos
+pt: Tampa · a luz passou por baixo, braços acesos estão abertos
+fr: Cache · la lumière passe dessous, les bras lumineux sont ouverts
+@ Closed station · don't connect it
+de: Geschlossene Station · nicht anschließen
+es: Estación cerrada · no la conectes
+pt: Estação fechada · não ligue
+fr: Station fermée · ne la relie pas
+@ A closed station can't be connected
+de: Eine geschlossene Station darf nicht angeschlossen werden
+es: Una estación cerrada no se puede conectar
+pt: Estação fechada não pode ser ligada
+fr: Une station fermée ne se relie pas
+@ ⊘ 1 station is closed · don't connect it
+de: ⊘ 1 Station ist geschlossen · nicht anschließen
+es: ⊘ 1 estación está cerrada · no la conectes
+pt: ⊘ 1 estação está fechada · não ligue
+fr: ⊘ 1 station est fermée · ne la relie pas
+@ ⊘ {0} stations are closed · don't connect them
+de: ⊘ {0} Stationen sind geschlossen · nicht anschließen
+es: ⊘ {0} estaciones están cerradas · no las conectes
+pt: ⊘ {0} estações estão fechadas · não ligue
+fr: ⊘ {0} stations sont fermées · ne les relie pas
+@ Closed station
+de: Geschlossene Station
+es: Estación cerrada
+pt: Estação fechada
+fr: Station fermée
+@ New: closed station
+de: Neu: geschlossene Station
+es: Nuevo: estación cerrada
+pt: Novo: estação fechada
+fr: Nouveau : station fermée
+@ Some stations are <b>closed</b> but look normal; the <b>{0} number</b> on the hub says how many. <b>Don't connect</b> a closed one; connect every open one.
+de: Manche Stationen sind <b>geschlossen</b>, sehen aber normal aus; die <b>{0}-Zahl</b> am Zentrum sagt, wie viele. Schließ geschlossene <b>nicht an</b>; verbinde jede offene.
+es: Algunas estaciones están <b>cerradas</b> pero parecen normales; el <b>número {0}</b> del centro dice cuántas. <b>No conectes</b> las cerradas; conecta todas las abiertas.
+pt: Algumas estações estão <b>fechadas</b>, mas parecem normais; o <b>número {0}</b> no centro diz quantas. <b>Não ligue</b> as fechadas; ligue todas as abertas.
+fr: Certaines stations sont <b>fermées</b> mais semblent normales ; le <b>nombre {0}</b> sur le centre dit combien. <b>Ne relie pas</b> les fermées ; relie toutes les ouvertes.
+@ Sliding row
+de: Schiebereihe
+es: Fila deslizante
+pt: Fileira deslizante
+fr: Rangée glissante
+@ New: sliding row
+de: Neu: Schiebereihe
+es: Nuevo: fila deslizante
+pt: Novo: fileira deslizante
+fr: Nouveau : rangée glissante
+@ Tiles in a railed row <b>don’t turn</b>: tap the row and the whole row <b>slides one step right</b>; the last tile wraps to the front.
+de: Kacheln in einer Schienenreihe <b>drehen sich nicht</b>: Tippst du die Reihe an, <b>rutscht sie einen Schritt nach rechts</b>; die letzte Kachel kommt nach vorn.
+es: Las piezas de una fila con raíles <b>no giran</b>: toca la fila y toda ella <b>se desliza un paso a la derecha</b>; la última pieza pasa al principio.
+pt: Peças numa fileira com trilhos <b>não giram</b>: toque na fileira e ela toda <b>desliza uma casa para a direita</b>; a última peça vai para o começo.
+fr: Les tuiles d’une rangée à rails <b>ne tournent pas</b> : touche la rangée et elle <b>glisse d’un cran à droite</b> ; la dernière tuile revient devant.
+@ New: bridge
+de: Neu: Brücke
+es: Nuevo: puente
+pt: Novo: ponte
+fr: Nouveau : pont
+@ On a <b>bridge</b> two lines cross but <b>never join</b>: left goes to right, top goes to bottom. It doesn't turn; connect <b>all four ends</b>.
+de: Auf einer <b>Brücke</b> kreuzen sich zwei Linien, <b>ohne sich zu verbinden</b>: links geht nach rechts, oben nach unten. Sie dreht sich nicht; verbinde <b>alle vier Enden</b>.
+es: En un <b>puente</b> dos líneas se cruzan pero <b>nunca se unen</b>: izquierda con derecha, arriba con abajo. No gira; conecta <b>los cuatro extremos</b>.
+pt: Numa <b>ponte</b> duas linhas se cruzam, mas <b>nunca se juntam</b>: esquerda com direita, cima com baixo. Ela não gira; ligue <b>as quatro pontas</b>.
+fr: Sur un <b>pont</b>, deux lignes se croisent <b>sans se joindre</b> : gauche vers droite, haut vers bas. Il ne tourne pas ; relie <b>les quatre bouts</b>.
+@ Bridge · doesn't turn
+de: Brücke · dreht sich nicht
+es: Puente · no gira
+pt: Ponte · não gira
+fr: Pont · ne tourne pas
+@ Switch
+de: Weiche
+es: Desvío
+pt: Desvio
+fr: Aiguillage
+@ New: switch
+de: Neu: Weiche
+es: Nuevo: desvío
+pt: Novo: desvio
+fr: Nouveau : aiguillage
+@ A <b>switch</b> doesn't turn: tap to flip between <b>straight</b> and <b>branch</b>. The <b>dashed line</b> shows the other route.
+de: Eine <b>Weiche</b> dreht sich nicht: Tippen schaltet zwischen <b>gerade</b> und <b>abzweigend</b>. Die <b>gestrichelte Linie</b> zeigt den anderen Weg.
+es: Un <b>desvío</b> no gira: tócalo para cambiar entre <b>recto</b> y <b>ramal</b>. La <b>línea discontinua</b> muestra la otra ruta.
+pt: Um <b>desvio</b> não gira: toque para trocar entre <b>reto</b> e <b>ramal</b>. A <b>linha tracejada</b> mostra o outro caminho.
+fr: Un <b>aiguillage</b> ne tourne pas : touche-le pour passer de <b>tout droit</b> à <b>bifurcation</b>. La <b>ligne pointillée</b> montre l’autre voie.
+@ Switch · straight ↔ branch
+de: Weiche · gerade ↔ abzweigend
+es: Desvío · recto ↔ ramal
+pt: Desvio · reto ↔ ramal
+fr: Aiguillage · tout droit ↔ bifurcation
+@ 🔒 Sealed tile · opens once a neighbour is on the line
+de: 🔒 Siegelkachel · öffnet, sobald ein Nachbar an der Linie ist
+es: 🔒 Pieza sellada · se abre cuando una vecina está en la línea
+pt: 🔒 Peça lacrada · abre quando uma vizinha está na linha
+fr: 🔒 Tuile scellée · s’ouvre dès qu’une voisine est sur la ligne
+@ Sealed tile
+de: Siegelkachel
+es: Pieza sellada
+pt: Peça lacrada
+fr: Tuile scellée
+@ New: sealed tile
+de: Neu: Siegelkachel
+es: Nuevo: pieza sellada
+pt: Novo: peça lacrada
+fr: Nouveau : tuile scellée
+@ A 🔒 <b>sealed</b> tile won’t turn until a neighbour is <b>on the line</b>. Break the link and it <b>seals again</b>: work outward from the hub.
+de: Eine 🔒 <b>versiegelte</b> Kachel dreht sich erst, wenn ein Nachbar <b>an der Linie</b> ist. Reißt die Verbindung, <b>versiegelt sie wieder</b>: arbeite dich vom Zentrum nach außen.
+es: Una pieza 🔒 <b>sellada</b> no gira hasta que una vecina esté <b>en la línea</b>. Si se corta el enlace, <b>se vuelve a sellar</b>: avanza desde el centro hacia fuera.
+pt: Uma peça 🔒 <b>lacrada</b> só gira quando uma vizinha está <b>na linha</b>. Se a ligação cair, ela <b>lacra de novo</b>: avance do centro para fora.
+fr: Une tuile 🔒 <b>scellée</b> ne tourne pas tant qu’une voisine n’est pas <b>sur la ligne</b>. Coupe le lien et elle <b>se rescelle</b> : avance depuis le centre.
+@ The bank needs {0} {1} · fewer means a loop
+de: Am Ufer braucht es {0} {1} · weniger heißt Schleife
+es: La orilla necesita {0} {1} · menos significa un bucle
+pt: A margem precisa de {0} {1} · menos quer dizer um laço
+fr: La rive veut {0} {1} · moins signifie une boucle
+@ buffer
+de: Prellbock
+es: tope
+pt: para-choque
+fr: butoir
+@ buffers
+de: Prellböcke
+es: topes
+pt: para-choques
+fr: butoirs
+@ Buffer · the track ended on the bank
+de: Prellbock · das Gleis endet am Ufer
+es: Tope · la vía terminó en la orilla
+pt: Para-choque · o trilho terminou na margem
+fr: Butoir · le rail s’arrête sur la rive
+@ River
+de: Fluss
+es: Río
+pt: Rio
+fr: Rivière
+@ New: river
+de: Neu: Fluss
+es: Nuevo: río
+pt: Novo: rio
+fr: Nouveau : rivière
+@ Track crosses the <b>river</b> at a ford or ends at a bank <b>buffer</b> {0}. Bank buffers must equal <b>the badge number</b>; fewer means a <b>loop</b> somewhere.
+de: Gleise queren den <b>Fluss</b> an einer Furt oder enden an einem <b>Prellbock</b> {0} am Ufer. Die Prellböcke müssen <b>der Zahl im Abzeichen</b> entsprechen; weniger heißt irgendwo eine <b>Schleife</b>.
+es: La vía cruza el <b>río</b> por un vado o termina en un <b>tope</b> {0} de la orilla. Los topes deben igualar <b>el número de la insignia</b>; menos significa un <b>bucle</b> en algún sitio.
+pt: O trilho cruza o <b>rio</b> por um vau ou termina num <b>para-choque</b> {0} da margem. Os para-choques precisam bater com <b>o número do selo</b>; menos quer dizer um <b>laço</b> em algum lugar.
+fr: Le rail franchit la <b>rivière</b> à un gué ou s’arrête à un <b>butoir</b> {0} sur la rive. Les butoirs doivent égaler <b>le nombre du badge</b> ; moins signifie une <b>boucle</b> quelque part.
+@ Wrap-around board
+de: Endlosbrett
+es: Tablero sin bordes
+pt: Tabuleiro sem bordas
+fr: Plateau sans bords
+@ New: wrap-around board
+de: Neu: Endlosbrett
+es: Nuevo: tablero sin bordes
+pt: Novo: tabuleiro sem bordas
+fr: Nouveau : plateau sans bords
+@ The board has <b>no edges</b>: track leaving the right comes back on the <b>left</b>, off the top it returns at the <b>bottom</b>. Edge arrows mark the crossings; corners won’t save you!
+de: Das Brett hat <b>keine Ränder</b>: Was rechts hinausführt, kommt <b>links</b> zurück, oben hinaus kommt <b>unten</b> wieder herein. Randpfeile zeigen die Übergänge; Ecken retten dich nicht!
+es: El tablero <b>no tiene bordes</b>: la vía que sale por la derecha vuelve por la <b>izquierda</b>, y la de arriba vuelve por <b>abajo</b>. Las flechas marcan los pasos; ¡las esquinas no te salvan!
+pt: O tabuleiro <b>não tem bordas</b>: o trilho que sai pela direita volta pela <b>esquerda</b>, e o de cima volta por <b>baixo</b>. As setas marcam as passagens; os cantos não salvam!
+fr: Le plateau n’a <b>pas de bords</b> : un rail qui sort à droite revient à <b>gauche</b>, par le haut il revient en <b>bas</b>. Les flèches marquent les passages ; les coins ne te sauveront pas !
+@ Faint arm
+de: Blasser Arm
+es: Brazo tenue
+pt: Braço apagado
+fr: Bras pâle
+@ New: faint arm
+de: Neu: blasser Arm
+es: Nuevo: brazo tenue
+pt: Novo: braço apagado
+fr: Nouveau : bras pâle
+@ Under a <b>faint arm (?)</b> there <b>may or may not</b> be track. The ? turns with the tile. Read the <b>neighbors</b> to tell if the arm is real.
+de: Unter einem <b>blassen Arm (?)</b> liegt <b>vielleicht</b> ein Gleis. Das ? dreht sich mit der Kachel. Lies die <b>Nachbarn</b>, um zu sehen, ob der Arm echt ist.
+es: Bajo un <b>brazo tenue (?)</b> <b>puede haber o no</b> vía. El ? gira con la pieza. Mira las <b>vecinas</b> para saber si el brazo es real.
+pt: Sob um <b>braço apagado (?)</b> <b>pode ou não</b> haver trilho. O ? gira com a peça. Olhe as <b>vizinhas</b> para saber se o braço é real.
+fr: Sous un <b>bras pâle (?)</b>, il y a <b>peut-être</b> un rail. Le ? tourne avec la tuile. Regarde les <b>voisines</b> pour savoir si le bras est réel.
+@ Faint arm · there may or may not be track under ?
+de: Blasser Arm · unter ? liegt vielleicht ein Gleis
+es: Brazo tenue · bajo ? puede haber o no vía
+pt: Braço apagado · sob ? pode ou não haver trilho
+fr: Bras pâle · sous le ?, il y a peut-être un rail
+@ Cooling tile
+de: Frostkachel
+es: Pieza helada
+pt: Peça gelada
+fr: Tuile givrée
+@ New: cooling tile
+de: Neu: Frostkachel
+es: Nuevo: pieza helada
+pt: Novo: peça gelada
+fr: Nouveau : tuile givrée
+@ Turn a frosted (❄) tile and <b>move on</b>, and it <b>freezes for 2 moves</b>. Don’t keep coming back to it: <b>think first</b>.
+de: Drehst du eine Frostkachel (❄) und <b>machst woanders weiter</b>, <b>friert sie 2 Züge lang ein</b>. Komm nicht ständig zu ihr zurück: <b>erst denken</b>.
+es: Gira una pieza helada (❄) y <b>pasa a otra</b>: <b>se congela 2 jugadas</b>. No vuelvas a ella una y otra vez: <b>piensa primero</b>.
+pt: Gire uma peça gelada (❄) e <b>passe para outra</b>: ela <b>congela por 2 jogadas</b>. Não fique voltando nela: <b>pense antes</b>.
+fr: Tourne une tuile givrée (❄) puis <b>passe à une autre</b> : elle <b>gèle pendant 2 coups</b>. N’y reviens pas sans cesse : <b>réfléchis d’abord</b>.
+@ ❄ Frozen tile · turns again in {0} {1}
+de: ❄ Gefrorene Kachel · dreht sich wieder in {0} {1}
+es: ❄ Pieza congelada · vuelve a girar en {0} {1}
+pt: ❄ Peça congelada · gira de novo em {0} {1}
+fr: ❄ Tuile gelée · retourne dans {0} {1}
+@ Signpost: the path to the hub must use the arrow's edge
+de: Wegweiser: der Weg zum Zentrum muss an der Pfeilseite hinaus
+es: Señal: el camino al centro debe salir por el lado de la flecha
+pt: Placa: o caminho até o centro deve sair pelo lado da seta
+fr: Panneau : le chemin vers le centre doit sortir côté flèche
+@  · ↺ restart or 💡
+de:  · ↺ Neustart oder 💡
+es:  · ↺ reinicia o 💡
+pt:  · ↺ recomece ou 💡
+fr:  · ↺ recommence ou 💡
+@ Signpost · the tile turns, the arrow stays
+de: Wegweiser · die Kachel dreht sich, der Pfeil bleibt
+es: Señal · la pieza gira, la flecha se queda
+pt: Placa · a peça gira, a seta fica
+fr: Panneau · la tuile tourne, la flèche reste
+@ Signpost
+de: Wegweiser
+es: Señal
+pt: Placa
+fr: Panneau
+@ New: signpost
+de: Neu: Wegweiser
+es: Nuevo: señal
+pt: Novo: placa
+fr: Nouveau : panneau
+@ A <b>signpost</b> tile's path to the hub must leave <b>where the arrow points</b>. The arrow is fixed: <b>the tile turns, the arrow doesn't</b>.
+de: Der Weg einer <b>Wegweiser</b>-Kachel zum Zentrum muss dort hinaus, <b>wohin der Pfeil zeigt</b>. Der Pfeil ist fest: <b>die Kachel dreht sich, der Pfeil nicht</b>.
+es: El camino de una pieza con <b>señal</b> hacia el centro debe salir <b>hacia donde apunta la flecha</b>. La flecha es fija: <b>la pieza gira, la flecha no</b>.
+pt: O caminho de uma peça com <b>placa</b> até o centro deve sair <b>para onde a seta aponta</b>. A seta é fixa: <b>a peça gira, a seta não</b>.
+fr: Le chemin d’une tuile à <b>panneau</b> vers le centre doit sortir <b>là où pointe la flèche</b>. La flèche est fixe : <b>la tuile tourne, pas la flèche</b>.
+@ The border needs {0} {1} and {2} {3}
+de: Die Grenze braucht {0} {1} und {2} {3}
+es: El borde necesita {0} {1} y {2} {3}
+pt: A borda precisa de {0} {1} e {2} {3}
+fr: La frontière veut {0} {1} et {2} {3}
+@ crossing
+de: Übergang
+es: cruce
+pt: travessia
+fr: passage
+@ crossings
+de: Übergänge
+es: cruces
+pt: travessias
+fr: passages
+@ Track ending at the border is a buffer · check the badge
+de: Ein Gleis, das an der Grenze endet, ist ein Prellbock · prüf das Abzeichen
+es: Una vía que acaba en el borde es un tope · mira la insignia
+pt: Trilho que termina na borda é para-choque · confira o selo
+fr: Un rail qui s’arrête à la frontière est un butoir · vérifie le badge
+@ Fare zone
+de: Tarifzone
+es: Zona tarifaria
+pt: Zona tarifária
+fr: Zone tarifaire
+@ New: fare zone
+de: Neu: Tarifzone
+es: Nuevo: zona tarifaria
+pt: Novo: zona tarifária
+fr: Nouveau : zone tarifaire
+@ At the <b>dashed square</b> around the hub, track either <b>crosses</b> or <b>ends at a buffer</b>. Crossings and buffers must match <b>the badge</b>.
+de: Am <b>gestrichelten Quadrat</b> um das Zentrum <b>quert</b> ein Gleis entweder oder <b>endet an einem Prellbock</b>. Übergänge und Prellböcke müssen zum <b>Abzeichen</b> passen.
+es: En el <b>cuadrado punteado</b> alrededor del centro, la vía <b>cruza</b> o <b>termina en un tope</b>. Cruces y topes deben coincidir con <b>la insignia</b>.
+pt: No <b>quadrado tracejado</b> em volta do centro, o trilho <b>atravessa</b> ou <b>termina num para-choque</b>. Travessias e para-choques precisam bater com <b>o selo</b>.
+fr: Au <b>carré pointillé</b> autour du centre, un rail <b>traverse</b> ou <b>s’arrête à un butoir</b>. Passages et butoirs doivent correspondre au <b>badge</b>.
+@ Tunnel portal
+de: Tunnelportal
+es: Boca de túnel
+pt: Boca de túnel
+fr: Portail de tunnel
+@ New: tunnel portal
+de: Neu: Tunnelportal
+es: Nuevo: boca de túnel
+pt: Novo: boca de túnel
+fr: Nouveau : portail
+@ Two edge portals with the <b>same letter</b> are linked: track entering one <b>exits the other</b>. The tunnel is optional; an edge with no letter is <b>closed</b>.
+de: Zwei Randportale mit <b>gleichem Buchstaben</b> sind verbunden: Was in eines hineinfährt, <b>kommt aus dem anderen heraus</b>. Der Tunnel ist freiwillig; ein Rand ohne Buchstaben ist <b>zu</b>.
+es: Dos bocas del borde con la <b>misma letra</b> están unidas: la vía que entra por una <b>sale por la otra</b>. El túnel es opcional; un borde sin letra está <b>cerrado</b>.
+pt: Duas bocas na borda com a <b>mesma letra</b> estão ligadas: o trilho que entra numa <b>sai pela outra</b>. O túnel é opcional; borda sem letra é <b>fechada</b>.
+fr: Deux portails du bord avec la <b>même lettre</b> sont reliés : un rail qui entre dans l’un <b>ressort par l’autre</b>. Le tunnel est facultatif ; un bord sans lettre est <b>fermé</b>.
+@ Tunnel {0} · in one portal, out the other
+de: Tunnel {0} · in ein Portal hinein, aus dem anderen heraus
+es: Túnel {0} · entra por una boca, sale por la otra
+pt: Túnel {0} · entra numa boca, sai pela outra
+fr: Tunnel {0} · on entre par un portail, on sort par l’autre
+@ Ray — Metro Puzzle
+de: Ray — Metro-Rätsel
+es: Ray — Puzle de metro
+pt: Ray — Quebra-cabeça do metrô
+fr: Ray — Puzzle de métro
+@ Connect the lines · Light up the city
+de: Verbinde die Linien · Erleuchte die Stadt
+es: Conecta las líneas · Ilumina la ciudad
+pt: Ligue as linhas · Ilumine a cidade
+fr: Relie les lignes · Illumine la ville
+@ Streak
+de: Serie
+es: Racha
+pt: Sequência
+fr: Série
+@ Stars
+de: Sterne
+es: Estrellas
+pt: Estrelas
+fr: Étoiles
+@ 🎯 Quests
+de: 🎯 Aufgaben
+es: 🎯 Misiones
+pt: 🎯 Missões
+fr: 🎯 Quêtes
+@ LINES
+de: LINIEN
+es: LÍNEAS
+pt: LINHAS
+fr: LIGNES
+@ Back
+de: Zurück
+es: Atrás
+pt: Voltar
+fr: Retour
+@ Restart
+de: Neustart
+es: Reiniciar
+pt: Recomeçar
+fr: Recommencer
+@ Game board: tap tiles to turn them and connect every station to the hub
+de: Spielbrett: tippe Kacheln an, um sie zu drehen, und verbinde jede Station mit dem Zentrum
+es: Tablero: toca las piezas para girarlas y conecta cada estación al centro
+pt: Tabuleiro: toque nas peças para girar e ligue cada estação ao centro
+fr: Plateau : touche les tuiles pour les tourner et relie chaque station au centre

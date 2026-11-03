@@ -11,7 +11,7 @@ const unrot = m => ((m >> 1) | (m << 3)) & 15;        // saat yönünün tersi 9
 const LINE_NAMES = L(['Liman', 'Çarşı', 'Sahil', 'Kule', 'Bahçe', 'Köprü', 'Fener', 'Vadi', 'Pınar', 'Meydan', 'Tepe', 'Ada', 'Saray', 'Rıhtım', 'Kanal', 'Çınar', 'Yayla', 'Koru', 'Kervan', 'Değirmen', 'Göl', 'Bağ', 'Pazar', 'Kale', 'Gar'],
   ['Harbor', 'Bazaar', 'Shore', 'Tower', 'Garden', 'Bridge', 'Lighthouse', 'Valley', 'Spring', 'Square', 'Hill', 'Island', 'Palace', 'Quay', 'Canal', 'Plane Tree', 'Highland', 'Grove', 'Caravan', 'Mill', 'Lake', 'Vineyard', 'Market', 'Castle', 'Terminal']);
 const NAME_PRE = L(['', 'Yeni', 'Eski', 'Kuzey', 'Güney', 'Doğu', 'Batı', 'Yukarı', 'Aşağı', 'Büyük', 'Küçük'], ['', 'New', 'Old', 'North', 'South', 'East', 'West', 'Upper', 'Lower', 'Great', 'Little']);
-const LOC = L('tr-TR', 'en-US');                         // tarih biçimi
+const LOC = RAY_LOCALE;                                  // tarih biçimi (i18n.js)
 const pl = (n, one, many) => n === 1 ? one : many;      // İngilizce tekil/çoğul
 const LINE0 = 12, LINE_STEP = 4, LINE_MAX = 28;         // hat uzunluğu: M1 12 bölüm, her hat +4 (16, 20, 24), M5'ten sonra hep 28
 const STAR_AVG = 2.2;                                   // yeni hat: önceki bölümlerde ortalama 2,2★
@@ -76,9 +76,11 @@ function dailyZ(day) {
 const dPct = day => Math.round(dailyZ(day) * 100);
 function lineTitle(c) {
   const n = LINE_NAMES.length, k = Math.floor(c / n), pre = NAME_PRE[k % NAME_PRE.length], tur = Math.floor(k / NAME_PRE.length);
-  return `${pre ? pre + ' ' : ''}${LINE_NAMES[c % n]}${tur ? ' ' + (tur + 1) : ''}`;
+  return `${pre ? PRE_JOIN(pre, LINE_NAMES[c % n]) : LINE_NAMES[c % n]}${tur ? ' ' + (tur + 1) : ''}`;
 }
-const lineName = c => `M${c + 1} · ${lineTitle(c)} ${L('Hattı', 'Line')}`;
+// önek: tr/en "Yeni Liman" · de "Neu-Hafen" · es/pt/fr adın ardından, cinsiyetsiz sözcüklerle ("Puerto Norte"; docs/CEVIRI.md)
+const PRE_JOIN = { de: (p, n) => `${p}-${n}`, es: (p, n) => `${n} ${p}`, 'pt-BR': (p, n) => `${n} ${p}`, fr: (p, n) => `${n} ${p}` }[RAY_LANG] || ((p, n) => `${p} ${n}`);
+const lineName = c => L(`M${c + 1} · ${lineTitle(c)} Hattı`, `M${c + 1} · ${lineTitle(c)} Line`);
 const need = c => Math.round((lineStart(c) - 1) * STAR_AVG);
 const totalStars = () => Object.values(save.stars).reduce((a, b) => a + b, 0);
 const unlocked = c => TEST || totalStars() >= need(c);
@@ -745,8 +747,8 @@ function refreshHome() {
   // toplam ★ üstteki çipte; burada yalnız sıradaki hatta kalan (tek ilerleme ekseni)
   $('gateTxt').textContent = tot >= hi ? `M${nx + 1} ${L('açık', 'open')} ✓` : L(`★ ${hi - tot} kaldı → M${nx + 1}`, `★ ${hi - tot} to go → M${nx + 1}`);
   $('progBar').style.width = Math.min(100, Math.max(4, (tot - lo) / Math.max(1, hi - lo) * 100)) + '%';
-  $('sSize').textContent = breath(save.level) ? L('☕ mola bölümü', '☕ breather level') : L(`⚡ zorluk %${zPct(save.level)}`, `⚡ ${zPct(save.level)}% hard`);
-  $('dailyK').textContent = L(`GÜNÜN HATTI · ⚡%${dPct(today())}`, `DAILY LINE · ⚡${dPct(today())}%`);
+  $('sSize').textContent = breath(save.level) ? L('☕ mola bölümü', '☕ breather level') : L(`⚡ zorluk ${LP(zPct(save.level))}`, `⚡ ${LP(zPct(save.level))} hard`);
+  $('dailyK').textContent = L(`GÜNÜN HATTI · ⚡${LP(dPct(today()))}`, `DAILY LINE · ⚡${LP(dPct(today()))}`);
   $('bPlay').classList.toggle('locked', !unlocked(c));
   questRow();
   // sıradaki bölümü boşta önceden üret: zor kurallı 7×9 bölüm telefonda 1–2 sn sürebilir, "Oyna"da beklenmesin (çıktı aynı, yalnız önbellek)
@@ -763,7 +765,7 @@ function renderMap() {
     const open = unlocked(c), first = lineStart(c), len = lineLen(c);
     const got = Array.from({ length: len }, (_, k) => save.stars[first + k] || 0).reduce((a, b) => a + b, 0);
     html += `<div class="line ${open ? '' : 'lockd'}" style="--lc:${lineCol(c)}">
-      <div class="lh"><i class="dot"></i><b>${lineName(c)}${RULES[c] ? `<em>${RULES[c].tag}</em>` : ''}</b><small>${open ? `★ ${got} / ${len * 3} · ⚡${L('%' + zPct(first), zPct(first) + '%')}` : `🔒 ★ ${tot} / ${need(c)}`}</small></div>
+      <div class="lh"><i class="dot"></i><b>${lineName(c)}${RULES[c] ? `<em>${RULES[c].tag}</em>` : ''}</b><small>${open ? `★ ${got} / ${len * 3} · ⚡${LP(zPct(first))}` : `🔒 ★ ${tot} / ${need(c)}`}</small></div>
       <div class="lvs">${Array.from({ length: len }, (_, k) => {
         const l = first + k, st = save.stars[l] || 0, can = open && (TEST || l <= save.level);
         return `<button class="lv ${can ? '' : 'off'} ${l === save.level && can ? 'cur' : ''} ${l === lineEnd(c) ? 'fin' : ''}" data-l="${l}" ${can ? '' : 'disabled'}><b>${l}</b><i>${can ? (save.crowns[l] ? '🎫' : starTxt(st)) : ''}</i></button>`;
@@ -1952,14 +1954,14 @@ function pauseSheet() {
 }
 function settings() {
   const seg = ['auto', 'dark', 'light'].map(t => `<button data-t="${t}" class="${save.theme === t ? 'on' : ''}">${{ auto: L('Oto', 'Auto'), dark: L('Koyu', 'Dark'), light: L('Açık', 'Light') }[t]}</button>`).join('');
-  const lang = [['tr', 'Türkçe'], ['en', 'English']].map(([k, n]) => `<button data-g="${k}" lang="${k}" class="${RAY_LANG === k ? 'on' : ''}">${n}</button>`).join('');
+  const lang = RAY_LANGS.map(([k, n]) => `<button data-g="${k}" lang="${k}" class="${RAY_LANG === k ? 'on' : ''}">${n}</button>`).join('');
   const opt = optTog;
   modal(`<h2>${L('Ayarlar', 'Settings')}</h2>
     ${SND_TOGS()}
     ${Remind.avail() ? opt('oR', save.remind, 'Günlük hatırlatma', 'Daily reminder') : ''}
     ${opt('oZ', save.zen, '🍃 Zen modu', '🍃 Zen mode')}
     <div class="opt">${L('Görünüm', 'Theme')} <div class="seg" id="oT">${seg}</div></div>
-    <div class="opt">${L('Dil', 'Language')} <div class="seg" id="oL">${lang}</div></div>
+    <div class="opt lang">${L('Dil', 'Language')} <div class="seg" id="oL">${lang}</div></div>
     <button class="opt row" id="oSkin"><span>${L('Renk temaları', 'Color themes')}</span><small>${skin().name} · 🎫 ${crownBal()} ›</small></button>
     <button class="opt row" id="oShop"><span>${L('Mağaza', 'Shop')}</span><small>💡 🧰 🎨 🎫 ›</small></button>
     <button class="opt row" id="oHow"><span>${L('Nasıl oynanır?', 'How to play?')}</span><small>›</small></button>
@@ -2198,7 +2200,7 @@ function chestSheet() {
   const can = chestBal() >= CHEST, own = LIVERIES.filter(v => ownsLiv(v.id)).length, cur = save.train || 'hat';
   modal(`<h2>${L('Sürpriz sandık', 'Surprise chest')}</h2>
     <div class="cbox ${can ? 'can' : ''}" id="chestBox">${CHEST_SVG}<div class="loot">${LOOT.map(([t, s]) => `<b class="tier-${t}">${RARITY[t][0]}</b><span>${s}</span>`).join('')}<small>${L(`${PITY} sandıkta destansı çıkmazsa ${PITY}.si garanti`, `No epic in ${PITY - 1} chests? The ${PITY}th is guaranteed`)}</small></div></div>
-    <div class="odds">${Object.entries(RARITY).map(([t, [n, p]]) => `<b class="tier-${t}">${n} ${L('%' + Math.round(p * 100), Math.round(p * 100) + '%')}</b>`).join('<i>·</i>')}<button id="mOdds" class="qm" aria-label="${L('Sandıktan ne çıkar?', 'What’s inside?')}">?</button></div>
+    <div class="odds">${Object.entries(RARITY).map(([t, [n, p]]) => `<b class="tier-${t}">${n} ${LP(Math.round(p * 100))}</b>`).join('<i>·</i>')}<button id="mOdds" class="qm" aria-label="${L('Sandıktan ne çıkar?', 'What’s inside?')}">?</button></div>
     ${(save.bCrowns || 0) > (save.bSpent || 0) ? `<p class="tip">${L(`Sandık kazanılan 🎫 bilet ile açılır · sende 🎫 ${Math.max(0, chestBal())}`, `Chests use earned 🎫 tickets · you have 🎫 ${Math.max(0, chestBal())}`)}</p>` : ''}
     ${BST.some(b => bst(b.id)) ? `<div class="bstinv">${BST.filter(b => bst(b.id)).map(b => `<span title="${b.name}">${b.ic} <b>${bst(b.id)}</b></span>`).join('')}</div>` : ''}
     <button id="mOpen" class="btn primary cbtn">${can ? `<span>${L('Aç', 'Open')} · 🎫 ${CHEST}</span>` : `<span>${L('Bilet topla', 'Earn tickets')}</span><small>${L(`🎫 ${CHEST} gerekli`, `🎫 ${CHEST} needed`)}</small>`}</button>
