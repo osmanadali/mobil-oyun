@@ -881,7 +881,7 @@ function start(mode, lvl = save.level) {
   const arch = mode === 'arch', daily = mode === 'daily' || arch, day = arch ? lvl : today();
   if (!daily && !unlocked(lineOf(lvl))) { lockedSheet(lineOf(lvl)); return; }
   // ❤️ 0 canda yeni bölüm başlamaz (yarım kalan aynı bölüm sürer; Günün Hattı, arşiv ve 🍃 zen can harcamaz)
-  if (!daily && !save.zen && !infOn() && lives() <= 0 && save.runs.level?.lvl !== lvl) { if (active('game')) show('home'); lifeSheet(lvl); return; }
+  if (!daily && !save.zen && !infOn() && lives() <= 0 && save.runs.level?.lvl !== lvl) { if (active('game')) show('home'); lifePop(lvl); return; }
   G = { ...(daily ? dailyFor(day) : puzzleFor(lvl)), daily, arch, lvl: daily ? 0 : lvl, day: daily ? day : null, practice: arch ? archPlayed(day) : daily && save.dailyDone === day, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0, bub: 0 };
   G.lim = limits(G); G.zen = !!save.zen && !daily;
   G.lim.dl = G.zen || daily ? 0 : lastCall(G.lim.t);   // son süre (0: yok)   // 🍃 zen: hedefler gizli (Günün Hattı herkes için aynı koşulda)
@@ -1847,7 +1847,14 @@ function addLife() { const n = lives(); if (n >= LIFE_MAX) return false; save.li
 const hearts = n => `<span class="hearts" aria-label="${n} / ${LIFE_MAX}">${'❤️'.repeat(n)}${'<i>🤍</i>'.repeat(LIFE_MAX - n)}</span>`;
 const lifeTxt = () => infOn() ? `❤️∞ ${fmtT(save.infUntil - Date.now())}` : lives() < LIFE_MAX ? `❤️ ${lives()} · ${fmtT(lifeNext() + 999)}` : `❤️ ${LIFE_MAX}`;
 // ana sayfa: Oyna düğmesinin alt satırında "Bölüm 12 · ❤️ 4 · 12:34" (zen'de can harcanmaz → gösterilmez)
-function lifeRow() { const el = $('hLife'); if (el) el.textContent = save.zen ? '' : ' · ' + lifeTxt(); }
+// ana sayfa üst çipi (serinin eski yeri): ❤️ 4 · 12:34 (dolarken sıradaki cana geri sayım), ❤️ ∞ 14:59; zen'de can harcanmaz → gizli
+function lifeRow() {
+  const c = $('lifeChip'); if (!c) return;
+  c.hidden = !!save.zen; if (save.zen) return;
+  const inf = infOn(), n = lives();
+  $('sLife').textContent = inf ? '∞' : n; $('sLifeT').textContent = inf ? fmtT(save.infUntil - Date.now()) : n < LIFE_MAX ? fmtT(lifeNext() + 999) : '';
+  c.setAttribute('aria-label', `${L('Can', 'Lives')} ${inf ? '∞' : `${n} / ${LIFE_MAX}`}`);
+}
 
 // 🚉 son süre doldu: bölüm başarısız, 1 ❤️ gider (sınırsız canda gitmez). Yarım oyun silinir.
 function fail() {
@@ -1859,7 +1866,7 @@ function fail() {
   setNext(`<span class="miss">${L('🚉 Son tren kaçtı', '🚉 Last train gone')}</span>`); $('gTrip').classList.remove('last'); bstUi();
   Music.setTension(0, false); Music.setMode('rest');
   [4, 2, 0].forEach((k, j) => tone(note(k), .35, .03, 'sine', j * .16)); haptic('heavy');
-  setTimeout(() => { if (G === g && active('game')) failSheet(g, lost); }, 650);
+  setTimeout(() => { if (G === g && active('game')) { failSheet(g, lost); if (lost && !lives()) lifePop(g.lvl); } }, 650);   // son can gitti → üstte ada bildirimi
 }
 function failSheet(g, lost) {
   const n = lives(), inf = infOn();
@@ -1870,32 +1877,40 @@ function failSheet(g, lost) {
     <button id="mHome" class="btn glassbtn">${L('Ana sayfa', 'Home')}</button>`,
     { mRetry: () => start('level', g.lvl), mHome: () => { closeModal(); show('home'); } }, true);
 }
-// 0 can: sıradaki can için geri sayım · ödüllü video +1 ❤️ · can dolunca Oyna
-function lifeSheet(lvl) {
-  modal(`<div class="bell">❤️</div><h2>${L('Canın kalmadı', 'Out of lives')}</h2>
-    <p>${L('Her 30 dakikada 1 can dolar (en çok 5). Günün Hattı ve 🍃 Zen modu can harcamaz.', 'One life refills every 30 minutes (up to 5). The Daily Line and 🍃 Zen mode cost no lives.')}</p>
-    <p class="lifep" id="mLife"></p><div id="mLifeAct" class="lifeact"></div>
-    <button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, { mClose: closeModal });
-  let go = null;
+// ❤️ can adası (üstte ada bildirimi, görev bildirimiyle aynı yer): can bitince sargılı kalp ❤️‍🩹 + yenilenmeye geri sayım,
+// ▶ video +1 ❤️ ve 🛒 mağaza (❤️∞ başlangıç paketi). Can gelince "Oyna". Can çipine dokununca da açılır (can doluysa kısa bilgi).
+// lvl: 0 canda Oyna'ya basılan bölüm (can gelince "Oyna" onu açar)
+let lpT = 0, lpLvl = 0;
+function lifePop(lvl = save.level) {
+  const el = $('lifePop'); lpLvl = lvl; clearInterval(lpT);
+  let mode = null, born = Date.now();
+  const hide = () => { clearInterval(lpT); lpT = 0; el.classList.remove('show'); };
   const up = () => {
-    const n = lives(), ok = n > 0 || infOn(), box = $('mLifeAct'); if (!box) return;
-    $('mLife').innerHTML = `${hearts(n)}<small>${infOn() ? lifeTxt() : n < LIFE_MAX ? L(`Sıradaki can ${fmtT(lifeNext() + 999)}`, `Next life in ${fmtT(lifeNext() + 999)}`) : ''}</small>`;
-    if (go === ok) return; go = ok;
-    box.innerHTML = ok ? `<button id="mGo" class="btn primary"><span>${L('Oyna', 'Play')}</span><small>${L('Bölüm', 'Level')} ${lvl}</small></button>`
-      : `<button id="mVid" class="btn primary"><span>${L('▶ Video izle', '▶ Watch a video')}</span><small>+1 ❤️</small></button>`;
-    bind({ mGo: () => start('level', lvl), mVid: lifeVideo });
+    if (!active('home') && !active('game')) return hide();
+    const n = lives(), inf = infOn(), m = inf ? 'inf' : n ? (n < LIFE_MAX ? 'some' : 'full') : 'empty';
+    const t = inf ? fmtT(save.infUntil - Date.now()) : n < LIFE_MAX ? fmtT(lifeNext() + 999) : '';
+    if (m !== mode) {
+      const was = mode; mode = m;
+      if (was === 'empty' && m !== 'empty') { haptic('heavy'); tone(note(9), .3, .045); born = Date.now(); }   // can geldi
+      const head = m === 'empty' ? L('CANIN BİTTİ', 'OUT OF LIVES') : m === 'inf' ? L('SINIRSIZ CAN', 'UNLIMITED LIVES') : `❤️ ${n} / ${LIFE_MAX}`;
+      const btn = m === 'empty' ? `${Ads.online() ? `<button id="lpVid">▶ +1 ❤️</button>` : ''}<button id="lpShop" class="${Ads.online() ? 'gl' : ''}">🛒</button>`
+        : was === 'empty' || lvl !== save.level || active('home') ? `<button id="lpGo">${L('Oyna', 'Play')}</button>` : '';
+      el.innerHTML = `<i>${m === 'empty' ? '❤️‍🩹' : '❤️'}</i><span><small>${head}</small><b id="lpTxt"></b></span><div class="lpb">${btn}<button class="x" id="lpX" aria-label="${L('Kapat', 'Close')}">✕</button></div>`;
+      bind({ lpVid: lifeVideo, lpShop: () => { hide(); storeSheet('star'); }, lpGo: () => { hide(); start('level', lpLvl); }, lpX: hide });
+    }
+    $('lpTxt').textContent = m === 'empty' ? L(`Yenilenmesine ${t}`, `Next life in ${t}`) : m === 'inf' ? t : m === 'some' ? L(`Sıradaki can ${t}`, `Next life in ${t}`) : L('Canların dolu', 'Lives are full');
+    if (m !== 'empty' && Date.now() - born > 6000) hide();   // can varken bilgi kısa kalır
   };
   async function lifeVideo() {
-    const b = $('mVid'); if (!b || Ads.busy()) return;
-    b.disabled = true; b.querySelector('span').textContent = L('Yükleniyor…', 'Loading…'); Music.stop();
+    const b = $('lpVid'); if (!b || Ads.busy()) return;
+    b.disabled = true; b.textContent = L('Yükleniyor…', 'Loading…'); Music.stop();
     const ok = await video(); Music.start();
-    if (!ok) { b.disabled = false; b.querySelector('span').textContent = L('▶ Video izle', '▶ Watch a video'); return; }
+    if (!ok) { b.disabled = false; b.textContent = '▶ +1 ❤️'; return; }
     addLife(); window.Olcum?.event?.('life_refill_ad');
-    haptic('heavy'); tone(note(9), .3, .045); toast(L('+1 ❤️ · iyi yolculuklar', '+1 ❤️ · have a good trip')); refreshHome();
-    if (modalOpen() && $('mLife')) up();
+    toast(L('+1 ❤️ · iyi yolculuklar', '+1 ❤️ · have a good trip')); refreshHome(); up();
   }
-  up(); const iv = setInterval(() => { if ($('mLife')) up(); else clearInterval(iv); }, 1000);
-  mOnClose = () => clearInterval(iv);
+  up(); el.classList.add('show'); tone(note(2), .3, .03, 'sine', .05);
+  lpT = setInterval(up, 1000);
 }
 // 3 görev; herkeste aynı tohum (basamağa göre). f: 'w' haftalık, 'd' günlük
 function qSet(f, id, salt) {
@@ -2485,7 +2500,8 @@ $('bBack').onclick = () => G && !G.won && !G.over && active('game') && !modalOpe
 $('bReset').onclick = reset;
 $('bHint').onclick = hint; $('gUndo').onclick = undo; $('gLamp').onclick = lamp; $('gPlus').onclick = plus15;
 $('bSettings').onclick = settings;
-$('streakChip').onclick = () => rescueOk() ? rescueSheet() : streakSheet();
+$('streakChip').onclick = e => { e.stopPropagation(); rescueOk() ? rescueSheet() : streakSheet(); };   // Günün Hattı kartının içinde: kart açılmasın
+$('lifeChip').onclick = () => lifePop();
 $('starsChip').onclick = () => show('map');
 $('crownChip').onclick = skinSheet;
 // arka plan ↔ ön plan: süre ve ses durur. İki kaynak (ikisi birden gelebilir, iş tekrarı zararsız): visibilitychange ve Capacitor appStateChange

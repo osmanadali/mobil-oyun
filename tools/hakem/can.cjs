@@ -21,6 +21,8 @@ module.exports = async T => {
     const G = window.__ray.G, m = document.getElementById('modal').classList.contains('open');
     return { game: document.getElementById('game').classList.contains('active'), over: !!G?.over, dl: G?.lim.dl, t: G?.lim.t, modal: m ? document.getElementById('mCard').textContent.replace(/\s+/g, ' ').trim() : '', ev: (window.__ev || []).filter(([n]) => n === 'life_lost' || n === 'life_refill_ad') };
   });
+  // ana sayfa can çipi (serinin eski yeri): "❤️ 4 25:00" · zen'de gizli → ''
+  const chip = page => page.evaluate(() => { const c = document.getElementById('lifeChip'); return c.hidden ? '' : [...c.children].map(e => e.textContent).filter(Boolean).join(' '); });
   const clock = (page, ms) => page.evaluate(ms => { const r = Date.now.__r || Date.now, off = (Date.now.__o || 0) + ms; Date.now = () => r() + off; Date.now.__r = r; Date.now.__o = off; }, ms);
 
   // ---------- a) son süre: 2× yıldız süresi (en az +60 sn); son 10 sn sinyal yanıp söner; dolunca başarısız, 1 ❤️ gider ----------
@@ -64,43 +66,58 @@ module.exports = async T => {
   {
     const now = Date.now();
     const { ctx, page, errors } = await go({ lives: 2, lifeT: now - 65 * MIN });
-    const a = { s: await getSave(page), txt: await page.textContent('#hLvl') };
+    const a = { s: await getSave(page), txt: await chip(page) };
     await clock(page, 31 * MIN); await page.waitForTimeout(1200);
-    const b = { s: await getSave(page), txt: await page.textContent('#hLvl') };
+    const b = { s: await getSave(page), txt: await chip(page) };
     await clock(page, 5 * 60 * MIN); await page.waitForTimeout(1200);
-    const c = { s: await getSave(page), txt: await page.textContent('#hLvl') };
+    const c = { s: await getSave(page), txt: await chip(page) };
     await shot(page, 'can-home');
-    check('can.refill', 'Can dolumu zaman damgasından: 65 dk sonra 2→4 (artan 5 dk sayılır), 31 dk sonra 5; 5\'te durur; ana sayfada "❤️ 4 · 25:00" gibi sade satır',
-      a.s.lives === 4 && a.s.lifeT === now - 5 * MIN && /❤️ 4 · 2[45]:\d\d/.test(a.txt) && b.s.lives === 5 && c.s.lives === 5 && /❤️ 5/.test(c.txt) && !errors.length,
+    check('can.refill', 'Can dolumu zaman damgasından: 65 dk sonra 2→4 (artan 5 dk sayılır), 31 dk sonra 5; 5\'te durur; ana sayfanın üst çipinde "❤️ 4 25:00" (dolarken geri sayım), dolunca yalnız "❤️ 5"',
+      a.s.lives === 4 && a.s.lifeT === now - 5 * MIN && /^❤️ 4 2[45]:\d\d$/.test(a.txt) && b.s.lives === 5 && c.s.lives === 5 && c.txt === '❤️ 5' && !errors.length,
       JSON.stringify({ a: [a.s.lives, a.s.lifeT - now, a.txt], b: [b.s.lives, b.txt], c: [c.s.lives, c.txt], errors }));
     errs.push(...errors); await ctx.close();
   }
 
-  // ---------- d) 0 can: bölüm başlamaz, pencere (geri sayım · video +1 ❤️ · Oyna) ----------
+  // ---------- d) 0 can: bölüm başlamaz; üstte can adası (❤️‍🩹 · yenilenmeye geri sayım · ▶ video +1 ❤️ · 🛒) → can gelince Oyna ----------
   {
     const { ctx, page, errors } = await go({ lives: 0, lifeT: Date.now() - 10 * MIN });
-    await page.click('#bPlay'); await page.waitForTimeout(600);
-    const a = await st(page);
+    const pop = () => page.evaluate(() => { const e = document.getElementById('lifePop'); return { show: e.classList.contains('show'), txt: e.textContent.replace(/\s+/g, ' ').trim(), vid: !!document.getElementById('lpVid'), shop: !!document.getElementById('lpShop'), go: !!document.getElementById('lpGo'), r: e.getBoundingClientRect().toJSON() }; });
+    await page.click('#bPlay'); await page.waitForTimeout(700);
+    const a = await st(page), p0 = await pop();
     await shot(page, 'can-empty');
-    await page.click('#mVid'); await page.waitForTimeout(900);
-    const s = await getSave(page), b = await st(page);
-    await page.click('#mGo'); await page.waitForTimeout(700);
-    const c = await st(page);
-    check('can.empty', '0 canda Oyna bölümü açmaz: "Canın kalmadı" penceresi sıradaki canı sayar (~20 dk); ödüllü video +1 ❤️ (life_refill_ad), sonra Oyna bölümü açar',
-      !a.game && /Canın kalmadı/.test(a.modal) && /Sıradaki can 1?[90]:\d\d|Sıradaki can 20:00/.test(a.modal) && s.lives === 1 && JSON.stringify(b.ev) === JSON.stringify([['life_refill_ad', null]]) && /Oyna/.test(b.modal) && c.game && !c.modal && !errors.length,
-      JSON.stringify({ a, lives: s.lives, b: b.modal.slice(0, 120), ev: b.ev, c: c.game, errors }));
+    await page.waitForTimeout(1100); const p1 = await pop();   // geri sayım akıyor
+    await page.click('#lpVid'); await page.waitForTimeout(900);
+    const s = await getSave(page), b = await st(page), p2 = await pop();
+    await page.click('#lpGo'); await page.waitForTimeout(700);
+    const c = await st(page), p3 = await pop();
+    check('can.empty', '0 canda Oyna bölümü açmaz: üstte can adası (❤️‍🩹 "CANIN BİTTİ", yenilenmesine ~20 dk geri sayım akar, ▶ +1 ❤️ ve 🛒 mağaza); video +1 ❤️ (life_refill_ad), ada "Oyna"ya döner, bölüm açılır',
+      !a.game && !a.modal && p0.show && /❤️‍🩹/.test(p0.txt) && /CANIN BİTTİ/.test(p0.txt) && /Yenilenmesine 1?[90]:\d\d|Yenilenmesine 20:00/.test(p0.txt) && p0.txt !== p1.txt && p0.vid && p0.shop && p0.r.top >= 0 && p0.r.right <= 391 &&
+      s.lives === 1 && JSON.stringify(b.ev) === JSON.stringify([['life_refill_ad', null]]) && p2.go && c.game && !c.modal && !p3.show && !errors.length,
+      JSON.stringify({ a: a.game, p0: p0.txt, p1: p1.txt, lives: s.lives, ev: b.ev, p2: p2.txt, c: c.game, errors }));
+    errs.push(...errors); await ctx.close();
+  }
+  {
+    // son can gidince: başarısızlık penceresi + üstte can adası; ada 🛒 mağazayı açar
+    const { ctx, page, errors } = await go({ lives: 1, lifeT: Date.now() - 2 * MIN });
+    await page.click('#bPlay'); await page.waitForTimeout(700);
+    await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.dl + .2) * 1000; }); await page.waitForTimeout(1500);
+    const f = await st(page), pop = await page.evaluate(() => document.getElementById('lifePop').classList.contains('show') && document.getElementById('lifePop').textContent);
+    await shot(page, 'can-last');
+    await page.click('#lpShop'); await page.waitForTimeout(500);
+    const shop = await page.evaluate(() => !!document.getElementById('store'));
+    check('can.last', 'Son can gidince "Son tren kaçtı" penceresiyle birlikte üstte can adası çıkar; 🛒 mağazayı açar', f.over && /Son tren/.test(f.modal) && /CANIN BİTTİ/.test(pop || '') && shop && !errors.length, JSON.stringify({ over: f.over, pop, shop, errors }));
     errs.push(...errors); await ctx.close();
   }
 
   // ---------- e) sınırsız can: 0 canda da oynanır, başarısızlıkta can gitmez; ❤️∞ görünür ----------
   {
     const { ctx, page, errors } = await go({ lives: 0, lifeT: Date.now(), infUntil: Date.now() + 15 * MIN });
-    const txt = await page.textContent('#hLvl');
+    const txt = await chip(page);
     await page.click('#bPlay'); await page.waitForTimeout(700);
     await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.dl + .2) * 1000; }); await page.waitForTimeout(1200);
     const f = await st(page), s = await getSave(page);
-    check('can.inf', 'Sınırsız can: ana sayfada "❤️∞ 14:59"; 0 canda bölüm açılır; son süre dolunca bölüm biter ama can gitmez (life_lost yok)',
-      /❤️∞ 1[45]:\d\d/.test(txt) && f.over && /can gitmedi/.test(f.modal) && s.lives === 0 && !f.ev.length && !errors.length, JSON.stringify({ txt, f, lives: s.lives, errors }));
+    check('can.inf', 'Sınırsız can: ana sayfa çipinde "❤️ ∞ 14:59"; 0 canda bölüm açılır; son süre dolunca bölüm biter ama can gitmez (life_lost yok)',
+      /^❤️ ∞ 1[45]:\d\d$/.test(txt) && f.over && /can gitmedi/.test(f.modal) && s.lives === 0 && !f.ev.length && !errors.length, JSON.stringify({ txt, f, lives: s.lives, errors }));
     errs.push(...errors); await ctx.close();
   }
 
@@ -115,11 +132,11 @@ module.exports = async T => {
     await page.evaluate(() => (document.getElementById('bBack')?.click(), document.getElementById('pHome')?.click())); await page.waitForTimeout(500);
     await page.evaluate(() => { const s = JSON.parse(localStorage.getItem('ray')); s.zen = true; localStorage.setItem('ray', JSON.stringify(s)); }); await page.reload(); await page.waitForTimeout(500);
     await page.evaluate(() => { window.__ev = []; window.Olcum = { event: (n, p) => window.__ev.push([n, p || null]) }; });
-    const ztxt = await page.textContent('#hLvl');
+    const ztxt = await chip(page);
     await page.click('#bPlay'); await page.waitForTimeout(700);
     await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.t * 3 + 120) * 1000; }); await page.waitForTimeout(600);
     const z = await st(page), s = await getSave(page);
-    check('can.exempt', 'Günün Hattı ve 🍃 zen 0 canda da açılır, son süre yok (çok geç kalsa da bölüm sürer), can harcanmaz; zen\'de ana sayfada can yazmaz',
+    check('can.exempt', 'Günün Hattı ve 🍃 zen 0 canda da açılır, son süre yok (çok geç kalsa da bölüm sürer), can harcanmaz; zen\'de ana sayfada can çipi gizli',
       d.game && !d.dl && !d.over && dWon && z.game && !z.dl && !z.over && !/❤️/.test(ztxt) && s.lives === 0 && !z.ev.length && !errors.length,
       JSON.stringify({ d, dWon, z, ztxt, lives: s.lives, errors }));
     errs.push(...errors); await ctx.close();

@@ -315,10 +315,10 @@ Bu iki sistemin amacı oyuncuya "bir bölüm daha" dedirtmektir. Yıldız süres
   - Eski bir yarım oyun son süreyi geçmişse açılışta son 10 sn'ye çekilir (uyarıyla sürer, anında düşmez).
   - ↺ Baştan başlamak can harcamaz (süre de sıfırlanır); can yalnız son süre dolunca gider. Oyun sakin kalır: ceza bekleyene değil, takılıp bırakmayana.
 - **Can:** en çok 5, 30 dk'da 1 dolar. Dolum kayıttaki zaman damgasından hesaplanır (`lives()`), bu yüzden uygulama kapalıyken ve çevrimdışıyken de doğrudur; saat geri alınırsa sayaç şimdiye çekilir. Kayıt sözleşmesi (adlar sabit): `save.lives` (0–5, yoksa 5), `save.lifeT` (son dolum hesabı, ms; dolu candan düşünce başlar), `save.infUntil` (bu ana dek ❤️∞ sınırsız can, ms; haftalık görev ve sandık yazar).
-  - 0 canda yeni bölüm başlamaz (aynı bölümün yarım oyunu sürer): "Canın kalmadı" penceresi sıradaki cana geri sayar, **▶ Video izle → +1 ❤️** (ödüllü video), can dolunca ya da videodan sonra Oyna.
+  - 0 canda yeni bölüm başlamaz (aynı bölümün yarım oyunu sürer): ekranın üstünde **can adası** çıkar (görev bildirimiyle aynı yerde): sargılı kalp ❤️‍🩹, "CANIN BİTTİ · Yenilenmesine 23:58" (saniye saniye akar), **▶ +1 ❤️** (ödüllü video; bağlantı yoksa gizli) ve **🛒** (mağaza, ❤️∞ içeren başlangıç paketi öne çıkar), ✕. Can gelince (dolum ya da video) ada "Oyna"ya döner. Son can başarısızlıkla gidince de "Son tren kaçtı" penceresiyle birlikte ada çıkar.
   - ❤️∞ sınırsız can açıkken başarısızlıkta can gitmez, 0 canda da oynanır.
   - **Günün Hattı, geçmiş gün arşivi ve 🍃 zen** can harcamaz ve son süreleri yoktur.
-  - Gösterge: ana sayfada yalnız Oyna düğmesinin alt satırı ("Bölüm 12 · ❤️ 4 · 23:10", sınırsızda "❤️∞ 14:59", zen'de yazmaz). Oyunda can gösterilmez; yalnız son süreye 10 sn kala sinyal.
+  - Gösterge: ana sayfanın sol üst çipi (eskiden 🔥 serinin yeri; seri Günün Hattı kartının içine taşındı): "❤️ 4 23:10" (dolarken sıradaki cana geri sayım), dolu "❤️ 5", sınırsızda "❤️ ∞ 14:59", zen'de gizli. Çipe dokununca can adası kısa bilgiyle açılır. Oyunda can gösterilmez; yalnız son süreye 10 sn kala sinyal.
   - Ölçüm: `Olcum.event('life_lost', { lvl })` (can gerçekten gidince), `Olcum.event('life_refill_ad')`.
   - Kod: `lastCall`, `lives`, `loseLife`, `addLife`, `fail`, `failSheet`, `lifeSheet`, `lifeRow`; test `tools/hakem/can.cjs` (`--only=can`).
 

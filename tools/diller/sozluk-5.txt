@@ -95,3 +95,23 @@ de: Heute sind die Kacheln <b>Sechsecke</b>: jedes Tippen dreht um <b>60°</b>, 
 es: Hoy las piezas son <b>hexágonos</b>: cada toque gira <b>60°</b>, seis posiciones. La regla es la misma: conecta cada estación al centro, sin <b>extremos sueltos</b>.
 pt: Hoje as peças são <b>hexágonos</b>: cada toque gira <b>60°</b>, seis posições. A regra é a mesma: ligue cada estação ao centro, sem <b>pontas soltas</b>.
 fr: Aujourd’hui les tuiles sont des <b>hexagones</b> : chaque toucher tourne de <b>60°</b>, six positions. Même règle : relie chaque station au centre, sans <b>bout libre</b>.
+@ Lives
+de: Leben
+es: Vidas
+pt: Vidas
+fr: Vies
+@ OUT OF LIVES
+de: KEINE LEBEN MEHR
+es: SIN VIDAS
+pt: SEM VIDAS
+fr: PLUS DE VIES
+@ UNLIMITED LIVES
+de: UNBEGRENZTE LEBEN
+es: VIDAS ILIMITADAS
+pt: VIDAS ILIMITADAS
+fr: VIES ILLIMITÉES
+@ Lives are full
+de: Alle Leben voll
+es: Vidas completas
+pt: Vidas cheias
+fr: Vies au complet

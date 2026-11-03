@@ -140,26 +140,11 @@ de: Nächstes Leben in {0}
 es: Próxima vida en {0}
 pt: Próxima vida em {0}
 fr: Prochaine vie dans {0}
-@ Out of lives
-de: Keine Leben mehr
-es: Sin vidas
-pt: Sem vidas
-fr: Plus de vies
-@ One life refills every 30 minutes (up to 5). The Daily Line and 🍃 Zen mode cost no lives.
-de: Alle 30 Minuten kommt ein Leben zurück (bis zu 5). Tageslinie und 🍃 Zen-Modus kosten keine Leben.
-es: Recuperas una vida cada 30 minutos (hasta 5). La Línea del día y el modo 🍃 Zen no gastan vidas.
-pt: Uma vida volta a cada 30 minutos (até 5). A Linha do Dia e o modo 🍃 Zen não gastam vidas.
-fr: Une vie revient toutes les 30 minutes (jusqu’à 5). La Ligne du jour et le mode 🍃 Zen ne coûtent rien.
 @ Play
 de: Spielen
 es: Jugar
 pt: Jogar
 fr: Jouer
-@ ▶ Watch a video
-de: ▶ Video ansehen
-es: ▶ Ver un vídeo
-pt: ▶ Ver um vídeo
-fr: ▶ Voir une vidéo
 @ +1 ❤️ · have a good trip
 de: +1 ❤️ · gute Fahrt
 es: +1 ❤️ · buen viaje
