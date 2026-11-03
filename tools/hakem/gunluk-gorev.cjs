@@ -32,7 +32,7 @@ module.exports = async T => {
     });
     const has = s => ({ fog: s.fog, two: s.two, pairs: s.links > 0, rev: s.rev > 0, cnt: s.cnt > 0 }[s.k] ?? s.plug);   // eklenti kuralı (slide, ice…): P[anahtar] dolu
     const kinds = new Set((r.sun || []).map(s => s.k));
-    check('week.fp', 'Haftanın kuralı: pazar dışındaki Günün Hattı bit bit eskisi gibi (60 gün parmak izi; cumartesi altıgen, eski kare bulmacası dailyBase'te), kuralsız; dailyBase pazar ve cumartesi dışında aynı, pazar günü kuralsız',
+    check('week.fp', 'Haftanın kuralı: pazar dışındaki Günün Hattı bit bit eskisi gibi (60 gün parmak izi; cumartesi altıgen, eski kare bulmacası dailyBase içinde), kuralsız; dailyBase pazar ve cumartesi dışında aynı, pazar günü kuralsız',
       !r.bad && r.fp === FP_WEEKDAYS, JSON.stringify({ bad: r.bad, fp: r.fp }));
     check('week.sun', 'Haftanın kuralı: her pazar tek kural taşır, kural bulmacada gerçekten var, çözüm geçerli; 10 pazarda ≥ 6 farklı kural, 7×9',
       r.sun?.length === 10 && r.sun.every(s => s.k && s.k === s.rule && s.rules === s.k && has(s) && s.solved && s.fresh && s.n === 63) && kinds.size >= 6,
