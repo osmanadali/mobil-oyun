@@ -164,13 +164,24 @@ module.exports = async T => {
     await G(page, () => document.dispatchEvent(new Event('visibilitychange'))); await page.waitForTimeout(100);
     const n1 = (await calls(page)).filter(k => k === 'prepI').length;
     const show1 = await G(page, () => Ads.interstitial()); await page.waitForTimeout(100);
-    const n1b = (await calls(page)).filter(k => k === 'prepI').length;   // gösterimden sonra yenisi yüklenir
-    // 56 dk sonra: yüklü reklam bayat → gösterilmez, yenilenir; sonraki istekte gösterilir
+    const n1b = (await calls(page)).filter(k => k === 'prepI').length;   // gösterimden hemen sonra yüklenmez (bölüm açılıyor)
+    await G(page, () => Ads.warm()); await page.waitForTimeout(100);       // sakin an (sonuç paneli) → yüklenir
+    const n1c = (await calls(page)).filter(k => k === 'prepI').length;
+    // 56 dk sonra: yüklü reklam bayat → gösterilmez; yenisi sakin anda yüklenir, sonraki istekte gösterilir
     await G(page, () => { const n = Date.now; Date.now = () => n() + 56 * 60e3; });
     const stale = await G(page, () => Ads.interstitial()); await page.waitForTimeout(100);
     const n2 = (await calls(page)).filter(k => k === 'prepI').length;
-    const show2 = await G(page, () => Ads.interstitial());
-    check('reklam.warm', 'Geçiş reklamı yüklenemezse 30 / 60 / 120 sn arayla yeniden; ön plana dönüşte yeniden yüklenir; 55 dk\'yı geçen yenilenir', d1.join() === '30000' && d2.join() === '30000,60000' && d3.join() === '30000,60000,120000' && n1 === n0 + 1 && show1 && n1b === n1 + 1 && !stale && n2 === n1b + 1 && show2 && !errors.length, JSON.stringify({ d1, d2, d3, n0, n1, show1, n1b, stale, n2, show2, errors }));
+    await G(page, () => Ads.warm()); await page.waitForTimeout(100);
+    const n3 = (await calls(page)).filter(k => k === 'prepI').length, show2 = await G(page, () => Ads.interstitial());
+    // oyun sürerken (sakin değil) ön plana dönüş reklam yüklemez
+    await G(page, () => { const n = Date.now; Date.now = () => n() + 60e3; });   // gösterim sonrası 5 sn sessizlik geçsin
+    await page.click('#bPlay'); await page.waitForTimeout(500);
+    const p0 = (await calls(page)).filter(k => /^prep/.test(k)).length;
+    await G(page, () => document.dispatchEvent(new Event('visibilitychange'))); await page.waitForTimeout(100);
+    const p1 = (await calls(page)).filter(k => /^prep/.test(k)).length;
+    check('reklam.warm', 'Geçiş reklamı yüklenemezse 30 / 60 / 120 sn arayla yeniden; ön plana dönüşte yeniden yüklenir; gösterimden hemen sonra ve oyun sürerken yüklenmez (Android\'de reklam oyunla aynı süreçte çalışır), sakin anda (sonuç paneli / ana sayfa) yüklenir; 55 dk\'yı geçen yenilenir',
+      d1.join() === '30000' && d2.join() === '30000,60000' && d3.join() === '30000,60000,120000' && n1 === n0 + 1 && show1 && n1b === n1 && n1c === n1 + 1 && !stale && n2 === n1c && n3 === n2 + 1 && show2 && p1 === p0 && !errors.length,
+      JSON.stringify({ d1, d2, d3, n0, n1, show1, n1b, n1c, stale, n2, n3, show2, p0, p1, errors }));
     await ctx.close();
   }
 };

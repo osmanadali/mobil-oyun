@@ -38,6 +38,8 @@ if (!save.owned || typeof save.owned !== 'object') save.owned = { metro: 1, ...(
 if (!Array.isArray(save.dailyLog)) save.dailyLog = save.lastDaily ? [save.lastDaily] : [];
 if (!save.born) { save.born = Date.now(); try { localStorage.setItem('ray', JSON.stringify(save)); } catch {} }   // ilk açılış (özel teklif ilk 2 günde yok)
 let wiped = false;   // "Verilerimi sil" → sayfa yenilenene dek kayıt yazılmaz
+// boşta çalıştır: after ms sonra, ana iş parçacığı boşalınca (animasyonu kesmesin). Bölüm üretimi telefonda 100–300 ms sürebilir.
+const idle = (fn, after = 0) => setTimeout(() => (window.requestIdleCallback || (f => setTimeout(f, 1)))(fn, { timeout: 2500 }), after);
 const persist = () => { if (wiped) return; try { localStorage.setItem('ray', JSON.stringify(save)); } catch {} };
 // gün değişimi: ücretsiz ipucu, kopan seri
 function dayTick() {
@@ -657,7 +659,7 @@ function show(id) {
   document.body.classList.toggle('playing', id === 'game');
   if (id === 'game') resume(); else { pause(); cityDown(); }
   Music.setMode(id === 'game' ? 'game' : 'menu');
-  if (id === 'home') { refreshHome(); setTimeout(maybeRescue, 600); if (G && Remind.avail() && !save.remindAsked && (save.dailyDone || save.level > lineEnd(0))) setTimeout(() => { if (active('home') && !modalOpen()) remindAsk(); }, 700); }
+  if (id === 'home') { refreshHome(); setTimeout(maybeRescue, 600); idle(() => { if (active('home')) { puzzleFor(save.level); if (save.dailyDone !== today()) dailyFor(today()); if (window.__rayCalm()) Ads.warm(); } }, document.body.classList.contains('introing') ? 3200 : 900); /* Oyna / Günün Hattı anında açılsın (intro'yu kesmeden) */ if (G && Remind.avail() && !save.remindAsked && (save.dailyDone || save.level > lineEnd(0))) setTimeout(() => { if (active('home') && !modalOpen()) remindAsk(); }, 700); }
   if (id === 'map') renderMap();
   if (id === 'city') renderMeta();
   clearInterval(clockT); if (id === 'home') clockT = setInterval(() => { dailyClock(); lifeRow(); }, 1000);
@@ -981,10 +983,14 @@ function trip(sec, tOk, left) {
   if (!G.won && !tOk) for (const late = -left; G.bub < PAX_AT.length && late >= PAX_AT[G.bub]; G.bub++) if (late - PAX_AT[G.bub] < 2) pax();
 }
 
+// Tuvalin arka belleği yalnız boyu değişince yeniden ayrılır (her ayırma telefonda GPU belleği + takılma demek).
+// Sonuç paneli tahtayı küçültünce tuval küçülmez: taşan alt kısmı #board keser; sonraki bölümde aynı bellek kullanılır.
+let cvW = 0, cvH = 0;
 function resize() {
   const bd = $('board'), Wd = bd.clientWidth, Hd = bd.clientHeight, dpr = Math.min(devicePixelRatio || 1, 2);   // 3x ekranda 2x yeterli, yük ~%55 az
   if (!Wd || !Hd) return;
-  cv.width = Math.round(Wd * dpr); cv.height = Math.round(Hd * dpr);
+  const H = $('game').classList.contains('won') && Wd === cvW && Hd <= cvH ? cvH : Hd, bw = Math.round(Wd * dpr), bh = Math.round(H * dpr);
+  if (Wd !== cvW || H !== cvH || cv.width !== bw || cv.height !== bh) { cvW = Wd; cvH = H; cv.style.height = `${H}px`; cv.width = bw; cv.height = bh; }
   if (!G) return;
   const p = { l: 0, r: 0, t: 0, b: 0 };   // eklenti kenar payı (karo cinsinden), ör. tünel ağızları
   for (const m of MODS) if (m.pad && G[m.key]) m.pad(G, p);
@@ -1007,8 +1013,12 @@ function railPath(T, m) {
 }
 
 // Aynı stildeki her şey tek yolda toplanır → kare başına ~15 çizim çağrısı (düşük donanımda akıcı).
-function draw() {
-  raf = 0;
+// 120 Hz ekranda (ör. Galaxy A52s) tuval her iki karede bir çizilir (~60 kare/sn): iş yarıya iner, animasyonlar süreye bağlı → hız aynı.
+// Doğrudan çağrı (dokunuş, boyut) hemen çizer; 90 Hz'de sınır devreye girmez.
+let lastF = 0;
+function draw(ts) {
+  if (ts && ts - lastF < 10) { raf = requestAnimationFrame(draw); return; }
+  raf = 0; lastF = ts || performance.now();
   if (!G || !geo.s) return;
   const now = performance.now();
   let busy = false;
@@ -1313,7 +1323,7 @@ function win() {
   const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { zen, st, tOk, mOk, perfect, extra: [tkMsg, cmsg, shardMsg, extra].filter(Boolean).join(' · '), unlockedNow, ns, dbl, combo, broke, near };
   winTimer = setTimeout(() => { if (G === g && active('game')) { winSheet(g, info); let rv = false; if (!g.daily && !g.practice) setTimeout(() => { if (G === g && active('game')) rv = maybeReview(st); }, 1100);
     setTimeout(() => { if (G === g && active('game') && !rv && !modalOpen()) maybeOffer(g); }, 1500); } }, wait);   // puan istendiyse teklif bu tur yok
-  if (!g.daily) setTimeout(() => puzzleFor(g.lvl + 1), wait + 900);   // sonraki bölüm hazır olsun (geçişte takılma olmasın)
+  if (!g.daily) idle(() => puzzleFor(g.lvl + 1), wait + 600);   // sonraki bölüm hazır olsun: panel kayarak oturunca, ilk boş anda (geçişte takılma olmasın)
 }
 // Sonuç paneli tahtanın altına yerleşir; tahta küçülüp üstte görünür kalır. Tahtaya dokununca panel küçülür / büyür.
 // Tekrar sağ üstteki ↺, ana sayfa sol üstteki ‹ → panelde tek ana düğme kalır (boşalan yer bölüm sonu başarımlarına).
@@ -1339,6 +1349,7 @@ function winSheet(g, { zen, st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, 
     <div class="wp-more">${zen ? `<div class="statrow"><div><b>${fmtT(g.time)}</b><span>⏱ ${L('süre', 'time')}</span></div><div><b>${g.moves}</b><span>↻ ${L('hamle', 'moves')}</span></div></div>` : `<div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(lim.t * 1000)}</small></b><span>${tOk ? L('⏱ tam vaktinde ★', '⏱ on time ★') : L('⏱ rötar ✗', '⏱ late ✗')}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${lim.m}</small></b><span>↻ ${L('hamle', 'moves')} ${mOk ? '★' : '✗'}</span></div></div>`}${tip}${extra ? `<p class="tip">${extra}${dbl && Ads.online() ? ` <button id="mDbl" class="dbl">${L('▶ 2 katı', '▶ Double')}</button>` : ''}</p>` : ''}${adFree}</div>
     ${primary}`;
   $('game').classList.add('won'); $('bBack').setAttribute('aria-label', L('Ana sayfa', 'Home'));
+  Ads.warm();   // sakin an: oyuncu sonucu okuyor → eksik reklam şimdi yüklenir (bölüm açılırken değil)
   bind({ mNext: next, mGo: () => start('level'), mArch: () => { show('home'); archSheet(); }, mDbl: () => doubleReward(dbl), mAdFree: shopSheet, mMap: () => show('map'), mRetry: () => start('level', g.lvl) });
   $('winPanel').querySelector('.wp-top').onclick = () => { if ($('game').classList.contains('mini')) toggleMini(); };   // küçükken başlığa dokunmak da açar
 }
@@ -2648,6 +2659,8 @@ document.body.classList.toggle('test', TEST);
 achCheck(true);
 applyTheme();
 show('home');
+// reklam kendiliğinden yalnız sakin anda yüklenir (ads.js soft): ana sayfa ya da sonuç paneli, intro bitmiş, uygulama önde
+window.__rayCalm = () => !document.hidden && !document.body.classList.contains('introing') && (!active('game') || !!G?.won);
 Ads.init();
 Shop.init({ owned: k => k === 'noads' ? grantNoAds() : grantThemes(), grant: grantItem });
 Remind.plan();

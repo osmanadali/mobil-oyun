@@ -137,3 +137,12 @@ Kanıt görüntüsü: [`docs/kalite/kalanlar.png`](kalite/kalanlar.png).
 
 - `node tools/hakem.cjs` komutu bütün robotu koşar. Bu dalın testleri `kalite.*` adıyla geçer (12 kontrol).
 - Görüntüler `hakem-out/shots/kalite-*.png` dosyalarına yazılır.
+
+## Android akıcılığı (3 Kasım, Galaxy A52s geri bildirimi)
+Ölçüm: masaüstü Chromium, işlemci 4× yavaşlatılmış, 412×915 (tools/hakem/performans.cjs kalıcı denetimler).
+- **Reklam yükleme sakin anda** (`ads.js` `soft` / `warm`): Android'de uygulamanın bütün WebView'ları tek tarayıcı sürecini paylaşır; reklam yüklenirken oyun takılır. Eskiden açılışta, her reklamdan hemen sonra (yeni bölüm açılırken) ve ön plana dönüşte yükleniyordu. Şimdi yalnız sonuç panelinde ve ana sayfada (`window.__rayCalm`), reklam kapandıktan sonra 5 sn hiç yüklenmez.
+- **Bölüm boşta üretilir** (`idle`): ana sayfa açılınca Oyna'nın bölümü ve Günün Hattı, bitişte sıradaki bölüm (panel oturunca). Geç bölümlerde üretim telefonda 100–300 ms sürüyordu; artık geçişte değil boşta.
+- **Tuval belleği yeniden ayrılmaz**: yalnız boyut değişince; sonuç paneli tahtayı küçültünce tuval küçülmez (#board keser).
+- **120 Hz ekranda tuval ~60 kare/sn** (her iki karede bir; animasyonlar süreye bağlı, hızları aynı; 90 Hz'de sınır yok).
+- **Görünmeyen ekranlar boyanmaz** (`visibility: hidden`, geçiş bitince) → GPU belleği azalır.
+- Görev "Topla" nabzı boyama yaptırmaz (ayrı katmanda opaklık).

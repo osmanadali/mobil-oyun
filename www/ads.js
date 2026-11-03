@@ -40,7 +40,7 @@ window.Ads = (() => {
     if (failed) throw new Error('consent');   // init() yutar; bağlantı / ön plan dönüşünde yeniden denenir
     if (!allowed) return;
     await A.initialize({ initializeForTesting: TESTING, maxAdContentRating: 'ParentalGuidance', tagForChildDirectedTreatment: false, tagForUnderAgeOfConsent: false });
-    ready = true; warm();
+    ready = true; soft();
   }
   // iOS izleme izni (ATT): yalnız sayfa görünürken (arka planda sorulan pencere görünmeden reddedilir); aynı anda tek sorgu
   function att() {
@@ -68,8 +68,14 @@ window.Ads = (() => {
     loadingR = false;
   }
   // Geçiş reklamı yüklenemedi → 30, 60, sonra 120 sn arayla yeniden dene (ön plana dönüş de dener)
-  function retry() { clearTimeout(retryT); retryT = setTimeout(warm, [30, 60, 120][Math.min(tries++, 2)] * 1e3); }
-  function warm() { if (!ready) { init(); return; } preload(); preloadReward(); }
+  function retry() { clearTimeout(retryT); retryT = setTimeout(soft, [30, 60, 120][Math.min(tries++, 2)] * 1e3); }
+  // warm: eksik / bayat reklamı yükle. Oyun bunu sakin anda çağırır (sonuç paneli, ana sayfa).
+  function warm() { if (!ready) return; preload(); preloadReward(); }   // başlatma (rıza) yalnız açılışta / ön plana dönüşte / bağlantı gelince
+  // Android'de reklam sayfası oyunla aynı tarayıcı sürecinde çalışır: yüklenirken oyun takılır. Bu yüzden kendiliğinden
+  // (açılış, ön plana dönüş, yeniden deneme) yalnız oyun sakinse yüklenir; reklam kapandıktan sonra 5 sn hiç yüklenmez
+  // (yeni bölüm açılıyor). Değilse ilk sakin anı (sonuç paneli) bekler. Gösterimden hemen sonra da yüklenmez.
+  let hush = 0;
+  function soft() { if (Date.now() > hush && (window.__rayCalm?.() ?? true)) warm(); }
   // Tam ekran reklam kapanana (ya da hata / zaman aşımı) kadar bekle.
   function closed(A, okEvents, failEvents, ms) {
     return new Promise(res => {
@@ -89,7 +95,7 @@ window.Ads = (() => {
   async function interstitial() {
     const A = plug();
     if (!A || !ok() || Date.now() - lastShown < 90e3) return false;   // en az 90 sn arayla (ödüllü video da sayılır)
-    if (!interReady || !fresh(interAt)) { preload(); return false; }
+    if (!interReady || !fresh(interAt)) return false;   // şimdi yükleme: "Sonraki"ye basıldı, bölüm açılıyor (sonuç panelinde yüklenir)
     let shown = false;
     try {
       const wait = closed(A, ['interstitialAdDismissed'], ['interstitialAdFailedToShow'], 60e3);
@@ -97,7 +103,7 @@ window.Ads = (() => {
       await A.showInterstitial();
       if (shown = await wait) { lastShown = Date.now(); window.Olcum?.event('ad_impression', { ad_platform: 'admob', ad_format: 'interstitial' }); }
     } catch {}
-    preload();
+    hush = Date.now() + 5e3;   // yenisi sonraki sonuç panelinde yüklenir
     return shown;
   }
   // 'earned': ödül hak edildi (video sonuna kadar izlendi) · 'closed': video açıldı, erken kapandı · 'nofill': video yok / açılamadı.
@@ -119,7 +125,7 @@ window.Ads = (() => {
     busy = false;
     if (earned || shown) lastShown = Date.now();   // videonun hemen ardından geçiş reklamı gelmesin
     if (earned || shown) window.Olcum?.event('ad_impression', { ad_platform: 'admob', ad_format: 'rewarded', earned });
-    preloadReward();
+    hush = Date.now() + 5e3;   // oyuna dönülüyor: yenisi sakin anda yüklenir
     return earned ? 'earned' : shown ? 'closed' : 'nofill';
   }
   // Ayarlar › Gizlilik › Reklam gizlilik seçenekleri (UMP gerekli dediyse görünür). Seçim değişince izin yenilenir.
@@ -129,8 +135,8 @@ window.Ads = (() => {
     if (!allowed) interReady = rewardReady = false;
     else if (!ready) init();
   }
-  addEventListener('online', warm);
+  addEventListener('online', () => ready ? soft() : init());
   // ön plana dönüş: açılışta arka plandaysak ATT şimdi sorulur; eksik / bayat reklam yeniden yüklenir
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) { if (ready) att(); warm(); } });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { if (ready) att(); ready ? soft() : init(); } });
   return { init, warm, interstitial, rewarded, privacyForm, busy: () => busy, online: () => !!plug() && ok(), privacy: () => !!plug() && privacy };
 })();
