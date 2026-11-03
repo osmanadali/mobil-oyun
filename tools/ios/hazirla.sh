@@ -1,7 +1,7 @@
 #!/bin/bash
 # 'npx cap add ios' ile üretilen projeyi Ray için hazırlar (CI: ios.yml; macOS). ios/ depoda yok, her derlemede yeniden üretilir.
 # Ortam: ADMOB_APP_ID_IOS (yoksa Google test App ID), ADMOB_INTERSTITIAL_IOS + ADMOB_REWARDED_IOS (varsa index.html'e window.RAY_ADS),
-#        VERSION_CODE (yapı numarası, yoksa 1), VERSION_NAME (yoksa package.json)
+#        VERSION_CODE (yapı numarası, yoksa 1), VERSION_NAME (yoksa package.json), FIREBASE_IOS_PLIST (gizli değer, isteğe bağlı: ölçüm)
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 P=ios/App/App/Info.plist PBX=ios/App/App.xcodeproj/project.pbxproj PB=/usr/libexec/PlistBuddy
@@ -76,3 +76,6 @@ ruby -rxcodeproj -e '
   proj.save
   puts "  knownRegions: #{proj.root_object.known_regions.join(", ")}; Resources: #{vg.files.map(&:path).join(", ")}"'
 echo "✓ Yerelleştirme: en.lproj + tr.lproj (InfoPlist.strings) projede"
+
+# 6) Ölçüm (Firebase Analytics): FIREBASE_IOS_PLIST gizli değeri varsa GoogleService-Info.plist projeye eklenir, yoksa eklenti çıkarılır
+node tools/olcum-hazirla.cjs ios

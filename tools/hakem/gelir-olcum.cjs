@@ -7,7 +7,7 @@ module.exports = async T => {
   // sahte mağaza: v13 olay zinciri (approved → verify → verified → finish), tüketilemez sahiplik, geri yükleme, aynı işlemin yeniden gelmesi
   const STORE = (o = {}) => `window.CdvPurchase = (() => {
     const L = window.__iap = Object.assign({ reg: [], fin: [], atFin: [], ver: 0, owned: {}, orders: [], restore: 0, restorable: {}, cancel: false }, ${JSON.stringify(o)});
-    const cb = { a: [], v: [], p: [], r: [] }, PR = { ray_reklamsiz: '$2.99', ray_temalar: '$3.99', ray_ipucu_10: '$0.99', ray_ipucu_30: '$1.99', ray_ipucu_80: '$3.99', ray_guclendirici: '$1.99', ray_bilet_50: '$1.99' };
+    const cb = { a: [], v: [], p: [], r: [] }, PR = { ray_reklamsiz: '$2.99', ray_temalar: '$3.99', ray_ipucu_10: '$0.99', ray_ipucu_30: '$1.99', ray_ipucu_80: '$3.99', ray_guclendirici: '$1.99', ray_bilet_50: '$1.99', ray_baslangic: '$2.99' };
     const NC = { ray_reklamsiz: 1, ray_temalar: 1 }, prods = {}; let n = 0;
     const tx = (id, txid) => { const t = { transactionId: txid || 'GPA.' + (++n), products: [{ id }],
       verify() { L.ver++; cb.v.forEach(f => f({ finish: () => t.finish() })); },
@@ -46,14 +46,14 @@ module.exports = async T => {
     await G(page, d => { const s = JSON.parse(localStorage.getItem('ray')); s.hintDay = d; s.hints = 2; localStorage.setItem('ray', JSON.stringify(s)); }, await G(page, today));
     await page.reload(); await wait(page, 500);
     const reg = (await iap(page)).reg.map(r => `${r.id}:${r.type}`).sort().join(',');
-    check('gelir.kayit', 'Yedi ürün iki mağazada aynı ray_ kimliğiyle kaydolur: 2 tüketilemez (reklamsız, tema), 5 tüketilebilir',
-      reg === 'ray_bilet_50:c,ray_guclendirici:c,ray_ipucu_10:c,ray_ipucu_30:c,ray_ipucu_80:c,ray_reklamsiz:nc,ray_temalar:nc', reg, 'medium');
+    check('gelir.kayit', 'Sekiz ürün iki mağazada aynı ray_ kimliğiyle kaydolur: 2 tüketilemez (reklamsız, tema), 6 tüketilebilir',
+      reg === 'ray_baslangic:c,ray_bilet_50:c,ray_guclendirici:c,ray_ipucu_10:c,ray_ipucu_30:c,ray_ipucu_80:c,ray_reklamsiz:nc,ray_temalar:nc', reg, 'medium');
     const row = await G(page, () => document.querySelector('#bSettings') && 1);
     await openStore(page);
     const rows = await storeRows(page), sh = await G(page, () => { const s = document.getElementById('mCard'); return { h: s.querySelector('h2')?.textContent, ov: s.scrollWidth > s.clientWidth + 1, rs: !!document.getElementById('mRestore') }; });
     await shot(page, 'magaza-320');
-    check('gelir.pencere', 'Ayarlar › Mağaza: tek pencerede 7 satır, her birinde fiyat; 320 px\'te taşma yok; geri yükleme düğmesi var',
-      row && sh.h === 'Mağaza' && rows.length === 7 && rows.every(r => /\$\d/.test(r.t) && r.r <= 320) && !sh.ov && sh.rs, JSON.stringify({ sh, rows }), 'medium');
+    check('gelir.pencere', 'Ayarlar › Mağaza: tek pencerede 8 satır, her birinde fiyat; 320 px\'te taşma yok; geri yükleme düğmesi var',
+      row && sh.h === 'Mağaza' && rows.length === 8 && rows.every(r => /\$\d/.test(r.t) && r.r <= 320) && !sh.ov && sh.rs, JSON.stringify({ sh, rows }), 'medium');
     await buy(page, 'hint30', 700);
     let v = await getSave(page), I = await iap(page);
     const fin = I.fin.find(x => x.endsWith(':ray_ipucu_30')), atFin = I.atFin[I.fin.indexOf(fin)];
@@ -126,7 +126,7 @@ module.exports = async T => {
     await openStore(page);
     const rows = await storeRows(page), sh = await G(page, () => { const s = document.getElementById('mCard'); return { h: s.querySelector('h2')?.textContent, ov: s.scrollWidth > s.clientWidth + 1, txt: s.textContent }; });
     await shot(page, 'magaza-en-320');
-    check('gelir.en', 'EN: "Shop" penceresi İngilizce (ipucu, güçlendirici, tema, bilet), 320 px\'te taşmaz', sh.h === 'Shop' && rows.length === 7 && !sh.ov && /Booster pack/.test(sh.txt) && /Theme pack/.test(sh.txt) && /50 tickets/.test(sh.txt) && !/ipucu|Tema paketi|bilet/.test(sh.txt) && rows.every(r => r.r <= 320) && !errors.length, JSON.stringify({ sh: { ...sh, txt: sh.txt.slice(0, 200) }, rows, errors }), 'medium');
+    check('gelir.en', 'EN: "Shop" penceresi İngilizce (ipucu, güçlendirici, tema, bilet), 320 px\'te taşmaz', sh.h === 'Shop' && rows.length === 8 && !sh.ov && /Booster pack/.test(sh.txt) && /Theme pack/.test(sh.txt) && /50 tickets/.test(sh.txt) && !/ipucu|Tema paketi|bilet/.test(sh.txt) && rows.every(r => r.r <= 320) && !errors.length, JSON.stringify({ sh: { ...sh, txt: sh.txt.slice(0, 200) }, rows, errors }), 'medium');
     await ctx.close();
   }
 

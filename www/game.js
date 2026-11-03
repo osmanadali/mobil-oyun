@@ -36,6 +36,7 @@ if (!save.seen || typeof save.seen !== 'object') save.seen = {};
 if (!save.miss || typeof save.miss !== 'object') save.miss = {};
 if (!save.owned || typeof save.owned !== 'object') save.owned = { metro: 1, ...(save.skin && save.skin !== 'metro' ? { [save.skin]: 1 } : {}) };   // eski kayıtta seçili tema korunur
 if (!Array.isArray(save.dailyLog)) save.dailyLog = save.lastDaily ? [save.lastDaily] : [];
+if (!save.born) { save.born = Date.now(); try { localStorage.setItem('ray', JSON.stringify(save)); } catch {} }   // ilk açılış (özel teklif ilk 2 günde yok)
 let wiped = false;   // "Verilerimi sil" → sayfa yenilenene dek kayıt yazılmaz
 const persist = () => { if (wiped) return; try { localStorage.setItem('ray', JSON.stringify(save)); } catch {} };
 // gün değişimi: ücretsiz ipucu, kopan seri
@@ -653,6 +654,7 @@ let toastT, mLocked = false, howBack = null, mOnClose = null;   // mOnClose: pen
 function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2200); }
 const active = id => $(id).classList.contains('active');
 function show(id) {
+  if (id !== 'game' && active('game')) quitEv();
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
   document.body.classList.toggle('playing', id === 'game');
   if (id === 'game') resume(); else { pause(); cityDown(); }
@@ -809,7 +811,11 @@ function saveRun() {
   persist();
 }
 // mode 'arch': arşivden geçmiş bir günün Günün Hattı'nı oynar (lvl = gün)
+// ölçüm (olcum.js): yalnız oyun olayları, kişisel veri yok
+const lvlP = () => G ? (G.daily ? { mode: G.arch ? 'archive' : 'daily' } : { mode: 'level', level: G.lvl, line: lineOf(G.lvl) + 1 }) : {};
+const quitEv = () => { if (G && !G.won && (G.moves || G.hu)) Olcum.event('level_quit', { ...lvlP(), time_s: elapsed() / 1000 | 0, moves: G.moves, hints: G.hu || 0 }); };
 function start(mode, lvl = save.level) {
+  if (G && active('game')) quitEv();
   clearTimeout(howT); clearTimeout(winTimer); closeModal(); closePanel(); cityDown();
   const arch = mode === 'arch', daily = mode === 'daily' || arch, day = arch ? lvl : today();
   if (!daily && !unlocked(lineOf(lvl))) { lockedSheet(lineOf(lvl)); return; }
@@ -839,6 +845,7 @@ function start(mode, lvl = save.level) {
   clearTimeout(bubT); $('gBub').classList.remove('show');
   const stake = comboStake(); $('gCombo').hidden = stake < 2; $('gCombo').textContent = `✨${stake}`;
   show('game'); resize(); hud(); tick();
+  Olcum.event('level_start', { ...lvlP(), resumed: !!G.moves });
   // Günün Hattı yalnız pazar günü kural taşır (haftanın kuralı): oyuncu o kuralı henüz görmediyse kartı açılır
   const rc = (G.rules || []).map(k => RULE_LINE[k]).filter(c => RULES[c] && !save.seen[c]).sort((a, b) => a - b)[0];
   if (rc != null) ruleCard(rc, !!G.week);
@@ -1300,8 +1307,11 @@ function win() {
   if (ns) { save.newSkin = 1; extra = [extra, L(`🎨 ${ns.name} alınabilir (🎫 ${ns.need})`, `🎨 ${ns.name} available (🎫 ${ns.need})`)].filter(Boolean).join(' · '); }
   persist();
   $('gCombo').hidden = combo < 2; $('gCombo').textContent = `✨${combo}`; $('gCombo').classList.remove('off');
+  const sum = { stars: st, time_s: G.time / 1000 | 0, moves: G.moves, hints: G.hu || 0, perfect, zen };
+  if (G.daily) Olcum.event('daily_end', { ...sum, mode: G.arch ? 'archive' : 'daily', practice: !!G.practice, streak: save.streak }); else Olcum.event('level_end', { ...lvlP(), ...sum });
   const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { zen, st, tOk, mOk, perfect, extra: [cmsg, shardMsg, extra, qmsg].filter(Boolean).join(' · '), unlockedNow, ns, dbl, combo, broke, near };
-  winTimer = setTimeout(() => { if (G === g && active('game')) { winSheet(g, info); if (!g.daily && !g.practice) setTimeout(() => { if (G === g && active('game')) maybeReview(st); }, 1100); } }, wait);
+  winTimer = setTimeout(() => { if (G === g && active('game')) { winSheet(g, info); let rv = false; if (!g.daily && !g.practice) setTimeout(() => { if (G === g && active('game')) rv = maybeReview(st); }, 1100);
+    setTimeout(() => { if (G === g && active('game') && !rv && !modalOpen()) maybeOffer(g); }, 1500); } }, wait);   // puan istendiyse teklif bu tur yok
   if (!g.daily) setTimeout(() => puzzleFor(g.lvl + 1), wait + 900);   // sonraki bölüm hazır olsun (geçişte takılma olmasın)
 }
 // Sonuç paneli tahtanın altına yerleşir; tahta küçülüp üstte görünür kalır.
@@ -1499,7 +1509,7 @@ function grantNoAds() {
   haptic('win'); toast(L('Reklamsız paket aktif 💛 +20 ipucu · 3 özel tema açıldı', 'Ad-free pack active 💛 +20 hints · 3 special themes'));
   if (modalOpen() && $('mBuy')) shopSheet();
 }
-// ---------- mağaza: tek pencere (Ayarlar › Mağaza, ipucu bitince "İpucu paketleri"). Satış sade: rozet, geri sayım, açılır pencere yok ----------
+// ---------- mağaza: tek pencere (Ayarlar › Mağaza, ipucu bitince "İpucu paketleri"). Satış sade: rozet ve geri sayım yok; kendiliğinden açılan tek pencere seyrek "özel teklif" (offer) ----------
 const STORE = [
   ['noads', '💛', () => L('Reklamsız paket', 'Ad-free pack'), () => L('Reklam yok · 20 ipucu · 3 özel tema', 'No ads · 20 hints · 3 special themes')],
   ['themes', '🎨', () => L('Tema paketi', 'Theme pack'), () => L(`${SKINS.filter(k => !k.vip).length} renk temasının hepsi · tek seferlik`, `All ${SKINS.filter(k => !k.vip).length} color themes · one-time`)],
@@ -1508,7 +1518,9 @@ const STORE = [
   ['hint80', '💡', () => L('80 ipucu', '80 hints'), () => ''],
   ['bst', '🧰', () => L('Güçlendirici paketi', 'Booster pack'), () => BST.map(b => `${b.ic}×3`).join(' ')],
   ['crown', '🎫', () => L('Bilet paketi · 50 bilet', 'Ticket pack · 50 tickets'), () => L('Yalnız temalar için (sandık kazanılan 🎫 ile açılır)', 'For themes only (chests use earned 🎫)')],
+  ['starter', '🎁', () => L('Başlangıç paketi', 'Starter pack'), () => starterTxt()],
 ];
+const starterTxt = () => { const g = Shop.item('starter').give; return `💡${g.hints} · ${BST.map(b => `${b.ic}×${g.bst[b.id]}`).join(' ')} · ❤️∞ ${g.inf / 60} ${L('sa', 'h')} · 🎫${g.crowns}`; };
 function storeSheet(focus) {
   const live = Shop.avail(), owns = k => k === 'noads' ? save.noAds : k === 'themes' && save.allThemes;
   const rows = STORE.filter(([k]) => live || k === 'noads').filter(([k]) => !(k === 'themes' && SKINS.every(x => x.vip || skinOpen(x)) && !save.allThemes))
@@ -1527,6 +1539,47 @@ function storeSheet(focus) {
     const r = await Shop.buy(k);
     if (r === 'hata') toast(L('Satın alma tamamlanamadı', 'Purchase couldn’t be completed'));
   };
+}
+// ---------- özel teklif (BOLUM_TASARIMI §Ekonomi, MAGAZA §11): kazanma sonrası, seyrek, gerçek mağaza ürünü ----------
+// Kurallar: en çok 48 saatte bir · ilk 2 günde ve ilk 15 bölümde hiç · Günün Hattı / arşiv / zen'de değil · aynı turda geçiş reklamıyla birlikte değil
+// (sıra gelmişse teklif bu tur yok, sıra korunur) · reklamsız sahibine reklamsız teklifi yok · mağaza hazır değilse yok (süre de işlemez).
+// Sahte üstü çizili fiyat ya da geri sayım yok: fiyat mağazanın gerçek fiyatı; ürün mağazada her zaman satılır.
+const OFFER_GAP = 48 * 36e5, OFFER_AGE = 2 * 864e5, OFFER_MIN = 15;
+const offerList = () => ['starter', ...(save.noAds ? [] : ['noads']), 'bst', 'hint30'];
+function offerDue(g) {
+  if (!g || g.daily || g.arch || g.zen || g.practice || g.lvl <= OFFER_MIN || save.played < OFFER_MIN) return false;
+  if (interDue && !save.noAds && !g.vid) return false;   // bu turun "Sonraki"sinde geçiş reklamı var
+  const now = Date.now();
+  return now - (save.born || now) >= OFFER_AGE && now - (save.offerAt || 0) >= OFFER_GAP;
+}
+function maybeOffer(g) {
+  if (!offerDue(g)) return false;
+  const L0 = offerList(), n = save.offerN || 0, k = [...L0.slice(n % L0.length), ...L0.slice(0, n % L0.length)].find(x => Shop.ready(x));
+  if (!k) return false;
+  save.offerAt = Date.now(); save.offerN = n + 1; persist();
+  offerSheet(k);
+  return true;
+}
+function offerSheet(k) {
+  const row = STORE.find(r => r[0] === k), pr = Shop.price(k), buy = L('Satın al', 'Buy');
+  const body = k === 'starter' ? (() => { const g = Shop.item('starter').give; return L(`<div><i>💡</i><span><b>${g.hints} ipucu</b></span></div><div><i>🧰</i><span>Güçlendiriciler · ${BST.map(b => `${b.ic}×${g.bst[b.id]}`).join(' ')}</span></div><div><i>❤️</i><span><b>1 saat sınırsız can</b></span></div><div><i>🎫</i><span><b>${g.crowns} bilet</b> · temalar için</span></div>`,
+      `<div><i>💡</i><span><b>${g.hints} hints</b></span></div><div><i>🧰</i><span>Boosters · ${BST.map(b => `${b.ic}×${g.bst[b.id]}`).join(' ')}</span></div><div><i>❤️</i><span><b>1 hour of unlimited lives</b></span></div><div><i>🎫</i><span><b>${g.crowns} tickets</b> · for themes</span></div>`); })()
+    : `<div><i>${row[1]}</i><span><b>${row[2]()}</b>${row[3]() ? ' · ' + row[3]() : ''}</span></div>`;
+  Olcum.event('offer_shown', { item_id: Shop.item(k).id, level: G?.lvl || 0 });
+  modal(`<div class="bell">${row[1]}</div><h2>${L('Özel teklif', 'Special offer')}</h2>
+    <p>${row[2]()}</p>
+    <div class="perks">${body}</div>
+    <button id="mOfBuy" class="btn primary"><span>${pr ? `${buy} · ${pr}` : buy}</span><small>${L(`${Shop.name()} ile güvenli ödeme`, `Secure payment via ${Shop.name()}`)}</small></button>
+    <button id="mClose" class="btn glassbtn">${L('Hayır, teşekkürler', 'No, thanks')}</button>
+    <p class="tip">${L('Bu paket Ayarlar › Mağaza\'da her zaman var.', 'This pack is always in Settings › Shop.')}</p>`, {
+    mOfBuy: async () => {
+      if (!Shop.ready(k)) { toast(L('Mağaza şu an kullanılamıyor · sonra dene', 'Store unavailable right now · try later')); return; }
+      if (k === 'noads') closeModal();
+      const r = await Shop.buy(k);
+      if (r === 'ok') { Olcum.event('offer_buy', { item_id: Shop.item(k).id }); if (modalOpen() && $('mOfBuy')) closeModal(); }
+      else if (r === 'hata') toast(L('Satın alma tamamlanamadı', 'Purchase couldn’t be completed'));
+    },
+    mClose: closeModal });
 }
 async function restoreBuys() {
   const had = [save.noAds, save.allThemes];
@@ -1548,11 +1601,12 @@ function grantItem(it, tx) {
   if (g.hints) save.hints += g.hints;
   if (g.bst) save.bst = Object.fromEntries(BST.map(b => [b.id, bst(b.id) + (g.bst[b.id] || 0)]));
   if (g.crowns) save.bCrowns = (save.bCrowns || 0) + g.crowns;
+  if (g.inf) save.infUntil = Math.max(save.infUntil || 0, Date.now()) + g.inf * 60e3;   // ❤️∞ sınırsız can (can sistemiyle ortak kayıt)
   if (tx) save.iapTx = [...(save.iapTx || []), key].slice(-50);
   persist();
   if (tx) try { if (!JSON.parse(localStorage.getItem('ray')).iapTx?.includes(key)) return false; } catch { return false; }   // kayıt gerçekten yazıldı mı (yazılmadıysa işlem açık kalır)
   $('gHints').textContent = save.hints; refreshHome(); haptic('win');
-  toast(g.hints ? L(`+${g.hints} ipucu 💡`, `+${g.hints} hints 💡`) : g.bst ? L('🧰 Güçlendiriciler çantanda', '🧰 Boosters added') : L(`+${g.crowns} 🎫 bilet · temalarda kullan`, `+${g.crowns} 🎫 tickets · spend them on themes`));
+  toast(g.inf ? L('🎁 Başlangıç paketi çantanda · ❤️∞ 1 saat', '🎁 Starter pack added · ❤️∞ 1 hour') : g.hints ? L(`+${g.hints} ipucu 💡`, `+${g.hints} hints 💡`) : g.bst ? L('🧰 Güçlendiriciler çantanda', '🧰 Boosters added') : L(`+${g.crowns} 🎫 bilet · temalarda kullan`, `+${g.crowns} 🎫 tickets · spend them on themes`));
   if (modalOpen() && $('store')) storeSheet();
   return true;
 }
@@ -1575,7 +1629,7 @@ async function hint() {
   const i = wrong[0], now = performance.now(), prev = G.L.d, ui = G.unitOf?.[i] ?? -1;
   G.hist = [];   // ipucunun sabitlediği karo geri alınmasın
   for (const k of ui >= 0 ? G.units[ui].cells : G.link[i] >= 0 ? [i, G.link[i]] : [i]) { G.cur[k] = G.sol[k]; G.fixed[k] = true; anim.set(k, now); press.set(k, now); }   // eşli karo / eklenti birimi: hepsi birden
-  save.hints--; G.hinted = true; persist(); $('gHints').textContent = save.hints; bump($('gHints'));
+  save.hints--; G.hinted = true; G.hu = (G.hu || 0) + 1; persist(); $('gHints').textContent = save.hints; bump($('gHints'));
   G.L = lit(G); reveal();
   G.L.d.forEach((v, j) => { if (v >= 0 && prev[j] < 0) litAt[j] = now + v * 12; });
   burst(i, 10, 0, pal.light ? '#ffc56b' : '#ffffff'); tone(note(9), .35, .05); tone(note(12), .35, .04, 'sine', .08); haptic('heavy');
@@ -1807,8 +1861,8 @@ function openPolicy() {
 }
 function privacySheet() {
   modal(`<h2>${L('Gizlilik', 'Privacy')}</h2>
-    <div class="perks">${L(`<div><i>📱</i><span><b>Hesap yok</b> · ilerlemen yalnız bu cihazda</span></div><div><i>🔔</i><span>Hatırlatmalar cihazında planlanır</span></div><div><i>📺</i><span>Reklamlar <b>Google AdMob</b> ile · reklam kimliği ve cihaz bilgisi işlenir</span></div><div><i>🚫</i><span>Analitik yok · ödeme mağaza üzerinden</span></div>`,
-      `<div><i>📱</i><span><b>No account</b> · your progress stays on this device</span></div><div><i>🔔</i><span>Reminders are scheduled on your device</span></div><div><i>📺</i><span>Ads by <b>Google AdMob</b> · ad ID and device info are processed</span></div><div><i>🚫</i><span>No analytics · payments via the store</span></div>`)}</div>
+    <div class="perks">${L(`<div><i>📱</i><span><b>Hesap yok</b> · ilerlemen yalnız bu cihazda</span></div><div><i>🔔</i><span>Hatırlatmalar cihazında planlanır</span></div><div><i>📺</i><span>Reklamlar <b>Google AdMob</b> ile · reklam kimliği ve cihaz bilgisi işlenir</span></div><div><i>📊</i><span>Adsız oyun istatistikleri <b>Firebase</b> ile · reklam kimliği yok · rıza gereken bölgede kapalı</span></div><div><i>💳</i><span>Ödeme mağaza üzerinden</span></div>`,
+      `<div><i>📱</i><span><b>No account</b> · your progress stays on this device</span></div><div><i>🔔</i><span>Reminders are scheduled on your device</span></div><div><i>📺</i><span>Ads by <b>Google AdMob</b> · ad ID and device info are processed</span></div><div><i>📊</i><span>Anonymous game stats via <b>Firebase</b> · no ad ID · off where consent is required</span></div><div><i>💳</i><span>Payments via the store</span></div>`)}</div>
     <button id="mPol" class="btn glassbtn">${L('Gizlilik politikası', 'Privacy policy')} ↗</button>
     ${Ads.privacy() ? `<button id="mAdP" class="btn glassbtn">${L('Reklam gizlilik seçenekleri', 'Ad privacy options')}</button>` : ''}
     <button id="mWipe" class="link">${L('Verilerimi sil', 'Delete my data')}</button>
@@ -1864,7 +1918,7 @@ function wipeSheet() {
     <button id="mNo" class="btn primary"><span>Cancel</span></button>
     <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">Yes, delete it all</button>`), {
     mNo: privacySheet,
-    mWipeOk: async () => { save.remind = false; await Promise.race([Remind.plan(), new Promise(r => setTimeout(r, 1500))]); wiped = true; try { localStorage.removeItem('ray'); } catch {} location.reload(); } });
+    mWipeOk: async () => { save.remind = false; await Promise.race([Promise.all([Remind.plan(), Olcum.reset()]), new Promise(r => setTimeout(r, 1500))]); wiped = true; try { localStorage.removeItem('ray'); } catch {} location.reload(); } });
 }
 // ---------- renk temaları ----------
 const skinSvg = '<svg viewBox="0 0 120 60"><path d="M10 46H40L60 28H110"/><path d="M60 6V28L80 46H110"/><path d="M10 14H36L60 28"/><rect x="52" y="20" width="16" height="16" rx="5"/></svg>';
@@ -1997,7 +2051,7 @@ const BST = [
   { id: 'geri', ic: '↶', name: L('Geri al', 'Undo'), sub: L('Son 5 hamle silinir, sayaç da geri gider', 'Takes back your last 5 moves'), line: 0 },
 ];
 const bst = id => save.bst?.[id] || 0;
-function useBst(id) { save.bst = { ...save.bst, [id]: bst(id) - 1 }; const m = questStep('bst'); persist(); if (m) setTimeout(() => toast(m), 900); }
+function useBst(id) { save.bst = { ...save.bst, [id]: bst(id) - 1 }; const m = questStep('bst'); persist(); Olcum.event('booster_use', { booster: id, ...lvlP() }); if (m) setTimeout(() => toast(m), 900); }
 const RW_ICON = {
   hint: '<svg class="rwi" viewBox="-1 -3 26 26"><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1.1 1.2 1.1 2.2h5c0-1 .5-1.7 1.1-2.2A6 6 0 0 0 12 3z" fill="url(#cgB)"/><path d="M9 18h6M10 21h4"/><path class="ry" d="M12 .6v-2M17.9 3.1l1.4-1.4M6.1 3.1 4.7 1.7M20.4 9h2M3.6 9h-2"/></svg>',
   shield: '<svg class="rwi" viewBox="0 0 24 24"><path d="M12 2.6 19.4 5.4v5.4c0 4.7-3 8.6-7.4 10.6-4.4-2-7.4-5.9-7.4-10.6V5.4z" fill="url(#cgS)"/><path d="M12 8.2c.5 2 2.5 2.75 2.5 5.5a2.5 2.5 0 0 1-5 0c0-1.25.6-2 1.25-2.5.1.9.5 1.5 1.1 1.65C11.5 11.5 11.65 9.7 12 8.2z" fill="url(#cgF)" stroke="none"/></svg>',
@@ -2196,8 +2250,9 @@ function how() {
     <p id="demoTxt" class="demotxt">${DEMO_STEPS[0][1]}</p>
     <small class="swipe" id="demoSwipe">${L('‹ kaydır ›', '‹ swipe ›')}</small>
     <button id="mClose" class="btn primary"><span>${L('İleri ›', 'Next ›')}</span><small>1 / ${DEMO_STEPS.length}</small></button>`, {}, true);
-  const btn = $('mClose'), close = closeModal;
-  mOnClose = () => { if (save.played === 0 && !G) start('level'); };
+  const btn = $('mClose'), close = closeModal, first = !save.played;
+  Olcum.event('tutorial', { step: 'begin', first });
+  mOnClose = () => { Olcum.event('tutorial', { step: done ? 'complete' : 'skip', first }); if (save.played === 0 && !G) start('level'); };
   const D = demo($('demoCv'), k => {
     if (k === last && !done) { done = true; mLocked = false; $('demoSwipe').style.visibility = 'hidden'; }
     btn.classList.toggle('fin', done && k === last);
@@ -2322,5 +2377,5 @@ if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { seaWin, plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), RULE_LINE, RULES,  review: maybeReview, BST, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
+window.__ray = { seaWin, plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), RULE_LINE, RULES,  review: maybeReview, BST, offer: { MIN: OFFER_MIN, GAP: OFFER_GAP, AGE: OFFER_AGE, list: offerList, due: () => offerDue(G), inter: v => { interDue = v; } }, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();
