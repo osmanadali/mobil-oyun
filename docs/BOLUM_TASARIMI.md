@@ -288,7 +288,7 @@ Bu iki sistemin amacı oyuncuya "bir bölüm daha" dedirtmektir. Yıldız süres
 **Sefer şeridi (tren sayacı):**
 
 - Saatin altındaki ince ray şeridinde küçük bir tren, süre hedefi boyunca sinyale doğru ilerler.
-- Rayın yanan kısmı bağlantı oranıdır (yanan karo / bütün karo): oyuncu rayı döşer, tren arkasından gelir. Eski ayrı "%" çubuğu kaldırıldı; tek şerit hem süreyi hem ilerlemeyi gösterir.
+- Rayın yanan kısmı trenin arkasından dolar (süreyle, `--p`); bağlantıyla dolmaz, trenin önüne hiç geçmez (3 Kasım: bağlantı oranıyla dolan ray trenin önüne geçiyordu, kaldırıldı). Ayrı "%" çubuğu yok; bağlantı geri bildirimi ses ve titreşimle.
 - Son 10 saniyede sinyal sarıya döner.
 - Süre dolunca sinyal kırmızıya döner; tren sinyalde bekler ve "+0:12 rötar" sayar.
 - Rötar sürerken peronda yolcular arada bir nazik ve esprili bir laf atar (3, 15 ve 30. saniyelerde, en fazla 3 kez).

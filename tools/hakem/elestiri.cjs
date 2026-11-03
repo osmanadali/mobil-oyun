@@ -2,7 +2,9 @@
 module.exports = async T => {
   const { browser, URL, open, check, solve, starsUpTo } = T;
   const errs = [];
-  const rail = page => page.evaluate(() => +getComputedStyle(document.getElementById('gTrip')).getPropertyValue('--b') || 0);
+  // yanan rayın sağ ucu ile trenin arka ucu (px) · --b (bağlantı oranı) artık yok
+  const rail = page => page.evaluate(() => { const t = document.getElementById('gTrip'), d = t.querySelector('.done').getBoundingClientRect(), m = document.getElementById('gTrain').getBoundingClientRect();
+    return { end: Math.round(d.right), rear: Math.round(m.left), b: getComputedStyle(t).getPropertyValue('--b').trim(), p: +getComputedStyle(t).getPropertyValue('--p') }; });
   const city = page => page.evaluate(() => document.querySelector('.bg').className);
 
   // ---------- a) üretim: mola bölümleri hattın 6., 12.… bölümü, bir boy küçük ve hat ortalamasından kolay; hat ortalamaları yine artar ----------
@@ -36,17 +38,18 @@ module.exports = async T => {
     await page.click('#bPlay'); await page.waitForTimeout(700);
     const t18 = await page.evaluate(() => document.getElementById('gMoves').textContent);
     const meter = await page.evaluate(() => !!document.querySelector('.meter, #gPct, #gBar'));
-    const b0 = await rail(page), want0 = await page.evaluate(() => { const G = window.__ray.G; return G.L.n / G.cur.length; });
+    await page.evaluate(() => { const G = window.__ray.G; G.ms = G.lim.t * 500; }); await page.waitForTimeout(800);   // süre yarıda
+    const b0 = await rail(page);
     check('mola.ui', 'Mola: oyunda başlık "☕ mola", ana sayfada "☕ mola bölümü"; hat kartı toplam ★ yerine sıradaki hatta kalanı yazar',
       /☕ mola/.test(t18) && !/⚡/.test(t18) && home.size === '☕ mola bölümü' && /kaldı → M3/.test(home.gate) && !home.gate.includes(home.tot),
       `oyun "${t18}" · ana "${home.size}" · kart "${home.gate}" (çip ★ ${home.tot})`);
 
-    // ---------- c) tek şerit: ayrı % çubuğu yok; rayın yanan kısmı = yanan karo oranı, bitince 1 ----------
+    // ---------- c) tek şerit: ayrı % çubuğu yok; yanan ray yalnız trenin arkasından dolar (bağlantıyla dolmaz, trenin önüne geçmez) ----------
     await solve(page, 15);
-    await page.waitForTimeout(400);
+    await page.waitForTimeout(1100);
     const b1 = await rail(page), c1 = await city(page);
-    check('hud.rail', 'Gösterge: ayrı "%" çubuğu yok; sefer şeridinin rayı bağlantı oranıyla yanar, bölüm bitince tam yanar',
-      !meter && Math.abs(b0 - want0) < .01 && b0 > 0 && b0 < 1 && b1 === 1, `ilk --b ${b0.toFixed(3)} (beklenen ${want0.toFixed(3)}) · bitiş ${b1}`);
+    check('hud.rail', 'Gösterge: ayrı "%" çubuğu yok; yanan ray bağlantıyla değil trenle dolar — ucu trenin arka ucunda, önüne geçmez; perona girince de öyle',
+      !meter && !b0.b && b0.p > .3 && Math.abs(b0.end - b0.rear) <= 3 && b1.p === 1 && Math.abs(b1.end - b1.rear) <= 3, JSON.stringify({ b0, b1 }));
 
     // ---------- d) şehir canlanır: bitişte harita parlar ve tren geçer; ana sayfaya dönünce söner ----------
     const op = await page.evaluate(() => +getComputedStyle(document.querySelector('.map')).opacity);

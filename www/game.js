@@ -886,8 +886,6 @@ function hud() {
   $('gPar').innerHTML = `${G.moves}<small> / ${G.lim.m}</small>`;
   $('gPar').classList.toggle('miss', !ok);
   $('gParLbl').textContent = ok ? L('↻ HAMLE HEDEFİ', '↻ MOVE TARGET') : L('↻ HEDEF AŞILDI', '↻ OVER TARGET');
-  // sefer şeridinin rayı bağlantıyla döşenir (yanan karo oranı): tren süreyle ilerler, ray önünden yetişmeli
-  $('gTrip').style.setProperty('--b', (G.L.n / G.cur.length).toFixed(3));
   bstUi();
 }
 // üst gösterge: süre + üç yıldız (bitir · ⏱ süre · ↻ hamle)
@@ -1215,7 +1213,6 @@ cv.addEventListener('pointerdown', e => {
   if (gained) { tone(note(k), .22, .05); if (stations) tone(note(k + 2), .3, .035, 'sine', .06); haptic(stations ? 'heavy' : 'light'); }
   else { tone(G.L.n < prev.filter(v => v >= 0).length ? 294 : 523, .05, .022); haptic('light'); }
   hud(); tick(); kick();
-  if (gained) bump($('gTrip').querySelector('.done'));
   if (G.L.solved) win(); else saveRun();
 });
 
