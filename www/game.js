@@ -124,7 +124,7 @@ const SKINS = [
   { id: 'fener', sea: '🌙', name: L('Bayram Fenerleri', 'Eid Lanterns'), lines: ['#ffd36b', '#4fd1c5', '#c39bff', '#ff9fb2', '#7fd0ff', '#f7b267'], acc: ['#ffd36b', '#4fd1c5'], glow: ['#b8862b', '#147d7a', '#7b4bff'] },
   { id: 'kurban', sea: '🌤', name: L('Bayram Sabahı', 'Eid Morning'), lines: ['#8fe388', '#ffd6a5', '#6ec6ff', '#ffb38a', '#c9f2a0', '#a8b8ff'], acc: ['#8fe388', '#6ec6ff'], glow: ['#3f9f5f', '#ffb36b', '#3a7bd5'] },
 ];
-const crownCount = () => Object.keys(save.crowns).length + (save.dCrowns || 0) + (save.fc || 0) + (save.cc || 0) + (save.qc || 0) + (save.aCrowns || 0) + (save.dt || 0);   // toplam kazanılan 🎫 (bölüm + günlük kusursuz + final + seri bonusu + haftalık görev + arşiv + Günün Hattı bitişi)
+const crownCount = () => Object.keys(save.crowns).length + (save.dCrowns || 0) + (save.fc || 0) + (save.cc || 0) + (save.qc || 0) + (save.dqc || 0) + (save.aCrowns || 0) + (save.dt || 0);   // toplam kazanılan 🎫 (bölüm + günlük kusursuz + final + seri bonusu + haftalık görev + arşiv + Günün Hattı bitişi)
 const crownBal = () => crownCount() + (save.bCrowns || 0) - (save.spent || 0);       // harcanabilir bakiye (satın alınan 🎫 dahil)
 // sandık yalnız kazanılan 🎫 ile açılır: satın alınan bilet (bCrowns, harcanan kısmı bSpent) yalnız temaya → parayla rastgele ödül yok
 const chestBal = () => crownCount() - ((save.spent || 0) - (save.bSpent || 0));
@@ -665,7 +665,9 @@ function modal(html, binds = {}, locked = false) {
   mLocked = locked; howBack = null; mOnClose = null;
   const sh = $('mCard'); sh.innerHTML = html; sh.scrollTop = 0; $('modal').classList.add('open');
   sh.classList.toggle('fit', sh.scrollHeight <= sh.clientHeight + 1);   // sığan pencere: her yerinden aşağı çekilebilir
-  bind(binds);
+  // uzun (kaydırılan) pencere: köşede ✕ — aşağı çekmek kaydırmayla karışabiliyor (temalar, sandık, mağaza)
+  if (!locked && !sh.classList.contains('fit')) sh.insertAdjacentHTML('afterbegin', `<button class="mx" id="mX" aria-label="${L('Kapat', 'Close')}">✕</button>`);
+  bind({ mX: closeModal, ...binds });
 }
 const closeModal = () => { howBack = null; const f = mOnClose; mOnClose = null; $('modal').classList.remove('open'); f?.(); };
 const modalOpen = () => $('modal').classList.contains('open');
@@ -692,6 +694,8 @@ $('modal').onclick = e => { if (e.target.id === 'modal' && !mLocked) closeModal(
     if (!mLocked && (dy > 110 || (dy > 40 && v > .6))) { closeModal(); haptic(); }
   };
   sh.addEventListener('pointerup', end); sh.addEventListener('pointercancel', end);
+  // dokunmatik: pencere en üstteyken aşağı hareketi kaydırma değil sürükleme say (yoksa tarayıcı pointercancel ile keser)
+  sh.addEventListener('touchmove', e => { if (y0 != null && (dragged || (sh.scrollTop <= 0 && dy > 0))) e.preventDefault(); }, { passive: false });
   sh.addEventListener('click', e => { if (dragged) { e.stopPropagation(); e.preventDefault(); dragged = false; } }, true);   // sürükleme sonrası düğmeye basılmış sayılmasın
 }
 const bump = el => { el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); };
@@ -1742,12 +1746,13 @@ function streakSheet() {
 // (💡 ya da ❤️∞ sınırsız can), üçü birden +1 🎫 ek. Günün Hattı'nı bitirmek de +1 🎫 (günde bir; win içinde).
 // Arşiv: son 30 günün Günün Hattı'ndan biri ARCH_COST 🎫 ile kalıcı açılır.
 const weekOf = s => { const d = dayDate(s); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return ymd(d); };
+// görevler: d = günlük hedef (gece yarısı yenilenir), w = haftalık hedef (pazartesi); basamak: yeni · orta · deneyimli
 const QUESTS = {
-  win: { n: [5, 10, 20], rw: 'hint', txt: n => L(`${n} bölüm bitir`, `Finish ${n} levels`) },
-  perfect: { n: [3, 5, 8], rw: 'inf30', txt: n => L(`${n} bölümü kusursuz bitir`, `Finish ${n} levels perfect`) },
-  nohint: { n: [3, 5, 8], rw: 'inf15', txt: n => L(`İpucusuz ${n} bölüm bitir`, `Finish ${n} levels without hints`) },
-  daily: { n: [0, 3, 4], rw: 'inf30', txt: n => L(`${n} Günün Hattı bitir`, `Finish ${n} Daily Lines`) },
-  bst: { n: [0, 2, 3], rw: 'hint', txt: n => L(`${n} güçlendirici kullan`, `Use ${n} boosters`) },
+  win: { d: [3, 5, 5], w: [15, 25, 40], rw: 'hint', txt: n => L(`${n} bölüm bitir`, `Finish ${n} levels`) },
+  perfect: { d: [2, 3, 3], w: [6, 12, 20], rw: 'inf30', txt: n => L(`${n} bölümü kusursuz bitir`, `Finish ${n} levels perfect`) },
+  nohint: { d: [2, 3, 3], w: [6, 12, 20], rw: 'inf15', txt: n => L(`İpucusuz ${n} bölüm bitir`, `Finish ${n} levels without hints`) },
+  daily: { d: [0, 1, 1], w: [0, 4, 5], rw: 'inf30', txt: n => n === 1 ? L('Günün Hattı\'nı bitir', 'Finish the Daily Line') : L(`${n} Günün Hattı bitir`, `Finish ${n} Daily Lines`) },
+  bst: { d: [0, 1, 1], w: [0, 3, 4], rw: 'hint', txt: n => L(`${n} güçlendirici kullan`, `Use ${n} ${pl(n, 'booster', 'boosters')}`) },
 };
 const RW_TXT = { hint: '💡', inf15: L('❤️∞ 15 dk', '❤️∞ 15 min'), inf30: L('❤️∞ 30 dk', '❤️∞ 30 min') };
 // sınırsız can: can sistemiyle ortak kayıt sözleşmesi (save.lives 0–5, save.lifeT, save.infUntil ms); burada yalnız süre eklenir
@@ -1824,38 +1829,46 @@ function lifeSheet(lvl) {
   up(); const iv = setInterval(() => { if ($('mLife')) up(); else clearInterval(iv); }, 1000);
   mOnClose = () => clearInterval(iv);
 }
-function weekQ() {
-  const id = weekOf(today());
-  if (save.wk?.id === id) return save.wk;
-  const t = save.level < lineStart(2) ? 0 : save.level < lineStart(5) ? 1 : 2, R = rng(hashStr('gorev' + id));
-  const ok = k => QUESTS[k].n[t] > 0 && (k !== 'daily' || save.dailyDone || save.level >= 61) && (k !== 'bst' || BST.reduce((a, b) => a + bst(b.id), 0) >= QUESTS[k].n[t]);
+// 3 görev; herkeste aynı tohum (basamağa göre). f: 'w' haftalık, 'd' günlük
+function qSet(f, id, salt) {
+  const t = save.level < lineStart(2) ? 0 : save.level < lineStart(5) ? 1 : 2, R = rng(hashStr(salt + id));
+  const ok = k => QUESTS[k][f][t] > 0 && (k !== 'daily' || save.dailyDone || save.level >= 61) && (k !== 'bst' || BST.reduce((a, b) => a + bst(b.id), 0) >= QUESTS[k][f][t]);
   const keys = Object.keys(QUESTS).map(k => [k, R()]).sort((a, b) => a[1] - b[1]).map(a => a[0]).filter(ok).slice(0, 3);
-  return save.wk = { id, q: keys.map(k => ({ t: k, n: QUESTS[k].n[t], p: 0 })), all: 0 };
+  return { id, q: keys.map(k => ({ t: k, n: QUESTS[k][f][t], p: 0 })), all: 0 };
 }
+function weekQ() { const id = weekOf(today()); return save.wk?.id === id ? save.wk : (save.wk = qSet('w', id, 'gorev')); }
+function dayQ() { const id = today(); return save.dq?.id === id ? save.dq : (save.dq = qSet('d', id, 'gunluk')); }
 // ilerleme: tamamlanan görevin ödülü hemen verilir; dönen metin sonuç paneline/bildirime yazılır (persist çağırana kalır)
 function questStep(type) {
-  const w = weekQ(), out = [];
+  const w = weekQ(), d = dayQ(), out = [];
+  // günlük: her görev +1 💡, üçü birden +1 🎫 (günlük ödül)
+  for (const q of d.q) if (q.t === type && q.p < q.n && ++q.p === q.n) { save.hints++; out.push(L('☀️ Günlük görev · +1 💡', '☀️ Daily quest · +1 💡')); }
+  if (!d.all && d.q.every(q => q.p >= q.n)) { d.all = 1; save.dqc = (save.dqc || 0) + 1; out.push(L('☀️ Günün görevleri tamam · +1 🎫', '☀️ All daily quests done · +1 🎫')); }
   for (const q of w.q) if (q.t === type && q.p < q.n && ++q.p === q.n) {
     const rw = QUESTS[q.t].rw; save.qc = (save.qc || 0) + 1;
     if (rw === 'hint') save.hints++; else giveInf(rw === 'inf15' ? 15 : 30);
     out.push(L(`🎯 Görev tamam · +1 🎫 +1 ${RW_TXT[QUESTS[q.t].rw]}`, `🎯 Quest done · +1 🎫 +1 ${RW_TXT[QUESTS[q.t].rw]}`));
   }
-  if (!w.all && w.q.every(q => q.p >= q.n)) { w.all = 1; save.wqAll = (save.wqAll || 0) + 1; save.qc = (save.qc || 0) + 1; out.push(L('🎯 Haftanın görevleri tamam · +1 🎫', '🎯 All weekly quests done · +1 🎫')); }
+  if (!w.all && w.q.every(q => q.p >= q.n)) { w.all = 1; save.wqAll = (save.wqAll || 0) + 1; save.qc = (save.qc || 0) + 2; out.push(L('🎯 Haftanın görevleri tamam · +2 🎫', '🎯 All weekly quests done · +2 🎫')); }
   return out.join(' · ');
 }
 const questVis = () => save.level > lineEnd(0) || !!save.dailyDone;   // ilk hat bitmeden ana sayfa sade kalsın
 function questRow() {
   const el = $('bQuest'); el.hidden = !questVis(); if (el.hidden) return;
-  const w = weekQ(), d = w.q.filter(q => q.p >= q.n).length;
-  $('qState').textContent = `${d}/${w.q.length}`; el.classList.toggle('done', d === w.q.length);
+  const w = weekQ(), dq = dayQ(), n = s => s.q.filter(q => q.p >= q.n).length, a = n(dq), b = n(w);
+  $('qState').textContent = `☀️ ${a}/${dq.q.length} · 📅 ${b}/${w.q.length}`; el.classList.toggle('done', a === dq.q.length && b === w.q.length);
 }
 function questSheet() {
-  const w = weekQ(), left = Math.round((dayDate(w.id).getTime() + 7 * 864e5 - dayDate(today()).getTime()) / 864e5), sun = (() => { const d = dayDate(w.id); d.setDate(d.getDate() + 6); return ymd(d); })(), wr = dailyRule(sun);
-  modal(`<h2>🎯 ${L('Haftalık görevler', 'Weekly quests')}</h2>
-    <p class="tip">${left <= 1 ? L('Yarın yenilenir', 'New quests tomorrow') : L(`${left} gün sonra yenilenir`, `New quests in ${left} days`)}</p>
-    <div class="quests">${w.q.map(q => `<div class="${q.p >= q.n ? 'ok' : ''}"><span>${QUESTS[q.t].txt(q.n)}</span><b>${q.p >= q.n ? '✓' : `${q.p}/${q.n}`}</b><i style="width:${Math.round(q.p / q.n * 100)}%"></i><small>+1 🎫 · +1 ${RW_TXT[QUESTS[q.t].rw]}</small></div>`).join('')}</div>
-    <p class="tip">${L('Üçü birden → +1 🎫 ek · Günün Hattı → +1 🎫', 'All three → +1 extra 🎫 · Daily Line → +1 🎫')}${wr ? `<br>${L('Pazar', 'Sunday')}: ${L('haftanın kuralı', 'rule of the week')} · <b>${RULES[RULE_LINE[wr]].name}</b>` : ''}</p>
-    <button id="mArch" class="btn primary"><span>📅 ${L('Geçmiş günler', 'Past days')}</span><small>🎫 ${crownBal()} · ${L(`${ARCH_COST} bilet = 1 gün`, `${ARCH_COST} tickets = 1 day`)}</small></button>
+  const w = weekQ(), dq = dayQ(), left = Math.round((dayDate(w.id).getTime() + 7 * 864e5 - dayDate(today()).getTime()) / 864e5), sun = (() => { const d = dayDate(w.id); d.setDate(d.getDate() + 6); return ymd(d); })(), wr = dailyRule(sun);
+  const row = (q, rw) => `<div class="${q.p >= q.n ? 'ok' : ''}"><span>${QUESTS[q.t].txt(q.n)}</span><b>${q.p >= q.n ? '✓' : `${q.p}/${q.n}`}</b><i style="width:${Math.round(q.p / q.n * 100)}%"></i><small>${rw}</small></div>`;
+  modal(`<h2>🎯 ${L('Görevler', 'Quests')}</h2>
+    <div class="nexts"><small><b>☀️ ${L('Bugün', 'Today')}</b></small><small>${L('Gece yarısı yenilenir', 'Resets at midnight')}</small></div>
+    <div class="quests">${dq.q.map(q => row(q, '+1 💡')).join('')}</div>
+    <p class="tip">${L('Üçü birden → <b>+1 🎫</b> günlük ödül', 'All three → <b>+1 🎫</b> daily reward')}</p>
+    <div class="nexts"><small><b>📅 ${L('Bu hafta', 'This week')}</b></small><small>${left <= 1 ? L('Yarın yenilenir', 'New quests tomorrow') : L(`${left} gün sonra yenilenir`, `New quests in ${left} days`)}</small></div>
+    <div class="quests">${w.q.map(q => row(q, `+1 🎫 · +1 ${RW_TXT[QUESTS[q.t].rw]}`)).join('')}</div>
+    <p class="tip">${L('Üçü birden → <b>+2 🎫</b> haftalık ödül · Günün Hattı → +1 🎫', 'All three → <b>+2 🎫</b> weekly reward · Daily Line → +1 🎫')}${wr ? `<br>${L('Pazar', 'Sunday')}: ${L('haftanın kuralı', 'rule of the week')} · <b>${RULES[RULE_LINE[wr]].name}</b>` : ''}</p>
+    <button id="mArch" class="btn primary"><span>📅 ${L('Geçmiş günler', 'Past days')}</span><small>${L(`${ARCH_COST} bilet = 1 gün`, `${ARCH_COST} tickets = 1 day`)}</small></button>
     <button id="mClose" class="btn glassbtn">${L('Tamam', 'OK')}</button>`, { mArch: archSheet, mClose: closeModal });
 }
 const ARCH_DAYS = 30, ARCH_COST = 3;
@@ -1872,7 +1885,7 @@ function archSheet() {
     <p class="tip">${L(`Son 30 gün · her gün ${ARCH_COST} 🎫 ile kalıcı açılır · seriyi etkilemez, kusursuz → +1 🎫`, `Last 30 days · each day opens for good with ${ARCH_COST} 🎫 · no effect on streak, perfect → +1 🎫`)}</p>
     <div class="arch" id="archGrid">${days.map(cell).join('')}</div>
     <div class="nexts"><small>🎫 <b id="archTk">${crownBal()}</b> ${L('bilet', pl(crownBal(), 'ticket', 'tickets'))}</small><small>${L('Kusursuz bölüm ve görevlerden', 'From perfect levels and quests')}</small></div>
-    <button id="mQuest" class="btn glassbtn">🎯 ${L('Haftalık görevler', 'Weekly quests')}</button>`, { mQuest: questSheet });
+    <button id="mQuest" class="btn glassbtn">🎯 ${L('Görevler', 'Quests')}</button>`, { mQuest: questSheet });
   $('archGrid').onclick = e => {
     const d = e.target.closest('button')?.dataset.d; if (!d) return;
     if (archOpen(d)) { start('arch', d); return; }
@@ -2582,5 +2595,5 @@ if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { seaWin, ACH, achCheck, linesDone, goldLine, plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), RULE_LINE, RULES,  review: maybeReview, BST, offer: { MIN: OFFER_MIN, GAP: OFFER_GAP, AGE: OFFER_AGE, list: offerList, due: () => offerDue(G), inter: v => { interDue = v; } }, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, lineOf, lineEnd, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
+window.__ray = { seaWin, ACH, achCheck, linesDone, goldLine, plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), dayQ: () => dayQ(), RULE_LINE, RULES,  review: maybeReview, BST, offer: { MIN: OFFER_MIN, GAP: OFFER_GAP, AGE: OFFER_AGE, list: offerList, due: () => offerDue(G), inter: v => { interDue = v; } }, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, lineOf, lineEnd, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();

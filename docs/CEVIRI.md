@@ -167,6 +167,8 @@ Hat adları yer adıdır ve çevrilir:
 | 🎫 3 yeni bilet · +1 ipucu | 🎫 3 new tickets · +1 hint |
 | İlerlemeyi taşı · Kodu kopyala · Kodu yükle | Move progress · Copy code · Load code |
 | Bize yaz · Öneri · hata | Contact us · Ideas · bugs |
+| 🎯 Görevler · ☀️ Bugün · 📅 Bu hafta | 🎯 Quests · ☀️ Today · 📅 This week |
+| günlük ödül · haftalık ödül | daily reward · weekly reward |
 | güçlendirici | booster |
 | 🔄 Ek tur · 🔦 Fener · ⏱ +15 sn · ↶ Geri al | 🔄 Extra turn · 🔦 Lantern · ⏱ +15 s · ↶ Undo |
 | ★ 11 kaldı → M3 | ★ 11 to go → M3 |

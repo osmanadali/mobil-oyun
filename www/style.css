@@ -237,6 +237,11 @@ html:lang(en) body.test .hero p::after{content:' · 🧪 TEST: all unlocked'}
 .ist{fill:var(--bg0);stroke:var(--fg);stroke-width:5;transform-box:fill-box;transform-origin:center;animation:pop .4s var(--d) cubic-bezier(.3,1.7,.5,1) both,ilit .5s calc(var(--d) + .25s) forwards}
 @keyframes ilit{to{fill:#fff;stroke:#ffb35c}}
 @keyframes ihub{40%{filter:drop-shadow(0 0 18px #ffb35c)}}
+.imark{width:min(44vw,176px)}
+.imark .iln{stroke-width:20;stroke:var(--ln1,var(--acc));animation-delay:.3s}
+.imark .ist{stroke:#fff8ec;stroke-width:6.5}
+.imark .ihub{fill:#ffd59a;filter:drop-shadow(0 0 9px rgba(255,179,92,.8));animation:pop .45s 1.05s cubic-bezier(.3,1.6,.5,1) both,ihub 1.2s 1.4s ease-out}
+.imark .ihubdot{fill:#fff;transform-box:fill-box;transform-origin:center;animation:pop .4s 1.3s cubic-bezier(.3,1.6,.5,1) both}
 .ititle{margin-top:18px;opacity:0;transform:translateY(10px);animation:rise .6s 1.3s cubic-bezier(.2,.9,.2,1) forwards}
 .isub{color:var(--mut);margin-top:6px;opacity:0;animation:rise .6s 1.55s ease forwards}
 @keyframes rise{to{opacity:1;transform:none}}
@@ -322,6 +327,7 @@ body.introing .screen *{animation-play-state:paused!important}
 .sheet{width:100%;border-radius:30px 30px 0 0;padding:14px 20px max(22px,var(--sab));background:var(--sheetBg);box-shadow:inset 0 1px 0 var(--stroke),0 -10px 40px rgba(0,0,0,.25);transform:translateY(105%);transition:transform .45s cubic-bezier(.2,.9,.2,1);display:flex;flex-direction:column;gap:12px}
 .sheet:before{content:"";width:40px;height:5px;border-radius:5px;background:var(--stroke);align-self:center;margin-bottom:8px;box-shadow:inset 0 0 0 9px var(--rail)}
 .modal.open .sheet{transform:none}
+.sheet .mx{position:sticky;top:0;z-index:3;align-self:flex-end;width:40px;height:40px;margin:-34px -8px -6px 0;border:0;border-radius:50%;background:var(--glass2);box-shadow:inset 0 0 0 1px var(--stroke);color:var(--mut);font-size:16px;line-height:1}
 .sheet{max-height:96%;overflow-y:auto;overscroll-behavior:contain}.sheet>*{flex-shrink:0}
 .sheet.fit,.sheet h2{touch-action:none}.sheet.drag{transition:none}
 @media (max-height:720px){.opt{padding:6px 4px}.sheet{gap:9px}}

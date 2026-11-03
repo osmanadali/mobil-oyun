@@ -21,10 +21,11 @@
 <div class="bg" aria-hidden="true"><i class="glow g1"></i><i class="glow g2"></i><i class="glow g3"></i><i class="map"><svg viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice"><g fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><path d="M-20 130H130L250 250V520L350 620H440" stroke="#f0a64a"/><path d="M70-20V200L190 320H420" stroke="#4fc3a1"/><path d="M-20 470H120L220 370H320L420 270" stroke="#6ea8ff"/><path d="M110 820V650L210 550H300V320" stroke="#ff7a8a"/><path d="M-20 720H90L190 820" stroke="#b394ff"/><path d="M310-20V110L420 220" stroke="#4fc3a1"/></g><g class="st" fill="#fff" stroke="#8892a6" stroke-width="5"><circle cx="130" cy="130" r="11"/><circle cx="250" cy="320" r="11"/><circle cx="350" cy="620" r="11"/><circle cx="70" cy="200" r="11"/><circle cx="120" cy="470" r="11"/><circle cx="320" cy="370" r="11"/><circle cx="210" cy="550" r="11"/><circle cx="300" cy="420" r="11"/><circle cx="90" cy="720" r="11"/><circle cx="310" cy="110" r="11"/></g><g class="ctr"><rect x="-26" y="-9" width="52" height="18" rx="7"/><animateMotion dur="2.6s" begin="indefinite" fill="freeze" rotate="auto" path="M0 0"/></g></svg></i></div>
 <div id="app">
   <div id="intro" class="intro" aria-hidden="true">
-    <svg class="ilogo" viewBox="-10 -10 220 140">
-      <path class="iln a" d="M14 92H62L98 56H186"/><path class="iln b" d="M98 10V56L134 92H186"/><path class="iln c" d="M14 30H54L98 56"/>
-      <rect class="ihub" x="85" y="43" width="26" height="26" rx="8"/><circle class="ihubdot" cx="98" cy="56" r="4.5"/>
-      <circle class="ist" style="--d:.95s" cx="14" cy="92" r="8"/><circle class="ist" style="--d:1.05s" cx="14" cy="30" r="8"/><circle class="ist" style="--d:1.15s" cx="98" cy="10" r="8"/><circle class="ist" style="--d:1.25s" cx="186" cy="56" r="8"/><circle class="ist" style="--d:1.35s" cx="186" cy="92" r="8"/>
+    <!-- uygulama ikonunun işareti (Gece Işığı): durak belirir, L ray çizilir, kare merkez yanar -->
+    <svg class="ilogo imark" viewBox="0 0 120 120">
+      <path class="iln a" d="M34 88V42H80"/>
+      <circle class="ist" style="--d:.1s" cx="34" cy="88" r="10"/>
+      <rect class="ihub" x="61" y="23" width="38" height="38" rx="11"/><circle class="ihubdot" cx="80" cy="42" r="5.5"/>
     </svg>
     <h1 class="ititle">Ray</h1><p class="isub" data-en="Connect the lines · Light up the city">Hatları bağla · Şehri canlandır</p>
   </div>
@@ -55,7 +56,7 @@
         <small id="dailyState">Seriyi koru</small>
         <svg class="arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
       </button>
-      <button class="qrow" id="bQuest" hidden><span data-en="🎯 Weekly quests">🎯 Haftalık görevler</span><b id="qState">0/3</b></button>
+      <button class="qrow" id="bQuest" hidden><span data-en="🎯 Quests">🎯 Görevler</span><b id="qState">0/3</b></button>
       <button class="card prog btn" id="bMap">
         <div class="ph"><span class="k" data-en="LINES">HATLAR</span><small><b id="sHints">3</b> <span id="sHintsL">ipucu</span></small></div>
         <b id="lineName">M1 · Turuncu Hat</b>

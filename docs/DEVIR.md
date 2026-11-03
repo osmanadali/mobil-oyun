@@ -73,6 +73,7 @@ APK indirme linkleri (sabit):
 ## 5. Durum
 
 <!-- DURUM:BAŞ -->
+- **Kullanıcı testi (3 Kasım):** açılış animasyonu uygulama ikonunun işaretiyle (L ray + yanan kare merkez); uzun pencerelerde köşede ✕ ve en üstteyken aşağı çekme kaydırmayla karışmıyor (touchmove); görev penceresi ☀️ günlük (3 görev: ör. 5 bölüm, 3 kusursuz, 3 ipucusuz; her biri +1 💡, üçü +1 🎫) ve 📅 haftalık (15–40 bölüm, 6–20 kusursuz…; her biri +1 🎫 + ödül, üçü +2 🎫); turuncu düğmede bilet bakiyesi yok.
 Durum 3 Kasım 2026 itibarıyla (en yeni madde başta):
 
 - **Özel teklif + Firebase Analytics (3 Kasım, `gelir-2` dalı):** kazanma sonrası seyrek "Özel teklif" penceresi (48 saatte bir; ilk 2 gün ve ilk 15 bölüm yok; Günün Hattı/zen yok; geçiş reklamıyla aynı turda yok; reklamsız sahibine reklamsız teklifi yok), yeni tüketilebilir ürün 🎁 Başlangıç paketi `ray_baslangic` (10 💡, 2'şer güçlendirici, ❤️∞ 1 saat, 20 🎫; 2,99 $). Ölçüm `www/olcum.js` (`window.Olcum.event`), `@capacitor-firebase/analytics` 8.5.2, CI gizli değerleri `FIREBASE_ANDROID_JSON`/`FIREBASE_IOS_PLIST` (yoksa eklenti çıkarılır, ölçüm kapalı), rıza "temel" mod (UMP rıza gerektirmiyorsa açık; AEA/BK/ABD eyalet mesajında kapalı), olay tablosu YAYIN §5.4. Robot `--only=gelir-2`.
