@@ -38,7 +38,7 @@ Kayan sıra uyumludur: sıra zaten sarmal biçimde kayar.
 **Zorluk ölçümü (3 Kasım).**
 
 - Aynı 80 tohumda (7×9) çözücü puanı sarmalsız **14,3**, sarmallı **27,2** (6×8'de 12,5 → 27,2). Puan neredeyse ikiye katlanıyor; artışın çoğu ilk turda elenemeyen karo oranından ve tahmin dallarından geliyor.
-- Seçici, hedefe en yakın adayı aldığı için sarmal bölümler hattın hedef puanından seçilir. `boost: 3` ile hat ortalaması M20 18,3 → **M21 18,4** → M22 19,0. Puan aynı ölçekte kaldığından merdiven kesintisiz.
+- Seçici, hedefe en yakın adayı aldığı için sarmal bölümler hattın hedef puanından seçilir. `boost: 3.5` ile hat ortalaması M20 18,4 → **M21 18,7** → M22 19,0. Puan aynı ölçekte kaldığından merdiven kesintisiz.
 - Seçicinin kaçındığı aşırı adaylar da var: 40 tohumda 3'ünde puan 40'ın üstünde.
 - Eklenti çıkarılınca 1–520. bölümler ve Günün Hattı bit bit aynı kalıyor.
 

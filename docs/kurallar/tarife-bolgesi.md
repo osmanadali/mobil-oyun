@@ -120,3 +120,5 @@ Parmak izi aynı: `tarife-bolgesi.js` yüklü ve yüksüz sayfada `puzzleFor(1..
 - Çözüm sayımı aday başına bir çözücü turu daha ekler. Düşük donanımda ilk bölüm açılışı birkaç yüz ms sürebilir.
 - Karma hatlarda boost toplamı sınırlanmaz. Bölge (4) ile tünel ağzı (1) birlikte 5 ekler. Prototip doğrudan üretimde bu ikilinin ortalamasını ~26 ölçtü; `pick` hedefe yakın aday seçtiğinden bölüm puanı hedef civarında kalır.
 - `rulesFor` karışımı, paralel oturumlarda yazılan çift hat kuralları (M10–M18) birleşince değişecek. O zaman karma taraması yeniden koşmalı. Testler sabit imza değil, yüklü/yüksüz karşılaştırması kullanır.
+
+**Düzeltme (3 Kasım).** Geçiş sayısı `B`, `tree` aşamasında çözümden sayılıyordu. Kapalı durak (`mark`, `ord 15`) sınırdaki bir durağı sonradan yok sayınca (`P.void`) rozet ile çözüm uyuşmuyordu: main'de de 600 doğrudan üretimden 11'inde çözüm dizilimi çözülmüyordu. Artık `mark` aşaması (kapalı duraktan sonra) iki sayıyı çözümden yeniden okur. Tampon sayısı tutmazsa aday reddedilir. Sonuç: 0/600 hata.

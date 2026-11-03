@@ -32,13 +32,13 @@ Hat boyu M1'den M5'e 4'er bölüm uzar (12, 16, 20, 24, 28), sonra **28'de sabit
 | M16 | 381–408 | 28 | ★ 836 | %89–91 | ⊂ Tünel ağzı | 16,9 |
 | M17 | 409–436 | 28 | ★ 898 | %91–92 | ➜ Yön tabelası | 17,2 |
 | M18 | 437–464 | 28 | ★ 959 | %92–93 | ◯ Halka hat | 17,5 |
-| M19 | 465–492 | 28 | ★ 1021 | %94 | ? Silik kol | 17,8 |
-| M20 | 493–520 | 28 | ★ 1082 | %94–95 | ⌂ Gizli depo | 18,3 |
-| M21 | 521–548 | 28 | ★ 1144 | %95–96 | 🌐 Sarmal tahta | 18,4 |
+| M19 | 465–492 | 28 | ★ 1021 | %94 | ? Silik kol | 18,2 |
+| M20 | 493–520 | 28 | ★ 1082 | %94–95 | ⌂ Gizli depo | 18,4 |
+| M21 | 521–548 | 28 | ★ 1144 | %95–96 | 🌐 Sarmal tahta | 18,7 |
 | M22 | 549–576 | 28 | ★ 1206 | %96–97 | ≈ Nehir | 19,0 |
 | M23 | 577–604 | 28 | ★ 1267 | %97 | ⊘ Kapalı durak | 19,5 |
 | M24 | 605–632 | 28 | ★ 1329 | %97–98 | ⇄ Tarife bölgesi | 20,1 |
-| M25+ | 633– | 28 | ★ 1390… | %98 → %100 | karma | ~19,7–20,1 |
+| M25+ | 633– | 28 | ★ 1390… | %98 → %100 | karma | ~19,7–20,5 |
 
 Kod: `LINE_MAX`, `lineLen`, `lineStart`, `lineOf` (tavandan sonra kapalı biçim, döngü yok). 3 Kasım'da sabit karo kalktı ve iki kural eklendi (🔒 mühürlü karo M11, 🌐 sarmal tahta M21): 1–28. bölümler (M1–M2) eskisi gibidir, 29. bölümden sonrası yeni kural sırasıyla yeniden üretilir (kasıtlı; parmak izi testleri yenilendi).
 
@@ -119,7 +119,7 @@ Eşli, ters, karanlık tünel, sayaçlı ve iki merkez dışındaki kurallar çe
 - Kurallar üst üste yığılmaz. Bir kural kendi hattında her bölümde vardır.
 - Sonraki hatlarda kendi kuralına ek olarak bölüm bölüm değişen en fazla 1 eski kural gelir.
 - M24 sonrası karma hatlardır: her bölüm 1–2 kuralın farklı bir karışımıdır. Kurallı hatlarda da bölümlerin yaklaşık yarısına bir eski kural eklenir. M9–M24 arasında ek kuralın yarısı en yeni 3 kuraldan (hat sırasıyla) seçilir, böylece yeni öğrenilen kural sık tekrar eder. M25 ve sonrasında bütün kurallar eşit sıklıkta gelir ve hedef puana sabit +3 pay eklenir; sınırsız karma M24 düzeyinde kalır.
-- Ölçülen merdiven (hat ortalaması, zorluk puanı) §2 tablosundadır: M1 5,6'dan M24 20,1'e her hat bir öncekinden zor; M25+ ~19,7–20,1. 3 Kasım ayarı: sarmal tahta `boost: 3`, nehir ve kapalı durak 3,5 → 4, tarife bölgesi 4,5 → 5 (yeni sırada merdiven kesintisiz kalsın).
+- Ölçülen merdiven (hat ortalaması, zorluk puanı) §2 tablosundadır: M1 5,6'dan M24 20,1'e her hat bir öncekinden zor; M25+ ~19,7–20,5. 3 Kasım ayarı: sarmal tahta `boost: 3.5`, silik kol 3 → 3,5, nehir ve kapalı durak 3,5 → 4, tarife bölgesi 4,5 → 5 (yeni sırada merdiven kesintisiz kalsın).
 - Birlikte gelemeyen kurallar vardır (çakışan kural sıradaki uyumlu kuralla değişir): halka ↔ tabela, köprü; kapak ↔ karanlık tünel, silik kol; kapalı durak ↔ kapak, silik kol, gizli depo; nehir ↔ köprü, tabla, halka, tarife bölgesi; tarife bölgesi ↔ iki merkez; mühürlü karo ↔ bakım karosu; sarmal tahta ↔ tünel ağzı, gizli depo, nehir, tarife bölgesi; kayan sıra ↔ kapalı durak, nehir, tarife bölgesi, gizli depo.
 - Böylece tahta kalabalıklaşmaz ve her bölüm biraz farklı hissettirir.
 

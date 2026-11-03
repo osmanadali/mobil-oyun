@@ -50,6 +50,8 @@
     // Çözüm sayımı çözücünün yaprağında, 2. çözümde durur. Karanlık ve "çözülmüş gelmesin" yalnız cur'u döndürür: çözüm kümesi değişmez. R() tüketmez.
     mark(C) {
       const Z = C.out.zone; if (!Z) return;
+      // kapalı durak (mark, ord 15) sınırdaki bir durağı yok saydıysa sayılar çözümden yeniden okunur (yoksa çözüm dizilimi çözülmezdi)
+      const [B2, T2] = count({ ...C.out, zone: Z }, C.sol); Z.B = B2; if (T2 !== Z.T) C.out.reject = true;
       const P = { ...C, ...C.out }; let k = 0;
       api.difficulty(P, cfg => (api.lit({ ...P, cur: cfg }).solved && k++, k > 1), 600);
       if (k !== 1 || Z.T !== C.x.zone) C.out.reject = true;

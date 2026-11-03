@@ -1,5 +1,5 @@
 // Makas (RL.sw hattı) — robot testleri (hakem.cjs K bölümü çağırır). Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/makas.md
-const FP = { lv: 4112808689, daily: 1906665804 };   // parmak izi: makas hattından önceki bölümler · Günün Hattı (eklentisiz, hat düzeninden bağımsız)
+const FP = { lv: 2796398046, daily: 1906665804 };   // parmak izi: makas hattından önceki bölümler · Günün Hattı (eklentisiz, hat düzeninden bağımsız)
 module.exports = async T => {
   const { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, starsUpTo, RL, LS, LE, AT, seenTo } = T;
   const A = AT('sw'), NX = RL.sw + 1;   // giriş bölümü · sonraki hat (karma denemesi)

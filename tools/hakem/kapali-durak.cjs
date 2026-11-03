@@ -2,7 +2,7 @@
 // Üretim + adillik (prune'suz çapraz sayım), zorluk farkı, eski bölümler bit bit aynı, hat ortalaması, kural kartı, oyun (dokunuş, kayıt, ↺, kazanma, ⊘ damgası),
 // ipucu, yakın kazanç uyarısı, gösterilmiş kapalı (engel), karma hat taraması ve karanlık tünelli karma bölüm.
 // Eklentisiz tabanın özeti (FNV-1a, JSON): halka testindekiyle aynı değerler → hiç değişmemeli (133/169/208: 31 Ekim hat düzeniyle yenilendi).
-const BASE = { l1: 'dukhsf', l29: '1ucs2l5', l77: '1notwly', l133: 's1mvix', l169: 've660k', l208: 'rn02th', '2026-10-01': '1npbt0', '2026-10-27': 'qx5s5f', '2027-03-14': '1s6o7ll' };
+const BASE = { l1: 'dukhsf', l29: '1n9orzi', l77: 'c4lzfm', l133: '1wllsso', l169: '152kw6q', l208: 'md4y2l', '2026-10-01': '1npbt0', '2026-10-27': 'qx5s5f', '2027-03-14': '1s6o7ll' };   // 3 Kasım hat düzeniyle yenilendi (sabit karo kalktı, yeni sıra)
 const SEEN = Object.fromEntries(Array.from({ length: 30 }, (_, k) => [k + 2, 1]));   // bütün kural kartları görülmüş
 
 module.exports = async T => {
