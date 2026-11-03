@@ -61,13 +61,13 @@
         cx.save(); cx.setLineDash([s * .09, s * .06]); cx.lineWidth = Math.max(1.5, s * .035); cx.strokeStyle = col; cx.beginPath();
         for (const i of shut) { const [x, y, , sc] = X[i], w = (s - 9) * sc; D.rrp(x - w / 2, y - w / 2, w, w, s * .22 * sc); }
         cx.stroke(); cx.restore();
-        cx.beginPath(); for (const i of shut) { const [x, y, , sc] = X[i]; cx.moveTo(x + s * .2 * sc, y); cx.arc(x, y, s * .2 * sc, 0, 7); }
+        cx.beginPath(); for (const i of shut) { const [x, y, , sc] = X[i]; cx.moveTo(x + s * .29 * sc, y); cx.arc(x, y, s * .29 * sc, 0, 7); }
         cx.fillStyle = D.rgba(pal.bg, .82); cx.fill();
       }
       for (const [cells, cen] of [[shut, true], [loose, false]]) {
         if (!cells.length) continue;
         const bodies = []; cx.beginPath();
-        for (const i of cells) { const [x, y, , sc] = X[i], u = s * (cen ? .1 : .065) * sc; bodies.push(lock(cx, cen ? x : x + s * .3 * sc, cen ? y : y - s * .27 * sc, u, !cen)); }
+        for (const i of cells) { const [x, y, , sc] = X[i], u = s * (cen ? .17 : .08) * sc; bodies.push(lock(cx, cen ? x : x + s * .3 * sc, cen ? y + s * .02 * sc : y - s * .27 * sc, u, !cen)); }
         cx.lineWidth = Math.max(1.5, s * (cen ? .03 : .022)); cx.lineCap = 'round'; cx.strokeStyle = col; cx.stroke();
         cx.beginPath(); for (const [bx, by, bw, bh] of bodies) D.rrp(bx, by, bw, bh, bw * .18); cx.fillStyle = col; cx.fill();
       }
