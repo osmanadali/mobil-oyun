@@ -75,3 +75,23 @@ de: Alle drei
 es: Las tres
 pt: As três
 fr: Les trois
+@ ⬡ Hex
+de: ⬡ Sechseck
+es: ⬡ Hexágono
+pt: ⬡ Hexágono
+fr: ⬡ Hexagone
+@ SATURDAY · HEX DAY
+de: SAMSTAG · SECHSECK-TAG
+es: SÁBADO · DÍA HEXAGONAL
+pt: SÁBADO · DIA HEXAGONAL
+fr: SAMEDI · JOUR HEXAGONAL
+@ ⬡ Hex day
+de: ⬡ Sechseck-Tag
+es: ⬡ Día hexagonal
+pt: ⬡ Dia hexagonal
+fr: ⬡ Jour hexagonal
+@ Today the tiles are <b>hexagons</b>: each tap turns <b>60°</b>, six positions. Same rule: link every station to the hub, leave no <b>loose ends</b>.
+de: Heute sind die Kacheln <b>Sechsecke</b>: jedes Tippen dreht um <b>60°</b>, sechs Stellungen. Die Regel bleibt: verbinde jede Station mit dem Zentrum, <b>keine offenen Enden</b>.
+es: Hoy las piezas son <b>hexágonos</b>: cada toque gira <b>60°</b>, seis posiciones. La regla es la misma: conecta cada estación al centro, sin <b>extremos sueltos</b>.
+pt: Hoje as peças são <b>hexágonos</b>: cada toque gira <b>60°</b>, seis posições. A regra é a mesma: ligue cada estação ao centro, sem <b>pontas soltas</b>.
+fr: Aujourd’hui les tuiles sont des <b>hexagones</b> : chaque toucher tourne de <b>60°</b>, six positions. Même règle : relie chaque station au centre, sans <b>bout libre</b>.

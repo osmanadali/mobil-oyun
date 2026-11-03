@@ -382,7 +382,7 @@ function tree(P, m = P.sol) {
   }
   return { pa, pd, dep, ow };
 }
-function popc(m) { return (m & 1) + (m >> 1 & 1) + (m >> 2 & 1) + (m >> 3 & 1); }
+function popc(m) { return (m & 1) + (m >> 1 & 1) + (m >> 2 & 1) + (m >> 3 & 1) + (m >> 4 & 1) + (m >> 5 & 1); }   // 6 bit: altıgen karo da (kare karoda üst bitler hep 0)
 
 // ---------- zorluk puanı: oyuncunun kesin çıkarımlarını taklit eder ----------
 // Kenar + komşu tutarlılığıyla aday eleme. puan = çıkarım zinciri (tur) + 3 × tahmin dalı + 10 × ilk turda elenemeyen oran.
@@ -488,6 +488,7 @@ const dailyRule = day => dayDate(day).getDay() === 0 ? weekRule(day) : null;
 function dailyFor(day, base = false) {
   return cached((base ? 'b' : 'd') + day, () => {
     const z = dailyZ(day), c = z < .35 ? 6 : 7, r = z < .35 ? 8 : 9, k = base ? null : dailyRule(day);
+    if (!base && HX?.isDay(day)) return HX.daily(day, z);   // ⬡ cumartesi: altıgen tahta (www/altigen.js); base = eski kare bulmaca
     if (!k) return pick(c, r, hashStr('ray' + day), 0, 0, z, 5 + 11 * z);
     const n = c * r, x = { rev: k === 'rev' ? Math.round(n * .15) : 0, cnt: k === 'cnt' ? Math.round(n * .12) : 0, two: k === 'two', fog: k === 'fog' };
     const m = MODS.find(m => m.key === k); if (m) x[k] = m.amount(n, false, z, false, c, r);
@@ -501,6 +502,7 @@ function dailyFor(day, base = false) {
 // P.split[i] (köprü): karo iki ayrı düğümdür: K–G yarısı (d/own) ve D–B yarısı (dB/ownB); ikisi de bağlanmalı.
 // Eklenti denetimi: m.check(P, L) bozuk sayısı döndürür (tabela, halka…); L'ye çizim verisi yazabilir.
 function lit(P) {
+  if (P.hex) return HX.lit(P);
   const { hub, hub2 = -1, split } = P, cur = P.void ? P.cur.map((v, i) => P.void[i] ? 0 : v) : P.cur, n = cur.length, d = new Array(n).fill(-1), own = new Array(n).fill(0);
   const opm = MODS.filter(m => m.open && P[m.key]);   // eklenti: eşi olmadan bitebilen kol (tampon, depo çıkışı) → gevşek sayılmaz, L.open sayar
   const dB = split ? new Array(n).fill(-1) : null, ownB = split ? new Array(n).fill(0) : null;
@@ -750,7 +752,7 @@ function refreshHome() {
   $('gateTxt').textContent = tot >= hi ? `M${nx + 1} ${L('açık', 'open')} ✓` : L(`★ ${hi - tot} kaldı → M${nx + 1}`, `★ ${hi - tot} to go → M${nx + 1}`);
   $('progBar').style.width = Math.min(100, Math.max(4, (tot - lo) / Math.max(1, hi - lo) * 100)) + '%';
   $('sSize').textContent = breath(save.level) ? L('☕ mola bölümü', '☕ breather level') : L(`⚡ zorluk ${LP(zPct(save.level))}`, `⚡ ${LP(zPct(save.level))} hard`);
-  $('dailyK').textContent = L(`GÜNÜN HATTI · ⚡${LP(dPct(today()))}`, `DAILY LINE · ⚡${LP(dPct(today()))}`);
+  $('dailyK').textContent = L(`GÜNÜN HATTI · ⚡${LP(dPct(today()))}`, `DAILY LINE · ⚡${LP(dPct(today()))}`) + (HX?.isDay(today()) ? ' · ⬡' : '');   // cumartesi: altıgen gün
   $('bPlay').classList.toggle('locked', !unlocked(c));
   questRow();
   // sıradaki bölümü boşta önceden üret: zor kurallı 7×9 bölüm telefonda 1–2 sn sürebilir, "Oyna"da beklenmesin (çıktı aynı, yalnız önbellek)
@@ -850,7 +852,7 @@ function start(mode, lvl = save.level) {
   G.tOk = timeOk(G.ms / 1000); G.mOk = movesOk();
   $('gTitle').textContent = daily ? (arch ? L('Günün Hattı · geçmiş gün', 'Daily Line · past day') : G.practice ? L('Günün Hattı · pratik', 'Daily Line · practice') : L('Günün Hattı', 'Daily Line')) : `${L('Bölüm', 'Level')} ${lvl}${G.final ? L(' · 🏁 Son durak', ' · 🏁 Last stop') : ''}`;
   $('game').classList.toggle('final', !!G.final);
-  $('gMoves').textContent = `${daily ? dayDate(day).toLocaleDateString(LOC, { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl))}${!daily && breath(lvl) ? ' · ' + L('☕ mola', '☕ breather') : ''}${G.week ? ' · ' + RULES[RULE_LINE[G.week]].name : ''}`;
+  $('gMoves').textContent = `${daily ? dayDate(day).toLocaleDateString(LOC, { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl))}${!daily && breath(lvl) ? ' · ' + L('☕ mola', '☕ breather') : ''}${G.week ? ' · ' + RULES[RULE_LINE[G.week]].name : ''}${G.hex ? ' · ' + L('⬡ Altıgen', '⬡ Hex') : ''}`;
   $('gHints').textContent = save.hints;
   clearTimeout(bubT); $('gBub').classList.remove('show');
   const stake = comboStake(); $('gCombo').hidden = stake < 2; $('gCombo').textContent = `✨${stake}`;
@@ -859,6 +861,7 @@ function start(mode, lvl = save.level) {
   // Günün Hattı yalnız pazar günü kural taşır (haftanın kuralı): oyuncu o kuralı henüz görmediyse kartı açılır
   const rc = (G.rules || []).map(k => RULE_LINE[k]).filter(c => RULES[c] && !save.seen[c]).sort((a, b) => a - b)[0];
   if (rc != null) ruleCard(rc, !!G.week);
+  else if (G.hex && !save.seen.hex) HX.card();   // ⬡ altıgen gün: ilk karşılaşmada kısa kart
   if (save.played === 0) setTimeout(() => toast(L('Karoya dokun → döner', 'Tap a tile → it turns')), 500);
   else if (G.zen) {}
   else if (save.comboLost?.lvl === lvl && !daily && !G.moves) setTimeout(() => toast(L(`✨ Kusursuz bitir → ${save.comboLost.n} seri geri gelir`, `✨ Finish perfect → get your ${save.comboLost.n} streak back`)), 600);
@@ -995,7 +998,7 @@ function resize() {
   const p = { l: 0, r: 0, t: 0, b: 0 };   // eklenti kenar payı (karo cinsinden), ör. tünel ağızları
   for (const m of MODS) if (m.pad && G[m.key]) m.pad(G, p);
   const s = Math.floor(Math.min((Wd - 8) / (G.cols + p.l + p.r), (Hd - 8) / (G.rows + p.t + p.b), 96));
-  const ng = { s, ox: (Wd - s * (G.cols + p.l + p.r)) / 2 + p.l * s, oy: (Hd - s * (G.rows + p.t + p.b)) / 2 + p.t * s, dpr };
+  const ng = G.hex ? HX.fit(G, Wd, Hd, dpr) : { s, ox: (Wd - s * (G.cols + p.l + p.r)) / 2 + p.l * s, oy: (Hd - s * (G.rows + p.t + p.b)) / 2 + p.t * s, dpr };   // ⬡ altıgen: ox/oy tahta merkezi
   if (G.won && vg.s && (ng.s !== vg.s || ng.oy !== vg.oy)) { geoFrom = vg; geoT0 = performance.now(); }
   geo = ng; draw();
 }
@@ -1030,6 +1033,7 @@ function draw(ts) {
   const { s, ox, oy, dpr } = vg, n = G.cur.length, col = G.color;
   cx.setTransform(dpr, 0, 0, dpr, 0, 0);
   cx.clearRect(0, 0, cv.width / dpr, cv.height / dpr);
+  if (G.hex) { if (HX.draw({ G, vg, now, cx, pal, litAt, anim, press, winT, ripples, parts }) || busy) raf = requestAnimationFrame(draw); return; }   // ⬡ altıgen tahta
   // karo dönüşümleri
   const X = [];
   for (let i = 0; i < n; i++) {
@@ -1169,7 +1173,7 @@ function draw(ts) {
 }
 const kick = () => { if (!raf) raf = requestAnimationFrame(draw); };
 function burst(i, k = 9, delay = 0, color = G.color) {
-  const { s, ox, oy } = geo, x = ox + (i % G.cols) * s + s / 2, y = oy + (i / G.cols | 0) * s + s / 2, t = performance.now() + delay;
+  const { s, ox, oy } = geo, [x, y] = G.hex ? HX.xy(G, i, geo) : [ox + (i % G.cols) * s + s / 2, oy + (i / G.cols | 0) * s + s / 2], t = performance.now() + delay;
   for (let j = 0; j < k; j++) {
     const a = j / k * Math.PI * 2 + Math.random() * .5, v = s * (1.2 + Math.random() * 1.4);
     parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - s * .6, t, life: 520 + Math.random() * 300, r: 1.6 + Math.random() * 2.4, c: Math.random() < .3 ? (pal.light ? '#ffc56b' : '#fff6e6') : color });
@@ -1180,9 +1184,9 @@ cv.addEventListener('pointerdown', e => {
   if (G?.won) { if ($('game').classList.contains('won')) toggleMini(); return; }
   if (!G || G.over) return;
   const { s, ox, oy } = geo, px = e.offsetX, py = e.offsetY;   // offsetX: CSS dönüşümlerinden bağımsız
-  const c = Math.floor((px - ox) / s), w = Math.floor((py - oy) / s);
-  if (c < 0 || w < 0 || c >= G.cols || w >= G.rows) return;
-  const i = w * G.cols + c, now = performance.now();
+  const c = Math.floor((px - ox) / s), w = Math.floor((py - oy) / s), hx = G.hex ? HX.hit(G, geo, px, py) : 0;   // ⬡ altıgen: en yakın karo merkezi
+  if (G.hex ? hx < 0 : c < 0 || w < 0 || c >= G.cols || w >= G.rows) return;
+  const i = G.hex ? hx : w * G.cols + c, now = performance.now();
   if (G.fixed[i]) { haptic('light'); tone(440, .06, .02); toast(L('Bu karo ipucuyla sabitlendi', 'This tile was set by a hint')); press.set(i, now); kick(); return; }
   if (G.fog && !G.seen[i]) { haptic('light'); tone(196, .05, .012); press.set(i, now); kick(); if (!G.fogTold) { toast(L('Karanlık tünel · hat yaklaşınca aydınlanır', 'Dark tunnel · lights up as the line nears')); G.fogTold = true; } return; }
   if (G.cnt[i] === 0 && G.cur[i] !== G.sol[i] && bst('tur') > 0) { haptic('light'); press.set(i, now); kick(); turSheet(i); return; }
@@ -1206,7 +1210,7 @@ cv.addEventListener('pointerdown', e => {
     MODS.find(m => m.key === U.kind)?.onTap?.(G, U, i, now);   // animasyon, ilk dokunuş bildirimi
   } else {
   const j = G.link[i], key = j >= 0 ? Math.min(i, j) : i;
-  G.cur[i] = G.rev[i] ? unrot(G.cur[i]) : rot(G.cur[i]);   // ters karo: saat yönünün tersine
+  G.cur[i] = G.hex ? HX.rot(G.cur[i]) : G.rev[i] ? unrot(G.cur[i]) : rot(G.cur[i]);   // ters karo: saat yönünün tersine · altıgen: 60°
   if (G.cnt[i] > 0) G.cnt[i]--;
   if (G.lastTile !== key) { G.moves++; G.lastTile = key; }   // aynı karoya (ya da eşine) art arda dokunuş = 1 hamle
   anim.set(i, now); press.set(i, now); ripples.push({ x: px, y: py, t: now });
@@ -1396,7 +1400,7 @@ function dailyResult() {
 }
 async function share(r) {
   const [, m, d] = (r.day || today()).split('-');
-  const head = r.daily ? L(`Ray 🚇 Günün Hattı ${d}.${m}`, `Ray 🚇 Daily Line ${+m}/${+d}`) + (r.arch ? L(' · geçmiş gün', ' · past day') : '') : `Ray 🚇 ${L('Bölüm', 'Level')} ${r.lvl}`;
+  const head = r.daily ? L(`Ray 🚇 Günün Hattı ${d}.${m}`, `Ray 🚇 Daily Line ${+m}/${+d}`) + (HX?.isDay(r.day || today()) ? ' ⬡' : '') + (r.arch ? L(' · geçmiş gün', ' · past day') : '') : `Ray 🚇 ${L('Bölüm', 'Level')} ${r.lvl}`;
   const url = r.daily && !r.arch ? `${SHARE_URL}?d=${r.day}&m=${r.moves}` : SHARE_URL;   // geçmiş gün bağlantısı arkadaşa "eski" der → düz bağlantı
   const text = `${head}\n${'⭐'.repeat(r.st)}${'☆'.repeat(3 - r.st)}${r.perfect ? ' 🎫' : ''} ${r.moves} ${L('hamle', pl(r.moves, 'move', 'moves'))} · ${fmtT(r.time)}${r.daily && !r.arch && save.streak > 1 ? L(`\n🔥 ${save.streak} gün seri`, `\n🔥 ${save.streak}-day streak`) : ''}\n${L('Sen kaç hamlede bağlarsın?', 'How few moves can you do it in?')}\n${url}`;
   try {
@@ -1683,7 +1687,7 @@ function ruleCard(c, week) {
     <button id="mGo" class="btn primary"><span>${L('Anladım', 'Got it')}</span></button>`,
     { mGo: () => { save.seen[c] = 1; persist(); closeModal(); if (active('game')) resume(); } }, true);
 }
-function nearLit(i) { const x = i % G.cols, y = i / G.cols | 0; let n = 0; for (const [, dx, dy] of DIRS) { const nx = x + dx, ny = y + dy; if (nx >= 0 && ny >= 0 && nx < G.cols && ny < G.rows && G.L.d[ny * G.cols + nx] >= 0) n++; } return n; }
+function nearLit(i) { if (G.hex) return HX.nearLit(G, i); const x = i % G.cols, y = i / G.cols | 0; let n = 0; for (const [, dx, dy] of DIRS) { const nx = x + dx, ny = y + dy; if (nx >= 0 && ny >= 0 && nx < G.cols && ny < G.rows && G.L.d[ny * G.cols + nx] >= 0) n++; } return n; }
 // baştan: süre ve hamle sıfırlanır, ipucuyla açılan karolar korunur
 function reset() {
   if (G?.won && $('game').classList.contains('won')) return start(G.arch ? 'arch' : G.daily ? 'daily' : 'level', G.arch ? G.day : G.lvl);   // sonuç ekranında ↺ = tekrar
@@ -1925,7 +1929,7 @@ function archSheet() {
   for (const k of ['arch', 'archDone']) save[k] = Object.fromEntries(Object.entries(save[k] || {}).filter(([d]) => d >= cut));
   const days = []; for (let k = 1, d = t; k <= ARCH_DAYS; k++) days.push(d = dayBefore(d));
   const cell = d => { const dt = dayDate(d), a = save.archDone?.[d], st = archPlayed(d) ? (a === 2 ? '🎫' : '✓') : archOpen(d) ? '▶' : '🔒';
-    return `<button data-d="${d}" class="${archPlayed(d) ? 'on' : archOpen(d) ? 'op' : ''} ${dt.getDay() ? '' : 'sun'}" aria-label="${dt.toLocaleDateString(LOC, { day: 'numeric', month: 'long' })}"><b>${dt.getDate()}</b><i>${st}</i></button>`; };
+    return `<button data-d="${d}" class="${archPlayed(d) ? 'on' : archOpen(d) ? 'op' : ''} ${dt.getDay() ? '' : 'sun'}${dt.getDay() === 6 && HX ? ' hex' : ''}" aria-label="${dt.toLocaleDateString(LOC, { day: 'numeric', month: 'long' })}"><b>${dt.getDate()}</b><i>${st}</i></button>`; };
   modal(`<h2>📅 ${L('Günün Hattı arşivi', 'Daily Line archive')}</h2>
     <p class="tip">${L(`Son 30 gün · her gün ${ARCH_COST} 🎫 ile kalıcı açılır · seriyi etkilemez, kusursuz → +1 🎫`, `Last 30 days · each day opens for good with ${ARCH_COST} 🎫 · no effect on streak, perfect → +1 🎫`)}</p>
     <div class="arch" id="archGrid">${days.map(cell).join('')}</div>
@@ -2636,11 +2640,14 @@ document.querySelector('#home .logo').onclick = () => openCity();
 const API = {
   N, E, S, W, DIRS, FOG_R, PAIR_COLS, rot, unrot, popc, nb, ob, tree, hashStr, rgba, shade, lum, hueRot, okl, oklch,
   toast, tone, note, haptic, persist, kick, burst, rrp, rr, railPath, ease, back, anim, press, lineName, difficulty, lit,
+  rng, modal, closeModal, pause, resume, active,
   get G() { return G; }, get pal() { return pal; }, get save() { return save; }, get geo() { return geo; }, get vg() { return vg; }, get cx() { return cx; },
 };
 loadRules(API);
+const HX = window.RAY_HEX ? window.RAY_HEX(API) : null;   // ⬡ altıgen gün (www/altigen.js): cumartesi Günün Hattı
 // robot için: eklenti birimlerini çözüme getiren dokunuşlar (birimin görünen, sabitlenmemiş ilk karosuna)
 function plan() {
+  if (G?.hex) return HX.plan(G);   // ⬡ altıgen: her karo çözüm yönüne (aynı karoya art arda)
   const out = [];
   (G?.units || []).forEach(U => {
     if (MODS.find(m => m.key === U.kind)?.plan) return;
@@ -2690,5 +2697,5 @@ if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { seaWin, popLog, popUp: (...a) => popUp(...a), ACH, achCheck, linesDone, goldLine, plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), dayQ: () => dayQ(), RULE_LINE, RULES,  review: maybeReview, BST, offer: { MIN: OFFER_MIN, GAP: OFFER_GAP, AGE: OFFER_AGE, list: offerList, due: () => offerDue(G), inter: v => { interDue = v; } }, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, lineOf, lineEnd, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
+window.__ray = { seaWin, popLog, popUp: (...a) => popUp(...a), ACH, achCheck, linesDone, goldLine, plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), dayQ: () => dayQ(), RULE_LINE, RULES,  review: maybeReview, BST, offer: { MIN: OFFER_MIN, GAP: OFFER_GAP, AGE: OFFER_AGE, list: offerList, due: () => offerDue(G), inter: v => { interDue = v; } }, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, HX, lineStart, lineOf, lineEnd, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();

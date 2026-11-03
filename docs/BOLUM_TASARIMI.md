@@ -136,7 +136,7 @@ Eşli, ters, karanlık tünel, sayaçlı ve iki merkez dışındaki kurallar çe
 - Dalganın dibi ve tepesi bir yıl içinde yavaşça yükselir (dip %45 → %60, tepe %85 → %97); oyuncu oyuna alıştıkça daha zor bulmacaları çözebilir.
 - Her hafta ±%8 farklıdır, haftalar birbirinin kopyası olmaz.
 - Hiçbir gün **%40'ın altına düşmez**; Günün Hattı hiçbir zaman fazla kolay olmaz.
-- Kural içermez (pazar günü haftanın kuralı hariç); kuralları bilmeyen yeni oyuncu da oynayabilir. Izgara 7×9'dur.
+- Kural içermez (pazar günü haftanın kuralı hariç); kuralları bilmeyen yeni oyuncu da oynayabilir. Izgara 7×9'dur (cumartesi altıgen tahta, aşağıda).
 
 | Hafta | Pzt | Sal | Çar | Per | Cum | Cmt | Paz |
 |---|---|---|---|---|---|---|---|
@@ -145,6 +145,15 @@ Eşli, ters, karanlık tünel, sayaçlı ve iki merkez dışındaki kurallar çe
 | 6 Eylül 2027 | %66 | %70 | %76 | %82 | %89 | %96 | %100 |
 
 **Haftanın kuralı (pazar):** Pazar günkü Günün Hattı o haftanın kuralını taşır; pazartesi–cumartesi kuralsızdır ve bit bit eskisi gibidir. Kural yalnız erken kurallardan (M3–M9) seçilir ve haftaya göre döner: eşli karo, ters karo, kayan sıra, karanlık tünel, sayaçlı karo, soğuyan karo, iki merkez (sabit karo 3 Kasım'da listeden çıktı). Listede olup oyunda henüz tanımlı olmayan kural atlanır; tanımlanınca dönüş sırası kayar. Miktar bölümlerdeki gibidir (ör. 7×9'da 4 çift eşli karo, %15 ters, %12 sayaçlı). Tohum ve kural herkeste aynıdır. Oyuncu o kuralı henüz görmediyse oyun "Haftanın kuralı" kartıyla açılır; başlığın alt satırında kuralın adı yazar, haftalık görev penceresi de pazarın kuralını önceden söyler. Kod: `WEEK_RULES`, `weekRule`, `dailyRule`, `dailyFor`.
+
+**⬡ Altıgen gün (cumartesi, deneme · 3 Kasım):** Cumartesi günkü Günün Hattı kare ızgara yerine **sivri tepeli altıgen karolu, büyük altıgen bir tahtada** oynanır. Her dokunuş karoyu **60°** döndürür (6 duruş). Kural aynıdır: bütün durakları merkezdeki istasyona bağla, açık uç kalmasın (çözüm kapsayan ağaçtır, kapalı devre olamaz). Amaç türü kalıcı olarak hatlara yaymadan önce oyuncunun beğenisini ölçmek; beğenilirse hatlara yayılır.
+- **Boyut zorluk dalgasına bağlı:** cumartesinin zorluğu (z ≈ %70–95) %80'in altındaysa 3 halka (37 karo), üstündeyse 4 halka (61 karo). İlk yıl ikisi karışık gelir, dalga yükseldikçe çoğunlukla 4 halka. Zorluk hedefi kare Günün Hattı'yla aynıdır (5 + 11z); aday sayısı 6 + 6z (hız için).
+- **Şekiller:** uç (durak), dar dirsek (60°), geniş dirsek (120°), düz, Y (120° aralıklı üç kol), öteki üçlü kollar ve dörtlü kol. Beş-altı kollu karo üretilmez (kavşak seyreltme kare üreticiyle aynı fikir).
+- **Kuralsız:** kare tahtaya bağlı kurallar (kayan sıra, sarmal tahta, makas…) altıgende yok. Pazar haftanın kuralı günü olarak kalır.
+- **Her şey aynı çalışır:** seri, +1 ipucu, +1 🎫 (kusursuzsa +1 daha), görevler, paylaşım (başlıkta ⬡), arşiv (geçmiş cumartesiler de altıgen, ızgarada ⬡ işareti), yarım oyun kaydı, ipucu (bir karoyu oturtur ve sabitler), ⏱/↻ hedefleri, duraklat, ↶ geri al ve ⏱ +15 güçlendiricisi, sonuç paneli. Hamle hedefi aynı formül: par = döndürülmesi gereken karo sayısı (aynı karoya art arda dokunuş 1 hamle), süre hedefi en az dokunuş sayısıyla (60° adımlarla, karo başına 0–5) hesaplanır.
+- **Ana sayfa ve kart:** cumartesi Günün Hattı kartında "⬡" belirir, oyun başlığının alt satırında "⬡ Altıgen" yazar. Oyuncunun ilk altıgen gününde kısa kart açılır ("CUMARTESİ · ALTIGEN GÜN · her dokunuş 60°", döner altıgen animasyonu; `save.seen.hex`).
+- **Eski bölümler:** pazartesi–cuma ve pazar bit bit aynı. Eski kare cumartesi bulmacası `dailyBase` ile üretilebilir (eklenti parmak izi testleri onu kullanır).
+- Ayrıntı ve doğrulama: `docs/kurallar/altigen.md`. Kod: `www/altigen.js` (`window.RAY_HEX`); `game.js` yalnız `G.hex` dallanması taşır.
 
 ### Günlük ve haftalık görevler, 🎫 bilet
 

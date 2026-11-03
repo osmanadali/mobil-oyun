@@ -22,15 +22,17 @@ module.exports = async T => {
       let wd = ''; const sun = [];
       for (let k = 0; k < 70; k++) {
         const d = new Date(2026, 9, 1 + k), s = ymd(d), P = R.dailyFor(s);
-        const B = R.dailyBase?.(s); if (B && (d.getDay() ? B.sol.join() + B.cur.join() !== P.sol.join() + P.cur.join() : B.week || !P.week)) return { bad: 'base ' + s };
-        if (d.getDay()) { wd += P.sol.join() + '|' + P.cur.join() + ';'; if (P.rules || P.week || R.dailyRule?.(s)) return { bad: s }; }
+        const B = R.dailyBase?.(s); if (B && (d.getDay() === 6 ? B.hex || !P.hex : d.getDay() ? B.sol.join() + B.cur.join() !== P.sol.join() + P.cur.join() : B.week || !P.week)) return { bad: 'base ' + s };
+        // cumartesi altıgen gün (tools/hakem/altigen.cjs): parmak izine eski kare bulmacası (dailyBase) girer → öteki günler ve dailyBase bit bit aynı
+        if (d.getDay() === 6) { wd += B.sol.join() + '|' + B.cur.join() + ';'; if (P.rules || P.week || R.dailyRule?.(s)) return { bad: s }; }
+        else if (d.getDay()) { wd += P.sol.join() + '|' + P.cur.join() + ';'; if (P.rules || P.week || R.dailyRule?.(s)) return { bad: s }; }
         else sun.push({ s, k: P.week, plug: !!P[P.week], rule: R.dailyRule?.(s), rules: (P.rules || []).join(), fog: !!P.fog, two: P.hub2 >= 0, pins: P.pinned.filter(Boolean).length, links: P.link.filter(v => v >= 0).length, rev: (P.rev || []).filter(Boolean).length, cnt: P.cnt.filter(v => v >= 0).length, solved: R.lit({ ...P, cur: P.sol }).solved, fresh: !R.lit(P).solved, n: P.cur.length });
       }
       return { fp: fnv(wd), sun };
     });
     const has = s => ({ fog: s.fog, two: s.two, pairs: s.links > 0, rev: s.rev > 0, cnt: s.cnt > 0 }[s.k] ?? s.plug);   // eklenti kuralı (slide, ice…): P[anahtar] dolu
     const kinds = new Set((r.sun || []).map(s => s.k));
-    check('week.fp', 'Haftanın kuralı: pazar dışındaki Günün Hattı bit bit eskisi gibi (60 gün parmak izi), kuralsız; dailyBase (eski testlerin kullandığı) pazar dışında aynı, pazar günü kuralsız',
+    check('week.fp', 'Haftanın kuralı: pazar dışındaki Günün Hattı bit bit eskisi gibi (60 gün parmak izi; cumartesi altıgen, eski kare bulmacası dailyBase'te), kuralsız; dailyBase pazar ve cumartesi dışında aynı, pazar günü kuralsız',
       !r.bad && r.fp === FP_WEEKDAYS, JSON.stringify({ bad: r.bad, fp: r.fp }));
     check('week.sun', 'Haftanın kuralı: her pazar tek kural taşır, kural bulmacada gerçekten var, çözüm geçerli; 10 pazarda ≥ 6 farklı kural, 7×9',
       r.sun?.length === 10 && r.sun.every(s => s.k && s.k === s.rule && s.rules === s.k && has(s) && s.solved && s.fresh && s.n === 63) && kinds.size >= 6,
