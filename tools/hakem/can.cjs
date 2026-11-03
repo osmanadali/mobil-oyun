@@ -19,7 +19,7 @@ module.exports = async T => {
   };
   const st = page => page.evaluate(() => {
     const G = window.__ray.G, m = document.getElementById('modal').classList.contains('open');
-    return { game: document.getElementById('game').classList.contains('active'), over: !!G?.over, dl: G?.lim.dl, t: G?.lim.t, modal: m ? document.getElementById('mCard').textContent.replace(/\s+/g, ' ').trim() : '', ev: window.__ev };
+    return { game: document.getElementById('game').classList.contains('active'), over: !!G?.over, dl: G?.lim.dl, t: G?.lim.t, modal: m ? document.getElementById('mCard').textContent.replace(/\s+/g, ' ').trim() : '', ev: (window.__ev || []).filter(([n]) => n === 'life_lost' || n === 'life_refill_ad') };
   });
   const clock = (page, ms) => page.evaluate(ms => { const r = Date.now.__r || Date.now, off = (Date.now.__o || 0) + ms; Date.now = () => r() + off; Date.now.__r = r; Date.now.__o = off; }, ms);
 
