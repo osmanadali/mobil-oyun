@@ -8,23 +8,39 @@ Bu belge, bölümlerin nasıl üretildiğini, hatların nasıl uzadığını ve 
 - Bölüm sayısı **sonsuzdur**. Oyun hiçbir zaman "bitmez"; zorluk dalga dalga artar: her hat bir öncekinden zordur, hat içinde arada kısa **mola bölümleri** gelir (§5).
 - Zorluk tek bir eğriyle yönetilir: **z(l) = 1 − e^(−l/170)**. Bu değer 0'dan başlar, hiç düşmez ve sonsuzda %100'e, yani "imkânsız"a yaklaşır ama hiç değmez. Oyuncu bu değeri ekranda "⚡ Zorluk %" olarak görür.
 
-## 2. Hatlar: bölüm sayısı doğrusal artar
+## 2. Hatlar: hat boyu 28 bölümde durur
 
-Her metro hattı bir öncekinden **4 bölüm daha uzundur**. M1 12 bölüm, M2 16, M3 20… Yeni hattın kilidi, önceki bütün bölümlerden ortalama **2,2 yıldız** toplayınca açılır.
+Hat boyu M1'den M5'e 4'er bölüm uzar (12, 16, 20, 24, 28), sonra **28'de sabit kalır**: `lineLen(c) = min(12 + 4c, 28)`. Böylece 22 kuralın hepsi ~600. bölüme kadar tanıtılır (son kural M24 605. bölümde; 31 Ekim'den önce M23 1189. bölümdeydi ve oyuncuların çoğu M10'un ötesini görmüyordu). Yeni hattın kilidi, önceki bütün bölümlerden ortalama **2,2 yıldız** toplayınca açılır. Zorluk z(l) yine bölüm numarasına bağlıdır; hatlar kısaldığı için her kural daha düşük bir z'de gelir.
 
-| Hat | Bölümler | Bölüm sayısı | Kilidi açmak için | Zorluk | Ortalama zorluk puanı |
-|---|---|---|---|---|---|
-| M1 | 1–12 | 12 | — | %1–7 | 5,4 |
-| M2 | 13–28 | 16 | ★ 26 | %7–15 | 6,6 |
-| M3 | 29–48 | 20 | ★ 62 | %16–25 | 7,2 |
-| M4 | 49–72 | 24 | ★ 106 | %25–35 | 8,3 |
-| M5 | 73–100 | 28 | ★ 158 | %35–44 | 9,3 |
-| M6 | 101–132 | 32 | ★ 220 | %45–54 | 10,3 |
-| M7 | 133–168 | 36 | ★ 290 | %54–63 | 11,6 |
-| M8 | 169–208 | 40 | ★ 370 | %63–71 | 12,3 |
-| M9 | 209–252 | 44 | ★ 458 | %71–77 | 13,0 |
-| M10 | 253–300 | 48 | ★ 554 | %77–83 | 13,6 |
-| … | | +4 | | → %100 | → ~16 |
+| Hat | Bölümler | Bölüm sayısı | Kilidi açmak için | Zorluk | Kural | Ortalama zorluk puanı |
+|---|---|---|---|---|---|---|
+| M1 | 1–12 | 12 | — | %1–7 | — | 5,6 |
+| M2 | 13–28 | 16 | ★ 26 | %7–15 | — | 6,7 |
+| M3 | 29–48 | 20 | ★ 62 | %16–25 | 🔗 Eşli karo | 7,3 |
+| M4 | 49–72 | 24 | ★ 106 | %25–35 | ↺ Ters karo | 8,2 |
+| M5 | 73–100 | 28 | ★ 158 | %35–44 | ↔ Kayan sıra | 9,8 |
+| M6 | 101–128 | 28 | ★ 220 | %45–53 | 🌑 Karanlık tünel | 10,1 |
+| M7 | 129–156 | 28 | ★ 282 | %53–60 | 🔢 Sayaçlı karo | 10,9 |
+| M8 | 157–184 | 28 | ★ 343 | %60–66 | ❄ Soğuyan karo | 11,9 |
+| M9 | 185–212 | 28 | ★ 405 | %66–71 | 🚉 İki merkez | 12,1 |
+| M10 | 213–240 | 28 | ★ 466 | %71–76 | ✂ Makas | 13,7 |
+| M11 | 241–268 | 28 | ★ 528 | %76–79 | 🔒 Mühürlü karo | 14,1 |
+| M12 | 269–296 | 28 | ★ 590 | %79–82 | ◉ Döner tabla | 14,9 |
+| M13 | 297–324 | 28 | ★ 651 | %83–85 | 🌉 Köprü | 15,1 |
+| M14 | 325–352 | 28 | ★ 713 | %85–87 | ⚙ Bakım karosu | 15,2 |
+| M15 | 353–380 | 28 | ★ 774 | %87–89 | ⊙ Kapak | 16,7 |
+| M16 | 381–408 | 28 | ★ 836 | %89–91 | ⊂ Tünel ağzı | 16,9 |
+| M17 | 409–436 | 28 | ★ 898 | %91–92 | ➜ Yön tabelası | 17,2 |
+| M18 | 437–464 | 28 | ★ 959 | %92–93 | ◯ Halka hat | 17,5 |
+| M19 | 465–492 | 28 | ★ 1021 | %94 | ? Silik kol | 17,8 |
+| M20 | 493–520 | 28 | ★ 1082 | %94–95 | ⌂ Gizli depo | 18,3 |
+| M21 | 521–548 | 28 | ★ 1144 | %95–96 | 🌐 Sarmal tahta | 18,4 |
+| M22 | 549–576 | 28 | ★ 1206 | %96–97 | ≈ Nehir | 19,0 |
+| M23 | 577–604 | 28 | ★ 1267 | %97 | ⊘ Kapalı durak | 19,5 |
+| M24 | 605–632 | 28 | ★ 1329 | %97–98 | ⇄ Tarife bölgesi | 20,1 |
+| M25+ | 633– | 28 | ★ 1390… | %98 → %100 | karma | ~19,7–20,1 |
+
+Kod: `LINE_MAX`, `lineLen`, `lineStart`, `lineOf` (tavandan sonra kapalı biçim, döngü yok). 3 Kasım'da sabit karo kalktı ve iki kural eklendi (🔒 mühürlü karo M11, 🌐 sarmal tahta M21): 1–28. bölümler (M1–M2) eskisi gibidir, 29. bölümden sonrası yeni kural sırasıyla yeniden üretilir (kasıtlı; parmak izi testleri yenilendi).
 
 Hattın son bölümünü ilk kez bitiren oyuncu +2 ipucu kazanır (videoyla +4).
 
@@ -45,7 +61,6 @@ Her bölüm için birden çok aday bulmaca üretilir; zorluk puanı hedefe (**5 
 | Kol | Başta | İleride | Etkisi |
 |---|---|---|---|
 | Izgara boyu | 3×3 | 7×9 (telefonda başparmak sınırı) | Daha çok karo, daha uzun zincir |
-| Sabit karo oranı | %16 (M3'ten itibaren) | 0'a iner | Sabit karolar ipucu gibidir; azaldıkça bulmaca zorlaşır |
 | Taranan aday | 6 | 32 | Hedefe daha yakın (daha zor) bulmaca bulunur |
 | Hamle toleransı | par × 1,3–1,4 (en az +2) | z %30'u geçince pay yavaşça %60'ına iner (sonsuzda ≈ par × 1,2) | ↻ yıldızı ve bilet zorlaşır |
 | Süre hedefi | Gereken dokunuşa göre | Zor bulmacaya düşünme payı eklenir (+3 sn/puan); hepsi × 0,75 | Zor bölüm haksız olmaz |
@@ -54,52 +69,58 @@ Her bölüm için birden çok aday bulmaca üretilir; zorluk puanı hedefe (**5 
 
 - ↻ hamle hedefi = par + max(2, round(par · tol · sıkılık)); tol = 0,30 (küçük ızgara) → 0,40 (7×9), sıkılık = 1 − 0,4·max(0, (z − 0,3)/0,7). Önceden tol 0,60–0,75 ve en az +3 idi (par × 1,6–1,75).
 - ⏱ süre hedefi = max(11, round(0,75 · (dokunuş·1,3 + karo·0,5 + 3·max(0, puan − 8)))) saniye. Önceden çarpan yoktu, taban 15 sn idi.
-- Kusursuz oynayan (par hamle, hızlı dokunuş) her bölümü yine iki yıldızla bitirir; robot bunu kural tanıtım bölümlerinde denetler.
+- Kusursuz oynayan (par hamle, hızlı dokunuş) her bölümü yine iki yıldızla bitirir; robot bunu her kuralın tanıtım bölümünde denetler.
 
 Izgara boyu bölüme göre büyür: 1–3 3×3 · 4–8 4×4 · 9–15 4×5 · 16–25 5×6 · 26–40 5×7 · 41–60 6×8 · 61+ 7×9.
 
 ## 5. Yeni kurallar (öğrenme basamakları)
 
+Sıra ilkesi (31 Ekim): **göze çarpan ve kolay kurallar önce, gizli bilgili ve ince kurallar sona.** Karonun üstünde görünen ve dokunuşla hemen anlaşılan kurallar (ters, kayan sıra, sayaç, soğuma) erken gelir; gizli bilgi (kapak, silik kol, gizli depo, kapalı durak) ve küresel sayım (nehir, tarife bölgesi) en sonda.
+
 | Hat | İlk bölüm | Kural | Ne yapar? |
 |---|---|---|---|
-| M3 | 29 | 🔩 **Sabit karo** | Koyu, cıvatalı karolar dönmez; zaten doğru yöndedir. |
-| M4 | 49 | 🔗 **Eşli karo** | Aynı numaralı iki karo birlikte döner. |
-| M5 | 73 | ↺ **Ters karo** | Oklu karo saat yönünün tersine döner. |
+| M3 | 29 | 🔗 **Eşli karo** | Aynı numaralı iki karo birlikte döner. |
+| M4 | 49 | ↺ **Ters karo** | Oklu karo saat yönünün tersine döner. |
+| M5 | 73 | ↔ **Kayan sıra** | Raylı sıranın karoları dönmez; sıraya dokununca bütün sıra bir kare sağa kayar. |
 | M6 | 101 | 🌑 **Karanlık tünel** | Hattın ulaşmadığı karolar karanlıktır, dokunulamaz; yanan hattın 2 karo yakını aydınlanır; bağlantı kopunca o bölge yeniden kararır. Merkez başta yalnız başlar. |
-| M7 | 133 | 🔢 **Sayaçlı karo** | En fazla 3 kez döner, sayı bitince kilitlenir. Önce düşün, sonra dokun. |
-| M8 | 169 | 🚉 **İki merkez** | İki istasyon, iki renk; her durak kendi merkezine bağlanmalı. İki hat birbirine değerse kırmızı yanar, bölüm bitmez. |
-| M9 | 209 | ✂ **Makas** | Dönmez; dokununca yol düz ile sapak arasında değişir. Kesik çizgi öbür yolu gösterir. |
-| M10 | 253 | ⊙ **Kapak** | Kapaklı karonun rayı görünmez ve dönmez; doğru yönde durur. Hangi yönlere açıldığı komşulardan çıkarılır. |
-| M11 | 301 | 🌉 **Köprü** | İki hat üst üste geçer ama birleşmez; köprü dönmez, dört ucuna da ray bağlanmalı. |
-| M12 | 353 | ? **Silik kol** | Soluk kolun altında ray olabilir de olmayabilir de; karo dönünce "?" de döner. Gerçeği komşulardan çıkarılır. |
-| M13 | 409 | ➜ **Yön tabelası** | Tabelalı karodan merkeze giden yol okun gösterdiği kenardan çıkmalı; karo döner, tabela dönmez. |
-| M14 | 469 | ⌂ **Gizli depo** | Kenardaki ayracın altındaki üç karodan tam biri dışarı, depoya çıkar; hangisi olduğu gizli. |
-| M15 | 533 | ◉ **Döner tabla** | Dört karoyu taşır; dokununca tabla bütünüyle 90° döner, karolar yer değiştirir. |
-| M16 | 601 | ⊘ **Kapalı durak** | Bazı duraklar kapalı ama sıradan görünür; merkezdeki ⊘ sayısı kaç tane olduğunu söyler. Kapalıya ray bağlanmaz. |
-| M17 | 673 | ◯ **Halka hat** | Raylar bir kez kendi üstüne kapanır; halka kesik çemberli karodan geçmeli. |
-| M18 | 749 | ≈ **Nehir** | Ray nehri geçitten geçer ya da kıyıda tamponla biter; kıyıda tam rozetteki sayı kadar tampon olmalı (eksikse döngü var). |
-| M19 | 829 | ⊂ **Tünel ağzı** | Kenardaki aynı harfli iki ağız bağlıdır: birine giren ray öbüründen çıkar. Tünel kullanmak zorunlu değil. |
-| M20 | 913 | ⇄ **Tarife bölgesi** | Merkezi saran bölge sınırında ray geçer ya da tamponla biter; geçiş ve tampon sayıları rozetle aynı olmalı. |
-| M21+ | — | Karma hatlar | Yeni kural yok; her bölümde öğrenilmiş kurallardan 1–2 tanesi. |
+| M7 | 129 | 🔢 **Sayaçlı karo** | En fazla 3 kez döner, sayı bitince kilitlenir. Önce düşün, sonra dokun. |
+| M8 | 157 | ❄ **Soğuyan karo** | Çevirip başka karoya geçince o karo 2 hamle donar. |
+| M9 | 185 | 🚉 **İki merkez** | İki istasyon, iki renk; her durak kendi merkezine bağlanmalı. İki hat birbirine değerse kırmızı yanar, bölüm bitmez. |
+| M10 | 213 | ✂ **Makas** | Dönmez; dokununca yol düz ile sapak arasında değişir. Kesik çizgi öbür yolu gösterir. |
+| M11 | 241 | 🔒 **Mühürlü karo** | Komşularından biri hatta bağlanana (yanana) dek dönmez; bağlantı kopunca yeniden mühürlenir. Merkezden dışa sırayla çözmeyi zorlar. |
+| M12 | 269 | ◉ **Döner tabla** | Dört karoyu taşır; dokununca tabla bütünüyle 90° döner, karolar yer değiştirir. |
+| M13 | 297 | 🌉 **Köprü** | İki hat üst üste geçer ama birleşmez; köprü dönmez, dört ucuna da ray bağlanmalı. |
+| M14 | 325 | ⚙ **Bakım karosu** | Dokunulmaz; her 2 hamlede bir kendiliğinden 90° döner. |
+| M15 | 353 | ⊙ **Kapak** | Kapaklı karonun rayı görünmez ve dönmez; doğru yönde durur. Hangi yönlere açıldığı komşulardan çıkarılır. |
+| M16 | 381 | ⊂ **Tünel ağzı** | Kenardaki aynı harfli iki ağız bağlıdır: birine giren ray öbüründen çıkar. Tünel kullanmak zorunlu değil. |
+| M17 | 409 | ➜ **Yön tabelası** | Tabelalı karodan merkeze giden yol okun gösterdiği kenardan çıkmalı; karo döner, tabela dönmez. |
+| M18 | 437 | ◯ **Halka hat** | Raylar bir kez kendi üstüne kapanır; halka kesik çemberli karodan geçmeli. |
+| M19 | 465 | ? **Silik kol** | Soluk kolun altında ray olabilir de olmayabilir de; karo dönünce "?" de döner. Gerçeği komşulardan çıkarılır. |
+| M20 | 493 | ⌂ **Gizli depo** | Kenardaki ayracın altındaki üç karodan tam biri dışarı, depoya çıkar; hangisi olduğu gizli. |
+| M21 | 521 | 🌐 **Sarmal tahta** | Sağ kenar sola, üst kenar alta bağlı: kenardan çıkan ray karşı kenardan girer. Kenardan başlama taktiği çöker; kenardaki oklar geçişi gösterir. |
+| M22 | 549 | ≈ **Nehir** | Ray nehri geçitten geçer ya da kıyıda tamponla biter; kıyıda tam rozetteki sayı kadar tampon olmalı (eksikse döngü var). |
+| M23 | 577 | ⊘ **Kapalı durak** | Bazı duraklar kapalı ama sıradan görünür; merkezdeki ⊘ sayısı kaç tane olduğunu söyler. Kapalıya ray bağlanmaz. |
+| M24 | 605 | ⇄ **Tarife bölgesi** | Merkezi saran bölge sınırında ray geçer ya da tamponla biter; geçiş ve tampon sayıları rozetle aynı olmalı. |
+| M25+ | 633 | Karma hatlar | Yeni kural yok; her bölümde öğrenilmiş kurallardan 1–2 tanesi. |
 
-**Zor kurallar (M10–M20 çift hatlar):** Oyuncu geri bildirimi "yeni kurallar zorluk katmıyor" oldu. Çift hatların kuralları bu yüzden gizli bilgi (kapak, silik kol, gizli depo, kapalı durak) ya da küresel sayım (nehir, tarife bölgesi) üzerine kuruludur: yerel çıkarım çıpalarını bozar, oyuncuyu komşulardan ve sayılardan akıl yürütmeye zorlar. Her biri aynı tohum ve boyutta zorluk puanını ölçülerek artırır (7×9'da +3 ile +8 arası) ve gördüğün bilgiyle tek çözüme iner (üretimde çözüm sayımıyla denetlenir). Ayrıca her kuralın bir **zorluk payı** (`boost`) vardır: kuralın kendi hattının ilk 3 bölümü dışında seçicinin hedef puanına eklenir, böylece kurallı bölüm kolay tabandan seçilip fark silinmez. Paylar: makas 1,5 · kapak 2,5 · köprü 2 · silik kol 2,5 · tabela 1,5 · gizli depo 3 · tabla 2 · kapalı durak 3,5 · halka 1,5 · nehir 3,5 · tünel 2 · tarife bölgesi 4.
+**Zor kurallar (M15'ten sonra):** Oyuncu geri bildirimi "yeni kurallar zorluk katmıyor" oldu. Son hatların kuralları bu yüzden gizli bilgi (kapak, silik kol, gizli depo, kapalı durak) ya da küresel sayım (nehir, tarife bölgesi) üzerine kuruludur: yerel çıkarım çıpalarını bozar, oyuncuyu komşulardan ve sayılardan akıl yürütmeye zorlar. Her biri aynı tohum ve boyutta zorluk puanını ölçülerek artırır (7×9'da +3 ile +8 arası) ve gördüğün bilgiyle tek çözüme iner (üretimde çözüm sayımıyla denetlenir). Ayrıca her kuralın bir **zorluk payı** (`boost`) vardır: kuralın kendi hattının ilk 3 bölümü dışında seçicinin hedef puanına eklenir, böylece kurallı bölüm kolay tabandan seçilip fark silinmez. Paylar (31 Ekim'de yeni sırada hat ortalamaları her hatta artsın diye ayarlandı): kayan sıra 1 · soğuyan karo 0,5 · makas 1,5 · tabla 2 · köprü 2 · bakım karosu 1 · kapak 2,5 · tünel 3 · tabela 3 · halka 3,5 · silik kol 3 · gizli depo 3,5 · nehir 3,5 · kapalı durak 3,5 · tarife bölgesi 4,5. Karma hatlarda (M24+) hedefe ayrıca +3.
 
-M9 ve sonrasının kuralları çekirdekte değil, eklenti dosyalarındadır (`www/rules/*.js`). Her kuralın tasarımı, çözülebilirlik kanıtı ve ölçümleri `docs/kurallar/` altındadır; eklenti sözleşmesi `docs/kurallar/README.md`'dedir.
+Eşli, ters, karanlık tünel, sayaçlı ve iki merkez dışındaki kurallar çekirdekte değil, eklenti dosyalarındadır (`www/rules/*.js`; hattı `line`, üretim aşamalarındaki sırası `ord` alanı). Her kuralın tasarımı, çözülebilirlik kanıtı ve ölçümleri `docs/kurallar/` altındadır; eklenti sözleşmesi `docs/kurallar/README.md`'dedir.
 
 **Öğretme:**
 
 - Yeni kuralın ilk girişinde animasyonlu bir kural kartı çıkar.
 - Yeni kural gelen hattın ilk 3 bölümü bir boy küçük ızgarayla gelir, yalnızca o kuralı içerir ve ilk bölüm biraz daha kolay seçilir (testere dişi).
 - **Mola bölümü (☕):** M2'den itibaren her hattın 6., 12., 18.… bölümü (ilk 3 öğrenme bölümü ve son durak hariç) bir boy küçük ızgarayla gelir; hedef zorluk puanı `5 + 11·z·0,55`, kural payı yok. Ölçüm: mola bölümleri hattın ortalamasından yaklaşık %25 kolay (ör. M8'de 6×8 ve 9 puan, komşuları 7×9 ve 12 puan). Oyunda başlıkta "⚡%" yerine "☕ mola", ana sayfada "☕ mola bölümü" yazar. Uzun hatlarda yorgunluğu kırar; hat ortalamaları yine her hatta artar. Kod: `breath(l)`.
-- **Kısa bölüm:** 7×9 ızgaralı hatlarda her 6 bölümün biri (hattın 3., 9., 15.… bölümü; öğrenme bölümleri ve son durak hariç) 6×8 gelir. Zorluk hedefi aynıdır (ör. 183: 6×8 ve 12 puan, komşuları 7×9 ve 12 puan); yalnız bölüm kısalır, büyük ızgara yorgunluğu kırılır. Kod: `short(l)`.
+- **Kısa bölüm:** 7×9 ızgaralı hatlarda her 6 bölümün biri (hattın 3., 9., 15.… bölümü; öğrenme bölümleri ve son durak hariç) 6×8 gelir. Zorluk hedefi aynıdır (ör. bir hattın 9. bölümü 6×8, komşuları 7×9, zorluk hedefi aynı); yalnız bölüm kısalır, büyük ızgara yorgunluğu kırılır. Kod: `short(l)`.
 
 **Kural dönüşümü:**
 
 - Kurallar üst üste yığılmaz. Bir kural kendi hattında her bölümde vardır.
 - Sonraki hatlarda kendi kuralına ek olarak bölüm bölüm değişen en fazla 1 eski kural gelir.
-- M20 sonrası karma hatlardır: her bölüm 1–2 kuralın farklı bir karışımıdır. Kurallı hatlarda da bölümlerin yaklaşık yarısına bir eski kural eklenir. M9–M20 arasında ek kuralın yarısı en yeni 3 kuraldan seçilir, böylece yeni öğrenilen kural sık tekrar eder. M21 ve sonrasında bütün kurallar eşit sıklıkta gelir ve hedef puana sabit +2 pay eklenir; sınırsız karma M20 düzeyinde kalır.
-- Ölçülen merdiven (hat ortalaması, zorluk puanı): M8 12,3 · M9 14,6 · M10 16,3 · M11 16,4 · M12 17,8 · M13 17,2 · M14 19,0 · M15 18,2 · M16 19,5 · M17 18,5 · M18 20,8 · M19 19,0 · M20 20,5 · M21+ ~19,6–20. Çift hatlar (zor kurallar) tepe, tek hatlar kısa bir soluklanmadır; genel çizgi yükselir.
-- Birlikte gelemeyen kurallar vardır (çakışan kural sıradaki uyumlu kuralla değişir): halka ↔ tabela, köprü; kapak ↔ karanlık tünel, silik kol; kapalı durak ↔ kapak, silik kol, gizli depo; nehir ↔ köprü, tabla, halka, tarife bölgesi; tarife bölgesi ↔ iki merkez.
+- M24 sonrası karma hatlardır: her bölüm 1–2 kuralın farklı bir karışımıdır. Kurallı hatlarda da bölümlerin yaklaşık yarısına bir eski kural eklenir. M9–M24 arasında ek kuralın yarısı en yeni 3 kuraldan (hat sırasıyla) seçilir, böylece yeni öğrenilen kural sık tekrar eder. M25 ve sonrasında bütün kurallar eşit sıklıkta gelir ve hedef puana sabit +3 pay eklenir; sınırsız karma M24 düzeyinde kalır.
+- Ölçülen merdiven (hat ortalaması, zorluk puanı) §2 tablosundadır: M1 5,6'dan M24 20,1'e her hat bir öncekinden zor; M25+ ~19,7–20,1. 3 Kasım ayarı: sarmal tahta `boost: 3`, nehir ve kapalı durak 3,5 → 4, tarife bölgesi 4,5 → 5 (yeni sırada merdiven kesintisiz kalsın).
+- Birlikte gelemeyen kurallar vardır (çakışan kural sıradaki uyumlu kuralla değişir): halka ↔ tabela, köprü; kapak ↔ karanlık tünel, silik kol; kapalı durak ↔ kapak, silik kol, gizli depo; nehir ↔ köprü, tabla, halka, tarife bölgesi; tarife bölgesi ↔ iki merkez; mühürlü karo ↔ bakım karosu; sarmal tahta ↔ tünel ağzı, gizli depo, nehir, tarife bölgesi; kayan sıra ↔ kapalı durak, nehir, tarife bölgesi, gizli depo.
 - Böylece tahta kalabalıklaşmaz ve her bölüm biraz farklı hissettirir.
 
 **Hat finali (🏁 Son durak):**
@@ -115,7 +136,7 @@ M9 ve sonrasının kuralları çekirdekte değil, eklenti dosyalarındadır (`ww
 - Dalganın dibi ve tepesi bir yıl içinde yavaşça yükselir (dip %45 → %60, tepe %85 → %97); oyuncu oyuna alıştıkça daha zor bulmacaları çözebilir.
 - Her hafta ±%8 farklıdır, haftalar birbirinin kopyası olmaz.
 - Hiçbir gün **%40'ın altına düşmez**; Günün Hattı hiçbir zaman fazla kolay olmaz.
-- Sabit ve eşli karo içermez (kuralları bilmeyen yeni oyuncu da oynayabilir); ızgara 7×9'dur.
+- Kural içermez (pazar günü haftanın kuralı hariç); kuralları bilmeyen yeni oyuncu da oynayabilir. Izgara 7×9'dur.
 
 | Hafta | Pzt | Sal | Çar | Per | Cum | Cmt | Paz |
 |---|---|---|---|---|---|---|---|
@@ -123,7 +144,7 @@ M9 ve sonrasının kuralları çekirdekte değil, eklenti dosyalarındadır (`ww
 | 2 Kasım 2026 | %52 | %56 | %62 | %69 | %76 | %84 | %92 |
 | 6 Eylül 2027 | %66 | %70 | %76 | %82 | %89 | %96 | %100 |
 
-**Haftanın kuralı (pazar):** Pazar günkü Günün Hattı o haftanın kuralını taşır; pazartesi–cumartesi kuralsızdır ve bit bit eskisi gibidir. Kural yalnız erken kurallardan seçilir ve haftaya göre döner: sabit karo, eşli karo, ters karo, (kayar karo), karanlık tünel, sayaçlı karo, (buz), iki merkez. Listede olup oyunda henüz tanımlı olmayan kural atlanır; tanımlanınca dönüş sırası kayar. Miktar bölümlerdeki gibidir (ör. 7×9'da 5 sabit karo, 4 çift eşli karo, %15 ters, %12 sayaçlı). Tohum ve kural herkeste aynıdır. Oyuncu o kuralı henüz görmediyse oyun "Haftanın kuralı" kartıyla açılır; başlığın alt satırında kuralın adı yazar, haftalık görev penceresi de pazarın kuralını önceden söyler. Kod: `WEEK_RULES`, `weekRule`, `dailyRule`, `dailyFor`.
+**Haftanın kuralı (pazar):** Pazar günkü Günün Hattı o haftanın kuralını taşır; pazartesi–cumartesi kuralsızdır ve bit bit eskisi gibidir. Kural yalnız erken kurallardan (M3–M9) seçilir ve haftaya göre döner: eşli karo, ters karo, kayan sıra, karanlık tünel, sayaçlı karo, soğuyan karo, iki merkez (sabit karo 3 Kasım'da listeden çıktı). Listede olup oyunda henüz tanımlı olmayan kural atlanır; tanımlanınca dönüş sırası kayar. Miktar bölümlerdeki gibidir (ör. 7×9'da 4 çift eşli karo, %15 ters, %12 sayaçlı). Tohum ve kural herkeste aynıdır. Oyuncu o kuralı henüz görmediyse oyun "Haftanın kuralı" kartıyla açılır; başlığın alt satırında kuralın adı yazar, haftalık görev penceresi de pazarın kuralını önceden söyler. Kod: `WEEK_RULES`, `weekRule`, `dailyRule`, `dailyFor`.
 
 ### Haftalık görevler ve 🎫 bilet
 
@@ -157,12 +178,12 @@ M9 ve sonrasının kuralları çekirdekte değil, eklenti dosyalarındadır (`ww
 
 Test robotu (`tools/hakem.cjs`) her değişiklikte şunları kontrol eder:
 
-- Hat uzunlukları 12, 16, 20… diye doğrusal artıyor.
+- Hat uzunlukları 12, 16, 20, 24, sonra hep 28.
 - Her hattın ortalama zorluk puanı bir öncekinden yüksek.
 - Sonsuzda zorluk %99'a ulaşıyor.
 - Günün Hattı haftalık dalga çiziyor, %40'ın altına düşmüyor, zamanla yükseliyor.
-- Sabit ve eşli karolu 600 bölümün hepsi çözülebiliyor.
-- Yeni kuralların her biri kendi testinde yüzlerce üretimle denenir: çözüm geçerli, başlangıç çözülmüş değil, kural kartı çıkıyor, robot bölümü kazanıyor; 1–208. bölümler ve Günün Hattı eklentilerden önceki hâliyle bit bit aynı.
+- Eşli karolu 600 bölümün hepsi çözülebiliyor; hiçbir bölümde ve Günün Hattı'nda sabit karo yok.
+- Yeni kuralların her biri kendi testinde yüzlerce üretimle denenir: çözüm geçerli, başlangıç çözülmüş değil, kural kartı çıkıyor, robot bölümü kazanıyor; kuralın hattından önceki bölümler ve Günün Hattı eklenti yüklü/yüksüz bit bit aynı. Testler bölüm numarası yazmaz, hat başını kuraldan okur (`AT('fog')`, `RL.ring`, `seenTo(c)`); kural sırası ya da hat boyu değişince kendiliğinden uyar.
 - Bir bölümü üretmek tarayıcıda 60 ms'nin altında sürüyor; sonraki bölüm kazanma ekranındayken önceden hazırlanıyor.
 
 ## 8. Bilet ekonomisi (renk temaları)
@@ -220,7 +241,7 @@ Biletlerin temalar dışındaki tek harcama yeri. Oyun içinde kendiliğinden ç
 | Nadir | %28 | üçte bir 🛡 seri kalkanı, üçte bir 2 güçlendirici, kalanın dörtte üçü ❤️∞ 15 dk sınırsız can, dörtte biri +4 💡 (en çok 3 kalkan birikir, doluysa 💡) |
 | Destansı | %12 | %30 ❤️∞ 30 dk sınırsız can, %70 sahip olunmayan bir tren kaplaması (hepsi varsa yarı yarıya ❤️∞ 30 dk ya da 3 güçlendirici). Şanssızlık korumasıyla gelen destansı her zaman kaplamadır. |
 
-**Güçlendiriciler** (31 Ekim). Sandıktan çıkar; oyunda kalıcı düğmeleri yoktur, yalnız işe yaradığı an alt çubukta belirir (sağ üstte kalan sayı). İlgili kural açılmadan sandıktan çıkmaz. Ölçülen dağılım (600 sandık, M8): 💡 %38, güçlendirici %40, 🛡 %9, kaplama %12.
+**Güçlendiriciler** (31 Ekim). Sandıktan çıkar; oyunda kalıcı düğmeleri yoktur, yalnız işe yaradığı an alt çubukta belirir (sağ üstte kalan sayı). İlgili kural açılmadan sandıktan çıkmaz. Ölçülen dağılım (600 sandık, sayaçlı ve karanlık tünel açılmış oyuncu): 💡 %38, güçlendirici %40, 🛡 %9, kaplama %12.
 
 | Güçlendirici | Ne zaman görünür | Ne yapar | Sandıktan çıkmaya başlar |
 |---|---|---|---|

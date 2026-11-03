@@ -1,4 +1,4 @@
-// M11 · Köprü (anahtar: bridge) — kuralın tamamı bu dosyada. Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/kopru.md
+// M13 · Köprü (anahtar: bridge) — kuralın tamamı bu dosyada. Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/kopru.md
 // Köprü dönmez (cur = sol = 15) ama iki ayrı düğümdür: K–G yarısı üstten, D–B yarısı alttan (alt geçit) geçer; iki yarı da bağlanmalı.
 // Bölünmüş düğümü çekirdekteki lit() P.split ile okur; bu dosya üretimi, dokunma engelini, çizimi ve kural kartını taşır.
 (window.RAY_RULES = window.RAY_RULES || []).push(api => {
@@ -14,7 +14,7 @@
     for (const k of [1, -1]) { const px = x + c * k * o, py = y + si * k * o; cx.moveTo(px + si * h, py - c * h); cx.lineTo(px - si * h, py + c * h); }
   };
   return {
-    key: 'bridge', line: 10, boost: 2,
+    key: 'bridge', line: 12, ord: 10, boost: 2,
     clash: ['ring'],   // halka 2-çekirdeği bölünmüş düğümü bilmez (halka dosyası da tanımlar; simetrik)
     card: { name: L('Köprü', 'Bridge'), tag: L('Yeni: köprü', 'New: bridge'),
       demo: '<div class="rd-bridge" aria-hidden="true"><i class="rd-bridge-w"><b></b></i><i class="rd-bridge-e"><b></b></i><i class="rd-bridge-ns"><b></b></i><i class="rd-bridge-g"></i><i class="rd-bridge-g rd-bridge-r"></i></div>',

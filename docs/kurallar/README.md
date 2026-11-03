@@ -1,6 +1,6 @@
-# Kural eklentileri (M9 ve sonrası)
+# Kural eklentileri
 
-M9'dan sonraki yeni kurallar çekirdeğe (`www/game.js`) dağılmaz. Her kural üç dosyada yaşar:
+Çekirdekteki beş kuraldan (eşli, ters, karanlık tünel, sayaçlı, iki merkez) sonra gelen kurallar çekirdeğe (`www/game.js`) dağılmaz. Her kural üç dosyada yaşar:
 
 | Dosya | İçerik |
 |---|---|
@@ -10,35 +10,36 @@ M9'dan sonraki yeni kurallar çekirdeğe (`www/game.js`) dağılmaz. Her kural �
 
 Çekirdek, eklentilere kancalar ve ortak altyapı sunar. Bir kuralı yazan kişi **yalnız kendi üç dosyasını** değiştirir. Çekirdekte zorunlu bir değişiklik gerekirse en küçük hâliyle yapılır ve raporda ayrıca belirtilir.
 
-| Hat | İlk bölüm | Kural | Anahtar | Dosya adı |
-|---|---|---|---|---|
-| M9 | 209 | Makas | `sw` | `makas` |
-| M11 | 301 | Köprü | `bridge` | `kopru` |
-| M13 | 409 | Yön tabelası | `sign` | `tabela` |
-| M15 | 533 | Döner tabla | `table` | `doner-tabla` |
-| M17 | 673 | Halka hat | `ring` | `halka` |
-| M19 | 829 | Tünel ağzı | `portal` | `tunel-agzi` |
-
-Çift hatlar (zor kurallar; gizli bilgi ve küresel koşul):
+Hat sırası (3 Kasım; göze çarpan/kolay kurallar önce, gizli bilgili ve ince kurallar sona; hat boyu `min(12 + 4c, 28)`, yani M5'ten sonra 28 bölüm). Sabit karo (eski M3) 3 Kasım'da kalktı: oyunu kolaylaştırıyordu. `pinned` dizisi çekirdekte hep boş durur, eklentiler okumaya devam edebilir. Çekirdek kurallar ayrıca gösterilir (anahtarları `RULE_LINE`'da):
 
 | Hat | İlk bölüm | Kural | Anahtar | Dosya adı |
 |---|---|---|---|---|
-| M10 | 253 | Kapak | `cover` | `kapak` |
-| M12 | 353 | Silik kol | `faint` | `silik-kol` |
-| M14 | 469 | Gizli depo | `depot` | `gizli-depo` |
-| M16 | 601 | Kapalı durak | `closed` | `kapali-durak` |
-| M18 | 749 | Nehir | `river` | `nehir` |
-| M20 | 913 | Tarife bölgesi | `zone` | `tarife-bolgesi` |
+| M3 | 29 | Eşli karo | `pairs` | çekirdek |
+| M4 | 49 | Ters karo | `rev` | çekirdek |
+| M5 | 73 | Kayan sıra | `slide` | `kayan-sira` |
+| M6 | 101 | Karanlık tünel | `fog` | çekirdek |
+| M7 | 129 | Sayaçlı karo | `cnt` | çekirdek |
+| M8 | 157 | Soğuyan karo | `ice` | `soguyan-karo` |
+| M9 | 185 | İki merkez | `two` | çekirdek |
+| M10 | 213 | Makas | `sw` | `makas` |
+| M11 | 241 | Mühürlü karo | `seal` | `muhurlu-karo` |
+| M12 | 269 | Döner tabla | `table` | `doner-tabla` |
+| M13 | 297 | Köprü | `bridge` | `kopru` |
+| M14 | 325 | Bakım karosu | `gear` | `bakim-karosu` |
+| M15 | 353 | Kapak | `cover` | `kapak` |
+| M16 | 381 | Tünel ağzı | `portal` | `tunel-agzi` |
+| M17 | 409 | Yön tabelası | `sign` | `tabela` |
+| M18 | 437 | Halka hat | `ring` | `halka` |
+| M19 | 465 | Silik kol | `faint` | `silik-kol` |
+| M20 | 493 | Gizli depo | `depot` | `gizli-depo` |
+| M21 | 521 | Sarmal tahta | `wrap` | `sarmal-tahta` |
+| M22 | 549 | Nehir | `river` | `nehir` |
+| M23 | 577 | Kapalı durak | `closed` | `kapali-durak` |
+| M24 | 605 | Tarife bölgesi | `zone` | `tarife-bolgesi` |
 
-Zamanlama ve konum kuralları (31 Ekim; bilgi eklemez, deneme-yanılmayı ve hamle planını zorlar):
+Bağımlılıklar yeni sırada da korunur: köprü (M13) tünel ağzından (M16) önce; tabela (M17) halkadan (M18) önce (halka ikisiyle `clash`, `CLASH` simetrik ve sırasız). Mühürlü karo bakım karosuyla, sarmal tahta tünel ağzı, gizli depo, nehir ve tarife bölgesiyle aynı bölümde gelmez (`clash`). Eklentilerin üretim/kanca sırası `ord` alanıyla sabittir (sarmal tahta `ord: 7` ile `pre` aşamalarının önünde, mühürlü karo `ord: 23` ile işaretlerin en sonunda). Güçlendiriciler kuralın hattını `RULE_LINE`'dan okur (🔦 fener → `fog`, 🔄 ek tur → `cnt`).
 
-| Hat | İlk bölüm | Kural | Anahtar | Dosya adı |
-|---|---|---|---|---|
-| M21 | 1001 | Soğuyan karo | `ice` | `soguyan-karo` |
-| M22 | 1093 | Bakım karosu | `gear` | `bakim-karosu` |
-| M23 | 1189 | Kayan sıra | `slide` | `kayan-sira` |
-
-M23 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`, `KARMA = 23`).
+M24 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`, `KARMA = 24`).
 
 ## Temel ilkeler
 
@@ -52,16 +53,16 @@ M23 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanes
 ## Eklenti dosyası
 
 ```js
-// M9 · Makas (anahtar: sw)
+// M10 · Makas (anahtar: sw)
 (window.RAY_RULES = window.RAY_RULES || []).push(api => ({
-  key: 'sw', line: 8,                       // 0 tabanlı hat: M9 → 8
+  key: 'sw', line: 9, ord: 8,               // 0 tabanlı hat: M10 → 9 · ord: üretim/kanca sırası (sabit; hat sırası değişse de aynı kalır)
   clash: [],                                 // aynı bölümde birlikte gelemeyeceği kurallar (simetrik)
   card: { name: 'Makas', tag: 'Yeni: makas', demo: '<div class="rd-sw">…</div>', text: '…' },
   css: `.rd-sw{…}`,                          // kural kartı demosu ve gerekirse başka stiller (sınıf adları rd-<anahtar> ile başlar)
   amount: (n, intro, z, fin, cols, rows) => 0,   // bu bölümdeki miktar (0 → kural yok; sıfırdan farklı her değer kuralı açar, ör. tanıtım işareti −1)
   // üretim aşamaları (aşağıda C)
   pre(C) {}, tree(C) {}, shape(C) {}, mark(C) {},
-  tOrder: 8,                                 // isteğe bağlı: tree aşamasında sıra (varsayılan line)
+  tOrder: 8,                                 // isteğe bağlı: tree aşamasında sıra (varsayılan ord ?? line)
   // oyun
   block(G, i) {},                            // dokunuşu reddet: bildirim metni ya da true döndür
   onTap(G, U, i, now) {},                    // bu kuralın birimine dokunuldu (animasyon, ilk dokunuş bildirimi)
@@ -70,7 +71,7 @@ M23 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanes
   plan(G, out) { return []; },               // robot planı (__ray.plan): bu eklentinin birimleri çekirdek planına girmez; out = o ana dek planlanan dokunuşlar
   check(P, L) { return 0; },                 // kazanma denetimi: bozuk sayısı (0 = tamam); L'ye çizim verisi yazılabilir
   allow(P, i, mask) { return true; },        // zorluk çözücüsü için yerel süzgeç: bu maske i karosunda olabilir mi
-  // gizli bilgi ve küresel koşullar (M10–M20 zor kuralları)
+  // gizli bilgi ve küresel koşullar (son hatların zor kuralları)
   cands(P, i) { return null; },              // gizli karo: oyuncunun bu karo için düşünebileceği maskeler dizisi (null = karo normal)
   open(P, i, k) { return 0; },               // i karosunun k kolu eşi olmadan bitebilir mi (tampon, depo çıkışı); lit ve çözücü
   prune(P, C, M, unit, units) { return []; },// çözücünün her turunda küresel süzgeç (sayım): daralttığı birimler ya da −1 (çelişki)
@@ -93,8 +94,8 @@ Aşamalar ve sırası:
 
 1. **`pre(C)`:** Ağaç kurulmadan önce. Köprü hücresi, tünel komşuluğu (`C.adj`, `C.ao`) ve ikisinin `C.onTake` kancaları burada hazırlanır.
 2. Ağaç (Prim): `C.take(j)` hücreyi ağaca alır. `C.onTake` dizisine eklenen işlevler her alınan hücre için çağrılır: köprü karşı kolu, tünel ağzı eş ağzı birlikte alır. Böylece eklenen her kenar ormana yeni bir yaprak ekler, döngü ve hat karışması oluşmaz.
-3. **`tree(C)`:** Ağaç bittikten sonra, karıştırmadan önce. Halka kenarı burada eklenir. Sıra `tOrder ?? line`. Ağaçtan kenar SİLMEK yasaktır: köprü yarılarını ve iki merkezin ayrılığını bozar (tünel doğrulamasında karşı örnekle görüldü).
-4. Karıştırma (`C.cur`), sabit karo, eşli karo.
+3. **`tree(C)`:** Ağaç bittikten sonra, karıştırmadan önce. Halka kenarı burada eklenir. Sıra `tOrder ?? ord ?? line`. Ağaçtan kenar SİLMEK yasaktır: köprü yarılarını ve iki merkezin ayrılığını bozar (tünel doğrulamasında karşı örnekle görüldü).
+4. Karıştırma (`C.cur`), eşli karo (sabit karo kalktı; `pinned` boş).
 5. **`shape(C)`:** Eşliden sonra, ters/sayaçlıdan önce. Makas, döner tabla burada `C.unit(...)` ile birim kurar.
 6. Ters ve sayaçlı karo (`C.free(i)` bu aşamada kurulan birimleri dışlar).
 7. **`mark(C)`:** Sayaçlıdan sonra, karanlıktan önce. Tabela ve halka işareti burada konur.
@@ -108,9 +109,9 @@ C alanları:
 | `sol, cur, inT` | çözüm, karıştırılmış başlangıç (aşama 4'ten sonra), ağaçta mı |
 | `hub, hub2, isHub(i)` | merkez(ler); `hub2 = -1` tek merkezde |
 | `nb(i, k), ob(i, k)` | komşu karo (yoksa −1) ve komşudaki karşılık bit; `C.adj` varsa onu kullanır |
-| `adj, ao` | tünel ağzı: `Int16Array(n·4)` komşu ve `Uint8Array(n·4)` karşılık bit. Yalnız tünelli bölümde kurulur |
+| `adj, ao` | tünel ağzı ve sarmal tahta: `Int16Array(n·4)` komşu ve `Uint8Array(n·4)` karşılık bit. Yalnız tünelli ya da sarmal bölümde kurulur |
 | `addF(i), take(j), onTake` | ağaç büyütme |
-| `keep[i]` | true → sabit ve eşli karo adayı olamaz (köprü, tünel ağzı) |
+| `keep[i]` | true → eşli karo adayı olamaz (köprü, tünel ağzı) |
 | `busy[i]` | true → ters, sayaçlı, "çözülmüş gelmesin" ve öteki eklentiler dokunmaz |
 | `unit(cells, K, tap, kind)` | eklenti birimi kurar; hücreleri `busy` ve `unitOf` olur. Dönüş birim numarasıdır |
 | `units, unitOf` | birimler ve hücre → birim |
@@ -145,7 +146,7 @@ Birden çok durum taşıyan, dönmeyen ya da birlikte hareket eden karolar için
 ## Oyun ve çizim
 
 - `G` = bölüm (`P`) + oyun durumu (`G.cur`, `G.fixed`, `G.seen`, `G.L`, `G.moves`…).
-- `block(G, i)`: sabit/karanlık/sayaç denetimlerinden sonra çağrılır. Metin dönerse ilk seferde bildirim gösterilir.
+- `block(G, i)`: ipucu/karanlık/sayaç denetimlerinden sonra çağrılır. Metin dönerse ilk seferde bildirim gösterilir.
 - `after(G, i, now)`: her dokunuşta, yeni `G.L` hesaplandıktan sonra çağrılır.
 - Çizim nesnesi `D`: `G, s (karo boyu), n, X, now, col, on(i), vis(i), own(i), OC, cx, pal, railPath, rrp, rr, rgba, tiles(f)`.
   - `X[i] = [x, y, açı, ölçek]`. `xform` X'i değiştirebilir (tabla dönüş animasyonu); `X[i][4] = true` o karonun zeminini çizdirmez.
@@ -153,7 +154,7 @@ Birden çok durum taşıyan, dönmeyen ya da birlikte hareket eden karolar için
 - Katman sırası:
   1. `xform`
   2. `base`: karo zemininden önce
-  3. zemin ve sabit karolar
+  3. zemin ve ipucuyla sabitlenen karolar
   4. `under`
   5. raylar (`G.split` ve `G.self` karoları atlanır)
   6. `rails`: bölünmüş karonun ve `G.self` karosunun rayları
@@ -174,6 +175,8 @@ Birden çok durum taşıyan, dönmeyen ya da birlikte hareket eden karolar için
 | Döner tabla `table` | `out.table = { plates: [[sol-üst, sağ-üst, sağ-alt, sol-alt], …], plate: n uzunlukta (−1 ya da tabla no) }`; birim türü `'table'`, K = 4 |
 | Halka `ring` | `out.ring = { mark: n uzunlukta bool, cyc: [döngü karoları] }` |
 | Tünel ağzı `portal` | `C.adj/C.ao` (pre; çift yoksa kurulmaz), `out.portal`: `[{ a, ka, b, kb, id }]` çiftleri, `C.mouth`: ağız hücrelerinin Set'i; ağız hücreleri `C.keep` |
+| Mühürlü karo `seal` | `out.seal`: n uzunlukta 0/1 dizi; mühürlü hücreler `C.busy` (mark, en son) |
+| Sarmal tahta `wrap` | `C.adj/C.ao` (pre, `ord: 7`; karşı kenar komşuluğu), `out.wrap = { cols, rows }` |
 
 Çakışma ve dışlamalar (tasarım doğrulamasından):
 
@@ -198,15 +201,17 @@ Birden çok durum taşıyan, dönmeyen ya da birlikte hareket eden karolar için
 ```js
 // tools/hakem/makas.cjs
 module.exports = async T => {
-  const { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, starsUpTo } = T;
-  const { ctx, page, errors } = await open(browser, URL, { save: { played: 6, level: 209, stars: starsUpTo(209) } });
+  const { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, starsUpTo, RL, AT, LS, LE, seenTo } = T;
+  const A = AT('sw');                        // bölüm numarası yazma: hat başı kuraldan okunur (RL = RULE_LINE)
+  const { ctx, page, errors } = await open(browser, URL, { save: { played: A - 1, level: A, stars: starsUpTo(A), seen: seenTo(RL.sw) } });
   // …
   check('rule.sw', 'Makas: …', ok, detay, 'high');
   await ctx.close();
 };
 ```
 
-- `window.__ray` şunları verir: `generate, lit, difficulty, puzzleFor, rulesFor, MODS, nb, tree, unitTaps, plan, G, geo…`.
+- `window.__ray` şunları verir: `generate, lit, difficulty, puzzleFor, rulesFor, MODS, RULE_LINE, lineStart, lineOf, lineEnd, nb, tree, unitTaps, plan, G, geo…`.
+- `T` hat yardımcıları: `RL` (kural → 0 tabanlı hat), `LS(c)`/`LE(c)` (hattın ilk/son bölümü), `AT(key, o)` (kural hattının o. bölümü), `seenTo(c)` (c'den önceki kural kartları görülmüş), `KR` (ilk karma hat). Sayfa içinde `R.RULE_LINE.<anahtar>` kullanılır; eklentisi engellenen sayfaya hat numarası argümanla geçer.
 - Üretimi doğrudan denemek için: `__ray.generate(7, 9, tohum, 0, 0, { sw: 5 })`.
 - `window.__rayTest = 1` başlatma betiğiyle bütün hatlar açılır: `open(browser, URL, { init: 'window.__rayTest = 1' })`.
 - Bütün robot `node tools/hakem.cjs` ile çalışır; hepsi geçmelidir.

@@ -28,7 +28,7 @@ module.exports = async T => {
       }
       return { fp: fnv(wd), sun };
     });
-    const has = s => ({ fog: s.fog, two: s.two, pins: s.pins > 0, pairs: s.links > 0, rev: s.rev > 0, cnt: s.cnt > 0 }[s.k] ?? s.plug);   // eklenti kuralı (slide, ice…): P[anahtar] dolu
+    const has = s => ({ fog: s.fog, two: s.two, pairs: s.links > 0, rev: s.rev > 0, cnt: s.cnt > 0 }[s.k] ?? s.plug);   // eklenti kuralı (slide, ice…): P[anahtar] dolu
     const kinds = new Set((r.sun || []).map(s => s.k));
     check('week.fp', 'Haftanın kuralı: pazar dışındaki Günün Hattı bit bit eskisi gibi (60 gün parmak izi), kuralsız; dailyBase (eski testlerin kullandığı) pazar dışında aynı, pazar günü kuralsız',
       !r.bad && r.fp === FP_WEEKDAYS, JSON.stringify({ bad: r.bad, fp: r.fp }));

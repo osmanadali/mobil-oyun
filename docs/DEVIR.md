@@ -9,10 +9,9 @@ Bu not, işi yeni bir sohbete taşırken bağlam kaybolmasın diye yazıldı. Ye
 - Teknoloji: vanilla JS PWA (`www/`) ve Capacitor Android (`android/`).
 - Depo `osmanadali/mobil-oyun`, dal `main`.
 - Bölümler tohumlu ve yordamsal olarak üretilir. Bölüm verisi saklanmaz: `generate()` çözümden bir yayılan ağaç kurar, karıştırır, sonra kuralları uygular.
-- Hatlar M1'den M20'ye kadar gider, sonrası sınırsız karma hattır. Her tek hat bir kural öğretir.
-  - M3 sabit, M4 eşli, M5 ters, M6 karanlık tünel, M7 sayaçlı, M8 iki merkez.
-  - M9 makas, M11 köprü, M13 yön tabelası, M15 döner tabla, M17 halka, M19 tünel ağzı.
-- Çift hatlar (M10, M12, …, M20) şu an karmadır. Her bölüm, öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`).
+- Hat boyu 12, 16, 20, 24, sonra hep 28 bölüm (`LINE_MAX`). M3'ten M24'e her hat bir kural öğretir (22 kural; M24 605. bölümde başlar), M25 ve sonrası sınırsız karmadır (`KARMA = 24`): her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`).
+  - Sıra (3 Kasım; göze çarpan/kolay önce, gizli bilgili/ince sona; sabit karo kalktı): M3 eşli · M4 ters · M5 kayan sıra · M6 karanlık tünel · M7 sayaçlı · M8 soğuyan karo · M9 iki merkez · M10 makas · M11 🔒 mühürlü karo · M12 döner tabla · M13 köprü · M14 bakım karosu · M15 kapak · M16 tünel ağzı · M17 tabela · M18 halka · M19 silik kol · M20 gizli depo · M21 🌐 sarmal tahta · M22 nehir · M23 kapalı durak · M24 tarife bölgesi.
+  - Tablo ve formüller: `docs/BOLUM_TASARIMI.md` §2 ve §5.
 
 ## 2. Kullanıcıyla çalışma kuralları (kalıcı)
 
@@ -38,7 +37,7 @@ Bu not, işi yeni bir sohbete taşırken bağlam kaybolmasın diye yazıldı. Ye
 | Yol | İçerik |
 |---|---|
 | `www/game.js` | Çekirdek: üretim, çözücü (`difficulty`), çizim, ekonomi, sandık, temalar, sefer şeridi |
-| `www/rules/*.js` | M9 sonrası kural eklentileri (`window.RAY_RULES`) |
+| `www/rules/*.js` | Çekirdek dışındaki kural eklentileri (`window.RAY_RULES`; hattı `line`, kanca sırası `ord`) |
 | `www/i18n.js`, `docs/CEVIRI.md` | Türkçe/İngilizce: `L(tr, en)`, cihaz diline göre seçim, Ayarlar › Dil; sözlük ve yazım ilkeleri |
 | `www/ads.js`, `www/shop.js`, `www/gizlilik.html` | Reklam (UMP rızası, ATT), mağaza ürünleri (Play + App Store), gizlilik politikası |
 | `www/index.html`, `www/style.css`, `www/sw.js` | Kabuk. Yeni kural dosyası eklenince `index.html`'e `<script>` satırı ve `sw.js` önbellek listesine girdi eklenir. |
@@ -63,7 +62,7 @@ APK indirme linkleri (sabit):
 
 ## 4. Önemli ilkeler
 
-- **Eski bölümler bit bit aynı kalır.** 1–208. bölümlerin ve Günün Hattı'nın üretimi değişmemeli. Bir eklenti rastgele sayıyı yalnız kendi miktarı sıfırdan farklıyken tüketir.
+- **Eski bölümler bit bit aynı kalır.** Bir kural eklenince ondan önceki hatların ve Günün Hattı'nın üretimi değişmemeli (31 Ekim hat düzeniyle 101+ bilerek yeniden üretildi; 1–100 aynı). Bir eklenti rastgele sayıyı yalnız kendi miktarı sıfırdan farklıyken tüketir.
 - **Zorluk puanı:** `difficulty()` = dalga + 3·(düğüm−1) + 10·(1−ilk/n). `pick()` hedef puana en yakın adayı seçer: hedef = (tanıtım?3:5) + 11z + (final?2:0) + Σboost.
 - **Kural zorluk payı (`boost`):** Her eklentide bir `boost` alanı vardır. Kuralın kendi hattındaki ilk 3 bölüm dışında hedefe eklenir. Böylece kurallı bölümler gerçekten daha zor tabanlardan seçilir.
 - **Süre ve hamle sınırları (`limits()`):**
@@ -74,12 +73,12 @@ APK indirme linkleri (sabit):
 ## 5. Durum
 
 <!-- DURUM:BAŞ -->
-Durum 28 Ekim 2026 sabahı itibarıyla:
+Durum 3 Kasım 2026 itibarıyla (en yeni madde başta):
 
+- **Hat yapısı 2 (3 Kasım, `hat-yapisi-2`):** 8a88d20'deki hazır iş uyarlandı ve genişletildi. Hat boyu 28'de durur (`lineLen = min(12 + 4c, 28)`). 🔩 **Sabit karo kuralı tamamen kalktı** (oyunu kolaylaştırıyordu): kart, `RULE_LINE.pins`, haftanın kuralı listesi ve robot testi çıktı; `pinned` çekirdekte hep boş durur. İki yeni kural geldi: 🔒 **mühürlü karo** (`seal`, M11, `www/rules/muhurlu-karo.js`) ve 🌐 **sarmal tahta** (`wrap`, M21, `www/rules/sarmal-tahta.js`; tünel ağzının `C.adj/C.ao` altyapısıyla). Kural sırası README tablosunda (22 kural, `KARMA = 24`). Merdiven kesintisiz kalsın diye boost'lar ayarlandı: sarmal 3, nehir ve kapalı durak 4, tarife bölgesi 5 (M1 5,6 → M24 20,1). Testler kurala göre yazılı (`AT`, `RL`, `seenTo`); 29. bölümden sonraki bütün parmak izleri kasıtlı olarak yenilendi. Hedefler %25 sıkı kaldı (↻ par × 1,3–1,4, ⏱ × ¾, kıl payı 4 sn).
 - **Mağaza (31 Ekim, `gelir-olcum` dalı):** Ayarlar › **Mağaza** tek pencere: Reklamsız paket, Tema paketi (`ray_temalar`, tüketilemez), 10/30/80 ipucu, Güçlendirici paketi (her birinden 3), Bilet paketi (`ray_bilet_50`, 50 🎫; tüketilebilir; ürünler ve fiyatlar MAGAZA §10). Tüketilebilirde ödül kayda yazılır, sonra işlem bitirilir; işlem kimliğiyle tekrar ödül yok. Satın alınan bilet ayrı sayılır (`bCrowns`/`bSpent`), yalnız temaya; sandık yalnız kazanılanla (`chestBal`). Robot: `--only=gelir-olcum`. **Salıya kalanlar:** Firebase Analytics (hazır kod `0536e22` commit'inde duruyor: `git show 0536e22 --stat`; `www/olcum.js`, `tools/olcum-hazirla.cjs`, `@capacitor-firebase/analytics` 8.5.2, ads.js/game.js/shop.js olay çağrıları, CI gizli değerleri `FIREBASE_ANDROID_JSON`/`FIREBASE_IOS_PLIST`, YAYIN §5 rıza kararı ve olay tablosu, gizlilik ve MAGAZA §6–§7 Firebase metinleri, robot ölçüm testleri; eklenecek olaylar: life_lost, life_refill_ad, offer_shown, offer_buy) ve özel teklif penceresi.
 - **Meta katmanı (31 Ekim, `meta` dalı):** Ayarlar › 🍃 Zen modu (`save.zen`; hedefler gizli, bitiş 3 ★, 🎫 ve ✨ yok; Günün Hattı etkilenmez) ve 6 mevsim teması (kış, erguvan, yaz, hazan, iki bayram; mevsiminde ücretsiz, sonra sahibinde kalır; bayram tablosu 2026–2035). Şehir haritası ve rozetler salıya kaldı (tasarım BOLUM_TASARIMI §10 sonunda, kod `564893d`). Robot `--only=meta`.
 - **🎫 Bilet, haftalık görev, arşiv, haftanın kuralı (31 Ekim):** 👑 taç para birimi 🎫 bilet olarak yeniden adlandırıldı (kayıtta `crowns`/`crownBal` adları kaldı; haritada kusursuz bölüm 🎫). Her pazartesi 3 haftalık görev (basamağa göre miktar, herkeste aynı tohum), ödül 🎫 + 💡/❤️∞ sınırsız can; Günün Hattı'nı bitirmek +1 🎫 (kusursuzsa +1 daha); seri penceresinden son 30 günün Günün Hattı arşivi (gün başına 3 🎫, seriyi etkilemez); sandığa ❤️∞ 15/30 dk eklendi (`save.infUntil`, can sistemi hat-yapisi'nde); pazar Günün Hattı haftanın kuralını taşır (öteki günler bit bit aynı). Ana sayfada yalnız Günün Hattı kartının altında ince bir görev satırı. Ayrıntı BOLUM_TASARIMI §6, §8; robot `--only=gunluk-gorev`. Robotun `solve()` yardımcısı açık kural kartını önce kapatır. Mağaza görselleri yeni metinle yeniden üretilmeli (birleştirmede).
-- **Hedefler %25 sıkı (31 Ekim, `hat-yapisi`):** ↻ hamle hedefi par × 1,3–1,4 (en az +2), ⏱ süre hedefi × ¾ (en az 11 sn), kıl payı 4 sn. Hat boyu tavanı (28) ve yeni kural sırası hazırlandı, salıya (3 Kasım) bırakıldı: hazır hâli `hat-yapisi` geçmişinde 8a88d20 commit'inde (testler kurala göre yazılmış: `AT('fog')`, `RL`, `seenTo`; boost ayarı; eklentilerde `ord`).
 
 - **Yeni kurallar M21–M23 (31 Ekim):** ❄ soğuyan karo (`ice`), ⚙ bakım karosu (`gear`, her 2 hamlede bir kendi döner; ilke 4 kullanıcı kararıyla gevşetildi), ↔ kayan sıra (`slide`). Karma hatlar artık M24'ten (`KARMA = 23`). Çekirdeğe üç küçük kanca: `after(…, moved)`, `undo`, `plan`. Belgeler: `docs/kurallar/`.
 - **Güçlendiriciler (31 Ekim):** sandıktan 🔄 ek tur, 🔦 fener, ⏱ +15 sn, ↶ geri al çıkar; yalnız işe yaradığı an alt çubukta belirir (BOLUM_TASARIMI › Sürpriz sandık). Sandıkta ipucu payı %60'tan %38'e indi. Robotta tek dosya: `node tools/hakem.cjs --only=guclendirici` (birleştirmeden önce tam koşu yine şart).
@@ -119,10 +118,10 @@ Durum 28 Ekim 2026 sabahı itibarıyla:
 
 ## 6. Sıradaki işler
 
-**Önerilen kurallar** (31 Ekim, piyasa incelemesinden; hepsi bilgi eklemez, zorlaştırır). Kullanıcı kararı: 1 ve 2 **3 Kasım Salı 09.01'de** başlanacak (planlı hatırlatma kurulu), 3–5 yalnız not.
+**Önerilen kurallar** (31 Ekim, piyasa incelemesinden; hepsi bilgi eklemez, zorlaştırır). 1 ve 2, 3 Kasım'da yapıldı (`hat-yapisi-2`); 3–5 yalnız not.
 
-1. **🌐 Sarmal tahta** (Simon Tatham *Net* "wrapping"): sağ kenar sola, üst kenar alta bağlı. Kenardan başlama taktiği çöker. Tünel ağzı `C.adj/C.ao` altyapısı kullanılır. → M24
-2. **🔒 Mühürlü karo** (Royal Match kilitleri): komşusu hatta bağlanana dek dönmez; merkezden dışa sırayla çözme zorunlu. → M25
+1. ✅ **🌐 Sarmal tahta** → M21 (`wrap`).
+2. ✅ **🔒 Mühürlü karo** → M11 (`seal`).
 3. **⏳ Son sefer durağı** (Candy Crush sayılı bombası): ör. 8 hamlede bağlanmazsa ↻ yıldızı söner (oyun bitmez).
 4. **↕ Kayan sütun** (Tatham *Netslide*): kayan sıranın dikeyi; sıra × sütun kesişimi çok zor.
 5. **⬡ Altıgen bölümler** (Flow Free Hexes, Infinity Loop): 6 yönlü karo; büyük iş, ayrı sezon.

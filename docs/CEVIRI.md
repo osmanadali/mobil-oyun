@@ -83,27 +83,28 @@ Oyun Türkçe ve İngilizce oynanır. Bu belge altyapıyı ve ortak sözlüğü 
 
 | Hat | Türkçe | İngilizce |
 |---|---|---|
-| M3 | Sabit karo | Fixed tile |
-| M4 | Eşli karo | Paired tiles |
-| M5 | Ters karo | Reverse tile |
+| M3 | Eşli karo | Paired tiles |
+| M4 | Ters karo | Reverse tile |
+| M5 | Kayan sıra | Sliding row |
 | M6 | Karanlık tünel | Dark tunnel |
 | M7 | Sayaçlı karo | Counter tile |
-| M8 | İki merkez | Two hubs |
-| M9 | Makas | Switch |
-| M10 | Kapak | Cover |
-| M11 | Köprü | Bridge |
-| M12 | Silik kol | Faint arm |
-| M13 | Yön tabelası | Signpost |
-| M14 | Gizli depo | Hidden depot |
-| M15 | Döner tabla | Turntable |
-| M16 | Kapalı durak | Closed station |
-| M17 | Halka hat | Loop line |
-| M18 | Nehir | River |
-| M19 | Tünel ağzı | Tunnel portal |
-| M20 | Tarife bölgesi | Fare zone |
-| M21 | Soğuyan karo | Cooling tile |
-| M22 | Bakım karosu | Gear tile |
-| M23 | Kayan sıra | Sliding row |
+| M8 | Soğuyan karo | Cooling tile |
+| M9 | İki merkez | Two hubs |
+| M10 | Makas | Switch |
+| M11 | Mühürlü karo | Sealed tile |
+| M12 | Döner tabla | Turntable |
+| M13 | Köprü | Bridge |
+| M14 | Bakım karosu | Gear tile |
+| M15 | Kapak | Cover |
+| M16 | Tünel ağzı | Tunnel portal |
+| M17 | Yön tabelası | Signpost |
+| M18 | Halka hat | Loop line |
+| M19 | Silik kol | Faint arm |
+| M20 | Gizli depo | Hidden depot |
+| M21 | Sarmal tahta | Wrap-around board |
+| M22 | Nehir | River |
+| M23 | Kapalı durak | Closed station |
+| M24 | Tarife bölgesi | Fare zone |
 
 Kart etiketi: `Yeni: kapak` → `New: cover`.
 

@@ -50,17 +50,17 @@ Hepsi 24 bit PNG'dir, saydamlık (alfa) içermez; iki mağazanın kuralına uyar
 
 | # | Dosya | Başlık | Alt satır | Ekranda |
 |---|---|---|---|---|
-| 1 | `01-oyun` | Dokun, döndür, hattı yak | Bütün durakları merkeze bağla, açık uç kalmasın | Bölüm 181 (M8, iki merkez), hat yarıya kadar yanmış. Mağazada ilk bakılan görsel oynanıştır. |
-| 2 | `02-ana` | Hatları bağla, şehri canlandır | Tek elle · internetsiz · her gün yeni bir Günün Hattı | Ana ekran: 12 günlük seri, Günün Hattı, M9 |
+| 1 | `01-oyun` | Dokun, döndür, hattı yak | Bütün durakları merkeze bağla, açık uç kalmasın | Bölüm 198 (M9, iki merkez), hat yarıya kadar yanmış. Mağazada ilk bakılan görsel oynanıştır. |
+| 2 | `02-ana` | Hatları bağla, şehri canlandır | Tek elle · internetsiz · her gün yeni bir Günün Hattı | Ana ekran: 12 günlük seri, Günün Hattı, M11 |
 | 3 | `03-kazan` | Kusursuz bitir, bilet kazan | Süre ve hamle hedefini tuttur, üç yıldızı topla | Bölüm 45 kusursuz: 3 yıldız, bilet, 5'li seri bonusu |
-| 4 | `04-harita` | 20 hat, sonu gelmeyen bölüm | Zorluk dalga dalga artar, arada mola var | Hat haritası: biten M9, süren M10 |
-| 5 | `05-kural` | Hat ilerledikçe yeni kurallar | Makas, köprü, tabela, döner tabla, halka, tünel ağzı… | Tünel ağzı kural kartı (M19) |
+| 4 | `04-harita` | 22 kural, sonu gelmeyen bölüm | Zorluk dalga dalga artar, arada mola var | Hat haritası: biten M11, süren M12 |
+| 5 | `05-kural` | Hat ilerledikçe yeni kurallar | Makas, köprü, tabela, döner tabla, halka, tünel ağzı… | Tünel ağzı kural kartı (M16) |
 | 6 | `06-tema` | Bilet topla, 25 renk teması aç | Kusursuz bitirdiğin her bölüm bir bilet kazandırır | Renk temaları penceresi |
 | 7 | `07-sandik` | Sürpriz sandık, yeni trenler | İpucu, seri kalkanı ya da yeni bir tren kaplaması | Sandık açılışı: destansı Lavanta kaplaması |
 
 Öne çıkan görsel: koyu lacivert zemin, uygulama ikonu (Gece Işığı: turuncu L ray, yanan kare merkez), "Ray", "Hatları bağla · Şehri canlandır" ve üç rozet (Tek elle, İnternetsiz, Metro bulmacası).
 
-İngilizce sahne başlıkları (`en`): 1 Connect the lines, light up the city · 2 Tap, turn, light the line · 3 Finish perfect, earn tickets · 4 20 lines, endless levels · 5 New rules as the line grows · 6 Collect tickets, unlock 25 themes · 7 Surprise chest, new trains. Öne çıkan görselde "Connect the lines · Light up the city" ve One hand, Offline, Metro puzzle rozetleri.
+İngilizce sahne başlıkları (`en`): 1 Connect the lines, light up the city · 2 Tap, turn, light the line · 3 Finish perfect, earn tickets · 4 22 rules, endless levels · 5 New rules as the line grows · 6 Collect tickets, unlock 25 themes · 7 Surprise chest, new trains. Öne çıkan görselde "Connect the lines · Light up the city" ve One hand, Offline, Metro puzzle rozetleri.
 
 ## 3. Karakter sayıları
 
@@ -112,11 +112,11 @@ NASIL OYNANIR
 • Üç yıldız: bölümü bitir, süre hedefini tuttur, hamle hedefini tuttur.
 • Süreyi ve hamleyi birlikte tutturursan bölüm kusursuz olur, bilet kazanırsın.
 
-20 HAT, SONU GELMEYEN BÖLÜMLER
-Her metro hattı bir öncekinden uzundur, her bölüm bir öncekinden biraz daha zordur. İlk 20 hattan sonra oyun karma hatlarla sonsuza dek sürer. Bölümler cihazında üretilir, hepsi çözülebilir ve herkes aynı numaralı bölümde aynı bulmacayı görür.
+24 HAT, SONU GELMEYEN BÖLÜMLER
+Her metro hattı yeni bir kural getirir, her bölüm bir öncekinden biraz daha zordur. 22 kurallı hattan sonra oyun karma hatlarla sonsuza dek sürer. Bölümler cihazında üretilir, hepsi çözülebilir ve herkes aynı numaralı bölümde aynı bulmacayı görür.
 
 HAT İLERLEDİKÇE YENİ KURALLAR
-Sabit karo, eşli karo, ters karo, karanlık tünel, sayaçlı karo, iki merkez, makas, kapak, köprü, silik kol, yön tabelası, gizli depo, döner tabla, kapalı durak, halka hat, nehir, tünel ağzı ve tarife bölgesi: 18 kural. Her yeni kural kısa, canlandırmalı bir kartla anlatılır. Tahta hiçbir zaman kalabalıklaşmaz.
+Eşli karo, ters karo, kayan sıra, karanlık tünel, sayaçlı karo, soğuyan karo, iki merkez, makas, mühürlü karo, döner tabla, köprü, bakım karosu, kapak, tünel ağzı, yön tabelası, halka hat, silik kol, gizli depo, sarmal tahta, nehir, kapalı durak ve tarife bölgesi: 22 kural. Her yeni kural kısa, canlandırmalı bir kartla anlatılır. Tahta hiçbir zaman kalabalıklaşmaz.
 
 GÜNÜN HATTI
 Her gün herkes aynı bulmacayı çözer. Bulmaca hafta boyunca zorlaşır, Pazar büyük bulmaca günüdür. Gün serini koru, sonucunu paylaş, arkadaşlarına meydan oku.
@@ -148,11 +148,11 @@ HOW TO PLAY
 • Three stars: finish the level, beat the time target, beat the move target.
 • Hit both targets in one go and the level is flawless: you earn a ticket.
 
-20 LINES, ENDLESS LEVELS
-Each metro line is longer than the last and every level is a little harder than the one before. After the first 20 lines the game continues forever with mixed lines. Levels are generated on your device, every one is solvable, and everyone gets the same puzzle on the same level number.
+24 LINES, ENDLESS LEVELS
+Each metro line brings a new rule and every level is a little harder than the one before. After 22 rule lines the game continues forever with mixed lines. Levels are generated on your device, every one is solvable, and everyone gets the same puzzle on the same level number.
 
 NEW RULES AS YOU TRAVEL
-Fixed tiles, paired tiles, reverse tiles, dark tunnels, counter tiles, two hubs, switches, manhole covers, bridges, faded arms, direction signs, hidden depots, turntables, closed stations, loop lines, rivers, tunnel portals and fare zones: 18 rules. Each new rule is introduced with a short animated card, and the board never gets cluttered.
+Paired tiles, reverse tiles, sliding rows, dark tunnels, counter tiles, cooling tiles, two hubs, switches, sealed tiles, turntables, bridges, gear tiles, covers, tunnel portals, signposts, loop lines, faint arms, hidden depots, wrap-around boards, rivers, closed stations and fare zones: 22 rules. Each new rule is introduced with a short animated card, and the board never gets cluttered.
 
 DAILY LINE
 Every day everyone solves the same puzzle. It gets harder through the week, and Sunday is big puzzle day. Keep your daily streak, share your result and challenge your friends.
@@ -187,8 +187,8 @@ Available in English and Turkish.
 | Ücretli / ücretsiz | Ücretsiz (yayından sonra ücretliye çevrilemez) |
 | İletişim e-postası | [iletişim e-postası] |
 | Web sitesi | https://osmanadali.github.io (app-ads.txt için, bkz. §11) |
-| Sürüm notu (ilk sürüm) | `İlk sürüm. Tek elle, internetsiz metro bulmacası: 20 hat, Günün Hattı, renk temaları ve sürpriz sandık.` |
-| Sürüm notu (EN) | `First release. A one-handed, offline metro puzzle: 20 lines, a Daily Line, color themes and a surprise chest.` |
+| Sürüm notu (ilk sürüm) | `İlk sürüm. Tek elle, internetsiz metro bulmacası: 22 kural, Günün Hattı, renk temaları ve sürpriz sandık.` |
+| Sürüm notu (EN) | `First release. A one-handed, offline metro puzzle: 22 rules, a Daily Line, color themes and a surprise chest.` |
 
 ## 5. App Store girişi
 
@@ -215,10 +215,10 @@ Calm, one-handed and offline
 **Tanıtım metni** (170). Sürüm göndermeden değiştirilebilir; kampanya ve yeni kural duyurusu için kullanılır.
 
 ```text
-Her gün yeni bir Günün Hattı! Rayları döndür, durakları bağla, kusursuz bitir, bilet topla. 20 hat, yeni kurallar ve sonu gelmeyen bölümler seni bekliyor.
+Her gün yeni bir Günün Hattı! Rayları döndür, durakları bağla, kusursuz bitir, bilet topla. 22 kural ve sonu gelmeyen bölümler seni bekliyor.
 ```
 ```text
-A new Daily Line every day! Rotate the rails, connect every station, finish flawlessly and collect tickets. 20 lines, new rules and endless levels await.
+A new Daily Line every day! Rotate the rails, connect every station, finish flawlessly and collect tickets. 22 rules and endless levels await.
 ```
 
 **Açıklama** (4000): §4'teki tam açıklamanın aynısı.
@@ -463,7 +463,7 @@ Mağaza
 ## 13. Bilinen sınırlar
 
 - **İki dil.** Oyun Türkçe ve İngilizcedir (28 Ekim 2026). İngilizce mağaza girişi İngilizce ekran görüntüleriyle (`store/screens-en/`) yüklenir. Altyapı ve sözlük: `docs/CEVIRI.md`.
-- **Kural sayısı.** Açıklama 18 kuralın hepsini sayar (çift hatların zor kuralları 28 Ekim'de eklendi; tam açıklama ~90 karakter uzadı, 4000 sınırının yine altında). 5. ekran görüntüsünün alt satırı eski 12 kurallı listeyi gösterir; istenirse `tools/store-shots.cjs` ile yeniden üretilir.
+- **Kural sayısı.** Açıklama 22 kuralın hepsini hat sırasıyla sayar (3 Kasım: sabit karo kalktı, mühürlü karo ve sarmal tahta eklendi; tam açıklama 4000 sınırının altında).
 - **Görseller çalışan koda bağlı.** Arayüz değişince `node tools/store-shots.cjs` yeniden çalıştırılmalı. Sahneler bölüm numarasıyla kurulur (180, 45, 829…); üretim değişirse aynı numara farklı bir tahta verebilir, çıktı gözle kontrol edilmeli.
 - **Veri ve gizlilik yanıtları** AdMob'un Ekim 2026 itibarıyla bilinen davranışına göredir. Gönderimden önce §6 ve §7'deki Google bağlantılarıyla karşılaştırılmalı.
 - **Silme düğmesi ve rıza penceresi** `magaza-reklam` dalında, iOS projesi ve imzalı derleme `magaza-yerel` dalındadır; bu belge o dallar `main`e birleşmiş gibi yazıldı.
