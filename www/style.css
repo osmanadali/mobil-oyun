@@ -338,6 +338,14 @@ body.introing .screen *{animation-play-state:paused!important}
 .sheet{width:100%;border-radius:30px 30px 0 0;padding:14px 20px max(22px,var(--sab));background:var(--sheetBg);box-shadow:inset 0 1px 0 var(--stroke),0 -10px 40px rgba(0,0,0,.25);transform:translateY(105%);transition:transform .45s cubic-bezier(.2,.9,.2,1);display:flex;flex-direction:column;gap:12px}
 .sheet:before{content:"";width:40px;height:5px;border-radius:5px;background:var(--stroke);align-self:center;margin-bottom:8px;box-shadow:inset 0 0 0 9px var(--rail)}
 .modal.open .sheet{transform:none}
+/* ortada küçük pencere (duraklat): kenarlardan bağımsız, büyüyerek açılır */
+.modal.center{align-items:center;justify-content:center;padding:24px}
+.modal.center .sheet{width:min(318px,100%);max-height:none;border-radius:28px;padding:20px 18px 18px;gap:4px;box-shadow:inset 0 0 0 1px var(--stroke),0 24px 70px rgba(0,0,0,.5);transform:scale(.88);opacity:0;transition:transform .32s cubic-bezier(.2,.9,.3,1.25),opacity .2s}
+.modal.center.open .sheet{transform:none;opacity:1}
+.modal.center .sheet:before{display:none}
+.modal.center .sheet h2{font-size:23px;margin-bottom:6px}
+.modal.center .opt{padding:7px 4px;font-size:15px}
+.modal.center .btn.primary{height:52px;margin-top:10px}.modal.center .btn.glassbtn{height:44px;margin-top:4px}
 .sheet .mx{position:sticky;top:0;z-index:3;align-self:flex-end;width:40px;height:40px;margin:-34px -8px -6px 0;border:0;border-radius:50%;background:var(--glass2);box-shadow:inset 0 0 0 1px var(--stroke);color:var(--mut);font-size:16px;line-height:1}
 .sheet{max-height:96%;overflow-y:auto;overscroll-behavior:contain}.sheet>*{flex-shrink:0}
 .sheet.fit,.sheet h2{touch-action:none}.sheet.drag{transition:none}

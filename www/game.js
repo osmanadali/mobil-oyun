@@ -661,15 +661,16 @@ function show(id) {
   clearInterval(clockT); if (id === 'home') clockT = setInterval(() => { dailyClock(); lifeRow(); }, 1000);
 }
 const bind = binds => { for (const [id, fn] of Object.entries(binds)) { const el = $(id); if (el) el.onclick = fn; } };
-function modal(html, binds = {}, locked = false) {
-  mLocked = locked; howBack = null; mOnClose = null;
+// center: ekranın ortasında küçük pencere (duraklat); öteki pencereler alttan açılır
+function modal(html, binds = {}, locked = false, center = false) {
+  mLocked = locked; howBack = null; mOnClose = null; $('modal').classList.toggle('center', center);
   const sh = $('mCard'); sh.innerHTML = html; sh.scrollTop = 0; $('modal').classList.add('open');
   sh.classList.toggle('fit', sh.scrollHeight <= sh.clientHeight + 1);   // sığan pencere: her yerinden aşağı çekilebilir
   // uzun (kaydırılan) pencere: köşede ✕ — aşağı çekmek kaydırmayla karışabiliyor (temalar, sandık, mağaza)
   if (!locked && !sh.classList.contains('fit')) sh.insertAdjacentHTML('afterbegin', `<button class="mx" id="mX" aria-label="${L('Kapat', 'Close')}">✕</button>`);
   bind({ mX: closeModal, ...binds });
 }
-const closeModal = () => { howBack = null; const f = mOnClose; mOnClose = null; $('modal').classList.remove('open'); f?.(); };
+const closeModal = () => { howBack = null; const f = mOnClose; mOnClose = null; $('modal').classList.remove('open'); f?.(); setTimeout(() => { if (!modalOpen()) $('modal').classList.remove('center'); }, 350); };   // kapanış animasyonu bitince alt pencere düzenine dön
 const modalOpen = () => $('modal').classList.contains('open');
 $('modal').onclick = e => { if (e.target.id === 'modal' && !mLocked) closeModal(); };
 // alt pencere: aşağı kaydırarak kapat. Kilitli pencere (anlatıcı, kural kartı) hafifçe esneyip geri gelir.
@@ -1948,7 +1949,7 @@ function pauseSheet() {
     <button id="pGo" class="btn primary"><span>${L('Devam et', 'Resume')}</span></button>
     <button id="pHome" class="btn glassbtn">${L('Ana sayfa', 'Home')}</button>`, {
     ...SND_BINDS, pGo: closeModal,
-    pHome: () => { mOnClose = () => $('game').classList.remove('paused'); closeModal(); show('home'); } });   // yarım oyun kayıtta, Oyna'yla sürer
+    pHome: () => { mOnClose = () => $('game').classList.remove('paused'); closeModal(); show('home'); } }, false, true);   // yarım oyun kayıtta, Oyna'yla sürer
   mOnClose = () => { $('game').classList.remove('paused'); if (active('game')) resume(); };
 }
 function settings() {

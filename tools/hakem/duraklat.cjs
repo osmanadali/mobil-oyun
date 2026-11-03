@@ -10,7 +10,7 @@ module.exports = async T => {
     await page.click('#bPlay'); await page.waitForTimeout(900);
     const ic0 = await icon(page);
     await page.click('#bBack'); await page.waitForTimeout(400);
-    const m = await page.evaluate(() => { const c = document.getElementById('mCard'); return { open: document.getElementById('modal').classList.contains('open'), h: c.querySelector('h2')?.textContent, ids: ['oM', 'oS', 'oV', 'pGo', 'pHome'].filter(i => document.getElementById(i)), fit: c.scrollHeight <= c.clientHeight + 1, blur: getComputedStyle(document.querySelector('#board canvas')).filter, ms: window.__ray.G.ms, run: window.__ray.G.runAt }; });
+    const m = await page.evaluate(() => { const c = document.getElementById('mCard'); return { open: document.getElementById('modal').classList.contains('open'), h: c.querySelector('h2')?.textContent, ids: ['oM', 'oS', 'oV', 'pGo', 'pHome'].filter(i => document.getElementById(i)), fit: c.scrollHeight <= c.clientHeight + 1, box: (r => [r.left, innerWidth - r.right, r.top, innerHeight - r.bottom].map(Math.round))(c.getBoundingClientRect()), blur: getComputedStyle(document.querySelector('#board canvas')).filter, ms: window.__ray.G.ms, run: window.__ray.G.runAt }; });
     await shot(page, 'pause-320');
     await page.waitForTimeout(1300);
     const ms2 = await page.evaluate(() => window.__ray.G.ms);
@@ -18,8 +18,8 @@ module.exports = async T => {
     const snd = (await getSave(page)).sound;
     await page.click('#pGo'); await page.waitForTimeout(700);
     const r = await page.evaluate(() => ({ open: document.getElementById('modal').classList.contains('open'), paused: document.getElementById('game').classList.contains('paused'), run: window.__ray.G.runAt > 0, home: document.getElementById('home').classList.contains('active') }));
-    check('pause.sheet', 'Duraklat: oyunda sol üstte ‖; basınca "Duraklatıldı" penceresi (müzik / efekt / titreşim, Devam et, Ana sayfa) 320×568\'e kaydırmasız sığar; süre durur, tahta bulanır; anahtar ayarı kaydeder; Devam et ile süre akar',
-      ic0[0] && !ic0[1] && m.open && m.h === 'Duraklatıldı' && m.ids.length === 5 && m.fit && /blur/.test(m.blur) && !m.run && ms2 === m.ms && snd === false && !r.open && !r.paused && r.run && !r.home,
+    check('pause.sheet', 'Duraklat: oyunda sol üstte ‖; basınca "Duraklatıldı" penceresi (müzik / efekt / titreşim, Devam et, Ana sayfa) ekranın ortasında küçük pencere (kenarlara ≥ 16 px), 320×568\'e kaydırmasız sığar; süre durur, tahta bulanır; anahtar ayarı kaydeder; Devam et ile süre akar',
+      ic0[0] && !ic0[1] && m.open && m.h === 'Duraklatıldı' && m.ids.length === 5 && m.fit && m.box.every(v => v >= 16) && Math.abs(m.box[2] - m.box[3]) <= 4 && /blur/.test(m.blur) && !m.run && ms2 === m.ms && snd === false && !r.open && !r.paused && r.run && !r.home,
       JSON.stringify({ ic0, ...m, ms2, snd, r }));
     // dışarı dokununca da kapanır ve oyun sürer; Ana sayfa → yarım oyun kayıtta
     await page.click('#bBack'); await page.waitForTimeout(300);
