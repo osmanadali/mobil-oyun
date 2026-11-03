@@ -726,7 +726,8 @@ function modal(html, binds = {}, locked = false, center = false) {
   if (!locked && !sh.classList.contains('fit')) sh.insertAdjacentHTML('afterbegin', `<button class="mx" id="mX" aria-label="${L('Kapat', 'Close')}">✕</button>`);
   bind({ mX: closeModal, ...binds });
 }
-const closeModal = () => { howBack = null; const f = mOnClose; mOnClose = null; $('modal').classList.remove('open'); f?.(); setTimeout(() => { if (!modalOpen()) $('modal').classList.remove('center'); }, 350); };   // kapanış animasyonu bitince alt pencere düzenine dön
+const closeModal = () => { howBack = null; const f = mOnClose; mOnClose = null; $('modal').classList.remove('open'); f?.();
+  if (active('game') && G && !G.won && !G.over && !document.hidden) { $('game').classList.remove('paused'); resume(); }   /* oyunda pencere nasıl kapanırsa kapansın süre akar (resume tekrarı zararsız) */ setTimeout(() => { if (!modalOpen()) $('modal').classList.remove('center'); }, 350); };   // kapanış animasyonu bitince alt pencere düzenine dön
 const modalOpen = () => $('modal').classList.contains('open');
 $('modal').onclick = e => { if (e.target.id === 'modal' && !mLocked) closeModal(); };
 // alt pencere: aşağı kaydırarak kapat. Kilitli pencere (anlatıcı, kural kartı) hafifçe esneyip geri gelir.
@@ -1925,10 +1926,10 @@ function questStep(type) {
   const w = weekQ(), d = dayQ(), out = [];
   // günlük: her görev +1 💡, üçü birden +1 🎫 (günlük ödül)
   const gift = L('🎁 Görevlerde', '🎁 In Quests');
-  for (const q of d.q) if (q.t === type && q.p < q.n && ++q.p === q.n) { q.r = 1; out.push(['☀️', L('GÜNLÜK GÖREV TAMAM', 'DAILY QUEST DONE'), QUESTS[q.t].txt(q.n), gift]); }
-  if (!d.all && d.q.every(q => q.p >= q.n)) { d.all = d.ar = 1; out.push(['☀️', L('GÜNLÜK ÖDÜL', 'DAILY REWARD'), L('Bugünün görevleri tamam', 'All of today’s quests done'), gift]); }
-  for (const q of w.q) if (q.t === type && q.p < q.n && ++q.p === q.n) { q.r = 1; out.push(['🎯', L('HAFTALIK GÖREV TAMAM', 'WEEKLY QUEST DONE'), QUESTS[q.t].txt(q.n), gift]); }
-  if (!w.all && w.q.every(q => q.p >= q.n)) { w.all = w.ar = 1; out.push(['🎯', L('HAFTALIK ÖDÜL', 'WEEKLY REWARD'), L('Haftanın görevleri tamam', 'All weekly quests done'), gift]); }
+  for (const q of d.q) if (q.t === type && q.p < q.n && ++q.p === q.n) { q.r = 1; out.push(['☀️', L('GÜNLÜK GÖREV TAMAM', 'DAILY QUEST DONE'), QUESTS[q.t].txt(q.n), gift, 'q']); }
+  if (!d.all && d.q.every(q => q.p >= q.n)) { d.all = d.ar = 1; out.push(['☀️', L('GÜNLÜK ÖDÜL', 'DAILY REWARD'), L('Bugünün görevleri tamam', 'All of today’s quests done'), gift, 'q']); }
+  for (const q of w.q) if (q.t === type && q.p < q.n && ++q.p === q.n) { q.r = 1; out.push(['🎯', L('HAFTALIK GÖREV TAMAM', 'WEEKLY QUEST DONE'), QUESTS[q.t].txt(q.n), gift, 'q']); }
+  if (!w.all && w.q.every(q => q.p >= q.n)) { w.all = w.ar = 1; out.push(['🎯', L('HAFTALIK ÖDÜL', 'WEEKLY REWARD'), L('Haftanın görevleri tamam', 'All weekly quests done'), gift, 'q']); }
   popUp(...out);   // ekrana üstten düşer; ödül Görevler penceresinde toplanır
   return out.length;
 }
@@ -1955,6 +1956,12 @@ function questSheet() {
     <button id="mClose" class="btn glassbtn">${L('Tamam', 'OK')}</button>`, { mArch: archSheet, mClose: closeModal });
   $('mCard').querySelectorAll('.qget').forEach(b => b.onclick = () => qClaim(b));
 }
+// bildirimden Görevler: bölüm oynanırken süre durur (pencere kapanınca closeModal sürdürür); kilitli pencere (anlatıcı) varken açılmaz
+function goQuests() {
+  if (modalOpen() && mLocked) return;
+  if (active('game') && G && !G.won && !G.over) pause();
+  questSheet();
+}
 // Topla: ödül verilir, düğmenin üstünden ödül yazısı büyüyüp yükselerek kaybolur, satır ✓ olur
 function qClaim(b) {
   const id = b.dataset.q, f = id[0], set = f === 'd' ? dayQ() : weekQ(), q = id[1] === 'a' ? null : set.q[+id.slice(1)];
@@ -1962,8 +1969,8 @@ function qClaim(b) {
   if (q) delete q.r; else delete set.ar;
   const txt = qGrant(q ? f : id, q);
   persist(); achCheck(); if (active('home')) refreshHome(); questRow();
-  const r = b.getBoundingClientRect(), fx = document.createElement('div');
-  fx.className = 'qfly'; fx.textContent = txt; fx.style.left = `${r.left + r.width / 2}px`; fx.style.top = `${r.top + r.height / 2}px`;
+  const r = b.parentElement.getBoundingClientRect(), fx = document.createElement('div');   // satırın ortasında belirir, satırında kalır (üstteki Topla düğmesini örtmez)
+  fx.className = 'qfly'; fx.textContent = txt; fx.style.left = `${r.left + r.width * .42}px`; fx.style.top = `${r.top + r.height / 2}px`;
   document.body.appendChild(fx); fx.addEventListener('animationend', () => fx.remove()); setTimeout(() => fx.remove(), 2000);
   const row = b.parentElement; b.outerHTML = '<b class="qok">✓</b>'; row.classList.remove('pend'); row.classList.add('ok', 'got');
   haptic('heavy'); tone(note(9), .25, .04); tone(note(14), .3, .035, 'sine', .09);
@@ -2564,7 +2571,7 @@ function popUp(...items) { if (!items.length) return; achQ.push(...items); popLo
 function achPop() {
   const a = achQ.shift(), el = $('achPop');
   if (!a) { achT = 0; return; }
-  el.innerHTML = `<i>${a[0]}</i><span><small>${a[1]}</small><b>${a[2]}</b></span>${a[3] ? `<em>${a[3]}</em>` : ''}`;
+  el.innerHTML = `<i>${a[0]}</i><span><small>${a[1]}</small><b>${a[2]}</b></span>${a[3] ? `<em>${a[3]}</em>` : ''}`; el.dataset.k = a[4] || '';   // q: görev → dokununca Görevler
   el.classList.add('show'); tone(note(9), .3, .03, 'sine', .05); tone(note(12), .35, .025, 'sine', .16);
   achT = setTimeout(achHide, 2600);
 }
@@ -2583,11 +2590,12 @@ function achHide() { $('achPop').classList.remove('show'); achT = setTimeout(ach
   });
   const up = () => {
     if (x0 == null) return; x0 = null;
-    const side = Math.abs(dx) > 70, out = side || dy < -24 || (Math.abs(dx) < 6 && Math.abs(dy) < 6);
+    const tap = Math.abs(dx) < 6 && Math.abs(dy) < 6, side = Math.abs(dx) > 70, out = side || dy < -24 || tap, go = tap && el.dataset.k === 'q';
     if (!out) { el.style.transition = el.style.transform = ''; achT = setTimeout(achHide, 1500); return; }
     el.style.transition = 'transform .26s ease-in,opacity .26s';
     el.style.transform = side ? `translate(calc(-50% + ${Math.sign(dx) * 120}vw),${dy}px)` : 'translate(-50%,-160%)'; el.style.opacity = '0';
     haptic('light');
+    if (go) goQuests();   // görev bildirimine dokununca Görevler açılır (kaydırınca yalnız gider)
     achT = setTimeout(() => { el.classList.remove('show'); el.style.transition = el.style.transform = el.style.opacity = ''; achT = setTimeout(achPop, 120); }, 270);
   };
   el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
