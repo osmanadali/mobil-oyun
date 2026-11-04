@@ -145,6 +145,116 @@ def stage_prep(c, o):
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(o["work"], "prep.blend"))
 
 
+# =================================================================== landmarks
+def segments(xs, gap):
+    """split sorted 1D coordinates into runs separated by gaps > gap"""
+    xs = np.sort(xs)
+    cut = np.where(np.diff(xs) > gap)[0]
+    return [(r[0], r[-1]) for r in np.split(xs, cut + 1)]
+
+
+def landmarks(V, bvh, tw=0.74, te=0.42):
+    """joint positions of an A-pose (or T-pose) humanoid mesh facing -Y, feet on z=0, centred at x=0"""
+    H = V[:, 2].max()
+    L = dict(H=H)
+    slab = lambda z, t=0.006: V[np.abs(V[:, 2] - z) < t * H]
+    # neck: narrowest section between shoulders and head
+    zs = np.linspace(0.78 * H, 0.93 * H, 40)
+    wd = []
+    for z in zs:
+        s = slab(z)
+        s = s[np.abs(s[:, 0]) < 0.1 * H]
+        wd.append(s[:, 0].max() - s[:, 0].min() if len(s) else 9)
+    L["neck_z"] = zs[int(np.argmin(wd))]
+    # crotch: lowest hit of upward rays between the legs
+    tor = slab(0.55 * H, 0.02)
+    tor = tor[np.abs(tor[:, 0]) < 0.08 * H]
+    yc = (tor[:, 1].min() + tor[:, 1].max()) / 2
+    hits = []
+    for dy in np.linspace(-0.04, 0.04, 9) * H:
+        h = bvh.ray_cast(Vector((0, yc + dy, 0.2 * H)), Vector((0, 0, 1)), H)
+        if h[0] is not None:
+            hits.append(h[0].z)
+    L["crotch_z"] = min(hits)
+    gap = 0.012 * H
+    for side, sg in (("L", 1), ("R", -1)):
+        # ---- arm: outermost x-segment while it is separate from the torso
+        arm_pts, z_pit = [], None
+        for z in np.arange(0.30 * H, 0.82 * H, 0.004 * H):
+            s = slab(z, 0.003)
+            s = s[s[:, 0] * sg > 0]
+            if len(s) < 3:
+                continue
+            segs = segments(s[:, 0] * sg, gap)
+            if len(segs) >= 2 and segs[-1][0] > 0.12 * H:
+                lo_, hi_ = segs[-1]
+                pts = s[(s[:, 0] * sg >= lo_ - 1e-9) & (s[:, 0] * sg <= hi_ + 1e-9)]
+                arm_pts.append(pts)
+                z_pit = z
+            elif z_pit is not None and z > 0.6 * H:
+                break
+        A = np.concatenate(arm_pts)
+        top = A[A[:, 2] > z_pit - 0.06 * H]          # upper arm just below the armpit
+        c_up = top.mean(0)
+        r_up = (top[:, 0].max() - top[:, 0].min()) / 2 * 0.5 + (top[:, 1].max() - top[:, 1].min()) / 2 * 0.5
+        cen = A.mean(0)
+        u, sv, vt = np.linalg.svd(A - cen)
+        ax = vt[0] * np.sign(vt[0][2])                 # pointing up
+        T = A[np.argmin((A - cen) @ ax)]               # fingertip: farthest down the axis
+        # shoulder joint: on the upper-arm axis, one arm radius below the top of the shoulder
+        S = c_up.copy()
+        for _ in range(3):
+            near = V[(np.abs(V[:, 0] - S[0]) < 0.012 * H) & (np.abs(V[:, 1] - c_up[1]) < 0.05 * H)
+                     & (V[:, 2] < L["neck_z"])]
+            ztop = near[:, 2].max()
+            zS = ztop - r_up * 1.05
+            S = c_up + ax * (zS - c_up[2]) / ax[2]
+        # centreline from S to T: centroids of thin slabs perpendicular to the axis
+        dST = (T - S) / np.linalg.norm(T - S)
+        A2 = A
+
+        def centre(t):
+            p = S + (T - S) * t
+            sl = A2[np.abs((A2 - p) @ dST) < 0.006 * H]
+            sl = sl[np.linalg.norm((sl - p) - np.outer((sl - p) @ dST, dST), axis=1) < 0.05 * H]
+            return (sl.min(0) + sl.max(0)) / 2 if len(sl) > 5 else p
+        L["arm" + side] = dict(S=S, E=centre(te), W=centre(tw), T=T, pit=z_pit, r=r_up,
+                               hand0=S + (T - S) * min(1, tw + 0.03))
+        # ---- leg
+        lg = lambda z: (lambda s: s[s[:, 0] * sg > 0.005 * H])(slab(z, 0.01))
+        def legsec(z):
+            s = lg(z)
+            lo_, hi_ = segments(s[:, 0] * sg, gap)[0]
+            return s[(s[:, 0] * sg >= lo_ - 1e-9) & (s[:, 0] * sg <= hi_ + 1e-9)]
+        mid = lambda s: (s.min(0) + s.max(0)) / 2
+        ank_z = 0.055 * H
+        knee_z0 = 0.285 * H
+        up = legsec(L["crotch_z"] - 0.05 * H)
+        kn = legsec(knee_z0)
+        c1, c2 = mid(up), mid(kn)
+        hip_z = max(L["crotch_z"] + 0.05 * H, 0.49 * H)
+        hip = c1 + (c2 - c1) * (hip_z - c1[2]) / (c2[2] - c1[2])
+        an = mid(legsec(ank_z + 0.03 * H))
+        ank = np.array([an[0], an[1], ank_z])
+        knee_z = ank_z + 0.51 * (hip_z - ank_z)
+        kn = mid(legsec(knee_z))
+        knee = np.array([kn[0], kn[1], knee_z])
+        foot = V[(V[:, 2] < 0.06 * H) & (V[:, 0] * sg > 0)]
+        tip = foot[np.argmin(foot[:, 1])]
+        ball_y = ank[1] + 0.62 * (tip[1] - ank[1])
+        fb = foot[np.abs(foot[:, 1] - ball_y) < 0.01 * H]
+        ball = np.array([(fb[:, 0].min() + fb[:, 0].max()) / 2, ball_y, 0.008 * H])
+        toe = np.array([ball[0], tip[1], 0.008 * H])
+        L["leg" + side] = dict(hip=hip, knee=knee, ank=ank, ball=ball, toe=toe)
+    return L
+
+
+def torso_mid_y(V, z, H):
+    s = V[np.abs(V[:, 2] - z) < 0.008 * H]
+    s = s[np.abs(s[:, 0]) < 0.06 * H]
+    return (s[:, 1].min() + s[:, 1].max()) / 2 if len(s) else 0.0
+
+
 # =================================================================== texture
 VIEWS = {  # toward-camera direction d, image-right direction r (image up = +Z)
     "front": ((0, -1, 0), (1, 0, 0)),
@@ -296,6 +406,40 @@ def fit_view(mask, U, Z, cell):
     return p, best
 
 
+def fit_head(mask, U, Z, cell, p, zcut):
+    """refine scale/offset on the head only (the turnaround art's head is not where the global fit puts it)"""
+    sel = Z > zcut
+    U, Z = U[sel], Z[sel]
+    hgt, wid = mask.shape
+    csum = np.concatenate([[0], np.cumsum(mask.sum(1))])
+
+    def score(q):
+        s, k, a, b = q
+        ix = np.floor(a + s * k * U).astype(int)
+        iy = np.floor(b - s * Z).astype(int)
+        ok = (ix >= 0) & (ix < wid) & (iy >= 0) & (iy < hgt)
+        inter = mask[iy[ok], ix[ok]].sum()
+        rc = csum[int(np.clip(b - s * zcut, 0, hgt))] / (s * s * k * cell * cell)
+        return inter / (len(U) + rc - inter)
+
+    p = p.copy()
+    best = score(p)
+    steps = np.array([0.02 * p[0], 0.0, 6.0, 6.0])
+    for _ in range(6):
+        improved = True
+        while improved:
+            improved = False
+            for i in (0, 2, 3):
+                for sg in (-1, 1):
+                    q = p.copy()
+                    q[i] += sg * steps[i]
+                    sc = score(q)
+                    if sc > best:
+                        best, p, improved = sc, q, True
+        steps /= 2
+    return p, best
+
+
 def bilinear(img, x, y):
     h, w = img.shape[:2]
     x = np.clip(x - 0.5, 0, w - 1.001)
@@ -333,6 +477,19 @@ def stage_texture(c, o):
     other = {"left": "right", "right": "left"}[c["side"]]
     views = [("front", "on", False, 1.4), ("back", "arka", False, 1.0),
              (c["side"], "yan", False, 0.8), (other, "yan", True, 0.8)]
+    LM = landmarks(V, bvh)
+    zc = LM["neck_z"] - 0.01 * H
+    th = np.clip((P[:, 2] - (zc - 0.02 * H)) / (0.04 * H), 0, 1)[:, None]   # 0 body .. 1 head
+    hand = np.zeros(len(idx), bool)                                           # hands: front/back only
+    for sd in ("L", "R"):
+        a_ = LM["arm" + sd]
+        S, T = a_["S"], a_["T"]
+        dd = T - S
+        t = (P - S) @ dd / (dd @ dd)
+        lat = np.linalg.norm((P - S) - np.outer(t, dd), axis=1)
+        h0 = (a_["hand0"] - S) @ dd / (dd @ dd)
+        hand |= (t > h0) & (lat < 0.045 * H) & (np.sign(P[:, 0]) == np.sign(S[0]))
+    log("hand texels", hand.sum(), "neck z %.3f" % LM["neck_z"])
     acc = np.zeros((len(idx), 3))
     wsum = np.zeros(len(idx))
     dbg = []
@@ -343,16 +500,18 @@ def stage_texture(c, o):
         cell = H / 280
         Vu = V @ np.array(r)
         U, Z = silhouette(bvh, d, r, Vu.min() - 0.02, Vu.max() + 0.02, H, cell)
-        (s, k, a, b), iou = fit_view(mask, U, Z, cell)
-        log("view %-5s from %s%s: scale %.1f px/m (k %.3f) a %.1f b %.1f IoU %.3f"
-            % (vname, img_name, " (mirrored)" if mirror else "", s, k, a, b, iou))
-        dbg.append((vname, img, mask, U, Z, (s, k, a, b)))
+        pb, iou = fit_view(mask, U, Z, cell)
+        ph, iouh = fit_head(mask, U, Z, cell, pb, zc)
+        log("view %-5s from %s%s: body s %.1f k %.3f a %.1f b %.1f IoU %.3f | head s %.1f a %.1f b %.1f IoU %.3f"
+            % (vname, img_name, " (mirrored)" if mirror else "", *pb, iou, ph[0], ph[2], ph[3], iouh))
+        dbg.append((vname, img, mask, U, Z, pb))
         valid = dilate(~mask, 3)  # erode the character mask: no white edge pixels
         valid = ~valid
         f = N @ np.array(d)
-        cand = np.where(f > 0.06)[0]
-        px = a + s * k * (P[cand] @ np.array(r))
-        py = b - s * P[cand, 2]
+        cand = np.where((f > 0.06) & ~(hand & (vname in ("left", "right"))))[0]
+        pp = pb[None, :] * (1 - th[cand]) + ph[None, :] * th[cand]
+        px = pp[:, 2] + pp[:, 0] * pp[:, 1] * (P[cand] @ np.array(r))
+        py = pp[:, 3] - pp[:, 0] * P[cand, 2]
         ix = np.clip(np.floor(px).astype(int), 0, mask.shape[1] - 1)
         iy = np.clip(np.floor(py).astype(int), 0, mask.shape[0] - 1)
         inm = valid[iy, ix]
@@ -364,7 +523,7 @@ def stage_texture(c, o):
         vis = np.fromiter((rc(Vector(p), dv, 10.0)[0] is None for p in org.tolist()), bool, len(cand))
         cand, px, py = cand[vis], px[vis], py[vis]
         col = bilinear(img, px, py)
-        w = gain * f[cand] ** 4
+        w = gain * f[cand] ** 6
         acc[cand] += col * w[:, None]
         wsum[cand] += w
         log("  %d texels painted (%.1fs)" % (len(cand), time.time() - t0))
