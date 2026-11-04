@@ -595,8 +595,8 @@ function limits(P) {
   return { m: P.par + Math.max(2, Math.round(P.par * moveTol(P.cur.length) * tight)), t: Math.max(11, Math.round(.75 * (P.taps * 1.3 + P.cur.length * .5 + Math.max(0, (P.diff || 0) - 8) * 3))) };
 }
 const timeOk = sec => sec <= G.lim.t;
-// 🚉 son süre: yıldız süresinin 2 katı, en az +60 sn (BOLUM_TASARIMI › Can). Dolunca bölüm başarısız, 1 ❤️ gider.
-const lastCall = t => Math.max(2 * t, t + 60);
+// 🚉 son süre: yıldız süresi + 20 sn (BOLUM_TASARIMI › Can). Dolunca bölüm başarısız, 1 ❤️ gider.
+const lastCall = t => t + 20;
 const movesOk = () => G.moves <= G.lim.m && !G.mLost;   // G.mLost: eklenti ↻ yıldızını söndürdü (son sefer kaçtı; bildirim metni)
 
 // ---------- ses / dokunsal ----------

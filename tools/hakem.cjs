@@ -352,7 +352,7 @@ async function inViewport(page, sel) {
     await page.waitForTimeout(400);
     const mus1 = await page.evaluate(() => window.__ray.music());
     // 3★ süresini aş → gösterge 2★'a düşmeli, çözünce en fazla 2★
-    await page.evaluate(() => { const G = window.__ray.G; G.ms += (G.lim.t + 1) * 1000; });
+    await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.t + 1) * 1000; });
     await page.waitForTimeout(400);
     const pill1 = await page.evaluate(() => document.querySelectorAll('#gStars i.on').length);
     const next = await page.textContent('#gNext');
@@ -817,7 +817,7 @@ async function inViewport(page, sel) {
     const poor = await page.textContent('#mOpen');
     await page.click('#mBack'); await page.waitForTimeout(300); await page.click('#mClose'); await page.waitForTimeout(300);
     await page.click('#bPlay'); await page.waitForTimeout(400);
-    await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.t + 20) * 1000; });
+    await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.t + 8) * 1000; });
     await solve(page, 10); await waitModal(page);
     const s = await getSave(page), w = await page.evaluate(() => ({ prim: document.querySelector('#winPanel .primary')?.id, txt: document.getElementById('winPanel').textContent }));
     check('chest.shield', 'Bakiye yetmezse "Bilet topla · 🎫 10 gerekli" (bakiye yazmaz); 🛡 kalkan kırılan seriyi bir kez korur (Tekrar öne çıkmaz)', /Bilet topla/.test(poor) && /🎫 10 gerekli/.test(poor) && !/akiye/.test(poor) && s.combo === 3 && s.shield === 0 && !s.comboLost && w.prim === 'mNext' && /Kalkan/.test(w.txt), JSON.stringify({ poor, combo: s.combo, shield: s.shield, prim: w.prim }), 'medium');

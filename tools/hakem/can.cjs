@@ -30,7 +30,7 @@ module.exports = async T => {
     const { ctx, page, errors } = await go({});
     await page.click('#bPlay'); await page.waitForTimeout(700);
     const s0 = await st(page);
-    await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.t + 20) * 1000; }); await page.waitForTimeout(400);
+    await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.t + 5) * 1000; }); await page.waitForTimeout(400);
     const late = await page.evaluate(() => ({ cls: document.getElementById('gTrip').className, over: window.__ray.G.over }));
     await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.dl - 6) * 1000; }); await page.waitForTimeout(400);
     const near = await page.evaluate(() => ({ cls: document.getElementById('gTrip').className, next: document.getElementById('gNext').textContent, anim: getComputedStyle(document.querySelector('#gTrip .sig')).animationName }));
@@ -38,8 +38,8 @@ module.exports = async T => {
     await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.dl + .2) * 1000; }); await page.waitForTimeout(1200);
     const f = await st(page), s = await getSave(page);
     await shot(page, 'can-fail');
-    check('can.deadline', 'Son süre: yıldız süresinin 2 katı, en az +60 sn; rötarda bölüm sürer; son 10 sn kırmızı sinyal yanıp söner (🚉 geri sayım); dolunca "Son tren kaçtı", 1 ❤️ gider, yarım oyun silinir, life_lost ölçülür',
-      s0.dl === Math.max(2 * s0.t, s0.t + 60) && /late/.test(late.cls) && !late.over && /last/.test(near.cls) && /🚉/.test(near.next) && near.anim === 'sigBlink' &&
+    check('can.deadline', 'Son süre: yıldız süresi + 20 sn; rötarda bölüm sürer; son 10 sn kırmızı sinyal yanıp söner (🚉 geri sayım); dolunca "Son tren kaçtı", 1 ❤️ gider, yarım oyun silinir, life_lost ölçülür',
+      s0.dl === s0.t + 20 && /late/.test(late.cls) && !late.over && /last/.test(near.cls) && /🚉/.test(near.next) && near.anim === 'sigBlink' &&
       f.over && /Son tren kaçtı/.test(f.modal) && s.lives === 4 && Math.abs(Date.now() - s.lifeT) < 60e3 && !s.runs?.level && JSON.stringify(f.ev) === JSON.stringify([['life_lost', { lvl: level }]]) && !errors.length,
       JSON.stringify({ s0, late, near, over: f.over, modal: f.modal.slice(0, 80), lives: s.lives, run: !!s.runs?.level, ev: f.ev, errors }));
     // tahta kilitli, Tekrar dene yeni oyun açar

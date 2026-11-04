@@ -318,8 +318,8 @@ Bu iki sistemin amacı oyuncuya "bir bölüm daha" dedirtmektir. Yıldız süres
 
 **Son süre ve ❤️ can (3 Kasım):**
 
-- **Son süre** (`lastCall`) = max(2 × yıldız süresi, yıldız süresi + 60 sn). Yıldız süresi (`limits().t`) değişmedi.
-  - Gerekçe: yıldız süresi kusursuzluk hedefidir ve ¾'e sıkılaştı (en az 11 sn); "bitirememe" eşiği ondan çok daha gevşek olmalı. 2 kat, uzun bölümde düşünme payını orantılı büyütür; +60 sn tabanı kısa bölümlerde (11–30 sn hedef) takılan oyuncuya en az bir dakika rötar tanır. Robot ve kusursuz oynayan oyuncu buna hiç yaklaşmaz.
+- **Son süre** (`lastCall`) = yıldız süresi + 20 sn (4 Kasım; önce max(2×, +60 sn): kullanıcı çok gevşek buldu). Yıldız süresi (`limits().t`) değişmedi.
+  - Gerekçe: yıldız süresi kusursuzluk hedefidir ve ¾'e sıkılaştı (en az 11 sn); "bitirememe" eşiği ondan biraz gevşek olmalı: +20 sn rötar, takılan oyuncuya kısa bir pay tanır ama bölümü gergin tutar. Robot ve kusursuz oynayan oyuncu buna hiç yaklaşmaz.
   - Rötardayken son 10 sn: sinyal kırmızı, sakince yanıp söner; şeritte süre yerine "🚉 0:09" yazar ve bir kez "🚉 Son trene 10 sn" bildirimi çıkar. Ayrı gösterge yok.
   - ⏱ +15 güçlendiricisi son süreyi de 15 sn uzatır ve son süreye 10 sn kala da belirir.
   - Son süre dolarsa bölüm **başarısız**: tahta kilitlenir, yarım oyun silinir, "🚉 Son tren kaçtı" penceresi (kalan canlar kalp sırasıyla) · **Tekrar dene** (alt satırda kalan can) · Ana sayfa. 1 ❤️ gider.

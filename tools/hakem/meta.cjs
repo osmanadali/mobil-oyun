@@ -25,7 +25,7 @@ module.exports = async T => {
     await page.click('#bPlay'); await page.waitForTimeout(700);
     const hide = await page.evaluate(() => ['#gPill', '#gTrip', '.parInfo'].map(s => getComputedStyle(document.querySelector(s)).visibility));
     // süre hedefini geçir: zen'de rötar uyarısı ve +15 düğmesi çıkmaz
-    await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.t + 30) * 1000; });
+    await page.evaluate(() => { const G = window.__ray.G; G.ms = (G.lim.t + 8) * 1000; });
     await page.waitForTimeout(600);
     const warn = await page.evaluate(() => document.getElementById('toast').classList.contains('show') ? document.getElementById('toast').textContent : '');
     await shot(page, 'meta-zen-game');
