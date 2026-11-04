@@ -242,7 +242,6 @@ def landmarks(V, F, bvh, tw=0.74, te=0.42):
         ax = np.linalg.svd(C - cen)[2][0]
         ax = ax * np.sign(ax[2])                       # upper-arm axis, pointing up
         r_up = float(np.mean([l["r"] for l in up]))
-        allp = np.array([l["c"] for z, l in arm])
         lows = [l for z, l in arm if z < arm[0][0] + 0.02 * H]
         T = min(lows, key=lambda l: l["lo"][2])["c"].copy()
         T[2] = arm[0][0] - 0.004 * H                   # fingertip: bottom of the lowest hand loop
@@ -499,7 +498,7 @@ def inpaint_hands(img, mask, skin, p, z0, z1, H, horizontal=False):
     """side art: the hand hangs in front of the shorts. Replace hand-skin pixels in the hand's height band
     by the nearest non-skin pixel below in the same column (the shorts' stripes are vertical)."""
     s, k, a, b = p
-    r_top = int(b - s * (z1 - 0.015 * H))
+    r_top = int(b - s * (z1 + (0.04 if horizontal else -0.015) * H))
     r_bot = int(b - s * (z0 - 0.005 * H))
     r_low = int(b - s * (z0 - 0.06 * H))
     img = img.copy()
@@ -620,6 +619,7 @@ def stage_texture(c, o):
     skinlike = lambda q: (q[:, 0] - q[:, 2] > 0.1) & (q[:, 1] > 0.52 * q[:, 0]) & (q[:, 0] > 0.12)
     whitelike = lambda q: (q.min(1) > 0.62) & (q.max(1) - q.min(1) < 0.15)
     hair_ref = None
+    skin_ref = None   # set by the front view, used by the side views (views run front, back, sides)
     fb_col = np.zeros((len(idx), 3))      # best front/back sample per texel (for side_check)
     fb_f = np.zeros(len(idx))
     # side views: the hands are inpainted away in the art, so they must not occlude either
