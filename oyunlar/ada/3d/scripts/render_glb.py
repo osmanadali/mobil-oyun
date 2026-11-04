@@ -294,10 +294,17 @@ def clips(o, root, objs, arm):
         if root.animation_data:
             root.animation_data_clear()
         root.location = base
-        if nm in water:   # swim beside the dock, body centred just under the water line
+        chest = None
+        if nm in water:   # swim beside the dock: chest just under the water line, head above it
             root.location = Vector((2.7, -3.4, 0.0))
-            lo, hi = anim_bbox(arm, objs, f0, f1)
-            root.location.z -= (lo.z + hi.z) / 2 + 0.06
+            pb = arm.pose.bones.get("DEF-spine.003") or arm.pose.bones[0]
+            pts = []
+            for f in range(f0, f1 + 1, max(1, (f1 - f0) // 12)):
+                sc.frame_set(f)
+                pts.append(arm.matrix_world @ pb.head)
+            chest = sum(pts, Vector()) / len(pts)
+            root.location.z -= chest.z + 0.06
+            chest.z = -0.06
         elif nm in lifts:  # in-place jump: sine arc over the airborne frames, feet never below the deck
             a0, a1, hgt = lifts[nm]
             low = {}
@@ -318,6 +325,10 @@ def clips(o, root, objs, arm):
         D = max(0.62 * hgt / math.tan(vh), 0.62 * wid / math.tan(hh), 2.0)
         d = Vector((0.42, -1.0, 0.16)).normalized()
         tgt = Vector((c.x, c.y, min(lo.z, floor) + 0.5 * hgt))
+        if chest is not None:   # swimmers: closer, looking down onto the water
+            d = Vector((0.5, -1.0, 0.6)).normalized()
+            D = 3.4
+            tgt = chest + Vector((0, -0.25, 0.1))
         cam.location = tgt + d * D
         cam.rotation_euler = (tgt - cam.location).to_track_quat("-Z", "Y").to_euler()
         safe = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in nm)
