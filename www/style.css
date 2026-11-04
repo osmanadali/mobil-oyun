@@ -113,7 +113,11 @@ html:lang(en) body.test .hero p::after{content:' · 🧪 TEST: all unlocked'}
 .daily{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto auto;align-items:center;width:100%}
 .daily b{font-size:20px;font-weight:700}
 .daily small{color:var(--mut);font-size:13px}
-.daily .arrow{grid-row:1/4;grid-column:2;width:28px;height:28px;fill:none;stroke:var(--acc);stroke-width:2.4}
+.daily{grid-template-columns:1fr auto auto;column-gap:10px}
+.daily .dstreak{grid-row:1/4;grid-column:2;height:38px;padding:0 12px 0 9px;cursor:pointer;transition:transform .15s}.daily .dstreak:active{transform:scale(.94)}
+.daily .dstreak svg{fill:var(--acc2)}.daily .dstreak b{font-size:17px}
+.chip.life i{font-style:normal;font-size:15px;line-height:1}.chip.life small{font-size:12px;font-weight:600;color:var(--mut);font-variant-numeric:tabular-nums}.chip.life small:empty{display:none}
+.daily .arrow{grid-row:1/4;grid-column:3;width:28px;height:28px;fill:none;stroke:var(--acc);stroke-width:2.4}
 .daily.done b{color:#4fc3a1}
 .prog{display:flex;flex-direction:column;gap:8px;width:100%;color:var(--fg)}
 .prog>b{font-size:19px;font-weight:700;transition:color .3s}
@@ -586,3 +590,5 @@ body.introing .screen *{animation-play-state:paused!important}
 .lifeact{display:contents}
 #bPlay small #hLife{font-size:13px;font-weight:600;letter-spacing:0;font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:reduce){.sd .lw,.sd.new{animation:none}}
+@media (max-width:360px){.daily{column-gap:6px}.daily .dstreak{height:34px;padding:0 9px 0 7px;gap:4px}.daily .dstreak b{font-size:15px}.daily .dstreak svg{width:16px;height:16px}}
+.lifep .lpt{display:block;margin-top:2px;font-size:26px;font-weight:800;color:var(--fg);letter-spacing:.5px}

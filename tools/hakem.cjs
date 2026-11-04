@@ -84,7 +84,8 @@ const modalOpen = page => page.evaluate(() => document.getElementById('modal').c
 
 async function tapTile(page, i) {
   const p = await page.evaluate(i => {
-    const { G, geo } = window.__ray, r = document.getElementById('cv').getBoundingClientRect();
+    const { G, geo, HX } = window.__ray, r = document.getElementById('cv').getBoundingClientRect();
+    if (G.hex) { const [x, y] = HX.xy(G, i, geo); return { x: r.left + x, y: r.top + y }; }   // ⬡ altıgen gün: karo merkezi
     return { x: r.left + geo.ox + (i % G.cols) * geo.s + geo.s / 2, y: r.top + geo.oy + (i / G.cols | 0) * geo.s + geo.s / 2 };
   }, i);
   await page.mouse.click(p.x, p.y);
@@ -98,6 +99,7 @@ async function solve(page, gap = 25, rounds = 40) {
     const taps = await page.evaluate(() => {
       const { G, rot } = window.__ray, out = [], lit = i => !G.seen || G.seen[i], unrot = m => ((m >> 1) | (m << 3)) & 15;
       if (!G || G.won) return out;
+      if (G.hex) return window.__ray.plan();   // ⬡ altıgen gün: 60° dönüş, plan() her karoyu çözüme getirir
       G.cur.forEach((v, i) => {
         if (G.fixed[i] || G.pinned[i] || G.unitOf?.[i] >= 0) return;   // eklenti birimi (makas, tabla…): aşağıda plan()
         const j = G.link?.[i] ?? -1, lo = j >= 0 ? Math.min(i, j) : i, hi = j >= 0 ? Math.max(i, j) : i, tapper = lit(lo) ? lo : hi;

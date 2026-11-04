@@ -90,7 +90,7 @@ function keysOf(toks, where, keys, odd) {
 }
 
 function extract() {
-  const files = ['game.js', 'shop.js', 'ads.js', 'olcum.js', ...fs.readdirSync(path.join(WWW, 'rules')).filter(f => f.endsWith('.js')).sort().map(f => 'rules/' + f)];
+  const files = ['game.js', 'altigen.js', 'shop.js', 'ads.js', 'olcum.js', ...fs.readdirSync(path.join(WWW, 'rules')).filter(f => f.endsWith('.js')).sort().map(f => 'rules/' + f)];
   const keys = new Map(), odd = [];
   for (const f of files) for (const c of calls(fs.readFileSync(path.join(WWW, f), 'utf8'), f)) {
     if (c.args.length < 2) { odd.push(`${f}:${c.line}: tek argüman`); continue; }
