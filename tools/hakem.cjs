@@ -1009,7 +1009,7 @@ async function inViewport(page, sel) {
     let bytes = 0; const walk = d => fs.readdirSync(d).forEach(f => { const p = path.join(d, f); if (p === LANG || p === PRIV) return; fs.statSync(p).isDirectory() ? walk(p) : bytes += fs.statSync(p).size; });
     walk(ROOT); const dict = Math.max(0, ...fs.readdirSync(LANG).map(f => fs.statSync(path.join(LANG, f)).size)), priv = fs.statSync(PRIV).size;
     metrics.webBytes = bytes; metrics.langBytes = dict; metrics.privacyBytes = priv;
-    check('size', 'Web paketi < 660 KB (19 kural eklentisi, mağaza, görev ve meta katmanı dahil); ayrı: en büyük dil sözlüğü < 64 KB, 6 dilli gizlilik sayfası < 64 KB', bytes < 660 * 1024 && dict < 64 * 1024 && priv < 64 * 1024, `${(bytes / 1024).toFixed(0)} KB · sözlük ${(dict / 1024).toFixed(0)} KB · gizlilik ${(priv / 1024).toFixed(0)} KB`, 'low');
+    check('size', 'Web paketi < 680 KB (19 kural eklentisi, altıgen gün, mağaza, görev ve meta katmanı dahil); ayrı: en büyük dil sözlüğü < 64 KB, 6 dilli gizlilik sayfası < 64 KB', bytes < 680 * 1024 && dict < 64 * 1024 && priv < 64 * 1024, `${(bytes / 1024).toFixed(0)} KB · sözlük ${(dict / 1024).toFixed(0)} KB · gizlilik ${(priv / 1024).toFixed(0)} KB`, 'low');
   }
 
   await browser.close(); server.close();
