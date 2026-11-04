@@ -24,7 +24,7 @@ REF = os.path.normpath(os.path.join(ROOT, "..", "referans", "gorunumler"))
 CHARS = {
     # side: which side of the character the "yan" reference view shows
     "kerem": dict(raw="ham/kerem_sekil_hunyuan2.glb", height=1.84, side="left", tris=32000),
-    "deniz": dict(raw="ham/deniz_sekil_hunyuan2.glb", height=1.70, side="right", tris=34000),
+    "deniz": dict(raw="ham/deniz_sekil_hunyuan2.glb", height=1.70, side="right", tris=34000, pony=True),
 }
 TEX = 2048
 
@@ -594,7 +594,27 @@ def stage_texture(c, o):
         h0 = (a_["hand0"] - S) @ dd / (dd @ dd)
         hand |= (t > h0) & (lat < 0.06 * H) & (np.sign(P[:, 0]) == np.sign(S[0]))
         near_arm |= (t > 0.3) & (lat < 0.07 * H) & (np.sign(P[:, 0]) == np.sign(S[0]))
-    log("hand texels", hand.sum(), "neck z %.3f" % LM["neck_z"])
+    # arm texels (shoulder to wrist): from the side art only skin or white (wristband) is believable
+    arm = np.zeros(len(idx), bool)
+    for sd in ("L", "R"):
+        a_ = LM["arm" + sd]
+        segd = np.full(len(idx), 9.0)
+        for p0, p1 in ((a_["S"], a_["E"]), (a_["E"], a_["W"])):
+            dd = p1 - p0
+            t = np.clip((P - p0) @ dd / (dd @ dd), 0, 1)
+            segd = np.minimum(segd, np.linalg.norm(P - (p0 + np.outer(t, dd)), axis=1))
+        arm |= (segd < 1.5 * a_["r"][0]) & (np.sign(P[:, 0]) == np.sign(a_["S"][0])) & ~hand & \
+                (P[:, 2] < a_["S"][2] - 0.5 * a_["r"][0])
+    # ponytail: well behind the neck; only hair-coloured samples (the art's ponytail is shaped differently)
+    pony = np.zeros(len(idx), bool)
+    if c.get("pony"):
+        nk = torso_loop(LM["sec"], LM["neck_z"])
+        pony = (P[:, 1] > nk["hi"][1] + 0.065 * H) & (P[:, 2] > LM["neck_z"] - 0.1 * H)
+    log("hand texels", hand.sum(), "arm texels", arm.sum(), "ponytail texels", pony.sum(),
+        "neck z %.3f" % LM["neck_z"])
+    skinlike = lambda q: (q[:, 0] - q[:, 2] > 0.1) & (q[:, 1] > 0.52 * q[:, 0]) & (q[:, 0] > 0.12)
+    whitelike = lambda q: (q.min(1) > 0.62) & (q.max(1) - q.min(1) < 0.15)
+    hair_ref = None
     # side views: the hands are inpainted away in the art, so they must not occlude either
     vh = np.zeros(len(V), bool)
     for sd in ("L", "R"):
@@ -648,15 +668,20 @@ def stage_texture(c, o):
         vis = np.fromiter((rc(Vector(p), dv, 10.0)[0] is None for p in org.tolist()), bool, len(cand))
         cand, px, py = cand[vis], px[vis], py[vis]
         col = bilinear(img, px, py)
+        rej = np.zeros(len(cand), bool)
         if vname == "front":
             skin_ref = np.median(col[hand[cand]], axis=0)
-        elif vname in ("left", "right"):
+        elif vname == "back" and pony.any():
+            hair_ref = np.median(col[pony[cand]], axis=0)
+        if vname in ("left", "right"):
             # the side art's hands hang in front of the shorts: never paint them onto non-hand texels
             hz0, hz1 = P[hand, 2].min() - 0.02 * H, P[hand, 2].max() + 0.01 * H
             zz = P[cand, 2]
-            rej = (zz > hz0) & (zz < hz1) & (np.abs(N[cand, 0]) > 0.5) & ~near_arm[cand] & \
-                  (np.linalg.norm(col - skin_ref, axis=1) < 0.14)
-            cand, col = cand[~rej], col[~rej]
+            rej |= (zz > hz0) & (zz < hz1) & (np.abs(N[cand, 0]) > 0.5) & ~near_arm[cand] & skinlike(col)
+            rej |= arm[cand] & ~(skinlike(col) | whitelike(col))
+        if hair_ref is not None:
+            rej |= pony[cand] & (np.linalg.norm(col - hair_ref, axis=1) > 0.2)
+        cand, col = cand[~rej], col[~rej]
         w = gain * np.where(hand[cand], 0.1 * f[cand] ** 2, f[cand] ** 6)
         acc[cand] += col * w[:, None]
         wsum[cand] += w
