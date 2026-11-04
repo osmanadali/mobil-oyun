@@ -118,3 +118,11 @@ palm trees, mossy rocks, distant green islands, warm soft sky with a few clouds.
 Clean stylized look matching a modern stylized hero game, soft lighting, readable shapes,
 no characters, no UI, no text.
 ```
+
+## Claude Code Game Studios (kurulu)
+
+Bu klasöre [Claude Code Game Studios](https://github.com/Donchitos/Claude-Code-Game-Studios) v1.2.0 (MIT, lisans: `.claude/LICENSE-CCGS`) kuruldu: 49 ajan, 74 beceri, kurallar, şablonlar ve doğrulama kancaları. Motor Unity 6 olarak ayarlandı (`CLAUDE.md`).
+
+- Tam kullanım için Claude Code'u **bu klasörde** başlatın: `cd oyunlar/ada && claude`, sonra `/start` ve `/setup-engine unity`. Kancalar, ajanlar ve izin kuralları yalnız Claude Code bu klasörde başlatılınca yüklenir.
+- Repo kökünden açılan oturumlarda (ör. bulut oturumu) yalnız beceriler `oyunlar/ada:` önekiyle görünür; kancalar ve ajanlar çalışmaz.
+- Şablonun kendi rehberi: `docs/CCGS-README.md`, sürüm yükseltme: `docs/CCGS-UPGRADING.md`.
