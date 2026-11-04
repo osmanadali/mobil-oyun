@@ -13,6 +13,7 @@ namespace Ada.InputLayer
     /// Editörde fare TouchSimulation ile çalışır. UI üzerinde başlayan dokunuşlar oyuna geçmez.
     /// Duraklatmadan dönüşte ClearAll() çağrılır; o anda basılı parmaklar bırakılana kadar yok sayılır.
     /// </summary>
+    [DefaultExecutionOrder(-500)] // PlayerMotor'dan önce: iniş karesindeki komut her zaman tampon yolundan geçer
     public sealed class TouchInput : MonoBehaviour
     {
         public event Action<Vector2> Tapped;
@@ -42,16 +43,26 @@ namespace Ada.InputLayer
 
         static float DpToPx(float dp) => dp * ((Screen.dpi > 1f ? Screen.dpi : 160f) / 160f);
 
+        public bool IsHolding => holding;
+
         void OnEnable()
         {
             EnhancedTouchSupport.Enable();
 #if UNITY_EDITOR
             TouchSimulation.Enable();
 #endif
+            Ada.Core.GameClock.PauseChanged += OnPauseChanged;
+        }
+
+        // Her duraklatmada açık dokunuş ve basılı tutma kapanır (parmak duraklatmada kalkarsa Ended kaçmasın).
+        void OnPauseChanged(bool paused)
+        {
+            if (paused) ClearAll();
         }
 
         void OnDisable()
         {
+            Ada.Core.GameClock.PauseChanged -= OnPauseChanged;
             ClearAll();
 #if UNITY_EDITOR
             TouchSimulation.Disable();
@@ -82,6 +93,20 @@ namespace Ada.InputLayer
                 return;
             }
             if (Ada.Core.GameClock.IsPaused) return;
+
+            // Güvence: izlenen parmak artık yoksa (Ended karesi kaçtıysa) durumu kapat.
+            if (fingerId != -1)
+            {
+                bool found = false;
+                for (int i = 0; i < touches.Count; i++)
+                    if (touches[i].touchId == fingerId) { found = true; break; }
+                if (!found)
+                {
+                    if (holding) { holding = false; HoldEnded?.Invoke(); }
+                    fingerId = -1;
+                    TouchEnded?.Invoke(startPos);
+                }
+            }
 
             for (int i = 0; i < touches.Count; i++)
             {

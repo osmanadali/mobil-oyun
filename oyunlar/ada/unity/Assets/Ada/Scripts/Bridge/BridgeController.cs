@@ -51,10 +51,12 @@ namespace Ada.Bridge
 
         int[] solid;
         int currentRow = -1;     // üzerinde durulan doğru sıra; -1 = iskele
+        int targetRow = -1;      // havadayken inilmekte olan sıra
         int checkpointRow = -1;
         bool playing, busy;
         int bufferedLane = -1;
         float bufferedAt;
+        Coroutine bufferedJump;
 
         public int RowCount => rows.Length;
         public bool IsPlaying => playing;
@@ -64,6 +66,7 @@ namespace Ada.Bridge
             input.Tapped += OnTap;
             input.Swiped += OnSwipe;
             motor.Landed += OnLanded;
+            GameClock.PauseChanged += OnPauseChanged;
         }
 
         void OnDisable()
@@ -71,6 +74,15 @@ namespace Ada.Bridge
             input.Tapped -= OnTap;
             input.Swiped -= OnSwipe;
             motor.Landed -= OnLanded;
+            GameClock.PauseChanged -= OnPauseChanged;
+        }
+
+        // Duraklatmada tamponlanmış komut atılır: dönüşte oyuncunun unuttuğu bir komutla zıplanmaz.
+        void OnPauseChanged(bool paused)
+        {
+            if (!paused) return;
+            bufferedLane = -1;
+            if (bufferedJump != null) { StopCoroutine(bufferedJump); bufferedJump = null; }
         }
 
         public void Begin()
@@ -125,7 +137,9 @@ namespace Ada.Bridge
         void OnTap(Vector2 screen)
         {
             if (!playing) return;
-            int next = currentRow + 1;
+            // Havadayken taban satır, inilmekte olan satırdır (tampon için bir sonraki sıraya dokunulabilir).
+            int baseRow = motor.State == MotorState.Jumping ? targetRow : currentRow;
+            int next = baseRow + 1;
             if (next >= rows.Length) return;
             Ray ray = cam.ScreenPointToRay(screen);
             if (!Physics.Raycast(ray, out RaycastHit hit, 200f, platformMask, QueryTriggerInteraction.Ignore)) return;
@@ -163,12 +177,14 @@ namespace Ada.Bridge
             bufferedLane = -1;
             if (Time.time - bufferedAt > inputBufferSeconds) return; // havada çok erken verilen komut atılır
             // Motor, Landed olayını varış geri çağrısından ÖNCE yayar. Kararın verilmesi için bir kare bekle.
-            StartCoroutine(JumpNextFrame(lane));
+            if (bufferedJump != null) StopCoroutine(bufferedJump);
+            bufferedJump = StartCoroutine(JumpNextFrame(lane));
         }
 
         IEnumerator JumpNextFrame(int lane)
         {
             yield return null;
+            bufferedJump = null;
             if (playing && !busy && motor.IsGrounded) JumpTo(lane);
         }
 
@@ -178,7 +194,7 @@ namespace Ada.Bridge
             if (next >= rows.Length) return;
             if (currentRow == -1 && !timer.IsRunning) timer.StartTimer();
             var plat = rows[next].platforms[lane];
-            motor.TryJump(plat.LandingPoint, () => OnArrived(next, lane));
+            if (motor.TryJump(plat.LandingPoint, () => OnArrived(next, lane))) targetRow = next;
         }
 
         void OnArrived(int row, int lane)

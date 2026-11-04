@@ -27,9 +27,10 @@ namespace Ada.Core
 
         void Awake()
         {
-            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+            // Tek sahneli akış: kalıcı (DontDestroyOnLoad) değil. Kopya varsa yalnız bu bileşen silinir,
+            // aynı nesnedeki RaceTimer / TouchInput / ResumeCountdown etkilenmez.
+            if (Instance != null && Instance != this) { Destroy(this); return; }
             Instance = this;
-            DontDestroyOnLoad(gameObject);
             Apply();
         }
 

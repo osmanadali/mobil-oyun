@@ -13,17 +13,10 @@ namespace Ada.Player
     /// </summary>
     public sealed class PlayerMotor : MonoBehaviour
     {
-        [Header("Zıplama (iki karakter için ortak)")]
-        [SerializeField] float jumpDuration = 0.42f;
-        [SerializeField] float jumpApexHeight = 0.9f;
+        [Tooltip("İki karakterin de bağlandığı ortak ayar varlığı (Ada/Motor Tuning).")]
+        [SerializeField] MotorTuning tuning;
 
-        [Header("Yer hareketi")]
-        [SerializeField] float runSpeed = 4.2f;
-        [SerializeField] float sprintSpeed = 6.5f;
-        [SerializeField] float turnSpeedDeg = 720f;
-
-        [Header("Düşüş ve su")]
-        [SerializeField] float gravity = 22f;
+        [Header("Su (sahne/karakter)")]
         [SerializeField] float waterSurfaceY = 0f;
         [Tooltip("Yüzerken kökün (ayak tabanı) su yüzeyinin ne kadar altında durduğu.")]
         [SerializeField] float swimRootOffset = -1.0f;
@@ -32,6 +25,13 @@ namespace Ada.Player
         public bool IsGrounded => State == MotorState.Grounded;
         public bool InWater => State == MotorState.Swimming || State == MotorState.Diving;
         public bool IsDiving => State == MotorState.Diving;
+        float jumpDuration => tuning.jumpDuration;
+        float jumpApexHeight => tuning.jumpApexHeight;
+        float runSpeed => tuning.runSpeed;
+        float sprintSpeed => tuning.sprintSpeed;
+        float turnSpeedDeg => tuning.turnSpeedDeg;
+        float gravity => tuning.gravity;
+
         public float RunSpeed => runSpeed;
         public float SprintSpeed => sprintSpeed;
         public float SwimRootY => waterSurfaceY + swimRootOffset;
@@ -56,7 +56,15 @@ namespace Ada.Player
         float runSpeedNow;
         Action onRunArrive;
 
-        void Awake() => prevPos = transform.position;
+        void Awake()
+        {
+            prevPos = transform.position;
+            if (tuning == null)
+            {
+                Debug.LogError("PlayerMotor: MotorTuning atanmadı; varsayılan değerler kullanılıyor.", this);
+                tuning = ScriptableObject.CreateInstance<MotorTuning>();
+            }
+        }
 
         /// <summary>
         /// Hedef kalkışta kesinleşir; havada değiştirilemez. intoWater: varışta suya girer (Landed yerine EnteredWater).

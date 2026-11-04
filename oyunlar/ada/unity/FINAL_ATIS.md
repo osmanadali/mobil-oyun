@@ -50,12 +50,15 @@ Yörüngenin gösterilmesi otomatik isabet anlamına gelmez: topun uçuşuna hi�
   - Aynı başlangıç konumu (`ThrowOrigin`), hız ve ayarlar. Rüzgâr atış anında dondurulur.
 - **Doğrulama:** `Ball`, geliştirme yapısında her `FixedUpdate`'te konumunu önizleme noktasıyla karşılaştırır. İlk temasta en büyük sapma loglanır (`[Atış] önizleme sapması`). Kabul eşiği < 2 cm.
   - Fixed Timestep 0,02 sn (varsayılan) ya da 0,0167 sn olabilir; önizleme hangisi kullanılıyorsa onu kullanır.
+- **Atılan yay = son çizilen yay:** Parmak kalkarken birkaç dp kayma olur. Bu yüzden gerçek hız bitiş konumundan yeniden hesaplanmaz; ekranda son çizilen yayın hızı fırlatılır.
+- **Art arda atış:** Throw animasyonu bitene kadar (`ThrowStateGuard` giriş/çıkış) yeni atış başlamaz. Çıkışta yalnız o animasyona ait atış (bırakılmadıysa) iptal edilir.
 - **Bırakma:** Topun tam el açılma anında çıkması için:
   1. Throw klibinin bırakma karesine `ThrowRelease` olayı konur.
   2. Klip o karede durdurulur; `ThrowOrigin` elin dünya konumuna taşınır.
   3. Kerem ve Deniz için ayrı ayrı yapılır.
 - **Kerem ve Deniz:**
-  - Boy farkı korunur; çıkış noktaları kendi ellerinde.
+  - Boy farkı korunur; çıkış noktaları kendi ellerinde (el bırakma karesine hizalı).
+  - Adalet tanımı: aynı sürükleme iki karakterde birebir aynı noktaya düşmek zorunda değil. Çıkış yüksekliği farklıdır ve yay bunu tam gösterir. Adalet, iki karakterin de aynı güç aralığıyla her hedefe rahatça ulaşabilmesidir; oyuncu yaya bakarak nişan alır.
   - Güç aralığı (8–14 m/sn) ve eğim (24°) iki karakterde aynıdır.
   - Kabul testi: iki karakterle de üç hedef minimum ve maksimum güç arasında vurulabilmeli.
   - Gerekirse stand mesafesi değil, güç aralığı ayarlanır (iki karakter için aynı değer).

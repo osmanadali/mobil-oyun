@@ -39,11 +39,11 @@ namespace Ada.Flow
             timer.ResetTimer();
 
             // 1) Köprü
-            cameraRig.SetProfile(CamProfileId.Bridge, instant: true);
             bool bridgeDone = false;
             void OnBridge() => bridgeDone = true;
             bridge.Finished += OnBridge;
-            bridge.Begin();
+            bridge.Begin();                                             // önce oyuncu başlangıca yerleşir
+            cameraRig.SetProfile(CamProfileId.Bridge, instant: true);   // sonra kamera anında kadraja
             while (!bridgeDone) yield return null;
             bridge.Finished -= OnBridge;
 

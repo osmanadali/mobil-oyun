@@ -3,17 +3,30 @@ using UnityEngine;
 namespace Ada.Throw
 {
     /// <summary>
-    /// Animator'daki Throw durumuna eklenir. Bırakma karesinden önce durumdan çıkılırsa (kesinti, geçiş)
-    /// bekleyen atışı temizler; atış durumu kilitlenmez. Normal akışta (top bırakıldıysa) etkisizdir.
+    /// Animator'daki Throw durumuna eklenir.
+    /// - Girişte: controller bu atışı "animasyonda" olarak işaretler; Throw durumundan çıkılana kadar yeni atış başlamaz.
+    /// - Çıkışta: yalnız KENDİ atışı bırakılmadıysa (kesinti, geçiş) iptal edilir; sonraki bir atışa dokunmaz.
     /// </summary>
     public sealed class ThrowStateGuard : StateMachineBehaviour
     {
         ThrowController controller;
 
-        public override void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        ThrowController Get(Animator animator)
         {
             if (controller == null) controller = animator.GetComponentInParent<ThrowController>();
-            if (controller != null) controller.CancelPending();
+            return controller;
+        }
+
+        public override void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        {
+            var c = Get(animator);
+            if (c != null) c.OnThrowStateEnter();
+        }
+
+        public override void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+        {
+            var c = Get(animator);
+            if (c != null) c.OnThrowStateExit();
         }
     }
 }

@@ -431,7 +431,7 @@ const hintRings = [0, 1, 2].map(() => {
 // ---------- hedefler ----------
 const tGroup = new THREE.Group(); scene.add(tGroup);
 let targets = [];
-const TSLOTS = [[-3.6, -25.5], [0.7, -26.5], [4.1, -29.5], [-1.6, -30.5], [-5.4, -33.5], [1.8, -34.5], [-0.3, -37.5]];
+const TSLOTS = [[-3.3, -6.5], [0.9, -7.5], [4.0, -10], [-1.5, -11], [-4.6, -13.5], [2.2, -14.5], [-0.2, -17]];
 const faceTex = canvasTex(256, 256, x => {
   const cols = [C.coral, '#ffffff', C.coral, '#ffffff', C.coral];
   for (let i = 0; i < 5; i++) { x.fillStyle = cols[i]; x.beginPath(); x.arc(128, 128, 126 - i * 25, 0, Math.PI * 2); x.fill(); x.strokeStyle = 'rgba(43,53,80,.25)'; x.lineWidth = 3; x.stroke(); }
@@ -587,6 +587,14 @@ const STAND_Z = -8.5, FINAL_SPOT = new V3(-0.45, TOP, 1.0);
 const stoneM = new THREE.MeshStandardMaterial({ color: '#c9b48f', roughness: 0.95 }), mossM = new THREE.MeshStandardMaterial({ color: '#7eae4c', roughness: 0.95 });
 const plankM = new THREE.MeshStandardMaterial({ color: '#b07a45', roughness: 0.85 }), ropeM = new THREE.MeshStandardMaterial({ color: '#dcc48e', roughness: 0.95 });
 const metalM = new THREE.MeshStandardMaterial({ color: '#5c636e', roughness: 0.45, metalness: 0.5 });
+const pennant = new THREE.Group(), pennantFlag = new THREE.Group();
+{
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.035, 1.9, 8), metalM); pole.position.y = 0.95; pole.castShadow = true;
+  const tri = new THREE.BufferGeometry(); tri.setAttribute('position', new THREE.Float32BufferAttribute([0, 0.16, 0, 0, -0.16, 0, 0.75, 0, 0], 3)); tri.computeVertexNormals();
+  const cloth = new THREE.Mesh(tri, new THREE.MeshStandardMaterial({ color: C.coral, side: THREE.DoubleSide, roughness: 0.7 })); cloth.castShadow = true;
+  pennantFlag.position.y = 1.72; pennantFlag.add(cloth); pennant.add(pole, pennantFlag);
+  pennant.position.set(0.95, TOP, 0.2); pennant.visible = false; scene.add(pennant);
+}
 const heldBall = new THREE.Mesh(new THREE.SphereGeometry(BALL_R, 14, 10), ball.material); heldBall.visible = false;
 function buildStand() {
   standGroup.clear(); blockers = [];
@@ -625,8 +633,8 @@ function updateCamera(dt) {
     case 'follow': tp.set(h.x * 0.18, Math.max(h.y, TOP) + 4.6, h.z + 6.2); tl.set(h.x * 0.35, 0.2, h.z - 6.5); k = 3.6; break;
     case 'targets': tp.set(h.x + 0.4, 6.4, h.z + 6); tl.set(-0.4, 0.4, h.z - 11); k = 2.4; break;
     case 'throw': tp.set(h.x + 0.5, 3.8, h.z + 4.8); tl.set(-0.3, 0.9, h.z - 12); k = 3; break;
-    case 'final': tp.set(h.x + 0.45, h.y + 2.85, h.z + 2.6); tl.set(h.x + 0.2, 0, h.z - 4.4); k = 3; break;
-    case 'victory': cam.vang += dt * 0.22; tp.set(h.x + Math.sin(cam.vang) * 5, h.y + 2.1, h.z - Math.cos(cam.vang) * 5); tl.set(h.x, h.y + 0.15, h.z); k = 2.2; break;
+    case 'final': tp.set(h.x + 0.65, h.y + 2.8, h.z + 3.0); tl.set(h.x + 0.4, 0, h.z - 4.2); k = 3; break;
+    case 'victory': cam.vang += dt * 0.22; tp.set(h.x + Math.sin(cam.vang) * 6.8, h.y + 2.2, h.z - Math.cos(cam.vang) * 6.8); tl.set(h.x, h.y - 2.4, h.z); k = 2.2; break;
   }
   if (cam.snap) { cam.pos.copy(tp); cam.look.copy(tl); cam.snap = false; }
   const a = 1 - Math.exp(-k * dt); cam.pos.lerp(tp, a); cam.look.lerp(tl, a);
@@ -649,7 +657,7 @@ function resetWorld(rows) {
   for (const n of finishNodes) { n.position.z = -ROWD * (rows - 5); n.visible = true; }
   if (flag) { flag.scale.set(1, 1, 1); flag.position.x = 0; }
   crack.visible = false; clearTargets(); B.on = false; ball.visible = false; heldBall.visible = false; hideAim(false);
-  trailPts.length = 0; trail.visible = false; flash.visible = false; G.freeze = 0;
+  trailPts.length = 0; trail.visible = false; flash.visible = false; G.freeze = 0; pennant.visible = false;
   for (const m of ripples) m.visible = false; for (const m of hintRings) m.visible = false;
   hero.flip = false;
 }
@@ -764,16 +772,18 @@ async function fall(p) {
 async function startTargets(L, rng) {
   resetWorld(5); G.type = 'hedef';
   G.wind = L.wind ? Math.round((rng() < 0.5 ? -1 : 1) * L.wind * (0.85 + rng() * 0.3) * 10) / 10 : 0;
-  buildTargets(L.targets, rng);
+  for (const row of plats) for (const p of row) p.g.visible = false;
+  for (const n of finishNodes) if (/^Bitis/.test(n.name)) n.visible = false;
+  buildTargets(L.targets, rng); pennant.visible = true;
   const idx = targets.map(t => t.i);
   for (let i = idx.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [idx[i], idx[j]] = [idx[j], idx[i]]; }
   G.seq = idx.slice(0, L.seq);
-  placeHero(new V3(-0.8, TOP, -20.0), 0); cam.mode = 'targets'; cam.snap = true;
+  placeHero(FINAL_SPOT.clone(), 0); cam.mode = 'targets'; cam.snap = true;
   ui.hud({ left: L.seq, unit: 'hedef', wind: G.wind });
   G.phase = 'memorize';
   await wait(0.5);
   await showSeq(0, L.show, 'EZBERLE');
-  G.phase = 'aim'; cam.mode = 'throw';
+  G.phase = 'aim'; cam.mode = 'final'; if (hero.P) heldBall.visible = true;
   ui.banner('GİT!', null, 750); audio.sfx('go'); ui.lantern(true);
   ui.hint('Aşağıdan yukarı kaydır, nişan al ve bırak');
 }
@@ -883,7 +893,7 @@ async function lantern() {
   const prev = G.phase; G.phase = 'replay'; ui.lantern(false); ui.hint('');
   addPenalty(6, 'lantern', 'lantern'); audio.sfx('lantern');
   if (G.type === 'kopru') { cam.mode = 'overview'; await wait(0.45); await memorizeRows(G.row + 1, Math.max(0.42, G.level.glow * 0.85), 'FENER'); cam.mode = 'follow'; ui.hint('Sıradaki taşa dokun ya da yukarı kaydır'); }
-  else { cam.mode = 'targets'; await wait(0.35); await showSeq(G.next, G.level.show * 0.9, 'FENER'); cam.mode = 'throw'; ui.hint('Aşağıdan yukarı kaydır, nişan al ve bırak'); }
+  else { cam.mode = 'targets'; await wait(0.35); await showSeq(G.next, G.level.show * 0.9, 'FENER'); cam.mode = 'final'; ui.hint('Aşağıdan yukarı kaydır, nişan al ve bırak'); }
   G.phase = prev; ui.lantern(true);
 }
 async function finishRun() {
@@ -997,6 +1007,12 @@ function frame(now) {
     if (nr >= G.rows && c === 1) p = { ...finishSpot(), broken: false, z: finishSpot().z };
     m.visible = !!(showH && p && !p.broken);
     if (m.visible) { const w = Math.sin(wt * 5 + c * 0.7); m.position.set(p.x, TOP + 0.03, p.z); m.material.opacity = 0.35 + 0.25 * w; m.scale.setScalar(1 + 0.05 * w); }
+  }
+  // rüzgâr flaması: rüzgâr yönünü gösterir, şiddetle çırpınır
+  if (pennant.visible) {
+    const w = G.wind, aw = Math.min(Math.abs(w), 2.5);
+    pennantFlag.rotation.set(0, (w < 0 ? Math.PI : 0) + Math.sin(wt * (5 + aw * 3)) * (0.12 + aw * 0.06), w === 0 ? -1.35 : -0.5 + aw * 0.2);
+    pennantFlag.scale.x = 0.92 + Math.sin(wt * (7 + aw * 3)) * 0.06;
   }
   // rüzgâr bayrağı
   if (flag) { const w = G.type === 'hedef' ? G.wind : 0.6, dir = w < 0 ? -1 : 1, sx = dir * (0.9 + Math.sin(wt * (4 + Math.abs(w) * 2.5)) * (0.04 + Math.abs(w) * 0.02)); flag.scale.x = sx; flag.position.x = 0.06 * (1 - sx); }

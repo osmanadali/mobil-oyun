@@ -1,0 +1,12 @@
+Universal Animation Library (Standard) and Universal Animation Library 2 (Standard)
+by Quaternius - https://quaternius.com
+
+License: CC0 1.0 Universal (Public Domain Dedication)
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Files in this folder (unchanged copies of the original downloads):
+  AnimationLibrary_Godot_Standard.glb   UAL 1, Godot version (mannequin + 46 actions, bone names DEF-*)
+  UAL2_Standard.glb                      UAL 2, Unreal/Godot version (43 actions, Unreal bone names;
+                                         scripts/rig_character.py maps them onto the UAL 1 skeleton)
+
+Credit (not required by CC0, but appreciated): animations by Quaternius (quaternius.com).

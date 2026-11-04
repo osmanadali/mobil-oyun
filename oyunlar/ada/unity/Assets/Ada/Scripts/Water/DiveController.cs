@@ -18,7 +18,11 @@ namespace Ada.Water
         [SerializeField] RaceTimer timer;
         [SerializeField] Transform exitPoint;     // sudan çıkış (forward = çıkış yönü)
         [SerializeField] Transform token;
-        [SerializeField] float bottomRootY = -2.4f;
+        [Tooltip("Havuz zemini katmanı. Doluysa Begin'de zemine ışın atılır ve dip sınırı zemin + pay olur.")]
+        [SerializeField] LayerMask floorMask;
+        [SerializeField] float floorClearance = 0.08f;
+        [Tooltip("Zemin bulunamazsa kullanılan dip sınırı (kök/ayak Y'si). Sığ havuz: yüzey − 1,4.")]
+        [SerializeField] float bottomRootY = -1.4f;
         [SerializeField] float forwardSpeed = 2.2f;
         [SerializeField] float diveSpeed = 1.8f;
         [SerializeField] float riseSpeed = 2.4f;
@@ -54,8 +58,11 @@ namespace Ada.Water
             active = true;
             hasToken = false;
             forcedUp = false;
-            holding = false;
+            holding = input.IsHolding;   // suya girerken zaten basılı tutuyorsa hemen dalar
             breath.Refill();
+            if (floorMask.value != 0 &&
+                Physics.Raycast(motor.transform.position + Vector3.up * 2f, Vector3.down, out RaycastHit hit, 30f, floorMask, QueryTriggerInteraction.Ignore))
+                bottomRootY = hit.point.y + floorClearance;
             if (token) token.gameObject.SetActive(true);
         }
 
@@ -64,7 +71,7 @@ namespace Ada.Water
         void OnHoldEnd()
         {
             holding = false;
-            forcedUp = false;
+            if (!breath.Submerged) forcedUp = false;   // zorla yükselme yalnız yüzeye çıkınca biter
         }
 
         void OnDepleted()
@@ -80,7 +87,7 @@ namespace Ada.Water
             Vector3 pos = motor.transform.position;
             Vector3 toExit = exitPoint.position - pos;
             toExit.y = 0f;
-            bool wantDown = holding && !forcedUp;
+            bool wantDown = holding && !forcedUp && breath.Current > 0f;
             Vector3 v = toExit.sqrMagnitude > 1e-4f ? toExit.normalized * forwardSpeed : Vector3.zero;
             v.y = wantDown ? -diveSpeed : riseSpeed;
             motor.SwimMove(v, bottomRootY);
@@ -88,6 +95,7 @@ namespace Ada.Water
             bool under = motor.transform.position.y < motor.SwimRootY - 0.2f;
             motor.SetDiving(under);
             breath.SetSubmerged(under);
+            if (forcedUp && !under && !holding) forcedUp = false;
 
             if (!hasToken && token && Vector3.Distance(motor.transform.position + Vector3.up * 0.9f, token.position) < tokenRadius)
             {

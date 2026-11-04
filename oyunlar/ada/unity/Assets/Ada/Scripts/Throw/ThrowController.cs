@@ -62,9 +62,9 @@ namespace Ada.Throw
         public event Action AimStarted;
         public event Action AimCanceled;
 
-        bool aimEnabled, touchActive, validAim, released;
-        int throwId, pendingId = -1;
-        Vector3 pendingVelocity;
+        bool aimEnabled, touchActive, validAim, released, throwStateActive;
+        int throwId, pendingId = -1, animThrowId = -1;
+        Vector3 pendingVelocity, lastPreviewVelocity;
         BallisticsSettings pendingSettings;
         float throwStartedAt;
         Ball heldBall;
@@ -74,7 +74,8 @@ namespace Ada.Throw
         Coroutine nextBallRoutine;
 
         public bool IsAiming => touchActive;
-        public bool IsBusy => pendingId >= 0;
+        /// <summary>Bekleyen atış var ya da Throw animasyonu henüz bitmedi: yeni atış başlamaz.</summary>
+        public bool IsBusy => pendingId >= 0 || throwStateActive;
         public int BallsInFlight => active.Count;
         /// <summary>Reklam yalnız nişan ve uçuş yokken açılabilir.</summary>
         public bool IsSafeForAds => !touchActive && !IsBusy && active.Count == 0;
@@ -141,6 +142,8 @@ namespace Ada.Throw
         {
             CancelAim();
             CancelPending();
+            throwStateActive = false;
+            animThrowId = -1;
             if (nextBallRoutine != null) { StopCoroutine(nextBallRoutine); nextBallRoutine = null; }
             for (int i = active.Count - 1; i >= 0; i--) pool.Release(active[i]);
             active.Clear();
@@ -176,18 +179,26 @@ namespace Ada.Throw
             TargetBoard tb = didHit ? hit.collider.GetComponentInParent<TargetBoard>() : null;
             bool onTarget = tb != null && !tb.IsDown;
             arc.Show(buffer, n, onTarget, onTarget ? hit.point : Vector3.zero, onTarget ? hit.normal : Vector3.up);
+            lastPreviewVelocity = v0;
         }
 
         void OnDragEnd(Vector2 start, Vector2 end, float seconds)
         {
             if (!touchActive) return;
             touchActive = false;
-            if (!ComputeLaunch(start, end, out Vector3 v0))
+            Vector3 v0;
+            if (validAim)
+            {
+                // Ekranda SON ÇİZİLEN yay atılır: parmak kalkarken birkaç dp kayması sonucu değiştirmez.
+                v0 = lastPreviewVelocity;
+            }
+            else if (!ComputeLaunch(start, end, out v0))
             {
                 arc.Hide();
                 AimCanceled?.Invoke();
                 return;
             }
+            validAim = false;
             pendingId = ++throwId;
             released = false;
             pendingVelocity = v0;
@@ -264,13 +275,31 @@ namespace Ada.Throw
         {
             yield return new WaitForSeconds(nextBallDelay);
             nextBallRoutine = null;
-            if (aimEnabled && !IsBusy) EnsureHeldBall();
+            if (aimEnabled && pendingId < 0) EnsureHeldBall();
         }
 
-        /// <summary>Bırakmadan önce Throw durumundan çıkıldığında (ThrowStateGuard) ya da zaman aşımında.</summary>
-        public void CancelPending()
+        /// <summary>ThrowStateGuard.OnStateEnter: bu atış animasyonda; zaman aşımı buradan sayılır.</summary>
+        public void OnThrowStateEnter()
+        {
+            throwStateActive = true;
+            animThrowId = pendingId;
+            throwStartedAt = Time.time;
+        }
+
+        /// <summary>ThrowStateGuard.OnStateExit: yalnız kendi atışı bırakılmadıysa iptal edilir.</summary>
+        public void OnThrowStateExit()
+        {
+            throwStateActive = false;
+            if (animThrowId >= 0) CancelPending(animThrowId);
+            animThrowId = -1;
+            if (aimEnabled && pendingId < 0) EnsureHeldBall();
+        }
+
+        /// <summary>Bekleyen atışı iptal eder. id verilirse yalnız o atış iptal edilir.</summary>
+        public void CancelPending(int id = -1)
         {
             if (pendingId < 0 || released) return;
+            if (id >= 0 && id != pendingId) return;
             pendingId = -1;
             anim.ClearThrow();
             if (arc) arc.Hide();
@@ -279,7 +308,12 @@ namespace Ada.Throw
 
         void Update()
         {
-            if (pendingId >= 0 && !released && Time.time - throwStartedAt > releaseTimeout) CancelPending();
+            if (pendingId >= 0 && !released && Time.time - throwStartedAt > releaseTimeout)
+            {
+                CancelPending();
+                throwStateActive = false;   // animasyon hiç girmediyse ya da takıldıysa kilit kalmasın
+                animThrowId = -1;
+            }
         }
 
         // ---------------------------------------------------------------- top olayları

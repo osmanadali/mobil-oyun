@@ -62,6 +62,12 @@ namespace Ada.CameraSystem
         void Awake()
         {
             basePos = transform.position;
+            // Dekoratif tam ekran örtü dokunuşları yutmasın (TouchInput UI elemesi).
+            if (underwaterTint)
+            {
+                underwaterTint.blocksRaycasts = false;
+                underwaterTint.interactable = false;
+            }
             fogDefault = RenderSettings.fog;
             fogColorDefault = RenderSettings.fogColor;
             fogDensityDefault = RenderSettings.fogDensity;

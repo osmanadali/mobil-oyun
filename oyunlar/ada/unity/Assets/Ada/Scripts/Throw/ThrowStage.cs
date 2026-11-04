@@ -94,8 +94,8 @@ namespace Ada.Throw
             while (!IsComplete) yield return null;
 
             yield return new WaitForSeconds(victoryDelay);
+            anim.PlayVictory();     // önce zafer: Aim/Recover → Victory geçişi Aiming=false'tan önceliklidir
             thrower.EndAiming();
-            anim.PlayVictory();
             yield return new WaitForSeconds(resultDelay);
             running = false;
             Completed?.Invoke();

@@ -18,7 +18,7 @@ Kod: `Assets/Ada/Scripts/` (Unity projesindeki `Assets/` altına aynen kopyalan�
 | 6 | Su altındaki karakter görünmez | v1 su yarı saydam: sığda daha saydam. Dalış alanı sığ (≤1,5 m) ve açık renkli zeminli. Dalış kamerası yüzeyin altına inince sis, turkuaz örtü ve suyun alt yüz rengi devreye girer (bkz. §5). |
 | 7 | Depth/Opaque Texture gereksiz açılıp GPU maliyeti getirir | v1 suda Scene Depth ve Scene Color kullanılmaz. Derinlik ve köpük maskesi vertex renginden gelir, iki doku da kapalı kalabilir. |
 | 8 | Yapay zekâ ile üretilmiş mesh: dağınık topoloji, omuz ve dirsek deformasyonu | Önce ölç, sonra karar ver: üçgen sayısı, draw call, deformasyon görüntüsü. Gerekirse yeniden topoloji ya da LOD. Kontrol pozları: Run, Throw, Swim. |
-| 9 | AdMob geri çağrıları ana iş parçacığında gelmez | `MobileAds.RaiseAdEventsOnUnityMainThread = true`. Reklam açılınca `GameClock.Pause(Ad)`, kapanınca `ResumeCountdown.OnAdClosed()`. Reklam yüklenmezse akış beklemez. |
+| 9 | AdMob geri çağrıları ana iş parçacığında gelmez; Android'de reklam ayrı Activity açtığı için hem `Ad` hem `App` duraklatma nedeni oluşur | `MobileAds.RaiseAdEventsOnUnityMainThread = true`. Reklam açılınca `GameClock.Pause(Ad)`, kapanınca `ResumeCountdown.OnAdClosed()`. Geri sayım bekleyen TÜM nedenleri birlikte kaldırır (oyun donmaz). Reklam yüklenmezse akış beklemez. |
 | 10 | Kare zamanlaması: 120 Hz ekran, Android titreme | `Application.targetFrameRate = 60`, `QualitySettings.vSyncCount = 0`. Android'de Player Settings → Optimized Frame Pacing açık. |
 | 11 | UI'ye dokunuş oyuna geçer | `TouchInput`, dokunuş başlangıcında `EventSystem.RaycastAll` ile UI üstünü eler. |
 
@@ -36,13 +36,13 @@ Kod: `Assets/Ada/Scripts/` (Unity projesindeki `Assets/` altına aynen kopyalan�
 ### Sahne hiyerarşisi
 
 ```
-GameSystems             GameClock, ResumeCountdown (+ UI overlay), RaceTimer, TouchInput
+GameSystems             GameClock (kalıcı değil, tek sahne), ResumeCountdown (+ UI overlay), RaceTimer, TouchInput
 PlayerRoot              PlayerMotor, PlayerAnimatorBridge, VisualSquash, SwimTilt, ThrowController, BreathSystem
   CameraTarget          (kamera odağı; karakter boyundan bağımsız)
   ThrowOrigin           (bırakma karesindeki el konumuna hizalı sabit nokta)
   VisualRoot            (yerel konum 0 = ayak tabanı; ölçek ve eğim yalnız burada)
     Character           Animator, AnimationEventRelay
-      Rig … RightHand
+      RightHand         (Optimize Game Objects ile açığa çıkarılmış kemik; Character'ın DÜZ çocuğu)
         HandSocket
       Mesh              SkinnedMeshRenderer (tek, opak malzeme)
 CameraRig               Camera, CameraRig
@@ -148,7 +148,8 @@ Tek katman (Base). Root motion kapalı (`PlayerAnimatorBridge.Awake`). Projede `
 | Throw → Recover | — | Açık, bırakmadan sonra (≈ 0,7) | 0,08 |
 | Recover → Aim | — | Açık | 0,10 |
 | Aim → Locomotion | `Aiming` = false | Kapalı | 0,20 |
-| Aim / Recover → Victory | `Victory` | Kapalı | 0,15 |
+| Aim / Recover → Victory | `Victory` | Kapalı | 0,15. **Listede en üstte** (Aiming=false geçişinden öncelikli) |
+| Locomotion → Victory | `Victory` | Kapalı | 0,15 |
 
 - **Kesinti ayarları:** zıplama zincirinde Interruption Source = None. Tek istisna Land → JumpStart'tır.
 - **İniş tamponu:** `BridgeController` iniş tamponunu yönetir. İnişten 130 ms önceye kadar gelen komut inişte uygulanır, daha erkeni atılır.
@@ -222,7 +223,7 @@ Tek katman (Base). Root motion kapalı (`PlayerAnimatorBridge.Awake`). Projede `
    - `UV0 × NormalTiling` → `Tiling And Offset(offset = Time × Speed1)` → `Sample Texture 2D (Type: Normal)` → N1.
    - Aynısını `Speed2` ile ve tiling × 1,37 ile yap → N2.
    - `Normal Blend(N1, N2)` → `Normal Strength(NormalStrength)` → **Normal (Tangent)**.
-3. **Fresnel:** `Fresnel Effect(Normal = yukarıdaki normal, Power = FresnelPower)` → `Lerp(A, HorizonColor, Fresnel × 0,6)` → B.
+3. **Fresnel:** Fresnel düğümünün Normal girişi **dünya uzayında** normal bekler. Bağlantı: `Normal Strength` → `Transform (From Tangent, To World, Type Direction)` → `Fresnel Effect.Normal` (Power = FresnelPower) → `Lerp(A, HorizonColor, Fresnel × 0,6)` → B. Master'daki Normal (Tangent) bağlantısı aynı kalır.
 4. **Köpük:**
    - `UV0 × FoamNoiseScale` + `Time × 0,05` → `Gradient Noise`.
    - `Step(FoamThreshold, Noise × Vertex Color.G + Vertex Color.G × 0,6)` → F.
@@ -241,9 +242,10 @@ Bu sürümde Scene Color ve Scene Depth düğümü yok; **Opaque Texture ve Dept
 ### Dalış görünürlüğü
 
 - **Yüzeyden bakış:** Sığ alan ShallowAlpha ≈ 0,55 olduğu için dalan karakter görünür. Dalış havuzu sığ (≤1,5 m) ve açık kum zeminlidir. Tamamen opak su karakteri örter; bu yüzden kullanılmaz.
+- **Sis derlemede kaybolmasın:** Üstel sis yalnız çalışma anında açıldığı için Project Settings → Graphics → Shader Stripping → **Fog Modes = Custom** yapın ve **Exponential**'ı işaretleyin. Aksi halde editörde çalışır, cihazda sis görünmez.
 - **Dalış kamerası (`Dive` profili):** Kamera su yüzeyinin altına inince `CameraRig`:
   - üstel sisi açar (turkuaz, yoğunluk ≈ 0,12),
-  - tam ekran turkuaz örtüyü (%15–25) gösterir.
+  - tam ekran turkuaz örtüyü (%15–25) gösterir. Örtü dokunuşları yutmaz: Image'ta Raycast Target kapalı, CanvasGroup'ta Blocks Raycasts kapalı (kod da kapatır).
   Su yüzeyinin alt tarafı `UndersideColor` ile görünür. Kamera yüzeyin üstüne çıkınca her şey eski haline döner.
 - **Overdraw:** Su, köpük, sıçrama ve UI üst üste biner. Scene görünümünde Overdraw modu, Frame Debugger, Android GPU Inspector ve Xcode GPU Capture ile ölçülür. Sıçrama parçacıkları küçük ve az tutulur.
 
@@ -339,7 +341,8 @@ Script tabanlı `CameraRig`; Cinemachine kullanılmıyor. Tek yumuşatma vardır
 ### Proje
 - **Paketler:** Input System (Active Input Handling: *Input System Package* ya da *Both*). URP. TextMeshPro (Unity 6'da uGUI ile gelir).
 - **Katmanlar:** `Platform`, `Target`.
-- **Fizik:** Physics → Queries Hit Triggers kapalı (kod zaten belirtiyor).
+- **Fizik:** Atış sorguları (`Ballistics.Cast`) tetikleyicileri açıkça yok sayar (`QueryTriggerInteraction.Ignore`); dokunma raycast'i de öyle. Hedef ve platform collider'ları trigger olmamalı.
+- **Statik işaretleme:** Ortam toplu olarak Static işaretlenirse `Platform_*`, kırılma parçaları, `Target_*` ve menteşe çocuklarında **Batching Static kapalı** kalmalı. Birleştirilmiş mesh hareket etmez; kırılma ve devrilme görünmez. Bu nesneler Light Probe ile aydınlatılır.
 
 ### Bileşen bağlantıları
 
@@ -350,7 +353,7 @@ Script tabanlı `CameraRig`; Cinemachine kullanılmıyor. Tek yumuşatma vardır
 - `ResumeCountdown`: `overlay` (tam ekran panel), `label` (TMP_Text), `input` (TouchInput).
 
 **PlayerRoot**
-- `PlayerMotor`: zıplama 0,42 sn / 0,9 m, `waterSurfaceY` = su düzlemi Y'si.
+- `PlayerMotor`: `tuning` = ortak **MotorTuning** varlığı (Create → Ada → Motor Tuning). Kerem ve Deniz AYNI varlığa bağlanır: zıplama 0,42 sn / 0,9 m, hızlar. `waterSurfaceY` = su düzlemi Y'si.
 - `PlayerAnimatorBridge`: `motor`, `animator` (Character), `runClipSpeed` / `sprintClipSpeed` (klip Average Velocity), `strideScale`.
 - `VisualSquash`: `motor`, `visualRoot`.
 - `SwimTilt`: `motor`, `visualRoot`.
@@ -382,7 +385,7 @@ Script tabanlı `CameraRig`; Cinemachine kullanılmıyor. Tek yumuşatma vardır
 - Her hedefte `TargetBoard`: `pivot` (alt kenar), `highlight`.
 
 **DivePool**
-- `DiveController`: `motor`, `input`, `breath`, `timer`, `exitPoint`, `token`, `bottomRootY`.
+- `DiveController`: `motor`, `input`, `breath`, `timer`, `exitPoint`, `token`. `floorMask` = havuz zemini (dip sınırı zeminden hesaplanır); bulunamazsa `bottomRootY`.
 
 **CameraRig**
 - `cam`, `target` (PlayerRoot/CameraTarget), `courseFrame` (= Bridge startPoint).

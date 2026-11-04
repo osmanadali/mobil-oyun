@@ -448,9 +448,9 @@ def fit_view(mask, U, Z, cell):
     return p, best
 
 
-def fit_head(mask, U, Z, cell, p, zcut):
-    """refine scale/offset on the head only (the turnaround art's head is not where the global fit puts it)"""
-    sel = Z > zcut
+def fit_region(mask, U, Z, cell, p, zlo, zhi, free=(0, 2, 3)):
+    """refine the projection on a height band only (IoU of mesh and art silhouettes inside the band)"""
+    sel = (Z > zlo) & (Z < zhi)
     U, Z = U[sel], Z[sel]
     hgt, wid = mask.shape
     csum = np.concatenate([[0], np.cumsum(mask.sum(1))])
@@ -461,25 +461,48 @@ def fit_head(mask, U, Z, cell, p, zcut):
         iy = np.floor(b - s * Z).astype(int)
         ok = (ix >= 0) & (ix < wid) & (iy >= 0) & (iy < hgt)
         inter = mask[iy[ok], ix[ok]].sum()
-        rc = csum[int(np.clip(b - s * zcut, 0, hgt))] / (s * s * k * cell * cell)
+        r0, r1 = (int(np.clip(b - s * z, 0, hgt)) for z in (zhi, zlo))
+        rc = (csum[r1] - csum[r0]) / (s * s * k * cell * cell)
         return inter / (len(U) + rc - inter)
 
     p = p.copy()
     best = score(p)
-    steps = np.array([0.02 * p[0], 0.0, 6.0, 6.0])
+    steps = np.array([0.02 * p[0], 0.02, 6.0, 6.0])
     for _ in range(6):
         improved = True
         while improved:
             improved = False
-            for i in (0, 2, 3):
+            for i in free:
                 for sg in (-1, 1):
                     q = p.copy()
                     q[i] += sg * steps[i]
+                    if i == 1 and abs(q[1] - 1) > 0.06:
+                        continue
                     sc = score(q)
                     if sc > best:
                         best, p, improved = sc, q, True
         steps /= 2
     return p, best
+
+
+def fit_profile(mask, U, Z, p, zlo, zhi, front):
+    """side views: shift the head so the face profile (front-most silhouette edge) lines up"""
+    s, k, a, b = p
+    du = []
+    for z in np.unique(Z[(Z > zlo) & (Z < zhi)]):
+        um = U[Z == z]
+        fm = um.max() if front > 0 else um.min()
+        py = int(b - s * z)
+        if not 0 <= py < mask.shape[0]:
+            continue
+        cols = np.where(mask[py])[0]
+        if len(cols):
+            fi = (cols.max() + 1) if front > 0 else cols.min()
+            du.append(fi - (a + s * k * fm))
+    q = p.copy()
+    if du:
+        q[2] += float(np.median(du))
+    return q, len(du)
 
 
 def inpaint_hands(img, mask, skin, p, z0, z1, H):
@@ -596,8 +619,13 @@ def stage_texture(c, o):
         Vu = V @ np.array(r)
         U, Z = silhouette(bvh, d, r, Vu.min() - 0.02, Vu.max() + 0.02, H, cell)
         pb, iou = fit_view(mask, U, Z, cell)
-        ph, iouh = fit_head(mask, U, Z, cell, pb, zc)
-        log("view %-5s from %s%s: body s %.1f k %.3f a %.1f b %.1f IoU %.3f | head s %.1f a %.1f b %.1f IoU %.3f"
+        if vname in ("left", "right"):   # hair differs most in profile: fit the body below it, the face by profile
+            pb, iou = fit_region(mask, U, Z, cell, pb, -1.0, 0.72 * H, free=(0, 1, 2, 3))
+            front = 1 if np.dot((0, -1, 0), r) > 0 else -1
+            ph, iouh = fit_profile(mask, U, Z, pb, LM["neck_z"] + 0.02 * H, H - 0.06 * H, front)
+        else:
+            ph, iouh = fit_region(mask, U, Z, cell, pb, zc, 9.0)
+        log("view %-5s from %s%s: body s %.1f k %.3f a %.1f b %.1f IoU %.3f | head s %.1f a %.1f b %.1f (%.3f)"
             % (vname, img_name, " (mirrored)" if mirror else "", *pb, iou, ph[0], ph[2], ph[3], iouh))
         dbg.append((vname, img, mask, U, Z, pb))
         if vname in ("left", "right"):

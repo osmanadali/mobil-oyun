@@ -2,7 +2,15 @@
 
 Usage:
   blender -b -P render_glb.py -- --glb karakter.glb [--name kerem] [--out DIR] [--height 1.84]
-        [--samples 48] [--anim-samples 16] [--max-frames 96] [--no-anim] [--no-env]
+        [--samples 48] [--anim-samples 16] [--max-frames 96] [--no-anim] [--no-env] [--no-turnaround]
+        [--actions Bekleme,Kosu] [--loops Bekleme,Kosu --loop-min 3] [--water Yuzme]
+        [--lift Ziplama:24:50:0.45]
+
+  --actions  only these clips (names as stored in the glb; the importer's "_<armature>" suffix is ignored)
+  --loops    looping clips: the MP4 repeats the cycle until it lasts at least --loop-min seconds
+  --water    clips filmed in the lagoon beside the dock (swimming), body centred on the water line
+  --lift     NAME:f0:f1:h  adds a sine arc of height h between frames f0..f1 (in-place jumps) and keeps
+             the feet above the deck for that clip (render only; the glb is not changed)
 
 Outputs (default DIR = ../render/<name>/):
   <name>_on.png, <name>_34.png, <name>_yan.png, <name>_arka.png   (1080x1350 turnaround)
@@ -20,7 +28,7 @@ import build_env as ENV  # noqa: E402
 def args():
     a = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     o = dict(glb=None, name=None, out=None, height=None, samples=48, anim_samples=16, max_frames=96,
-             anim=True, env=True)
+             anim=True, env=True, turn=True, actions="", loops="", loop_min=3.0, water="", lift="")
     i = 0
     while i < len(a):
         k = a[i]
@@ -28,11 +36,13 @@ def args():
             o["anim"] = False
         elif k == "--no-env":
             o["env"] = False
+        elif k == "--no-turnaround":
+            o["turn"] = False
         else:
             key = k.lstrip("-").replace("-", "_")
             v = a[i + 1]
             i += 1
-            o[key] = v if key in ("glb", "name", "out") else float(v)
+            o[key] = v if key in ("glb", "name", "out", "actions", "loops", "water", "lift") else float(v)
         i += 1
     if not o["glb"]:
         raise SystemExit("--glb gerekli")
@@ -93,6 +103,14 @@ def normalize(root, objs, height):
     root.location -= Vector(((lo.x + hi.x) / 2, (lo.y + hi.y) / 2, lo.z))
     bpy.context.view_layer.update()
     return mesh_bbox(objs)
+
+
+def clean_name(act, arm):
+    """the glTF importer names actions "<animation>_<armature object>"; drop that suffix"""
+    for suf in ("_" + arm.name, "_" + arm.name.split(".")[0]):
+        if act.name.endswith(suf):
+            return act.name[:-len(suf)]
+    return act.name
 
 
 def char_actions(arm):
@@ -259,23 +277,49 @@ def clips(o, root, objs, arm):
     ad = arm.animation_data_create()
     for t in ad.nla_tracks:
         t.mute = True
+    want = [x for x in o["actions"].split(",") if x]
+    if want:
+        acts = sorted([a for a in acts if clean_name(a, arm) in want], key=lambda a: want.index(clean_name(a, arm)))
+    loops = set(x for x in o["loops"].split(",") if x)
+    water = set(x for x in o["water"].split(",") if x)
+    lifts = {x.split(":")[0]: [float(v) for v in x.split(":")[1:]] for x in o["lift"].split(",") if x}
+    base = root.location.copy()
     for act in acts:
+        nm = clean_name(act, arm)
         ad.action = act
         f0, f1 = int(act.frame_range[0]), int(act.frame_range[1])
         f1 = min(f1, f0 + int(o["max_frames"]) - 1)
         sc.frame_start, sc.frame_end = f0, f1
+        if root.animation_data:
+            root.animation_data_clear()
+        root.location = base
+        if nm in water:   # swim beside the dock, body centred just under the water line
+            root.location = Vector((2.7, -3.4, 0.0))
+            lo, hi = anim_bbox(arm, objs, f0, f1)
+            root.location.z -= (lo.z + hi.z) / 2 + 0.06
+        elif nm in lifts:  # in-place jump: sine arc over the airborne frames, feet never below the deck
+            a0, a1, hgt = lifts[nm]
+            low = {}
+            for f in range(f0, f1 + 1):
+                sc.frame_set(f)
+                low[f] = mesh_bbox(objs)[0].z
+            for f in range(f0, f1 + 1):
+                arc = hgt * math.sin(math.pi * (f - a0) / (a1 - a0)) if a0 <= f <= a1 else 0.0
+                root.location = base + Vector((0, 0, max(arc, base.z - low[f])))
+                root.keyframe_insert("location", index=2, frame=f)
         lo, hi = anim_bbox(arm, objs, f0, f1)
         c = (lo + hi) / 2
-        hgt = hi.z - min(lo.z, root.location.z)
+        floor = base.z if nm not in water else min(lo.z, 0.0)
+        hgt = hi.z - min(lo.z, floor)
         wid = max(hi.x - lo.x, hi.y - lo.y)
         vh = math.atan(12 / cd.lens)
         hh = math.atan(12 * (540 / 960) / cd.lens)
         D = max(0.62 * hgt / math.tan(vh), 0.62 * wid / math.tan(hh), 2.0)
         d = Vector((0.42, -1.0, 0.16)).normalized()
-        tgt = Vector((c.x, c.y, min(lo.z, root.location.z) + 0.5 * hgt))
+        tgt = Vector((c.x, c.y, min(lo.z, floor) + 0.5 * hgt))
         cam.location = tgt + d * D
         cam.rotation_euler = (tgt - cam.location).to_track_quat("-Z", "Y").to_euler()
-        safe = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in act.name)
+        safe = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in nm)
         tmp = os.path.join(o["out"], "_tmp_%s_" % safe)
         sc.render.filepath = tmp
         sc.render.image_settings.file_format = "FFMPEG"
@@ -286,8 +330,15 @@ def clips(o, root, objs, arm):
         bpy.ops.render.render(animation=True)
         made = sorted(glob.glob(tmp + "*"))
         if made:
-            shutil.move(made[-1], os.path.join(o["out"], "%s_%s.mp4" % (o["name"], safe)))
-        print("[render_glb] klip:", act.name, f0, f1)
+            dst = os.path.join(o["out"], "%s_%s.mp4" % (o["name"], safe))
+            n = math.ceil(o["loop_min"] * sc.render.fps / (f1 - f0 + 1)) if nm in loops else 1
+            if n > 1 and shutil.which("ffmpeg"):
+                subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-stream_loop", str(n - 1), "-i", made[-1],
+                                "-c", "copy", dst], check=False)
+                os.remove(made[-1])
+            else:
+                shutil.move(made[-1], dst)
+        print("[render_glb] klip:", nm, f0, f1)
 
 
 def main():
@@ -302,7 +353,8 @@ def main():
         arm.data.pose_position = "REST"
     lo, hi = normalize(root, objs, o["height"])
     print("[render_glb] boy %.3f m" % (hi.z - lo.z))
-    turnaround(o, root, objs, arm, lo, hi)
+    if o["turn"]:
+        turnaround(o, root, objs, arm, lo, hi)
     if o["anim"]:
         clips(o, root, objs, arm)
 

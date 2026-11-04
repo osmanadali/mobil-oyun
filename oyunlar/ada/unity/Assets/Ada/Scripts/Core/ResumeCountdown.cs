@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -6,7 +7,8 @@ namespace Ada.Core
 {
     /// <summary>
     /// Uygulamadan ya da reklamdan dönüşte basılı kalan girdileri temizler, 3-2-1 sayar, sonra oyunu sürdürür.
-    /// Sayım unscaled zamanla çalışır (oyun saati dururken).
+    /// Bekleyen TÜM nedenler (ör. Android'de reklam hem Ad hem App nedeni bırakır) sayım sonunda birlikte kaldırılır;
+    /// yeni bir neden gelirse sayım baştan başlar ama önceki neden kaybolmaz. Sayım unscaled zamanla çalışır.
     /// </summary>
     public sealed class ResumeCountdown : MonoBehaviour
     {
@@ -15,6 +17,9 @@ namespace Ada.Core
         [SerializeField] Ada.InputLayer.TouchInput input;
         [SerializeField] int seconds = 3;
 
+        readonly HashSet<string> pending = new HashSet<string>();
+        readonly List<string> toResume = new List<string>(4);
+        static readonly string[] digits = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
         Coroutine running;
 
         void OnEnable()
@@ -33,23 +38,27 @@ namespace Ada.Core
         public void Begin(string reason)
         {
             if (!GameClock.IsPausedBy(reason)) return;
+            pending.Add(reason);
             if (running != null) StopCoroutine(running);
-            running = StartCoroutine(Run(reason));
+            running = StartCoroutine(Run());
         }
 
-        IEnumerator Run(string reason)
+        IEnumerator Run()
         {
             if (input) input.ClearAll();
             if (overlay) overlay.SetActive(true);
             for (int i = seconds; i > 0; i--)
             {
-                if (label) label.text = i.ToString();
+                if (label) label.text = i < digits.Length ? digits[i] : i.ToString();
                 yield return new WaitForSecondsRealtime(1f);
             }
             if (overlay) overlay.SetActive(false);
             running = null;
             if (input) input.ClearAll();
-            GameClock.Resume(reason);
+            toResume.Clear();
+            toResume.AddRange(pending);
+            pending.Clear();
+            for (int i = 0; i < toResume.Count; i++) GameClock.Resume(toResume[i]);
         }
     }
 }
