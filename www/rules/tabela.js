@@ -5,7 +5,7 @@
   const { popc, nb, ob } = api, K = { 1: 0, 2: 1, 4: 2, 8: 3 }, V = { 1: [0, -1], 2: [1, 0], 4: [0, 1], 8: [-1, 0] };
   const idx = new WeakMap(), list = g => { let a = idx.get(g); if (!a) idx.set(g, a = g.flatMap((b, i) => b ? [i] : [])); return a; };   // tabelalı karolar
   return {
-    key: 'sign', line: 16, ord: 12, boost: 3, clash: ['ring'],
+    key: 'sign', line: 16, ord: 12, boost: 3.5, clash: ['ring'],
     card: { name: L('Yön tabelası', 'Signpost'), tag: L('Yeni: yön tabelası', 'New: signpost'),
       demo: '<div class="rd-sign" aria-hidden="true"><i class="rd-sign-h"></i><i class="rd-sign-t"><b></b><svg class="rd-sign-a" viewBox="0 0 76 76"><path d="M6 38 22.8 26.6v22.8z"/></svg><i class="rd-sign-p"></i></i></div>',
       text: L('<b>Tabelalı</b> karodan merkeze giden yol <b>okun gösterdiği kenardan</b> çıkmalı. Ok yere sabittir: <b>karo döner, ok dönmez</b>.',

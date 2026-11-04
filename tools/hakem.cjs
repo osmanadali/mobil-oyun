@@ -566,7 +566,7 @@ async function inViewport(page, sel) {
       return { lines, lens, ms, daily, far: R.zPct(5000) };
     });
     metrics.difficulty = cv;
-    check('difficulty.ladder', 'Zorluk merdiveni: hat uzunluğu 12→28 (M5+ tavan), her hat bir öncekinden zor, sonsuzda %99', cv.lens.every((v, k) => v === Math.min(12 + 4 * k, 28)) && cv.lines.every((v, k) => !k || v > cv.lines[k - 1]) && cv.far === 99 && cv.ms < 60, `${cv.lines.join(' → ')} · ${cv.ms} ms/bölüm`, 'medium');
+    check('difficulty.ladder', 'Zorluk merdiveni: hat uzunluğu 12→28 (M5+ tavan; M5, M8 … sonunda +5 🔁 Aktarma), her hat bir öncekinden zor, sonsuzda %99', cv.lens.every((v, k) => v === Math.min(12 + 4 * k, 28) + (k >= 4 && (k - 4) % 3 === 0 ? 5 : 0)) && cv.lines.every((v, k) => !k || v > cv.lines[k - 1]) && cv.far === 99 && cv.ms < 60, `${cv.lines.join(' → ')} · ${cv.ms} ms/bölüm`, 'medium');
     check('difficulty.daily', 'Günün Hattı haftalık dalga: Pzt→Paz zorlaşır, %40 altına düşmez, tepe %85+, zamanla yükselir', cv.daily.wave && cv.daily.min >= 40 && cv.daily.peak >= 85 && cv.daily.late > cv.daily.early, JSON.stringify(cv.daily), 'medium');
     check('pairs.solvable', 'Eşli karolu 600 bölümün hepsi çözülebilir, eşler simetrik', gen.bad === 0 && gen.pairs > 1000 && gen.pre === 0, JSON.stringify(gen));
     await page.click('#bPlay'); await page.waitForTimeout(700);

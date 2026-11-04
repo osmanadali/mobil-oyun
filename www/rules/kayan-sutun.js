@@ -5,7 +5,7 @@
   // aşağı bir kare: her karo bir alta, en alttaki başa (yönler değişmez)
   const shift = cells => c => { const v = cells.map(q => c[q]); cells.forEach((q, p) => { c[q] = v[(p + cells.length - 1) % cells.length]; }); };
   return {
-    key: 'column', line: 25, ord: 24, boost: 7.5,
+    key: 'column', line: 25, ord: 24, boost: 9.5,
     // kayan sıra: kesişen karo iki birime giremez, sıra × sütun birlikte çok zor (docs/BOLUM_TASARIMI.md §5) · konuma bağlı sayım/kıyı kuralları kayan sıradaki gibi
     clash: ['slide', 'closed', 'river', 'zone', 'depot'],
     card: { name: L('Kayan sütun', 'Sliding column'), tag: L('Yeni: kayan sütun', 'New: sliding column'),

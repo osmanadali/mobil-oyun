@@ -109,11 +109,19 @@ function dayTick() {
 
 // ---------- hatlar ve yıldız kapıları ----------
 const LINE_CAP = (LINE_MAX - LINE0) / LINE_STEP;          // 4: M5 ve sonrası tavanda
-const lineLen = c => Math.min(LINE0 + LINE_STEP * c, LINE_MAX);
-const lineStart = c => { const k = Math.min(c, LINE_CAP); return 1 + LINE0 * k + LINE_STEP * k * (k - 1) / 2 + LINE_MAX * (c - k); };   // M1 1 · M2 13 · M3 29 · M4 49 · M5 73 · M6 101 · M10 213 · M24 605
-const S_CAP = lineStart(LINE_CAP);
-const lineOf = l => { if (l >= S_CAP) return LINE_CAP + Math.floor((l - S_CAP) / LINE_MAX); let c = 0; while (lineStart(c + 1) <= l) c++; return c; };
+const KARMA = 26;   // 0 tabanlı: M27 ve sonrası sınırsız karma (son kural M26 · kayan sütun)
+// 🔁 Aktarma: M5'ten başlayarak her 3 kural hattının sonuna 5 bölümlük karma tekrar dönemi eklenir (M5, M8 … M23; son kural hattından sonra karma zaten başlar).
+// Dönem hattın parçasıdır: hattın son bölümü (🏁 son durak) Aktarma'nın son bölümüdür. BOLUM_TASARIMI §2.
+const AKT_N = 5, AKT_FROM = 4, AKT_EVERY = 3;
+const aktAfter = c => c >= AKT_FROM && c < KARMA - 1 && (c - AKT_FROM) % AKT_EVERY === 0;
+const aktBefore = c => c <= AKT_FROM ? 0 : Math.ceil((Math.min(c, KARMA - 1) - AKT_FROM) / AKT_EVERY);   // c'den önceki Aktarma sayısı
+const baseLen = c => Math.min(LINE0 + LINE_STEP * c, LINE_MAX);   // hattın kendi bölümleri (Aktarma hariç)
+const lineLen = c => baseLen(c) + (aktAfter(c) ? AKT_N : 0);
+const lineStart = c => { const k = Math.min(c, LINE_CAP); return 1 + LINE0 * k + LINE_STEP * k * (k - 1) / 2 + LINE_MAX * (c - k) + AKT_N * aktBefore(c); };   // M1 1 · M2 13 · M3 29 · M4 49 · M5 73 · M6 106 · M27 724
+const K_START = lineStart(KARMA);
+const lineOf = l => { if (l >= K_START) return KARMA + Math.floor((l - K_START) / LINE_MAX); let c = 0; while (lineStart(c + 1) <= l) c++; return c; };
 const lineEnd = c => lineStart(c + 1) - 1;
+const akt = l => { const c = lineOf(l); return aktAfter(c) && l - lineStart(c) >= baseLen(c); };   // bu bölüm bir Aktarma bölümü mü
 // zorluk: z(l) = 1 − e^(−l/170). Hiç düşmez; sonsuzda %100 = imkânsız. Ekranda "Zorluk %".
 const zOf = l => 1 - Math.exp(-l / 170);
 const zPct = l => Math.min(99, Math.round(zOf(l) * 100));
@@ -298,10 +306,14 @@ const RULES = {
 const RULE_LINE = { pairs: 2, rev: 3, fog: 5, cnt: 6, two: 8 };
 const MODS = [], CLASH = {};   // eklentiler · birlikte gelemeyen kurallar (simetrik)
 const clash = (a, b) => !!(CLASH[a]?.includes(b) || CLASH[b]?.includes(a));
-const KARMA = 26;   // 0 tabanlı: M27 ve sonrası sınırsız karma (son kural M26 · kayan sütun, 661. bölüm)
 function rulesFor(l) {
   const c = lineOf(l), own = Object.keys(RULE_LINE).find(k => RULE_LINE[k] === c), set = new Set(own ? [own] : []);
   const learned = Object.keys(RULE_LINE).filter(k => RULE_LINE[k] < c).sort((a, b) => RULE_LINE[a] - RULE_LINE[b]);   // hat sırasıyla: slice(-3) = en yeni 3 kural
+  if (akt(l)) {   // 🔁 Aktarma: hattın kuralı dahil öğrenilmiş bütün kurallardan 1–2 tanesi, eşit ağırlık (karma gibi)
+    const all = Object.keys(RULE_LINE).filter(k => RULE_LINE[k] <= c).sort((a, b) => RULE_LINE[a] - RULE_LINE[b]), g = hashStr('aktarma' + l), out = new Set();
+    for (let k = 0, n = g % 100 < 50 ? 1 : 2; k < n; k++) { const at = (g >>> (7 + k * 6)) % all.length; for (let t = 0; t < all.length; t++) { const r = all[(at + t) % all.length]; if (!out.has(r) && ![...out].some(q => clash(q, r))) { out.add(r); break; } } }
+    return out;
+  }
   if (!learned.length || (own && l - lineStart(c) < 3)) return set;   // yeni kuralın ilk 3 bölümü yalın
   const h = hashStr('kural' + l), extra = own ? (h % 100 < 55 ? 1 : 0) : (h % 100 < 65 ? 1 : 2);
   for (let k = 0; k < extra; k++) {
@@ -328,9 +340,9 @@ const FOG_T = 420;                                      // karanlık örtünün 
 const PAIR_COLS = ['#ff7ab6', '#4cc9ff', '#ffc94d', '#8fe388', '#c39bff'];
 const TIERS = [[3, 3], [4, 4], [4, 5], [5, 6], [5, 7], [6, 8], [7, 9]], CAPS = [3, 8, 15, 25, 40, 60, 1e9];
 // mola bölümü: M2'den sonra her hattın 6., 12., 18.… bölümü (öğrenme bölümleri ve son durak hariç) kısa ve kolay → zorluk dalga dalga artar, oyuncu nefes alır
-const breath = l => { const c = lineOf(l), o = l - lineStart(c); return c > 0 && o >= 3 && o % 6 === 5 && l !== lineEnd(c); };
+const breath = l => { const c = lineOf(l), o = l - lineStart(c); return c > 0 && o >= 3 && o % 6 === 5 && l !== lineEnd(c) && !akt(l); };
 // kısa bölüm: 7×9 hatlarında her 6 bölümün biri (hattın 3., 9., 15.… bölümü) 6×8 — zorluk hedefi aynı, yalnız daha kısa (büyük ızgara yorgunluğu)
-const short = l => { const c = lineOf(l), o = l - lineStart(c); return o >= 3 && o % 6 === 2 && l !== lineEnd(c); };
+const short = l => { const c = lineOf(l), o = l - lineStart(c); return o >= 3 && o % 6 === 2 && l !== lineEnd(c) && !akt(l); };
 function sizeFor(l) {
   let k = CAPS.findIndex(m => l <= m);
   // testere dişi: yeni kural gelen hattın ilk 3 bölümü ve mola bölümleri bir küçük ızgara → kural rahat öğrenilir
@@ -527,7 +539,7 @@ function puzzleFor(l) {
     if (breath(l)) boost = 0;   // mola: kural payı yok, hedef aşağıda yarıya yakın
     // hat finali (SON DURAK): hedef +2 puan, en çok aday taranır · zorluk paylı bölümde de geniş tarama
     const P = pick(c, r, l * 7919 + 13, 0, pairs, z, (intro ? 3 : 5) + 11 * z * (breath(l) ? .55 : 1) + (fin ? 2 : 0) + boost, x, fin ? Math.max(32, scan) : boost ? Math.max(24, 6 + Math.round(26 * z), scan) : undefined);
-    P.fog = U.has('fog'); P.final = fin; P.rules = [...U]; P.breath = breath(l); return P;
+    P.fog = U.has('fog'); P.final = fin; P.akt = akt(l); P.rules = [...U]; P.breath = breath(l); return P;
   });
 }
 // Haftanın kuralı: pazar günkü Günün Hattı o haftanın kuralını taşır (erken kurallardan, haftaya göre döner; listede olup
@@ -824,7 +836,7 @@ function renderMap() {
       <div class="lh"><i class="dot"></i><b>${lineName(c)}${RULES[c] ? `<em>${RULES[c].tag}</em>` : ''}</b><small>${open ? `★ ${got} / ${len * 3} · ⚡${LP(zPct(first))}` : `🔒 ★ ${tot} / ${need(c)}`}</small></div>
       <div class="lvs">${Array.from({ length: len }, (_, k) => {
         const l = first + k, st = save.stars[l] || 0, can = open && (TEST || l <= save.level);
-        return `<button class="lv ${can ? '' : 'off'} ${l === save.level && can ? 'cur' : ''} ${l === lineEnd(c) ? 'fin' : ''}" data-l="${l}" ${can ? '' : 'disabled'}><b>${l}</b><i>${can ? (save.crowns[l] ? '🎫' : starTxt(st)) : ''}</i></button>`;
+        return `<button class="lv ${can ? '' : 'off'} ${l === save.level && can ? 'cur' : ''} ${l === lineEnd(c) ? 'fin' : ''} ${akt(l) ? 'akt' : ''}" data-l="${l}" ${can ? '' : 'disabled'}><b>${l}</b><i>${can ? (save.crowns[l] ? '🎫' : starTxt(st)) : ''}</i></button>`;
       }).join('')}</div></div>`;
   }
   $('mapList').innerHTML = html;
@@ -904,7 +916,7 @@ function start(mode, lvl = save.level) {
   G.tOk = timeOk(G.ms / 1000); G.mOk = movesOk();
   $('gTitle').textContent = daily ? (arch ? L('Günün Hattı · geçmiş gün', 'Daily Line · past day') : G.practice ? L('Günün Hattı · pratik', 'Daily Line · practice') : L('Günün Hattı', 'Daily Line')) : `${L('Bölüm', 'Level')} ${lvl}${G.final ? L(' · 🏁 Son durak', ' · 🏁 Last stop') : ''}`;
   $('game').classList.toggle('final', !!G.final);
-  $('gMoves').textContent = `${daily ? dayDate(day).toLocaleDateString(LOC, { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl))}${!daily && breath(lvl) ? ' · ' + L('☕ mola', '☕ breather') : ''}${G.week ? ' · ' + RULES[RULE_LINE[G.week]].name : ''}`;
+  $('gMoves').textContent = `${daily ? dayDate(day).toLocaleDateString(LOC, { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl))}${!daily && breath(lvl) ? ' · ' + L('☕ mola', '☕ breather') : ''}${!daily && akt(lvl) ? ' · ' + L('🔁 Aktarma', '🔁 Transfer') : ''}${G.week ? ' · ' + RULES[RULE_LINE[G.week]].name : ''}`;
   $('gHints').textContent = save.hints;
   clearTimeout(bubT); $('gBub').classList.remove('show');
   const stake = comboStake(); $('gCombo').hidden = stake < 2; $('gCombo').textContent = `✨${stake}`;
@@ -916,6 +928,7 @@ function start(mode, lvl = save.level) {
   if (save.played === 0) setTimeout(() => toast(L('Karoya dokun → döner', 'Tap a tile → it turns')), 500);
   else if (G.zen) {}
   else if (save.comboLost?.lvl === lvl && !daily && !G.moves) setTimeout(() => toast(L(`✨ Kusursuz bitir → ${save.comboLost.n} seri geri gelir`, `✨ Finish perfect → get your ${save.comboLost.n} streak back`)), 600);
+  else if (!daily && akt(lvl) && !akt(lvl - 1) && !G.moves) setTimeout(() => toast(L(`🔁 Aktarma · ${AKT_N} bölüm, öğrendiğin kurallar karışık`, `🔁 Transfer · ${AKT_N} levels mixing the rules you know`)), 600);
   else if (G.final && !save.crowns[lvl] && !G.moves) setTimeout(() => toast(L('🏁 Son durak · kusursuz bitir → +1 bonus 🎫', '🏁 Last stop · finish perfect → +1 bonus 🎫')), 600);
   else if (!daily && save.miss[lvl] && !save.crowns[lvl] && !G.moves) setTimeout(() => toast(L(`Geçen sefer: ${missTxt(lvl)}`, `Last time: ${missTxt(lvl)}`)), 600);
 }
@@ -2757,5 +2770,5 @@ if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { jank: Jank, seaWin, popLog, popUp: (...a) => popUp(...a), ACH, achCheck, linesDone, goldLine, plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), dayQ: () => dayQ(), RULE_LINE, RULES, prio, review: maybeReview, BST, offer: { MIN: OFFER_MIN, GAP: OFFER_GAP, AGE: OFFER_AGE, list: offerList, due: () => offerDue(G), inter: v => { interDue = v; } }, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, lineOf, lineEnd, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
+window.__ray = { jank: Jank, seaWin, popLog, popUp: (...a) => popUp(...a), ACH, achCheck, linesDone, goldLine, plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), dayQ: () => dayQ(), RULE_LINE, RULES, prio, akt, lineLen, baseLen, review: maybeReview, BST, offer: { MIN: OFFER_MIN, GAP: OFFER_GAP, AGE: OFFER_AGE, list: offerList, due: () => offerDue(G), inter: v => { interDue = v; } }, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, lineStart, lineOf, lineEnd, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();

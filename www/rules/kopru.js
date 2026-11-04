@@ -14,7 +14,7 @@
     for (const k of [1, -1]) { const px = x + c * k * o, py = y + si * k * o; cx.moveTo(px + si * h, py - c * h); cx.lineTo(px - si * h, py + c * h); }
   };
   return {
-    key: 'bridge', line: 12, ord: 10, boost: 2,
+    key: 'bridge', line: 12, ord: 10, boost: 2.5,
     clash: ['ring'],   // halka 2-çekirdeği bölünmüş düğümü bilmez (halka dosyası da tanımlar; simetrik)
     card: { name: L('Köprü', 'Bridge'), tag: L('Yeni: köprü', 'New: bridge'),
       demo: '<div class="rd-bridge" aria-hidden="true"><i class="rd-bridge-w"><b></b></i><i class="rd-bridge-e"><b></b></i><i class="rd-bridge-ns"><b></b></i><i class="rd-bridge-g"></i><i class="rd-bridge-g rd-bridge-r"></i></div>',

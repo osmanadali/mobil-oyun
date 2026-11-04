@@ -10,38 +10,38 @@
 
 Çekirdek, eklentilere kancalar ve ortak altyapı sunar. Bir kuralı yazan kişi **yalnız kendi üç dosyasını** değiştirir. Çekirdekte zorunlu bir değişiklik gerekirse en küçük hâliyle yapılır ve raporda ayrıca belirtilir.
 
-Hat sırası (3 Kasım; göze çarpan/kolay kurallar önce, gizli bilgili ve ince kurallar sona; hat boyu `min(12 + 4c, 28)`, yani M5'ten sonra 28 bölüm). Sabit karo (eski M3) 3 Kasım'da kalktı: oyunu kolaylaştırıyordu. `pinned` dizisi çekirdekte hep boş durur, eklentiler okumaya devam edebilir. Çekirdek kurallar ayrıca gösterilir (anahtarları `RULE_LINE`'da):
+Hat sırası (3 Kasım; göze çarpan/kolay kurallar önce, gizli bilgili ve ince kurallar sona; hat boyu `min(12 + 4c, 28)`, yani M5'ten sonra 28 bölüm; M5, M8 … M23'ün sonunda +5 bölüm 🔁 Aktarma, `akt(l)`). Sabit karo (eski M3) 3 Kasım'da kalktı: oyunu kolaylaştırıyordu. `pinned` dizisi çekirdekte hep boş durur, eklentiler okumaya devam edebilir. Çekirdek kurallar ayrıca gösterilir (anahtarları `RULE_LINE`'da):
 
 | Hat | İlk bölüm | Kural | Anahtar | Dosya adı |
 |---|---|---|---|---|
 | M3 | 29 | Eşli karo | `pairs` | çekirdek |
 | M4 | 49 | Ters karo | `rev` | çekirdek |
 | M5 | 73 | Kayan sıra | `slide` | `kayan-sira` |
-| M6 | 101 | Karanlık tünel | `fog` | çekirdek |
-| M7 | 129 | Sayaçlı karo | `cnt` | çekirdek |
-| M8 | 157 | Soğuyan karo | `ice` | `soguyan-karo` |
-| M9 | 185 | İki merkez | `two` | çekirdek |
-| M10 | 213 | Makas | `sw` | `makas` |
-| M11 | 241 | Mühürlü karo | `seal` | `muhurlu-karo` |
-| M12 | 269 | Döner tabla | `table` | `doner-tabla` |
-| M13 | 297 | Köprü | `bridge` | `kopru` |
-| M14 | 325 | Bakım karosu | `gear` | `bakim-karosu` |
-| M15 | 353 | Kapak | `cover` | `kapak` |
-| M16 | 381 | Tünel ağzı | `portal` | `tunel-agzi` |
-| M17 | 409 | Yön tabelası | `sign` | `tabela` |
-| M18 | 437 | Halka hat | `ring` | `halka` |
-| M19 | 465 | Silik kol | `faint` | `silik-kol` |
-| M20 | 493 | Gizli depo | `depot` | `gizli-depo` |
-| M21 | 521 | Sarmal tahta | `wrap` | `sarmal-tahta` |
-| M22 | 549 | Nehir | `river` | `nehir` |
-| M23 | 577 | Kapalı durak | `closed` | `kapali-durak` |
-| M24 | 605 | Tarife bölgesi | `zone` | `tarife-bolgesi` |
-| M25 | 633 | Son sefer | `last` | `son-sefer` |
-| M26 | 661 | Kayan sütun | `column` | `kayan-sutun` |
+| M6 | 106 | Karanlık tünel | `fog` | çekirdek |
+| M7 | 134 | Sayaçlı karo | `cnt` | çekirdek |
+| M8 | 162 | Soğuyan karo | `ice` | `soguyan-karo` |
+| M9 | 195 | İki merkez | `two` | çekirdek |
+| M10 | 223 | Makas | `sw` | `makas` |
+| M11 | 251 | Mühürlü karo | `seal` | `muhurlu-karo` |
+| M12 | 284 | Döner tabla | `table` | `doner-tabla` |
+| M13 | 312 | Köprü | `bridge` | `kopru` |
+| M14 | 340 | Bakım karosu | `gear` | `bakim-karosu` |
+| M15 | 373 | Kapak | `cover` | `kapak` |
+| M16 | 401 | Tünel ağzı | `portal` | `tunel-agzi` |
+| M17 | 429 | Yön tabelası | `sign` | `tabela` |
+| M18 | 462 | Halka hat | `ring` | `halka` |
+| M19 | 490 | Silik kol | `faint` | `silik-kol` |
+| M20 | 518 | Gizli depo | `depot` | `gizli-depo` |
+| M21 | 551 | Sarmal tahta | `wrap` | `sarmal-tahta` |
+| M22 | 579 | Nehir | `river` | `nehir` |
+| M23 | 607 | Kapalı durak | `closed` | `kapali-durak` |
+| M24 | 640 | Tarife bölgesi | `zone` | `tarife-bolgesi` |
+| M25 | 668 | Son sefer | `last` | `son-sefer` |
+| M26 | 696 | Kayan sütun | `column` | `kayan-sutun` |
 
 Bağımlılıklar yeni sırada da korunur: köprü (M13) tünel ağzından (M16) önce; tabela (M17) halkadan (M18) önce (halka ikisiyle `clash`, `CLASH` simetrik ve sırasız). Mühürlü karo bakım karosuyla, sarmal tahta tünel ağzı, gizli depo, nehir ve tarife bölgesiyle aynı bölümde gelmez (`clash`). Eklentilerin üretim/kanca sırası `ord` alanıyla sabittir (sarmal tahta `ord: 7` ile `pre` aşamalarının önünde, mühürlü karo `ord: 23` ile işaretlerin en sonunda). Güçlendiriciler kuralın hattını `RULE_LINE`'dan okur (🔦 fener → `fog`, 🔄 ek tur → `cnt`).
 
-M26 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`, `KARMA = 26`). Son sefer ve kayan sütun 3 Kasım'da (`kurallar-3`) sona eklendi: 1–632. bölümler bit bit aynı kaldı, yalnız karma (eskiden 633'ten, şimdi 689'dan) yeniden üretildi. Kayan sütun kayan sırayla aynı bölümde gelmez (`clash`); son sefer bakım karosuyla gelmez.
+M26 sonrası hatlar karmadır (724. bölümden): her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`, `KARMA = 26`). Son sefer ve kayan sütun 3 Kasım'da (`kurallar-3`) sona eklendi: 4 Kasım'da 🔁 Aktarma (her 3 kural hattının sonunda 5 karma bölüm) eklenince 106. bölümden sonrası kaydı ve yeniden üretildi. Kayan sütun kayan sırayla aynı bölümde gelmez (`clash`); son sefer bakım karosuyla gelmez.
 
 ## Temel ilkeler
 

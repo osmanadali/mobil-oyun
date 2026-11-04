@@ -9,7 +9,7 @@
     for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4, c = Math.cos(a), s = Math.sin(a); cx.moveTo(x + c * r, y + s * r); cx.lineTo(x + c * r * 1.28, y + s * r * 1.28); }
   };
   return {
-    key: 'gear', line: 13, ord: 21, boost: 1,
+    key: 'gear', line: 13, ord: 21, boost: 2,
     card: { name: L('Bakım karosu', 'Gear tile'), tag: L('Yeni: bakım karosu', 'New: gear tile'),
       demo: '<div class="rd-gear" aria-hidden="true"><i></i><b></b><s></s><em></em><em></em></div>',
       text: L('Dişli (⚙) karoya <b>dokunulmaz</b>: <b>her 2 hamlede bir</b> kendiliğinden 90° döner. Hattı, dişli <b>doğru yöne geldiği hamlede</b> tamamla.',

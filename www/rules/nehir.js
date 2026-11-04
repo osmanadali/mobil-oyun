@@ -30,7 +30,7 @@
   };
   const ICON = '<svg class="rd-river-i" viewBox="0 0 20 20"><path d="M3 4v12M3 10h9M16 3c-3 3 3 4 0 7s3 4 0 7"/></svg>';
   return {
-    key: 'river', line: 21, ord: 17, boost: 4,
+    key: 'river', line: 21, ord: 17, boost: 4.5,
     // köprü: bölünmüş düğüm kıyıda belirsiz · tabla: karoları iki yaka arasında taşır · tarife bölgesi: aynı mekanizma (yumuşak sınır + sayım) · halka: iki kart zıt sezgi verir ("bir kez kapan" ↔ "eksik tampon = döngü")
     clash: ['bridge', 'table', 'zone', 'ring'],
     // tanıtım (749, 6×8): 1 tampon · sonra 2

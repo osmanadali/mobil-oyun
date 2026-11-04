@@ -16,7 +16,7 @@
   };
   const sync = G => { G.mLost = G.lastS.miss.includes(true) ? MSG.lost : 0; };
   return {
-    key: 'last', line: 24, ord: 25, boost: 7, scan: 48,
+    key: 'last', line: 24, ord: 25, boost: 5.5, scan: 48,
     clash: ['gear'],   // kendiliğinden dönen bakım karosu yolu hamle sayısından bağımsız bozar: hamle payı kanıtı geçmez
     card: { name: L('Son sefer', 'Timed station'), tag: L('Yeni: son sefer', 'New: timed station'),
       demo: '<div class="rd-last" aria-hidden="true"><i class="a"></i><i class="b"><s></s><u></u><b></b><em>3</em><em>2</em><em>1</em></i></div>',

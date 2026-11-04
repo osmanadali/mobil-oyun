@@ -1,6 +1,6 @@
 # M25 · Son sefer (`last`)
 
-Hat M25, ilk bölüm 633 (3 Kasım, `kurallar-3`). Dosyalar: `www/rules/son-sefer.js`, `tools/hakem/son-sefer.cjs`. Esin kaynağı: Candy Crush'ın sayılı bombası (hamle sayacı biter, bir şey kaybedilir).
+Hat M25, ilk bölüm 668 (4 Kasım 🔁 Aktarma düzeni). Dosyalar: `www/rules/son-sefer.js`, `tools/hakem/son-sefer.cjs`. Esin kaynağı: Candy Crush'ın sayılı bombası (hamle sayacı biter, bir şey kaybedilir).
 
 **Kural.** Bazı duraklar ⏳ saatlidir: üstündeki sayı kadar **hamle içinde** merkeze bağlanmalıdır. Yetişmezse **↻ hamle yıldızı söner**. Oyun bitmez, can gitmez, bölüm sürer. Durak bağlanınca sayaç kalkar ve bir daha gelmez (sonradan kopsa da). İngilizce adı bilerek "Timed station": "last train" son süre (🚉) için kullanılıyor.
 
@@ -44,7 +44,7 @@ Oyun içi kısıtlar sırayı bozmaz:
 - Son hamlede kırmızı nabız; kaçınca kesik gri çember ve "–". Biçim renge bağlı değildir.
 - Sayaç karanlık tünelde de görünür: oyuncu saatli durağın yerini bilmelidir.
 
-**Zorluk ve merdiven (3 Kasım).** Kural çözücü puanını değiştirmez (7×9, 60 tohum: 14,5 → 14,5). Hat ortalamasını seçici hedefi taşır: `boost: 7` ve `scan: 48` (yeni alan; yalnız kendi hattında en az 48 aday taranır, çünkü bazı tohumlarda 32 aday hedefe ulaşmıyordu). Ölçüm: M24 20,1 < **M25 20,5** < M26 20,9.
+**Zorluk ve merdiven (3 Kasım).** Kural çözücü puanını değiştirmez (7×9, 60 tohum: 14,5 → 14,5). Hat ortalamasını seçici hedefi taşır: `boost: 5.5` ve `scan: 48` (yeni alan; yalnız kendi hattında en az 48 aday taranır, çünkü bazı tohumlarda 32 aday hedefe ulaşmıyordu). Ölçüm (Aktarma sonrası): M24 19,9 < **M25 20,3** < M26 20,7.
 
 **Bilinen sınırlar.**
 
