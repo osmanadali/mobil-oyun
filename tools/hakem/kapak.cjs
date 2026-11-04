@@ -3,7 +3,7 @@
 // ipucu, ↺ baştan, yarım oyun, karma hatlar (≥ 300 bölüm), çakışma (karanlık tünel).
 const SEEN = Object.fromEntries(Array.from({ length: 30 }, (_, k) => [k + 2, 1]));   // bütün kural kartları görülmüş
 // kapak hattından önceki bölümlerin ve 40 Günün Hattı'nın parmak izi (FNV-1a, JSON). Kapak yalnız kendi hattından başlar → değişmemeli.
-const FP = { old: '1bekcwh', day: '109kff2' };   // old: mola (28 Ekim), kısa bölüm (31 Ekim) ve hat düzeni (31 Ekim ve 3 Kasım: 28 bölüm tavanı, yeni kural sırası, sabit karo kalktı) ile yenilendi
+const FP = { old: '1crlb2j', day: '109kff2' };   // old: 4 Kasım 🔁 Aktarma; mola (28 Ekim), kısa bölüm (31 Ekim) ve hat düzeni (31 Ekim ve 3 Kasım: 28 bölüm tavanı, yeni kural sırası, sabit karo kalktı) ile yenilendi
 
 module.exports = async T => {
   const { browser, URL, open, check, solve, shot, getSave, tapTile, waitModal, starsUpTo, RL, LS, LE, AT } = T;

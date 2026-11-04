@@ -13,7 +13,7 @@ module.exports = async T => {
       const R = window.__ray, o = {};
       for (const k of ['ice', 'gear', 'slide']) {
         const c = R.RULE_LINE[k], a = R.lineStart(c), P = R.puzzleFor(a); let bad = 0, has = 0;
-        o[k] = { len: R.lineStart(c + 1) - a };
+        o[k] = { len: R.baseLen(c) };   // 🔁 Aktarma hariç
         for (let l = a; l < a + o[k].len; l++) { const Q = R.puzzleFor(l); if (Q[k]) has++; const S = { ...Q, cur: Q.sol.slice() }; if (!R.lit(S).solved) bad++; }
         Object.assign(o[k], { line: R.MODS.find(m => m.key === k)?.line, own: [...R.rulesFor(a)].join(), n: k === 'ice' ? P.ice?.filter(Boolean).length : P[k]?.length, has, bad });
       }

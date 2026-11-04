@@ -40,7 +40,7 @@ module.exports = async T => {
         if (!R.lit({ ...P, cur: P.sol }).solved) o.bad++;
       }
       // hat: mühür hattından önce mühür yok; hattın her bölümünde var, giriş 2 mühür, ilk 3 bölüm 6×8
-      const a = R.lineStart(SL), z = R.lineStart(SL + 1); let early = 0, own = 0;
+      const a = R.lineStart(SL), z = a + R.baseLen(SL); let early = 0, own = 0;   // 🔁 Aktarma (hattın sonu) hariç
       for (let l = 1; l < a; l++) if (R.rulesFor(l).has('seal')) early++;
       for (let l = a; l < z; l++) { const P = R.puzzleFor(l); if (P.seal) own++; }
       o.line = { early, own, len: z - a, intro: R.puzzleFor(a).seal?.filter(Boolean).length, size: [a, a + 1, a + 2, a + 3].map(l => R.sizeFor(l).join('x')).join(' ') };

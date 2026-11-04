@@ -2,7 +2,7 @@
 // Üretim + adillik (prune'suz çapraz sayım), zorluk farkı, eski bölümler bit bit aynı, hat ortalaması, kural kartı, oyun (dokunuş, kayıt, ↺, kazanma, ⊘ damgası),
 // ipucu, yakın kazanç uyarısı, gösterilmiş kapalı (engel), karma hat taraması ve karanlık tünelli karma bölüm.
 // Eklentisiz tabanın özeti (FNV-1a, JSON): halka testindekiyle aynı değerler → hiç değişmemeli (133/169/208: 31 Ekim hat düzeniyle yenilendi).
-const BASE = { l1: 'dukhsf', l29: '1n9orzi', l77: 'c4lzfm', l133: '1wllsso', l169: '152kw6q', l208: 'md4y2l', '2026-10-01': '1npbt0', '2026-10-27': 'qx5s5f', '2027-03-14': '1s6o7ll' };   // 3 Kasım hat düzeniyle yenilendi (sabit karo kalktı, yeni sıra)
+const BASE = { l1: 'dukhsf', l29: '1n9orzi', l77: 'c4lzfm', l133: '1va8ubz', l169: '152kw6q', l208: '1gr3nhj', '2026-10-01': '1npbt0', '2026-10-27': 'qx5s5f', '2027-03-14': '1s6o7ll' };   // 3 Kasım hat düzeni ve 4 Kasım 🔁 Aktarma (106 sonrası kaydı) ile yenilendi
 const SEEN = Object.fromEntries(Array.from({ length: 30 }, (_, k) => [k + 2, 1]));   // bütün kural kartları görülmüş
 
 module.exports = async T => {
@@ -79,8 +79,8 @@ module.exports = async T => {
       let miss = 0, shown = 0, gms = 0, L7 = 0; const intro = [];
       const t = performance.now();
       const m16 = avg(a, b, (l, P) => {
-        if (!P.closed || !R.rulesFor(l).has('closed')) miss++; if (P.closedShown || P.reject) shown++;
-        if (l < a + 3 || l === b) intro.push(`${l}:${P.cols}x${P.rows}/${P.closed}`);
+        if (!R.akt(l) && (!P.closed || !R.rulesFor(l).has('closed'))) miss++;   // 🔁 Aktarma bölümü karma if (P.closedShown || P.reject) shown++;
+        if (l < a + 3 || (l === b && !R.akt(b))) intro.push(`${l}:${P.cols}x${P.rows}/${P.closed}`);
         if (!L7 && l >= a + 3 && P.cols === 7 && P.rules.every(k => ['closed', 'pairs', 'rev', 'cnt'].includes(k))) L7 = l;
       });
       gms = (performance.now() - t) / (b - a + 1);
@@ -89,7 +89,7 @@ module.exports = async T => {
       return { a, b, m16, m15, miss, shown, intro, genMs: Math.round(gms), L7, LF };
     }, CL);
     L7 = h.L7; LF = h.LF;
-    const introOk = h.intro.length === 4 && h.intro.slice(0, 3).every(s => /:6x8\/1$/.test(s)) && /:7x9\/2$/.test(h.intro[3]);
+    const introOk = h.intro.length >= 3 && h.intro.slice(0, 3).every(s => /:6x8\/1$/.test(s)) && (h.intro.length === 3 || /:7x9\/2$/.test(h.intro[3]));   // hat finali Aktarma ise kapalısız olabilir
     check('rule.closed.line', `Kapalı durak: M${CL + 1} (${h.a}–${h.b}) her bölümde var; ilk 3 bölüm 6×8 ve 1 kapalı, final 7×9 ve 2 kapalı; ortalama zorluk önceki hattan yüksek`,
       h.a === A && !h.miss && !h.shown && introOk && h.m16 > h.m15, JSON.stringify(h));
     errs.push(...errors); await ctx.close();

@@ -1,5 +1,5 @@
 // Tünel ağzı (RL.portal hattı) — robot testleri (hakem.cjs K bölümü çağırır). Sözleşme: docs/kurallar/README.md
-const FP = '5ko8ya';   // örnek bölümler (1, 13, 29, 49, 73, 101, 150, 208) imzası
+const FP = 'hgoq0t';   // 4 Kasım 🔁 Aktarma ile yenilendi · örnek bölümler (1, 13, 29, 49, 73, 101, 150, 208) imzası
 module.exports = async T => {
   const { browser, URL, open, check, solve, shot, waitModal, starsUpTo, RL, AT } = T;
   const seen = Object.fromEntries(Array.from({ length: 30 }, (_, k) => [k + 2, 1])), A = AT('portal');   // bütün kural kartları görülmüş · tünel hattının ilk bölümü

@@ -18,7 +18,7 @@
   const iconX = (cx, x, y, r) => { const a = r * .42, h = r * .4; for (const e of [-1, 1]) { const yy = y + e * a, tip = x - e * r; cx.moveTo(x + e * r, yy); cx.lineTo(tip, yy); cx.moveTo(tip + e * h, yy - h); cx.lineTo(tip, yy); cx.lineTo(tip + e * h, yy + h); } };
   const iconT = (cx, x, y, r) => { cx.moveTo(x - r, y); cx.lineTo(x + r * .35, y); cx.moveTo(x + r * .35, y - r * .7); cx.lineTo(x + r * .35, y + r * .7); };
   return {
-    key: 'zone', line: 23, ord: 19, boost: 5,
+    key: 'zone', line: 23, ord: 19, boost: 6,
     // iki merkez: bölge yalnız birini sarardı · nehir: aynı mekanizma (yumuşak sınır + sayım), aynı bölümde iki rozet kalabalık.
     // Köprü ve döner tabla prototipte dışlanmıştı; ölçümde ikisiyle de çözüm geçerli ve çözücü sağlam (docs), dışlanmadı.
     clash: ['two', 'river'],

@@ -100,7 +100,8 @@ module.exports = async T => {
   {
     const { ctx, page, errors } = await open(browser, URL, { save: { played: 1 } });
     const h = await page.evaluate(DL => {
-      const R = window.__ray, L0 = R.lineStart(DL), L1 = R.lineStart(DL + 1), avg = c => { let a = 0, n = 0; for (let l = R.lineStart(c); l < R.lineStart(c + 1); l++) { a += R.puzzleFor(l).diff; n++; } return +(a / n).toFixed(2); };
+      const R = window.__ray, L0 = R.lineStart(DL), L1 = R.lineStart(DL) + R.baseLen(DL),   // 🔁 Aktarma hariç
+        avg = c => { let a = 0, n = 0; for (let l = R.lineStart(c); l < R.lineStart(c + 1); l++) { a += R.puzzleFor(l).diff; n++; } return +(a / n).toFixed(2); };
       let early = 0, own = 0, miss = 0; const intro = [];
       for (let l = 1; l < L0; l++) if (R.rulesFor(l).has('depot')) early++;
       for (let l = L0; l < L1; l++) { if (R.rulesFor(l).has('depot')) own++; const P = R.puzzleFor(l); if (!P.depot) miss++; if (l < L0 + 4) intro.push(`${l}:${P.cols}x${P.rows}/${P.depot?.length}`); }

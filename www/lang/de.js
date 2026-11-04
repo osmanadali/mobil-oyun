@@ -623,6 +623,8 @@ window.RAY_DICT={
 "💡 hint ×2 <i>or</i> 1 booster":"💡 Tipp ×2 <i>oder</i> 1 Booster",
 "💡 hint ×4, 🛡 streak shield, 2 boosters <i>or</i> ❤️∞ 15 min":"💡 Tipp ×4, 🛡 Serienschild, 2 Booster <i>oder</i> ❤️∞ 15 Min.",
 "📅 Perfect past day · +1 🎫":"📅 Vergangener Tag perfekt · +1 🎫",
+"🔁 Transfer":"🔁 Umstieg",
+"🔁 Transfer · {0} levels mixing the rules you know":"🔁 Umstieg · {0} Level mit gemischten bekannten Regeln",
 "🔄 Extra turn · the tile turns once more":"🔄 Extradrehung · die Kachel dreht sich noch einmal",
 "🔒 Locked":"🔒 Gesperrt",
 "🔒 Sealed tile · opens once a neighbour is on the line":"🔒 Siegelkachel · öffnet, sobald ein Nachbar an der Linie ist",

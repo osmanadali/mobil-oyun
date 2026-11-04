@@ -15,7 +15,7 @@ module.exports = async T => {
       for (let c = 0; c < 9; c++) {
         const a = R.lineStart(c), z = R.lineStart(c + 1) - 1; let d = 0, dn = 0, bd = 0, bn = 0;
         for (let l = a; l <= z; l++) {
-          const P = R.puzzleFor(l), o = l - a, want = c > 0 && o >= 3 && o % 6 === 5 && l !== z;
+          const P = R.puzzleFor(l), o = l - a, want = c > 0 && o >= 3 && o % 6 === 5 && l !== z && !R.akt(l);   // 🔁 Aktarma bölümünde mola yok
           if (R.breath(l) !== want || !!P.breath !== want) bad.push(`${l}:işaret`);
           if (want) { n++; bd += P.diff; bn++; const [w, h] = R.sizeFor(l), [w2, h2] = R.sizeFor(l + 1); if (w * h >= w2 * h2 && w2 * h2 > 9) bad.push(`${l}:boy ${w}×${h}`); }
           else { d += P.diff; dn++; }

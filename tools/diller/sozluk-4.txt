@@ -990,3 +990,13 @@ de: Kacheln in einer Schienenspalte <b>drehen sich nicht</b>: Tippst du die Spal
 es: Las piezas de una columna con raíles <b>no giran</b>: toca la columna y toda ella <b>baja un paso</b>; la pieza de abajo pasa arriba.
 pt: Peças numa coluna com trilhos <b>não giram</b>: toque na coluna e ela toda <b>desce uma casa</b>; a peça de baixo vai para o topo.
 fr: Les tuiles d’une colonne à rails <b>ne tournent pas</b> : touche la colonne et elle <b>descend d’un cran</b> ; la tuile du bas remonte en haut.
+@ 🔁 Transfer
+de: 🔁 Umstieg
+es: 🔁 Transbordo
+pt: 🔁 Baldeação
+fr: 🔁 Correspondance
+@ 🔁 Transfer · {0} levels mixing the rules you know
+de: 🔁 Umstieg · {0} Level mit gemischten bekannten Regeln
+es: 🔁 Transbordo · {0} niveles que mezclan las reglas que conoces
+pt: 🔁 Baldeação · {0} fases misturando as regras que você conhece
+fr: 🔁 Correspondance · {0} niveaux qui mêlent les règles connues

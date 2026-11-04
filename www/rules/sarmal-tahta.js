@@ -10,7 +10,7 @@
     return E;
   };
   return {
-    key: 'wrap', line: 20, ord: 7, boost: 3.5,
+    key: 'wrap', line: 20, ord: 7, boost: 4,
     clash: ['portal', 'depot', 'river', 'zone'],   // kenar geçidi/kenar çıkışı ve kıyı/bölge sayımı sınır ister
     card: { name: L('Sarmal tahta', 'Wrap-around board'), tag: L('Yeni: sarmal tahta', 'New: wrap-around board'),
       demo: '<div class="rd-wrap" aria-hidden="true"><u class="l"></u><i class="ft on"><b></b></i><i class="ft on"><b></b></i><i class="ft on"><b></b></i><u class="r"></u><em></em></div>',

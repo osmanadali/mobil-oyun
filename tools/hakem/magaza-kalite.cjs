@@ -184,15 +184,15 @@ module.exports = async T => {
     const nwOf = pg => pg.evaluate(() => [...document.querySelectorAll('#mCard p .nw')].filter(e => getComputedStyle(e).whiteSpace === 'nowrap').map(e => e.textContent));
     const nw = { buy: await nwOf(page) };
     await ctx.close();
-    const c2 = await open(browser, URL, { vp: [360, 740], save: { played: 30, level: 101, stars: starsUpTo(101, 2) } });
+    const c2 = await open(browser, URL, { vp: [360, 740], save: { played: 30, level: T.LS(T.RL.fog), stars: starsUpTo(T.LS(T.RL.fog), 2) } });   // karanlık tünel hattının başı (Aktarma'yla kayabilir)
     await c2.page.click('#crownChip'); await c2.page.waitForTimeout(400); await c2.page.click('#mHunt'); await c2.page.waitForTimeout(400);
     const poor = await c2.page.textContent('#mCard p');
     await c2.page.click('#mBack'); await c2.page.waitForTimeout(300); await c2.page.click('#mClose'); await c2.page.waitForTimeout(300);
-    await c2.page.click('#bPlay'); await c2.page.waitForTimeout(450);   // M6 kilitli (★ 200 / 220)
+    await c2.page.click('#bPlay'); await c2.page.waitForTimeout(450);   // M6 kilitli (★ 210 / 231)
     const lock = await c2.page.textContent('#mCard p');
     nw.lock = await nwOf(c2.page);
     check('kalite.texts', 'Bilet avı: bakiye yetiyorsa "0 🎫 daha gerekli" yazmaz, yetmiyorsa eksik sayıyı yazar; kilitli hat ve tema satın alma: ★/🎫 sayısından kopmaz',
-      !/daha gerekli/.test(rich) && /Gün Batımı için 5 🎫 daha gerekli/.test(poor) && nw.lock.join() === '★ 220,★ 200' && nw.buy.join() === '🎫 5,🎫 12,🎫 7',
+      !/daha gerekli/.test(rich) && /Gün Batımı için 5 🎫 daha gerekli/.test(poor) && nw.lock.join() === `★ ${Math.round((T.LS(T.RL.fog) - 1) * 2.2)},★ ${(T.LS(T.RL.fog) - 1) * 2}` && nw.buy.join() === '🎫 5,🎫 12,🎫 7',
       JSON.stringify({ rich: rich.slice(0, 40), poor: poor.slice(0, 40), nw }), 'low');
     errs.push(...errors, ...c2.errors); await c2.ctx.close();
     // yeni oyuncu: "0 bölüm kusursuz bitmeyi bekliyor" ve "Oynadığın her bölüm kusursuz! 🎉" yazmaz

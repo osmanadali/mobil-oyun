@@ -623,6 +623,8 @@ window.RAY_DICT={
 "💡 hint ×2 <i>or</i> 1 booster":"💡 indice ×2 <i>ou</i> 1 booster",
 "💡 hint ×4, 🛡 streak shield, 2 boosters <i>or</i> ❤️∞ 15 min":"💡 indice ×4, 🛡 bouclier de série, 2 boosters <i>ou</i> ❤️∞ 15 min",
 "📅 Perfect past day · +1 🎫":"📅 Jour passé parfait · +1 🎫",
+"🔁 Transfer":"🔁 Correspondance",
+"🔁 Transfer · {0} levels mixing the rules you know":"🔁 Correspondance · {0} niveaux qui mêlent les règles connues",
 "🔄 Extra turn · the tile turns once more":"🔄 Tour bonus · la tuile tourne encore une fois",
 "🔒 Locked":"🔒 Verrouillé",
 "🔒 Sealed tile · opens once a neighbour is on the line":"🔒 Tuile scellée · s’ouvre dès qu’une voisine est sur la ligne",

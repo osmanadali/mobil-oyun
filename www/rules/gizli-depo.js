@@ -8,7 +8,7 @@
   const count = (P, V, cur = P.cur) => { let c = 0; for (const i of V.cells) if (cur[i] & bit(V.k)) c++; return c; };
   const ICON = '<svg class="rd-depot-i" viewBox="0 0 20 20"><path d="M3 9 10 3l7 6v8H3z"/></svg>';
   return {
-    key: 'depot', line: 19, ord: 13, tOrder: 30, boost: 3.5, clash: [],
+    key: 'depot', line: 19, ord: 13, tOrder: 30, boost: 4.5, clash: [],
     card: { name: L('Gizli depo', 'Hidden depot'), tag: L('Yeni: gizli depo', 'New: hidden depot'),
       demo: '<div class="rd-depot" aria-hidden="true"><i class="ft"><b></b></i><i class="ft rd-dm"><b></b><u></u></i><i class="ft"><b></b></i><i class="rd-db"></i><i class="rd-dh"></i></div>',
       text: L(`Kenardaki <b>ayraç</b>: altındaki üç karodan <b>tam biri</b> dışarı, depoya ${ICON} çıkar. Hangisi olduğu <b>gizli</b>; ayraç dışında kenar yine duvardır.`,

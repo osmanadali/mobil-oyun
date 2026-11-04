@@ -44,7 +44,7 @@ Oyun içi kısıtlar sırayı bozmaz:
 - Son hamlede kırmızı nabız; kaçınca kesik gri çember ve "–". Biçim renge bağlı değildir.
 - Sayaç karanlık tünelde de görünür: oyuncu saatli durağın yerini bilmelidir.
 
-**Zorluk ve merdiven (3 Kasım).** Kural çözücü puanını değiştirmez (7×9, 60 tohum: 14,5 → 14,5). Hat ortalamasını seçici hedefi taşır: `boost: 5.5` ve `scan: 48` (yeni alan; yalnız kendi hattında en az 48 aday taranır, çünkü bazı tohumlarda 32 aday hedefe ulaşmıyordu). Ölçüm (Aktarma sonrası): M24 19,9 < **M25 20,3** < M26 20,7.
+**Zorluk ve merdiven (3 Kasım).** Kural çözücü puanını değiştirmez (7×9, 60 tohum: 14,5 → 14,5). Hat ortalamasını seçici hedefi taşır: `boost: 6.5` ve `scan: 48` (yeni alan; yalnız kendi hattında en az 48 aday taranır, çünkü bazı tohumlarda 32 aday hedefe ulaşmıyordu). Ölçüm (Aktarma sonrası): M24 20,7 < **M25 20,9** < M26 21,3.
 
 **Bilinen sınırlar.**
 

@@ -623,6 +623,8 @@ window.RAY_DICT={
 "💡 hint ×2 <i>or</i> 1 booster":"💡 pista ×2 <i>o</i> 1 potenciador",
 "💡 hint ×4, 🛡 streak shield, 2 boosters <i>or</i> ❤️∞ 15 min":"💡 pista ×4, 🛡 escudo de racha, 2 potenciadores <i>o</i> ❤️∞ 15 min",
 "📅 Perfect past day · +1 🎫":"📅 Día pasado perfecto · +1 🎫",
+"🔁 Transfer":"🔁 Transbordo",
+"🔁 Transfer · {0} levels mixing the rules you know":"🔁 Transbordo · {0} niveles que mezclan las reglas que conoces",
 "🔄 Extra turn · the tile turns once more":"🔄 Giro extra · la pieza gira una vez más",
 "🔒 Locked":"🔒 Bloqueado",
 "🔒 Sealed tile · opens once a neighbour is on the line":"🔒 Pieza sellada · se abre cuando una vecina está en la línea",

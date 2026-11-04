@@ -15,7 +15,7 @@
     return keys.size === 1 && sc < 3 * cap;
   };
   return {
-    key: 'cover', line: 14, ord: 9, boost: 2.5, clash: ['fog', 'faint'],
+    key: 'cover', line: 14, ord: 9, boost: 3.5, clash: ['fog', 'faint'],
     card: { name: L('Kapak', 'Cover'), tag: L('Yeni: kapak', 'New: cover'),
       demo: '<div class="rd-cover" aria-hidden="true"><i class="ft"><b></b></i><i class="rd-cv"><em class="w"></em><em class="e"></em><s></s></i><i class="rd-cvs"><b></b><u></u></i></div>',
       text: L('<b>Kapaklı</b> karonun rayı görünmez ve <b>dönmez</b>; altındaki ray zaten doğru yönde. Komşulara bakıp <b>hangi yönlere açıldığını</b> çıkar.',

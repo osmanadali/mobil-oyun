@@ -23,7 +23,7 @@
   // "?" kolunun gerçekten ışık taşıdığı an (karo yanıyor, kol var, komşu o kola bağlı ve yanıyor): oyuncu zaten görüyor → dolu ray
   const through = (G, i, q) => { if (!(G.cur[i] & q) || G.L.d[i] < 0) return false; const k = kOf(q), j = nb(G, i, k); return j >= 0 && (G.cur[j] & ob(G, i, k)) && G.L.d[j] >= 0; };
   return {
-    key: 'faint', line: 18, ord: 11, boost: 3.5,
+    key: 'faint', line: 18, ord: 11, boost: 4.5,
     clash: ['cover'],   // şekil gizleyen iki kural birlikte fazla ağır (tasarım ölçümü Δ +14,6)
     card: { name: L('Silik kol', 'Faint arm'), tag: L('Yeni: silik kol', 'New: faint arm'),
       demo: '<div class="rd-faint" aria-hidden="true"><i class="rd-fs"></i><i class="rd-ft"><b class="rd-fr"><u class="rd-fv"></u><u class="rd-ff"></u><u class="rd-fx"><u class="rd-fg"></u><em class="rd-fq">?</em></u></b></i></div>',
