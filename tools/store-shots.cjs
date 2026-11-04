@@ -1,6 +1,6 @@
 // Mağaza görselleri: gerçek oyunu yerel sunucuda açar, 7 sahneyi çeker, pazarlama çerçevesine (başlık + telefon) koyar.
 // Ayrıca Play öne çıkan görseli (1024×500) üretir. Oyun koduna dokunmaz; durum yalnız kayıt (localStorage) ve dokunuşla kurulur.
-// Kullanım: node tools/store-shots.cjs [play|ios-69|ios-65|feature] [01 02 …]   (boş = hepsi) · metinler ve yükleme yerleri: docs/MAGAZA.md
+// Kullanım: node tools/store-shots.cjs [all|en|de|es|pt-BR|fr] [play|ios-69|ios-65|feature] [01 02 …]   (boş = Türkçe, hepsi) · metinler ve yükleme yerleri: docs/MAGAZA.md
 // Çıktı: store/screens/{play,ios-69,ios-65}/NN-ad.png · store/feature-graphic.png (24 bit PNG, saydamlık yok)
 'use strict';
 const { chromium } = require('playwright');
@@ -104,7 +104,7 @@ const SCENES = [
     save: saveAt(46, { combo: 4 }), go: async page => { await play(page, 45); await page.waitForTimeout(900); await clock(page, 38); await solveTo(page, 1); await page.waitForTimeout(3200); } },
   // harita gerçek ilerlemeyle (test açık değil): şimdiki hattın (M12, döner tabla) başlığı üstte, bitmiş M11 sonu üstünde;
   // ekranın altı satır arasına denk gelir (yarım kesik sayı kalmasın, ev çizgisi yazının üstüne binmesin)
-  { id: '04-harita', t: ['22 kural,', 'sonu gelmeyen bölüm'], s: 'Zorluk dalga dalga artar, arada mola var', te: ['22 rules,', 'endless levels'], se: 'Harder and harder, with breather levels', test: false,
+  { id: '04-harita', t: ['24 kural,', 'sonu gelmeyen bölüm'], s: 'Zorluk dalga dalga artar, arada mola var', te: ['24 rules,', 'endless levels'], se: 'Harder and harder, with breather levels', test: false,
     save: saveAt(270), go: async page => {
       await page.evaluate(() => document.getElementById('bMap').click()); await page.waitForTimeout(700);
       await page.evaluate(() => {
@@ -143,6 +143,44 @@ const SCENES = [
     } },
 ];
 
+// öteki diller: sahne başlığı [satır 1, satır 2 (vurgu)] ve alt satır · öne çıkan görsel: [alt yazı, rozetler]
+const TX = {
+  de: { '01-oyun': [['Tippen, drehen,', 'Linie erleuchten'], 'Verbinde jede Station mit dem Zentrum, ohne offene Enden'],
+    '02-ana': [['Linien verbinden,', 'die Stadt beleben'], 'Einhändig · offline · jeden Tag eine neue Tageslinie'],
+    '03-kazan': [['Perfekt spielen,', 'Tickets sammeln'], 'Schaffe Zeit- und Zugziel, hol alle drei Sterne'],
+    '04-harita': [['24 Regeln,', 'endlose Level'], 'Immer schwerer, mit Verschnaufpausen'],
+    '05-kural': [['Neue Regeln', 'mit jeder Linie'], 'Weichen, Brücken, Wegweiser, Drehscheiben, Tunnelportale…'],
+    '06-tema': [['Tickets sammeln,', '25 Farbthemen'], 'Jedes perfekte Level bringt ein Ticket'],
+    '07-sandik': [['Überraschungskiste,', 'neue Züge'], 'Tipps, ein Serienschild oder ein neuer Zuglack'],
+    feature: ['Linien verbinden · Stadt beleben', ['Einhändig', 'Offline', 'Metrorätsel']] },
+  es: { '01-oyun': [['Toca, gira,', 'enciende la línea'], 'Une cada estación al centro, sin extremos sueltos'],
+    '02-ana': [['Conecta las líneas,', 'da vida a la ciudad'], 'A una mano · sin conexión · una Línea del día cada día'],
+    '03-kazan': [['Termina perfecto,', 'gana billetes'], 'Cumple el tiempo y los movimientos, logra tres estrellas'],
+    '04-harita': [['24 reglas,', 'niveles sin fin'], 'Cada vez más difícil, con niveles de respiro'],
+    '05-kural': [['Nuevas reglas', 'en cada línea'], 'Desvíos, puentes, señales, plataformas giratorias, túneles…'],
+    '06-tema': [['Gana billetes,', 'desbloquea 25 temas'], 'Cada nivel perfecto te da un billete'],
+    '07-sandik': [['Cofre sorpresa,', 'trenes nuevos'], 'Pistas, un escudo de racha o un nuevo diseño de tren'],
+    feature: ['Conecta las líneas · Da vida a la ciudad', ['A una mano', 'Sin conexión', 'Puzle de metro']] },
+  'pt-BR': { '01-oyun': [['Toque, gire,', 'acenda a linha'], 'Ligue cada estação ao centro, sem pontas soltas'],
+    '02-ana': [['Ligue as linhas,', 'dê vida à cidade'], 'Uma mão · offline · uma nova Linha do Dia todo dia'],
+    '03-kazan': [['Termine perfeito,', 'ganhe bilhetes'], 'Bata o tempo e os movimentos, pegue as três estrelas'],
+    '04-harita': [['24 regras,', 'fases sem fim'], 'Cada vez mais difícil, com fases de descanso'],
+    '05-kural': [['Novas regras', 'a cada linha'], 'Desvios, pontes, placas, plataformas giratórias, túneis…'],
+    '06-tema': [['Junte bilhetes,', 'libere 25 temas'], 'Cada fase perfeita rende um bilhete'],
+    '07-sandik': [['Baú surpresa,', 'trens novos'], 'Dicas, um escudo de sequência ou uma nova pintura de trem'],
+    feature: ['Ligue as linhas · Dê vida à cidade', ['Uma mão', 'Offline', 'Metrô']] },
+  fr: { '01-oyun': [['Touche, tourne,', 'allume la ligne'], 'Relie chaque station au centre, sans bout libre'],
+    '02-ana': [['Relie les lignes,', 'anime la ville'], 'À une main · hors ligne · une Ligne du jour chaque jour'],
+    '03-kazan': [['Finis parfait,', 'gagne des tickets'], 'Tiens le temps et les coups, décroche trois étoiles'],
+    '04-harita': [['24 règles,', 'des niveaux sans fin'], 'De plus en plus dur, avec des pauses'],
+    '05-kural': [['De nouvelles règles', 'à chaque ligne'], 'Aiguillages, ponts, panneaux, plaques tournantes, tunnels…'],
+    '06-tema': [['Gagne des tickets,', 'débloque 25 thèmes'], 'Chaque niveau parfait rapporte un ticket'],
+    '07-sandik': [['Coffre surprise,', 'nouveaux trains'], 'Des indices, un bouclier de série ou une nouvelle livrée'],
+    feature: ['Relie les lignes · Anime la ville', ['À une main', 'Hors ligne', 'Puzzle de métro']] },
+};
+const LOCALE = { tr: 'tr-TR', en: 'en-US', de: 'de-DE', es: 'es-ES', 'pt-BR': 'pt-BR', fr: 'fr-FR' }, LANGS = Object.keys(LOCALE);
+const words = (sc, lg) => lg === 'tr' ? [sc.t, sc.s] : lg === 'en' ? [sc.te, sc.se] : TX[lg][sc.id];
+
 // güvenli alan: env(safe-area-inset-*) tarayıcıda 0 → aynı kuralları sabit değerle ez (telefonda olduğu gibi durum çubuğu payı)
 const safeCss = ([t, b]) => `.screen{padding-top:${t}px!important}#home{padding-bottom:${Math.max(18, b)}px!important}
   .bottom{padding-bottom:${Math.max(18, b)}px!important}.mapList{padding-bottom:${Math.max(24, b)}px!important}
@@ -150,8 +188,8 @@ const safeCss = ([t, b]) => `.screen{padding-top:${t}px!important}#home{padding-
   .cscene{padding-top:${Math.max(16, t)}px!important;padding-bottom:${Math.max(16, b)}px!important}
   #toast{top:${t + 128}px!important}body.test .hero p::after{content:none!important}`;
 
-async function capture(browser, url, sc, d, k, en = false) {
-  const ctx = await browser.newContext({ viewport: { width: d.vp[0], height: d.vp[1] }, deviceScaleFactor: k, colorScheme: 'dark', hasTouch: true, isMobile: true, locale: en ? 'en-US' : 'tr-TR' });
+async function capture(browser, url, sc, d, k, lg = 'tr') {
+  const ctx = await browser.newContext({ viewport: { width: d.vp[0], height: d.vp[1] }, deviceScaleFactor: k, colorScheme: 'dark', hasTouch: true, isMobile: true, locale: LOCALE[lg] });
   await ctx.addInitScript(`window.__noIntro = true; window.__rayTest = ${sc.test === false ? 0 : 1}; try { localStorage.setItem('ray', ${JSON.stringify(JSON.stringify(sc.save))}); } catch {}
     addEventListener('DOMContentLoaded', () => { const s = document.createElement('style'); s.textContent = ${JSON.stringify(safeCss(d.safe))}; document.head.append(s); });`);
   const page = await ctx.newPage(), errors = [];
@@ -169,8 +207,8 @@ const ICONS = `<svg viewBox="0 0 74 14" fill="#eef0f7"><rect x="0" y="9" width="
   <path d="M31.5 3.2a12 12 0 0 1 8.6 3.5l1.3-1.4a14 14 0 0 0-19.8 0l1.3 1.4a12 12 0 0 1 8.6-3.5zm0 4a8 8 0 0 1 5.7 2.3l1.4-1.4a10 10 0 0 0-14.2 0l1.4 1.4a8 8 0 0 1 5.7-2.3zm0 4a4 4 0 0 1 2.9 1.2l-2.9 2.9-2.9-2.9a4 4 0 0 1 2.9-1.2z"/>
   <rect x="47" y="1.5" width="23" height="11" rx="3.2" fill="none" stroke="#eef0f7" stroke-opacity=".45" stroke-width="1.1"/><rect x="49" y="3.5" width="16" height="7" rx="1.8"/><path d="M71.6 5.5v3.2c.8-.3 1.3-.9 1.3-1.6s-.5-1.3-1.3-1.6z" fill-opacity=".45"/></svg>`;
 const BG = `background:radial-gradient(60% 40% at 12% 6%,rgba(255,159,90,.30),transparent 70%),radial-gradient(70% 45% at 92% 96%,rgba(109,123,255,.32),transparent 70%),radial-gradient(45% 30% at 85% 30%,rgba(255,111,145,.14),transparent 70%),linear-gradient(165deg,#161b33,#0d1020 62%)`;
-function frameHtml(d, sc, png, en = false) {
-  const [t, sub] = en ? [sc.te, sc.se] : [sc.t, sc.s];
+function frameHtml(d, sc, png, lg = 'tr') {
+  const [t, sub] = words(sc, lg);
   const L = layout(d), f = Math.round(d.W * .074), k = L.k, rad = Math.round(L.sw * .12), [st, sb] = d.safe;
   return `<!doctype html><html><head><meta charset="utf-8"><style>${FACE}
 *{margin:0;box-sizing:border-box}html,body{width:${d.W}px;height:${d.H}px;overflow:hidden}
@@ -194,8 +232,8 @@ header p{margin-top:${Math.round(f * .34)}px;font-size:${Math.round(f * .4)}px;f
 }
 
 // ---------- Play öne çıkan görsel (1024×500) ----------
-function featureHtml(en = false) {
-  const [sub, chips] = en ? ['Connect the lines · Light up the city', ['One hand', 'Offline', 'Metro puzzle']] : ['Hatları bağla · Şehri canlandır', ['Tek elle', 'İnternetsiz', 'Metro bulmacası']];
+function featureHtml(lg = 'tr') {
+  const en = lg !== 'tr', [sub, chips] = lg === 'en' ? ['Connect the lines · Light up the city', ['One hand', 'Offline', 'Metro puzzle']] : lg === 'tr' ? ['Hatları bağla · Şehri canlandır', ['Tek elle', 'İnternetsiz', 'Metro bulmacası']] : TX[lg].feature;
   const icon = rIcon({ size: 1000, round: 229 }).replace('<svg ', '<svg style="width:300px;height:300px" ');
   return `<!doctype html><html><head><meta charset="utf-8"><style>${FACE}
 *{margin:0;box-sizing:border-box}html,body{width:1024px;height:500px;overflow:hidden}
@@ -214,8 +252,8 @@ small b{font-size:21px;font-weight:600;color:#dfe3f2;padding:9px 18px;border-rad
 }
 
 async function main(args, scenes = SCENES, dir = OUT) {
-  // 'en' → İngilizce oyun (en-US) ve İngilizce başlıklar: store/screens-en/, store/feature-graphic-en.png
-  const en = args.includes('en'), sfx = en ? '-en' : '';
+  // dil: 'en', 'de', 'es', 'pt-BR', 'fr' ya da 'all' (6 dil) · boş = Türkçe. tr → store/screens/, öteki → store/screens-<dil>/, store/feature-graphic-<dil>.png
+  const lgs = args.includes('all') ? LANGS : LANGS.filter(l => l !== 'tr' && args.includes(l)); if (!lgs.length) lgs.push('tr');
   const devs = args.filter(a => DEVICES[a] || a === 'feature'), only = args.filter(a => /^\d\d$/.test(a));
   const want = id => !devs.length || devs.includes(id), wantSc = sc => !only.length || only.includes(sc.id.slice(0, 2));
   const srv = await serve(), url = `http://127.0.0.1:${srv.address().port}/index.html`, browser = await chromium.launch(), out = [];
@@ -226,15 +264,18 @@ async function main(args, scenes = SCENES, dir = OUT) {
     await p.screenshot({ path: file }); await p.close(); out.push(file.startsWith(R + path.sep) ? path.relative(R, file) : file);
   }
   try {
-    for (const [id, d] of Object.entries(DEVICES)) {
-      if (!want(id)) continue;
-      const L = layout(d);
-      for (const sc of scenes.filter(wantSc)) {
-        const png = await capture(browser, url, sc, d, L.k, en);
-        await render(path.join(dir, 'screens' + sfx, id, sc.id + '.png'), d.W, d.H, frameHtml(d, sc, png, en));
+    for (const lg of lgs) {
+      const sfx = lg === 'tr' ? '' : '-' + lg;
+      for (const [id, d] of Object.entries(DEVICES)) {
+        if (!want(id)) continue;
+        const L = layout(d);
+        for (const sc of scenes.filter(wantSc)) {
+          const png = await capture(browser, url, sc, d, L.k, lg);
+          await render(path.join(dir, 'screens' + sfx, id, sc.id + '.png'), d.W, d.H, frameHtml(d, sc, png, lg));
+        }
       }
+      if (want('feature')) await render(path.join(dir, `feature-graphic${sfx}.png`), 1024, 500, featureHtml(lg));
     }
-    if (want('feature')) await render(path.join(dir, `feature-graphic${sfx}.png`), 1024, 500, featureHtml(en));
   } finally { await browser.close(); srv.close(); }
   return out;
 }

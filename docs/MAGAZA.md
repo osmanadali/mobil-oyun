@@ -32,6 +32,7 @@ node tools/store-shots.cjs                 # hepsi (Play, iPhone 6,9", iPhone 6,
 node tools/store-shots.cjs play 02 03      # yalnız Play'in 2. ve 3. sahnesi
 node tools/store-shots.cjs feature         # yalnız öne çıkan görsel
 node tools/store-shots.cjs en              # İngilizce: oyun en-US'de, başlıklar İngilizce → store/screens-en/, store/feature-graphic-en.png
+node tools/store-shots.cjs all             # 6 dil (tr, en, de, es, pt-BR, fr) → store/screens[-<dil>]/, store/feature-graphic[-<dil>].png
 ```
 
 | Dosya | Boyut | Nereye |
@@ -42,6 +43,7 @@ node tools/store-shots.cjs en              # İngilizce: oyun en-US'de, başlık
 | `store/screens/ios-69/*.png` | 1320×2868 | App Store Connect › iPhone 6,9" ekran (zorunlu boy) |
 | `store/screens/ios-65/*.png` | 1284×2778 | App Store Connect › iPhone 6,5" (6,9" yüklenince gerekmez; yedek) |
 | `store/screens-en/…`, `store/feature-graphic-en.png` | aynı boylar | İngilizce mağaza girişi (Play › İngilizce çeviri, App Store Connect › English (U.S.)) |
+| `store/screens-{de,es,pt-BR,fr}/…`, `store/feature-graphic-{de,es,pt-BR,fr}.png` | aynı boylar | Almanca, İspanyolca, Portekizce (Brezilya), Fransızca mağaza girişleri (§5b) |
 | `store/appstore-icon-1024.png` | 1024×1024 | iOS projesinin simgesi (App Store simgesi derlemeden gelir) |
 
 Hepsi 24 bit PNG'dir, saydamlık (alfa) içermez; iki mağazanın kuralına uyar.
@@ -53,14 +55,14 @@ Hepsi 24 bit PNG'dir, saydamlık (alfa) içermez; iki mağazanın kuralına uyar
 | 1 | `01-oyun` | Dokun, döndür, hattı yak | Bütün durakları merkeze bağla, açık uç kalmasın | Bölüm 198 (M9, iki merkez), hat yarıya kadar yanmış. Mağazada ilk bakılan görsel oynanıştır. |
 | 2 | `02-ana` | Hatları bağla, şehri canlandır | Tek elle · internetsiz · her gün yeni bir Günün Hattı | Ana ekran: 12 günlük seri, Günün Hattı, M11 |
 | 3 | `03-kazan` | Kusursuz bitir, bilet kazan | Süre ve hamle hedefini tuttur, üç yıldızı topla | Bölüm 45 kusursuz: 3 yıldız, bilet, 5'li seri bonusu |
-| 4 | `04-harita` | 22 kural, sonu gelmeyen bölüm | Zorluk dalga dalga artar, arada mola var | Hat haritası: biten M11, süren M12 |
+| 4 | `04-harita` | 24 kural, sonu gelmeyen bölüm | Zorluk dalga dalga artar, arada mola var | Hat haritası: biten M11, süren M12 |
 | 5 | `05-kural` | Hat ilerledikçe yeni kurallar | Makas, köprü, tabela, döner tabla, halka, tünel ağzı… | Tünel ağzı kural kartı (M16) |
 | 6 | `06-tema` | Bilet topla, 25 renk teması aç | Kusursuz bitirdiğin her bölüm bir bilet kazandırır | Renk temaları penceresi |
 | 7 | `07-sandik` | Sürpriz sandık, yeni trenler | İpucu, seri kalkanı ya da yeni bir tren kaplaması | Sandık açılışı: destansı Lavanta kaplaması |
 
 Öne çıkan görsel: koyu lacivert zemin, uygulama ikonu (Gece Işığı: turuncu L ray, yanan kare merkez), "Ray", "Hatları bağla · Şehri canlandır" ve üç rozet (Tek elle, İnternetsiz, Metro bulmacası).
 
-İngilizce sahne başlıkları (`en`): 1 Connect the lines, light up the city · 2 Tap, turn, light the line · 3 Finish perfect, earn tickets · 4 22 rules, endless levels · 5 New rules as the line grows · 6 Collect tickets, unlock 25 themes · 7 Surprise chest, new trains. Öne çıkan görselde "Connect the lines · Light up the city" ve One hand, Offline, Metro puzzle rozetleri.
+İngilizce sahne başlıkları (`en`): 1 Connect the lines, light up the city · 2 Tap, turn, light the line · 3 Finish perfect, earn tickets · 4 24 rules, endless levels · 5 New rules as the line grows · 6 Collect tickets, unlock 25 themes · 7 Surprise chest, new trains. Öne çıkan görselde "Connect the lines · Light up the city" ve One hand, Offline, Metro puzzle rozetleri.
 
 ## 3. Karakter sayıları
 
@@ -68,11 +70,11 @@ Hepsi 24 bit PNG'dir, saydamlık (alfa) içermez; iki mağazanın kuralına uyar
 |---|---|---|---|
 | Play: uygulama adı | 30 | 18 | 22 |
 | Play: kısa açıklama | 80 | 78 | 73 |
-| Play: tam açıklama | 4000 | 2530 | 2785 |
+| Play: tam açıklama | 4000 | 2554 | 2818 |
 | App Store: ad | 30 | 18 | 22 |
 | App Store: alt başlık | 30 | 28 | 28 |
 | App Store: tanıtım metni | 170 | 152 | 152 |
-| App Store: açıklama | 4000 | 2530 | 2785 |
+| App Store: açıklama | 4000 | 2554 | 2818 |
 | App Store: anahtar kelimeler | 100 | 87 (94 bayt) | 99 |
 | Ürün adı (App Store) | 30 | 15 | 15 |
 | Ürün açıklaması (App Store) | 45 | 41 | 41 |
@@ -113,10 +115,10 @@ NASIL OYNANIR
 • Süreyi ve hamleyi birlikte tutturursan bölüm kusursuz olur, bilet kazanırsın.
 
 24 HAT, SONU GELMEYEN BÖLÜMLER
-Her metro hattı yeni bir kural getirir, her bölüm bir öncekinden biraz daha zordur. 22 kurallı hattan sonra oyun karma hatlarla sonsuza dek sürer. Bölümler cihazında üretilir, hepsi çözülebilir ve herkes aynı numaralı bölümde aynı bulmacayı görür.
+Her metro hattı yeni bir kural getirir, her bölüm bir öncekinden biraz daha zordur. 24 kurallı hattan sonra oyun karma hatlarla sonsuza dek sürer. Bölümler cihazında üretilir, hepsi çözülebilir ve herkes aynı numaralı bölümde aynı bulmacayı görür.
 
 HAT İLERLEDİKÇE YENİ KURALLAR
-Eşli karo, ters karo, kayan sıra, karanlık tünel, sayaçlı karo, soğuyan karo, iki merkez, makas, mühürlü karo, döner tabla, köprü, bakım karosu, kapak, tünel ağzı, yön tabelası, halka hat, silik kol, gizli depo, sarmal tahta, nehir, kapalı durak ve tarife bölgesi: 22 kural. Her yeni kural kısa, canlandırmalı bir kartla anlatılır. Tahta hiçbir zaman kalabalıklaşmaz.
+Eşli karo, ters karo, kayan sıra, karanlık tünel, sayaçlı karo, soğuyan karo, iki merkez, makas, mühürlü karo, döner tabla, köprü, bakım karosu, kapak, tünel ağzı, yön tabelası, halka hat, silik kol, gizli depo, sarmal tahta, nehir, kapalı durak, tarife bölgesi, son sefer ve kayan sütun: 24 kural. Her yeni kural kısa, canlandırmalı bir kartla anlatılır. Tahta hiçbir zaman kalabalıklaşmaz.
 
 GÜNÜN HATTI
 Her gün herkes aynı bulmacayı çözer. Bulmaca hafta boyunca zorlaşır, Pazar büyük bulmaca günüdür. Gün serini koru, sonucunu paylaş, arkadaşlarına meydan oku.
@@ -149,10 +151,10 @@ HOW TO PLAY
 • Hit both targets in one go and the level is flawless: you earn a ticket.
 
 24 LINES, ENDLESS LEVELS
-Each metro line brings a new rule and every level is a little harder than the one before. After 22 rule lines the game continues forever with mixed lines. Levels are generated on your device, every one is solvable, and everyone gets the same puzzle on the same level number.
+Each metro line brings a new rule and every level is a little harder than the one before. After 24 rule lines the game continues forever with mixed lines. Levels are generated on your device, every one is solvable, and everyone gets the same puzzle on the same level number.
 
 NEW RULES AS YOU TRAVEL
-Paired tiles, reverse tiles, sliding rows, dark tunnels, counter tiles, cooling tiles, two hubs, switches, sealed tiles, turntables, bridges, gear tiles, covers, tunnel portals, signposts, loop lines, faint arms, hidden depots, wrap-around boards, rivers, closed stations and fare zones: 22 rules. Each new rule is introduced with a short animated card, and the board never gets cluttered.
+Paired tiles, reverse tiles, sliding rows, dark tunnels, counter tiles, cooling tiles, two hubs, switches, sealed tiles, turntables, bridges, gear tiles, covers, tunnel portals, signposts, loop lines, faint arms, hidden depots, wrap-around boards, rivers, closed stations, fare zones, timed stations and sliding columns: 24 rules. Each new rule is introduced with a short animated card, and the board never gets cluttered.
 
 DAILY LINE
 Every day everyone solves the same puzzle. It gets harder through the week, and Sunday is big puzzle day. Keep your daily streak, share your result and challenge your friends.
@@ -187,8 +189,8 @@ Available in English, German, Spanish, Portuguese, French and Turkish.
 | Ücretli / ücretsiz | Ücretsiz (yayından sonra ücretliye çevrilemez) |
 | İletişim e-postası | [iletişim e-postası] |
 | Web sitesi | https://osmanadali.github.io (app-ads.txt için, bkz. §11) |
-| Sürüm notu (ilk sürüm) | `İlk sürüm. Tek elle, internetsiz metro bulmacası: 22 kural, Günün Hattı, renk temaları ve sürpriz sandık.` |
-| Sürüm notu (EN) | `First release. A one-handed, offline metro puzzle: 22 rules, a Daily Line, color themes and a surprise chest.` |
+| Sürüm notu (ilk sürüm) | `İlk sürüm. Tek elle, internetsiz metro bulmacası: 24 kural, Günün Hattı, renk temaları ve sürpriz sandık.` |
+| Sürüm notu (EN) | `First release. A one-handed, offline metro puzzle: 24 rules, a Daily Line, color themes and a surprise chest.` |
 
 ## 5. App Store girişi
 
@@ -215,10 +217,10 @@ Calm, one-handed and offline
 **Tanıtım metni** (170). Sürüm göndermeden değiştirilebilir; kampanya ve yeni kural duyurusu için kullanılır.
 
 ```text
-Her gün yeni bir Günün Hattı! Rayları döndür, durakları bağla, kusursuz bitir, bilet topla. 22 kural ve sonu gelmeyen bölümler seni bekliyor.
+Her gün yeni bir Günün Hattı! Rayları döndür, durakları bağla, kusursuz bitir, bilet topla. 24 kural ve sonu gelmeyen bölümler seni bekliyor.
 ```
 ```text
-A new Daily Line every day! Rotate the rails, connect every station, finish flawlessly and collect tickets. 22 rules and endless levels await.
+A new Daily Line every day! Rotate the rails, connect every station, finish flawlessly and collect tickets. 24 rules and endless levels await.
 ```
 
 **Açıklama** (4000): §4'teki tam açıklamanın aynısı.
@@ -245,7 +247,7 @@ pipes,net,subway,train,station,logic,brain,daily,relaxing,rotate,connect,tiles,r
 
 ## 5b. Almanca, İspanyolca, Portekizce (Brezilya), Fransızca
 
-Oyun bu dillerde de açılır (cihaz dili ya da Ayarlar › Dil). Play Console › Mağaza girişi › Çeviriler'e `de-DE`, `es-ES` (Latin Amerika için `es-419` aynı metinle), `pt-BR`, `fr-FR`; App Store Connect'te German, Spanish (Spain / Mexico), Portuguese (Brazil), French olarak eklenir. Terimler oyundakiyle aynıdır (docs/CEVIRI.md §3). Ekran görüntüleri şimdilik İngilizce sette kalır (`store/screens-en/`); dile özel görsel ileride `tools/store-shots.cjs` ile üretilebilir.
+Oyun bu dillerde de açılır (cihaz dili ya da Ayarlar › Dil). Play Console › Mağaza girişi › Çeviriler'e `de-DE`, `es-ES` (Latin Amerika için `es-419` aynı metinle), `pt-BR`, `fr-FR`; App Store Connect'te German, Spanish (Spain / Mexico), Portuguese (Brazil), French olarak eklenir. Terimler oyundakiyle aynıdır (docs/CEVIRI.md §3). Her dilin kendi ekran görüntüleri ve öne çıkan görseli var (`store/screens-<dil>/`, `store/feature-graphic-<dil>.png`; oyun o dilde açılır, başlıklar o dilde). Başlık metinleri `tools/store-shots.cjs` içindeki `TX` tablosundadır.
 
 | Metin | Sınır | DE | ES | PT-BR | FR |
 |---|---|---|---|---|---|
@@ -254,7 +256,7 @@ Oyun bu dillerde de açılır (cihaz dili ya da Ayarlar › Dil). Play Console �
 | App Store alt başlık | 30 | 28 | 30 | 28 | 29 |
 | App Store tanıtım metni | 170 | 150 | 146 | 141 | 163 |
 | Anahtar kelimeler | 100 | 98 | 93 | 91 | 90 |
-| Tam açıklama | 4000 | 2708 | 2645 | 2605 | 2819 |
+| Tam açıklama | 4000 | 2739 | 2689 | 2648 | 2859 |
 | Sürüm notu | 500 | 119 | 127 | 127 | 138 |
 
 ### Deutsch (de-DE)
@@ -273,7 +275,7 @@ Ruhig, einhändig und offline
 ```
 **Werbetext** (App Store)
 ```text
-Jeden Tag eine neue Tageslinie! Dreh die Gleise, verbinde jede Station, spiel perfekt und sammle Tickets. 22 Regeln und endlose Level warten auf dich.
+Jeden Tag eine neue Tageslinie! Dreh die Gleise, verbinde jede Station, spiel perfekt und sammle Tickets. 24 Regeln und endlose Level warten auf dich.
 ```
 **Schlüsselwörter** (App Store)
 ```text
@@ -290,10 +292,10 @@ SO WIRD GESPIELT
 • Schaffst du beide Ziele auf einmal, ist das Level perfekt: Du bekommst ein Ticket.
 
 24 LINIEN, ENDLOSE LEVEL
-Jede Metrolinie bringt eine neue Regel, jedes Level ist etwas schwerer als das vorige. Nach 22 Regellinien geht es mit gemischten Linien endlos weiter. Die Level entstehen auf deinem Gerät, jedes ist lösbar, und alle bekommen bei derselben Levelnummer dasselbe Rätsel.
+Jede Metrolinie bringt eine neue Regel, jedes Level ist etwas schwerer als das vorige. Nach 24 Regellinien geht es mit gemischten Linien endlos weiter. Die Level entstehen auf deinem Gerät, jedes ist lösbar, und alle bekommen bei derselben Levelnummer dasselbe Rätsel.
 
 NEUE REGELN UNTERWEGS
-Paarkacheln, Umkehrkacheln, Schiebereihen, dunkle Tunnel, Zählkacheln, Frostkacheln, zwei Zentren, Weichen, Siegelkacheln, Drehscheiben, Brücken, Zahnradkacheln, Abdeckungen, Tunnelportale, Wegweiser, Ringlinien, blasse Arme, versteckte Depots, Endlosbretter, Flüsse, geschlossene Stationen und Tarifzonen: 22 Regeln. Jede neue Regel stellt eine kurze animierte Karte vor, und das Brett wird nie unübersichtlich.
+Paarkacheln, Umkehrkacheln, Schiebereihen, dunkle Tunnel, Zählkacheln, Frostkacheln, zwei Zentren, Weichen, Siegelkacheln, Drehscheiben, Brücken, Zahnradkacheln, Abdeckungen, Tunnelportale, Wegweiser, Ringlinien, blasse Arme, versteckte Depots, Endlosbretter, Flüsse, geschlossene Stationen, Tarifzonen, Zeitstationen und Schiebespalten: 24 Regeln. Jede neue Regel stellt eine kurze animierte Karte vor, und das Brett wird nie unübersichtlich.
 
 TAGESLINIE
 Jeden Tag lösen alle dasselbe Rätsel. Es wird im Lauf der Woche schwerer, sonntags gibt es das große Rätsel. Halte deine Serie, teile dein Ergebnis und fordere Freunde heraus.
@@ -316,7 +318,7 @@ Auf Deutsch, Englisch, Spanisch, Portugiesisch, Französisch und Türkisch.
 ```
 **Versionshinweis**
 ```text
-Erste Version. Ein einhändiges Offline-Metrorätsel: 22 Regeln, eine Tageslinie, Farbthemen und eine Überraschungskiste.
+Erste Version. Ein einhändiges Offline-Metrorätsel: 24 Regeln, eine Tageslinie, Farbthemen und eine Überraschungskiste.
 ```
 
 ### Español (es-ES · es-419)
@@ -335,7 +337,7 @@ Tranquilo, a una mano, sin red
 ```
 **Texto promocional** (App Store)
 ```text
-¡Una nueva Línea del día cada día! Gira las vías, conecta cada estación, termina perfecto y gana billetes. Te esperan 22 reglas y niveles sin fin.
+¡Una nueva Línea del día cada día! Gira las vías, conecta cada estación, termina perfecto y gana billetes. Te esperan 24 reglas y niveles sin fin.
 ```
 **Palabras clave** (App Store)
 ```text
@@ -352,10 +354,10 @@ CÓMO SE JUEGA
 • Cumple los dos a la vez y el nivel es perfecto: ganas un billete.
 
 24 LÍNEAS, NIVELES SIN FIN
-Cada línea de metro trae una regla nueva y cada nivel es un poco más difícil que el anterior. Tras 22 líneas con reglas, el juego sigue para siempre con líneas mixtas. Los niveles se crean en tu dispositivo, todos tienen solución y todo el mundo juega el mismo puzle en el mismo número de nivel.
+Cada línea de metro trae una regla nueva y cada nivel es un poco más difícil que el anterior. Tras 24 líneas con reglas, el juego sigue para siempre con líneas mixtas. Los niveles se crean en tu dispositivo, todos tienen solución y todo el mundo juega el mismo puzle en el mismo número de nivel.
 
 REGLAS NUEVAS POR EL CAMINO
-Piezas gemelas, piezas inversas, filas deslizantes, túneles oscuros, piezas contador, piezas heladas, dos centros, desvíos, piezas selladas, plataformas giratorias, puentes, piezas engranaje, tapas, bocas de túnel, señales, líneas circulares, brazos tenues, depósitos ocultos, tableros sin bordes, ríos, estaciones cerradas y zonas tarifarias: 22 reglas. Cada regla nueva se presenta con una tarjeta animada corta y el tablero nunca se satura.
+Piezas gemelas, piezas inversas, filas deslizantes, túneles oscuros, piezas contador, piezas heladas, dos centros, desvíos, piezas selladas, plataformas giratorias, puentes, piezas engranaje, tapas, bocas de túnel, señales, líneas circulares, brazos tenues, depósitos ocultos, tableros sin bordes, ríos, estaciones cerradas, zonas tarifarias, estaciones con reloj y columnas deslizantes: 24 reglas. Cada regla nueva se presenta con una tarjeta animada corta y el tablero nunca se satura.
 
 LÍNEA DEL DÍA
 Cada día todos resuelven el mismo puzle. Se complica a lo largo de la semana y el domingo toca el gran puzle. Mantén tu racha, comparte tu resultado y reta a tus amigos.
@@ -378,7 +380,7 @@ En español, inglés, alemán, portugués, francés y turco.
 ```
 **Notas de la versión**
 ```text
-Primera versión. Un puzle de metro a una mano y sin conexión: 22 reglas, una Línea del día, temas de color y un cofre sorpresa.
+Primera versión. Un puzle de metro a una mano y sin conexión: 24 reglas, una Línea del día, temas de color y un cofre sorpresa.
 ```
 
 ### Português (pt-BR)
@@ -397,7 +399,7 @@ Calmo, com uma mão e offline
 ```
 **Texto promocional** (App Store)
 ```text
-Uma nova Linha do Dia todo dia! Gire os trilhos, ligue cada estação, termine perfeito e ganhe bilhetes. 22 regras e fases sem fim te esperam.
+Uma nova Linha do Dia todo dia! Gire os trilhos, ligue cada estação, termine perfeito e ganhe bilhetes. 24 regras e fases sem fim te esperam.
 ```
 **Palavras-chave** (App Store)
 ```text
@@ -414,10 +416,10 @@ COMO JOGAR
 • Bata as duas de uma vez e a fase fica perfeita: você ganha um bilhete.
 
 24 LINHAS, FASES SEM FIM
-Cada linha de metrô traz uma regra nova e cada fase é um pouco mais difícil que a anterior. Depois de 22 linhas com regras, o jogo continua para sempre com linhas mistas. As fases são criadas no seu aparelho, todas têm solução e todo mundo recebe o mesmo quebra-cabeça no mesmo número de fase.
+Cada linha de metrô traz uma regra nova e cada fase é um pouco mais difícil que a anterior. Depois de 24 linhas com regras, o jogo continua para sempre com linhas mistas. As fases são criadas no seu aparelho, todas têm solução e todo mundo recebe o mesmo quebra-cabeça no mesmo número de fase.
 
 REGRAS NOVAS PELO CAMINHO
-Peças gêmeas, peças inversas, fileiras deslizantes, túneis escuros, peças contador, peças geladas, dois centros, desvios, peças lacradas, plataformas giratórias, pontes, peças engrenagem, tampas, bocas de túnel, placas, linhas circulares, braços apagados, depósitos ocultos, tabuleiros sem bordas, rios, estações fechadas e zonas tarifárias: 22 regras. Cada regra nova chega com um cartão animado curto, e o tabuleiro nunca fica poluído.
+Peças gêmeas, peças inversas, fileiras deslizantes, túneis escuros, peças contador, peças geladas, dois centros, desvios, peças lacradas, plataformas giratórias, pontes, peças engrenagem, tampas, bocas de túnel, placas, linhas circulares, braços apagados, depósitos ocultos, tabuleiros sem bordas, rios, estações fechadas, zonas tarifárias, estações com relógio e colunas deslizantes: 24 regras. Cada regra nova chega com um cartão animado curto, e o tabuleiro nunca fica poluído.
 
 LINHA DO DIA
 Todo dia todo mundo resolve o mesmo quebra-cabeça. Ele fica mais difícil ao longo da semana, e domingo é dia do desafio grande. Mantenha sua sequência, compartilhe o resultado e desafie os amigos.
@@ -440,7 +442,7 @@ Em português, inglês, espanhol, alemão, francês e turco.
 ```
 **Notas da versão**
 ```text
-Primeira versão. Um quebra-cabeça de metrô para uma mão e offline: 22 regras, a Linha do Dia, temas de cores e um baú surpresa.
+Primeira versão. Um quebra-cabeça de metrô para uma mão e offline: 24 regras, a Linha do Dia, temas de cores e um baú surpresa.
 ```
 
 ### Français (fr-FR)
@@ -459,7 +461,7 @@ Calme, à une main, hors ligne
 ```
 **Texte promotionnel** (App Store)
 ```text
-Une nouvelle Ligne du jour chaque jour ! Tourne les rails, relie chaque station, finis parfait et gagne des tickets. 22 règles et des niveaux sans fin t’attendent.
+Une nouvelle Ligne du jour chaque jour ! Tourne les rails, relie chaque station, finis parfait et gagne des tickets. 24 règles et des niveaux sans fin t’attendent.
 ```
 **Mots-clés** (App Store)
 ```text
@@ -476,10 +478,10 @@ COMMENT JOUER
 • Tiens les deux à la fois et le niveau est parfait : tu gagnes un ticket.
 
 24 LIGNES, DES NIVEAUX SANS FIN
-Chaque ligne de métro apporte une nouvelle règle et chaque niveau est un peu plus dur que le précédent. Après 22 lignes à règles, le jeu continue à l’infini avec des lignes mixtes. Les niveaux sont créés sur ton appareil, tous ont une solution et tout le monde a le même puzzle au même numéro de niveau.
+Chaque ligne de métro apporte une nouvelle règle et chaque niveau est un peu plus dur que le précédent. Après 24 lignes à règles, le jeu continue à l’infini avec des lignes mixtes. Les niveaux sont créés sur ton appareil, tous ont une solution et tout le monde a le même puzzle au même numéro de niveau.
 
 DE NOUVELLES RÈGLES EN ROUTE
-Tuiles jumelles, tuiles inverses, rangées glissantes, tunnels sombres, tuiles compteur, tuiles givrées, deux centres, aiguillages, tuiles scellées, plaques tournantes, ponts, tuiles engrenage, caches, portails de tunnel, panneaux, lignes circulaires, bras pâles, dépôts cachés, plateaux sans bords, rivières, stations fermées et zones tarifaires : 22 règles. Chaque nouvelle règle est présentée par une courte carte animée, et le plateau ne devient jamais surchargé.
+Tuiles jumelles, tuiles inverses, rangées glissantes, tunnels sombres, tuiles compteur, tuiles givrées, deux centres, aiguillages, tuiles scellées, plaques tournantes, ponts, tuiles engrenage, caches, portails de tunnel, panneaux, lignes circulaires, bras pâles, dépôts cachés, plateaux sans bords, rivières, stations fermées, zones tarifaires, stations minutées et colonnes glissantes : 24 règles. Chaque nouvelle règle est présentée par une courte carte animée, et le plateau ne devient jamais surchargé.
 
 LIGNE DU JOUR
 Chaque jour, tout le monde résout le même puzzle. Il se corse au fil de la semaine, et le dimanche c’est le grand puzzle. Garde ta série, partage ton résultat et défie tes amis.
@@ -502,7 +504,7 @@ En français, anglais, allemand, espagnol, portugais et turc.
 ```
 **Notes de version**
 ```text
-Première version. Un puzzle de métro à une main et hors ligne : 22 règles, une Ligne du jour, des thèmes de couleur et un coffre surprise.
+Première version. Un puzzle de métro à une main et hors ligne : 24 règles, une Ligne du jour, des thèmes de couleur et un coffre surprise.
 ```
 
 ## 6. Google Play "Veri güvenliği" formu
@@ -766,7 +768,7 @@ Mağaza
 ## 13. Bilinen sınırlar
 
 - **İki dil.** Oyun Türkçe ve İngilizcedir (28 Ekim 2026). İngilizce mağaza girişi İngilizce ekran görüntüleriyle (`store/screens-en/`) yüklenir. Altyapı ve sözlük: `docs/CEVIRI.md`.
-- **Kural sayısı.** Açıklama 22 kuralın hepsini hat sırasıyla sayar (3 Kasım: sabit karo kalktı, mühürlü karo ve sarmal tahta eklendi; tam açıklama 4000 sınırının altında).
+- **Kural sayısı.** Açıklama 24 kuralın hepsini hat sırasıyla sayar (4 Kasım: son sefer ve kayan sütun eklendi; tam açıklama 4000 sınırının altında).
 - **Görseller çalışan koda bağlı.** Arayüz değişince `node tools/store-shots.cjs` yeniden çalıştırılmalı. Sahneler bölüm numarasıyla kurulur (180, 45, 829…); üretim değişirse aynı numara farklı bir tahta verebilir, çıktı gözle kontrol edilmeli.
 - **Veri ve gizlilik yanıtları** AdMob'un ve Firebase Analytics'in Kasım 2026 itibarıyla bilinen davranışına göredir. Gönderimden önce §6 ve §7'deki Google bağlantılarıyla karşılaştırılmalı.
 - **Silme düğmesi ve rıza penceresi** `magaza-reklam` dalında, iOS projesi ve imzalı derleme `magaza-yerel` dalındadır; bu belge o dallar `main`e birleşmiş gibi yazıldı.
