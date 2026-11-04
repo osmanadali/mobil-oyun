@@ -106,7 +106,9 @@ namespace Ada.Throw
         {
             StopAllCoroutines();
             running = false;
+            thrower.EndAiming();          // nişanı yalnız Run içindeki BeginAiming açar
             thrower.ResetAll();
+            anim.ResetForStage();         // Victory'den Locomotion'a: tekrar oynamada Throw tetikleyicisi tüketilir
             if (hitFx) hitFx.StopAll();
             if (finalFx) finalFx.StopAll();
             foreach (var t in targets) t.ResetBoard();
@@ -117,14 +119,18 @@ namespace Ada.Throw
 
         void OnReleased(Vector3 position, Vector3 velocity)
         {
-            if (sfx && throwClip) sfx.PlayOneShot(throwClip, 0.8f);
+            if (running && !IsComplete && sfx && throwClip) sfx.PlayOneShot(throwClip, 0.8f);
         }
 
         void OnTargetHit(TargetBoard target, Vector3 point, Vector3 normal)
         {
             if (!running || IsComplete) return;
             if (Array.IndexOf(targets, target) < 0) return;
-            if (!target.RegisterHit(point)) return;      // aynı hedefe tekrar temas: puan yok
+            if (!target.RegisterHit(point))              // zaten devrilmiş hedef: puan yok, ıska geri bildirimi
+            {
+                OnMissed();
+                return;
+            }
 
             Count++;
             bool final = IsComplete;
@@ -145,6 +151,7 @@ namespace Ada.Throw
 
             if (final)
             {
+                thrower.EndAiming();     // son isabetle girdi hemen kilitlenir: zafer sırasında top atılamaz
                 GameClock.HitStop(finalHitStop);
                 cameraRig.Shake(finalShakeSeconds, finalShakeFraction);
             }

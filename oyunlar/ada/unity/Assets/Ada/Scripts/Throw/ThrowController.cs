@@ -98,6 +98,10 @@ namespace Ada.Throw
                 collectionCheck: true,
                 defaultCapacity: 4,
                 maxSize: 8);
+
+            var animator = anim ? anim.Animator : null;
+            if (animator && animator.updateMode != AnimatorUpdateMode.Normal)
+                Debug.LogWarning("ThrowController: Animator Update Mode 'Normal' olmalı (bırakma olayı ile önizleme hizası).", this);
         }
 
         void OnEnable()
@@ -128,13 +132,16 @@ namespace Ada.Throw
             EnsureHeldBall();
         }
 
+        /// <summary>Nişanı kapatır: girdi kilitlenir, bekleyen atış iptal edilir, yay gizlenir, eldeki top bırakılır.</summary>
         public void EndAiming()
         {
             aimEnabled = false;
             CancelAim();
+            CancelPending();
+            if (arc) arc.Hide();
             anim.SetAiming(false);
             if (nextBallRoutine != null) { StopCoroutine(nextBallRoutine); nextBallRoutine = null; }
-            if (heldBall != null && !IsBusy) { pool.Release(heldBall); heldBall = null; }
+            if (heldBall != null) { pool.Release(heldBall); heldBall = null; }
         }
 
         /// <summary>Yeniden başlatma: bekleyen atış, yay, uçan toplar ve eldeki top sıfırlanır.</summary>
@@ -186,18 +193,14 @@ namespace Ada.Throw
         {
             if (!touchActive) return;
             touchActive = false;
-            Vector3 v0;
-            if (validAim)
-            {
-                // Ekranda SON ÇİZİLEN yay atılır: parmak kalkarken birkaç dp kayması sonucu değiştirmez.
-                v0 = lastPreviewVelocity;
-            }
-            else if (!ComputeLaunch(start, end, out v0))
+            // Yalnız ekranda SON ÇİZİLEN yay atılır. Yay görünmüyorsa (eşik altı / iptal hareketi) atış yok.
+            if (!validAim)
             {
                 arc.Hide();
                 AimCanceled?.Invoke();
                 return;
             }
+            Vector3 v0 = lastPreviewVelocity;
             validAim = false;
             pendingId = ++throwId;
             released = false;
@@ -254,15 +257,21 @@ namespace Ada.Throw
         public void OnReleaseEvent()
         {
             if (pendingId < 0 || released) return;   // iptal edilmiş atış ya da çift olay
+            if (!aimEnabled)                           // etap bitti / nişan kapandı: top fırlatılmaz
+            {
+                CancelPending();
+                return;
+            }
             released = true;
             int id = pendingId;
             pendingId = -1;
 
             Vector3 origin = throwOrigin.position;
-            int n = Ballistics.Predict(origin, pendingVelocity, pendingSettings, Time.fixedDeltaTime, buffer, hitMask, killY, out _, out _);
+            int n = Ballistics.Predict(origin, pendingVelocity, pendingSettings, Time.fixedDeltaTime, buffer, hitMask, killY,
+                out bool endsInHit, out _);
             var ball = heldBall != null ? heldBall : pool.Get();
             heldBall = null;
-            ball.Launch(id, origin, pendingVelocity, pendingSettings, killY, buffer, n);
+            ball.Launch(id, origin, pendingVelocity, pendingSettings, hitMask, killY, buffer, n, endsInHit);
             active.Add(ball);
 
             arc.FadeOut();
@@ -317,17 +326,13 @@ namespace Ada.Throw
         }
 
         // ---------------------------------------------------------------- top olayları
-        void OnBallContact(Ball ball, Collision collision)
+        void OnBallContact(Ball ball, Collider other, Vector3 point, Vector3 normal)
         {
             if (logTrajectoryError && Debug.isDebugBuild)
                 Debug.Log($"[Atış] önizleme sapması (temas öncesi en büyük): {ball.LastMaxError * 100f:F1} cm");
 
-            var target = collision.collider.GetComponentInParent<TargetBoard>();
-            if (target != null)
-            {
-                ContactPoint cp = collision.GetContact(0);
-                TargetHit?.Invoke(target, cp.point, cp.normal);
-            }
+            var target = other ? other.GetComponentInParent<TargetBoard>() : null;
+            if (target != null) TargetHit?.Invoke(target, point, normal);
             else Missed?.Invoke();
         }
 

@@ -24,7 +24,8 @@ REF = os.path.normpath(os.path.join(ROOT, "..", "referans", "gorunumler"))
 CHARS = {
     # side: which side of the character the "yan" reference view shows
     "kerem": dict(raw="ham/kerem_sekil_hunyuan2.glb", height=1.84, side="left", tris=32000),
-    "deniz": dict(raw="ham/deniz_sekil_hunyuan2.glb", height=1.70, side="right", tris=34000, pony=True),
+    "deniz": dict(raw="ham/deniz_sekil_hunyuan2.glb", height=1.70, side="right", tris=34000, pony=True,
+                  face_front=True, side_check=True),
 }
 TEX = 2048
 
@@ -448,12 +449,16 @@ def fit_view(mask, U, Z, cell):
     return p, best
 
 
-def fit_region(mask, U, Z, cell, p, zlo, zhi, free=(0, 2, 3)):
-    """refine the projection on a height band only (IoU of mesh and art silhouettes inside the band)"""
+def fit_region(mask, U, Z, cell, p, zlo, zhi, free=(0, 2, 3), ucut=None, front=1):
+    """refine the projection on a height band only (IoU of mesh and art silhouettes inside the band);
+    with ucut, only the part in front of u=ucut counts (side views: the face, not the hair behind it)"""
     sel = (Z > zlo) & (Z < zhi)
+    if ucut is not None:
+        sel &= (U - ucut) * front > 0
     U, Z = U[sel], Z[sel]
     hgt, wid = mask.shape
-    csum = np.concatenate([[0], np.cumsum(mask.sum(1))])
+    sat = np.zeros((hgt + 1, wid + 1))
+    sat[1:, 1:] = mask.cumsum(0).cumsum(1)
 
     def score(q):
         s, k, a, b = q
@@ -462,7 +467,12 @@ def fit_region(mask, U, Z, cell, p, zlo, zhi, free=(0, 2, 3)):
         ok = (ix >= 0) & (ix < wid) & (iy >= 0) & (iy < hgt)
         inter = mask[iy[ok], ix[ok]].sum()
         r0, r1 = (int(np.clip(b - s * z, 0, hgt)) for z in (zhi, zlo))
-        rc = (csum[r1] - csum[r0]) / (s * s * k * cell * cell)
+        c0, c1 = 0, wid
+        if ucut is not None:
+            cc = int(np.clip(a + s * k * ucut, 0, wid))
+            c0, c1 = (cc, wid) if front > 0 else (0, cc)
+        cnt = sat[r1, c1] - sat[r0, c1] - sat[r1, c0] + sat[r0, c0]
+        rc = cnt / (s * s * k * cell * cell)
         return inter / (len(U) + rc - inter)
 
     p = p.copy()
@@ -485,27 +495,7 @@ def fit_region(mask, U, Z, cell, p, zlo, zhi, free=(0, 2, 3)):
     return p, best
 
 
-def fit_profile(mask, U, Z, p, zlo, zhi, front):
-    """side views: shift the head so the face profile (front-most silhouette edge) lines up"""
-    s, k, a, b = p
-    du = []
-    for z in np.unique(Z[(Z > zlo) & (Z < zhi)]):
-        um = U[Z == z]
-        fm = um.max() if front > 0 else um.min()
-        py = int(b - s * z)
-        if not 0 <= py < mask.shape[0]:
-            continue
-        cols = np.where(mask[py])[0]
-        if len(cols):
-            fi = (cols.max() + 1) if front > 0 else cols.min()
-            du.append(fi - (a + s * k * fm))
-    q = p.copy()
-    if du:
-        q[2] += float(np.median(du))
-    return q, len(du)
-
-
-def inpaint_hands(img, mask, skin, p, z0, z1, H):
+def inpaint_hands(img, mask, skin, p, z0, z1, H, horizontal=False):
     """side art: the hand hangs in front of the shorts. Replace hand-skin pixels in the hand's height band
     by the nearest non-skin pixel below in the same column (the shorts' stripes are vertical)."""
     s, k, a, b = p
@@ -531,6 +521,21 @@ def inpaint_hands(img, mask, skin, p, z0, z1, H):
         carry[ns] = img[r, ns]
         have |= ns
         have &= mask[r]
+    if horizontal:
+        # hand pixels with no clean pixel below (hand reaches past the hem onto the thigh): interpolate
+        # between the nearest non-hand pixels left and right in the same row
+        done = np.zeros_like(isskin)
+        for r in range(max(r_top, 0), min(r_bot, img.shape[0] - 1) + 1):
+            rem = np.where(isskin[r])[0]
+            ok = np.where(mask[r] & ~isskin[r])[0]
+            if len(rem) == 0 or len(ok) < 2:
+                continue
+            j = np.clip(np.searchsorted(ok, rem), 1, len(ok) - 1)
+            cl, cr = ok[j - 1], ok[j]
+            t = ((rem - cl) / np.maximum(cr - cl, 1))[:, None]
+            img[r, rem] = img[r, cl] * (1 - t) + img[r, cr] * t
+            done[r, rem] = True
+        n = int(done.sum())
     log("  inpainted %d hand pixels in the side view (rows %d-%d)" % (n, r_top, r_bot))
     if os.environ.get("RIG_DEBUG"):
         dbg = bpy.data.images.new("inp", img.shape[1], img.shape[0], alpha=False)
@@ -615,6 +620,8 @@ def stage_texture(c, o):
     skinlike = lambda q: (q[:, 0] - q[:, 2] > 0.1) & (q[:, 1] > 0.52 * q[:, 0]) & (q[:, 0] > 0.12)
     whitelike = lambda q: (q.min(1) > 0.62) & (q.max(1) - q.min(1) < 0.15)
     hair_ref = None
+    fb_col = np.zeros((len(idx), 3))      # best front/back sample per texel (for side_check)
+    fb_f = np.zeros(len(idx))
     # side views: the hands are inpainted away in the art, so they must not occlude either
     vh = np.zeros(len(V), bool)
     for sd in ("L", "R"):
@@ -642,14 +649,17 @@ def stage_texture(c, o):
         if vname in ("left", "right"):   # hair differs most in profile: fit the body below it, the face by profile
             pb, iou = fit_region(mask, U, Z, cell, pb, -1.0, 0.72 * H, free=(0, 1, 2, 3))
             front = 1 if np.dot((0, -1, 0), r) > 0 else -1
-            ph, iouh = fit_profile(mask, U, Z, pb, LM["neck_z"] + 0.02 * H, H - 0.06 * H, front)
+            nb = np.abs(Z - LM["neck_z"]) < 0.01 * H
+            ucut = (U[nb].min() + U[nb].max()) / 2      # neck centre line: face in front, hair behind
+            ph, iouh = fit_region(mask, U, Z, cell, pb, zc, 9.0, ucut=ucut, front=front)
         else:
             ph, iouh = fit_region(mask, U, Z, cell, pb, zc, 9.0)
         log("view %-5s from %s%s: body s %.1f k %.3f a %.1f b %.1f IoU %.3f | head s %.1f a %.1f b %.1f (%.3f)"
             % (vname, img_name, " (mirrored)" if mirror else "", *pb, iou, ph[0], ph[2], ph[3], iouh))
         dbg.append((vname, img, mask, U, Z, pb))
         if vname in ("left", "right"):
-            img = inpaint_hands(img, mask, skin_ref, pb, P[hand, 2].min(), P[hand, 2].max(), H)
+            img = inpaint_hands(img, mask, skin_ref, pb, P[hand, 2].min(), P[hand, 2].max(), H,
+                                horizontal=bool(c.get("side_check")))
         valid = dilate(~mask, 3)  # erode the character mask: no white edge pixels
         valid = ~valid
         f = N @ np.array(d)
@@ -677,12 +687,25 @@ def stage_texture(c, o):
             # the side art's hands hang in front of the shorts: never paint them onto non-hand texels
             hz0, hz1 = P[hand, 2].min() - 0.02 * H, P[hand, 2].max() + 0.01 * H
             zz = P[cand, 2]
-            rej |= (zz > hz0) & (zz < hz1) & (np.abs(N[cand, 0]) > 0.5) & ~near_arm[cand] & skinlike(col)
+            if not c.get("side_check"):
+                rej |= (zz > hz0) & (zz < hz1) & (np.abs(N[cand, 0]) > 0.5) & ~near_arm[cand] & skinlike(col)
             rej |= arm[cand] & ~(skinlike(col) | whitelike(col))
         if hair_ref is not None:
             rej |= pony[cand] & (np.linalg.norm(col - hair_ref, axis=1) > 0.2)
+        if vname in ("left", "right") and c.get("side_check"):
+            # the mesh was generated from the front image: where front/back see a texel reasonably well and the
+            # side art disagrees clearly, the side art is misaligned there (shorts hem, armholes)
+            rej |= (fb_f[cand] > 0.25) & (np.linalg.norm(col - fb_col[cand], axis=1) > 0.3)
         cand, col = cand[~rej], col[~rej]
+        if vname in ("front", "back"):
+            better = f[cand] > fb_f[cand]
+            fb_col[cand[better]] = col[better]
+            fb_f[cand[better]] = f[cand][better]
         w = gain * np.where(hand[cand], 0.1 * f[cand] ** 2, f[cand] ** 6)
+        if vname in ("left", "right") and c.get("face_front"):
+            # this character's profile art does not match the mesh's face: let the front view own the face
+            ff = -N[cand, 1]
+            w *= np.where(P[cand, 2] > LM["neck_z"], np.clip((0.6 - ff) / 0.4, 0, 1), 1.0)
         acc[cand] += col * w[:, None]
         wsum[cand] += w
         maxf[cand] = np.maximum(maxf[cand], f[cand])
@@ -929,6 +952,28 @@ def bind_auto(mesh, arm):
     log("bound to %s: %d groups, %d unweighted verts" % (arm.name, len(mesh.vertex_groups), (tot < 0.5).sum()))
 
 
+def rigid_ponytail(ob, LM):
+    """the ponytail follows the head bone only (heat weighting leaks it onto the neck and upper spine,
+    which stretches it whenever the head turns)"""
+    H = LM["H"]
+    nk = torso_loop(LM["sec"], LM["neck_z"])
+    V = mesh_np(ob.data)   # T-pose now, but head and ponytail did not move
+    sel = (V[:, 1] > nk["hi"][1] + 0.04 * H) & (V[:, 2] > LM["neck_z"] - 0.1 * H)
+    head = ob.vertex_groups["DEF-head"]
+    n = 0
+    for v in ob.data.vertices:
+        if not sel[v.index]:
+            continue
+        w = {ob.vertex_groups[g.group].name: g.weight for g in v.groups}
+        if w.get("DEF-head", 0) + w.get("DEF-neck", 0) + w.get("DEF-spine.003", 0) < 0.3:
+            continue
+        for g in list(v.groups):
+            ob.vertex_groups[g.group].remove([v.index])
+        head.add([v.index], 1.0, "REPLACE")
+        n += 1
+    log("ponytail: %d verts bound rigidly to DEF-head" % n)
+
+
 def stage_rig(c, o):
     bpy.ops.wm.open_mainfile(filepath=os.path.join(o["work"], "tex.blend"))
     ob = bpy.data.objects[o["char"]]
@@ -978,6 +1023,8 @@ def stage_rig(c, o):
     bpy.data.objects.remove(armA, do_unlink=True)
     # final bind on the original-orientation T-pose skeleton
     bind_auto(ob, armT)
+    if c.get("pony"):
+        rigid_ponytail(ob, LM)
     for p in ob.data.polygons:
         p.use_smooth = True
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(o["work"], "rig.blend"))

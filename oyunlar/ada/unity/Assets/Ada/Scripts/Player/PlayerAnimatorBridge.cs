@@ -33,7 +33,24 @@ namespace Ada.Player
         static readonly int VictoryId = Animator.StringToHash("Victory");
         static readonly int RollId = Animator.StringToHash("Roll");
 
+        static readonly int LocomotionStateId = Animator.StringToHash("Locomotion");
+
+        public Animator Animator => animator;
+
         void Awake() => animator.applyRootMotion = false;
+
+        /// <summary>Etap yeniden başlarken: bekleyen tetikleyiciler temizlenir, Animator Locomotion'a döner (ör. Victory'den çıkış).</summary>
+        public void ResetForStage()
+        {
+            animator.ResetTrigger(JumpId);
+            animator.ResetTrigger(LandId);
+            animator.ResetTrigger(FallId);
+            animator.ResetTrigger(ThrowId);
+            animator.ResetTrigger(VictoryId);
+            animator.ResetTrigger(RollId);
+            animator.SetBool(AimingId, false);
+            animator.Play(LocomotionStateId, 0, 0f);
+        }
 
         void OnEnable()
         {

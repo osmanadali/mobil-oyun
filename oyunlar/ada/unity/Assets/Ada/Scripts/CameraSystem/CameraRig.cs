@@ -160,9 +160,15 @@ namespace Ada.CameraSystem
             return r * new Vector3(x, y, 0f) * amp;
         }
 
+        bool lastUnder;
+        bool underInitialized;
+
         void UpdateUnderwater()
         {
             bool under = current.underwaterEffects && transform.position.y < waterSurfaceY;
+            if (underInitialized && under == lastUnder) return;   // yalnız değişince yaz
+            underInitialized = true;
+            lastUnder = under;
             if (under)
             {
                 RenderSettings.fog = true;

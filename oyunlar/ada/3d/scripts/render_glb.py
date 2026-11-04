@@ -274,6 +274,7 @@ def clips(o, root, objs, arm):
     cam = bpy.data.objects.new("Klip_Kamera", cd)
     sc.collection.objects.link(cam)
     sc.camera = cam
+    arm.data.pose_position = "POSE"
     ad = arm.animation_data_create()
     for t in ad.nla_tracks:
         t.mute = True

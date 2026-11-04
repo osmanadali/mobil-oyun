@@ -43,6 +43,9 @@ Yörüngenin gösterilmesi otomatik isabet anlamına gelmez: topun uçuşuna hi�
   - `Rigidbody` + `SphereCollider` (r = 0,11 m) + `TrailRenderer`.
   - `useGravity` kapalı, `linearDamping` 0, Interpolate.
   - Uçuşta CCD **ContinuousDynamic**; elde ContinuousSpeculative + kinematik + collider kapalı.
+- **Katmanlar:** Toplar "Ball" katmanında; Layer Collision Matrix'te Ball–Ball kapalı. Uçuşta `excludeLayers = ~hitMask`: top yalnız yayın gördüğü katmanlara çarpar, yayda görünmeyen bir collider topu durduramaz.
+- **Animator Update Mode = Normal** olmalı (bırakma olayı Update'te gelir, ilk fizik adımı önizlemeyle hizalı). Başka bir modda `ThrowController` uyarı verir; `Ball.Launch` ise fizik adımı içinde çağrılırsa ilk ivmeyi hemen uygular.
+- **Temas önceliği:** Aynı fizik adımında hem çerçeveye hem diske değen topta disk teması önceliklidir. İlk temas adım bitince tek kez değerlendirilir; temas noktası yoksa topun konumu kullanılır.
 - **Hareket modeli** (önizleme ve gerçek top için aynı): `a(v) = (0, −9,81, 0) + rüzgâr − 0,08·v`.
   - Gerçek top: her `FixedUpdate`'te `AddForce(a(v), ForceMode.Acceleration)`. Uçuşu yalnız Rigidbody yönetir.
   - Önizleme: aynı formül, `dt = Time.fixedDeltaTime`, yarı örtük Euler (önce hız, sonra konum; PhysX'in gövde entegrasyon sırası).
@@ -218,6 +221,9 @@ Eksikler geçici animasyonla doldurulur. Nihai kalite, referanstaki duruş ve at
 | İsabet hedefi fiziksel olarak etkiliyor, her hedef bir kez sayılıyor | Aynı hedefe 3 top: sayaç bir kez artar |
 | 3/3 → zafer ve sonuç arayüzü | Farklı sıralarla (S-O-Ğ, Ğ-S-O …) |
 | Iska kilitlemiyor | 10 ardışık ıska; 0,4 sn sonra yeni top elde |
+| Son isabetten sonra atış yok | 3. top uçarken 4. topu çek-bırak: son isabetle bekleyen atış iptal olur, zafer sırasında top çıkmaz |
+| Tekrar oyna sonrası atış | Sonuç panelinden "Tekrar oyna": karakter Victory'den Locomotion/Aim'e döner, ilk atış normal çalışır |
+| Devrilmiş hedefe isabet | Devrilmiş diske çarpan top: puan yok, "Tekrar dene" görünür |
 | Yeniden başlatma her şeyi sıfırlıyor | Uçuş sırasında "Tekrar oyna": top, efekt, simge, sayaç sıfır |
 | Reklam ve arka plan dönüşü | Nişan sırasında uygulamayı arka plana al → dönüşte nişan iptal, 3-2-1, atış yok |
 | Kerem ve Deniz adil | İki karakterle aynı hedefleri minimum ve maksimum güçte vur |
