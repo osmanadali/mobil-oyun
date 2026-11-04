@@ -48,7 +48,7 @@ Dikey (9:16) mobil ezber parkuru. Oyuncu bir deseni ezberler, tropik ada parkuru
    - Bilinen kusur: yan yüzeylerde ve kol altında projeksiyon lekeleri.
    - Daha temiz doku için ücretsiz HF hesabının `HF_TOKEN`'ı ile TRELLIS önerildi; kullanıcı henüz eklemedi.
 3. **Kullanıcı kararı bekleniyor:** Hedef Dizisi'nin kontrolü de Final Atışı gibi "geri çek ve bırak" (sapan) olsun mu? Şu an prototipte Hedef Dizisi yukarı kaydırmayla oynanıyor.
-4. **Kullanıcı kararı bekleniyor:** `mobil-oyun` reposu herkese açık ve `oyunlar/ada/` hâlâ orada. Taşıma bitince oradan kaldırılsın mı?
+4. **Karar verildi:** `mobil-oyun` reposundaki `oyunlar/ada/` klasörü kaldırılmayacak, olduğu gibi kalacak.
 5. **Unity:**
    - Boş Unity 6 URP projesi kurulup kodlar derlenecek.
    - M1 Köprü → M2 Atış → M3 Su → M4 Görsel → M5 Cihaz (`TEKNIK_TASARIM.md` §9).
