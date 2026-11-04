@@ -104,6 +104,9 @@ export const audio = {
       case 'thunk':
         tone(150, t, 0.2, { vol: 0.55, f2: 75 }); noise(t, 0.06, { type: 'bandpass', f: 950, q: 1.4, vol: 0.35 });
         mar(PENTA[Math.min(8, 2 + arg)], t + 0.03, 0.26); break;
+      case 'ding':
+        noise(t, 0.04, { type: 'highpass', f: 3500, vol: 0.3 }); tone(160, t, 0.16, { vol: 0.45, f2: 85 });
+        mar(PENTA[Math.min(8, 4 + arg)], t + 0.01, 0.3); tone(PENTA[Math.min(8, 4 + arg)] * 2, t + 0.01, 0.25, { vol: 0.08 }); break;
       case 'buzz': tone(150, t, 0.3, { type: 'sawtooth', vol: 0.08, f2: 100 }); tone(155, t, 0.3, { type: 'square', vol: 0.04, f2: 98 }); break;
       case 'pop': tone(520 + arg * 220, t, 0.14, { vol: 0.28, f2: 1100 + arg * 320 }); tone(2400 + arg * 300, t + 0.05, 0.18, { vol: 0.05 }); break;
       case 'win': [0, 2, 4, 5, 7].forEach((k, i) => mar(PENTA[k], t + i * 0.085, 0.28)); break;

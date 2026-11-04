@@ -56,6 +56,13 @@ def mesh_np(me):
     return co.reshape(-1, 3)
 
 
+def mesh_tris(me):
+    me.calc_loop_triangles()
+    F = np.empty(len(me.loop_triangles) * 3, np.int64)
+    me.loop_triangles.foreach_get("vertices", F)
+    return F.reshape(-1, 3)
+
+
 def import_glb(path):
     before = set(bpy.data.objects)
     bpy.ops.import_scene.gltf(filepath=path)
@@ -146,98 +153,133 @@ def stage_prep(c, o):
 
 
 # =================================================================== landmarks
-def segments(xs, gap):
-    """split sorted 1D coordinates into runs separated by gaps > gap"""
-    xs = np.sort(xs)
-    cut = np.where(np.diff(xs) > gap)[0]
-    return [(r[0], r[-1]) for r in np.split(xs, cut + 1)]
+class Sections:
+    """exact plane sections of a triangle mesh, split into closed loops"""
+
+    def __init__(self, V, F):
+        self.V = V
+        e = np.sort(np.concatenate([F[:, [0, 1]], F[:, [1, 2]], F[:, [2, 0]]]), axis=1)
+        self.E, inv = np.unique(e, axis=0, return_inverse=True)
+        self.TE = inv.reshape(3, -1).T
+
+    def cut(self, p0, n):
+        d = (self.V - p0) @ n
+        e0, e1 = self.E[:, 0], self.E[:, 1]
+        cross = (d[e0] > 0) != (d[e1] > 0)
+        t = d[e0] / np.where(cross, d[e0] - d[e1], 1)
+        P = self.V[e0] + (self.V[e1] - self.V[e0]) * t[:, None]
+        tc = cross[self.TE]
+        sel = tc.sum(1) == 2
+        pairs = self.TE[sel][tc[sel]].reshape(-1, 2)
+        ids = np.where(cross)[0]
+        par = {i: i for i in ids.tolist()}
+
+        def find(i):
+            while par[i] != i:
+                par[i] = par[par[i]]
+                i = par[i]
+            return i
+        for i, j in pairs.tolist():
+            ri, rj = find(i), find(j)
+            if ri != rj:
+                par[ri] = rj
+        groups = {}
+        for i in ids.tolist():
+            groups.setdefault(find(i), []).append(i)
+        return [P[g] for g in groups.values() if len(g) >= 4]
+
+    def hcut(self, z):
+        return self.cut(np.array([0, 0, z]), np.array([0, 0, 1.0]))
 
 
-def landmarks(V, bvh, tw=0.74, te=0.42):
-    """joint positions of an A-pose (or T-pose) humanoid mesh facing -Y, feet on z=0, centred at x=0"""
+def loop_info(L):
+    lo, hi = L.min(0), L.max(0)
+    return dict(c=L.mean(0), mid=(lo + hi) / 2, lo=lo, hi=hi, r=float(np.mean(hi[:2] - lo[:2]) / 2), P=L)
+
+
+def torso_loop(sec, z):
+    """the body's own section at height z (largest loop around x=0; not goggles, straps or hair strands)"""
+    loops = [loop_info(L) for L in sec.hcut(z)]
+    span = [l for l in loops if l["lo"][0] < 0 < l["hi"][0]]
+    return max(span, key=lambda l: np.prod(l["hi"][:2] - l["lo"][:2])) if span else None
+
+
+def landmarks(V, F, bvh, tw=0.74, te=0.42):
+    """joint positions of an A-pose humanoid mesh facing -Y, feet on z=0, centred at x=0"""
     H = V[:, 2].max()
+    sec = Sections(V, F)
     L = dict(H=H)
-    slab = lambda z, t=0.006: V[np.abs(V[:, 2] - z) < t * H]
-    # neck: narrowest section between shoulders and head
+    # neck: narrowest torso section between shoulders and head
     zs = np.linspace(0.78 * H, 0.93 * H, 40)
-    wd = []
-    for z in zs:
-        s = slab(z)
-        s = s[np.abs(s[:, 0]) < 0.1 * H]
-        wd.append(s[:, 0].max() - s[:, 0].min() if len(s) else 9)
+    wd = [(lambda t: t["hi"][0] - t["lo"][0] if t else 9)(torso_loop(sec, z)) for z in zs]
     L["neck_z"] = zs[int(np.argmin(wd))]
     # crotch: lowest hit of upward rays between the legs
-    tor = slab(0.55 * H, 0.02)
-    tor = tor[np.abs(tor[:, 0]) < 0.08 * H]
-    yc = (tor[:, 1].min() + tor[:, 1].max()) / 2
+    tl = torso_loop(sec, 0.55 * H)
+    yc = tl["mid"][1]
     hits = []
     for dy in np.linspace(-0.04, 0.04, 9) * H:
         h = bvh.ray_cast(Vector((0, yc + dy, 0.2 * H)), Vector((0, 0, 1)), H)
         if h[0] is not None:
             hits.append(h[0].z)
     L["crotch_z"] = min(hits)
-    gap = 0.012 * H
     for side, sg in (("L", 1), ("R", -1)):
-        # ---- arm: outermost x-segment while it is separate from the torso
-        arm_pts, z_pit = [], None
-        for z in np.arange(0.30 * H, 0.82 * H, 0.004 * H):
-            s = slab(z, 0.003)
-            s = s[s[:, 0] * sg > 0]
-            if len(s) < 3:
-                continue
-            segs = segments(s[:, 0] * sg, gap)
-            if len(segs) >= 2 and segs[-1][0] > 0.12 * H:
-                lo_, hi_ = segs[-1]
-                pts = s[(s[:, 0] * sg >= lo_ - 1e-9) & (s[:, 0] * sg <= hi_ + 1e-9)]
-                arm_pts.append(pts)
+        # ---- arm: outermost loop on this side while it is separate from the torso
+        arm, z_pit = [], None
+        for z in np.arange(0.30 * H, 0.84 * H, 0.004 * H):
+            loops = [loop_info(Lp) for Lp in sec.hcut(z)]
+            side_l = [l for l in loops if l["lo"][0] * sg > 0 or l["hi"][0] * sg > 0]
+            free = [l for l in side_l if not (l["lo"][0] < 0 < l["hi"][0]) and l["c"][0] * sg > 0.12 * H]
+            if free and len(side_l) >= 2:
+                l = max(free, key=lambda l: l["c"][0] * sg)
+                arm.append((z, l))
                 z_pit = z
             elif z_pit is not None and z > 0.6 * H:
                 break
-        A = np.concatenate(arm_pts)
-        top = A[A[:, 2] > z_pit - 0.06 * H]          # upper arm just below the armpit
-        c_up = top.mean(0)
-        r_up = (top[:, 0].max() - top[:, 0].min()) / 2 * 0.5 + (top[:, 1].max() - top[:, 1].min()) / 2 * 0.5
-        cen = A.mean(0)
-        u, sv, vt = np.linalg.svd(A - cen)
-        ax = vt[0] * np.sign(vt[0][2])                 # pointing up
-        T = A[np.argmin((A - cen) @ ax)]               # fingertip: farthest down the axis
+        up = [l for z, l in arm if z_pit - 0.12 * H < z < z_pit - 0.01 * H]
+        C = np.array([l["c"] for l in up])
+        cen = C.mean(0)
+        ax = np.linalg.svd(C - cen)[2][0]
+        ax = ax * np.sign(ax[2])                       # upper-arm axis, pointing up
+        r_up = float(np.mean([l["r"] for l in up]))
+        allp = np.array([l["c"] for z, l in arm])
+        lows = [l for z, l in arm if z < arm[0][0] + 0.02 * H]
+        T = min(lows, key=lambda l: l["lo"][2])["c"].copy()
+        T[2] = arm[0][0] - 0.004 * H                   # fingertip: bottom of the lowest hand loop
         # shoulder joint: on the upper-arm axis, one arm radius below the top of the shoulder
-        S = c_up.copy()
-        for _ in range(3):
-            near = V[(np.abs(V[:, 0] - S[0]) < 0.012 * H) & (np.abs(V[:, 1] - c_up[1]) < 0.05 * H)
-                     & (V[:, 2] < L["neck_z"])]
-            ztop = near[:, 2].max()
-            zS = ztop - r_up * 1.05
-            S = c_up + ax * (zS - c_up[2]) / ax[2]
-        # centreline from S to T: centroids of thin slabs perpendicular to the axis
+        # shoulder joint: one arm radius inside the deltoid's outer surface, centred in the shoulder cap's
+        # depth, one arm radius below the top of the shoulder
+        S = cen + ax * ((z_pit + 0.04 * H) - cen[2]) / ax[2]
+        for _ in range(4):
+            tl = torso_loop(sec, S[2])
+            Pp = tl["P"][tl["P"][:, 0] * sg > 0]
+            x_out = (Pp[:, 0] * sg).max()
+            sx = x_out - 1.15 * r_up
+            cap = Pp[Pp[:, 0] * sg > sx]
+            S = np.array([sg * sx, (cap[:, 1].min() + cap[:, 1].max()) / 2, S[2]])
+            h = bvh.ray_cast(Vector((S[0], S[1], L["neck_z"])), Vector((0, 0, -1)), H)
+            S[2] = (h[0].z if h[0] is not None else S[2] + r_up) - 1.1 * r_up
+        # elbow / wrist: centres of sections perpendicular to the S->T line
         dST = (T - S) / np.linalg.norm(T - S)
-        A2 = A
 
         def centre(t):
             p = S + (T - S) * t
-            sl = A2[np.abs((A2 - p) @ dST) < 0.006 * H]
-            sl = sl[np.linalg.norm((sl - p) - np.outer((sl - p) @ dST, dST), axis=1) < 0.05 * H]
-            return (sl.min(0) + sl.max(0)) / 2 if len(sl) > 5 else p
-        L["arm" + side] = dict(S=S, E=centre(te), W=centre(tw), T=T, pit=z_pit, r=r_up,
+            loops = [loop_info(Lp) for Lp in sec.cut(p, dST)]
+            return min(loops, key=lambda l: np.linalg.norm(l["c"] - p))["mid"] if loops else p
+        L["arm" + side] = dict(S=S, E=centre(te), W=centre(tw), T=T, pit=np.array([z_pit]), r=np.array([r_up]),
                                hand0=S + (T - S) * min(1, tw + 0.03))
-        # ---- leg
-        lg = lambda z: (lambda s: s[s[:, 0] * sg > 0.005 * H])(slab(z, 0.01))
-        def legsec(z):
-            s = lg(z)
-            lo_, hi_ = segments(s[:, 0] * sg, gap)[0]
-            return s[(s[:, 0] * sg >= lo_ - 1e-9) & (s[:, 0] * sg <= hi_ + 1e-9)]
-        mid = lambda s: (s.min(0) + s.max(0)) / 2
+        # ---- leg: the innermost free loop on this side (hands hang further out)
+        def leg(z):
+            loops = [loop_info(Lp) for Lp in sec.hcut(z)]
+            ls = [l for l in loops if l["c"][0] * sg > 0 and not (l["lo"][0] < 0 < l["hi"][0])]
+            return min(ls, key=lambda l: l["c"][0] * sg)["mid"]
         ank_z = 0.055 * H
-        knee_z0 = 0.285 * H
-        up = legsec(L["crotch_z"] - 0.05 * H)
-        kn = legsec(knee_z0)
-        c1, c2 = mid(up), mid(kn)
         hip_z = max(L["crotch_z"] + 0.05 * H, 0.49 * H)
+        c1, c2 = leg(L["crotch_z"] - 0.05 * H), leg(0.285 * H)
         hip = c1 + (c2 - c1) * (hip_z - c1[2]) / (c2[2] - c1[2])
-        an = mid(legsec(ank_z + 0.03 * H))
+        an = leg(ank_z + 0.03 * H)
         ank = np.array([an[0], an[1], ank_z])
         knee_z = ank_z + 0.51 * (hip_z - ank_z)
-        kn = mid(legsec(knee_z))
+        kn = leg(knee_z)
         knee = np.array([kn[0], kn[1], knee_z])
         foot = V[(V[:, 2] < 0.06 * H) & (V[:, 0] * sg > 0)]
         tip = foot[np.argmin(foot[:, 1])]
@@ -246,13 +288,13 @@ def landmarks(V, bvh, tw=0.74, te=0.42):
         ball = np.array([(fb[:, 0].min() + fb[:, 0].max()) / 2, ball_y, 0.008 * H])
         toe = np.array([ball[0], tip[1], 0.008 * H])
         L["leg" + side] = dict(hip=hip, knee=knee, ank=ank, ball=ball, toe=toe)
+    L["sec"] = sec
     return L
 
 
-def torso_mid_y(V, z, H):
-    s = V[np.abs(V[:, 2] - z) < 0.008 * H]
-    s = s[np.abs(s[:, 0]) < 0.06 * H]
-    return (s[:, 1].min() + s[:, 1].max()) / 2 if len(s) else 0.0
+def torso_mid_y(sec, z):
+    t = torso_loop(sec, z)
+    return t["mid"][1] if t else 0.0
 
 
 # =================================================================== texture
@@ -515,7 +557,7 @@ def stage_texture(c, o):
     other = {"left": "right", "right": "left"}[c["side"]]
     views = [("front", "on", False, 1.4), ("back", "arka", False, 1.0),
              (c["side"], "yan", False, 0.8), (other, "yan", True, 0.8)]
-    LM = landmarks(V, bvh)
+    LM = landmarks(V, mesh_tris(me), bvh, **c.get("lm", {}))
     zc = LM["neck_z"] - 0.01 * H
     th = np.clip((P[:, 2] - (zc - 0.02 * H)) / (0.04 * H), 0, 1)[:, None]   # 0 body .. 1 head
     hand = np.zeros(len(idx), bool)                                           # hands: front/back only
@@ -599,7 +641,9 @@ def stage_texture(c, o):
         acc[hand] += skin * 0.03
         wsum[hand] += 0.03
     # texels seen only at grazing angles are unreliable (ghosts of neighbouring parts): refill them
-    ok = (wsum > 0) & ((maxf > 0.2) | hand)
+    # up-facing surfaces (shoulder tops, head) are seen edge-on by every camera: stricter there
+    need = np.where(N[:, 2] > 0.5, 0.35, 0.2)
+    ok = (wsum > 0) & ((maxf > need) | hand)
     col = np.zeros((len(idx), 3))
     col[ok] = acc[ok] / wsum[ok, None]
     bad = np.where(~ok)[0]
@@ -685,6 +729,350 @@ def save_fit_debug(dbg, work):
     im.filepath_raw = os.path.join(work, "fit_debug.png")
     im.file_format = "PNG"
     im.save()
+
+
+# =================================================================== rig
+ARM_CHAIN = ("DEF-upper_arm", "DEF-forearm", "DEF-hand")
+LEG_CHAIN = ("DEF-thigh", "DEF-shin", "DEF-foot", "DEF-toe")
+SPINE = ("DEF-hips", "DEF-spine.001", "DEF-spine.002", "DEF-spine.003", "DEF-neck", "DEF-head")
+
+
+def import_ual(path):
+    """UAL glb -> (armature, mannequin mesh, new actions)"""
+    acts0 = set(bpy.data.actions)
+    new = import_glb(path)
+    arm = next(ob for ob in new if ob.type == "ARMATURE")
+    man = next((ob for ob in new if ob.type == "MESH" and ob.parent == arm), None)
+    for ob in new:
+        if ob.type == "MESH" and ob is not man:
+            bpy.data.objects.remove(ob, do_unlink=True)
+    for pb in arm.pose.bones:
+        pb.custom_shape = None
+    if arm.animation_data:
+        arm.animation_data.action = None
+        for t in list(arm.animation_data.nla_tracks):
+            arm.animation_data.nla_tracks.remove(t)
+    return arm, man, [a for a in bpy.data.actions if a not in acts0]
+
+
+def world_verts(ob):
+    V = mesh_np(ob.data)
+    M = np.array(ob.matrix_world)
+    return V @ M[:3, :3].T + M[:3, 3]
+
+
+def piecewise(z, src, dst):
+    return float(np.interp(z, src, dst, left=None, right=None)) if src[0] <= z <= src[-1] else \
+        (dst[0] + (z - src[0]) * (dst[1] - dst[0]) / (src[1] - src[0]) if z < src[0]
+         else dst[-1] + (z - src[-1]) * (dst[-1] - dst[-2]) / (src[-1] - src[-2]))
+
+
+def fit_skeleton(arm, man, V, LM):
+    """edit the UAL armature in place: heads on the mesh landmarks, every bone keeps its UAL direction and
+    roll (so UAL rotations mean the same thing), arms/legs laid out straight in the UAL T-pose."""
+    H = LM["H"]
+    VM = world_verts(man)
+    HM = VM[:, 2].max()
+    secM = Sections(VM, mesh_tris(man.data))
+    sec = LM["sec"]
+    zs = np.linspace(0.78 * HM, 0.93 * HM, 40)
+    wd = [(lambda t: t["hi"][0] - t["lo"][0] if t else 9)(torso_loop(secM, z)) for z in zs]
+    neckM = zs[int(np.argmin(wd))]
+    rb = {b.name: (b.head_local.copy(), b.tail_local.copy()) for b in arm.data.bones}
+    hipM = rb["DEF-thigh.L"][0].z
+    hip = (LM["legL"]["hip"][2] + LM["legR"]["hip"][2]) / 2
+    zsrc, zdst = [0.0, hipM, neckM, HM], [0.0, hip, LM["neck_z"], H]
+    zmap = lambda z: piecewise(z, zsrc, zdst)
+    log("UAL mannequin neck %.3f hip %.3f | mesh neck %.3f hip %.3f" % (neckM, hipM, LM["neck_z"], hip))
+
+    def spine_pt(p):
+        z = zmap(p.z)
+        y = torso_mid_y(sec, z) + p.y * 0.8   # UAL's spine sits close to its mannequin's centre (y~0)
+        return Vector((0.0, y, z))
+
+    heads, lens = {}, {}
+    for n in SPINE:
+        h, t = spine_pt(rb[n][0]), spine_pt(rb[n][1])
+        heads[n], lens[n] = h, (t - h).length
+        log("  %-14s UAL %s -> %s" % (n, tuple(np.round(rb[n][0], 3)), tuple(np.round(h, 3))))
+    wristM = rb["DEF-hand.L"][0]
+    tipM = rb["DEF-f_middle.03.L"][1]
+    for sd, sg in (("L", 1), ("R", -1)):
+        A, G = LM["arm" + sd], LM["leg" + sd]
+        S, E, W, T = (Vector(A[k]) for k in ("S", "E", "W", "T"))
+        sx = abs(S.x) / abs(rb["DEF-upper_arm.L"][0].x)
+        n = "DEF-shoulder." + sd
+        heads[n] = spine_pt(rb[n][0]) + Vector((rb[n][0].x * sx, 0, 0))
+        lens[n] = (rb[n][1] - rb[n][0]).length * sx
+        seg = [(S - Vector(A["S"])).length, (E - S).length, (W - E).length]
+        p = S.copy()
+        for bn, L_ in zip(ARM_CHAIN[:2], seg[1:]):
+            n = bn + "." + sd
+            heads[n], lens[n] = p.copy(), L_
+            p = p + (rb[n][1] - rb[n][0]).normalized() * L_
+        hs = (T - W).length / (tipM - wristM).length
+        n = "DEF-hand." + sd
+        heads[n], lens[n] = p.copy(), (rb[n][1] - rb[n][0]).length * hs
+        for b in arm.data.bones:   # fingers: UAL offsets from the wrist, scaled to this hand
+            if b.name.endswith("." + sd) and (b.name.startswith("DEF-f_") or b.name.startswith("DEF-thumb")):
+                heads[b.name] = p + (rb[b.name][0] - rb["DEF-hand." + sd][0]) * hs
+                lens[b.name] = (rb[b.name][1] - rb[b.name][0]).length * hs
+        P_ = [Vector(G[k]) for k in ("hip", "knee", "ank", "ball", "toe")]
+        p = P_[0].copy()
+        for i, bn in enumerate(LEG_CHAIN):
+            n = bn + "." + sd
+            L_ = (P_[i + 1] - P_[i]).length
+            heads[n], lens[n] = p.copy(), L_
+            p = p + (rb[n][1] - rb[n][0]).normalized() * L_
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.mode_set(mode="EDIT")
+    eb = arm.data.edit_bones
+    info = {b.name: ((b.tail - b.head).normalized(), b.roll) for b in eb}
+    for b in eb:
+        b.use_connect = False
+    for n, h in heads.items():
+        b = eb[n]
+        d, roll = info[n]
+        b.head = h
+        b.tail = h + d * lens[n]
+        b.roll = roll
+    bpy.ops.object.mode_set(mode="OBJECT")
+    arm.data.bones["root"].use_deform = False
+    return dict(hip_ratio=hip / hipM)
+
+
+def pose_to_landmarks(armA, LM):
+    """pose the (T-pose) copy so arms and legs follow the mesh's A-pose landmarks"""
+    for sd in ("L", "R"):
+        A, G = LM["arm" + sd], LM["leg" + sd]
+        chains = [(ARM_CHAIN, [A["E"], A["W"], A["T"]]), (LEG_CHAIN, [G["knee"], G["ank"], G["ball"], G["toe"]])]
+        for names, targets in chains:
+            for bn, tgt in zip(names, targets):
+                bpy.context.view_layer.update()
+                pb = armA.pose.bones[bn + "." + sd]
+                M = pb.matrix.copy()
+                h = M.translation.copy()
+                cur = (M.to_3x3() @ Vector((0, 1, 0))).normalized()
+                R = cur.rotation_difference((Vector(tgt) - h).normalized()).to_matrix().to_4x4()
+                pb.matrix = Matrix.Translation(h) @ R @ Matrix.Translation(-h) @ M
+    bpy.context.view_layer.update()
+
+
+def bind_auto(mesh, arm):
+    for vg in list(mesh.vertex_groups):
+        mesh.vertex_groups.remove(vg)
+    bpy.ops.object.select_all(action="DESELECT")
+    mesh.select_set(True)
+    arm.select_set(True)
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.parent_set(type="ARMATURE_AUTO")
+    bpy.context.view_layer.objects.active = mesh
+    bpy.ops.object.vertex_group_limit_total(group_select_mode="ALL", limit=4)
+    bpy.ops.object.vertex_group_normalize_all(group_select_mode="ALL", lock_active=False)
+    me = mesh.data
+    tot = np.zeros(len(me.vertices))
+    for v in me.vertices:
+        tot[v.index] = sum(g.weight for g in v.groups)
+    log("bound to %s: %d groups, %d unweighted verts" % (arm.name, len(mesh.vertex_groups), (tot < 0.5).sum()))
+
+
+def stage_rig(c, o):
+    bpy.ops.wm.open_mainfile(filepath=os.path.join(o["work"], "tex.blend"))
+    ob = bpy.data.objects[o["char"]]
+    V = mesh_np(ob.data)
+    bvh = BVHTree.FromPolygons([tuple(v) for v in V], [tuple(p.vertices) for p in ob.data.polygons])
+    LM = landmarks(V, mesh_tris(ob.data), bvh, **c.get("lm", {}))
+    for k in ("armL", "armR", "legL", "legR"):
+        log(k, {kk: tuple(np.round(vv, 3)) for kk, vv in LM[k].items() if isinstance(vv, np.ndarray)})
+    log("neck %.3f crotch %.3f" % (LM["neck_z"], LM["crotch_z"]))
+    armT, man, acts = import_ual(o["ual1"])
+    for a in acts:
+        bpy.data.actions.remove(a)
+    armT.name = "Rig"
+    armT.data.name = "Rig"
+    info = fit_skeleton(armT, man, V, LM)
+    bpy.data.objects.remove(man, do_unlink=True)
+    armT["hip_ratio"] = info["hip_ratio"]
+    # A-pose copy: pose to the mesh, make that its rest, bind there
+    armA = armT.copy()
+    armA.data = armT.data.copy()
+    armA.name = "Rig_A"
+    bpy.context.scene.collection.objects.link(armA)
+    bpy.ops.object.select_all(action="DESELECT")
+    bpy.context.view_layer.objects.active = armA
+    armA.select_set(True)
+    bpy.ops.object.mode_set(mode="POSE")
+    pose_to_landmarks(armA, LM)
+    bpy.ops.pose.armature_apply(selected=False)
+    bpy.ops.object.mode_set(mode="OBJECT")
+    if os.environ.get("RIG_DEBUG"):
+        bpy.ops.wm.save_as_mainfile(filepath=os.path.join(o["work"], "debug_apose.blend"), copy=True)
+    bind_auto(ob, armA)
+    # A -> T: drive the A rig into the T rest pose and bake the mesh there
+    bpy.context.view_layer.objects.active = armA
+    bpy.ops.object.mode_set(mode="POSE")
+    for b in armA.data.bones:   # parents before children
+        pb = armA.pose.bones[b.name]
+        pb.matrix = armT.data.bones[b.name].matrix_local.copy()
+        bpy.context.view_layer.update()
+    bpy.ops.object.mode_set(mode="OBJECT")
+    bpy.context.view_layer.objects.active = ob
+    mod = next(m for m in ob.modifiers if m.type == "ARMATURE")
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+    mw = ob.matrix_world.copy()
+    ob.parent = None
+    ob.matrix_world = mw
+    bpy.data.objects.remove(armA, do_unlink=True)
+    # final bind on the original-orientation T-pose skeleton
+    bind_auto(ob, armT)
+    for p in ob.data.polygons:
+        p.use_smooth = True
+    bpy.ops.wm.save_as_mainfile(filepath=os.path.join(o["work"], "rig.blend"))
+
+
+# =================================================================== animations
+ACTIONS = [  # (name, [(library, source action, first frame, last frame or None)])
+    ("Bekleme", [("u1", "Idle_Loop", 0, None)]),
+    ("Kosu", [("u1", "Jog_Fwd_Loop", 0, None)]),
+    ("Sprint", [("u1", "Sprint_Loop", 0, None)]),
+    ("Ziplama", [("u1", "Jump_Start", 0, None), ("u1", "Jump_Loop", 0, 18), ("u1", "Jump_Land", 0, None)]),
+    ("Ziplama_Basla", [("u1", "Jump_Start", 0, None)]),
+    ("Ziplama_Havada", [("u1", "Jump_Loop", 0, None)]),
+    ("Ziplama_Inis", [("u1", "Jump_Land", 0, None)]),
+    ("Yuzme", [("u1", "Swim_Fwd_Loop", 0, None)]),
+    ("Yuzme_Bekleme", [("u1", "Swim_Idle_Loop", 0, None)]),
+    ("Atis", [("u2", "OverhandThrow", 0, None)]),
+    ("Zafer", [("u1", "Dance_Loop", 0, None)]),
+    ("Takla", [("u1", "Roll", 0, None)]),
+]
+
+
+def channels(act):
+    ch = {}
+    for fc in act.fcurves:
+        if fc.data_path.startswith("pose.bones"):
+            bone = fc.data_path.split('"')[1]
+            ch.setdefault(bone, {})[(fc.data_path.rsplit(".", 1)[1], fc.array_index)] = fc
+    return ch
+
+
+def sample_pose(ch, bone, t, conj, hips_scale):
+    fc = ch.get(bone, {})
+    ev = lambda k, i, d: fc[(k, i)].evaluate(t) if (k, i) in fc else d
+    q = Quaternion([ev("rotation_quaternion", i, (1, 0, 0, 0)[i]) for i in range(4)])
+    loc = Vector([ev("location", i, 0.0) for i in range(3)])
+    scl = Vector([ev("scale", i, 1.0) for i in range(3)])
+    if conj is not None:
+        q = conj.inverted() @ q @ conj
+        loc = conj.inverted() @ loc
+    return q.normalized(), loc * hips_scale, scl
+
+
+def build_action(name, parts, libs, bones, hip_ratio, blend=3):
+    """sample source actions at integer frames (30 fps) into one action for our bone names"""
+    frames = {b: [] for b in bones}
+    t_out = 0
+    for pi, (lib, src, f0, f1) in enumerate(parts):
+        act, ch_map, conj = libs[lib][0][src], libs[lib][1], libs[lib][2]
+        ch = channels(act)
+        f1 = int(round(act.frame_range[1])) if f1 is None else f1
+        for k, t in enumerate(range(f0, f1 + 1)):
+            for b in bones:
+                sb = ch_map.get(b)
+                if sb is None:
+                    continue
+                q, l, s = sample_pose(ch, sb, t, conj.get(b), hip_ratio if b == "DEF-hips" else 1.0)
+                if pi > 0 and k < blend:   # short cross-fade into a following part
+                    w = (k + 1) / (blend + 1)
+                    q0, l0, s0 = frames[b][-1][1:]
+                    q = q0.slerp(q, w)
+                    l = l0.lerp(l, w)
+                    s = s0.lerp(s, w)
+                frames[b].append((t_out, q, l, s))
+            t_out += 1
+    act = bpy.data.actions.new(name)
+    for b, seq in frames.items():
+        if not seq:
+            continue
+        n = len(seq)
+        for prop, size, get in (("rotation_quaternion", 4, lambda e: e[1]), ("location", 3, lambda e: e[2]),
+                                ("scale", 3, lambda e: e[3])):
+            for i in range(size):
+                fc = act.fcurves.new('pose.bones["%s"].%s' % (b, prop), index=i, action_group=b)
+                fc.keyframe_points.add(n)
+                co = np.empty(2 * n)
+                co[0::2] = [e[0] for e in seq]
+                co[1::2] = [get(e)[i] for e in seq]
+                fc.keyframe_points.foreach_set("co", co)
+                fc.keyframe_points.foreach_set("interpolation", [1] * n)   # LINEAR
+                fc.update()
+    act.use_frame_range = True
+    act.frame_start, act.frame_end = 0, t_out - 1
+    act.use_fake_user = False
+    act.id_root = "OBJECT"
+    return act
+
+
+def stage_anim(c, o):
+    bpy.ops.wm.open_mainfile(filepath=os.path.join(o["work"], "rig.blend"))
+    sc = bpy.context.scene
+    sc.render.fps = 30
+    arm = bpy.data.objects["Rig"]
+    mesh = bpy.data.objects[o["char"]]
+    bones = [b.name for b in arm.data.bones]
+    a1, m1, acts1 = import_ual(o["ual1"])
+    a2, m2, acts2 = import_ual(o["ual2"])
+    lib1 = {a.name.rsplit("_", 1)[0]: a for a in acts1}
+    lib2 = {a.name.rsplit("_", 1)[0]: a for a in acts2}
+    # UAL2 (Unreal names) -> UAL1 names: same skeleton, match bones by rest head position
+    map2, conj2 = {}, {}
+    for b in a1.data.bones:
+        cand = [x for x in a2.data.bones if "leaf" not in x.name and (x.head_local - b.head_local).length < 1e-3
+                and (x.tail_local - x.head_local).normalized().dot((b.tail_local - b.head_local).normalized()) > 0.99]
+        if cand:
+            x = cand[0]
+            map2[b.name] = x.name
+            conj2[b.name] = (x.matrix_local.to_3x3().inverted() @ b.matrix_local.to_3x3()).to_quaternion()
+    log("UAL2 bones mapped: %d/%d" % (len(map2), len(bones)))
+    libs = {"u1": (lib1, {b: b for b in bones}, {}), "u2": (lib2, map2, conj2)}
+    hip_ratio = float(arm.get("hip_ratio", 1.0))
+    made = []
+    for name, parts in ACTIONS:
+        act = build_action(name, parts, libs, bones, hip_ratio)
+        made.append(act)
+        log("action %-15s frames 0-%d" % (name, act.frame_end))
+    for ob in (a1, m1, a2, m2):
+        if ob:
+            bpy.data.objects.remove(ob, do_unlink=True)
+    for a in list(bpy.data.actions):
+        if a not in made:
+            bpy.data.actions.remove(a)
+    ad = arm.animation_data_create()
+    ad.action = None
+    for act in made:
+        tr = ad.nla_tracks.new()
+        tr.name = act.name
+        tr.strips.new(act.name, 0, act)
+        tr.mute = True
+    for pb in arm.pose.bones:
+        pb.rotation_mode = "QUATERNION"
+        pb.location = (0, 0, 0)
+        pb.rotation_quaternion = (1, 0, 0, 0)
+        pb.scale = (1, 1, 1)
+    bpy.ops.wm.save_as_mainfile(filepath=os.path.join(o["work"], "anim.blend"))
+    bpy.ops.object.select_all(action="DESELECT")
+    arm.select_set(True)
+    mesh.select_set(True)
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.export_scene.gltf(
+        filepath=o["out"], export_format="GLB", use_selection=True, export_apply=False,
+        export_texcoords=True, export_normals=True, export_tangents=False, export_materials="EXPORT",
+        export_image_format="JPEG", export_jpeg_quality=90, export_skins=True, export_influence_nb=4,
+        export_all_influences=False, export_def_bones=False, export_morph=False, export_animations=True,
+        export_animation_mode="ACTIONS", export_force_sampling=True, export_frame_range=False,
+        export_anim_single_armature=True, export_reset_pose_bones=True, export_optimize_animation_size=True,
+        export_yup=True)
+    log("exported", o["out"], "%.2f MB" % (os.path.getsize(o["out"]) / 1e6))
 
 
 # =================================================================== main

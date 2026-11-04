@@ -10,11 +10,13 @@ export const LEVELS = [
   { n: 8, type: 'hedef', targets: 5, seq: 4, wind: 1.7, show: 0.68, name: 'Rüzgârlı Burun' },
   { n: 9, type: 'kopru', rows: 8, glow: 0.45, name: 'Fırtına Basamakları' },
   { n: 10, type: 'hedef', targets: 5, seq: 5, wind: 2.1, show: 0.6, name: 'Kumsal Finali' },
+  { n: 11, type: 'final', targets: 3, name: 'Final Atışı' },
 ].map(L => ({ ...L, id: String(L.n) }));
 
 const r1 = v => Math.round(v * 2) / 2;
 // [3 yıldız sınırı, 2 yıldız sınırı] (sn). Bitiren en az 1 yıldız alır.
 export function starTimes(L) {
+  if (L.type === 'final') return [9, 16];
   return L.type === 'kopru' ? [r1(L.rows * 1.5 + 3), r1(L.rows * 2.6 + 7)] : [r1(L.seq * 2.8 + 2), r1(L.seq * 4.6 + 7)];
 }
 export function starsFor(L, t) { const [a, b] = starTimes(L); return t <= a ? 3 : t <= b ? 2 : 1; }
@@ -38,7 +40,7 @@ export function dailyLevel(d = new Date()) {
 export const dateLabel = (d = new Date()) => { try { return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' }); } catch (e) { return ''; } };
 
 const KEY = 'ada_prototip_v1';
-const DEF = () => ({ unlocked: 1, stars: {}, best: {}, settings: { sfx: true, music: true, vib: true }, char: 'kerem' });
+const DEF = () => ({ unlocked: 1, stars: {}, best: {}, settings: { sfx: true, music: true, vib: true }, char: 'kerem', tips: {} });
 function load() {
   try {
     const s = localStorage.getItem(KEY);

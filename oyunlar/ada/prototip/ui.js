@@ -6,7 +6,8 @@ const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [..
 const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const ic = id => `<svg aria-hidden="true"><use href="#i-${id}"/></svg>`;
 const starsHtml = (n, cls = '') => [0, 1, 2].map(i => `<svg class="${i < n ? 'on' : ''} ${cls}" aria-hidden="true"><use href="#i-star"/></svg>`).join('');
-const typeName = L => L.type === 'kopru' ? 'Üçlü Köprü' : 'Hedef Dizisi';
+const typeName = L => L.type === 'kopru' ? 'Üçlü Köprü' : L.type === 'final' ? 'Final Atışı' : 'Hedef Dizisi';
+const typeIcon = L => L.type === 'kopru' ? 'bridge' : L.type === 'final' ? 'trophy' : 'target';
 const windName = w => !w ? 'yok' : w < 1 ? 'hafif' : w < 1.6 ? 'orta' : 'sert';
 
 let api = null, cur = 'splash', introL = null, lastL = null, timeStr = '', bannerTimer = 0, toastTimer = 0, wiping = false, resultTimers = [];
@@ -84,7 +85,7 @@ function buildMap() {
     const locked = L.n > D.unlocked, next = !locked && L.n === D.unlocked && !st;
     html += `<button class="node ${L.type}${locked ? ' locked' : ''}${next ? ' next' : ''}" data-n="${L.n}" style="left:${pts[i].x}px;top:${pts[i].y}px"
       aria-label="Bölüm ${L.n}, ${typeName(L)}${locked ? ', kilitli' : `, ${st} yıldız`}"><span class="n">${L.n}</span><svg class="lk" aria-hidden="true"><use href="#i-lock"/></svg>
-      <span class="ty">${ic(L.type === 'kopru' ? 'bridge' : 'target')}</span><span class="ns">${starsHtml(st)}</span></button>`;
+      <span class="ty">${ic(typeIcon(L))}</span><span class="ns">${starsHtml(st)}</span></button>`;
   });
   inner.innerHTML = html;
   $('#lv-stars').textContent = `${total}/${n * 3}`;
@@ -103,11 +104,14 @@ function openIntro(L) {
   const k = L.type === 'kopru', [t3, t2] = starTimes(L), best = store.data.best[L.id];
   $('#in-kick').textContent = L.daily ? `Günün Adası · ${dateLabel()} · ${typeName(L)}` : `Bölüm ${L.n} · ${typeName(L)}`;
   $('#in-name').textContent = L.name;
-  const icb = $('#in-ic'); icb.className = 'type-ic ' + (L.daily ? 'daily' : L.type); icb.innerHTML = ic(k ? 'bridge' : 'target');
-  $('#in-memo').textContent = k
-    ? 'Her sırada yalnızca bir taş sağlam. Taşlar sırayla parlar: hangisinin parladığını ezberle, sonra yalnızca onlara zıpla.'
+  const icb = $('#in-ic'); icb.className = 'type-ic ' + (L.daily ? 'daily' : L.type); icb.innerHTML = ic(typeIcon(L));
+  const fin = L.type === 'final';
+  $('#in-memo-t').textContent = fin ? 'Görev' : 'Ezberle';
+  $('#in-memo').textContent = fin
+    ? 'Üç hedefi istediğin sırayla devir. Ekranın altında parmağını geri çekerek nişan al, bırakınca at.'
+    : k ? 'Her sırada yalnızca bir taş sağlam. Taşlar sırayla parlar: hangisinin parladığını ezberle, sonra yalnızca onlara zıpla.'
     : 'Hedefler numarayla sırayla yanar. Sırayı ezberle, sonra aşağıdan yukarı kaydırarak aynı sırayla vur.';
-  const facts = k
+  const facts = fin ? ['3 hedef', 'Sıra serbest', 'Rüzgâr yok', ['Iska +3 sn', 'warn']] : k
     ? [`${L.rows} sıra × 3 taş`, `Ezber: ${String(L.glow).replace('.', ',')} sn / taş`, ['Yanlış taş +4 sn', 'warn'], ['Fener +6 sn', 'warn']]
     : [`${L.targets} hedef`, `${L.seq} atışlık dizi`, `Rüzgâr: ${windName(L.wind)}`, ['Iska +3 sn', 'warn'], ['Fener +6 sn', 'warn']];
   $('#in-facts').innerHTML = facts.map(f => Array.isArray(f) ? `<li class="${f[1]}">${f[0]}</li>` : `<li>${f}</li>`).join('');
@@ -133,21 +137,26 @@ function buildBoard() {
 // ---------- HUD ----------
 function setTime(s) { const t = fmt(s); if (t !== timeStr) { timeStr = t; $('#h-time').textContent = t; } }
 function setLeft(n) { const p = $('.left-pill'); $('#h-left').textContent = n; p.classList.remove('bump'); void p.offsetWidth; p.classList.add('bump'); }
-function banner(text, sub, ms) {
+function banner(text, sub, ms, cls = '') {
   const b = $('#h-banner'); clearTimeout(bannerTimer);
   if (!text) { b.classList.remove('on'); return; }
   $('#h-btext').textContent = text;
-  const s = $('#h-bsub'); s.textContent = sub ?? ''; s.hidden = sub == null || sub === '';
-  b.classList.toggle('go', text === 'GİT!');
+  const s = $('#h-bsub'); s.textContent = sub ?? ''; s.hidden = sub == null || sub === ''; s.classList.toggle('txt', typeof sub === 'string');
+  b.className = 'banner' + (text === 'GİT!' ? ' go' : '') + (cls ? ' ' + cls : '');
   b.classList.remove('on'); void b.offsetWidth; b.classList.add('on');
   if (ms) bannerTimer = setTimeout(() => b.classList.remove('on'), ms);
 }
 function bannerSub(v) { const s = $('#h-bsub'); s.textContent = v; s.hidden = false; s.classList.remove('tick'); void s.offsetWidth; s.classList.add('tick'); }
 function hint(t, nudge) { const h = $('#h-hint'); h.textContent = t || ''; if (nudge) { h.classList.remove('nudge'); void h.offsetWidth; h.classList.add('nudge'); } }
+function setIcon(i, on) { const el = $$('#h-icons .ti')[i]; if (el) el.classList.toggle('hit', on); }
 function lantern(on) { $('#h-lantern').disabled = !on; }
 function power(p) { const el = $('#h-power'); if (p == null) { el.hidden = true; return; } el.hidden = false; $('#h-powerbar').style.height = Math.round(p * 100) + '%'; }
 function hud(o) {
   $('#s-game').classList.remove('done');
+  $('#h-label').textContent = o.label || 'KALAN';
+  $('#h-lantern').hidden = o.lantern === false;
+  const icons = $('#h-icons'); icons.hidden = !o.icons;
+  icons.innerHTML = o.icons ? Array.from({ length: o.icons }, () => '<span class="ti">' + ic('check') + '</span>').join('') : '';
   $('#h-unit').textContent = o.unit; $('#h-left').textContent = o.left; timeStr = ''; setTime(0);
   const w = $('#h-wind'); w.hidden = o.wind == null;
   if (o.wind != null) {
@@ -186,7 +195,8 @@ function results(R) {
   lastL = R.L; resultTimers.forEach(clearTimeout); resultTimers = [];
   $('#s-game').classList.add('done');
   $('#r-kick').textContent = R.L.daily ? `Günün Adası · ${dateLabel()}` : `Bölüm ${R.L.n} · ${typeName(R.L)}`;
-  $('#r-title').textContent = R.stars === 3 ? 'Kusursuz!' : R.stars === 2 ? 'Harika!' : 'Tamamlandı!';
+  $('#r-retry').innerHTML = ic('replay') + (R.final ? 'Tekrar oyna' : 'Tekrar');
+  $('#r-title').textContent = R.final ? 'ETAP TAMAMLANDI!' : R.stars === 3 ? 'Kusursuz!' : R.stars === 2 ? 'Harika!' : 'Tamamlandı!';
   const sts = $$('#r-stars .st'); sts.forEach(s => s.classList.remove('on'));
   $('#r-ribbon').classList.remove('show');
   const pen = R.pens.reduce((a, p) => a + p.n * p.sec, 0);
@@ -196,7 +206,7 @@ function results(R) {
   const [t3, t2] = R.times;
   $('#r-best').textContent = `En iyi: ${fmtSn(R.best)}  ·  3 yıldız ≤ ${fmtSn(t3)}  ·  2 yıldız ≤ ${fmtSn(t2)}`;
   const nb = $('#r-next');
-  nb.innerHTML = R.hasNext ? `Sonraki${ic('next')}` : `${ic('home')}Menü`;
+  nb.innerHTML = R.final ? 'Devam' + ic('next') : R.hasNext ? `Sonraki${ic('next')}` : `${ic('home')}Menü`;
   shareTextVal = `Ada · ${R.L.daily ? 'Günün Adası ' + dateLabel() : 'Bölüm ' + R.L.n} (${typeName(R.L)}): ${fmtSn(R.total)} ${'★'.repeat(R.stars)}${'☆'.repeat(3 - R.stars)}${pen ? ` (${pen} sn ceza)` : ' (cezasız)'}`;
   $('#r-time').textContent = fmtSn(0);
   overlay('results', true);
@@ -252,7 +262,7 @@ function bind() {
   $('#r-retry').onclick = () => { overlay('results', false); show('game', () => api.restart()); };
   $('#r-next').onclick = () => {
     const L = lastL && !lastL.daily && LEVELS[lastL.n];
-    if (L) openIntro(L); else { overlay('results', false); show('menu', () => api.toMenu()); }
+    if (L) openIntro(L); else { overlay('results', false); show(lastL && lastL.type === 'final' ? 'levels' : 'menu', () => api.toMenu()); }
   };
   $('#r-home').onclick = () => { overlay('results', false); show('levels', () => api.toMenu(true)); };
   $('#r-share').onclick = share;
@@ -274,7 +284,7 @@ export const ui = {
     $$('.pick').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.char === store.data.char)));
   },
   get screen() { return cur; },
-  show, overlay, toast, openIntro, hud, setTime, setLeft, banner, bannerSub, hint, lantern, power, penalty, results,
+  show, overlay, toast, openIntro, hud, setIcon, setTime, setLeft, banner, bannerSub, hint, lantern, power, penalty, results,
   setLoad(p, text) { $('#loadbar').style.width = Math.round(4 + p * 96) + '%'; if (text) $('#loadt').textContent = text; },
   isOverlay(name) { return $('#o-' + name).classList.contains('on'); },
 };
