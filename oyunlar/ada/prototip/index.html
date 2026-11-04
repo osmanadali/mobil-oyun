@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#74D6E3">
+<meta name="description" content="Ada: tropik adada ezber parkuru prototipi (Üçlü Köprü ve Hedef Dizisi).">
+<title>Ada</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-star" viewBox="0 0 24 24"><path fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" d="M12 2.8l2.8 5.8 6.3.8-4.6 4.4 1.2 6.3L12 17l-5.7 3.1 1.2-6.3-4.6-4.4 6.3-.8z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4.2" height="14" rx="1.6" fill="currentColor"/><rect x="13.8" y="5" width="4.2" height="14" rx="1.6" fill="currentColor"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M8 5.5l10.5 6.5L8 18.5z"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3.5l9 7.6-1.4 1.6-1.1-.9V20h-5v-5.5h-3V20h-5v-8.2l-1.1.9L3 11.1z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></symbol>
+    <symbol id="i-trophy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 01-10 0z" fill="currentColor"/><path d="M7 6H4v1.5A3.5 3.5 0 007.5 11M17 6h3v1.5a3.5 3.5 0 01-3.5 3.5M12 14v4M8 20.5h8"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="12" cy="12" r="3.4"/><path d="M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3M5.5 5.5l2.1 2.1M16.4 16.4l2.1 2.1M5.5 18.5l2.1-2.1M16.4 7.6l2.1-2.1"/></symbol>
+    <symbol id="i-sound" viewBox="0 0 24 24"><path fill="currentColor" d="M3.5 9h4l5-4.2v14.4l-5-4.2h-4z"/><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M16 8.6a4.6 4.6 0 010 6.8M18.6 6a8.4 8.4 0 010 12"/></symbol>
+    <symbol id="i-mute" viewBox="0 0 24 24"><path fill="currentColor" d="M3.5 9h4l5-4.2v14.4l-5-4.2h-4z"/><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" d="M16 9l5 6M21 9l-5 6"/></symbol>
+    <symbol id="i-music" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M9 17.5V5.5l10-2v12"/><circle cx="6.5" cy="17.5" r="2.8" fill="currentColor"/><circle cx="16.5" cy="15.5" r="2.8" fill="currentColor"/></symbol>
+    <symbol id="i-vib" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="8" y="3.5" width="8" height="17" rx="2.2"/><path d="M4.5 8v8M19.5 8v8M2 10.5v3M22 10.5v3"/></symbol>
+    <symbol id="i-lantern" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M9 2.8h6M12 2.8v2"/><path fill="currentColor" d="M7.5 6h9l1.2 3v8.5a3 3 0 01-3 3h-5.4a3 3 0 01-3-3V9z" opacity=".28"/><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" d="M7.5 6h9l1.2 3v8.5a3 3 0 01-3 3h-5.4a3 3 0 01-3-3V9z"/><path fill="currentColor" d="M12 9.5c1.9 2 2.6 3.4 2.6 4.6a2.6 2.6 0 01-5.2 0c0-1.2.7-2.6 2.6-4.6z"/></symbol>
+    <symbol id="i-replay" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12a7.5 7.5 0 11-2.4-5.5"/><path d="M19.5 3.8v4.6h-4.6"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3.5M7.5 8L12 3.5 16.5 8M5 13.5v6h14v-6"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.6" d="M8 11V8a4 4 0 018 0v3"/><rect x="5.5" y="10.5" width="13" height="10" rx="2.5" fill="currentColor"/></symbol>
+    <symbol id="i-bridge" viewBox="0 0 24 24"><g fill="currentColor"><rect x="2.5" y="14" width="5.2" height="5.2" rx="1.2"/><rect x="9.4" y="14" width="5.2" height="5.2" rx="1.2"/><rect x="16.3" y="14" width="5.2" height="5.2" rx="1.2"/><rect x="2.5" y="5" width="5.2" height="5.2" rx="1.2" opacity=".45"/><rect x="9.4" y="5" width="5.2" height="5.2" rx="1.2"/><rect x="16.3" y="5" width="5.2" height="5.2" rx="1.2" opacity=".45"/></g></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h16M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-swipe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V6M7.5 10.5L12 6l4.5 4.5"/><circle cx="12" cy="4" r="1.6" fill="currentColor"/></symbol>
+    <symbol id="i-palm" viewBox="0 0 48 48"><path d="M24 46c-1-10 0-20 3-28" fill="none" stroke="#8a5a32" stroke-width="3.4" stroke-linecap="round"/><path fill="#3e9f53" d="M27 16c-6-6-15-6-20-1 6-1 12 0 16 4zM27 16c3-7 11-10 17-7-6 1-11 4-14 9zM27 16c-8-1-14 4-15 10 4-4 9-7 14-7zM27 16c7-2 14 2 16 8-4-3-10-6-15-5z"/><circle cx="26" cy="18" r="2" fill="#6b4224"/></symbol>
+  </defs>
+</svg>
+
+<canvas id="scene" aria-label="Ada oyun sahnesi"></canvas>
+
+<main id="ui">
+  <!-- Açılış -->
+  <section id="s-splash" class="screen splash on">
+    <div class="splash-sun"></div>
+    <div class="logo big" aria-label="Ada"><span>A</span><span>D</span><span>A</span></div>
+    <p class="tag">Ezber Parkuru</p>
+    <div class="splash-foot">
+      <div class="loader"><i id="loadbar"></i></div>
+      <p class="load-t" id="loadt">Ada yükleniyor…</p>
+    </div>
+    <div class="waves" aria-hidden="true"><i class="wv w1"></i><i class="wv w2"></i><i class="wv w3"></i></div>
+  </section>
+
+  <!-- Ana menü -->
+  <section id="s-menu" class="screen menu">
+    <header class="topbar">
+      <span></span>
+      <button class="icon-btn" id="m-mute" aria-label="Sesi kapat veya aç"><svg><use href="#i-sound"/></svg></button>
+    </header>
+    <div class="menu-head panel-fx">
+      <div class="logo" aria-label="Ada"><span>A</span><span>D</span><span>A</span></div>
+      <p class="tag">Ezber Parkuru · Kumsal</p>
+    </div>
+    <div class="grow"></div>
+    <div class="picker panel panel-fx">
+      <p class="picker-t">Yarışmacını seç</p>
+      <div class="pick-row">
+        <button class="pick kerem" data-char="kerem" aria-pressed="true"><span class="ava"><i></i></span><b>Kerem</b><small>No 12</small></button>
+        <button class="pick deniz" data-char="deniz" aria-pressed="false"><span class="ava"><i></i></span><b>Deniz</b><small>No 07</small></button>
+      </div>
+    </div>
+    <div class="menu-btns stagger">
+      <button class="btn btn-sun btn-xl" id="m-play"><svg><use href="#i-play"/></svg>Oyna</button>
+      <button class="btn btn-turq" id="m-daily"><svg><use href="#i-sun"/></svg><span>Günün Adası</span><small class="chip" id="m-date"></small></button>
+      <div class="row2">
+        <button class="btn btn-white" id="m-board"><svg><use href="#i-trophy"/></svg>Sıralama</button>
+        <button class="btn btn-white" id="m-settings"><svg><use href="#i-gear"/></svg>Ayarlar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bölüm seçimi -->
+  <section id="s-levels" class="screen levels">
+    <header class="topbar">
+      <button class="icon-btn" data-back="menu" aria-label="Geri"><svg><use href="#i-back"/></svg></button>
+      <h2 class="title">Kumsal</h2>
+      <div class="pill star-total"><svg><use href="#i-star"/></svg><span id="lv-stars">0/30</span></div>
+    </header>
+    <div class="map" id="map"><div class="map-inner" id="map-inner"></div></div>
+  </section>
+
+  <!-- Oyun HUD -->
+  <section id="s-game" class="screen hud">
+    <div class="hud-top">
+      <button class="icon-btn" id="h-pause" aria-label="Duraklat"><svg><use href="#i-pause"/></svg></button>
+      <div class="timer" id="h-timer"><span id="h-time">0:00,0</span></div>
+      <div class="left-pill"><small>KALAN</small><b id="h-left">5</b><small id="h-unit">sıra</small></div>
+    </div>
+    <div class="wind" id="h-wind" hidden><svg id="h-warrow"><use href="#i-arrow"/></svg><span id="h-windt">Rüzgâr</span></div>
+    <div class="banner" id="h-banner" aria-live="polite"><b id="h-btext">EZBERLE</b><span id="h-bsub"></span></div>
+    <div class="hud-bottom">
+      <button class="btn btn-sun lantern" id="h-lantern" disabled><svg><use href="#i-lantern"/></svg><span>Fener<small>+6 sn</small></span></button>
+      <p class="hint" id="h-hint"></p>
+    </div>
+    <div class="power" id="h-power" hidden><i id="h-powerbar"></i></div>
+    <div id="pops"></div>
+  </section>
+
+  <!-- Ayarlar -->
+  <section id="s-settings" class="screen settings">
+    <header class="topbar">
+      <button class="icon-btn" data-back="menu" aria-label="Geri"><svg><use href="#i-back"/></svg></button>
+      <h2 class="title">Ayarlar</h2><span></span>
+    </header>
+    <div class="card panel panel-fx">
+      <div class="stack stagger">
+        <button class="switch" data-set="sfx" aria-pressed="true"><svg><use href="#i-sound"/></svg><span>Ses efektleri</span><i></i></button>
+        <button class="switch" data-set="music" aria-pressed="true"><svg><use href="#i-music"/></svg><span>Müzik</span><i></i></button>
+        <button class="switch" data-set="vib" aria-pressed="true"><svg><use href="#i-vib"/></svg><span>Titreşim</span><i></i></button>
+      </div>
+      <p class="note" id="vib-note"></p>
+      <button class="btn btn-white btn-sm wide" id="set-reset">İlerlemeyi sıfırla</button>
+    </div>
+  </section>
+
+  <!-- Sıralama -->
+  <section id="s-board" class="screen board">
+    <header class="topbar">
+      <button class="icon-btn" data-back="menu" aria-label="Geri"><svg><use href="#i-back"/></svg></button>
+      <h2 class="title">Sıralama</h2><span></span>
+    </header>
+    <div class="card panel panel-fx board-card">
+      <div class="local-badge">Yerel · yalnızca bu cihazdaki en iyi süreler</div>
+      <ol class="board-list stagger" id="board-list"></ol>
+      <p class="note">Çevrimiçi sıralama sonraki sürümde.</p>
+    </div>
+  </section>
+
+  <!-- Bölüm giriş kartı -->
+  <section id="o-intro" class="overlay" role="dialog" aria-modal="true" aria-labelledby="in-name">
+    <div class="card">
+      <div class="card-head">
+        <span class="type-ic" id="in-ic"></span>
+        <div><p class="kicker" id="in-kick">Bölüm 1 · Üçlü Köprü</p><h2 id="in-name">Kıyı Basamakları</h2></div>
+      </div>
+      <div class="memo"><b>Ezberle</b><p id="in-memo"></p></div>
+      <ul class="facts" id="in-facts"></ul>
+      <div class="goals">
+        <div class="goal"><span class="mini-stars s3"></span><b id="in-t3"></b></div>
+        <div class="goal"><span class="mini-stars s2"></span><b id="in-t2"></b></div>
+        <div class="goal"><span class="mini-stars s1"></span><b>Bitir</b></div>
+      </div>
+      <p class="best-line" id="in-best"></p>
+      <div class="card-btns stagger">
+        <button class="btn btn-white" id="in-close">Geri</button>
+        <button class="btn btn-sun btn-lg" id="in-start"><svg><use href="#i-play"/></svg>Başla</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Duraklat -->
+  <section id="o-pause" class="overlay" role="dialog" aria-modal="true" aria-label="Duraklatıldı">
+    <div class="card narrow">
+      <h2 class="center">Duraklatıldı</h2>
+      <div class="stack stagger">
+        <button class="btn btn-sun btn-lg" id="p-resume"><svg><use href="#i-play"/></svg>Devam</button>
+        <button class="btn btn-turq" id="p-restart"><svg><use href="#i-replay"/></svg>Yeniden</button>
+        <button class="btn btn-white" id="p-menu"><svg><use href="#i-home"/></svg>Menü</button>
+      </div>
+      <div class="mini-toggles">
+        <button class="tog" data-set="sfx" aria-pressed="true"><svg><use href="#i-sound"/></svg>Ses</button>
+        <button class="tog" data-set="music" aria-pressed="true"><svg><use href="#i-music"/></svg>Müzik</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sonuç -->
+  <section id="o-results" class="overlay results" role="dialog" aria-modal="true" aria-labelledby="r-title">
+    <div class="card sheet">
+      <div class="ribbon" id="r-ribbon">Yeni rekor!</div>
+      <button class="icon-btn small r-home" id="r-home" aria-label="Bölümlere dön"><svg><use href="#i-home"/></svg></button>
+      <p class="kicker center" id="r-kick">Bölüm 1 · Üçlü Köprü</p>
+      <h2 class="center" id="r-title">Tamamlandı!</h2>
+      <div class="stars-big" id="r-stars">
+        <span class="st"><svg><use href="#i-star"/></svg></span><span class="st mid"><svg><use href="#i-star"/></svg></span><span class="st"><svg><use href="#i-star"/></svg></span>
+      </div>
+      <div class="bigtime" id="r-time">0,0 sn</div>
+      <ul class="breakdown" id="r-break"></ul>
+      <p class="best-line" id="r-best"></p>
+      <div class="card-btns three stagger">
+        <button class="btn btn-white" id="r-retry"><svg><use href="#i-replay"/></svg>Tekrar</button>
+        <button class="btn btn-sun" id="r-next">Sonraki<svg><use href="#i-next"/></svg></button>
+        <button class="btn btn-turq" id="r-share"><svg><use href="#i-share"/></svg>Paylaş</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Paylaş yedeği -->
+  <section id="o-share" class="overlay" role="dialog" aria-modal="true" aria-label="Sonucu paylaş">
+    <div class="card narrow">
+      <h2 class="center">Sonucunu paylaş</h2>
+      <p class="note">Kopyalama izni yok. Metni seçip kopyala:</p>
+      <textarea id="share-text" rows="4" readonly></textarea>
+      <button class="btn btn-sun wide" id="share-close">Tamam</button>
+    </div>
+  </section>
+
+  <div class="toast" id="toast" role="status"></div>
+</main>
+
+<div id="wipe" aria-hidden="true"></div>
+<script type="module" src="game.js"></script>
+</body>
+</html>

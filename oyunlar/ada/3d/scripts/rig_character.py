@@ -440,6 +440,44 @@ def fit_head(mask, U, Z, cell, p, zcut):
     return p, best
 
 
+def inpaint_hands(img, mask, skin, p, z0, z1, H):
+    """side art: the hand hangs in front of the shorts. Replace hand-skin pixels in the hand's height band
+    by the nearest non-skin pixel below in the same column (the shorts' stripes are vertical)."""
+    s, k, a, b = p
+    r_top = int(b - s * (z1 - 0.015 * H))
+    r_bot = int(b - s * (z0 - 0.005 * H))
+    r_low = int(b - s * (z0 - 0.06 * H))
+    img = img.copy()
+    R, G, B_ = img[..., 0], img[..., 1], img[..., 2]
+    isskin = (R - B_ > 0.1) & (G > 0.52 * R) & (R > 0.12) & mask   # skin and its shadows; not navy/red/white
+    band = np.zeros_like(mask)
+    band[max(r_top, 0):r_bot + 1] = True
+    isskin = dilate(isskin & band, 3) & mask & band                  # the hand blob incl. its dark outline
+    carry = np.zeros((img.shape[1], 3), np.float32)
+    have = np.zeros(img.shape[1], bool)
+    n = 0
+    for r in range(min(r_low, img.shape[0] - 1), max(r_top, 0) - 1, -1):
+        sk = isskin[r]
+        if r <= r_bot:
+            fill = sk & have
+            img[r, fill] = carry[fill]
+            n += fill.sum()
+        ns = ~sk & mask[r]
+        carry[ns] = img[r, ns]
+        have |= ns
+        have &= mask[r]
+    log("  inpainted %d hand pixels in the side view (rows %d-%d)" % (n, r_top, r_bot))
+    if os.environ.get("RIG_DEBUG"):
+        dbg = bpy.data.images.new("inp", img.shape[1], img.shape[0], alpha=False)
+        rgba = np.ones(img.shape[:2] + (4,), np.float32)
+        rgba[..., :3] = img[::-1]
+        dbg.pixels.foreach_set(rgba.ravel())
+        dbg.filepath_raw = os.environ["RIG_DEBUG"] + "/inpaint_%d.png" % int(skin.sum() * 1000 + r_top)
+        dbg.file_format = "PNG"
+        dbg.save()
+    return img
+
+
 def bilinear(img, x, y):
     h, w = img.shape[:2]
     x = np.clip(x - 0.5, 0, w - 1.001)
@@ -481,6 +519,7 @@ def stage_texture(c, o):
     zc = LM["neck_z"] - 0.01 * H
     th = np.clip((P[:, 2] - (zc - 0.02 * H)) / (0.04 * H), 0, 1)[:, None]   # 0 body .. 1 head
     hand = np.zeros(len(idx), bool)                                           # hands: front/back only
+    near_arm = np.zeros(len(idx), bool)
     for sd in ("L", "R"):
         a_ = LM["arm" + sd]
         S, T = a_["S"], a_["T"]
@@ -488,10 +527,24 @@ def stage_texture(c, o):
         t = (P - S) @ dd / (dd @ dd)
         lat = np.linalg.norm((P - S) - np.outer(t, dd), axis=1)
         h0 = (a_["hand0"] - S) @ dd / (dd @ dd)
-        hand |= (t > h0) & (lat < 0.045 * H) & (np.sign(P[:, 0]) == np.sign(S[0]))
+        hand |= (t > h0) & (lat < 0.06 * H) & (np.sign(P[:, 0]) == np.sign(S[0]))
+        near_arm |= (t > 0.3) & (lat < 0.07 * H) & (np.sign(P[:, 0]) == np.sign(S[0]))
     log("hand texels", hand.sum(), "neck z %.3f" % LM["neck_z"])
+    # side views: the hands are inpainted away in the art, so they must not occlude either
+    vh = np.zeros(len(V), bool)
+    for sd in ("L", "R"):
+        a_ = LM["arm" + sd]
+        S, T = a_["S"], a_["T"]
+        dd = T - S
+        t = (V - S) @ dd / (dd @ dd)
+        lat = np.linalg.norm((V - S) - np.outer(t, dd), axis=1)
+        h0 = (a_["hand0"] - S) @ dd / (dd @ dd)
+        vh |= (t > h0) & (lat < 0.06 * H) & (np.sign(V[:, 0]) == np.sign(S[0]))
+    bvh_nh = BVHTree.FromPolygons([tuple(v) for v in V],
+                                  [tuple(p.vertices) for p in me.polygons if not vh[list(p.vertices)].all()])
     acc = np.zeros((len(idx), 3))
     wsum = np.zeros(len(idx))
+    maxf = np.zeros(len(idx))
     dbg = []
     for vname, img_name, mirror, gain in views:
         d, r = VIEWS[vname]
@@ -505,6 +558,8 @@ def stage_texture(c, o):
         log("view %-5s from %s%s: body s %.1f k %.3f a %.1f b %.1f IoU %.3f | head s %.1f a %.1f b %.1f IoU %.3f"
             % (vname, img_name, " (mirrored)" if mirror else "", *pb, iou, ph[0], ph[2], ph[3], iouh))
         dbg.append((vname, img, mask, U, Z, pb))
+        if vname in ("left", "right"):
+            img = inpaint_hands(img, mask, skin_ref, pb, P[hand, 2].min(), P[hand, 2].max(), H)
         valid = dilate(~mask, 3)  # erode the character mask: no white edge pixels
         valid = ~valid
         f = N @ np.array(d)
@@ -519,21 +574,38 @@ def stage_texture(c, o):
         # visibility toward the camera
         dv = Vector(d)
         org = P[cand] + N[cand] * 0.003 + np.array(d) * 0.001
-        rc = bvh.ray_cast
+        rc = (bvh_nh if vname in ("left", "right") else bvh).ray_cast
         vis = np.fromiter((rc(Vector(p), dv, 10.0)[0] is None for p in org.tolist()), bool, len(cand))
         cand, px, py = cand[vis], px[vis], py[vis]
         col = bilinear(img, px, py)
-        w = gain * f[cand] ** 6
+        if vname == "front":
+            skin_ref = np.median(col[hand[cand]], axis=0)
+        elif vname in ("left", "right"):
+            # the side art's hands hang in front of the shorts: never paint them onto non-hand texels
+            hz0, hz1 = P[hand, 2].min() - 0.02 * H, P[hand, 2].max() + 0.01 * H
+            zz = P[cand, 2]
+            rej = (zz > hz0) & (zz < hz1) & (np.abs(N[cand, 0]) > 0.5) & ~near_arm[cand] & \
+                  (np.linalg.norm(col - skin_ref, axis=1) < 0.14)
+            cand, col = cand[~rej], col[~rej]
+        w = gain * np.where(hand[cand], 0.1 * f[cand] ** 2, f[cand] ** 6)
         acc[cand] += col * w[:, None]
         wsum[cand] += w
+        maxf[cand] = np.maximum(maxf[cand], f[cand])
         log("  %d texels painted (%.1fs)" % (len(cand), time.time() - t0))
-    ok = wsum > 0
+    # hands: where front/back only graze the surface, lean on the hand's median skin colour
+    good_h = hand & (wsum > 0.05)
+    if good_h.sum() > 100:
+        skin = np.median(acc[good_h] / wsum[good_h, None], axis=0)
+        acc[hand] += skin * 0.03
+        wsum[hand] += 0.03
+    # texels seen only at grazing angles are unreliable (ghosts of neighbouring parts): refill them
+    ok = (wsum > 0) & ((maxf > 0.2) | hand)
     col = np.zeros((len(idx), 3))
     col[ok] = acc[ok] / wsum[ok, None]
-    # gaps (occluded from every camera): nearest painted texel on the surface
     bad = np.where(~ok)[0]
     log("unpainted texels: %d (%.2f%%)" % (len(bad), 100 * len(bad) / len(idx)))
     if len(bad):
+        # nearest reliable texel on the surface, then a short diffusion so fills have no hard patches
         good = np.where(ok)[0][::3]
         kd = KDTree(len(good))
         for j, p in zip(good, P[good].tolist()):
@@ -541,6 +613,14 @@ def stage_texture(c, o):
         kd.balance()
         for j, p in zip(bad, P[bad].tolist()):
             col[j] = col[kd.find(p)[1]]
+        sub = np.unique(np.concatenate([bad, np.where(ok)[0][::2]]))
+        kd = KDTree(len(sub))
+        for j, p in zip(sub, P[sub].tolist()):
+            kd.insert(p, int(j))
+        kd.balance()
+        nb = np.array([[j for _, j, _ in kd.find_n(p, 8)] for p in P[bad].tolist()])
+        for _ in range(40):
+            col[bad] = col[nb].mean(1)
     tex = np.zeros((W * W, 3), np.float32)
     tex[idx] = col
     tex = tex.reshape(W, W, 3)
