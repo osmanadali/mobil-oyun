@@ -6,8 +6,8 @@ using Ada.Core;
 namespace Ada.Throw
 {
     /// <summary>
-    /// Atış standı: hedef sırasını gösterir, isabetleri sıraya göre değerlendirir.
-    /// Yanlış hedef ya da ıska ceza ekler. Sıra ve doğruluk burada tutulur (Animator'da değil).
+    /// "Hedef Dizisi" ezber varyantı: hedefler sırayla yanar, aynı sırayla vurulmalıdır.
+    /// (Final atış sahnesi için sırasız ThrowStage kullanılır.) Sıra ve doğruluk burada tutulur.
     /// </summary>
     public sealed class ThrowCourse : MonoBehaviour
     {
@@ -67,12 +67,12 @@ namespace Ada.Throw
             thrower.EndAiming();
         }
 
-        void OnHit(TargetBoard t)
+        void OnHit(TargetBoard t, Vector3 point, Vector3 normal)
         {
-            if (!active || next >= order.Length) return;
+            if (!active || next >= order.Length || t.IsDown) return;
             if (t == targets[order[next]])
             {
-                t.KnockDown();
+                t.RegisterHit(point);
                 next++;
                 if (next == order.Length) FinalHit?.Invoke();
             }

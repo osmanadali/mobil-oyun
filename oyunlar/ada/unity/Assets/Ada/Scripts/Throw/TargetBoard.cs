@@ -1,26 +1,65 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
 namespace Ada.Throw
 {
-    /// <summary>Hedef tahtası: yanıp sönme ve devrilme. Collider "Target" katmanında, bu nesne ya da çocuğunda.</summary>
+    /// <summary>
+    /// Menteşeli hedef diski. Fiziksel isabet (top çarpışması) RegisterHit ile bildirilir; hedef yalnız BİR kez sayılır.
+    /// Devrilme serbest fizik değil, kontrollü: menteşe ekseninde kısa geri tepki + geriye devrilme (ease-out-back).
+    /// Kurulum: 'hinge' diskin alt kenarında; yerel +X disk genişliği boyunca, +Z oyuncudan UZAĞA bakar.
+    /// Collider diskte, "Target" katmanında. Devrildikten sonra da collider kalır (sonraki toplar sekip düşer, puan vermez).
+    /// </summary>
     public sealed class TargetBoard : MonoBehaviour
     {
-        [SerializeField] Transform pivot;          // devrilme ekseni (tahtanın alt kenarı)
-        [SerializeField] Renderer highlight;       // Emission açık malzeme
-        [SerializeField] float fallSeconds = 0.25f;
+        [SerializeField] Transform hinge;
+        [Tooltip("0 sol, 1 orta, 2 sağ: üstteki hedef simgesiyle eşleşir.")]
+        [SerializeField] int slotIndex;
+        [SerializeField] float fallDeg = 82f;
+        [SerializeField] float fallSeconds = 0.32f;
+        [SerializeField] Renderer flashRenderer;   // Emission açık malzeme (dizi modunda yanıp sönme)
 
         static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
         MaterialPropertyBlock mpb;
-        Quaternion pivotRest;
+        Quaternion hingeRest;
+        Coroutine anim;
 
+        public int SlotIndex => slotIndex;
         public bool IsDown { get; private set; }
+
+        /// <summary>İlk sayılan isabet. Tekrar temaslar puan vermez.</summary>
+        public event Action<TargetBoard, Vector3> Knocked;
 
         void Awake()
         {
             mpb = new MaterialPropertyBlock();
-            if (!pivot) pivot = transform;
-            pivotRest = pivot.localRotation;
+            if (!hinge) hinge = transform;
+            hingeRest = hinge.localRotation;
+        }
+
+        /// <summary>Topun hedefe fiziksel temasında çağrılır. true: bu isabet sayıldı.</summary>
+        public bool RegisterHit(Vector3 point)
+        {
+            if (IsDown) return false;
+            IsDown = true;
+            if (anim != null) StopCoroutine(anim);
+            anim = StartCoroutine(FallRoutine());
+            Knocked?.Invoke(this, point);
+            return true;
+        }
+
+        IEnumerator FallRoutine()
+        {
+            const float s = 1.70158f;   // ease-out-back aşımı
+            for (float t = 0f; t < 1f; t += Time.deltaTime / fallSeconds)
+            {
+                float x = t - 1f;
+                float e = 1f + (s + 1f) * x * x * x + s * x * x;
+                hinge.localRotation = hingeRest * Quaternion.Euler(fallDeg * e, 0f, 0f);
+                yield return null;
+            }
+            hinge.localRotation = hingeRest * Quaternion.Euler(fallDeg, 0f, 0f);
+            anim = null;
         }
 
         public IEnumerator Flash(Color color, float seconds)
@@ -31,38 +70,20 @@ namespace Ada.Throw
             yield return new WaitForSeconds(seconds * 0.2f);
         }
 
-        public void KnockDown()
-        {
-            if (IsDown) return;
-            IsDown = true;
-            StartCoroutine(FallRoutine());
-        }
-
-        IEnumerator FallRoutine()
-        {
-            for (float t = 0f; t < 1f; t += Time.deltaTime / fallSeconds)
-            {
-                float e = 1f - (1f - t) * (1f - t);
-                pivot.localRotation = pivotRest * Quaternion.Euler(-85f * e, 0f, 0f);
-                yield return null;
-            }
-            pivot.localRotation = pivotRest * Quaternion.Euler(-85f, 0f, 0f);
-        }
-
         public void ResetBoard()
         {
-            StopAllCoroutines();
+            if (anim != null) { StopCoroutine(anim); anim = null; }
             IsDown = false;
-            pivot.localRotation = pivotRest;
+            hinge.localRotation = hingeRest;
             SetEmission(Color.black);
         }
 
         void SetEmission(Color c)
         {
-            if (!highlight) return;
-            highlight.GetPropertyBlock(mpb);
+            if (!flashRenderer) return;
+            flashRenderer.GetPropertyBlock(mpb);
             mpb.SetColor(EmissionColorId, c);
-            highlight.SetPropertyBlock(mpb);
+            flashRenderer.SetPropertyBlock(mpb);
         }
     }
 }

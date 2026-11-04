@@ -6,33 +6,40 @@ namespace Ada.Throw
     [Serializable]
     public struct BallisticsSettings
     {
-        [Tooltip("Yerçekimi ivmesi (m/sn², pozitif).")] public float gravity;
-        [Tooltip("Rüzgâr ivmesi (m/sn²). Atış anında dondurulur.")] public Vector3 wind;
-        [Tooltip("Doğrusal sürükleme (1/sn).")] public float drag;
-        [Tooltip("Top yarıçapı (m).")] public float radius;
+        [Tooltip("Yerçekimi ivmesi (m/sn², pozitif). Rigidbody.useGravity kapalı; bu değer kodla uygulanır.")]
+        public float gravity;
+        [Tooltip("Rüzgâr ivmesi (m/sn²). Atış anında dondurulur.")]
+        public Vector3 wind;
+        [Tooltip("Doğrusal sürükleme (1/sn): a = -drag·v. Rigidbody.linearDamping 0 tutulur.")]
+        public float drag;
+        [Tooltip("Top yarıçapı (m). SphereCollider ile aynı olmalı.")]
+        public float radius;
 
         public static BallisticsSettings Default => new BallisticsSettings
         {
             gravity = 9.81f,
             wind = Vector3.zero,
-            drag = 0.05f,
+            drag = 0.08f,
             radius = 0.11f
         };
     }
 
     /// <summary>
-    /// Nişan önizlemesi ve gerçek top AYNI sabit adımlı entegrasyonu kullanır (yarı örtük Euler, 1/60 sn).
-    /// Kare hızından bağımsızdır; aynı başlangıç koşulu → aynı yörünge.
+    /// Önizleme ile gerçek top aynı hareket modelini kullanır:
+    ///   a(v) = (0, -g, 0) + rüzgâr - drag·v
+    ///   v ← v + a(v)·dt ;  x ← x + v·dt     (yarı örtük Euler; PhysX'in gövde entegrasyonuyla aynı sıra)
+    /// Gerçek topta a(v), her FixedUpdate'te Rigidbody.AddForce(..., ForceMode.Acceleration) ile verilir;
+    /// önizleme dt = Time.fixedDeltaTime ile aynı adımları hesaplar. Gizli düzeltme ya da hedefe yapışma yoktur.
     /// </summary>
     public static class Ballistics
     {
-        public const float Step = 1f / 60f;
+        public static Vector3 Acceleration(Vector3 velocity, in BallisticsSettings s)
+            => new Vector3(0f, -s.gravity, 0f) + s.wind - velocity * s.drag;
 
-        public static void Advance(ref Vector3 pos, ref Vector3 vel, in BallisticsSettings s)
+        public static void Advance(ref Vector3 pos, ref Vector3 vel, in BallisticsSettings s, float dt)
         {
-            Vector3 acc = new Vector3(0f, -s.gravity, 0f) + s.wind - vel * s.drag;
-            vel += acc * Step;
-            pos += vel * Step;
+            vel += Acceleration(vel, s) * dt;
+            pos += vel * dt;
         }
 
         public static bool Cast(Vector3 from, Vector3 to, float radius, LayerMask mask, out RaycastHit hit)
@@ -44,11 +51,14 @@ namespace Ada.Throw
                 hit = default;
                 return false;
             }
-            return Physics.SphereCast(from, radius, d / len, out hit, len, mask, QueryTriggerInteraction.Collide);
+            return Physics.SphereCast(from, radius, d / len, out hit, len, mask, QueryTriggerInteraction.Ignore);
         }
 
-        /// <summary>Yörünge noktalarını buffer'a yazar; çarpmada ya da minY altında durur. Nokta sayısını döndürür.</summary>
-        public static int Predict(Vector3 pos, Vector3 vel, in BallisticsSettings s, Vector3[] buffer,
+        /// <summary>
+        /// Yörünge noktalarını buffer'a yazar; ilk gerçek çarpışmada (ya da minY altında) durur, hedefin arkasına devam etmez.
+        /// Dönen değer nokta sayısıdır. Bellek ayırmaz.
+        /// </summary>
+        public static int Predict(Vector3 pos, Vector3 vel, in BallisticsSettings s, float dt, Vector3[] buffer,
             LayerMask mask, float minY, out bool didHit, out RaycastHit hit)
         {
             didHit = false;
@@ -59,10 +69,10 @@ namespace Ada.Throw
             while (n < buffer.Length)
             {
                 Vector3 prev = pos;
-                Advance(ref pos, ref vel, s);
+                Advance(ref pos, ref vel, s, dt);
                 if (Cast(prev, pos, s.radius, mask, out hit))
                 {
-                    buffer[n++] = hit.point;
+                    buffer[n++] = hit.point + hit.normal * s.radius;
                     didHit = true;
                     return n;
                 }

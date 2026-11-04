@@ -22,6 +22,10 @@ namespace Ada.InputLayer
         public event Action<Vector2, Vector2, float> DragEnded;  // başlangıç, bitiş, süre (sn)
         public event Action HoldStarted;
         public event Action HoldEnded;
+        /// <summary>Takip edilen dokunuş bitti (hareketli ya da hareketsiz), DragEnded'den SONRA yayılır.</summary>
+        public event Action<Vector2> TouchEnded;
+        /// <summary>ClearAll çağrıldı (odak kaybı, reklam dönüşü): bekleyen nişanlar iptal edilmeli.</summary>
+        public event Action Cleared;
 
         [SerializeField] float tapMaxSeconds = 0.25f;
         [SerializeField] float moveThresholdDp = 12f;
@@ -66,6 +70,7 @@ namespace Ada.InputLayer
             fingerId = -1;
             moved = false;
             blockUntilAllUp = true;
+            Cleared?.Invoke();
         }
 
         void Update()
@@ -126,6 +131,7 @@ namespace Ada.InputLayer
                             if (moved) DragEnded?.Invoke(startPos, pos, age);
                         }
                         fingerId = -1;
+                        TouchEnded?.Invoke(pos);
                         break;
                 }
             }

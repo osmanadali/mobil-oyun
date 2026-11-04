@@ -173,6 +173,8 @@ Tek katman (Base). Root motion kapalı (`PlayerAnimatorBridge.Awake`). Projede `
 
 ## 4. Atış sistemi
 
+> **Güncelleme:** Final atış brief'iyle top artık **Rigidbody** ile uçuyor. Yerçekimi ve sürükleme her `FixedUpdate`'te aynı `Ballistics.Acceleration` formülüyle uygulanıyor; önizleme `Time.fixedDeltaTime` adımıyla aynı hesabı yapıyor. Kontrol "geri çek ve bırak" (sapan) oldu. Final etabında hedefler sırasız; sıralı ezber varyantı `ThrowCourse`'ta kaldı. Ayrıntılar `FINAL_ATIS.md` içinde; aşağıdaki maddelerin ilgili kısımlarının yerini alır.
+
 - İlk sürümde tam vücut atış animasyonu kullanılır, karakter sabit durur.
 - İleride hareket ederek atış gerekirse: üst gövde Avatar Mask'i + Override katmanında Throw; alt gövde Locomotion'da kalır.
 - **Akış:**

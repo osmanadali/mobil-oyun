@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
 using Ada.Core;
@@ -9,67 +10,85 @@ using Ada.Player;
 namespace Ada.Throw
 {
     /// <summary>
-    /// Nişan (yukarı sürükleme), önizleme, atış animasyonu ve bırakma olayı.
-    /// - Top bırakma karesine kadar HandSocket'ta durur.
-    /// - Bırakma, Throw klibindeki Animation Event ile gelir (AnimationEventRelay.ThrowRelease).
-    /// - Atış kimliği + released bayrağı çift top üretimini engeller; bırakmadan önce kesilen atış temizlenir.
-    /// - Önizleme ve gerçek top aynı başlangıç noktası (ThrowOrigin), hız, ayar ve Ballistics hesabını kullanır.
+    /// Sapan tipi nişan: alt güvenli bölgede dokun → GERİ (aşağı) çek = güç, yatay = yön → bırak = atış.
+    /// - Eşikler dp cinsinden (çözünürlükten bağımsız). Eşik altı hareket top fırlatmaz. UI dokunuşları TouchInput'ta elenir.
+    /// - Yay (AimArc) ve gerçek top aynı başlangıç (ThrowOrigin), hız, BallisticsSettings ve fixedDeltaTime ile hesaplanır.
+    /// - Top bırakma karesine kadar HandSocket'ta durur; Throw klibinin "ThrowRelease" olayıyla elden çıkar.
+    /// - pendingId + released: çift top yok. Kesilen/zaman aşımına uğrayan atış temizlenir; kilitlenme yok.
+    /// - Odak kaybı / reklam dönüşü (TouchInput.Cleared, GameClock.PauseChanged) bekleyen nişanı iptal eder.
     /// </summary>
     public sealed class ThrowController : MonoBehaviour
     {
         [Header("Bağlantılar")]
         [SerializeField] TouchInput input;
         [SerializeField] PlayerAnimatorBridge anim;
-        [Tooltip("Sağ el kemiğinin çocuğu.")]
+        [Tooltip("Sağ el kemiğinin çocuğu (top elde burada durur).")]
         [SerializeField] Transform handSocket;
-        [Tooltip("PlayerRoot çocuğu, sabit nokta: Throw klibinin bırakma karesindeki el konumuna hizalayın.")]
+        [Tooltip("Throw klibinin bırakma karesindeki el konumuna hizalı sabit nokta (PlayerRoot çocuğu). Yay buradan başlar.")]
         [SerializeField] Transform throwOrigin;
-        [Tooltip("Nişan yönü referansı (genelde PlayerRoot).")]
+        [Tooltip("Nişan yönü referansı (genelde PlayerRoot; hedeflere bakar).")]
         [SerializeField] Transform aimReference;
         [SerializeField] Ball ballPrefab;
-        [SerializeField] LineRenderer preview;
+        [SerializeField] AimArc arc;
+        [Tooltip("Yayın ve topun çarpacağı katmanlar: Target + çevre (stand, iskele, kaya, zemin). Su hariç.")]
         [SerializeField] LayerMask hitMask;
 
-        [Header("Nişan")]
-        [SerializeField] float maxYawDeg = 25f;
-        [SerializeField] float pitchDeg = 28f;
-        [SerializeField] float minSpeed = 7f;
-        [SerializeField] float maxSpeed = 15f;
-        [SerializeField] float fullPowerDragDp = 260f;
-        [SerializeField] float minDragDp = 24f;
-        [SerializeField] int previewSteps = 90;
-        [SerializeField] float killY = -0.5f;
-        [Tooltip("Bırakma olayı bu süre içinde gelmezse atış iptal edilir (kilitlenme koruması).")]
+        [Header("Kontrol (dp)")]
+        [Tooltip("Dokunuşun başlaması gereken bölge: güvenli alanın alttan bu oranı.")]
+        [SerializeField] [Range(0.2f, 0.7f)] float touchZoneHeight = 0.45f;
+        [SerializeField] float minPullDp = 28f;
+        [SerializeField] float maxPullDp = 220f;
+        [SerializeField] float sideRangeDp = 160f;
+        [Tooltip("Açık: sola çekmek sağa nişan alır (sapan). Kapalı: parmak yönüne nişan.")]
+        [SerializeField] bool slingshotHorizontal = true;
+
+        [Header("Atış")]
+        [SerializeField] float maxYawDeg = 16f;
+        [SerializeField] float pitchDeg = 24f;
+        [SerializeField] float minSpeed = 8f;
+        [SerializeField] float maxSpeed = 14f;
+        [SerializeField] float killY = -0.6f;
+        [SerializeField] int maxPredictSteps = 150;
+        [Tooltip("Bırakma olayı bu süre içinde gelmezse atış iptal edilir.")]
         [SerializeField] float releaseTimeout = 1.2f;
-        [SerializeField] float nextBallDelay = 0.35f;
+        [SerializeField] float nextBallDelay = 0.4f;
+        [SerializeField] bool logTrajectoryError = true;
 
         public BallisticsSettings settings = BallisticsSettings.Default;
 
-        /// <summary>Bırakma anı: ses, parçacık, kamera bu tek olaydan beslenir.</summary>
-        public event Action<Vector3, Vector3> Released;   // konum, hız
-        public event Action<TargetBoard> TargetHit;
+        public event Action<Vector3, Vector3> Released;                 // konum, hız (ses/parçacık tek kaynak)
+        public event Action<TargetBoard, Vector3, Vector3> TargetHit;    // hedef, temas noktası, normal (fiziksel isabet)
         public event Action Missed;
+        public event Action AimStarted;
+        public event Action AimCanceled;
 
-        bool aimEnabled, dragging, released;
+        bool aimEnabled, touchActive, validAim, released;
         int throwId, pendingId = -1;
         Vector3 pendingVelocity;
         BallisticsSettings pendingSettings;
         float throwStartedAt;
         Ball heldBall;
         ObjectPool<Ball> pool;
+        readonly List<Ball> active = new List<Ball>(8);
         Vector3[] buffer;
+        Coroutine nextBallRoutine;
 
+        public bool IsAiming => touchActive;
         public bool IsBusy => pendingId >= 0;
+        public int BallsInFlight => active.Count;
+        /// <summary>Reklam yalnız nişan ve uçuş yokken açılabilir.</summary>
+        public bool IsSafeForAds => !touchActive && !IsBusy && active.Count == 0;
 
         void Awake()
         {
-            buffer = new Vector3[Mathf.Max(2, previewSteps)];
+            buffer = new Vector3[Mathf.Clamp(maxPredictSteps, 8, 256)];
             pool = new ObjectPool<Ball>(
                 createFunc: () =>
                 {
                     var b = Instantiate(ballPrefab);
-                    b.HitSomething += OnBallHit;
-                    b.Expired += OnBallExpired;
+                    b.FirstContact += OnBallContact;
+                    b.Finished += OnBallFinished;
+                    b.gameObject.SetActive(false);
                     return b;
                 },
                 actionOnGet: b => b.gameObject.SetActive(true),
@@ -78,23 +97,29 @@ namespace Ada.Throw
                 collectionCheck: true,
                 defaultCapacity: 4,
                 maxSize: 8);
-            if (preview) preview.enabled = false;
         }
 
         void OnEnable()
         {
+            input.DragStarted += OnTouchStart;
             input.Dragging += OnDrag;
             input.DragEnded += OnDragEnd;
+            input.TouchEnded += OnTouchEnded;
+            input.Cleared += CancelAim;
             GameClock.PauseChanged += OnPauseChanged;
         }
 
         void OnDisable()
         {
+            input.DragStarted -= OnTouchStart;
             input.Dragging -= OnDrag;
             input.DragEnded -= OnDragEnd;
+            input.TouchEnded -= OnTouchEnded;
+            input.Cleared -= CancelAim;
             GameClock.PauseChanged -= OnPauseChanged;
         }
 
+        // ---------------------------------------------------------------- dışarıdan
         public void BeginAiming()
         {
             aimEnabled = true;
@@ -105,28 +130,105 @@ namespace Ada.Throw
         public void EndAiming()
         {
             aimEnabled = false;
-            dragging = false;
-            if (preview) preview.enabled = false;
+            CancelAim();
             anim.SetAiming(false);
+            if (nextBallRoutine != null) { StopCoroutine(nextBallRoutine); nextBallRoutine = null; }
+            if (heldBall != null && !IsBusy) { pool.Release(heldBall); heldBall = null; }
+        }
+
+        /// <summary>Yeniden başlatma: bekleyen atış, yay, uçan toplar ve eldeki top sıfırlanır.</summary>
+        public void ResetAll()
+        {
+            CancelAim();
             CancelPending();
-            ReturnHeldBall();
+            if (nextBallRoutine != null) { StopCoroutine(nextBallRoutine); nextBallRoutine = null; }
+            for (int i = active.Count - 1; i >= 0; i--) pool.Release(active[i]);
+            active.Clear();
+            if (heldBall != null) { pool.Release(heldBall); heldBall = null; }
+            if (aimEnabled) EnsureHeldBall();
+        }
+
+        // ---------------------------------------------------------------- girdi
+        void OnTouchStart(Vector2 p)
+        {
+            touchActive = aimEnabled && !IsBusy && InTouchZone(p);
+            validAim = false;
+            if (touchActive) AimStarted?.Invoke();
+        }
+
+        bool InTouchZone(Vector2 p)
+        {
+            Rect safe = Screen.safeArea;
+            return safe.Contains(p) && p.y <= safe.yMin + safe.height * touchZoneHeight;
+        }
+
+        void OnDrag(Vector2 start, Vector2 current)
+        {
+            if (!touchActive) return;
+            validAim = ComputeLaunch(start, current, out Vector3 v0);
+            if (!validAim)
+            {
+                arc.Hide();
+                return;
+            }
+            int n = Ballistics.Predict(throwOrigin.position, v0, settings, Time.fixedDeltaTime, buffer, hitMask, killY,
+                out bool didHit, out RaycastHit hit);
+            TargetBoard tb = didHit ? hit.collider.GetComponentInParent<TargetBoard>() : null;
+            bool onTarget = tb != null && !tb.IsDown;
+            arc.Show(buffer, n, onTarget, onTarget ? hit.point : Vector3.zero, onTarget ? hit.normal : Vector3.up);
+        }
+
+        void OnDragEnd(Vector2 start, Vector2 end, float seconds)
+        {
+            if (!touchActive) return;
+            touchActive = false;
+            if (!ComputeLaunch(start, end, out Vector3 v0))
+            {
+                arc.Hide();
+                AimCanceled?.Invoke();
+                return;
+            }
+            pendingId = ++throwId;
+            released = false;
+            pendingVelocity = v0;
+            pendingSettings = settings;      // rüzgâr dahil, atış anında dondurulur
+            throwStartedAt = Time.time;
+            EnsureHeldBall();
+            anim.PlayThrow();                 // yay bırakma karesine kadar donuk kalır, sonra söner
+        }
+
+        void OnTouchEnded(Vector2 p)
+        {
+            if (!touchActive) return;         // DragEnded işlemediyse (hareketsiz dokunuş): atış yok
+            touchActive = false;
+            arc.Hide();
+            AimCanceled?.Invoke();
+        }
+
+        void CancelAim()
+        {
+            bool was = touchActive;
+            touchActive = false;
+            validAim = false;
+            if (!IsBusy && arc) arc.Hide();
+            if (was) AimCanceled?.Invoke();
         }
 
         void OnPauseChanged(bool paused)
         {
-            if (!paused) return;
-            dragging = false;
-            if (preview) preview.enabled = false;
+            if (paused) CancelAim();
         }
 
-        bool ComputeLaunch(Vector2 a, Vector2 b, out Vector3 v0)
+        bool ComputeLaunch(Vector2 start, Vector2 current, out Vector3 v0)
         {
             v0 = default;
             float dpScale = (Screen.dpi > 1f ? Screen.dpi : 160f) / 160f;
-            Vector2 d = b - a;
-            if (d.y < minDragDp * dpScale) return false;               // yukarı sürükleme gerekli
-            float power = Mathf.Clamp01(d.magnitude / (fullPowerDragDp * dpScale));
-            float yaw = Mathf.Clamp(Mathf.Atan2(d.x, d.y) * Mathf.Rad2Deg, -maxYawDeg, maxYawDeg);
+            Vector2 d = (current - start) / dpScale;          // dp
+            float pull = -d.y;                                  // aşağı çekme pozitif
+            if (pull < minPullDp) return false;
+            float power = Mathf.Clamp01((pull - minPullDp) / Mathf.Max(1f, maxPullDp - minPullDp));
+            float side = Mathf.Clamp(d.x / Mathf.Max(1f, sideRangeDp), -1f, 1f);
+            float yaw = (slingshotHorizontal ? -side : side) * maxYawDeg;
             float speed = Mathf.Lerp(minSpeed, maxSpeed, power);
             Vector3 fwd = aimReference.forward;
             fwd.y = 0f;
@@ -136,40 +238,8 @@ namespace Ada.Throw
             return true;
         }
 
-        void OnDrag(Vector2 a, Vector2 b)
-        {
-            if (!aimEnabled || IsBusy) return;
-            if (!ComputeLaunch(a, b, out Vector3 v0))
-            {
-                dragging = false;
-                if (preview) preview.enabled = false;
-                return;
-            }
-            dragging = true;
-            if (!preview) return;
-            int n = Ballistics.Predict(throwOrigin.position, v0, settings, buffer, hitMask, killY, out _, out _);
-            preview.positionCount = n;
-            for (int i = 0; i < n; i++) preview.SetPosition(i, buffer[i]);
-            preview.enabled = true;
-        }
-
-        void OnDragEnd(Vector2 a, Vector2 b, float seconds)
-        {
-            if (!aimEnabled || !dragging || IsBusy) return;
-            dragging = false;
-            if (preview) preview.enabled = false;
-            if (!ComputeLaunch(a, b, out Vector3 v0)) return;
-
-            pendingId = ++throwId;
-            released = false;
-            pendingVelocity = v0;
-            pendingSettings = settings;   // rüzgâr dahil, atış anında dondurulur
-            throwStartedAt = Time.time;
-            EnsureHeldBall();
-            anim.PlayThrow();
-        }
-
-        /// <summary>Throw klibinin bırakma karesindeki Animation Event (AnimationEventRelay üzerinden).</summary>
+        // ---------------------------------------------------------------- bırakma
+        /// <summary>Throw klibinin bırakma karesindeki Animation Event (AnimationEventRelay.ThrowRelease).</summary>
         public void OnReleaseEvent()
         {
             if (pendingId < 0 || released) return;   // iptal edilmiş atış ya da çift olay
@@ -177,25 +247,34 @@ namespace Ada.Throw
             int id = pendingId;
             pendingId = -1;
 
+            Vector3 origin = throwOrigin.position;
+            int n = Ballistics.Predict(origin, pendingVelocity, pendingSettings, Time.fixedDeltaTime, buffer, hitMask, killY, out _, out _);
             var ball = heldBall != null ? heldBall : pool.Get();
             heldBall = null;
-            ball.Launch(throwOrigin.position, pendingVelocity, pendingSettings, hitMask, killY);
-            Released?.Invoke(throwOrigin.position, pendingVelocity);
-            StartCoroutine(GiveNextBall(id));
+            ball.Launch(id, origin, pendingVelocity, pendingSettings, killY, buffer, n);
+            active.Add(ball);
+
+            arc.FadeOut();
+            Released?.Invoke(origin, pendingVelocity);
+            if (nextBallRoutine != null) StopCoroutine(nextBallRoutine);
+            nextBallRoutine = StartCoroutine(GiveNextBall());
         }
 
-        IEnumerator GiveNextBall(int id)
+        IEnumerator GiveNextBall()
         {
             yield return new WaitForSeconds(nextBallDelay);
-            if (aimEnabled && pendingId < 0 && id == throwId) EnsureHeldBall();
+            nextBallRoutine = null;
+            if (aimEnabled && !IsBusy) EnsureHeldBall();
         }
 
-        /// <summary>Bırakmadan önce animasyon kesildiğinde (ThrowStateGuard) ya da zaman aşımında çağrılır.</summary>
+        /// <summary>Bırakmadan önce Throw durumundan çıkıldığında (ThrowStateGuard) ya da zaman aşımında.</summary>
         public void CancelPending()
         {
             if (pendingId < 0 || released) return;
             pendingId = -1;
             anim.ClearThrow();
+            if (arc) arc.Hide();
+            AimCanceled?.Invoke();
         }
 
         void Update()
@@ -203,38 +282,33 @@ namespace Ada.Throw
             if (pendingId >= 0 && !released && Time.time - throwStartedAt > releaseTimeout) CancelPending();
         }
 
+        // ---------------------------------------------------------------- top olayları
+        void OnBallContact(Ball ball, Collision collision)
+        {
+            if (logTrajectoryError && Debug.isDebugBuild)
+                Debug.Log($"[Atış] önizleme sapması (temas öncesi en büyük): {ball.LastMaxError * 100f:F1} cm");
+
+            var target = collision.collider.GetComponentInParent<TargetBoard>();
+            if (target != null)
+            {
+                ContactPoint cp = collision.GetContact(0);
+                TargetHit?.Invoke(target, cp.point, cp.normal);
+            }
+            else Missed?.Invoke();
+        }
+
+        void OnBallFinished(Ball ball)
+        {
+            if (!ball.Contacted) Missed?.Invoke();       // hiçbir şeye değmeden düştü / süresi doldu
+            active.Remove(ball);
+            pool.Release(ball);
+        }
+
         void EnsureHeldBall()
         {
             if (heldBall != null) return;
             heldBall = pool.Get();
             heldBall.Hold(handSocket);
-        }
-
-        void ReturnHeldBall()
-        {
-            if (heldBall == null) return;
-            pool.Release(heldBall);
-            heldBall = null;
-        }
-
-        void OnBallHit(Ball b, RaycastHit hit)
-        {
-            var target = hit.collider.GetComponentInParent<TargetBoard>();
-            if (target != null) TargetHit?.Invoke(target);
-            else Missed?.Invoke();
-            StartCoroutine(ReturnLater(b, 0.4f));
-        }
-
-        void OnBallExpired(Ball b)
-        {
-            Missed?.Invoke();
-            pool.Release(b);
-        }
-
-        IEnumerator ReturnLater(Ball b, float seconds)
-        {
-            yield return new WaitForSeconds(seconds);
-            if (b && b.gameObject.activeSelf && !b.IsFlying) pool.Release(b);
         }
     }
 }

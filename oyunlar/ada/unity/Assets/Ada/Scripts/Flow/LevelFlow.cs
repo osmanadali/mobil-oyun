@@ -11,38 +11,31 @@ using Ada.Water;
 namespace Ada.Flow
 {
     /// <summary>
-    /// İlk oynanabilir döngü: köprü → atış standı → kısa dalış → bitiş. Süre ilk zıplamada başlar, bitişte durur.
-    /// UI bu sınıfın olaylarını dinler (sonuç ekranı, ceza yazıları).
+    /// İlk oynanabilir döngü: köprü → kısa dalış → final atışı → sonuç.
+    /// Süre ilk zıplamada başlar, final etabı tamamlanınca durur. Etaplar kendi coroutine'lerini yönetir;
+    /// LevelFlow yalnız olaylarını bekler (yeniden başlatmada çift akış oluşmaz).
     /// </summary>
     public sealed class LevelFlow : MonoBehaviour
     {
         [SerializeField] PlayerMotor motor;
-        [SerializeField] PlayerAnimatorBridge anim;
         [SerializeField] CameraRig cameraRig;
         [SerializeField] RaceTimer timer;
         [SerializeField] BridgeController bridge;
-        [SerializeField] ThrowCourse throwCourse;
         [SerializeField] DiveController dive;
+        [SerializeField] ThrowStage finalThrow;
 
         [Header("Noktalar")]
-        [SerializeField] Transform throwStand;
-        [SerializeField] Transform diveEntry;      // su yüzeyindeki giriş noktası
         [SerializeField] Transform diveJumpFrom;   // havuz kenarı
-        [SerializeField] Transform finishSpot;
-
-        [Header("His")]
-        [SerializeField] float finalHitStop = 0.04f;
-        [SerializeField] float finalShakeSeconds = 0.1f;
-        [SerializeField] float finalShakeFraction = 0.0025f;
+        [SerializeField] Transform diveEntry;      // su yüzeyindeki giriş noktası
+        [SerializeField] Transform throwAreaEntry; // final atış alanına giriş (iskele başı)
 
         public event Action<float, float> LevelCompleted; // toplam süre, ceza
-
-        void OnEnable() => throwCourse.FinalHit += OnFinalHit;
-        void OnDisable() => throwCourse.FinalHit -= OnFinalHit;
 
         IEnumerator Start()
         {
             yield return null;
+            Application.targetFrameRate = 60;
+            QualitySettings.vSyncCount = 0;
             timer.ResetTimer();
 
             // 1) Köprü
@@ -54,18 +47,12 @@ namespace Ada.Flow
             while (!bridgeDone) yield return null;
             bridge.Finished -= OnBridge;
 
-            // 2) Atış standı
-            yield return RunTo(throwStand.position);
-            motor.PlaceGrounded(throwStand.position, throwStand.forward);
-            cameraRig.SetProfile(CamProfileId.Aim);
-            yield return throwCourse.Run();
-
-            // 3) Kısa dalış
+            // 2) Kısa dalış
             yield return RunTo(diveJumpFrom.position);
             bool inWater = false;
-            motor.TryJump(diveEntry.position, () => { }, intoWater: true);
             void OnWater() => inWater = true;
             motor.EnteredWater += OnWater;
+            motor.TryJump(diveEntry.position, null, intoWater: true);
             while (!inWater) yield return null;
             motor.EnteredWater -= OnWater;
             cameraRig.SetProfile(CamProfileId.Dive);
@@ -76,11 +63,16 @@ namespace Ada.Flow
             while (!diveDone) yield return null;
             dive.Completed -= OnDive;
 
-            // 4) Bitiş
-            yield return RunTo(finishSpot.position);
+            // 3) Final atışı
+            yield return RunTo(throwAreaEntry.position);
+            bool throwDone = false;
+            void OnThrow() => throwDone = true;
+            finalThrow.Completed += OnThrow;
+            finalThrow.Begin();
+            while (!throwDone) yield return null;
+            finalThrow.Completed -= OnThrow;
+
             timer.StopTimer();
-            cameraRig.SetProfile(CamProfileId.Finish);
-            anim.PlayVictory();
             LevelCompleted?.Invoke(timer.Total, timer.Penalty);
         }
 
@@ -89,12 +81,6 @@ namespace Ada.Flow
             bool arrived = false;
             motor.RunTo(point, false, () => arrived = true);
             while (!arrived) yield return null;
-        }
-
-        void OnFinalHit()
-        {
-            GameClock.HitStop(finalHitStop);
-            cameraRig.Shake(finalShakeSeconds, finalShakeFraction);
         }
     }
 }

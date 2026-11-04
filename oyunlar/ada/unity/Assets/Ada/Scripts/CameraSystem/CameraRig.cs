@@ -25,6 +25,10 @@ namespace Ada.CameraSystem
         public float lookAhead = 2.5f;
         public Vector3 focusOffset = new Vector3(0f, 0.9f, 0f);
         public bool underwaterEffects;
+        [Tooltip("Doluysa kamera bu sahne noktasına gider ve orada SABİT durur (ör. final atış kadrajı). Diğer alanlar yok sayılır.")]
+        public Transform fixedPose;
+        [Tooltip(">0 ise dar ekranlarda yatay görüş açısı en az bu değer olacak şekilde dikey FOV büyütülür (kenarlar kesilmez).")]
+        public float minHorizontalFovDeg = 0f;
     }
 
     /// <summary>
@@ -78,7 +82,7 @@ namespace Ada.CameraSystem
                 {
                     basePos = DesiredPosition(out Quaternion r);
                     transform.SetPositionAndRotation(basePos, r);
-                    cam.fieldOfView = p.fovDeg;
+                    cam.fieldOfView = FitFov(p);
                     velocity = Vector3.zero;
                 }
                 return;
@@ -94,9 +98,21 @@ namespace Ada.CameraSystem
             shakeAmplitude = screenHeightFraction;
         }
 
+        float FitFov(CamProfile p)
+        {
+            if (p.minHorizontalFovDeg <= 0f || cam.aspect <= 0f) return p.fovDeg;
+            float needed = 2f * Mathf.Atan(Mathf.Tan(p.minHorizontalFovDeg * 0.5f * Mathf.Deg2Rad) / cam.aspect) * Mathf.Rad2Deg;
+            return Mathf.Clamp(Mathf.Max(p.fovDeg, needed), 20f, 90f);
+        }
+
         Vector3 DesiredPosition(out Quaternion rot)
         {
             var p = current;
+            if (p.fixedPose)
+            {
+                rot = p.fixedPose.rotation;
+                return p.fixedPose.position;
+            }
             Vector3 local = courseFrame.InverseTransformPoint(target.position);
             if (p.lockLateral) local.x = p.lateralX;
             if (p.ignoreTargetHeight) local.y = p.fixedHeight;
@@ -119,7 +135,7 @@ namespace Ada.CameraSystem
             if (blend < 1f) blend = Mathf.Min(1f, blend + Time.unscaledDeltaTime / Mathf.Max(0.01f, profileBlendSeconds));
             float e = blend * blend * (3f - 2f * blend);
             Quaternion r = Quaternion.Slerp(rotFrom, rot, e);
-            cam.fieldOfView = Mathf.Lerp(fovFrom, current.fovDeg, e);
+            cam.fieldOfView = Mathf.Lerp(fovFrom, FitFov(current), e);
 
             transform.SetPositionAndRotation(basePos + ShakeOffset(r), r);
             UpdateUnderwater();
@@ -129,7 +145,8 @@ namespace Ada.CameraSystem
         {
             float t = (Time.unscaledTime - shakeStart) / shakeDuration;
             if (shakeAmplitude <= 0f || t >= 1f) return Vector3.zero;
-            float worldHeight = 2f * current.distance * Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad);
+            float dist = current.fixedPose ? Vector3.Distance(transform.position, target.position) : current.distance;
+            float worldHeight = 2f * dist * Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad);
             float amp = shakeAmplitude * worldHeight * (1f - t);
             float s = Time.unscaledTime * 40f;
             float x = (Mathf.PerlinNoise(s, 0.37f) - 0.5f) * 2f;
