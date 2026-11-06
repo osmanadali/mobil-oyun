@@ -15,7 +15,7 @@ module.exports = async T => {
     await page.evaluate(() => document.getElementById('modal').classList.remove('open')); await page.reload(); await page.waitForTimeout(400);
     await page.click('#bPlay'); await page.waitForTimeout(700);
     const g = await page.evaluate(() => ({ t: document.getElementById('gMoves').textContent, time: !!document.getElementById('gTime'), pill: document.getElementById('gPill').textContent }));
-    check('t2.ui', 'Sade ekran: oyunda tek süre (kalan süre şeritte), başlıkta ⚡% yok; ana sayfa logosu ikon işareti; "Nasıl oynanır?" ve "İlerlemeyi taşı" Ayarlar\'da; "Bize yaz" (destek e-postası) Ayarlar'da',
+    check('t2.ui', 'Sade ekran: oyunda tek süre (kalan süre şeritte), başlıkta ⚡% yok; ana sayfa logosu ikon işareti; "Nasıl oynanır?" ve "İlerlemeyi taşı" Ayarlar\'da; "Bize yaz" (destek e-postası) Ayarlar\'da',
       !g.time && !/⚡|%/.test(g.t) && /M2/.test(g.t) && !home.how && home.mark && rows[0] && rows[1] && rows[2] && howOpen, JSON.stringify({ g, home, rows, howOpen }));
     errs.push(...errors); await ctx.close();
   }
