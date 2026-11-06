@@ -3,7 +3,7 @@
 Bu belge Google Play ve App Store'a gönderim için gereken her şeyi tek yerde toplar: mağaza metinleri (Türkçe ve İngilizce), görseller, veri güvenliği ve gizlilik beyanları, yaş derecelendirmesi, uygulama içi ürün ve kullanıcının yapması gereken işler.
 
 - Metinler kopyalanıp yapıştırılmak üzere kod bloklarındadır. Karakter sayıları tablolarda, sınırla birlikte verilmiştir (Unicode karakter; Türkçe harfler tek karakter sayılır).
-- Geliştirici adı: Osman Adalı. `[iletişim e-postası]` yer tutucudur; gönderimden önce gerçek adresle değiştirilmeli.
+- Geliştirici adı: Osman Adalı. Destek e-postası: osmanadali.apps@gmail.com (bütün uygulamalar için ortak).
 - Bütün özellikler `README.md` ve `docs/BOLUM_TASARIMI.md` ile doğrulanmıştır. Oyun değişirse (ör. çift hatlara yeni kurallar gelince) "Bilinen sınırlar" bölümündeki maddeler güncellenmeli.
 
 ## 1. Kimlik bilgileri
@@ -17,7 +17,7 @@ Bu belge Google Play ve App Store'a gönderim için gereken her şeyi tek yerde 
 | Destek URL'si (App Store) | https://osmanadali.github.io/mobil-oyun/gizlilik.html (İletişim bölümü) |
 | Pazarlama URL'si (isteğe bağlı) | https://osmanadali.github.io/mobil-oyun/ (oyunun web sürümü) |
 | Telif (App Store) | © 2026 Osman Adalı |
-| İletişim e-postası (iki mağaza, herkese açık) | [iletişim e-postası] |
+| İletişim e-postası (iki mağaza, herkese açık) | osmanadali.apps@gmail.com |
 | Dil | Türkçe, İngilizce, Almanca, İspanyolca, Portekizce (Brezilya), Fransızca (oyun cihaz diline göre açılır, desteklenmeyen dilde İngilizce; Ayarlar › Dil ile değişir; mağaza metinleri §4, §5, §5b) |
 | Cihaz | Android telefon, iPhone (yalnız dikey; iPad yok) |
 
@@ -187,7 +187,7 @@ Available in English, German, Spanish, Portuguese, French and Turkish.
 | Kategori | Bulmaca (Puzzle) |
 | Etiketler (en çok 5, önerilen) | Bulmaca, Mantık, Çevrimdışı, Tek oyunculu, Gündelik |
 | Ücretli / ücretsiz | Ücretsiz (yayından sonra ücretliye çevrilemez) |
-| İletişim e-postası | [iletişim e-postası] |
+| İletişim e-postası | osmanadali.apps@gmail.com |
 | Web sitesi | https://osmanadali.github.io (app-ads.txt için, bkz. §11) |
 | Sürüm notu (ilk sürüm) | `İlk sürüm. Tek elle, internetsiz metro bulmacası: 24 kural, Günün Hattı, renk temaları ve sürpriz sandık.` |
 | Sürüm notu (EN) | `First release. A one-handed, offline metro puzzle: 24 rules, a Daily Line, color themes and a surprise chest.` |
@@ -575,7 +575,7 @@ Google'ın iOS tabloları: https://developers.google.com/admob/ios/privacy/data-
 
 | Soru | Yanıt |
 |---|---|
-| E-posta | [iletişim e-postası] |
+| E-posta | osmanadali.apps@gmail.com |
 | Kategori | Oyun (Game) |
 | Şiddet, kan, korku | Hayır |
 | Cinsellik, çıplaklık | Hayır |
@@ -738,7 +738,7 @@ AdMob
 
 Gizlilik ve yayın sayfası
 
-- [ ] `www/gizlilik.html` içindeki `[geliştirici adı]` ve `[iletişim e-postası]` yer tutucularını doldur (`magaza-reklam` dalı).
+- [x] `www/gizlilik.html` içindeki geliştirici adı ve iletişim e-postası dolduruldu (Osman Adalı, osmanadali.apps@gmail.com; 6 Kasım).
 - [ ] GitHub Pages'i aç (onayınla) ve `web.yml` push tetikleyicisini geri getir; gizlilik adresinin açıldığını tarayıcıda doğrula.
 
 İmza

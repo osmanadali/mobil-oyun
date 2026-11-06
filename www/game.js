@@ -2075,7 +2075,7 @@ function settings() {
 }
 // ---------- gizlilik: kısa özet, politika, reklam rıza seçenekleri, verileri sil ----------
 // Ayarlar › Bize yaz: destek e-postası (gizlilik.html İletişim ile aynı olmalı). Boşken satır gösterilmez.
-const SUPPORT_MAIL = '';
+const SUPPORT_MAIL = 'osmanadali.apps@gmail.com';
 const POLICY = 'https://osmanadali.github.io/mobil-oyun/gizlilik.html#' + RAY_LANG;   // sayfa iki dilli: oyunun dilindeki bölüme açılır
 // uygulamada sistem tarayıcısında (Capacitor dış adresi uygulama içinde açmaz), web'de yeni sekmede yerel kopya (çevrimdışı da açılır)
 function openPolicy() {

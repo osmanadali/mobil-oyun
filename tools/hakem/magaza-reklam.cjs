@@ -44,7 +44,7 @@ module.exports = async T => {
     if (pop) {
       await pop.waitForLoadState('load').catch(() => {}); await pop.setViewportSize({ width: 360, height: 640 }); await pop.waitForTimeout(300);
       pol = await G(pop, () => { const t = document.body.innerText; return { url: location.pathname, tr: document.querySelector('#tr[lang=tr] h1')?.textContent, en: document.querySelector('#en[lang=en] h1')?.textContent,
-        date: /3 Kasım 2026/.test(t) && /3 November 2026/.test(t), mail: (t.match(/\[iletişim e-postası\]/g) || []).length, google: !!document.querySelector('a[href="https://policies.google.com/technologies/partner-sites"]'),
+        date: /3 Kasım 2026/.test(t) && /3 November 2026/.test(t), mail: (t.match(/osmanadali\.apps@gmail\.com/g) || []).length, google: !!document.querySelector('a[href="https://policies.google.com/technologies/partner-sites"]'),
         facts: ['localStorage', 'AdMob', 'IDFA', 'IP', 'Google Play', 'App Store', '13', 'Verilerimi sil', 'Firebase', 'Google Analytics', 'özel teklif', 'special offer'].filter(k => !t.includes(k)), ov: document.documentElement.scrollWidth > innerWidth }; });
       await pop.evaluate(() => scrollTo(0, 0)); await shot(pop, 'gizlilik-politika');
       await pop.close();
@@ -52,7 +52,7 @@ module.exports = async T => {
     const src = fs.readFileSync(path.join(__dirname, '..', '..', 'www', 'gizlilik.html'), 'utf8'), sw = fs.readFileSync(path.join(__dirname, '..', '..', 'www', 'sw.js'), 'utf8');
     const ext = (src.match(/<(?:script|link|img|iframe)\b[^>]*(?:src|href)="(?:https?:)?\/\/[^"]*"/gi) || []).length;
     check('gizlilik.page', 'Politika sayfası açılır: Türkçe + İngilizce, yürürlük 3 Kasım 2026, AdMob/Firebase/yerel veri/satın alma/13+/silme anlatılır, 360 px taşmaz', /gizlilik\.html$/.test(pol.url) && pol.tr === 'Gizlilik Politikası' && pol.en === 'Privacy Policy' && pol.date && pol.mail >= 2 && pol.google && !pol.facts?.length && !pol.ov, JSON.stringify(pol), 'medium');
-    check('gizlilik.offline', 'Politika tek dosya (dış betik/stil/görsel yok) ve çevrimdışı önbellekte; kullanıcı e-postası yok, yer tutucu var', !ext && /'gizlilik\.html'/.test(sw) && !/@gmail\.com/i.test(src), `dış kaynak ${ext} · sw ${/'gizlilik\.html'/.test(sw)}`, 'medium');
+    check('gizlilik.offline', 'Politika tek dosya (dış betik/stil/görsel yok) ve çevrimdışı önbellekte; yer tutucu kalmadı, e-posta olarak yalnız destek adresi (osmanadali.apps@gmail.com)', !ext && /'gizlilik\.html'/.test(sw) && !/\[(?:iletişim e-postası|geliştirici adı)\]/.test(src) && (src.match(/[\w.+-]+@[\w.-]+/g) || []).every(a => a === 'osmanadali.apps@gmail.com'), `dış kaynak ${ext} · sw ${/'gizlilik\.html'/.test(sw)}`, 'medium');
     // veri silme: önce onay; Vazgeç → hiçbir şey silinmez; Evet → kayıt gider, oyun baştan açılır
     await page.click('#mWipe'); await page.waitForTimeout(400);
     const ask = await h2(page), lvl0 = (await getSave(page)).level;

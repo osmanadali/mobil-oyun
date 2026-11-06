@@ -144,7 +144,7 @@ Durum 3 Kasım 2026 itibarıyla (en yeni madde başta):
 2. **AdMob:** Android ve iOS uygulamaları, 4 reklam birimi, AB/BK ve ABD rıza mesajları.
    - Kimlikler GitHub değişkenlerine girilir: `ADMOB_APP_ID_ANDROID`, `ADMOB_INTERSTITIAL_ANDROID`, `ADMOB_REWARDED_ANDROID`; iOS karşılıkları `ADMOB_APP_ID_IOS`, `ADMOB_INTERSTITIAL_IOS`, `ADMOB_REWARDED_IOS` **iOS yayınında zorunlu** (`ios-release.yml` eksik ya da test kimliği görürse durur). iOS kimlikleri AdMob'da açıldı ve `ios-release.yml`'de varsayılan olarak yazılı (YAYIN §3); Android kimlikleri de açıldı, `release.yml`'de varsayılan.
 3. **İmza anahtarı:** `keytool` ile üretilir ve yedeklenir. Dört gizli değer GitHub'a girilir: `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`.
-4. **Gizlilik politikası:** `www/gizlilik.html` içindeki `[iletişim e-postası]` ve `[geliştirici adı]` doldurulur.
+4. **Gizlilik politikası:** geliştirici adı (Osman Adalı) ve destek e-postası (osmanadali.apps@gmail.com) dolduruldu (6 Kasım).
 5. **GitHub Pages:** açılmalı (gizlilik adresi bunu bekliyor). `web.yml` push tetikleyicisi geri getirilir.
 6. **Mağaza ürünleri ve formlar:** yedi ürün (MAGAZA §10: `ray_reklamsiz`, `ray_temalar`, `ray_ipucu_10/30/80`, `ray_guclendirici`, `ray_bilet_50`) iki mağazada tanımlanır, formlar doldurulur, metin ve görseller yüklenir.
 
