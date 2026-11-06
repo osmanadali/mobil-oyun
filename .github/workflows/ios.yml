@@ -47,7 +47,7 @@ jobs:
             -destination 'generic/platform=iOS Simulator' -derivedDataPath build CODE_SIGNING_ALLOWED=NO build > build.log 2>&1 \
             || { grep -E "error:" build.log | sort -u | head -40; tail -60 build.log; exit 1; }
           grep -E "warning: .*Info\.plist|\*\* BUILD" build.log || true
-      - name: Uygulama paketini denetle (iPhone, SKAdNetwork, satın alma, diller en+tr)
+      - name: Uygulama paketini denetle (iPhone, SKAdNetwork, satın alma, 6 dil)
         run: |
           A=build/Build/Products/Release-iphonesimulator/App.app
           plutil -p "$A/Info.plist" | grep -E 'CFBundleDisplayName|CFBundleShortVersionString|CFBundleVersion|MinimumOSVersion|UIDeviceFamily|GADApplicationIdentifier|ITSAppUses|NSUserTracking' -A2 | grep -v '^--'
