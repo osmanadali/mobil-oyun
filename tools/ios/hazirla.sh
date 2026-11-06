@@ -13,11 +13,16 @@ put() { pb "Delete :$1" 2>/dev/null || true; pb "Add :$1 $2${3:+ \"$3\"}"; }   #
 # 1) Info.plist
 pb "Set :CFBundleDisplayName Ray"
 # Dil: WKWebView navigator.languages'ı uygulamanın desteklediği dillerden verir, eşleşme yoksa geliştirme bölgesine düşer.
-# Bu yüzden geliştirme bölgesi 'en' ve iki dil de CFBundleLocalizations + .lproj ile bildirilir (bkz. 5. adım).
+# Bu yüzden geliştirme bölgesi 'en' ve altı dil de CFBundleLocalizations + .lproj ile bildirilir (bkz. 5. adım).
+LANGS="en tr de es pt-BR fr"
 ATT_EN="If you allow it, ads can be chosen based on your interests. If you do not, the game works just the same; you will still see ads, but they will be less personal."
 ATT_TR="İzin verirsen reklamlar ilgi alanlarına göre seçilebilir. Vermesen de oyun aynen çalışır; reklamlar yine görünür ama daha az kişisel olur."
+ATT_DE="Wenn du es erlaubst, können Anzeigen nach deinen Interessen ausgewählt werden. Wenn nicht, funktioniert das Spiel genauso; du siehst weiterhin Anzeigen, nur weniger persönliche."
+ATT_ES="Si lo permites, los anuncios pueden elegirse según tus intereses. Si no, el juego funciona igual; seguirás viendo anuncios, pero menos personalizados."
+ATT_PT="Se você permitir, os anúncios podem ser escolhidos de acordo com seus interesses. Se não, o jogo funciona do mesmo jeito; você continua vendo anúncios, mas menos personalizados."
+ATT_FR="Si tu l’autorises, les publicités peuvent être choisies selon tes centres d’intérêt. Sinon, le jeu fonctionne exactement pareil ; tu verras toujours des publicités, mais moins personnalisées."
 pb "Set :CFBundleDevelopmentRegion en"
-put CFBundleLocalizations array; pb "Add :CFBundleLocalizations:0 string en"; pb "Add :CFBundleLocalizations:1 string tr"
+put CFBundleLocalizations array; i=0; for l in $LANGS; do pb "Add :CFBundleLocalizations:$i string $l"; i=$((i+1)); done
 put GADApplicationIdentifier string "$APP_ID"
 put NSUserTrackingUsageDescription string "$ATT_EN"
 put ITSAppUsesNonExemptEncryption bool false
@@ -31,7 +36,7 @@ while read -r id; do
   pb "Add :SKAdNetworkItems:$i dict"; pb "Add :SKAdNetworkItems:$i:SKAdNetworkIdentifier string $id"; i=$((i+1))
 done < tools/ios/skadnetwork.txt
 plutil -lint "$P"
-echo "✓ Info.plist: AdMob $([ "$APP_ID" = "ca-app-pub-3940256099942544~1458002511" ] && echo '(Google test)' || echo '(gerçek)'), $i SKAdNetwork, yalnız dikey, diller en+tr (geliştirme: en)"
+echo "✓ Info.plist: AdMob $([ "$APP_ID" = "ca-app-pub-3940256099942544~1458002511" ] && echo '(Google test)' || echo '(gerçek)'), $i SKAdNetwork, yalnız dikey, diller $LANGS (geliştirme: en)"
 
 # 2) Xcode projesi: yalnız iPhone, sürüm
 grep -q 'TARGETED_DEVICE_FAMILY' "$PBX" || { echo "TARGETED_DEVICE_FAMILY bulunamadı"; exit 1; }
@@ -54,28 +59,29 @@ if [ -n "${ADMOB_INTERSTITIAL_IOS:-}" ] && [ -n "${ADMOB_REWARDED_IOS:-}" ]; the
   echo "✓ window.RAY_ADS (iOS)"
 fi
 
-# 5) Yerelleştirme: en.lproj + tr.lproj/InfoPlist.strings (ATT metni), projeye Resources olarak eklenir (xcodeproj gem'i)
-for l in en tr; do   # macOS /bin/bash 3.2: ${l^^} yok
+# 5) Yerelleştirme: <dil>.lproj/InfoPlist.strings (6 dil) (ATT metni), projeye Resources olarak eklenir (xcodeproj gem'i)
+for l in $LANGS; do   # macOS /bin/bash 3.2: ${l^^} yok
   mkdir -p "ios/App/App/$l.lproj"
-  [ "$l" = en ] && t=$ATT_EN || t=$ATT_TR
+  case $l in en) t=$ATT_EN;; tr) t=$ATT_TR;; de) t=$ATT_DE;; es) t=$ATT_ES;; pt-BR) t=$ATT_PT;; fr) t=$ATT_FR;; esac
   printf '"NSUserTrackingUsageDescription" = "%s";\n' "$t" > "ios/App/App/$l.lproj/InfoPlist.strings"
   plutil -lint "ios/App/App/$l.lproj/InfoPlist.strings"
 done
 ruby -rxcodeproj -e1 2>/dev/null || gem install --no-document xcodeproj >/dev/null || sudo gem install --no-document xcodeproj >/dev/null
-ruby -rxcodeproj -e '
+LANGS="$LANGS" ruby -rxcodeproj -e '
   proj = Xcodeproj::Project.open("ios/App/App.xcodeproj")
   target = proj.targets.find { |t| t.name == "App" } or abort "App hedefi yok"
   group = proj.main_group["App"] or abort "App grubu yok"
   vg = group.children.find { |c| c.isa == "PBXVariantGroup" && c.display_name == "InfoPlist.strings" } || group.new_variant_group("InfoPlist.strings")
-  %w[en tr].each do |l|
+  langs = ENV["LANGS"].split
+  langs.each do |l|
     next if vg.files.any? { |f| f.name == l }
     ref = vg.new_reference("#{l}.lproj/InfoPlist.strings"); ref.name = l
   end
   target.resources_build_phase.add_file_reference(vg, true)
-  proj.root_object.known_regions = (proj.root_object.known_regions | %w[en tr Base])
+  proj.root_object.known_regions = (proj.root_object.known_regions | langs | %w[Base])
   proj.save
   puts "  knownRegions: #{proj.root_object.known_regions.join(", ")}; Resources: #{vg.files.map(&:path).join(", ")}"'
-echo "✓ Yerelleştirme: en.lproj + tr.lproj (InfoPlist.strings) projede"
+echo "✓ Yerelleştirme: $LANGS (InfoPlist.strings) projede"
 
 # 6) Ölçüm (Firebase Analytics): FIREBASE_IOS_PLIST gizli değeri varsa GoogleService-Info.plist projeye eklenir, yoksa eklenti çıkarılır
 node tools/olcum-hazirla.cjs ios

@@ -58,7 +58,7 @@ jobs:
             && echo "Satın alma eklentisi (StoreKit) pakette" || { echo "::error::cordova-plugin-purchase iOS paketine girmemiş"; exit 1; }
           echo "Diller: geliştirme $(plutil -extract CFBundleDevelopmentRegion raw -o - "$A/Info.plist"), CFBundleLocalizations $(plutil -extract CFBundleLocalizations json -o - "$A/Info.plist")"
           [ "$(plutil -extract CFBundleDevelopmentRegion raw -o - "$A/Info.plist")" = en ] || { echo "::error::CFBundleDevelopmentRegion en değil"; exit 1; }
-          for l in en tr; do
+          for l in en tr de es pt-BR fr; do
             plutil -extract CFBundleLocalizations json -o - "$A/Info.plist" | grep -q "\"$l\"" || { echo "::error::CFBundleLocalizations içinde $l yok"; exit 1; }
             [ -f "$A/$l.lproj/InfoPlist.strings" ] || { echo "::error::$l.lproj/InfoPlist.strings pakette yok"; exit 1; }
             t=$(plutil -extract NSUserTrackingUsageDescription raw -o - "$A/$l.lproj/InfoPlist.strings") \

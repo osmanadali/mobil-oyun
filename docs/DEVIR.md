@@ -49,7 +49,7 @@ Bu not, işi yeni bir sohbete taşırken bağlam kaybolmasın diye yazıldı. Ye
 | `.github/workflows/web.yml` | Pages yayını. Pages açık olmadığından şimdilik yalnız elle çalışır; yayın hazırlığında push tetikleyicisi geri açılacak. |
 | `.github/workflows/hakem.yml` | Robotu CI'da koşar |
 | `.github/workflows/release.yml` | İmzalı AAB + APK (yalnız elle; imza gizli değerleri ve AdMob değişkenleri gerekir) |
-| `.github/workflows/ios.yml` | iOS simülatör derlemesi (imzasız, elle); en+tr dil paketlerini denetler |
+| `.github/workflows/ios.yml` | iOS simülatör derlemesi (imzasız, elle); 6 dilin paketlerini denetler |
 | `.github/workflows/ios-release.yml` | İmzalı iOS arşivi + App Store Connect yüklemesi (yalnız elle; Apple gizli değerleri ve iOS AdMob değişkenleri gerekir, test reklam kimliği görürse durur) |
 | `tools/ikon.cjs`, `tools/make-assets.cjs` | Uygulama ikonu ("Gece Işığı"; eski "R" `rIconR` olarak durur) ve bütün ikon/açılış/mağaza görselleri |
 | `tools/store-shots.cjs`, `store/` | Mağaza ekran görüntüleri, öne çıkan görsel, mağaza ikonları |

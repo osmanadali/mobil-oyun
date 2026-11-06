@@ -151,8 +151,8 @@ Actions → **Android yayın (imzalı AAB)** → Run workflow. Komut satırında
   - SKAdNetwork listesi
   - şifreleme beyanı
   - yalnız dikey yön
-  - diller: geliştirme bölgesi `en`, `CFBundleLocalizations` = en + tr
-- `en.lproj` ve `tr.lproj` (`InfoPlist.strings`: izleme izni metninin İngilizcesi ve Türkçesi) pakette
+  - diller: geliştirme bölgesi `en`, `CFBundleLocalizations` = en, tr, de, es, pt-BR, fr
+- 6 dilin `<dil>.lproj/InfoPlist.strings` dosyası (izleme izni metni o dilde) pakette
 - yalnız iPhone desteği
 - simgeler
 
@@ -160,7 +160,7 @@ AdMob değişkenleri eksikse ya da Google test kimliği içeriyorsa `ios.yml` ya
 
 App Store'a göndermek için Apple hesabı ve imza gerekir: `ios-release.yml` (§3.2-A).
 
-**Dil:** `www/i18n.js` dili `navigator.languages[0]`'dan alır. iOS'ta WKWebView bu değeri yalnız uygulamanın bildirdiği diller arasından verir; eşleşme yoksa geliştirme bölgesine düşer. Bu yüzden `tools/ios/hazirla.sh` geliştirme bölgesini `en` yapar, iki dili `CFBundleLocalizations` ile bildirir ve `en.lproj`/`tr.lproj` klasörlerini `xcodeproj` gem'iyle projeye (Resources) ekler. Böylece Türkçe iPhone'da oyun Türkçe, öteki her dilde İngilizce açılır; izleme izni metni de aynı dilde görünür.
+**Dil:** `www/i18n.js` dili `navigator.languages[0]`'dan alır. iOS'ta WKWebView bu değeri yalnız uygulamanın bildirdiği diller arasından verir; eşleşme yoksa geliştirme bölgesine düşer. Bu yüzden `tools/ios/hazirla.sh` geliştirme bölgesini `en` yapar, altı dili (en, tr, de, es, pt-BR, fr) `CFBundleLocalizations` ile bildirir ve `<dil>.lproj` klasörlerini `xcodeproj` gem'iyle projeye (Resources) ekler. Böylece iPhone bu dillerden birindeyse oyun o dilde, öteki her dilde İngilizce açılır; izleme izni metni de aynı dilde görünür.
 
 ### 3.1 Hesap ve kayıtlar
 
@@ -223,7 +223,7 @@ Sonra Actions → **iOS yayın (App Store Connect)** → Run workflow (ya da `gh
 1. **Ön denetim:** yukarıdaki yedi ayardan biri eksikse, AdMob kimliklerinin biçimi yanlışsa, biri Google test kimliği içeriyorsa ya da yapı numarası geçersizse durur (Android'deki `release.yml` korumasının aynısı).
 2. `ios.yml` ile aynı hazırlık: `npx cap add ios`, simgeler, `tools/ios/hazirla.sh` (gerçek App ID, `window.RAY_ADS`, diller), `npx cap sync ios`.
 3. API anahtarıyla imzalı arşiv; yapı numarası `CURRENT_PROJECT_VERSION` = çalıştırma numarası (ya da `buildNumber` girdisi).
-4. **Arşiv denetimi:** `GADApplicationIdentifier` test kimliği değil, paketteki `public/index.html` içinde `window.RAY_ADS` var ve test kimliği taşımıyor, sürüm numarası doğru, yalnız iPhone, en + tr dil dosyaları yerinde, uygulama imzalı. Biri tutmazsa yükleme yapılmaz.
+4. **Arşiv denetimi:** `GADApplicationIdentifier` test kimliği değil, paketteki `public/index.html` içinde `window.RAY_ADS` var ve test kimliği taşımıyor, sürüm numarası doğru, yalnız iPhone, 6 dilin dil dosyaları yerinde, uygulama imzalı. Biri tutmazsa yükleme yapılmaz.
 5. Dışa aktarma ve yükleme (`ExportOptions.plist`, `destination: upload`). Yapı işlenince TestFlight'ta görünür.
 6. Günlükler ve dSYM dosyaları iş akışı çıktısı olarak 30 gün saklanır; `.p8` makineden silinir.
 
@@ -301,7 +301,7 @@ Bu yol A'dan daha zahmetlidir ve sertifika her yıl yenilenir.
   - Diagnostics
 
   Kullanıcı izleme iznini verirse bu veriler "izleme" (tracking) sayılır.
-- **İzleme izni (ATT):** `Info.plist`'te `NSUserTrackingUsageDescription` var (İngilizce; Türkçesi `tr.lproj/InfoPlist.strings`'te). ABD'deki inceleyici İngilizce metni görür.
+- **İzleme izni (ATT):** `Info.plist`'te `NSUserTrackingUsageDescription` var (İngilizce; öteki 5 dil `<dil>.lproj/InfoPlist.strings`'te). ABD'deki inceleyici İngilizce metni görür.
   - Reklam katmanı izni `AdMob.requestTrackingAuthorization()` ile istemeli. Bu iş reklam dalının işidir.
   - İzin istenmeden IDFA kullanılamaz. Apple, izin metnini yazıp hiç sormamayı da reddedebilir.
 - **Şifreleme:** `ITSAppUsesNonExemptEncryption = false` yazılı olduğu için her yüklemede soru sorulmaz.
