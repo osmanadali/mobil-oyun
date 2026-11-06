@@ -60,10 +60,23 @@ jobs:
       - name: İkon ve açılış ekranı (assets/)
         run: npx @capacitor/assets generate --android --iconBackgroundColor '#0d1020' --iconBackgroundColorDark '#0d1020' --splashBackgroundColor '#0d1020' --splashBackgroundColorDark '#0d1020'
       - name: Anahtar deposunu çöz (yalnız bu makinede, iş bitince silinir)
-        env: { KS: '${{ secrets.ANDROID_KEYSTORE_BASE64 }}' }
+        env:
+          KS: '${{ secrets.ANDROID_KEYSTORE_BASE64 }}'
+          KSP: '${{ secrets.ANDROID_KEYSTORE_PASSWORD }}'
+          KA: '${{ secrets.ANDROID_KEY_ALIAS }}'
         run: |
-          echo "$KS" | base64 -d > "$RUNNER_TEMP/ray-upload.jks"
-          [ -s "$RUNNER_TEMP/ray-upload.jks" ] || { echo "::error::ANDROID_KEYSTORE_BASE64 çözülemedi (base64 -w0 ile mi kodlandı?)"; exit 1; }
+          # yapıştırırken araya giren boşluk / satır sonları atılır; sorun varsa değeri göstermeden ne olduğunu söyler
+          K=$(printf '%s' "$KS" | tr -d ' \r\n\t')
+          bad=$(printf '%s' "$K" | tr -d 'A-Za-z0-9+/=' | wc -c)
+          if [ "$bad" -gt 0 ] || [ ${#K} -lt 5000 ] || ! printf '%s' "$K" | base64 -d > "$RUNNER_TEMP/ray-upload.jks" 2>/dev/null || [ ! -s "$RUNNER_TEMP/ray-upload.jks" ]; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 okunamadı: ${#K} karakter (anahtar dosyasınınki 5000'den fazla olur), başı '$(printf '%s' "$K" | cut -c1-3)' (MII olmalı), base64 dışı karakter: $bad. ANDROID_KEYSTORE_BASE64.txt dosyasının içeriğinin TAMAMINI yeniden yapıştır (Update secret)."
+            exit 1
+          fi
+          keytool -list -keystore "$RUNNER_TEMP/ray-upload.jks" -storetype PKCS12 -storepass "$KSP" >/dev/null 2>&1 \
+            || { echo "::error::Anahtar dosyası açıldı ama ANDROID_KEYSTORE_PASSWORD yanlış (OKU-BENI.txt içindeki parola, başında/sonunda boşluk olmadan)"; exit 1; }
+          keytool -list -keystore "$RUNNER_TEMP/ray-upload.jks" -storetype PKCS12 -storepass "$KSP" -alias "$KA" >/dev/null 2>&1 \
+            || { echo "::error::ANDROID_KEY_ALIAS yanlış (ray olmalı, küçük harfle)"; exit 1; }
+          echo "Anahtar deposu, parola ve takma ad doğru."
           echo "RAY_KEYSTORE=$RUNNER_TEMP/ray-upload.jks" >> "$GITHUB_ENV"
       - name: Yerel projeyi hazırla (gerçek AdMob kimlikleri, sürüm, imza, kenardan kenara, SDK denetimi)
         env: { FIREBASE_ANDROID_JSON: '${{ secrets.FIREBASE_ANDROID_JSON }}' }   # isteğe bağlı: yoksa ölçüm kapalı derlenir (docs/YAYIN.md §5)
