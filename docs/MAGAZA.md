@@ -3,7 +3,7 @@
 Bu belge Google Play ve App Store'a gönderim için gereken her şeyi tek yerde toplar: mağaza metinleri (Türkçe ve İngilizce), görseller, veri güvenliği ve gizlilik beyanları, yaş derecelendirmesi, uygulama içi ürün ve kullanıcının yapması gereken işler.
 
 - Metinler kopyalanıp yapıştırılmak üzere kod bloklarındadır. Karakter sayıları tablolarda, sınırla birlikte verilmiştir (Unicode karakter; Türkçe harfler tek karakter sayılır).
-- `[geliştirici adı]` ve `[iletişim e-postası]` yer tutucudur. Gönderimden önce gerçek değerle değiştirilmeli.
+- Geliştirici adı: Osman Adalı. `[iletişim e-postası]` yer tutucudur; gönderimden önce gerçek adresle değiştirilmeli.
 - Bütün özellikler `README.md` ve `docs/BOLUM_TASARIMI.md` ile doğrulanmıştır. Oyun değişirse (ör. çift hatlara yeni kurallar gelince) "Bilinen sınırlar" bölümündeki maddeler güncellenmeli.
 
 ## 1. Kimlik bilgileri
@@ -16,7 +16,7 @@ Bu belge Google Play ve App Store'a gönderim için gereken her şeyi tek yerde 
 | Gizlilik politikası | https://osmanadali.github.io/mobil-oyun/gizlilik.html |
 | Destek URL'si (App Store) | https://osmanadali.github.io/mobil-oyun/gizlilik.html (İletişim bölümü) |
 | Pazarlama URL'si (isteğe bağlı) | https://osmanadali.github.io/mobil-oyun/ (oyunun web sürümü) |
-| Telif (App Store) | © 2026 [geliştirici adı] |
+| Telif (App Store) | © 2026 Osman Adalı |
 | İletişim e-postası (iki mağaza, herkese açık) | [iletişim e-postası] |
 | Dil | Türkçe, İngilizce, Almanca, İspanyolca, Portekizce (Brezilya), Fransızca (oyun cihaz diline göre açılır, desteklenmeyen dilde İngilizce; Ayarlar › Dil ile değişir; mağaza metinleri §4, §5, §5b) |
 | Cihaz | Android telefon, iPhone (yalnız dikey; iPad yok) |
@@ -241,7 +241,7 @@ pipes,net,subway,train,station,logic,brain,daily,relaxing,rotate,connect,tiles,r
 | Destek URL'si | https://osmanadali.github.io/mobil-oyun/gizlilik.html |
 | Pazarlama URL'si | https://osmanadali.github.io/mobil-oyun/ |
 | Gizlilik politikası URL'si | https://osmanadali.github.io/mobil-oyun/gizlilik.html |
-| Telif | © 2026 [geliştirici adı] |
+| Telif | © 2026 Osman Adalı |
 | Şifreleme (export compliance) | Muaf olmayan şifreleme yok (`ITSAppUsesNonExemptEncryption = false`, iOS hazırlık betiği yazar) |
 | Üçüncü taraf içerik | "Evet, gerekli haklara sahibim" (Outfit yazı tipi SIL OFL lisanslıdır; reklamlar AdMob'dan gelir) |
 
