@@ -50,9 +50,9 @@ if (E.RAY_KEYSTORE) {
     signingConfigs {
         release {
             storeFile = file(System.getenv("RAY_KEYSTORE"))
-            storePassword = System.getenv("RAY_KEYSTORE_PASSWORD")
-            keyAlias = System.getenv("RAY_KEY_ALIAS")
-            keyPassword = System.getenv("RAY_KEY_PASSWORD")
+            storePassword = System.getenv("RAY_KEYSTORE_PASSWORD")?.trim()
+            keyAlias = System.getenv("RAY_KEY_ALIAS")?.trim()
+            keyPassword = System.getenv("RAY_KEY_PASSWORD")?.trim()
         }
     }
     buildTypes {

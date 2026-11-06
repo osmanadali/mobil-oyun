@@ -72,10 +72,12 @@ jobs:
             echo "::error::ANDROID_KEYSTORE_BASE64 okunamadı: ${#K} karakter (anahtar dosyasınınki 5000'den fazla olur), başı '$(printf '%s' "$K" | cut -c1-3)' (MII olmalı), base64 dışı karakter: $bad. ANDROID_KEYSTORE_BASE64.txt dosyasının içeriğinin TAMAMINI yeniden yapıştır (Update secret)."
             exit 1
           fi
+          tr1() { printf '%s' "$1" | tr -d '\r\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'; }   # baştaki/sondaki boşluk ve satır sonu (Gradle da trim eder)
+          KSP=$(tr1 "$KSP"); KA=$(tr1 "$KA")
           keytool -list -keystore "$RUNNER_TEMP/ray-upload.jks" -storetype PKCS12 -storepass "$KSP" >/dev/null 2>&1 \
             || { echo "::error::Anahtar dosyası açıldı ama ANDROID_KEYSTORE_PASSWORD yanlış (OKU-BENI.txt içindeki parola, başında/sonunda boşluk olmadan)"; exit 1; }
           keytool -list -keystore "$RUNNER_TEMP/ray-upload.jks" -storetype PKCS12 -storepass "$KSP" -alias "$KA" >/dev/null 2>&1 \
-            || { echo "::error::ANDROID_KEY_ALIAS yanlış (ray olmalı, küçük harfle)"; exit 1; }
+            || { echo "::error::ANDROID_KEY_ALIAS yanlış: ${#KA} karakter, yalnız ray (3 harf) olmalı"; exit 1; }
           echo "Anahtar deposu, parola ve takma ad doğru."
           echo "RAY_KEYSTORE=$RUNNER_TEMP/ray-upload.jks" >> "$GITHUB_ENV"
       - name: Yerel projeyi hazırla (gerçek AdMob kimlikleri, sürüm, imza, kenardan kenara, SDK denetimi)
