@@ -121,19 +121,19 @@ HAT İLERLEDİKÇE YENİ KURALLAR
 Eşli karo, ters karo, kayan sıra, karanlık tünel, sayaçlı karo, soğuyan karo, iki merkez, makas, mühürlü karo, döner tabla, köprü, bakım karosu, kapak, tünel ağzı, yön tabelası, halka hat, silik kol, gizli depo, sarmal tahta, nehir, kapalı durak, tarife bölgesi, son sefer ve kayan sütun: 24 kural. Her yeni kural kısa, canlandırmalı bir kartla anlatılır. Tahta hiçbir zaman kalabalıklaşmaz.
 
 GÜNÜN HATTI
-Her gün herkes aynı bulmacayı çözer. Bulmaca hafta boyunca zorlaşır, Pazar büyük bulmaca günüdür. Gün serini koru, sonucunu paylaş, arkadaşlarına meydan oku.
+Her gün herkes aynı bulmacayı çözer. Cumartesi altıgen tahtada oynanır, pazar haftanın kuralı günüdür. Gün serini koru, günlük ve haftalık görevleri tamamla.
 
-TAÇLAR, TEMALAR VE SÜRPRİZ SANDIK
+BİLETLER, TEMALAR VE SÜRPRİZ SANDIK
 Kusursuz bitirdiğin her bölüm bir bilet kazandırır. Biletlerle 25 renk temasının 22'sini açabilir ya da sürpriz sandığı açabilirsin: içinden ipucu, seri kalkanı ya da yeni bir tren kaplaması çıkar. Sandık yalnız oyunda kazanılan biletle açılır, olasılıklar sandık ekranında yazılıdır.
 
 SEFER ŞERİDİ VE KUSURSUZ SERİ
-Saatin altındaki küçük tren süre hedefine doğru ilerler. Süre dolsa da oyun bitmez; tren yalnız rötar yapar, peronda bekleyen yolcular da nazikçe takılır. Kusursuz bölümleri art arda bitir, seriyi büyüt, bonus bilet kazan.
+Saatin altındaki küçük tren süre hedefine doğru ilerler. Süre geçerse oyun hemen bitmez: yalnız süre yıldızı söner ve kısa bir rötar payın olur. Son tren de kaçarsa bir can gider; canlar zamanla kendiliğinden dolar. Kusursuz bölümleri art arda bitir, seriyi büyüt, bonus bilet kazan.
 
 GÖZ DOSTU, PİL DOSTU
 Koyu, açık ve otomatik görünüm. Yumuşak renkler. Animasyonlar yalnız hareket olduğunda çalışır. Müzik, ses ve titreşim ayrı ayrı kapatılabilir. İstersen günlük hatırlatma kurabilirsin.
 
 ÜCRETSİZ VE ADİL
-Ray ücretsizdir. İpucun her gün en az 3'e tamamlanır, hat sonlarında ek ipucu kazanırsın. Reklamlar yalnız internet varken gösterilir: bölüm aralarında ara sıra bir geçiş reklamı ve yalnız sen istersen izlediğin ödüllü videolar (ek ipucu, ödülü ikiye katlama, kopan seriyi kurtarma). Günün Hattı'nda geçiş reklamı yoktur.
+Ray ücretsizdir. İpucun her gün en az 3'e tamamlanır, hat sonlarında ek ipucu kazanırsın. Reklamlar yalnız internet varken gösterilir: bölüm aralarında ara sıra bir geçiş reklamı ve yalnız sen istersen izlediğin ödüllü videolar (ek ipucu, ek can, ödülü ikiye katlama, kopan seriyi kurtarma). Günün Hattı'nda geçiş reklamı yoktur.
 
 REKLAMSIZ PAKET
 Tek seferlik satın alma. Bölüm aralarındaki reklamlar kalkar, 20 ipucu hediye edilir, 3 özel tema (Altın, Elmas, Yakut) açılır. İpucu videoları isteğe bağlı kalır.
