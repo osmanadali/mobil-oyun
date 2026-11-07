@@ -92,16 +92,15 @@ jobs:
             fetch("https://api.appstoreconnect.apple.com/v1/apps?limit=1",{headers:{Authorization:"Bearer "+h+"."+p+"."+sig}}).then(async r=>{
               if(r.ok){console.log("App Store Connect API anahtarı geçerli.");return;}
               console.log("::error::Apple anahtarı kabul etmedi (HTTP "+r.status+"). Key ID ile Issuer ID aynı anahtara ait mi, .p8 o anahtarın dosyası mı, anahtar Team Keys altında ve Admin mi? Ayrıntı: "+(await r.text()).slice(0,300));process.exit(1);});'
-      - name: Arşivle (imzalı, App Store)
+      - name: Arşivle (imzasız; imza dışa aktarımda)
         run: |
           xcodebuild archive -project ios/App/App.xcodeproj -scheme App -configuration Release \
             -destination 'generic/platform=iOS' -archivePath build/Ray.xcarchive \
-            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CODE_SIGN_STYLE=Automatic CURRENT_PROJECT_VERSION="$VERSION_CODE" \
-            -allowProvisioningUpdates -authenticationKeyPath "$RUNNER_TEMP/AuthKey.p8" \
-            -authenticationKeyID "$APPSTORE_API_KEY_ID" -authenticationKeyIssuerID "$APPSTORE_API_ISSUER_ID" > archive.log 2>&1 \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CURRENT_PROJECT_VERSION="$VERSION_CODE" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" > archive.log 2>&1 \
             || { grep -E "error:" archive.log | sort -u | head -40; tail -60 archive.log; exit 1; }
           grep -E "\*\* ARCHIVE" archive.log || true
-      - name: Arşivi denetle (gerçek AdMob, RAY_ADS, sürüm, diller, imza)
+      - name: Arşivi denetle (gerçek AdMob, RAY_ADS, sürüm, diller)
         run: |
           A=build/Ray.xcarchive/Products/Applications/App.app
           [ -d "$A" ] || { echo "::error::Arşivde App.app yok"; ls -R build/Ray.xcarchive | head -40; exit 1; }
@@ -118,9 +117,9 @@ jobs:
             plutil -extract CFBundleLocalizations json -o - "$A/Info.plist" | grep -q "\"$l\"" || { echo "::error::CFBundleLocalizations içinde $l yok"; exit 1; }
             plutil -extract NSUserTrackingUsageDescription raw -o - "$A/$l.lproj/InfoPlist.strings" >/dev/null || { echo "::error::$l.lproj ATT metni pakette yok"; exit 1; }
           done
-          codesign -dvv "$A" 2>&1 | grep -E "Authority|TeamIdentifier" || { echo "::error::Uygulama imzası okunamadı"; exit 1; }
+          # arşiv bilerek imzasız: imza dışa aktarırken App Store dağıtım sertifikasıyla atılır (geliştirme profili ve kayıtlı cihaz gerekmez)
           echo "::notice::Ray $SV ($CV) arşivlendi"
-      - name: Dışa aktar ve App Store Connect'e yükle
+      - name: İmzala, dışa aktar ve App Store Connect'e yükle
         run: |
           cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
