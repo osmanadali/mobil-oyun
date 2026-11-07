@@ -70,11 +70,11 @@ Hepsi 24 bit PNG'dir, saydamlık (alfa) içermez; iki mağazanın kuralına uyar
 |---|---|---|---|
 | Play: uygulama adı | 30 | 18 | 22 |
 | Play: kısa açıklama | 80 | 78 | 73 |
-| Play: tam açıklama | 4000 | 2554 | 2818 |
+| Play: tam açıklama | 4000 | 2772 | 3046 |
 | App Store: ad | 30 | 18 | 22 |
 | App Store: alt başlık | 30 | 28 | 28 |
 | App Store: tanıtım metni | 170 | 152 | 152 |
-| App Store: açıklama | 4000 | 2554 | 2818 |
+| App Store: açıklama | 4000 | 2772 | 3046 |
 | App Store: anahtar kelimeler | 100 | 87 (94 bayt) | 99 |
 | Ürün adı (App Store) | 30 | 15 | 15 |
 | Ürün açıklaması (App Store) | 45 | 41 | 41 |
@@ -157,19 +157,19 @@ NEW RULES AS YOU TRAVEL
 Paired tiles, reverse tiles, sliding rows, dark tunnels, counter tiles, cooling tiles, two hubs, switches, sealed tiles, turntables, bridges, gear tiles, covers, tunnel portals, signposts, loop lines, faint arms, hidden depots, wrap-around boards, rivers, closed stations, fare zones, timed stations and sliding columns: 24 rules. Each new rule is introduced with a short animated card, and the board never gets cluttered.
 
 DAILY LINE
-Every day everyone solves the same puzzle. It gets harder through the week, and Sunday is big puzzle day. Keep your daily streak, share your result and challenge your friends.
+Every day everyone solves the same puzzle. Saturday is played on a hexagon board, Sunday is rule-of-the-week day. Keep your daily streak and complete daily and weekly quests.
 
-CROWNS, THEMES AND THE SURPRISE CHEST
+TICKETS, THEMES AND THE SURPRISE CHEST
 Every level you finish flawlessly earns a ticket. Spend tickets on 22 of the 25 color themes or open the surprise chest for a hint, a streak shield or a new train livery. The chest only opens with tickets earned in the game, and its odds are shown on the chest screen.
 
 TRAIN STRIP AND FLAWLESS STREAK
-A little train below the clock rolls toward your time target. When time runs out the game does not end; the train is just running late, and the passengers on the platform tease you gently. Finish flawless levels in a row, grow your streak and earn bonus tickets.
+A little train below the clock rolls toward your time target. When the target passes the game does not end at once: only the time star goes out and you get a short delay. If the last train leaves too, you lose a life; lives refill on their own over time. Finish flawless levels in a row, grow your streak and earn bonus tickets.
 
 EASY ON THE EYES AND THE BATTERY
 Dark, light and automatic appearance. Soft colors. Animations only run while something is moving. Music, sound effects and vibration can each be turned off. Set a daily reminder if you like.
 
 FREE AND FAIR
-Ray is free to play. Your hints are topped up to at least 3 every day, and you earn extra hints at the end of each line. Ads are only shown when you are online: an occasional interstitial between levels, and rewarded videos only when you choose to watch them (extra hints, doubling a reward, saving a broken streak). The Daily Line has no interstitials.
+Ray is free to play. Your hints are topped up to at least 3 every day, and you earn extra hints at the end of each line. Ads are only shown when you are online: an occasional interstitial between levels, and rewarded videos only when you choose to watch them (extra hints, an extra life, doubling a reward, saving a broken streak). The Daily Line has no interstitials.
 
 AD-FREE PACK
 A one-time purchase. Removes the ads between levels, gives you 20 hints and unlocks 3 exclusive themes (Gold, Diamond, Ruby). Hint videos stay optional.
@@ -256,7 +256,7 @@ Oyun bu dillerde de açılır (cihaz dili ya da Ayarlar › Dil). Play Console �
 | App Store alt başlık | 30 | 28 | 30 | 28 | 29 |
 | App Store tanıtım metni | 170 | 150 | 146 | 141 | 163 |
 | Anahtar kelimeler | 100 | 98 | 93 | 91 | 90 |
-| Tam açıklama | 4000 | 2739 | 2689 | 2648 | 2859 |
+| Tam açıklama | 4000 | 2766 | 2717 | 2658 | 2899 |
 | Sürüm notu | 500 | 119 | 127 | 127 | 138 |
 
 ### Deutsch (de-DE)
@@ -298,7 +298,7 @@ NEUE REGELN UNTERWEGS
 Paarkacheln, Umkehrkacheln, Schiebereihen, dunkle Tunnel, Zählkacheln, Frostkacheln, zwei Zentren, Weichen, Siegelkacheln, Drehscheiben, Brücken, Zahnradkacheln, Abdeckungen, Tunnelportale, Wegweiser, Ringlinien, blasse Arme, versteckte Depots, Endlosbretter, Flüsse, geschlossene Stationen, Tarifzonen, Zeitstationen und Schiebespalten: 24 Regeln. Jede neue Regel stellt eine kurze animierte Karte vor, und das Brett wird nie unübersichtlich.
 
 TAGESLINIE
-Jeden Tag lösen alle dasselbe Rätsel. Es wird im Lauf der Woche schwerer, sonntags gibt es das große Rätsel. Halte deine Serie, teile dein Ergebnis und fordere Freunde heraus.
+Jeden Tag lösen alle dasselbe Rätsel. Samstags spielst du auf einem Sechseckbrett, sonntags gibt es die Regel der Woche. Halte deine Serie und erfülle tägliche und wöchentliche Aufgaben.
 
 TICKETS, THEMEN UND ÜBERRASCHUNGSKISTE
 Jedes perfekte Level bringt ein Ticket. Gib Tickets für 22 der 25 Farbthemen aus oder öffne die Überraschungskiste: Tipps, ein Serienschild oder ein neuer Zuglack. Die Kiste öffnet sich nur mit im Spiel verdienten Tickets, die Chancen stehen im Kistenbildschirm.
@@ -307,7 +307,7 @@ ANGENEHM FÜR AUGEN UND AKKU
 Dunkles, helles und automatisches Design. Sanfte Farben. Animationen laufen nur, wenn sich etwas bewegt. Musik, Soundeffekte und Vibration lassen sich einzeln abschalten. Auf Wunsch gibt es eine tägliche Erinnerung.
 
 KOSTENLOS UND FAIR
-Ray ist kostenlos. Deine Tipps werden jeden Tag auf mindestens 3 aufgefüllt, am Ende jeder Linie gibt es Extratipps. Werbung erscheint nur online: ab und zu zwischen Leveln und als Belohnungsvideo nur, wenn du es willst (Extratipps, Belohnung verdoppeln, gerissene Serie retten). Die Tageslinie hat keine Zwischenwerbung.
+Ray ist kostenlos. Deine Tipps werden jeden Tag auf mindestens 3 aufgefüllt, am Ende jeder Linie gibt es Extratipps. Werbung erscheint nur online: ab und zu zwischen Leveln und als Belohnungsvideo nur, wenn du es willst (Extratipps, ein Extraleben, Belohnung verdoppeln, gerissene Serie retten). Die Tageslinie hat keine Zwischenwerbung.
 
 WERBEFREI-PAKET
 Einmaliger Kauf. Entfernt die Werbung zwischen Leveln, schenkt dir 20 Tipps und schaltet 3 exklusive Themen frei (Gold, Diamant, Rubin). Tipp-Videos bleiben freiwillig.
@@ -360,7 +360,7 @@ REGLAS NUEVAS POR EL CAMINO
 Piezas gemelas, piezas inversas, filas deslizantes, túneles oscuros, piezas contador, piezas heladas, dos centros, desvíos, piezas selladas, plataformas giratorias, puentes, piezas engranaje, tapas, bocas de túnel, señales, líneas circulares, brazos tenues, depósitos ocultos, tableros sin bordes, ríos, estaciones cerradas, zonas tarifarias, estaciones con reloj y columnas deslizantes: 24 reglas. Cada regla nueva se presenta con una tarjeta animada corta y el tablero nunca se satura.
 
 LÍNEA DEL DÍA
-Cada día todos resuelven el mismo puzle. Se complica a lo largo de la semana y el domingo toca el gran puzle. Mantén tu racha, comparte tu resultado y reta a tus amigos.
+Cada día todos resuelven el mismo puzle. El sábado se juega en un tablero hexagonal y el domingo toca la regla de la semana. Mantén tu racha y completa misiones diarias y semanales.
 
 BILLETES, TEMAS Y COFRE SORPRESA
 Cada nivel perfecto te da un billete. Gástalos en 22 de los 25 temas de color o abre el cofre sorpresa: pistas, un escudo de racha o un nuevo diseño de tren. El cofre solo se abre con billetes ganados jugando y las probabilidades se ven en su pantalla.
@@ -369,7 +369,7 @@ CUIDA TUS OJOS Y TU BATERÍA
 Tema oscuro, claro y automático. Colores suaves. Las animaciones solo funcionan cuando algo se mueve. Música, efectos y vibración se apagan por separado. Si quieres, activa un aviso diario.
 
 GRATIS Y JUSTO
-Ray es gratis. Tus pistas se recargan cada día hasta al menos 3 y ganas pistas extra al final de cada línea. Los anuncios solo salen con conexión: alguno entre niveles y vídeos con premio solo si tú quieres (pistas extra, doblar un premio, salvar una racha rota). La Línea del día no tiene anuncios intersticiales.
+Ray es gratis. Tus pistas se recargan cada día hasta al menos 3 y ganas pistas extra al final de cada línea. Los anuncios solo salen con conexión: alguno entre niveles y vídeos con premio solo si tú quieres (pistas extra, una vida extra, doblar un premio, salvar una racha rota). La Línea del día no tiene anuncios intersticiales.
 
 PAQUETE SIN ANUNCIOS
 Compra única. Quita los anuncios entre niveles, te regala 20 pistas y desbloquea 3 temas exclusivos (Oro, Diamante, Rubí). Los vídeos de pistas siguen siendo opcionales.
@@ -422,7 +422,7 @@ REGRAS NOVAS PELO CAMINHO
 Peças gêmeas, peças inversas, fileiras deslizantes, túneis escuros, peças contador, peças geladas, dois centros, desvios, peças lacradas, plataformas giratórias, pontes, peças engrenagem, tampas, bocas de túnel, placas, linhas circulares, braços apagados, depósitos ocultos, tabuleiros sem bordas, rios, estações fechadas, zonas tarifárias, estações com relógio e colunas deslizantes: 24 regras. Cada regra nova chega com um cartão animado curto, e o tabuleiro nunca fica poluído.
 
 LINHA DO DIA
-Todo dia todo mundo resolve o mesmo quebra-cabeça. Ele fica mais difícil ao longo da semana, e domingo é dia do desafio grande. Mantenha sua sequência, compartilhe o resultado e desafie os amigos.
+Todo dia todo mundo resolve o mesmo quebra-cabeça. No sábado se joga num tabuleiro hexagonal e domingo é dia da regra da semana. Mantenha sua sequência e complete missões diárias e semanais.
 
 BILHETES, TEMAS E BAÚ SURPRESA
 Cada fase perfeita rende um bilhete. Use bilhetes em 22 dos 25 temas de cores ou abra o baú surpresa: dicas, um escudo de sequência ou uma nova pintura de trem. O baú só abre com bilhetes ganhos no jogo, e as chances aparecem na tela do baú.
@@ -431,7 +431,7 @@ BOM PARA OS OLHOS E PARA A BATERIA
 Tema escuro, claro e automático. Cores suaves. As animações só rodam quando algo se mexe. Música, efeitos e vibração desligam separadamente. Se quiser, ative um lembrete diário.
 
 GRÁTIS E JUSTO
-Ray é grátis. Suas dicas voltam a pelo menos 3 todo dia, e você ganha dicas extras no fim de cada linha. Anúncios só aparecem com internet: um de vez em quando entre fases e vídeos premiados só se você quiser (dicas extras, dobrar o prêmio, salvar uma sequência perdida). A Linha do Dia não tem anúncios intersticiais.
+Ray é grátis. Suas dicas voltam a pelo menos 3 todo dia, e você ganha dicas extras no fim de cada linha. Anúncios só aparecem com internet: um de vez em quando entre fases e vídeos premiados só se você quiser (dicas extras, uma vida extra, dobrar o prêmio, salvar uma sequência perdida). A Linha do Dia não tem anúncios intersticiais.
 
 PACOTE SEM ANÚNCIOS
 Compra única. Tira os anúncios entre as fases, dá 20 dicas de presente e libera 3 temas exclusivos (Ouro, Diamante, Rubi). Os vídeos de dicas continuam opcionais.
@@ -484,7 +484,7 @@ DE NOUVELLES RÈGLES EN ROUTE
 Tuiles jumelles, tuiles inverses, rangées glissantes, tunnels sombres, tuiles compteur, tuiles givrées, deux centres, aiguillages, tuiles scellées, plaques tournantes, ponts, tuiles engrenage, caches, portails de tunnel, panneaux, lignes circulaires, bras pâles, dépôts cachés, plateaux sans bords, rivières, stations fermées, zones tarifaires, stations minutées et colonnes glissantes : 24 règles. Chaque nouvelle règle est présentée par une courte carte animée, et le plateau ne devient jamais surchargé.
 
 LIGNE DU JOUR
-Chaque jour, tout le monde résout le même puzzle. Il se corse au fil de la semaine, et le dimanche c’est le grand puzzle. Garde ta série, partage ton résultat et défie tes amis.
+Chaque jour, tout le monde résout le même puzzle. Le samedi se joue sur un plateau hexagonal, le dimanche c’est la règle de la semaine. Garde ta série et accomplis les quêtes du jour et de la semaine.
 
 TICKETS, THÈMES ET COFFRE SURPRISE
 Chaque niveau parfait rapporte un ticket. Dépense-les pour 22 des 25 thèmes de couleur ou ouvre le coffre surprise : des indices, un bouclier de série ou une nouvelle livrée de train. Le coffre ne s’ouvre qu’avec des tickets gagnés en jeu, et ses chances sont affichées sur son écran.
@@ -493,7 +493,7 @@ DOUX POUR LES YEUX ET LA BATTERIE
 Thème sombre, clair et automatique. Couleurs douces. Les animations ne tournent que quand quelque chose bouge. Musique, effets sonores et vibration se coupent séparément. Un rappel quotidien si tu veux.
 
 GRATUIT ET ÉQUITABLE
-Ray est gratuit. Tes indices remontent à au moins 3 chaque jour, et tu gagnes des indices en plus à la fin de chaque ligne. Les pubs n’apparaissent qu’en ligne : de temps en temps entre deux niveaux, et des vidéos récompensées seulement si tu le choisis (indices en plus, récompense doublée, série brisée sauvée). La Ligne du jour n’a pas de pub interstitielle.
+Ray est gratuit. Tes indices remontent à au moins 3 chaque jour, et tu gagnes des indices en plus à la fin de chaque ligne. Les pubs n’apparaissent qu’en ligne : de temps en temps entre deux niveaux, et des vidéos récompensées seulement si tu le choisis (indices en plus, une vie en plus, récompense doublée, série brisée sauvée). La Ligne du jour n’a pas de pub interstitielle.
 
 PACK SANS PUB
 Achat unique. Supprime les pubs entre les niveaux, offre 20 indices et débloque 3 thèmes exclusifs (Or, Diamant, Rubis). Les vidéos d’indices restent facultatives.
