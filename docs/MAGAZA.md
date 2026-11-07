@@ -652,7 +652,7 @@ Kimlikler iki mağazada aynıdır (`www/shop.js` › `ITEMS`). Tüketilebilir ü
 
 | Kimlik | Tür | Ad TR / EN | İçerik | ABD (taban) | Türkiye (elle) |
 |---|---|---|---|---|---|
-| `ray_temalar` | Tüketilemez | Tema paketi / Theme Pack | Taçla açılan 22 renk temasının hepsi (Altın, Elmas, Yakut hariç; onlar Reklamsız pakette) | 3,99 $ | ₺79,99 |
+| `ray_temalar` | Tüketilemez | Tema paketi / Theme Pack | 28 renk temasının hepsi: biletle açılan 22 + 6 mevsim teması (Altın, Elmas, Yakut hariç; onlar Reklamsız pakette) | 3,99 $ | ₺79,99 |
 | `ray_ipucu_10` | Tüketilebilir | 10 ipucu / 10 Hints | 10 💡 | 0,99 $ | ₺19,99 |
 | `ray_ipucu_30` | Tüketilebilir | 30 ipucu / 30 Hints | 30 💡 | 1,99 $ | ₺39,99 |
 | `ray_ipucu_80` | Tüketilebilir | 80 ipucu / 80 Hints | 80 💡 | 3,99 $ | ₺79,99 |
@@ -664,7 +664,7 @@ Mağaza açıklamaları (App Store görünen ad ≤ 30, açıklama ≤ 45 karakt
 
 | Kimlik | Açıklama TR | Açıklama EN |
 |---|---|---|
-| `ray_temalar` | `Taçla açılan 22 renk temasının hepsi` | `All 22 crown color themes, one-time` |
+| `ray_temalar` | `28 renk temasının hepsi, tek seferlik` | `All 28 color themes, one-time` |
 | `ray_ipucu_10` / `_30` / `_80` | `10 (30, 80) ipucu: takıldığın karo yerine oturur` (Play) · `10 ipucu` (App Store) | `10 (30, 80) hints: puts a tricky tile in place` (Play) · `10 hints` (App Store) |
 | `ray_guclendirici` | `Her güçlendiriciden 3: ek tur, fener, +15 sn, geri al` | `3 of each booster: turn, lantern, +15 s, undo` |
 | `ray_bilet_50` | `50 bilet, renk temaları için` | `50 tickets to spend on color themes` |
