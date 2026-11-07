@@ -44,7 +44,8 @@ module.exports = async T => {
     const errs = await page.evaluate(() => window.__ev.filter(e => e[0] === 'js_error').map(e => e[1]));
     // bölüm oynanırken ana iş parçacığı 120 ms kilitlenir → level_end'de jank ≥ 1
     await page.click('#bPlay'); await page.waitForTimeout(700);
-    await page.evaluate(() => { const t = performance.now(); while (performance.now() - t < 120); });
+    // takılma bir çizim karesinin içinde ve iki kez (tahta canlıyken): ölçüm karesi kaçırmasın
+    for (let k = 0; k < 2; k++) { await page.evaluate(() => { const G = window.__ray.G; G && (G.cur[0] = window.__ray.rot(G.cur[0])); }); await page.evaluate(() => new Promise(r => requestAnimationFrame(() => { const t = performance.now(); while (performance.now() - t < 140); requestAnimationFrame(() => requestAnimationFrame(r)); }))); }
     await page.waitForTimeout(200); await solve(page, 15); await page.waitForTimeout(2500);
     const end = await page.evaluate(() => window.__ev.find(e => e[0] === 'level_end')?.[1]);
     await page.evaluate(() => window.__ray.jank.report(true));
