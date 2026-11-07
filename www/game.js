@@ -806,7 +806,7 @@ function refreshHome() {
   $('gateTxt').textContent = tot >= hi ? `M${nx + 1} ${L('açık', 'open')} ✓` : L(`★ ${hi - tot} kaldı → M${nx + 1}`, `★ ${hi - tot} to go → M${nx + 1}`);
   $('progBar').style.width = Math.min(100, Math.max(4, (tot - lo) / Math.max(1, hi - lo) * 100)) + '%';
   $('sSize').textContent = breath(save.level) ? L('☕ mola bölümü', '☕ breather level') : L(`⚡ zorluk ${LP(zPct(save.level))}`, `⚡ ${LP(zPct(save.level))} hard`);
-  $('dailyK').textContent = L(`GÜNÜN HATTI · ⚡${LP(dPct(today()))}`, `DAILY LINE · ⚡${LP(dPct(today()))}`) + (HX?.isDay(today()) ? ' · ⬡' : '');   // cumartesi: altıgen gün
+  { const k = L(`GÜNÜN HATTI · ⚡${LP(dPct(today()))}`, `DAILY LINE · ⚡${LP(dPct(today()))}`); $('dailyK').textContent = HX?.isDay(today()) ? k.replace(/\s*·\s*⚡.*$/, ' · ⬡') : k; }   // cumartesi: altıgen gün (⚡ yerine ⬡; uzun dillerde 320 px'e sığsın)
   $('bPlay').classList.toggle('locked', !unlocked(c));
   questRow();
   // sıradaki bölümü boşta önceden üret: zor kurallı 7×9 bölüm telefonda 1–2 sn sürebilir, "Oyna"da beklenmesin (çıktı aynı, yalnız önbellek)
