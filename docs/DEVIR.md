@@ -129,6 +129,8 @@ Durum 3 Kasım 2026 itibarıyla (en yeni madde başta):
 
 ## 6. Sıradaki işler
 
+**📅 Salı 10 Kasım 2026: Korece, Japonca, Geleneksel Çince (1.1).** Kullanıcı istedi, 1.0 yayınından sonra. Kapsam: `ko`, `ja`, `zh-Hant` (Basitleştirilmiş Çince değil). 647 metin (`tools/diller/sozluk-*.txt` → `node tools/diller.cjs`), `www/i18n.js` dil listesi ve Ayarlar › Dil, kural kartları, gizlilik sayfası, iOS `tools/ios/hazirla.sh` LANGS + izleme izni metni, mağaza metinleri (docs/MAGAZA.md) ve görseller (`tools/store-shots.cjs` TX), Play/App Store çeviri girişleri. Outfit yazı tipinde CJK harfi yok: sistem yazı tipine düşer, 320 px taşma testleri (`tools/hakem/diller.cjs`) bu dillerle de koşulmalı. Ayrı alt oturumda yapılması önerildi; Korece için kullanıcının Koreli arkadaşı göz atabilir.
+
 **Önerilen kurallar** (31 Ekim, piyasa incelemesinden; hepsi bilgi eklemez, zorlaştırır). 1 ve 2, 3 Kasım'da yapıldı (`hat-yapisi-2`); 3 ve 4 de 3 Kasım'da (`kurallar-3`); 5 yalnız not.
 
 1. ✅ **🌐 Sarmal tahta** → M21 (`wrap`).
