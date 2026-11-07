@@ -125,11 +125,11 @@ de: 🚉 Der letzte Zug ist weg und hat dein <b class="nw">letztes Leben</b> mit
 es: 🚉 El último tren se fue y se llevó tu <b class="nw">última vida</b>.␣
 pt: 🚉 O último trem partiu e levou sua <b class="nw">última vida</b>.␣
 fr: 🚉 Le dernier train est parti avec ta <b class="nw">dernière vie</b>.␣
-@ One life refills every 30 minutes. The Daily Line and 🍃 Zen cost no lives.
-de: Alle 30 Minuten kommt 1 Leben zurück. Tageslinie und 🍃 Zen kosten keine Leben.
-es: Cada 30 minutos se recarga 1 vida. La Línea del día y el modo 🍃 Zen no gastan vidas.
-pt: A cada 30 minutos 1 vida recarrega. A Linha do Dia e o 🍃 Zen não gastam vidas.
-fr: Une vie revient toutes les 30 minutes. La Ligne du jour et le mode 🍃 Zen ne coûtent aucune vie.
+@ One life refills every 6 minutes. The Daily Line and 🍃 Zen cost no lives.
+de: Alle 6 Minuten kommt 1 Leben zurück. Tageslinie und 🍃 Zen kosten keine Leben.
+es: Cada 6 minutos se recarga 1 vida. La Línea del día y el modo 🍃 Zen no gastan vidas.
+pt: A cada 6 minutos 1 vida recarrega. A Linha do Dia e o 🍃 Zen não gastam vidas.
+fr: Une vie revient toutes les 6 minutes. La Ligne du jour et le mode 🍃 Zen ne coûtent aucune vie.
 @ ▶ Watch a video
 de: ▶ Video ansehen
 es: ▶ Ver un vídeo

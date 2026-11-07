@@ -316,7 +316,7 @@ window.RAY_DICT={
 "On this line the track closes on itself <b>once</b> and forms a <b>loop</b>. The loop must pass the <b>dashed-ring</b> {0} tile: then the ring fills.":"Nesta linha o trilho se fecha <b>uma vez</b> e forma um <b>laço</b>. O laço precisa passar pela peça do <b>anel tracejado</b> {0}: aí o anel se enche.",
 "On time":"No horário",
 "On your new phone, open <b>Settings › Move progress</b> and paste this code. The ad-free and theme packs don’t move with the code; restore them from the store.":"No celular novo, abra <b>Ajustes › Transferir progresso</b> e cole este código. Os pacotes sem anúncios e de temas não vão junto; restaure-os pela loja.",
-"One life refills every 30 minutes. The Daily Line and 🍃 Zen cost no lives.":"A cada 30 minutos 1 vida recarrega. A Linha do Dia e o 🍃 Zen não gastam vidas.",
+"One life refills every 6 minutes. The Daily Line and 🍃 Zen cost no lives.":"A cada 6 minutos 1 vida recarrega. A Linha do Dia e o 🍃 Zen não gastam vidas.",
 "One video left":"Falta um vídeo",
 "Only one track can leave a bracket":"Só um trilho pode sair do colchete",
 "Open":"Abrir",
