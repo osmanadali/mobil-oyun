@@ -411,7 +411,7 @@ async function inViewport(page, sel) {
 
   // ---------- E3. Seri penceresi, müzik ayarı, açılış intro'su ----------
   {
-    const { ctx, page, errors } = await open(browser, URL, { save: { played: 9, streak: 3, best: 5, lastDaily: YDAY, dailyLog: [YDAY, ymd(new Date(Date.now() - 2 * 864e5)), ymd(new Date(Date.now() - 3 * 864e5))] } });
+    const { ctx, page, errors } = await open(browser, URL, { save: { played: 9, streak: 3, best: 5, seen: { hex: 1 }, lastDaily: YDAY, dailyLog: [YDAY, ymd(new Date(Date.now() - 2 * 864e5)), ymd(new Date(Date.now() - 3 * 864e5))] } });
     await page.click('#streakChip'); await page.waitForTimeout(600);
     const w = await page.evaluate(() => ({ cells: document.querySelectorAll('.week i').length, on: document.querySelectorAll('.week i.on').length, title: document.querySelector('.sheet h2')?.textContent }));
     await shot(page, 'streak-sheet');
