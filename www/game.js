@@ -1828,9 +1828,9 @@ const RW_TXT = { hint: '💡', inf15: L('❤️∞ 15 dk', '❤️∞ 15 min'), 
 // sınırsız can: can sistemiyle ortak kayıt sözleşmesi (save.lives 0–5, save.lifeT, save.infUntil ms); burada yalnız süre eklenir
 const giveInf = min => { save.infUntil = Math.max(save.infUntil || 0, Date.now()) + min * 60e3; };
 
-// ---------- ❤️ can (BOLUM_TASARIMI › Can): en çok 5, 30 dk'da 1 dolar. Kayıt: save.lives (yoksa 5), save.lifeT (son dolum, ms), save.infUntil ----------
+// ---------- ❤️ can (BOLUM_TASARIMI › Can): en çok 5, 6 dk'da 1 dolar (5'i 30 dk'da). Kayıt: save.lives (yoksa 5), save.lifeT (son dolum, ms), save.infUntil ----------
 // Dolum zaman damgasından hesaplanır: uygulama kapalıyken ve çevrimdışıyken de doğru. Can yalnız son süre dolunca gider.
-const LIFE_MAX = 5, LIFE_MS = 30 * 60e3;
+const LIFE_MAX = 5, LIFE_MS = 6 * 60e3;   // 6 dk'da 1 can: 5 can 30 dk'da dolar
 const infOn = () => (save.infUntil || 0) > Date.now();
 function lives() {
   const now = Date.now(), raw = save.lives;
@@ -1896,7 +1896,7 @@ function lifePop(lvl = save.level, failed = false) {
     mode = m;
     $('lpI').textContent = m === 'empty' ? '❤️‍🩹' : '❤️';
     $('lpH').textContent = m === 'empty' ? L('Canın bitti', 'Out of lives') : m === 'inf' ? L('Sınırsız can', 'Unlimited lives') : `❤️ ${n} / ${LIFE_MAX}`;
-    $('lpP').innerHTML = m === 'empty' ? (failed ? L('🚉 Son tren kaçtı, <b class="nw">son canın</b> gitti. ', '🚉 The last train left and took your <b class="nw">last life</b>. ') : '') + L('Her 30 dakikada 1 can dolar. Günün Hattı ve 🍃 Zen can harcamaz.', 'One life refills every 30 minutes. The Daily Line and 🍃 Zen cost no lives.') : '';
+    $('lpP').innerHTML = m === 'empty' ? (failed ? L('🚉 Son tren kaçtı, <b class="nw">son canın</b> gitti. ', '🚉 The last train left and took your <b class="nw">last life</b>. ') : '') + L('Her 6 dakikada 1 can dolar. Günün Hattı ve 🍃 Zen can harcamaz.', 'One life refills every 6 minutes. The Daily Line and 🍃 Zen cost no lives.') : '';
     $('lpAct').innerHTML = m === 'empty'
       ? `${Ads.online() ? `<button id="lpVid" class="btn primary"><span>${L('▶ Video izle', '▶ Watch a video')}</span><small>+1 ❤️</small></button>` : ''}<button id="lpShop" class="btn ${Ads.online() ? 'glassbtn' : 'primary'}"><span>🛒 ${L('Mağaza', 'Shop')}</span><small>${L('❤️∞ sınırsız can paketi', '❤️∞ unlimited lives pack')}</small></button>`
       : `<button id="lpGo" class="btn primary"><span>${L('Oyna', 'Play')}</span><small>${L('Bölüm', 'Level')} ${lvl}</small></button>`;

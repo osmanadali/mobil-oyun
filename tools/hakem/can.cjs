@@ -62,25 +62,25 @@ module.exports = async T => {
     errs.push(...errors); await ctx.close();
   }
 
-  // ---------- c) dolum: 30 dk'da 1 can (kapalıyken geçen süre de sayılır), en çok 5; ana sayfada Oyna'nın alt satırı ----------
+  // ---------- c) dolum: 6 dk'da 1 can (kapalıyken geçen süre de sayılır), en çok 5; ana sayfada Oyna'nın alt satırı ----------
   {
     const now = Date.now();
-    const { ctx, page, errors } = await go({ lives: 2, lifeT: now - 65 * MIN });
+    const { ctx, page, errors } = await go({ lives: 2, lifeT: now - 13 * MIN });
     const a = { s: await getSave(page), txt: await chip(page) };
-    await clock(page, 31 * MIN); await page.waitForTimeout(1200);
+    await clock(page, 7 * MIN); await page.waitForTimeout(1200);
     const b = { s: await getSave(page), txt: await chip(page) };
     await clock(page, 5 * 60 * MIN); await page.waitForTimeout(1200);
     const c = { s: await getSave(page), txt: await chip(page) };
     await shot(page, 'can-home');
-    check('can.refill', 'Can dolumu zaman damgasından: 65 dk sonra 2→4 (artan 5 dk sayılır), 31 dk sonra 5; 5\'te durur; ana sayfanın üst çipinde "❤️ 4 25:00" (dolarken geri sayım), dolunca yalnız "❤️ 5"',
-      a.s.lives === 4 && a.s.lifeT === now - 5 * MIN && /^❤️ 4 2[45]:\d\d$/.test(a.txt) && b.s.lives === 5 && c.s.lives === 5 && c.txt === '❤️ 5' && !errors.length,
+    check('can.refill', 'Can dolumu zaman damgasından (6 dk\'da 1): 13 dk sonra 2→4 (artan 1 dk sayılır), 7 dk sonra 5; 5\'te durur; ana sayfanın üst çipinde "❤️ 4 5:00" (dolarken geri sayım), dolunca yalnız "❤️ 5"',
+      a.s.lives === 4 && a.s.lifeT === now - 1 * MIN && /^❤️ 4 0?[45]:\d\d$/.test(a.txt) && b.s.lives === 5 && c.s.lives === 5 && c.txt === '❤️ 5' && !errors.length,
       JSON.stringify({ a: [a.s.lives, a.s.lifeT - now, a.txt], b: [b.s.lives, b.txt], c: [c.s.lives, c.txt], errors }));
     errs.push(...errors); await ctx.close();
   }
 
   // ---------- d) 0 can: bölüm başlamaz; ortada can penceresi (❤️‍🩹 · yenilenmesine geri sayım · ▶ video +1 ❤️ · 🛒) → can gelince Oyna ----------
   {
-    const { ctx, page, errors } = await go({ lives: 0, lifeT: Date.now() - 10 * MIN });
+    const { ctx, page, errors } = await go({ lives: 0, lifeT: Date.now() - 2 * MIN });
     const box = () => page.evaluate(() => { const m = document.getElementById('modal'), r = document.getElementById('mCard').getBoundingClientRect(); return { center: m.classList.contains('center'), mid: Math.abs((r.top + r.bottom) / 2 - innerHeight / 2) < innerHeight * .2, vid: !!document.getElementById('lpVid'), shop: !!document.getElementById('lpShop'), go: !!document.getElementById('lpGo') }; });
     await page.click('#bPlay'); await page.waitForTimeout(700);
     const a = await st(page), b0 = await box();
@@ -90,8 +90,8 @@ module.exports = async T => {
     const s = await getSave(page), b = await st(page), b1 = await box();
     await page.click('#lpGo'); await page.waitForTimeout(700);
     const c = await st(page);
-    check('can.empty', '0 canda Oyna bölümü açmaz: ekranın ortasında can penceresi (❤️‍🩹 "Canın bitti", yenilenmesine ~20 dk geri sayım akar, ▶ video +1 ❤️ ve 🛒 mağaza); video +1 ❤️ (life_refill_ad), pencere "Oyna"ya döner, bölüm açılır',
-      !a.game && b0.center && b0.mid && /❤️‍🩹/.test(a.modal) && /Canın bitti/.test(a.modal) && /Yenilenmesine 1?[90]:\d\d|Yenilenmesine 20:00/.test(a.modal) && a.modal !== a1.modal && b0.vid && b0.shop &&
+    check('can.empty', '0 canda Oyna bölümü açmaz: ekranın ortasında can penceresi (❤️‍🩹 "Canın bitti", yenilenmesine ~4 dk geri sayım akar, ▶ video +1 ❤️ ve 🛒 mağaza); video +1 ❤️ (life_refill_ad), pencere "Oyna"ya döner, bölüm açılır',
+      !a.game && b0.center && b0.mid && /❤️‍🩹/.test(a.modal) && /Canın bitti/.test(a.modal) && /Yenilenmesine 0?[34]:\d\d/.test(a.modal) && a.modal !== a1.modal && b0.vid && b0.shop &&
       s.lives === 1 && JSON.stringify(b.ev) === JSON.stringify([['life_refill_ad', null]]) && b1.go && c.game && !c.modal && !errors.length,
       JSON.stringify({ a: a.modal.slice(0, 140), b0, lives: s.lives, ev: b.ev, b1, c: c.game, errors }));
     errs.push(...errors); await ctx.close();
