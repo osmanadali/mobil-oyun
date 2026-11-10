@@ -1597,7 +1597,8 @@ const ART = (() => {
   const bulb = (x, y, r, a = 0) => { const big = r > 3.2;
     return `<g transform="translate(${x} ${y}) rotate(${a})">${r > 5 ? `<circle r="${r * 1.75}" fill="url(#gGlow)"/>` : ''}
     <path d="M${-r} 0a${r} ${r} 0 1 1 ${2 * r} 0c0 ${r * .5}-${r * .42} ${r * .7}-${r * .42} ${r * 1.12}h${-r * 1.16}c0-${r * .42}-${r * .42}-${r * .62}-${r * .42}-${r * 1.12}z" fill="url(#gBulb)" stroke="#e39a33" stroke-width="${(r * .07).toFixed(2)}"/>
-    ${big ? `<path d="M${-r * .28} ${r * .95}v${-r * .7}l${r * .14}-${r * .22}l${r * .14} ${r * .22}l${r * .14}-${r * .22}l${r * .14} ${r * .22}v${r * .7}" stroke="#d98a2b" stroke-width="${r * .09}" fill="none" stroke-linejoin="round"/>` : ''}
+    ${big ? `<path d="M${-r * .28} ${r * .95}v${-r * .7}l${r * .14}-${r * .22}l${r * .14} ${r * .22}l${r * .14}-${r * .22}l${r * .14} ${r * .22}v${r * .7}" stroke="#d98a2b" stroke-width="${r * .09}" fill="none" stroke-linejoin="round"/>`
+      : `<path d="M${-r * .3} ${r * .95}v${-r * .75}l${r * .3}-${r * .3}l${r * .3} ${r * .3}v${r * .75}" stroke="#c9771c" stroke-width="${(r * .16).toFixed(2)}" fill="none" stroke-linejoin="round"/>`}
     <rect x="${-r * .52}" y="${r * 1.1}" width="${r * 1.04}" height="${r * .62}" rx="${r * .14}" fill="url(#gBase)"/>${big ? `<path d="M${-r * .52} ${r * 1.32}h${r * 1.04}M${-r * .52} ${r * 1.5}h${r * 1.04}" stroke="#7c8296" stroke-width="${r * .08}"/>` : ''}
     <ellipse cx="${-r * .4}" cy="${-r * .38}" rx="${r * .2}" ry="${r * .34}" transform="rotate(35 ${-r * .4} ${-r * .38})" fill="#fff" opacity=".9"/></g>`; };
   const leaf = (x, y, a, l = 13) => `<path d="M0 0q${l * .45}-${l * .42} ${l} 0q-${l * .5} ${l * .38}-${l} 0z" fill="url(#gLeaf)" transform="translate(${x} ${y}) rotate(${a})"/><path d="M0 0h${l * .8}" stroke="#3f9a5e" stroke-width=".6" transform="translate(${x} ${y}) rotate(${a})"/>`;
