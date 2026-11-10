@@ -1594,34 +1594,41 @@ const starterTxt = () => { const g = Shop.item('starter').give; return `💡${g.
 // paket görselleri (SVG, dosya yok): ipucu paketleri ampul buketi (10 → 3, 30 → 6, 80 → 10 ampul), diğerleri tek nesne
 const ART = (() => {
   // ampul: cam + boyun + duy, iç tel, parıltı ve hafif ışık halesi
-  const bulb = (x, y, r, a = 0) => `<g transform="translate(${x} ${y}) rotate(${a})"><circle r="${r * 1.75}" fill="url(#gGlow)"/>
-    <path d="M${-r} 0a${r} ${r} 0 1 1 ${2 * r} 0c0 ${r * .5}-${r * .42} ${r * .7}-${r * .42} ${r * 1.12}h${-r * 1.16}c0-${r * .42}-${r * .42}-${r * .62}-${r * .42}-${r * 1.12}z" fill="url(#gBulb)"/>
-    <path d="M${-r * .28} ${r * .95}v${-r * .7}l${r * .14}-${r * .22}l${r * .14} ${r * .22}l${r * .14}-${r * .22}l${r * .14} ${r * .22}v${r * .7}" stroke="#d98a2b" stroke-width="${r * .09}" fill="none" stroke-linejoin="round"/>
-    <rect x="${-r * .52}" y="${r * 1.1}" width="${r * 1.04}" height="${r * .62}" rx="${r * .14}" fill="url(#gBase)"/><path d="M${-r * .52} ${r * 1.32}h${r * 1.04}M${-r * .52} ${r * 1.5}h${r * 1.04}" stroke="#7c8296" stroke-width="${r * .08}"/>
-    <ellipse cx="${-r * .4}" cy="${-r * .38}" rx="${r * .2}" ry="${r * .34}" transform="rotate(35 ${-r * .4} ${-r * .38})" fill="#fff" opacity=".9"/></g>`;
-  // gül: dış taç yaprakları + iç sarmal
-  const rose = (x, y, r) => `<g transform="translate(${x} ${y})">${[0, 72, 144, 216, 288].map(a => `<ellipse cx="0" cy="${-r * .55}" rx="${r * .62}" ry="${r * .55}" transform="rotate(${a})" fill="#f27a8f"/>`).join('')}
-    <circle r="${r * .72}" fill="url(#gRose)"/><path d="M${-r * .38} ${r * .05}a${r * .4} ${r * .4} 0 1 1 ${r * .42} ${r * .4}a${r * .22} ${r * .22} 0 1 1 ${r * .02}-${r * .48}" stroke="#b8324b" stroke-width="${r * .13}" fill="none" stroke-linecap="round"/></g>`;
+  const bulb = (x, y, r, a = 0) => { const big = r > 3.2;
+    return `<g transform="translate(${x} ${y}) rotate(${a})">${r > 5 ? `<circle r="${r * 1.75}" fill="url(#gGlow)"/>` : ''}
+    <path d="M${-r} 0a${r} ${r} 0 1 1 ${2 * r} 0c0 ${r * .5}-${r * .42} ${r * .7}-${r * .42} ${r * 1.12}h${-r * 1.16}c0-${r * .42}-${r * .42}-${r * .62}-${r * .42}-${r * 1.12}z" fill="url(#gBulb)" stroke="#e39a33" stroke-width="${(r * .07).toFixed(2)}"/>
+    ${big ? `<path d="M${-r * .28} ${r * .95}v${-r * .7}l${r * .14}-${r * .22}l${r * .14} ${r * .22}l${r * .14}-${r * .22}l${r * .14} ${r * .22}v${r * .7}" stroke="#d98a2b" stroke-width="${r * .09}" fill="none" stroke-linejoin="round"/>` : ''}
+    <rect x="${-r * .52}" y="${r * 1.1}" width="${r * 1.04}" height="${r * .62}" rx="${r * .14}" fill="url(#gBase)"/>${big ? `<path d="M${-r * .52} ${r * 1.32}h${r * 1.04}M${-r * .52} ${r * 1.5}h${r * 1.04}" stroke="#7c8296" stroke-width="${r * .08}"/>` : ''}
+    <ellipse cx="${-r * .4}" cy="${-r * .38}" rx="${r * .2}" ry="${r * .34}" transform="rotate(35 ${-r * .4} ${-r * .38})" fill="#fff" opacity=".9"/></g>`; };
   const leaf = (x, y, a, l = 13) => `<path d="M0 0q${l * .45}-${l * .42} ${l} 0q-${l * .5} ${l * .38}-${l} 0z" fill="url(#gLeaf)" transform="translate(${x} ${y}) rotate(${a})"/><path d="M0 0h${l * .8}" stroke="#3f9a5e" stroke-width=".6" transform="translate(${x} ${y}) rotate(${a})"/>`;
-  const dots = pts => pts.map(([x, y]) => `<g fill="#fff" stroke="#f0c6cf" stroke-width=".5"><circle cx="${x}" cy="${y}" r="1.5"/><circle cx="${x + 2.4}" cy="${y + 1.6}" r="1.1"/><circle cx="${x - 2}" cy="${y + 1.8}" r="1"/></g>`).join('');
-  // buket: ampul sayısı paketle büyür (3 / 6 / 10); güller, yapraklar, beyaz çiçekler, iki kat kâğıt, fiyonk
-  const B = {
-    3: { r: 7.2, bulbs: [[40, 20, 0], [28, 27, -16], [52, 27, 16]], roses: [[31, 40], [49, 40]], dots: [[20, 34], [58, 33], [40, 38]], leaves: [[30, 44, -140], [50, 44, -40], [24, 40, -165, 11], [56, 40, -15, 11]] },
-    6: { r: 6.3, bulbs: [[40, 14, 0], [27, 19, -14], [53, 19, 14], [18, 30, -26], [62, 30, 26], [40, 28, 0]], roses: [[29, 39], [51, 39], [40, 41]], dots: [[34, 21], [46, 21], [24, 37], [56, 37]], leaves: [[28, 45, -145], [52, 45, -35], [18, 40, -170, 12], [62, 40, -10, 12]] },
-    10: { r: 5.4, bulbs: [[40, 10, 0], [29, 13, -10], [51, 13, 10], [19, 20, -20], [61, 20, 20], [34, 23, -4], [46, 23, 4], [13, 31, -30], [67, 31, 30], [40, 33, 0]],
-      roses: [[24, 38], [56, 38], [32, 41], [48, 41], [40, 43]], dots: [[34, 12], [46, 12], [14, 25], [66, 25], [22, 39], [58, 39]], leaves: [[26, 45, -150], [54, 45, -30], [14, 39, -172, 13], [66, 39, -8, 13], [40, 44, -90, 10]] } };
-  const bouquet = n => { const c = B[n];
-    return `<svg viewBox="0 0 80 80" aria-hidden="true">
-      <path d="M12 38Q40 16 68 38L42 74h-4z" fill="#fff6ef" stroke="#f2d3c7" stroke-width=".8"/>
-      ${c.leaves.map(([x, y, a, l]) => leaf(x, y, a, l)).join('')}${dots(c.dots)}${c.bulbs.map(([x, y, a]) => bulb(x, y, c.r, a)).join('')}${c.roses.map(([x, y]) => rose(x, y, c.r * .78)).join('')}
-      <path d="M22 46Q31 43 40 47L40 76Q37 76 36 74z" fill="url(#gWrapL)"/><path d="M58 46Q49 43 40 47L40 76Q43 76 44 74z" fill="url(#gWrapR)"/>
-      <path d="M22 46Q31 43 40 47Q49 43 58 46" stroke="#fff" stroke-opacity=".7" stroke-width="1.1" fill="none"/>
-      <path d="M40 60q-11-9-13-2q1 6 13 2zM40 60q11-9 13-2q-1 6-13 2z" fill="#f0637a"/><path d="M40 60l-5 10l3-1zM40 60l5 10l-3-1z" fill="#d9435c"/><ellipse cx="40" cy="60" rx="2.8" ry="2.4" fill="#d9435c"/></svg>`; };
+  // buket: gerçek ampul sayısı (10 / 30 / 80). Ampuller kâğıdın ağzından kubbe biçiminde açılır (Vogel sarmalı, eşit aralık),
+  // her biri sapın dibine (40,58) dönük, üsttekiler önce çizilir ki alttakiler öne gelsin
+  const bouquet = n => {
+    const rx = 31, ry = 37, cy = 47, A = Math.PI * rx * ry / 2, r = Math.min(6, Math.sqrt(A / n) * .36);
+    let pts = [];
+    for (let M = n * 2; pts.length < n; M += n) {
+      pts = [];
+      for (let k = 0; k < M && pts.length < n; k++) {
+        const t = Math.sqrt((k + .5) / M), a = k * 2.39996, u = t * Math.cos(a), v = t * Math.sin(a);
+        if (v < -.06) pts.push([40 + (rx - r * 1.4) * u, cy + (ry - r * 1.4) * v]);
+      }
+    }
+    pts.sort((p, q) => p[1] - q[1]);
+    const ang = (x, y) => Math.atan2(x - 40, 60 - y) * 57.3;
+    const stems = pts.map(([x, y]) => `M40 60L${x.toFixed(1)} ${(y + r).toFixed(1)}`).join('');
+    // yeşillik: kubbenin ardında yaprak halkası + kenarlarda büyük yapraklar
+    const fol = Array.from({ length: 15 }, (_, k) => { const a = Math.PI * (k / 14), x = 40 - Math.cos(a) * (rx - 2), y = cy - Math.sin(a) * (ry - 3); return leaf(+(40 + (x - 40) * .55).toFixed(1), +(cy + (y - cy) * .55).toFixed(1), Math.round(ang(x, y) - 90), 13 + (k % 3) * 2); }).join('');
+    const g = pts.map(([x, y]) => bulb(+x.toFixed(1), +y.toFixed(1), +(r * (.9 + .2 * ((y - 10) / 37))).toFixed(2), Math.round(ang(x, y)))).join('');
+    return `<svg viewBox="7 5 66 72" aria-hidden="true"><ellipse cx="40" cy="28" rx="30" ry="24" fill="url(#gGlow)"/>
+      <path d="M10 42Q40 18 70 42L42 74h-4z" fill="#fff6ef" stroke="#f2d3c7" stroke-width=".8"/>
+      ${fol}<path d="${stems}" stroke="#3f9a5e" stroke-width="${Math.max(.5, r * .22).toFixed(2)}" opacity=".85" fill="none"/>${leaf(26, 46, -150, 15)}${leaf(54, 46, -30, 15)}${g}
+      <path d="M22 47Q31 44 40 48L40 76Q37 76 36 74z" fill="url(#gWrapL)"/><path d="M58 47Q49 44 40 48L40 76Q43 76 44 74z" fill="url(#gWrapR)"/>
+      <path d="M22 47Q31 44 40 48Q49 44 58 47" stroke="#fff" stroke-opacity=".7" stroke-width="1.1" fill="none"/>
+      <path d="M40 61q-11-9-13-2q1 6 13 2zM40 61q11-9 13-2q-1 6-13 2z" fill="#f0637a"/><path d="M40 61l-5 10l3-1zM40 61l5 10l-3-1z" fill="#d9435c"/><ellipse cx="40" cy="61" rx="2.8" ry="2.4" fill="#d9435c"/></svg>`; };
   const D = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
     <radialGradient id="gBulb" cx=".4" cy=".35"><stop offset="0" stop-color="#fff7c2"/><stop offset=".55" stop-color="#ffd35a"/><stop offset="1" stop-color="#f5a33c"/></radialGradient>
     <radialGradient id="gGlow"><stop offset=".45" stop-color="#ffe17a" stop-opacity=".45"/><stop offset="1" stop-color="#ffe17a" stop-opacity="0"/></radialGradient>
     <linearGradient id="gBase" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#c3c8d6"/><stop offset=".5" stop-color="#eef0f6"/><stop offset="1" stop-color="#9aa0b4"/></linearGradient>
-    <radialGradient id="gRose" cx=".4" cy=".35"><stop offset="0" stop-color="#ff9fb1"/><stop offset="1" stop-color="#e04b66"/></radialGradient>
     <linearGradient id="gLeaf" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4fb06f"/><stop offset="1" stop-color="#8fdc9e"/></linearGradient>
     <linearGradient id="gWrapL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe3e9"/><stop offset="1" stop-color="#f9b3c2"/></linearGradient>
     <linearGradient id="gWrapR" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7a9b9"/><stop offset="1" stop-color="#e98aa0"/></linearGradient>
@@ -1629,7 +1636,7 @@ const ART = (() => {
     <linearGradient id="gBox" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8fa3"/><stop offset="1" stop-color="#e5546e"/></linearGradient></defs></svg>`;
   const svg = b => `<svg viewBox="0 0 80 80" aria-hidden="true">${b}</svg>`;
   return { defs: D,
-    hint10: bouquet(3), hint30: bouquet(6), hint80: bouquet(10),
+    hint10: bouquet(10), hint30: bouquet(30), hint80: bouquet(80),
     noads: svg(`<circle cx="40" cy="40" r="30" fill="#ffd66b" opacity=".2"/><path d="M40 66C18 51 12 40 12 30a14 14 0 0 1 28-6a14 14 0 0 1 28 6c0 10-6 21-28 36z" fill="url(#gGold)"/>
       <path d="M22 27a8 8 0 0 1 9-7" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none" opacity=".7"/>
       <g transform="translate(40 40)"><rect x="-13" y="-8" width="26" height="16" rx="5" fill="#fff" opacity=".92"/><text y="5" text-anchor="middle" font-size="12" font-weight="800" fill="#c46a12" font-family="Outfit,sans-serif">AD</text><path d="M-15 10L15 -10" stroke="#d9435c" stroke-width="3.2" stroke-linecap="round"/></g>
