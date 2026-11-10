@@ -50,21 +50,23 @@ module.exports = async T => {
     const want = { 'de-AT': 'de|de|Spielen', 'es-MX': 'es|es|Jugar', 'pt-PT': 'pt-BR|pt-BR|Jogar', 'pt-BR': 'pt-BR|pt-BR|Jogar', 'fr-CA': 'fr|fr|Jouer', 'ko-KR': 'ko|ko|플레이', 'ja-JP': 'ja|ja|プレイ', 'zh-TW': 'zh-Hant|zh-Hant|開始', 'zh-HK': 'zh-Hant|zh-Hant|開始', 'zh-Hant-TW': 'zh-Hant|zh-Hant|開始', 'zh-CN': 'en|en|Play', 'it-IT': 'en|en|Play', 'tr-TR': 'tr|tr|Oyna' };
     const { ctx, page, errors } = await open(browser, URL, { vp: [320, 568], save: { played: 3 } }, 'tr-TR');
     await page.click('#bSettings'); await page.waitForTimeout(500);
+    const shut = await page.evaluate(() => ({ btn: document.getElementById('oLb')?.textContent.trim(), hidden: getComputedStyle(document.getElementById('oL')).visibility === 'hidden' }));
+    await page.click('#oLb'); await page.waitForTimeout(450);
     const sel = await page.evaluate(() => {
       const bs = [...document.querySelectorAll('#oL button')], box = document.getElementById('mCard').getBoundingClientRect();
-      return { names: bs.map(b => b.textContent).join(','), fit: bs.every(b => { const r = b.getBoundingClientRect(); return r.left >= box.left - 1 && r.right <= box.right + 1 && r.height < 52; }) };
+      return { names: bs.map(b => b.querySelector('span').textContent).join(','), fit: bs.every(b => { const r = b.getBoundingClientRect(); return r.left >= box.left - 1 && r.right <= box.right + 1 && r.height < 52; }) };
     });
     await Promise.all([page.waitForNavigation(), page.click('#oL [data-g=fr]')]); await page.waitForTimeout(500);
     const fr = await page.evaluate(() => [window.RAY_LANG, document.querySelector('#bPlay span').textContent, JSON.parse(localStorage.getItem('ray')).lang].join('|'));
     await page.reload(); await page.waitForTimeout(400);
     const fr2 = await page.evaluate(() => window.RAY_LANG);
-    await page.click('#bSettings'); await page.waitForTimeout(500);
+    await page.click('#bSettings'); await page.waitForTimeout(500); await page.click('#oLb'); await page.waitForTimeout(450);
     await Promise.all([page.waitForNavigation(), page.click('#oL [data-g=tr]')]); await page.waitForTimeout(500);
     const back = await page.evaluate(() => [window.RAY_LANG, document.querySelector('#bPlay span').textContent].join('|'));
     errs.push(...errors); await ctx.close();
-    check('lang.device', 'Cihaz dili: de-AT → Almanca, es-MX → İspanyolca, pt-PT ve pt-BR → Portekizce (Brezilya), fr-CA → Fransızca, ko-KR → Korece, ja-JP → Japonca, zh-TW/zh-HK/zh-Hant-TW → Geleneksel Çince, zh-CN → İngilizce, it-IT → İngilizce, tr-TR → Türkçe; Ayarlar › Dil: 9 dil kendi adıyla, 320 px\'te sığar; Français seçilir, kalıcı, Türkçeye dönülür',
-      Object.entries(want).every(([k, v]) => dev[k] === v) && sel.names === 'Türkçe,English,Deutsch,Español,Português,Français,한국어,日本語,繁體中文' && sel.fit && fr === 'fr|Jouer|fr' && fr2 === 'fr' && back === 'tr|Oyna',
-      JSON.stringify({ dev, sel, fr, fr2, back }));
+    check('lang.device', 'Cihaz dili: de-AT → Almanca, es-MX → İspanyolca, pt-PT ve pt-BR → Portekizce (Brezilya), fr-CA → Fransızca, ko-KR → Korece, ja-JP → Japonca, zh-TW/zh-HK/zh-Hant-TW → Geleneksel Çince, zh-CN → İngilizce, it-IT → İngilizce, tr-TR → Türkçe; Ayarlar › Dil: kapalıyken yalnız seçili dil (▾), dokununca 9 dil kendi adıyla aşağı açılır, 320 px\'te sığar; Français seçilir, kalıcı, Türkçeye dönülür',
+      Object.entries(want).every(([k, v]) => dev[k] === v) && shut.hidden && /^Türkçe\s*▾$/.test(shut.btn) && sel.names === 'Türkçe,English,Deutsch,Español,Português,Français,한국어,日本語,繁體中文' && sel.fit && fr === 'fr|Jouer|fr' && fr2 === 'fr' && back === 'tr|Oyna',
+      JSON.stringify({ dev, shut, sel, fr, fr2, back }));
   }
 
   // ---------- 3. Her dilde ekranlar (320 px) ----------
