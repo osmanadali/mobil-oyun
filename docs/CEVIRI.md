@@ -1,11 +1,11 @@
-# Yerelleştirme (6 dil)
+# Yerelleştirme (9 dil)
 
-Oyun Türkçe, İngilizce, Almanca, İspanyolca, Portekizce (Brezilya) ve Fransızca oynanır. Bu belge altyapıyı ve ortak sözlüğü anlatır; iki dildeki metinlerin tutarlı kalması için yeni metin yazan herkes buraya bakar.
+Oyun Türkçe, İngilizce, Almanca, İspanyolca, Portekizce (Brezilya), Fransızca, Korece, Japonca ve Geleneksel Çince oynanır (son üçü 1.1 ile, §1c). Bu belge altyapıyı ve ortak sözlüğü anlatır; iki dildeki metinlerin tutarlı kalması için yeni metin yazan herkes buraya bakar.
 
 ## 1. Altyapı (`www/i18n.js`)
 
 - `i18n.js` bütün betiklerden önce yüklenir ve iki küresel ad tanımlar:
-  - `RAY_LANG`: `'tr'`, `'en'`, `'de'`, `'es'`, `'pt-BR'` ya da `'fr'` (öteki diller: §1b).
+  - `RAY_LANG`: `'tr'`, `'en'`, `'de'`, `'es'`, `'pt-BR'`, `'fr'`, `'ko'`, `'ja'` ya da `'zh-Hant'` (öteki diller: §1b, §1c).
   - `L(tr, en)`: seçili dildeki metni döndürür. Örnek: `L('İpucu', 'Hint')`, `` L(`${n} hamle`, `${n} moves`) ``.
 - **Dil seçimi:** kayıtta `save.lang` varsa o kullanılır. Yoksa cihaz dili okunur: `tr`, `de`, `es`, `pt`, `fr` ile başlıyorsa o dil, öteki her dilde İngilizce.
 - **Dil değişince sayfa yenilenir.** Metinler yüklemede bir kez seçilir; bu yüzden kural kartları gibi yükleme anında kurulan nesnelerde `L()` doğrudan kullanılabilir.
@@ -35,6 +35,63 @@ Oyun Türkçe, İngilizce, Almanca, İspanyolca, Portekizce (Brezilya) ve Frans�
 - **Sayı, tarih, büyük harf:** tarih `toLocaleDateString(LOC)` (`LOC = RAY_LOCALE`: tr-TR, en-US, de-DE, es-ES, pt-BR, fr-FR; cihaz aynı dilde başka bölgedeyse onunki, ör. es-MX), yüzde `LP(n)` (`%30` · `30%` · `30 %`), büyük harf `toLocaleUpperCase(RAY_LANG)`.
 - **Hat adı:** `M1 · Liman Hattı` / `M1 · Harbor Line` / `M1 · Linie Hafen` / `M1 · Línea Puerto` / `M1 · Linha Porto` / `M1 · Ligne Port`. 26. hattan sonraki önekler: Almancada tireli önek (`Neu-Hafen`, `Nord-…`), İspanyolca/Portekizce/Fransızcada adın ardından, cinsiyetle değişmeyen sözcük (`Puerto Norte`, `Porto Central`, `Port d’Antan`); bu yüzden "New/Old/Upper…" bu dillerde bilerek serbest çevrilir.
 - **Robot:** `tools/hakem/diller.cjs` (K bölümü; tek başına `node tools/hakem.cjs --only=diller`): sözlükler eksiksiz ve güncel; cihaz dili ve dil seçici; dört dilde 320 px'te açılış, ana sayfa, ayarlar, mağaza, görevler, renk temaları, Hatlar, oyun, kazanma paneli ve 24 kural kartı — Türkçe harf, sözlükte bulunamayan metin, ekranda İngilizce sözcük, taşma ve iki satıra bölünen düğme yok; tarih/yüzde/hat adı biçimi.
+
+## 1c. Korece, Japonca, Geleneksel Çince (1.1)
+
+- **Dil kodları:** `ko`, `ja`, `zh-Hant` (sözlük satırında `ko:`, `ja:`, `zh:`). Cihaz dili `ko…` → Korece, `ja…` → Japonca; `zh-Hant…`, `zh-TW`, `zh-HK`, `zh-MO` → Geleneksel Çince. **Basitleştirilmiş Çince (`zh-CN`, `zh-Hans`, `zh-SG`) bilerek İngilizceye düşer**: Geleneksel Çince metin anakara kullanıcısına verilmez. Ayarlar › Dil seçicisi 9 dili 3×3 ızgarada gösterir (한국어 · 日本語 · 繁體中文).
+- **Tarih ve sayı:** `RAY_LOCALE` ko-KR, ja-JP, zh-TW (Hong Kong/Makao cihazında zh-HK/zh-MO); `LP(30)` üçünde de `30%`. Tarih `1월 5일` · `1月5日` · `1月5日`.
+- **Yazı tipi:** Outfit'te CJK harfi yok. `style.css` ve `gizlilik.html` dile göre sistem yazı tipine düşer: ko Apple SD Gothic Neo / Noto Sans KR, ja Hiragino Sans / Noto Sans JP, zh-Hant PingFang TC / Noto Sans TC; Latin harf ve rakam Outfit'te kalır. `<html lang>` dili taşıdığı için Han harfleri doğru biçimde (Japonca/Geleneksel) çizilir. Korecede `word-break: keep-all` (sözcük ortasından bölünmez).
+- **Yer tutucular:** Bu dillerde tekil/çoğul yok; `pl()` ile gelen sözcük yer tutucusu genelde düşürülür, sayaç cümleye yazılır: `↶ {0} {1} undone` → `↶ {0}번 이동 되돌림` · `↶ {0}手戻しました` · `↶ 已復原 {0} 步`. `move`/`moves` gibi tek sözcükler yine çevrilir (yalnız kalıp dışında kullanıldıkları yerler için).
+- **Hat adı:** önek bitişik tek hecedir (`PRE_JOIN`): `M31 · 신다리선` · `M31 · 新橋線` · `M31 · 新橋樑線`; "Hat" → ko `선`, ja/zh `線`.
+- **Hitap ve üslup:** ko 해요체 (düğmeler ad biçiminde: 다시 시작, 공유), ja です/ます ve kısa düğme adları (やり直し, シェア), zh-Hant Tayvan kullanımı ve `你` (資料, 設定, 影片). Noktalama: ja/zh tam genişlik `。、！？：`, ko Latin noktalama.
+- **Terim listesi:** `tools/diller/sozluk-1.txt` başında. Öne çıkanlar:
+
+| İngilizce | Korece | Japonca | Geleneksel Çince |
+|---|---|---|---|
+| Ray · Metro Puzzle | Ray · 지하철 퍼즐 | Ray · メトロパズル | Ray · 地鐵解謎 |
+| level | 레벨 | ステージ | 關卡 (Level 12 = 第 12 關) |
+| line · Daily Line | 노선 · 오늘의 노선 | 路線 · 今日の路線 | 路線 · 每日路線 |
+| tile · track · station · hub | 타일 · 선로 · 역 · 허브 | タイル · 線路 · 駅 · ハブ | 方塊 · 軌道 · 車站 · 樞紐 |
+| move · target · hint · star | 이동 · 목표 · 힌트 · 별 | 手 · 目標 · ヒント · 星 | 步 · 目標 · 提示 · 星 |
+| ticket 🎫 | 티켓 | 切符 | 車票 |
+| perfect · streak | 퍼펙트 · 연속 기록 | パーフェクト · 連続記録 | 完美 · 連續紀錄 |
+| last stop · last train · late | 종점 · 막차 · 지연 | 終点 · 終電 · 遅延 | 終點站 · 末班車 · 誤點 |
+| life ❤️ · booster | 하트 · 부스터 | ライフ · ブースター | 生命 · 道具 |
+| quests · surprise chest | 미션 · 깜짝 상자 | ミッション · びっくり宝箱 | 任務 · 驚喜寶箱 |
+| Shop · Settings · Play | 상점 · 설정 · 플레이 | ショップ · 設定 · プレイ | 商店 · 設定 · 開始 |
+| Move progress | 진행 상황 옮기기 | データ引き継ぎ | 轉移進度 |
+| New: … | 새 규칙: … | 新ルール：… | 新規則：… |
+
+**Kural adları**
+
+| Hat | İngilizce | Korece | Japonca | Geleneksel Çince |
+|---|---|---|---|---|
+| M3 | Paired tiles | 짝 타일 | ペアタイル | 成對方塊 |
+| M4 | Reverse tile | 역회전 타일 | 逆回転タイル | 反轉方塊 |
+| M5 | Sliding row | 가로 슬라이드 | 横スライド | 橫向滑動 |
+| M6 | Dark tunnel | 어두운 터널 | 暗いトンネル | 黑暗隧道 |
+| M7 | Counter tile | 카운터 타일 | カウンタータイル | 計數方塊 |
+| M8 | Cooling tile | 얼음 타일 | 凍るタイル | 結冰方塊 |
+| M9 | Two hubs | 두 허브 | ふたつのハブ | 雙樞紐 |
+| M10 | Switch | 전환기 | 分岐器 | 轉轍器 |
+| M11 | Sealed tile | 봉인 타일 | 封印タイル | 封印方塊 |
+| M12 | Turntable | 회전대 | 転車台 | 轉車台 |
+| M13 | Bridge | 다리 | 橋 | 橋樑 |
+| M14 | Gear tile | 톱니 타일 | 歯車タイル | 齒輪方塊 |
+| M15 | Cover | 덮개 | カバー | 蓋板 |
+| M16 | Tunnel portal | 터널 입구 | トンネル口 | 隧道口 |
+| M17 | Signpost | 표지판 | 標識 | 路標 |
+| M18 | Loop line | 순환선 | 環状線 | 環狀線 |
+| M19 | Faint arm | 흐릿한 가지 | 淡い枝 | 淡色分支 |
+| M20 | Hidden depot | 숨은 차고 | 隠れ車庫 | 隱藏車庫 |
+| M21 | Wrap-around board | 끝없는 보드 | 端のない盤面 | 無邊盤面 |
+| M22 | River | 강 | 川 | 河流 |
+| M23 | Closed station | 폐쇄역 | 閉鎖駅 | 封閉車站 |
+| M24 | Fare zone | 요금 구역 | 運賃ゾーン | 票價區 |
+| M25 | Timed station | 시간제한 역 | 時限駅 | 限時車站 |
+| M26 | Sliding column | 세로 슬라이드 | 縦スライド | 縱向滑動 |
+
+- **Gözden geçirme:** çeviriler yayından önce anadili konuşan birine okutulmalı (Korece için kullanıcının Koreli arkadaşı). Robot (`--only=diller`) eksik/İngilizce kalan metni ve 320 px taşmayı yakalar, dil doğruluğunu denetlemez.
 
 ## 2. Yazım ilkeleri
 

@@ -115,7 +115,7 @@ jobs:
           [ "$CV" = "$VERSION_CODE" ] || { echo "::error::CFBundleVersion $CV, beklenen $VERSION_CODE"; exit 1; }
           plutil -extract UIDeviceFamily json -o - "$A/Info.plist" | grep -qx '\[1\]' || { echo "::error::Yalnız iPhone (UIDeviceFamily [1]) değil"; exit 1; }
           [ "$(plutil -extract CFBundleDevelopmentRegion raw -o - "$A/Info.plist")" = en ] || { echo "::error::CFBundleDevelopmentRegion en değil"; exit 1; }
-          for l in en tr de es pt-BR fr; do
+          for l in en tr de es pt-BR fr ko ja zh-Hant; do
             plutil -extract CFBundleLocalizations json -o - "$A/Info.plist" | grep -q "\"$l\"" || { echo "::error::CFBundleLocalizations içinde $l yok"; exit 1; }
             plutil -extract NSUserTrackingUsageDescription raw -o - "$A/$l.lproj/InfoPlist.strings" >/dev/null || { echo "::error::$l.lproj ATT metni pakette yok"; exit 1; }
           done

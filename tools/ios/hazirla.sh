@@ -13,14 +13,18 @@ put() { pb "Delete :$1" 2>/dev/null || true; pb "Add :$1 $2${3:+ \"$3\"}"; }   #
 # 1) Info.plist
 pb "Set :CFBundleDisplayName Ray"
 # Dil: WKWebView navigator.languages'ı uygulamanın desteklediği dillerden verir, eşleşme yoksa geliştirme bölgesine düşer.
-# Bu yüzden geliştirme bölgesi 'en' ve altı dil de CFBundleLocalizations + .lproj ile bildirilir (bkz. 5. adım).
-LANGS="en tr de es pt-BR fr"
+# Bu yüzden geliştirme bölgesi 'en' ve dokuz dil de CFBundleLocalizations + .lproj ile bildirilir (bkz. 5. adım).
+# zh-Hant: Geleneksel Çince (Tayvan, Hong Kong); Basitleştirilmiş Çince (zh-Hans) yok, o cihazlar İngilizceye düşer.
+LANGS="en tr de es pt-BR fr ko ja zh-Hant"
 ATT_EN="If you allow it, ads can be chosen based on your interests. If you do not, the game works just the same; you will still see ads, but they will be less personal."
 ATT_TR="İzin verirsen reklamlar ilgi alanlarına göre seçilebilir. Vermesen de oyun aynen çalışır; reklamlar yine görünür ama daha az kişisel olur."
 ATT_DE="Wenn du es erlaubst, können Anzeigen nach deinen Interessen ausgewählt werden. Wenn nicht, funktioniert das Spiel genauso; du siehst weiterhin Anzeigen, nur weniger persönliche."
 ATT_ES="Si lo permites, los anuncios pueden elegirse según tus intereses. Si no, el juego funciona igual; seguirás viendo anuncios, pero menos personalizados."
 ATT_PT="Se você permitir, os anúncios podem ser escolhidos de acordo com seus interesses. Se não, o jogo funciona do mesmo jeito; você continua vendo anúncios, mas menos personalizados."
 ATT_FR="Si tu l’autorises, les publicités peuvent être choisies selon tes centres d’intérêt. Sinon, le jeu fonctionne exactement pareil ; tu verras toujours des publicités, mais moins personnalisées."
+ATT_KO="허용하면 관심사에 맞춰 광고가 선택될 수 있어요. 허용하지 않아도 게임은 똑같이 작동하며, 광고는 계속 표시되지만 덜 개인화돼요."
+ATT_JA="許可すると、興味に合わせて広告が選ばれることがあります。許可しなくてもゲームはまったく同じように遊べます。広告は表示されますが、パーソナライズの度合いが低くなります。"
+ATT_ZH="如果你允許，廣告可以依照你的興趣挑選。即使不允許，遊戲也完全照常運作；你仍會看到廣告，只是比較不個人化。"
 pb "Set :CFBundleDevelopmentRegion en"
 put CFBundleLocalizations array; i=0; for l in $LANGS; do pb "Add :CFBundleLocalizations:$i string $l"; i=$((i+1)); done
 put GADApplicationIdentifier string "$APP_ID"
@@ -59,10 +63,10 @@ if [ -n "${ADMOB_INTERSTITIAL_IOS:-}" ] && [ -n "${ADMOB_REWARDED_IOS:-}" ]; the
   echo "✓ window.RAY_ADS (iOS)"
 fi
 
-# 5) Yerelleştirme: <dil>.lproj/InfoPlist.strings (6 dil) (ATT metni), projeye Resources olarak eklenir (xcodeproj gem'i)
+# 5) Yerelleştirme: <dil>.lproj/InfoPlist.strings (9 dil) (ATT metni), projeye Resources olarak eklenir (xcodeproj gem'i)
 for l in $LANGS; do   # macOS /bin/bash 3.2: ${l^^} yok
   mkdir -p "ios/App/App/$l.lproj"
-  case $l in en) t=$ATT_EN;; tr) t=$ATT_TR;; de) t=$ATT_DE;; es) t=$ATT_ES;; pt-BR) t=$ATT_PT;; fr) t=$ATT_FR;; esac
+  case $l in en) t=$ATT_EN;; tr) t=$ATT_TR;; de) t=$ATT_DE;; es) t=$ATT_ES;; pt-BR) t=$ATT_PT;; fr) t=$ATT_FR;; ko) t=$ATT_KO;; ja) t=$ATT_JA;; zh-Hant) t=$ATT_ZH;; esac
   printf '"NSUserTrackingUsageDescription" = "%s";\n' "$t" > "ios/App/App/$l.lproj/InfoPlist.strings"
   plutil -lint "ios/App/App/$l.lproj/InfoPlist.strings"
 done

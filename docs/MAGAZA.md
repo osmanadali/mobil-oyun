@@ -18,7 +18,7 @@ Bu belge Google Play ve App Store'a gönderim için gereken her şeyi tek yerde 
 | Pazarlama URL'si (isteğe bağlı) | https://osmanadali.github.io/mobil-oyun/ (oyunun web sürümü) |
 | Telif (App Store) | © 2026 Osman Adalı |
 | İletişim e-postası (iki mağaza, herkese açık) | osmanadali.apps@gmail.com |
-| Dil | Türkçe, İngilizce, Almanca, İspanyolca, Portekizce (Brezilya), Fransızca (oyun cihaz diline göre açılır, desteklenmeyen dilde İngilizce; Ayarlar › Dil ile değişir; mağaza metinleri §4, §5, §5b) |
+| Dil | Türkçe, İngilizce, Almanca, İspanyolca, Portekizce (Brezilya), Fransızca; 1.1 ile Korece, Japonca, Geleneksel Çince (oyun cihaz diline göre açılır, desteklenmeyen dilde İngilizce; Ayarlar › Dil ile değişir; mağaza metinleri §4, §5, §5b, §5c) |
 | Cihaz | Android telefon, iPhone (yalnız dikey; iPad yok) |
 
 Gizlilik ve destek adresleri GitHub Pages açılınca yayına girer. Pages kullanıcının onayıyla açılacak (bkz. §11).
@@ -44,6 +44,7 @@ node tools/store-shots.cjs all             # 6 dil (tr, en, de, es, pt-BR, fr) �
 | `store/screens/ios-65/*.png` | 1284×2778 | App Store Connect › iPhone 6,5" (6,9" yüklenince gerekmez; yedek) |
 | `store/screens-en/…`, `store/feature-graphic-en.png` | aynı boylar | İngilizce mağaza girişi (Play › İngilizce çeviri, App Store Connect › English (U.S.)) |
 | `store/screens-{de,es,pt-BR,fr}/…`, `store/feature-graphic-{de,es,pt-BR,fr}.png` | aynı boylar | Almanca, İspanyolca, Portekizce (Brezilya), Fransızca mağaza girişleri (§5b) |
+| `store/screens-{ko,ja,zh-Hant}/…`, `store/feature-graphic-{ko,ja,zh-Hant}.png` | aynı boylar | Korece, Japonca, Geleneksel Çince mağaza girişleri (§5c, 1.1) |
 | `store/appstore-icon-1024.png` | 1024×1024 | iOS projesinin simgesi (App Store simgesi derlemeden gelir) |
 
 Hepsi 24 bit PNG'dir, saydamlık (alfa) içermez; iki mağazanın kuralına uyar.
@@ -70,11 +71,11 @@ Hepsi 24 bit PNG'dir, saydamlık (alfa) içermez; iki mağazanın kuralına uyar
 |---|---|---|---|
 | Play: uygulama adı | 30 | 18 | 22 |
 | Play: kısa açıklama | 80 | 78 | 73 |
-| Play: tam açıklama | 4000 | 2772 | 3046 |
+| Play: tam açıklama | 4000 | 2772 | 3085 |
 | App Store: ad | 30 | 18 | 22 |
 | App Store: alt başlık | 30 | 28 | 28 |
 | App Store: tanıtım metni | 170 | 152 | 152 |
-| App Store: açıklama | 4000 | 2772 | 3046 |
+| App Store: açıklama | 4000 | 2772 | 3085 |
 | App Store: anahtar kelimeler | 100 | 87 (94 bayt) | 99 |
 | Ürün adı (App Store) | 30 | 15 | 15 |
 | Ürün açıklaması (App Store) | 45 | 41 | 41 |
@@ -176,7 +177,7 @@ A one-time purchase. Removes the ads between levels, gives you 20 hints and unlo
 
 No account needed and no personal details asked. Your progress stays on your device.
 
-Available in English, German, Spanish, Portuguese, French and Turkish.
+Available in English, German, Spanish, Portuguese, French, Korean, Japanese, Traditional Chinese and Turkish.
 ```
 
 **Diğer Play alanları**
@@ -256,7 +257,7 @@ Oyun bu dillerde de açılır (cihaz dili ya da Ayarlar › Dil). Play Console �
 | App Store alt başlık | 30 | 28 | 30 | 28 | 29 |
 | App Store tanıtım metni | 170 | 150 | 146 | 141 | 163 |
 | Anahtar kelimeler | 100 | 98 | 93 | 91 | 90 |
-| Tam açıklama | 4000 | 2766 | 2717 | 2658 | 2899 |
+| Tam açıklama | 4000 | 2816 | 2754 | 2696 | 2939 |
 | Sürüm notu | 500 | 119 | 127 | 127 | 138 |
 
 ### Deutsch (de-DE)
@@ -314,7 +315,7 @@ Einmaliger Kauf. Entfernt die Werbung zwischen Leveln, schenkt dir 20 Tipps und 
 
 Kein Konto nötig, keine persönlichen Daten. Dein Fortschritt bleibt auf deinem Gerät.
 
-Auf Deutsch, Englisch, Spanisch, Portugiesisch, Französisch und Türkisch.
+Auf Deutsch, Englisch, Spanisch, Portugiesisch, Französisch, Koreanisch, Japanisch, traditionellem Chinesisch und Türkisch.
 ```
 **Versionshinweis**
 ```text
@@ -376,7 +377,7 @@ Compra única. Quita los anuncios entre niveles, te regala 20 pistas y desbloque
 
 Sin cuenta y sin datos personales. Tu progreso se queda en tu dispositivo.
 
-En español, inglés, alemán, portugués, francés y turco.
+En español, inglés, alemán, portugués, francés, coreano, japonés, chino tradicional y turco.
 ```
 **Notas de la versión**
 ```text
@@ -438,7 +439,7 @@ Compra única. Tira os anúncios entre as fases, dá 20 dicas de presente e libe
 
 Sem conta e sem dados pessoais. Seu progresso fica no seu aparelho.
 
-Em português, inglês, espanhol, alemão, francês e turco.
+Em português, inglês, espanhol, alemão, francês, coreano, japonês, chinês tradicional e turco.
 ```
 **Notas da versão**
 ```text
@@ -500,11 +501,224 @@ Achat unique. Supprime les pubs entre les niveaux, offre 20 indices et débloque
 
 Pas de compte, aucune donnée personnelle. Ta progression reste sur ton appareil.
 
-En français, anglais, allemand, espagnol, portugais et turc.
+En français, anglais, allemand, espagnol, portugais, coréen, japonais, chinois traditionnel et turc.
 ```
 **Notes de version**
 ```text
 Première version. Un puzzle de métro à une main et hors ligne : 24 règles, une Ligne du jour, des thèmes de couleur et un coffre surprise.
+```
+
+## 5c. Korece, Japonca, Geleneksel Çince (1.1)
+
+1.1 sürümüyle gelir (1.0 incelemedeyken eklenmedi). Play Console › Mağaza girişi › Çeviriler'e `ko-KR`, `ja-JP`, `zh-TW`; App Store Connect'te Korean, Japanese, Chinese (Traditional) olarak eklenir. **Basitleştirilmiş Çince (`zh-CN`, Chinese Simplified) eklenmez**: oyun o cihazlarda İngilizce açılır. Hong Kong için Play'de ayrıca `zh-HK` gerekirse aynı Geleneksel Çince metin kullanılır. Terimler oyundakiyle aynıdır (`tools/diller/sozluk-1.txt` başındaki terim listesi, docs/CEVIRI.md §1c). Ekran görüntüleri ve öne çıkan görsel `store/screens-{ko,ja,zh-Hant}/`, `store/feature-graphic-{ko,ja,zh-Hant}.png`; başlıklar `tools/store-shots.cjs` `TX` tablosunda.
+
+Korece metne yayından önce anadili Korece olan biri (kullanıcının Koreli arkadaşı) göz atmalı; Japonca ve Çince için de mümkünse birer okuma iyi olur.
+
+App Store anahtar kelime sınırı 100'dür; bazı araçlar bayt saydığı için (CJK harfi UTF-8'de 3 bayt) üç dilde de 100 baytın altında tutuldu. Sayılar karakterdir, anahtar kelimelerde parantez içi bayttır.
+
+| Metin | Sınır | KO | JA | ZH-HANT |
+|---|---|---|---|---|
+| Uygulama adı / ad | 30 | 14 | 13 | 11 |
+| Play kısa açıklama | 80 | 43 | 41 | 28 |
+| App Store alt başlık | 30 | 17 | 15 | 10 |
+| App Store tanıtım metni | 170 | 72 | 71 | 47 |
+| Anahtar kelimeler | 100 | 34 (82 bayt) | 35 (87 bayt) | 33 (79 bayt) |
+| Tam açıklama | 4000 | 1569 | 1438 | 1047 |
+| Sürüm notu (1.1) | 500 | 53 | 44 | 35 |
+
+### 한국어 (ko-KR)
+
+**이름**
+```text
+Ray: 지하철 노선 퍼즐
+```
+**간단한 설명** (Play)
+```text
+선로를 돌려 모든 역을 이어요. 한 손으로, 오프라인으로 즐기는 차분한 퍼즐.
+```
+**부제** (App Store)
+```text
+한 손으로, 오프라인, 차분하게
+```
+**프로모션 텍스트** (App Store)
+```text
+매일 새로운 오늘의 노선! 선로를 돌리고 모든 역을 이어 퍼펙트로 깨고 티켓을 모으세요. 24가지 규칙과 끝없는 레벨이 기다려요.
+```
+**키워드** (App Store)
+```text
+파이프,연결,기차,역,두뇌,논리,힐링,타일,회전,노선도,메트로
+```
+**설명**
+```text
+Ray는 한 손으로, 인터넷 없이도 즐기는 차분한 지하철 퍼즐이에요. 타일을 탭하면 선로가 90° 돌아가요. 가운데 허브역에서 시작한 노선을 모든 역까지 이어 주세요. 끊긴 선로 끝이 남으면 안 돼요. 노선이 이어질수록 도시에 불이 켜져요.
+
+게임 방법
+• 타일을 탭해서 선로를 돌려요.
+• 모든 역을 허브에 연결하고, 끊긴 끝을 남기지 마세요.
+• 별 3개: 레벨 클리어, 시간 목표 달성, 이동 목표 달성.
+• 두 목표를 한 번에 달성하면 퍼펙트! 티켓을 받아요.
+
+24개 노선, 끝없는 레벨
+지하철 노선마다 새로운 규칙이 등장하고, 레벨은 조금씩 어려워져요. 규칙이 있는 24개 노선이 끝나면 여러 규칙이 섞인 노선이 끝없이 이어져요. 레벨은 기기에서 만들어지고, 모두 풀 수 있으며, 같은 레벨 번호에서는 누구나 같은 퍼즐을 만나요.
+
+여행할수록 새로운 규칙
+짝 타일, 역회전 타일, 가로 슬라이드, 어두운 터널, 카운터 타일, 얼음 타일, 두 허브, 전환기, 봉인 타일, 회전대, 다리, 톱니 타일, 덮개, 터널 입구, 표지판, 순환선, 흐릿한 가지, 숨은 차고, 끝없는 보드, 강, 폐쇄역, 요금 구역, 시간제한 역, 세로 슬라이드: 모두 24가지 규칙이에요. 새 규칙은 짧은 애니메이션 카드로 소개되고, 보드는 결코 복잡해지지 않아요.
+
+오늘의 노선
+매일 모두가 같은 퍼즐을 풀어요. 토요일은 육각형 보드, 일요일은 이번 주 규칙의 날이에요. 연속 기록을 이어 가고 일일·주간 미션을 완료하세요.
+
+티켓, 테마, 깜짝 상자
+퍼펙트로 깬 레벨마다 티켓 1장을 받아요. 티켓으로 색상 테마 25종 중 22종을 열거나 깜짝 상자를 열어 힌트, 연속 기록 보호막, 새 열차 도색을 얻으세요. 상자는 게임에서 모은 티켓으로만 열 수 있고, 확률은 상자 화면에 표시돼요.
+
+운행 바와 퍼펙트 연속 기록
+시계 아래의 작은 열차가 시간 목표를 향해 달려요. 목표 시간이 지나도 게임은 바로 끝나지 않아요. 시간 별만 꺼지고 잠깐의 지연 시간이 주어져요. 막차까지 놓치면 하트 1개를 잃지만, 하트는 시간이 지나면 저절로 채워져요. 퍼펙트 레벨을 연달아 깨서 연속 기록을 늘리고 보너스 티켓을 받으세요.
+
+눈과 배터리에 편안하게
+다크, 라이트, 자동 화면. 부드러운 색감. 애니메이션은 무언가 움직일 때만 작동해요. 음악, 효과음, 진동은 따로 끌 수 있어요. 원하면 매일 알림을 설정할 수 있어요.
+
+무료이고 공정하게
+Ray는 무료예요. 힌트는 매일 최소 3개까지 채워지고, 노선이 끝날 때마다 힌트를 더 받아요. 광고는 온라인일 때만 나와요. 레벨 사이에 가끔 나오는 전면 광고, 그리고 원할 때만 보는 보상형 영상(추가 힌트, 추가 하트, 보상 2배, 끊긴 연속 기록 지키기)이 전부예요. 오늘의 노선에는 전면 광고가 없어요.
+
+광고 제거 팩
+한 번만 구매하면 돼요. 레벨 사이 광고가 사라지고, 힌트 20개를 선물로 받으며, 특별 테마 3종(골드, 다이아몬드, 루비)이 열려요. 힌트 영상은 계속 선택 사항이에요.
+
+계정이 필요 없고 개인정보도 묻지 않아요. 진행 상황은 기기에만 저장돼요.
+
+한국어, 영어, 일본어, 중국어(번체), 독일어, 스페인어, 포르투갈어, 프랑스어, 튀르키예어를 지원해요.
+```
+**업데이트 내용**
+```text
+한국어를 지원해요! 한 손으로, 오프라인으로 즐기는 지하철 퍼즐: 24가지 규칙, 오늘의 노선.
+```
+
+### 日本語 (ja-JP)
+
+**名前**
+```text
+Ray: メトロ路線パズル
+```
+**簡単な説明**（Play）
+```text
+線路を回して、すべての駅をつなごう。片手でオフラインでも遊べる、落ち着いたパズル。
+```
+**サブタイトル**（App Store）
+```text
+片手で・オフラインで・のんびり
+```
+**プロモーションテキスト**（App Store）
+```text
+毎日あたらしい「今日の路線」！線路を回して駅をつなぎ、パーフェクトでクリアして切符を集めよう。24のルールと終わらないステージが待っています。
+```
+**キーワード**（App Store）
+```text
+パイプ,電車,駅,脳トレ,ロジック,回転,タイル,癒し,路線図,つなぐ
+```
+**説明**
+```text
+Rayは、片手で、インターネットなしでも遊べる落ち着いたメトロパズルです。タイルをタップすると線路が90°回ります。中央のハブ駅から路線をのばして、すべての駅につなげましょう。線路の行き止まりを残してはいけません。路線がつながるほど、街に明かりが灯ります。
+
+遊び方
+• タイルをタップして線路を回す。
+• すべての駅をハブにつなぎ、行き止まりを残さない。
+• 星3つ：ステージをクリア、タイム目標を達成、手数目標を達成。
+• ふたつの目標を同時に達成するとパーフェクト。切符がもらえます。
+
+24の路線、終わらないステージ
+路線ごとに新しいルールが登場し、ステージは少しずつ難しくなります。ルールのある24路線のあとは、ルールが混ざった路線がどこまでも続きます。ステージは端末の中で作られ、どれも必ず解けて、同じステージ番号ならだれでも同じパズルです。
+
+旅するほど新しいルール
+ペアタイル、逆回転タイル、横スライド、暗いトンネル、カウンタータイル、凍るタイル、ふたつのハブ、分岐器、封印タイル、転車台、橋、歯車タイル、カバー、トンネル口、標識、環状線、淡い枝、隠れ車庫、端のない盤面、川、閉鎖駅、運賃ゾーン、時限駅、縦スライド：全24ルール。新しいルールは短いアニメーションのカードで紹介され、盤面がごちゃごちゃすることはありません。
+
+今日の路線
+毎日、みんなが同じパズルに挑みます。土曜日は六角形の盤面、日曜日は今週のルールの日。連続記録をのばして、デイリーとウィークリーのミッションを達成しよう。
+
+切符、テーマ、びっくり宝箱
+パーフェクトでクリアしたステージごとに切符が1枚。切符で25のカラーテーマのうち22を解放したり、びっくり宝箱を開けてヒント、連続記録シールド、新しい車両カラーを手に入れたりできます。宝箱はゲーム内で集めた切符でのみ開けられ、確率は宝箱の画面に表示されます。
+
+運行バーとパーフェクト連続記録
+時計の下の小さな列車がタイム目標に向かって進みます。目標を過ぎてもすぐには終わりません。タイムの星が消えて、少しの遅延時間がもらえるだけです。終電にも間に合わないとライフが1つ減りますが、ライフは時間がたつと自然に回復します。パーフェクトを続けて連続記録をのばし、ボーナス切符を手に入れよう。
+
+目にもバッテリーにもやさしい
+ダーク、ライト、自動の表示。やわらかな色づかい。アニメーションは何かが動いているときだけ。音楽、効果音、振動はそれぞれオフにできます。毎日のお知らせも設定できます。
+
+無料で、フェアに
+Rayは無料で遊べます。ヒントは毎日最低3個まで補充され、路線をクリアするたびにヒントが追加でもらえます。広告はオンラインのときだけ表示されます。ステージの間にときどき出るインタースティシャル広告と、自分で選んだときだけ見るリワード動画（ヒント追加、ライフ追加、報酬2倍、途切れた連続記録の救済）だけです。今日の路線にはインタースティシャル広告はありません。
+
+広告なしパック
+買い切りです。ステージ間の広告がなくなり、ヒント20個のプレゼントと、特別テーマ3種（ゴールド、ダイヤモンド、ルビー）が解放されます。ヒント動画は引き続き任意です。
+
+アカウント不要、個人情報も入力不要。進行状況はお使いの端末にだけ保存されます。
+
+日本語、英語、韓国語、中国語（繁体字）、ドイツ語、スペイン語、ポルトガル語、フランス語、トルコ語に対応。
+```
+**このバージョンの新機能**
+```text
+日本語に対応しました！片手でオフラインでも遊べるメトロパズル：24のルール、今日の路線。
+```
+
+### 繁體中文 (zh-TW · Chinese Traditional)
+
+**名稱**
+```text
+Ray: 地鐵路線解謎
+```
+**簡短說明**（Play）
+```text
+轉動軌道，連起每個車站。單手、離線也能玩的療癒解謎遊戲。
+```
+**副標題**（App Store）
+```text
+單手、離線、輕鬆療癒
+```
+**宣傳文字**（App Store）
+```text
+每天都有新的每日路線！轉動軌道、連起每個車站，完美過關收集車票。24 種規則與無限關卡等著你。
+```
+**關鍵字**（App Store）
+```text
+水管,火車,車站,燒腦,邏輯,旋轉,方塊,療癒,捷運,路線圖,連線
+```
+**描述**
+```text
+Ray 是一款可以單手、不用網路就能玩的輕鬆地鐵解謎遊戲。點一下方塊，軌道就轉 90°。從中央的樞紐站延伸路線，連到每一個車站，不能留下沒接上的軌道斷頭。路線越連越多，城市就一盞盞亮起來。
+
+怎麼玩
+• 點方塊轉動軌道。
+• 把每個車站連到樞紐，不留斷頭。
+• 三顆星：過關、達成時間目標、達成步數目標。
+• 同時達成兩個目標就是完美過關，還能得到一張車票。
+
+24 條路線，無限關卡
+每條地鐵路線都會帶來新規則，每一關都比上一關難一點。24 條規則路線之後，混合規則的路線會無限延續。關卡在你的裝置上產生，每一關都有解，而且同一個關卡編號，大家拿到的都是同一道謎題。
+
+一路解鎖新規則
+成對方塊、反轉方塊、橫向滑動、黑暗隧道、計數方塊、結冰方塊、雙樞紐、轉轍器、封印方塊、轉車台、橋樑、齒輪方塊、蓋板、隧道口、路標、環狀線、淡色分支、隱藏車庫、無邊盤面、河流、封閉車站、票價區、限時車站、縱向滑動：共 24 種規則。每個新規則都用一張簡短的動畫卡片介紹，盤面永遠不會雜亂。
+
+每日路線
+每天大家都解同一道謎題。星期六在六角形盤面上玩，星期日是本週規則日。保持連續紀錄，完成每日和每週任務。
+
+車票、主題與驚喜寶箱
+每個完美過關的關卡都能得到一張車票。用車票解鎖 25 款色彩主題中的 22 款，或打開驚喜寶箱，獲得提示、連續紀錄護盾或新的列車塗裝。寶箱只能用遊戲中賺到的車票開啟，機率會顯示在寶箱畫面上。
+
+行車條與完美連續紀錄
+時鐘下方的小列車會朝時間目標前進。超過目標時間，遊戲不會馬上結束：只會熄滅時間星，並給你一小段誤點時間。如果連末班車都錯過，就會失去一條生命；生命會隨時間自動恢復。連續完美過關，累積紀錄，賺取額外車票。
+
+護眼又省電
+深色、淺色與自動外觀。柔和的配色。只有畫面在動時才會播放動畫。音樂、音效和震動可以分別關閉。也可以設定每日提醒。
+
+免費又公平
+Ray 可以免費遊玩。提示每天至少補到 3 個，每完成一條路線還會額外獲得提示。廣告只在連網時出現：關卡之間偶爾一則插頁式廣告，以及只有你願意時才看的獎勵影片（額外提示、額外生命、獎勵加倍、挽救中斷的連續紀錄）。每日路線沒有插頁式廣告。
+
+免廣告包
+一次購買。移除關卡之間的廣告，贈送 20 個提示，並解鎖 3 款專屬主題（黃金、鑽石、紅寶石）。提示影片仍可自由選擇觀看。
+
+不需要帳號，也不會要求個人資料。你的進度只會保存在你的裝置上。
+
+支援繁體中文、英文、日文、韓文、德文、西班牙文、葡萄牙文、法文和土耳其文。
+```
+**版本更新說明**
+```text
+現在支援繁體中文！單手、離線也能玩的地鐵解謎：24 種規則、每日路線。
 ```
 
 ## 6. Google Play "Veri güvenliği" formu
@@ -761,6 +975,7 @@ Mağaza
 - [ ] Uygulama fiyatı: iki mağazada **Ücretsiz** (Play'de "Ücretsiz", App Store'da 0,00 $).
 - [ ] Reklamsız paket fiyatı (§10.1): App Store'da taban ülke ABD 2,99 $, Türkiye elle ₺59,99. Play'de ABD 2,99 $ · AB 2,99 € · BK 2,49 £ elle (ya da USD tabanlı şablon). Taban Türkiye bırakılmaz.
 - [ ] Metinleri (§4, §5) ve görselleri (§2) yükle.
+- [ ] 1.1: Korece (`ko-KR` / Korean), Japonca (`ja-JP` / Japanese), Geleneksel Çince (`zh-TW` / Chinese (Traditional)) çevirilerini iki mağazaya ekle (§5c metinleri, `store/screens-{ko,ja,zh-Hant}/` ve `store/feature-graphic-{ko,ja,zh-Hant}.png`). Basitleştirilmiş Çince ekleme. Oyun içi ürün adları ve açıklamaları (§10) bu dillerde de girilebilir; girilmezse mağaza varsayılan dili gösterir.
 - [ ] Formlar: Veri güvenliği (§6), App Privacy (§7), yaş derecelendirmesi (§8), hedef kitle ve öteki beyanlar (§9), inceleme notları (§11).
 - [ ] Gerçek cihazda son deneme: rıza penceresi, iOS ATT penceresi, reklam, satın alma ve geri yükleme (Play lisans test hesabı, Apple Sandbox). Tüketilebilir bir paketi iki kez al (ikisi de verilmeli), uygulamayı satın alma sırasında kapatıp aç (ödül bir kez gelmeli); Firebase DebugView'da `level_start`/`level_end` görünmeli; özel teklif (16. bölümden sonra, kayıt 2 günden eski) bir kez çıkmalı.
 - [ ] Yayın: Play'de iç test → kapalı test (14 gün) → üretim. iOS'ta TestFlight → incelemeye gönder.

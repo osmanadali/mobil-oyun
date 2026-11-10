@@ -132,8 +132,9 @@ function lineTitle(c) {
   const n = LINE_NAMES.length, k = Math.floor(c / n), pre = NAME_PRE[k % NAME_PRE.length], tur = Math.floor(k / NAME_PRE.length);
   return `${pre ? PRE_JOIN(pre, LINE_NAMES[c % n]) : LINE_NAMES[c % n]}${tur ? ' ' + (tur + 1) : ''}`;
 }
-// önek: tr/en "Yeni Liman" · de "Neu-Hafen" · es/pt/fr adın ardından, cinsiyetsiz sözcüklerle ("Puerto Norte"; docs/CEVIRI.md)
-const PRE_JOIN = { de: (p, n) => `${p}-${n}`, es: (p, n) => `${n} ${p}`, 'pt-BR': (p, n) => `${n} ${p}`, fr: (p, n) => `${n} ${p}` }[RAY_LANG] || ((p, n) => `${p} ${n}`);
+// önek: tr/en "Yeni Liman" · de "Neu-Hafen" · es/pt/fr adın ardından, cinsiyetsiz sözcüklerle ("Puerto Norte") · ko/ja/zh-Hant bitişik tek hece ("신항구", "新港"; docs/CEVIRI.md)
+const PRE_CJK = (p, n) => `${p}${n}`;
+const PRE_JOIN = { de: (p, n) => `${p}-${n}`, es: (p, n) => `${n} ${p}`, 'pt-BR': (p, n) => `${n} ${p}`, fr: (p, n) => `${n} ${p}`, ko: PRE_CJK, ja: PRE_CJK, 'zh-Hant': PRE_CJK }[RAY_LANG] || ((p, n) => `${p} ${n}`);
 const lineName = c => L(`M${c + 1} · ${lineTitle(c)} Hattı`, `M${c + 1} · ${lineTitle(c)} Line`);
 const need = c => Math.round((lineStart(c) - 1) * STAR_AVG);
 const totalStars = () => Object.values(save.stars).reduce((a, b) => a + b, 0);

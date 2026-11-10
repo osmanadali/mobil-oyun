@@ -1,6 +1,6 @@
 // Mağaza görselleri: gerçek oyunu yerel sunucuda açar, 7 sahneyi çeker, pazarlama çerçevesine (başlık + telefon) koyar.
 // Ayrıca Play öne çıkan görseli (1024×500) üretir. Oyun koduna dokunmaz; durum yalnız kayıt (localStorage) ve dokunuşla kurulur.
-// Kullanım: node tools/store-shots.cjs [all|en|de|es|pt-BR|fr] [play|ios-69|ios-65|feature] [01 02 …]   (boş = Türkçe, hepsi) · metinler ve yükleme yerleri: docs/MAGAZA.md
+// Kullanım: node tools/store-shots.cjs [all|en|de|es|pt-BR|fr|ko|ja|zh-Hant] [play|ios-69|ios-65|feature] [01 02 …]   (boş = Türkçe, hepsi) · metinler ve yükleme yerleri: docs/MAGAZA.md
 // Çıktı: store/screens/{play,ios-69,ios-65}/NN-ad.png · store/feature-graphic.png (24 bit PNG, saydamlık yok)
 'use strict';
 const { chromium } = require('playwright');
@@ -177,8 +177,35 @@ const TX = {
     '06-tema': [['Gagne des tickets,', 'débloque 25 thèmes'], 'Chaque niveau parfait rapporte un ticket'],
     '07-sandik': [['Coffre surprise,', 'nouveaux trains'], 'Des indices, un bouclier de série ou une nouvelle livrée'],
     feature: ['Relie les lignes · Anime la ville', ['À une main', 'Hors ligne', 'Puzzle de métro']] },
+  ko: { '01-oyun': [['탭하고 돌려서', '노선을 밝혀요'], '모든 역을 허브에 연결하고, 끊긴 끝은 남기지 마세요'],
+    '02-ana': [['노선을 잇고,', '도시를 깨워요'], '한 손으로 · 오프라인 · 매일 새로운 오늘의 노선'],
+    '03-kazan': [['퍼펙트로 깨고,', '티켓을 모아요'], '시간과 이동 목표를 지키고 별 3개를 모으세요'],
+    '04-harita': [['24가지 규칙,', '끝없는 레벨'], '점점 어려워지고, 중간중간 쉬어 가요'],
+    '05-kural': [['노선마다', '새로운 규칙'], '전환기, 다리, 표지판, 회전대, 순환선, 터널 입구…'],
+    '06-tema': [['티켓을 모아', '테마 25종 해제'], '퍼펙트로 깬 레벨마다 티켓 1장'],
+    '07-sandik': [['깜짝 상자,', '새로운 열차'], '힌트, 연속 기록 보호막 또는 새 열차 도색'],
+    feature: ['노선을 잇고 · 도시를 밝혀요', ['한 손으로', '오프라인', '지하철 퍼즐']] },
+  ja: { '01-oyun': [['タップで回して', '路線を灯そう'], 'すべての駅をハブにつなぎ、行き止まりをなくそう'],
+    '02-ana': [['路線をつなぎ、', '街に灯りを'], '片手で · オフライン · 毎日あたらしい今日の路線'],
+    '03-kazan': [['パーフェクトで', '切符をゲット'], 'タイムと手数の目標を守って、星を3つ集めよう'],
+    '04-harita': [['24のルール、', '終わらないステージ'], 'だんだん難しく、ひと休みステージも'],
+    '05-kural': [['路線ごとに', '新しいルール'], '分岐器、橋、標識、転車台、環状線、トンネル口…'],
+    '06-tema': [['切符を集めて', '25のテーマを解放'], 'パーフェクトでクリアするたびに切符1枚'],
+    '07-sandik': [['びっくり宝箱、', '新しい列車'], 'ヒント、連続記録シールド、新しい車両カラー'],
+    feature: ['路線をつなぎ · 街を照らそう', ['片手で', 'オフライン', 'メトロパズル']] },
+  'zh-Hant': { '01-oyun': [['點一下、轉一轉，', '點亮路線'], '把每個車站連到樞紐，不留斷頭'],
+    '02-ana': [['連起路線，', '點亮城市'], '單手 · 離線 · 每天都有新的每日路線'],
+    '03-kazan': [['完美過關，', '賺取車票'], '達成時間和步數目標，收集三顆星'],
+    '04-harita': [['24 種規則，', '關卡無限'], '越來越難，也有休息關卡'],
+    '05-kural': [['每條路線', '都有新規則'], '轉轍器、橋樑、路標、轉車台、環狀線、隧道口…'],
+    '06-tema': [['收集車票，', '解鎖 25 款主題'], '每個完美過關的關卡都能得到一張車票'],
+    '07-sandik': [['驚喜寶箱，', '全新列車'], '提示、連續紀錄護盾或新列車塗裝'],
+    feature: ['連起路線 · 點亮城市', ['單手', '離線', '地鐵解謎']] },
 };
-const LOCALE = { tr: 'tr-TR', en: 'en-US', de: 'de-DE', es: 'es-ES', 'pt-BR': 'pt-BR', fr: 'fr-FR' }, LANGS = Object.keys(LOCALE);
+const LOCALE = { tr: 'tr-TR', en: 'en-US', de: 'de-DE', es: 'es-ES', 'pt-BR': 'pt-BR', fr: 'fr-FR', ko: 'ko-KR', ja: 'ja-JP', 'zh-Hant': 'zh-TW' }, LANGS = Object.keys(LOCALE);
+// Outfit'te CJK harfi yok: başlıklar dilin yazı tipine düşer (oyundaki style.css ile aynı sıra; Linux'ta Noto Sans CJK kurulu olmalı)
+const CJK = { ko: '"Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR",', ja: '"Hiragino Sans","Noto Sans JP","Noto Sans CJK JP",', 'zh-Hant': '"PingFang TC","Noto Sans TC","Noto Sans CJK TC",' };
+const FONT_OF = lg => `Outfit,${CJK[lg] || ''}system-ui,sans-serif`;
 const words = (sc, lg) => lg === 'tr' ? [sc.t, sc.s] : lg === 'en' ? [sc.te, sc.se] : TX[lg][sc.id];
 
 // güvenli alan: env(safe-area-inset-*) tarayıcıda 0 → aynı kuralları sabit değerle ez (telefonda olduğu gibi durum çubuğu payı)
@@ -210,9 +237,9 @@ const BG = `background:radial-gradient(60% 40% at 12% 6%,rgba(255,159,90,.30),tr
 function frameHtml(d, sc, png, lg = 'tr') {
   const [t, sub] = words(sc, lg);
   const L = layout(d), f = Math.round(d.W * .074), k = L.k, rad = Math.round(L.sw * .12), [st, sb] = d.safe;
-  return `<!doctype html><html><head><meta charset="utf-8"><style>${FACE}
+  return `<!doctype html><html lang="${lg}"><head><meta charset="utf-8"><style>${FACE}
 *{margin:0;box-sizing:border-box}html,body{width:${d.W}px;height:${d.H}px;overflow:hidden}
-body{${BG};font-family:Outfit;color:#eef0f7;position:relative}
+body{${BG};font-family:${FONT_OF(lg)};color:#eef0f7;position:relative}${CJK[lg] ? 'h1{letter-spacing:0;line-height:1.15}' : ''}
 .map{position:absolute;inset:-4%;background:url(${MAP}) center/cover;opacity:.07;-webkit-mask:radial-gradient(ellipse at 50% 40%,#000 25%,transparent 75%)}
 header{position:absolute;left:0;right:0;top:0;height:${L.y}px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 ${Math.round(d.W * .06)}px}
 h1{font-size:${f}px;line-height:1.04;font-weight:800;letter-spacing:-.025em}
@@ -235,10 +262,10 @@ header p{margin-top:${Math.round(f * .34)}px;font-size:${Math.round(f * .4)}px;f
 function featureHtml(lg = 'tr') {
   const en = lg !== 'tr', [sub, chips] = lg === 'en' ? ['Connect the lines · Light up the city', ['One hand', 'Offline', 'Metro puzzle']] : lg === 'tr' ? ['Hatları bağla · Şehri canlandır', ['Tek elle', 'İnternetsiz', 'Metro bulmacası']] : TX[lg].feature;
   const icon = rIcon({ size: 1000, round: 229 }).replace('<svg ', '<svg style="width:300px;height:300px" ');
-  return `<!doctype html><html><head><meta charset="utf-8"><style>${FACE}
+  return `<!doctype html><html lang="${lg}"><head><meta charset="utf-8"><style>${FACE}
 *{margin:0;box-sizing:border-box}html,body{width:1024px;height:500px;overflow:hidden}
 body{background:radial-gradient(55% 75% at 20% 45%,rgba(125,162,253,.20),transparent 70%),radial-gradient(50% 70% at 95% 100%,rgba(255,159,90,.20),transparent 70%),linear-gradient(160deg,#171e3a,#0e1226 55%,#0b0e1d);
-  font-family:Outfit;color:#eef0f7;position:relative;display:flex;align-items:center;gap:56px;padding:0 0 0 104px}
+  font-family:${FONT_OF(lg)};color:#eef0f7;position:relative;display:flex;align-items:center;gap:56px;padding:0 0 0 104px}
 .map{position:absolute;inset:-10% -4%;background:url(${MAP}) center/cover;opacity:.06;-webkit-mask:linear-gradient(90deg,transparent,#000 30%,#000 80%,transparent)}
 .ic{position:relative;flex:none;border-radius:66px;box-shadow:0 30px 60px -18px rgba(0,0,0,.75),0 0 0 2px rgba(255,255,255,.06)}
 .ic svg{display:block;border-radius:66px}
@@ -252,7 +279,7 @@ small b{font-size:21px;font-weight:600;color:#dfe3f2;padding:9px 18px;border-rad
 }
 
 async function main(args, scenes = SCENES, dir = OUT) {
-  // dil: 'en', 'de', 'es', 'pt-BR', 'fr' ya da 'all' (6 dil) · boş = Türkçe. tr → store/screens/, öteki → store/screens-<dil>/, store/feature-graphic-<dil>.png
+  // dil: 'en', 'de', 'es', 'pt-BR', 'fr', 'ko', 'ja', 'zh-Hant' ya da 'all' (9 dil) · boş = Türkçe. tr → store/screens/, öteki → store/screens-<dil>/, store/feature-graphic-<dil>.png
   const lgs = args.includes('all') ? LANGS : LANGS.filter(l => l !== 'tr' && args.includes(l)); if (!lgs.length) lgs.push('tr');
   const devs = args.filter(a => DEVICES[a] || a === 'feature'), only = args.filter(a => /^\d\d$/.test(a));
   const want = id => !devs.length || devs.includes(id), wantSc = sc => !only.length || only.includes(sc.id.slice(0, 2));

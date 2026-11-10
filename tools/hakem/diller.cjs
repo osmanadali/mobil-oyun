@@ -1,12 +1,13 @@
-// Almanca, İspanyolca, Portekizce (Brezilya), Fransızca — robot testleri (hakem.cjs K bölümü çağırır). Altyapı: docs/CEVIRI.md
-// 1) sözlükler kaynakla eşit: her L() anahtarının 4 dilde çevirisi var, www/lang/*.js sözlük kaynağından üretilmiş hâliyle aynı
-// 2) cihaz dili: de-AT → de, es-MX → es, pt-PT → pt-BR, fr-CA → fr, it-IT → en; Ayarlar › Dil seçicide 6 dil kendi adıyla, seçim kalıcı
+// Almanca, İspanyolca, Portekizce (Brezilya), Fransızca, Korece, Japonca, Geleneksel Çince — robot testleri (hakem.cjs K bölümü çağırır). Altyapı: docs/CEVIRI.md
+// 1) sözlükler kaynakla eşit: her L() anahtarının 7 dilde çevirisi var, www/lang/*.js sözlük kaynağından üretilmiş hâliyle aynı
+// 2) cihaz dili: de-AT → de, es-MX → es, pt-PT → pt-BR, fr-CA → fr, ko-KR → ko, ja-JP → ja, zh-TW/zh-HK/zh-Hant → zh-Hant, zh-CN → en, it-IT → en;
+//    Ayarlar › Dil seçicide 9 dil kendi adıyla, seçim kalıcı
 // 3) her dilde 320 px: açılış (nasıl oynanır), ana sayfa, oyun, kazanma paneli, ayarlar, mağaza, görevler, renk temaları, Hatlar —
 //    duraklat penceresi; Türkçe harf (ğ ı ş İ) yok, çevrilmemiş İngilizce yok (sözlükte bulunamayan L() metni + ekranda İngilizce sözcük), taşma ve
 //    iki satıra bölünen düğme yok, konsol hatası yok; tarih, yüzde ve büyük harf dile göre
 const path = require('path'), fs = require('fs');
 const D = require(path.join(__dirname, '..', 'diller.cjs'));
-const LANGS = [['de', 'de-DE'], ['es', 'es-ES'], ['pt-BR', 'pt-BR'], ['fr', 'fr-FR']];
+const LANGS = [['de', 'de-DE'], ['es', 'es-ES'], ['pt-BR', 'pt-BR'], ['fr', 'fr-FR'], ['ko', 'ko-KR'], ['ja', 'ja-JP'], ['zh-Hant', 'zh-TW']], N = LANGS.length;
 const TR_ONLY = /\S*[ğışĞİŞ]\S*/g;   // Türkçeye özgü harfler (ç ö ü öteki dillerde de var)
 // iki dilde aynı yazılan ya da özel ad olan İngilizce sözcükler: ekranda görünmesi çeviri eksiği sayılmaz
 const SAME = new Set(['ray', 'metro', 'zen', 'neon', 'sakura', 'pastel', 'retro', 'google', 'admob', 'firebase', 'play', 'store', 'auto', 'english', 'video', 'videos', 'level', 'levels', 'booster', 'boosters', 'ticket', 'tickets', 'shop', 'badge', 'badges', 'tunnel', 'portal', 'express', 'terminal', 'canal', 'lava', 'cosmos', 'glacier', 'rare', 'mint', 'gold', 'demo', 'power', 'bonus', 'total', 'final', 'normal', 'start', 'stop', 'online', 'chips', 'quiz']);
@@ -27,7 +28,7 @@ module.exports = async T => {
       const got = ctx.window.RAY_DICT || {};
       if (Object.keys(got).length !== Object.keys(dict[l]).length || Object.entries(dict[l]).some(([k, v]) => got[k] !== v)) stale.push(l);
     }
-    check('lang.dict', `Sözlükler: ${keys.size} İngilizce anahtarın de/es/pt-BR/fr çevirisi var; www/lang/*.js tools/diller/sozluk-*.txt'ten güncel üretilmiş`,
+    check('lang.dict', `Sözlükler: ${keys.size} İngilizce anahtarın de/es/pt-BR/fr/ko/ja/zh-Hant çevirisi var; www/lang/*.js tools/diller/sozluk-*.txt'ten güncel üretilmiş`,
       Object.values(miss).every(m => !m.length) && !stale.length && keys.size > 500, JSON.stringify({ miss, stale }));
   }
   // dile göre İngilizce sözcük listesi: anahtarlarda geçen, o dilin hiçbir çevirisinde geçmeyen sözcükler
@@ -41,12 +42,12 @@ module.exports = async T => {
   // ---------- 2. Cihaz dili ve dil seçici ----------
   {
     const dev = {};
-    for (const loc of ['de-AT', 'es-MX', 'pt-PT', 'pt-BR', 'fr-CA', 'it-IT', 'tr-TR']) {
+    for (const loc of ['de-AT', 'es-MX', 'pt-PT', 'pt-BR', 'fr-CA', 'ko-KR', 'ja-JP', 'zh-TW', 'zh-HK', 'zh-Hant-TW', 'zh-CN', 'it-IT', 'tr-TR']) {
       const o = await open(browser, URL, { save: { played: 3 } }, loc);
       dev[loc] = await o.page.evaluate(() => [window.RAY_LANG, document.documentElement.lang, document.querySelector('#bPlay span').textContent].join('|'));
       errs.push(...o.errors); await o.ctx.close();
     }
-    const want = { 'de-AT': 'de|de|Spielen', 'es-MX': 'es|es|Jugar', 'pt-PT': 'pt-BR|pt-BR|Jogar', 'pt-BR': 'pt-BR|pt-BR|Jogar', 'fr-CA': 'fr|fr|Jouer', 'it-IT': 'en|en|Play', 'tr-TR': 'tr|tr|Oyna' };
+    const want = { 'de-AT': 'de|de|Spielen', 'es-MX': 'es|es|Jugar', 'pt-PT': 'pt-BR|pt-BR|Jogar', 'pt-BR': 'pt-BR|pt-BR|Jogar', 'fr-CA': 'fr|fr|Jouer', 'ko-KR': 'ko|ko|플레이', 'ja-JP': 'ja|ja|プレイ', 'zh-TW': 'zh-Hant|zh-Hant|開始', 'zh-HK': 'zh-Hant|zh-Hant|開始', 'zh-Hant-TW': 'zh-Hant|zh-Hant|開始', 'zh-CN': 'en|en|Play', 'it-IT': 'en|en|Play', 'tr-TR': 'tr|tr|Oyna' };
     const { ctx, page, errors } = await open(browser, URL, { vp: [320, 568], save: { played: 3 } }, 'tr-TR');
     await page.click('#bSettings'); await page.waitForTimeout(500);
     const sel = await page.evaluate(() => {
@@ -61,8 +62,8 @@ module.exports = async T => {
     await Promise.all([page.waitForNavigation(), page.click('#oL [data-g=tr]')]); await page.waitForTimeout(500);
     const back = await page.evaluate(() => [window.RAY_LANG, document.querySelector('#bPlay span').textContent].join('|'));
     errs.push(...errors); await ctx.close();
-    check('lang.device', 'Cihaz dili: de-AT → Almanca, es-MX → İspanyolca, pt-PT ve pt-BR → Portekizce (Brezilya), fr-CA → Fransızca, it-IT → İngilizce, tr-TR → Türkçe; Ayarlar › Dil: 6 dil kendi adıyla, 320 px\'te sığar; Français seçilir, kalıcı, Türkçeye dönülür',
-      Object.entries(want).every(([k, v]) => dev[k] === v) && sel.names === 'Türkçe,English,Deutsch,Español,Português,Français' && sel.fit && fr === 'fr|Jouer|fr' && fr2 === 'fr' && back === 'tr|Oyna',
+    check('lang.device', 'Cihaz dili: de-AT → Almanca, es-MX → İspanyolca, pt-PT ve pt-BR → Portekizce (Brezilya), fr-CA → Fransızca, ko-KR → Korece, ja-JP → Japonca, zh-TW/zh-HK/zh-Hant-TW → Geleneksel Çince, zh-CN → İngilizce, it-IT → İngilizce, tr-TR → Türkçe; Ayarlar › Dil: 9 dil kendi adıyla, 320 px\'te sığar; Français seçilir, kalıcı, Türkçeye dönülür',
+      Object.entries(want).every(([k, v]) => dev[k] === v) && sel.names === 'Türkçe,English,Deutsch,Español,Português,Français,한국어,日本語,繁體中文' && sel.fit && fr === 'fr|Jouer|fr' && fr2 === 'fr' && back === 'tr|Oyna',
       JSON.stringify({ dev, sel, fr, fr2, back }));
   }
 
@@ -130,12 +131,12 @@ module.exports = async T => {
     if (R.miss.length) bad.miss.push(`${lang}: ${[...new Set(R.miss)].slice(0, 4).map(s => s.slice(0, 50)).join(' | ')}`);
   }
   const lg = LANGS.map(([l]) => res[l].lang.split('|').slice(0, 2).join('/')).join(' ');
-  check('lang.text', `4 dilde açılış, ana sayfa, ayarlar, mağaza, görevler, renk temaları, Hatlar, oyun, duraklat penceresi ve kazanma paneli: Türkçe harf yok, sözlükte bulunamayan metin yok, ekranda çevrilmemiş İngilizce sözcük yok (${lg})`,
+  check('lang.text', `${N} dilde açılış, ana sayfa, ayarlar, mağaza, görevler, renk temaları, Hatlar, oyun, duraklat penceresi ve kazanma paneli: Türkçe harf yok, sözlükte bulunamayan metin yok, ekranda çevrilmemiş İngilizce sözcük yok (${lg})`,
     LANGS.every(([l]) => res[l].lang.startsWith(`${l}|${l}|`)) && !bad.tr.length && !bad.miss.length && !bad.en.length, [...bad.tr, ...bad.miss, ...bad.en].join(' · ').slice(0, 900) || lg);
-  check('lang.fit', '4 dilde 320 px: yatay taşma, kesilen yazı ve iki satıra bölünen düğme yok', !bad.fit.length && !bad.wrap.length, [...bad.fit, ...bad.wrap].join(' · ').slice(0, 900), 'medium');
+  check('lang.fit', `${N} dilde 320 px: yatay taşma, kesilen yazı ve iki satıra bölünen düğme yok`, !bad.fit.length && !bad.wrap.length, [...bad.fit, ...bad.wrap].join(' · ').slice(0, 900), 'medium');
   const f = Object.fromEntries(LANGS.map(([l]) => [l, res[l].fmt]));
-  check('lang.format', 'Tarih, yüzde ve hat adı dile göre: de "5. Januar" · "30 %" · "M1 · Linie Hafen", es "5 de enero" · "M1 · Línea Puerto", pt-BR "5 de janeiro" · "M1 · Linha Porto", fr "5 janvier" · "M1 · Ligne Port"; büyük harf toLocaleUpperCase(dil)',
-    f.de.date === '5. Januar' && /^30\s%$/.test(f.de.pct) && f.de.line === 'M1 · Linie Hafen' && f.es.date === '5 de enero' && f.es.line === 'M1 · Línea Puerto' && f['pt-BR'].date === '5 de janeiro' && f['pt-BR'].pct === '30%' && f['pt-BR'].line === 'M1 · Linha Porto' && f.fr.date === '5 janvier' && /^30\s%$/.test(f.fr.pct) && f.fr.line === 'M1 · Ligne Port' && LANGS.every(([l]) => f[l].up === 'I'),
+  check('lang.format', 'Tarih, yüzde ve hat adı dile göre: de "5. Januar" · "30 %" · "M1 · Linie Hafen", es "5 de enero" · "M1 · Línea Puerto", pt-BR "5 de janeiro" · "M1 · Linha Porto", fr "5 janvier" · "M1 · Ligne Port", ko "1월 5일" · "M1 · 항구선", ja "1月5日" · "M1 · 港線", zh-Hant "1月5日" · "M1 · 港灣線" (önek bitişik: "신다리선", "新橋線", "新橋樑線"); büyük harf toLocaleUpperCase(dil)',
+    f.de.date === '5. Januar' && /^30\s%$/.test(f.de.pct) && f.de.line === 'M1 · Linie Hafen' && f.es.date === '5 de enero' && f.es.line === 'M1 · Línea Puerto' && f['pt-BR'].date === '5 de janeiro' && f['pt-BR'].pct === '30%' && f['pt-BR'].line === 'M1 · Linha Porto' && f.fr.date === '5 janvier' && /^30\s%$/.test(f.fr.pct) && f.fr.line === 'M1 · Ligne Port' && f.ko.date === '1월 5일' && f.ko.line === 'M1 · 항구선' && f.ko.line30 === 'M31 · 신다리선' && f.ja.date === '1月5日' && f.ja.line === 'M1 · 港線' && f.ja.line30 === 'M31 · 新橋線' && f['zh-Hant'].date === '1月5日' && f['zh-Hant'].line === 'M1 · 港灣線' && f['zh-Hant'].line30 === 'M31 · 新橋樑線' && ['ko', 'ja', 'zh-Hant'].every(l => f[l].pct === '30%') && LANGS.every(([l]) => f[l].up === 'I'),
     JSON.stringify(f));
   // ---------- 4. Kural kartları: her dilde 320×568'de tanıtım kartı sığar (başlık tek satır, kaydırma yok, düğme ekranda) ----------
   {
@@ -156,7 +157,7 @@ module.exports = async T => {
       if (!(c.open && !c.tr.length && c.lines <= 1 && c.scrollY <= 1 && !c.wide.length && c.go && c.page <= 0 && !c.miss.length && !errors.length)) badR.push({ lang, key: q.key, ...c, errors });
       errs.push(...errors.map(e => `${lang}: ${e}`)); await ctx.close();
     }
-    check('lang.rules', `4 dilde ${rules.length} kuralın tanıtım kartı 320×568'de sığar: başlık tek satır, kaydırma yok, düğme ekranda, Türkçe harf ve çevrilmemiş metin yok`, n === rules.length * 4 && !badR.length, JSON.stringify(badR.slice(0, 4)).slice(0, 900), 'medium');
+    check('lang.rules', `${N} dilde ${rules.length} kuralın tanıtım kartı 320×568'de sığar: başlık tek satır, kaydırma yok, düğme ekranda, Türkçe harf ve çevrilmemiş metin yok`, n === rules.length * N && !badR.length, JSON.stringify(badR.slice(0, 4)).slice(0, 900), 'medium');
   }
-  check('lang.errors', '4 dil testlerinde konsol/sayfa hatası yok', !errs.length, errs.slice(0, 3).join(' | '), 'medium');
+  check('lang.errors', `${N} dil testlerinde konsol/sayfa hatası yok`, !errs.length, errs.slice(0, 3).join(' | '), 'medium');
 };

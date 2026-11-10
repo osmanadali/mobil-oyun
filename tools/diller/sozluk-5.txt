@@ -5,138 +5,222 @@ de: Zurück zum Archiv
 es: Volver al archivo
 pt: Voltar ao arquivo
 fr: Retour aux archives
+ko: 보관함으로
+ja: アーカイブに戻る
+zh: 返回存檔
 @ Back to levels
 de: Weiter mit Leveln
 es: Seguir con niveles
 pt: Voltar às fases
 fr: Retour aux niveaux
+ko: 레벨로 돌아가기
+ja: ステージに戻る
+zh: 返回關卡
 @ Pause
 de: Pause
 es: Pausa
 pt: Pausar
 fr: Pause
+ko: 일시정지
+ja: 一時停止
+zh: 暫停
 @ Paused
 de: Pausiert
 es: En pausa
 pt: Pausado
 fr: En pause
+ko: 일시정지됨
+ja: 一時停止中
+zh: 已暫停
 @ Resume
 de: Weiter
 es: Continuar
 pt: Continuar
 fr: Reprendre
+ko: 계속하기
+ja: 再開
+zh: 繼續
 @ 🎁 In Quests
 de: 🎁 In Aufgaben
 es: 🎁 En Misiones
 pt: 🎁 Em Missões
 fr: 🎁 Dans Quêtes
+ko: 🎁 미션에서
+ja: 🎁 ミッションで
+zh: 🎁 在任務中
 @ DAILY QUEST DONE
 de: TAGESAUFGABE GESCHAFFT
 es: MISIÓN DIARIA HECHA
 pt: MISSÃO DIÁRIA FEITA
 fr: QUÊTE DU JOUR FINIE
+ko: 일일 미션 완료
+ja: デイリーミッション達成
+zh: 每日任務完成
 @ DAILY REWARD
 de: TAGESBELOHNUNG
 es: PREMIO DIARIO
 pt: PRÊMIO DIÁRIO
 fr: RÉCOMPENSE DU JOUR
+ko: 일일 보상
+ja: デイリー報酬
+zh: 每日獎勵
 @ All of today’s quests done
 de: Alle heutigen Aufgaben geschafft
 es: Todas las misiones de hoy hechas
 pt: Todas as missões de hoje feitas
 fr: Toutes les quêtes du jour finies
+ko: 오늘의 미션 모두 완료
+ja: 今日のミッションをすべて達成
+zh: 今天的任務全部完成
 @ WEEKLY QUEST DONE
 de: WOCHENAUFGABE GESCHAFFT
 es: MISIÓN SEMANAL HECHA
 pt: MISSÃO SEMANAL FEITA
 fr: QUÊTE DE LA SEMAINE FINIE
+ko: 주간 미션 완료
+ja: ウィークリーミッション達成
+zh: 每週任務完成
 @ WEEKLY REWARD
 de: WOCHENBELOHNUNG
 es: PREMIO SEMANAL
 pt: PRÊMIO SEMANAL
 fr: RÉCOMPENSE DE LA SEMAINE
+ko: 주간 보상
+ja: ウィークリー報酬
+zh: 每週獎勵
 @ All weekly quests done
 de: Alle Wochenaufgaben geschafft
 es: Todas las misiones semanales hechas
 pt: Todas as missões semanais feitas
 fr: Toutes les quêtes de la semaine finies
+ko: 주간 미션 모두 완료
+ja: 今週のミッションをすべて達成
+zh: 本週任務全部完成
 @ Collect
 de: Holen
 es: Recoger
 pt: Pegar
 fr: Prendre
+ko: 받기
+ja: 受け取る
+zh: 領取
 @ Daily Line → +1 🎫
 de: Tageslinie → +1 🎫
 es: Línea del día → +1 🎫
 pt: Linha do Dia → +1 🎫
 fr: Ligne du jour → +1 🎫
+ko: 오늘의 노선 → +1 🎫
+ja: 今日の路線 → +1 🎫
+zh: 每日路線 → +1 🎫
 @ All three
 de: Alle drei
 es: Las tres
 pt: As três
 fr: Les trois
+ko: 3개 모두
+ja: 3つすべて
+zh: 三項全部
 @ ⬡ Hex
 de: ⬡ Sechseck
 es: ⬡ Hexágono
 pt: ⬡ Hexágono
 fr: ⬡ Hexagone
+ko: ⬡ 육각형
+ja: ⬡ 六角形
+zh: ⬡ 六角形
 @ SATURDAY · HEX DAY
 de: SAMSTAG · SECHSECK-TAG
 es: SÁBADO · DÍA HEXAGONAL
 pt: SÁBADO · DIA HEXAGONAL
 fr: SAMEDI · JOUR HEXAGONAL
+ko: 토요일 · 육각형의 날
+ja: 土曜日 · 六角形の日
+zh: 星期六 · 六角形日
 @ ⬡ Hex day
 de: ⬡ Sechseck-Tag
 es: ⬡ Día hexagonal
 pt: ⬡ Dia hexagonal
 fr: ⬡ Jour hexagonal
+ko: ⬡ 육각형의 날
+ja: ⬡ 六角形の日
+zh: ⬡ 六角形日
 @ Today the tiles are <b>hexagons</b>: each tap turns <b>60°</b>, six positions. Same rule: link every station to the hub, leave no <b>loose ends</b>.
 de: Heute sind die Kacheln <b>Sechsecke</b>: jedes Tippen dreht um <b>60°</b>, sechs Stellungen. Die Regel bleibt: verbinde jede Station mit dem Zentrum, <b>keine offenen Enden</b>.
 es: Hoy las piezas son <b>hexágonos</b>: cada toque gira <b>60°</b>, seis posiciones. La regla es la misma: conecta cada estación al centro, sin <b>extremos sueltos</b>.
 pt: Hoje as peças são <b>hexágonos</b>: cada toque gira <b>60°</b>, seis posições. A regra é a mesma: ligue cada estação ao centro, sem <b>pontas soltas</b>.
 fr: Aujourd’hui les tuiles sont des <b>hexagones</b> : chaque toucher tourne de <b>60°</b>, six positions. Même règle : relie chaque station au centre, sans <b>bout libre</b>.
+ko: 오늘은 타일이 <b>육각형</b>이에요. 한 번 탭할 때마다 <b>60°</b>씩, 여섯 방향으로 돌아요. 규칙은 같아요. 모든 역을 허브에 연결하고 <b>끊긴 끝</b>을 남기지 마세요.
+ja: 今日のタイルは<b>六角形</b>。1タップで<b>60°</b>、6方向に回ります。ルールは同じ：すべての駅をハブにつなぎ、<b>行き止まりの線</b>を残さないこと。
+zh: 今天的方塊是<b>六角形</b>：每點一下轉 <b>60°</b>，共六個方向。規則不變：把每個車站連到樞紐，不要留下<b>斷頭</b>。
 @ Lives
 de: Leben
 es: Vidas
 pt: Vidas
 fr: Vies
+ko: 하트
+ja: ライフ
+zh: 生命
 @ Lives are full
 de: Alle Leben voll
 es: Vidas completas
 pt: Vidas cheias
 fr: Vies au complet
+ko: 하트가 가득해요
+ja: ライフは満タン
+zh: 生命已滿
 @ Refills in <b class="lpt">{0}</b>
 de: Wieder voll in <b class="lpt">{0}</b>
 es: Se recarga en <b class="lpt">{0}</b>
 pt: Recarrega em <b class="lpt">{0}</b>
 fr: Rechargé dans <b class="lpt">{0}</b>
+ko: <b class="lpt">{0}</b> 후 충전
+ja: あと <b class="lpt">{0}</b> で回復
+zh: <b class="lpt">{0}</b> 後補滿
 @ Out of lives
 de: Keine Leben mehr
 es: Sin vidas
 pt: Sem vidas
 fr: Plus de vies
+ko: 하트가 다 떨어졌어요
+ja: ライフがなくなりました
+zh: 生命用完了
 @ Unlimited lives
 de: Unbegrenzte Leben
 es: Vidas ilimitadas
 pt: Vidas ilimitadas
 fr: Vies illimitées
+ko: 무제한 하트
+ja: ライフ無限
+zh: 無限生命
 @ 🚉 The last train left and took your <b class="nw">last life</b>.␣
 de: 🚉 Der letzte Zug ist weg und hat dein <b class="nw">letztes Leben</b> mitgenommen.␣
 es: 🚉 El último tren se fue y se llevó tu <b class="nw">última vida</b>.␣
 pt: 🚉 O último trem partiu e levou sua <b class="nw">última vida</b>.␣
 fr: 🚉 Le dernier train est parti avec ta <b class="nw">dernière vie</b>.␣
+ko: 🚉 막차가 떠나면서 <b class="nw">마지막 하트</b>를 가져갔어요.␣
+ja: 🚉 終電が<b class="nw">最後のライフ</b>を連れて行ってしまった。
+zh: 🚉 末班車開走了，也帶走了你<b class="nw">最後一條生命</b>。
 @ One life refills every 6 minutes. The Daily Line and 🍃 Zen cost no lives.
 de: Alle 6 Minuten kommt 1 Leben zurück. Tageslinie und 🍃 Zen kosten keine Leben.
 es: Cada 6 minutos se recarga 1 vida. La Línea del día y el modo 🍃 Zen no gastan vidas.
 pt: A cada 6 minutos 1 vida recarrega. A Linha do Dia e o 🍃 Zen não gastam vidas.
 fr: Une vie revient toutes les 6 minutes. La Ligne du jour et le mode 🍃 Zen ne coûtent aucune vie.
+ko: 하트는 6분마다 1개씩 충전돼요. 오늘의 노선과 🍃 젠 모드는 하트가 들지 않아요.
+ja: ライフは6分ごとに1つ回復します。今日の路線と🍃禅ではライフを使いません。
+zh: 每 6 分鐘補 1 條生命。每日路線和 🍃 禪模式不消耗生命。
 @ ▶ Watch a video
 de: ▶ Video ansehen
 es: ▶ Ver un vídeo
 pt: ▶ Ver um vídeo
 fr: ▶ Regarder une vidéo
+ko: ▶ 영상 보기
+ja: ▶ 動画を見る
+zh: ▶ 看影片
 @ ❤️∞ unlimited lives pack
 de: ❤️∞ Paket mit unbegrenzten Leben
 es: ❤️∞ paquete de vidas ilimitadas
 pt: ❤️∞ pacote de vidas ilimitadas
 fr: ❤️∞ pack de vies illimitées
+ko: ❤️∞ 무제한 하트 팩
+ja: ❤️∞ ライフ無限パック
+zh: ❤️∞ 無限生命包

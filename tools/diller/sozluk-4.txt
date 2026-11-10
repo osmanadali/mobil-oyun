@@ -5,988 +5,1582 @@ de: Laterne
 es: Linterna
 pt: Lanterna
 fr: Lanterne
+ko: 손전등
+ja: ライト
+zh: 手電筒
 @ Lights up the dark tunnel for 5 s
 de: Erhellt den dunklen Tunnel 5 s lang
 es: Ilumina el túnel oscuro 5 s
 pt: Ilumina o túnel escuro por 5 s
 fr: Éclaire le tunnel sombre 5 s
+ko: 어두운 터널을 5초 동안 밝혀요
+ja: 暗いトンネルを5秒間照らす
+zh: 照亮黑暗隧道 5 秒
 @ +15 s
 de: +15 s
 es: +15 s
 pt: +15 s
 fr: +15 s
+ko: +15초
+ja: +15秒
+zh: +15 秒
 @ Saves the ⏱ star in the last 10 s
 de: Rettet den ⏱-Stern in den letzten 10 s
 es: Salva la estrella ⏱ en los últimos 10 s
 pt: Salva a estrela ⏱ nos últimos 10 s
 fr: Sauve l’étoile ⏱ dans les 10 dernières s
+ko: 마지막 10초에 ⏱ 별을 지켜요
+ja: 残り10秒で⏱の星を守る
+zh: 在最後 10 秒保住 ⏱ 星
 @ Undo
 de: Rückgängig
 es: Deshacer
 pt: Desfazer
 fr: Annuler
+ko: 되돌리기
+ja: 戻す
+zh: 復原
 @ Takes back your last 5 moves
 de: Nimmt deine letzten 5 Züge zurück
 es: Deshace tus últimas 5 jugadas
 pt: Desfaz suas últimas 5 jogadas
 fr: Annule tes 5 derniers coups
+ko: 마지막 5번의 이동을 되돌려요
+ja: 直前の5手を戻す
+zh: 復原最後 5 步
 @ 💡 hint ×2 <i>or</i> 1 booster
 de: 💡 Tipp ×2 <i>oder</i> 1 Booster
 es: 💡 pista ×2 <i>o</i> 1 potenciador
 pt: 💡 dica ×2 <i>ou</i> 1 reforço
 fr: 💡 indice ×2 <i>ou</i> 1 booster
+ko: 💡 힌트 ×2 <i>또는</i> 부스터 1개
+ja: 💡 ヒント ×2 <i>または</i> ブースター1個
+zh: 💡 提示 ×2 <i>或</i> 1 個道具
 @ 💡 hint ×4, 🛡 streak shield, 2 boosters <i>or</i> ❤️∞ 15 min
 de: 💡 Tipp ×4, 🛡 Serienschild, 2 Booster <i>oder</i> ❤️∞ 15 Min.
 es: 💡 pista ×4, 🛡 escudo de racha, 2 potenciadores <i>o</i> ❤️∞ 15 min
 pt: 💡 dica ×4, 🛡 escudo de sequência, 2 reforços <i>ou</i> ❤️∞ 15 min
 fr: 💡 indice ×4, 🛡 bouclier de série, 2 boosters <i>ou</i> ❤️∞ 15 min
+ko: 💡 힌트 ×4, 🛡 연속 기록 보호막, 부스터 2개 <i>또는</i> ❤️∞ 15분
+ja: 💡 ヒント ×4、🛡 連続記録シールド、ブースター2個 <i>または</i> ❤️∞ 15分
+zh: 💡 提示 ×4、🛡 連續紀錄護盾、2 個道具 <i>或</i> ❤️∞ 15 分鐘
 @ 🚆 new train livery <i>or</i> ❤️∞ 30 min
 de: 🚆 neuer Zuglack <i>oder</i> ❤️∞ 30 Min.
 es: 🚆 nuevo diseño de tren <i>o</i> ❤️∞ 30 min
 pt: 🚆 nova pintura de trem <i>ou</i> ❤️∞ 30 min
 fr: 🚆 nouvelle livrée <i>ou</i> ❤️∞ 30 min
+ko: 🚆 새 열차 도색 <i>또는</i> ❤️∞ 30분
+ja: 🚆 新しい車両カラー <i>または</i> ❤️∞ 30分
+zh: 🚆 新列車塗裝 <i>或</i> ❤️∞ 30 分鐘
 @ No epic in {0} chests? The {1}th is guaranteed
 de: Nichts Episches in {0} Kisten? Die {1}. ist sicher
 es: ¿Nada épico en {0} cofres? El {1}.º es seguro
 pt: Nada épico em {0} baús? O {1}º é garantido
 fr: Rien d’épique en {0} coffres ? Le {1}e est garanti
+ko: 상자 {0}개 동안 에픽이 없었나요? {1}번째는 확정
+ja: 宝箱{0}個でエピックなし？{1}個目は確定
+zh: 連開 {0} 個寶箱都沒史詩？第 {1} 個保證有
 @ What’s inside?
 de: Was ist drin?
 es: ¿Qué hay dentro?
 pt: O que tem dentro?
 fr: Qu’y a-t-il dedans ?
+ko: 무엇이 들어 있나요?
+ja: 中身は？
+zh: 裡面有什麼？
 @ Chests use earned 🎫 tickets · you have 🎫 {0}
 de: Kisten kosten verdiente 🎫 Tickets · du hast 🎫 {0}
 es: Los cofres usan 🎫 billetes ganados · tienes 🎫 {0}
 pt: Baús usam 🎫 bilhetes ganhos · você tem 🎫 {0}
 fr: Les coffres prennent les 🎫 gagnés · tu as 🎫 {0}
+ko: 상자는 모은 🎫 티켓으로 열어요 · 보유 🎫 {0}
+ja: 宝箱は集めた 🎫 切符で開けます · 所持 🎫 {0}
+zh: 寶箱要用賺到的 🎫 車票開 · 你有 🎫 {0}
 @ 🎫 {0} needed
 de: 🎫 {0} nötig
 es: Necesitas 🎫 {0}
 pt: Precisa de 🎫 {0}
 fr: 🎫 {0} requis
+ko: 🎫 {0} 필요
+ja: 🎫 {0} 必要
+zh: 需要 🎫 {0}
 @ Your train
 de: Dein Zug
 es: Tu tren
 pt: Seu trem
 fr: Ton train
+ko: 내 열차
+ja: あなたの列車
+zh: 你的列車
 @ Comes from a chest as an epic
 de: Kommt als Episch aus einer Kiste
 es: Sale de un cofre como épico
 pt: Sai de um baú como épico
 fr: Sort d’un coffre en épique
+ko: 상자에서 에픽으로 나와요
+ja: 宝箱からエピックとして出ます
+zh: 從寶箱開出史詩獎勵
 @ Unlimited lives · {0} min
 de: Unendlich Leben · {0} Min.
 es: Vidas ilimitadas · {0} min
 pt: Vidas ilimitadas · {0} min
 fr: Vies illimitées · {0} min
+ko: 무제한 하트 · {0}분
+ja: ライフ無限 · {0}分
+zh: 無限生命 · {0} 分鐘
 @ No lives lost for {0} minutes
 de: {0} Minuten lang kein Lebensverlust
 es: No pierdes vidas durante {0} minutos
 pt: Sem perder vidas por {0} minutos
 fr: Aucune vie perdue pendant {0} minutes
+ko: {0}분 동안 하트가 줄지 않아요
+ja: {0}分間ライフが減りません
+zh: {0} 分鐘內不會失去生命
 @ {0} owned
 de: {0} im Besitz
 es: tienes {0}
 pt: você tem {0}
 fr: {0} en stock
+ko: {0}개 보유
+ja: {0}個所持
+zh: 擁有 {0} 個
 @ Hint
 de: Tipp
 es: Pista
 pt: Dica
 fr: Indice
+ko: 힌트
+ja: ヒント
+zh: 提示
 @ Hints
 de: Tipps
 es: Pistas
 pt: Dicas
 fr: Indices
+ko: 힌트
+ja: ヒント
+zh: 提示
 @ You now have {0} {1}
 de: Du hast jetzt {0} {1}
 es: Ahora tienes {0} {1}
 pt: Agora você tem {0} {1}
 fr: Tu as maintenant {0} {1}
+ko: 이제 힌트 {0}개
+ja: ヒントが{0}個になりました
+zh: 現在有 {0} 個提示
 @ Streak shield
 de: Serienschild
 es: Escudo de racha
 pt: Escudo de sequência
 fr: Bouclier de série
+ko: 연속 기록 보호막
+ja: 連続記録シールド
+zh: 連續紀錄護盾
 @ Saves a broken streak once · {0}/{1} owned
 de: Rettet eine gerissene Serie einmal · {0}/{1} im Besitz
 es: Salva una racha rota una vez · tienes {0}/{1}
 pt: Salva uma sequência perdida uma vez · você tem {0}/{1}
 fr: Sauve une série brisée une fois · {0}/{1} en stock
+ko: 끊긴 연속 기록을 한 번 지켜요 · {0}/{1} 보유
+ja: 途切れた連続記録を1回守る · {0}/{1}所持
+zh: 保住一次中斷的連續紀錄 · 擁有 {0}/{1}
 @ New train livery
 de: Neuer Zuglack
 es: Nuevo diseño de tren
 pt: Nova pintura de trem
 fr: Nouvelle livrée
+ko: 새 열차 도색
+ja: 新しい車両カラー
+zh: 新列車塗裝
 @ Tap → open
 de: Tippen → öffnen
 es: Toca → abrir
 pt: Toque → abrir
 fr: Touche → ouvrir
+ko: 탭 → 열기
+ja: タップ → 開ける
+zh: 點一下 → 開啟
 @ Put on your train
 de: Auf deinen Zug
 es: Ponlo en tu tren
 pt: Usar no seu trem
 fr: Mettre sur ton train
+ko: 내 열차에 적용
+ja: 列車に使う
+zh: 套用到列車
 @ Tap to continue
 de: Tippen zum Weitermachen
 es: Toca para seguir
 pt: Toque para continuar
 fr: Touche pour continuer
+ko: 탭해서 계속
+ja: タップして続ける
+zh: 點一下繼續
 @ Tap a tile → it <b>turns</b>
 de: Tippe eine Kachel → sie <b>dreht sich</b>
 es: Toca una pieza → <b>gira</b>
 pt: Toque numa peça → ela <b>gira</b>
 fr: Touche une tuile → elle <b>tourne</b>
+ko: 타일을 탭 → <b>회전</b>
+ja: タイルをタップ → <b>回転</b>
+zh: 點方塊 → 它會<b>旋轉</b>
 @ <b>Extend the line</b> from the hub in the middle
 de: <b>Verlängere die Linie</b> vom Zentrum in der Mitte
 es: <b>Alarga la línea</b> desde el centro
 pt: <b>Estenda a linha</b> a partir do centro
 fr: <b>Prolonge la ligne</b> depuis le centre
+ko: 가운데 허브에서 <b>노선을 뻗으세요</b>
+ja: 中央のハブから<b>路線をのばそう</b>
+zh: 從中央的樞紐<b>延伸路線</b>
 @ <b>Light up</b> every station
 de: <b>Erleuchte</b> jede Station
 es: <b>Ilumina</b> cada estación
 pt: <b>Acenda</b> todas as estações
 fr: <b>Allume</b> chaque station
+ko: 모든 역에 <b>불을 켜세요</b>
+ja: すべての駅を<b>点灯</b>
+zh: <b>點亮</b>每個車站
 @ All connected → <b>you win!</b> 🎉
 de: Alles verbunden → <b>gewonnen!</b> 🎉
 es: Todo conectado → <b>¡ganas!</b> 🎉
 pt: Tudo ligado → <b>você vence!</b> 🎉
 fr: Tout est relié → <b>gagné !</b> 🎉
+ko: 모두 연결 → <b>클리어!</b> 🎉
+ja: 全部つながったら → <b>クリア！</b>🎉
+zh: 全部連通 → <b>過關！</b>🎉
 @ Finish <b>fast</b> + tap <b>less</b> = ★★★
 de: <b>Schnell</b> fertig + <b>wenig</b> tippen = ★★★
 es: Acaba <b>rápido</b> + toca <b>menos</b> = ★★★
 pt: Termine <b>rápido</b> + toque <b>menos</b> = ★★★
 fr: Finis <b>vite</b> + touche <b>moins</b> = ★★★
+ko: <b>빠르게</b> + <b>적게</b> 탭 = ★★★
+ja: <b>速く</b> ＋ <b>少ないタップ</b> = ★★★
+zh: <b>快速</b>完成 + <b>少</b>點幾下 = ★★★
 @ Levels grow <b>bigger and harder</b>
 de: Level werden <b>größer und schwerer</b>
 es: Los niveles se vuelven <b>más grandes y difíciles</b>
 pt: As fases ficam <b>maiores e mais difíceis</b>
 fr: Les niveaux deviennent <b>plus grands et plus durs</b>
+ko: 레벨은 점점 <b>커지고 어려워져요</b>
+ja: ステージはだんだん<b>大きく、むずかしく</b>
+zh: 關卡會越來越<b>大、越來越難</b>
 @ A new <b>Daily Line</b> every day 🔥
 de: Jeden Tag eine neue <b>Tageslinie</b> 🔥
 es: Una nueva <b>Línea del día</b> cada día 🔥
 pt: Uma nova <b>Linha do Dia</b> todo dia 🔥
 fr: Une nouvelle <b>Ligne du jour</b> chaque jour 🔥
+ko: 매일 새로운 <b>오늘의 노선</b> 🔥
+ja: 毎日あたらしい<b>今日の路線</b> 🔥
+zh: 每天都有新的<b>每日路線</b> 🔥
 @ finish · ⏱ time · ↻ moves
 de: Ziel · ⏱ Zeit · ↻ Züge
 es: meta · ⏱ tiempo · ↻ jugadas
 pt: final · ⏱ tempo · ↻ jogadas
 fr: fin · ⏱ temps · ↻ coups
+ko: 클리어 · ⏱ 시간 · ↻ 이동
+ja: クリア · ⏱ タイム · ↻ 手数
+zh: 過關 · ⏱ 時間 · ↻ 步數
 @ Let’s play!
 de: Los geht’s!
 es: ¡A jugar!
 pt: Vamos jogar!
 fr: C’est parti !
+ko: 시작해요!
+ja: さあ、遊ぼう！
+zh: 開始玩吧！
 @ Gameplay demo
 de: Spieldemo
 es: Demo de juego
 pt: Demonstração
 fr: Démo de jeu
+ko: 게임 플레이 데모
+ja: プレイのデモ
+zh: 遊戲示範
 @ ‹ swipe ›
 de: ‹ wischen ›
 es: ‹ desliza ›
 pt: ‹ deslize ›
 fr: ‹ glisse ›
+ko: ‹ 밀어서 넘기기 ›
+ja: ‹ スワイプ ›
+zh: ‹ 滑動 ›
 @ Next ›
 de: Weiter ›
 es: Siguiente ›
 pt: Próximo ›
 fr: Suivant ›
+ko: 다음 ›
+ja: 次へ ›
+zh: 下一步 ›
 @ {0} {1} is yours · it stays after the season
 de: {0} {1} gehört dir · bleibt auch nach der Saison
 es: {0} {1} es tuyo · se queda tras la temporada
 pt: {0} {1} é seu · fica depois da estação
 fr: {0} {1} est à toi · il reste après la saison
+ko: {0} {1} 획득 · 시즌이 끝나도 남아요
+ja: {0} {1}をゲット · シーズン後も使えます
+zh: {0} {1}到手 · 季節結束後也會保留
 @ First perfect
 de: Erstes Perfekt
 es: Primer perfecto
 pt: Primeiro perfeito
 fr: Premier parfait
+ko: 첫 퍼펙트
+ja: はじめてのパーフェクト
+zh: 首次完美
 @ Beat a level within ⏱ and ↻
 de: Schaff ein Level mit ⏱ und ↻
 es: Supera un nivel con ⏱ y ↻
 pt: Vença uma fase dentro de ⏱ e ↻
 fr: Finis un niveau dans ⏱ et ↻
+ko: ⏱와 ↻ 목표 안에 레벨 깨기
+ja: ⏱と↻の目標内でステージをクリア
+zh: 在 ⏱ 和 ↻ 目標內過關
 @ Perfect 10
 de: Perfekt 10
 es: Perfecto 10
 pt: Perfeito 10
 fr: Parfait 10
+ko: 퍼펙트 10
+ja: パーフェクト10
+zh: 完美 10
 @ Finish 10 levels perfectly
 de: Schaff 10 Level perfekt
 es: Completa 10 niveles perfectos
 pt: Complete 10 fases perfeitas
 fr: Finis 10 niveaux parfaits
+ko: 레벨 10개를 퍼펙트로 깨기
+ja: 10ステージをパーフェクトでクリア
+zh: 完美完成 10 個關卡
 @ Perfect 100
 de: Perfekt 100
 es: Perfecto 100
 pt: Perfeito 100
 fr: Parfait 100
+ko: 퍼펙트 100
+ja: パーフェクト100
+zh: 完美 100
 @ Finish 100 levels perfectly
 de: Schaff 100 Level perfekt
 es: Completa 100 niveles perfectos
 pt: Complete 100 fases perfeitas
 fr: Finis 100 niveaux parfaits
+ko: 레벨 100개를 퍼펙트로 깨기
+ja: 100ステージをパーフェクトでクリア
+zh: 完美完成 100 個關卡
 @ First district
 de: Erstes Viertel
 es: Primer barrio
 pt: Primeiro bairro
 fr: Premier quartier
+ko: 첫 구역
+ja: はじめての地区
+zh: 第一個街區
 @ Finish a whole line
 de: Schaff eine ganze Linie
 es: Completa una línea entera
 pt: Complete uma linha inteira
 fr: Finis une ligne entière
+ko: 노선 하나를 완주하기
+ja: 路線をひとつ制覇
+zh: 完成一整條路線
 @ Golden district
 de: Goldenes Viertel
 es: Barrio dorado
 pt: Bairro dourado
 fr: Quartier doré
+ko: 황금 구역
+ja: 黄金の地区
+zh: 黃金街區
 @ Finish every level of a line perfectly
 de: Schaff jedes Level einer Linie perfekt
 es: Completa perfecto cada nivel de una línea
 pt: Complete perfeita cada fase de uma linha
 fr: Finis parfait chaque niveau d’une ligne
+ko: 노선의 모든 레벨을 퍼펙트로 깨기
+ja: ひとつの路線の全ステージをパーフェクトでクリア
+zh: 完美完成一條路線的所有關卡
 @ Rule master
 de: Regelmeister
 es: Maestro de reglas
 pt: Mestre das regras
 fr: Maître des règles
+ko: 규칙의 달인
+ja: ルールマスター
+zh: 規則大師
 @ Finish the line of every rule
 de: Schaff die Linie jeder Regel
 es: Completa la línea de cada regla
 pt: Complete a linha de cada regra
 fr: Finis la ligne de chaque règle
+ko: 모든 규칙의 노선을 완주하기
+ja: すべてのルールの路線を制覇
+zh: 完成每個規則的路線
 @ 100 levels
 de: 100 Level
 es: 100 niveles
 pt: 100 fases
 fr: 100 niveaux
+ko: 레벨 100개
+ja: 100ステージ
+zh: 100 關
 @ Finish 100 levels
 de: Schaff 100 Level
 es: Completa 100 niveles
 pt: Complete 100 fases
 fr: Finis 100 niveaux
+ko: 레벨 100개 깨기
+ja: 100ステージをクリア
+zh: 完成 100 個關卡
 @ 500 levels
 de: 500 Level
 es: 500 niveles
 pt: 500 fases
 fr: 500 niveaux
+ko: 레벨 500개
+ja: 500ステージ
+zh: 500 關
 @ Finish 500 levels
 de: Schaff 500 Level
 es: Completa 500 niveles
 pt: Complete 500 fases
 fr: Finis 500 niveaux
+ko: 레벨 500개 깨기
+ja: 500ステージをクリア
+zh: 完成 500 個關卡
 @ 7-day streak
 de: 7-Tage-Serie
 es: Racha de 7 días
 pt: 7 dias seguidos
 fr: Série de 7 jours
+ko: 7일 연속
+ja: 7日連続
+zh: 連續 7 天
 @ Finish the Daily Line 7 days in a row
 de: Schaff die Tageslinie 7 Tage in Folge
 es: Completa la Línea del día 7 días seguidos
 pt: Complete a Linha do Dia 7 dias seguidos
 fr: Finis la Ligne du jour 7 jours d’affilée
+ko: 오늘의 노선을 7일 연속 깨기
+ja: 今日の路線を7日連続でクリア
+zh: 連續 7 天完成每日路線
 @ 30-day streak
 de: 30-Tage-Serie
 es: Racha de 30 días
 pt: 30 dias seguidos
 fr: Série de 30 jours
+ko: 30일 연속
+ja: 30日連続
+zh: 連續 30 天
 @ Finish the Daily Line 30 days in a row
 de: Schaff die Tageslinie 30 Tage in Folge
 es: Completa la Línea del día 30 días seguidos
 pt: Complete a Linha do Dia 30 dias seguidos
 fr: Finis la Ligne du jour 30 jours d’affilée
+ko: 오늘의 노선을 30일 연속 깨기
+ja: 今日の路線を30日連続でクリア
+zh: 連續 30 天完成每日路線
 @ First chest
 de: Erste Kiste
 es: Primer cofre
 pt: Primeiro baú
 fr: Premier coffre
+ko: 첫 상자
+ja: はじめての宝箱
+zh: 第一個寶箱
 @ Open a surprise chest
 de: Öffne eine Überraschungskiste
 es: Abre un cofre sorpresa
 pt: Abra um baú surpresa
 fr: Ouvre un coffre surprise
+ko: 깜짝 상자 열기
+ja: びっくり宝箱を開ける
+zh: 打開一個驚喜寶箱
 @ Chest hunter
 de: Kistenjäger
 es: Cazacofres
 pt: Caçador de baús
 fr: Chasseur de coffres
+ko: 상자 사냥꾼
+ja: 宝箱ハンター
+zh: 寶箱獵人
 @ Open 25 chests
 de: Öffne 25 Kisten
 es: Abre 25 cofres
 pt: Abra 25 baús
 fr: Ouvre 25 coffres
+ko: 상자 25개 열기
+ja: 宝箱を25個開ける
+zh: 打開 25 個寶箱
 @ Power-up
 de: Power-up
 es: Potenciado
 pt: Turbinado
 fr: Survolté
+ko: 파워업
+ja: パワーアップ
+zh: 道具達人
 @ Use 10 power-ups
 de: Nutze 10 Booster
 es: Usa 10 potenciadores
 pt: Use 10 reforços
 fr: Utilise 10 boosters
+ko: 부스터 10번 사용
+ja: ブースターを10回使う
+zh: 使用 10 次道具
 @ Weekly rider
 de: Wochenfahrgast
 es: Viajero semanal
 pt: Passageiro da semana
 fr: Voyageur de la semaine
+ko: 주간 승객
+ja: 週間パス
+zh: 每週乘客
 @ Finish all three quests of a week
 de: Schaff alle drei Aufgaben einer Woche
 es: Completa las tres misiones de una semana
 pt: Complete as três missões de uma semana
 fr: Finis les trois quêtes d’une semaine
+ko: 한 주의 미션 3개 모두 완료
+ja: 1週間のミッションを3つとも達成
+zh: 完成一週的全部三個任務
 @ Zen rider
 de: Zen-Fahrgast
 es: Viajero zen
 pt: Passageiro zen
 fr: Voyageur zen
+ko: 젠 승객
+ja: 禅の乗客
+zh: 禪意乘客
 @ Finish 10 levels in zen mode
 de: Schaff 10 Level im Zen-Modus
 es: Completa 10 niveles en modo zen
 pt: Complete 10 fases no modo zen
 fr: Finis 10 niveaux en mode zen
+ko: 젠 모드로 레벨 10개 깨기
+ja: 禅モードで10ステージをクリア
+zh: 在禪模式完成 10 個關卡
 @ NEW BADGE
 de: NEUES ABZEICHEN
 es: INSIGNIA NUEVA
 pt: NOVA MEDALHA
 fr: NOUVEAU BADGE
+ko: 새 배지
+ja: 新しいバッジ
+zh: 新徽章
 @ Light City
 de: Lichtstadt
 es: Ciudad Luz
 pt: Cidade Luz
 fr: Ville Lumière
+ko: 빛의 도시
+ja: 光の街
+zh: 光之城
 @ Harbor City
 de: Hafenstadt
 es: Ciudad Puerto
 pt: Cidade Porto
 fr: Ville Port
+ko: 항구 도시
+ja: 港の街
+zh: 港灣之城
 @ Star City
 de: Sternenstadt
 es: Ciudad Estrella
 pt: Cidade Estrela
 fr: Ville Étoile
+ko: 별의 도시
+ja: 星の街
+zh: 星之城
 @ Night City
 de: Nachtstadt
 es: Ciudad Noche
 pt: Cidade Noite
 fr: Ville Nuit
+ko: 밤의 도시
+ja: 夜の街
+zh: 夜之城
 @ Spring City
 de: Quellstadt
 es: Ciudad Fuente
 pt: Cidade Fonte
 fr: Ville Source
+ko: 샘의 도시
+ja: 泉の街
+zh: 清泉之城
 @ North City
 de: Nordstadt
 es: Ciudad Norte
 pt: Cidade Norte
 fr: Ville Nord
+ko: 북쪽 도시
+ja: 北の街
+zh: 北方之城
 @ Horizon City
 de: Horizontstadt
 es: Ciudad Horizonte
 pt: Cidade Horizonte
 fr: Ville Horizon
+ko: 지평선 도시
+ja: 地平線の街
+zh: 地平線之城
 @ Sky City
 de: Himmelsstadt
 es: Ciudad Cielo
 pt: Cidade Céu
 fr: Ville Ciel
+ko: 하늘 도시
+ja: 空の街
+zh: 天空之城
 @ {0}/{1} districts · ✨ {2} golden
 de: {0}/{1} Viertel · ✨ {2} golden
 es: {0}/{1} barrios · ✨ {2} dorados
 pt: {0}/{1} bairros · ✨ {2} dourados
 fr: {0}/{1} quartiers · ✨ {2} dorés
+ko: 구역 {0}/{1} · ✨ 황금 {2}
+ja: 地区 {0}/{1} · ✨ 黄金 {2}
+zh: 街區 {0}/{1} · ✨ 黃金 {2}
 @ Previous city
 de: Vorige Stadt
 es: Ciudad anterior
 pt: Cidade anterior
 fr: Ville précédente
+ko: 이전 도시
+ja: 前の街
+zh: 上一座城市
 @ Next city
 de: Nächste Stadt
 es: Ciudad siguiente
 pt: Próxima cidade
 fr: Ville suivante
+ko: 다음 도시
+ja: 次の街
+zh: 下一座城市
 @ City map
 de: Stadtplan
 es: Mapa de la ciudad
 pt: Mapa da cidade
 fr: Plan de la ville
+ko: 도시 지도
+ja: 街の地図
+zh: 城市地圖
 @ Every finished line lights a district · all-perfect lines glow gold
 de: Jede fertige Linie erhellt ein Viertel · ganz perfekte Linien leuchten golden
 es: Cada línea completada ilumina un barrio · las perfectas brillan en oro
 pt: Cada linha completa acende um bairro · as perfeitas brilham em dourado
 fr: Chaque ligne finie éclaire un quartier · les lignes parfaites brillent d’or
+ko: 완주한 노선마다 구역 하나가 밝아져요 · 전부 퍼펙트인 노선은 금빛으로 빛나요
+ja: 制覇した路線ごとに地区がひとつ灯ります · 全部パーフェクトの路線は金色に輝きます
+zh: 每完成一條路線就點亮一個街區 · 全部完美的路線會閃耀金光
 @ ✨ Golden district
 de: ✨ Goldenes Viertel
 es: ✨ Barrio dorado
 pt: ✨ Bairro dourado
 fr: ✨ Quartier doré
+ko: ✨ 황금 구역
+ja: ✨ 黄金の地区
+zh: ✨ 黃金街區
 @ District lit ✓
 de: Viertel erleuchtet ✓
 es: Barrio iluminado ✓
 pt: Bairro aceso ✓
 fr: Quartier éclairé ✓
+ko: 구역 밝힘 ✓
+ja: 地区点灯 ✓
+zh: 街區已點亮 ✓
 @ {0} {1} to go
 de: noch {0} {1}
 es: faltan {0} {1}
 pt: faltam {0} {1}
 fr: encore {0} {1}
+ko: 레벨 {0}개 남음
+ja: あと{0}ステージ
+zh: 還剩 {0} 關
 @ level
 de: Level
 es: nivel
 pt: fase
 fr: niveau
+ko: 레벨
+ja: ステージ
+zh: 關
 @ 🔒 Locked
 de: 🔒 Gesperrt
 es: 🔒 Bloqueado
 pt: 🔒 Bloqueado
 fr: 🔒 Verrouillé
+ko: 🔒 잠김
+ja: 🔒 未開放
+zh: 🔒 未解鎖
 @ Up next
 de: Als Nächstes
 es: A continuación
 pt: A seguir
 fr: Ensuite
+ko: 다음 차례
+ja: 次はここ
+zh: 下一站
 @ Badges live on this device · Move progress takes them to a new phone
 de: Abzeichen liegen auf diesem Gerät · „Fortschritt übertragen“ nimmt sie mit
 es: Las insignias viven en este dispositivo · «Pasar progreso» las lleva a otro móvil
 pt: As medalhas ficam neste aparelho · “Transferir progresso” leva para outro celular
 fr: Les badges restent sur cet appareil · « Transférer la partie » les emmène
+ko: 배지는 이 기기에 저장돼요 · 진행 상황 옮기기로 새 휴대폰에 가져갈 수 있어요
+ja: バッジはこの端末に保存されます · データ引き継ぎで新しいスマホへ移せます
+zh: 徽章存在這台裝置上 · 「轉移進度」可以帶到新手機
 @ City
 de: Stadt
 es: Ciudad
 pt: Cidade
 fr: Ville
+ko: 도시
+ja: 街
+zh: 城市
 @ Badges
 de: Abzeichen
 es: Insignias
 pt: Medalhas
 fr: Badges
+ko: 배지
+ja: バッジ
+zh: 徽章
 @ {0} / {1} badges
 de: {0} / {1} Abzeichen
 es: {0} / {1} insignias
 pt: {0} / {1} medalhas
 fr: {0} / {1} badges
+ko: 배지 {0} / {1}
+ja: バッジ {0} / {1}
+zh: 徽章 {0} / {1}
 @ Your friend took {0} {1} · you {2}
 de: Dein Freund brauchte {0} {1} · du {2}
 es: Tu amigo hizo {0} {1} · tú {2}
 pt: Seu amigo fez {0} {1} · você {2}
 fr: Ton ami a fait {0} {1} · toi {2}
+ko: 친구는 {0}번 이동 · 나는 {2}번
+ja: 友だちは{0}手 · あなたは{2}手
+zh: 朋友用了 {0} 步 · 你用了 {2} 步
 @ You already finished today’s line
 de: Die heutige Linie hast du schon geschafft
 es: Ya completaste la línea de hoy
 pt: Você já completou a linha de hoje
 fr: Tu as déjà fini la ligne du jour
+ko: 오늘의 노선은 이미 깼어요
+ja: 今日の路線はもうクリアしています
+zh: 你已經完成今天的路線了
 @ Your friend took {0} {1} · can you beat that?
 de: Dein Freund brauchte {0} {1} · schaffst du’s besser?
 es: Tu amigo hizo {0} {1} · ¿lo superas?
 pt: Seu amigo fez {0} {1} · consegue bater?
 fr: Ton ami a fait {0} {1} · tu fais mieux ?
+ko: 친구는 {0}번 만에 깼어요 · 이길 수 있나요?
+ja: 友だちは{0}手でクリア · 勝てるかな？
+zh: 朋友用了 {0} 步 · 你能贏過他嗎？
 @ That challenge has expired · today’s line awaits
 de: Diese Herausforderung ist abgelaufen · die heutige Linie wartet
 es: Ese reto caducó · te espera la línea de hoy
 pt: Esse desafio expirou · a linha de hoje te espera
 fr: Ce défi a expiré · la ligne du jour t’attend
+ko: 이 도전은 만료됐어요 · 오늘의 노선이 기다려요
+ja: この挑戦は期限切れです · 今日の路線が待っています
+zh: 這個挑戰已過期 · 今天的路線在等你
 @ Gear tile
 de: Zahnradkachel
 es: Pieza engranaje
 pt: Peça engrenagem
 fr: Tuile engrenage
+ko: 톱니 타일
+ja: 歯車タイル
+zh: 齒輪方塊
 @ New: gear tile
 de: Neu: Zahnradkachel
 es: Nuevo: pieza engranaje
 pt: Novo: peça engrenagem
 fr: Nouveau : tuile engrenage
+ko: 새 규칙: 톱니 타일
+ja: 新ルール：歯車タイル
+zh: 新規則：齒輪方塊
 @ You <b>can’t tap</b> a gear (⚙) tile: it turns 90° by itself <b>every 2 moves</b>. Finish the line on the move when the gear <b>points the right way</b>.
 de: Eine Zahnradkachel (⚙) kannst du <b>nicht antippen</b>: sie dreht sich <b>alle 2 Züge</b> von selbst um 90°. Schließ die Linie in dem Zug, in dem das Zahnrad <b>richtig steht</b>.
 es: Una pieza engranaje (⚙) <b>no se toca</b>: gira 90° sola <b>cada 2 jugadas</b>. Cierra la línea en la jugada en que el engranaje <b>apunta bien</b>.
 pt: A peça engrenagem (⚙) <b>não pode ser tocada</b>: ela gira 90° sozinha <b>a cada 2 jogadas</b>. Feche a linha na jogada em que a engrenagem <b>estiver certa</b>.
 fr: Une tuile engrenage (⚙) <b>ne se touche pas</b> : elle tourne seule de 90° <b>tous les 2 coups</b>. Ferme la ligne au coup où l’engrenage <b>est dans le bon sens</b>.
+ko: 톱니(⚙) 타일은 <b>탭할 수 없어요</b>. <b>2번 이동할 때마다</b> 스스로 90° 돌아요. 톱니가 <b>맞는 방향일 때</b> 그 이동으로 노선을 완성하세요.
+ja: 歯車（⚙）のタイルは<b>タップできません</b>。<b>2手ごとに</b>ひとりでに90°回ります。歯車が<b>正しい向きになった手</b>で路線を完成させよう。
+zh: 齒輪（⚙）方塊<b>不能點</b>：它<b>每 2 步</b>會自己轉 90°。趁齒輪<b>轉到正確方向</b>的那一步完成路線。
 @ ⚙ Gear tile · can’t be tapped, it turns by itself every 2 moves
 de: ⚙ Zahnradkachel · nicht antippbar, dreht sich alle 2 Züge selbst
 es: ⚙ Pieza engranaje · no se toca, gira sola cada 2 jugadas
 pt: ⚙ Peça engrenagem · não dá para tocar, gira sozinha a cada 2 jogadas
 fr: ⚙ Tuile engrenage · intouchable, elle tourne seule tous les 2 coups
+ko: ⚙ 톱니 타일 · 탭할 수 없고 2번 이동마다 스스로 돌아요
+ja: ⚙ 歯車タイル · タップ不可、2手ごとに自動で回る
+zh: ⚙ 齒輪方塊 · 不能點，每 2 步自己轉一次
 @ ⚙ The gear turned · every 2 moves
 de: ⚙ Das Zahnrad hat gedreht · alle 2 Züge
 es: ⚙ El engranaje giró · cada 2 jugadas
 pt: ⚙ A engrenagem girou · a cada 2 jogadas
 fr: ⚙ L’engrenage a tourné · tous les 2 coups
+ko: ⚙ 톱니가 돌았어요 · 2번 이동마다
+ja: ⚙ 歯車が回った · 2手ごと
+zh: ⚙ 齒輪轉了 · 每 2 步一次
 @ Turntable
 de: Drehscheibe
 es: Plataforma giratoria
 pt: Plataforma giratória
 fr: Plaque tournante
+ko: 회전대
+ja: 転車台
+zh: 轉車台
 @ New: turntable
 de: Neu: Drehscheibe
 es: Nuevo: plataforma giratoria
 pt: Novo: plataforma giratória
 fr: Nouveau : plaque tournante
+ko: 새 규칙: 회전대
+ja: 新ルール：転車台
+zh: 新規則：轉車台
 @ A round <b>turntable</b> carries four tiles: tap one and the whole table <b>turns 90°</b>. Tiles swap places, tracks <b>stay joined</b>.
 de: Eine runde <b>Drehscheibe</b> trägt vier Kacheln: Tippst du eine an, <b>dreht sich die ganze Scheibe um 90°</b>. Die Kacheln wechseln den Platz, die Gleise <b>bleiben verbunden</b>.
 es: Una <b>plataforma giratoria</b> lleva cuatro piezas: toca una y toda la plataforma <b>gira 90°</b>. Las piezas cambian de sitio y las vías <b>siguen unidas</b>.
 pt: Uma <b>plataforma giratória</b> leva quatro peças: toque numa e a plataforma toda <b>gira 90°</b>. As peças trocam de lugar e os trilhos <b>continuam ligados</b>.
 fr: Une <b>plaque tournante</b> porte quatre tuiles : touches-en une et toute la plaque <b>tourne de 90°</b>. Les tuiles changent de place, les rails <b>restent reliés</b>.
+ko: 둥근 <b>회전대</b>에는 타일 4개가 올라가 있어요. 하나를 탭하면 회전대 전체가 <b>90° 돌아요</b>. 타일 자리는 바뀌어도 선로는 <b>계속 이어져요</b>.
+ja: 丸い<b>転車台</b>にはタイルが4枚のっています。どれかをタップすると台ごと<b>90°回ります</b>。タイルの位置は入れ替わっても、線路は<b>つながったまま</b>です。
+zh: 圓形<b>轉車台</b>上有四個方塊：點其中一個，整個台子就<b>轉 90°</b>。方塊會換位置，軌道<b>仍然相連</b>。
 @ Hidden depot
 de: Verstecktes Depot
 es: Depósito oculto
 pt: Depósito oculto
 fr: Dépôt caché
+ko: 숨은 차고
+ja: 隠れ車庫
+zh: 隱藏車庫
 @ New: hidden depot
 de: Neu: verstecktes Depot
 es: Nuevo: depósito oculto
 pt: Novo: depósito oculto
 fr: Nouveau : dépôt caché
+ko: 새 규칙: 숨은 차고
+ja: 新ルール：隠れ車庫
+zh: 新規則：隱藏車庫
 @ An edge <b>bracket</b>: <b>exactly one</b> of its three tiles runs out to the depot {0}. Which one is <b>hidden</b>; elsewhere the edge is still a wall.
 de: Eine <b>Klammer</b> am Rand: <b>genau eine</b> ihrer drei Kacheln führt hinaus zum Depot {0}. Welche, ist <b>geheim</b>; sonst bleibt der Rand eine Wand.
 es: Un <b>corchete</b> en el borde: <b>solo una</b> de sus tres piezas sale al depósito {0}. Cuál es un <b>secreto</b>; en el resto el borde sigue siendo un muro.
 pt: Um <b>colchete</b> na borda: <b>só uma</b> das três peças sai para o depósito {0}. Qual delas é <b>segredo</b>; no resto a borda continua sendo parede.
 fr: Un <b>crochet</b> au bord : <b>une seule</b> de ses trois tuiles sort vers le dépôt {0}. Laquelle reste <b>cachée</b> ; ailleurs le bord reste un mur.
+ko: 가장자리의 <b>괄호</b> 표시: 그 안의 타일 3개 중 <b>딱 하나</b>만 차고 {0}로 나가요. 어느 것인지는 <b>비밀</b>이고, 나머지 가장자리는 그대로 벽이에요.
+ja: 端の<b>カッコ</b>：その中の3枚のうち<b>1枚だけ</b>が車庫{0}へ出られます。どれかは<b>ひみつ</b>。ほかの端は今までどおり壁です。
+zh: 邊緣的<b>括號</b>：裡面三個方塊中<b>只有一個</b>能通往車庫 {0}。是哪一個是<b>秘密</b>；其他邊緣仍然是牆。
 @ Depot · only one tile at the bracket runs out
 de: Depot · nur eine Kachel an der Klammer führt hinaus
 es: Depósito · solo una pieza del corchete sale
 pt: Depósito · só uma peça do colchete sai
 fr: Dépôt · une seule tuile du crochet sort
+ko: 차고 · 괄호 안에서 타일 하나만 밖으로 나가요
+ja: 車庫 · カッコの中で外へ出られるのは1枚だけ
+zh: 車庫 · 括號裡只有一個方塊能通出去
 @ Only one track can leave a bracket
 de: Nur ein Gleis darf eine Klammer verlassen
 es: Solo una vía puede salir de un corchete
 pt: Só um trilho pode sair do colchete
 fr: Un seul rail peut sortir d’un crochet
+ko: 괄호에서는 선로 하나만 나갈 수 있어요
+ja: カッコから出られる線路は1本だけ
+zh: 每個括號只能有一條軌道通出去
 @ The loop must pass the dashed-ring tile
 de: Der Ring muss über die Kachel mit dem gestrichelten Kreis
 es: El bucle debe pasar por la pieza del anillo
 pt: O laço precisa passar pela peça do anel
 fr: La boucle doit passer par la tuile à anneau
+ko: 순환 노선은 점선 고리 타일을 지나야 해요
+ja: 環状の線路は点線の輪のタイルを通る必要があります
+zh: 環線必須經過虛線圓環方塊
 @ The loop passed the ring tile · the ring fills
 de: Der Ring führt über die Kreiskachel · der Kreis füllt sich
 es: El bucle pasó por el anillo · el anillo se llena
 pt: O laço passou pelo anel · o anel se enche
 fr: La boucle passe par l’anneau · l’anneau se remplit
+ko: 순환 노선이 고리 타일을 지났어요 · 고리가 채워져요
+ja: 環状の線路が輪のタイルを通った · 輪が満ちる
+zh: 環線經過了圓環方塊 · 圓環填滿了
 @ Loop line
 de: Ringlinie
 es: Línea circular
 pt: Linha circular
 fr: Ligne circulaire
+ko: 순환선
+ja: 環状線
+zh: 環狀線
 @ New: loop line
 de: Neu: Ringlinie
 es: Nuevo: línea circular
 pt: Novo: linha circular
 fr: Nouveau : ligne circulaire
+ko: 새 규칙: 순환선
+ja: 新ルール：環状線
+zh: 新規則：環狀線
 @ On this line the track closes on itself <b>once</b> and forms a <b>loop</b>. The loop must pass the <b>dashed-ring</b> {0} tile: then the ring fills.
 de: Auf dieser Linie schließt sich das Gleis <b>einmal</b> zu einem <b>Ring</b>. Der Ring muss über die Kachel mit dem <b>gestrichelten Kreis</b> {0}: dann füllt sich der Kreis.
 es: En esta línea la vía se cierra <b>una vez</b> y forma un <b>bucle</b>. El bucle debe pasar por la pieza del <b>anillo punteado</b> {0}: así se llena el anillo.
 pt: Nesta linha o trilho se fecha <b>uma vez</b> e forma um <b>laço</b>. O laço precisa passar pela peça do <b>anel tracejado</b> {0}: aí o anel se enche.
 fr: Sur cette ligne, le rail se referme <b>une fois</b> en <b>boucle</b>. La boucle doit passer par la tuile à <b>anneau pointillé</b> {0} : l’anneau se remplit alors.
+ko: 이 노선에서는 선로가 <b>한 번</b> 제자리로 돌아와 <b>고리</b>를 만들어요. 고리는 <b>점선 고리</b> {0} 타일을 지나야 해요. 그러면 고리가 채워져요.
+ja: この路線では線路が<b>1回</b>だけ自分自身につながり、<b>環状</b>になります。その環は<b>点線の輪</b>{0}のタイルを通る必要があります。通ると輪が満ちます。
+zh: 這條路線的軌道會<b>一次</b>首尾相接，形成<b>環線</b>。環線必須經過<b>虛線圓環</b> {0} 方塊，這樣圓環就會填滿。
 @ Cover
 de: Abdeckung
 es: Tapa
 pt: Tampa
 fr: Cache
+ko: 덮개
+ja: カバー
+zh: 蓋板
 @ New: cover
 de: Neu: Abdeckung
 es: Nuevo: tapa
 pt: Novo: tampa
 fr: Nouveau : cache
+ko: 새 규칙: 덮개
+ja: 新ルール：カバー
+zh: 新規則：蓋板
 @ A <b>covered</b> tile hides its track and <b>won't turn</b>; the track below already faces right. Use the neighbors to find <b>which ways it opens</b>.
 de: Eine <b>abgedeckte</b> Kachel verbirgt ihr Gleis und <b>dreht sich nicht</b>; darunter liegt es schon richtig. Finde mit den Nachbarn heraus, <b>wohin es führt</b>.
 es: Una pieza <b>tapada</b> oculta su vía y <b>no gira</b>; debajo ya está bien orientada. Usa las vecinas para saber <b>hacia dónde se abre</b>.
 pt: Uma peça <b>tampada</b> esconde o trilho e <b>não gira</b>; por baixo ele já está certo. Use as vizinhas para descobrir <b>para onde ele abre</b>.
 fr: Une tuile <b>cachée</b> masque son rail et <b>ne tourne pas</b> ; dessous, il est déjà bien placé. Sers-toi des voisines pour trouver <b>où il s’ouvre</b>.
+ko: <b>덮인</b> 타일은 선로를 감추고 <b>돌지 않아요</b>. 아래의 선로는 이미 맞는 방향이에요. 이웃 타일로 <b>어느 쪽이 열려 있는지</b> 알아내세요.
+ja: <b>カバー付き</b>のタイルは線路が見えず、<b>回りません</b>。下の線路はすでに正しい向きです。まわりのタイルから<b>どちらに開いているか</b>を見抜こう。
+zh: <b>被蓋住</b>的方塊看不見軌道，也<b>不會轉</b>；底下的軌道已經是正確方向。從相鄰方塊推理出它<b>往哪些方向開口</b>。
 @ Cover · the track below is fixed and already right
 de: Abdeckung · das Gleis darunter ist fest und schon richtig
 es: Tapa · la vía de abajo está fija y bien
 pt: Tampa · o trilho embaixo é fixo e já está certo
 fr: Cache · le rail dessous est fixe et déjà bon
+ko: 덮개 · 아래 선로는 고정되어 있고 이미 맞아요
+ja: カバー · 下の線路は固定で、すでに正しい向き
+zh: 蓋板 · 底下的軌道固定且已正確
 @ Cover · light passed under it, glowing arms are open
 de: Abdeckung · Licht fließt darunter, leuchtende Arme sind offen
 es: Tapa · la luz pasó por debajo, los brazos que brillan están abiertos
 pt: Tampa · a luz passou por baixo, braços acesos estão abertos
 fr: Cache · la lumière passe dessous, les bras lumineux sont ouverts
+ko: 덮개 · 아래로 빛이 지나갔어요, 빛나는 가지가 열린 쪽이에요
+ja: カバー · 下を光が通った、光る枝が開いている方向
+zh: 蓋板 · 光從底下通過，發亮的分支就是開口
 @ Closed station · don't connect it
 de: Geschlossene Station · nicht anschließen
 es: Estación cerrada · no la conectes
 pt: Estação fechada · não ligue
 fr: Station fermée · ne la relie pas
+ko: 폐쇄역 · 연결하지 마세요
+ja: 閉鎖駅 · つながないで
+zh: 封閉車站 · 不要連接
 @ A closed station can't be connected
 de: Eine geschlossene Station darf nicht angeschlossen werden
 es: Una estación cerrada no se puede conectar
 pt: Estação fechada não pode ser ligada
 fr: Une station fermée ne se relie pas
+ko: 폐쇄역은 연결할 수 없어요
+ja: 閉鎖駅にはつなげません
+zh: 封閉車站不能連接
 @ ⊘ 1 station is closed · don't connect it
 de: ⊘ 1 Station ist geschlossen · nicht anschließen
 es: ⊘ 1 estación está cerrada · no la conectes
 pt: ⊘ 1 estação está fechada · não ligue
 fr: ⊘ 1 station est fermée · ne la relie pas
+ko: ⊘ 폐쇄역이 1곳 있어요 · 연결하지 마세요
+ja: ⊘ 閉鎖駅が1つあります · つながないで
+zh: ⊘ 有 1 個封閉車站 · 不要連接
 @ ⊘ {0} stations are closed · don't connect them
 de: ⊘ {0} Stationen sind geschlossen · nicht anschließen
 es: ⊘ {0} estaciones están cerradas · no las conectes
 pt: ⊘ {0} estações estão fechadas · não ligue
 fr: ⊘ {0} stations sont fermées · ne les relie pas
+ko: ⊘ 폐쇄역이 {0}곳 있어요 · 연결하지 마세요
+ja: ⊘ 閉鎖駅が{0}つあります · つながないで
+zh: ⊘ 有 {0} 個封閉車站 · 不要連接
 @ Closed station
 de: Geschlossene Station
 es: Estación cerrada
 pt: Estação fechada
 fr: Station fermée
+ko: 폐쇄역
+ja: 閉鎖駅
+zh: 封閉車站
 @ New: closed station
 de: Neu: geschlossene Station
 es: Nuevo: estación cerrada
 pt: Novo: estação fechada
 fr: Nouveau : station fermée
+ko: 새 규칙: 폐쇄역
+ja: 新ルール：閉鎖駅
+zh: 新規則：封閉車站
 @ Some stations are <b>closed</b> but look normal; the <b>{0} number</b> on the hub says how many. <b>Don't connect</b> a closed one; connect every open one.
 de: Manche Stationen sind <b>geschlossen</b>, sehen aber normal aus; die <b>{0}-Zahl</b> am Zentrum sagt, wie viele. Schließ geschlossene <b>nicht an</b>; verbinde jede offene.
 es: Algunas estaciones están <b>cerradas</b> pero parecen normales; el <b>número {0}</b> del centro dice cuántas. <b>No conectes</b> las cerradas; conecta todas las abiertas.
 pt: Algumas estações estão <b>fechadas</b>, mas parecem normais; o <b>número {0}</b> no centro diz quantas. <b>Não ligue</b> as fechadas; ligue todas as abertas.
 fr: Certaines stations sont <b>fermées</b> mais semblent normales ; le <b>nombre {0}</b> sur le centre dit combien. <b>Ne relie pas</b> les fermées ; relie toutes les ouvertes.
+ko: 어떤 역은 평범해 보여도 <b>폐쇄</b>되어 있어요. 허브의 <b>{0} 숫자</b>가 그 개수예요. 폐쇄역은 <b>연결하지 말고</b>, 열린 역은 모두 연결하세요.
+ja: 見た目はふつうでも<b>閉鎖</b>されている駅があります。ハブの<b>{0}の数字</b>がその数です。閉鎖駅には<b>つながず</b>、開いている駅はすべてつなごう。
+zh: 有些車站看起來正常，其實已經<b>封閉</b>；樞紐上的 <b>{0} 數字</b>表示有幾個。<b>不要連接</b>封閉車站，其餘車站全部連起來。
 @ Sliding row
 de: Schiebereihe
 es: Fila deslizante
 pt: Fileira deslizante
 fr: Rangée glissante
+ko: 가로 슬라이드
+ja: 横スライド
+zh: 橫向滑動
 @ New: sliding row
 de: Neu: Schiebereihe
 es: Nuevo: fila deslizante
 pt: Novo: fileira deslizante
 fr: Nouveau : rangée glissante
+ko: 새 규칙: 가로 슬라이드
+ja: 新ルール：横スライド
+zh: 新規則：橫向滑動
 @ Tiles in a railed row <b>don’t turn</b>: tap the row and the whole row <b>slides one step right</b>; the last tile wraps to the front.
 de: Kacheln in einer Schienenreihe <b>drehen sich nicht</b>: Tippst du die Reihe an, <b>rutscht sie einen Schritt nach rechts</b>; die letzte Kachel kommt nach vorn.
 es: Las piezas de una fila con raíles <b>no giran</b>: toca la fila y toda ella <b>se desliza un paso a la derecha</b>; la última pieza pasa al principio.
 pt: Peças numa fileira com trilhos <b>não giram</b>: toque na fileira e ela toda <b>desliza uma casa para a direita</b>; a última peça vai para o começo.
 fr: Les tuiles d’une rangée à rails <b>ne tournent pas</b> : touche la rangée et elle <b>glisse d’un cran à droite</b> ; la dernière tuile revient devant.
+ko: 레일이 깔린 가로줄의 타일은 <b>돌지 않아요</b>. 줄을 탭하면 줄 전체가 <b>오른쪽으로 한 칸</b> 밀려요. 맨 끝 타일은 맨 앞으로 와요.
+ja: レールのある横一列のタイルは<b>回りません</b>。列をタップすると列全体が<b>右へ1マス</b>ずれます。いちばん端のタイルは先頭へ回ります。
+zh: 有軌道的橫列中，方塊<b>不會轉</b>：點這一列，整列會<b>往右滑一格</b>；最後一個方塊會移到最前面。
 @ New: bridge
 de: Neu: Brücke
 es: Nuevo: puente
 pt: Novo: ponte
 fr: Nouveau : pont
+ko: 새 규칙: 다리
+ja: 新ルール：橋
+zh: 新規則：橋樑
 @ On a <b>bridge</b> two lines cross but <b>never join</b>: left goes to right, top goes to bottom. It doesn't turn; connect <b>all four ends</b>.
 de: Auf einer <b>Brücke</b> kreuzen sich zwei Linien, <b>ohne sich zu verbinden</b>: links geht nach rechts, oben nach unten. Sie dreht sich nicht; verbinde <b>alle vier Enden</b>.
 es: En un <b>puente</b> dos líneas se cruzan pero <b>nunca se unen</b>: izquierda con derecha, arriba con abajo. No gira; conecta <b>los cuatro extremos</b>.
 pt: Numa <b>ponte</b> duas linhas se cruzam, mas <b>nunca se juntam</b>: esquerda com direita, cima com baixo. Ela não gira; ligue <b>as quatro pontas</b>.
 fr: Sur un <b>pont</b>, deux lignes se croisent <b>sans se joindre</b> : gauche vers droite, haut vers bas. Il ne tourne pas ; relie <b>les quatre bouts</b>.
+ko: <b>다리</b> 위에서는 두 노선이 교차하지만 <b>절대 합쳐지지 않아요</b>. 왼쪽은 오른쪽으로, 위는 아래로 이어져요. 다리는 돌지 않으니 <b>네 끝을 모두</b> 연결하세요.
+ja: <b>橋</b>では2本の路線が交差しますが、<b>つながりません</b>。左は右へ、上は下へ抜けます。橋は回らないので、<b>4つの端すべて</b>をつなごう。
+zh: 在<b>橋樑</b>上，兩條路線交叉但<b>不會相連</b>：左通右，上通下。橋樑不會轉，要把<b>四個端點都</b>接上。
 @ Bridge · doesn't turn
 de: Brücke · dreht sich nicht
 es: Puente · no gira
 pt: Ponte · não gira
 fr: Pont · ne tourne pas
+ko: 다리 · 돌지 않아요
+ja: 橋 · 回りません
+zh: 橋樑 · 不會轉
 @ Switch
 de: Weiche
 es: Desvío
 pt: Desvio
 fr: Aiguillage
+ko: 전환기
+ja: 分岐器
+zh: 轉轍器
 @ New: switch
 de: Neu: Weiche
 es: Nuevo: desvío
 pt: Novo: desvio
 fr: Nouveau : aiguillage
+ko: 새 규칙: 전환기
+ja: 新ルール：分岐器
+zh: 新規則：轉轍器
 @ A <b>switch</b> doesn't turn: tap to flip between <b>straight</b> and <b>branch</b>. The <b>dashed line</b> shows the other route.
 de: Eine <b>Weiche</b> dreht sich nicht: Tippen schaltet zwischen <b>gerade</b> und <b>abzweigend</b>. Die <b>gestrichelte Linie</b> zeigt den anderen Weg.
 es: Un <b>desvío</b> no gira: tócalo para cambiar entre <b>recto</b> y <b>ramal</b>. La <b>línea discontinua</b> muestra la otra ruta.
 pt: Um <b>desvio</b> não gira: toque para trocar entre <b>reto</b> e <b>ramal</b>. A <b>linha tracejada</b> mostra o outro caminho.
 fr: Un <b>aiguillage</b> ne tourne pas : touche-le pour passer de <b>tout droit</b> à <b>bifurcation</b>. La <b>ligne pointillée</b> montre l’autre voie.
+ko: <b>전환기</b>는 돌지 않아요. 탭하면 <b>직진</b>과 <b>분기</b>가 바뀌어요. <b>점선</b>은 다른 경로를 보여 줘요.
+ja: <b>分岐器</b>は回りません。タップで<b>直進</b>と<b>分岐</b>が切り替わります。<b>点線</b>はもう一方のルートです。
+zh: <b>轉轍器</b>不會轉：點一下就在<b>直行</b>和<b>分岔</b>之間切換。<b>虛線</b>顯示另一條路線。
 @ Switch · straight ↔ branch
 de: Weiche · gerade ↔ abzweigend
 es: Desvío · recto ↔ ramal
 pt: Desvio · reto ↔ ramal
 fr: Aiguillage · tout droit ↔ bifurcation
+ko: 전환기 · 직진 ↔ 분기
+ja: 分岐器 · 直進 ↔ 分岐
+zh: 轉轍器 · 直行 ↔ 分岔
 @ 🔒 Sealed tile · opens once a neighbour is on the line
 de: 🔒 Siegelkachel · öffnet, sobald ein Nachbar an der Linie ist
 es: 🔒 Pieza sellada · se abre cuando una vecina está en la línea
 pt: 🔒 Peça lacrada · abre quando uma vizinha está na linha
 fr: 🔒 Tuile scellée · s’ouvre dès qu’une voisine est sur la ligne
+ko: 🔒 봉인 타일 · 이웃 타일이 노선에 닿으면 열려요
+ja: 🔒 封印タイル · となりが路線につながると解ける
+zh: 🔒 封印方塊 · 相鄰方塊接上路線就會解開
 @ Sealed tile
 de: Siegelkachel
 es: Pieza sellada
 pt: Peça lacrada
 fr: Tuile scellée
+ko: 봉인 타일
+ja: 封印タイル
+zh: 封印方塊
 @ New: sealed tile
 de: Neu: Siegelkachel
 es: Nuevo: pieza sellada
 pt: Novo: peça lacrada
 fr: Nouveau : tuile scellée
+ko: 새 규칙: 봉인 타일
+ja: 新ルール：封印タイル
+zh: 新規則：封印方塊
 @ A 🔒 <b>sealed</b> tile won’t turn until a neighbour is <b>on the line</b>. Break the link and it <b>seals again</b>: work outward from the hub.
 de: Eine 🔒 <b>versiegelte</b> Kachel dreht sich erst, wenn ein Nachbar <b>an der Linie</b> ist. Reißt die Verbindung, <b>versiegelt sie wieder</b>: arbeite dich vom Zentrum nach außen.
 es: Una pieza 🔒 <b>sellada</b> no gira hasta que una vecina esté <b>en la línea</b>. Si se corta el enlace, <b>se vuelve a sellar</b>: avanza desde el centro hacia fuera.
 pt: Uma peça 🔒 <b>lacrada</b> só gira quando uma vizinha está <b>na linha</b>. Se a ligação cair, ela <b>lacra de novo</b>: avance do centro para fora.
 fr: Une tuile 🔒 <b>scellée</b> ne tourne pas tant qu’une voisine n’est pas <b>sur la ligne</b>. Coupe le lien et elle <b>se rescelle</b> : avance depuis le centre.
+ko: 🔒 <b>봉인</b> 타일은 이웃 타일이 <b>노선에 닿기</b> 전까지 돌지 않아요. 연결이 끊기면 <b>다시 봉인돼요</b>. 허브에서 바깥쪽으로 풀어 나가세요.
+ja: 🔒 <b>封印</b>タイルは、となりのタイルが<b>路線につながる</b>まで回りません。つながりが切れると<b>また封印</b>されます。ハブから外へ向かって解いていこう。
+zh: 🔒 <b>封印</b>方塊要等相鄰方塊<b>接上路線</b>才能轉動。連線一斷，就會<b>再次封印</b>：從樞紐往外一步步解開。
 @ The bank needs {0} {1} · fewer means a loop
 de: Am Ufer braucht es {0} {1} · weniger heißt Schleife
 es: La orilla necesita {0} {1} · menos significa un bucle
 pt: A margem precisa de {0} {1} · menos quer dizer um laço
 fr: La rive veut {0} {1} · moins signifie une boucle
+ko: 강둑에 차막이가 {0}개 있어야 해요 · 모자라면 어딘가에 고리가 있어요
+ja: 岸には車止めが{0}個必要 · 足りなければどこかが輪になっています
+zh: 河岸需要 {0} 個車擋 · 不夠代表某處形成了環
 @ buffer
 de: Prellbock
 es: tope
 pt: para-choque
 fr: butoir
+ko: 차막이
+ja: 車止め
+zh: 車擋
 @ buffers
 de: Prellböcke
 es: topes
 pt: para-choques
 fr: butoirs
+ko: 차막이
+ja: 車止め
+zh: 車擋
 @ Buffer · the track ended on the bank
 de: Prellbock · das Gleis endet am Ufer
 es: Tope · la vía terminó en la orilla
 pt: Para-choque · o trilho terminou na margem
 fr: Butoir · le rail s’arrête sur la rive
+ko: 차막이 · 선로가 강둑에서 끝났어요
+ja: 車止め · 線路が岸で終わった
+zh: 車擋 · 軌道在河岸終止
 @ River
 de: Fluss
 es: Río
 pt: Rio
 fr: Rivière
+ko: 강
+ja: 川
+zh: 河流
 @ New: river
 de: Neu: Fluss
 es: Nuevo: río
 pt: Novo: rio
 fr: Nouveau : rivière
+ko: 새 규칙: 강
+ja: 新ルール：川
+zh: 新規則：河流
 @ Track crosses the <b>river</b> at a ford or ends at a bank <b>buffer</b> {0}. Bank buffers must equal <b>the badge number</b>; fewer means a <b>loop</b> somewhere.
 de: Gleise queren den <b>Fluss</b> an einer Furt oder enden an einem <b>Prellbock</b> {0} am Ufer. Die Prellböcke müssen <b>der Zahl im Abzeichen</b> entsprechen; weniger heißt irgendwo eine <b>Schleife</b>.
 es: La vía cruza el <b>río</b> por un vado o termina en un <b>tope</b> {0} de la orilla. Los topes deben igualar <b>el número de la insignia</b>; menos significa un <b>bucle</b> en algún sitio.
 pt: O trilho cruza o <b>rio</b> por um vau ou termina num <b>para-choque</b> {0} da margem. Os para-choques precisam bater com <b>o número do selo</b>; menos quer dizer um <b>laço</b> em algum lugar.
 fr: Le rail franchit la <b>rivière</b> à un gué ou s’arrête à un <b>butoir</b> {0} sur la rive. Les butoirs doivent égaler <b>le nombre du badge</b> ; moins signifie une <b>boucle</b> quelque part.
+ko: 선로는 여울에서 <b>강</b>을 건너거나 강둑의 <b>차막이</b> {0}에서 끝나요. 강둑의 차막이 수는 <b>배지의 숫자</b>와 같아야 해요. 모자라면 어딘가에 <b>고리</b>가 있어요.
+ja: 線路は浅瀬で<b>川</b>を渡るか、岸の<b>車止め</b>{0}で終わります。岸の車止めの数は<b>バッジの数字</b>と同じでなければなりません。足りなければどこかが<b>輪</b>になっています。
+zh: 軌道可以在淺灘越過<b>河流</b>，或在河岸的<b>車擋</b> {0} 終止。河岸車擋的數量必須等於<b>標記上的數字</b>；不夠代表某處形成了<b>環</b>。
 @ Wrap-around board
 de: Endlosbrett
 es: Tablero sin bordes
 pt: Tabuleiro sem bordas
 fr: Plateau sans bords
+ko: 끝없는 보드
+ja: 端のない盤面
+zh: 無邊盤面
 @ New: wrap-around board
 de: Neu: Endlosbrett
 es: Nuevo: tablero sin bordes
 pt: Novo: tabuleiro sem bordas
 fr: Nouveau : plateau sans bords
+ko: 새 규칙: 끝없는 보드
+ja: 新ルール：端のない盤面
+zh: 新規則：無邊盤面
 @ The board has <b>no edges</b>: track leaving the right comes back on the <b>left</b>, off the top it returns at the <b>bottom</b>. Edge arrows mark the crossings; corners won’t save you!
 de: Das Brett hat <b>keine Ränder</b>: Was rechts hinausführt, kommt <b>links</b> zurück, oben hinaus kommt <b>unten</b> wieder herein. Randpfeile zeigen die Übergänge; Ecken retten dich nicht!
 es: El tablero <b>no tiene bordes</b>: la vía que sale por la derecha vuelve por la <b>izquierda</b>, y la de arriba vuelve por <b>abajo</b>. Las flechas marcan los pasos; ¡las esquinas no te salvan!
 pt: O tabuleiro <b>não tem bordas</b>: o trilho que sai pela direita volta pela <b>esquerda</b>, e o de cima volta por <b>baixo</b>. As setas marcam as passagens; os cantos não salvam!
 fr: Le plateau n’a <b>pas de bords</b> : un rail qui sort à droite revient à <b>gauche</b>, par le haut il revient en <b>bas</b>. Les flèches marquent les passages ; les coins ne te sauveront pas !
+ko: 보드에 <b>가장자리가 없어요</b>. 오른쪽으로 나간 선로는 <b>왼쪽</b>으로, 위로 나간 선로는 <b>아래</b>로 돌아와요. 가장자리의 화살표가 넘어가는 곳이에요. 모서리도 안전하지 않아요!
+ja: 盤面には<b>端がありません</b>。右から出た線路は<b>左</b>から、上から出た線路は<b>下</b>から戻ってきます。端の矢印が通り抜ける場所です。角でも油断できません！
+zh: 盤面<b>沒有邊界</b>：從右邊出去的軌道會從<b>左邊</b>回來，從上面出去會從<b>下面</b>回來。邊緣的箭頭標出穿越的位置；角落也救不了你！
 @ Faint arm
 de: Blasser Arm
 es: Brazo tenue
 pt: Braço apagado
 fr: Bras pâle
+ko: 흐릿한 가지
+ja: 淡い枝
+zh: 淡色分支
 @ New: faint arm
 de: Neu: blasser Arm
 es: Nuevo: brazo tenue
 pt: Novo: braço apagado
 fr: Nouveau : bras pâle
+ko: 새 규칙: 흐릿한 가지
+ja: 新ルール：淡い枝
+zh: 新規則：淡色分支
 @ Under a <b>faint arm (?)</b> there <b>may or may not</b> be track. The ? turns with the tile. Read the <b>neighbors</b> to tell if the arm is real.
 de: Unter einem <b>blassen Arm (?)</b> liegt <b>vielleicht</b> ein Gleis. Das ? dreht sich mit der Kachel. Lies die <b>Nachbarn</b>, um zu sehen, ob der Arm echt ist.
 es: Bajo un <b>brazo tenue (?)</b> <b>puede haber o no</b> vía. El ? gira con la pieza. Mira las <b>vecinas</b> para saber si el brazo es real.
 pt: Sob um <b>braço apagado (?)</b> <b>pode ou não</b> haver trilho. O ? gira com a peça. Olhe as <b>vizinhas</b> para saber se o braço é real.
 fr: Sous un <b>bras pâle (?)</b>, il y a <b>peut-être</b> un rail. Le ? tourne avec la tuile. Regarde les <b>voisines</b> pour savoir si le bras est réel.
+ko: <b>흐릿한 가지(?)</b> 아래에는 선로가 <b>있을 수도, 없을 수도</b> 있어요. ?는 타일과 함께 돌아요. <b>이웃 타일</b>을 보고 진짜 가지인지 알아내세요.
+ja: <b>淡い枝（?）</b>の下には線路が<b>あるかもしれないし、ないかもしれません</b>。? はタイルといっしょに回ります。<b>となりのタイル</b>を見て本物の枝か見抜こう。
+zh: <b>淡色分支（?）</b>底下<b>可能有、也可能沒有</b>軌道。? 會跟著方塊一起轉。觀察<b>相鄰方塊</b>，判斷這個分支是不是真的。
 @ Faint arm · there may or may not be track under ?
 de: Blasser Arm · unter ? liegt vielleicht ein Gleis
 es: Brazo tenue · bajo ? puede haber o no vía
 pt: Braço apagado · sob ? pode ou não haver trilho
 fr: Bras pâle · sous le ?, il y a peut-être un rail
+ko: 흐릿한 가지 · ? 아래에 선로가 있을 수도, 없을 수도 있어요
+ja: 淡い枝 · ? の下に線路があるかもしれないし、ないかもしれない
+zh: 淡色分支 · ? 底下可能有、也可能沒有軌道
 @ Cooling tile
 de: Frostkachel
 es: Pieza helada
 pt: Peça gelada
 fr: Tuile givrée
+ko: 얼음 타일
+ja: 凍るタイル
+zh: 結冰方塊
 @ New: cooling tile
 de: Neu: Frostkachel
 es: Nuevo: pieza helada
 pt: Novo: peça gelada
 fr: Nouveau : tuile givrée
+ko: 새 규칙: 얼음 타일
+ja: 新ルール：凍るタイル
+zh: 新規則：結冰方塊
 @ Turn a frosted (❄) tile and <b>move on</b>, and it <b>freezes for 2 moves</b>. Don’t keep coming back to it: <b>think first</b>.
 de: Drehst du eine Frostkachel (❄) und <b>machst woanders weiter</b>, <b>friert sie 2 Züge lang ein</b>. Komm nicht ständig zu ihr zurück: <b>erst denken</b>.
 es: Gira una pieza helada (❄) y <b>pasa a otra</b>: <b>se congela 2 jugadas</b>. No vuelvas a ella una y otra vez: <b>piensa primero</b>.
 pt: Gire uma peça gelada (❄) e <b>passe para outra</b>: ela <b>congela por 2 jogadas</b>. Não fique voltando nela: <b>pense antes</b>.
 fr: Tourne une tuile givrée (❄) puis <b>passe à une autre</b> : elle <b>gèle pendant 2 coups</b>. N’y reviens pas sans cesse : <b>réfléchis d’abord</b>.
+ko: 서리(❄) 타일을 돌리고 <b>다른 곳으로 넘어가면</b> <b>2번 이동 동안 얼어요</b>. 자꾸 돌아오지 말고 <b>먼저 생각하세요</b>.
+ja: 霜（❄）のタイルを回して<b>ほかへ移る</b>と、<b>2手のあいだ凍ります</b>。何度も戻ってこないで、<b>まず考えよう</b>。
+zh: 轉動結霜（❄）方塊後<b>改去轉別的</b>，它就會<b>凍住 2 步</b>。別一直回頭轉它：<b>先想清楚</b>。
 @ ❄ Frozen tile · turns again in {0} {1}
 de: ❄ Gefrorene Kachel · dreht sich wieder in {0} {1}
 es: ❄ Pieza congelada · vuelve a girar en {0} {1}
 pt: ❄ Peça congelada · gira de novo em {0} {1}
 fr: ❄ Tuile gelée · retourne dans {0} {1}
+ko: ❄ 얼어붙은 타일 · {0}번 이동 후 다시 돌아요
+ja: ❄ 凍ったタイル · あと{0}手で回せます
+zh: ❄ 結冰方塊 · {0} 步後才能再轉
 @ Signpost: the path to the hub must use the arrow's edge
 de: Wegweiser: der Weg zum Zentrum muss an der Pfeilseite hinaus
 es: Señal: el camino al centro debe salir por el lado de la flecha
 pt: Placa: o caminho até o centro deve sair pelo lado da seta
 fr: Panneau : le chemin vers le centre doit sortir côté flèche
+ko: 표지판: 허브로 가는 길은 화살표 쪽 변으로 나가야 해요
+ja: 標識：ハブへの道は矢印の辺から出る必要があります
+zh: 路標：通往樞紐的路必須從箭頭那一邊出去
 @  · ↺ restart or 💡
 de:  · ↺ Neustart oder 💡
 es:  · ↺ reinicia o 💡
 pt:  · ↺ recomece ou 💡
 fr:  · ↺ recommence ou 💡
+ko:  · ↺ 다시 시작 또는 💡
+ja:  · ↺ やり直すか 💡
+zh:  · ↺ 重來或 💡
 @ Signpost · the tile turns, the arrow stays
 de: Wegweiser · die Kachel dreht sich, der Pfeil bleibt
 es: Señal · la pieza gira, la flecha se queda
 pt: Placa · a peça gira, a seta fica
 fr: Panneau · la tuile tourne, la flèche reste
+ko: 표지판 · 타일은 돌고 화살표는 그대로예요
+ja: 標識 · タイルは回り、矢印はそのまま
+zh: 路標 · 方塊會轉，箭頭不動
 @ Signpost
 de: Wegweiser
 es: Señal
 pt: Placa
 fr: Panneau
+ko: 표지판
+ja: 標識
+zh: 路標
 @ New: signpost
 de: Neu: Wegweiser
 es: Nuevo: señal
 pt: Novo: placa
 fr: Nouveau : panneau
+ko: 새 규칙: 표지판
+ja: 新ルール：標識
+zh: 新規則：路標
 @ A <b>signpost</b> tile's path to the hub must leave <b>where the arrow points</b>. The arrow is fixed: <b>the tile turns, the arrow doesn't</b>.
 de: Der Weg einer <b>Wegweiser</b>-Kachel zum Zentrum muss dort hinaus, <b>wohin der Pfeil zeigt</b>. Der Pfeil ist fest: <b>die Kachel dreht sich, der Pfeil nicht</b>.
 es: El camino de una pieza con <b>señal</b> hacia el centro debe salir <b>hacia donde apunta la flecha</b>. La flecha es fija: <b>la pieza gira, la flecha no</b>.
 pt: O caminho de uma peça com <b>placa</b> até o centro deve sair <b>para onde a seta aponta</b>. A seta é fixa: <b>a peça gira, a seta não</b>.
 fr: Le chemin d’une tuile à <b>panneau</b> vers le centre doit sortir <b>là où pointe la flèche</b>. La flèche est fixe : <b>la tuile tourne, pas la flèche</b>.
+ko: <b>표지판</b> 타일에서 허브로 가는 길은 <b>화살표가 가리키는 쪽</b>으로 나가야 해요. 화살표는 고정이에요. <b>타일은 돌지만 화살표는 돌지 않아요</b>.
+ja: <b>標識</b>タイルからハブへの道は、<b>矢印が指す方向</b>から出る必要があります。矢印は固定：<b>タイルは回っても、矢印は回りません</b>。
+zh: <b>路標</b>方塊通往樞紐的路，必須從<b>箭頭指的方向</b>出去。箭頭是固定的：<b>方塊會轉，箭頭不會</b>。
 @ The border needs {0} {1} and {2} {3}
 de: Die Grenze braucht {0} {1} und {2} {3}
 es: El borde necesita {0} {1} y {2} {3}
 pt: A borda precisa de {0} {1} e {2} {3}
 fr: La frontière veut {0} {1} et {2} {3}
+ko: 경계에는 통과 {0}개와 차막이 {2}개가 필요해요
+ja: 境界には通過が{0}本、車止めが{2}個必要です
+zh: 邊界需要 {0} 處穿越和 {2} 個車擋
 @ crossing
 de: Übergang
 es: cruce
 pt: travessia
 fr: passage
+ko: 통과
+ja: 通過
+zh: 穿越
 @ crossings
 de: Übergänge
 es: cruces
 pt: travessias
 fr: passages
+ko: 통과
+ja: 通過
+zh: 穿越
 @ Track ending at the border is a buffer · check the badge
 de: Ein Gleis, das an der Grenze endet, ist ein Prellbock · prüf das Abzeichen
 es: Una vía que acaba en el borde es un tope · mira la insignia
 pt: Trilho que termina na borda é para-choque · confira o selo
 fr: Un rail qui s’arrête à la frontière est un butoir · vérifie le badge
+ko: 경계에서 끝난 선로는 차막이예요 · 배지를 확인하세요
+ja: 境界で終わる線路は車止めです · バッジを確認しよう
+zh: 在邊界終止的軌道就是車擋 · 看看標記
 @ Fare zone
 de: Tarifzone
 es: Zona tarifaria
 pt: Zona tarifária
 fr: Zone tarifaire
+ko: 요금 구역
+ja: 運賃ゾーン
+zh: 票價區
 @ New: fare zone
 de: Neu: Tarifzone
 es: Nuevo: zona tarifaria
 pt: Novo: zona tarifária
 fr: Nouveau : zone tarifaire
+ko: 새 규칙: 요금 구역
+ja: 新ルール：運賃ゾーン
+zh: 新規則：票價區
 @ At the <b>dashed square</b> around the hub, track either <b>crosses</b> or <b>ends at a buffer</b>. Crossings and buffers must match <b>the badge</b>.
 de: Am <b>gestrichelten Quadrat</b> um das Zentrum <b>quert</b> ein Gleis entweder oder <b>endet an einem Prellbock</b>. Übergänge und Prellböcke müssen zum <b>Abzeichen</b> passen.
 es: En el <b>cuadrado punteado</b> alrededor del centro, la vía <b>cruza</b> o <b>termina en un tope</b>. Cruces y topes deben coincidir con <b>la insignia</b>.
 pt: No <b>quadrado tracejado</b> em volta do centro, o trilho <b>atravessa</b> ou <b>termina num para-choque</b>. Travessias e para-choques precisam bater com <b>o selo</b>.
 fr: Au <b>carré pointillé</b> autour du centre, un rail <b>traverse</b> ou <b>s’arrête à un butoir</b>. Passages et butoirs doivent correspondre au <b>badge</b>.
+ko: 허브를 둘러싼 <b>점선 사각형</b>에서 선로는 <b>통과</b>하거나 <b>차막이에서 끝나요</b>. 통과와 차막이 수는 <b>배지</b>와 맞아야 해요.
+ja: ハブを囲む<b>点線の四角</b>では、線路は<b>通過する</b>か<b>車止めで終わる</b>かのどちらかです。通過と車止めの数は<b>バッジ</b>と一致させよう。
+zh: 在樞紐周圍的<b>虛線方框</b>上，軌道要嘛<b>穿越</b>，要嘛<b>停在車擋</b>。穿越與車擋的數量必須符合<b>標記</b>。
 @ Tunnel portal
 de: Tunnelportal
 es: Boca de túnel
 pt: Boca de túnel
 fr: Portail de tunnel
+ko: 터널 입구
+ja: トンネル口
+zh: 隧道口
 @ New: tunnel portal
 de: Neu: Tunnelportal
 es: Nuevo: boca de túnel
 pt: Novo: boca de túnel
 fr: Nouveau : portail
+ko: 새 규칙: 터널 입구
+ja: 新ルール：トンネル口
+zh: 新規則：隧道口
 @ Two edge portals with the <b>same letter</b> are linked: track entering one <b>exits the other</b>. The tunnel is optional; an edge with no letter is <b>closed</b>.
 de: Zwei Randportale mit <b>gleichem Buchstaben</b> sind verbunden: Was in eines hineinfährt, <b>kommt aus dem anderen heraus</b>. Der Tunnel ist freiwillig; ein Rand ohne Buchstaben ist <b>zu</b>.
 es: Dos bocas del borde con la <b>misma letra</b> están unidas: la vía que entra por una <b>sale por la otra</b>. El túnel es opcional; un borde sin letra está <b>cerrado</b>.
 pt: Duas bocas na borda com a <b>mesma letra</b> estão ligadas: o trilho que entra numa <b>sai pela outra</b>. O túnel é opcional; borda sem letra é <b>fechada</b>.
 fr: Deux portails du bord avec la <b>même lettre</b> sont reliés : un rail qui entre dans l’un <b>ressort par l’autre</b>. Le tunnel est facultatif ; un bord sans lettre est <b>fermé</b>.
+ko: <b>같은 글자</b>가 적힌 가장자리 입구 두 개는 서로 이어져 있어요. 한쪽으로 들어간 선로는 <b>다른 쪽으로 나와요</b>. 터널은 써도 되고 안 써도 돼요. 글자가 없는 가장자리는 <b>막혀 있어요</b>.
+ja: <b>同じ文字</b>の端のトンネル口2つはつながっています。片方に入った線路は<b>もう片方から出てきます</b>。トンネルは使っても使わなくてもOK。文字のない端は<b>ふさがっています</b>。
+zh: 邊緣兩個<b>字母相同</b>的隧道口互相連通：從一個進去的軌道會<b>從另一個出來</b>。隧道可用可不用；沒有字母的邊緣是<b>封閉</b>的。
 @ Tunnel {0} · in one portal, out the other
 de: Tunnel {0} · in ein Portal hinein, aus dem anderen heraus
 es: Túnel {0} · entra por una boca, sale por la otra
 pt: Túnel {0} · entra numa boca, sai pela outra
 fr: Tunnel {0} · on entre par un portail, on sort par l’autre
+ko: 터널 {0} · 한 입구로 들어가 다른 입구로 나와요
+ja: トンネル{0} · 片方の口から入り、もう片方から出る
+zh: 隧道 {0} · 從一個入口進，另一個出
 @ Ray — Metro Puzzle
 de: Ray — Metro-Rätsel
 es: Ray — Puzle de metro
 pt: Ray — Quebra-cabeça do metrô
 fr: Ray — Puzzle de métro
+ko: Ray — 지하철 퍼즐
+ja: Ray — メトロパズル
+zh: Ray — 地鐵解謎
 @ Connect the lines · Light up the city
 de: Verbinde die Linien · Erleuchte die Stadt
 es: Conecta las líneas · Ilumina la ciudad
 pt: Ligue as linhas · Ilumine a cidade
 fr: Relie les lignes · Illumine la ville
+ko: 노선을 잇고 · 도시를 밝혀요
+ja: 路線をつなぎ · 街を照らそう
+zh: 連起路線 · 點亮城市
 @ Streak
 de: Serie
 es: Racha
 pt: Sequência
 fr: Série
+ko: 연속 기록
+ja: 連続記録
+zh: 連續紀錄
 @ Stars
 de: Sterne
 es: Estrellas
 pt: Estrelas
 fr: Étoiles
+ko: 별
+ja: 星
+zh: 星星
 @ 🎯 Quests
 de: 🎯 Aufgaben
 es: 🎯 Misiones
 pt: 🎯 Missões
 fr: 🎯 Quêtes
+ko: 🎯 미션
+ja: 🎯 ミッション
+zh: 🎯 任務
 @ LINES
 de: LINIEN
 es: LÍNEAS
 pt: LINHAS
 fr: LIGNES
+ko: 노선
+ja: 路線
+zh: 路線
 @ Back
 de: Zurück
 es: Atrás
 pt: Voltar
 fr: Retour
+ko: 뒤로
+ja: 戻る
+zh: 返回
 @ Restart
 de: Neustart
 es: Reiniciar
 pt: Recomeçar
 fr: Recommencer
+ko: 다시 시작
+ja: やり直し
+zh: 重來
 @ Game board: tap tiles to turn them and connect every station to the hub
 de: Spielbrett: tippe Kacheln an, um sie zu drehen, und verbinde jede Station mit dem Zentrum
 es: Tablero: toca las piezas para girarlas y conecta cada estación al centro
 pt: Tabuleiro: toque nas peças para girar e ligue cada estação ao centro
 fr: Plateau : touche les tuiles pour les tourner et relie chaque station au centre
+ko: 게임 보드: 타일을 탭해서 돌리고 모든 역을 허브에 연결하세요
+ja: ゲーム盤：タイルをタップして回し、すべての駅をハブにつなごう
+zh: 遊戲盤面：點方塊使其旋轉，把每個車站都連到樞紐
 @ Timed station
 de: Zeitstation
 es: Estación con reloj
 pt: Estação com relógio
 fr: Station minutée
+ko: 시간제한 역
+ja: 時限駅
+zh: 限時車站
 @ New: timed station
 de: Neu: Zeitstation
 es: Nuevo: estación con reloj
 pt: Novo: estação com relógio
 fr: Nouveau : station minutée
+ko: 새 규칙: 시간제한 역
+ja: 新ルール：時限駅
+zh: 新規則：限時車站
 @ A ⏳ timed station must reach the hub <b>within the moves</b> shown on it. Miss it and the <b>↻ move star goes out</b>; the level goes on, no life lost.
 de: Eine ⏳ Zeitstation muss das Zentrum <b>in so vielen Zügen</b> erreichen, wie auf ihr steht. Schaffst du es nicht, <b>erlischt der ↻ Zug-Stern</b>; das Level läuft weiter, kein Leben weg.
 es: Una ⏳ estación con reloj debe llegar al centro <b>en las jugadas</b> que indica. Si no llegas, <b>se apaga la ★ de ↻ jugadas</b>; el nivel sigue y no pierdes vida.
 pt: Uma ⏳ estação com relógio deve chegar ao centro <b>dentro das jogadas</b> mostradas nela. Se não der, <b>a ★ de ↻ jogadas se apaga</b>; a fase continua, sem perder vida.
 fr: Une ⏳ station minutée doit rejoindre le centre <b>en autant de coups</b> qu’indiqué dessus. Sinon, <b>l’étoile ↻ coups s’éteint</b> ; le niveau continue, sans perdre de vie.
+ko: ⏳ 시간제한 역은 역에 적힌 <b>이동 횟수 안에</b> 허브에 닿아야 해요. 놓치면 <b>↻ 이동 별이 꺼지지만</b> 레벨은 계속되고 하트도 줄지 않아요.
+ja: ⏳ 時限駅は、駅に書かれた<b>手数以内</b>にハブへつなぐ必要があります。間に合わないと<b>↻ 手数の星が消えます</b>が、ステージは続き、ライフも減りません。
+zh: ⏳ 限時車站必須在上面標示的<b>步數內</b>連到樞紐。沒趕上的話 <b>↻ 步數星會熄滅</b>；關卡會繼續，也不會失去生命。
 @ ⏳ Timed station missed · ↻ ★ lost
 de: ⏳ Zeitstation verpasst · ↻ ★ weg
 es: ⏳ Estación con reloj perdida · ↻ ★ perdida
 pt: ⏳ Estação com relógio perdida · ↻ ★ perdida
 fr: ⏳ Station minutée ratée · ↻ ★ perdue
+ko: ⏳ 시간제한 역을 놓쳤어요 · ↻ ★ 잃음
+ja: ⏳ 時限駅に間に合わず · ↻ ★ を失った
+zh: ⏳ 沒趕上限時車站 · 失去 ↻ ★
 @ ⏳ Timed station reached
 de: ⏳ Zeitstation erreicht
 es: ⏳ Estación con reloj a tiempo
 pt: ⏳ Estação com relógio a tempo
 fr: ⏳ Station minutée atteinte
+ko: ⏳ 시간제한 역 도착
+ja: ⏳ 時限駅に到着
+zh: ⏳ 已抵達限時車站
 @ ⏳ STATION MISSED
 de: ⏳ STATION VERPASST
 es: ⏳ ESTACIÓN PERDIDA
 pt: ⏳ ESTAÇÃO PERDIDA
 fr: ⏳ STATION RATÉE
+ko: ⏳ 역을 놓침
+ja: ⏳ 駅に間に合わず
+zh: ⏳ 錯過車站
 @ ⏳ timed station
 de: ⏳ Zeitstation
 es: ⏳ estación con reloj
 pt: ⏳ estação com relógio
 fr: ⏳ station minutée
+ko: ⏳ 시간제한 역
+ja: ⏳ 時限駅
+zh: ⏳ 限時車站
 @ ⏳ reach the timed station
 de: ⏳ Zeitstation rechtzeitig erreichen
 es: ⏳ llega a tiempo a la estación con reloj
 pt: ⏳ chegue a tempo à estação com relógio
 fr: ⏳ atteins la station minutée à temps
+ko: ⏳ 시간제한 역에 도착
+ja: ⏳ 時限駅に間に合わせる
+zh: ⏳ 趕上限時車站
 @ ⏳ timed station missed
 de: ⏳ Zeitstation verpasst
 es: ⏳ estación con reloj perdida
 pt: ⏳ estação com relógio perdida
 fr: ⏳ station minutée ratée
+ko: ⏳ 시간제한 역 놓침
+ja: ⏳ 時限駅に間に合わず
+zh: ⏳ 錯過限時車站
 @ Sliding column
 de: Schiebespalte
 es: Columna deslizante
 pt: Coluna deslizante
 fr: Colonne glissante
+ko: 세로 슬라이드
+ja: 縦スライド
+zh: 縱向滑動
 @ New: sliding column
 de: Neu: Schiebespalte
 es: Nuevo: columna deslizante
 pt: Novo: coluna deslizante
 fr: Nouveau : colonne glissante
+ko: 새 규칙: 세로 슬라이드
+ja: 新ルール：縦スライド
+zh: 新規則：縱向滑動
 @ Tiles in a railed column <b>don’t turn</b>: tap the column and the whole column <b>slides one step down</b>; the bottom tile wraps to the top.
 de: Kacheln in einer Schienenspalte <b>drehen sich nicht</b>: Tippst du die Spalte an, <b>rutscht sie einen Schritt nach unten</b>; die unterste Kachel kommt nach oben.
 es: Las piezas de una columna con raíles <b>no giran</b>: toca la columna y toda ella <b>baja un paso</b>; la pieza de abajo pasa arriba.
 pt: Peças numa coluna com trilhos <b>não giram</b>: toque na coluna e ela toda <b>desce uma casa</b>; a peça de baixo vai para o topo.
 fr: Les tuiles d’une colonne à rails <b>ne tournent pas</b> : touche la colonne et elle <b>descend d’un cran</b> ; la tuile du bas remonte en haut.
+ko: 레일이 깔린 세로줄의 타일은 <b>돌지 않아요</b>. 줄을 탭하면 줄 전체가 <b>아래로 한 칸</b> 밀려요. 맨 아래 타일은 맨 위로 와요.
+ja: レールのある縦一列のタイルは<b>回りません</b>。列をタップすると列全体が<b>下へ1マス</b>ずれます。いちばん下のタイルは上へ回ります。
+zh: 有軌道的直行中，方塊<b>不會轉</b>：點這一行，整行會<b>往下滑一格</b>；最下面的方塊會移到最上面。
