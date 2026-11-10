@@ -1591,16 +1591,78 @@ const STORE = [
   ['starter', '🎁', () => L('Başlangıç paketi', 'Starter pack'), () => starterTxt()],
 ];
 const starterTxt = () => { const g = Shop.item('starter').give; return `💡${g.hints} · ${BST.map(b => `${b.ic}×${g.bst[b.id]}`).join(' ')} · ❤️∞ ${g.inf / 60} ${L('sa', 'h')} · 🎫${g.crowns}`; };
+// paket görselleri (SVG, dosya yok): ipucu paketleri ampul buketi (10 → 3, 30 → 6, 80 → 10 ampul), diğerleri tek nesne
+const ART = (() => {
+  // ampul: cam + boyun + duy, iç tel, parıltı ve hafif ışık halesi
+  const bulb = (x, y, r, a = 0) => `<g transform="translate(${x} ${y}) rotate(${a})"><circle r="${r * 1.75}" fill="url(#gGlow)"/>
+    <path d="M${-r} 0a${r} ${r} 0 1 1 ${2 * r} 0c0 ${r * .5}-${r * .42} ${r * .7}-${r * .42} ${r * 1.12}h${-r * 1.16}c0-${r * .42}-${r * .42}-${r * .62}-${r * .42}-${r * 1.12}z" fill="url(#gBulb)"/>
+    <path d="M${-r * .28} ${r * .95}v${-r * .7}l${r * .14}-${r * .22}l${r * .14} ${r * .22}l${r * .14}-${r * .22}l${r * .14} ${r * .22}v${r * .7}" stroke="#d98a2b" stroke-width="${r * .09}" fill="none" stroke-linejoin="round"/>
+    <rect x="${-r * .52}" y="${r * 1.1}" width="${r * 1.04}" height="${r * .62}" rx="${r * .14}" fill="url(#gBase)"/><path d="M${-r * .52} ${r * 1.32}h${r * 1.04}M${-r * .52} ${r * 1.5}h${r * 1.04}" stroke="#7c8296" stroke-width="${r * .08}"/>
+    <ellipse cx="${-r * .4}" cy="${-r * .38}" rx="${r * .2}" ry="${r * .34}" transform="rotate(35 ${-r * .4} ${-r * .38})" fill="#fff" opacity=".9"/></g>`;
+  // gül: dış taç yaprakları + iç sarmal
+  const rose = (x, y, r) => `<g transform="translate(${x} ${y})">${[0, 72, 144, 216, 288].map(a => `<ellipse cx="0" cy="${-r * .55}" rx="${r * .62}" ry="${r * .55}" transform="rotate(${a})" fill="#f27a8f"/>`).join('')}
+    <circle r="${r * .72}" fill="url(#gRose)"/><path d="M${-r * .38} ${r * .05}a${r * .4} ${r * .4} 0 1 1 ${r * .42} ${r * .4}a${r * .22} ${r * .22} 0 1 1 ${r * .02}-${r * .48}" stroke="#b8324b" stroke-width="${r * .13}" fill="none" stroke-linecap="round"/></g>`;
+  const leaf = (x, y, a, l = 13) => `<path d="M0 0q${l * .45}-${l * .42} ${l} 0q-${l * .5} ${l * .38}-${l} 0z" fill="url(#gLeaf)" transform="translate(${x} ${y}) rotate(${a})"/><path d="M0 0h${l * .8}" stroke="#3f9a5e" stroke-width=".6" transform="translate(${x} ${y}) rotate(${a})"/>`;
+  const dots = pts => pts.map(([x, y]) => `<g fill="#fff" stroke="#f0c6cf" stroke-width=".5"><circle cx="${x}" cy="${y}" r="1.5"/><circle cx="${x + 2.4}" cy="${y + 1.6}" r="1.1"/><circle cx="${x - 2}" cy="${y + 1.8}" r="1"/></g>`).join('');
+  // buket: ampul sayısı paketle büyür (3 / 6 / 10); güller, yapraklar, beyaz çiçekler, iki kat kâğıt, fiyonk
+  const B = {
+    3: { r: 7.2, bulbs: [[40, 20, 0], [28, 27, -16], [52, 27, 16]], roses: [[31, 40], [49, 40]], dots: [[20, 34], [58, 33], [40, 38]], leaves: [[30, 44, -140], [50, 44, -40], [24, 40, -165, 11], [56, 40, -15, 11]] },
+    6: { r: 6.3, bulbs: [[40, 14, 0], [27, 19, -14], [53, 19, 14], [18, 30, -26], [62, 30, 26], [40, 28, 0]], roses: [[29, 39], [51, 39], [40, 41]], dots: [[34, 21], [46, 21], [24, 37], [56, 37]], leaves: [[28, 45, -145], [52, 45, -35], [18, 40, -170, 12], [62, 40, -10, 12]] },
+    10: { r: 5.4, bulbs: [[40, 10, 0], [29, 13, -10], [51, 13, 10], [19, 20, -20], [61, 20, 20], [34, 23, -4], [46, 23, 4], [13, 31, -30], [67, 31, 30], [40, 33, 0]],
+      roses: [[24, 38], [56, 38], [32, 41], [48, 41], [40, 43]], dots: [[34, 12], [46, 12], [14, 25], [66, 25], [22, 39], [58, 39]], leaves: [[26, 45, -150], [54, 45, -30], [14, 39, -172, 13], [66, 39, -8, 13], [40, 44, -90, 10]] } };
+  const bouquet = n => { const c = B[n];
+    return `<svg viewBox="0 0 80 80" aria-hidden="true">
+      <path d="M12 38Q40 16 68 38L42 74h-4z" fill="#fff6ef" stroke="#f2d3c7" stroke-width=".8"/>
+      ${c.leaves.map(([x, y, a, l]) => leaf(x, y, a, l)).join('')}${dots(c.dots)}${c.bulbs.map(([x, y, a]) => bulb(x, y, c.r, a)).join('')}${c.roses.map(([x, y]) => rose(x, y, c.r * .78)).join('')}
+      <path d="M22 46Q31 43 40 47L40 76Q37 76 36 74z" fill="url(#gWrapL)"/><path d="M58 46Q49 43 40 47L40 76Q43 76 44 74z" fill="url(#gWrapR)"/>
+      <path d="M22 46Q31 43 40 47Q49 43 58 46" stroke="#fff" stroke-opacity=".7" stroke-width="1.1" fill="none"/>
+      <path d="M40 60q-11-9-13-2q1 6 13 2zM40 60q11-9 13-2q-1 6-13 2z" fill="#f0637a"/><path d="M40 60l-5 10l3-1zM40 60l5 10l-3-1z" fill="#d9435c"/><ellipse cx="40" cy="60" rx="2.8" ry="2.4" fill="#d9435c"/></svg>`; };
+  const D = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <radialGradient id="gBulb" cx=".4" cy=".35"><stop offset="0" stop-color="#fff7c2"/><stop offset=".55" stop-color="#ffd35a"/><stop offset="1" stop-color="#f5a33c"/></radialGradient>
+    <radialGradient id="gGlow"><stop offset=".45" stop-color="#ffe17a" stop-opacity=".45"/><stop offset="1" stop-color="#ffe17a" stop-opacity="0"/></radialGradient>
+    <linearGradient id="gBase" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#c3c8d6"/><stop offset=".5" stop-color="#eef0f6"/><stop offset="1" stop-color="#9aa0b4"/></linearGradient>
+    <radialGradient id="gRose" cx=".4" cy=".35"><stop offset="0" stop-color="#ff9fb1"/><stop offset="1" stop-color="#e04b66"/></radialGradient>
+    <linearGradient id="gLeaf" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4fb06f"/><stop offset="1" stop-color="#8fdc9e"/></linearGradient>
+    <linearGradient id="gWrapL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe3e9"/><stop offset="1" stop-color="#f9b3c2"/></linearGradient>
+    <linearGradient id="gWrapR" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7a9b9"/><stop offset="1" stop-color="#e98aa0"/></linearGradient>
+    <linearGradient id="gGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#f59a3c"/></linearGradient>
+    <linearGradient id="gBox" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8fa3"/><stop offset="1" stop-color="#e5546e"/></linearGradient></defs></svg>`;
+  const svg = b => `<svg viewBox="0 0 80 80" aria-hidden="true">${b}</svg>`;
+  return { defs: D,
+    hint10: bouquet(3), hint30: bouquet(6), hint80: bouquet(10),
+    noads: svg(`<circle cx="40" cy="40" r="30" fill="#ffd66b" opacity=".2"/><path d="M40 66C18 51 12 40 12 30a14 14 0 0 1 28-6a14 14 0 0 1 28 6c0 10-6 21-28 36z" fill="url(#gGold)"/>
+      <path d="M22 27a8 8 0 0 1 9-7" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none" opacity=".7"/>
+      <g transform="translate(40 40)"><rect x="-13" y="-8" width="26" height="16" rx="5" fill="#fff" opacity=".92"/><text y="5" text-anchor="middle" font-size="12" font-weight="800" fill="#c46a12" font-family="Outfit,sans-serif">AD</text><path d="M-15 10L15 -10" stroke="#d9435c" stroke-width="3.2" stroke-linecap="round"/></g>
+      <path d="M66 12l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#ffd66b"/>`),
+    starter: svg(`<circle cx="40" cy="44" r="30" fill="#ff8fa3" opacity=".16"/>${bulb(26, 18, 6, -12)}<g transform="rotate(-14 54 22)"><rect x="44" y="15" width="22" height="13" rx="3" fill="#ffd66b"/><circle cx="44" cy="21.5" r="3" fill="#fff"/><circle cx="66" cy="21.5" r="3" fill="#fff"/></g>
+      <rect x="14" y="38" width="52" height="32" rx="6" fill="url(#gBox)"/><rect x="11" y="31" width="58" height="11" rx="4" fill="#ff9fb0"/><rect x="36" y="31" width="8" height="39" fill="#ffd66b"/>
+      <path d="M40 31c-10-12-20-6-14 0zM40 31c10-12 20-6 14 0z" fill="#ffd66b" stroke="#f59a3c" stroke-width="1.4"/>`),
+    themes: svg(['#7aa7ff', '#5cc27e', '#ffd66b', '#ff9a5c', '#f0637a'].map((c, i) => `<rect x="31" y="14" width="18" height="48" rx="6" fill="${c}" stroke="#fff" stroke-width="1.5" transform="rotate(${(i - 2) * 16} 40 64)"/>`).join('') + '<circle cx="40" cy="62" r="4" fill="#fff" stroke="#9aa0b4" stroke-width="1.5"/>'),
+    bst: svg(`<rect x="12" y="32" width="56" height="34" rx="6" fill="#e5546e"/><rect x="12" y="32" width="56" height="10" rx="5" fill="#f0637a"/><path d="M30 32v-7a4 4 0 0 1 4-4h12a4 4 0 0 1 4 4v7" stroke="#9aa0b4" stroke-width="4" fill="none"/>
+      <rect x="36" y="38" width="8" height="8" rx="2" fill="#ffd66b"/><path d="M20 30l8-14M58 30l-6-16" stroke="#9aa0b4" stroke-width="4" stroke-linecap="round"/><circle cx="28" cy="15" r="4" fill="#7aa7ff"/><circle cx="52" cy="13" r="4" fill="#5cc27e"/>`),
+    crown: svg([2, 1, 0].map(i => `<g transform="rotate(${(i - 1) * 12} 40 44) translate(0 ${i * -3})"><rect x="14" y="30" width="52" height="26" rx="5" fill="${['#ffd66b', '#ffc04d', '#f5a33c'][i]}"/><circle cx="14" cy="43" r="4.5" fill="var(--sheetBg)"/><circle cx="66" cy="43" r="4.5" fill="var(--sheetBg)"/><path d="M50 33v20" stroke="#fff" stroke-dasharray="3 3" stroke-width="1.6"/></g>`).join('') + '<text x="32" y="46" text-anchor="middle" font-size="12" font-weight="800" fill="#8a4a0e" font-family="Outfit,sans-serif">50</text>'),
+  };
+})();
 function storeSheet(focus) {
   const live = Shop.avail(), owns = k => k === 'noads' ? save.noAds : k === 'themes' && save.allThemes;
-  const rows = STORE.filter(([k]) => live || k === 'noads').filter(([k]) => !(k === 'themes' && SKINS.every(x => x.vip || skinOpen(x)) && !save.allThemes))
-    .map(([k, ic, name, sub]) => `<button class="opt row prod ${focus === k.slice(0, 4) ? 'on' : ''}" data-p="${k}"><span>${ic} ${name()}${sub() ? `<small>${sub()}</small>` : ''}</span><b>${owns(k) ? L('Sende ✓', 'Owned ✓') : (Shop.price(k) || '') + ' ›'}</b></button>`).join('');
+  const has = STORE.filter(([k]) => live || k === 'noads').filter(([k]) => !(k === 'themes' && SKINS.every(x => x.vip || skinOpen(x)) && !save.allThemes)).map(r => r[0]);
+  const price = k => owns(k) ? L('Sende ✓', 'Owned ✓') : Shop.price(k) || '›';
+  // paket içeriği: envanter yuvaları (simge + adet, güçlendiricide ad) — emoji dizisi yerine
+  const slots = k => { const sl = (ic, n, t) => `<span class="sl"><i>${ic}</i><b>${n}</b>${t ? `<small>${t}</small>` : ''}</span>`;
+    if (k === 'bst') return BST.map(b => sl(b.ic, '×3', b.name)).join('');
+    if (k !== 'starter') return ''; const g = Shop.item('starter').give;
+    return sl('💡', g.hints) + BST.map(b => sl(b.ic, '×' + g.bst[b.id])).join('') + sl('❤️', `∞ ${g.inf / 60} ${L('sa', 'h')}`) + sl('🎫', g.crowns); };
+  const card = (k, cls) => { const [, , name, sub] = STORE.find(r => r[0] === k), sl = slots(k);
+    return `<button class="pk prod ${cls} pk-${k} ${focus === k.slice(0, 4) ? 'on' : ''}" data-p="${k}"><i class="art">${ART[k]}</i><span class="tx"><b>${name()}</b>${sub() && cls !== 'tri' && !sl ? `<small>${sub()}</small>` : ''}</span><em class="pr">${price(k)}</em>${sl ? `<span class="slots">${sl}</span>` : ''}</button>`; };
+  const grp = (ks, cls) => { const g = ks.filter(k => has.includes(k)); return g.length ? `<div class="pkg ${cls}">${g.map(k => card(k, cls)).join('')}</div>` : ''; };
+  const rows = ART.defs + grp(['noads', 'starter'], 'big') + grp(['hint10', 'hint30', 'hint80'], 'tri') + grp(['themes', 'bst', 'crown'], 'wide');
   modal(`<h2>${L('Mağaza', 'Shop')}</h2>
     <p>${L(`Sende 💡 ${save.hints} · 🎫 ${crownBal()}`, `You have 💡 ${save.hints} · 🎫 ${crownBal()}`)}</p>
     <div class="store" id="store">${rows}</div>
     <p class="tip">${live ? L('Oyunun tamamı ücretsiz oynanır; paketler isteğe bağlı.', 'The whole game is free to play; packs are optional.') : L('Paketler mağazadan indirilen sürümde açılır.', 'Packs are available in the store version.')}</p>
     ${live ? `<button id="mRestore" class="link">${L('Satın alımı geri yükle', 'Restore purchase')}</button>` : ''}
     <button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, { mRestore: restoreBuys, mClose: closeModal });
+  if (focus) setTimeout(() => $('store')?.querySelector('.pk.on')?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 350);
   $('store').onclick = async e => {
     const b = e.target.closest('[data-p]'), k = b?.dataset.p; if (!k) return;
     if (k === 'noads') return shopSheet();

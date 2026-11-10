@@ -381,8 +381,25 @@ body.introing .screen *{animation-play-state:paused!important}
 
 .opt.row{width:100%;min-height:48px;border:0;background:none;font:inherit;color:var(--fg);font-weight:600;text-align:left}
 .opt.row small,.opt.sub span{font-weight:500;color:var(--mut)}
-.store{display:flex;flex-direction:column}.store .prod{gap:10px;border-top:1px solid var(--stroke)}.store .prod:first-child{border-top:0}
-.store .prod span{display:flex;flex-direction:column;gap:2px;min-width:0}.store .prod small{font-size:12.5px}.store .prod b{flex:none;font-weight:700;color:var(--acc)}.store .prod.on b{text-decoration:underline;text-underline-offset:4px}
+/* mağaza: vitrin (kart + çizim), liste değil. Rozet ve geri sayım yok */
+.store{display:flex;flex-direction:column;gap:10px}
+.pkg{display:grid;gap:8px}.pkg.big{grid-template-columns:1fr}.pkg.tri{grid-template-columns:repeat(3,1fr)}.pkg.wide{grid-template-columns:1fr}
+.pk{position:relative;display:flex;align-items:center;gap:10px;min-width:0;padding:10px 12px;border:0;border-radius:20px;font:inherit;color:var(--fg);text-align:left;background:var(--glass);box-shadow:inset 0 0 0 1px var(--stroke);transition:transform .15s}
+.pk:active{transform:scale(.97)}.pk.on{box-shadow:inset 0 0 0 2px var(--acc)}
+.pk .art{flex:none;display:block;width:52px;height:52px}.pk .art svg{display:block;width:100%;height:100%;overflow:visible}
+.pk .tx{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}.pk .tx b{font-weight:700;font-size:15.5px;line-height:1.2}.pk .tx small{font-size:12.5px;color:var(--mut);line-height:1.3}
+.pk .pr{flex:none;font-style:normal;font-weight:800;font-size:14px;padding:6px 11px;border-radius:99px;background:var(--acc);color:var(--onacc);white-space:nowrap}
+.pk.big{padding:12px 14px;min-height:96px}.pk.big .art{width:76px;height:76px}.pk.big .tx b{font-size:17px}
+.pk-noads{background:linear-gradient(135deg,rgba(255,214,107,.32),rgba(245,154,60,.12) 70%),var(--glass)}
+.pk-starter{background:linear-gradient(135deg,rgba(255,143,163,.28),rgba(240,99,122,.08) 70%),var(--glass)}
+.pk:has(.slots){flex-wrap:wrap}.pk .slots{flex-basis:100%;display:flex;gap:6px;margin-top:2px}
+.pk .sl{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 2px 5px;border-radius:12px;background:var(--glass2);box-shadow:inset 0 0 0 1px var(--stroke)}
+.pk .sl i{font-style:normal;font-size:18px;line-height:1.1}.pk .sl b{font-size:12.5px;font-weight:800;white-space:nowrap}.pk .sl small{font-size:10.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.pk-starter .sl:nth-last-child(2){flex:1.6}
+.pk.tri{flex-direction:column;justify-content:space-between;gap:4px;padding:10px 4px 10px;text-align:center;background:linear-gradient(180deg,rgba(255,214,107,.14),transparent 60%),var(--glass)}
+.pk.tri .art{width:100%;max-width:84px;height:auto;aspect-ratio:1}.pk.tri .tx{align-items:center;flex:none}.pk.tri .tx b{font-size:14.5px}
+.pk.tri .pr{padding:5px 9px;font-size:13px}
+@media (max-width:340px){.pk.big .art{width:62px;height:62px}.pk .pr{padding:5px 8px;font-size:13px}.pk .tx b{font-size:14.5px}}
 .opt.sub{padding-top:0;transition:opacity .25s}.opt.sub.off{opacity:.35;pointer-events:none}
 .opt .seg button{padding:7px 10px}
 .opt.lang{flex-wrap:wrap;gap:6px}.opt.lang .seg{display:grid;grid-template-columns:repeat(3,1fr);width:100%}.opt.lang .seg button{padding:7px 4px;white-space:nowrap}   /* 6 dil: 3×2, her dil kendi adıyla */
