@@ -11,6 +11,11 @@ on:
         description: 'versionCode (boş: çalıştırma numarası). Play her yüklemede öncekinden büyük ister.'
         type: string
         default: ''
+      track:
+        description: 'Play kanalı: alpha = kapalı test, internal = dahili test, production = herkese açık, none = yükleme yok (yalnız dosya)'
+        type: choice
+        options: [alpha, internal, production, none]
+        default: alpha
 permissions: { contents: read }
 concurrency: { group: release-android, cancel-in-progress: false }
 jobs:
@@ -124,6 +129,27 @@ jobs:
           ls -la out
       - uses: actions/upload-artifact@v5
         with: { name: 'ray-${{ env.VERSION_NAME }}-${{ env.VERSION_CODE }}', path: out/, retention-days: 30 }
+      # Google Play'e yükleme: PLAY_SERVICE_ACCOUNT_JSON gizli değeri yoksa atlanır (dosya yine Actions'ta indirilebilir). Kurulum: docs/YAYIN.md §Play otomatik yükleme
+      - name: Play yüklemesini denetle
+        id: play
+        env: { SA: '${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}', TRACK: '${{ inputs.track }}' }
+        run: |
+          if [ "$TRACK" = "none" ]; then echo "::notice::Play'e yükleme istenmedi (track=none)"; echo "go=0" >> "$GITHUB_OUTPUT"
+          elif [ -z "$SA" ]; then echo "::warning::PLAY_SERVICE_ACCOUNT_JSON yok: Play'e yüklenmedi, AAB'yi Actions'tan indirip elle yükle"; echo "go=0" >> "$GITHUB_OUTPUT"
+          else printf '%s' "$SA" | node -e 'const j=JSON.parse(require("fs").readFileSync(0,"utf8"));if(j.type!=="service_account"||!j.client_email)process.exit(1)' || { echo "::error::PLAY_SERVICE_ACCOUNT_JSON geçerli bir servis hesabı JSON'u değil"; exit 1; }
+            echo "go=1" >> "$GITHUB_OUTPUT"; fi
+      - name: Play'e yükle (${{ inputs.track }})
+        if: steps.play.outputs.go == '1'
+        uses: r0adkll/upload-google-play@v1.1.3
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.osmanadali.ray
+          releaseFiles: out/ray-${{ env.VERSION_NAME }}-${{ env.VERSION_CODE }}.aab
+          track: ${{ inputs.track }}
+          status: completed
+      - name: Yükleme özeti
+        if: steps.play.outputs.go == '1'
+        run: echo "::notice::Play › ${{ inputs.track }} kanalına yüklendi · Ray $VERSION_NAME ($VERSION_CODE)"
       - name: Anahtar deposunu sil
         if: always()
         run: rm -f "$RUNNER_TEMP/ray-upload.jks"

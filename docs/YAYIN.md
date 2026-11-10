@@ -141,6 +141,21 @@ Actions → **Android yayın (imzalı AAB)** → Run workflow. Komut satırında
 2. `release.yml`'yi çalıştır.
 3. Yeni `.aab` dosyasını uygun kanala yükle. versionCode kendiliğinden artar.
 
+### 2.4 Play otomatik yükleme (bir kez kurulur)
+
+`release.yml` derlediği AAB'yi Play'e kendisi yükler (varsayılan kanal `alpha` = kapalı test). Bunun için bir **servis hesabı** gerekir; gizli değer yoksa iş akışı yüklemeyi atlar, dosya yine Actions'tan indirilir.
+
+1. **Google Cloud:** console.cloud.google.com → Play Console'a bağlı proje (yoksa yeni proje) → *APIs & Services › Library* → **Google Play Android Developer API** → Enable.
+2. **Servis hesabı:** *IAM & Admin › Service Accounts* → Create (ad: `ray-yayin`, rol vermeye gerek yok) → hesabın *Keys* sekmesi → *Add key › JSON* → dosya iner.
+3. **Play Console:** *Kullanıcılar ve izinler* → *Yeni kullanıcı davet et* → servis hesabının e-postası (…@….iam.gserviceaccount.com) → *Uygulama izinleri* › Ray → **Sürümleri test kanallarına yayınlama**, **Sürümleri üretime yayınlama**, **Sürümleri yönet** → Davet et.
+4. **GitHub:** depo › Settings › Secrets and variables › Actions › New secret: ad **`PLAY_SERVICE_ACCOUNT_JSON`**, değer JSON dosyasının **tüm içeriği**. JSON dosyasını sonra güvenli bir yerde sakla ya da sil.
+
+Çalıştırma: Actions → "Android yayın (imzalı AAB)" → `track`: `alpha` (kapalı test), `internal`, `production` ya da `none`. Üretime çıkış Play'in incelemesinden geçer. İzin yeni verildiyse ilk denemede 403 alınabilir; birkaç saat sonra yeniden dene.
+
+### 2.5 iOS inceleme durumu
+
+`ios-durum.yml` (Actions → "iOS inceleme durumu") App Store Connect'ten sürüm, inceleme ve yapı durumunu okur, Türkçe özet yazar; hiçbir şeyi değiştirmez. Her sabah 09:17'de (İstanbul) kendiliğinden de çalışır. Apple'ın yazılı mesajları API'den okunamaz: "Reddedildi" ya da "Çözülmemiş sorun" görünürse App Store Connect › App Review'daki mesaja bakılır.
+
 ## 3. iOS: App Store
 
 `ios.yml` imzasız bir simülatör derlemesi üretir. Bu derleme projenin derlendiğini ve şunların doğru olduğunu kanıtlar:
