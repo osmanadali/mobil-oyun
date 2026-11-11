@@ -933,13 +933,14 @@ async function inViewport(page, sel) {
     const ui = () => page.evaluate(() => ({ lang: document.documentElement.lang, play: document.querySelector('#bPlay span').textContent, how: document.querySelector('#bMap .k').textContent, saved: JSON.parse(localStorage.getItem('ray') || '{}').lang }));
     const u0 = await ui();
     await page.click('#bSettings'); await page.waitForTimeout(500);
-    const row = await page.evaluate(() => document.getElementById('oL')?.parentElement.firstChild.textContent.trim());
+    const row = await page.evaluate(() => document.querySelector('.opt.lang')?.firstChild.textContent.trim());
+    await page.click('#oLb'); await page.waitForTimeout(450);
     await Promise.all([page.waitForNavigation(), page.click('#oL [data-g=tr]')]); await page.waitForTimeout(500);
     const u1 = await ui();
     await page.reload(); await page.waitForTimeout(500);
     const u2 = await ui();
     await page.click('#bSettings'); await page.waitForTimeout(500);
-    const row2 = await page.evaluate(() => document.getElementById('oL')?.parentElement.firstChild.textContent.trim());
+    const row2 = await page.evaluate(() => document.querySelector('.opt.lang')?.firstChild.textContent.trim());
     await ctx.close();
     const dflt = {};
     for (const locale of ['tr-TR', 'en-US']) { const o = await open(browser, URL, { locale, save: { played: 3 } }); dflt[locale] = await o.page.evaluate(() => [window.RAY_LANG, document.querySelector('#bPlay span').textContent]); await o.ctx.close(); }
