@@ -2048,7 +2048,7 @@ function questRow() {
   const el = $('bQuest'); el.hidden = !questVis(); if (el.hidden) return;
   const w = weekQ(), dq = dayQ(), n = s => s.q.filter(q => q.p >= q.n).length, a = n(dq), b = n(w);
   const p = qPend();
-  $('qState').innerHTML = p ? `<em>🎁 ${p}</em>` : `☀️ ${a}/${dq.q.length} · 📅 ${b}/${w.q.length}`;
+  $('qState').innerHTML = p ? `<em>🎁 ${p}</em>` : `☀️${a}/${dq.q.length} 📅${b}/${w.q.length}`;
   el.classList.toggle('done', !p && a === dq.q.length && b === w.q.length); el.classList.toggle('gift', !!p);
 }
 function questSheet() {
