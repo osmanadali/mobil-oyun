@@ -601,12 +601,20 @@ const movesOk = () => G.moves <= G.lim.m && !G.mLost;   // G.mLost: eklenti ↻ 
 
 // ---------- ses / dokunsal ----------
 let ac;
-function ensureAC() { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume(); return ac; }
+let hushed = false;   // arka planda / ses kesintisinde (iOS 'interrupted': satın alma, bildirim perdesi): efekt çalınmaz, müzik kısık
+function ensureAC() {
+  if (!ac) {
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    ac.onstatechange = () => { if (ac.state === 'running') { if (!document.hidden) { hushed = false; Music.wake(); } } else { hushed = true; Music.hush(); } };
+  }
+  if (ac.state !== 'running' && !document.hidden) ac.resume();
+  return ac;
+}
 // yumuşak çan tınısı: sinüs + hafif üst oktav, üstel sönüm (sert tık yok)
 function tone(f, dur = .08, vol = .05, type = 'sine', at = 0) {
-  if (!save.sound) return;
+  if (!save.sound || hushed || document.hidden) return;   // gizliyken kuyruğa giren ses dönüşte "bip" diye çalmasın
   try {
-    ensureAC();
+    ensureAC(); if (ac.state === 'interrupted') return;
     const t = ac.currentTime + at, o = ac.createOscillator(), o2 = ac.createOscillator(), g = ac.createGain(), g2 = ac.createGain();
     o.type = type; o.frequency.value = f; o2.frequency.value = f * 2; g2.gain.value = .18;
     g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .012);
@@ -626,7 +634,7 @@ const Music = (() => {
   const ALARM = [[50, 62, 65, 69, 74], [45, 61, 64, 67, 73]];   // son saniyeler: Dm ↔ A7
   const GPAT = [1, 2, 3, 2, 4, 2, 3, 2];
   const VOL = .55, hz = m => 440 * Math.pow(2, (m - 69) / 12);
-  let on = false, mode = 'menu', tension = 0, alarm = false, barT = 0, barAlarm = false, master, lp, noise, timer = 0, next = 0, step = 0;
+  let notes = 0, on = false, mode = 'menu', tension = 0, alarm = false, barT = 0, barAlarm = false, master, lp, noise, timer = 0, next = 0, step = 0;
   function setup() {
     master = ac.createGain(); master.gain.value = 0;
     lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400;
@@ -635,6 +643,7 @@ const Music = (() => {
     const d = noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   }
   function bell(m, t, v, len) {
+    notes++;
     const o = ac.createOscillator(), o2 = ac.createOscillator(), g = ac.createGain(), g2 = ac.createGain();
     o.frequency.value = hz(m); o2.frequency.value = hz(m) * 2; g2.gain.value = .22;
     g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .015); g.gain.exponentialRampToValueAtTime(.0005, t + len);
@@ -654,6 +663,7 @@ const Music = (() => {
     o.connect(g).connect(master); o.start(t); o.stop(t + .25);
   }
   function sched() {
+    if (next < ac.currentTime) next = ac.currentTime + .05;   // zamanlayıcı geride kaldıysa (arka plan) kaçan notalar topluca çalınmaz, atlanır
     while (next < ac.currentTime + .6) {
       const beat = step % 8, bar = step / 8 | 0;
       let dt = .45;
@@ -690,9 +700,18 @@ const Music = (() => {
     if (!on) return; on = false; clearInterval(timer);
     try { master.gain.cancelScheduledValues(ac.currentTime); master.gain.setTargetAtTime(0, ac.currentTime, .3); } catch {}
   }
+  // arka plan: müzik anında susar; dönüş: kaçan notalar atlanır, ses 0'dan yumuşakça açılır
+  function hush() { if (!master) return; try { master.gain.cancelScheduledValues(0); master.gain.value = 0; master.gain.setValueAtTime(0, ac.currentTime); } catch {} }
+  function wake() {
+    if (!on || !master) return;
+    try {
+      const t = ac.currentTime; next = t + .15;
+      master.gain.cancelScheduledValues(0); master.gain.setValueAtTime(0, t); master.gain.linearRampToValueAtTime(VOL, t + 1.5);
+    } catch {}
+  }
   function setMode(m) { if (m === mode) return; mode = m; step = 0; if (m !== 'game') { tension = barT = 0; alarm = barAlarm = false; } }
   function setTension(x, a = false) { tension = Math.max(0, Math.min(1, x)); alarm = a; }
-  return { start, stop, setMode, setTension, state: () => ({ on, mode, tension, alarm }) };
+  return { start, stop, hush, wake, setMode, setTension, state: () => ({ on, mode, tension, alarm, notes, gain: master ? master.gain.value : 0, ac: ac?.state }) };
 })();
 const note = k => 392 * Math.pow(2, PENTA[Math.max(0, Math.min(PENTA.length - 1, k))] / 12);
 function haptic(kind) {
@@ -2507,8 +2526,8 @@ $('starsChip').onclick = () => show('map');
 $('crownChip').onclick = skinSheet;
 // arka plan ↔ ön plan: süre ve ses durur. İki kaynak (ikisi birden gelebilir, iş tekrarı zararsız): visibilitychange ve Capacitor appStateChange
 function front(on) {
-  if (!on) { pause(); Kasa.flush(); ac?.suspend?.(); Remind.plan(); Jank.report(); return; }
-  ac?.resume?.(); dayTick();
+  if (!on) { pause(); Kasa.flush(); hushed = true; Music.hush(); ac?.suspend?.(); Remind.plan(); Jank.report(); return; }
+  hushed = false; if (ac) { Music.wake(); ac.resume?.(); } dayTick();
   if (active('game') && !(modalOpen() && mLocked)) resume();   // kural kartı açıkken süre durgun kalır (Anladım'la akar)
   if (active('home')) { refreshHome(); setTimeout(maybeRescue, 600); }
 }
