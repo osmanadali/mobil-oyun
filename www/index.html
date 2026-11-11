@@ -59,7 +59,11 @@
         <span class="chip dstreak" id="streakChip" role="button" aria-label="Seri" data-en-label="Streak"><svg viewBox="0 0 24 24"><path d="M12 2c1 4 5 5.5 5 11a5 5 0 0 1-10 0c0-2.5 1.2-4 2.5-5 .2 1.8 1 3 2.2 3.3C11 8.6 11.3 5 12 2z"/></svg><b id="sStreak">0</b></span>
         <svg class="arrow" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
       </button>
-      <button class="qrow" id="bQuest" hidden><span data-en="🎯 Quests">🎯 Görevler</span><b id="qState">0/3</b></button>
+      <!-- Görevler (solda) · Mağaza (sağda): Günün Hattı kartının altında tek satır. Mağaza ana sayfada da görünür (App Store incelemesi Ayarlar'ın altında bulamamıştı) -->
+      <div class="homerow">
+        <button class="qrow" id="bQuest" hidden><span data-en="🎯 Quests">🎯 Görevler</span><b id="qState">0/3</b></button>
+        <button class="shopbtn" id="bShop"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 8.5h13l-1.1 11.2a1.5 1.5 0 0 1-1.5 1.3H8.1a1.5 1.5 0 0 1-1.5-1.3z"/><path d="M9 10.5V7a3 3 0 0 1 6 0v3.5"/></svg><span data-en="Shop">Mağaza</span></button>
+      </div>
       <button class="card prog btn" id="bMap">
         <div class="ph"><span class="k" data-en="LINES">HATLAR</span><small><b id="sHints">3</b> <span id="sHintsL">ipucu</span></small></div>
         <b id="lineName">M1 · Turuncu Hat</b>
@@ -70,8 +74,6 @@
 
     <div class="actions">
       <button id="bPlay" class="btn primary"><span data-en="Play">Oyna</span><small id="hLvl">Bölüm <span id="hLevel">1</span><span id="hLife"></span></small></button>
-      <!-- Mağaza: ana sayfada da görünür (App Store incelemesi Ayarlar'ın altında bulamamıştı) -->
-      <button id="bShop" class="shoplink"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2"/></svg><span data-en="Shop">Mağaza</span></button>
     </div>
   </section>
 

@@ -129,8 +129,6 @@ html:lang(en) body.test .hero p::after{content:' · 🧪 TEST: all unlocked'}
 .pb{height:8px;border-radius:9px;background:var(--rail);overflow:hidden}
 .pb i{display:block;height:100%;width:0;border-radius:9px;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .8s cubic-bezier(.2,.8,.2,1)}
 .actions{display:flex;flex-direction:column;align-items:center}
-.shoplink{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;padding:10px 18px;border:0;border-radius:99px;background:none;color:var(--mut);font:inherit;font-weight:600;font-size:15px;cursor:pointer}
-.shoplink svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.shoplink:active{background:var(--glass2);color:var(--fg)}
 
 /* ---------- oyun ekranı ---------- */
 .title{flex:1;text-align:center}.title b{font-size:19px;font-weight:700}.title small{display:block;color:var(--mut);font-size:13px}
@@ -309,8 +307,13 @@ body.introing .screen *{animation-play-state:paused!important}
 /* seri penceresi */
 .flame{align-self:center;width:64px;height:64px;fill:var(--acc2);filter:drop-shadow(0 0 16px var(--accGlow));animation:flick 1.6s ease-in-out infinite}
 @keyframes flick{50%{transform:scale(1.06) rotate(-2deg)}}
-.qrow{display:flex;align-items:center;gap:10px;margin:-4px 8px -2px;padding:5px 12px;border:0;border-radius:12px;background:none;color:var(--mut);font:inherit;font-size:13px;text-align:left;cursor:pointer}
-.qrow[hidden]{display:none}.qrow span{flex:1}.qrow b{color:var(--fg);font-weight:600}.qrow.done>b{color:#4fc3a1}.qrow:active{background:var(--glass2)}
+/* Görevler (sol, geniş) · Mağaza (sağ): aynı yükseklikte iki cam düğme */
+.homerow{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:8px}
+.qrow,.shopbtn{display:flex;align-items:center;gap:8px;min-height:48px;padding:6px 14px;border:0;border-radius:16px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--stroke);color:var(--fg);font:inherit;text-align:left;cursor:pointer;transition:transform .15s}
+.qrow:active,.shopbtn:active{transform:scale(.97)}
+.qrow{grid-column:1;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;min-width:0}.qrow[hidden]{display:none}.qrow span{font-size:15px;font-weight:600;white-space:nowrap}.qrow b{color:var(--mut);font-size:12.5px;font-weight:600;white-space:nowrap}.qrow.done>b{color:#4fc3a1}
+.shopbtn{grid-column:2;justify-content:center;font-size:15px;font-weight:600;min-width:0;min-height:54px}.qrow{min-height:54px}
+.shopbtn svg{flex:none;width:21px;height:21px;fill:none;stroke:var(--acc);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .quests{display:flex;flex-direction:column;gap:8px;margin:8px 0}
 .quests div{position:relative;display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:10px 14px 12px;border-radius:14px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--stroke);overflow:hidden;text-align:left}
 .quests span{font-weight:600}.quests b{font-variant-numeric:tabular-nums}.quests small{grid-column:1/3;font-size:12px;color:var(--mut)}
@@ -452,7 +455,6 @@ body.introing .screen *{animation-play-state:paused!important}
 /* uzun bildirim dar ekranda iki satıra iner, ekrandan taşmaz (tek satırda görünüş aynı) */
 #toast{width:max-content;max-width:calc(100% - 32px);white-space:normal;text-align:center;border-radius:24px}
 @media (max-height:640px){.logo{width:42vw}.logo.mark{width:24vw}h1{font-size:48px}.cards{gap:8px}.card{padding:12px 16px}.primary{height:64px}}
-@media (max-height:640px){.shoplink{margin-top:0;padding:6px 16px;font-size:14px}.hero p{margin-top:4px}.hero{padding-bottom:6px}}   /* küçük ekranda Mağaza düğmesi yer açar (320×568) */
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01s!important;animation-iteration-count:1!important;transition-duration:.01s!important}}
 /* sürpriz sandık */
 .chestrow{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:10px;width:100%;min-height:56px;padding:6px 14px;border:0;border-radius:18px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--stroke);color:var(--fg);font:inherit;text-align:left}
