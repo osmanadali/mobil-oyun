@@ -2591,6 +2591,7 @@ $('bPlay').onclick = () => start('level');
 $('bDaily').onclick = () => (save.dailyDone === today() && save.dailyStats?.day === today()) ? dailyResult() : start('daily');
 $('bMap').onclick = () => show('map');
 $('bQuest').onclick = questSheet;
+$('bShop').onclick = () => storeSheet();
 $('pBack').onclick = () => show('home');
 $('bBack').onclick = () => G && !G.won && !G.over && active('game') && !modalOpen() ? pauseSheet() : show('home');
 $('bReset').onclick = reset;
