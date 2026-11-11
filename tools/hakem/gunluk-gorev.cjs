@@ -187,8 +187,8 @@ module.exports = async T => {
     const vp = {}; for (const s of ['#bPlay', '#bDaily', '#bQuest', '#bMap']) vp[s] = (await inViewport(b.page, s)).ok;
     await b.page.click('#bQuest'); await b.page.waitForTimeout(400);
     const sheet = await b.page.evaluate(() => ({ n: document.querySelectorAll('.quests > div:not(.qall)').length, t: document.getElementById('mCard').textContent, fit: document.getElementById('mCard').scrollWidth <= document.getElementById('mCard').clientWidth + 1 }));
-    check('quest.home', 'Ana sayfa: görevler Günün Hattı kartının altında tek ince satır (≤ 34 px, ilerlemeyle), yeni oyuncuda gizli; 320×568\'de Oyna/Günün Hattı/Hatlar görünür; pencerede 3 günlük + 3 haftalık görev',
-      hid && row.vis && row.h <= 34 && /0\/3/.test(row.t) && Object.values(vp).every(Boolean) && sheet.n === 6 && sheet.fit && /Geçmiş günler/.test(sheet.t), JSON.stringify({ hid, row, vp, sheet: { ...sheet, t: sheet.t.slice(0, 80) } }));
+    check('quest.home', 'Ana sayfa: görevler Günün Hattı kartının altında çerçevesiz tek satır, solda (≤ 44 px, ilerlemeyle; sağında Mağaza), yeni oyuncuda gizli; 320×568\'de Oyna/Günün Hattı/Hatlar görünür; pencerede 3 günlük + 3 haftalık görev',
+      hid && row.vis && row.h <= 44 && /0\/3/.test(row.t) && Object.values(vp).every(Boolean) && sheet.n === 6 && sheet.fit && /Geçmiş günler/.test(sheet.t), JSON.stringify({ hid, row, vp, sheet: { ...sheet, t: sheet.t.slice(0, 80) } }));
     errs.push(...b.errors); await b.ctx.close();
     const c = await open(browser, URL, { locale: 'en-US', vp: [320, 568], save: { played: 30, level: 61, stars: starsUpTo(61), remindAsked: true } });
     await c.page.click('#bQuest'); await c.page.waitForTimeout(400);
