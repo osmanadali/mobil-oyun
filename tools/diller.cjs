@@ -6,7 +6,8 @@
 'use strict';
 const fs = require('fs'), path = require('path');
 const WWW = path.join(__dirname, '..', 'www'), SRC = path.join(__dirname, 'diller');   // sozluk-*.txt (sırayla okunur)
-const LANGS = ['de', 'es', 'pt-BR', 'fr'];
+const LANGS = ['de', 'es', 'pt-BR', 'fr', 'ko', 'ja', 'zh-Hant'];
+const CODE = { pt: 'pt-BR', zh: 'zh-Hant' };   // sozluk satır öneki → dil kodu (pt = pt-BR, zh = zh-Hant: Geleneksel Çince)
 
 // ---------- JS taraması: yorum, dizgi, şablon (iç içe ${…}), düzenli ifade ----------
 function lex(src) {
@@ -102,7 +103,7 @@ function extract() {
   return { keys, odd };
 }
 
-// ---------- sozluk-*.txt: "@ anahtar" satırı (İngilizce, boşluklar sıkıştırılmış), ardından "de: …", "es: …", "pt: …", "fr: …" (pt = pt-BR) ----------
+// ---------- sozluk-*.txt: "@ anahtar" satırı (İngilizce, boşluklar sıkıştırılmış), ardından "de: …", "es: …", "pt: …", "fr: …", "ko: …", "ja: …", "zh: …" (pt = pt-BR, zh = zh-Hant) ----------
 function readDict() {
   const D = Object.fromEntries(LANGS.map(l => [l, {}])), order = [];
   let key = null;
@@ -111,12 +112,13 @@ function readDict() {
     const line = raw.replace(/\r$/, '');
     if (!line.trim() || line.startsWith('#')) continue;
     if (line.startsWith('@ ')) { key = norm(line.slice(2).replace(/␣/g, ' ')); order.push(key); continue; }
-    const m = /^(de|es|pt|fr): ?(.*)$/.exec(line);
+    const m = /^(de|es|pt|fr|ko|ja|zh): ?(.*)$/.exec(line);
     if (!m || key == null) throw new Error('sözlük: anlaşılmayan satır: ' + line);
-    if (D[m[1] === 'pt' ? 'pt-BR' : m[1]][key] != null) throw new Error('sözlük: iki kez: ' + key);
+    const l = CODE[m[1]] || m[1];
+    if (D[l][key] != null) throw new Error('sözlük: iki kez: ' + key);
     let v = m[2].replace(/␣/g, ' ');
     if (m[1] === 'fr') v = v.replace(/ ([:;!?»])/g, '\u00a0$1').replace(/« /g, '«\u00a0');   // Fransızca: işaretten önce bölünmez boşluk
-    D[m[1] === 'pt' ? 'pt-BR' : m[1]][key] = v;
+    D[l][key] = v;
   }
   return { D, order };
 }
@@ -140,7 +142,7 @@ module.exports = { extract, readDict, build, lex, LANGS, INNER };
 if (require.main === module) {
   const a = process.argv;
   if (a.includes('--keys')) { const { keys, odd } = extract(); for (const [k, w] of keys) console.log(JSON.stringify(k), w.slice(0, 2).join(' ')); console.error(`${keys.size} anahtar`); if (odd.length) console.error('Elle bakılacak:\n' + odd.join('\n')); return; }
-  if (a.includes('--skeleton')) { const { keys } = extract(), { D } = readDict(); for (const k of keys.keys()) if (D.de[k] == null) console.log(`@ ${k}\nde: \nes: \npt: \nfr: \n`); return; }
+  if (a.includes('--skeleton')) { const { keys } = extract(), { D } = readDict(); for (const k of keys.keys()) if (D.de[k] == null) console.log(`@ ${k}\nde: \nes: \npt: \nfr: \nko: \nja: \nzh: \n`); return; }
   const r = build(), n = Object.values(r.miss).reduce((s, m) => s + m.length, 0);
   console.log(`${r.keys.size} anahtar · eksik: ${LANGS.map(l => `${l} ${r.miss[l].length}`).join(', ')} · kaynakta olmayan: ${r.extra.length}`);
   for (const l of LANGS) if (r.miss[l].length) console.log(`${l}: ` + r.miss[l].slice(0, 15).map(k => JSON.stringify(k).slice(0, 80)).join('\n  '));

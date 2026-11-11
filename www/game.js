@@ -132,8 +132,9 @@ function lineTitle(c) {
   const n = LINE_NAMES.length, k = Math.floor(c / n), pre = NAME_PRE[k % NAME_PRE.length], tur = Math.floor(k / NAME_PRE.length);
   return `${pre ? PRE_JOIN(pre, LINE_NAMES[c % n]) : LINE_NAMES[c % n]}${tur ? ' ' + (tur + 1) : ''}`;
 }
-// önek: tr/en "Yeni Liman" · de "Neu-Hafen" · es/pt/fr adın ardından, cinsiyetsiz sözcüklerle ("Puerto Norte"; docs/CEVIRI.md)
-const PRE_JOIN = { de: (p, n) => `${p}-${n}`, es: (p, n) => `${n} ${p}`, 'pt-BR': (p, n) => `${n} ${p}`, fr: (p, n) => `${n} ${p}` }[RAY_LANG] || ((p, n) => `${p} ${n}`);
+// önek: tr/en "Yeni Liman" · de "Neu-Hafen" · es/pt/fr adın ardından, cinsiyetsiz sözcüklerle ("Puerto Norte") · ko/ja/zh-Hant bitişik tek hece ("신항구", "新港"; docs/CEVIRI.md)
+const PRE_CJK = (p, n) => `${p}${n}`;
+const PRE_JOIN = { de: (p, n) => `${p}-${n}`, es: (p, n) => `${n} ${p}`, 'pt-BR': (p, n) => `${n} ${p}`, fr: (p, n) => `${n} ${p}`, ko: PRE_CJK, ja: PRE_CJK, 'zh-Hant': PRE_CJK }[RAY_LANG] || ((p, n) => `${p} ${n}`);
 const lineName = c => L(`M${c + 1} · ${lineTitle(c)} Hattı`, `M${c + 1} · ${lineTitle(c)} Line`);
 const need = c => Math.round((lineStart(c) - 1) * STAR_AVG);
 const totalStars = () => Object.values(save.stars).reduce((a, b) => a + b, 0);
@@ -2134,14 +2135,16 @@ function pauseSheet() {
 }
 function settings() {
   const seg = ['auto', 'dark', 'light'].map(t => `<button data-t="${t}" class="${save.theme === t ? 'on' : ''}">${{ auto: L('Oto', 'Auto'), dark: L('Koyu', 'Dark'), light: L('Açık', 'Light') }[t]}</button>`).join('');
-  const lang = RAY_LANGS.map(([k, n]) => `<button data-g="${k}" lang="${k}" class="${RAY_LANG === k ? 'on' : ''}">${n}</button>`).join('');
+  const cur = RAY_LANGS.find(([k]) => k === RAY_LANG) || RAY_LANGS[0];
+  const lang = RAY_LANGS.map(([k, n]) => `<button data-g="${k}" lang="${k}" class="${RAY_LANG === k ? 'on' : ''}"><span>${n}</span>${RAY_LANG === k ? '<b>✓</b>' : ''}</button>`).join('');
   const opt = optTog;
   modal(`<h2>${L('Ayarlar', 'Settings')}</h2>
     ${SND_TOGS()}
     ${Remind.avail() ? opt('oR', save.remind, 'Günlük hatırlatma', 'Daily reminder') : ''}
     ${opt('oZ', save.zen, '🍃 Zen modu', '🍃 Zen mode')}
     <div class="opt">${L('Görünüm', 'Theme')} <div class="seg" id="oT">${seg}</div></div>
-    <div class="opt lang">${L('Dil', 'Language')} <div class="seg" id="oL">${lang}</div></div>
+    <div class="opt lang">${L('Dil', 'Language')} <button id="oLb" class="dd" aria-expanded="false" aria-controls="oLw"><span lang="${cur[0]}">${cur[1]}</span><i>▾</i></button></div>
+    <div class="langs" id="oLw"><div><div id="oL">${lang}</div></div></div>
     <button class="opt row" id="oSkin"><span>${L('Renk temaları', 'Color themes')}</span><small>${skin().name} · 🎫 ${crownBal()} ›</small></button>
     <button class="opt row" id="oShop"><span>${L('Mağaza', 'Shop')}</span><small>💡 🧰 🎨 🎫 ›</small></button>
     <button class="opt row" id="oHow"><span>${L('Nasıl oynanır?', 'How to play?')}</span><small>›</small></button>
@@ -2160,7 +2163,10 @@ function settings() {
     mClose: closeModal });
   $('oT').onclick = e => { const t = e.target.dataset.t; if (!t) return; save.theme = t; persist(); applyTheme(); refreshHome(); $('oT').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.t === t)); };
   // dil: metinler yüklemede seçilir → kaydet ve yenile (yarım oyun kayıtta, kaldığı yerden sürer)
-  $('oL').onclick = e => { const g = e.target.dataset.g; if (!g || g === RAY_LANG) return; pause(); save.lang = g; persist(); location.reload(); };
+  // Dil: yalnız seçili dil görünür; dokununca liste aşağı açılır (açılınca görünür kaydırılır)
+  $('oLb').onclick = () => { const w = $('oLw'), on = !w.classList.contains('open'); w.classList.toggle('open', on); $('oLb').setAttribute('aria-expanded', on); haptic('light');
+    if (on) setTimeout(() => w.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 260); };
+  $('oL').onclick = e => { const g = e.target.closest('[data-g]')?.dataset.g; if (!g || g === RAY_LANG) return; pause(); save.lang = g; persist(); location.reload(); };
 }
 // ---------- gizlilik: kısa özet, politika, reklam rıza seçenekleri, verileri sil ----------
 // Ayarlar › Bize yaz: destek e-postası (gizlilik.html İletişim ile aynı olmalı). Boşken satır gösterilmez.

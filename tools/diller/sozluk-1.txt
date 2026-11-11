@@ -1,755 +1,1218 @@
 # Ray — çeviri sözlüğü (1/4): hat adları, temalar, kural kartları, oyun içi bildirimler
-# Biçim: "@ İngilizce anahtar" + de/es/pt/fr satırları. {0} {1}: yer tutucu (sıra serbest). Terimler: docs/CEVIRI.md
+# Biçim: "@ İngilizce anahtar" + de/es/pt/fr/ko/ja/zh satırları (pt = pt-BR, zh = zh-Hant Geleneksel Çince). {0} {1}: yer tutucu (sıra serbest, düşürülebilir). Terimler: docs/CEVIRI.md
 # Derleme: node tools/diller.cjs → www/lang/<dil>.js · satır sonundaki boşluk ␣ ile yazılır (düzenleyiciler sondaki boşluğu siler)
+#
+# CJK terim listesi (ko · ja · zh-Hant; ayrıntı docs/CEVIRI.md §1c). Hitap: ko 해요체, ja です/ます + kısa düğme adları, zh-Hant Tayvan kullanımı (你).
+#   level 레벨 · ステージ · 關卡 ("Level 12" = 레벨 12 · ステージ12 · 第 12 關)   line 노선 · 路線 · 路線 ("M1 · 항구선 / 港線 / 港灣線")
+#   Daily Line 오늘의 노선 · 今日の路線 · 每日路線   tile 타일 · タイル · 方塊   track 선로 · 線路 · 軌道   station 역 · 駅 · 車站   hub 허브 · ハブ · 樞紐
+#   move 이동(…번) · 手 · 步   target 목표 · 目標 · 目標   hint 힌트 · ヒント · 提示   star 별 · 星 · 星   ticket 🎫 티켓 · 切符 · 車票
+#   perfect 퍼펙트 · パーフェクト · 完美   streak 연속 기록 · 連続記録 · 連續紀錄   streak shield 연속 기록 보호막 · 連続記録シールド · 連續紀錄護盾
+#   last stop 종점 · 終点 · 終點站   last train · late 막차 · 지연 / 終電 · 遅延 / 末班車 · 誤點   breather 쉬어 가는 레벨 · ひと休みステージ · 休息關卡
+#   life ❤️ 하트 · ライフ · 生命   booster 부스터 · ブースター · 道具   extra turn · lantern · undo 추가 회전 · 손전등 · 되돌리기 / 追加回転 · ライト · 戻す / 額外轉動 · 手電筒 · 復原
+#   quests 미션 · ミッション · 任務   color themes 색상 테마 · カラーテーマ · 色彩主題   train livery 열차 도색 · 車両カラー · 列車塗裝
+#   surprise chest 깜짝 상자 · びっくり宝箱 · 驚喜寶箱   Common/Rare/Epic 일반/희귀/에픽 · コモン/レア/エピック · 普通/稀有/史詩   Shop 상점 · ショップ · 商店
+#   Zen 젠 · 禅 · 禪   City · district · badge 도시 · 구역 · 배지 / 街 · 地区 · バッジ / 城市 · 街區 · 徽章   New: … 새 규칙: … · 新ルール：… · 新規則：…
+#   kural metinleri: buffer 차막이 · 車止め · 車擋   crossing 통과 · 通過 · 穿越   arm 가지 · 枝 · 分支   straight/branch 직진/분기 · 直進/分岐 · 直行/分岔
+#   hat adı önekleri bitişik tek hece: 신/구/북/남/동/서/상/하/대/소 · 新/旧/北/南/東/西/上/下/大/小 · 新/舊/北/南/東/西/上/下/大/小
 
 @ Harbor
 de: Hafen
 es: Puerto
 pt: Porto
 fr: Port
+ko: 항구
+ja: 港
+zh: 港灣
 @ Bazaar
 de: Basar
 es: Bazar
 pt: Bazar
 fr: Bazar
+ko: 바자르
+ja: バザール
+zh: 市集
 @ Shore
 de: Strand
 es: Costa
 pt: Praia
 fr: Rivage
+ko: 해변
+ja: 海岸
+zh: 海岸
 @ Tower
 de: Turm
 es: Torre
 pt: Torre
 fr: Tour
+ko: 타워
+ja: 塔
+zh: 高塔
 @ Garden
 de: Garten
 es: Jardín
 pt: Jardim
 fr: Jardin
+ko: 정원
+ja: 庭園
+zh: 花園
 @ Bridge
 de: Brücke
 es: Puente
 pt: Ponte
 fr: Pont
+ko: 다리
+ja: 橋
+zh: 橋樑
 @ Lighthouse
 de: Leuchtturm
 es: Faro
 pt: Farol
 fr: Phare
+ko: 등대
+ja: 灯台
+zh: 燈塔
 @ Valley
 de: Tal
 es: Valle
 pt: Vale
 fr: Vallée
+ko: 계곡
+ja: 渓谷
+zh: 山谷
 @ Spring
 de: Quelle
 es: Manantial
 pt: Fonte
 fr: Source
+ko: 샘
+ja: 泉
+zh: 清泉
 @ Square
 de: Platz
 es: Plaza
 pt: Praça
 fr: Place
+ko: 광장
+ja: 広場
+zh: 廣場
 @ Hill
 de: Hügel
 es: Colina
 pt: Colina
 fr: Colline
+ko: 언덕
+ja: 丘
+zh: 山丘
 @ Island
 de: Insel
 es: Isla
 pt: Ilha
 fr: Île
+ko: 섬
+ja: 島
+zh: 島嶼
 @ Palace
 de: Palast
 es: Palacio
 pt: Palácio
 fr: Palais
+ko: 궁전
+ja: 宮殿
+zh: 宮殿
 @ Quay
 de: Kai
 es: Muelle
 pt: Cais
 fr: Quai
+ko: 부두
+ja: 埠頭
+zh: 碼頭
 @ Canal
 de: Kanal
 es: Canal
 pt: Canal
 fr: Canal
+ko: 운하
+ja: 運河
+zh: 運河
 @ Plane Tree
 de: Platane
 es: Álamo
 pt: Álamo
 fr: Platane
+ko: 플라타너스
+ja: プラタナス
+zh: 梧桐
 @ Highland
 de: Hochland
 es: Meseta
 pt: Planalto
 fr: Plateau
+ko: 고원
+ja: 高原
+zh: 高原
 @ Grove
 de: Hain
 es: Arboleda
 pt: Bosque
 fr: Bosquet
+ko: 솔숲
+ja: 木立
+zh: 樹林
 @ Caravan
 de: Karawane
 es: Caravana
 pt: Caravana
 fr: Caravane
+ko: 카라반
+ja: キャラバン
+zh: 商隊
 @ Mill
 de: Mühle
 es: Molino
 pt: Moinho
 fr: Moulin
+ko: 방앗간
+ja: 水車
+zh: 磨坊
 @ Lake
 de: See
 es: Lago
 pt: Lago
 fr: Lac
+ko: 호수
+ja: 湖
+zh: 湖畔
 @ Vineyard
 de: Weinberg
 es: Viñedo
 pt: Vinhedo
 fr: Vignoble
+ko: 포도원
+ja: ぶどう園
+zh: 葡萄園
 @ Market
 de: Markt
 es: Mercado
 pt: Mercado
 fr: Marché
+ko: 시장
+ja: 市場
+zh: 市場
 @ Castle
 de: Burg
 es: Castillo
 pt: Castelo
 fr: Château
+ko: 성
+ja: 城
+zh: 城堡
 @ Terminal
 de: Bahnhof
 es: Terminal
 pt: Terminal
 fr: Gare
+ko: 터미널
+ja: ターミナル
+zh: 總站
 # hat adı önekleri: de "Neu-Hafen"; es/pt/fr adın ardından, cinsiyete göre değişmeyen sözcükler (bilerek serbest çeviri)
 @ New
 de: Neu
 es: Central
 pt: Central
 fr: Centre
+ko: 신
+ja: 新
+zh: 新
 @ Old
 de: Alt
 es: Real
 pt: Real
 fr: d’Antan
+ko: 구
+ja: 旧
+zh: 舊
 @ North
 de: Nord
 es: Norte
 pt: Norte
 fr: Nord
+ko: 북
+ja: 北
+zh: 北
 @ South
 de: Süd
 es: Sur
 pt: Sul
 fr: Sud
+ko: 남
+ja: 南
+zh: 南
 @ East
 de: Ost
 es: Este
 pt: Leste
 fr: Est
+ko: 동
+ja: 東
+zh: 東
 @ West
 de: West
 es: Oeste
 pt: Oeste
 fr: Ouest
+ko: 서
+ja: 西
+zh: 西
 @ Upper
 de: Ober
 es: de Arriba
 pt: de Cima
 fr: d’en Haut
+ko: 상
+ja: 上
+zh: 上
 @ Lower
 de: Unter
 es: de Abajo
 pt: de Baixo
 fr: d’en Bas
+ko: 하
+ja: 下
+zh: 下
 @ Great
 de: Groß
 es: Mayor
 pt: Maior
 fr: d’Or
+ko: 대
+ja: 大
+zh: 大
 @ Little
 de: Klein
 es: Menor
 pt: Menor
 fr: d’Azur
+ko: 소
+ja: 小
+zh: 小
 @ M{0} · {1} Line
 de: M{0} · Linie {1}
 es: M{0} · Línea {1}
 pt: M{0} · Linha {1}
 fr: M{0} · Ligne {1}
+ko: M{0} · {1}선
+ja: M{0} · {1}線
+zh: M{0} · {1}線
 @ Sunset
 de: Sonnenuntergang
 es: Atardecer
 pt: Pôr do Sol
 fr: Crépuscule
+ko: 노을
+ja: 夕焼け
+zh: 夕陽
 @ Ocean
 de: Ozean
 es: Océano
 pt: Oceano
 fr: Océan
+ko: 바다
+ja: 海
+zh: 海洋
 @ Forest
 de: Wald
 es: Bosque
 pt: Floresta
 fr: Forêt
+ko: 숲
+ja: 森
+zh: 森林
 @ Desert
 de: Wüste
 es: Desierto
 pt: Deserto
 fr: Désert
+ko: 사막
+ja: 砂漠
+zh: 沙漠
 @ Neon Night
 de: Neonnacht
 es: Noche Neón
 pt: Noite Neon
 fr: Nuit Néon
+ko: 네온 나이트
+ja: ネオンナイト
+zh: 霓虹之夜
 @ Northern Lights
 de: Polarlicht
 es: Aurora Boreal
 pt: Aurora Boreal
 fr: Aurore Boréale
+ko: 오로라
+ja: オーロラ
+zh: 極光
 @ Lava
 de: Lava
 es: Lava
 pt: Lava
 fr: Lave
+ko: 용암
+ja: 溶岩
+zh: 熔岩
 @ Cosmos
 de: Kosmos
 es: Cosmos
 pt: Cosmos
 fr: Cosmos
+ko: 우주
+ja: 宇宙
+zh: 宇宙
 @ Glacier
 de: Gletscher
 es: Glaciar
 pt: Geleira
 fr: Glacier
+ko: 빙하
+ja: 氷河
+zh: 冰河
 @ Autumn
 de: Herbst
 es: Otoño
 pt: Outono
 fr: Automne
+ko: 가을
+ja: 秋
+zh: 秋天
 @ Coral Reef
 de: Korallenriff
 es: Arrecife
 pt: Recife
 fr: Récif
+ko: 산호초
+ja: サンゴ礁
+zh: 珊瑚礁
 @ Tea Garden
 de: Teegarten
 es: Jardín de Té
 pt: Jardim de Chá
 fr: Jardin de Thé
+ko: 차밭
+ja: 茶畑
+zh: 茶園
 @ Tulip
 de: Tulpe
 es: Tulipán
 pt: Tulipa
 fr: Tulipe
+ko: 튤립
+ja: チューリップ
+zh: 鬱金香
 @ Storm
 de: Sturm
 es: Tormenta
 pt: Tempestade
 fr: Orage
+ko: 폭풍
+ja: 嵐
+zh: 暴風雨
 @ Midnight
 de: Mitternacht
 es: Medianoche
 pt: Meia-Noite
 fr: Minuit
+ko: 한밤
+ja: 真夜中
+zh: 午夜
 @ Rainbow
 de: Regenbogen
 es: Arcoíris
 pt: Arco-Íris
 fr: Arc-en-ciel
+ko: 무지개
+ja: 虹
+zh: 彩虹
 @ Retro Wave
 de: Retrowelle
 es: Ola Retro
 pt: Onda Retrô
 fr: Vague Rétro
+ko: 레트로 웨이브
+ja: レトロウェーブ
+zh: 復古浪潮
 @ Dawn
 de: Morgenrot
 es: Alba
 pt: Aurora
 fr: Aube
+ko: 새벽
+ja: 夜明け
+zh: 黎明
 @ Gold
 de: Gold
 es: Oro
 pt: Ouro
 fr: Or
+ko: 골드
+ja: ゴールド
+zh: 黃金
 @ Diamond
 de: Diamant
 es: Diamante
 pt: Diamante
 fr: Diamant
+ko: 다이아몬드
+ja: ダイヤモンド
+zh: 鑽石
 @ Ruby
 de: Rubin
 es: Rubí
 pt: Rubi
 fr: Rubis
+ko: 루비
+ja: ルビー
+zh: 紅寶石
 @ Snow Lights
 de: Schneelichter
 es: Luces de Nieve
 pt: Luzes de Neve
 fr: Lumières d’Hiver
+ko: 눈꽃 조명
+ja: 雪あかり
+zh: 雪燈
 @ Redbud
 de: Judasbaum
 es: Árbol de Judas
 pt: Flor de Judas
 fr: Arbre de Judée
+ko: 박태기꽃
+ja: ハナズオウ
+zh: 紫荊
 @ Summer Night
 de: Sommernacht
 es: Noche de Verano
 pt: Noite de Verão
 fr: Nuit d’Été
+ko: 여름밤
+ja: 夏の夜
+zh: 夏夜
 @ Harvest
 de: Erntezeit
 es: Cosecha
 pt: Colheita
 fr: Moisson
+ko: 수확
+ja: 実りの秋
+zh: 豐收
 @ Eid Lanterns
 de: Festlaternen
 es: Faroles del Eid
 pt: Lanternas do Eid
 fr: Lanternes de l’Aïd
+ko: 명절 등불
+ja: 祭りの灯
+zh: 節慶燈籠
 @ Eid Morning
 de: Festmorgen
 es: Mañana del Eid
 pt: Manhã do Eid
 fr: Matin de l’Aïd
+ko: 명절 아침
+ja: 祭りの朝
+zh: 節慶早晨
 @ Dark tunnel
 de: Dunkler Tunnel
 es: Túnel oscuro
 pt: Túnel escuro
 fr: Tunnel sombre
+ko: 어두운 터널
+ja: 暗いトンネル
+zh: 黑暗隧道
 @ New: dark tunnel
 de: Neu: dunkler Tunnel
 es: Nuevo: túnel oscuro
 pt: Novo: túnel escuro
 fr: Nouveau : tunnel sombre
+ko: 새 규칙: 어두운 터널
+ja: 新ルール：暗いトンネル
+zh: 新規則：黑暗隧道
 @ Where the line hasn’t reached is <b>dark</b>: tracks are hidden and can’t be tapped. As the line grows, the area <b>lights up</b>; break the line and it goes <b>dark</b> again. Follow the light!
 de: Wo die Linie nicht hinreicht, ist es <b>dunkel</b>: Gleise sind unsichtbar und nicht antippbar. Wächst die Linie, wird es <b>hell</b>; reißt sie ab, wird es wieder <b>dunkel</b>. Folge dem Licht!
 es: Donde no llega la línea está <b>oscuro</b>: las vías no se ven ni se pueden tocar. Al crecer la línea, la zona se <b>ilumina</b>; si se corta, vuelve a <b>oscurecer</b>. ¡Sigue la luz!
 pt: Onde a linha não chega fica <b>escuro</b>: os trilhos somem e não dá para tocar. Conforme a linha cresce, tudo <b>se ilumina</b>; se ela se rompe, volta a <b>escurecer</b>. Siga a luz!
 fr: Là où la ligne n’arrive pas, tout est <b>sombre</b> : rails invisibles et intouchables. Quand la ligne avance, la zone <b>s’éclaire</b> ; si elle se coupe, tout redevient <b>sombre</b>. Suis la lumière !
+ko: 노선이 닿지 않은 곳은 <b>어두워요</b>. 선로가 보이지 않고 탭할 수도 없어요. 노선이 뻗어 가면 주변이 <b>밝아지고</b>, 노선이 끊기면 다시 <b>어두워져요</b>. 빛을 따라가세요!
+ja: 路線が届いていない場所は<b>暗く</b>、線路が見えずタップもできません。路線がのびるとまわりが<b>明るく</b>なり、途切れるとまた<b>暗く</b>なります。光をたどろう！
+zh: 路線還沒到達的地方一片<b>黑暗</b>：看不見軌道，也無法點擊。路線延伸時，周圍會<b>亮起來</b>；路線一斷開，又會<b>變暗</b>。跟著光走！
 @ Reverse tile
 de: Umkehrkachel
 es: Pieza inversa
 pt: Peça inversa
 fr: Tuile inverse
+ko: 역회전 타일
+ja: 逆回転タイル
+zh: 反轉方塊
 @ New: reverse tile
 de: Neu: Umkehrkachel
 es: Nuevo: pieza inversa
 pt: Novo: peça inversa
 fr: Nouveau : tuile inverse
+ko: 새 규칙: 역회전 타일
+ja: 新ルール：逆回転タイル
+zh: 新規則：反轉方塊
 @ Arrow (↺) tiles turn the <b>other way</b>, counterclockwise. Don’t trust your finger’s habit!
 de: Pfeilkacheln (↺) drehen sich <b>andersherum</b>, gegen den Uhrzeigersinn. Trau nicht der Gewohnheit deines Fingers!
 es: Las piezas con flecha (↺) giran <b>al revés</b>, en sentido antihorario. ¡No te fíes de la costumbre de tu dedo!
 pt: Peças com seta (↺) giram <b>ao contrário</b>, no sentido anti-horário. Não confie no hábito do seu dedo!
 fr: Les tuiles fléchées (↺) tournent <b>dans l’autre sens</b>, à l’envers des aiguilles d’une montre. Méfie-toi de l’habitude de ton doigt !
+ko: 화살표(↺) 타일은 <b>반대 방향</b>, 즉 시계 반대 방향으로 돌아요. 손가락 습관을 믿지 마세요!
+ja: 矢印（↺）のタイルは<b>逆向き</b>、反時計回りに回ります。指のクセにご用心！
+zh: 箭頭（↺）方塊會往<b>反方向</b>轉，也就是逆時針。別相信手指的習慣！
 @ Counter tile
 de: Zählkachel
 es: Pieza contador
 pt: Peça contador
 fr: Tuile compteur
+ko: 카운터 타일
+ja: カウンタータイル
+zh: 計數方塊
 @ New: counter tile
 de: Neu: Zählkachel
 es: Nuevo: pieza contador
 pt: Novo: peça contador
 fr: Nouveau : tuile compteur
+ko: 새 규칙: 카운터 타일
+ja: 新ルール：カウンタータイル
+zh: 新規則：計數方塊
 @ A numbered tile turns at most <b>3 times</b>, then locks. <b>Think first, then tap.</b> Stuck? ↺ restart or use a 💡 hint.
 de: Eine Zahlenkachel dreht sich höchstens <b>3-mal</b>, dann sperrt sie. <b>Erst denken, dann tippen.</b> Festgefahren? ↺ Neustart oder 💡 Tipp.
 es: Una pieza con número gira como mucho <b>3 veces</b> y se bloquea. <b>Piensa primero, toca después.</b> ¿Atascado? ↺ reinicia o usa una 💡 pista.
 pt: Uma peça numerada gira no máximo <b>3 vezes</b> e trava. <b>Pense antes, toque depois.</b> Travou? ↺ recomece ou use uma 💡 dica.
 fr: Une tuile numérotée tourne <b>3 fois</b> au plus, puis se bloque. <b>Réfléchis, puis touche.</b> Coincé ? ↺ recommence ou prends un 💡 indice.
+ko: 숫자 타일은 최대 <b>3번</b> 돌고 나면 잠겨요. <b>먼저 생각하고 탭하세요.</b> 막혔다면 ↺ 다시 시작하거나 💡 힌트를 쓰세요.
+ja: 数字のタイルは<b>3回</b>まで回ると固定されます。<b>考えてからタップ。</b>詰まったら↺やり直すか💡ヒントを使おう。
+zh: 數字方塊最多轉 <b>3 次</b>，之後就會鎖住。<b>先想再點。</b>卡住了？↺ 重來或使用 💡 提示。
 @ Two hubs
 de: Zwei Zentren
 es: Dos centros
 pt: Dois centros
 fr: Deux centres
+ko: 두 허브
+ja: ふたつのハブ
+zh: 雙樞紐
 @ New: two hubs
 de: Neu: zwei Zentren
 es: Nuevo: dos centros
 pt: Novo: dois centros
 fr: Nouveau : deux centres
+ko: 새 규칙: 두 허브
+ja: 新ルール：ふたつのハブ
+zh: 新規則：雙樞紐
 @ <b>Two hubs, two colors.</b> Every station must reach its own hub. If the two lines touch, they glow <b>red</b>: split them!
 de: <b>Zwei Zentren, zwei Farben.</b> Jede Station muss ihr eigenes Zentrum erreichen. Berühren sich die Linien, leuchten sie <b>rot</b>: trenn sie!
 es: <b>Dos centros, dos colores.</b> Cada estación debe llegar a su propio centro. Si las dos líneas se tocan, brillan en <b>rojo</b>: ¡sepáralas!
 pt: <b>Dois centros, duas cores.</b> Cada estação precisa chegar ao seu centro. Se as duas linhas se tocam, ficam <b>vermelhas</b>: separe-as!
 fr: <b>Deux centres, deux couleurs.</b> Chaque station doit rejoindre son centre. Si les deux lignes se touchent, elles brillent en <b>rouge</b> : sépare-les !
+ko: <b>허브도 둘, 색도 둘.</b> 모든 역은 자기 허브에 닿아야 해요. 두 노선이 맞닿으면 <b>빨갛게</b> 빛나요. 떼어 놓으세요!
+ja: <b>ハブがふたつ、色もふたつ。</b>どの駅も自分の色のハブにつなげます。ふたつの路線がふれると<b>赤く</b>光ります。切り離そう！
+zh: <b>兩個樞紐，兩種顏色。</b>每個車站都要連到自己的樞紐。兩條路線一碰到就會發出<b>紅光</b>：把它們分開！
 @ Paired tiles
 de: Paarkacheln
 es: Piezas gemelas
 pt: Peças gêmeas
 fr: Tuiles jumelles
+ko: 짝 타일
+ja: ペアタイル
+zh: 成對方塊
 @ New: paired tiles
 de: Neu: Paarkacheln
 es: Nuevo: piezas gemelas
 pt: Novo: peças gêmeas
 fr: Nouveau : tuiles jumelles
+ko: 새 규칙: 짝 타일
+ja: 新ルール：ペアタイル
+zh: 新規則：成對方塊
 @ Two tiles with the same color and number <b>turn together</b>: tap one and the other turns too. Find a spot where both fit. One tap = <b>1 move</b>.
 de: Zwei Kacheln mit gleicher Farbe und Zahl <b>drehen sich zusammen</b>: Tippst du eine an, dreht sich die andere mit. Finde die Lage, in der beide passen. Ein Tippen = <b>1 Zug</b>.
 es: Dos piezas del mismo color y número <b>giran juntas</b>: toca una y la otra también gira. Busca la posición en la que encajen las dos. Un toque = <b>1 jugada</b>.
 pt: Duas peças com a mesma cor e número <b>giram juntas</b>: toque numa e a outra gira também. Ache a posição em que as duas encaixam. Um toque = <b>1 jogada</b>.
 fr: Deux tuiles de même couleur et même numéro <b>tournent ensemble</b> : touche l’une, l’autre tourne aussi. Trouve la position où les deux s’emboîtent. Une touche = <b>1 coup</b>.
+ko: 색과 숫자가 같은 두 타일은 <b>함께 돌아요</b>. 하나를 탭하면 다른 하나도 돌아요. 둘 다 맞는 방향을 찾으세요. 한 번 탭 = <b>1 이동</b>.
+ja: 色と数字が同じふたつのタイルは<b>いっしょに回ります</b>。片方をタップするともう片方も回ります。両方がはまる向きを探そう。1タップ＝<b>1手</b>。
+zh: 顏色和數字相同的兩個方塊會<b>一起轉</b>：點一個，另一個也跟著轉。找出兩個都對的方向。點一下 = <b>1 步</b>。
 @ Close
 de: Schließen
 es: Cerrar
 pt: Fechar
 fr: Fermer
+ko: 닫기
+ja: 閉じる
+zh: 關閉
 @ New line in {0}
 de: Neue Linie in {0}
 es: Nueva línea en {0}
 pt: Nova linha em {0}
 fr: Nouvelle ligne dans {0}
+ko: 새 노선까지 {0}
+ja: 次の路線まで {0}
+zh: 新路線倒數 {0}
 @ Next Daily Line: {0}
 de: Nächste Tageslinie: {0}
 es: Próxima Línea del día: {0}
 pt: Próxima Linha do Dia: {0}
 fr: Prochaine Ligne du jour : {0}
+ko: 다음 오늘의 노선까지 {0}
+ja: 次の「今日の路線」まで {0}
+zh: 下一條每日路線：{0}
 @ hint
 de: Tipp
 es: pista
 pt: dica
 fr: indice
+ko: 힌트
+ja: ヒント
+zh: 提示
 @ hints
 de: Tipps
 es: pistas
 pt: dicas
 fr: indices
+ko: 힌트
+ja: ヒント
+zh: 提示
 @ Level␣
 de: Level␣
 es: Nivel␣
 pt: Fase␣
 fr: Niveau␣
+ko: 레벨␣
+ja: ステージ␣
+zh: 關卡␣
 @ Done ✓
 de: Fertig ✓
 es: Hecho ✓
 pt: Feito ✓
 fr: Fait ✓
+ko: 완료 ✓
+ja: クリア ✓
+zh: 完成 ✓
 @ Ready
 de: Bereit
 es: Lista
 pt: Pronta
 fr: Prête
+ko: 준비 완료
+ja: 準備OK
+zh: 準備好了
 @ 💔 {0}-day streak lost · save it
 de: 💔 {0}-Tage-Serie gerissen · retten
 es: 💔 Racha de {0} días rota · sálvala
 pt: 💔 Sequência de {0} dias perdida · salve
 fr: 💔 Série de {0} jours perdue · sauve-la
+ko: 💔 {0}일 연속 기록이 끊겼어요 · 지키기
+ja: 💔 {0}日連続が途切れた · 取り戻す
+zh: 💔 連續 {0} 天中斷了 · 挽救
 @ 🔥 Keep your {0}-day streak
 de: 🔥 Halte deine {0}-Tage-Serie
 es: 🔥 Mantén tu racha de {0} días
 pt: 🔥 Mantenha sua sequência de {0} dias
 fr: 🔥 Garde ta série de {0} jours
+ko: 🔥 {0}일 연속 기록을 지키세요
+ja: 🔥 {0}日連続をキープしよう
+zh: 🔥 保住連續 {0} 天紀錄
 @ A new line every day
 de: Jeden Tag eine neue Linie
 es: Una línea nueva cada día
 pt: Uma linha nova todo dia
 fr: Une nouvelle ligne chaque jour
+ko: 매일 새로운 노선
+ja: 毎日あたらしい路線
+zh: 每天一條新路線
 @ open
 de: offen
 es: abierta
 pt: aberta
 fr: ouverte
+ko: 개통
+ja: 開通
+zh: 已開通
 @ ★ {0} to go → M{1}
 de: ★ noch {0} → M{1}
 es: ★ faltan {0} → M{1}
 pt: ★ faltam {0} → M{1}
 fr: ★ encore {0} → M{1}
+ko: ★ {0}개 남음 → M{1}
+ja: ★ あと{0} → M{1}
+zh: ★ 還差 {0} → M{1}
 @ ☕ breather level
 de: ☕ Pausenlevel
 es: ☕ nivel de respiro
 pt: ☕ fase de pausa
 fr: ☕ niveau détente
+ko: ☕ 쉬어 가는 레벨
+ja: ☕ ひと休みステージ
+zh: ☕ 休息關卡
 @ ⚡ {0} hard
 de: ⚡ {0} schwer
 es: ⚡ {0} difícil
 pt: ⚡ {0} difícil
 fr: ⚡ difficulté {0}
+ko: ⚡ 난이도 {0}
+ja: ⚡ 難易度 {0}
+zh: ⚡ 難度 {0}
 @ DAILY LINE · ⚡{0}
 de: TAGESLINIE · ⚡{0}
 es: LÍNEA DEL DÍA · ⚡{0}
 pt: LINHA DO DIA · ⚡{0}
 fr: LIGNE DU JOUR · ⚡{0}
+ko: 오늘의 노선 · ⚡{0}
+ja: 今日の路線 · ⚡{0}
+zh: 每日路線 · ⚡{0}
 @ Earn stars → open new lines
 de: Sterne sammeln → neue Linien öffnen
 es: Gana estrellas → abre líneas nuevas
 pt: Ganhe estrelas → abra linhas novas
 fr: Gagne des étoiles → ouvre des lignes
+ko: 별을 모아 → 새 노선 개통
+ja: 星を集めて → 新しい路線を開通
+zh: 收集星星 → 開通新路線
 @ <h2>{0} is locked</h2> <p>You need <b class="nw">★ {1}</b> to open this line. You have <b class="nw">★ {2}</b>.<br>Replay earlier levels <b>faster</b> and in <b>fewer moves</b> to earn more stars.</p>
 de: <h2>{0} ist gesperrt</h2> <p>Du brauchst <b class="nw">★ {1}</b>, um diese Linie zu öffnen. Du hast <b class="nw">★ {2}</b>.<br>Spiel frühere Level <b>schneller</b> und mit <b>weniger Zügen</b>, um mehr Sterne zu holen.</p>
 es: <h2>{0} está bloqueada</h2> <p>Necesitas <b class="nw">★ {1}</b> para abrir esta línea. Tienes <b class="nw">★ {2}</b>.<br>Repite niveles anteriores <b>más rápido</b> y con <b>menos jugadas</b> para ganar más estrellas.</p>
 pt: <h2>{0} está bloqueada</h2> <p>Você precisa de <b class="nw">★ {1}</b> para abrir esta linha. Você tem <b class="nw">★ {2}</b>.<br>Jogue fases anteriores <b>mais rápido</b> e com <b>menos jogadas</b> para ganhar mais estrelas.</p>
 fr: <h2>{0} est verrouillée</h2> <p>Il te faut <b class="nw">★ {1}</b> pour ouvrir cette ligne. Tu as <b class="nw">★ {2}</b>.<br>Rejoue des niveaux <b>plus vite</b> et en <b>moins de coups</b> pour gagner plus d’étoiles.</p>
+ko: <h2>{0} 잠김</h2> <p>이 노선을 열려면 <b class="nw">★ {1}</b>개가 필요해요. 지금 <b class="nw">★ {2}</b>개 있어요.<br>지난 레벨을 <b>더 빠르게</b>, <b>더 적은 이동</b>으로 다시 깨서 별을 더 모으세요.</p>
+ja: <h2>{0}はまだ開通していません</h2> <p>この路線を開通するには<b class="nw">★ {1}</b>が必要です。いまは<b class="nw">★ {2}</b>。<br>前のステージを<b>もっと速く</b>、<b>少ない手数</b>でクリアし直して星を集めよう。</p>
+zh: <h2>{0}尚未開通</h2> <p>開通這條路線需要 <b class="nw">★ {1}</b>，你目前有 <b class="nw">★ {2}</b>。<br>用<b>更快的速度</b>、<b>更少的步數</b>重玩之前的關卡，就能拿到更多星星。</p>
 @ Go to lines
 de: Zu den Linien
 es: Ir a las líneas
 pt: Ir para as linhas
 fr: Voir les lignes
+ko: 노선 보기
+ja: 路線へ
+zh: 前往路線
 @ {0} {1} short
 de: noch {0} {1}
 es: faltan {0} {1}
 pt: faltam {0} {1}
 fr: encore {0} {1}
+ko: 별 {0}개 부족
+ja: 星があと{0}個
+zh: 還差 {0} 顆星
 @ star
 de: Stern
 es: estrella
 pt: estrela
 fr: étoile
+ko: 별
+ja: 星
+zh: 星
 @ stars
 de: Sterne
 es: estrellas
 pt: estrelas
 fr: étoiles
+ko: 별
+ja: 星
+zh: 星
 @ 🍃 Zen
 de: 🍃 Zen
 es: 🍃 Zen
 pt: 🍃 Zen
 fr: 🍃 Zen
+ko: 🍃 젠
+ja: 🍃 禅
+zh: 🍃 禪
 @ Daily Line · past day
 de: Tageslinie · vergangener Tag
 es: Línea del día · día pasado
 pt: Linha do Dia · dia passado
 fr: Ligne du jour · jour passé
+ko: 오늘의 노선 · 지난 날
+ja: 今日の路線 · 過去の日
+zh: 每日路線 · 過去日
 @ Daily Line · practice
 de: Tageslinie · Übung
 es: Línea del día · práctica
 pt: Linha do Dia · treino
 fr: Ligne du jour · entraînement
+ko: 오늘의 노선 · 연습
+ja: 今日の路線 · 練習
+zh: 每日路線 · 練習
 @ Daily Line
 de: Tageslinie
 es: Línea del día
 pt: Linha do Dia
 fr: Ligne du jour
+ko: 오늘의 노선
+ja: 今日の路線
+zh: 每日路線
 @ Level
 de: Level
 es: Nivel
 pt: Fase
 fr: Niveau
+ko: 레벨
+ja: ステージ
+zh: 關卡
 @  · 🏁 Last stop
 de:  · 🏁 Endstation
 es:  · 🏁 Última parada
 pt:  · 🏁 Última parada
 fr:  · 🏁 Terminus
+ko:  · 🏁 종점
+ja:  · 🏁 終点
+zh:  · 🏁 終點站
 @ ☕ breather
 de: ☕ Pause
 es: ☕ respiro
 pt: ☕ pausa
 fr: ☕ détente
+ko: ☕ 쉬어 가기
+ja: ☕ ひと休み
+zh: ☕ 休息
 @ Tap a tile → it turns
 de: Tippe eine Kachel → sie dreht sich
 es: Toca una pieza → gira
 pt: Toque numa peça → ela gira
 fr: Touche une tuile → elle tourne
+ko: 타일을 탭 → 회전
+ja: タイルをタップ → 回転
+zh: 點方塊 → 旋轉
 @ ✨ Finish perfect → get your {0} streak back
 de: ✨ Perfekt beenden → deine {0}er-Serie kommt zurück
 es: ✨ Termina perfecto → recupera tu racha de {0}
 pt: ✨ Termine perfeito → recupere sua sequência de {0}
 fr: ✨ Finis parfait → récupère ta série de {0}
+ko: ✨ 퍼펙트로 깨면 → {0} 연속 기록 복구
+ja: ✨ パーフェクトでクリア → {0}連続が復活
+zh: ✨ 完美過關 → 找回連續 {0} 次紀錄
 @ 🏁 Last stop · finish perfect → +1 bonus 🎫
 de: 🏁 Endstation · perfekt beenden → +1 Bonus-🎫
 es: 🏁 Última parada · termina perfecto → +1 🎫 extra
 pt: 🏁 Última parada · termine perfeito → +1 🎫 bônus
 fr: 🏁 Terminus · finis parfait → +1 🎫 bonus
+ko: 🏁 종점 · 퍼펙트로 깨면 → 보너스 +1 🎫
+ja: 🏁 終点 · パーフェクトで → ボーナス +1 🎫
+zh: 🏁 終點站 · 完美過關 → 額外 +1 🎫
 @ Last time: {0}
 de: Letztes Mal: {0}
 es: La última vez: {0}
 pt: Da última vez: {0}
 fr: La dernière fois : {0}
+ko: 지난번: {0}
+ja: 前回：{0}
+zh: 上次：{0}
 @ ↻ MOVE TARGET
 de: ↻ ZUGZIEL
 es: ↻ OBJETIVO
 pt: ↻ META DE JOGADAS
 fr: ↻ OBJECTIF COUPS
+ko: ↻ 이동 목표
+ja: ↻ 目標手数
+zh: ↻ 步數目標
 @ ↻ OVER TARGET
 de: ↻ ZIEL VERFEHLT
 es: ↻ OBJETIVO SUPERADO
 pt: ↻ META ESTOURADA
 fr: ↻ OBJECTIF DÉPASSÉ
+ko: ↻ 목표 초과
+ja: ↻ 目標オーバー
+zh: ↻ 超過目標
 @ late
 de: Verspätung
 es: de retraso
 pt: de atraso
 fr: de retard
+ko: 지연
+ja: 遅延
+zh: 誤點
 @ 🚉 Last train in 10 s
 de: 🚉 Letzter Zug in 10 s
 es: 🚉 Último tren en 10 s
 pt: 🚉 Último trem em 10 s
 fr: 🚉 Dernier train dans 10 s
+ko: 🚉 막차까지 10초
+ja: 🚉 終電まで10秒
+zh: 🚉 末班車 10 秒後發車
 @  · ↺ restart → keep ✨{0}
 de:  · ↺ Neustart → ✨{0} bleibt
 es:  · ↺ reinicia → conservas ✨{0}
 pt:  · ↺ recomece → mantém ✨{0}
 fr:  · ↺ recommence → garde ✨{0}
+ko:  · ↺ 다시 시작 → ✨{0} 유지
+ja:  · ↺ やり直し → ✨{0}をキープ
+zh:  · ↺ 重來 → 保住 ✨{0}
 @ ⏱ Train is late · ★ lost
 de: ⏱ Zug verspätet · ★ weg
 es: ⏱ El tren va tarde · ★ perdida
 pt: ⏱ Trem atrasado · ★ perdida
 fr: ⏱ Train en retard · ★ perdue
+ko: ⏱ 열차 지연 · ★ 잃음
+ja: ⏱ 列車が遅延 · ★ を失った
+zh: ⏱ 列車誤點 · 失去 ★
 @ ↻ Move target passed · ★ lost
 de: ↻ Zugziel überschritten · ★ weg
 es: ↻ Objetivo superado · ★ perdida
 pt: ↻ Meta de jogadas estourada · ★ perdida
 fr: ↻ Objectif dépassé · ★ perdue
+ko: ↻ 이동 목표 초과 · ★ 잃음
+ja: ↻ 目標手数をオーバー · ★ を失った
+zh: ↻ 超過步數目標 · 失去 ★
 @ ↶ {0} {1} undone
 de: ↶ {0} {1} zurückgenommen
 es: ↶ {0} {1} deshechas
 pt: ↶ {0} {1} desfeitas
 fr: ↶ {0} {1} annulés
+ko: ↶ {0}번 이동 되돌림
+ja: ↶ {0}手戻しました
+zh: ↶ 已復原 {0} 步
 @ move
 de: Zug
 es: jugada
 pt: jogada
 fr: coup
+ko: 이동
+ja: 手
+zh: 步
 @ moves
 de: Züge
 es: jugadas
 pt: jogadas
 fr: coups
+ko: 이동
+ja: 手
+zh: 步
 @ 🔦 Lantern on · 5 s
 de: 🔦 Laterne an · 5 s
 es: 🔦 Linterna encendida · 5 s
 pt: 🔦 Lanterna acesa · 5 s
 fr: 🔦 Lanterne allumée · 5 s
+ko: 🔦 손전등 켜짐 · 5초
+ja: 🔦 ライト点灯 · 5秒
+zh: 🔦 手電筒開啟 · 5 秒
 @ ⏱ +15 s · the train waits a bit longer
 de: ⏱ +15 s · der Zug wartet noch etwas
 es: ⏱ +15 s · el tren espera un poco más
 pt: ⏱ +15 s · o trem espera mais um pouco
 fr: ⏱ +15 s · le train attend un peu
+ko: ⏱ +15초 · 열차가 조금 더 기다려요
+ja: ⏱ +15秒 · 列車がもう少し待ってくれます
+zh: ⏱ +15 秒 · 列車再多等一下
 @ Extra turn
 de: Extradrehung
 es: Giro extra
 pt: Giro extra
 fr: Tour bonus
+ko: 추가 회전
+ja: 追加回転
+zh: 額外轉動
 @ This counter tile is used up. An extra turn lets it turn <b>once more</b>.
 de: Diese Zählkachel ist aufgebraucht. Mit einer Extradrehung dreht sie sich <b>noch einmal</b>.
 es: Esta pieza contador se agotó. Un giro extra la deja girar <b>una vez más</b>.
 pt: Esta peça contador acabou. Um giro extra deixa ela girar <b>mais uma vez</b>.
 fr: Cette tuile compteur est épuisée. Un tour bonus la fait tourner <b>une fois de plus</b>.
+ko: 이 카운터 타일은 다 썼어요. 추가 회전을 쓰면 <b>한 번 더</b> 돌릴 수 있어요.
+ja: このカウンタータイルは使い切りました。追加回転で<b>もう1回</b>回せます。
+zh: 這個計數方塊已經用完了。使用額外轉動可以<b>再轉一次</b>。
 @ Use extra turn
 de: Extradrehung nutzen
 es: Usar giro extra
 pt: Usar giro extra
 fr: Utiliser
+ko: 추가 회전 사용
+ja: 追加回転を使う
+zh: 使用額外轉動
 @ {0} left
 de: noch {0}
 es: quedan {0}
 pt: restam {0}
 fr: il en reste {0}
+ko: {0}개 남음
+ja: 残り{0}
+zh: 剩 {0} 個
 @ Cancel
 de: Abbrechen
 es: Cancelar
 pt: Cancelar
 fr: Annuler
+ko: 취소
+ja: キャンセル
+zh: 取消
 @ 🔄 Extra turn · the tile turns once more
 de: 🔄 Extradrehung · die Kachel dreht sich noch einmal
 es: 🔄 Giro extra · la pieza gira una vez más
 pt: 🔄 Giro extra · a peça gira mais uma vez
 fr: 🔄 Tour bonus · la tuile tourne encore une fois
+ko: 🔄 추가 회전 · 타일이 한 번 더 돌아요
+ja: 🔄 追加回転 · タイルがもう1回回ります
+zh: 🔄 額外轉動 · 方塊可以再轉一次
 @ ☕ Guess I’ll grab another coffee…
 de: ☕ Dann hol ich mir noch einen Kaffee…
 es: ☕ Pues me tomo otro café…
 pt: ☕ Então vou pegar mais um café…
 fr: ☕ Bon, je reprends un café…
+ko: ☕ 커피 한 잔 더 마셔야겠다…
+ja: ☕ もう一杯コーヒーでも飲もうかな…
+zh: ☕ 看來得再來一杯咖啡了…
 @ Hope the boss is patient today.
 de: Hoffentlich ist der Chef heute geduldig.
 es: Ojalá el jefe tenga paciencia hoy.
 pt: Tomara que o chefe tenha paciência hoje.
 fr: Pourvu que le patron soit patient aujourd’hui.
+ko: 오늘은 부장님이 너그러우시길.
+ja: 今日は上司が寛大だといいな。
+zh: 希望老闆今天有耐心。
 @ Finished another chapter 📖
 de: Wieder ein Kapitel geschafft 📖
 es: Otro capítulo terminado 📖
 pt: Mais um capítulo lido 📖
 fr: Encore un chapitre de lu 📖
+ko: 책 한 챕터 또 끝냈다 📖
+ja: また一章読み終わった 📖
+zh: 又看完一章了 📖
 @ Signal failure, maybe?
 de: Signalstörung, vielleicht?
 es: ¿Fallo de señal, quizá?
 pt: Falha de sinal, será?
 fr: Panne de signal, peut-être ?
+ko: 신호 장애인가?
+ja: 信号トラブルかな？
+zh: 號誌故障嗎？
 @ Walking would’ve been faster 🚶
 de: Zu Fuß wär ich schneller gewesen 🚶
 es: Andando habría llegado antes 🚶
 pt: A pé teria sido mais rápido 🚶
 fr: À pied, ça aurait été plus vite 🚶
+ko: 걸어가는 게 빨랐겠다 🚶
+ja: 歩いたほうが速かったな 🚶
+zh: 用走的還比較快 🚶
 @ Oh well, nice view.
 de: Na ja, schöne Aussicht.
 es: Bueno, bonita vista.
 pt: Ah, pelo menos a vista é bonita.
 fr: Bah, la vue est belle.
+ko: 뭐, 경치는 좋네.
+ja: まあ、景色はいいけどね。
+zh: 算了，風景不錯。
 @ Mom texted “where are you” 📱
 de: Mama schreibt „wo bist du“ 📱
 es: Mamá escribió «¿dónde estás?» 📱
 pt: Minha mãe mandou “cadê você?” 📱
 fr: Maman a écrit « t’es où ? » 📱
+ko: 엄마한테 "어디야" 문자 왔다 📱
+ja: 母から「どこにいるの」ってメッセージ 📱
+zh: 媽媽傳訊息問「你在哪」📱
 @ A whole album just ended 🎧
 de: Ein ganzes Album ist schon durch 🎧
 es: Se acabó un álbum entero 🎧
 pt: Um álbum inteiro acabou 🎧
 fr: Un album entier vient de finir 🎧
+ko: 앨범 한 장이 통째로 끝났다 🎧
+ja: アルバム1枚まるごと聴き終わった 🎧
+zh: 整張專輯都聽完了 🎧
 @ Patience, patience… 🧘
 de: Geduld, Geduld… 🧘
 es: Paciencia, paciencia… 🧘
 pt: Paciência, paciência… 🧘
 fr: Patience, patience… 🧘
+ko: 인내, 인내… 🧘
+ja: がまん、がまん… 🧘
+zh: 耐心，耐心… 🧘
 @ I’ll clap when the train arrives 👏
 de: Ich klatsche, wenn der Zug kommt 👏
 es: Aplaudiré cuando llegue el tren 👏
 pt: Vou aplaudir quando o trem chegar 👏
 fr: J’applaudirai quand le train arrivera 👏
+ko: 열차 오면 박수 쳐야지 👏
+ja: 列車が来たら拍手しよう 👏
+zh: 列車來了我要鼓掌 👏
 @ I said “on my way”. They believed me 😅
 de: Ich schrieb „bin unterwegs“. Sie glaubten mir 😅
 es: Dije «voy de camino». Me creyeron 😅
 pt: Falei “tô chegando”. Acreditaram 😅
 fr: J’ai dit « j’arrive ». On m’a cru 😅
+ko: "가는 중"이라고 했더니 믿더라 😅
+ja: 「いま向かってる」って送ったら信じてくれた 😅
+zh: 我說「在路上了」，他們居然相信 😅
 @ My coffee went cold ☕
 de: Mein Kaffee ist kalt geworden ☕
 es: Se me enfrió el café ☕
 pt: Meu café esfriou ☕
 fr: Mon café a refroidi ☕
+ko: 커피가 다 식었네 ☕
+ja: コーヒーが冷めちゃった ☕
+zh: 咖啡都涼了 ☕
 @ This delay will go down in history.
 de: Diese Verspätung geht in die Geschichte ein.
 es: Este retraso pasará a la historia.
 pt: Esse atraso vai entrar para a história.
 fr: Ce retard restera dans l’histoire.
+ko: 이번 지연은 역사에 남겠다.
+ja: この遅延は歴史に残るな。
+zh: 這次誤點會載入史冊。
 @ Almost there? The light’s on 💡
 de: Fast da? Das Licht ist an 💡
 es: ¿Ya casi? La luz está encendida 💡
 pt: Quase lá? A luz acendeu 💡
 fr: Presque ? La lumière est allumée 💡
+ko: 거의 다 왔나? 불이 들어왔어 💡
+ja: もうすぐかな？明かりがついた 💡
+zh: 快到了嗎？燈亮了 💡
 @ This tile was set by a hint
 de: Diese Kachel hat ein Tipp gesetzt
 es: Una pista colocó esta pieza
 pt: Uma dica fixou esta peça
 fr: Un indice a placé cette tuile
+ko: 힌트로 맞춘 타일이에요
+ja: ヒントで合わせたタイルです
+zh: 這個方塊是提示擺好的
 @ Dark tunnel · lights up as the line nears
 de: Dunkler Tunnel · wird hell, wenn die Linie naht
 es: Túnel oscuro · se ilumina al acercarse la línea
 pt: Túnel escuro · acende quando a linha chega perto
 fr: Tunnel sombre · s’éclaire quand la ligne approche
+ko: 어두운 터널 · 노선이 다가오면 밝아져요
+ja: 暗いトンネル · 路線が近づくと明るくなる
+zh: 黑暗隧道 · 路線接近時會亮起
 @ Counter used up · tile is in place
 de: Zähler aufgebraucht · Kachel sitzt richtig
 es: Contador agotado · la pieza está bien
 pt: Contador esgotado · a peça está certa
 fr: Compteur épuisé · la tuile est en place
+ko: 카운터 소진 · 타일이 제자리에 있어요
+ja: カウンター切れ · タイルは正しい向き
+zh: 次數用完 · 方塊已在正確位置
 @ Counter used up · ↺ restart or 💡 hint
 de: Zähler aufgebraucht · ↺ Neustart oder 💡 Tipp
 es: Contador agotado · ↺ reinicia o 💡 pista
 pt: Contador esgotado · ↺ recomece ou 💡 dica
 fr: Compteur épuisé · ↺ recommence ou 💡 indice
+ko: 카운터 소진 · ↺ 다시 시작 또는 💡 힌트
+ja: カウンター切れ · ↺ やり直すか 💡 ヒント
+zh: 次數用完 · ↺ 重來或 💡 提示
 @ Paired tiles · both turn together
 de: Paarkacheln · beide drehen sich zusammen
 es: Piezas gemelas · giran juntas
 pt: Peças gêmeas · giram juntas
 fr: Tuiles jumelles · elles tournent ensemble
+ko: 짝 타일 · 둘이 함께 돌아요
+ja: ペアタイル · ふたつ同時に回る
+zh: 成對方塊 · 兩個一起轉
 @ The two lines touch · split them!
 de: Die Linien berühren sich · trenn sie!
 es: Las dos líneas se tocan · ¡sepáralas!
 pt: As duas linhas se tocam · separe-as!
 fr: Les deux lignes se touchent · sépare-les !
+ko: 두 노선이 맞닿았어요 · 떼어 놓으세요!
+ja: ふたつの路線がふれています · 切り離そう！
+zh: 兩條路線碰在一起了 · 把它們分開！
 @ On time
 de: Pünktlich
 es: A tiempo
 pt: No horário
 fr: À l’heure
+ko: 정시
+ja: 定刻
+zh: 準點

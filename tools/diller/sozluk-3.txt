@@ -5,628 +5,1006 @@ de: Heute
 es: Hoy
 pt: Hoje
 fr: Aujourd’hui
+ko: 오늘
+ja: 今日
+zh: 今天
 @ {0}-day streak
 de: {0}-Tage-Serie
 es: Racha de {0} días
 pt: Sequência de {0} dias
 fr: Série de {0} jours
+ko: {0}일 연속
+ja: {0}日連続
+zh: 連續 {0} 天
 @ Today’s line is done.
 de: Die heutige Linie ist geschafft.
 es: La línea de hoy está hecha.
 pt: A linha de hoje está feita.
 fr: La ligne du jour est faite.
+ko: 오늘의 노선을 완료했어요.
+ja: 今日の路線はクリア済みです。
+zh: 今天的路線已完成。
 @ Finish today’s line to keep your streak!
 de: Schaff die heutige Linie, um deine Serie zu halten!
 es: ¡Termina la línea de hoy para mantener tu racha!
 pt: Termine a linha de hoje para manter sua sequência!
 fr: Finis la ligne du jour pour garder ta série !
+ko: 오늘의 노선을 깨고 연속 기록을 지키세요!
+ja: 今日の路線をクリアして連続記録をキープしよう！
+zh: 完成今天的路線，保住連續紀錄！
 @ Finish the Daily Line to start a streak!
 de: Schaff die Tageslinie, um eine Serie zu starten!
 es: ¡Termina la Línea del día para empezar una racha!
 pt: Termine a Linha do Dia para começar uma sequência!
 fr: Finis la Ligne du jour pour lancer une série !
+ko: 오늘의 노선을 깨고 연속 기록을 시작하세요!
+ja: 今日の路線をクリアして連続記録をはじめよう！
+zh: 完成每日路線，開始連續紀錄！
 @ best streak
 de: beste Serie
 es: mejor racha
 pt: melhor sequência
 fr: meilleure série
+ko: 최고 연속
+ja: 最高連続
+zh: 最佳紀錄
 @ total days
 de: Tage gesamt
 es: días en total
 pt: dias no total
 fr: jours au total
+ko: 총 일수
+ja: 合計日数
+zh: 總天數
 @ OK
 de: OK
 es: Vale
 pt: OK
 fr: OK
+ko: 확인
+ja: OK
+zh: 好
 @ Keep your streak
 de: Serie halten
 es: Mantén tu racha
 pt: Mantenha a sequência
 fr: Garde ta série
+ko: 연속 기록 지키기
+ja: 連続記録をキープ
+zh: 保住連續紀錄
 @ Past days
 de: Vergangene Tage
 es: Días pasados
 pt: Dias passados
 fr: Jours passés
+ko: 지난 날
+ja: 過去の日
+zh: 過去日
 @ Finish {0} levels
 de: Schaff {0} Level
 es: Completa {0} niveles
 pt: Complete {0} fases
 fr: Finis {0} niveaux
+ko: 레벨 {0}개 깨기
+ja: ステージを{0}回クリア
+zh: 完成 {0} 個關卡
 @ Finish {0} levels perfect
 de: Schaff {0} Level perfekt
 es: Completa {0} niveles perfectos
 pt: Complete {0} fases perfeitas
 fr: Finis {0} niveaux parfaits
+ko: 레벨 {0}개 퍼펙트로 깨기
+ja: ステージを{0}回パーフェクトでクリア
+zh: 完美完成 {0} 個關卡
 @ Finish {0} levels without hints
 de: Schaff {0} Level ohne Tipps
 es: Completa {0} niveles sin pistas
 pt: Complete {0} fases sem dicas
 fr: Finis {0} niveaux sans indice
+ko: 힌트 없이 레벨 {0}개 깨기
+ja: ヒントなしでステージを{0}回クリア
+zh: 不用提示完成 {0} 個關卡
 @ Finish the Daily Line
 de: Schaff die Tageslinie
 es: Completa la Línea del día
 pt: Complete a Linha do Dia
 fr: Finis la Ligne du jour
+ko: 오늘의 노선 깨기
+ja: 今日の路線をクリア
+zh: 完成每日路線
 @ Finish {0} Daily Lines
 de: Schaff {0} Tageslinien
 es: Completa {0} Líneas del día
 pt: Complete {0} Linhas do Dia
 fr: Finis {0} Lignes du jour
+ko: 오늘의 노선 {0}번 깨기
+ja: 今日の路線を{0}回クリア
+zh: 完成 {0} 次每日路線
 @ Use {0} {1}
 de: Nutze {0} {1}
 es: Usa {0} {1}
 pt: Use {0} {1}
 fr: Utilise {0} {1}
+ko: 부스터 {0}개 사용
+ja: ブースターを{0}回使う
+zh: 使用 {0} 次道具
 @ booster
 de: Booster
 es: potenciador
 pt: reforço
 fr: booster
+ko: 부스터
+ja: ブースター
+zh: 道具
 @ boosters
 de: Booster
 es: potenciadores
 pt: reforços
 fr: boosters
+ko: 부스터
+ja: ブースター
+zh: 道具
 @ ❤️∞ 15 min
 de: ❤️∞ 15 Min.
 es: ❤️∞ 15 min
 pt: ❤️∞ 15 min
 fr: ❤️∞ 15 min
+ko: ❤️∞ 15분
+ja: ❤️∞ 15分
+zh: ❤️∞ 15 分鐘
 @ ❤️∞ 30 min
 de: ❤️∞ 30 Min.
 es: ❤️∞ 30 min
 pt: ❤️∞ 30 min
 fr: ❤️∞ 30 min
+ko: ❤️∞ 30분
+ja: ❤️∞ 30分
+zh: ❤️∞ 30 分鐘
 @ 🚉 Last train gone
 de: 🚉 Letzter Zug weg
 es: 🚉 Se fue el último tren
 pt: 🚉 O último trem partiu
 fr: 🚉 Dernier train parti
+ko: 🚉 막차가 떠났어요
+ja: 🚉 終電が行ってしまった
+zh: 🚉 末班車開走了
 @ The last train left
 de: Der letzte Zug ist weg
 es: Se fue el último tren
 pt: O último trem partiu
 fr: Le dernier train est parti
+ko: 막차가 떠났어요
+ja: 終電が行ってしまった
+zh: 末班車開走了
 @ Level {0} didn’t connect in time.
 de: Level {0} wurde nicht rechtzeitig verbunden.
 es: El nivel {0} no se conectó a tiempo.
 pt: A fase {0} não foi ligada a tempo.
 fr: Le niveau {0} n’a pas été relié à temps.
+ko: 레벨 {0}: 시간 안에 연결하지 못했어요.
+ja: ステージ{0}は時間内につながりませんでした。
+zh: 第 {0} 關沒能及時連通。
 @ <b class="nw">1 ❤️</b> lost.
 de: <b class="nw">1 ❤️</b> verloren.
 es: <b class="nw">1 ❤️</b> perdida.
 pt: <b class="nw">1 ❤️</b> perdida.
 fr: <b class="nw">1 ❤️</b> perdue.
+ko: <b class="nw">❤️ 1개</b>를 잃었어요.
+ja: <b class="nw">❤️ 1</b> を失いました。
+zh: 失去 <b class="nw">1 ❤️</b>。
 @ Unlimited lives on, no life lost.
 de: Unendlich Leben an, kein Leben verloren.
 es: Vidas ilimitadas activas, no pierdes vida.
 pt: Vidas ilimitadas ativas, nenhuma vida perdida.
 fr: Vies illimitées actives, aucune vie perdue.
+ko: 무제한 하트 적용 중이라 하트가 줄지 않았어요.
+ja: ライフ無限中なので、ライフは減りません。
+zh: 無限生命中，沒有失去生命。
 @ ❤️∞ unlimited lives
 de: ❤️∞ unendlich Leben
 es: ❤️∞ vidas ilimitadas
 pt: ❤️∞ vidas ilimitadas
 fr: ❤️∞ vies illimitées
+ko: ❤️∞ 무제한 하트
+ja: ❤️∞ ライフ無限
+zh: ❤️∞ 無限生命
 @ {0} ❤️ left
 de: noch {0} ❤️
 es: quedan {0} ❤️
 pt: restam {0} ❤️
 fr: il reste {0} ❤️
+ko: ❤️ {0}개 남음
+ja: ❤️ 残り{0}
+zh: 剩 {0} ❤️
 @ Next life in {0}
 de: Nächstes Leben in {0}
 es: Próxima vida en {0}
 pt: Próxima vida em {0}
 fr: Prochaine vie dans {0}
+ko: 다음 하트까지 {0}
+ja: 次のライフまで {0}
+zh: 下一條生命 {0}
 @ Play
 de: Spielen
 es: Jugar
 pt: Jogar
 fr: Jouer
+ko: 플레이
+ja: プレイ
+zh: 開始
 @ +1 ❤️ · have a good trip
 de: +1 ❤️ · gute Fahrt
 es: +1 ❤️ · buen viaje
 pt: +1 ❤️ · boa viagem
 fr: +1 ❤️ · bon voyage
+ko: +1 ❤️ · 즐거운 여행 되세요
+ja: +1 ❤️ · いってらっしゃい
+zh: +1 ❤️ · 祝你旅途愉快
 @ Quests
 de: Aufgaben
 es: Misiones
 pt: Missões
 fr: Quêtes
+ko: 미션
+ja: ミッション
+zh: 任務
 @ Resets at midnight
 de: Neu um Mitternacht
 es: Se renuevan a medianoche
 pt: Renovam à meia-noite
 fr: Renouvelées à minuit
+ko: 자정에 초기화
+ja: 0時にリセット
+zh: 午夜重置
 @ This week
 de: Diese Woche
 es: Esta semana
 pt: Esta semana
 fr: Cette semaine
+ko: 이번 주
+ja: 今週
+zh: 本週
 @ New quests tomorrow
 de: Neue Aufgaben morgen
 es: Misiones nuevas mañana
 pt: Missões novas amanhã
 fr: Nouvelles quêtes demain
+ko: 내일 새 미션
+ja: 明日あたらしいミッション
+zh: 明天有新任務
 @ New quests in {0} days
 de: Neue Aufgaben in {0} Tagen
 es: Misiones nuevas en {0} días
 pt: Missões novas em {0} dias
 fr: Nouvelles quêtes dans {0} jours
+ko: {0}일 후 새 미션
+ja: {0}日後にあたらしいミッション
+zh: {0} 天後有新任務
 @ Sunday
 de: Sonntag
 es: Domingo
 pt: Domingo
 fr: Dimanche
+ko: 일요일
+ja: 日曜日
+zh: 星期日
 @ rule of the week
 de: Regel der Woche
 es: regla de la semana
 pt: regra da semana
 fr: règle de la semaine
+ko: 이번 주 규칙
+ja: 今週のルール
+zh: 本週規則
 @ {0} tickets = 1 day
 de: {0} Tickets = 1 Tag
 es: {0} billetes = 1 día
 pt: {0} bilhetes = 1 dia
 fr: {0} tickets = 1 jour
+ko: 티켓 {0}장 = 1일
+ja: 切符{0}枚 = 1日
+zh: {0} 張車票 = 1 天
 @ Daily Line archive
 de: Tageslinien-Archiv
 es: Archivo de Líneas del día
 pt: Arquivo da Linha do Dia
 fr: Archives de la Ligne du jour
+ko: 오늘의 노선 보관함
+ja: 今日の路線アーカイブ
+zh: 每日路線存檔
 @ Last 30 days · each day opens for good with {0} 🎫 · no effect on streak, perfect → +1 🎫
 de: Letzte 30 Tage · jeder Tag öffnet dauerhaft mit {0} 🎫 · zählt nicht zur Serie, perfekt → +1 🎫
 es: Últimos 30 días · cada día se abre para siempre con {0} 🎫 · no cuenta para la racha, perfecto → +1 🎫
 pt: Últimos 30 dias · cada dia abre de vez com {0} 🎫 · não conta na sequência, perfeito → +1 🎫
 fr: 30 derniers jours · chaque jour s’ouvre pour de bon avec {0} 🎫 · sans effet sur la série, parfait → +1 🎫
+ko: 최근 30일 · 하루마다 {0} 🎫로 영구히 열려요 · 연속 기록에는 영향 없음, 퍼펙트 → +1 🎫
+ja: 過去30日 · 1日ごとに {0} 🎫 でずっと開放 · 連続記録には影響なし、パーフェクト → +1 🎫
+zh: 最近 30 天 · 每天用 {0} 🎫 永久開放 · 不影響連續紀錄，完美 → +1 🎫
 @ ticket
 de: Ticket
 es: billete
 pt: bilhete
 fr: ticket
+ko: 티켓
+ja: 切符
+zh: 車票
 @ tickets
 de: Tickets
 es: billetes
 pt: bilhetes
 fr: tickets
+ko: 티켓
+ja: 切符
+zh: 車票
 @ From perfect levels and quests
 de: Aus perfekten Leveln und Aufgaben
 es: De niveles perfectos y misiones
 pt: De fases perfeitas e missões
 fr: Des niveaux parfaits et des quêtes
+ko: 퍼펙트 레벨과 미션으로 획득
+ja: パーフェクトとミッションで獲得
+zh: 來自完美關卡與任務
 @ {0} 🎫 needed · finish perfect, complete quests
 de: {0} 🎫 nötig · perfekt beenden, Aufgaben erfüllen
 es: Necesitas {0} 🎫 · termina perfecto, completa misiones
 pt: Precisa de {0} 🎫 · termine perfeito, complete missões
 fr: {0} 🎫 requis · finis parfait, fais des quêtes
+ko: {0} 🎫 필요 · 퍼펙트로 깨고 미션을 완료하세요
+ja: {0} 🎫 必要 · パーフェクトでクリア、ミッションを達成
+zh: 需要 {0} 🎫 · 完美過關、完成任務
 @ This day’s Daily Line opens with {0} 🎫 and stays open.
 de: Die Tageslinie dieses Tages öffnet mit {0} 🎫 und bleibt offen.
 es: La Línea de este día se abre con {0} 🎫 y queda abierta.
 pt: A Linha deste dia abre com {0} 🎫 e fica aberta.
 fr: La Ligne de ce jour s’ouvre avec {0} 🎫 et reste ouverte.
+ko: 이날의 오늘의 노선은 {0} 🎫로 열리고 계속 열려 있어요.
+ja: この日の路線は {0} 🎫 で開放され、ずっと遊べます。
+zh: 這天的每日路線用 {0} 🎫 開放，之後一直開放。
 @ Open
 de: Öffnen
 es: Abrir
 pt: Abrir
 fr: Ouvrir
+ko: 열기
+ja: 開ける
+zh: 開啟
 @ You have {0} {1}
 de: Du hast {0} {1}
 es: Tienes {0} {1}
 pt: Você tem {0} {1}
 fr: Tu as {0} {1}
+ko: 보유 티켓 {0}장
+ja: 切符{0}枚所持
+zh: 你有 {0} 張車票
 @ Auto
 de: Auto
 es: Auto
 pt: Auto
 fr: Auto
+ko: 자동
+ja: 自動
+zh: 自動
 @ Dark
 de: Dunkel
 es: Oscuro
 pt: Escuro
 fr: Sombre
+ko: 다크
+ja: ダーク
+zh: 深色
 @ Light
 de: Hell
 es: Claro
 pt: Claro
 fr: Clair
+ko: 라이트
+ja: ライト
+zh: 淺色
 @ Settings
 de: Einstellungen
 es: Ajustes
 pt: Ajustes
 fr: Réglages
+ko: 설정
+ja: 設定
+zh: 設定
 @ Music
 de: Musik
 es: Música
 pt: Música
 fr: Musique
+ko: 음악
+ja: 音楽
+zh: 音樂
 @ Sound effects
 de: Soundeffekte
 es: Efectos de sonido
 pt: Efeitos sonoros
 fr: Effets sonores
+ko: 효과음
+ja: 効果音
+zh: 音效
 @ Vibration
 de: Vibration
 es: Vibración
 pt: Vibração
 fr: Vibration
+ko: 진동
+ja: 振動
+zh: 震動
 @ Daily reminder
 de: Tägliche Erinnerung
 es: Aviso diario
 pt: Lembrete diário
 fr: Rappel quotidien
+ko: 매일 알림
+ja: 毎日のお知らせ
+zh: 每日提醒
 @ 🍃 Zen mode
 de: 🍃 Zen-Modus
 es: 🍃 Modo zen
 pt: 🍃 Modo zen
 fr: 🍃 Mode zen
+ko: 🍃 젠 모드
+ja: 🍃 禅モード
+zh: 🍃 禪模式
 @ Theme
 de: Design
 es: Tema
 pt: Tema
 fr: Thème
+ko: 화면
+ja: 表示
+zh: 外觀
 @ Language
 de: Sprache
 es: Idioma
 pt: Idioma
 fr: Langue
+ko: 언어
+ja: 言語
+zh: 語言
 @ Color themes
 de: Farbthemen
 es: Temas de color
 pt: Temas de cores
 fr: Thèmes de couleur
+ko: 색상 테마
+ja: カラーテーマ
+zh: 色彩主題
 @ How to play?
 de: Wie spielt man?
 es: ¿Cómo se juega?
 pt: Como jogar?
 fr: Comment jouer ?
+ko: 게임 방법
+ja: 遊び方
+zh: 怎麼玩？
 @ Move progress
 de: Fortschritt übertragen
 es: Pasar progreso
 pt: Transferir progresso
 fr: Transférer la partie
+ko: 진행 상황 옮기기
+ja: データ引き継ぎ
+zh: 轉移進度
 @ To a new phone
 de: Auf ein neues Handy
 es: A un móvil nuevo
 pt: Para um celular novo
 fr: Vers un nouveau téléphone
+ko: 새 휴대폰으로
+ja: 新しいスマホへ
+zh: 轉到新手機
 @ Contact us
 de: Schreib uns
 es: Escríbenos
 pt: Fale conosco
 fr: Écris-nous
+ko: 문의하기
+ja: お問い合わせ
+zh: 聯絡我們
 @ Ideas · bugs
 de: Ideen · Fehler
 es: Ideas · errores
 pt: Ideias · erros
 fr: Idées · bugs
+ko: 아이디어 · 버그
+ja: アイデア · 不具合
+zh: 建議 · 錯誤回報
 @ Privacy
 de: Datenschutz
 es: Privacidad
 pt: Privacidade
 fr: Confidentialité
+ko: 개인정보
+ja: プライバシー
+zh: 隱私
 @ Policy · data
 de: Richtlinie · Daten
 es: Política · datos
 pt: Política · dados
 fr: Règles · données
+ko: 정책 · 데이터
+ja: ポリシー · データ
+zh: 政策 · 資料
 @ Done
 de: Fertig
 es: Listo
 pt: Pronto
 fr: OK
+ko: 완료
+ja: 完了
+zh: 完成
 @ 🍃 Zen: no timer or move target · every finish 3 ★ · no 🎫
 de: 🍃 Zen: keine Zeit, kein Zugziel · jedes Ziel 3 ★ · keine 🎫
 es: 🍃 Zen: sin reloj ni objetivo · cada final 3 ★ · sin 🎫
 pt: 🍃 Zen: sem relógio nem meta · todo final 3 ★ · sem 🎫
 fr: 🍃 Zen : ni chrono ni objectif · chaque fin 3 ★ · pas de 🎫
+ko: 🍃 젠: 시간과 이동 목표 없음 · 깨면 언제나 ★ 3개 · 🎫 없음
+ja: 🍃 禅：タイムも目標手数もなし · クリアすれば必ず ★3 · 🎫 なし
+zh: 🍃 禪：沒有計時與步數目標 · 過關一律 3 ★ · 沒有 🎫
 @ Zen off · targets are back
 de: Zen aus · Ziele sind zurück
 es: Zen desactivado · vuelven los objetivos
 pt: Zen desligado · as metas voltaram
 fr: Zen désactivé · les objectifs reviennent
+ko: 젠 끔 · 목표가 돌아왔어요
+ja: 禅オフ · 目標が戻りました
+zh: 禪模式關閉 · 目標回來了
 @ <div><i>📱</i><span><b>No account</b> · your progress stays on this device</span></div><div><i>🔔</i><span>Reminders are scheduled on your device</span></div><div><i>📺</i><span>Ads by <b>Google AdMob</b> · ad ID and device info are processed</span></div><div><i>📊</i><span>Anonymous game stats via <b>Firebase</b> · no ad ID · off where consent is required</span></div><div><i>💳</i><span>Payments via the store</span></div>
 de: <div><i>📱</i><span><b>Kein Konto</b> · dein Fortschritt bleibt auf diesem Gerät</span></div><div><i>🔔</i><span>Erinnerungen plant dein Gerät</span></div><div><i>📺</i><span>Werbung von <b>Google AdMob</b> · Werbe-ID und Geräteinfos werden verarbeitet</span></div><div><i>📊</i><span>Anonyme Spielstatistik über <b>Firebase</b> · keine Werbe-ID · aus, wo Einwilligung nötig ist</span></div><div><i>💳</i><span>Zahlungen über den Store</span></div>
 es: <div><i>📱</i><span><b>Sin cuenta</b> · tu progreso se queda en este dispositivo</span></div><div><i>🔔</i><span>Los avisos se programan en tu dispositivo</span></div><div><i>📺</i><span>Anuncios de <b>Google AdMob</b> · se procesan el ID de publicidad y datos del dispositivo</span></div><div><i>📊</i><span>Estadísticas anónimas con <b>Firebase</b> · sin ID de publicidad · desactivadas donde se pide consentimiento</span></div><div><i>💳</i><span>Pagos a través de la tienda</span></div>
 pt: <div><i>📱</i><span><b>Sem conta</b> · seu progresso fica neste aparelho</span></div><div><i>🔔</i><span>Os lembretes são agendados no seu aparelho</span></div><div><i>📺</i><span>Anúncios do <b>Google AdMob</b> · ID de publicidade e dados do aparelho são processados</span></div><div><i>📊</i><span>Estatísticas anônimas pelo <b>Firebase</b> · sem ID de publicidade · desligadas onde o consentimento é exigido</span></div><div><i>💳</i><span>Pagamentos pela loja</span></div>
 fr: <div><i>📱</i><span><b>Pas de compte</b> · ta progression reste sur cet appareil</span></div><div><i>🔔</i><span>Les rappels sont programmés sur ton appareil</span></div><div><i>📺</i><span>Pubs par <b>Google AdMob</b> · ID publicitaire et infos de l’appareil traités</span></div><div><i>📊</i><span>Stats de jeu anonymes via <b>Firebase</b> · sans ID publicitaire · désactivées là où le consentement est requis</span></div><div><i>💳</i><span>Paiements via le store</span></div>
+ko: <div><i>📱</i><span><b>계정 없음</b> · 진행 상황은 이 기기에만 저장돼요</span></div><div><i>🔔</i><span>알림은 기기에서 예약돼요</span></div><div><i>📺</i><span>광고: <b>Google AdMob</b> · 광고 ID와 기기 정보가 처리돼요</span></div><div><i>📊</i><span><b>Firebase</b>로 익명 게임 통계 · 광고 ID 없음 · 동의가 필요한 지역에서는 꺼짐</span></div><div><i>💳</i><span>결제는 스토어에서</span></div>
+ja: <div><i>📱</i><span><b>アカウント不要</b> · 進行状況はこの端末にだけ保存</span></div><div><i>🔔</i><span>お知らせは端末内で予約されます</span></div><div><i>📺</i><span>広告は <b>Google AdMob</b> · 広告IDと端末情報が処理されます</span></div><div><i>📊</i><span><b>Firebase</b> で匿名のプレイ統計 · 広告IDなし · 同意が必要な地域ではオフ</span></div><div><i>💳</i><span>支払いはストア経由</span></div>
+zh: <div><i>📱</i><span><b>不需帳號</b> · 進度只存在這台裝置上</span></div><div><i>🔔</i><span>提醒由你的裝置排程</span></div><div><i>📺</i><span>廣告由 <b>Google AdMob</b> 提供 · 會處理廣告 ID 與裝置資訊</span></div><div><i>📊</i><span>透過 <b>Firebase</b> 收集匿名遊戲統計 · 不含廣告 ID · 需要同意的地區預設關閉</span></div><div><i>💳</i><span>付款透過商店進行</span></div>
 @ Privacy policy
 de: Datenschutzerklärung
 es: Política de privacidad
 pt: Política de privacidade
 fr: Politique de confidentialité
+ko: 개인정보 처리방침
+ja: プライバシーポリシー
+zh: 隱私權政策
 @ Ad privacy options
 de: Werbe-Datenschutz
 es: Privacidad de anuncios
 pt: Privacidade de anúncios
 fr: Confidentialité des pubs
+ko: 광고 개인정보 설정
+ja: 広告のプライバシー設定
+zh: 廣告隱私選項
 @ Delete my data
 de: Meine Daten löschen
 es: Borrar mis datos
 pt: Apagar meus dados
 fr: Effacer mes données
+ko: 내 데이터 삭제
+ja: データを削除
+zh: 刪除我的資料
 @ On your new phone, open <b>Settings › Move progress</b> and paste this code. The ad-free and theme packs don’t move with the code; restore them from the store.
 de: Öffne auf dem neuen Handy <b>Einstellungen › Fortschritt übertragen</b> und füge diesen Code ein. Werbefrei- und Themenpaket wandern nicht mit; stell sie über den Store wieder her.
 es: En tu móvil nuevo, abre <b>Ajustes › Pasar progreso</b> y pega este código. Los paquetes sin anuncios y de temas no pasan con el código; restáuralos desde la tienda.
 pt: No celular novo, abra <b>Ajustes › Transferir progresso</b> e cole este código. Os pacotes sem anúncios e de temas não vão junto; restaure-os pela loja.
 fr: Sur ton nouveau téléphone, ouvre <b>Réglages › Transférer la partie</b> et colle ce code. Les packs sans pub et de thèmes ne suivent pas le code ; restaure-les depuis le store.
+ko: 새 휴대폰에서 <b>설정 › 진행 상황 옮기기</b>를 열고 이 코드를 붙여 넣으세요. 광고 제거 팩과 테마 팩은 코드로 옮겨지지 않으니 스토어에서 복원하세요.
+ja: 新しいスマホで<b>設定 › データ引き継ぎ</b>を開き、このコードを貼り付けてください。広告なしパックとテーマパックはコードでは引き継がれないので、ストアから復元してください。
+zh: 在新手機上打開<b>設定 › 轉移進度</b>，貼上這組代碼。免廣告包和主題包不會隨代碼轉移，請從商店恢復購買。
 @ Copy code
 de: Code kopieren
 es: Copiar código
 pt: Copiar código
 fr: Copier le code
+ko: 코드 복사
+ja: コードをコピー
+zh: 複製代碼
 @ Level {0} · ★ {1}
 de: Level {0} · ★ {1}
 es: Nivel {0} · ★ {1}
 pt: Fase {0} · ★ {1}
 fr: Niveau {0} · ★ {1}
+ko: 레벨 {0} · ★ {1}
+ja: ステージ{0} · ★ {1}
+zh: 第 {0} 關 · ★ {1}
 @ Paste the code from your other phone
 de: Füge den Code von deinem anderen Handy ein
 es: Pega el código de tu otro móvil
 pt: Cole o código do outro celular
 fr: Colle le code de ton autre téléphone
+ko: 다른 휴대폰의 코드를 붙여 넣으세요
+ja: 前のスマホのコードを貼り付けてください
+zh: 貼上另一支手機的代碼
 @ Load code
 de: Code laden
 es: Cargar código
 pt: Carregar código
 fr: Charger le code
+ko: 코드 불러오기
+ja: コードを読み込む
+zh: 載入代碼
 @ Code copied · paste it on your new phone
 de: Code kopiert · füge ihn auf dem neuen Handy ein
 es: Código copiado · pégalo en tu móvil nuevo
 pt: Código copiado · cole no celular novo
 fr: Code copié · colle-le sur ton nouveau téléphone
+ko: 코드 복사 완료 · 새 휴대폰에 붙여 넣으세요
+ja: コードをコピーしました · 新しいスマホに貼り付けてください
+zh: 代碼已複製 · 請貼到新手機上
 @ Select and copy the code
 de: Markiere und kopiere den Code
 es: Selecciona y copia el código
 pt: Selecione e copie o código
 fr: Sélectionne et copie le code
+ko: 코드를 선택해서 복사하세요
+ja: コードを選択してコピーしてください
+zh: 請選取並複製代碼
 @ Invalid code · paste all of it
 de: Ungültiger Code · füge ihn ganz ein
 es: Código no válido · pégalo entero
 pt: Código inválido · cole ele inteiro
 fr: Code invalide · colle-le en entier
+ko: 잘못된 코드예요 · 전부 붙여 넣으세요
+ja: 無効なコードです · 全部貼り付けてください
+zh: 代碼無效 · 請完整貼上
 @ This phone’s progress will be replaced · load Level {0}?
 de: Der Fortschritt auf diesem Handy wird ersetzt · Level {0} laden?
 es: Se reemplazará el progreso de este móvil · ¿cargar el nivel {0}?
 pt: O progresso deste celular será substituído · carregar a fase {0}?
 fr: La progression de ce téléphone sera remplacée · charger le niveau {0} ?
+ko: 이 휴대폰의 진행 상황이 바뀌어요 · 레벨 {0} 진행 상황을 불러올까요?
+ja: このスマホの進行状況は上書きされます · ステージ{0}を読み込みますか？
+zh: 這支手機的進度會被取代 · 要載入第 {0} 關嗎？
 @ <h2>Delete your data?</h2> <p>All progress on this device will be erased: levels, ★, 🎫, streak, themes and settings. <b>This can’t be undone.</b></p> <p class="tip">If you bought the Ad-free pack, it comes back from your store account.</p> <button id="mNo" class="btn primary"><span>Cancel</span></button> <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">Yes, delete it all</button>
 de: <h2>Deine Daten löschen?</h2> <p>Der ganze Fortschritt auf diesem Gerät wird gelöscht: Level, ★, 🎫, Serie, Themen und Einstellungen. <b>Das lässt sich nicht rückgängig machen.</b></p> <p class="tip">Hast du das Werbefrei-Paket gekauft, kommt es über dein Store-Konto zurück.</p> <button id="mNo" class="btn primary"><span>Abbrechen</span></button> <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">Ja, alles löschen</button>
 es: <h2>¿Borrar tus datos?</h2> <p>Se borrará todo el progreso de este dispositivo: niveles, ★, 🎫, racha, temas y ajustes. <b>No se puede deshacer.</b></p> <p class="tip">Si compraste el Paquete sin anuncios, vuelve desde tu cuenta de la tienda.</p> <button id="mNo" class="btn primary"><span>Cancelar</span></button> <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">Sí, borrar todo</button>
 pt: <h2>Apagar seus dados?</h2> <p>Todo o progresso deste aparelho será apagado: fases, ★, 🎫, sequência, temas e ajustes. <b>Não dá para desfazer.</b></p> <p class="tip">Se você comprou o Pacote sem anúncios, ele volta pela sua conta da loja.</p> <button id="mNo" class="btn primary"><span>Cancelar</span></button> <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">Sim, apagar tudo</button>
 fr: <h2>Effacer tes données ?</h2> <p>Toute la progression de cet appareil sera effacée : niveaux, ★, 🎫, série, thèmes et réglages. <b>C’est irréversible.</b></p> <p class="tip">Si tu as acheté le Pack sans pub, il revient via ton compte du store.</p> <button id="mNo" class="btn primary"><span>Annuler</span></button> <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">Oui, tout effacer</button>
+ko: <h2>데이터를 삭제할까요?</h2> <p>이 기기의 모든 진행 상황이 지워져요: 레벨, ★, 🎫, 연속 기록, 테마, 설정. <b>되돌릴 수 없어요.</b></p> <p class="tip">광고 제거 팩을 샀다면 스토어 계정에서 다시 받을 수 있어요.</p> <button id="mNo" class="btn primary"><span>취소</span></button> <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">네, 모두 삭제</button>
+ja: <h2>データを削除しますか？</h2> <p>この端末の進行状況がすべて消えます：ステージ、★、🎫、連続記録、テーマ、設定。<b>元には戻せません。</b></p> <p class="tip">広告なしパックを購入していれば、ストアのアカウントから復元できます。</p> <button id="mNo" class="btn primary"><span>キャンセル</span></button> <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">はい、すべて削除</button>
+zh: <h2>要刪除你的資料嗎？</h2> <p>這台裝置上的所有進度都會被清除：關卡、★、🎫、連續紀錄、主題和設定。<b>此操作無法復原。</b></p> <p class="tip">如果你買過免廣告包，可以從商店帳號恢復。</p> <button id="mNo" class="btn primary"><span>取消</span></button> <button id="mWipeOk" class="btn glassbtn" style="color:var(--warn)">是，全部刪除</button>
 @ Selected ✓
 de: Gewählt ✓
 es: Elegido ✓
 pt: Escolhido ✓
 fr: Choisi ✓
+ko: 선택됨 ✓
+ja: 選択中 ✓
+zh: 使用中 ✓
 @ Select
 de: Wählen
 es: Elegir
 pt: Escolher
 fr: Choisir
+ko: 선택
+ja: 選択
+zh: 選用
 @ 💛 Ad-free
 de: 💛 Werbefrei
 es: 💛 Sin anuncios
 pt: 💛 Sem anúncios
 fr: 💛 Sans pub
+ko: 💛 광고 제거
+ja: 💛 広告なし
+zh: 💛 免廣告
 @ 🎁 Free
 de: 🎁 Gratis
 es: 🎁 Gratis
 pt: 🎁 Grátis
 fr: 🎁 Gratuit
+ko: 🎁 무료
+ja: 🎁 無料
+zh: 🎁 免費
 @ Every <b>perfect</b> level (⏱ and ↻ targets) gives 1 🎫. Spend 🎫 on themes and chests.
 de: Jedes <b>perfekte</b> Level (⏱- und ↻-Ziel) gibt 1 🎫. Gib 🎫 für Themen und Kisten aus.
 es: Cada nivel <b>perfecto</b> (objetivos ⏱ y ↻) da 1 🎫. Gasta 🎫 en temas y cofres.
 pt: Cada fase <b>perfeita</b> (metas ⏱ e ↻) dá 1 🎫. Use 🎫 em temas e baús.
 fr: Chaque niveau <b>parfait</b> (objectifs ⏱ et ↻) donne 1 🎫. Dépense tes 🎫 en thèmes et coffres.
+ko: <b>퍼펙트</b> 레벨(⏱와 ↻ 목표 달성)마다 1 🎫. 🎫는 테마와 상자에 써요.
+ja: <b>パーフェクト</b>なステージ（⏱と↻の目標を達成）ごとに 1 🎫。🎫 はテーマと宝箱に使えます。
+zh: 每個<b>完美</b>關卡（達成 ⏱ 和 ↻ 目標）可得 1 🎫。🎫 可用來兌換主題和開寶箱。
 @ Balance
 de: Guthaben
 es: Saldo
 pt: Saldo
 fr: Solde
+ko: 잔액
+ja: 残高
+zh: 餘額
 @ Surprise chest
 de: Überraschungskiste
 es: Cofre sorpresa
 pt: Baú surpresa
 fr: Coffre surprise
+ko: 깜짝 상자
+ja: びっくり宝箱
+zh: 驚喜寶箱
 @ Hints · 🛡 shield · 🚆 train livery
 de: Tipps · 🛡 Schild · 🚆 Zuglack
 es: Pistas · 🛡 escudo · 🚆 diseño de tren
 pt: Dicas · 🛡 escudo · 🚆 pintura de trem
 fr: Indices · 🛡 bouclier · 🚆 livrée
+ko: 힌트 · 🛡 보호막 · 🚆 열차 도색
+ja: ヒント · 🛡 シールド · 🚆 車両カラー
+zh: 提示 · 🛡 護盾 · 🚆 列車塗裝
 @ Next up
 de: Als Nächstes
 es: Siguiente
 pt: Próximo
 fr: Prochain
+ko: 다음 목표
+ja: 次はこれ
+zh: 下一個
 @ {0} Seasonal theme · free until {1}
 de: {0} Saisonthema · gratis bis {1}
 es: {0} Tema de temporada · gratis hasta el {1}
 pt: {0} Tema da estação · grátis até {1}
 fr: {0} Thème de saison · gratuit jusqu’au {1}
+ko: {0} 시즌 테마 · {1}까지 무료
+ja: {0} 季節テーマ · {1}まで無料
+zh: {0} 季節主題 · {1}前免費
 @ 🍂 Seasonal themes
 de: 🍂 Saisonthemen
 es: 🍂 Temas de temporada
 pt: 🍂 Temas da estação
 fr: 🍂 Thèmes de saison
+ko: 🍂 시즌 테마
+ja: 🍂 季節テーマ
+zh: 🍂 季節主題
 @ 🎫 Ticket themes
 de: 🎫 Ticket-Themen
 es: 🎫 Temas con billetes
 pt: 🎫 Temas com bilhetes
 fr: 🎫 Thèmes à tickets
+ko: 🎫 티켓 테마
+ja: 🎫 切符テーマ
+zh: 🎫 車票主題
 @ 💛 Ad-free pack only
 de: 💛 Nur im Werbefrei-Paket
 es: 💛 Solo con el Paquete sin anuncios
 pt: 💛 Só no Pacote sem anúncios
 fr: 💛 Pack sans pub uniquement
+ko: 💛 광고 제거 팩 전용
+ja: 💛 広告なしパック限定
+zh: 💛 免廣告包專屬
 @ Earn tickets
 de: Tickets holen
 es: Gana billetes
 pt: Ganhe bilhetes
 fr: Gagne des tickets
+ko: 티켓 모으기
+ja: 切符を集める
+zh: 賺車票
 @ {0} {1} a perfect finish
 de: {0} {1} auf ein perfektes Ende
 es: {0} {1} un final perfecto
 pt: {0} {1} um final perfeito
 fr: {0} {1} une fin parfaite
+ko: 퍼펙트를 기다리는 레벨 {0}개
+ja: パーフェクト待ちのステージが{0}個
+zh: 有 {0} 個關卡等你完美過關
 @ level awaits
 de: Level wartet
 es: nivel espera
 pt: fase espera
 fr: niveau attend
+ko: 레벨
+ja: ステージ
+zh: 關卡
 @ levels await
 de: Level warten
 es: niveles esperan
 pt: fases esperam
 fr: niveaux attendent
+ko: 레벨
+ja: ステージ
+zh: 關卡
 @ Beat new levels within ⏱ and ↻ targets
 de: Schaff neue Level mit ⏱- und ↻-Ziel
 es: Supera niveles nuevos con los objetivos ⏱ y ↻
 pt: Vença fases novas dentro das metas ⏱ e ↻
 fr: Finis de nouveaux niveaux dans les objectifs ⏱ et ↻
+ko: 새 레벨을 ⏱와 ↻ 목표 안에 깨세요
+ja: 新しいステージを⏱と↻の目標内でクリア
+zh: 在 ⏱ 和 ↻ 目標內完成新關卡
 @ This costs <b class="nw">🎫 {0}</b>. You have <span class="nw">🎫 {1}</span> → <b class="nw">🎫 {2}</b> left.
 de: Das kostet <b class="nw">🎫 {0}</b>. Du hast <span class="nw">🎫 {1}</span> → übrig bleiben <b class="nw">🎫 {2}</b>.
 es: Cuesta <b class="nw">🎫 {0}</b>. Tienes <span class="nw">🎫 {1}</span> → te quedan <b class="nw">🎫 {2}</b>.
 pt: Custa <b class="nw">🎫 {0}</b>. Você tem <span class="nw">🎫 {1}</span> → sobram <b class="nw">🎫 {2}</b>.
 fr: Ça coûte <b class="nw">🎫 {0}</b>. Tu as <span class="nw">🎫 {1}</span> → il restera <b class="nw">🎫 {2}</b>.
+ko: 가격은 <b class="nw">🎫 {0}</b>이에요. 지금 <span class="nw">🎫 {1}</span> → 남는 티켓 <b class="nw">🎫 {2}</b>.
+ja: 価格は<b class="nw">🎫 {0}</b>です。所持 <span class="nw">🎫 {1}</span> → 残り <b class="nw">🎫 {2}</b>。
+zh: 需要 <b class="nw">🎫 {0}</b>。你有 <span class="nw">🎫 {1}</span> → 剩下 <b class="nw">🎫 {2}</b>。
 @ <br>Then you’ll need {0} more 🎫 for {1}.
 de: <br>Für {1} brauchst du dann noch {0} 🎫.
 es: <br>Luego te faltarán {0} 🎫 para {1}.
 pt: <br>Depois faltarão {0} 🎫 para {1}.
 fr: <br>Ensuite il te faudra {0} 🎫 de plus pour {1}.
+ko: <br>그다음 {1}까지 🎫 {0}장이 더 필요해요.
+ja: <br>そのあと{1}まで、あと {0} 🎫 必要です。
+zh: <br>之後要兌換{1}還需要 {0} 🎫。
 @ Use it right away
 de: Gleich nutzen
 es: Usar ya
 pt: Usar agora
 fr: L’utiliser tout de suite
+ko: 바로 사용
+ja: すぐに使う
+zh: 立即使用
 @ 🎨 {0} is yours!
 de: 🎨 {0} gehört dir!
 es: 🎨 ¡{0} es tuyo!
 pt: 🎨 {0} é seu!
 fr: 🎨 {0} est à toi !
+ko: 🎨 {0} 획득!
+ja: 🎨 {0}をゲット！
+zh: 🎨 {0}到手了！
 @ ⏱ {0} s late
 de: ⏱ {0} s zu spät
 es: ⏱ {0} s tarde
 pt: ⏱ {0} s atrasado
 fr: ⏱ {0} s de retard
+ko: ⏱ {0}초 지연
+ja: ⏱ {0}秒の遅延
+zh: ⏱ 誤點 {0} 秒
 @ ↻ {0} {1} over
 de: ↻ {0} {1} zu viel
 es: ↻ {0} {1} de más
 pt: ↻ {0} {1} a mais
 fr: ↻ {0} {1} de trop
+ko: ↻ {0}번 초과
+ja: ↻ {0}手オーバー
+zh: ↻ 超過 {0} 步
 @ You need <b>{0} more 🎫</b> for <b>{1}</b>.␣
 de: Für <b>{1}</b> brauchst du <b>noch {0} 🎫</b>.␣
 es: Te faltan <b>{0} 🎫</b> para <b>{1}</b>.␣
 pt: Faltam <b>{0} 🎫</b> para <b>{1}</b>.␣
 fr: Il te faut <b>{0} 🎫 de plus</b> pour <b>{1}</b>.␣
+ko: <b>{1}</b>까지 <b>🎫 {0}장이 더</b> 필요해요.␣
+ja: <b>{1}</b>まで<b>あと {0} 🎫</b> 必要です。
+zh: 兌換<b>{1}</b>還需要 <b>{0} 🎫</b>。
 @ Beat {0} within the <b>⏱ time</b> and <b>↻ move</b> targets: 1 🎫 each.
 de: Schaff {0} mit <b>⏱ Zeit</b>- und <b>↻ Zug</b>-Ziel: je 1 🎫.
 es: Supera {0} con los objetivos de <b>⏱ tiempo</b> y <b>↻ jugadas</b>: 1 🎫 cada uno.
 pt: Vença {0} dentro das metas de <b>⏱ tempo</b> e <b>↻ jogadas</b>: 1 🎫 cada.
 fr: Finis {0} dans les objectifs <b>⏱ temps</b> et <b>↻ coups</b> : 1 🎫 chacun.
+ko: {0}을 <b>⏱ 시간</b>과 <b>↻ 이동</b> 목표 안에 깨면 각각 1 🎫.
+ja: {0}を<b>⏱ タイム</b>と<b>↻ 手数</b>の目標内でクリアすると、それぞれ 1 🎫。
+zh: 在 <b>⏱ 時間</b>和 <b>↻ 步數</b>目標內完成{0}，每關 1 🎫。
 @ the levels below
 de: die Level unten
 es: los niveles de abajo
 pt: as fases abaixo
 fr: les niveaux ci-dessous
+ko: 아래 레벨
+ja: 下のステージ
+zh: 下方的關卡
 @ levels
 de: Level
 es: niveles
 pt: fases
 fr: niveaux
+ko: 레벨
+ja: ステージ
+zh: 關卡
 @ ★★☆ levels are closest to perfect · the Daily Line also gives 1 🎫, 2 if perfect
 de: ★★☆-Level sind am nächsten an perfekt · auch die Tageslinie gibt 1 🎫, perfekt 2
 es: Los niveles ★★☆ están más cerca de perfecto · la Línea del día también da 1 🎫, 2 si es perfecta
 pt: Fases ★★☆ estão mais perto do perfeito · a Linha do Dia também dá 1 🎫, 2 se perfeita
 fr: Les niveaux ★★☆ sont les plus proches du parfait · la Ligne du jour donne aussi 1 🎫, 2 si parfaite
+ko: ★★☆ 레벨이 퍼펙트에 가장 가까워요 · 오늘의 노선도 1 🎫, 퍼펙트면 2
+ja: ★★☆ のステージがパーフェクトにいちばん近い · 今日の路線でも 1 🎫、パーフェクトなら 2
+zh: ★★☆ 關卡最接近完美 · 每日路線也有 1 🎫，完美則 2
 @ Every level you’ve played is perfect! 🎉␣
 de: Jedes gespielte Level ist perfekt! 🎉␣
 es: ¡Todos tus niveles son perfectos! 🎉␣
 pt: Todas as fases que você jogou estão perfeitas! 🎉␣
 fr: Tous tes niveaux joués sont parfaits ! 🎉␣
+ko: 플레이한 레벨이 모두 퍼펙트예요! 🎉␣
+ja: 遊んだステージはすべてパーフェクト！🎉
+zh: 你玩過的關卡全都完美！🎉
 @ New levels and the Daily Line bring new 🎫.
 de: Neue Level und die Tageslinie bringen neue 🎫.
 es: Los niveles nuevos y la Línea del día traen más 🎫.
 pt: Fases novas e a Linha do Dia trazem mais 🎫.
 fr: Les nouveaux niveaux et la Ligne du jour rapportent des 🎫.
+ko: 새 레벨과 오늘의 노선에서 새 🎫를 얻을 수 있어요.
+ja: 新しいステージと今日の路線で 🎫 がもらえます。
+zh: 新關卡和每日路線會帶來新的 🎫。
 @ Back to themes
 de: Zurück zu den Themen
 es: Volver a los temas
 pt: Voltar aos temas
 fr: Retour aux thèmes
+ko: 테마로 돌아가기
+ja: テーマに戻る
+zh: 返回主題
 @ Common
 de: Gewöhnlich
 es: Común
 pt: Comum
 fr: Commun
+ko: 일반
+ja: コモン
+zh: 普通
 @ Rare
 de: Selten
 es: Raro
 pt: Raro
 fr: Rare
+ko: 희귀
+ja: レア
+zh: 稀有
 @ Epic
 de: Episch
 es: Épico
 pt: Épico
 fr: Épique
+ko: 에픽
+ja: エピック
+zh: 史詩
 @ Line color
 de: Linienfarbe
 es: Color de línea
 pt: Cor da linha
 fr: Couleur de ligne
+ko: 노선 색
+ja: 路線カラー
+zh: 路線顏色
 @ Red Express
 de: Roter Express
 es: Expreso Rojo
 pt: Expresso Vermelho
 fr: Express Rouge
+ko: 레드 익스프레스
+ja: 赤い特急
+zh: 紅色特快
 @ Night Train
 de: Nachtzug
 es: Tren Nocturno
 pt: Trem Noturno
 fr: Train de Nuit
+ko: 야간열차
+ja: 夜行列車
+zh: 夜行列車
 @ Mint
 de: Minze
 es: Menta
 pt: Menta
 fr: Menthe
+ko: 민트
+ja: ミント
+zh: 薄荷
 @ Ice
 de: Eis
 es: Hielo
 pt: Gelo
 fr: Glace
+ko: 아이스
+ja: アイス
+zh: 冰晶
 @ Lavender
 de: Lavendel
 es: Lavanda
 pt: Lavanda
 fr: Lavande
+ko: 라벤더
+ja: ラベンダー
+zh: 薰衣草
 @ Gold Express
 de: Gold-Express
 es: Expreso Dorado
 pt: Expresso Dourado
 fr: Express Doré
+ko: 골드 익스프레스
+ja: 金の特急
+zh: 黃金特快
 @ A locked counter tile turns once more
 de: Eine gesperrte Zählkachel dreht sich noch einmal
 es: Una pieza contador bloqueada gira una vez más
 pt: Uma peça contador travada gira mais uma vez
 fr: Une tuile compteur bloquée tourne encore une fois
+ko: 잠긴 카운터 타일이 한 번 더 돌아요
+ja: 固定されたカウンタータイルがもう1回回る
+zh: 讓鎖住的計數方塊再轉一次

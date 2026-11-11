@@ -1,20 +1,23 @@
-// Dil seçimi: tr · en · de · es · pt-BR · fr. Kayıtta save.lang varsa o, yoksa cihaz dili (tr/de/es/pt/fr… → o dil, öteki → İngilizce).
+// Dil seçimi: tr · en · de · es · pt-BR · fr · ko · ja · zh-Hant. Kayıtta save.lang varsa o, yoksa cihaz dili (tr/de/es/pt/fr/ko/ja… → o dil;
+// Geleneksel Çince zh-Hant/zh-TW/zh-HK/zh-MO → zh-Hant; Basitleştirilmiş Çince ve öteki diller → İngilizce).
 // Metinler yüklemede bir kez seçilir: dil değişince sayfa yenilenir. Bütün betiklerden önce yüklenir.
 // Kullanım: L('Türkçe', 'English') · durağan HTML: data-en="…" (yazı), data-en-label="…" (aria-label), data-en-title="…" (title).
 // Öteki diller: anahtar İngilizce metindir. Seçili dilin sözlüğü (lang/<dil>.js, tools/diller.cjs üretir) burada eşzamanlı yüklenir;
 // L() önce tam eşleşmeye, sonra {0} yer tutuculu kalıplara bakar (ör. "{0} moves left" → "Noch {0} Züge"); bulamazsa İngilizce kalır.
 // Ayrıntı: docs/CEVIRI.md
 (() => {
-  const LOCALE = { tr: 'tr-TR', en: 'en-US', de: 'de-DE', es: 'es-ES', 'pt-BR': 'pt-BR', fr: 'fr-FR' };
+  const LOCALE = { tr: 'tr-TR', en: 'en-US', de: 'de-DE', es: 'es-ES', 'pt-BR': 'pt-BR', fr: 'fr-FR', ko: 'ko-KR', ja: 'ja-JP', 'zh-Hant': 'zh-TW' };
   let s = {};
   try { s = JSON.parse(localStorage.getItem('ray') || '{}') || {}; } catch {}
   const devRaw = String((navigator.languages && navigator.languages[0]) || navigator.language || 'tr'), dev = devRaw.toLowerCase();
-  const fromDev = dev.startsWith('tr') ? 'tr' : dev.startsWith('de') ? 'de' : dev.startsWith('es') ? 'es' : dev.startsWith('pt') ? 'pt-BR' : dev.startsWith('fr') ? 'fr' : 'en';
+  const hant = /^zh-(hant|tw|hk|mo)\b/.test(dev);   // Geleneksel Çince; zh-CN/zh-Hans/zh-SG → İngilizce
+  const fromDev = dev.startsWith('tr') ? 'tr' : dev.startsWith('de') ? 'de' : dev.startsWith('es') ? 'es' : dev.startsWith('pt') ? 'pt-BR' : dev.startsWith('fr') ? 'fr' : dev.startsWith('ko') ? 'ko' : dev.startsWith('ja') ? 'ja' : hant ? 'zh-Hant' : 'en';
   const lang = LOCALE[s.lang] ? s.lang : fromDev;
   window.RAY_LANG = lang;
-  window.RAY_LANGS = [['tr', 'Türkçe'], ['en', 'English'], ['de', 'Deutsch'], ['es', 'Español'], ['pt-BR', 'Português'], ['fr', 'Français']];
-  // tarih ve sayı biçimi: cihaz aynı dildeyse onun bölgesi (es-MX, fr-CA…), değilse dilin varsayılanı; Portekizce hep Brezilya
-  window.RAY_LOCALE = lang !== 'pt-BR' && dev.split('-')[0] === lang.split('-')[0] && /^[a-z]{2}-[a-z]{2}$/.test(dev) ? devRaw : LOCALE[lang];
+  window.RAY_LANGS = [['tr', 'Türkçe'], ['en', 'English'], ['de', 'Deutsch'], ['es', 'Español'], ['pt-BR', 'Português'], ['fr', 'Français'], ['ko', '한국어'], ['ja', '日本語'], ['zh-Hant', '繁體中文']];
+  // tarih ve sayı biçimi: cihaz aynı dildeyse onun bölgesi (es-MX, fr-CA…), değilse dilin varsayılanı; Portekizce hep Brezilya,
+  // Geleneksel Çince cihaz zh-HK/zh-MO ise o (zh-CN gibi Basitleştirilmiş bölge değil), yoksa zh-TW
+  window.RAY_LOCALE = lang === 'zh-Hant' ? (/^zh-(hk|mo)$/.test(dev) ? devRaw : LOCALE[lang]) : lang !== 'pt-BR' && dev.split('-')[0] === lang.split('-')[0] && /^[a-z]{2}-[a-z]{2}$/.test(dev) ? devRaw : LOCALE[lang];
   document.documentElement.lang = lang;
   const pctF = new Intl.NumberFormat(window.RAY_LOCALE, { style: 'percent', maximumFractionDigits: 0 });
   window.LP = n => pctF.format(n / 100);   // yüzde: %30 · 30% · 30 %

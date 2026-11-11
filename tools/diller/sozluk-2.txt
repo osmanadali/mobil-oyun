@@ -5,723 +5,1158 @@ de: Endlich! 👏
 es: ¡Por fin! 👏
 pt: Finalmente! 👏
 fr: Enfin ! 👏
+ko: 드디어! 👏
+ja: ついに！👏
+zh: 終於！👏
 @ 📅 Perfect past day · +1 🎫
 de: 📅 Vergangener Tag perfekt · +1 🎫
 es: 📅 Día pasado perfecto · +1 🎫
 pt: 📅 Dia passado perfeito · +1 🎫
 fr: 📅 Jour passé parfait · +1 🎫
+ko: 📅 지난 날 퍼펙트 · +1 🎫
+ja: 📅 過去の日をパーフェクト · +1 🎫
+zh: 📅 過去日完美過關 · +1 🎫
 @ 🔥 {0}-day streak · +1 hint · +1 🎫
 de: 🔥 {0}-Tage-Serie · +1 Tipp · +1 🎫
 es: 🔥 Racha de {0} días · +1 pista · +1 🎫
 pt: 🔥 Sequência de {0} dias · +1 dica · +1 🎫
 fr: 🔥 Série de {0} jours · +1 indice · +1 🎫
+ko: 🔥 {0}일 연속 · 힌트 +1 · +1 🎫
+ja: 🔥 {0}日連続 · ヒント +1 · +1 🎫
+zh: 🔥 連續 {0} 天 · 提示 +1 · +1 🎫
 @ ✨ {0} perfect in a row · +1 bonus 🎫
 de: ✨ {0} perfekt in Folge · +1 Bonus-🎫
 es: ✨ {0} perfectos seguidos · +1 🎫 extra
 pt: ✨ {0} perfeitas seguidas · +1 🎫 bônus
 fr: ✨ {0} parfaits d’affilée · +1 🎫 bonus
+ko: ✨ {0}연속 퍼펙트 · 보너스 +1 🎫
+ja: ✨ {0}回連続パーフェクト · ボーナス +1 🎫
+zh: ✨ 連續 {0} 次完美 · 額外 +1 🎫
 @ ✨ 3 perfect in a row · +1 hint
 de: ✨ 3 perfekt in Folge · +1 Tipp
 es: ✨ 3 perfectos seguidos · +1 pista
 pt: ✨ 3 perfeitas seguidas · +1 dica
 fr: ✨ 3 parfaits d’affilée · +1 indice
+ko: ✨ 3연속 퍼펙트 · 힌트 +1
+ja: ✨ 3回連続パーフェクト · ヒント +1
+zh: ✨ 連續 3 次完美 · 提示 +1
 @ ✨ Streak is back · {0}
 de: ✨ Serie ist zurück · {0}
 es: ✨ Racha recuperada · {0}
 pt: ✨ Sequência de volta · {0}
 fr: ✨ Série retrouvée · {0}
+ko: ✨ 연속 기록 복구 · {0}
+ja: ✨ 連続記録が復活 · {0}
+zh: ✨ 連續紀錄回來了 · {0}
 @ 🛡 Shield saved your streak · ✨{0}
 de: 🛡 Schild hat deine Serie gerettet · ✨{0}
 es: 🛡 El escudo salvó tu racha · ✨{0}
 pt: 🛡 O escudo salvou sua sequência · ✨{0}
 fr: 🛡 Le bouclier a sauvé ta série · ✨{0}
+ko: 🛡 보호막이 연속 기록을 지켰어요 · ✨{0}
+ja: 🛡 シールドが連続記録を守った · ✨{0}
+zh: 🛡 護盾保住了你的連續紀錄 · ✨{0}
 @ New best: {0}
 de: Neuer Rekord: {0}
 es: Nuevo récord: {0}
 pt: Novo recorde: {0}
 fr: Nouveau record : {0}
+ko: 최고 기록: {0}
+ja: 自己ベスト：{0}
+zh: 新紀錄：{0}
 @ 🎁 Line complete · +2 hints
 de: 🎁 Linie komplett · +2 Tipps
 es: 🎁 Línea completa · +2 pistas
 pt: 🎁 Linha completa · +2 dicas
 fr: 🎁 Ligne terminée · +2 indices
+ko: 🎁 노선 완주 · 힌트 +2
+ja: 🎁 路線制覇 · ヒント +2
+zh: 🎁 路線全破 · 提示 +2
 @ 🏁 Perfect last stop · +1 bonus 🎫
 de: 🏁 Endstation perfekt · +1 Bonus-🎫
 es: 🏁 Última parada perfecta · +1 🎫 extra
 pt: 🏁 Última parada perfeita · +1 🎫 bônus
 fr: 🏁 Terminus parfait · +1 🎫 bonus
+ko: 🏁 종점 퍼펙트 · 보너스 +1 🎫
+ja: 🏁 終点をパーフェクト · ボーナス +1 🎫
+zh: 🏁 終點站完美過關 · 額外 +1 🎫
 @ 🎫 +1 ticket
 de: 🎫 +1 Ticket
 es: 🎫 +1 billete
 pt: 🎫 +1 bilhete
 fr: 🎫 +1 ticket
+ko: 🎫 티켓 +1
+ja: 🎫 切符 +1
+zh: 🎫 車票 +1
 @ 🎫 3 new tickets · +1 hint
 de: 🎫 3 neue Tickets · +1 Tipp
 es: 🎫 3 billetes nuevos · +1 pista
 pt: 🎫 3 bilhetes novos · +1 dica
 fr: 🎫 3 nouveaux tickets · +1 indice
+ko: 🎫 새 티켓 3장 · 힌트 +1
+ja: 🎫 新しい切符3枚 · ヒント +1
+zh: 🎫 3 張新車票 · 提示 +1
 @ 🎨 {0} available (🎫 {1})
 de: 🎨 {0} verfügbar (🎫 {1})
 es: 🎨 {0} disponible (🎫 {1})
 pt: 🎨 {0} disponível (🎫 {1})
 fr: 🎨 {0} disponible (🎫 {1})
+ko: 🎨 {0} 구매 가능 (🎫 {1})
+ja: 🎨 {0}が交換可能 (🎫 {1})
+zh: 🎨 可兌換{0} (🎫 {1})
 @ NEW LINE OPEN
 de: NEUE LINIE OFFEN
 es: LÍNEA NUEVA ABIERTA
 pt: NOVA LINHA ABERTA
 fr: NOUVELLE LIGNE
+ko: 새 노선 개통
+ja: 新しい路線が開通
+zh: 新路線開通
 @ NEW THEME
 de: NEUES THEMA
 es: TEMA NUEVO
 pt: TEMA NOVO
 fr: NOUVEAU THÈME
+ko: 새 테마
+ja: 新しいテーマ
+zh: 新主題
 @ PERFECT
 de: PERFEKT
 es: PERFECTO
 pt: PERFEITO
 fr: PARFAIT
+ko: 퍼펙트
+ja: パーフェクト
+zh: 完美
 @ For perfect
 de: Für perfekt
 es: Para perfecto
 pt: Para perfeito
 fr: Pour un parfait
+ko: 퍼펙트 조건
+ja: パーフェクト条件
+zh: 完美條件
 @  and␣
 de:  und␣
 es:  y␣
 pt:  e␣
 fr:  et␣
+ko: ,␣
+ja: 、
+zh: 、
 @ Share
 de: Teilen
 es: Enviar
 pt: Enviar
 fr: Partager
+ko: 공유
+ja: シェア
+zh: 分享
 @ Home
 de: Startseite
 es: Inicio
 pt: Início
 fr: Accueil
+ko: 홈
+ja: ホーム
+zh: 主畫面
 @ So close
 de: Knapp daneben
 es: Casi
 pt: Por pouco
 fr: Presque
+ko: 아깝다
+ja: おしい
+zh: 差一點
 @ Play ad-free · {0}
 de: Werbefrei spielen · {0}
 es: Juega sin anuncios · {0}
 pt: Jogue sem anúncios · {0}
 fr: Jouer sans pub · {0}
+ko: 광고 없이 플레이 · {0}
+ja: 広告なしでプレイ · {0}
+zh: 免廣告暢玩 · {0}
 @ Play ad-free
 de: Werbefrei spielen
 es: Juega sin anuncios
 pt: Jogue sem anúncios
 fr: Jouer sans pub
+ko: 광고 없이 플레이
+ja: 広告なしでプレイ
+zh: 免廣告暢玩
 @ Challenge a friend
 de: Freund herausfordern
 es: Reta a un amigo
 pt: Desafie um amigo
 fr: Défie un ami
+ko: 친구에게 도전장
+ja: 友だちに挑戦
+zh: 挑戰朋友
 @ Try again
 de: Nochmal
 es: Reintentar
 pt: Tentar de novo
 fr: Réessayer
+ko: 다시 도전
+ja: もう一度
+zh: 再試一次
 @ ✨ Win back your {0} streak
 de: ✨ Hol deine {0}er-Serie zurück
 es: ✨ Recupera tu racha de {0}
 pt: ✨ Recupere sua sequência de {0}
 fr: ✨ Récupère ta série de {0}
+ko: ✨ {0} 연속 기록 되찾기
+ja: ✨ {0}連続を取り戻す
+zh: ✨ 找回連續 {0} 次紀錄
 @ Lines
 de: Linien
 es: Líneas
 pt: Linhas
 fr: Lignes
+ko: 노선
+ja: 路線
+zh: 路線
 @ Next
 de: Weiter
 es: Siguiente
 pt: Próxima
 fr: Suivant
+ko: 다음
+ja: 次へ
+zh: 下一關
 @ Next line locked
 de: Nächste Linie gesperrt
 es: Siguiente línea bloqueada
 pt: Próxima linha bloqueada
 fr: Ligne suivante verrouillée
+ko: 다음 노선 잠김
+ja: 次の路線は未開通
+zh: 下一條路線未開通
 @ earn stars
 de: Sterne sammeln
 es: gana estrellas
 pt: ganhe estrelas
 fr: gagne des étoiles
+ko: 별을 모으세요
+ja: 星を集めよう
+zh: 收集星星
 @ Past day done!
 de: Vergangener Tag geschafft!
 es: ¡Día pasado completado!
 pt: Dia passado concluído!
 fr: Jour passé réussi !
+ko: 지난 날 완료!
+ja: 過去の日クリア！
+zh: 過去日完成！
 @ Practice done!
 de: Übung geschafft!
 es: ¡Práctica completada!
 pt: Treino concluído!
 fr: Entraînement réussi !
+ko: 연습 완료!
+ja: 練習クリア！
+zh: 練習完成！
 @ Daily Line done!
 de: Tageslinie geschafft!
 es: ¡Línea del día completada!
 pt: Linha do Dia concluída!
 fr: Ligne du jour réussie !
+ko: 오늘의 노선 완료!
+ja: 今日の路線クリア！
+zh: 每日路線完成！
 @ Connected!
 de: Verbunden!
 es: ¡Conectado!
 pt: Conectado!
 fr: Connecté !
+ko: 연결 완료!
+ja: つながった！
+zh: 連通了！
 @ time
 de: Zeit
 es: tiempo
 pt: tempo
 fr: temps
+ko: 시간
+ja: タイム
+zh: 時間
 @ ⏱ on time ★
 de: ⏱ pünktlich ★
 es: ⏱ a tiempo ★
 pt: ⏱ no horário ★
 fr: ⏱ à l’heure ★
+ko: ⏱ 정시 도착 ★
+ja: ⏱ 定刻どおり ★
+zh: ⏱ 準點 ★
 @ ⏱ late ✗
 de: ⏱ verspätet ✗
 es: ⏱ tarde ✗
 pt: ⏱ atrasado ✗
 fr: ⏱ en retard ✗
+ko: ⏱ 지연 ✗
+ja: ⏱ 遅延 ✗
+zh: ⏱ 誤點 ✗
 @ ▶ Double
 de: ▶ Doppelt
 es: ▶ Doble
 pt: ▶ Dobro
 fr: ▶ Double
+ko: ▶ 2배
+ja: ▶ 2倍
+zh: ▶ 加倍
 @ No reward · watch the video to the end
 de: Keine Belohnung · schau das Video bis zum Ende
 es: Sin premio · mira el vídeo hasta el final
 pt: Sem prêmio · assista ao vídeo até o fim
 fr: Pas de récompense · regarde la vidéo jusqu’au bout
+ko: 보상 없음 · 영상을 끝까지 보세요
+ja: 報酬なし · 動画を最後まで見てね
+zh: 沒有獎勵 · 請把影片看完
 @ No connection · try later
 de: Keine Verbindung · später nochmal
 es: Sin conexión · prueba más tarde
 pt: Sem conexão · tente mais tarde
 fr: Pas de connexion · réessaie plus tard
+ko: 연결 안 됨 · 나중에 다시 시도하세요
+ja: 接続できません · あとでもう一度
+zh: 沒有網路 · 請稍後再試
 @ No video right now · try again soon
 de: Gerade kein Video · gleich nochmal
 es: Ahora no hay vídeo · prueba pronto
 pt: Sem vídeo agora · tente daqui a pouco
 fr: Pas de vidéo pour l’instant · réessaie bientôt
+ko: 지금은 영상이 없어요 · 잠시 후 다시 시도하세요
+ja: いまは動画がありません · 少ししてからもう一度
+zh: 目前沒有影片 · 請稍後再試
 @ Loading…
 de: Lädt…
 es: Cargando…
 pt: Carregando…
 fr: Chargement…
+ko: 불러오는 중…
+ja: 読み込み中…
+zh: 載入中…
 @ +{0} more {1} 🎁
 de: +{0} {1} extra 🎁
 es: +{0} {1} más 🎁
 pt: +{0} {1} a mais 🎁
 fr: +{0} {1} en plus 🎁
+ko: 힌트 +{0} 추가 🎁
+ja: ヒント +{0} 追加 🎁
+zh: 再加 {0} 個提示 🎁
 @ Daily Line done
 de: Tageslinie geschafft
 es: Línea del día completada
 pt: Linha do Dia concluída
 fr: Ligne du jour réussie
+ko: 오늘의 노선 완료
+ja: 今日の路線クリア
+zh: 每日路線完成
 @ day streak
 de: Tage Serie
 es: días de racha
 pt: dias seguidos
 fr: jours de série
+ko: 일 연속
+ja: 日連続
+zh: 連續天數
 @ Replay · practice
 de: Nochmal · Übung
 es: Repetir · práctica
 pt: Jogar de novo · treino
 fr: Rejouer · entraînement
+ko: 다시 하기 · 연습
+ja: もう一度 · 練習
+zh: 重玩 · 練習
 @ Practice won’t change your result or streak
 de: Übung ändert weder Ergebnis noch Serie
 es: La práctica no cambia tu resultado ni tu racha
 pt: O treino não muda seu resultado nem sua sequência
 fr: L’entraînement ne change ni ton résultat ni ta série
+ko: 연습은 결과와 연속 기록에 영향을 주지 않아요
+ja: 練習は結果にも連続記録にも影響しません
+zh: 練習不會影響成績和連續紀錄
 @ Ray 🚇 Daily Line {0}/{1}
 de: Ray 🚇 Tageslinie {1}.{0}.
 es: Ray 🚇 Línea del día {1}/{0}
 pt: Ray 🚇 Linha do Dia {1}/{0}
 fr: Ray 🚇 Ligne du jour {1}/{0}
+ko: Ray 🚇 오늘의 노선 {0}/{1}
+ja: Ray 🚇 今日の路線 {0}/{1}
+zh: Ray 🚇 每日路線 {0}/{1}
 @  · past day
 de:  · vergangener Tag
 es:  · día pasado
 pt:  · dia passado
 fr:  · jour passé
+ko:  · 지난 날
+ja:  · 過去の日
+zh:  · 過去日
 @  🔥 {0}-day streak
 de:  🔥 {0}-Tage-Serie
 es:  🔥 racha de {0} días
 pt:  🔥 sequência de {0} dias
 fr:  🔥 série de {0} jours
+ko:  🔥 {0}일 연속
+ja:  🔥 {0}日連続
+zh:  🔥 連續 {0} 天
 @ How few moves can you do it in?
 de: Mit wie wenigen Zügen schaffst du es?
 es: ¿En cuántas jugadas lo logras?
 pt: Em quantas jogadas você consegue?
 fr: En combien de coups tu y arrives ?
+ko: 몇 번 만에 깰 수 있을까?
+ja: 何手でクリアできる？
+zh: 你能用幾步過關？
 @ Copied to clipboard
 de: In die Zwischenablage kopiert
 es: Copiado al portapapeles
 pt: Copiado para a área de transferência
 fr: Copié dans le presse-papiers
+ko: 클립보드에 복사했어요
+ja: クリップボードにコピーしました
+zh: 已複製到剪貼簿
 @ Level {0} is waiting · {1} ★ to the next line
 de: Level {0} wartet · noch {1} ★ bis zur nächsten Linie
 es: El nivel {0} te espera · {1} ★ para la próxima línea
 pt: A fase {0} te espera · {1} ★ para a próxima linha
 fr: Le niveau {0} t’attend · {1} ★ avant la prochaine ligne
+ko: 레벨 {0} 도전이 기다려요 · 다음 노선까지 ★ {1}
+ja: ステージ{0}が待っています · 次の路線まで ★ {1}
+zh: 第 {0} 關在等你 · 離下一條路線還差 ★ {1}
 @ Level {0} is waiting · a one-minute puzzle
 de: Level {0} wartet · ein Rätsel für eine Minute
 es: El nivel {0} te espera · un puzle de un minuto
 pt: A fase {0} te espera · um quebra-cabeça de um minuto
 fr: Le niveau {0} t’attend · un puzzle d’une minute
+ko: 레벨 {0} 도전이 기다려요 · 1분이면 되는 퍼즐
+ja: ステージ{0}が待っています · 1分で遊べるパズル
+zh: 第 {0} 關在等你 · 一分鐘的小謎題
 @ Pick up where you left off 🚇
 de: Mach weiter, wo du warst 🚇
 es: Sigue donde lo dejaste 🚇
 pt: Continue de onde parou 🚇
 fr: Reprends là où tu en étais 🚇
+ko: 하던 곳에서 이어서 해요 🚇
+ja: 続きから遊ぼう 🚇
+zh: 從上次的地方繼續 🚇
 @ The lines are waiting 🚇
 de: Die Linien warten 🚇
 es: Las líneas te esperan 🚇
 pt: As linhas estão esperando 🚇
 fr: Les lignes t’attendent 🚇
+ko: 노선이 기다리고 있어요 🚇
+ja: 路線が待っています 🚇
+zh: 路線在等你 🚇
 @ Your streak is about to break 💔
 de: Deine Serie reißt gleich 💔
 es: Tu racha está a punto de romperse 💔
 pt: Sua sequência está quase acabando 💔
 fr: Ta série va se briser 💔
+ko: 연속 기록이 곧 끊겨요 💔
+ja: 連続記録が途切れそう 💔
+zh: 連續紀錄快要中斷了 💔
 @ Your Daily Line is waiting 🚇
 de: Deine Tageslinie wartet 🚇
 es: Tu Línea del día te espera 🚇
 pt: Sua Linha do Dia está esperando 🚇
 fr: Ta Ligne du jour t’attend 🚇
+ko: 오늘의 노선이 기다려요 🚇
+ja: 今日の路線が待っています 🚇
+zh: 每日路線在等你 🚇
 @ You can still save your {0}-day streak today
 de: Heute kannst du deine {0}-Tage-Serie noch retten
 es: Hoy aún puedes salvar tu racha de {0} días
 pt: Hoje você ainda pode salvar sua sequência de {0} dias
 fr: Tu peux encore sauver ta série de {0} jours aujourd’hui
+ko: 오늘 안에 {0}일 연속 기록을 지킬 수 있어요
+ja: 今日中なら{0}日連続をまだ守れます
+zh: 今天還來得及保住連續 {0} 天紀錄
 @ 🔥 Don’t let your {0}-day streak go out today
 de: 🔥 Lass deine {0}-Tage-Serie heute nicht erlöschen
 es: 🔥 No dejes que tu racha de {0} días se apague hoy
 pt: 🔥 Não deixe sua sequência de {0} dias apagar hoje
 fr: 🔥 Ne laisse pas ta série de {0} jours s’éteindre
+ko: 🔥 오늘 {0}일 연속 기록이 꺼지지 않게 하세요
+ja: 🔥 {0}日連続の火を今日消さないで
+zh: 🔥 別讓連續 {0} 天的火今天熄滅
 @ A one-minute puzzle · connect the line, light up the city
 de: Ein Rätsel für eine Minute · Linie verbinden, Stadt erleuchten
 es: Un puzle de un minuto · conecta la línea, ilumina la ciudad
 pt: Um quebra-cabeça de um minuto · ligue a linha, ilumine a cidade
 fr: Un puzzle d’une minute · relie la ligne, illumine la ville
+ko: 1분이면 되는 퍼즐 · 노선을 잇고 도시를 밝혀요
+ja: 1分で遊べるパズル · 路線をつないで街を照らそう
+zh: 一分鐘的小謎題 · 連起路線，點亮城市
 @ A new Daily Line is open 🚇
 de: Eine neue Tageslinie ist offen 🚇
 es: Hay una nueva Línea del día 🚇
 pt: Uma nova Linha do Dia chegou 🚇
 fr: Une nouvelle Ligne du jour est ouverte 🚇
+ko: 새로운 오늘의 노선이 열렸어요 🚇
+ja: 新しい今日の路線が開通しました 🚇
+zh: 新的每日路線開通了 🚇
 @ 🔥 {0}-day streak · add one more today
 de: 🔥 {0}-Tage-Serie · heute einen Tag mehr
 es: 🔥 Racha de {0} días · suma uno más hoy
 pt: 🔥 Sequência de {0} dias · some mais um hoje
 fr: 🔥 Série de {0} jours · ajoute un jour aujourd’hui
+ko: 🔥 {0}일 연속 · 오늘 하루 더 늘려요
+ja: 🔥 {0}日連続 · 今日でもう1日のばそう
+zh: 🔥 連續 {0} 天 · 今天再加一天
 @ Today’s puzzle is ready · connect a line for the trip
 de: Das heutige Rätsel ist bereit · verbinde eine Linie für die Fahrt
 es: El puzle de hoy está listo · conecta una línea para el viaje
 pt: O quebra-cabeça de hoje está pronto · ligue uma linha para a viagem
 fr: Le puzzle du jour est prêt · relie une ligne pour le trajet
+ko: 오늘의 퍼즐 준비 완료 · 노선을 이어 출발해요
+ja: 今日のパズルができました · 路線をつないで出発しよう
+zh: 今天的謎題準備好了 · 連起路線出發吧
 @ The city misses you 🌃
 de: Die Stadt vermisst dich 🌃
 es: La ciudad te echa de menos 🌃
 pt: A cidade sente sua falta 🌃
 fr: La ville s’ennuie de toi 🌃
+ko: 도시가 당신을 그리워해요 🌃
+ja: 街があなたを待っています 🌃
+zh: 城市想念你 🌃
 @ Level {0} is waiting · earn ★, open new lines
 de: Level {0} wartet · sammle ★, öffne neue Linien
 es: El nivel {0} te espera · gana ★, abre líneas nuevas
 pt: A fase {0} te espera · ganhe ★, abra linhas novas
 fr: Le niveau {0} t’attend · gagne des ★, ouvre des lignes
+ko: 레벨 {0} 도전이 기다려요 · ★을 모아 새 노선을 열어요
+ja: ステージ{0}が待っています · ★を集めて新しい路線へ
+zh: 第 {0} 關在等你 · 收集 ★，開通新路線
 @ The lines have stopped 🚦
 de: Die Linien stehen still 🚦
 es: Las líneas se han parado 🚦
 pt: As linhas pararam 🚦
 fr: Les lignes sont à l’arrêt 🚦
+ko: 노선이 멈춰 있어요 🚦
+ja: 路線が止まっています 🚦
+zh: 路線停駛了 🚦
 @ Spare a minute and bring the city back to life
 de: Nimm dir eine Minute und erweck die Stadt wieder zum Leben
 es: Dedica un minuto y devuelve la vida a la ciudad
 pt: Tire um minuto e traga a cidade de volta à vida
 fr: Prends une minute et rends vie à la ville
+ko: 1분만 내서 도시를 다시 살려 주세요
+ja: 1分だけ時間をつくって、街をよみがえらせよう
+zh: 花一分鐘，讓城市重新動起來
 @ Notifications not allowed
 de: Benachrichtigungen nicht erlaubt
 es: Notificaciones no permitidas
 pt: Notificações não permitidas
 fr: Notifications non autorisées
+ko: 알림이 허용되지 않았어요
+ja: 通知が許可されていません
+zh: 通知未開啟
 @ <div class="bell">🔔</div><h2>Remind you where you left off?</h2> <p>One short reminder a day, at the time you play. Tap it to jump back to your level.</p> <button id="mYes" class="btn primary"><span>Yes, remind me</span><small>You can turn it off in Settings</small></button> <button id="mClose" class="btn glassbtn">Not now</button>
 de: <div class="bell">🔔</div><h2>Soll ich dich erinnern?</h2> <p>Eine kurze Erinnerung am Tag, zu deiner Spielzeit. Antippen und du bist zurück in deinem Level.</p> <button id="mYes" class="btn primary"><span>Ja, erinnern</span><small>In den Einstellungen abschaltbar</small></button> <button id="mClose" class="btn glassbtn">Jetzt nicht</button>
 es: <div class="bell">🔔</div><h2>¿Te recuerdo dónde lo dejaste?</h2> <p>Un aviso corto al día, a la hora en que juegas. Tócalo y vuelves a tu nivel.</p> <button id="mYes" class="btn primary"><span>Sí, recuérdame</span><small>Puedes quitarlo en Ajustes</small></button> <button id="mClose" class="btn glassbtn">Ahora no</button>
 pt: <div class="bell">🔔</div><h2>Quer um lembrete de onde parou?</h2> <p>Um lembrete curto por dia, na hora em que você joga. Toque e volte direto para sua fase.</p> <button id="mYes" class="btn primary"><span>Sim, me lembre</span><small>Dá para desligar nos Ajustes</small></button> <button id="mClose" class="btn glassbtn">Agora não</button>
 fr: <div class="bell">🔔</div><h2>Un rappel pour reprendre ?</h2> <p>Un petit rappel par jour, à l’heure où tu joues. Touche-le pour retrouver ton niveau.</p> <button id="mYes" class="btn primary"><span>Oui, rappelle-moi</span><small>Désactivable dans Réglages</small></button> <button id="mClose" class="btn glassbtn">Pas maintenant</button>
+ko: <div class="bell">🔔</div><h2>하던 곳을 알려 드릴까요?</h2> <p>하루에 한 번, 평소 플레이하는 시간에 짧게 알려 드려요. 탭하면 바로 레벨로 돌아가요.</p> <button id="mYes" class="btn primary"><span>네, 알려 주세요</span><small>설정에서 끌 수 있어요</small></button> <button id="mClose" class="btn glassbtn">나중에</button>
+ja: <div class="bell">🔔</div><h2>続きをお知らせしましょうか？</h2> <p>1日1回、いつも遊ぶ時間に短くお知らせします。タップするとステージに戻れます。</p> <button id="mYes" class="btn primary"><span>はい、お知らせして</span><small>設定でオフにできます</small></button> <button id="mClose" class="btn glassbtn">今はしない</button>
+zh: <div class="bell">🔔</div><h2>要提醒你回來繼續嗎？</h2> <p>每天一次，在你平常玩的時間簡短提醒。點一下就能回到你的關卡。</p> <button id="mYes" class="btn primary"><span>好，提醒我</span><small>可以在設定中關閉</small></button> <button id="mClose" class="btn glassbtn">以後再說</button>
 @ <div class="bell">🔔</div><h2>Want a reminder?</h2> <p>A new <b>Daily Line</b> arrives every day. One short reminder a day keeps your streak alive.</p> <button id="mYes" class="btn primary"><span>Yes, remind me</span><small>You can turn it off in Settings</small></button> <button id="mClose" class="btn glassbtn">Not now</button>
 de: <div class="bell">🔔</div><h2>Erinnerung gefällig?</h2> <p>Jeden Tag kommt eine neue <b>Tageslinie</b>. Eine kurze Erinnerung am Tag hält deine Serie am Leben.</p> <button id="mYes" class="btn primary"><span>Ja, erinnern</span><small>In den Einstellungen abschaltbar</small></button> <button id="mClose" class="btn glassbtn">Jetzt nicht</button>
 es: <div class="bell">🔔</div><h2>¿Quieres un aviso?</h2> <p>Cada día llega una nueva <b>Línea del día</b>. Un aviso corto al día mantiene viva tu racha.</p> <button id="mYes" class="btn primary"><span>Sí, recuérdame</span><small>Puedes quitarlo en Ajustes</small></button> <button id="mClose" class="btn glassbtn">Ahora no</button>
 pt: <div class="bell">🔔</div><h2>Quer um lembrete?</h2> <p>Todo dia chega uma nova <b>Linha do Dia</b>. Um lembrete curto por dia mantém sua sequência viva.</p> <button id="mYes" class="btn primary"><span>Sim, me lembre</span><small>Dá para desligar nos Ajustes</small></button> <button id="mClose" class="btn glassbtn">Agora não</button>
 fr: <div class="bell">🔔</div><h2>Un petit rappel ?</h2> <p>Une nouvelle <b>Ligne du jour</b> arrive chaque jour. Un petit rappel par jour garde ta série en vie.</p> <button id="mYes" class="btn primary"><span>Oui, rappelle-moi</span><small>Désactivable dans Réglages</small></button> <button id="mClose" class="btn glassbtn">Pas maintenant</button>
+ko: <div class="bell">🔔</div><h2>알림을 받을까요?</h2> <p>매일 새로운 <b>오늘의 노선</b>이 열려요. 하루 한 번 짧은 알림으로 연속 기록을 이어 가세요.</p> <button id="mYes" class="btn primary"><span>네, 알려 주세요</span><small>설정에서 끌 수 있어요</small></button> <button id="mClose" class="btn glassbtn">나중에</button>
+ja: <div class="bell">🔔</div><h2>お知らせを受け取りますか？</h2> <p>毎日あたらしい<b>今日の路線</b>が開通します。1日1回の短いお知らせで連続記録をキープしよう。</p> <button id="mYes" class="btn primary"><span>はい、お知らせして</span><small>設定でオフにできます</small></button> <button id="mClose" class="btn glassbtn">今はしない</button>
+zh: <div class="bell">🔔</div><h2>需要提醒嗎？</h2> <p>每天都有新的<b>每日路線</b>。每天一則簡短提醒，讓連續紀錄不中斷。</p> <button id="mYes" class="btn primary"><span>好，提醒我</span><small>可以在設定中關閉</small></button> <button id="mClose" class="btn glassbtn">以後再說</button>
 @ Done! I’ll remind you at the time you play 🔔
 de: Erledigt! Ich erinnere dich zu deiner Spielzeit 🔔
 es: ¡Hecho! Te aviso a la hora en que juegas 🔔
 pt: Pronto! Vou te lembrar na hora em que você joga 🔔
 fr: C’est noté ! Je te le rappelle à l’heure où tu joues 🔔
+ko: 완료! 평소 플레이하는 시간에 알려 드릴게요 🔔
+ja: 設定しました！いつも遊ぶ時間にお知らせします 🔔
+zh: 好了！會在你平常玩的時間提醒你 🔔
 @ Buy
 de: Kaufen
 es: Comprar
 pt: Comprar
 fr: Acheter
+ko: 구매
+ja: 購入
+zh: 購買
 @ Ad-free pack
 de: Werbefrei-Paket
 es: Paquete sin anuncios
 pt: Pacote sem anúncios
 fr: Pack sans pub
+ko: 광고 제거 팩
+ja: 広告なしパック
+zh: 免廣告包
 @ <div><i>🚫</i><span>No more ads between levels</span></div><div><i>💡</i><span><b>+20 hints</b> as a gift</span></div><div><i>🎨</i><span><b>3 special themes:</b> {0}</span></div><div><i>🚇</i><span>One-time · yours for life</span></div>
 de: <div><i>🚫</i><span>Keine Werbung mehr zwischen Leveln</span></div><div><i>💡</i><span><b>+20 Tipps</b> geschenkt</span></div><div><i>🎨</i><span><b>3 Sonderthemen:</b> {0}</span></div><div><i>🚇</i><span>Einmalig · gehört dir für immer</span></div>
 es: <div><i>🚫</i><span>Sin anuncios entre niveles</span></div><div><i>💡</i><span><b>+20 pistas</b> de regalo</span></div><div><i>🎨</i><span><b>3 temas especiales:</b> {0}</span></div><div><i>🚇</i><span>Pago único · tuyo para siempre</span></div>
 pt: <div><i>🚫</i><span>Sem anúncios entre as fases</span></div><div><i>💡</i><span><b>+20 dicas</b> de presente</span></div><div><i>🎨</i><span><b>3 temas especiais:</b> {0}</span></div><div><i>🚇</i><span>Pagamento único · seu para sempre</span></div>
 fr: <div><i>🚫</i><span>Plus de pub entre les niveaux</span></div><div><i>💡</i><span><b>+20 indices</b> offerts</span></div><div><i>🎨</i><span><b>3 thèmes spéciaux :</b> {0}</span></div><div><i>🚇</i><span>Achat unique · à toi pour toujours</span></div>
+ko: <div><i>🚫</i><span>레벨 사이 광고 없음</span></div><div><i>💡</i><span><b>힌트 +20</b> 선물</span></div><div><i>🎨</i><span><b>특별 테마 3종:</b> {0}</span></div><div><i>🚇</i><span>한 번 구매 · 평생 내 것</span></div>
+ja: <div><i>🚫</i><span>ステージ間の広告がなくなります</span></div><div><i>💡</i><span><b>ヒント +20</b> をプレゼント</span></div><div><i>🎨</i><span><b>特別テーマ3種：</b>{0}</span></div><div><i>🚇</i><span>買い切り · ずっと使える</span></div>
+zh: <div><i>🚫</i><span>關卡之間不再有廣告</span></div><div><i>💡</i><span>贈送 <b>20 個提示</b></span></div><div><i>🎨</i><span><b>3 款特別主題：</b>{0}</span></div><div><i>🚇</i><span>一次購買 · 永久擁有</span></div>
 @ ACTIVE ✓ · Thank you!
 de: AKTIV ✓ · Danke!
 es: ACTIVO ✓ · ¡Gracias!
 pt: ATIVO ✓ · Obrigado!
 fr: ACTIF ✓ · Merci !
+ko: 적용 중 ✓ · 고마워요!
+ja: 有効 ✓ · ありがとう！
+zh: 已啟用 ✓ · 謝謝你！
 @ Secure payment via {0}
 de: Sichere Zahlung über {0}
 es: Pago seguro con {0}
 pt: Pagamento seguro pelo {0}
 fr: Paiement sécurisé via {0}
+ko: {0}로 안전하게 결제
+ja: {0}で安全に決済
+zh: 透過 {0} 安全付款
 @ Connecting to store…
 de: Verbinde mit dem Store…
 es: Conectando con la tienda…
 pt: Conectando à loja…
 fr: Connexion au store…
+ko: 스토어에 연결하는 중…
+ja: ストアに接続中…
+zh: 正在連線至商店…
 @ Hint videos stay optional.
 de: Tipp-Videos bleiben freiwillig.
 es: Los vídeos de pistas siguen siendo opcionales.
 pt: Os vídeos de dicas continuam opcionais.
 fr: Les vidéos d’indices restent facultatives.
+ko: 힌트 영상은 언제나 선택이에요.
+ja: ヒント動画はいつでも任意です。
+zh: 提示影片一樣可自由選擇觀看。
 @ Restore purchase
 de: Kauf wiederherstellen
 es: Restaurar compra
 pt: Restaurar compra
 fr: Restaurer l’achat
+ko: 구매 복원
+ja: 購入を復元
+zh: 恢復購買
 @ Store unavailable right now · try later
 de: Store gerade nicht erreichbar · später nochmal
 es: Tienda no disponible · prueba más tarde
 pt: Loja indisponível agora · tente mais tarde
 fr: Store indisponible · réessaie plus tard
+ko: 지금은 스토어를 쓸 수 없어요 · 나중에 다시 시도하세요
+ja: いまストアに接続できません · あとでもう一度
+zh: 目前無法使用商店 · 請稍後再試
 @ Purchases work in the store version
 de: Käufe gehen in der Store-Version
 es: Las compras funcionan en la versión de la tienda
 pt: Compras funcionam na versão da loja
 fr: Les achats marchent dans la version du store
+ko: 구매는 스토어 버전에서 할 수 있어요
+ja: 購入はストア版で利用できます
+zh: 商店版才能購買
 @ Purchase couldn’t be completed
 de: Kauf konnte nicht abgeschlossen werden
 es: No se pudo completar la compra
 pt: Não foi possível concluir a compra
 fr: L’achat n’a pas pu aboutir
+ko: 구매를 완료하지 못했어요
+ja: 購入を完了できませんでした
+zh: 購買未能完成
 @ Checking…
 de: Prüfe…
 es: Comprobando…
 pt: Verificando…
 fr: Vérification…
+ko: 확인 중…
+ja: 確認中…
+zh: 檢查中…
 @ No purchase found on this account
 de: Kein Kauf auf diesem Konto gefunden
 es: No hay compras en esta cuenta
 pt: Nenhuma compra nesta conta
 fr: Aucun achat sur ce compte
+ko: 이 계정에서 구매 내역을 찾지 못했어요
+ja: このアカウントに購入履歴がありません
+zh: 這個帳號沒有購買紀錄
 @ Ad-free pack active 💛 +20 hints · 3 special themes
 de: Werbefrei-Paket aktiv 💛 +20 Tipps · 3 Sonderthemen
 es: Paquete sin anuncios activo 💛 +20 pistas · 3 temas especiales
 pt: Pacote sem anúncios ativo 💛 +20 dicas · 3 temas especiais
 fr: Pack sans pub actif 💛 +20 indices · 3 thèmes spéciaux
+ko: 광고 제거 팩 적용 중 💛 힌트 +20 · 특별 테마 3종
+ja: 広告なしパック有効 💛 ヒント +20 · 特別テーマ3種
+zh: 免廣告包已啟用 💛 提示 +20 · 3 款特別主題
 @ No ads · 20 hints · 3 special themes
 de: Keine Werbung · 20 Tipps · 3 Sonderthemen
 es: Sin anuncios · 20 pistas · 3 temas especiales
 pt: Sem anúncios · 20 dicas · 3 temas especiais
 fr: Sans pub · 20 indices · 3 thèmes spéciaux
+ko: 광고 없음 · 힌트 20개 · 특별 테마 3종
+ja: 広告なし · ヒント20個 · 特別テーマ3種
+zh: 無廣告 · 20 個提示 · 3 款特別主題
 @ Theme pack
 de: Themenpaket
 es: Paquete de temas
 pt: Pacote de temas
 fr: Pack de thèmes
+ko: 테마 팩
+ja: テーマパック
+zh: 主題包
 @ All {0} color themes · one-time
 de: Alle {0} Farbthemen · einmalig
 es: Los {0} temas de color · pago único
 pt: Todos os {0} temas de cores · pagamento único
 fr: Les {0} thèmes de couleur · achat unique
+ko: 색상 테마 {0}종 전부 · 한 번 구매
+ja: カラーテーマ全{0}種 · 買い切り
+zh: 全部 {0} 款色彩主題 · 一次購買
 @ 10 hints
 de: 10 Tipps
 es: 10 pistas
 pt: 10 dicas
 fr: 10 indices
+ko: 힌트 10개
+ja: ヒント10個
+zh: 10 個提示
 @ Puts a tricky tile in place
 de: Setzt eine knifflige Kachel richtig
 es: Coloca una pieza difícil
 pt: Encaixa uma peça difícil
 fr: Place une tuile difficile
+ko: 어려운 타일을 제자리에 맞춰 줘요
+ja: むずかしいタイルを正しい向きに
+zh: 幫你擺好一個難搞的方塊
 @ 30 hints
 de: 30 Tipps
 es: 30 pistas
 pt: 30 dicas
 fr: 30 indices
+ko: 힌트 30개
+ja: ヒント30個
+zh: 30 個提示
 @ 80 hints
 de: 80 Tipps
 es: 80 pistas
 pt: 80 dicas
 fr: 80 indices
+ko: 힌트 80개
+ja: ヒント80個
+zh: 80 個提示
 @ Booster pack
 de: Booster-Paket
 es: Paquete de potenciadores
 pt: Pacote de reforços
 fr: Pack de boosters
+ko: 부스터 팩
+ja: ブースターパック
+zh: 道具包
 @ Ticket pack · 50 tickets
 de: Ticketpaket · 50 Tickets
 es: Paquete de billetes · 50 billetes
 pt: Pacote de bilhetes · 50 bilhetes
 fr: Pack de tickets · 50 tickets
+ko: 티켓 팩 · 티켓 50장
+ja: 切符パック · 切符50枚
+zh: 車票包 · 50 張車票
 @ For themes only (chests use earned 🎫)
 de: Nur für Themen (Kisten nutzen verdiente 🎫)
 es: Solo para temas (los cofres usan 🎫 ganados)
 pt: Só para temas (baús usam 🎫 ganhos)
 fr: Pour les thèmes (les coffres prennent les 🎫 gagnés)
+ko: 테마 전용 (상자는 모은 🎫로 열어요)
+ja: テーマ専用（宝箱は集めた🎫で開けます）
+zh: 僅限主題（寶箱要用賺到的 🎫）
 @ Starter pack
 de: Starterpaket
 es: Paquete inicial
 pt: Pacote inicial
 fr: Pack de départ
+ko: 스타터 팩
+ja: スターターパック
+zh: 新手包
 @ Owned ✓
 de: Gekauft ✓
 es: Comprado ✓
 pt: Comprado ✓
 fr: Acheté ✓
+ko: 보유 ✓
+ja: 購入済み ✓
+zh: 已擁有 ✓
 @ Shop
 de: Shop
 es: Tienda
 pt: Loja
 fr: Boutique
+ko: 상점
+ja: ショップ
+zh: 商店
 @ You have 💡 {0} · 🎫 {1}
 de: Du hast 💡 {0} · 🎫 {1}
 es: Tienes 💡 {0} · 🎫 {1}
 pt: Você tem 💡 {0} · 🎫 {1}
 fr: Tu as 💡 {0} · 🎫 {1}
+ko: 보유: 💡 {0} · 🎫 {1}
+ja: 所持：💡 {0} · 🎫 {1}
+zh: 你有 💡 {0} · 🎫 {1}
 @ The whole game is free to play; packs are optional.
 de: Das ganze Spiel ist kostenlos; Pakete sind freiwillig.
 es: Todo el juego es gratis; los paquetes son opcionales.
 pt: O jogo todo é grátis; os pacotes são opcionais.
 fr: Tout le jeu est gratuit ; les packs sont facultatifs.
+ko: 게임은 모두 무료로 즐길 수 있고, 팩은 선택이에요.
+ja: ゲームはすべて無料で遊べます。パックは任意です。
+zh: 整個遊戲都能免費玩，禮包可自由選購。
 @ Packs are available in the store version.
 de: Pakete gibt es in der Store-Version.
 es: Los paquetes están en la versión de la tienda.
 pt: Os pacotes estão na versão da loja.
 fr: Les packs sont dans la version du store.
+ko: 팩은 스토어 버전에서 살 수 있어요.
+ja: パックはストア版で購入できます。
+zh: 商店版才能購買禮包。
 @ <div><i>💡</i><span><b>{0} hints</b></span></div><div><i>🧰</i><span>Boosters · {1}</span></div><div><i>❤️</i><span><b>1 hour of unlimited lives</b></span></div><div><i>🎫</i><span><b>{2} tickets</b> · for themes</span></div>
 de: <div><i>💡</i><span><b>{0} Tipps</b></span></div><div><i>🧰</i><span>Booster · {1}</span></div><div><i>❤️</i><span><b>1 Stunde unendlich Leben</b></span></div><div><i>🎫</i><span><b>{2} Tickets</b> · für Themen</span></div>
 es: <div><i>💡</i><span><b>{0} pistas</b></span></div><div><i>🧰</i><span>Potenciadores · {1}</span></div><div><i>❤️</i><span><b>1 hora de vidas ilimitadas</b></span></div><div><i>🎫</i><span><b>{2} billetes</b> · para temas</span></div>
 pt: <div><i>💡</i><span><b>{0} dicas</b></span></div><div><i>🧰</i><span>Reforços · {1}</span></div><div><i>❤️</i><span><b>1 hora de vidas ilimitadas</b></span></div><div><i>🎫</i><span><b>{2} bilhetes</b> · para temas</span></div>
 fr: <div><i>💡</i><span><b>{0} indices</b></span></div><div><i>🧰</i><span>Boosters · {1}</span></div><div><i>❤️</i><span><b>1 heure de vies illimitées</b></span></div><div><i>🎫</i><span><b>{2} tickets</b> · pour les thèmes</span></div>
+ko: <div><i>💡</i><span><b>힌트 {0}개</b></span></div><div><i>🧰</i><span>부스터 · {1}</span></div><div><i>❤️</i><span><b>1시간 무제한 하트</b></span></div><div><i>🎫</i><span><b>티켓 {2}장</b> · 테마용</span></div>
+ja: <div><i>💡</i><span><b>ヒント{0}個</b></span></div><div><i>🧰</i><span>ブースター · {1}</span></div><div><i>❤️</i><span><b>1時間ライフ無限</b></span></div><div><i>🎫</i><span><b>切符{2}枚</b> · テーマ用</span></div>
+zh: <div><i>💡</i><span><b>{0} 個提示</b></span></div><div><i>🧰</i><span>道具 · {1}</span></div><div><i>❤️</i><span><b>1 小時無限生命</b></span></div><div><i>🎫</i><span><b>{2} 張車票</b> · 兌換主題用</span></div>
 @ Special offer
 de: Sonderangebot
 es: Oferta especial
 pt: Oferta especial
 fr: Offre spéciale
+ko: 특별 할인
+ja: 特別オファー
+zh: 特別優惠
 @ No, thanks
 de: Nein, danke
 es: No, gracias
 pt: Não, obrigado
 fr: Non merci
+ko: 괜찮아요
+ja: いいえ、けっこうです
+zh: 不用了，謝謝
 @ This pack is always in Settings › Shop.
 de: Dieses Paket findest du immer unter Einstellungen › Shop.
 es: Este paquete siempre está en Ajustes › Tienda.
 pt: Este pacote fica sempre em Ajustes › Loja.
 fr: Ce pack est toujours dans Réglages › Boutique.
+ko: 이 팩은 언제든 설정 › 상점에 있어요.
+ja: このパックはいつでも 設定 › ショップ にあります。
+zh: 這個禮包隨時都在「設定 › 商店」。
 @ Your purchases are up to date ✓
 de: Deine Käufe sind aktuell ✓
 es: Tus compras están al día ✓
 pt: Suas compras estão em dia ✓
 fr: Tes achats sont à jour ✓
+ko: 구매 내역이 최신 상태예요 ✓
+ja: 購入情報は最新です ✓
+zh: 你的購買紀錄已是最新 ✓
 @ 🎨 Theme pack unlocked · every color theme is yours
 de: 🎨 Themenpaket frei · alle Farbthemen gehören dir
 es: 🎨 Paquete de temas activado · todos los temas son tuyos
 pt: 🎨 Pacote de temas liberado · todos os temas são seus
 fr: 🎨 Pack de thèmes débloqué · tous les thèmes sont à toi
+ko: 🎨 테마 팩 해제 · 모든 색상 테마가 내 것
+ja: 🎨 テーマパック解放 · すべてのカラーテーマが使えます
+zh: 🎨 主題包已解鎖 · 所有色彩主題都是你的
 @ 🎁 Starter pack added · ❤️∞ 1 hour
 de: 🎁 Starterpaket hinzugefügt · ❤️∞ 1 Stunde
 es: 🎁 Paquete inicial añadido · ❤️∞ 1 hora
 pt: 🎁 Pacote inicial adicionado · ❤️∞ 1 hora
 fr: 🎁 Pack de départ ajouté · ❤️∞ 1 heure
+ko: 🎁 스타터 팩 지급 · ❤️∞ 1시간
+ja: 🎁 スターターパックを追加 · ❤️∞ 1時間
+zh: 🎁 已加入新手包 · ❤️∞ 1 小時
 @ +{0} hints 💡
 de: +{0} Tipps 💡
 es: +{0} pistas 💡
 pt: +{0} dicas 💡
 fr: +{0} indices 💡
+ko: 힌트 +{0} 💡
+ja: ヒント +{0} 💡
+zh: 提示 +{0} 💡
 @ 🧰 Boosters added
 de: 🧰 Booster hinzugefügt
 es: 🧰 Potenciadores añadidos
 pt: 🧰 Reforços adicionados
 fr: 🧰 Boosters ajoutés
+ko: 🧰 부스터 지급
+ja: 🧰 ブースターを追加
+zh: 🧰 已加入道具
 @ +{0} 🎫 tickets · spend them on themes
 de: +{0} 🎫 Tickets · gib sie für Themen aus
 es: +{0} 🎫 billetes · gástalos en temas
 pt: +{0} 🎫 bilhetes · use em temas
 fr: +{0} 🎫 tickets · à dépenser en thèmes
+ko: 🎫 티켓 +{0} · 테마에 쓰세요
+ja: 🎫 切符 +{0} · テーマに使おう
+zh: 🎫 車票 +{0} · 用來兌換主題
 @ Out of hints · +3 free tomorrow
 de: Keine Tipps mehr · morgen +3 gratis
 es: Sin pistas · mañana +3 gratis
 pt: Sem dicas · amanhã +3 grátis
 fr: Plus d’indices · +3 gratuits demain
+ko: 힌트가 없어요 · 내일 무료로 +3
+ja: ヒントがありません · 明日 +3 無料
+zh: 提示用完了 · 明天免費 +3
 @ Loading ad…
 de: Werbung lädt…
 es: Cargando anuncio…
 pt: Carregando anúncio…
 fr: Chargement de la pub…
+ko: 광고 불러오는 중…
+ja: 広告を読み込み中…
+zh: 廣告載入中…
 @ More videos to go
 de: Noch mehr Videos
 es: Faltan más vídeos
 pt: Faltam mais vídeos
 fr: Encore des vidéos
+ko: 영상이 더 남았어요
+ja: 動画はまだあります
+zh: 還有影片要看
 @ One video left
 de: Noch ein Video
 es: Queda un vídeo
 pt: Falta um vídeo
 fr: Plus qu’une vidéo
+ko: 영상 1개 남음
+ja: 動画あと1本
+zh: 還剩一段影片
 @ Out of hints
 de: Keine Tipps mehr
 es: Sin pistas
 pt: Sem dicas
 fr: Plus d’indices
+ko: 힌트가 없어요
+ja: ヒント切れ
+zh: 提示用完了
 @ Watch a short video
 de: Schau ein kurzes Video
 es: Mira un vídeo corto
 pt: Assista a um vídeo curto
 fr: Regarde une courte vidéo
+ko: 짧은 영상을 보고
+ja: 短い動画を見て
+zh: 看一段短片
 @ Watch {0} short videos
 de: Schau {0} kurze Videos
 es: Mira {0} vídeos cortos
 pt: Assista a {0} vídeos curtos
 fr: Regarde {0} courtes vidéos
+ko: 짧은 영상 {0}개를 보고
+ja: 短い動画を{0}本見て
+zh: 看 {0} 段短片
 @ earn <b>2 hints</b>.
 de: hol dir <b>2 Tipps</b>.
 es: gana <b>2 pistas</b>.
 pt: ganhe <b>2 dicas</b>.
 fr: gagne <b>2 indices</b>.
+ko: <b>힌트 2개</b>를 받으세요.
+ja: <b>ヒント2個</b>をゲット。
+zh: 獲得 <b>2 個提示</b>。
 @ watched
 de: angesehen
 es: vistos
 pt: assistidos
 fr: vues
+ko: 시청
+ja: 視聴済み
+zh: 已觀看
 @ Continue · video {0}
 de: Weiter · Video {0}
 es: Seguir · vídeo {0}
 pt: Continuar · vídeo {0}
 fr: Continuer · vidéo {0}
+ko: 계속 · {0}번째 영상
+ja: 続ける · {0}本目
+zh: 繼續 · 第 {0} 段
 @ Watch · +2 hints
 de: Ansehen · +2 Tipps
 es: Ver · +2 pistas
 pt: Assistir · +2 dicas
 fr: Regarder · +2 indices
+ko: 보기 · 힌트 +2
+ja: 見る · ヒント +2
+zh: 觀看 · 提示 +2
 @ 💡 Hint packs
 de: 💡 Tipp-Pakete
 es: 💡 Paquetes de pistas
 pt: 💡 Pacotes de dicas
 fr: 💡 Packs d’indices
+ko: 💡 힌트 팩
+ja: 💡 ヒントパック
+zh: 💡 提示包
 @ You earned +2 hints
 de: Du hast +2 Tipps bekommen
 es: Ganaste +2 pistas
 pt: Você ganhou +2 dicas
 fr: Tu as gagné +2 indices
+ko: 힌트 2개를 받았어요
+ja: ヒントを2個ゲット
+zh: 獲得 2 個提示
 @ RULE OF THE WEEK
 de: REGEL DER WOCHE
 es: REGLA DE LA SEMANA
 pt: REGRA DA SEMANA
 fr: RÈGLE DE LA SEMAINE
+ko: 이번 주 규칙
+ja: 今週のルール
+zh: 本週規則
 @ NEW RULE
 de: NEUE REGEL
 es: REGLA NUEVA
 pt: REGRA NOVA
 fr: NOUVELLE RÈGLE
+ko: 새 규칙
+ja: 新ルール
+zh: 新規則
 @ Got it
 de: Verstanden
 es: Entendido
 pt: Entendi
 fr: Compris
+ko: 알겠어요
+ja: わかった
+zh: 知道了
 @ Restarted
 de: Neu gestartet
 es: Reiniciado
 pt: Reiniciado
 fr: Recommencé
+ko: 다시 시작했어요
+ja: やり直しました
+zh: 已重來
 @ Your {0}-day streak broke
 de: Deine {0}-Tage-Serie ist gerissen
 es: Tu racha de {0} días se rompió
 pt: Sua sequência de {0} dias acabou
 fr: Ta série de {0} jours s’est brisée
+ko: {0}일 연속 기록이 끊겼어요
+ja: {0}日連続が途切れました
+zh: 連續 {0} 天紀錄中斷了
 @ You missed yesterday’s Daily Line. Watch {0} to keep your <b>{1}-day</b> streak.<br>This offer is good <b>today only</b>.
 de: Du hast die gestrige Tageslinie verpasst. Schau {0}, um deine <b>{1}-Tage</b>-Serie zu halten.<br>Das Angebot gilt <b>nur heute</b>.
 es: Te perdiste la Línea del día de ayer. Mira {0} para mantener tu racha de <b>{1} días</b>.<br>Esta oferta vale <b>solo hoy</b>.
 pt: Você perdeu a Linha do Dia de ontem. Assista a {0} para manter sua sequência de <b>{1} dias</b>.<br>Esta oferta vale <b>só hoje</b>.
 fr: Tu as raté la Ligne du jour d’hier. Regarde {0} pour garder ta série de <b>{1} jours</b>.<br>Offre valable <b>aujourd’hui seulement</b>.
+ko: 어제의 오늘의 노선을 놓쳤어요. {0}를 보면 <b>{1}일</b> 연속 기록을 지킬 수 있어요.<br>이 기회는 <b>오늘만</b> 있어요.
+ja: 昨日の「今日の路線」を逃しました。{0}を見ると<b>{1}日</b>連続をキープできます。<br>このチャンスは<b>今日だけ</b>。
+zh: 你錯過了昨天的每日路線。看{0}就能保住<b>連續 {1} 天</b>紀錄。<br>這個機會<b>只限今天</b>。
 @ a short video
 de: ein kurzes Video
 es: un vídeo corto
 pt: um vídeo curto
 fr: une courte vidéo
+ko: 짧은 영상 1개
+ja: 短い動画1本
+zh: 一段短片
 @ {0} short videos
 de: {0} kurze Videos
 es: {0} vídeos cortos
 pt: {0} vídeos curtos
 fr: {0} courtes vidéos
+ko: 짧은 영상 {0}개
+ja: 短い動画{0}本
+zh: {0} 段短片
 @ ▶ Save streak
 de: ▶ Serie retten
 es: ▶ Salvar racha
 pt: ▶ Salvar sequência
 fr: ▶ Sauver la série
+ko: ▶ 연속 기록 지키기
+ja: ▶ 連続記録を守る
+zh: ▶ 挽救連續紀錄
 @ Go online · you can save it today
 de: Geh online · heute kannst du sie retten
 es: Conéctate · hoy puedes salvarla
 pt: Fique online · dá para salvar hoje
 fr: Connecte-toi · tu peux la sauver aujourd’hui
+ko: 인터넷에 연결하세요 · 오늘 안에 지킬 수 있어요
+ja: オンラインにしよう · 今日中なら守れます
+zh: 請連上網路 · 今天還能挽救
 @ 🔥 Streak saved · {0} {1}
 de: 🔥 Serie gerettet · {0} {1}
 es: 🔥 Racha salvada · {0} {1}
 pt: 🔥 Sequência salva · {0} {1}
 fr: 🔥 Série sauvée · {0} {1}
+ko: 🔥 연속 기록 지킴 · {0}일
+ja: 🔥 連続記録を守った · {0}日
+zh: 🔥 連續紀錄保住了 · {0} 天
 @ day
 de: Tag
 es: día
 pt: dia
 fr: jour
+ko: 일
+ja: 日
+zh: 天
 @ days
 de: Tage
 es: días
 pt: dias
 fr: jours
+ko: 일
+ja: 日
+zh: 天
 @ Mon
 de: Mo
 es: Lu
 pt: Seg
 fr: Lun
+ko: 월
+ja: 月
+zh: 一
 @ Tue
 de: Di
 es: Ma
 pt: Ter
 fr: Mar
+ko: 화
+ja: 火
+zh: 二
 @ Wed
 de: Mi
 es: Mi
 pt: Qua
 fr: Mer
+ko: 수
+ja: 水
+zh: 三
 @ Thu
 de: Do
 es: Ju
 pt: Qui
 fr: Jeu
+ko: 목
+ja: 木
+zh: 四
 @ Fri
 de: Fr
 es: Vi
 pt: Sex
 fr: Ven
+ko: 금
+ja: 金
+zh: 五
 @ Sat
 de: Sa
 es: Sá
 pt: Sáb
 fr: Sam
+ko: 토
+ja: 土
+zh: 六
 @ Sun
 de: So
 es: Do
 pt: Dom
 fr: Dim
+ko: 일
+ja: 日
+zh: 日
