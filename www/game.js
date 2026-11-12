@@ -1671,6 +1671,8 @@ const ART = (() => {
     crown: svg([2, 1, 0].map(i => `<g transform="rotate(${(i - 1) * 12} 40 44) translate(0 ${i * -3})"><rect x="14" y="30" width="52" height="26" rx="5" fill="${['#ffd66b', '#ffc04d', '#f5a33c'][i]}"/><circle cx="14" cy="43" r="4.5" fill="var(--sheetBg)"/><circle cx="66" cy="43" r="4.5" fill="var(--sheetBg)"/><path d="M50 33v20" stroke="#fff" stroke-dasharray="3 3" stroke-width="1.6"/></g>`).join('') + '<text x="32" y="46" text-anchor="middle" font-size="12" font-weight="800" fill="#8a4a0e" font-family="Outfit,sans-serif">50</text>'),
   };
 })();
+// Mağaza iki sekme: 🛍️ Paketler (parayla) · 🎨 Temalar (🎫 ile; bilet çipi doğrudan buraya açar)
+const shopTabs = on => `<div class="tabs" role="tablist"><button id="tPk" role="tab" aria-selected="${on === 'pk'}" class="${on === 'pk' ? 'on' : ''}"><i>🛍️</i>${L('Paketler', 'Packs')}</button><button id="tTh" role="tab" aria-selected="${on === 'th'}" class="${on === 'th' ? 'on' : ''}"><i>🎨</i>${L('Temalar', 'Themes')}${seaNew() || save.newSkin ? '<em class="dot"></em>' : ''}</button></div>`;
 function storeSheet(focus) {
   const live = Shop.avail(), owns = k => k === 'noads' ? save.noAds : k === 'themes' && save.allThemes;
   const has = STORE.filter(([k]) => live || k === 'noads').filter(([k]) => !(k === 'themes' && SKINS.every(x => x.vip || skinOpen(x)) && !save.allThemes)).map(r => r[0]);
@@ -1684,12 +1686,12 @@ function storeSheet(focus) {
     return `<button class="pk prod ${cls} pk-${k} ${focus === k.slice(0, 4) ? 'on' : ''}" data-p="${k}"><i class="art">${ART[k]}</i><span class="tx"><b>${name()}</b>${sub() && cls !== 'tri' && !sl ? `<small>${sub()}</small>` : ''}</span><em class="pr">${price(k)}</em>${sl ? `<span class="slots">${sl}</span>` : ''}</button>`; };
   const grp = (ks, cls) => { const g = ks.filter(k => has.includes(k)); return g.length ? `<div class="pkg ${cls}">${g.map(k => card(k, cls)).join('')}</div>` : ''; };
   const rows = ART.defs + grp(['noads', 'starter'], 'big') + grp(['hint10', 'hint30', 'hint80'], 'tri') + grp(['themes', 'bst', 'crown'], 'wide');
-  modal(`<h2>${L('Mağaza', 'Shop')}</h2>
+  modal(`<h2>${L('Mağaza', 'Shop')}</h2>${shopTabs('pk')}
     <p>${L(`Sende 💡 ${save.hints} · 🎫 ${crownBal()}`, `You have 💡 ${save.hints} · 🎫 ${crownBal()}`)}</p>
     <div class="store" id="store">${rows}</div>
     <p class="tip">${live ? L('Oyunun tamamı ücretsiz oynanır; paketler isteğe bağlı.', 'The whole game is free to play; packs are optional.') : L('Paketler mağazadan indirilen sürümde açılır.', 'Packs are available in the store version.')}</p>
     ${live ? `<button id="mRestore" class="link">${L('Satın alımı geri yükle', 'Restore purchase')}</button>` : ''}
-    <button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, { mRestore: restoreBuys, mClose: closeModal });
+    <button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, { mRestore: restoreBuys, mClose: closeModal, tTh: () => skinSheet() });
   if (focus) setTimeout(() => $('store')?.querySelector('.pk.on')?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 350);
   $('store').onclick = async e => {
     const b = e.target.closest('[data-p]'), k = b?.dataset.p; if (!k) return;
@@ -2258,14 +2260,14 @@ function skinSheet() {
   };
   // mevsim temaları: tarihi gelmiş olanlar (ücretsiz alınır) ve sahip olunanlar; ötekiler görünmez (menü sade kalır)
   const sea = SKINS.filter(k => k.sea && (seaWin(k.id) || skinOpen(k))), seaOn = sea.filter(k => seaWin(k.id) && !skinOpen(k));
-  modal(`<h2>${L('Renk temaları', 'Color themes')}</h2><p>${L('Her <b>kusursuz</b> bölüm (⏱ ve ↻ hedefi) 1 🎫 verir. 🎫 ile tema ve sandık açılır.', 'Every <b>perfect</b> level (⏱ and ↻ targets) gives 1 🎫. Spend 🎫 on themes and chests.')}</p>
+  modal(`<h2>${L('Mağaza', 'Shop')}</h2>${shopTabs('th')}<p>${L('Her <b>kusursuz</b> bölüm (⏱ ve ↻ hedefi) 1 🎫 verir. 🎫 ile tema ve sandık açılır.', 'Every <b>perfect</b> level (⏱ and ↻ targets) gives 1 🎫. Spend 🎫 on themes and chests.')}</p>
     <div class="nexts"><small>${L('Bakiye', 'Balance')}</small><b class="bal">🎫 ${bal}</b></div>
     <button id="mChest" class="chestrow ${chestBal() >= CHEST ? 'can' : ''}"><i>${CHEST_SVG}</i><span><b>${L('Sürpriz sandık', 'Surprise chest')}</b><small>${L('İpucu · 🛡 seri kalkanı · 🚆 tren kaplaması', 'Hints · 🛡 shield · 🚆 train livery')}</small></span><em>🎫 ${CHEST}</em></button>
     ${nx ? `<div class="nexts"><small>${L('Sıradaki', 'Next up')}: <b>${nx.name}</b></small><small>🎫 ${Math.min(bal, nx.need)} / ${nx.need}</small></div><div class="pb"><i style="width:${Math.max(4, Math.min(100, bal / nx.need * 100))}%"></i></div>` : ''}
     <div class="skins" id="skins">${sea.length ? `<small class="vipk sea">${seaOn.length ? L(`${seaOn[0].sea} Mevsim teması · ${seaTill(seaOn[0])} tarihine dek ücretsiz`, `${seaOn[0].sea} Seasonal theme · free until ${seaTill(seaOn[0])}`) : L('🍂 Mevsim temaları', '🍂 Seasonal themes')}</small>${sea.map(card).join('')}<small class="vipk">${L('🎫 Bilet temaları', '🎫 Ticket themes')}</small>` : ''}${SKINS.filter(k => !k.vip && !k.sea).map(card).join('')}
       <small class="vipk">${L('💛 Reklamsız pakete özel', '💛 Ad-free pack only')}</small>${SKINS.filter(k => k.vip).map(card).join('')}</div>
     ${nx ? `<button id="mHunt" class="btn primary"><span>${L('Bilet topla', 'Earn tickets')} 🎫</span><small>${hn ? L(`${hn} bölüm kusursuz bitmeyi bekliyor`, `${hn} ${pl(hn, 'level awaits', 'levels await')} a perfect finish`) : L('Yeni bölümleri ⏱ ve ↻ hedefiyle bitir', 'Beat new levels within ⏱ and ↻ targets')}</small></button>` : ''}
-    <button id="mClose" class="btn glassbtn">${L('Tamam', 'Done')}</button>`, { mClose: closeModal, mHunt: () => crownHunt(nx), mChest: chestSheet });
+    <button id="mClose" class="btn glassbtn">${L('Tamam', 'Done')}</button>`, { mClose: closeModal, mHunt: () => crownHunt(nx), mChest: chestSheet, tPk: () => storeSheet() });
   $('skins').onclick = e => {
     const b = e.target.closest('.skin'); if (!b) return;
     const k = SKINS.find(x => x.id === b.dataset.k);
