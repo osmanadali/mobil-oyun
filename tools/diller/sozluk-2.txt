@@ -1432,3 +1432,35 @@ fr: LIGNE DU JOUR
 ko: 오늘의 노선
 ja: 今日の路線
 zh: 每日路線
+@ We heard your feedback!
+de: Wir haben euer Feedback gehört!
+es: ¡Escuchamos tus comentarios!
+pt: Ouvimos o seu feedback!
+fr: Nous avons entendu vos retours !
+ko: 여러분의 의견을 반영했어요!
+ja: みなさんの声を受け取りました！
+zh: 我們收到你的意見了！
+@ The first levels are now easier and teach you step by step.
+de: Die ersten Levels sind jetzt leichter und bringen dir das Spiel Schritt für Schritt bei.
+es: Los primeros niveles ahora son más fáciles y te enseñan paso a paso.
+pt: As primeiras fases agora são mais fáceis e ensinam passo a passo.
+fr: Les premiers niveaux sont désormais plus faciles et t’apprennent pas à pas.
+ko: 이제 첫 레벨들이 더 쉬워지고 차근차근 알려 줘요.
+ja: 最初のレベルがやさしくなり、少しずつ遊び方を覚えられます。
+zh: 前幾關現在更簡單，會一步步教你玩。
+@ As a thank-you, <b>{0} hints</b> were added to your account.
+de: Als Dankeschön wurden deinem Konto <b>{0} Tipps</b> gutgeschrieben.
+es: Como agradecimiento, se añadieron <b>{0} pistas</b> a tu cuenta.
+pt: Como agradecimento, <b>{0} dicas</b> foram adicionadas à sua conta.
+fr: Pour te remercier, <b>{0} indices</b> ont été ajoutés à ton compte.
+ko: 감사의 뜻으로 <b>힌트 {0}개</b>를 드렸어요.
+ja: お礼に<b>ヒント{0}回</b>をプレゼントしました。
+zh: 為了感謝你，已送你 <b>{0} 次提示</b>。
+@ Fewer mixed tiles, more time and moves on the first levels; no lives lost to the clock on the first two lines
+de: Weniger verdrehte Felder, mehr Zeit und Züge in den ersten Levels; auf den ersten beiden Linien kostet die Uhr keine Leben
+es: Menos casillas mezcladas, más tiempo y movimientos en los primeros niveles; en las dos primeras líneas el reloj no quita vidas
+pt: Menos peças embaralhadas, mais tempo e jogadas nas primeiras fases; nas duas primeiras linhas o relógio não tira vidas
+fr: Moins de tuiles mélangées, plus de temps et de coups au début ; sur les deux premières lignes, le chrono ne coûte pas de vie
+ko: 첫 레벨들은 섞인 타일이 적고 시간과 이동 횟수가 넉넉해요. 처음 두 노선에서는 시간이 지나도 생명이 줄지 않아요
+ja: 最初のレベルは回転したタイルが少なく、時間と手数に余裕があります。最初の2路線では時間切れでライフが減りません
+zh: 前幾關打亂的方塊更少、時間和步數更寬裕；前兩條路線超時不扣生命

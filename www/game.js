@@ -1958,9 +1958,10 @@ function maybeGift() {
   if (!save.played) { persist(); return; }   // yeni oyuncu: hediye yok, pencere yok
   save.hints += GIFT_HINTS; persist(); refreshHome();
   modal(`<div class="gift"><i>🎁</i></div><h2>${L('Güncelleme hediyesi', 'Update gift')}</h2>
-    <p>${L(`Ray'i oynadığın için teşekkürler! Hesabına <b>${GIFT_HINTS} ipucu</b> eklendi.`, `Thanks for playing Ray! <b>${GIFT_HINTS} hints</b> were added to your account.`)}</p>
+    <p><b>${L('Geri bildiriminizi aldık!', 'We heard your feedback!')}</b> ${L('İlk bölümler artık daha kolay ve öğretici.', 'The first levels are now easier and teach you step by step.')}</p>
+    <p>${L(`Teşekkür olarak hesabına <b>${GIFT_HINTS} ipucu</b> eklendi.`, `As a thank-you, <b>${GIFT_HINTS} hints</b> were added to your account.`)}</p>
     <ul class="news">
-      <li><i>🐣</i>${L('İlk hatlarda daha çok süre; ilk iki hatta süre bitince can gitmez', 'More time on the first lines; no lives lost to the clock on the first two')}</li>
+      <li><i>🐣</i>${L('İlk bölümlerde daha az karışık karo, daha çok süre ve hamle; ilk iki hatta süre bitince can gitmez', 'Fewer mixed tiles, more time and moves on the first levels; no lives lost to the clock on the first two lines')}</li>
       <li><i>⏱</i>${L('Süre artık ekranda gördüğün saniyeyle ölçülür: 0:17 / 0:17 vaktinde sayılır', 'Time is now judged by the seconds you see: 0:17 / 0:17 counts as on time')}</li>
       <li><i>🛍️</i>${L('Mağaza ana ekranda, temalar mağazanın içinde', 'The shop is on the home screen, themes are inside it')}</li>
       <li><i>📱</i>${L('iPad ve tabletlerde tam ekran', 'Full screen on iPad and tablets')}</li>
