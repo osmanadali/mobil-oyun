@@ -592,6 +592,14 @@ fr: Sur ton nouveau téléphone, ouvre <b>Réglages › Transférer la partie</b
 ko: 새 휴대폰에서 <b>설정 › 진행 상황 옮기기</b>를 열고 이 코드를 붙여 넣으세요. 광고 제거 팩과 테마 팩은 코드로 옮겨지지 않으니 스토어에서 복원하세요.
 ja: 新しいスマホで<b>設定 › データ引き継ぎ</b>を開き、このコードを貼り付けてください。広告なしパックとテーマパックはコードでは引き継がれないので、ストアから復元してください。
 zh: 在新手機上打開<b>設定 › 轉移進度</b>，貼上這組代碼。免廣告包和主題包不會隨代碼轉移，請從商店恢復購買。
+@ Purchased hints, boosters and tickets don’t move with the code; they stay on this phone.
+de: Gekaufte Tipps, Booster und Tickets wandern nicht mit dem Code; sie bleiben auf diesem Handy.
+es: Las pistas, potenciadores y billetes comprados no pasan con el código; se quedan en este móvil.
+pt: Dicas, reforços e bilhetes comprados não vão com o código; ficam neste celular.
+fr: Les indices, bonus et tickets achetés ne suivent pas le code ; ils restent sur ce téléphone.
+ko: 구매한 힌트, 부스터, 티켓은 코드로 옮겨지지 않고 이 휴대폰에 남습니다.
+ja: 購入したヒント・ブースター・チケットはコードでは引き継がれず、このスマホに残ります。
+zh: 購買的提示、加成道具和車票不會隨代碼轉移，會留在這支手機上。
 @ Copy code
 de: Code kopieren
 es: Copiar código

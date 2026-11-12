@@ -352,6 +352,7 @@ window.RAY_DICT={
 "Privacy":"プライバシー",
 "Privacy policy":"プライバシーポリシー",
 "Purchase couldn’t be completed":"購入を完了できませんでした",
+"Purchased hints, boosters and tickets don’t move with the code; they stay on this phone.":"購入したヒント・ブースター・チケットはコードでは引き継がれず、このスマホに残ります。",
 "Purchases work in the store version":"購入はストア版で利用できます",
 "Put on your train":"列車に使う",
 "Puts a tricky tile in place":"むずかしいタイルを正しい向きに",

@@ -51,14 +51,15 @@ module.exports = async T => {
     await o.page.click('#bSettings'); await o.page.waitForTimeout(400); await o.page.click('#oMove'); await o.page.waitForTimeout(400);
     await o.page.fill('#mCode', 'RAY1.bozuk.kod'); await o.page.click('#mLoad'); await o.page.waitForTimeout(300);
     const bad = await o.page.evaluate(() => JSON.parse(localStorage.getItem('ray')).level);
+    const h1 = await o.page.evaluate(() => JSON.parse(localStorage.getItem('ray')).hints);   // bu telefonun kendi ipucu sayısı
     await o.page.fill('#mCode', cp); await o.page.click('#mLoad'); await o.page.waitForTimeout(200);
     await Promise.all([o.page.waitForNavigation().catch(() => {}), o.page.click('#mLoad')]); await o.page.waitForTimeout(600);
     const s2 = await o.page.evaluate(() => JSON.parse(localStorage.getItem('ray')));
     errs.push(...o.errors); await o.ctx.close();
     check('t2.review', 'Mağaza puanı: yalnız 3 ★ ve ilk hattan sonra, bir kez (60 gün + 40 bölüm geçmeden tekrar yok)', !r.a && r.b && !r.c && r.n === 1 && r.rv, JSON.stringify(r));
     check('t2.short', `7×9 hatlarında kısa bölüm: hattın 9., 15.… bölümü 6×8 (${LS(KR) + 8}, ${LS(KR) + 14}), diğerleri 7×9`, r.sz === '7x9 7x9 6x8 7x9 6x8', r.sz);
-    check('t2.move', 'İlerlemeyi taşı: kod öteki cihazda bölüm, ★ ve ipucunu taşır; bozuk kod reddedilir; reklamsız paket ve VIP tema kodla taşınmaz',
-      /^RAY1\./.test(cp) && bad === 3 && s2.level === 40 && s2.hints === 7 && Object.keys(s2.stars).length === 39 && !s2.noAds && !s2.owned?.gold, `${cp.slice(0, 16)}… · bozuk→${bad} · yüklenen bölüm ${s2.level} · ipucu ${s2.hints} · noAds ${s2.noAds} · gold ${s2.owned?.gold}`);
+    check('t2.move', 'İlerlemeyi taşı: kod öteki cihazda bölüm ve ★ taşır; satın alınabilen ipucu/güçlendirici/bilet koda girmez, yeni telefonun kendi ipucu kalır; bozuk kod reddedilir; reklamsız paket ve VIP tema kodla taşınmaz',
+      /^RAY1\./.test(cp) && bad === 3 && s2.level === 40 && s2.hints === h1 && s2.hints !== 7 && !/"hints"|"bCrowns"|"bst"/.test(Buffer.from(cp.split('.')[1], 'base64').toString()) && Object.keys(s2.stars).length === 39 && !s2.noAds && !s2.owned?.gold, `${cp.slice(0, 16)}… · bozuk→${bad} · yüklenen bölüm ${s2.level} · ipucu ${s2.hints} (bu telefon ${h1}) · noAds ${s2.noAds} · gold ${s2.owned?.gold}`);
   }
 
   check('t2.errors', 'Tasarım turu 2 senaryolarında konsol hatası yok', !errs.length, errs.slice(0, 3).join(' | ') || 'hata yok');

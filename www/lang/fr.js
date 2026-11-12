@@ -352,6 +352,7 @@ window.RAY_DICT={
 "Privacy":"Confidentialité",
 "Privacy policy":"Politique de confidentialité",
 "Purchase couldn’t be completed":"L’achat n’a pas pu aboutir",
+"Purchased hints, boosters and tickets don’t move with the code; they stay on this phone.":"Les indices, bonus et tickets achetés ne suivent pas le code ; ils restent sur ce téléphone.",
 "Purchases work in the store version":"Les achats marchent dans la version du store",
 "Put on your train":"Mettre sur ton train",
 "Puts a tricky tile in place":"Place une tuile difficile",

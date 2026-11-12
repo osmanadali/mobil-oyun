@@ -352,6 +352,7 @@ window.RAY_DICT={
 "Privacy":"개인정보",
 "Privacy policy":"개인정보 처리방침",
 "Purchase couldn’t be completed":"구매를 완료하지 못했어요",
+"Purchased hints, boosters and tickets don’t move with the code; they stay on this phone.":"구매한 힌트, 부스터, 티켓은 코드로 옮겨지지 않고 이 휴대폰에 남습니다.",
 "Purchases work in the store version":"구매는 스토어 버전에서 할 수 있어요",
 "Put on your train":"내 열차에 적용",
 "Puts a tricky tile in place":"어려운 타일을 제자리에 맞춰 줘요",

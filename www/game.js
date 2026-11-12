@@ -2145,7 +2145,6 @@ function settings() {
     <div class="opt">${L('Görünüm', 'Theme')} <div class="seg" id="oT">${seg}</div></div>
     <div class="opt lang">${L('Dil', 'Language')} <button id="oLb" class="dd" aria-expanded="false" aria-controls="oLw"><span lang="${cur[0]}">${cur[1]}</span><i>▾</i></button></div>
     <div class="langs" id="oLw"><div><div id="oL">${lang}</div></div></div>
-    <button class="opt row" id="oSkin"><span>${L('Renk temaları', 'Color themes')}</span><small>${skin().name} · 🎫 ${crownBal()} ›</small></button>
     <button class="opt row" id="oShop"><span>${L('Mağaza', 'Shop')}</span><small>💡 🧰 🎨 🎫 ›</small></button>
     <button class="opt row" id="oHow"><span>${L('Nasıl oynanır?', 'How to play?')}</span><small>›</small></button>
     <button class="opt row" id="oMove"><span>${L('İlerlemeyi taşı', 'Move progress')}</span><small>${L('Yeni telefona', 'To a new phone')} ›</small></button>
@@ -2157,7 +2156,7 @@ function settings() {
       else if (!await Remind.enable()) toast(NO_PERM);
       $('oR').classList.toggle('on', save.remind);
     },
-    oSkin: skinSheet, oShop: () => storeSheet(), oPriv: privacySheet, oHow: () => { closeModal(); how(); }, oMove: moveSheet, oMail: () => { location.href = `mailto:${SUPPORT_MAIL}?subject=${encodeURIComponent('Ray · ' + (window.Capacitor?.getPlatform?.() || 'web') + ' · ' + RAY_LANG)}`; },
+    oShop: () => storeSheet(), oPriv: privacySheet, oHow: () => { closeModal(); how(); }, oMove: moveSheet, oMail: () => { location.href = `mailto:${SUPPORT_MAIL}?subject=${encodeURIComponent('Ray · ' + (window.Capacitor?.getPlatform?.() || 'web') + ' · ' + RAY_LANG)}`; },
     ...SND_BINDS,
     oZ: () => { save.zen = !save.zen; persist(); $('oZ').classList.toggle('on', save.zen); toast(save.zen ? L('🍃 Zen: süre ve hamle hedefi yok · her bitiş 3 ★ · 🎫 verilmez', '🍃 Zen: no timer or move target · every finish 3 ★ · no 🎫') : L('Zen kapalı · hedefler geri geldi', 'Zen off · targets are back')); },
     mClose: closeModal });
@@ -2193,6 +2192,8 @@ function privacySheet() {
 const VIP = () => SKINS.filter(k => k.vip).map(k => k.id);
 function moveCode() {
   const s = { ...save }; delete s.noAds; delete s.allThemes; delete s.iapTx; delete s.runs; s.owned = { ...s.owned }; VIP().forEach(id => delete s.owned[id]);
+  // satın alınan (parayla) şeyler kodla çoğalmasın: ipucu, güçlendirici, ∞ can, satın alınan 🎫. Harcanmış satın alınan 🎫 düşülür (bakiye eksiye inmesin)
+  s.spent = Math.max(0, (s.spent || 0) - (s.bSpent || 0)); ['hints', 'hintDay', 'bst', 'infUntil', 'bCrowns', 'bSpent'].forEach(k => delete s[k]);
   const b = btoa(unescape(encodeURIComponent(JSON.stringify(s))));
   return `RAY1.${b}.${hashStr(b + 'ray').toString(36)}`;
 }
@@ -2205,6 +2206,7 @@ function moveSheet() {
   const n = Object.keys(save.stars).length;
   modal(`<h2>${L('İlerlemeyi taşı', 'Move progress')}</h2>
     <p>${L('Yeni telefonda oyunu aç, <b>Ayarlar › İlerlemeyi taşı</b>’ya bu kodu yapıştır. Reklamsız ve tema paketi kodla taşınmaz, mağazadan geri yüklenir.', 'On your new phone, open <b>Settings › Move progress</b> and paste this code. The ad-free and theme packs don’t move with the code; restore them from the store.')}</p>
+    <p class="tip">${L('Satın alınan ipucu, güçlendirici ve biletler kodla taşınmaz; bu telefonda kalır.', 'Purchased hints, boosters and tickets don’t move with the code; they stay on this phone.')}</p>
     <button id="mCopy" class="btn primary"><span>${L('Kodu kopyala', 'Copy code')}</span><small>${L(`Bölüm ${save.level} · ★ ${totalStars()}`, `Level ${save.level} · ★ ${totalStars()}`)}</small></button>
     <textarea id="mCode" class="code" rows="3" spellcheck="false" autocomplete="off" placeholder="${L('Öteki telefondaki kodu buraya yapıştır', 'Paste the code from your other phone')}"></textarea>
     <button id="mLoad" class="btn glassbtn">${L('Kodu yükle', 'Load code')}</button>
@@ -2218,7 +2220,9 @@ function moveSheet() {
       const b = $('mLoad'), s = moveRead($('mCode').value);
       if (!s) { toast(L('Kod geçersiz · tamamını yapıştır', 'Invalid code · paste all of it')); return; }
       if (!b.dataset.ok && n) { b.dataset.ok = 1; b.textContent = L(`Bu cihazdaki ilerleme silinir · Bölüm ${s.level} yüklensin mi?`, `This phone’s progress will be replaced · load Level ${s.level}?`); return; }
-      s.noAds = save.noAds; s.allThemes = save.allThemes; s.iapTx = save.iapTx; s.owned = { ...s.owned }; VIP().forEach(id => { if (save.owned?.[id]) s.owned[id] = 1; else delete s.owned[id]; });
+      s.noAds = save.noAds; s.allThemes = save.allThemes; s.iapTx = save.iapTx;
+      for (const k of ['hints', 'hintDay', 'bst', 'infUntil', 'bCrowns', 'bSpent']) { if (save[k] !== undefined) s[k] = save[k]; else delete s[k]; }   // bu telefonun kendi ipucu/güçlendirici/bileti kalır
+      s.spent = (s.spent || 0) + (save.bSpent || 0); s.owned = { ...s.owned }; VIP().forEach(id => { if (save.owned?.[id]) s.owned[id] = 1; else delete s.owned[id]; });
       wiped = true;   // yenilenirken eski kayıt üstüne yazılmasın (persist susar)
       s.ts = Date.now();   // kalıcı yedekten yeni say (açılışta eskisi geri gelmesin)
       try { localStorage.setItem('ray', JSON.stringify(s)); } catch {}

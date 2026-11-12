@@ -352,6 +352,7 @@ window.RAY_DICT={
 "Privacy":"隱私",
 "Privacy policy":"隱私權政策",
 "Purchase couldn’t be completed":"購買未能完成",
+"Purchased hints, boosters and tickets don’t move with the code; they stay on this phone.":"購買的提示、加成道具和車票不會隨代碼轉移，會留在這支手機上。",
 "Purchases work in the store version":"商店版才能購買",
 "Put on your train":"套用到列車",
 "Puts a tricky tile in place":"幫你擺好一個難搞的方塊",
