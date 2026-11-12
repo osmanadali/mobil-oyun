@@ -49,6 +49,8 @@ async function upload(setId, file) {
       const ids = []; for (const f of files) ids.push(await upload(set.id, f));
       await api('PATCH', `/v1/appScreenshotSets/${set.id}/relationships/appScreenshots`, { data: ids.map(id => ({ type: 'appScreenshots', id })) });
     }
+    // eski küçük iPhone seti (1.0'dan kalan, eski mağaza ekranı): 6,9" seti varken Apple küçük ekranlara onu ölçekler → boşalt
+    if (APPLY) for (const st of sets) if (st.attributes.screenshotDisplayType === 'APP_IPHONE_61') for (const x of (await api('GET', `/v1/appScreenshotSets/${st.id}/appScreenshots?limit=50`)).data) await api('DELETE', `/v1/appScreenshots/${x.id}`);
     const other = []; for (const st of sets) if (!Object.values(TYPES).includes(st.attributes.screenshotDisplayType)) other.push(`${st.attributes.screenshotDisplayType}=${(await api('GET', `/v1/appScreenshotSets/${st.id}/appScreenshots?limit=50`)).data.length}`);
     out.push(`- **${loc}**: ${line.join(' · ')}${other.length ? ' · diğer setler: ' + other.join(', ') : ''}`);
   }
