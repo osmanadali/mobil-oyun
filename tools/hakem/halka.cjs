@@ -1,7 +1,7 @@
 // Halka hat (RL.ring hattı) — robot testleri (hakem.cjs K bölümü çağırır). Sözleşme: docs/kurallar/README.md · tasarım: docs/kurallar/halka.md
 // Üretim (600+ bulmaca), işaret kayınca ret, eski bölümler bit bit aynı, çakışma (tabela/köprü), kural kartı, kapanma, yakın kazanç uyarısı, karma bölüm, kare süresi.
 // Eklentisiz tabanın özeti (FNV-1a, JSON): örnek bölümler ve Günün Hattı (133/169/208: 31 Ekim hat düzeniyle yenilendi).
-const BASE = { l1: 'dukhsf', l29: '1n9orzi', l77: 'c4lzfm', l133: '1wllsso', l169: '152kw6q', l208: 'md4y2l', '2026-10-01': '1npbt0', '2026-10-27': 'qx5s5f', '2027-03-14': '1s6o7ll' };   // 3 Kasım hat düzeniyle yenilendi (sabit karo kalktı, yeni sıra)
+const BASE = { l1: '7ppukv', l29: '1n9orzi', l77: 'c4lzfm', l133: '1wllsso', l169: '152kw6q', l208: 'md4y2l', '2026-10-01': '1npbt0', '2026-10-27': 'qx5s5f', '2027-03-14': '1s6o7ll' };   // 3 Kasım hat düzeniyle yenilendi (sabit karo kalktı, yeni sıra)
 const SEEN = Object.fromEntries(Array.from({ length: 30 }, (_, k) => [k + 2, 1]));   // bütün kural kartları görülmüş
 
 module.exports = async T => {

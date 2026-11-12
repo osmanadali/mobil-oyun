@@ -5,7 +5,7 @@ module.exports = async T => {
   const { ctx, page, errors } = await open(browser, URL, { save: { played: 1 } });
   const r = await page.evaluate(() => {
     const R = window.__ray, out = [];
-    for (let c = 0; c < 7; c++) { const l = R.lineStart(c) + 2, P = R.puzzleFor(l), raw = .75 * (P.taps * 1.3 + P.cur.length * .5 + Math.max(0, (P.diff || 0) - 8) * 3);
+    for (let c = 0; c < 7; c++) { const l = c ? R.lineStart(c) + 2 : 11, P = R.puzzleFor(l), raw = .75 * (P.taps * 1.3 + P.cur.length * .5 + Math.max(0, (P.diff || 0) - 8) * 3);
       out.push({ c, l, raw, base: Math.max(11, Math.round(raw)), t: R.limits({ ...P, lvl: l, daily: false }).t, daily: R.limits({ ...P, lvl: 0, daily: true }).t }); }
     return out;
   });
