@@ -1,11 +1,13 @@
 # Ray 1.1 · "Bu sürümdeki yenilikler" (App Store / Google Play)
 
+App Store "What's New" alanı emoji kabul etmiyor; metinlerde emoji yok.
+
 Her dilin metni ayrı kutuda: kutunun sağ üstündeki kopyala simgesine bas, App Store Connect'e yapıştır. Satır sonları korunur.
 
 ## tr
 
 ```
-🎁 Geri bildiriminizi aldık! İlk bölümler artık daha kolay ve öğretici. Güncelleyen herkese 3 ipucu hediye!
+Geri bildiriminizi aldık! İlk bölümler artık daha kolay ve öğretici. Güncelleyen herkese 3 ipucu hediye!
 • Mağaza artık ana ekranda; temalar da mağazanın içinde
 • iPad ve tabletlerde tam ekran
 • İlk bölümlerde daha az karışık karo, daha çok süre ve hamle; ilk iki hatta süre bitince can gitmez
@@ -16,7 +18,7 @@ Her dilin metni ayrı kutuda: kutunun sağ üstündeki kopyala simgesine bas, Ap
 ## en
 
 ```
-🎁 We heard your feedback! The first levels are now easier and teach you step by step. 3 free hints for everyone who updates!
+We heard your feedback! The first levels are now easier and teach you step by step. 3 free hints for everyone who updates!
 • The shop is now on the home screen, with themes inside it
 • Full screen on iPad and tablets
 • Fewer mixed tiles, more time and moves on the first levels; no lives lost to the clock on the first two lines
@@ -27,7 +29,7 @@ Her dilin metni ayrı kutuda: kutunun sağ üstündeki kopyala simgesine bas, Ap
 ## de
 
 ```
-🎁 Wir haben euer Feedback gehört! Die ersten Levels sind jetzt leichter und bringen dir das Spiel Schritt für Schritt bei. 3 Gratis-Tipps für alle, die aktualisieren!
+Wir haben euer Feedback gehört! Die ersten Levels sind jetzt leichter und bringen dir das Spiel Schritt für Schritt bei. 3 Gratis-Tipps für alle, die aktualisieren!
 • Der Shop ist jetzt auf dem Startbildschirm, die Themen sind darin
 • Vollbild auf iPad und Tablets
 • Mehr Zeit auf den ersten Linien; auf den ersten beiden kostet die Uhr keine Leben
@@ -38,7 +40,7 @@ Her dilin metni ayrı kutuda: kutunun sağ üstündeki kopyala simgesine bas, Ap
 ## es
 
 ```
-🎁 ¡Escuchamos tus comentarios! Los primeros niveles ahora son más fáciles y te enseñan paso a paso. ¡3 pistas gratis para todos los que actualicen!
+¡Escuchamos tus comentarios! Los primeros niveles ahora son más fáciles y te enseñan paso a paso. ¡3 pistas gratis para todos los que actualicen!
 • La tienda ahora está en la pantalla de inicio, con los temas dentro
 • Pantalla completa en iPad y tabletas
 • Más tiempo en las primeras líneas; en las dos primeras el reloj no quita vidas
@@ -49,7 +51,7 @@ Her dilin metni ayrı kutuda: kutunun sağ üstündeki kopyala simgesine bas, Ap
 ## pt-BR
 
 ```
-🎁 Ouvimos o seu feedback! As primeiras fases agora são mais fáceis e ensinam passo a passo. 3 dicas grátis para quem atualizar!
+Ouvimos o seu feedback! As primeiras fases agora são mais fáceis e ensinam passo a passo. 3 dicas grátis para quem atualizar!
 • A loja agora fica na tela inicial, com os temas dentro dela
 • Tela cheia no iPad e em tablets
 • Mais tempo nas primeiras linhas; nas duas primeiras o relógio não tira vidas
@@ -60,7 +62,7 @@ Her dilin metni ayrı kutuda: kutunun sağ üstündeki kopyala simgesine bas, Ap
 ## fr
 
 ```
-🎁 Nous avons entendu vos retours ! Les premiers niveaux sont plus faciles et guidés. 3 indices offerts à tous ceux qui mettent à jour !
+Nous avons entendu vos retours ! Les premiers niveaux sont plus faciles et guidés. 3 indices offerts à tous ceux qui mettent à jour !
 • La boutique est maintenant sur l’écran d’accueil, avec les thèmes dedans
 • Plein écran sur iPad et tablettes
 • Plus de temps sur les premières lignes ; sur les deux premières, le chrono ne coûte pas de vie
@@ -71,7 +73,7 @@ Her dilin metni ayrı kutuda: kutunun sağ üstündeki kopyala simgesine bas, Ap
 ## ko
 
 ```
-🎁 여러분의 의견을 반영했어요! 이제 첫 레벨들이 더 쉬워지고 차근차근 알려 줘요. 업데이트하면 힌트 3개를 드려요!
+여러분의 의견을 반영했어요! 이제 첫 레벨들이 더 쉬워지고 차근차근 알려 줘요. 업데이트하면 힌트 3개를 드려요!
 • 상점이 홈 화면에 생겼고, 테마는 상점 안에 있어요
 • iPad와 태블릿에서 전체 화면
 • 처음 노선들은 시간이 더 넉넉하고, 처음 두 노선에서는 시간이 지나도 생명이 줄지 않아요
@@ -82,7 +84,7 @@ Her dilin metni ayrı kutuda: kutunun sağ üstündeki kopyala simgesine bas, Ap
 ## ja
 
 ```
-🎁 みなさんの声を受け取りました！最初のレベルがやさしくなり、少しずつ遊び方を覚えられます。アップデートでヒント3回をプレゼント！
+みなさんの声を受け取りました！最初のレベルがやさしくなり、少しずつ遊び方を覚えられます。アップデートでヒント3回をプレゼント！
 • ショップがホーム画面に。テーマはショップの中にあります
 • iPadとタブレットで全画面表示
 • 最初の路線は時間に余裕が。最初の2路線では時間切れでライフが減りません
@@ -93,7 +95,7 @@ Her dilin metni ayrı kutuda: kutunun sağ üstündeki kopyala simgesine bas, Ap
 ## zh-Hant
 
 ```
-🎁 我們收到你的意見了！前幾關現在更簡單，會一步步教你玩。更新就送 3 次提示！
+我們收到你的意見了！前幾關現在更簡單，會一步步教你玩。更新就送 3 次提示！
 • 商店移到主畫面，主題就在商店裡
 • iPad 和平板全螢幕顯示
 • 前幾條路線時間更寬裕；前兩條路線超時不扣生命
@@ -107,7 +109,7 @@ Play Console › sürüm notları alanına bu kutunun tamamını yapıştır; Pl
 
 ```
 <tr-TR>
-🎁 Geri bildiriminizi aldık! İlk bölümler artık daha kolay ve öğretici. Güncelleyen herkese 3 ipucu hediye!
+Geri bildiriminizi aldık! İlk bölümler artık daha kolay ve öğretici. Güncelleyen herkese 3 ipucu hediye!
 • Mağaza artık ana ekranda; temalar da mağazanın içinde
 • iPad ve tabletlerde tam ekran
 • İlk bölümlerde daha az karışık karo, daha çok süre ve hamle; ilk iki hatta süre bitince can gitmez
@@ -115,7 +117,7 @@ Play Console › sürüm notları alanına bu kutunun tamamını yapıştır; Pl
 • Yeni diller: Korece, Japonca, Geleneksel Çince
 </tr-TR>
 <en-US>
-🎁 We heard your feedback! The first levels are now easier and teach you step by step. 3 free hints for everyone who updates!
+We heard your feedback! The first levels are now easier and teach you step by step. 3 free hints for everyone who updates!
 • The shop is now on the home screen, with themes inside it
 • Full screen on iPad and tablets
 • Fewer mixed tiles, more time and moves on the first levels; no lives lost to the clock on the first two lines
@@ -123,7 +125,7 @@ Play Console › sürüm notları alanına bu kutunun tamamını yapıştır; Pl
 • New languages: Korean, Japanese, Traditional Chinese
 </en-US>
 <de-DE>
-🎁 Wir haben euer Feedback gehört! Die ersten Levels sind jetzt leichter und bringen dir das Spiel Schritt für Schritt bei. 3 Gratis-Tipps für alle, die aktualisieren!
+Wir haben euer Feedback gehört! Die ersten Levels sind jetzt leichter und bringen dir das Spiel Schritt für Schritt bei. 3 Gratis-Tipps für alle, die aktualisieren!
 • Der Shop ist jetzt auf dem Startbildschirm, die Themen sind darin
 • Vollbild auf iPad und Tablets
 • Mehr Zeit auf den ersten Linien; auf den ersten beiden kostet die Uhr keine Leben
@@ -131,7 +133,7 @@ Play Console › sürüm notları alanına bu kutunun tamamını yapıştır; Pl
 • Neue Sprachen: Koreanisch, Japanisch, traditionelles Chinesisch
 </de-DE>
 <es-ES>
-🎁 ¡Escuchamos tus comentarios! Los primeros niveles ahora son más fáciles y te enseñan paso a paso. ¡3 pistas gratis para todos los que actualicen!
+¡Escuchamos tus comentarios! Los primeros niveles ahora son más fáciles y te enseñan paso a paso. ¡3 pistas gratis para todos los que actualicen!
 • La tienda ahora está en la pantalla de inicio, con los temas dentro
 • Pantalla completa en iPad y tabletas
 • Más tiempo en las primeras líneas; en las dos primeras el reloj no quita vidas
@@ -139,7 +141,7 @@ Play Console › sürüm notları alanına bu kutunun tamamını yapıştır; Pl
 • Nuevos idiomas: coreano, japonés y chino tradicional
 </es-ES>
 <pt-BR>
-🎁 Ouvimos o seu feedback! As primeiras fases agora são mais fáceis e ensinam passo a passo. 3 dicas grátis para quem atualizar!
+Ouvimos o seu feedback! As primeiras fases agora são mais fáceis e ensinam passo a passo. 3 dicas grátis para quem atualizar!
 • A loja agora fica na tela inicial, com os temas dentro dela
 • Tela cheia no iPad e em tablets
 • Mais tempo nas primeiras linhas; nas duas primeiras o relógio não tira vidas
@@ -147,7 +149,7 @@ Play Console › sürüm notları alanına bu kutunun tamamını yapıştır; Pl
 • Novos idiomas: coreano, japonês e chinês tradicional
 </pt-BR>
 <fr-FR>
-🎁 Nous avons entendu vos retours ! Les premiers niveaux sont plus faciles et guidés. 3 indices offerts à tous ceux qui mettent à jour !
+Nous avons entendu vos retours ! Les premiers niveaux sont plus faciles et guidés. 3 indices offerts à tous ceux qui mettent à jour !
 • La boutique est maintenant sur l’écran d’accueil, avec les thèmes dedans
 • Plein écran sur iPad et tablettes
 • Plus de temps sur les premières lignes ; sur les deux premières, le chrono ne coûte pas de vie
@@ -155,7 +157,7 @@ Play Console › sürüm notları alanına bu kutunun tamamını yapıştır; Pl
 • Nouvelles langues : coréen, japonais, chinois traditionnel
 </fr-FR>
 <ko-KR>
-🎁 여러분의 의견을 반영했어요! 이제 첫 레벨들이 더 쉬워지고 차근차근 알려 줘요. 업데이트하면 힌트 3개를 드려요!
+여러분의 의견을 반영했어요! 이제 첫 레벨들이 더 쉬워지고 차근차근 알려 줘요. 업데이트하면 힌트 3개를 드려요!
 • 상점이 홈 화면에 생겼고, 테마는 상점 안에 있어요
 • iPad와 태블릿에서 전체 화면
 • 처음 노선들은 시간이 더 넉넉하고, 처음 두 노선에서는 시간이 지나도 생명이 줄지 않아요
@@ -163,7 +165,7 @@ Play Console › sürüm notları alanına bu kutunun tamamını yapıştır; Pl
 • 새 언어: 한국어, 일본어, 중국어 번체
 </ko-KR>
 <ja-JP>
-🎁 みなさんの声を受け取りました！最初のレベルがやさしくなり、少しずつ遊び方を覚えられます。アップデートでヒント3回をプレゼント！
+みなさんの声を受け取りました！最初のレベルがやさしくなり、少しずつ遊び方を覚えられます。アップデートでヒント3回をプレゼント！
 • ショップがホーム画面に。テーマはショップの中にあります
 • iPadとタブレットで全画面表示
 • 最初の路線は時間に余裕が。最初の2路線では時間切れでライフが減りません
@@ -171,7 +173,7 @@ Play Console › sürüm notları alanına bu kutunun tamamını yapıştır; Pl
 • 新しい言語：韓国語、日本語、繁体字中国語
 </ja-JP>
 <zh-TW>
-🎁 我們收到你的意見了！前幾關現在更簡單，會一步步教你玩。更新就送 3 次提示！
+我們收到你的意見了！前幾關現在更簡單，會一步步教你玩。更新就送 3 次提示！
 • 商店移到主畫面，主題就在商店裡
 • iPad 和平板全螢幕顯示
 • 前幾條路線時間更寬裕；前兩條路線超時不扣生命
