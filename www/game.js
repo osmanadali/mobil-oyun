@@ -1669,7 +1669,7 @@ const ART = (() => {
       <rect x="14" y="38" width="52" height="32" rx="6" fill="url(#gBox)"/><rect x="36" y="38" width="8" height="32" fill="#ffd66b"/>
       <g class="a-lid"><rect x="11" y="31" width="58" height="11" rx="4" fill="#ff9fb0"/><rect x="36" y="31" width="8" height="11" fill="#ffd66b"/>
       <path d="M40 31c-10-12-20-6-14 0zM40 31c10-12 20-6 14 0z" fill="#ffd66b" stroke="#f59a3c" stroke-width="1.4"/></g>`),
-    themes: svg(['#7aa7ff', '#5cc27e', '#ffd66b', '#ff9a5c', '#f0637a'].map((c, i) => `<g transform="rotate(${(i - 2) * 16} 40 62)"><g class="a-card" style="--d:${i - 2}"><rect x="31" y="14" width="18" height="52" rx="6" fill="${c}" stroke="#fff" stroke-width="1.5"/><circle cx="40" cy="62" r="2" fill="#000" opacity=".12"/></g></g>`).join('') + '<circle cx="40" cy="62" r="4.2" fill="#fff" stroke="#9aa0b4" stroke-width="1.5"/><circle cx="40" cy="62" r="1.4" fill="#9aa0b4"/>'),
+    themes: svg(['#7aa7ff', '#5cc27e', '#ffd66b', '#ff9a5c', '#f0637a'].map((c, i) => `<g class="a-card" style="--d:${i - 2}"><path d="M31.5 20a7 7 0 0 1 7-7h3a7 7 0 0 1 7 7L44 62a4 4 0 0 1-8 0z" fill="${c}" stroke="#fff" stroke-width="1.5"/></g>`).join('') + '<circle cx="40" cy="62" r="4.2" fill="#fff" stroke="#9aa0b4" stroke-width="1.5"/><circle cx="40" cy="62" r="1.4" fill="#9aa0b4"/>'),
     bst: svg(`<g class="a-sway"><path d="M28 34V24a5 5 0 0 1 5-5h14a5 5 0 0 1 5 5v10" stroke="#8b92a8" stroke-width="4" fill="none"/>
       <path d="M22 44l7-28" stroke="#9aa0b4" stroke-width="4" stroke-linecap="round"/><circle cx="29.5" cy="15" r="4.5" fill="#7aa7ff"/>
       <path d="M57 44l-5-30" stroke="#9aa0b4" stroke-width="4" stroke-linecap="round"/><path d="M48 10h8l-1 6h-6z" fill="#5cc27e"/>
@@ -1679,8 +1679,10 @@ const ART = (() => {
     crown: (() => {   // bilet makinesi: ekranda 50; ağzından oyunun 🎫 biletleri birer birer çıkar, düşüp yığına katılır
       const T = (x, y, a, sz = 15) => `<text x="${x}" y="${y}" font-size="${sz}" text-anchor="middle" transform="rotate(${a} ${x} ${y - sz * .35})">🎫</text>`;
       const G = (x, y, a, sz = 15) => `<g transform="translate(${x} ${y}) rotate(${a})"><text y="${sz * .35}" font-size="${sz}" text-anchor="middle">🎫</text></g>`;
-      const pile = [[30, 71, -8], [50, 72, 6], [40, 69, -3], [62, 70, 12], [21, 70, -16]].map(([x, y, a]) => G(x, y, a)).join('');
-      const fly = [[46, 64, 9], [33, 64, -11], [57, 65, -4], [40, 60, 14], [26, 62, -6], [52, 58, -12]].map(([x, y, a], i) => `<g class="a-tk" style="--x:${x}px;--y:${y}px;--a:${a}deg;animation-delay:${.5 + i * .75}s"><text y="5" font-size="15" text-anchor="middle">🎫</text></g>`).join('');
+      // sürekli basar: her bilet yığındaki kendi yerine düşer; orada aynı bilet zaten durduğu için döngü başa sarınca yığın eksilmez
+      const spots = [[46, 64, 9], [33, 64, -11], [57, 65, -4], [40, 60, 14], [26, 62, -6], [52, 58, -12], [36, 56, 5], [62, 61, 18], [45, 53, -8], [29, 57, 11]];
+      const pile = [[30, 71, -8], [50, 72, 6], [40, 69, -3], [62, 70, 12], [21, 70, -16], ...spots].map(([x, y, a]) => G(x, y, a)).join('');
+      const fly = spots.map(([x, y, a], i) => `<g class="a-tk" style="--x:${x}px;--y:${y}px;--a:${a}deg;animation-delay:${i * .8}s"><text y="5" font-size="15" text-anchor="middle">🎫</text></g>`).join('');
       return svg(`<ellipse cx="42" cy="76" rx="30" ry="3.2" fill="#000" opacity=".25"/>${pile}${fly}
         <rect x="10" y="3" width="42" height="36" rx="7" fill="#3c4a6b"/><rect x="10" y="3" width="42" height="11" rx="7" fill="#4f6088"/>
         <rect x="15" y="9" width="24" height="13" rx="2.5" fill="#0d1626"/><text x="27" y="19.4" text-anchor="middle" font-size="10" font-weight="800" fill="#ffcf4d" font-family="Outfit,sans-serif">50</text>
