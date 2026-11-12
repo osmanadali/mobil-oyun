@@ -1664,18 +1664,23 @@ const ART = (() => {
       <path d="M22 27a8 8 0 0 1 9-7" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none" opacity=".7"/>
       <g transform="translate(40 40)"><rect x="-13" y="-8" width="26" height="16" rx="5" fill="#fff" opacity=".92"/><text y="5" text-anchor="middle" font-size="12" font-weight="800" fill="#c46a12" font-family="Outfit,sans-serif">AD</text><path d="M-15 10L15 -10" stroke="#d9435c" stroke-width="3.2" stroke-linecap="round"/></g></g>
       <path class="a-spark" d="M66 12l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#ffd66b"/><path class="a-spark b" d="M14 58l1.2 3 3 1.2-3 1.2-1.2 3-1.2-3-3-1.2 3-1.2z" fill="#fff3c4"/>`),
-    starter: svg(`<circle cx="40" cy="44" r="30" fill="#ff8fa3" opacity=".16"/><g class="a-pop">${bulb(26, 18, 6, -12)}</g><g class="a-pop b"><g transform="rotate(-14 54 22)"><rect x="44" y="15" width="22" height="13" rx="3" fill="#ffd66b"/><circle cx="44" cy="21.5" r="3" fill="#fff"/><circle cx="66" cy="21.5" r="3" fill="#fff"/></g></g>
+    starter: svg(`<circle cx="40" cy="44" r="30" fill="#ff8fa3" opacity=".16"/>
+      <g class="a-in"><text x="25" y="44" font-size="15" text-anchor="middle">💡</text><text x="40" y="40" font-size="15" text-anchor="middle">🎫</text><text x="55" y="44" font-size="14" text-anchor="middle">❤️</text></g>
       <rect x="14" y="38" width="52" height="32" rx="6" fill="url(#gBox)"/><rect x="36" y="38" width="8" height="32" fill="#ffd66b"/>
       <g class="a-lid"><rect x="11" y="31" width="58" height="11" rx="4" fill="#ff9fb0"/><rect x="36" y="31" width="8" height="11" fill="#ffd66b"/>
       <path d="M40 31c-10-12-20-6-14 0zM40 31c10-12 20-6 14 0z" fill="#ffd66b" stroke="#f59a3c" stroke-width="1.4"/></g>`),
-    themes: svg('<g class="a-fan">' + ['#7aa7ff', '#5cc27e', '#ffd66b', '#ff9a5c', '#f0637a'].map((c, i) => `<g class="a-card" style="--d:${i - 2}"><rect x="31" y="14" width="18" height="48" rx="6" fill="${c}" stroke="#fff" stroke-width="1.5" transform="rotate(${(i - 2) * 16} 40 64)"/></g>`).join('') + '</g><circle cx="40" cy="62" r="4" fill="#fff" stroke="#9aa0b4" stroke-width="1.5"/>'),
-    bst: svg(`<g class="a-sway"><g class="a-tool"><path d="M20 30l8-14" stroke="#9aa0b4" stroke-width="4" stroke-linecap="round"/><circle cx="28" cy="15" r="4" fill="#7aa7ff"/></g><g class="a-tool b"><path d="M58 30l-6-16" stroke="#9aa0b4" stroke-width="4" stroke-linecap="round"/><circle cx="52" cy="13" r="4" fill="#5cc27e"/></g>
-      <rect x="12" y="32" width="56" height="34" rx="6" fill="#e5546e"/><rect x="12" y="32" width="56" height="10" rx="5" fill="#f0637a"/><path d="M30 32v-7a4 4 0 0 1 4-4h12a4 4 0 0 1 4 4v7" stroke="#9aa0b4" stroke-width="4" fill="none"/>
-      <rect x="36" y="38" width="8" height="8" rx="2" fill="#ffd66b"/></g>`),
+    themes: svg(['#7aa7ff', '#5cc27e', '#ffd66b', '#ff9a5c', '#f0637a'].map((c, i) => `<g transform="rotate(${(i - 2) * 16} 40 62)"><g class="a-card" style="--d:${i - 2}"><rect x="31" y="14" width="18" height="52" rx="6" fill="${c}" stroke="#fff" stroke-width="1.5"/><circle cx="40" cy="62" r="2" fill="#000" opacity=".12"/></g></g>`).join('') + '<circle cx="40" cy="62" r="4.2" fill="#fff" stroke="#9aa0b4" stroke-width="1.5"/><circle cx="40" cy="62" r="1.4" fill="#9aa0b4"/>'),
+    bst: svg(`<g class="a-sway"><path d="M28 34V24a5 5 0 0 1 5-5h14a5 5 0 0 1 5 5v10" stroke="#8b92a8" stroke-width="4" fill="none"/>
+      <path d="M22 44l7-28" stroke="#9aa0b4" stroke-width="4" stroke-linecap="round"/><circle cx="29.5" cy="15" r="4.5" fill="#7aa7ff"/>
+      <path d="M57 44l-5-30" stroke="#9aa0b4" stroke-width="4" stroke-linecap="round"/><path d="M48 10h8l-1 6h-6z" fill="#5cc27e"/>
+      <path d="M40 44v-26" stroke="#c98a1a" stroke-width="3" stroke-linecap="round"/><ellipse cx="40" cy="16" rx="3.6" ry="4.6" fill="#ffd66b"/>
+      <rect x="12" y="32" width="56" height="34" rx="7" fill="#e5546e"/><path d="M12 39q0-7 7-7h42q7 0 7 7v3H12z" fill="#f0637a"/>
+      <rect x="35" y="38" width="10" height="8" rx="2" fill="#ffd66b"/><rect x="38.5" y="41" width="3" height="3" rx="1" fill="#c98a1a"/></g>`),
     crown: (() => {   // bilet makinesi: ekranda 50; ağzından oyunun 🎫 biletleri birer birer çıkar, düşüp yığına katılır
       const T = (x, y, a, sz = 15) => `<text x="${x}" y="${y}" font-size="${sz}" text-anchor="middle" transform="rotate(${a} ${x} ${y - sz * .35})">🎫</text>`;
-      const pile = [[30, 76, -8], [50, 77, 6], [40, 73, -3], [62, 75, 12], [22, 74, -16], [46, 69, 9], [33, 69, -11], [57, 70, -4]].map(([x, y, a]) => T(x, y, a)).join('');
-      const fly = [0, 1, 2].map(i => `<g class="a-tk" style="animation-delay:${-i * .9}s">${T(30, 46, 0, 14)}</g>`).join('');
+      const G = (x, y, a, sz = 15) => `<g transform="translate(${x} ${y}) rotate(${a})"><text y="${sz * .35}" font-size="${sz}" text-anchor="middle">🎫</text></g>`;
+      const pile = [[30, 71, -8], [50, 72, 6], [40, 69, -3], [62, 70, 12], [21, 70, -16]].map(([x, y, a]) => G(x, y, a)).join('');
+      const fly = [[46, 64, 9], [33, 64, -11], [57, 65, -4], [40, 60, 14], [26, 62, -6], [52, 58, -12]].map(([x, y, a], i) => `<g class="a-tk" style="--x:${x}px;--y:${y}px;--a:${a}deg;animation-delay:${.5 + i * .75}s"><text y="5" font-size="15" text-anchor="middle">🎫</text></g>`).join('');
       return svg(`<ellipse cx="42" cy="76" rx="30" ry="3.2" fill="#000" opacity=".25"/>${pile}${fly}
         <rect x="10" y="3" width="42" height="36" rx="7" fill="#3c4a6b"/><rect x="10" y="3" width="42" height="11" rx="7" fill="#4f6088"/>
         <rect x="15" y="9" width="24" height="13" rx="2.5" fill="#0d1626"/><text x="27" y="19.4" text-anchor="middle" font-size="10" font-weight="800" fill="#ffcf4d" font-family="Outfit,sans-serif">50</text>
