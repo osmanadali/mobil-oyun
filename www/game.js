@@ -535,7 +535,7 @@ function puzzleFor(l) {
 }
 // zorluk etiketi (12 Kasım): yüzde yerine kelime — "%1" yeni oyuncuya "çok kolay" diye okunuyor, takılınca moral bozuyordu
 const lvTag = c => c <= 1 ? L('🌱 Isınma', '🌱 Warm-up') : c <= 5 ? L('⚡ Kolay', '⚡ Easy') : c <= 11 ? L('⚡ Orta', '⚡ Medium') : c <= 19 ? L('🔥 Zor', '🔥 Hard') : L('💎 Uzman', '💎 Expert');
-const dTag = p => p < 50 ? L('⚡ Kolay', '⚡ Easy') : p < 70 ? L('⚡ Orta', '⚡ Medium') : L('🔥 Zor', '🔥 Hard');
+const dBolt = p => p < 50 ? '⚡' : p < 70 ? '⚡⚡' : '⚡⚡⚡';   // Günün Hattı kartı dar: dilden bağımsız şimşek sayısı (Pzt ⚡ … Paz ⚡⚡⚡)
 // 🎉 kazanma başlığı: kusursuzda (ve ilk 10 bölümde her galibiyette) dönen övgü; seri uzadıkça coşkusu artar
 const PRAISE = () => L(['Harika!', 'Süper!', 'Bravo!', 'Tam isabet!', 'Muhteşem!', 'Şahane!', 'Efsane!'], ['Great!', 'Super!', 'Bravo!', 'Spot on!', 'Brilliant!', 'Awesome!', 'Legendary!']);
 function praise(g, perfect) {
@@ -860,7 +860,7 @@ function refreshHome() {
   $('gateTxt').textContent = tot >= hi ? `M${nx + 1} ${L('açık', 'open')} ✓` : L(`★ ${hi - tot} kaldı → M${nx + 1}`, `★ ${hi - tot} to go → M${nx + 1}`);
   $('progBar').style.width = Math.min(100, Math.max(4, (tot - lo) / Math.max(1, hi - lo) * 100)) + '%';
   $('sSize').textContent = breath(save.level) ? L('☕ mola bölümü', '☕ breather level') : lvTag(lineOf(save.level));
-  { const k = `${L('GÜNÜN HATTI', 'DAILY LINE')} · ${dTag(dPct(today())).toLocaleUpperCase(RAY_LANG === 'tr' ? 'tr' : undefined)}`; $('dailyK').textContent = HX?.isDay(today()) ? k.replace(/\s*·\s*⚡.*$/, ' · ⬡') : k; }   // cumartesi: altıgen gün (⚡ yerine ⬡; uzun dillerde 320 px'e sığsın)
+  { const k = `${L('GÜNÜN HATTI', 'DAILY LINE')} · ${dBolt(dPct(today()))}`; $('dailyK').textContent = HX?.isDay(today()) ? k.replace(/\s*·\s*\S+$/, ' · ⬡') : k; }   // cumartesi: altıgen gün (⚡ yerine ⬡; uzun dillerde 320 px'e sığsın)
   $('bPlay').classList.toggle('locked', !unlocked(c));
   questRow();
   // sıradaki bölümü boşta önceden üret: zor kurallı 7×9 bölüm telefonda 1–2 sn sürebilir, "Oyna"da beklenmesin (çıktı aynı, yalnız önbellek)
