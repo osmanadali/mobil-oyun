@@ -669,3 +669,4 @@ body.introing .screen *{animation-play-state:paused!important}
 .pk .art svg .a-tk{transform-box:view-box;transform-origin:0 0;opacity:0;animation:aTk 8s cubic-bezier(.45,0,.75,.6) infinite backwards}
 @keyframes aTk{0%{transform:translate(30px,31px);opacity:0}2%{transform:translate(30px,36px);opacity:1}6%{transform:translate(30px,44px) rotate(0)}15%{transform:translate(var(--x),var(--y)) rotate(var(--a));opacity:1}17%{transform:translate(var(--x),calc(var(--y) - 2.5px)) rotate(var(--a))}19%,100%{transform:translate(var(--x),var(--y)) rotate(var(--a));opacity:1}}
 @media (prefers-reduced-motion:reduce){.pk .art svg *{animation:none!important}.pk .art svg .a-tk{transform-box:view-box;transform-origin:0 0;opacity:0;animation:aTk 8s cubic-bezier(.45,0,.75,.6) infinite backwards}
+.feat small{white-space:normal;overflow:visible;text-overflow:clip}
