@@ -140,7 +140,7 @@ window.FX_EXTRA = (() => {
         t0.t += dt; const a = Math.min(1, t0.t / .8) * (act ? 1 : Math.max(0, 1 - (t0.t - 4.2)));
         if (a <= 0) return false;
         c.translate(W / 2, -30); c.rotate(t0.t * .08);
-        for (let i = 0; i < 12; i++) { c.rotate(TAU / 12); const g = c.createLinearGradient(0, 0, 0, H * .7); g.addColorStop(0, `rgba(255,214,140,${.22 * a})`); g.addColorStop(1, 'rgba(255,214,140,0)'); c.fillStyle = g; c.beginPath(); c.moveTo(0, 0); c.lineTo(-26, H * .7); c.lineTo(26, H * .7); c.closePath(); c.fill(); }
+        for (let i = 0; i < 12; i++) { c.rotate(TAU / 12); const g = c.createLinearGradient(0, 0, 0, H * .7); g.addColorStop(0, `rgba(255,214,140,${.09 * a})`); g.addColorStop(1, 'rgba(255,214,140,0)'); c.fillStyle = g; c.beginPath(); c.moveTo(0, 0); c.lineTo(-26, H * .7); c.lineTo(26, H * .7); c.closePath(); c.fill(); }
       } });
       // dipten hoplayarak geçen kuzular (biri durup bakar)
       for (let i = 0; i < 4; i++) {
