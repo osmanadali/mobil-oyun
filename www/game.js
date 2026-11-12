@@ -999,7 +999,7 @@ function tick() {
 function bstUi(left = G ? G.lim.t - elapsed() / 1000 : 0, dLeft = G?.lim.dl ? G.lim.dl - elapsed() / 1000 : Infinity) {
   // güçlendirici bitmişse: video izleyerek 1 tane (bölüm başına her biri bir kez) — düğmede sayı yerine ▶
   const live = G && !G.won && !G.over, can = k => bst(k) > 0 || (Ads.online() && !G.bv?.[k]);
-  const set = (id, k, on) => { const b = $(id); b.hidden = !on; if (on) { b.lastChild.textContent = bst(k) || '▶'; b.classList.toggle('vid', !bst(k)); } };
+  const set = (id, k, on) => { const b = $(id); b.hidden = !on; if (on) { b.lastChild.textContent = bst(k) || L('▶ izle', '▶ watch'); b.classList.toggle('vid', !bst(k)); } };
   set('gUndo', 'geri', live && bst('geri') > 0 && G.hist?.length > 0);
   set('gLamp', 'fener', live && can('fener') && G.fog && !(G.lamp > performance.now()));
   set('gPlus', 'sure', live && !G.zen && can('sure') && ((left > 0 && left <= 10) || (dLeft > 0 && dLeft <= 10)));   // son süreye 10 sn kala da
@@ -1439,8 +1439,8 @@ function winSheet(g, { zen, st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, 
       ? `<button id="mRetry" class="btn primary"><span>${L('Tekrar dene', 'Try again')}</span><small>${broke >= 2 ? `${near ? B.close + ' · ' : ''}${L(`✨ ${broke} seri geri gelsin`, `✨ Win back your ${broke} streak`)}` : `${B.close} · ${miss}`}</small></button>
        <div class="row2">${nxLocked ? `<button id="mMap" class="btn glassbtn">${L('Hatlar', 'Lines')}</button>` : `<button id="mNext" class="btn glassbtn">${L('Sonraki', 'Next')}</button>`}</div>`
       : nxLocked ? `<button id="mMap" class="btn primary"><span>${L('Yeni hat kilitli', 'Next line locked')}</span><small>★ ${totalStars()} / ${need(lineOf(nx))} · ${L('yıldız topla', 'earn stars')}</small></button>` : `<button id="mNext" class="btn primary"><span>${L('Sonraki', 'Next')}</span><small>${L('Bölüm', 'Level')} ${nx}</small></button>`;
-  $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml([true, tOk, mOk])}<div class="wp-t"><h2>${g.arch ? L('Geçmiş gün tamam!', 'Past day done!') : g.practice ? L('Pratik tamam!', 'Practice done!') : g.daily ? L('Günün Hattı tamam!', 'Daily Line done!') : L('Hat açıldı!', 'Connected!')}</h2>${badge}</div></div></div>
-    <div class="wp-more">${zen ? `<div class="statrow"><div><b>${fmtT(g.time)}</b><span>⏱ ${L('süre', 'time')}</span></div><div><b>${g.moves}</b><span>↻ ${L('hamle', 'moves')}</span></div></div>` : `<div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(lim.t * 1000)}</small></b><span>${tOk ? L('⏱ tam vaktinde ★', '⏱ on time ★') : L('⏱ rötar ✗', '⏱ late ✗')}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${lim.m}</small></b><span>↻ ${L('hamle', 'moves')} ${mOk ? '★' : '✗'}</span></div></div>`}${tip}${extra ? `<p class="tip">${extra}${dbl && Ads.online() ? ` <button id="mDbl" class="dbl">${L('▶ 2 katı', '▶ Double')}</button>` : tk && Ads.online() ? ` <button id="mTk" class="dbl">${L('▶ +1 🎫', '▶ +1 🎫')}</button>` : ''}</p>` : ''}${adFree}</div>
+  $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml([true, tOk, mOk])}<div class="wp-t"><h2>${g.arch ? L('Geçmiş gün tamam!', 'Past day done!') : g.practice ? L('Pratik tamam!', 'Practice done!') : g.daily ? L('Günün Hattı tamam!', 'Daily Line done!') : L('Hat açıldı!', 'Connected!')}</h2>${badge}</div></div>${tk && !dbl && Ads.online() ? `<button id="mTk" class="adcta tkcta"><b>▶ +1 🎫</b><small>${L('video izle', 'watch')}</small></button>` : ''}</div>
+    <div class="wp-more">${zen ? `<div class="statrow"><div><b>${fmtT(g.time)}</b><span>⏱ ${L('süre', 'time')}</span></div><div><b>${g.moves}</b><span>↻ ${L('hamle', 'moves')}</span></div></div>` : `<div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(lim.t * 1000)}</small></b><span>${tOk ? L('⏱ tam vaktinde ★', '⏱ on time ★') : L('⏱ rötar ✗', '⏱ late ✗')}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${lim.m}</small></b><span>↻ ${L('hamle', 'moves')} ${mOk ? '★' : '✗'}</span></div></div>`}${tip}${extra ? `<p class="tip">${extra}${dbl && Ads.online() ? ` <button id="mDbl" class="dbl">${L('▶ 2 katı', '▶ Double')}</button>` : ''}</p>` : ''}${adFree}</div>
     ${primary}`;
   $('game').classList.add('won'); $('bBack').setAttribute('aria-label', L('Ana sayfa', 'Home'));
   Ads.warm();   // sakin an: oyuncu sonucu okuyor → eksik reklam şimdi yüklenir (bölüm açılırken değil)
@@ -1463,9 +1463,9 @@ async function ticketVideo() {
   const b = $('mTk'); if (!b || Ads.busy()) return;
   b.disabled = true; b.textContent = L('Yükleniyor…', 'Loading…'); Music.stop();
   const ok = await video(); Music.start();
-  if (!ok) { b.disabled = false; b.textContent = '▶ +1 🎫'; return; }
+  if (!ok) { b.disabled = false; b.innerHTML = `<b>▶ +1 🎫</b><small>${L('video izle', 'watch')}</small>`; return; }
   save.vc = (save.vc || 0) + 1; persist(); refreshHome(); window.Olcum?.event?.('ticket_ad');
-  b.outerHTML = `<b class="dblok">✓ +1 🎫</b>`; haptic('heavy'); tone(note(9), .3, .045); toast(L('+1 bilet daha 🎫', '+1 more ticket 🎫'));
+  b.outerHTML = `<b class="dblok tkok">✓ +1 🎫</b>`; haptic('heavy'); tone(note(9), .3, .045); toast(L('+1 bilet daha 🎫', '+1 more ticket 🎫'));
 }
 async function doubleReward(n) {
   const b = $('mDbl'); if (!b || Ads.busy()) return;
@@ -1714,6 +1714,17 @@ const ART = (() => {
         <path class="a-spark" d="M66 8l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z" fill="#ffd66b"/>`); })(),
   };
 })();
+// 🎁 Mağaza › ücretsiz ipucu: günde en çok 3 video, her biri +1 ipucu
+const FREE_VID = 3, freeVidLeft = () => FREE_VID - (save.fvDay === today() ? save.fvN || 0 : 0);
+async function freeVideo() {
+  const b = $('mFree'); if (!b || Ads.busy() || freeVidLeft() <= 0) return;
+  b.disabled = true; b.querySelector('em').textContent = L('Yükleniyor…', 'Loading…'); Music.stop();
+  const ok = await video(); Music.start();
+  if (!ok) { b.disabled = false; b.querySelector('em').textContent = '▶ ' + L('İzle', 'Watch'); return; }
+  if (save.fvDay !== today()) { save.fvDay = today(); save.fvN = 0; }
+  save.fvN++; save.hints++; persist(); refreshHome(); window.Olcum?.event?.('free_hint_ad');
+  haptic('heavy'); tone(note(9), .3, .045); toast(L('+1 ipucu 💡', '+1 hint 💡')); storeSheet();
+}
 // Mağaza iki sekme: 🛍️ Paketler (parayla) · 🎨 Temalar (🎫 ile; bilet çipi doğrudan buraya açar)
 const shopTabs = on => `<div class="tabs" role="tablist"><button id="tPk" role="tab" aria-selected="${on === 'pk'}" class="${on === 'pk' ? 'on' : ''}"><i>🛍️</i>${L('Paketler', 'Packs')}</button><button id="tTh" role="tab" aria-selected="${on === 'th'}" class="${on === 'th' ? 'on' : ''}"><i>🎨</i>${L('Temalar', 'Themes')}${seaNew() || save.newSkin ? '<em class="dot"></em>' : ''}</button></div>`;
 function storeSheet(focus) {
@@ -1741,13 +1752,14 @@ function storeSheet(focus) {
     if (cls === 'sq') return `<button class="pk prod sq pk-${k} ${focus === k.slice(0, 4) ? 'on' : ''}" data-p="${k}"><i class="art">${ART[k]}</i><b class="nm">${name().split(" · ")[0]}</b>${inv(k)}<em class="pr">${price(k)}</em></button>`;
     return `<button class="pk prod ${cls} pk-${k} ${focus === k.slice(0, 4) ? 'on' : ''}" data-p="${k}"><i class="art">${ART[k]}</i><span class="tx"><b>${name()}</b>${sub() && cls !== 'tri' && !sl && k !== 'noads' ? `<small>${sub()}</small>` : ''}</span><em class="pr">${price(k)}</em>${sl ? `<span class="slots">${sl}</span>` : ''}${k === 'noads' ? feats() : ''}</button>`; };
   const grp = (ks, cls) => { const g = ks.filter(k => has.includes(k)); return g.length ? `<div class="pkg ${cls}">${g.map(k => card(k, cls)).join('')}</div>` : ''; };
-  const rows = ART.defs + grp(['noads'], 'big') + grp(['starter', 'bst'], 'sq') + grp(['hint10', 'hint30', 'hint80'], 'tri') + grp(['crown', 'themes'], 'sq');
+  const fv = freeVidLeft(), free = Ads.online() && fv > 0 ? `<button id="mFree" class="pk freepk"><i class="art"><span>🎁</span></i><span class="tx"><b>${L('Ücretsiz ipucu', 'Free hint')}</b><small>${L(`Video izle · +1 💡 · bugün ${fv} kaldı`, `Watch a video · +1 💡 · ${fv} left today`)}</small></span><em class="pr adcta">▶ ${L('İzle', 'Watch')}</em></button>` : '';
+  const rows = ART.defs + free + grp(['noads'], 'big') + grp(['starter', 'bst'], 'sq') + grp(['hint10', 'hint30', 'hint80'], 'tri') + grp(['crown', 'themes'], 'sq');
   modal(`<h2>${L('Mağaza', 'Shop')}</h2>${shopTabs('pk')}
     <p>${L(`Sende 💡 ${save.hints} · 🎫 ${crownBal()}`, `You have 💡 ${save.hints} · 🎫 ${crownBal()}`)}</p>
     <div class="store" id="store">${rows}</div>
     <p class="tip">${live ? L('Oyunun tamamı ücretsiz oynanır; paketler isteğe bağlı.', 'The whole game is free to play; packs are optional.') : L('Paketler mağazadan indirilen sürümde açılır.', 'Packs are available in the store version.')}</p>
     ${live ? `<button id="mRestore" class="link">${L('Satın alımı geri yükle', 'Restore purchase')}</button>` : ''}
-    <button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, { mRestore: restoreBuys, mClose: closeModal, tTh: () => skinSheet() });
+    <button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, { mRestore: restoreBuys, mClose: closeModal, tTh: () => skinSheet(), mFree: freeVideo });
   if (focus) setTimeout(() => $('store')?.querySelector('.pk.on')?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 350);
   $('store').onclick = async e => {
     const b = e.target.closest('[data-p]'), k = b?.dataset.p; if (!k) return;
@@ -2065,12 +2077,11 @@ function lifePop(lvl = save.level, failed = false) {
     $('lpI').textContent = m === 'empty' ? '❤️‍🩹' : '❤️';
     $('lpH').textContent = m === 'empty' ? L('Canın bitti', 'Out of lives') : m === 'inf' ? L('Sınırsız can', 'Unlimited lives') : `❤️ ${n} / ${LIFE_MAX}`;
     $('lpP').innerHTML = m === 'empty' ? (failed ? L('🚉 Son tren kaçtı, <b class="nw">son canın</b> gitti. ', '🚉 The last train left and took your <b class="nw">last life</b>. ') : '') + L('Her 6 dakikada 1 can dolar. Günün Hattı ve 🍃 Zen can harcamaz.', 'One life refills every 6 minutes. The Daily Line and 🍃 Zen cost no lives.') : '';
-    // can yok: üç yol — ▶ video (+1 ❤️ hemen) · ☀️ Günün Hattı (can harcamaz, bugün bitmediyse) · 🛍️ sınırsız can
-    const dOk = save.dailyDone !== today();
+    // can yok: tek, belirgin yol ▶ video (+1 ❤️ hemen); reklam yoksa mağaza (sınırsız can)
     $('lpAct').innerHTML = m === 'empty'
-      ? `${Ads.online() ? `<button id="lpVid" class="btn primary"><span>${L('▶ Video izle', '▶ Watch a video')}</span><small>${L('+1 ❤️ hemen', '+1 ❤️ right away')}</small></button>` : ''}${dOk ? `<button id="lpDay" class="btn ${Ads.online() ? 'glassbtn' : 'primary'}"><span>☀️ ${L('Günün Hattı', 'Daily Line')}</span><small>${L('can harcamaz', 'costs no lives')}</small></button>` : ''}<button id="lpShop" class="btn glassbtn"><span>🛍️ ${L('Sınırsız can', 'Unlimited lives')}</span><small>${L('Mağaza', 'Shop')}</small></button>`
+      ? (Ads.online() ? `<button id="lpVid" class="btn primary adcta"><span>${L('▶ Video izle', '▶ Watch a video')}</span><small>${L('+1 ❤️ hemen', '+1 ❤️ right away')}</small></button>` : `<button id="lpShop" class="btn primary"><span>🛍️ ${L('Sınırsız can', 'Unlimited lives')}</span><small>${L('Mağaza', 'Shop')}</small></button>`)
       : `<button id="lpGo" class="btn primary"><span>${L('Oyna', 'Play')}</span><small>${L('Bölüm', 'Level')} ${lvl}</small></button>`;
-    bind({ lpVid: lifeVideo, lpDay: () => { closeModal(); start('daily'); }, lpShop: () => storeSheet('star'), lpGo: () => start('level', lvl) });
+    bind({ lpVid: lifeVideo, lpShop: () => storeSheet('star'), lpGo: () => start('level', lvl) });
   };
   async function lifeVideo() {
     const b = $('lpVid'); if (!b || Ads.busy()) return;
@@ -2138,7 +2149,7 @@ function questSheet() {
   const bonus = (x, id, tr, en, rw) => `<div class="qall${x.ar ? ' pend' : x.all ? ' ok' : ''}"><span>${L(tr, en)} → <b>${rw}</b></span>${x.ar ? take(id) : x.all ? got : ''}</div>`;
   const gift = save.giftDay !== today() && Ads.online();   // 🎁 günde bir ▶ video → küçük hediye
   modal(`<h2>🎯 ${L('Görevler', 'Quests')}</h2>
-    ${gift ? `<button id="mGift" class="giftrow"><i>🎁</i><span><b>${L('Günlük hediye', 'Daily gift')}</b><small>${L('İpucu, bilet ya da güçlendirici', 'A hint, ticket or booster')}</small></span><em>▶ ${L('İzle', 'Watch')}</em></button>` : ''}
+    ${gift ? `<button id="mGift" class="giftrow"><i>🎁</i><span><b>${L('Günlük hediye', 'Daily gift')}</b><small>${L('İpucu, bilet ya da güçlendirici', 'A hint, ticket or booster')}</small></span><em class="adcta">▶ ${L('İzle', 'Watch')}</em></button>` : ''}
     <div class="nexts"><small><b>☀️ ${L('Bugün', 'Today')}</b></small><small>${L('Gece yarısı yenilenir', 'Resets at midnight')}</small></div>
     <div class="quests">${dq.q.map((q, i) => row(q, '+1 💡', 'd' + i)).join('')}${bonus(dq, 'da', 'Üçü birden', 'All three', '+1 🎫')}</div>
     <div class="nexts"><small><b>📅 ${L('Bu hafta', 'This week')}</b></small><small>${left <= 1 ? L('Yarın yenilenir', 'New quests tomorrow') : L(`${left} gün sonra yenilenir`, `New quests in ${left} days`)}</small></div>

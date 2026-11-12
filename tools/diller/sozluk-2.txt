@@ -1376,3 +1376,43 @@ fr: 🎁 +1 ticket 🎫
 ko: 🎁 티켓 +1 🎫
 ja: 🎁 チケット +1 🎫
 zh: 🎁 +1 張車票 🎫
+@ ▶ watch
+de: ▶ ansehen
+es: ▶ ver
+pt: ▶ assistir
+fr: ▶ regarder
+ko: ▶ 보기
+ja: ▶ 見る
+zh: ▶ 觀看
+@ watch
+de: ansehen
+es: ver vídeo
+pt: assistir
+fr: regarder
+ko: 영상 보기
+ja: 動画を見る
+zh: 看影片
+@ +1 hint 💡
+de: +1 Tipp 💡
+es: +1 pista 💡
+pt: +1 dica 💡
+fr: +1 indice 💡
+ko: 힌트 +1 💡
+ja: ヒント +1 💡
+zh: +1 次提示 💡
+@ Free hint
+de: Gratis-Tipp
+es: Pista gratis
+pt: Dica grátis
+fr: Indice gratuit
+ko: 무료 힌트
+ja: 無料ヒント
+zh: 免費提示
+@ Watch a video · +1 💡 · {0} left today
+de: Video ansehen · +1 💡 · heute noch {0}
+es: Mira un vídeo · +1 💡 · quedan {0} hoy
+pt: Assista a um vídeo · +1 💡 · restam {0} hoje
+fr: Regarde une vidéo · +1 💡 · encore {0} aujourd’hui
+ko: 영상 보기 · +1 💡 · 오늘 {0}회 남음
+ja: 動画を見る · +1 💡 · 今日あと{0}回
+zh: 看影片 · +1 💡 · 今天還剩 {0} 次
