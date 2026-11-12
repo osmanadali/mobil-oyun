@@ -45,6 +45,11 @@ workflows:
           npx cap sync ios
       - name: Arşivle (otomatik imza)
         script: |
+          # Codemagic makinelerinin adı hep aynı: Xcode "bu makinenin geliştirici sertifikası var ama anahtarı yok" deyip durur.
+          # Her derlemede makineye kendine özel ad verilir, Xcode bu ada yeni sertifika oluşturur (GitHub'da makine adı zaten her seferinde farklı).
+          N="ray-cm-$(echo "${CM_BUILD_ID:-$RANDOM$RANDOM}" | tr -cd 'A-Za-z0-9' | cut -c1-12)"
+          sudo scutil --set ComputerName "$N"; sudo scutil --set LocalHostName "$N"; sudo scutil --set HostName "$N"
+          echo "Makine adı: $(scutil --get ComputerName)"
           K="$CM_BUILD_DIR/../AuthKey.p8"
           xcodebuild archive -project ios/App/App.xcodeproj -scheme App -configuration Release \
             -destination 'generic/platform=iOS' -archivePath build/Ray.xcarchive \
