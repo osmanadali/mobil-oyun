@@ -743,8 +743,9 @@ const bind = binds => { for (const [id, fn] of Object.entries(binds)) { const el
 // center: ekranın ortasında küçük pencere (duraklat); öteki pencereler alttan açılır
 function modal(html, binds = {}, locked = false, center = false) {
   mLocked = locked; howBack = null; mOnClose = null; $('modal').classList.toggle('center', center);
-  const sh = $('mCard'); sh.innerHTML = html; sh.scrollTop = 0; $('modal').classList.add('open');
-  sh.classList.toggle('fit', sh.scrollHeight <= sh.clientHeight + 1);   // sığan pencere: her yerinden aşağı çekilebilir
+  const sh = $('mCard'), full = html.includes('class="tabs"'); sh.innerHTML = html; sh.scrollTop = 0; $('modal').classList.add('open');
+  sh.classList.toggle('full', full);   // sekmeli Mağaza: iki sekme de tam boy, hep ✕ (sekme değişince pencere zıplamaz)
+  sh.classList.toggle('fit', !full && sh.scrollHeight <= sh.clientHeight + 1);   // sığan pencere: her yerinden aşağı çekilebilir
   // uzun (kaydırılan) pencere: köşede ✕ — aşağı çekmek kaydırmayla karışabiliyor (temalar, sandık, mağaza)
   if (!locked && !sh.classList.contains('fit')) sh.insertAdjacentHTML('afterbegin', `<button class="mx" id="mX" aria-label="${L('Kapat', 'Close')}">✕</button>`);
   bind({ mX: closeModal, ...binds });
@@ -1658,19 +1659,40 @@ const ART = (() => {
   const svg = b => `<svg viewBox="0 0 80 80" aria-hidden="true">${b}</svg>`;
   return { defs: D,
     hint10: bouquet(10), hint30: bouquet(30), hint80: bouquet(80),
-    noads: svg(`<circle cx="40" cy="40" r="30" fill="#ffd66b" opacity=".2"/><path d="M40 66C18 51 12 40 12 30a14 14 0 0 1 28-6a14 14 0 0 1 28 6c0 10-6 21-28 36z" fill="url(#gGold)"/>
+    // hareketli (CSS: .a-*; hareketi azalt açıksa durur): kalp atar, yıldız parlar · kutu kapağı aralanır · çanta sallanır · yelpaze açılıp kapanır · makine bilet basar
+    noads: svg(`<circle cx="40" cy="40" r="30" fill="#ffd66b" opacity=".2" class="a-halo"/><g class="a-beat"><path d="M40 66C18 51 12 40 12 30a14 14 0 0 1 28-6a14 14 0 0 1 28 6c0 10-6 21-28 36z" fill="url(#gGold)"/>
       <path d="M22 27a8 8 0 0 1 9-7" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none" opacity=".7"/>
-      <g transform="translate(40 40)"><rect x="-13" y="-8" width="26" height="16" rx="5" fill="#fff" opacity=".92"/><text y="5" text-anchor="middle" font-size="12" font-weight="800" fill="#c46a12" font-family="Outfit,sans-serif">AD</text><path d="M-15 10L15 -10" stroke="#d9435c" stroke-width="3.2" stroke-linecap="round"/></g>
-      <path d="M66 12l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#ffd66b"/>`),
-    starter: svg(`<circle cx="40" cy="44" r="30" fill="#ff8fa3" opacity=".16"/>${bulb(26, 18, 6, -12)}<g transform="rotate(-14 54 22)"><rect x="44" y="15" width="22" height="13" rx="3" fill="#ffd66b"/><circle cx="44" cy="21.5" r="3" fill="#fff"/><circle cx="66" cy="21.5" r="3" fill="#fff"/></g>
-      <rect x="14" y="38" width="52" height="32" rx="6" fill="url(#gBox)"/><rect x="11" y="31" width="58" height="11" rx="4" fill="#ff9fb0"/><rect x="36" y="31" width="8" height="39" fill="#ffd66b"/>
-      <path d="M40 31c-10-12-20-6-14 0zM40 31c10-12 20-6 14 0z" fill="#ffd66b" stroke="#f59a3c" stroke-width="1.4"/>`),
-    themes: svg(['#7aa7ff', '#5cc27e', '#ffd66b', '#ff9a5c', '#f0637a'].map((c, i) => `<rect x="31" y="14" width="18" height="48" rx="6" fill="${c}" stroke="#fff" stroke-width="1.5" transform="rotate(${(i - 2) * 16} 40 64)"/>`).join('') + '<circle cx="40" cy="62" r="4" fill="#fff" stroke="#9aa0b4" stroke-width="1.5"/>'),
-    bst: svg(`<rect x="12" y="32" width="56" height="34" rx="6" fill="#e5546e"/><rect x="12" y="32" width="56" height="10" rx="5" fill="#f0637a"/><path d="M30 32v-7a4 4 0 0 1 4-4h12a4 4 0 0 1 4 4v7" stroke="#9aa0b4" stroke-width="4" fill="none"/>
-      <rect x="36" y="38" width="8" height="8" rx="2" fill="#ffd66b"/><path d="M20 30l8-14M58 30l-6-16" stroke="#9aa0b4" stroke-width="4" stroke-linecap="round"/><circle cx="28" cy="15" r="4" fill="#7aa7ff"/><circle cx="52" cy="13" r="4" fill="#5cc27e"/>`),
-    crown: svg([2, 1, 0].map(i => `<g transform="rotate(${(i - 1) * 12} 40 44) translate(0 ${i * -3})"><rect x="14" y="30" width="52" height="26" rx="5" fill="${['#ffd66b', '#ffc04d', '#f5a33c'][i]}"/><circle cx="14" cy="43" r="4.5" fill="var(--sheetBg)"/><circle cx="66" cy="43" r="4.5" fill="var(--sheetBg)"/><path d="M50 33v20" stroke="#fff" stroke-dasharray="3 3" stroke-width="1.6"/></g>`).join('') + '<text x="32" y="46" text-anchor="middle" font-size="12" font-weight="800" fill="#8a4a0e" font-family="Outfit,sans-serif">50</text>'),
+      <g transform="translate(40 40)"><rect x="-13" y="-8" width="26" height="16" rx="5" fill="#fff" opacity=".92"/><text y="5" text-anchor="middle" font-size="12" font-weight="800" fill="#c46a12" font-family="Outfit,sans-serif">AD</text><path d="M-15 10L15 -10" stroke="#d9435c" stroke-width="3.2" stroke-linecap="round"/></g></g>
+      <path class="a-spark" d="M66 12l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#ffd66b"/><path class="a-spark b" d="M14 58l1.2 3 3 1.2-3 1.2-1.2 3-1.2-3-3-1.2 3-1.2z" fill="#fff3c4"/>`),
+    starter: svg(`<circle cx="40" cy="44" r="30" fill="#ff8fa3" opacity=".16"/>
+      <g class="a-in"><text x="25" y="44" font-size="15" text-anchor="middle">💡</text><text x="40" y="40" font-size="15" text-anchor="middle">🎫</text><text x="55" y="44" font-size="14" text-anchor="middle">❤️</text></g>
+      <rect x="14" y="38" width="52" height="32" rx="6" fill="url(#gBox)"/><rect x="36" y="38" width="8" height="32" fill="#ffd66b"/>
+      <g class="a-lid"><rect x="11" y="31" width="58" height="11" rx="4" fill="#ff9fb0"/><rect x="36" y="31" width="8" height="11" fill="#ffd66b"/>
+      <path d="M40 31c-10-12-20-6-14 0zM40 31c10-12 20-6 14 0z" fill="#ffd66b" stroke="#f59a3c" stroke-width="1.4"/></g>`),
+    themes: svg(['#7aa7ff', '#5cc27e', '#ffd66b', '#ff9a5c', '#f0637a'].map((c, i) => `<g class="a-card" style="--d:${i - 2}"><path d="M31.5 20a7 7 0 0 1 7-7h3a7 7 0 0 1 7 7L44 62a4 4 0 0 1-8 0z" fill="${c}" stroke="#fff" stroke-width="1.5"/></g>`).join('') + '<circle cx="40" cy="62" r="4.2" fill="#fff" stroke="#9aa0b4" stroke-width="1.5"/><circle cx="40" cy="62" r="1.4" fill="#9aa0b4"/>'),
+    bst: svg(`<g class="a-sway"><path d="M28 34V24a5 5 0 0 1 5-5h14a5 5 0 0 1 5 5v10" stroke="#8b92a8" stroke-width="4" fill="none"/>
+      <path d="M22 44l7-28" stroke="#9aa0b4" stroke-width="4" stroke-linecap="round"/><circle cx="29.5" cy="15" r="4.5" fill="#7aa7ff"/>
+      <path d="M57 44l-5-30" stroke="#9aa0b4" stroke-width="4" stroke-linecap="round"/><path d="M48 10h8l-1 6h-6z" fill="#5cc27e"/>
+      <path d="M40 44v-26" stroke="#c98a1a" stroke-width="3" stroke-linecap="round"/><ellipse cx="40" cy="16" rx="3.6" ry="4.6" fill="#ffd66b"/>
+      <rect x="12" y="32" width="56" height="34" rx="7" fill="#e5546e"/><path d="M12 39q0-7 7-7h42q7 0 7 7v3H12z" fill="#f0637a"/>
+      <rect x="35" y="38" width="10" height="8" rx="2" fill="#ffd66b"/><rect x="38.5" y="41" width="3" height="3" rx="1" fill="#c98a1a"/></g>`),
+    crown: (() => {   // bilet makinesi: ekranda 50; ağzından oyunun 🎫 biletleri birer birer çıkar, düşüp yığına katılır
+      const T = (x, y, a, sz = 15) => `<text x="${x}" y="${y}" font-size="${sz}" text-anchor="middle" transform="rotate(${a} ${x} ${y - sz * .35})">🎫</text>`;
+      const G = (x, y, a, sz = 15) => `<g transform="translate(${x} ${y}) rotate(${a})"><text y="${sz * .35}" font-size="${sz}" text-anchor="middle">🎫</text></g>`;
+      // sürekli basar: her bilet yığındaki kendi yerine düşer; orada aynı bilet zaten durduğu için döngü başa sarınca yığın eksilmez
+      const spots = [[46, 64, 9], [33, 64, -11], [57, 65, -4], [40, 60, 14], [26, 62, -6], [52, 58, -12], [36, 56, 5], [62, 61, 18], [45, 53, -8], [29, 57, 11]];
+      const pile = [[30, 71, -8], [50, 72, 6], [40, 69, -3], [62, 70, 12], [21, 70, -16], ...spots].map(([x, y, a]) => G(x, y, a)).join('');
+      const fly = spots.map(([x, y, a], i) => `<g class="a-tk" style="--x:${x}px;--y:${y}px;--a:${a}deg;animation-delay:${i * .8}s"><text y="5" font-size="15" text-anchor="middle">🎫</text></g>`).join('');
+      return svg(`<ellipse cx="42" cy="76" rx="30" ry="3.2" fill="#000" opacity=".25"/>${pile}${fly}
+        <rect x="10" y="3" width="42" height="36" rx="7" fill="#3c4a6b"/><rect x="10" y="3" width="42" height="11" rx="7" fill="#4f6088"/>
+        <rect x="15" y="9" width="24" height="13" rx="2.5" fill="#0d1626"/><text x="27" y="19.4" text-anchor="middle" font-size="10" font-weight="800" fill="#ffcf4d" font-family="Outfit,sans-serif">50</text>
+        <circle cx="45.5" cy="12" r="2.2" fill="#5cff9b"><animate attributeName="opacity" values="1;.25;1" dur="1.4s" repeatCount="indefinite"/></circle>
+        <rect x="42.5" y="18" width="6" height="1.8" rx=".9" fill="#0d1626"/><rect x="20" y="32" width="20" height="4" rx="2" fill="#0d1626"/>
+        <path class="a-spark" d="M66 8l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z" fill="#ffd66b"/>`); })(),
   };
 })();
+// Mağaza iki sekme: 🛍️ Paketler (parayla) · 🎨 Temalar (🎫 ile; bilet çipi doğrudan buraya açar)
+const shopTabs = on => `<div class="tabs" role="tablist"><button id="tPk" role="tab" aria-selected="${on === 'pk'}" class="${on === 'pk' ? 'on' : ''}"><i>🛍️</i>${L('Paketler', 'Packs')}</button><button id="tTh" role="tab" aria-selected="${on === 'th'}" class="${on === 'th' ? 'on' : ''}"><i>🎨</i>${L('Temalar', 'Themes')}${seaNew() || save.newSkin ? '<em class="dot"></em>' : ''}</button></div>`;
 function storeSheet(focus) {
   const live = Shop.avail(), owns = k => k === 'noads' ? save.noAds : k === 'themes' && save.allThemes;
   const has = STORE.filter(([k]) => live || k === 'noads').filter(([k]) => !(k === 'themes' && SKINS.every(x => x.vip || skinOpen(x)) && !save.allThemes)).map(r => r[0]);
@@ -1680,16 +1702,29 @@ function storeSheet(focus) {
     if (k === 'bst') return BST.map(b => sl(b.ic, '×3', b.name)).join('');
     if (k !== 'starter') return ''; const g = Shop.item('starter').give;
     return sl('💡', g.hints) + BST.map(b => sl(b.ic, '×' + g.bst[b.id])).join('') + sl('❤️', `∞ ${g.inf / 60} ${L('sa', 'h')}`) + sl('🎫', g.crowns); };
+  const it = (ic, n, t) => `<span class="it"><i>${ic}</i><b>${n}</b>${t ? `<small>${t}</small>` : ''}</span>`;
+  const sw = ks => `<span class="sw">${ks.map(k => `<i style="background:${skinCols(k)[0]}"></i>`).join('')}</span>`;
+  const inv = k => {   // kare kartın içi: ne alacağın tek bakışta
+    if (k === 'starter') { const g = Shop.item('starter').give; return `<span class="inv c4">${it('💡', g.hints) + BST.map(b => it(b.ic, '×' + g.bst[b.id])).join('') + it('❤️', `∞ ${g.inf / 60}${L('sa', 'h')}`)}${it('🎫', g.crowns)}</span>`; }
+    if (k === 'bst') return `<span class="inv c2">${BST.map(b => it(b.ic, '×3', b.name)).join('')}</span>`;
+    if (k === 'crown') return `<span class="inv c1"><span class="it wide"><b>50 🎫</b><small>${L('Yalnız temalar için', 'For themes only')}</small></span></span>`;
+    if (k === 'themes') { const ks = SKINS.filter(x => !x.vip && !x.sea); return `<span class="inv c1"><span class="it wide">${sw(ks.slice(0, 12))}<small>${L(`${SKINS.filter(x => !x.vip).length} tema · tek seferlik`, `${SKINS.filter(x => !x.vip).length} themes · one-time`)}</small></span></span>`; }
+    return '';
+  };
+  const feats = () => { const v = SKINS.filter(x => x.vip);
+    const f = (ic, t, sub) => `<span class="feat"><i>${ic}</i><span><b>${t}</b><small>${sub}</small></span></span>`;
+    return `<span class="feats">${f('🚫', L('Reklam yok', 'No ads'), L('Araya reklam girmez', 'No ads between levels'))}${f('💡', L('20 ipucu', '20 hints'), L('Hemen hesabına', 'Added right away'))}${f(sw(v), L('3 özel tema', '3 special themes'), v.map(x => x.name).join(' · '))}${f('♾️', L('Tek seferlik', 'One-time'), L('Hep senin, geri yüklenir', 'Yours forever, restorable'))}</span>`; };
   const card = (k, cls) => { const [, , name, sub] = STORE.find(r => r[0] === k), sl = slots(k);
-    return `<button class="pk prod ${cls} pk-${k} ${focus === k.slice(0, 4) ? 'on' : ''}" data-p="${k}"><i class="art">${ART[k]}</i><span class="tx"><b>${name()}</b>${sub() && cls !== 'tri' && !sl ? `<small>${sub()}</small>` : ''}</span><em class="pr">${price(k)}</em>${sl ? `<span class="slots">${sl}</span>` : ''}</button>`; };
+    if (cls === 'sq') return `<button class="pk prod sq pk-${k} ${focus === k.slice(0, 4) ? 'on' : ''}" data-p="${k}"><i class="art">${ART[k]}</i><b class="nm">${name().split(" · ")[0]}</b>${inv(k)}<em class="pr">${price(k)}</em></button>`;
+    return `<button class="pk prod ${cls} pk-${k} ${focus === k.slice(0, 4) ? 'on' : ''}" data-p="${k}"><i class="art">${ART[k]}</i><span class="tx"><b>${name()}</b>${sub() && cls !== 'tri' && !sl && k !== 'noads' ? `<small>${sub()}</small>` : ''}</span><em class="pr">${price(k)}</em>${sl ? `<span class="slots">${sl}</span>` : ''}${k === 'noads' ? feats() : ''}</button>`; };
   const grp = (ks, cls) => { const g = ks.filter(k => has.includes(k)); return g.length ? `<div class="pkg ${cls}">${g.map(k => card(k, cls)).join('')}</div>` : ''; };
-  const rows = ART.defs + grp(['noads', 'starter'], 'big') + grp(['hint10', 'hint30', 'hint80'], 'tri') + grp(['themes', 'bst', 'crown'], 'wide');
-  modal(`<h2>${L('Mağaza', 'Shop')}</h2>
+  const rows = ART.defs + grp(['noads'], 'big') + grp(['starter', 'bst'], 'sq') + grp(['hint10', 'hint30', 'hint80'], 'tri') + grp(['crown', 'themes'], 'sq');
+  modal(`<h2>${L('Mağaza', 'Shop')}</h2>${shopTabs('pk')}
     <p>${L(`Sende 💡 ${save.hints} · 🎫 ${crownBal()}`, `You have 💡 ${save.hints} · 🎫 ${crownBal()}`)}</p>
     <div class="store" id="store">${rows}</div>
     <p class="tip">${live ? L('Oyunun tamamı ücretsiz oynanır; paketler isteğe bağlı.', 'The whole game is free to play; packs are optional.') : L('Paketler mağazadan indirilen sürümde açılır.', 'Packs are available in the store version.')}</p>
     ${live ? `<button id="mRestore" class="link">${L('Satın alımı geri yükle', 'Restore purchase')}</button>` : ''}
-    <button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, { mRestore: restoreBuys, mClose: closeModal });
+    <button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, { mRestore: restoreBuys, mClose: closeModal, tTh: () => skinSheet() });
   if (focus) setTimeout(() => $('store')?.querySelector('.pk.on')?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 350);
   $('store').onclick = async e => {
     const b = e.target.closest('[data-p]'), k = b?.dataset.p; if (!k) return;
@@ -2258,14 +2293,14 @@ function skinSheet() {
   };
   // mevsim temaları: tarihi gelmiş olanlar (ücretsiz alınır) ve sahip olunanlar; ötekiler görünmez (menü sade kalır)
   const sea = SKINS.filter(k => k.sea && (seaWin(k.id) || skinOpen(k))), seaOn = sea.filter(k => seaWin(k.id) && !skinOpen(k));
-  modal(`<h2>${L('Renk temaları', 'Color themes')}</h2><p>${L('Her <b>kusursuz</b> bölüm (⏱ ve ↻ hedefi) 1 🎫 verir. 🎫 ile tema ve sandık açılır.', 'Every <b>perfect</b> level (⏱ and ↻ targets) gives 1 🎫. Spend 🎫 on themes and chests.')}</p>
+  modal(`<h2>${L('Mağaza', 'Shop')}</h2>${shopTabs('th')}<p>${L('Her <b>kusursuz</b> bölüm (⏱ ve ↻ hedefi) 1 🎫 verir. 🎫 ile tema ve sandık açılır.', 'Every <b>perfect</b> level (⏱ and ↻ targets) gives 1 🎫. Spend 🎫 on themes and chests.')}</p>
     <div class="nexts"><small>${L('Bakiye', 'Balance')}</small><b class="bal">🎫 ${bal}</b></div>
     <button id="mChest" class="chestrow ${chestBal() >= CHEST ? 'can' : ''}"><i>${CHEST_SVG}</i><span><b>${L('Sürpriz sandık', 'Surprise chest')}</b><small>${L('İpucu · 🛡 seri kalkanı · 🚆 tren kaplaması', 'Hints · 🛡 shield · 🚆 train livery')}</small></span><em>🎫 ${CHEST}</em></button>
     ${nx ? `<div class="nexts"><small>${L('Sıradaki', 'Next up')}: <b>${nx.name}</b></small><small>🎫 ${Math.min(bal, nx.need)} / ${nx.need}</small></div><div class="pb"><i style="width:${Math.max(4, Math.min(100, bal / nx.need * 100))}%"></i></div>` : ''}
     <div class="skins" id="skins">${sea.length ? `<small class="vipk sea">${seaOn.length ? L(`${seaOn[0].sea} Mevsim teması · ${seaTill(seaOn[0])} tarihine dek ücretsiz`, `${seaOn[0].sea} Seasonal theme · free until ${seaTill(seaOn[0])}`) : L('🍂 Mevsim temaları', '🍂 Seasonal themes')}</small>${sea.map(card).join('')}<small class="vipk">${L('🎫 Bilet temaları', '🎫 Ticket themes')}</small>` : ''}${SKINS.filter(k => !k.vip && !k.sea).map(card).join('')}
       <small class="vipk">${L('💛 Reklamsız pakete özel', '💛 Ad-free pack only')}</small>${SKINS.filter(k => k.vip).map(card).join('')}</div>
     ${nx ? `<button id="mHunt" class="btn primary"><span>${L('Bilet topla', 'Earn tickets')} 🎫</span><small>${hn ? L(`${hn} bölüm kusursuz bitmeyi bekliyor`, `${hn} ${pl(hn, 'level awaits', 'levels await')} a perfect finish`) : L('Yeni bölümleri ⏱ ve ↻ hedefiyle bitir', 'Beat new levels within ⏱ and ↻ targets')}</small></button>` : ''}
-    <button id="mClose" class="btn glassbtn">${L('Tamam', 'Done')}</button>`, { mClose: closeModal, mHunt: () => crownHunt(nx), mChest: chestSheet });
+    <button id="mClose" class="btn glassbtn">${L('Tamam', 'Done')}</button>`, { mClose: closeModal, mHunt: () => crownHunt(nx), mChest: chestSheet, tPk: () => storeSheet() });
   $('skins').onclick = e => {
     const b = e.target.closest('.skin'); if (!b) return;
     const k = SKINS.find(x => x.id === b.dataset.k);

@@ -784,6 +784,22 @@ fr: Acheté ✓
 ko: 보유 ✓
 ja: 購入済み ✓
 zh: 已擁有 ✓
+@ Packs
+de: Pakete
+es: Paquetes
+pt: Pacotes
+fr: Packs
+ko: 패키지
+ja: パック
+zh: 禮包
+@ Themes
+de: Themen
+es: Temas
+pt: Temas
+fr: Thèmes
+ko: 테마
+ja: テーマ
+zh: 主題
 @ Shop
 de: Shop
 es: Tienda
