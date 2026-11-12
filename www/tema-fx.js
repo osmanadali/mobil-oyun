@@ -3,7 +3,7 @@
 // Dışarıdan: FX.set(id) · FX.step(dt) (önizlemede elle) · FX.win() · FX.auto(true) (gerçek oyunda rAF ile)
 const FX = (() => {
   const PAD_X = 34, PAD_Y = 30;
-  let lastX = null, id = null, cv = null, cx = null, parts = [], rain = [], rcv = null, rcx = null, rainT = 0, t = 0, lastP = 0, raf = 0, dpr = 2;
+  let meltA = 1, fxs = [], melting = false, lastX = null, id = null, cv = null, cx = null, parts = [], rain = [], rcv = null, rcx = null, rainT = 0, t = 0, lastP = 0, raf = 0, dpr = 2;
   let pile = null, landed = [];   // ekran dibi: kar yığını yükseklik haritası (2 px sütun) · yere düşen yapraklar
   const rnd = (a, b) => a + Math.random() * (b - a);
   const THEMES = {
@@ -38,16 +38,17 @@ const FX = (() => {
     return { x0: mv.left - trk.left + PAD_X, x1: mv.right - trk.left + PAD_X, y: PAD_Y + 9, top: PAD_Y + 3, bot: PAD_Y + 15 };
   }
   function set(n) {
-    id = THEMES[n] ? n : null; parts = []; rain = []; landed = []; pile = null; mount();
+    const T = THEMES[n] || window.FX_EXTRA?.[n];
+    id = T ? n : null; parts = []; rain = []; landed = []; fxs = []; pile = null; lastX = null; mount();
     const trip = document.getElementById('gTrip');
-    if (id && THEMES[id].rail) trip.style.setProperty('--line', THEMES[id].rail); else trip.style.removeProperty('--line');
-    ['--tb1', '--tb2', '--tw'].forEach((k, i) => id ? trip.style.setProperty(k, THEMES[id].tb[i]) : trip.style.removeProperty(k));
+    if (T?.rail) trip.style.setProperty('--line', T.rail); else trip.style.removeProperty('--line');
+    ['--tb1', '--tb2', '--tw'].forEach((k, i) => T ? trip.style.setProperty(k, T.tb[i]) : trip.style.removeProperty(k));
   }
 
   // ---------- ❄️ Kar Feneri: rayın üstünde kar örtüsü; tren küreği karı yukarı-ileri savurur, kar tozu bulutu kalkar ----------
   const bankH = x => 3.2 + noise(x / 9) * 2.6 + noise(x / 2.7 + 40) * .8;   // kar örtüsü kalınlığı (px), şerit x'ine bağlı
   function snowBank(c, B, W) {
-    const x0 = B.x1 + 1, x1 = PAD_X + W - 44;
+    const x0 = B.x1 + 1, x1 = PAD_X + W;   // peron dahil sonuna dek
     if (x1 <= x0 + 2) return;
     const g = c.createLinearGradient(0, B.y - 7, 0, B.y + 3);
     g.addColorStop(0, '#ffffff'); g.addColorStop(.55, '#e6f1fb'); g.addColorStop(1, '#b9cde3');
@@ -70,7 +71,7 @@ const FX = (() => {
     c.fillStyle = g; c.beginPath(); c.moveTo(x + 3, B.y - 1); c.lineTo(x + 34, B.y - 9); c.lineTo(x + 34, B.y + 4); c.closePath(); c.fill();
   }
   function emitSnow(B, speed, dt) {
-    const rate = speed > .02 ? 40 + speed * 12 : 0;   // tren durunca savrulma da durur
+    const rate = speed > .02 ? 36 + speed * 11 : 0;   // tren durunca savrulma da durur
     let n = rate * dt; while (n > 0) { if (n < 1 && Math.random() > n) break; n--;
       const big = Math.random() < .25;
       parts.push({ k: 'snow', x: B.x1 + rnd(1, 4), y: B.y - rnd(2, 7), vx: rnd(55, 115), vy: -rnd(28, 70), r: big ? rnd(.9, 1.5) : rnd(.35, .8), life: 0, max: rnd(.9, 1.6) });
@@ -86,7 +87,8 @@ const FX = (() => {
   function stepParts(dt, B) {
     for (const p of parts) {
       p.life += dt;
-      if (p.k === 'snow') {
+      if (p.st) p.st(p, dt);
+      else if (p.k === 'snow') {
         p.vy += 260 * dt; p.vx *= Math.pow(.5, dt); p.x += p.vx * dt; p.y += p.vy * dt;
         const ground = B.y + .5 - bankH(p.x);   // örtüye düşen tane örtüye karışır
         if (p.vy > 0 && p.y >= ground && p.x > B.x1) p.life = p.max;
@@ -103,7 +105,8 @@ const FX = (() => {
   function drawParts(c) {
     for (const p of parts) {
       const f = 1 - p.life / p.max;
-      if (p.k === 'mist') {
+      if (p.dr) { c.save(); p.dr(c, p, f); c.restore(); }
+      else if (p.k === 'mist') {
         const g = c.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
         g.addColorStop(0, `rgba(240,248,255,${.28 * f})`); g.addColorStop(1, 'rgba(240,248,255,0)');
         c.fillStyle = g; c.beginPath(); c.arc(p.x, p.y, p.r, 0, 6.283); c.fill();
@@ -135,17 +138,21 @@ const FX = (() => {
     c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, cv.width, cv.height);
     if (id === 'kis') { snowBank(c, B, W); emitSnow(B, speed, dt); }
     if (id === 'erguvan') { railPetals(c, B); emitPetal(B, speed); }
+    const X = window.FX_EXTRA?.[id];
+    if (X) X.under?.(c, B, W, t, speed, dt, parts);
     stepParts(dt, B); drawParts(c);
     if (id === 'kis') plow(c, B);
+    if (X) X.over?.(c, B, W, t, speed);
     renderRain(dt);
   }
 
   // ---------- bölüm bitince: ekrana yağar, dipte birikir (kar yığılır, yapraklar halı olur) ----------
   function win() {
-    if (!id) return; mount(); size(); rainT = 4.2; rain = [];
+    if (!id) return; mount(); size(); rainT = 4.2; rain = []; melting = false;
     if (!pile) pile = new Float32Array(Math.ceil(innerWidth / 2) + 2);
+    const X = window.FX_EXTRA?.[id]; if (X) { fxs = X.win(innerWidth, innerHeight) || []; return; }
     const P = THEMES.erguvan?.petals;
-    const n = id === 'kis' ? 260 : 110;
+    const n = id === 'kis' ? 234 : 110;
     for (let i = 0; i < n; i++) {
       const z = Math.random();   // derinlik: 0 uzak (küçük, yavaş, soluk) · 1 yakın
       rain.push(id === 'kis'
@@ -198,9 +205,14 @@ const FX = (() => {
         c.restore();
       }
     }
+    for (const q of fxs) { if (q.done) continue; c.save(); if (q.st(q, dt, c, rainT > 0) === false) q.done = 1; c.restore(); }
+    for (const q of fxs) if (q.done === 1 && q.land) { landed.push(q.land); q.done = 2; }
+    if (melting) { if (pile) for (let i = 0; i < pile.length; i++) pile[i] *= Math.pow(.3, dt); meltA = Math.max(0, meltA - dt / 2.5); if (meltA <= 0) { landed = []; pile = null; melting = false; } }
+    c.globalAlpha = melting ? meltA : 1;
     drawPile(c);
     for (const l of landed) {   // dipte yatan yapraklar (yassı, üst üste)
-      c.save(); c.translate(l.x, l.y); c.rotate(l.a); c.scale(1, .55); c.globalAlpha = .92; c.fillStyle = l.col;
+      if (l.dr) { c.save(); l.dr(c, l); c.restore(); continue; }
+      c.save(); c.translate(l.x, l.y); c.rotate(l.a); c.scale(1, .55); c.globalAlpha *= .92; c.fillStyle = l.col;
       c.beginPath(); c.moveTo(-l.w, 0); c.quadraticCurveTo(0, -l.h * 1.6, l.w, 0); c.quadraticCurveTo(0, l.h * 1.1, -l.w, 0); c.fill();
       c.restore();
     }
@@ -212,5 +224,7 @@ const FX = (() => {
     const loop = now => { render(Math.min(.05, (now - last) / 1000)); last = now; raf = requestAnimationFrame(loop); };
     raf = requestAnimationFrame(loop);
   }
-  return { set, step: render, win, auto };
+  // sonraki bölüm başlarken: dipteki kar/yaprak/şeker 2,5 sn'de yavaşça erir
+  function melt() { if (pile || landed.length) { melting = true; meltA = 1; } rainT = 0; rain = []; fxs = []; }
+  return { set, step: render, win, auto, melt, rnd, hash, noise, glow: null };
 })();

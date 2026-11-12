@@ -180,6 +180,8 @@ const SKINS = [
   { id: 'hazan', sea: '🍂', name: L('Hazan', 'Harvest'), lines: ['#ff9a3d', '#e0663f', '#ffd166', '#b5895a', '#f7b267', '#8fb36b'], acc: ['#ff9a3d', '#e0663f'], glow: ['#d9622b', '#7a3418', '#ffb347'] },
   { id: 'fener', sea: '🌙', name: L('Bayram Fenerleri', 'Eid Lanterns'), lines: ['#ffd36b', '#4fd1c5', '#c39bff', '#ff9fb2', '#7fd0ff', '#f7b267'], acc: ['#ffd36b', '#4fd1c5'], glow: ['#b8862b', '#147d7a', '#7b4bff'] },
   { id: 'kurban', sea: '🌤', name: L('Bayram Sabahı', 'Eid Morning'), lines: ['#8fe388', '#ffd6a5', '#6ec6ff', '#ffb38a', '#c9f2a0', '#a8b8ff'], acc: ['#8fe388', '#6ec6ff'], glow: ['#3f9f5f', '#ffb36b', '#3a7bd5'] },
+  { id: 'cadi', sea: '🎃', name: L('Cadılar Bayramı', 'Halloween'), lines: ['#ff9a3d', '#9b6bff', '#7dffb0', '#ffcf6b', '#ff5c8a', '#c3a6ff'], acc: ['#ff9a3d', '#9b6bff'], glow: ['#c2560f', '#5b2d86', '#2f9e6e'] },
+  { id: 'ayyili', sea: '🐉', name: L('Ay Yeni Yılı', 'Lunar New Year'), lines: ['#ff4d4d', '#ffcf4d', '#ff9a3d', '#ffe8a3', '#e63232', '#f4b400'], acc: ['#ff4d4d', '#ffcf4d'], glow: ['#b81d1d', '#c98a00', '#c2560f'] },
 ];
 const crownCount = () => Object.keys(save.crowns).length + (save.dCrowns || 0) + (save.fc || 0) + (save.cc || 0) + (save.qc || 0) + (save.dqc || 0) + (save.aCrowns || 0) + (save.dt || 0);   // toplam kazanılan 🎫 (bölüm + günlük kusursuz + final + seri bonusu + haftalık görev + arşiv + Günün Hattı bitişi)
 const crownBal = () => crownCount() + (save.bCrowns || 0) - (save.spent || 0);       // harcanabilir bakiye (satın alınan 🎫 dahil)
@@ -2624,10 +2626,11 @@ App?.addListener?.('backButton', () => {
 // ---------- meta: şehir haritası · rozetler · mevsim temaları (zen modu: start/tick/win içinde G.zen) · BOLUM_TASARIMI §10 ----------
 const nowD = () => window.__rayDate ? new Date(window.__rayDate) : new Date();   // robot tarihi değiştirebilsin
 // Mevsim pencereleri (ay·gün, uçlar dahil). Bayramlar Diyanet takvimiyle (Ümmü'l-Kurâ hesabıyla aynı gün): ilk gün −2 … +6.
-const SEASON = { kis: [1201, 131], erguvan: [320, 520], yaz: [615, 831], hazan: [1001, 1130] };
+const SEASON = { kis: [1201, 131], erguvan: [320, 520], yaz: [615, 831], hazan: [1001, 1130], cadi: [1025, 1101] };
 const BAYRAM = {
   fener: ['2026-03-20', '2027-03-09', '2028-02-26', '2029-02-14', '2030-02-04', '2031-01-24', '2032-01-14', '2033-01-03', '2033-12-23', '2034-12-12', '2035-12-01'],   // Ramazan Bayramı
   kurban: ['2026-05-27', '2027-05-16', '2028-05-05', '2029-04-24', '2030-04-13', '2031-04-02', '2032-03-22', '2033-03-12', '2034-03-01', '2035-02-19'],               // Kurban Bayramı
+  ayyili: ['2027-02-06', '2028-01-26', '2029-02-13', '2030-02-03', '2031-01-23', '2032-02-11', '2033-01-31', '2034-02-19', '2035-02-08'],   // Ay Yeni Yılı (Çin takvimi)
 };
 function seaWin(id, d = nowD()) {   // bugün mevsimindeyse [başlangıç, bitiş], değilse null
   const day = new Date(d.getFullYear(), d.getMonth(), d.getDate()), y = day.getFullYear();
