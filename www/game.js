@@ -743,8 +743,9 @@ const bind = binds => { for (const [id, fn] of Object.entries(binds)) { const el
 // center: ekranın ortasında küçük pencere (duraklat); öteki pencereler alttan açılır
 function modal(html, binds = {}, locked = false, center = false) {
   mLocked = locked; howBack = null; mOnClose = null; $('modal').classList.toggle('center', center);
-  const sh = $('mCard'); sh.innerHTML = html; sh.scrollTop = 0; $('modal').classList.add('open');
-  sh.classList.toggle('fit', sh.scrollHeight <= sh.clientHeight + 1);   // sığan pencere: her yerinden aşağı çekilebilir
+  const sh = $('mCard'), full = html.includes('class="tabs"'); sh.innerHTML = html; sh.scrollTop = 0; $('modal').classList.add('open');
+  sh.classList.toggle('full', full);   // sekmeli Mağaza: iki sekme de tam boy, hep ✕ (sekme değişince pencere zıplamaz)
+  sh.classList.toggle('fit', !full && sh.scrollHeight <= sh.clientHeight + 1);   // sığan pencere: her yerinden aşağı çekilebilir
   // uzun (kaydırılan) pencere: köşede ✕ — aşağı çekmek kaydırmayla karışabiliyor (temalar, sandık, mağaza)
   if (!locked && !sh.classList.contains('fit')) sh.insertAdjacentHTML('afterbegin', `<button class="mx" id="mX" aria-label="${L('Kapat', 'Close')}">✕</button>`);
   bind({ mX: closeModal, ...binds });
