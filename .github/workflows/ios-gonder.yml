@@ -7,6 +7,7 @@ on:
       version: { description: 'Sürüm (ör. 1.1)', type: string, default: '1.1' }
       build: { description: 'Yapı numarası (ör. 10)', type: string, required: true }
       apply: { description: 'Gönder (false = yalnız denetim)', type: boolean, default: false }
+      replace: { description: 'İncelemedeki gönderimi geri çekip bu yapıyla yeniden gönder', type: boolean, default: false }
 permissions: { contents: read }
 jobs:
   gonder:
@@ -23,6 +24,7 @@ jobs:
           VERSION: ${{ inputs.version }}
           BUILD: ${{ inputs.build }}
           APPLY: ${{ inputs.apply && '1' || '0' }}
+          REPLACE: ${{ inputs.replace && '1' || '0' }}
         run: |
           echo "$P8" | base64 -d > "$RUNNER_TEMP/AuthKey.p8"
           AUTHKEY="$RUNNER_TEMP/AuthKey.p8" node tools/ios/gonder.cjs
