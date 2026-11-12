@@ -675,3 +675,6 @@ body.introing .screen *{animation-play-state:paused!important}
 @keyframes aGift{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-5px) rotate(4deg)}}
 .news{list-style:none;margin:2px 0 6px;padding:0;display:flex;flex-direction:column;gap:7px;text-align:left}
 .news li{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.35;color:var(--mut)}.news li i{font-style:normal;font-size:16px;flex:none;width:20px;text-align:center}
+/* 🎨 ilk temaya ilerleme (kazanma panelinde) */
+.tip.goal{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 8px;color:var(--fg)}.tip.goal b{font-weight:700}
+.gbar{display:inline-block;width:90px;height:7px;border-radius:9px;background:var(--glass2);overflow:hidden;vertical-align:middle}.gbar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#ffcf5c,#ff8a6b);transition:width .8s cubic-bezier(.2,.8,.2,1)}

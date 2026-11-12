@@ -1312,3 +1312,75 @@ fr: Plus de temps sur les premières lignes ; sur les deux premières, le chrono
 ko: 처음 노선들은 시간이 더 넉넉해요. 처음 두 노선에서는 시간이 지나도 생명이 줄지 않아요
 ja: 最初の路線は時間に余裕が。最初の2路線では時間切れでライフが減りません
 zh: 前幾條路線時間更寬裕；前兩條路線超時不扣生命
+@ Great!
+de: Klasse!
+es: ¡Genial!
+pt: Ótimo!
+fr: Génial !
+ko: 훌륭해요!
+ja: いいね！
+zh: 太棒了！
+@ Super!
+de: Super!
+es: ¡Súper!
+pt: Super!
+fr: Super !
+ko: 최고예요!
+ja: すごい！
+zh: 超讚！
+@ Bravo!
+de: Bravo!
+es: ¡Bravo!
+pt: Bravo!
+fr: Bravo !
+ko: 브라보!
+ja: ブラボー！
+zh: 好樣的！
+@ Spot on!
+de: Volltreffer!
+es: ¡En el blanco!
+pt: Na mosca!
+fr: Dans le mille !
+ko: 정확해요!
+ja: ドンピシャ！
+zh: 正中紅心！
+@ Brilliant!
+de: Brillant!
+es: ¡Brillante!
+pt: Brilhante!
+fr: Brillant !
+ko: 눈부셔요!
+ja: 見事！
+zh: 太精彩了！
+@ Awesome!
+de: Großartig!
+es: ¡Increíble!
+pt: Incrível!
+fr: Formidable !
+ko: 대단해요!
+ja: 最高！
+zh: 太厲害了！
+@ Legendary!
+de: Legendär!
+es: ¡Legendario!
+pt: Lendário!
+fr: Légendaire !
+ko: 전설이에요!
+ja: 伝説級！
+zh: 傳奇！
+@ {0} theme unlocked!
+de: Thema {0} freigeschaltet!
+es: ¡Tema {0} desbloqueado!
+pt: Tema {0} liberado!
+fr: Thème {0} débloqué !
+ko: {0} 테마를 열 수 있어요!
+ja: {0}テーマが解放！
+zh: {0} 主題已解鎖！
+@ First theme: {0}
+de: Erstes Thema: {0}
+es: Primer tema: {0}
+pt: Primeiro tema: {0}
+fr: Premier thème : {0}
+ko: 첫 테마: {0}
+ja: 最初のテーマ：{0}
+zh: 第一個主題：{0}

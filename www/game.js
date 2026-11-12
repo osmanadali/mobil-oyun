@@ -528,8 +528,36 @@ function puzzleFor(l) {
     if (breath(l)) boost = 0;   // mola: kural payı yok, hedef aşağıda yarıya yakın
     // hat finali (SON DURAK): hedef +2 puan, en çok aday taranır · zorluk paylı bölümde de geniş tarama
     const P = pick(c, r, l * 7919 + 13, 0, pairs, z, (intro ? 3 : 5) + 11 * z * (breath(l) ? .55 : 1) + (fin ? 2 : 0) + boost, x, fin ? Math.max(32, scan) : boost ? Math.max(24, 6 + Math.round(26 * z), scan) : undefined);
-    P.fog = U.has('fog'); P.final = fin; P.rules = [...U]; P.breath = breath(l); return P;
+    P.fog = U.has('fog'); P.final = fin; P.rules = [...U]; P.breath = breath(l);
+    if (l <= SOFT.length) soften(P, SOFT[l - 1], l);
+    return P;
   });
+}
+// 🎉 kazanma başlığı: kusursuzda (ve ilk 10 bölümde her galibiyette) dönen övgü; seri uzadıkça coşkusu artar
+const PRAISE = () => L(['Harika!', 'Süper!', 'Bravo!', 'Tam isabet!', 'Muhteşem!', 'Şahane!', 'Efsane!'], ['Great!', 'Super!', 'Bravo!', 'Spot on!', 'Brilliant!', 'Awesome!', 'Legendary!']);
+function praise(g, perfect) {
+  if (g.daily || !(perfect || g.lvl <= SOFT.length)) return L('Hat açıldı!', 'Connected!');
+  const P = PRAISE(), c = save.combo || 0;
+  return c >= 5 ? P[6] : c >= 3 ? P[4 + (g.lvl % 2)] : P[g.lvl % 4];
+}
+// 🎨 hiç tema almamış oyuncuya ilk temaya kalan yol (hedefe yaklaşma hissi): kusursuz bitişte "Kusursuz için" satırının yerine
+function firstThemeGoal() {
+  if ((save.spent || 0) > 0 || save.allThemes) return '';
+  const nx = SKINS.filter(k => !k.vip && !k.sea && !skinOpen(k)).sort((a, b) => a.need - b.need)[0]; if (!nx) return '';
+  const b = crownBal(), n = Math.min(b, nx.need);
+  return `<p class="tip goal"><b>🎨 ${b >= nx.need ? L(`${nx.name} teması alınabilir!`, `${nx.name} theme unlocked!`) : L(`İlk tema: ${nx.name}`, `First theme: ${nx.name}`)}</b> <span class="gbar"><i style="width:${Math.round(n / nx.need * 100)}%"></i></span> 🎫 ${n} / ${nx.need}</p>`;
+}
+// 🐣 yumuşak başlangıç (12 Kasım, "ilk bölümler zor"): ilk 10 bölümde yalnız birkaç karo dönmüş başlar, her bölümde biraz artar.
+// Oyuncu ilk dakikada "aa, böyle oynanıyor" der, ilk zaferler hızlı ve kusursuz gelir (🎫 → ilk tema erken açılır).
+// Hangi karoların karışık kalacağı bölüm numarasıyla belirlenir (herkeste aynı); kalanlar çözüm yönünde başlar.
+const SOFT = [3, 4, 4, 5, 6, 7, 8, 9, 11, 12];
+function soften(P, k, l) {
+  if (P.units || P.link?.some(j => j >= 0)) return;
+  const R = rng(l * 7349 + 17), mixed = []; P.cur.forEach((v, i) => { if (v !== P.sol[i]) mixed.push(i); });
+  while (mixed.length > k) { const i = mixed.splice(R() * mixed.length | 0, 1)[0]; P.cur[i] = P.sol[i]; }
+  let par = 0, taps = 0;
+  for (const i of mixed) { let r = 0, t = P.cur[i]; const step = P.rev?.[i] ? unrot : rot; while (t !== P.sol[i] && r < 4) { t = step(t); r++; } taps += r; if (r) par++; }
+  P.par = par; P.taps = taps; P.diff = difficulty(P);
 }
 // Haftanın kuralı: pazar günkü Günün Hattı o haftanın kuralını taşır (erken kurallardan, haftaya göre döner; listede olup
 // henüz tanımlı olmayan kural atlanır). Pazartesi–cumartesi kuralsız ve bit bit eskisi gibi; herkeste aynı.
@@ -593,8 +621,9 @@ function limits(P) {
   // ↻ hamle payı: par'ın %30'u (küçük ızgara) – %40'ı (7×9); z %30'dan sonra yavaşça %60'ına iner → 1–200 ≈ par × 1,3–1,4, sonsuzda ≈ × 1,2 (en az +2)
   // ⏱ süre: ¾ × (dokunuş başına 1,3 sn + karo başına ,5 sn + zor bölüme düşünme payı: puanın 8'i aşan her birimi +3 sn), en az 11 sn
   // 🐣 öğrenme rampası (12 Kasım, "herkes çok zor dedi"): ilk hatlarda ⏱ payı geniş — M1 × 1,6 · M2 × 1,45 · M3 × 1,3 · M4 × 1,15 · M5+ × 1 (Günün Hattı herkes için aynı: × 1)
-  const tight = 1 - .4 * Math.max(0, ((P.z || 0) - .3) / .7), ramp = P.daily || !P.lvl ? 1 : Math.max(1, 1.6 - .15 * lineOf(P.lvl));
-  return { m: P.par + Math.max(2, Math.round(P.par * moveTol(P.cur.length) * tight)), t: Math.max(11, Math.round(ramp * .75 * (P.taps * 1.3 + P.cur.length * .5 + Math.max(0, (P.diff || 0) - 8) * 3))) };
+  // ↻ hamle payı da rampalı: M1 ×2,6 · M2 ×2,2 · M3 ×1,8 · M4 ×1,4 · M5+ eskisi (yeni oyuncu dener, gidip gelir; yine 3 ★ alabilsin)
+  const tight = 1 - .4 * Math.max(0, ((P.z || 0) - .3) / .7), early = !P.daily && P.lvl, ramp = early ? Math.max(1, 1.6 - .15 * lineOf(P.lvl)) : 1, mr = early ? Math.max(1, 2.6 - .4 * lineOf(P.lvl)) : 1;
+  return { m: P.par + Math.max(mr > 1 ? 3 : 2, Math.round(P.par * moveTol(P.cur.length) * tight * mr)), t: Math.max(11, Math.round(ramp * .75 * (P.taps * 1.3 + P.cur.length * .5 + Math.max(0, (P.diff || 0) - 8) * 3))) };
 }
 const timeOk = sec => Math.floor(sec) <= G.lim.t;   // ekranda görünen saniyeyle (küsurat atılır) karar verilir: 0:17 / 0:17 → vaktinde
 // 🚉 son süre: yıldız süresi + 20 sn (BOLUM_TASARIMI › Can). Dolunca bölüm başarısız, 1 ❤️ gider.
@@ -1416,7 +1445,7 @@ function winSheet(g, { zen, st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, 
   const badge = unlockedNow ? `<span class="badge">${L('YENİ HAT AÇILDI', 'NEW LINE OPEN')} · M${unlockedNow + 1}</span>` : ns ? `<span class="badge">${L('TEMA ALINABİLİR', 'NEW THEME')} 🎨</span>` : perfect ? `<span class="badge">${L('KUSURSUZ', 'PERFECT')}${combo >= 2 ? ` · ✨${combo}` : ''}</span>` : zen ? '<span class="badge">🍃 ZEN</span>' : '';
   const late = Math.floor(g.time / 1000) - lim.t, over = g.moves - lim.m;
   const miss = [tOk ? '' : `⏱ ${late} ${L('sn', 's')}`, mOk ? '' : over > 0 ? `↻ ${over} ${L('hamle', pl(over, 'move', 'moves'))}` : L('⏳ son sefer', '⏳ timed station')].filter(Boolean).join(' · ');
-  const tip = perfect || zen ? '' : `<p class="tip">${L('Kusursuz için', 'For perfect')}: ${[tOk ? '' : `⏱ ≤ ${fmtT(lim.t * 1000)}`, mOk ? '' : over > 0 ? `↻ ≤ ${lim.m} ${L('hamle', 'moves')}` : L('⏳ saatli durağa yetiş', '⏳ reach the timed station')].filter(Boolean).join(L(' ve ', ' and '))}</p>`;
+  const goal = firstThemeGoal(), tip = goal && (perfect || zen) ? goal : perfect || zen ? '' : `<p class="tip">${L('Kusursuz için', 'For perfect')}: ${[tOk ? '' : `⏱ ≤ ${fmtT(lim.t * 1000)}`, mOk ? '' : over > 0 ? `↻ ≤ ${lim.m} ${L('hamle', 'moves')}` : L('⏳ saatli durağa yetiş', '⏳ reach the timed station')].filter(Boolean).join(L(' ve ', ' and '))}</p>`;
   const B = { close: L('Kıl payı', 'So close') };
   // geçiş reklamı sırası gelmişse: Sonraki'den önce tek, sessiz bir bağlantı (reklamsız paketi olana hiç çıkmaz)
   const pr = Shop.price(), adFree = !g.daily && interDue && !save.noAds ? `<p class="adfree"><button id="mAdFree">${pr ? L(`Reklamsız oyna · ${pr}`, `Play ad-free · ${pr}`) : L('Reklamsız oyna', 'Play ad-free')}</button></p>` : '';
@@ -1428,7 +1457,7 @@ function winSheet(g, { zen, st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, 
       ? `<button id="mRetry" class="btn primary"><span>${L('Tekrar dene', 'Try again')}</span><small>${broke >= 2 ? `${near ? B.close + ' · ' : ''}${L(`✨ ${broke} seri geri gelsin`, `✨ Win back your ${broke} streak`)}` : `${B.close} · ${miss}`}</small></button>
        <div class="row2">${nxLocked ? `<button id="mMap" class="btn glassbtn">${L('Hatlar', 'Lines')}</button>` : `<button id="mNext" class="btn glassbtn">${L('Sonraki', 'Next')}</button>`}</div>`
       : nxLocked ? `<button id="mMap" class="btn primary"><span>${L('Yeni hat kilitli', 'Next line locked')}</span><small>★ ${totalStars()} / ${need(lineOf(nx))} · ${L('yıldız topla', 'earn stars')}</small></button>` : `<button id="mNext" class="btn primary"><span>${L('Sonraki', 'Next')}</span><small>${L('Bölüm', 'Level')} ${nx}</small></button>`;
-  $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml([true, tOk, mOk])}<div class="wp-t"><h2>${g.arch ? L('Geçmiş gün tamam!', 'Past day done!') : g.practice ? L('Pratik tamam!', 'Practice done!') : g.daily ? L('Günün Hattı tamam!', 'Daily Line done!') : L('Hat açıldı!', 'Connected!')}</h2>${badge}</div></div></div>
+  $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml([true, tOk, mOk])}<div class="wp-t"><h2>${g.arch ? L('Geçmiş gün tamam!', 'Past day done!') : g.practice ? L('Pratik tamam!', 'Practice done!') : g.daily ? L('Günün Hattı tamam!', 'Daily Line done!') : praise(g, perfect)}</h2>${badge}</div></div></div>
     <div class="wp-more">${zen ? `<div class="statrow"><div><b>${fmtT(g.time)}</b><span>⏱ ${L('süre', 'time')}</span></div><div><b>${g.moves}</b><span>↻ ${L('hamle', 'moves')}</span></div></div>` : `<div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(lim.t * 1000)}</small></b><span>${tOk ? L('⏱ tam vaktinde ★', '⏱ on time ★') : L('⏱ rötar ✗', '⏱ late ✗')}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${lim.m}</small></b><span>↻ ${L('hamle', 'moves')} ${mOk ? '★' : '✗'}</span></div></div>`}${tip}${extra ? `<p class="tip">${extra}${dbl && Ads.online() ? ` <button id="mDbl" class="dbl">${L('▶ 2 katı', '▶ Double')}</button>` : ''}</p>` : ''}${adFree}</div>
     ${primary}`;
   $('game').classList.add('won'); $('bBack').setAttribute('aria-label', L('Ana sayfa', 'Home'));
