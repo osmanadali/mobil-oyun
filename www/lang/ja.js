@@ -251,6 +251,7 @@ window.RAY_DICT={
 "Mint":"ミント",
 "Mom texted “where are you” 📱":"母から「どこにいるの」ってメッセージ 📱",
 "Mon":"月",
+"More time on the first lines; no lives lost to the clock on the first two":"最初の路線は時間に余裕が。最初の2路線では時間切れでライフが減りません",
 "More videos to go":"動画はまだあります",
 "Move progress":"データ引き継ぎ",
 "Music":"音楽",

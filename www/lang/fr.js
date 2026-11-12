@@ -251,6 +251,7 @@ window.RAY_DICT={
 "Mint":"Menthe",
 "Mom texted “where are you” 📱":"Maman a écrit « t’es où ? » 📱",
 "Mon":"Lun",
+"More time on the first lines; no lives lost to the clock on the first two":"Plus de temps sur les premières lignes ; sur les deux premières, le chrono ne coûte pas de vie",
 "More videos to go":"Encore des vidéos",
 "Move progress":"Transférer la partie",
 "Music":"Musique",

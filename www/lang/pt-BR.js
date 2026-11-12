@@ -251,6 +251,7 @@ window.RAY_DICT={
 "Mint":"Menta",
 "Mom texted “where are you” 📱":"Minha mãe mandou “cadê você?” 📱",
 "Mon":"Seg",
+"More time on the first lines; no lives lost to the clock on the first two":"Mais tempo nas primeiras linhas; nas duas primeiras o relógio não tira vidas",
 "More videos to go":"Faltam mais vídeos",
 "Move progress":"Transferir progresso",
 "Music":"Música",

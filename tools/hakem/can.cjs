@@ -9,7 +9,7 @@ module.exports = async T => {
     LS = await page.evaluate(() => Array.from({ length: 4 }, (_, c) => window.__ray.lineStart(c)));
     await ctx.close();
   }
-  const level = LS[1] + 2;
+  const level = LS[2] + 2;   // M3: ilk iki hatta (CALM_LINES) son süre yok, bu yüzden üçüncü hattan
   const stars = Object.fromEntries(Array.from({ length: level - 1 }, (_, k) => [k + 1, 3]));
   const base = { played: 60, level, stars, remindAsked: true, seen: Object.fromEntries(Array.from({ length: 40 }, (_, k) => [k, 1])) };
   const go = async x => {

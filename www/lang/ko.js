@@ -251,6 +251,7 @@ window.RAY_DICT={
 "Mint":"민트",
 "Mom texted “where are you” 📱":"엄마한테 \"어디야\" 문자 왔다 📱",
 "Mon":"월",
+"More time on the first lines; no lives lost to the clock on the first two":"처음 노선들은 시간이 더 넉넉해요. 처음 두 노선에서는 시간이 지나도 생명이 줄지 않아요",
 "More videos to go":"영상이 더 남았어요",
 "Move progress":"진행 상황 옮기기",
 "Music":"음악",

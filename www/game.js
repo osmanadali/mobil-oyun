@@ -592,12 +592,13 @@ const moveTol = n => .3 + .1 * Math.min(1, Math.max(0, (n - 9) / 54));
 function limits(P) {
   // ↻ hamle payı: par'ın %30'u (küçük ızgara) – %40'ı (7×9); z %30'dan sonra yavaşça %60'ına iner → 1–200 ≈ par × 1,3–1,4, sonsuzda ≈ × 1,2 (en az +2)
   // ⏱ süre: ¾ × (dokunuş başına 1,3 sn + karo başına ,5 sn + zor bölüme düşünme payı: puanın 8'i aşan her birimi +3 sn), en az 11 sn
-  const tight = 1 - .4 * Math.max(0, ((P.z || 0) - .3) / .7);
-  return { m: P.par + Math.max(2, Math.round(P.par * moveTol(P.cur.length) * tight)), t: Math.max(11, Math.round(.75 * (P.taps * 1.3 + P.cur.length * .5 + Math.max(0, (P.diff || 0) - 8) * 3))) };
+  // 🐣 öğrenme rampası (12 Kasım, "herkes çok zor dedi"): ilk hatlarda ⏱ payı geniş — M1 × 1,6 · M2 × 1,45 · M3 × 1,3 · M4 × 1,15 · M5+ × 1 (Günün Hattı herkes için aynı: × 1)
+  const tight = 1 - .4 * Math.max(0, ((P.z || 0) - .3) / .7), ramp = P.daily || !P.lvl ? 1 : Math.max(1, 1.6 - .15 * lineOf(P.lvl));
+  return { m: P.par + Math.max(2, Math.round(P.par * moveTol(P.cur.length) * tight)), t: Math.max(11, Math.round(ramp * .75 * (P.taps * 1.3 + P.cur.length * .5 + Math.max(0, (P.diff || 0) - 8) * 3))) };
 }
 const timeOk = sec => Math.floor(sec) <= G.lim.t;   // ekranda görünen saniyeyle (küsurat atılır) karar verilir: 0:17 / 0:17 → vaktinde
 // 🚉 son süre: yıldız süresi + 20 sn (BOLUM_TASARIMI › Can). Dolunca bölüm başarısız, 1 ❤️ gider.
-const lastCall = t => t + 20;
+const lastCall = t => t + 20, CALM_LINES = 2;   // CALM_LINES: ilk iki hatta (M1, M2) son süre yok (öğrenen oyuncu can kaybetmesin)
 const movesOk = () => G.moves <= G.lim.m && !G.mLost;   // G.mLost: eklenti ↻ yıldızını söndürdü (son sefer kaçtı; bildirim metni)
 
 // ---------- ses / dokunsal ----------
@@ -906,7 +907,7 @@ function start(mode, lvl = save.level) {
   if (!daily && !save.zen && !infOn() && lives() <= 0 && save.runs.level?.lvl !== lvl) { if (active('game')) show('home'); lifePop(lvl); return; }
   G = { ...(daily ? dailyFor(day) : puzzleFor(lvl)), daily, arch, lvl: daily ? 0 : lvl, day: daily ? day : null, practice: arch ? archPlayed(day) : daily && save.dailyDone === day, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0, bub: 0 };
   G.lim = limits(G); G.zen = !!save.zen && !daily;
-  G.lim.dl = G.zen || daily ? 0 : lastCall(G.lim.t);   // son süre (0: yok)   // 🍃 zen: hedefler gizli (Günün Hattı herkes için aynı koşulda)
+  G.lim.dl = G.zen || daily || lineOf(lvl) < CALM_LINES ? 0 : lastCall(G.lim.t);   // son süre (0: yok) · ilk iki hatta yok: süre geçince yalnız ⏱ yıldızı kaçar, can gitmez   // 🍃 zen: hedefler gizli (Günün Hattı herkes için aynı koşulda)
   $('game').classList.toggle('zen', G.zen); $('game').querySelector('.status').dataset.zen = L('🍃 Zen', '🍃 Zen');
   // yarım kalan oyunu sürdür
   const run = save.runs[arch ? 'arch' : daily ? 'daily' : 'level'];
@@ -1925,6 +1926,7 @@ function maybeGift() {
   modal(`<div class="gift"><i>🎁</i></div><h2>${L('Güncelleme hediyesi', 'Update gift')}</h2>
     <p>${L(`Ray'i oynadığın için teşekkürler! Hesabına <b>${GIFT_HINTS} ipucu</b> eklendi.`, `Thanks for playing Ray! <b>${GIFT_HINTS} hints</b> were added to your account.`)}</p>
     <ul class="news">
+      <li><i>🐣</i>${L('İlk hatlarda daha çok süre; ilk iki hatta süre bitince can gitmez', 'More time on the first lines; no lives lost to the clock on the first two')}</li>
       <li><i>⏱</i>${L('Süre artık ekranda gördüğün saniyeyle ölçülür: 0:17 / 0:17 vaktinde sayılır', 'Time is now judged by the seconds you see: 0:17 / 0:17 counts as on time')}</li>
       <li><i>🛍️</i>${L('Mağaza ana ekranda, temalar mağazanın içinde', 'The shop is on the home screen, themes are inside it')}</li>
       <li><i>📱</i>${L('iPad ve tabletlerde tam ekran', 'Full screen on iPad and tablets')}</li>

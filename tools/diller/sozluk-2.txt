@@ -1304,3 +1304,11 @@ fr: Merci
 ko: 고마워요
 ja: ありがとう
 zh: 謝謝
+@ More time on the first lines; no lives lost to the clock on the first two
+de: Mehr Zeit auf den ersten Linien; auf den ersten beiden kostet die Uhr keine Leben
+es: Más tiempo en las primeras líneas; en las dos primeras el reloj no quita vidas
+pt: Mais tempo nas primeiras linhas; nas duas primeiras o relógio não tira vidas
+fr: Plus de temps sur les premières lignes ; sur les deux premières, le chrono ne coûte pas de vie
+ko: 처음 노선들은 시간이 더 넉넉해요. 처음 두 노선에서는 시간이 지나도 생명이 줄지 않아요
+ja: 最初の路線は時間に余裕が。最初の2路線では時間切れでライフが減りません
+zh: 前幾條路線時間更寬裕；前兩條路線超時不扣生命

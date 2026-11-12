@@ -251,6 +251,7 @@ window.RAY_DICT={
 "Mint":"薄荷",
 "Mom texted “where are you” 📱":"媽媽傳訊息問「你在哪」📱",
 "Mon":"一",
+"More time on the first lines; no lives lost to the clock on the first two":"前幾條路線時間更寬裕；前兩條路線超時不扣生命",
 "More videos to go":"還有影片要看",
 "Move progress":"轉移進度",
 "Music":"音樂",
