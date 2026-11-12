@@ -654,3 +654,4 @@ body.introing .screen *{animation-play-state:paused!important}
 .pk-crown{background:linear-gradient(160deg,rgba(255,214,107,.2),transparent 60%),var(--glass)}
 .pk-themes{background:linear-gradient(160deg,rgba(122,167,255,.2),transparent 60%),var(--glass)}
 .pk-starter.sq{background:linear-gradient(160deg,rgba(255,143,163,.28),rgba(240,99,122,.08) 70%),var(--glass)}
+.inv .it.wide .sw{flex-wrap:wrap;max-width:100%}@media (max-width:350px){.feat small{display:none}.feat{padding:9px 8px}}
