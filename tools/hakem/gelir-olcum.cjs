@@ -36,7 +36,7 @@ module.exports = async T => {
   const base = { played: 5, level: 3, stars: starsUpTo(3), remindAsked: true };
   const iap = page => G(page, () => window.__iap);
   const storeRows = page => G(page, () => [...document.querySelectorAll('#store [data-p]')].map(b => ({ k: b.dataset.p, t: b.textContent.replace(/\s+/g, ' ').trim(), r: b.getBoundingClientRect().right })));
-  async function openStore(page) { if (await G(page, () => document.getElementById('modal').classList.contains('open'))) { await page.click('#mClose'); await wait(page); } await page.click('#bSettings'); await wait(page); await page.click('#oShop'); await wait(page, 600); }
+  async function openStore(page) { if (await G(page, () => document.getElementById('modal').classList.contains('open'))) { await page.click('#mClose'); await wait(page); } await page.click('#bShop'); await wait(page, 600); }
   async function buy(page, k, ms = 500) { await page.click(`#store [data-p=${k}]`); await wait(page, ms); }
 
   // ---- 1) Ayarlar › Mağaza: 7 ürün, fiyatlar, 320 px taşmaz; tüketilebilir: ödül kayda yazıldıktan sonra finish ----
