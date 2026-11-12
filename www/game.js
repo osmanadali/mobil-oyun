@@ -1659,28 +1659,29 @@ const ART = (() => {
   const svg = b => `<svg viewBox="0 0 80 80" aria-hidden="true">${b}</svg>`;
   return { defs: D,
     hint10: bouquet(10), hint30: bouquet(30), hint80: bouquet(80),
-    noads: svg(`<circle cx="40" cy="40" r="30" fill="#ffd66b" opacity=".2"/><path d="M40 66C18 51 12 40 12 30a14 14 0 0 1 28-6a14 14 0 0 1 28 6c0 10-6 21-28 36z" fill="url(#gGold)"/>
+    // hareketli (CSS: .a-*; hareketi azalt açıksa durur): kalp atar, yıldız parlar · kutu kapağı aralanır · çanta sallanır · yelpaze açılıp kapanır · makine bilet basar
+    noads: svg(`<circle cx="40" cy="40" r="30" fill="#ffd66b" opacity=".2" class="a-halo"/><g class="a-beat"><path d="M40 66C18 51 12 40 12 30a14 14 0 0 1 28-6a14 14 0 0 1 28 6c0 10-6 21-28 36z" fill="url(#gGold)"/>
       <path d="M22 27a8 8 0 0 1 9-7" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none" opacity=".7"/>
-      <g transform="translate(40 40)"><rect x="-13" y="-8" width="26" height="16" rx="5" fill="#fff" opacity=".92"/><text y="5" text-anchor="middle" font-size="12" font-weight="800" fill="#c46a12" font-family="Outfit,sans-serif">AD</text><path d="M-15 10L15 -10" stroke="#d9435c" stroke-width="3.2" stroke-linecap="round"/></g>
-      <path d="M66 12l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#ffd66b"/>`),
-    starter: svg(`<circle cx="40" cy="44" r="30" fill="#ff8fa3" opacity=".16"/>${bulb(26, 18, 6, -12)}<g transform="rotate(-14 54 22)"><rect x="44" y="15" width="22" height="13" rx="3" fill="#ffd66b"/><circle cx="44" cy="21.5" r="3" fill="#fff"/><circle cx="66" cy="21.5" r="3" fill="#fff"/></g>
-      <rect x="14" y="38" width="52" height="32" rx="6" fill="url(#gBox)"/><rect x="11" y="31" width="58" height="11" rx="4" fill="#ff9fb0"/><rect x="36" y="31" width="8" height="39" fill="#ffd66b"/>
-      <path d="M40 31c-10-12-20-6-14 0zM40 31c10-12 20-6 14 0z" fill="#ffd66b" stroke="#f59a3c" stroke-width="1.4"/>`),
-    themes: svg(['#7aa7ff', '#5cc27e', '#ffd66b', '#ff9a5c', '#f0637a'].map((c, i) => `<rect x="31" y="14" width="18" height="48" rx="6" fill="${c}" stroke="#fff" stroke-width="1.5" transform="rotate(${(i - 2) * 16} 40 64)"/>`).join('') + '<circle cx="40" cy="62" r="4" fill="#fff" stroke="#9aa0b4" stroke-width="1.5"/>'),
-    bst: svg(`<rect x="12" y="32" width="56" height="34" rx="6" fill="#e5546e"/><rect x="12" y="32" width="56" height="10" rx="5" fill="#f0637a"/><path d="M30 32v-7a4 4 0 0 1 4-4h12a4 4 0 0 1 4 4v7" stroke="#9aa0b4" stroke-width="4" fill="none"/>
-      <rect x="36" y="38" width="8" height="8" rx="2" fill="#ffd66b"/><path d="M20 30l8-14M58 30l-6-16" stroke="#9aa0b4" stroke-width="4" stroke-linecap="round"/><circle cx="28" cy="15" r="4" fill="#7aa7ff"/><circle cx="52" cy="13" r="4" fill="#5cc27e"/>`),
-    crown: (() => {   // bilet makinesi: ekranda 50; ağızdan sarkan uzun bilet şeridi yere akordeon gibi katlanır
-      const P = [[30, 38], [30, 52], [70, 56], [24, 61], [70, 66], [24, 71], [66, 75]];
-      let legs = '';
-      for (let i = 0; i < P.length - 1; i++) { const [a, b] = [P[i], P[i + 1]], c = i % 2 ? '#ffc04d' : '#ffdf7e';
-        legs += `<path d="M${a[0]} ${a[1]}L${b[0]} ${b[1]}" stroke="#c98a1a" stroke-width="8.4" stroke-linecap="round"/><path d="M${a[0]} ${a[1]}L${b[0]} ${b[1]}" stroke="${c}" stroke-width="7" stroke-linecap="round"/>
-          <path d="M${a[0]} ${a[1]}L${b[0]} ${b[1]}" stroke="#c98a1a" stroke-width="7" stroke-dasharray=".6 6.4" stroke-dashoffset="-3" opacity=".7"/>`; }
-      return svg(`<ellipse cx="46" cy="76" rx="28" ry="3.2" fill="#000" opacity=".25"/>${legs}
+      <g transform="translate(40 40)"><rect x="-13" y="-8" width="26" height="16" rx="5" fill="#fff" opacity=".92"/><text y="5" text-anchor="middle" font-size="12" font-weight="800" fill="#c46a12" font-family="Outfit,sans-serif">AD</text><path d="M-15 10L15 -10" stroke="#d9435c" stroke-width="3.2" stroke-linecap="round"/></g></g>
+      <path class="a-spark" d="M66 12l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#ffd66b"/><path class="a-spark b" d="M14 58l1.2 3 3 1.2-3 1.2-1.2 3-1.2-3-3-1.2 3-1.2z" fill="#fff3c4"/>`),
+    starter: svg(`<circle cx="40" cy="44" r="30" fill="#ff8fa3" opacity=".16"/><g class="a-pop">${bulb(26, 18, 6, -12)}</g><g class="a-pop b"><g transform="rotate(-14 54 22)"><rect x="44" y="15" width="22" height="13" rx="3" fill="#ffd66b"/><circle cx="44" cy="21.5" r="3" fill="#fff"/><circle cx="66" cy="21.5" r="3" fill="#fff"/></g></g>
+      <rect x="14" y="38" width="52" height="32" rx="6" fill="url(#gBox)"/><rect x="36" y="38" width="8" height="32" fill="#ffd66b"/>
+      <g class="a-lid"><rect x="11" y="31" width="58" height="11" rx="4" fill="#ff9fb0"/><rect x="36" y="31" width="8" height="11" fill="#ffd66b"/>
+      <path d="M40 31c-10-12-20-6-14 0zM40 31c10-12 20-6 14 0z" fill="#ffd66b" stroke="#f59a3c" stroke-width="1.4"/></g>`),
+    themes: svg('<g class="a-fan">' + ['#7aa7ff', '#5cc27e', '#ffd66b', '#ff9a5c', '#f0637a'].map((c, i) => `<g class="a-card" style="--d:${i - 2}"><rect x="31" y="14" width="18" height="48" rx="6" fill="${c}" stroke="#fff" stroke-width="1.5" transform="rotate(${(i - 2) * 16} 40 64)"/></g>`).join('') + '</g><circle cx="40" cy="62" r="4" fill="#fff" stroke="#9aa0b4" stroke-width="1.5"/>'),
+    bst: svg(`<g class="a-sway"><g class="a-tool"><path d="M20 30l8-14" stroke="#9aa0b4" stroke-width="4" stroke-linecap="round"/><circle cx="28" cy="15" r="4" fill="#7aa7ff"/></g><g class="a-tool b"><path d="M58 30l-6-16" stroke="#9aa0b4" stroke-width="4" stroke-linecap="round"/><circle cx="52" cy="13" r="4" fill="#5cc27e"/></g>
+      <rect x="12" y="32" width="56" height="34" rx="6" fill="#e5546e"/><rect x="12" y="32" width="56" height="10" rx="5" fill="#f0637a"/><path d="M30 32v-7a4 4 0 0 1 4-4h12a4 4 0 0 1 4 4v7" stroke="#9aa0b4" stroke-width="4" fill="none"/>
+      <rect x="36" y="38" width="8" height="8" rx="2" fill="#ffd66b"/></g>`),
+    crown: (() => {   // bilet makinesi: ekranda 50; ağzından oyunun 🎫 biletleri birer birer çıkar, düşüp yığına katılır
+      const T = (x, y, a, sz = 15) => `<text x="${x}" y="${y}" font-size="${sz}" text-anchor="middle" transform="rotate(${a} ${x} ${y - sz * .35})">🎫</text>`;
+      const pile = [[30, 76, -8], [50, 77, 6], [40, 73, -3], [62, 75, 12], [22, 74, -16], [46, 69, 9], [33, 69, -11], [57, 70, -4]].map(([x, y, a]) => T(x, y, a)).join('');
+      const fly = [0, 1, 2].map(i => `<g class="a-tk" style="animation-delay:${-i * .9}s">${T(30, 46, 0, 14)}</g>`).join('');
+      return svg(`<ellipse cx="42" cy="76" rx="30" ry="3.2" fill="#000" opacity=".25"/>${pile}${fly}
         <rect x="10" y="3" width="42" height="36" rx="7" fill="#3c4a6b"/><rect x="10" y="3" width="42" height="11" rx="7" fill="#4f6088"/>
         <rect x="15" y="9" width="24" height="13" rx="2.5" fill="#0d1626"/><text x="27" y="19.4" text-anchor="middle" font-size="10" font-weight="800" fill="#ffcf4d" font-family="Outfit,sans-serif">50</text>
         <circle cx="45.5" cy="12" r="2.2" fill="#5cff9b"><animate attributeName="opacity" values="1;.25;1" dur="1.4s" repeatCount="indefinite"/></circle>
-        <rect x="42.5" y="18" width="6" height="1.8" rx=".9" fill="#0d1626"/><rect x="22" y="32" width="16" height="4" rx="2" fill="#0d1626"/>
-        <path d="M66 8l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z" fill="#ffd66b"/>`); })(),
+        <rect x="42.5" y="18" width="6" height="1.8" rx=".9" fill="#0d1626"/><rect x="20" y="32" width="20" height="4" rx="2" fill="#0d1626"/>
+        <path class="a-spark" d="M66 8l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z" fill="#ffd66b"/>`); })(),
   };
 })();
 // Mağaza iki sekme: 🛍️ Paketler (parayla) · 🎨 Temalar (🎫 ile; bilet çipi doğrudan buraya açar)
