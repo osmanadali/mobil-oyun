@@ -9,6 +9,26 @@ window.FX_EXTRA = (() => {
     c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill();
   }
   const roof = B => B.y - 4.6, nose = B => B.x1 - 1;
+  const fenerP = { a: 0, v: 0, sp: 0 };
+  // kuzu: gölgeli yün yumağı, rüzgârda sallanan kulaklar, göz kırpar, başını sallar
+  function lamb(c, x, y, s, t, speed = 0, dir = 1, legT = 0, legs = false) {
+    c.save(); c.translate(x, y); c.scale(s * dir, s);
+    if (legs) { c.strokeStyle = '#3b3340'; c.lineWidth = .7; c.lineCap = 'round'; const lg = Math.sin(legT) * .9; [[-2.2, lg], [-.8, -lg], [1, lg], [2.2, -lg]].forEach(([lx, d]) => { c.beginPath(); c.moveTo(lx, 1.6); c.lineTo(lx + d * .5, 3.8); c.stroke(); }); }
+    const blobs = [[-2.4, .2, 1.7], [-1, -1, 1.8], [.8, -1.1, 1.75], [2.2, -.1, 1.6], [-1.3, 1, 1.6], [.6, 1, 1.7], [0, -.1, 2]];
+    c.fillStyle = '#cfc6b8'; for (const [bx, by, br] of blobs) { c.beginPath(); c.arc(bx + .25, by + .45, br, 0, TAU); c.fill(); }   // gölge katı
+    for (const [bx, by, br] of blobs) { const g = c.createRadialGradient(bx - br * .35, by - br * .4, br * .1, bx, by, br); g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#ece5d8'); c.fillStyle = g; c.beginPath(); c.arc(bx, by, br, 0, TAU); c.fill(); }
+    const nod = Math.sin(t * 2.4) * .12, flap = Math.sin(t * (10 + speed * 2)) * (.25 + Math.min(.4, speed * .05));
+    c.translate(3.7, -.6); c.rotate(nod);
+    c.fillStyle = '#4a4150'; c.save(); c.translate(-.6, -.9); c.rotate(-.9 + flap); c.beginPath(); c.ellipse(-.9, 0, 1.1, .45, 0, 0, TAU); c.fill(); c.restore();   // kulak
+    const hg = c.createRadialGradient(-.2, -.4, .1, 0, 0, 1.6); hg.addColorStop(0, '#5a5060'); hg.addColorStop(1, '#3b3340');
+    c.fillStyle = hg; c.beginPath(); c.ellipse(.2, 0, 1.4, 1.15, .2, 0, TAU); c.fill();
+    c.fillStyle = '#fbf7ef'; c.beginPath(); c.arc(-.6, -1.1, .8, 0, TAU); c.arc(.2, -1.25, .7, 0, TAU); c.fill();   // alındaki yün perçemi
+    const bl = (t % 3.1) < .13 ? .12 : 1;
+    c.fillStyle = '#fff'; c.beginPath(); c.ellipse(.65, -.25, .33, .33 * bl, 0, 0, TAU); c.fill();
+    c.fillStyle = '#111'; c.beginPath(); c.ellipse(.75, -.25, .17, .17 * bl, 0, 0, TAU); c.fill();
+    c.fillStyle = '#e9a0a8'; c.beginPath(); c.ellipse(1.35, .5, .25, .15, 0, 0, TAU); c.fill();
+    c.restore();
+  }
   // düşüp dipte yatan nesne (şeker, altın, zarf): yerçekimi + dönme, dibe değince landed'e geçer
   function faller(W, H, draw, o = {}) {
     const q = { x: R(0, W), y: R(-H * .8, H * .5), vy: R(90, 170), vx: R(-15, 15), a: R(0, TAU), va: R(-5, 5), s: R(.8, 1.25), col: o.cols ? o.cols[Math.random() * o.cols.length | 0] : '#fff', ...o };
@@ -62,20 +82,34 @@ window.FX_EXTRA = (() => {
         c.fillStyle = col; c.globalAlpha = .6 + .4 * tw; c.beginPath(); c.arc(x, B.y - 3, .9, 0, TAU); c.fill(); c.globalAlpha = 1;
       }
     },
-    over(c, B, W, t, speed) {
-      const r0 = roof(B), sw = Math.sin(t * 2.6) * (.18 + Math.min(.25, speed * .03));
-      // vagonların üstünde ip, ipte 4 fener (her biri kendi ışığını yakar)
-      c.strokeStyle = 'rgba(255,230,170,.6)'; c.lineWidth = .5;
-      c.beginPath(); c.moveTo(B.x0 + 2, r0 - 2); c.quadraticCurveTo((B.x0 + B.x1) / 2 - 3, r0 + .5, B.x1 - 9, r0 - 2); c.stroke();
-      [0.15, .38, .62, .82].forEach((u, i) => {
-        const x = B.x0 + 2 + (B.x1 - 11 - B.x0) * u, y = r0 - 1.3 + Math.sin(u * Math.PI) * 1.2, fl = .8 + .2 * Math.sin(t * 9 + i * 2);
-        glow(c, x, y + 1, 6, '255,214,120', .5 * fl);
-        lantern(c, x, y + 1.6, FEN[i], sw * (i % 2 ? 1 : -1), .85);
-      });
-      // ön vagonda hilal ve yıldız, ışık saçar
-      const hx = B.x1 - 5, hy = r0 - 4.2;
-      glow(c, hx, hy, 9, '255,220,140', .55 + Math.sin(t * 2) * .08);
-      crescent(c, hx, hy, 2.6, '#ffe08a'); star(c, hx + 2.9, hy - .6, 1.1, '#fff2c4');
+    over(c, B, W, t, speed, dt) {
+      const r0 = roof(B);
+      // arka vagonda direk ucunda hilal ve yıldız
+      const hx = B.x0 + 8, hy = r0 - 6.5;
+      c.strokeStyle = '#c9a24a'; c.lineWidth = .5; c.beginPath(); c.moveTo(hx, r0); c.lineTo(hx, hy + 2.6); c.stroke();
+      glow(c, hx, hy, 10, '255,220,140', .5 + Math.sin(t * 2) * .08);
+      crescent(c, hx, hy, 2.5, '#ffe08a'); star(c, hx + 2.7, hy - .5, 1, '#fff2c4');
+      // ön vagonda kıvrık direkten sarkan Osmanlı feneri: sarkaç gibi sallanır (tren ivmesi + rüzgâr)
+      const P = fenerP, acc = (speed - P.sp) / Math.max(dt || .04, .01); P.sp = speed;
+      const drive = -acc * .004 + Math.sin(t * 1.3) * .5 + speed * .02;
+      P.v += (-9 * P.a - 1.6 * P.v + drive) * (dt || .04); P.a += P.v * (dt || .04); P.a = Math.max(-.7, Math.min(.7, P.a));
+      const px = B.x1 - 7, top = r0 - 8.5, kx = px + 3.4, ky = top;
+      c.strokeStyle = '#c9a24a'; c.lineWidth = .7; c.beginPath(); c.moveTo(px, r0); c.lineTo(px, top + 1.4); c.quadraticCurveTo(px, top, kx, ky); c.stroke();
+      const len = 2.4, lx = kx + Math.sin(P.a) * len, ly = ky + Math.cos(P.a) * len, fl = .82 + .18 * Math.sin(t * 13) * Math.sin(t * 5.1);
+      // ışık: fenerin etrafı ve rayın üstüne düşen, sallanışla kayan ışık havuzu
+      glow(c, lx, ly + 3, 20, '255,206,110', .42 * fl);
+      c.save(); c.translate(lx + Math.sin(P.a) * 8, B.y + 1.5); c.scale(1, .28); glow(c, 0, 0, 16, '255,214,130', .5 * fl); c.restore();
+      c.strokeStyle = 'rgba(255,230,170,.8)'; c.lineWidth = .35; c.beginPath(); c.moveTo(kx, ky); c.lineTo(lx, ly); c.stroke();
+      c.save(); c.translate(lx, ly); c.rotate(-P.a);
+      c.fillStyle = '#d9b25a'; c.beginPath(); c.moveTo(-1.6, 1.1); c.quadraticCurveTo(0, -1, 1.6, 1.1); c.closePath(); c.fill();   // kubbe
+      c.fillStyle = '#e8c56a'; c.beginPath(); c.arc(0, -.3, .45, 0, TAU); c.fill();                                                   // tepe topuzu
+      const gg = c.createLinearGradient(0, 1, 0, 6); gg.addColorStop(0, `rgba(255,236,170,${.95 * fl})`); gg.addColorStop(1, `rgba(255,170,70,${.9 * fl})`);
+      c.fillStyle = gg; c.beginPath(); c.moveTo(-1.7, 1.1); c.lineTo(1.7, 1.1); c.lineTo(1.3, 5.6); c.lineTo(-1.3, 5.6); c.closePath(); c.fill();   // camlı gövde
+      c.fillStyle = `rgba(255,255,230,${fl})`; c.beginPath(); c.ellipse(0, 3.6, .45, .95, 0, 0, TAU); c.fill();                            // alev
+      c.strokeStyle = '#9c7a2e'; c.lineWidth = .3;                                                                                         // kafes
+      c.beginPath(); c.moveTo(-.6, 1.1); c.lineTo(-.45, 5.6); c.moveTo(.6, 1.1); c.lineTo(.45, 5.6); c.moveTo(-1.6, 2.6); c.quadraticCurveTo(0, 3.3, 1.6, 2.6); c.moveTo(-1.45, 4.2); c.quadraticCurveTo(0, 4.9, 1.45, 4.2); c.stroke();
+      c.fillStyle = '#d9b25a'; c.fillRect(-1.4, 5.5, 2.8, .6); c.beginPath(); c.moveTo(-.5, 6.1); c.lineTo(0, 7.3); c.lineTo(.5, 6.1); c.fill();      // taban ve uç
+      c.restore();
     },
     win(W, H) {
       const out = [];
@@ -130,9 +164,15 @@ window.FX_EXTRA = (() => {
         c.fillStyle = '#ffd36b'; c.beginPath(); c.arc(x, y, .45, 0, TAU); c.fill();
       }
     },
-    over(c, B, W, t, speed) {
-      const bob = Math.abs(Math.sin(t * (4 + speed))) * .7;   // tren sallandıkça kuzu hoplar
-      sheep(c, B.x0 + 10, roof(B) - 3 - bob, .78, t * 6);
+    over(c, B, W, t, speed, dt, parts) {
+      const bob = Math.abs(Math.sin(t * (3.5 + speed * .6))) * .6;   // tren sallandıkça kuzu hafifçe zıplar
+      lamb(c, B.x0 + 10, roof(B) - 3.6 - bob, 1.05, t, speed);
+      if (speed > .05 && Math.random() < 1.2 * (dt || .04)) {   // rüzgârda yünden tutam kopar
+        const p = { life: 0, max: R(.8, 1.3), x: B.x0 + R(7, 13), y: roof(B) - R(4, 6), vx: -R(14, 30), vy: -R(2, 8), r: R(.6, 1) };
+        p.st = (p, dt) => { p.x += p.vx * dt; p.y += p.vy * dt + Math.sin(p.life * 8) * .1; p.vy += 4 * dt; };
+        p.dr = (c, p, f) => { c.globalAlpha = f; c.fillStyle = '#fbf7ef'; for (const [ox, oy] of [[0, 0], [.6, -.3], [-.5, .2]]) { c.beginPath(); c.arc(p.x + ox, p.y + oy, p.r, 0, TAU); c.fill(); } };
+        parts.push(p);
+      }
     },
     win(W, H) {
       const out = [], t0 = { t: 0 };
@@ -151,7 +191,7 @@ window.FX_EXTRA = (() => {
           if (dir > 0 ? q.x > W + 40 : q.x < -40) return false;
           const hop = Math.abs(Math.sin(q.t * 7)) * 14;
           c.fillStyle = 'rgba(0,0,0,.18)'; c.beginPath(); c.ellipse(q.x, H - 10, 11 - hop * .3, 2.2, 0, 0, TAU); c.fill();
-          sheep(c, q.x, H - 22 - hop, 3.1, q.t * 14, dir);
+          lamb(c, q.x, H - 22 - hop, 3.1, q.t, 0, dir, q.t * 14, true);
         } });
       }
       return out;
@@ -203,10 +243,27 @@ window.FX_EXTRA = (() => {
         parts.push(p);
       }
     },
-    over(c, B, W, t) {
-      const fl = .75 + .25 * Math.sin(t * 17) * Math.sin(t * 7.3);
-      glow(c, nose(B) + 1, B.y - 1, 16, '255,140,40', .4 * fl);
-      pumpkin(c, nose(B) - 1.5, roof(B) - 2.6, 2.6, fl);
+    over(c, B, W, t, speed) {
+      // önde bal kabağı fener: mumu titrer, yola turuncu ışık düşer
+      const fl = .75 + .25 * Math.sin(t * 17) * Math.sin(t * 7.3), nx = nose(B);
+      c.save(); const g = c.createRadialGradient(nx + 3, B.y - 1, .5, nx + 16, B.y - 1, 22); g.addColorStop(0, `rgba(255,150,50,${.42 * fl})`); g.addColorStop(1, 'rgba(255,150,50,0)');
+      c.fillStyle = g; c.beginPath(); c.moveTo(nx + 2, B.y - 1); c.lineTo(nx + 32, B.y - 8); c.lineTo(nx + 32, B.y + 5); c.closePath(); c.fill(); c.restore();
+      glow(c, nx - 1.5, roof(B) - 3, 11, '255,140,40', .45 * fl);
+      pumpkin(c, nx - 1.5, roof(B) - 3, 3.2, fl);
+      // trenin arkasından süzülen hayalet: dalgalı kuyruk, öne bakan gözler
+      const gx = B.x0 - 9 + Math.sin(t * 1.1) * 3, gy = roof(B) - 8 + Math.sin(t * 2.3) * 2.2;
+      glow(c, gx, gy, 13, '200,220,255', .22);
+      c.save(); c.translate(gx, gy);
+      const tail = 9, gr = c.createLinearGradient(3, 0, -tail, 0); gr.addColorStop(0, 'rgba(244,246,255,.95)'); gr.addColorStop(1, 'rgba(244,246,255,0)');
+      c.fillStyle = gr; c.beginPath(); c.arc(0, 0, 3.4, -Math.PI * .5, Math.PI * .5, false);
+      for (let i = 0; i <= 8; i++) { const u = i / 8, x = -u * tail, w = 3.4 * (1 - u * .85); c.lineTo(x, w + Math.sin(t * 6 - u * 5) * 1.3 * u); }
+      for (let i = 8; i >= 0; i--) { const u = i / 8, x = -u * tail, w = 3.4 * (1 - u * .85); c.lineTo(x, -w + Math.sin(t * 6 - u * 5) * 1.3 * u); }
+      c.closePath(); c.fill();
+      c.fillStyle = 'rgba(244,246,255,.95)'; c.beginPath(); c.arc(.3, 0, 3.4, 0, TAU); c.fill();
+      const look = Math.sin(t * .7) > .85 ? -.5 : .5, blink = (t % 3.3) < .12 ? .15 : 1;
+      c.fillStyle = '#241634'; c.beginPath(); c.ellipse(1 + look * .4, -.8, .55, .8 * blink, 0, 0, TAU); c.ellipse(2.6 + look * .4, -.8, .55, .8 * blink, 0, 0, TAU); c.fill();
+      c.beginPath(); c.ellipse(2, 1.1, .5, .6 + Math.sin(t * 3) * .15, 0, 0, TAU); c.fill();
+      c.restore();
     },
     win(W, H) {
       const out = [];

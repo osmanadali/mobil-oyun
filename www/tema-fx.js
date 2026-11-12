@@ -142,7 +142,7 @@ const FX = (() => {
     if (X) X.under?.(c, B, W, t, speed, dt, parts);
     stepParts(dt, B); drawParts(c);
     if (id === 'kis') plow(c, B);
-    if (X) X.over?.(c, B, W, t, speed);
+    if (X) X.over?.(c, B, W, t, speed, dt, parts);
     renderRain(dt);
   }
 
