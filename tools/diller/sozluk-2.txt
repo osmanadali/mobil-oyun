@@ -1384,3 +1384,51 @@ fr: Premier thème : {0}
 ko: 첫 테마: {0}
 ja: 最初のテーマ：{0}
 zh: 第一個主題：{0}
+@ 🌱 Warm-up
+de: 🌱 Aufwärmen
+es: 🌱 Calentamiento
+pt: 🌱 Aquecimento
+fr: 🌱 Échauffement
+ko: 🌱 워밍업
+ja: 🌱 ウォームアップ
+zh: 🌱 暖身
+@ ⚡ Easy
+de: ⚡ Leicht
+es: ⚡ Fácil
+pt: ⚡ Fácil
+fr: ⚡ Facile
+ko: ⚡ 쉬움
+ja: ⚡ やさしい
+zh: ⚡ 簡單
+@ ⚡ Medium
+de: ⚡ Mittel
+es: ⚡ Media
+pt: ⚡ Médio
+fr: ⚡ Moyen
+ko: ⚡ 보통
+ja: ⚡ ふつう
+zh: ⚡ 中等
+@ 🔥 Hard
+de: 🔥 Schwer
+es: 🔥 Difícil
+pt: 🔥 Difícil
+fr: 🔥 Difficile
+ko: 🔥 어려움
+ja: 🔥 むずかしい
+zh: 🔥 困難
+@ 💎 Expert
+de: 💎 Experte
+es: 💎 Experto
+pt: 💎 Especialista
+fr: 💎 Expert
+ko: 💎 전문가
+ja: 💎 エキスパート
+zh: 💎 專家
+@ DAILY LINE
+de: TAGESLINIE
+es: LÍNEA DEL DÍA
+pt: LINHA DO DIA
+fr: LIGNE DU JOUR
+ko: 오늘의 노선
+ja: 今日の路線
+zh: 每日路線

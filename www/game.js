@@ -533,6 +533,9 @@ function puzzleFor(l) {
     return P;
   });
 }
+// zorluk etiketi (12 Kasım): yüzde yerine kelime — "%1" yeni oyuncuya "çok kolay" diye okunuyor, takılınca moral bozuyordu
+const lvTag = c => c <= 1 ? L('🌱 Isınma', '🌱 Warm-up') : c <= 5 ? L('⚡ Kolay', '⚡ Easy') : c <= 11 ? L('⚡ Orta', '⚡ Medium') : c <= 19 ? L('🔥 Zor', '🔥 Hard') : L('💎 Uzman', '💎 Expert');
+const dTag = p => p < 50 ? L('⚡ Kolay', '⚡ Easy') : p < 70 ? L('⚡ Orta', '⚡ Medium') : L('🔥 Zor', '🔥 Hard');
 // 🎉 kazanma başlığı: kusursuzda (ve ilk 10 bölümde her galibiyette) dönen övgü; seri uzadıkça coşkusu artar
 const PRAISE = () => L(['Harika!', 'Süper!', 'Bravo!', 'Tam isabet!', 'Muhteşem!', 'Şahane!', 'Efsane!'], ['Great!', 'Super!', 'Bravo!', 'Spot on!', 'Brilliant!', 'Awesome!', 'Legendary!']);
 function praise(g, perfect) {
@@ -856,8 +859,8 @@ function refreshHome() {
   // toplam ★ üstteki çipte; burada yalnız sıradaki hatta kalan (tek ilerleme ekseni)
   $('gateTxt').textContent = tot >= hi ? `M${nx + 1} ${L('açık', 'open')} ✓` : L(`★ ${hi - tot} kaldı → M${nx + 1}`, `★ ${hi - tot} to go → M${nx + 1}`);
   $('progBar').style.width = Math.min(100, Math.max(4, (tot - lo) / Math.max(1, hi - lo) * 100)) + '%';
-  $('sSize').textContent = breath(save.level) ? L('☕ mola bölümü', '☕ breather level') : L(`⚡ zorluk ${LP(zPct(save.level))}`, `⚡ ${LP(zPct(save.level))} hard`);
-  { const k = L(`GÜNÜN HATTI · ⚡${LP(dPct(today()))}`, `DAILY LINE · ⚡${LP(dPct(today()))}`); $('dailyK').textContent = HX?.isDay(today()) ? k.replace(/\s*·\s*⚡.*$/, ' · ⬡') : k; }   // cumartesi: altıgen gün (⚡ yerine ⬡; uzun dillerde 320 px'e sığsın)
+  $('sSize').textContent = breath(save.level) ? L('☕ mola bölümü', '☕ breather level') : lvTag(lineOf(save.level));
+  { const k = `${L('GÜNÜN HATTI', 'DAILY LINE')} · ${dTag(dPct(today())).toLocaleUpperCase(RAY_LANG === 'tr' ? 'tr' : undefined)}`; $('dailyK').textContent = HX?.isDay(today()) ? k.replace(/\s*·\s*⚡.*$/, ' · ⬡') : k; }   // cumartesi: altıgen gün (⚡ yerine ⬡; uzun dillerde 320 px'e sığsın)
   $('bPlay').classList.toggle('locked', !unlocked(c));
   questRow();
   // sıradaki bölümü boşta önceden üret: zor kurallı 7×9 bölüm telefonda 1–2 sn sürebilir, "Oyna"da beklenmesin (çıktı aynı, yalnız önbellek)
@@ -874,7 +877,7 @@ function renderMap() {
     const open = unlocked(c), first = lineStart(c), len = lineLen(c);
     const got = Array.from({ length: len }, (_, k) => save.stars[first + k] || 0).reduce((a, b) => a + b, 0);
     html += `<div class="line ${open ? '' : 'lockd'}" style="--lc:${lineCol(c)}">
-      <div class="lh"><i class="dot"></i><b>${lineName(c)}${RULES[c] ? `<em>${RULES[c].tag}</em>` : ''}</b><small>${open ? `★ ${got} / ${len * 3} · ⚡${LP(zPct(first))}` : `🔒 ★ ${tot} / ${need(c)}`}</small></div>
+      <div class="lh"><i class="dot"></i><b>${lineName(c)}${RULES[c] ? `<em>${RULES[c].tag}</em>` : ''}</b><small>${open ? `★ ${got} / ${len * 3} · ${lvTag(c)}` : `🔒 ★ ${tot} / ${need(c)}`}</small></div>
       <div class="lvs">${Array.from({ length: len }, (_, k) => {
         const l = first + k, st = save.stars[l] || 0, can = open && (TEST || l <= save.level);
         return `<button class="lv ${can ? '' : 'off'} ${l === save.level && can ? 'cur' : ''} ${l === lineEnd(c) ? 'fin' : ''}" data-l="${l}" ${can ? '' : 'disabled'}><b>${l}</b><i>${can ? (save.crowns[l] ? '🎫' : starTxt(st)) : ''}</i></button>`;
