@@ -1,0 +1,92 @@
+# Codemagic (codemagic.io): iOS yayını GitHub'ın Mac makinesi olmadan. Adımlar .github/workflows/ios-release.yml ile aynı.
+# Gizli değerler Codemagic › uygulama › Environment variables › "ray_ios" grubunda (Secure işaretli):
+#   APPSTORE_API_KEY_ID, APPSTORE_API_ISSUER_ID, APPSTORE_API_KEY_P8_BASE64, APPLE_TEAM_ID, (isteğe bağlı) FIREBASE_IOS_PLIST
+# Başlatma: Start new build › workflow "Ray iOS". Yapı numarası BUILD_NO (aşağıda); her yüklemede bir artır ya da başlatırken değiştir.
+workflows:
+  ray-ios:
+    name: Ray iOS (App Store Connect)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      groups: [ray_ios]
+      node: 22
+      xcode: latest
+      vars:
+        ADMOB_APP_ID_IOS: ca-app-pub-1478688740631972~9395068810
+        ADMOB_INTERSTITIAL_IOS: ca-app-pub-1478688740631972/5351882023
+        ADMOB_REWARDED_IOS: ca-app-pub-1478688740631972/8249508106
+        BUILD_NO: "10"
+    scripts:
+      - name: Ayarları denetle
+        script: |
+          set -e
+          tr1() { printf '%s' "$1" | tr -d ' \r\n\t'; }
+          KID=$(tr1 "$APPSTORE_API_KEY_ID"); ISS=$(tr1 "$APPSTORE_API_ISSUER_ID"); TID=$(tr1 "$APPLE_TEAM_ID")
+          VC=$BUILD_NO
+          [ -n "$KID" ] && [ -n "$ISS" ] && [ -n "$TID" ] && [ -n "$APPSTORE_API_KEY_P8_BASE64" ] || { echo "Eksik gizli değer: ray_ios grubuna bak (codemagic.yaml başı)"; exit 1; }
+          echo "$KID" | grep -Eq '^[A-Z0-9]{10}$' || { echo "APPSTORE_API_KEY_ID 10 karakter olmalı"; exit 1; }
+          echo "$TID" | grep -Eq '^[A-Z0-9]{10}$' || { echo "APPLE_TEAM_ID 10 karakter olmalı"; exit 1; }
+          echo "$VC" | grep -Eq '^[1-9][0-9]{0,9}$' || { echo "Yapı numarası pozitif tam sayı olmalı: $VC"; exit 1; }
+          VN=$(node -p "require('./package.json').version")
+          { echo "APPSTORE_API_KEY_ID=$KID"; echo "APPSTORE_API_ISSUER_ID=$ISS"; echo "APPLE_TEAM_ID=$TID"; echo "VERSION_CODE=$VC"; echo "VERSION_NAME=$VN"; } >> "$CM_ENV"
+          printf '%s' "$APPSTORE_API_KEY_P8_BASE64" | base64 --decode > "$CM_BUILD_DIR/../AuthKey.p8"
+          grep -q 'BEGIN PRIVATE KEY' "$CM_BUILD_DIR/../AuthKey.p8" || { echo "APPSTORE_API_KEY_P8_BASE64 çözülemedi"; exit 1; }
+          xcodebuild -version
+          V=$(xcodebuild -version | awk 'NR==1{print int($2)}'); [ "$V" -ge 26 ] || { echo "Capacitor 8 Xcode 26+ ister (bulunan: $V)"; exit 1; }
+          echo "Ray $VN ($VC) derlenecek"
+      - name: Bağımlılıklar ve yerel proje
+        script: |
+          set -e
+          npm ci --no-audit --no-fund
+          npx cap add ios
+          npx @capacitor/assets generate --ios --iconBackgroundColor '#0d1020' --splashBackgroundColor '#0d1020' --splashBackgroundColorDark '#0d1020'
+          tools/ios/hazirla.sh
+          grep -c 'window.RAY_ADS' www/index.html
+          npx cap sync ios
+      - name: Arşivle (otomatik imza)
+        script: |
+          K="$CM_BUILD_DIR/../AuthKey.p8"
+          xcodebuild archive -project ios/App/App.xcodeproj -scheme App -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath build/Ray.xcarchive \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CURRENT_PROJECT_VERSION="$VERSION_CODE" CODE_SIGN_STYLE=Automatic \
+            -allowProvisioningUpdates -authenticationKeyPath "$K" \
+            -authenticationKeyID "$APPSTORE_API_KEY_ID" -authenticationKeyIssuerID "$APPSTORE_API_ISSUER_ID" > archive.log 2>&1 \
+            || { grep -E "error:" archive.log | sort -u | head -40; tail -60 archive.log; exit 1; }
+          grep -E "\*\* ARCHIVE" archive.log || true
+      - name: Arşivi denetle (gerçek AdMob, sürüm, iPhone + iPad, diller)
+        script: |
+          set -e
+          A=build/Ray.xcarchive/Products/Applications/App.app
+          GAD=$(plutil -extract GADApplicationIdentifier raw -o - "$A/Info.plist"); echo "GAD: $GAD"
+          echo "$GAD" | grep -q 3940256099942544 && { echo "Test AdMob App ID yayın arşivinde"; exit 1; }
+          grep -q 'window.RAY_ADS' "$A/public/index.html" || { echo "window.RAY_ADS yok"; exit 1; }
+          CV=$(plutil -extract CFBundleVersion raw -o - "$A/Info.plist"); [ "$CV" = "$VERSION_CODE" ] || { echo "CFBundleVersion $CV, beklenen $VERSION_CODE"; exit 1; }
+          plutil -extract UIDeviceFamily json -o - "$A/Info.plist" | tr -d ' \n' | grep -qx '\[1,2\]' || { echo "iPhone + iPad değil"; exit 1; }
+          for l in en tr de es pt-BR fr ko ja zh-Hant; do plutil -extract CFBundleLocalizations json -o - "$A/Info.plist" | grep -q "\"$l\"" || { echo "$l dili yok"; exit 1; }; done
+          [ -f "$A/GoogleService-Info.plist" ] && echo "Ölçüm: GoogleService-Info.plist pakette" || echo "Ölçüm: kapalı (FIREBASE_IOS_PLIST yok)"
+          echo "Ray $VERSION_NAME ($CV) arşivlendi"
+      - name: Dışa aktar ve App Store Connect'e yükle
+        script: |
+          K="$CM_BUILD_DIR/../AuthKey.p8"
+          cat > ExportOptions.plist <<PL
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>teamID</key><string>$APPLE_TEAM_ID</string>
+            <key>signingStyle</key><string>automatic</string>
+          </dict></plist>
+          PL
+          sed -i '' 's/^ *//' ExportOptions.plist; plutil -lint ExportOptions.plist
+          xcodebuild -exportArchive -archivePath build/Ray.xcarchive -exportPath build/out -exportOptionsPlist ExportOptions.plist \
+            -allowProvisioningUpdates -authenticationKeyPath "$K" \
+            -authenticationKeyID "$APPSTORE_API_KEY_ID" -authenticationKeyIssuerID "$APPSTORE_API_ISSUER_ID" > export.log 2>&1 \
+            || { grep -iE "error" export.log | sort -u | head -40; tail -60 export.log; rm -f "$K"; exit 1; }
+          rm -f "$K"
+          grep -iE "upload|EXPORT SUCCEEDED" export.log | tail -5 || true
+          echo "Ray $VERSION_NAME ($VERSION_CODE) App Store Connect'e yüklendi; 10-30 dk içinde TestFlight'ta görünür."
+    artifacts:
+      - archive.log
+      - export.log
+      - build/Ray.xcarchive/dSYMs/**
