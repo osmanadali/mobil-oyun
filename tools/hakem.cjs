@@ -899,7 +899,7 @@ async function inViewport(page, sel) {
       await page.waitForTimeout(900);
       R.home = await probe(page, '#home'); R.home.play = await page.textContent('#bPlay');
       await page.click('#bSettings'); await gap(); R.settings = await probe(page, sheet); if (w === 320) await shot(page, 'en-settings-320');
-      await page.click('#oShop'); await gap(); R.shop = await probe(page, sheet);
+      await page.click('#mClose'); await gap(); await page.click('#bShop'); await gap(); R.shop = await probe(page, sheet);
       await page.click('#mClose'); await gap(); await page.click('#bSettings'); await gap();
       await page.click('#oPriv'); await gap(); R.privacy = await probe(page, sheet);
       await page.click('#mWipe'); await gap(); R.wipe = await probe(page, sheet);

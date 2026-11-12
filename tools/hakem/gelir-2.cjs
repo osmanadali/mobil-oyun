@@ -41,7 +41,7 @@ module.exports = async T => {
   const fa = page => G(page, () => window.__fa);
   const evs = (F, n) => F.ev.filter(e => e.name === n).map(e => e.params);
   async function buy(page, k, ms = 500) { await page.click(`#store [data-p=${k}]`); await wait(page, ms); }
-  async function openStore(page) { if (await G(page, () => document.getElementById('modal').classList.contains('open'))) { await page.click('#mClose'); await wait(page); } await page.click('#bSettings'); await wait(page); await page.click('#oShop'); await wait(page, 600); }
+  async function openStore(page) { if (await G(page, () => document.getElementById('modal').classList.contains('open'))) { await page.click('#mClose'); await wait(page); } await page.click('#bShop'); await wait(page, 600); }
   // teklif eşiğini oyundan oku (boş sayfada)
   let MIN, AGE, GAP;
   { const { ctx, page } = await open(browser, URL, { cap: false }); ({ MIN, AGE, GAP } = await G(page, () => window.__ray.offer)); await ctx.close(); }

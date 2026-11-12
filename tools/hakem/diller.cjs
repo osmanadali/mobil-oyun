@@ -104,7 +104,7 @@ module.exports = async T => {
     await page.waitForTimeout(900);
     R.scr.home = await probe(page, '#home');
     await page.click('#bSettings'); await gap(); R.scr.settings = await probe(page, sheet); await shot(page, `${lang}-settings-320`);
-    await page.click('#oShop'); await gap(); R.scr.shop = await probe(page, sheet); await shot(page, `${lang}-shop-320`);
+    await page.click('#mClose'); await gap(); await page.click('#bShop'); await gap(); R.scr.shop = await probe(page, sheet); await shot(page, `${lang}-shop-320`);
     await page.click('#mClose'); await gap();
     await page.click('#bQuest'); await gap(); R.scr.quests = await probe(page, sheet); await shot(page, `${lang}-quests-320`);
     await page.click('#mClose').catch(() => {}); await gap();
