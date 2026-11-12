@@ -49,7 +49,8 @@ async function upload(setId, file) {
       const ids = []; for (const f of files) ids.push(await upload(set.id, f));
       await api('PATCH', `/v1/appScreenshotSets/${set.id}/relationships/appScreenshots`, { data: ids.map(id => ({ type: 'appScreenshots', id })) });
     }
-    out.push(`- **${loc}**: ${line.join(' · ')}`);
+    const other = []; for (const st of sets) if (!Object.values(TYPES).includes(st.attributes.screenshotDisplayType)) other.push(`${st.attributes.screenshotDisplayType}=${(await api('GET', `/v1/appScreenshotSets/${st.id}/appScreenshots?limit=50`)).data.length}`);
+    out.push(`- **${loc}**: ${line.join(' · ')}${other.length ? ' · diğer setler: ' + other.join(', ') : ''}`);
   }
   const txt = out.join('\n'); console.log(txt);
   if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, txt + '\n');
