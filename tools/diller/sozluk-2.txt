@@ -1248,3 +1248,59 @@ fr: À toi pour toujours, restaurable
 ko: 영구 소장, 복원 가능
 ja: ずっと使える・復元可能
 zh: 永久擁有，可恢復購買
+@ Update gift
+de: Update-Geschenk
+es: Regalo de actualización
+pt: Presente de atualização
+fr: Cadeau de mise à jour
+ko: 업데이트 선물
+ja: アップデート記念プレゼント
+zh: 更新禮物
+@ Thanks for playing Ray! <b>{0} hints</b> were added to your account.
+de: Danke, dass du Ray spielst! <b>{0} Tipps</b> wurden deinem Konto gutgeschrieben.
+es: ¡Gracias por jugar a Ray! Se añadieron <b>{0} pistas</b> a tu cuenta.
+pt: Obrigado por jogar Ray! <b>{0} dicas</b> foram adicionadas à sua conta.
+fr: Merci de jouer à Ray ! <b>{0} indices</b> ont été ajoutés à ton compte.
+ko: Ray를 플레이해 주셔서 감사해요! <b>힌트 {0}개</b>가 지급되었어요.
+ja: Rayを遊んでくれてありがとう！<b>ヒント{0}回</b>をプレゼントしました。
+zh: 謝謝你玩 Ray！已送你 <b>{0} 次提示</b>。
+@ Time is now judged by the seconds you see: 0:17 / 0:17 counts as on time
+de: Die Zeit zählt jetzt nach den angezeigten Sekunden: 0:17 / 0:17 ist pünktlich
+es: El tiempo ahora se mide por los segundos que ves: 0:17 / 0:17 cuenta a tiempo
+pt: O tempo agora conta pelos segundos que você vê: 0:17 / 0:17 vale como no horário
+fr: Le temps se juge désormais sur les secondes affichées : 0:17 / 0:17 compte à l’heure
+ko: 이제 화면에 보이는 초로 시간을 판정해요: 0:17 / 0:17은 정시예요
+ja: 時間は画面に表示された秒で判定されるようになりました：0:17 / 0:17 は時間内です
+zh: 時間現在以畫面顯示的秒數判定：0:17 / 0:17 算準時
+@ The shop is on the home screen, themes are inside it
+de: Der Shop ist auf dem Startbildschirm, die Themen sind darin
+es: La tienda está en la pantalla de inicio y los temas, dentro de ella
+pt: A loja está na tela inicial e os temas ficam dentro dela
+fr: La boutique est sur l’écran d’accueil, les thèmes sont dedans
+ko: 상점이 홈 화면에 생겼고, 테마는 상점 안에 있어요
+ja: ショップがホーム画面に。テーマはショップの中にあります
+zh: 商店移到主畫面，主題就在商店裡
+@ Full screen on iPad and tablets
+de: Vollbild auf iPad und Tablets
+es: Pantalla completa en iPad y tabletas
+pt: Tela cheia no iPad e em tablets
+fr: Plein écran sur iPad et tablettes
+ko: iPad와 태블릿에서 전체 화면
+ja: iPadとタブレットで全画面表示
+zh: iPad 和平板全螢幕顯示
+@ New languages: Korean, Japanese, Traditional Chinese
+de: Neue Sprachen: Koreanisch, Japanisch, traditionelles Chinesisch
+es: Nuevos idiomas: coreano, japonés y chino tradicional
+pt: Novos idiomas: coreano, japonês e chinês tradicional
+fr: Nouvelles langues : coréen, japonais, chinois traditionnel
+ko: 새 언어: 한국어, 일본어, 중국어 번체
+ja: 新しい言語：韓国語、日本語、繁体字中国語
+zh: 新語言：韓文、日文、繁體中文
+@ Thanks
+de: Danke
+es: Gracias
+pt: Obrigado
+fr: Merci
+ko: 고마워요
+ja: ありがとう
+zh: 謝謝

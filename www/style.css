@@ -670,3 +670,8 @@ body.introing .screen *{animation-play-state:paused!important}
 @keyframes aTk{0%{transform:translate(30px,31px);opacity:0}2%{transform:translate(30px,36px);opacity:1}6%{transform:translate(30px,44px) rotate(0)}15%{transform:translate(var(--x),var(--y)) rotate(var(--a));opacity:1}17%{transform:translate(var(--x),calc(var(--y) - 2.5px)) rotate(var(--a))}19%,100%{transform:translate(var(--x),var(--y)) rotate(var(--a));opacity:1}}
 @media (prefers-reduced-motion:reduce){.pk .art svg *{animation:none!important}.pk .art svg .a-tk{opacity:1;transform:translate(var(--x),var(--y)) rotate(var(--a))}.pk .art svg .a-in{transform:translateY(9px)}}
 .feat small{white-space:normal;overflow:visible;text-overflow:clip}
+/* 🎁 güncelleme hediyesi penceresi */
+.gift{display:flex;justify-content:center}.gift i{font-style:normal;font-size:52px;line-height:1;animation:aGift 2.6s ease-in-out infinite;filter:drop-shadow(0 6px 18px rgba(255,170,90,.45))}
+@keyframes aGift{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-5px) rotate(4deg)}}
+.news{list-style:none;margin:2px 0 6px;padding:0;display:flex;flex-direction:column;gap:7px;text-align:left}
+.news li{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.35;color:var(--mut)}.news li i{font-style:normal;font-size:16px;flex:none;width:20px;text-align:center}

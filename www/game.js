@@ -734,7 +734,7 @@ function show(id) {
   document.body.classList.toggle('playing', id === 'game');
   if (id === 'game') resume(); else { pause(); cityDown(); }
   Music.setMode(id === 'game' ? 'game' : 'menu');
-  if (id === 'home') { refreshHome(); setTimeout(maybeRescue, 600); idle(() => { if (active('home')) { puzzleFor(save.level); if (save.dailyDone !== today()) dailyFor(today()); if (window.__rayCalm()) Ads.warm(); } }, document.body.classList.contains('introing') ? 3200 : 900); /* Oyna / Günün Hattı anında açılsın (intro'yu kesmeden) */ if (G && Remind.avail() && !save.remindAsked && (save.dailyDone || save.level > lineEnd(0))) setTimeout(() => { if (active('home') && !modalOpen()) remindAsk(); }, 700); }
+  if (id === 'home') { refreshHome(); setTimeout(maybeGift, 450); setTimeout(maybeRescue, 600); idle(() => { if (active('home')) { puzzleFor(save.level); if (save.dailyDone !== today()) dailyFor(today()); if (window.__rayCalm()) Ads.warm(); } }, document.body.classList.contains('introing') ? 3200 : 900); /* Oyna / Günün Hattı anında açılsın (intro'yu kesmeden) */ if (G && Remind.avail() && !save.remindAsked && (save.dailyDone || save.level > lineEnd(0))) setTimeout(() => { if (active('home') && !modalOpen()) remindAsk(); }, 700); }
   if (id === 'map') renderMap();
   if (id === 'city') renderMeta();
   clearInterval(clockT); if (id === 'home') clockT = setInterval(() => { dailyClock(); lifeRow(); }, 1000);
@@ -1914,6 +1914,25 @@ function rescueSheet() {
     mClose: closeModal });
 }
 // ana sayfada bir kez kendiliğinden sorulur (sonra 🔥 çipinden)
+// 🎁 1.1 güncelleme hediyesi: eski oyunculara bir kez 3 ipucu + yenilikler penceresi (yeni kurulumda yok).
+// Robot ve mağaza görselleri (__noIntro) araya girmesin diye yalnız __withGift ile; o durumda hiçbir şey verilmez, işaret de konmaz.
+const GIFT_ID = 'g11', GIFT_HINTS = 3;
+function maybeGift() {
+  if (save[GIFT_ID] || (window.__noIntro && !window.__withGift) || !active('home') || modalOpen() || introOn) return;
+  save[GIFT_ID] = 1;
+  if (!save.played) { persist(); return; }   // yeni oyuncu: hediye yok, pencere yok
+  save.hints += GIFT_HINTS; persist(); refreshHome();
+  modal(`<div class="gift"><i>🎁</i></div><h2>${L('Güncelleme hediyesi', 'Update gift')}</h2>
+    <p>${L(`Ray'i oynadığın için teşekkürler! Hesabına <b>${GIFT_HINTS} ipucu</b> eklendi.`, `Thanks for playing Ray! <b>${GIFT_HINTS} hints</b> were added to your account.`)}</p>
+    <ul class="news">
+      <li><i>⏱</i>${L('Süre artık ekranda gördüğün saniyeyle ölçülür: 0:17 / 0:17 vaktinde sayılır', 'Time is now judged by the seconds you see: 0:17 / 0:17 counts as on time')}</li>
+      <li><i>🛍️</i>${L('Mağaza ana ekranda, temalar mağazanın içinde', 'The shop is on the home screen, themes are inside it')}</li>
+      <li><i>📱</i>${L('iPad ve tabletlerde tam ekran', 'Full screen on iPad and tablets')}</li>
+      <li><i>🌏</i>${L('Yeni diller: Korece, Japonca, Geleneksel Çince', 'New languages: Korean, Japanese, Traditional Chinese')}</li>
+    </ul>
+    <button id="mOk" class="btn primary"><span>${L('Teşekkürler', 'Thanks')}</span><small>💡 +${GIFT_HINTS}</small></button>`, { mOk: closeModal }, false, true);
+  haptic('win'); tone(note(7), .3, .05);
+}
 function maybeRescue() {
   if (!rescueOk() || save.lost.seen || !active('home') || modalOpen() || introOn) return;
   save.lost.seen = 1; persist(); rescueSheet();
