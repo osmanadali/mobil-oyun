@@ -595,7 +595,7 @@ function limits(P) {
   const tight = 1 - .4 * Math.max(0, ((P.z || 0) - .3) / .7);
   return { m: P.par + Math.max(2, Math.round(P.par * moveTol(P.cur.length) * tight)), t: Math.max(11, Math.round(.75 * (P.taps * 1.3 + P.cur.length * .5 + Math.max(0, (P.diff || 0) - 8) * 3))) };
 }
-const timeOk = sec => sec <= G.lim.t;
+const timeOk = sec => Math.floor(sec) <= G.lim.t;   // ekranda görünen saniyeyle (küsurat atılır) karar verilir: 0:17 / 0:17 → vaktinde
 // 🚉 son süre: yıldız süresi + 20 sn (BOLUM_TASARIMI › Can). Dolunca bölüm başarısız, 1 ❤️ gider.
 const lastCall = t => t + 20;
 const movesOk = () => G.moves <= G.lim.m && !G.mLost;   // G.mLost: eklenti ↻ yıldızını söndürdü (son sefer kaçtı; bildirim metni)
@@ -1341,7 +1341,7 @@ function win() {
   const cr0 = crownBal();
   let extra = '', unlockedNow = null, shard = false, dbl = 0, tkMsg = '';   // dbl: videoyla ikiye katlanabilecek ipucu
   let cmsg = '', combo = 0, broke = 0, near = false;               // kusursuz seri · kıl payı (tekrar öne çıkar)
-  const late = Math.ceil(G.time / 1000 - G.lim.t);
+  const late = Math.floor(G.time / 1000) - G.lim.t;
   setNext(tOk ? L('Tam vaktinde', 'On time') : `<span class="miss">+${fmtT(late * 1000)} ${L('rötar', 'late')}</span>`); trip(G.time / 1000, tOk, 0);
   if (!tOk) setTimeout(() => { if (G?.won) pax(L('Nihayet! 👏', 'Finally! 👏')); }, 700);
   if (G.arch) {
@@ -1411,7 +1411,7 @@ function win() {
 function winSheet(g, { zen, st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, combo, broke, near }) {
   const lim = g.lim, nx = g.lvl + 1, nxLocked = !g.daily && !unlocked(lineOf(nx)), again = !g.daily && (near || broke >= 2);
   const badge = unlockedNow ? `<span class="badge">${L('YENİ HAT AÇILDI', 'NEW LINE OPEN')} · M${unlockedNow + 1}</span>` : ns ? `<span class="badge">${L('TEMA ALINABİLİR', 'NEW THEME')} 🎨</span>` : perfect ? `<span class="badge">${L('KUSURSUZ', 'PERFECT')}${combo >= 2 ? ` · ✨${combo}` : ''}</span>` : zen ? '<span class="badge">🍃 ZEN</span>' : '';
-  const late = Math.ceil(g.time / 1000 - lim.t), over = g.moves - lim.m;
+  const late = Math.floor(g.time / 1000) - lim.t, over = g.moves - lim.m;
   const miss = [tOk ? '' : `⏱ ${late} ${L('sn', 's')}`, mOk ? '' : over > 0 ? `↻ ${over} ${L('hamle', pl(over, 'move', 'moves'))}` : L('⏳ son sefer', '⏳ timed station')].filter(Boolean).join(' · ');
   const tip = perfect || zen ? '' : `<p class="tip">${L('Kusursuz için', 'For perfect')}: ${[tOk ? '' : `⏱ ≤ ${fmtT(lim.t * 1000)}`, mOk ? '' : over > 0 ? `↻ ≤ ${lim.m} ${L('hamle', 'moves')}` : L('⏳ saatli durağa yetiş', '⏳ reach the timed station')].filter(Boolean).join(L(' ve ', ' and '))}</p>`;
   const B = { close: L('Kıl payı', 'So close') };
