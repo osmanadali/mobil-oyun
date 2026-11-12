@@ -16,7 +16,8 @@ window.FX_EXTRA = (() => {
     q.st = (q, dt, c, active) => {
       if (!active && q.y < 0) return false;
       q.vy += 120 * dt; q.y += q.vy * dt; q.x += q.vx * dt; q.a += q.va * dt;
-      if (q.y >= floor) { q.land = { x: q.x, y: floor, a: q.a, s: q.s, col: q.col, col2: q.col2, dr: (c, l) => { c.translate(l.x, l.y); c.rotate(l.a); draw(c, l); } }; return false; }
+      if (q.y >= floor && !q.hit) { q.hit = 1; q.y = floor; q.vy = -q.vy * R(.3, .42); q.vx *= .6; q.va *= .5; }   // dibe çarpınca bir tık seker
+      else if (q.y >= floor) { q.land = { x: q.x, y: floor, a: q.a, s: q.s, col: q.col, col2: q.col2, dr: (c, l) => { c.translate(l.x, l.y); c.rotate(l.a); draw(c, l); } }; return false; }
       c.translate(q.x, q.y); c.rotate(q.a); draw(c, q);
     };
     return q;
@@ -220,7 +221,15 @@ window.FX_EXTRA = (() => {
         out.push({ t: -d, st(q, dt, c) { q.t += dt; if (q.t < 0) return; if (q.t > 3.2) return false; const a = Math.sin(Math.min(1, q.t / 3.2) * Math.PI); ghost(c, x0 + Math.sin(q.t * 2) * 14, H * .78 - q.t * 70, 3.4, q.t, a * .9); } });
       }
       // dipte bal kabakları belirir (yavaşça büyür)
-      for (let i = 0; i < 5; i++) { const x = W * (.1 + i * .2) + R(-12, 12), r = R(7, 10), d = .4 + i * .25; out.push({ t: -d, st(q, dt, c, act) { q.t += dt; if (q.t < 0) return; const g = Math.min(1, q.t / .5); if (!act && q.t > 6) return false; glow(c, x, H - r, r * 3, '255,140,40', .35 * g); pumpkin(c, x, H - r * g + 2, r * g, .85 + .15 * Math.sin(q.t * 15 + i)); } }); }
+      // dipte, ekranın biraz içinde bal kabakları (uzaktaki küçük ve yukarıda, yakındaki büyük ve aşağıda) yavaşça belirir
+      const pk = Array.from({ length: 6 }, (_, i) => ({ x: W * (.08 + i * .168) + R(-10, 10), z: [.15, .7, .35, .9, .5, .2][i] })).sort((a, b) => a.z - b.z);
+      pk.forEach(({ x, z }, i) => {
+        const r = 5 + z * 6, y = H - 26 - (1 - z) * 54, d = .4 + i * .2;
+        out.push({ t: -d, st(q, dt, c, act) { q.t += dt; if (q.t < 0) return; if (!act && q.t > 6) return false; const g = Math.min(1, q.t / .6), e = 1 - Math.pow(1 - g, 3);
+          c.globalAlpha = (.55 + z * .45) * g;
+          c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(x, y + r * .85, r * 1.3, r * .3, 0, 0, TAU); c.fill();
+          glow(c, x, y, r * 3.2, '255,140,40', .3 * g); pumpkin(c, x, y + (1 - e) * 6, r * (.6 + .4 * e), .85 + .15 * Math.sin(q.t * 15 + i)); } });
+      });
       return out;
     },
   };
@@ -253,14 +262,30 @@ window.FX_EXTRA = (() => {
       for (let x = 40; x < B.x0 - 4; x += 16) { glow(c, x, B.y - 6, 5, '255,90,60', .35); c.fillStyle = '#e63232'; c.beginPath(); c.ellipse(x, B.y - 6, 1.6, 1.3, 0, 0, TAU); c.fill(); c.fillStyle = '#ffcf4d'; c.fillRect(x - .2, B.y - 4.8, .4, 1.1); }
     },
     over(c, B, W, t, speed) {
-      // ejder başı: trenin burnu; bıyıklar rüzgârda dalgalanır, sırtta altın pullar
-      const x = nose(B) - 2, y = B.y - 1;
-      for (let i = 0; i < 6; i++) { const px = B.x0 + 3 + i * 5.4; c.fillStyle = '#ffcf4d'; c.beginPath(); c.moveTo(px, roof(B) + .4); c.lineTo(px + 1.3, roof(B) - 1.6); c.lineTo(px + 2.6, roof(B) + .4); c.fill(); }
-      c.fillStyle = '#e63232'; c.beginPath(); c.moveTo(x - 4, y - 4.5); c.quadraticCurveTo(x + 5, y - 6, x + 6.5, y - .5); c.quadraticCurveTo(x + 5, y + 3.6, x - 4, y + 4.2); c.closePath(); c.fill();
-      c.fillStyle = '#ffcf4d'; c.beginPath(); c.moveTo(x - 1, y - 4.6); c.lineTo(x - 4, y - 8); c.lineTo(x + 1, y - 5); c.fill();
-      c.fillStyle = '#fff'; c.beginPath(); c.arc(x + 2.4, y - 2.2, .9, 0, TAU); c.fill(); c.fillStyle = '#111'; c.beginPath(); c.arc(x + 2.7, y - 2.2, .45, 0, TAU); c.fill();
-      c.strokeStyle = '#ffcf4d'; c.lineWidth = .5;
-      for (const k of [-1, 1]) { c.beginPath(); c.moveTo(x + 5.5, y + .3 * k); for (let s = 1; s <= 6; s++) c.lineTo(x + 5.5 - s * 1.8, y + .3 * k + k * s * .5 + Math.sin(t * 7 + s * .9 + k) * 1.1); c.stroke(); }
+      // tren boyunca uçan ejderha: yılan gibi dalgalanan gövde, sırtta altın dikenler, başta boynuz ve bıyık; ara sıra alev püskürtür
+      const N = 16, hx = B.x1 + 3, tx = B.x0 - 4, base = roof(B) - 6;
+      const pts = Array.from({ length: N }, (_, i) => { const u = i / (N - 1); return [hx + (tx - hx) * u, base + Math.sin(t * 5.5 - i * .62) * (1.2 + u * 2.4) - Math.sin(u * Math.PI) * 1.5]; });
+      c.lineCap = 'round'; c.lineJoin = 'round';
+      const path = () => { c.beginPath(); c.moveTo(...pts[0]); for (let i = 1; i < N - 1; i++) c.quadraticCurveTo(pts[i][0], pts[i][1], (pts[i][0] + pts[i + 1][0]) / 2, (pts[i][1] + pts[i + 1][1]) / 2); c.lineTo(...pts[N - 1]); };
+      glow(c, (hx + tx) / 2, base, 30, '255,90,60', .18);
+      for (let i = 2; i < N - 2; i += 2) { const [x, y] = pts[i], w = 1.6 - i / N; c.fillStyle = '#ffcf4d'; c.beginPath(); c.moveTo(x - w, y - 1); c.lineTo(x, y - 2.6 - w); c.lineTo(x + w, y - 1); c.fill(); }   // sırt dikenleri
+      c.strokeStyle = '#e63232'; c.lineWidth = 3; path(); c.stroke();
+      c.strokeStyle = '#ffcf4d'; c.lineWidth = .8; c.save(); c.translate(0, .9); path(); c.restore(); c.stroke();   // altın karın
+      const [tx2, ty2] = pts[N - 1]; c.fillStyle = '#ffcf4d'; c.beginPath(); c.moveTo(tx2, ty2 - 1.5); c.lineTo(tx2 - 3.5, ty2 - .2 + Math.sin(t * 6) * 1.2); c.lineTo(tx2, ty2 + 1.5); c.fill();   // kuyruk püskülü
+      // baş
+      const [x, y] = pts[0], dy = pts[0][1] - pts[1][1], a = Math.atan2(dy, 3);
+      c.save(); c.translate(x, y); c.rotate(a);
+      c.fillStyle = '#e63232'; c.beginPath(); c.moveTo(-2, -2.4); c.quadraticCurveTo(3, -3.2, 4.6, -.4); c.lineTo(4.2, .9); c.quadraticCurveTo(2, 2.4, -2, 2.2); c.closePath(); c.fill();
+      c.fillStyle = '#ffcf4d'; c.beginPath(); c.moveTo(-.5, -2.3); c.lineTo(-3.3, -4.6); c.lineTo(.8, -2.6); c.fill();
+      c.fillStyle = '#fff'; c.beginPath(); c.arc(1.7, -1, .65, 0, TAU); c.fill(); c.fillStyle = '#111'; c.beginPath(); c.arc(1.9, -1, .32, 0, TAU); c.fill();
+      c.strokeStyle = '#ffcf4d'; c.lineWidth = .4;
+      for (const k of [-1, 1]) { c.beginPath(); c.moveTo(4, .4 * k); for (let s2 = 1; s2 <= 6; s2++) c.lineTo(4 - s2 * 1.5, .4 * k + k * s2 * .35 + Math.sin(t * 7 + s2 * .9 + k) * .9); c.stroke(); }
+      c.restore();
+      // alev: her ~1,8 sn'de bir kısa püskürme
+      const ph = (t % 1.8) / 1.8;
+      if (ph < .32) { const k = ph / .32;
+        for (let i = 0; i < 7; i++) { const d = (i / 6) * 14 * Math.sin(k * Math.PI), fx = x + 5 + d, fy = y + .8 + Math.sin(i * 2.1 + t * 30) * d * .12, rr = 1 + d * .18;
+          glow(c, fx, fy, rr * 2.6, i < 3 ? '255,230,140' : '255,120,40', .75 * Math.sin(k * Math.PI)); } }
     },
     win(W, H) {
       const out = [], cols = ['255,90,60', '255,207,77', '255,150,60', '255,236,170'];
