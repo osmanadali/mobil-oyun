@@ -1312,3 +1312,67 @@ fr: Plus de temps sur les premières lignes ; sur les deux premières, le chrono
 ko: 처음 노선들은 시간이 더 넉넉해요. 처음 두 노선에서는 시간이 지나도 생명이 줄지 않아요
 ja: 最初の路線は時間に余裕が。最初の2路線では時間切れでライフが減りません
 zh: 前幾條路線時間更寬裕；前兩條路線超時不扣生命
+@ +1 more ticket 🎫
+de: +1 weiteres Ticket 🎫
+es: +1 billete más 🎫
+pt: +1 bilhete a mais 🎫
+fr: +1 ticket de plus 🎫
+ko: 티켓 +1 추가 🎫
+ja: チケットをもう1枚 🎫
+zh: 再得 1 張車票 🎫
+@ +1 ❤️ right away
+de: +1 ❤️ sofort
+es: +1 ❤️ al instante
+pt: +1 ❤️ na hora
+fr: +1 ❤️ tout de suite
+ko: 즉시 ❤️ +1
+ja: すぐに ❤️ +1
+zh: 立即 +1 ❤️
+@ costs no lives
+de: kostet keine Leben
+es: no gasta vidas
+pt: não gasta vidas
+fr: ne coûte pas de vie
+ko: 생명 소모 없음
+ja: ライフを使いません
+zh: 不消耗生命
+@ Daily gift
+de: Tagesgeschenk
+es: Regalo diario
+pt: Presente diário
+fr: Cadeau du jour
+ko: 오늘의 선물
+ja: 毎日のプレゼント
+zh: 每日禮物
+@ A hint, ticket or booster
+de: Ein Tipp, Ticket oder Booster
+es: Una pista, un billete o un potenciador
+pt: Uma dica, um bilhete ou um reforço
+fr: Un indice, un ticket ou un bonus
+ko: 힌트, 티켓 또는 부스터
+ja: ヒント・チケット・ブースターのどれか
+zh: 提示、車票或加成道具
+@ Watch
+de: Ansehen
+es: Ver
+pt: Assistir
+fr: Regarder
+ko: 보기
+ja: 見る
+zh: 觀看
+@ 🎁 +2 hints
+de: 🎁 +2 Tipps
+es: 🎁 +2 pistas
+pt: 🎁 +2 dicas
+fr: 🎁 +2 indices
+ko: 🎁 힌트 +2
+ja: 🎁 ヒント +2
+zh: 🎁 +2 次提示
+@ 🎁 +1 ticket 🎫
+de: 🎁 +1 Ticket 🎫
+es: 🎁 +1 billete 🎫
+pt: 🎁 +1 bilhete 🎫
+fr: 🎁 +1 ticket 🎫
+ko: 🎁 티켓 +1 🎫
+ja: 🎁 チケット +1 🎫
+zh: 🎁 +1 張車票 🎫

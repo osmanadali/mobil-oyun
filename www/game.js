@@ -181,7 +181,7 @@ const SKINS = [
   { id: 'fener', sea: '🌙', name: L('Bayram Fenerleri', 'Eid Lanterns'), lines: ['#ffd36b', '#4fd1c5', '#c39bff', '#ff9fb2', '#7fd0ff', '#f7b267'], acc: ['#ffd36b', '#4fd1c5'], glow: ['#b8862b', '#147d7a', '#7b4bff'] },
   { id: 'kurban', sea: '🌤', name: L('Bayram Sabahı', 'Eid Morning'), lines: ['#8fe388', '#ffd6a5', '#6ec6ff', '#ffb38a', '#c9f2a0', '#a8b8ff'], acc: ['#8fe388', '#6ec6ff'], glow: ['#3f9f5f', '#ffb36b', '#3a7bd5'] },
 ];
-const crownCount = () => Object.keys(save.crowns).length + (save.dCrowns || 0) + (save.fc || 0) + (save.cc || 0) + (save.qc || 0) + (save.dqc || 0) + (save.aCrowns || 0) + (save.dt || 0);   // toplam kazanılan 🎫 (bölüm + günlük kusursuz + final + seri bonusu + haftalık görev + arşiv + Günün Hattı bitişi)
+const crownCount = () => Object.keys(save.crowns).length + (save.vc || 0) + (save.dCrowns || 0) + (save.fc || 0) + (save.cc || 0) + (save.qc || 0) + (save.dqc || 0) + (save.aCrowns || 0) + (save.dt || 0);   // toplam kazanılan 🎫 (bölüm + günlük kusursuz + final + seri bonusu + haftalık görev + arşiv + Günün Hattı bitişi)
 const crownBal = () => crownCount() + (save.bCrowns || 0) - (save.spent || 0);       // harcanabilir bakiye (satın alınan 🎫 dahil)
 // sandık yalnız kazanılan 🎫 ile açılır: satın alınan bilet (bCrowns, harcanan kısmı bSpent) yalnız temaya → parayla rastgele ödül yok
 const chestBal = () => crownCount() - ((save.spent || 0) - (save.bSpent || 0));
@@ -997,11 +997,24 @@ function tick() {
 }
 // güçlendirici düğmeleri: yalnız işe yaradığı an (geri al: geçmiş varken · fener: karanlık tünelde · +15: son 10 sn, ⏱ yıldızı yanarken)
 function bstUi(left = G ? G.lim.t - elapsed() / 1000 : 0, dLeft = G?.lim.dl ? G.lim.dl - elapsed() / 1000 : Infinity) {
-  const live = G && !G.won && !G.over, set = (id, k, on) => { const b = $(id); b.hidden = !on; if (on) b.lastChild.textContent = bst(k); };
+  // güçlendirici bitmişse: video izleyerek 1 tane (bölüm başına her biri bir kez) — düğmede sayı yerine ▶
+  const live = G && !G.won && !G.over, can = k => bst(k) > 0 || (Ads.online() && !G.bv?.[k]);
+  const set = (id, k, on) => { const b = $(id); b.hidden = !on; if (on) { b.lastChild.textContent = bst(k) || '▶'; b.classList.toggle('vid', !bst(k)); } };
   set('gUndo', 'geri', live && bst('geri') > 0 && G.hist?.length > 0);
-  set('gLamp', 'fener', live && bst('fener') > 0 && G.fog && !(G.lamp > performance.now()));
-  set('gPlus', 'sure', live && !G.zen && bst('sure') > 0 && ((left > 0 && left <= 10) || (dLeft > 0 && dLeft <= 10)));   // son süreye 10 sn kala da
+  set('gLamp', 'fener', live && can('fener') && G.fog && !(G.lamp > performance.now()));
+  set('gPlus', 'sure', live && !G.zen && can('sure') && ((left > 0 && left <= 10) || (dLeft > 0 && dLeft <= 10)));   // son süreye 10 sn kala da
   document.querySelector('#game .bottom').classList.toggle('bx', ['gUndo', 'gLamp', 'gPlus'].some(id => !$(id).hidden));
+}
+// güçlendirici yoksa ▶ video: izlenirken süre durur (pause), ödül gelince hemen kullanılır
+async function bstAd(k, use) {
+  if (bst(k) > 0) return use();
+  if (!G || G.won || G.over || G.bv?.[k] || Ads.busy()) return;
+  const g = G; g.bv = { ...g.bv, [k]: 1 }; pause(); Music.stop();
+  const ok = await video(); Music.start();
+  if (G !== g) return;
+  resume();
+  if (!ok) { g.bv[k] = 0; bstUi(); return; }
+  save.bst = { ...save.bst, [k]: bst(k) + 1 }; persist(); window.Olcum?.event?.('booster_ad', { booster: k }); use();
 }
 function undo() {
   if (!G || G.won || G.over || !G.hist?.length || bst('geri') < 1) return;
@@ -1401,7 +1414,7 @@ function win() {
   const sum = { stars: st, time_s: G.time / 1000 | 0, moves: G.moves, hints: G.hu || 0, perfect, zen };
   Object.assign(sum, Jank.take());   // bu bölümde takılan kare sayısı ve toplam süresi
   if (G.daily) Olcum.event('daily_end', { ...sum, mode: G.arch ? 'archive' : 'daily', practice: !!G.practice, streak: save.streak }); else Olcum.event('level_end', { ...lvlP(), ...sum });
-  const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { zen, st, tOk, mOk, perfect, extra: [tkMsg, cmsg, shardMsg, extra].filter(Boolean).join(' · '), unlockedNow, ns, dbl, combo, broke, near };
+  const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { zen, st, tOk, mOk, perfect, extra: [tkMsg, cmsg, shardMsg, extra].filter(Boolean).join(' · '), unlockedNow, ns, dbl, tk: shard && !zen, combo, broke, near };
   winTimer = setTimeout(() => { if (G === g && active('game')) { winSheet(g, info); let rv = false; if (!g.daily && !g.practice) setTimeout(() => { if (G === g && active('game')) rv = maybeReview(st); }, 1100);
     setTimeout(() => { if (G === g && active('game') && !rv && !modalOpen()) maybeOffer(g); }, 1500); } }, wait);   // puan istendiyse teklif bu tur yok
   if (!g.daily) idle(() => puzzleFor(g.lvl + 1), wait + 600);   // sonraki bölüm hazır olsun: panel kayarak oturunca, ilk boş anda (geçişte takılma olmasın)
@@ -1409,7 +1422,7 @@ function win() {
 // Sonuç paneli tahtanın altına yerleşir; tahta küçülüp üstte görünür kalır. Tahtaya dokununca panel küçülür / büyür.
 // Tekrar sağ üstteki ↺, ana sayfa sol üstteki ‹ → panelde tek ana düğme kalır (boşalan yer bölüm sonu başarımlarına).
 // Kıl payı ya da kırılan seri → "Tekrar dene" büyük düğmeye geçer, Sonraki altına küçük iner.
-function winSheet(g, { zen, st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, combo, broke, near }) {
+function winSheet(g, { zen, st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, tk, combo, broke, near }) {
   const lim = g.lim, nx = g.lvl + 1, nxLocked = !g.daily && !unlocked(lineOf(nx)), again = !g.daily && (near || broke >= 2);
   const badge = unlockedNow ? `<span class="badge">${L('YENİ HAT AÇILDI', 'NEW LINE OPEN')} · M${unlockedNow + 1}</span>` : ns ? `<span class="badge">${L('TEMA ALINABİLİR', 'NEW THEME')} 🎨</span>` : perfect ? `<span class="badge">${L('KUSURSUZ', 'PERFECT')}${combo >= 2 ? ` · ✨${combo}` : ''}</span>` : zen ? '<span class="badge">🍃 ZEN</span>' : '';
   const late = Math.floor(g.time / 1000) - lim.t, over = g.moves - lim.m;
@@ -1427,11 +1440,11 @@ function winSheet(g, { zen, st, tOk, mOk, perfect, extra, unlockedNow, ns, dbl, 
        <div class="row2">${nxLocked ? `<button id="mMap" class="btn glassbtn">${L('Hatlar', 'Lines')}</button>` : `<button id="mNext" class="btn glassbtn">${L('Sonraki', 'Next')}</button>`}</div>`
       : nxLocked ? `<button id="mMap" class="btn primary"><span>${L('Yeni hat kilitli', 'Next line locked')}</span><small>★ ${totalStars()} / ${need(lineOf(nx))} · ${L('yıldız topla', 'earn stars')}</small></button>` : `<button id="mNext" class="btn primary"><span>${L('Sonraki', 'Next')}</span><small>${L('Bölüm', 'Level')} ${nx}</small></button>`;
   $('winPanel').innerHTML = `<div class="wp-top"><div class="wp-sum">${starsHtml([true, tOk, mOk])}<div class="wp-t"><h2>${g.arch ? L('Geçmiş gün tamam!', 'Past day done!') : g.practice ? L('Pratik tamam!', 'Practice done!') : g.daily ? L('Günün Hattı tamam!', 'Daily Line done!') : L('Hat açıldı!', 'Connected!')}</h2>${badge}</div></div></div>
-    <div class="wp-more">${zen ? `<div class="statrow"><div><b>${fmtT(g.time)}</b><span>⏱ ${L('süre', 'time')}</span></div><div><b>${g.moves}</b><span>↻ ${L('hamle', 'moves')}</span></div></div>` : `<div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(lim.t * 1000)}</small></b><span>${tOk ? L('⏱ tam vaktinde ★', '⏱ on time ★') : L('⏱ rötar ✗', '⏱ late ✗')}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${lim.m}</small></b><span>↻ ${L('hamle', 'moves')} ${mOk ? '★' : '✗'}</span></div></div>`}${tip}${extra ? `<p class="tip">${extra}${dbl && Ads.online() ? ` <button id="mDbl" class="dbl">${L('▶ 2 katı', '▶ Double')}</button>` : ''}</p>` : ''}${adFree}</div>
+    <div class="wp-more">${zen ? `<div class="statrow"><div><b>${fmtT(g.time)}</b><span>⏱ ${L('süre', 'time')}</span></div><div><b>${g.moves}</b><span>↻ ${L('hamle', 'moves')}</span></div></div>` : `<div class="statrow"><div><b class="${tOk ? 'ok' : 'miss'}">${fmtT(g.time)}<small> / ${fmtT(lim.t * 1000)}</small></b><span>${tOk ? L('⏱ tam vaktinde ★', '⏱ on time ★') : L('⏱ rötar ✗', '⏱ late ✗')}</span></div><div><b class="${mOk ? 'ok' : 'miss'}">${g.moves}<small> / ${lim.m}</small></b><span>↻ ${L('hamle', 'moves')} ${mOk ? '★' : '✗'}</span></div></div>`}${tip}${extra ? `<p class="tip">${extra}${dbl && Ads.online() ? ` <button id="mDbl" class="dbl">${L('▶ 2 katı', '▶ Double')}</button>` : tk && Ads.online() ? ` <button id="mTk" class="dbl">${L('▶ +1 🎫', '▶ +1 🎫')}</button>` : ''}</p>` : ''}${adFree}</div>
     ${primary}`;
   $('game').classList.add('won'); $('bBack').setAttribute('aria-label', L('Ana sayfa', 'Home'));
   Ads.warm();   // sakin an: oyuncu sonucu okuyor → eksik reklam şimdi yüklenir (bölüm açılırken değil)
-  bind({ mNext: next, mGo: () => start('level'), mArch: () => { show('home'); archSheet(); }, mDbl: () => doubleReward(dbl), mAdFree: shopSheet, mMap: () => show('map'), mRetry: () => start('level', g.lvl) });
+  bind({ mNext: next, mGo: () => start('level'), mArch: () => { show('home'); archSheet(); }, mDbl: () => doubleReward(dbl), mTk: ticketVideo, mAdFree: shopSheet, mMap: () => show('map'), mRetry: () => start('level', g.lvl) });
   $('winPanel').querySelector('.wp-top').onclick = () => { if ($('game').classList.contains('mini')) toggleMini(); };   // küçükken başlığa dokunmak da açar
 }
 const NO_REWARD = L('Ödül alınamadı · video sonuna kadar izlenmeli', 'No reward · watch the video to the end'), NO_NET = L('Bağlantı yok · sonra dene', 'No connection · try later');
@@ -1445,6 +1458,15 @@ async function video() {
   return r === 'earned';
 }
 // hat sonu / Günün Hattı ödülü: isteğe bağlı bir video → ödül bir kez daha
+// kusursuz bölümün biletini videoyla ikiye katla (bölüm başına bir kez; save.vc kazanılan 🎫 sayılır → sandıkta da geçer)
+async function ticketVideo() {
+  const b = $('mTk'); if (!b || Ads.busy()) return;
+  b.disabled = true; b.textContent = L('Yükleniyor…', 'Loading…'); Music.stop();
+  const ok = await video(); Music.start();
+  if (!ok) { b.disabled = false; b.textContent = '▶ +1 🎫'; return; }
+  save.vc = (save.vc || 0) + 1; persist(); refreshHome(); window.Olcum?.event?.('ticket_ad');
+  b.outerHTML = `<b class="dblok">✓ +1 🎫</b>`; haptic('heavy'); tone(note(9), .3, .045); toast(L('+1 bilet daha 🎫', '+1 more ticket 🎫'));
+}
 async function doubleReward(n) {
   const b = $('mDbl'); if (!b || Ads.busy()) return;
   b.disabled = true; b.textContent = L('Yükleniyor…', 'Loading…'); Music.stop();
@@ -2043,10 +2065,12 @@ function lifePop(lvl = save.level, failed = false) {
     $('lpI').textContent = m === 'empty' ? '❤️‍🩹' : '❤️';
     $('lpH').textContent = m === 'empty' ? L('Canın bitti', 'Out of lives') : m === 'inf' ? L('Sınırsız can', 'Unlimited lives') : `❤️ ${n} / ${LIFE_MAX}`;
     $('lpP').innerHTML = m === 'empty' ? (failed ? L('🚉 Son tren kaçtı, <b class="nw">son canın</b> gitti. ', '🚉 The last train left and took your <b class="nw">last life</b>. ') : '') + L('Her 6 dakikada 1 can dolar. Günün Hattı ve 🍃 Zen can harcamaz.', 'One life refills every 6 minutes. The Daily Line and 🍃 Zen cost no lives.') : '';
+    // can yok: üç yol — ▶ video (+1 ❤️ hemen) · ☀️ Günün Hattı (can harcamaz, bugün bitmediyse) · 🛍️ sınırsız can
+    const dOk = save.dailyDone !== today();
     $('lpAct').innerHTML = m === 'empty'
-      ? `${Ads.online() ? `<button id="lpVid" class="btn primary"><span>${L('▶ Video izle', '▶ Watch a video')}</span><small>+1 ❤️</small></button>` : ''}<button id="lpShop" class="btn ${Ads.online() ? 'glassbtn' : 'primary'}"><span>🛒 ${L('Mağaza', 'Shop')}</span><small>${L('❤️∞ sınırsız can paketi', '❤️∞ unlimited lives pack')}</small></button>`
+      ? `${Ads.online() ? `<button id="lpVid" class="btn primary"><span>${L('▶ Video izle', '▶ Watch a video')}</span><small>${L('+1 ❤️ hemen', '+1 ❤️ right away')}</small></button>` : ''}${dOk ? `<button id="lpDay" class="btn ${Ads.online() ? 'glassbtn' : 'primary'}"><span>☀️ ${L('Günün Hattı', 'Daily Line')}</span><small>${L('can harcamaz', 'costs no lives')}</small></button>` : ''}<button id="lpShop" class="btn glassbtn"><span>🛍️ ${L('Sınırsız can', 'Unlimited lives')}</span><small>${L('Mağaza', 'Shop')}</small></button>`
       : `<button id="lpGo" class="btn primary"><span>${L('Oyna', 'Play')}</span><small>${L('Bölüm', 'Level')} ${lvl}</small></button>`;
-    bind({ lpVid: lifeVideo, lpShop: () => storeSheet('star'), lpGo: () => start('level', lvl) });
+    bind({ lpVid: lifeVideo, lpDay: () => { closeModal(); start('daily'); }, lpShop: () => storeSheet('star'), lpGo: () => start('level', lvl) });
   };
   async function lifeVideo() {
     const b = $('lpVid'); if (!b || Ads.busy()) return;
@@ -2112,15 +2136,32 @@ function questSheet() {
   const got = `<b>✓</b>`, take = id => `<button class="qget" data-q="${id}">${L('Topla', 'Collect')}</button>`;
   const row = (q, rw, id) => `<div class="${q.p >= q.n ? 'ok' : ''}${q.r ? ' pend' : ''}"><span>${QUESTS[q.t].txt(q.n)}</span>${q.r ? take(id) : q.p >= q.n ? got : `<b>${q.p}/${q.n}</b>`}<i style="width:${Math.round(q.p / q.n * 100)}%"></i><small>${rw}</small></div>`;
   const bonus = (x, id, tr, en, rw) => `<div class="qall${x.ar ? ' pend' : x.all ? ' ok' : ''}"><span>${L(tr, en)} → <b>${rw}</b></span>${x.ar ? take(id) : x.all ? got : ''}</div>`;
+  const gift = save.giftDay !== today() && Ads.online();   // 🎁 günde bir ▶ video → küçük hediye
   modal(`<h2>🎯 ${L('Görevler', 'Quests')}</h2>
+    ${gift ? `<button id="mGift" class="giftrow"><i>🎁</i><span><b>${L('Günlük hediye', 'Daily gift')}</b><small>${L('İpucu, bilet ya da güçlendirici', 'A hint, ticket or booster')}</small></span><em>▶ ${L('İzle', 'Watch')}</em></button>` : ''}
     <div class="nexts"><small><b>☀️ ${L('Bugün', 'Today')}</b></small><small>${L('Gece yarısı yenilenir', 'Resets at midnight')}</small></div>
     <div class="quests">${dq.q.map((q, i) => row(q, '+1 💡', 'd' + i)).join('')}${bonus(dq, 'da', 'Üçü birden', 'All three', '+1 🎫')}</div>
     <div class="nexts"><small><b>📅 ${L('Bu hafta', 'This week')}</b></small><small>${left <= 1 ? L('Yarın yenilenir', 'New quests tomorrow') : L(`${left} gün sonra yenilenir`, `New quests in ${left} days`)}</small></div>
     <div class="quests">${w.q.map((q, i) => row(q, `+1 🎫 · +1 ${RW_TXT[QUESTS[q.t].rw]}`, 'w' + i)).join('')}${bonus(w, 'wa', 'Üçü birden', 'All three', '+2 🎫')}</div>
     <p class="tip">${L('Günün Hattı → +1 🎫', 'Daily Line → +1 🎫')}${wr ? `<br>${L('Pazar', 'Sunday')}: ${L('haftanın kuralı', 'rule of the week')} · <b>${RULES[RULE_LINE[wr]].name}</b>` : ''}</p>
     <button id="mArch" class="btn primary"><span>📅 ${L('Geçmiş günler', 'Past days')}</span><small>${L(`${ARCH_COST} bilet = 1 gün`, `${ARCH_COST} tickets = 1 day`)}</small></button>
-    <button id="mClose" class="btn glassbtn">${L('Tamam', 'OK')}</button>`, { mArch: archSheet, mClose: closeModal });
+    <button id="mClose" class="btn glassbtn">${L('Tamam', 'OK')}</button>`, { mArch: archSheet, mClose: closeModal, mGift: dailyGift });
   $('mCard').querySelectorAll('.qget').forEach(b => b.onclick = () => qClaim(b));
+}
+// 🎁 günlük hediye (günde bir video): 2 ipucu · 1 🎫 · 1 güçlendirici (hangisi geleceği sırayla döner, şans yok)
+async function dailyGift() {
+  const b = $('mGift'); if (!b || Ads.busy() || save.giftDay === today()) return;
+  b.disabled = true; b.querySelector('em').textContent = L('Yükleniyor…', 'Loading…'); Music.stop();
+  const ok = await video(); Music.start();
+  if (!ok) { b.disabled = false; b.querySelector('em').textContent = '▶ ' + L('İzle', 'Watch'); return; }
+  const n = save.giftN = (save.giftN || 0) + 1, k = n % 3, bk = BST[Math.floor(n / 3) % BST.length];
+  save.giftDay = today();
+  let msg;
+  if (k === 1) { save.hints += 2; msg = L('🎁 +2 ipucu', '🎁 +2 hints'); }
+  else if (k === 2) { save.vc = (save.vc || 0) + 1; msg = L('🎁 +1 bilet 🎫', '🎁 +1 ticket 🎫'); }
+  else { save.bst = { ...save.bst, [bk.id]: bst(bk.id) + 1 }; msg = `🎁 +1 ${bk.ic} ${bk.name}`; }
+  persist(); refreshHome(); window.Olcum?.event?.('daily_gift_ad', { kind: k });
+  haptic('win'); tone(note(9), .3, .05); toast(msg); questSheet();
 }
 // bildirimden Görevler: bölüm oynanırken süre durur (pencere kapanınca closeModal sürdürür); kilitli pencere (anlatıcı) varken açılmaz
 function goQuests() {
@@ -2655,7 +2696,7 @@ $('bShop').onclick = () => storeSheet();
 $('pBack').onclick = () => show('home');
 $('bBack').onclick = () => G && !G.won && !G.over && active('game') && !modalOpen() ? pauseSheet() : show('home');
 $('bReset').onclick = reset;
-$('bHint').onclick = hint; $('gUndo').onclick = undo; $('gLamp').onclick = lamp; $('gPlus').onclick = plus15;
+$('bHint').onclick = hint; $('gUndo').onclick = undo; $('gLamp').onclick = () => bstAd('fener', lamp); $('gPlus').onclick = () => bstAd('sure', plus15);
 $('bSettings').onclick = settings;
 $('streakChip').onclick = e => { e.stopPropagation(); rescueOk() ? rescueSheet() : streakSheet(); };   // Günün Hattı kartının içinde: kart açılmasın
 $('lifeChip').onclick = () => lifePop();
