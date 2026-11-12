@@ -15,7 +15,7 @@ const LOC = RAY_LOCALE;                                  // tarih biçimi (i18n.
 const pl = (n, one, many) => n === 1 ? one : many;      // İngilizce tekil/çoğul
 const LINE0 = 12, LINE_STEP = 4, LINE_MAX = 28;         // hat uzunluğu: M1 12 bölüm, her hat +4 (16, 20, 24), M5'ten sonra hep 28
 const STAR_AVG = 2.2;                                   // yeni hat: önceki bölümlerde ortalama 2,2★
-const INTER_EVERY = 4;                                  // her 4 galibiyette 1 geçiş reklamı
+const INTER_EVERY = 4;                                  // her 4 bölümde 1 geçiş reklamı (kayıtlı sayaç save.adW)
 const DAILY_FREE_HINTS = 3;
 const TEST = !!window.__rayTest;                        // yalnız "her şey açık" test APK'sı (apk.yml → unlocked): bütün hatlar ve bölümler açık
 const AD_TIERS = [1, 2, 2, 3];                          // aynı bölümde ipucu için izlenecek video: ~15 sn, ~30, ~30, ~45…
@@ -1362,7 +1362,9 @@ function win() {
       questStep('daily');
     }
   } else {
-    if (++sessionWins % INTER_EVERY === 0 && !save.noAds && save.played >= 5) interDue = true;
+    // geçiş reklamı: her 4 bölümde bir (sayaç kayıtta: uygulamayı kapatıp açınca sıfırlanmaz); ilk 5 bölümde yok, reklamsız pakette yok
+    save.adW = (save.adW || 0) + 1; sessionWins++;
+    if (save.adW >= INTER_EVERY && !save.noAds && save.played >= 5) interDue = true;
     const before = totalStars(), old = save.stars[G.lvl] || 0, firstClear = G.lvl >= save.level;
     // haftalık görev: taçlı bölümü yeniden oynamak sayılmaz (kolay bölümde biriktirilmesin)
     if (firstClear || !save.crowns[G.lvl]) { questStep('win'); if (!G.hinted) questStep('nohint'); if (perfect) questStep('perfect'); }
@@ -1462,7 +1464,7 @@ async function next() {
   const g = G; if (g.going) return; g.going = 1;   // çift dokunuş tek geçiş: reklam sürerken ikinci basış bölüm atlatmasın
   // sıra gelmiş, bu turda ödüllü video izlenmemiş → geçiş reklamı; gösterilemezse (hazır değil, 90 sn dolmadı) sıra korunur
   if (interDue && !g.daily && !save.noAds && !g.vid) {
-    Music.stop(); if (await Ads.interstitial()) interDue = false; Music.start();
+    Music.stop(); if (await Ads.interstitial()) { interDue = false; save.adW = 0; persist(); } Music.start();
   }
   if (G === g) start('level', g.lvl + 1);
 }
