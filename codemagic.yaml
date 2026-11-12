@@ -43,19 +43,15 @@ workflows:
           tools/ios/hazirla.sh
           grep -c 'window.RAY_ADS' www/index.html
           npx cap sync ios
-      - name: Arşivle (otomatik imza)
+      - name: Arşivle (imzasız; imza dışa aktarımda)
         script: |
-          # Codemagic makinelerinin adı hep aynı: Xcode "bu makinenin geliştirici sertifikası var ama anahtarı yok" deyip durur.
-          # Her derlemede makineye kendine özel ad verilir, Xcode bu ada yeni sertifika oluşturur (GitHub'da makine adı zaten her seferinde farklı).
-          N="ray-cm-$(echo "${CM_BUILD_ID:-$RANDOM$RANDOM}" | tr -cd 'A-Za-z0-9' | cut -c1-12)"
-          sudo scutil --set ComputerName "$N"; sudo scutil --set LocalHostName "$N"; sudo scutil --set HostName "$N"
-          echo "Makine adı: $(scutil --get ComputerName)"
-          K="$CM_BUILD_DIR/../AuthKey.p8"
+          # Codemagic sanal makinelerinin donanım kimliği hep aynı: arşivde geliştirici imzası istenirse Xcode
+          # "bu makinenin sertifikası var ama anahtarı yok" deyip durur. Arşiv imzasız alınır; dışa aktarım App Store
+          # dağıtım imzasını Apple'ın bulut sertifikasıyla (API anahtarı) atar, makineye bağlı sertifika gerekmez.
           xcodebuild archive -project ios/App/App.xcodeproj -scheme App -configuration Release \
             -destination 'generic/platform=iOS' -archivePath build/Ray.xcarchive \
-            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CURRENT_PROJECT_VERSION="$VERSION_CODE" CODE_SIGN_STYLE=Automatic \
-            -allowProvisioningUpdates -authenticationKeyPath "$K" \
-            -authenticationKeyID "$APPSTORE_API_KEY_ID" -authenticationKeyIssuerID "$APPSTORE_API_ISSUER_ID" > archive.log 2>&1 \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CURRENT_PROJECT_VERSION="$VERSION_CODE" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" > archive.log 2>&1 \
             || { grep -E "error:" archive.log | sort -u | head -40; tail -60 archive.log; exit 1; }
           grep -E "\*\* ARCHIVE" archive.log || true
       - name: Arşivi denetle (gerçek AdMob, sürüm, iPhone + iPad, diller)
