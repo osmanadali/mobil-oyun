@@ -1669,7 +1669,18 @@ const ART = (() => {
     themes: svg(['#7aa7ff', '#5cc27e', '#ffd66b', '#ff9a5c', '#f0637a'].map((c, i) => `<rect x="31" y="14" width="18" height="48" rx="6" fill="${c}" stroke="#fff" stroke-width="1.5" transform="rotate(${(i - 2) * 16} 40 64)"/>`).join('') + '<circle cx="40" cy="62" r="4" fill="#fff" stroke="#9aa0b4" stroke-width="1.5"/>'),
     bst: svg(`<rect x="12" y="32" width="56" height="34" rx="6" fill="#e5546e"/><rect x="12" y="32" width="56" height="10" rx="5" fill="#f0637a"/><path d="M30 32v-7a4 4 0 0 1 4-4h12a4 4 0 0 1 4 4v7" stroke="#9aa0b4" stroke-width="4" fill="none"/>
       <rect x="36" y="38" width="8" height="8" rx="2" fill="#ffd66b"/><path d="M20 30l8-14M58 30l-6-16" stroke="#9aa0b4" stroke-width="4" stroke-linecap="round"/><circle cx="28" cy="15" r="4" fill="#7aa7ff"/><circle cx="52" cy="13" r="4" fill="#5cc27e"/>`),
-    crown: svg([2, 1, 0].map(i => `<g transform="rotate(${(i - 1) * 12} 40 44) translate(0 ${i * -3})"><rect x="14" y="30" width="52" height="26" rx="5" fill="${['#ffd66b', '#ffc04d', '#f5a33c'][i]}"/><circle cx="14" cy="43" r="4.5" fill="var(--sheetBg)"/><circle cx="66" cy="43" r="4.5" fill="var(--sheetBg)"/><path d="M50 33v20" stroke="#fff" stroke-dasharray="3 3" stroke-width="1.6"/></g>`).join('') + '<text x="32" y="46" text-anchor="middle" font-size="12" font-weight="800" fill="#8a4a0e" font-family="Outfit,sans-serif">50</text>'),
+    crown: (() => {   // bilet makinesi: ekranda 50; ağızdan sarkan uzun bilet şeridi yere akordeon gibi katlanır
+      const P = [[30, 38], [30, 52], [70, 56], [24, 61], [70, 66], [24, 71], [66, 75]];
+      let legs = '';
+      for (let i = 0; i < P.length - 1; i++) { const [a, b] = [P[i], P[i + 1]], c = i % 2 ? '#ffc04d' : '#ffdf7e';
+        legs += `<path d="M${a[0]} ${a[1]}L${b[0]} ${b[1]}" stroke="#c98a1a" stroke-width="8.4" stroke-linecap="round"/><path d="M${a[0]} ${a[1]}L${b[0]} ${b[1]}" stroke="${c}" stroke-width="7" stroke-linecap="round"/>
+          <path d="M${a[0]} ${a[1]}L${b[0]} ${b[1]}" stroke="#c98a1a" stroke-width="7" stroke-dasharray=".6 6.4" stroke-dashoffset="-3" opacity=".7"/>`; }
+      return svg(`<ellipse cx="46" cy="76" rx="28" ry="3.2" fill="#000" opacity=".25"/>${legs}
+        <rect x="10" y="3" width="42" height="36" rx="7" fill="#3c4a6b"/><rect x="10" y="3" width="42" height="11" rx="7" fill="#4f6088"/>
+        <rect x="15" y="9" width="24" height="13" rx="2.5" fill="#0d1626"/><text x="27" y="19.4" text-anchor="middle" font-size="10" font-weight="800" fill="#ffcf4d" font-family="Outfit,sans-serif">50</text>
+        <circle cx="45.5" cy="12" r="2.2" fill="#5cff9b"><animate attributeName="opacity" values="1;.25;1" dur="1.4s" repeatCount="indefinite"/></circle>
+        <rect x="42.5" y="18" width="6" height="1.8" rx=".9" fill="#0d1626"/><rect x="22" y="32" width="16" height="4" rx="2" fill="#0d1626"/>
+        <path d="M66 8l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z" fill="#ffd66b"/>`); })(),
   };
 })();
 // Mağaza iki sekme: 🛍️ Paketler (parayla) · 🎨 Temalar (🎫 ile; bilet çipi doğrudan buraya açar)
@@ -1683,10 +1694,23 @@ function storeSheet(focus) {
     if (k === 'bst') return BST.map(b => sl(b.ic, '×3', b.name)).join('');
     if (k !== 'starter') return ''; const g = Shop.item('starter').give;
     return sl('💡', g.hints) + BST.map(b => sl(b.ic, '×' + g.bst[b.id])).join('') + sl('❤️', `∞ ${g.inf / 60} ${L('sa', 'h')}`) + sl('🎫', g.crowns); };
+  const it = (ic, n, t) => `<span class="it"><i>${ic}</i><b>${n}</b>${t ? `<small>${t}</small>` : ''}</span>`;
+  const sw = ks => `<span class="sw">${ks.map(k => `<i style="background:${skinCols(k)[0]}"></i>`).join('')}</span>`;
+  const inv = k => {   // kare kartın içi: ne alacağın tek bakışta
+    if (k === 'starter') { const g = Shop.item('starter').give; return `<span class="inv c4">${it('💡', g.hints) + BST.map(b => it(b.ic, '×' + g.bst[b.id])).join('') + it('❤️', `∞ ${g.inf / 60}${L('sa', 'h')}`)}${it('🎫', g.crowns)}</span>`; }
+    if (k === 'bst') return `<span class="inv c2">${BST.map(b => it(b.ic, '×3', b.name)).join('')}</span>`;
+    if (k === 'crown') return `<span class="inv c1"><span class="it wide"><b>50 🎫</b><small>${L('Yalnız temalar için', 'For themes only')}</small></span></span>`;
+    if (k === 'themes') { const ks = SKINS.filter(x => !x.vip && !x.sea); return `<span class="inv c1"><span class="it wide">${sw(ks.slice(0, 12))}<small>${L(`${SKINS.filter(x => !x.vip).length} tema · tek seferlik`, `${SKINS.filter(x => !x.vip).length} themes · one-time`)}</small></span></span>`; }
+    return '';
+  };
+  const feats = () => { const v = SKINS.filter(x => x.vip);
+    const f = (ic, t, sub) => `<span class="feat"><i>${ic}</i><span><b>${t}</b><small>${sub}</small></span></span>`;
+    return `<span class="feats">${f('🚫', L('Reklam yok', 'No ads'), L('Araya reklam girmez', 'No ads between levels'))}${f('💡', L('20 ipucu', '20 hints'), L('Hemen hesabına', 'Added right away'))}${f(sw(v), L('3 özel tema', '3 special themes'), v.map(x => x.name).join(' · '))}${f('♾️', L('Tek seferlik', 'One-time'), L('Hep senin, geri yüklenir', 'Yours forever, restorable'))}</span>`; };
   const card = (k, cls) => { const [, , name, sub] = STORE.find(r => r[0] === k), sl = slots(k);
-    return `<button class="pk prod ${cls} pk-${k} ${focus === k.slice(0, 4) ? 'on' : ''}" data-p="${k}"><i class="art">${ART[k]}</i><span class="tx"><b>${name()}</b>${sub() && cls !== 'tri' && !sl ? `<small>${sub()}</small>` : ''}</span><em class="pr">${price(k)}</em>${sl ? `<span class="slots">${sl}</span>` : ''}</button>`; };
+    if (cls === 'sq') return `<button class="pk prod sq pk-${k} ${focus === k.slice(0, 4) ? 'on' : ''}" data-p="${k}"><i class="art">${ART[k]}</i><b class="nm">${name().split(" · ")[0]}</b>${inv(k)}<em class="pr">${price(k)}</em></button>`;
+    return `<button class="pk prod ${cls} pk-${k} ${focus === k.slice(0, 4) ? 'on' : ''}" data-p="${k}"><i class="art">${ART[k]}</i><span class="tx"><b>${name()}</b>${sub() && cls !== 'tri' && !sl && k !== 'noads' ? `<small>${sub()}</small>` : ''}</span><em class="pr">${price(k)}</em>${sl ? `<span class="slots">${sl}</span>` : ''}${k === 'noads' ? feats() : ''}</button>`; };
   const grp = (ks, cls) => { const g = ks.filter(k => has.includes(k)); return g.length ? `<div class="pkg ${cls}">${g.map(k => card(k, cls)).join('')}</div>` : ''; };
-  const rows = ART.defs + grp(['noads', 'starter'], 'big') + grp(['hint10', 'hint30', 'hint80'], 'tri') + grp(['themes', 'bst', 'crown'], 'wide');
+  const rows = ART.defs + grp(['noads'], 'big') + grp(['starter', 'bst'], 'sq') + grp(['hint10', 'hint30', 'hint80'], 'tri') + grp(['crown', 'themes'], 'sq');
   modal(`<h2>${L('Mağaza', 'Shop')}</h2>${shopTabs('pk')}
     <p>${L(`Sende 💡 ${save.hints} · 🎫 ${crownBal()}`, `You have 💡 ${save.hints} · 🎫 ${crownBal()}`)}</p>
     <div class="store" id="store">${rows}</div>
