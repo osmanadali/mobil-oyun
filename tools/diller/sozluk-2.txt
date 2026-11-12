@@ -1176,3 +1176,75 @@ fr: Dim
 ko: 일
 ja: 日
 zh: 日
+@ For themes only
+de: Nur für Themen
+es: Solo para temas
+pt: Só para temas
+fr: Uniquement pour les thèmes
+ko: 테마 전용
+ja: テーマ専用
+zh: 僅限主題
+@ {0} themes · one-time
+de: {0} Themen · einmalig
+es: {0} temas · pago único
+pt: {0} temas · compra única
+fr: {0} thèmes · achat unique
+ko: 테마 {0}개 · 1회 구매
+ja: テーマ{0}種 · 買い切り
+zh: {0} 個主題 · 一次購買
+@ No ads
+de: Keine Werbung
+es: Sin anuncios
+pt: Sem anúncios
+fr: Sans pub
+ko: 광고 없음
+ja: 広告なし
+zh: 無廣告
+@ No ads between levels
+de: Keine Werbung zwischen Levels
+es: Sin anuncios entre niveles
+pt: Sem anúncios entre fases
+fr: Plus de pub entre les niveaux
+ko: 레벨 사이 광고 없음
+ja: レベル間の広告なし
+zh: 關卡之間不再有廣告
+@ 20 hints
+de: 20 Tipps
+es: 20 pistas
+pt: 20 dicas
+fr: 20 indices
+ko: 힌트 20개
+ja: ヒント20回
+zh: 20 次提示
+@ Added right away
+de: Sofort gutgeschrieben
+es: Se añaden al instante
+pt: Adicionadas na hora
+fr: Ajoutés tout de suite
+ko: 바로 지급
+ja: すぐに付与
+zh: 立即入帳
+@ 3 special themes
+de: 3 Spezialthemen
+es: 3 temas especiales
+pt: 3 temas especiais
+fr: 3 thèmes spéciaux
+ko: 특별 테마 3개
+ja: 特別テーマ3種
+zh: 3 個特別主題
+@ One-time
+de: Einmalig
+es: Pago único
+pt: Compra única
+fr: Achat unique
+ko: 1회 구매
+ja: 買い切り
+zh: 一次購買
+@ Yours forever, restorable
+de: Für immer deins, wiederherstellbar
+es: Tuyo para siempre, restaurable
+pt: Seu para sempre, restaurável
+fr: À toi pour toujours, restaurable
+ko: 영구 소장, 복원 가능
+ja: ずっと使える・復元可能
+zh: 永久擁有，可恢復購買

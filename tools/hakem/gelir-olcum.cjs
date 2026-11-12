@@ -126,7 +126,7 @@ module.exports = async T => {
     await openStore(page);
     const rows = await storeRows(page), sh = await G(page, () => { const s = document.getElementById('mCard'); return { h: s.querySelector('h2')?.textContent, ov: s.scrollWidth > s.clientWidth + 1, txt: s.textContent }; });
     await shot(page, 'magaza-en-320');
-    check('gelir.en', 'EN: "Shop" penceresi İngilizce (ipucu, güçlendirici, tema, bilet), 320 px\'te taşmaz', sh.h === 'Shop' && rows.length === 8 && !sh.ov && /Booster pack/.test(sh.txt) && /Theme pack/.test(sh.txt) && /50 tickets/.test(sh.txt) && !/ipucu|Tema paketi|bilet/.test(sh.txt) && rows.every(r => r.r <= 320) && !errors.length, JSON.stringify({ sh: { ...sh, txt: sh.txt.slice(0, 200) }, rows, errors }), 'medium');
+    check('gelir.en', 'EN: "Shop" penceresi İngilizce (ipucu, güçlendirici, tema, bilet paketi · 50 🎫), 320 px\'te taşmaz', sh.h === 'Shop' && rows.length === 8 && !sh.ov && /Booster pack/.test(sh.txt) && /Theme pack/.test(sh.txt) && /Ticket pack/.test(sh.txt) && /50 🎫/.test(sh.txt) && /For themes only/.test(sh.txt) && !/ipucu|Tema paketi|bilet/.test(sh.txt) && rows.every(r => r.r <= 320) && !errors.length, JSON.stringify({ sh: { ...sh, txt: sh.txt.slice(0, 200) }, rows, errors }), 'medium');
     await ctx.close();
   }
 
