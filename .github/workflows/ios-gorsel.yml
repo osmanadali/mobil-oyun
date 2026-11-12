@@ -1,0 +1,27 @@
+# App Store Connect ekran görüntüleri (9 dil × iPhone 6,9" · 6,5" · iPad 13"): tools/ios/gorsel.cjs. Varsayılan önizleme; apply=true yükler (her seti önce boşaltır). Gizli değerler ios-release.yml ile aynı.
+name: iOS ekran görüntüleri
+on:
+  workflow_dispatch:
+    inputs:
+      version: { description: 'Sürüm (ör. 1.1)', type: string, default: '1.1' }
+      apply: { description: 'Yükle (false = yalnız sayıları göster)', type: boolean, default: false }
+permissions: { contents: read }
+jobs:
+  gorsel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: 22 }
+      - name: Görselleri karşılaştır / yükle
+        env:
+          APPSTORE_API_KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+          APPSTORE_API_ISSUER_ID: ${{ secrets.APPSTORE_API_ISSUER_ID }}
+          P8: ${{ secrets.APPSTORE_API_KEY_P8_BASE64 }}
+          VERSION: ${{ inputs.version }}
+          APPLY: ${{ inputs.apply && '1' || '0' }}
+        run: |
+          echo "$P8" | base64 -d > "$RUNNER_TEMP/AuthKey.p8"
+          AUTHKEY="$RUNNER_TEMP/AuthKey.p8" node tools/ios/gorsel.cjs
+      - if: always()
+        run: rm -f "$RUNNER_TEMP/AuthKey.p8"
