@@ -1,7 +1,7 @@
 // Mağaza görselleri: gerçek oyunu yerel sunucuda açar, 7 sahneyi çeker, pazarlama çerçevesine (başlık + telefon) koyar.
 // Ayrıca Play öne çıkan görseli (1024×500) üretir. Oyun koduna dokunmaz; durum yalnız kayıt (localStorage) ve dokunuşla kurulur.
-// Kullanım: node tools/store-shots.cjs [all|en|de|es|pt-BR|fr|ko|ja|zh-Hant] [play|ios-69|ios-65|feature] [01 02 …]   (boş = Türkçe, hepsi) · metinler ve yükleme yerleri: docs/MAGAZA.md
-// Çıktı: store/screens/{play,ios-69,ios-65}/NN-ad.png · store/feature-graphic.png (24 bit PNG, saydamlık yok)
+// Kullanım: node tools/store-shots.cjs [all|en|de|es|pt-BR|fr|ko|ja|zh-Hant] [play|ios-69|ios-65|ios-ipad13|feature] [01 02 …]   (boş = Türkçe, hepsi) · metinler ve yükleme yerleri: docs/MAGAZA.md
+// Çıktı: store/screens/{play,ios-69,ios-65,ios-ipad13}/NN-ad.png · store/feature-graphic.png (24 bit PNG, saydamlık yok)
 'use strict';
 const { chromium } = require('playwright');
 const http = require('http'), fs = require('fs'), path = require('path');
@@ -31,6 +31,7 @@ const DEVICES = {
   play: { W: 1080, H: 1920, vp: [412, 800], safe: [32, 18] },     // Google Play telefon, 9:16
   'ios-69': { W: 1320, H: 2868, vp: [440, 956], safe: [54, 34] }, // iPhone 6,9" (440×956 pt)
   'ios-65': { W: 1284, H: 2778, vp: [428, 926], safe: [47, 34] }, // iPhone 6,5" (428×926 pt)
+  'ios-ipad13': { W: 2048, H: 2732, vp: [1024, 1366], safe: [24, 20], rad: .045 }, // iPad 13" (1024×1366 pt); oyun tablette arayüzü büyütür (index.html "tablet")
 };
 // çerçeve ölçüleri: başlık bloğu üstte, telefon kalan yüksekliğe sığar
 function layout(d) {
@@ -236,7 +237,7 @@ const ICONS = `<svg viewBox="0 0 74 14" fill="#eef0f7"><rect x="0" y="9" width="
 const BG = `background:radial-gradient(60% 40% at 12% 6%,rgba(255,159,90,.30),transparent 70%),radial-gradient(70% 45% at 92% 96%,rgba(109,123,255,.32),transparent 70%),radial-gradient(45% 30% at 85% 30%,rgba(255,111,145,.14),transparent 70%),linear-gradient(165deg,#161b33,#0d1020 62%)`;
 function frameHtml(d, sc, png, lg = 'tr') {
   const [t, sub] = words(sc, lg);
-  const L = layout(d), f = Math.round(d.W * .074), k = L.k, rad = Math.round(L.sw * .12), [st, sb] = d.safe;
+  const L = layout(d), f = Math.round(d.W * .074), k = L.k, rad = Math.round(L.sw * (d.rad || .12)), [st, sb] = d.safe;
   return `<!doctype html><html lang="${lg}"><head><meta charset="utf-8"><style>${FACE}
 *{margin:0;box-sizing:border-box}html,body{width:${d.W}px;height:${d.H}px;overflow:hidden}
 body{${BG};font-family:${FONT_OF(lg)};color:#eef0f7;position:relative}${CJK[lg] ? 'h1{letter-spacing:0;line-height:1.15}' : ''}

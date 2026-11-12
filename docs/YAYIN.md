@@ -168,7 +168,7 @@ Actions → **Android yayın (imzalı AAB)** → Run workflow. Komut satırında
   - yalnız dikey yön
   - diller: geliştirme bölgesi `en`, `CFBundleLocalizations` = en, tr, de, es, pt-BR, fr
 - 6 dilin `<dil>.lproj/InfoPlist.strings` dosyası (izleme izni metni o dilde) pakette
-- yalnız iPhone desteği
+- iPhone ve iPad desteği (1.1'den beri; iPad'de arayüz ekrana göre büyür)
 - simgeler
 
 AdMob değişkenleri eksikse ya da Google test kimliği içeriyorsa `ios.yml` yalnız uyarır, durmaz.
@@ -322,7 +322,7 @@ Bu yol A'dan daha zahmetlidir ve sertifika her yıl yenilenir.
 - **Şifreleme:** `ITSAppUsesNonExemptEncryption = false` yazılı olduğu için her yüklemede soru sorulmaz.
 - **Yaş derecelendirmesi:** anketi doldur. Oyunda kumar, şiddet ya da sohbet yok.
 - **Kategori:** Games → Puzzle.
-- **Ekran görüntüleri:** yalnız iPhone. 6,9 inç (1320×2868) zorunludur, küçük ekranlar bundan türetilir.
+- **Ekran görüntüleri:** iPhone 6,9 inç (1320×2868) ve iPad 13 inç (2048×2732) zorunludur; küçük ekranlar bunlardan türetilir. iPad görselleri: `node tools/store-shots.cjs all ios-ipad13`.
 - **TestFlight:** yüklenen yapı işlenince önce iç test edenlere aç, sonra incelemeye gönder.
 
 ## 4. Teknik kararlar
@@ -350,7 +350,7 @@ LocalNotifications 8.3, varsayılan olarak kesin alarm ister. Bu izin yoksa her 
 
 - Capacitor 8 varsayılanı olan **Swift Package Manager** kullanılır; CocoaPods gerekmez.
 - En düşük iOS sürümü 15'tir.
-- Yalnız iPhone (`TARGETED_DEVICE_FAMILY = 1`) ve yalnız dikey.
+- iPhone + iPad (`TARGETED_DEVICE_FAMILY = "1,2"`), yalnız dikey; iPad tam ekran (`UIRequiresFullScreen`).
 - SKAdNetwork listesi `tools/ios/skadnetwork.txt` dosyasındadır. Google'ın sayfası güncellenirse bu dosya da güncellenmeli.
 
 ## 5. Ölçüm (Firebase Analytics)

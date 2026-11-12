@@ -31,9 +31,10 @@ put GADApplicationIdentifier string "$APP_ID"
 put NSUserTrackingUsageDescription string "$ATT_EN"
 put ITSAppUsesNonExemptEncryption bool false
 put UIRequiresFullScreen bool true
-for k in UISupportedInterfaceOrientations "UISupportedInterfaceOrientations~ipad"; do   # yalnız dikey
+for k in UISupportedInterfaceOrientations "UISupportedInterfaceOrientations~ipad"; do   # yalnız dikey (iPad: tam ekran, ters dikey de)
   put "$k" array; pb "Add :$k:0 string UIInterfaceOrientationPortrait"
 done
+pb "Add :UISupportedInterfaceOrientations~ipad:1 string UIInterfaceOrientationPortraitUpsideDown"
 put SKAdNetworkItems array; i=0
 while read -r id; do
   case "$id" in ''|\#*) continue;; esac
@@ -42,11 +43,11 @@ done < tools/ios/skadnetwork.txt
 plutil -lint "$P"
 echo "✓ Info.plist: AdMob $([ "$APP_ID" = "ca-app-pub-3940256099942544~1458002511" ] && echo '(Google test)' || echo '(gerçek)'), $i SKAdNetwork, yalnız dikey, diller $LANGS (geliştirme: en)"
 
-# 2) Xcode projesi: yalnız iPhone, sürüm
+# 2) Xcode projesi: iPhone + iPad (1.1: iPad'de arayüz ekrana göre büyür, bkz. index.html "tablet"), sürüm
 grep -q 'TARGETED_DEVICE_FAMILY' "$PBX" || { echo "TARGETED_DEVICE_FAMILY bulunamadı"; exit 1; }
-sed -i '' -E "s/TARGETED_DEVICE_FAMILY = [^;]*;/TARGETED_DEVICE_FAMILY = 1;/g; s/MARKETING_VERSION = [^;]*;/MARKETING_VERSION = $VN;/g; s/CURRENT_PROJECT_VERSION = [^;]*;/CURRENT_PROJECT_VERSION = $VC;/g" "$PBX"
+sed -i '' -E "s/TARGETED_DEVICE_FAMILY = [^;]*;/TARGETED_DEVICE_FAMILY = \"1,2\";/g; s/MARKETING_VERSION = [^;]*;/MARKETING_VERSION = $VN;/g; s/CURRENT_PROJECT_VERSION = [^;]*;/CURRENT_PROJECT_VERSION = $VC;/g" "$PBX"
 grep -E 'TARGETED_DEVICE_FAMILY|MARKETING_VERSION|CURRENT_PROJECT_VERSION|IPHONEOS_DEPLOYMENT_TARGET' "$PBX" | sort | uniq -c
-echo "✓ Proje: yalnız iPhone, sürüm $VN ($VC)"
+echo "✓ Proje: iPhone + iPad, sürüm $VN ($VC)"
 
 # 3) App Store simgesi saydamlık (alfa) içeremez → varsa düzleştir
 for f in ios/App/App/Assets.xcassets/AppIcon.appiconset/*.png; do

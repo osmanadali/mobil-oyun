@@ -37,7 +37,7 @@ jobs:
       - run: npx cap add ios
       - name: İkon ve açılış ekranı (assets/)
         run: npx @capacitor/assets generate --ios --iconBackgroundColor '#0d1020' --splashBackgroundColor '#0d1020' --splashBackgroundColorDark '#0d1020'
-      - name: Yerel projeyi hazırla (Info.plist, yalnız iPhone + dikey, sürüm, simge)
+      - name: Yerel projeyi hazırla (Info.plist, iPhone + iPad, dikey, sürüm, simge)
         env: { FIREBASE_IOS_PLIST: '${{ secrets.FIREBASE_IOS_PLIST }}' }   # isteğe bağlı: yoksa ölçüm kapalı derlenir (docs/YAYIN.md §5)
         run: tools/ios/hazirla.sh
       - run: npx cap sync ios

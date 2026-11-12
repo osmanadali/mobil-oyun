@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<script>/* 📱→iPad: tablette arayüz telefondaki oranında büyür (kısa kenarı 540 CSS px sayılır; düzen aynı, her şey ~1,4–1,9× büyük) */
+(() => { const w = Math.min(screen.width, screen.height); if (w >= 700) { const k = w / 540; document.querySelector('meta[name=viewport]').content = `width=540,initial-scale=${k.toFixed(4)},minimum-scale=${k.toFixed(4)},maximum-scale=${k.toFixed(4)},viewport-fit=cover,user-scalable=no`; document.documentElement.classList.add('tablet'); } })();</script>
 <meta name="theme-color" content="#0e1120">
 <title data-en="Ray — Metro Puzzle">Ray — Metro Bulmaca</title>
 <meta name="description" content="Hatları bağla, şehri canlandır. Tek elle, internetsiz oynanan sakin metro bulmacası.">
