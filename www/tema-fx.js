@@ -1,22 +1,26 @@
 // 🎨 Tema efektleri (taslak · önizleme): sefer şeridindeki trene temaya göre süs + parçacık, bölüm bitince ekrana yağan parçacık.
-// Tahtaya dokunmaz: yalnız şeridin çevresinde ve kazanma anında, pointer-events yok. Hareketi azalt açıksa parçacık yok.
+// Şerit yandan görünüştür: ray zemin, yerçekimi aşağı. Tahtaya dokunmaz; yağan parçacıklar ekranın dibinde birikir.
 // Dışarıdan: FX.set(id) · FX.step(dt) (önizlemede elle) · FX.win() · FX.auto(true) (gerçek oyunda rAF ile)
 const FX = (() => {
   const PAD_X = 34, PAD_Y = 30;
-  let id = null, cv = null, cx = null, parts = [], rain = [], rcv = null, rcx = null, rainT = 0, t = 0, lastP = 0, raf = 0, dpr = 2;
+  let lastX = null, id = null, cv = null, cx = null, parts = [], rain = [], rcv = null, rcx = null, rainT = 0, t = 0, lastP = 0, raf = 0, dpr = 2;
+  let pile = null, landed = [];   // ekran dibi: kar yığını yükseklik haritası (2 px sütun) · yere düşen yapraklar
   const rnd = (a, b) => a + Math.random() * (b - a);
   const THEMES = {
-    kis: { rail: '#e9f6ff', tb: ['#c2405a', '#3d7bd9', '#fff6dc'], petals: null },
+    kis: { rail: '#e9f6ff', tb: ['#c2405a', '#3d7bd9', '#fff6dc'] },
     erguvan: { rail: null, tb: ['#b04fae', '#7b5bd6', '#ffe3f4'], petals: ['#e07ad6', '#ff9fc8', '#f3b4ff', '#c86bd0', '#ffd0ea'] },
   };
+  // yumuşak değer gürültüsü (sabit tohum): şerit koordinatına bağlı → tren yürürken kar yığını kıpırdamaz
+  const hash = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+  const noise = x => { const i = Math.floor(x), f = x - i, u = f * f * (3 - 2 * f); return hash(i) * (1 - u) + hash(i + 1) * u; };
   function mount() {
     const trip = document.getElementById('gTrip');
     if (!trip || cv) return;
     cv = document.createElement('canvas'); cv.className = 'fxc';
-    Object.assign(cv.style, { position: 'absolute', left: -PAD_X + 'px', top: -PAD_Y + 'px', pointerEvents: 'none', zIndex: 4 });
+    Object.assign(cv.style, { position: 'absolute', pointerEvents: 'none', zIndex: 4 });
     trip.appendChild(cv); cx = cv.getContext('2d');
     rcv = document.createElement('canvas'); rcv.className = 'fxr';
-    Object.assign(rcv.style, { position: 'fixed', inset: 0, width: '100vw', height: '100vh', pointerEvents: 'none', zIndex: 60 });
+    Object.assign(rcv.style, { position: 'fixed', left: 0, top: 0, width: '100vw', height: '100vh', pointerEvents: 'none', zIndex: 60 });
     document.body.appendChild(rcv); rcx = rcv.getContext('2d');
   }
   function size() {
@@ -27,65 +31,68 @@ const FX = (() => {
     const trip = document.getElementById('gTrip').getBoundingClientRect();
     cv.style.left = (r.left - trip.left - PAD_X) + 'px'; cv.style.top = (r.top - trip.top - PAD_Y) + 'px';
     if (rcv.width !== Math.round(innerWidth * dpr)) { rcv.width = Math.round(innerWidth * dpr); rcv.height = Math.round(innerHeight * dpr); }
-    return { W: r.width, H: r.height };
+    return { W: r.width };
   }
-  // trenin şeritteki yeri (tuval koordinatı): .mv kutusu
   function trainBox() {
     const trk = document.querySelector('#gTrip .trk').getBoundingClientRect(), mv = document.querySelector('#gTrip .trn').getBoundingClientRect();
     return { x0: mv.left - trk.left + PAD_X, x1: mv.right - trk.left + PAD_X, y: PAD_Y + 9, top: PAD_Y + 3, bot: PAD_Y + 15 };
   }
   function set(n) {
-    id = THEMES[n] ? n : null; parts = []; mount();
+    id = THEMES[n] ? n : null; parts = []; rain = []; landed = []; pile = null; mount();
     const trip = document.getElementById('gTrip');
-    trip.dataset.fx = id || '';
     if (id && THEMES[id].rail) trip.style.setProperty('--line', THEMES[id].rail); else trip.style.removeProperty('--line');
     ['--tb1', '--tb2', '--tw'].forEach((k, i) => id ? trip.style.setProperty(k, THEMES[id].tb[i]) : trip.style.removeProperty(k));
   }
-  // --- ❄️ kar küreyici: önde kar yığını (ray boyunca), küreğe çarpan kar iki yana savrulur, arkada temiz buzlu ray ---
+
+  // ---------- ❄️ Kar Feneri: rayın üstünde kar örtüsü; tren küreği karı yukarı-ileri savurur, kar tozu bulutu kalkar ----------
+  const bankH = x => 3.2 + noise(x / 9) * 2.6 + noise(x / 2.7 + 40) * .8;   // kar örtüsü kalınlığı (px), şerit x'ine bağlı
   function snowBank(c, B, W) {
-    const x0 = B.x1 + 3, x1 = PAD_X + W - 44;   // peronun önüne dek
-    if (x1 <= x0) return;
-    c.fillStyle = 'rgba(226,240,255,.78)';
-    c.beginPath(); c.moveTo(x0, B.y + 3);
-    for (let x = x0; x <= x1; x += 3) { const h = 2.6 + Math.sin(x * .9) * .7 + Math.sin(x * .31 + 1) * .9; c.lineTo(x, B.y - h); }
-    for (let x = x1; x >= x0; x -= 3) { const h = 2.2 + Math.cos(x * .7) * .6 + Math.sin(x * .23) * .8; c.lineTo(x, B.y + 1.5 + h); }
-    c.closePath(); c.fill();
-    // yığının kar tozu parıltısı
-    c.fillStyle = 'rgba(255,255,255,.9)';
-    for (let x = x0 + 2; x < x1; x += 7) { const s = (Math.sin(x * 12.9898) * 43758.5453) % 1; if (Math.abs(s) > .55) c.fillRect(x, B.y - 2.5 + Math.abs(s) * 3, 1, 1); }
-    // trenin önündeki küreme kabarması
-    c.beginPath(); c.ellipse(x0 + 2, B.y, 4.5, 6.5, 0, -Math.PI / 2, Math.PI / 2); c.fill();
+    const x0 = B.x1 + 1, x1 = PAD_X + W - 44;
+    if (x1 <= x0 + 2) return;
+    const g = c.createLinearGradient(0, B.y - 7, 0, B.y + 3);
+    g.addColorStop(0, '#ffffff'); g.addColorStop(.55, '#e6f1fb'); g.addColorStop(1, '#b9cde3');
+    c.fillStyle = g; c.beginPath(); c.moveTo(x0, B.y + 2.2);
+    // trenin önünde küreğin ittiği kabarık dalga: önce yükselir, sonra normal örtüye iner
+    for (let x = Math.ceil(x0); x <= x1; x += 1) { const d = x - x0, push = Math.max(0, 1 - d / 9) * 3.4; c.lineTo(x, B.y + .5 - bankH(x) - push * Math.sin(Math.min(1, d / 3) * Math.PI / 2)); }
+    c.lineTo(x1, B.y + 2.2); c.closePath(); c.fill();
+    // üst kenarda ince parıltı (sabit noktalar)
+    c.fillStyle = 'rgba(255,255,255,.95)';
+    for (let x = Math.ceil(x0 + 6); x < x1; x++) if (hash(x * 3.1) > .9) c.fillRect(x, B.y + .5 - bankH(x) + .4, .8, .8);
   }
   function plow(c, B) {
     const x = B.x1 - 1;
-    c.fillStyle = '#ff6b5a'; c.strokeStyle = '#ffd0c8'; c.lineWidth = .8;
-    c.beginPath(); c.moveTo(x - 1, B.top - 2.5); c.lineTo(x + 5, B.y); c.lineTo(x - 1, B.bot + 2.5); c.closePath(); c.fill(); c.stroke();
-    c.strokeStyle = 'rgba(255,255,255,.75)'; c.lineWidth = .7;
-    c.beginPath(); c.moveTo(x + .5, B.top); c.lineTo(x + 3.6, B.y - 1.2); c.moveTo(x + .5, B.bot); c.lineTo(x + 3.6, B.y + 1.2); c.stroke();
-    // far: ileriye sıcak ışık konisi karın üstüne düşer
-    const g = c.createRadialGradient(x + 4, B.y, 1, x + 30, B.y, 34);
-    g.addColorStop(0, 'rgba(255,226,150,.35)'); g.addColorStop(1, 'rgba(255,226,150,0)');
-    c.fillStyle = g; c.beginPath(); c.moveTo(x + 4, B.y); c.lineTo(x + 46, B.y - 9); c.lineTo(x + 46, B.y + 9); c.closePath(); c.fill();
+    c.fillStyle = '#d8434a';
+    c.beginPath(); c.moveTo(x - 1, B.top + 2); c.quadraticCurveTo(x + 5.5, B.y + 1, x + 2, B.bot + 1.5); c.lineTo(x - 1, B.bot + 1.5); c.closePath(); c.fill();
+    c.fillStyle = 'rgba(255,255,255,.55)'; c.fillRect(x, B.top + 4, .8, 7);
+    // far: karın üstüne düşen sıcak ışık
+    const g = c.createRadialGradient(x + 3, B.y - 1, .5, x + 14, B.y - 1, 22);
+    g.addColorStop(0, 'rgba(255,230,160,.45)'); g.addColorStop(1, 'rgba(255,230,160,0)');
+    c.fillStyle = g; c.beginPath(); c.moveTo(x + 3, B.y - 1); c.lineTo(x + 34, B.y - 9); c.lineTo(x + 34, B.y + 4); c.closePath(); c.fill();
   }
-  function emitSnow(B, speed) {
-    const n = Math.random() < .5 ? 1 : Math.min(4, 1 + speed * .5);
-    for (let i = 0; i < n; i++) {
-      const side = Math.random() < .5 ? -1 : 1;
-      parts.push({ k: 'snow', x: B.x1 + rnd(2, 6), y: B.y + side * rnd(0, 3), vx: rnd(25, 60) + speed * 3, vy: side * rnd(45, 95), z: 0, vz: rnd(30, 70), r: rnd(.5, 1.4), life: 0, max: rnd(.6, 1.1) });
+  function emitSnow(B, speed, dt) {
+    const rate = speed > .02 ? 40 + speed * 12 : 0;   // tren durunca savrulma da durur
+    let n = rate * dt; while (n > 0) { if (n < 1 && Math.random() > n) break; n--;
+      const big = Math.random() < .25;
+      parts.push({ k: 'snow', x: B.x1 + rnd(1, 4), y: B.y - rnd(2, 7), vx: rnd(55, 115), vy: -rnd(28, 70), r: big ? rnd(.9, 1.5) : rnd(.35, .8), life: 0, max: rnd(.9, 1.6) });
     }
+    if (speed > .02 && Math.random() < 14 * dt) parts.push({ k: 'mist', x: B.x1 + rnd(2, 6), y: B.y - rnd(3, 8), vx: rnd(8, 22), vy: -rnd(6, 16), r: rnd(2, 3.5), life: 0, max: rnd(.7, 1.2) });
   }
-  // --- 🌸 erguvan: tavandan kopan yapraklar rüzgârla geriye savrulur, takla atar, bir kısmı raya düşer ---
+  // ---------- 🌸 Erguvan: tavandan kopan yapraklar rüzgârla geriye savrulur, takla atar, bir kısmı raya düşer ----------
   function emitPetal(B, speed) {
     const n = speed > .2 ? (Math.random() < .55 + speed * .08 ? 1 + (Math.random() < speed * .1 ? 1 : 0) : 0) : (Math.random() < .08 ? 1 : 0);
     const P = THEMES.erguvan.petals;
     for (let i = 0; i < n; i++) parts.push({ k: 'petal', x: rnd(B.x0 + 2, B.x1 - 6), y: B.top + rnd(-1, 3), vx: -rnd(18, 45) - speed * 3, vy: rnd(-22, 14), w: rnd(2.2, 3.4), h: rnd(1.3, 2), a: rnd(0, 6.28), va: rnd(-6, 6), flip: rnd(0, 6.28), vf: rnd(4, 9), sw: rnd(0, 6.28), col: P[Math.random() * P.length | 0], life: 0, max: rnd(1.4, 2.4) });
   }
-  function stepParts(dt) {
+  function stepParts(dt, B) {
     for (const p of parts) {
       p.life += dt;
       if (p.k === 'snow') {
-        p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= Math.pow(.18, dt); p.vy *= Math.pow(.12, dt);
-        p.z += p.vz * dt; p.vz -= 160 * dt; if (p.z < 0) { p.z = 0; p.vz *= -.2; p.vx *= .5; p.vy *= .5; }
+        p.vy += 260 * dt; p.vx *= Math.pow(.5, dt); p.x += p.vx * dt; p.y += p.vy * dt;
+        const ground = B.y + .5 - bankH(p.x);   // örtüye düşen tane örtüye karışır
+        if (p.vy > 0 && p.y >= ground && p.x > B.x1) p.life = p.max;
+        if (p.y > B.y + 1) p.life = p.max;
+      } else if (p.k === 'mist') {
+        p.x += p.vx * dt; p.y += p.vy * dt; p.r += 6 * dt; p.vx *= Math.pow(.4, dt);
       } else {
         p.sw += dt * 3; p.x += (p.vx + Math.sin(p.sw) * 10) * dt; p.y += (p.vy + Math.cos(p.sw * .8) * 12) * dt;
         p.vx *= Math.pow(.55, dt); p.vy += 6 * dt; p.a += p.va * dt; p.flip += p.vf * dt;
@@ -95,24 +102,27 @@ const FX = (() => {
   }
   function drawParts(c) {
     for (const p of parts) {
-      const f = 1 - p.life / p.max, al = Math.min(1, f * 2.2);
-      if (p.k === 'snow') {
-        c.globalAlpha = al; c.fillStyle = '#f4faff';
-        c.beginPath(); c.arc(p.x, p.y - p.z * .25, p.r * (1 + p.z * .02), 0, 6.283); c.fill();
+      const f = 1 - p.life / p.max;
+      if (p.k === 'mist') {
+        const g = c.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
+        g.addColorStop(0, `rgba(240,248,255,${.28 * f})`); g.addColorStop(1, 'rgba(240,248,255,0)');
+        c.fillStyle = g; c.beginPath(); c.arc(p.x, p.y, p.r, 0, 6.283); c.fill();
+      } else if (p.k === 'snow') {
+        c.globalAlpha = Math.min(1, f * 3) * .95; c.fillStyle = '#f7fbff';
+        c.beginPath(); c.arc(p.x, p.y, p.r, 0, 6.283); c.fill();
       } else {
         c.save(); c.translate(p.x, p.y); c.rotate(p.a); c.scale(1, Math.max(.15, Math.abs(Math.cos(p.flip))));
-        c.globalAlpha = al; c.fillStyle = p.col;
+        c.globalAlpha = Math.min(1, f * 2.2); c.fillStyle = p.col;
         c.beginPath(); c.moveTo(-p.w, 0); c.quadraticCurveTo(0, -p.h * 1.6, p.w, 0); c.quadraticCurveTo(0, p.h * 1.1, -p.w, 0); c.fill();
         c.restore();
       }
     }
     c.globalAlpha = 1;
   }
-  // arkada kalan rayın üstünde düşmüş yapraklar (sabit desen, tren geçtikçe görünür)
   function railPetals(c, B) {
     const P = THEMES.erguvan.petals;
     for (let x = PAD_X + 4; x < B.x0 - 3; x += 9) {
-      const s = Math.abs(Math.sin(x * 78.233) * 43758.5453) % 1; if (s < .45) continue;
+      const s = hash(x * .37); if (s < .45) continue;
       c.save(); c.translate(x, B.y + (s - .7) * 8); c.rotate(s * 6); c.globalAlpha = .85; c.fillStyle = P[(s * 100 | 0) % P.length];
       c.beginPath(); c.ellipse(0, 0, 2.2, 1.1, 0, 0, 6.283); c.fill(); c.restore();
     }
@@ -121,42 +131,78 @@ const FX = (() => {
     if (!id || !cv) return;
     t += dt;
     const { W } = size(), c = cx, B = trainBox();
-    const p = parseFloat(getComputedStyle(document.getElementById('gTrip')).getPropertyValue('--p')) || 0;
-    const speed = Math.max(0, (p - lastP) / Math.max(dt, 1e-3) * 60); lastP = p;   // şerit başına hız (yaklaşık)
+    const speed = lastX == null ? 0 : Math.max(0, (B.x1 - lastX) / Math.max(dt, 1e-3) / 4); lastX = B.x1;   // ~px/sn ÷ 4
     c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, cv.width, cv.height);
-    if (id === 'kis') { snowBank(c, B, W); if (speed > .05 || Math.random() < .25) emitSnow(B, speed); }
+    if (id === 'kis') { snowBank(c, B, W); emitSnow(B, speed, dt); }
     if (id === 'erguvan') { railPetals(c, B); emitPetal(B, speed); }
-    stepParts(dt); drawParts(c);
+    stepParts(dt, B); drawParts(c);
     if (id === 'kis') plow(c, B);
     renderRain(dt);
   }
-  // --- bölüm bitince yağan parçacıklar (3,5 sn) ---
+
+  // ---------- bölüm bitince: ekrana yağar, dipte birikir (kar yığılır, yapraklar halı olur) ----------
   function win() {
-    if (!id) return; mount(); size(); rainT = 3.6; rain = [];
-    const n = id === 'kis' ? 130 : 90, P = THEMES.erguvan.petals;
-    for (let i = 0; i < n; i++) rain.push(id === 'kis'
-      ? { k: 'flake', x: rnd(0, innerWidth), y: rnd(-innerHeight * .9, -10), vy: rnd(40, 110), r: rnd(1.2, 4.2), sw: rnd(0, 6.28), a: rnd(0, 6.28), six: Math.random() < .35 }
-      : { k: 'petal', x: rnd(-60, innerWidth), y: rnd(-innerHeight * .9, -10), vy: rnd(55, 120), vx: rnd(20, 60), w: rnd(4, 7), h: rnd(2.4, 3.8), a: rnd(0, 6.28), va: rnd(-4, 4), flip: rnd(0, 6.28), vf: rnd(3, 7), sw: rnd(0, 6.28), col: P[Math.random() * P.length | 0] });
+    if (!id) return; mount(); size(); rainT = 4.2; rain = [];
+    if (!pile) pile = new Float32Array(Math.ceil(innerWidth / 2) + 2);
+    const P = THEMES.erguvan?.petals;
+    const n = id === 'kis' ? 260 : 110;
+    for (let i = 0; i < n; i++) {
+      const z = Math.random();   // derinlik: 0 uzak (küçük, yavaş, soluk) · 1 yakın
+      rain.push(id === 'kis'
+        ? { k: 'flake', z, x: rnd(0, innerWidth), y: rnd(-innerHeight * .9, innerHeight * .75), vy: 45 + z * 85, r: .7 + z * z * 2.6, sw: rnd(0, 6.28), sf: rnd(.6, 1.4) }
+        : { k: 'petal', z, x: rnd(-60, innerWidth), y: rnd(-innerHeight * .7, innerHeight * .6), vy: rnd(60, 125), vx: rnd(20, 60), w: rnd(4, 7), h: rnd(2.4, 3.8), a: rnd(0, 6.28), va: rnd(-4, 4), flip: rnd(0, 6.28), vf: rnd(3, 7), sw: rnd(0, 6.28), col: P[Math.random() * P.length | 0] });
+    }
+  }
+  const PILE_MAX = 22;
+  function addPile(x, amt) {
+    const i = Math.max(0, Math.min(pile.length - 1, Math.round(x / 2)));
+    for (let k = -4; k <= 4; k++) { const j = i + k; if (j < 0 || j >= pile.length) continue; pile[j] = Math.min(PILE_MAX, pile[j] + amt * Math.exp(-k * k / 6)); }
+  }
+  function drawPile(c) {
+    if (!pile) return;
+    const H = innerHeight;
+    // sütunları yumuşat (kar kendi açısıyla yayılır)
+    for (let s = 0; s < 2; s++) for (let i = 1; i < pile.length - 1; i++) pile[i] = pile[i] * .9 + (pile[i - 1] + pile[i + 1]) * .05;
+    if (pile.every(v => v < .3)) return;
+    const g = c.createLinearGradient(0, H - PILE_MAX - 2, 0, H);
+    g.addColorStop(0, '#ffffff'); g.addColorStop(.5, '#e4eef9'); g.addColorStop(1, '#a9bed8');
+    c.fillStyle = g; c.beginPath(); c.moveTo(0, H);
+    for (let i = 0; i < pile.length; i++) c.lineTo(i * 2, H - pile[i] - noise(i * .35) * Math.min(1.2, pile[i] * .2));
+    c.lineTo(innerWidth, H); c.closePath(); c.fill();
+    c.fillStyle = 'rgba(255,255,255,.9)';
+    for (let i = 0; i < pile.length; i += 1) if (pile[i] > 3 && hash(i * 7.7) > .93) c.fillRect(i * 2, H - pile[i] + 1, 1, 1);
   }
   function renderRain(dt) {
     if (!rcx) return;
-    const c = rcx; c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, innerWidth, innerHeight);
-    if (rainT <= 0) return;
-    rainT -= dt; const fade = Math.min(1, rainT / .9);
+    const c = rcx, H = innerHeight; c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, innerWidth, H);
+    if (rainT > 0) rainT -= dt;
+    const fall = rainT > 0;
     for (const q of rain) {
-      q.sw += dt * 1.6; q.y += q.vy * dt;
+      if (q.done) continue;
+      if (!fall && q.y < 0) { q.done = 1; continue; }
+      q.sw += dt * (q.sf || 1) * (q.k === 'flake' ? 1.3 : 1.6); q.y += q.vy * dt;
       if (q.k === 'flake') {
-        q.x += Math.sin(q.sw) * 18 * dt; q.a += dt * .8;
-        c.globalAlpha = .9 * fade; c.fillStyle = '#f4faff'; c.strokeStyle = '#f4faff';
-        if (q.six) { c.save(); c.translate(q.x, q.y); c.rotate(q.a); c.lineWidth = .9; c.beginPath(); for (let k = 0; k < 6; k++) { const an = k * Math.PI / 3; c.moveTo(0, 0); c.lineTo(Math.cos(an) * q.r * 1.6, Math.sin(an) * q.r * 1.6); } c.stroke(); c.restore(); }
-        else { c.beginPath(); c.arc(q.x, q.y, q.r * .7, 0, 6.283); c.fill(); }
+        q.x += Math.sin(q.sw) * (8 + q.z * 14) * dt;
+        const floor = H - (pile[Math.max(0, Math.min(pile.length - 1, Math.round(q.x / 2)))] || 0);
+        if (q.y + q.r >= floor) { if (q.z > .25) addPile(q.x, 1.6 + q.r * .7); q.done = 1; continue; }
+        const g = c.createRadialGradient(q.x, q.y, 0, q.x, q.y, q.r * 1.6);
+        const a = .35 + q.z * .6;
+        g.addColorStop(0, `rgba(255,255,255,${a})`); g.addColorStop(.45, `rgba(240,247,255,${a * .8})`); g.addColorStop(1, 'rgba(240,247,255,0)');
+        c.fillStyle = g; c.beginPath(); c.arc(q.x, q.y, q.r * 1.6, 0, 6.283); c.fill();
       } else {
         q.x += (q.vx + Math.sin(q.sw) * 30) * dt; q.a += q.va * dt; q.flip += q.vf * dt;
+        if (q.y >= H - 4 - hash(q.x) * 6) { landed.push({ x: q.x, y: q.y, a: q.a, w: q.w, h: q.h, col: q.col }); q.done = 1; continue; }
         c.save(); c.translate(q.x, q.y); c.rotate(q.a); c.scale(1, Math.max(.15, Math.abs(Math.cos(q.flip))));
-        c.globalAlpha = fade; c.fillStyle = q.col;
+        c.fillStyle = q.col;
         c.beginPath(); c.moveTo(-q.w, 0); c.quadraticCurveTo(0, -q.h * 1.6, q.w, 0); c.quadraticCurveTo(0, q.h * 1.1, -q.w, 0); c.fill();
         c.restore();
       }
+    }
+    drawPile(c);
+    for (const l of landed) {   // dipte yatan yapraklar (yassı, üst üste)
+      c.save(); c.translate(l.x, l.y); c.rotate(l.a); c.scale(1, .55); c.globalAlpha = .92; c.fillStyle = l.col;
+      c.beginPath(); c.moveTo(-l.w, 0); c.quadraticCurveTo(0, -l.h * 1.6, l.w, 0); c.quadraticCurveTo(0, l.h * 1.1, -l.w, 0); c.fill();
+      c.restore();
     }
     c.globalAlpha = 1;
   }
