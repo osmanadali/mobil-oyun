@@ -51,7 +51,7 @@ jobs:
         run: |
           A=build/Build/Products/Release-iphonesimulator/App.app
           plutil -p "$A/Info.plist" | grep -E 'CFBundleDisplayName|CFBundleShortVersionString|CFBundleVersion|MinimumOSVersion|UIDeviceFamily|GADApplicationIdentifier|ITSAppUses|NSUserTracking' -A2 | grep -v '^--'
-          plutil -extract UIDeviceFamily json -o - "$A/Info.plist" | grep -qx '\[1\]' || { echo "::error::Yalnız iPhone (UIDeviceFamily [1]) değil"; exit 1; }
+          plutil -extract UIDeviceFamily json -o - "$A/Info.plist" | tr -d ' \n' | grep -qx '\[1,2\]' || { echo "::error::iPhone + iPad (UIDeviceFamily [1,2]) değil"; exit 1; }
           echo "SKAdNetwork: $(plutil -extract SKAdNetworkItems json -o - "$A/Info.plist" | grep -o skadnetwork | wc -l | tr -d ' ')"
           [ -f "$A/GoogleService-Info.plist" ] && echo "Ölçüm: GoogleService-Info.plist pakette" || echo "Ölçüm kapalı (FIREBASE_IOS_PLIST yok)"
           grep -q 'cordova-plugin-purchase' "$A/public/cordova_plugins.js" && nm -gU "$A/App" 2>/dev/null | grep -q 'InAppPurchase' \

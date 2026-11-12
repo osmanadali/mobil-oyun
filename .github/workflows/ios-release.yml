@@ -113,7 +113,7 @@ jobs:
           grep -o 'window.RAY_ADS = [^<]*' "$A/public/index.html" | grep -q 3940256099942544 && { echo "::error::window.RAY_ADS içinde Google test kimliği var"; exit 1; }
           CV=$(plutil -extract CFBundleVersion raw -o - "$A/Info.plist"); SV=$(plutil -extract CFBundleShortVersionString raw -o - "$A/Info.plist")
           [ "$CV" = "$VERSION_CODE" ] || { echo "::error::CFBundleVersion $CV, beklenen $VERSION_CODE"; exit 1; }
-          plutil -extract UIDeviceFamily json -o - "$A/Info.plist" | grep -qx '\[1\]' || { echo "::error::Yalnız iPhone (UIDeviceFamily [1]) değil"; exit 1; }
+          plutil -extract UIDeviceFamily json -o - "$A/Info.plist" | tr -d ' \n' | grep -qx '\[1,2\]' || { echo "::error::iPhone + iPad (UIDeviceFamily [1,2]) değil"; exit 1; }
           [ "$(plutil -extract CFBundleDevelopmentRegion raw -o - "$A/Info.plist")" = en ] || { echo "::error::CFBundleDevelopmentRegion en değil"; exit 1; }
           for l in en tr de es pt-BR fr ko ja zh-Hant; do
             plutil -extract CFBundleLocalizations json -o - "$A/Info.plist" | grep -q "\"$l\"" || { echo "::error::CFBundleLocalizations içinde $l yok"; exit 1; }
