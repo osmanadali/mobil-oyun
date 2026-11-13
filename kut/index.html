@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#120f1c">
+<title>Kut Arena</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ANA EKRAN -->
+  <section id="ana" class="ekran aktif">
+    <header class="ust"><span class="rozet">🏆 <b id="aKupa">0</b></span><span class="rozet">⭐ Usta <b id="aUsta">0</b></span></header>
+    <div class="logo"><div class="logoIkon">☀️</div><h1>Kut Arena</h1><p>Efsaneler kaynaşır · Kut senin elinde</p></div>
+    <div class="menu">
+      <button class="btn ana" id="bOyna">⚔️ Oyna <small>~7 dk · çevrimiçi hayaletler</small></button>
+      <button class="btn" id="bDuello">🤝 Düello Kodu</button>
+      <button class="btn" id="bKodeks">📖 Kahramanlar</button>
+      <button class="btn" id="bNasil">❔ Nasıl Oynanır</button>
+    </div>
+    <p class="durumYazi" id="aDurum"></p>
+  </section>
+
+  <!-- MAÇ: DÜKKÂN + TAHTA -->
+  <section id="mac" class="ekran">
+    <header class="macUst">
+      <span class="rozet can">❤️ <b id="mCan">5</b></span>
+      <span class="rozet">🏅 <b id="mZafer">0</b>/7</span>
+      <span class="rozet">Tur <b id="mTur">1</b></span>
+      <span class="rozet altin">🪙 <b id="mAltin">10</b></span>
+    </header>
+    <div class="alamet" id="mAlamet"></div>
+    <div class="rakipBilgi" id="mRakip"></div>
+    <div class="soylar" id="mSoylar"></div>
+    <div class="tahtaBaslik"><span>Takım <b id="mSay">0</b>/<b id="mYuva">3</b></span><span class="ipucu">Üst sıra = ön (düşmana yakın) · Alt sıra = arka</span></div>
+    <div class="tahta" id="mTahta"></div>
+    <div class="tahtaBaslik"><span>Yedek</span></div>
+    <div class="yedek" id="mYedek"></div>
+    <div class="secimPanel" id="mSecim"></div>
+    <div class="dukkanUst">
+      <button class="btn kucuk" id="bYenile">🔄 Yenile <small>1🪙</small></button>
+      <button class="btn kucuk" id="bKilit">🔓 Kilitle</button>
+    </div>
+    <div class="dukkan" id="mDukkan"></div>
+    <button class="btn ana savasBtn" id="bSavas">⚔️ Savaşa!</button>
+  </section>
+
+  <!-- SAVAŞ -->
+  <section id="savas" class="ekran">
+    <header class="macUst">
+      <span class="rozet" id="sRakipAd">Rakip</span>
+      <span class="rozet" id="sAlamet"></span>
+      <button class="rozet btnRozet" id="bHiz">1×</button>
+    </header>
+    <canvas id="tuval"></canvas>
+    <div class="kutBar" id="sKut">✨ <b>Kut hazır</b> — bir kahramanına dokun, yeteneğini anında patlat (savaş başına 1)</div>
+    <div class="sonucKutu" id="sSonuc"></div>
+  </section>
+
+  <!-- MAÇ SONU -->
+  <section id="son" class="ekran">
+    <div class="sonKart" id="sonKart"></div>
+  </section>
+
+  <!-- ALT PENCERE -->
+  <div class="perde" id="perde"><div class="pencere" id="pencere"></div></div>
+  <div class="bildirim" id="bildirim"></div>
+</div>
+<script src="data.js"></script>
+<script src="sim.js"></script>
+<script src="online.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

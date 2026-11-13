@@ -1,0 +1,100 @@
+/* KUT ARENA — yer tutucu arayüz. Görsel kimlik (renkler, çizimler, yazı tipi) sonra gelecek; düzen hazır. */
+:root{--bg:#120f1c;--bg2:#1d1830;--kart:#262040;--kart2:#30285099;--fg:#f3eee2;--mut:#9a92b4;--acc:#f2b53a;--acc2:#e0533d;--iyi:#59c27a;--kot:#e05a5a;--cizgi:rgba(255,255,255,.08);
+  --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{height:100%;overflow:hidden;background:radial-gradient(120% 80% at 50% 0%,#2a2045,var(--bg) 70%);color:var(--fg);font:15px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#app{height:100%;max-width:520px;margin:0 auto;position:relative}
+.ekran{position:absolute;inset:0;display:none;flex-direction:column;padding:calc(10px + var(--sat)) 12px calc(12px + var(--sab));gap:8px;overflow-y:auto}
+.ekran.aktif{display:flex}
+button{font:inherit;color:inherit;border:0;cursor:pointer}
+.btn{background:var(--kart);border:1px solid var(--cizgi);padding:14px 16px;border-radius:14px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .08s}
+.btn:active{transform:scale(.97)}
+.btn small{font-weight:400;color:var(--mut);font-size:12px}
+.btn.ana{background:linear-gradient(180deg,var(--acc),#d88f1f);color:#2a1800;font-size:18px}
+.btn.ana small{color:#4a3000}
+.btn.kucuk{padding:8px 12px;flex-direction:row;gap:6px;font-size:14px}
+.btn:disabled{opacity:.4}
+.ust,.macUst{display:flex;gap:6px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.rozet{background:var(--kart2);border:1px solid var(--cizgi);border-radius:999px;padding:5px 10px;font-size:13px;white-space:nowrap}
+.btnRozet{min-width:44px}
+.rozet.altin b{color:var(--acc)} .rozet.can b{color:#ff8a8a}
+.logo{text-align:center;margin:40px 0 20px}
+.logoIkon{font-size:64px;filter:drop-shadow(0 0 20px #f2b53a88)}
+.logo h1{font-size:38px;letter-spacing:1px}
+.logo p{color:var(--mut)}
+.menu{display:flex;flex-direction:column;gap:10px}
+.durumYazi{text-align:center;color:var(--mut);font-size:13px;margin-top:auto}
+
+.alamet{background:linear-gradient(90deg,#3b2a5a,#2a2045);border:1px solid #6b55a0;border-radius:12px;padding:8px 10px;font-size:13px}
+.alamet b{color:var(--acc)}
+.rakipBilgi{font-size:12px;color:var(--mut);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.rakipBilgi .mini{font-size:16px}
+.soylar{display:flex;flex-wrap:wrap;gap:4px;min-height:22px}
+.soy{font-size:11px;padding:2px 7px;border-radius:999px;background:var(--kart);border:1px solid var(--cizgi);color:var(--mut)}
+.soy.s1{color:var(--fg);border-color:#a08a50;background:#3a3020}
+.soy.s2{color:#2a1800;background:var(--acc);border-color:var(--acc)}
+.tahtaBaslik{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-top:2px}
+.tahta{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.yedek{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.yuva{aspect-ratio:1/1;border-radius:12px;border:1.5px dashed var(--cizgi);background:rgba(255,255,255,.02);position:relative;display:flex;align-items:center;justify-content:center}
+.tahta .yuva.arka{background:rgba(120,140,255,.04)}
+.yuva.hedefle{border-color:var(--acc);border-style:solid;background:rgba(242,181,58,.08)}
+.birim{position:absolute;inset:3px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--renk,#555);background:linear-gradient(160deg,var(--renk),#00000080);border:2px solid transparent}
+.birim.secili{border-color:#fff;box-shadow:0 0 0 3px var(--acc)}
+.birim .em{font-size:30px;line-height:1}
+.birim .ad{font-size:10px;font-weight:600;text-shadow:0 1px 2px #000;text-align:center;line-height:1.1;padding:0 2px;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.birim .yildiz{position:absolute;top:2px;left:4px;font-size:10px;color:var(--acc);text-shadow:0 1px 2px #000}
+.birim .ek{position:absolute;bottom:2px;right:3px;font-size:14px}
+.birim.kaynasik{border-color:#c58bff;box-shadow:inset 0 0 12px #c58bff88}
+.yedek .birim .em{font-size:24px}
+.secimPanel{background:var(--bg2);border:1px solid var(--cizgi);border-radius:12px;padding:8px 10px;font-size:12px;display:none}
+.secimPanel.acik{display:block}
+.secimPanel h4{font-size:14px;margin-bottom:3px}
+.secimPanel .satir{color:var(--mut);margin:2px 0}
+.secimPanel .satir b{color:var(--fg)}
+.secimPanel .eylem{display:flex;gap:6px;margin-top:6px}
+.dukkanUst{display:flex;gap:6px;justify-content:space-between}
+.btn.kilitli{background:#4a3a14;border-color:var(--acc)}
+.dukkan{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.kart{border-radius:10px;padding:6px 2px 4px;background:linear-gradient(170deg,var(--renk),#000000a0);border:1px solid var(--cizgi);display:flex;flex-direction:column;align-items:center;gap:1px;min-height:92px;position:relative}
+.kart .em{font-size:26px}
+.kart .ad{font-size:10px;font-weight:600;text-align:center;line-height:1.1}
+.kart .soyk{font-size:10px;opacity:.9}
+.kart .fiyat{position:absolute;top:3px;right:4px;font-size:11px;font-weight:700;color:var(--acc)}
+.kart.k2{border-color:#6aa8ff}.kart.k3{border-color:#d58bff;box-shadow:0 0 10px #d58bff55}
+.kart.bos{background:transparent;border-style:dashed;opacity:.35}
+.kart.pahali{opacity:.45}
+.kart.ciftle::after{content:"⬆";position:absolute;top:2px;left:4px;color:var(--iyi);font-weight:900}
+.savasBtn{margin-top:4px}
+
+#tuval{width:100%;flex:1;min-height:0;border-radius:16px;background:linear-gradient(180deg,#2a1f3f,#1a1530 50%,#20283a);touch-action:none}
+.kutBar{text-align:center;font-size:13px;background:var(--kart);border:1px solid #c58bff;border-radius:12px;padding:8px}
+.kutBar.bitti{border-color:var(--cizgi);color:var(--mut)}
+.sonucKutu{display:none;text-align:center;font-size:22px;font-weight:800;padding:10px;border-radius:12px}
+.sonucKutu.acik{display:block}
+.sonucKutu.kazandi{background:#1f4a2c;color:#bff5cf}.sonucKutu.kaybetti{background:#4a1f1f;color:#ffcaca}.sonucKutu.berabere{background:#3a3a3a}
+
+.sonKart{margin:auto 0;background:var(--bg2);border:1px solid var(--cizgi);border-radius:18px;padding:20px;text-align:center;display:flex;flex-direction:column;gap:10px}
+.sonKart h2{font-size:28px}
+.kodKutu{font:12px ui-monospace,monospace;background:#0008;padding:8px;border-radius:8px;word-break:break-all;user-select:all;-webkit-user-select:all}
+
+.perde{position:fixed;inset:0;background:#000a;display:none;align-items:flex-end;justify-content:center;z-index:10}
+.perde.acik{display:flex}
+.pencere{background:var(--bg2);width:100%;max-width:520px;max-height:85vh;overflow-y:auto;border-radius:18px 18px 0 0;padding:16px 14px calc(16px + var(--sab));display:flex;flex-direction:column;gap:8px}
+.pencere h3{font-size:20px}
+.pencere p,.pencere li{color:#d8d2e6;font-size:14px}
+.pencere ul{padding-left:18px;display:flex;flex-direction:column;gap:5px}
+.pencere textarea{width:100%;min-height:70px;background:#0006;color:var(--fg);border:1px solid var(--cizgi);border-radius:10px;padding:8px;font:12px ui-monospace,monospace;user-select:text;-webkit-user-select:text}
+.kodeks{display:grid;grid-template-columns:1fr;gap:6px}
+.kodeksSatir{display:flex;gap:10px;align-items:center;background:var(--kart);border-radius:12px;padding:8px}
+.kodeksSatir .em{font-size:30px;width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--renk)}
+.kodeksSatir .bilgi{font-size:12px;color:var(--mut);flex:1}
+.kodeksSatir .bilgi b{color:var(--fg);font-size:14px}
+.bildirim{position:fixed;left:50%;bottom:calc(90px + var(--sab));transform:translateX(-50%);background:#000c;padding:8px 14px;border-radius:999px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20;white-space:nowrap}
+.bildirim.acik{opacity:1}
+@media (max-height:700px){.kart{min-height:80px}.kart .em{font-size:22px}.birim .em{font-size:24px}.logo{margin:16px 0 10px}}
+/* sığdırma: tahta yuvaları yatay, panel küçük */
+.tahta .yuva{aspect-ratio:1.45/1}.yedek .yuva{aspect-ratio:1.25/1}
+.birim .em{font-size:26px}.yedek .birim .em{font-size:20px}
+#mac{gap:6px}
+.kart{min-height:78px}.kart .em{font-size:22px}
