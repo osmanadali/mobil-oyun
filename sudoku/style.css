@@ -71,14 +71,15 @@ img{-webkit-user-drag:none}
 
 /* OYUN ÜST ÇUBUK */
 #game{gap:6px;justify-content:flex-start}
-.bar{width:min(560px,100%);display:flex;align-items:center;justify-content:space-between;
+.bar{width:min(560px,100%);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
   background:var(--glass);border:1.5px solid var(--line2);border-radius:20px;padding:4px 8px;backdrop-filter:blur(8px)}
+.icon{justify-self:start}
 .icon img{width:44px;height:44px;display:block;transition:transform .1s}
 .icon:active img{transform:scale(.88)}
 .info{display:flex;flex-direction:column;align-items:center;font-weight:700}
 .info #diffLabel{font-family:var(--title);font-size:13px;color:var(--gold);letter-spacing:2px}
 .info #timer{font-size:20px;font-variant-numeric:tabular-nums}
-.hearts{display:flex;gap:2px;min-width:96px;justify-content:flex-end}
+.hearts{display:flex;gap:2px;justify-content:flex-end;justify-self:end}
 .hearts img{width:30px;height:30px}
 .hearts .lost{filter:grayscale(1) brightness(.6);opacity:.5;animation:heartBreak .6s}
 @keyframes heartBreak{30%{transform:scale(1.6) rotate(-20deg)}}
