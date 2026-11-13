@@ -36,6 +36,14 @@ Bu bloğun ardından yaratığın türüne göre **duruş satırı** gelir:
   FULL BODY, THREE-QUARTER FRONT VIEW, standing on all four legs, legs clearly separated, tail held away from the body, calm neutral pose.
   ```
 
+**Uçuşan efekt yasağı** (deneyerek öğrendik; tarz bloğunun sonuna eklenir):
+```
+Draw NO floating effects: no smoke, mist, wisps, sparks, particles, lightning bolts, snowflakes, bubbles, orbiting objects, auras or halos around the creature. Glowing parts must be ON the body only. Fire, clouds and ghostly parts are SOLID shapes attached to the body.
+```
+Tripo görseldeki her şeyi katı nesne sanır; sis ve kıvılcımlar modelin etrafında kopuk parçalara dönüşür. Bu efektler Unity'de gerçek efekt olarak eklenir.
+
+**Uzun sohbette liste kayar:** ChatGPT uzun bir sohbette sırayı karıştırıp listede olmayan yaratıklar çizebiliyor. Her yaratığı ayrı ve kendi başına yeten bir komutla iste, gerekirse yeni sohbet aç.
+
 > **Neden bu kurallar:** Tripo tek bir görselden 3D çıkarıyor. Uzuvlar gövdeden ayrık, fon düz ve ışık gölgesizse model temiz çıkar. Kol ya da kanat gövdeye yapışıksa model yapışık çıkar ve iskelet bozulur.
 
 ### Toplu görsel (tarz referansı için ilk iş)
