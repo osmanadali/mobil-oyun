@@ -4,7 +4,7 @@ const $ = s => document.querySelector(s);
 const COLORS = ['', '#ff6a3d', '#ff7ad9', '#7dff6a', '#e8d7ff', '#6ab7ff', '#5ff2ff', '#ffae3d', '#ff5a5a', '#fff36a'];
 const NAMES = ['', 'Ejder', 'Peri', 'Balçık Kral', 'Tek Boynuz', 'Baykuş Büyücü', 'Kristal Golem', 'Anka', 'Mantar Cini', 'Yıldız Ruhu'];
 const DIFF_TR = { kolay: 'Kolay', orta: 'Orta', zor: 'Zor' };
-const img = n => `img/c${n}.png`;
+const img = n => `img/c${n}.png`, dig = n => `img/d${n}.png`;
 const store = {
   get(k, d) { try { const v = localStorage.getItem('bsudoku_' + k); return v ? JSON.parse(v) : d; } catch { return d; } },
   set(k, v) { try { localStorage.setItem('bsudoku_' + k, JSON.stringify(v)); } catch {} }
@@ -133,7 +133,7 @@ function paint(i) {
   const v = S.vals[i], d = cells[i];
   d.classList.toggle('given', S.given[i]);
   d.style.setProperty('--col', COLORS[v] || 'transparent');
-  d.firstChild.innerHTML = v ? `<img src="${img(v)}" alt=""><span class="n">${v}</span>` : '';
+  d.firstChild.innerHTML = v ? `<img class="cr" src="${img(v)}" alt=""><img class="dg" src="${dig(v)}" alt="${v}">` : '';
 }
 function paintAll() { for (let i = 0; i < 81; i++) paint(i); highlight(); legend(); hearts(); $('#hintCount').textContent = S.hints; }
 function highlight() {
@@ -148,14 +148,14 @@ function highlight() {
 }
 function legend() {
   const L = $('#legend');
-  if (!L.children.length) for (let n = 1; n <= 9; n++) L.insertAdjacentHTML('beforeend', `<div class="lg" data-n="${n}"><img src="${img(n)}" alt=""><b>${n}</b><i></i></div>`);
+  if (!L.children.length) for (let n = 1; n <= 9; n++) L.insertAdjacentHTML('beforeend', `<div class="lg" data-n="${n}"><img src="${img(n)}" alt=""><img class="ld" src="${dig(n)}" alt="${n}"><i></i></div>`);
   for (let n = 1; n <= 9; n++) {
     const left = 9 - S.vals.filter((v, i) => v === n && v === S.solution[i]).length;
     const el = L.children[n - 1]; el.querySelector('i').textContent = left || '';
     el.classList.toggle('done', left === 0);
   }
 }
-function hearts() { $('#hearts').innerHTML = [0, 1, 2].map(k => `<span class="${k < S.miss ? 'lost' : ''}">❤️</span>`).join(''); }
+function hearts() { $('#hearts').innerHTML = [0, 1, 2].map(k => `<img src="img/i_heart.png" class="${k < S.miss ? 'lost' : ''}" alt="">`).join(''); }
 
 function replay(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
 function centerOf(i) { const b = cells[i].getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; }
@@ -170,7 +170,7 @@ function setVal(i, v, anim = true) {
     void d.offsetWidth; d.classList.add('a' + v); replay(d, 'flash');
     const [x, y] = centerOf(i); SPELLS[v](x, y);
     sfx('num', v); buzz(8 + v * 2);
-    toast(`${v} · ${NAMES[v]}`, 600);
+    toast(NAMES[v], 600);
   }
   highlight();
 }
@@ -263,9 +263,9 @@ function finish(won) {
   if (won) { st.won++; if (!st.best[S.diff] || S.time < st.best[S.diff]) st.best[S.diff] = S.time; store.set('stats', st); }
   const stars = won ? 3 - Math.min(2, S.miss) : 0;
   $('#win h2').textContent = won ? 'Büyü Tamamlandı!' : 'Büyü Bozuldu…';
-  $('#win .crown').textContent = won ? '👑' : '💫';
+  $('#win .crown').innerHTML = `<img src="${img(won ? 3 : 5)}" alt="">`; $('#win .crown').classList.toggle('sad', !won);
   $('#winText').textContent = won ? `${DIFF_TR[S.diff]} · ${fmt(S.time)} · ${S.miss} hata` : '3 kalbin de gitti. Yaratıklar bir dahaki sefere bekliyor!';
-  $('#winStars').innerHTML = [0, 1, 2].map(k => `<span>${k < stars ? '⭐' : '☆'}</span>`).join('');
+  $('#winStars').innerHTML = [0, 1, 2].map(k => `<img src="img/i_star.png" class="${k < stars ? '' : 'off'}" alt="">`).join('');
   renderStats();
 }
 function win() {
@@ -321,7 +321,7 @@ $('#undoBtn').onclick = undo;
 $('#clearBtn').onclick = clearSel;
 $('#hintBtn').onclick = hint;
 $('#viewBtn').onclick = () => { view = view === 'creature' ? 'number' : 'creature'; store.set('view', view); board.className = 'view-' + view; toast(view === 'creature' ? 'Yaratık görünümü 🐾' : 'Rakam görünümü 🔢'); };
-const soundIcon = () => $('#soundBtn b').textContent = soundOn ? '🔊' : '🔇';
+const soundIcon = () => $('#soundImg').src = soundOn ? 'img/i_sound.png' : 'img/i_mute.png';
 $('#soundBtn').onclick = () => { soundOn = !soundOn; store.set('sound', soundOn); soundIcon(); };
 $('#howBtn').onclick = () => $('#howModal').hidden = false;
 $('#howClose').onclick = () => $('#howModal').hidden = true;

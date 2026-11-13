@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#1a0f3a">
 <title>Büyülü Sudoku</title>
+<link rel="preload" href="fonts/fredoka.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,15 +16,15 @@
 <section id="menu" class="screen active">
   <div class="logo">
     <div class="logo-creatures" id="logoCreatures"></div>
-    <h1><span>Büyülü</span> Sudoku</h1>
+    <div class="banner"><h1><span>Büyülü</span>Sudoku</h1></div>
     <p class="tag">Kutucuğa dokun, yaratığını çağır!</p>
   </div>
   <div class="menu-buttons">
-    <button class="btn big" data-diff="kolay">🌱 Kolay</button>
-    <button class="btn big" data-diff="orta">🔮 Orta</button>
-    <button class="btn big" data-diff="zor">🐉 Zor</button>
-    <button class="btn ghost" id="continueBtn" hidden>✨ Devam Et</button>
-    <button class="btn ghost" id="howBtn">📜 Nasıl Oynanır?</button>
+    <button class="btn big" data-diff="kolay">Kolay</button>
+    <button class="btn big" data-diff="orta">Orta</button>
+    <button class="btn big" data-diff="zor">Zor</button>
+    <button class="btn ghost" id="continueBtn" hidden>Devam Et</button>
+    <button class="btn ghost" id="howBtn">Nasıl Oynanır?</button>
   </div>
   <div class="stats" id="stats"></div>
 </section>
@@ -31,32 +32,32 @@
 <!-- OYUN -->
 <section id="game" class="screen">
   <header class="bar">
-    <button class="icon" id="backBtn" aria-label="Menü">⟵</button>
+    <button class="icon" id="backBtn" aria-label="Menü"><img src="img/i_back.png" alt=""></button>
     <div class="info"><span id="diffLabel"></span><span id="timer">00:00</span></div>
     <div class="hearts" id="hearts"></div>
   </header>
   <div class="board-wrap">
-    <div id="board"></div>
+    <div class="frame"><div id="board"></div></div>
   </div>
   <div class="legend" id="legend"></div>
   <footer class="tools">
-    <button class="tool" id="undoBtn"><b>↶</b><span>Geri</span></button>
-    <button class="tool" id="clearBtn"><b>🧹</b><span>Sil</span></button>
-    <button class="tool" id="hintBtn"><b>🪄</b><span>İpucu <i id="hintCount">3</i></span></button>
-    <button class="tool" id="viewBtn"><b>🐾</b><span>Görünüm</span></button>
-    <button class="tool" id="soundBtn"><b>🔊</b><span>Ses</span></button>
+    <button class="tool" id="undoBtn"><img src="img/i_undo.png" alt=""><span>Geri</span></button>
+    <button class="tool" id="clearBtn"><img src="img/i_erase.png" alt=""><span>Sil</span></button>
+    <button class="tool" id="hintBtn"><img src="img/i_hint.png" alt=""><span>İpucu <i id="hintCount">3</i></span></button>
+    <button class="tool" id="viewBtn"><img src="img/i_view.png" alt=""><span>Görünüm</span></button>
+    <button class="tool" id="soundBtn"><img src="img/i_sound.png" alt="" id="soundImg"><span>Ses</span></button>
   </footer>
 </section>
 
 <!-- KAZANDIN -->
 <section id="win" class="screen">
   <div class="win-card">
-    <div class="crown">👑</div>
-    <h2>Büyü Tamamlandı!</h2>
+    <div class="crown"></div>
+    <div class="banner small"><h2>Büyü Tamamlandı!</h2></div>
     <p id="winText"></p>
     <div class="win-stars" id="winStars"></div>
-    <button class="btn big" id="againBtn">🔁 Yeni Bulmaca</button>
-    <button class="btn ghost" id="menuBtn">🏰 Menü</button>
+    <button class="btn big" id="againBtn">Yeni Bulmaca</button>
+    <button class="btn ghost" id="menuBtn">Menü</button>
   </div>
 </section>
 
