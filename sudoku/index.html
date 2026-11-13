@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#1a0f3a">
+<title>Büyülü Sudoku</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="bg"></div>
+<canvas id="fx"></canvas>
+
+<!-- MENÜ -->
+<section id="menu" class="screen active">
+  <div class="logo">
+    <div class="logo-creatures" id="logoCreatures"></div>
+    <h1><span>Büyülü</span> Sudoku</h1>
+    <p class="tag">Kutucuğa dokun, yaratığını çağır!</p>
+  </div>
+  <div class="menu-buttons">
+    <button class="btn big" data-diff="kolay">🌱 Kolay</button>
+    <button class="btn big" data-diff="orta">🔮 Orta</button>
+    <button class="btn big" data-diff="zor">🐉 Zor</button>
+    <button class="btn ghost" id="continueBtn" hidden>✨ Devam Et</button>
+    <button class="btn ghost" id="howBtn">📜 Nasıl Oynanır?</button>
+  </div>
+  <div class="stats" id="stats"></div>
+</section>
+
+<!-- OYUN -->
+<section id="game" class="screen">
+  <header class="bar">
+    <button class="icon" id="backBtn" aria-label="Menü">⟵</button>
+    <div class="info"><span id="diffLabel"></span><span id="timer">00:00</span></div>
+    <div class="hearts" id="hearts"></div>
+  </header>
+  <div class="board-wrap">
+    <div id="board"></div>
+  </div>
+  <div class="legend" id="legend"></div>
+  <footer class="tools">
+    <button class="tool" id="undoBtn"><b>↶</b><span>Geri</span></button>
+    <button class="tool" id="clearBtn"><b>🧹</b><span>Sil</span></button>
+    <button class="tool" id="hintBtn"><b>🪄</b><span>İpucu <i id="hintCount">3</i></span></button>
+    <button class="tool" id="viewBtn"><b>🐾</b><span>Görünüm</span></button>
+    <button class="tool" id="soundBtn"><b>🔊</b><span>Ses</span></button>
+  </footer>
+</section>
+
+<!-- KAZANDIN -->
+<section id="win" class="screen">
+  <div class="win-card">
+    <div class="crown">👑</div>
+    <h2>Büyü Tamamlandı!</h2>
+    <p id="winText"></p>
+    <div class="win-stars" id="winStars"></div>
+    <button class="btn big" id="againBtn">🔁 Yeni Bulmaca</button>
+    <button class="btn ghost" id="menuBtn">🏰 Menü</button>
+  </div>
+</section>
+
+<!-- NASIL OYNANIR -->
+<div id="howModal" class="modal" hidden>
+  <div class="modal-card">
+    <h3>📜 Büyü Kitabı</h3>
+    <ul>
+      <li>Boş kutucuğa <b>1 kez</b> dokun → <b>1</b>, <b>8 kez</b> dokun → <b>8</b>. Her rakam farklı bir yaratık ve büyü çağırır!</li>
+      <li>9'dan sonra bir dokunuş daha kutuyu boşaltır. Basılı tutmak da siler.</li>
+      <li>Her satır, sütun ve 3×3 kutuda 1–9 birer kez olmalı.</li>
+      <li>Yanlış rakam bir süre sonra kırmızı yanar ve bir kalp gider. 3 kalp biterse büyü bozulur!</li>
+      <li>Satır, sütun ya da kutu tamamlayınca dalga büyüsü patlar. 🎆</li>
+    </ul>
+    <button class="btn" id="howClose">Anladım!</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="sudoku.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
