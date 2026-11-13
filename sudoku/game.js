@@ -21,11 +21,32 @@ function tone(f, t0, dur, type = 'sine', vol = .12) {
   o.connect(g).connect(ac.destination); o.start(t0); o.stop(t0 + dur + .02);
   return o;
 }
+// ElevenLabs ile üretilmiş efektler (sfx/*.mp3); yüklenmeden önce veya hata olursa sentez sese düşer
+const SFX_KEYS = ['n1', 'n2', 'n3', 'n4', 'n5', 'n6', 'n7', 'n8', 'n9', 'clear', 'bad', 'line', 'win', 'hint'];
+const buffers = {}, VOL = { win: .9, line: .8, bad: .7, clear: .6, hint: .8 };
+let sfxLoading = false, lastNum = null;
+function loadSfx() {
+  if (sfxLoading) return; sfxLoading = true;
+  SFX_KEYS.forEach(k => fetch(`sfx/${k}.mp3`).then(r => r.ok ? r.arrayBuffer() : Promise.reject())
+    .then(b => new Promise((ok, no) => ac.decodeAudioData(b, ok, no))).then(buf => { buffers[k] = buf; }).catch(() => {}));
+}
+function playBuf(key, isNum) {
+  const buf = buffers[key]; if (!buf) return false;
+  if (isNum && lastNum) { try { lastNum.g.gain.setTargetAtTime(0, ac.currentTime, .03); lastNum.s.stop(ac.currentTime + .15); } catch {} }
+  const s = ac.createBufferSource(), g = ac.createGain();
+  s.buffer = buf; s.playbackRate.value = isNum ? .96 + Math.random() * .08 : 1;
+  g.gain.value = VOL[key] || .75;
+  s.connect(g).connect(ac.destination); s.start();
+  if (isNum) lastNum = { s, g };
+  return true;
+}
 function sfx(kind, n = 1) {
   if (!soundOn) return;
   try {
     ac = ac || new (window.AudioContext || window.webkitAudioContext)();
     if (ac.state === 'suspended') ac.resume();
+    loadSfx();
+    if (kind !== 'tap' && playBuf(kind === 'num' ? 'n' + n : kind, kind === 'num')) return;
     const t = ac.currentTime;
     if (kind === 'num') {
       const f = SCALE[n];
@@ -326,6 +347,7 @@ $('#soundBtn').onclick = () => { soundOn = !soundOn; store.set('sound', soundOn)
 $('#howBtn').onclick = () => $('#howModal').hidden = false;
 $('#howClose').onclick = () => $('#howModal').hidden = true;
 soundIcon();
+addEventListener('pointerdown', function warm() { if (!soundOn) return; try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); loadSfx(); } catch {} removeEventListener('pointerdown', warm); }, { once: false });
 
 // menü süsleri
 $('#logoCreatures').innerHTML = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<img src="${img(n)}" style="animation-delay:${n * .12}s" alt="">`).join('');
