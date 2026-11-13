@@ -11,7 +11,28 @@ const store = {
 };
 
 // ---------- SES (WebAudio, dosya yok) ----------
-let ac = null, soundOn = store.get('sound', true);
+let ac = null, soundOn = store.get('sound', true), musicOn = store.get('music', true);
+// Arka plan müziği (ElevenLabs, 60 sn kusursuz döngü) — WebAudio ile boşluksuz döner
+let musicBuf = null, musicSrc = null, musicGain = null, musicLoading = false;
+function ensureAc() { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume(); return ac; }
+function startMusic() {
+  if (!musicOn || !soundOn || musicSrc) return;
+  try { ensureAc(); } catch { return; }
+  if (!musicBuf) {
+    if (musicLoading) return; musicLoading = true;
+    fetch('sfx/music.mp3').then(r => r.ok ? r.arrayBuffer() : Promise.reject()).then(b => new Promise((ok, no) => ac.decodeAudioData(b, ok, no)))
+      .then(buf => { musicBuf = buf; startMusic(); }).catch(() => {}).finally(() => { musicLoading = false; });
+    return;
+  }
+  musicGain = ac.createGain(); musicGain.gain.setValueAtTime(0, ac.currentTime); musicGain.gain.linearRampToValueAtTime(.32, ac.currentTime + 2.5);
+  musicSrc = ac.createBufferSource(); musicSrc.buffer = musicBuf; musicSrc.loop = true;
+  musicSrc.connect(musicGain).connect(ac.destination); musicSrc.start();
+}
+function stopMusic() {
+  if (!musicSrc) return;
+  const s = musicSrc, g = musicGain; musicSrc = null;
+  try { g.gain.setTargetAtTime(0, ac.currentTime, .25); s.stop(ac.currentTime + 1.2); } catch {}
+}
 const SCALE = [0, 261.6, 293.7, 329.6, 392, 440, 523.3, 587.3, 659.3, 784];
 const WAVES = ['', 'sawtooth', 'sine', 'square', 'triangle', 'sine', 'triangle', 'sawtooth', 'square', 'sine'];
 function tone(f, t0, dur, type = 'sine', vol = .12) {
@@ -342,12 +363,22 @@ $('#undoBtn').onclick = undo;
 $('#clearBtn').onclick = clearSel;
 $('#hintBtn').onclick = hint;
 $('#viewBtn').onclick = () => { view = view === 'creature' ? 'number' : 'creature'; store.set('view', view); board.className = 'view-' + view; toast(view === 'creature' ? 'Yaratık görünümü 🐾' : 'Rakam görünümü 🔢'); };
-const soundIcon = () => $('#soundImg').src = soundOn ? 'img/i_sound.png' : 'img/i_mute.png';
-$('#soundBtn').onclick = () => { soundOn = !soundOn; store.set('sound', soundOn); soundIcon(); };
+// Ses düğmesi: Ses+Müzik → Efekt → Kapalı
+const soundIcon = () => {
+  $('#soundImg').src = soundOn ? 'img/i_sound.png' : 'img/i_mute.png';
+  $('#soundBtn span').textContent = !soundOn ? 'Kapalı' : musicOn ? 'Müzik' : 'Efekt';
+};
+$('#soundBtn').onclick = () => {
+  if (soundOn && musicOn) { musicOn = false; stopMusic(); toast('Sadece efektler 🔔'); }
+  else if (soundOn) { soundOn = false; toast('Ses kapalı 🔇'); }
+  else { soundOn = true; musicOn = true; startMusic(); toast('Müzik açık 🎵'); }
+  store.set('sound', soundOn); store.set('music', musicOn); soundIcon();
+};
 $('#howBtn').onclick = () => $('#howModal').hidden = false;
 $('#howClose').onclick = () => $('#howModal').hidden = true;
 soundIcon();
-addEventListener('pointerdown', function warm() { if (!soundOn) return; try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); loadSfx(); } catch {} removeEventListener('pointerdown', warm); }, { once: false });
+addEventListener('pointerdown', function warm() { if (!soundOn) return; try { ensureAc(); loadSfx(); startMusic(); } catch {} removeEventListener('pointerdown', warm); });
+document.addEventListener('visibilitychange', () => { if (!ac) return; document.hidden ? ac.suspend() : ac.resume(); });
 
 // menü süsleri
 $('#logoCreatures').innerHTML = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<img src="${img(n)}" style="animation-delay:${n * .12}s" alt="">`).join('');
