@@ -80,7 +80,7 @@
       return { ad: botAd(tohum + tur), takim: botTakim(tur, tohum, guc), kupa, kaynak: 'bot' };
     },
   };
-  const ADLAR = ['Kara Bulut', 'Ak Doğan', 'Demir Yay', 'Gök Börü', 'Yalın Kılıç', 'Kızıl Elma', 'Bilge Kağan', 'Ay Kaya', 'Tuna', 'Aras', 'Ilgın', 'Bozok'];
+  const ADLAR = ['Kara Bulut', 'Ak Doğan', 'Demir Yay', 'Mavi Kıvılcım', 'Yalın Kılıç', 'Gece Rüzgârı', 'Taş Yürek', 'Ay Kaya', 'Sessiz Ok', 'Kor Göz', 'Bulut Avcısı', 'Buz Pençe'];
   const botAd = (n) => ADLAR[Math.abs(n) % ADLAR.length];
 
   const api = { botTakim, yerlestir, kodla, coz, Hayalet };
