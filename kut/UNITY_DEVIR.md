@@ -88,6 +88,8 @@ Assets/Kut/
 
 ## 5. Kod: prototipten C#'a
 
+**✅ Motor hazır ve sınandı:** `kut/unity/Kod/` (KutVeri, KutSavas, KutHayalet). Tarayıcı motoruyla 496/496 savaşta bit bit aynı sonuç veriyor; ayrıntılar `kut/unity/README.md`'de. Bu dosyaları `Assets/Kut/Kod/` altına kopyala. Aşağıdaki tablo yalnız arayüz ve sahne tarafı için yol gösterir.
+
 `sim.js` → `KutSavas.cs` (saf C#, MonoBehaviour değil). Tarayıcı sürümüyle **aynı sonucu** vermeli: aynı tohum (mulberry32), aynı 0,05 sn adım, aynı sıra. Bunu doğrulamak için `node kut/test/sim.test.cjs` çıktısındaki örnek savaşları C# testine koy.
 
 | JS | C# |
@@ -117,7 +119,7 @@ Assets/Kut/
 1. URP projesi aç ya da mevcudu kontrol et; klasör yapısını kur.
 2. Golemi (`3187858f`) Humanoid olarak içe aktar. UAL FBX'ten Idle, Walk ve Punch'ı bağla. Bir Animator Controller kur; golem arenada yürüsün.
 3. Arena platformunu, zemini ve gökyüzünü koy; kamerayı ayarla.
-4. `KutSavas.cs`'i yaz, JS testleriyle aynı sonucu verdiğini doğrula.
+4. `kut/unity/Kod/*.cs` dosyalarını projeye kopyala (yazıldı ve sınandı); `SavasSahnesi.cs` ile Fx olaylarını görsele bağla.
 5. 16 yaratığı içe aktar, iki takım dizip ilk tam savaşı oynat.
 6. Dükkân ve tahta arayüzü, Kut dokunuşu, kaynaştırma.
 7. Efektler; sonra çevrimiçi (Firebase) ve paketleme.

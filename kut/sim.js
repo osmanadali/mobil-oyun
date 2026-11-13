@@ -63,7 +63,7 @@
 
     function dostlar(u) { return birimler.filter(o => o.taraf === u.taraf && !o.olu); }
     function dusmanlar(u) { return birimler.filter(o => o.taraf !== u.taraf && !o.olu); }
-    function mesafe(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+    function mesafe(a, b) { const dx = a.x - b.x, dy = a.y - b.y; return Math.sqrt(dx * dx + dy * dy); } // hypot değil: C# ile bit bit aynı sonuç
     function enYakin(u) { let en = null, m = 1e9; for (const o of dusmanlar(u)) { const d = mesafe(u, o) + o.i * 1e-4; if (d < m) { m = d; en = o; } } return en; }
     function kalkanVer(u, n) { u.kalkan += n; fx.push({ t, tip: 'kalkan', u: u.uid, n: Math.round(n) }); }
     function iyiles(u, n) { if (u.olu) return; const v = Math.min(u.mx - u.hp, n); u.hp += v; if (v > 1) fx.push({ t, tip: 'iyi', u: u.uid, n: Math.round(v) }); }
