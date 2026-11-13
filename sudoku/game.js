@@ -377,7 +377,13 @@ $('#soundBtn').onclick = () => {
 $('#howBtn').onclick = () => $('#howModal').hidden = false;
 $('#howClose').onclick = () => $('#howModal').hidden = true;
 soundIcon();
-addEventListener('pointerdown', function warm() { if (!soundOn) return; try { ensureAc(); loadSfx(); startMusic(); } catch {} removeEventListener('pointerdown', warm); });
+// iOS sesi yalnızca kullanıcı hareketinde açar: ilk dokunuş/tıklamada kilidi aç
+function warm() {
+  if (!soundOn) return;
+  try { ensureAc(); loadSfx(); startMusic(); } catch {}
+  if (ac && ac.state === 'running') ['pointerdown', 'touchend', 'click'].forEach(e => removeEventListener(e, warm, true));
+}
+['pointerdown', 'touchend', 'click'].forEach(e => addEventListener(e, warm, true));
 document.addEventListener('visibilitychange', () => { if (!ac) return; document.hidden ? ac.suspend() : ac.resume(); });
 
 // menü süsleri

@@ -13,7 +13,8 @@
   --bad:#ff4d6d; --sel:rgba(255,211,107,.30); --peer:rgba(160,120,255,.18);
   --title:"Cinzel Decorative",Georgia,serif;
 }
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+html,body,button,.cell{touch-action:manipulation} /* iOS: hızlı çoklu dokunuşta yakınlaştırma olmasın */
 html,body{height:100%;overflow:hidden;background:#140a2e;color:var(--ink);font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 img{-webkit-user-drag:none}
@@ -86,7 +87,7 @@ img{-webkit-user-drag:none}
 
 /* TAHTA + ÇERÇEVE */
 .board-wrap{flex:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:0}
-.frame{--f:min(calc(100vw - 8px),calc(100vh - 250px),580px);--s:calc(var(--f) * .815);
+.frame{--f:min(calc(100vw - 8px),calc(100vh - 250px),580px);--f:min(calc(100vw - 8px),calc(100dvh - 250px),580px);--s:calc(var(--f) * .815);
   width:var(--f);height:var(--f);position:relative;display:flex;align-items:center;justify-content:center}
 .frame::after{content:"";position:absolute;inset:0;background:url(img/frame.png) center/100% 100% no-repeat;pointer-events:none;z-index:0;
   filter:drop-shadow(0 8px 16px rgba(0,0,0,.6))}
@@ -193,3 +194,19 @@ img{-webkit-user-drag:none}
 .shake{animation:screenShake .4s}
 @keyframes screenShake{25%{transform:translate(4px,-3px)}50%{transform:translate(-4px,3px)}75%{transform:translate(3px,2px)}}
 @media (prefers-reduced-motion:reduce){#bg{animation:none}}
+/* Tablet (iPad): tahta ve kontroller büyüsün */
+@media (min-width:700px) and (min-height:800px){
+  .frame{--f:min(calc(100vw - 40px),calc(100vh - 330px),760px);--f:min(calc(100vw - 40px),calc(100dvh - 330px),760px)}
+  .bar,.legend,.tools{width:min(720px,100%)}
+  .icon img{width:58px;height:58px}
+  .hearts img{width:40px;height:40px}
+  .info #timer{font-size:28px}.info #diffLabel{font-size:16px}
+  .legend .lg{max-width:76px}
+  .tool img{width:78px;height:78px}.tool{font-size:17px}
+  .menu-buttons{width:min(420px,86vw);gap:14px}
+  .btn,.btn.big{height:74px;border-width:0 37px;border-image-width:0 37px;font-size:28px}
+  .tag{font-size:22px}
+  .banner{width:min(520px,80vw)}.banner h1{font-size:56px}
+  .logo-creatures img{width:56px;height:56px}.logo-creatures{height:66px}
+  #toast{top:calc(env(safe-area-inset-top) + 90px);font-size:22px}
+}
