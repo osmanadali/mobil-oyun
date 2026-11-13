@@ -40,7 +40,18 @@ img{-webkit-user-drag:none}
   filter:drop-shadow(0 2px 0 #5a2a00) drop-shadow(0 0 8px rgba(255,190,80,.7))}
 .banner h1{font-size:clamp(30px,9.5vw,44px)}
 .banner h1 span{display:block;font-size:.6em;margin-bottom:-.15em;padding-top:.1em;background:linear-gradient(180deg,#fff,#ffc8f2);-webkit-background-clip:text;background-clip:text}
+.banner h1 b{display:block;font-weight:900}
 .banner.small{width:min(320px,80vw)}
+/* menü altı: dil + reklam gizliliği */
+.menu-foot{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:15px;text-shadow:0 2px 4px #000}
+.lang-pick{display:flex;align-items:center;gap:6px;background:var(--glass);border:1.5px solid var(--line);border-radius:20px;padding:4px 10px}
+.lang-pick select{font:inherit;font-weight:600;color:var(--ink);background:transparent;border:0;outline:0;-webkit-appearance:none;appearance:none;padding:2px 4px}
+.lang-pick select option{color:#000}
+.link{text-decoration:underline;opacity:.8;font-size:13px}
+.ad-card{text-align:center;gap:10px;width:min(340px,90vw)}
+.ad-card .ad-img{width:84px;height:84px;animation:hop 1.4s infinite}
+.ad-card p{font-size:17px;line-height:1.4}
+.ad-card .btn{width:100%}
 .banner h2{font-size:clamp(18px,5.6vw,24px)}
 .banner::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.35) 50%,transparent 60%) 200% 0/250% 100% no-repeat;
   -webkit-mask:url(img/banner.png) center/contain no-repeat;mask:url(img/banner.png) center/contain no-repeat;animation:shine 4s infinite}

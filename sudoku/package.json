@@ -1,0 +1,22 @@
+{
+  "name": "magic-sudoku",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Büyülü Sudoku / Magic Sudoku — dokunarak rakam yazılan fantastik sudoku",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "serve": "npx --yes http-server www -p 8080 -c-1",
+    "test": "node test/robot.cjs",
+    "ios": "npx cap sync ios && npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor-community/admob": "^8.2.1",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.3"
+  }
+}

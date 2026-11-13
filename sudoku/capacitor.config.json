@@ -1,0 +1,12 @@
+{
+  "appId": "com.osmanadali.sudoku",
+  "appName": "Magic Sudoku",
+  "webDir": "www",
+  "backgroundColor": "#140a2e",
+  "loggingBehavior": "none",
+  "ios": { "contentInset": "never" },
+  "plugins": {
+    "SplashScreen": { "launchShowDuration": 600, "backgroundColor": "#140a2e", "showSpinner": false },
+    "SystemBars": { "insetsHandling": "css", "initialViewportFitValueHint": "cover" }
+  }
+}

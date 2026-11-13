@@ -2,7 +2,7 @@
 // Üretici doğruluğu + gerçek tarayıcıda oynanış, ekran boyutları, kayıt, performans.
 const path = require('path'), fs = require('fs'), http = require('http');
 const { chromium, devices } = require('playwright');
-const ROOT = path.join(__dirname, '..'), OUT = path.join(ROOT, 'test', 'out');
+const ROOT = path.join(__dirname, '..', 'www'), OUT = path.join(__dirname, 'out');
 fs.mkdirSync(OUT, { recursive: true });
 const results = []; const ok = (name, pass, info = '') => { results.push({ name, pass, info }); console.log(`${pass ? '✅' : '❌'} ${name}${info ? ' — ' + info : ''}`); };
 
@@ -46,7 +46,7 @@ async function browserTests() {
   const b = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
   const state = p => p.evaluate(() => JSON.parse(localStorage.getItem('bsudoku_cur')));
   const fresh = async (dev, opts = {}) => {
-    const c = await b.newContext({ ...dev, ...opts }); const p = await c.newPage(); const errs = [];
+    const c = await b.newContext({ locale: 'tr-TR', ...dev, ...opts }); const p = await c.newPage(); const errs = [];
     p.on('pageerror', e => errs.push(e.message)); p.on('console', m => m.type() === 'error' && errs.push(m.text()));
     p.on('requestfailed', r => errs.push('istek: ' + r.url()));
     await p.goto(URL); await p.waitForTimeout(400);
@@ -164,6 +164,26 @@ async function browserTests() {
       ok('Kazanmadan sonra parçacıklar temizlenir (boşta çizim yok)', lit === 0, `boyalı piksel: ${lit}`);
     }
     ok(`${name}: hata yok`, !errs.length, errs.slice(0, 3).join(' | '));
+    await c.close();
+  }
+
+  // 2c') 9 dil: eksik metin yok, yazılar butonlara sığıyor (en küçük ekranda)
+  for (const lang of ['tr', 'en', 'de', 'es', 'pt-BR', 'fr', 'ko', 'ja', 'zh-Hant']) {
+    const { c, p, errs } = await fresh({ viewport: { width: 375, height: 667 }, isMobile: true, hasTouch: true });
+    await p.evaluate(l => localStorage.setItem('bsudoku_lang', JSON.stringify(l)), lang); await p.reload(); await p.waitForTimeout(500);
+    if (await p.isVisible('#howModal')) { await p.screenshot({ path: `${OUT}/dil-${lang}-kural.png` }); await p.click('#howClose'); }
+    const menu = await p.evaluate(() => {
+      const missing = [...document.querySelectorAll('[data-t],[data-th]')].filter(e => { const k = e.dataset.t || e.dataset.th; return !e.textContent.trim() || e.textContent.trim() === k; }).map(e => e.dataset.t || e.dataset.th);
+      const tight = [...document.querySelectorAll('#menu .btn')].filter(b => !b.hidden && b.scrollWidth > b.clientWidth + 1).map(b => b.textContent);
+      return { missing, tight, lang: document.documentElement.lang };
+    });
+    await p.screenshot({ path: `${OUT}/dil-${lang}-menu.png` });
+    await p.click('[data-diff="kolay"]'); await p.waitForTimeout(1300);
+    for (let k = 0; k < 3; k++) await p.click('#soundBtn');   // ses etiketinin üç hâli
+    const game = await p.evaluate(() => [...document.querySelectorAll('.tool span, .info span')].filter(e => e.scrollWidth > e.parentElement.clientWidth + 2).map(e => e.textContent));
+    await p.screenshot({ path: `${OUT}/dil-${lang}-oyun.png` });
+    ok(`Dil ${lang}: metinler tam, taşma yok`, menu.lang === lang && !menu.missing.length && !menu.tight.length && !game.length && !errs.length,
+      [menu.missing.length && 'eksik: ' + menu.missing, menu.tight.length && 'menüde taşan: ' + menu.tight, game.length && 'oyunda taşan: ' + game, errs[0]].filter(Boolean).join(' · '));
     await c.close();
   }
 

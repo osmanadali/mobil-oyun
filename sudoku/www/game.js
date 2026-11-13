@@ -2,8 +2,8 @@
 'use strict';
 const $ = s => document.querySelector(s);
 const COLORS = ['', '#ff6a3d', '#ff7ad9', '#7dff6a', '#e8d7ff', '#6ab7ff', '#5ff2ff', '#ffae3d', '#ff5a5a', '#fff36a'];
-const NAMES = ['', 'Ejder', 'Peri', 'Balçık Kral', 'Tek Boynuz', 'Baykuş Büyücü', 'Kristal Golem', 'Anka', 'Mantar Cini', 'Yıldız Ruhu'];
-const DIFF_TR = { kolay: 'Kolay', orta: 'Orta', zor: 'Zor' };
+const NAMES = ['', ...T('names')];
+const DIFF_TR = { kolay: T('kolay'), orta: T('orta'), zor: T('zor') };
 const img = n => `img/c${n}.png`, dig = n => `img/d${n}.png`;
 const store = {
   get(k, d) { try { const v = localStorage.getItem('bsudoku_' + k); return v ? JSON.parse(v) : d; } catch { return d; } },
@@ -86,7 +86,14 @@ function sfx(kind, n = 1) {
     else if (kind === 'tap') tone(660, t, .06, 'sine', .04);
   } catch {}
 }
-const buzz = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch {} };
+// Titreşim: iOS'ta navigator.vibrate yok → Capacitor Haptics; web/Android'de vibrate
+const buzz = ms => {
+  try {
+    const H = window.Capacitor?.Plugins?.Haptics;
+    if (H) return Array.isArray(ms) ? H.notification({ type: ms.length > 3 ? 'SUCCESS' : 'ERROR' }) : H.impact({ style: ms > 26 ? 'MEDIUM' : 'LIGHT' });
+    navigator.vibrate && navigator.vibrate(ms);
+  } catch {}
+};
 
 // ---------- PARÇACIK EFEKTLERİ ----------
 const cv = $('#fx'), cx = cv.getContext('2d');
@@ -153,7 +160,14 @@ let S = null, cells = [], sel = -1, timerId = 0;
 let view = store.get('view', 'creature');
 const pending = new Map(); // hücre -> değerlendirme zamanlayıcısı
 
-function newGame(diff) {
+let adBusy = false;
+async function newGame(diff) {
+  if (adBusy) return;
+  if (S && S.over && store.get('fin', 0) > 2 && window.Ads) {
+    adBusy = true; stopMusic();
+    try { await Ads.interstitial(); } catch {}
+    adBusy = false; startMusic();
+  }
   const { puzzle, solution } = Sudoku.generate(diff);
   S = { diff, puzzle, solution, vals: puzzle.slice(), given: puzzle.map(v => !!v), hist: [], miss: 0, hints: 3, time: 0, judged: puzzle.slice(), over: false };
   save(); startGame(true);
@@ -236,7 +250,7 @@ function judge(i) {
   S.judged[i] = v;
   if (v !== S.solution[i]) {
     S.miss++; cells[i].classList.add('bad'); sfx('bad'); buzz([40, 40, 60]);
-    replay(document.body, 'shake'); hearts(); toast('Yanlış büyü! 💔');
+    replay(document.body, 'shake'); hearts(); toast(T('wrong'));
     if (S.miss >= 3) return lose();
     save(); return;
   }
@@ -254,13 +268,13 @@ function checkGroups(i) {
     g.forEach(k => { const d = cells[k]; d.style.setProperty('--w', Math.abs((k / 9 | 0) - r) + Math.abs(k % 9 - c)); replay(d, 'wave'); });
     g.forEach((k, j) => setTimeout(() => { const [x, y] = centerOf(k); SPELLS[S.vals[k]](x, y); }, j * 55));
   }
-  if (any) { sfx('line'); buzz(30); toast(['Harika! ✨', 'Süper büyü! 🌟', 'Muhteşem! 🔥', 'Efsane! 🐉'][Math.random() * 4 | 0]); }
+  if (any) { sfx('line'); buzz(30); toast(T('praise')[Math.random() * 4 | 0]); }
   const n = S.vals[i];
   if (S.vals.filter((v, k) => v === n && v === S.solution[k]).length === 9) replay($('#legend').children[n - 1], 'pulse');
 }
 
 function undo() {
-  const h = S.hist.pop(); if (!h) return toast('Geri alınacak yok');
+  const h = S.hist.pop(); if (!h) return toast(T('noUndo'));
   clearTimeout(pending.get(h.i)); pending.delete(h.i);
   sel = h.i; setVal(h.i, h.prev); S.judged[h.i] = h.prev; save(); legend();
 }
@@ -269,7 +283,7 @@ function clearSel() {
   S.hist.push({ i: sel, prev: S.vals[sel] }); setVal(sel, 0); S.judged[sel] = 0; save(); legend();
 }
 function hint() {
-  if (!S.hints) return toast('İpucu kalmadı 🪄');
+  if (!S.hints) return askReward();
   let i = sel >= 0 && !S.given[sel] && S.vals[sel] !== S.solution[sel] ? sel : -1;
   if (i < 0) { const empty = S.vals.map((v, k) => v !== S.solution[k] ? k : -1).filter(k => k >= 0); if (!empty.length) return; i = empty[Math.random() * empty.length | 0]; }
   S.hints--; $('#hintCount').textContent = S.hints;
@@ -301,12 +315,14 @@ function startGame(fresh) {
 }
 function finish(won) {
   S.over = true; clearInterval(timerId); save();
+  store.set('fin', store.get('fin', 0) + 1);
+  window.Ads?.warm();   // sakin an: sonraki reklamı şimdi yükle
   const st = store.get('stats', { won: 0, best: {} });
   if (won) { st.won++; if (!st.best[S.diff] || S.time < st.best[S.diff]) st.best[S.diff] = S.time; store.set('stats', st); }
   const stars = won ? 3 - Math.min(2, S.miss) : 0;
-  $('#win h2').textContent = won ? 'Büyü Tamamlandı!' : 'Büyü Bozuldu…';
+  $('#win h2').textContent = T(won ? 'winT' : 'loseT');
   $('#win .crown').innerHTML = `<img src="${img(won ? 3 : 5)}" alt="">`; $('#win .crown').classList.toggle('sad', !won);
-  $('#winText').textContent = won ? `${DIFF_TR[S.diff]} · ${fmt(S.time)} · ${S.miss} hata` : '3 kalbin de gitti. Yaratıklar bir dahaki sefere bekliyor!';
+  $('#winText').textContent = won ? T('winTxt', DIFF_TR[S.diff], fmt(S.time), S.miss) : T('loseTxt');
   $('#winStars').innerHTML = [0, 1, 2].map(k => `<img src="img/i_star.png" class="${k < stars ? '' : 'off'}" alt="">`).join('');
   renderStats();
 }
@@ -327,7 +343,8 @@ function toast(t, ms = 1100) {
 function renderStats() {
   const st = store.get('stats', { won: 0, best: {} });
   const b = Object.entries(st.best).map(([k, v]) => `${DIFF_TR[k]} ${fmt(v)}`).join(' · ');
-  $('#stats').innerHTML = st.won ? `🏆 ${st.won} büyü tamamlandı${b ? '<br>⏱ En iyi: ' + b : ''}` : '';
+  $('#stats').innerHTML = st.won ? T('won', st.won) + (b ? '<br>' + T('best') + b : '') : '';
+  $('#privacyBtn').hidden = !window.Ads?.privacy();
   const cur = store.get('cur', null);
   $('#continueBtn').hidden = !(cur && !cur.over);
 }
@@ -362,16 +379,16 @@ $('#menuBtn').onclick = () => { renderStats(); show('menu'); };
 $('#undoBtn').onclick = undo;
 $('#clearBtn').onclick = clearSel;
 $('#hintBtn').onclick = hint;
-$('#viewBtn').onclick = () => { view = view === 'creature' ? 'number' : 'creature'; store.set('view', view); board.className = 'view-' + view; toast(view === 'creature' ? 'Yaratık görünümü 🐾' : 'Rakam görünümü 🔢'); };
+$('#viewBtn').onclick = () => { view = view === 'creature' ? 'number' : 'creature'; store.set('view', view); board.className = 'view-' + view; toast(T(view === 'creature' ? 'viewC' : 'viewN')); };
 // Ses düğmesi: Ses+Müzik → Efekt → Kapalı
 const soundIcon = () => {
   $('#soundImg').src = soundOn ? 'img/i_sound.png' : 'img/i_mute.png';
-  $('#soundBtn span').textContent = !soundOn ? 'Kapalı' : musicOn ? 'Müzik' : 'Efekt';
+  $('#soundBtn span').textContent = T(!soundOn ? 'off' : musicOn ? 'music' : 'sfx');
 };
 $('#soundBtn').onclick = () => {
-  if (soundOn && musicOn) { musicOn = false; stopMusic(); toast('Sadece efektler 🔔'); }
-  else if (soundOn) { soundOn = false; toast('Ses kapalı 🔇'); }
-  else { soundOn = true; musicOn = true; startMusic(); toast('Müzik açık 🎵'); }
+  if (soundOn && musicOn) { musicOn = false; stopMusic(); toast(T('sfxOnly')); }
+  else if (soundOn) { soundOn = false; toast(T('soundOff')); }
+  else { soundOn = true; musicOn = true; startMusic(); toast(T('musicOn')); }
   store.set('sound', soundOn); store.set('music', musicOn); soundIcon();
 };
 $('#howBtn').onclick = () => $('#howModal').hidden = false;
@@ -389,7 +406,28 @@ document.addEventListener('visibilitychange', () => { if (!ac) return; document.
 // menü süsleri
 $('#logoCreatures').innerHTML = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<img src="${img(n)}" style="animation-delay:${n * .12}s" alt="">`).join('');
 $('#logoCreatures').onclick = e => { const im = e.target.closest('img'); if (!im) return; const n = [...im.parentNode.children].indexOf(im) + 1; const b = im.getBoundingClientRect(); SPELLS[n](b.left + b.width / 2, b.top + b.height / 2); sfx('num', n); };
+// --- Ödüllü reklam: ipucu bitince +2 ---
+function askReward() {
+  if (!window.Ads?.online()) return toast(T('noHint'));
+  $('#adModal').hidden = false;
+}
+$('#adCancel').onclick = () => { $('#adModal').hidden = true; };
+$('#adWatch').onclick = async () => {
+  $('#adModal').hidden = true; stopMusic();
+  const r = await Ads.rewarded();
+  startMusic();
+  if (r === 'earned') { S.hints += 2; $('#hintCount').textContent = S.hints; save(); sfx('hint'); toast(T('gotHints')); }
+  else if (r === 'nofill') toast(T('noAd'));
+};
+$('#privacyBtn').onclick = () => Ads.privacyForm().then(renderStats);
+// --- Dil seçici ---
+const langSel = $('#langSel');
+langSel.innerHTML = LANGS.map(([k, n]) => `<option value="${k}"${k === LANG ? ' selected' : ''}>${n}</option>`).join('');
+langSel.onchange = () => setLang(langSel.value);
+window.__rayCalm = () => !$('#game').classList.contains('active');   // ads.js: oyun oynanırken reklam yüklenmesin
+applyI18n(); soundIcon();
 renderStats();
+setTimeout(() => window.Ads?.init().then(renderStats), 400);   // rıza + (iOS) izleme izni + reklam başlatma
 if (!store.get('seenHow', false)) { $('#howModal').hidden = false; store.set('seenHow', true); }
 document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
 })();

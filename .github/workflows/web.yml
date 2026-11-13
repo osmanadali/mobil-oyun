@@ -11,7 +11,9 @@ jobs:
     environment: { name: github-pages, url: '${{ steps.d.outputs.page_url }}' }
     steps:
       - uses: actions/checkout@v4
+      # Site: Ray (www/) + Magic Sudoku (sudoku/www/ → /sudoku/, gizlilik: /sudoku/privacy.html)
+      - run: mkdir -p site && cp -r www/. site/ && mkdir -p site/sudoku && cp -r sudoku/www/. site/sudoku/
       - uses: actions/upload-pages-artifact@v3
-        with: { path: www }
+        with: { path: site }
       - id: d
         uses: actions/deploy-pages@v4

@@ -1,8 +1,8 @@
 # Büyülü Sudoku — Kalite Kontrolü
 
-Test robotu: `node sudoku/test/robot.cjs` (gerçek Chromium tarayıcıda oynar; ekran görüntüleri ve özet `sudoku/test/out/`).
+Test robotu: `cd sudoku && npm test` (gerçek Chromium tarayıcıda oynar; ekran görüntüleri ve özet `sudoku/test/out/`).
 
-**Son sonuç: 40/40 geçti.**
+**Son sonuç: 49/49 geçti** (9 dil kontrolü eklendi).
 
 ## Neler test ediliyor
 | Alan | Kontrol |
@@ -13,6 +13,7 @@ Test robotu: `node sudoku/test/robot.cjs` (gerçek Chromium tarayıcıda oynar; 
 | Kural | 3 yanlışta oyun biter, tahta çözülünce kazanma ekranı |
 | Ekranlar | iPhone SE (375), iPhone 13, iPhone 15 Pro Max, iPad: taşma/çakışma yok, kutucuk ≥ 30 px (33–68 px) |
 | Performans | Hızlı dokunma fırtınasında ortalama kare 16,7 ms (60 fps), 50 ms+ takılma yok; kazandıktan sonra boşta çizim yok |
+| Diller | 9 dilin her birinde eksik metin yok, menü butonları ve araç etiketleri en küçük ekranda taşmıyor |
 | Varlıklar | 50 görsel/ses dosyasının hepsi yükleniyor, konsol hatası yok |
 
 ## Bu turda düzeltilenler

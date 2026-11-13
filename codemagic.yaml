@@ -92,3 +92,96 @@ workflows:
       - archive.log
       - export.log
       - build/Ray.xcarchive/dSYMs/**
+
+  # ───────────────────────────── Magic Sudoku (sudoku/ klasörü) ─────────────────────────────
+  # Aynı Apple hesabı → gizli değerler yine "ray_ios" grubundan. AdMob kimlikleri aşağıda (boşsa derleme durur:
+  # test reklamlı sürüm mağazaya gitmesin). Kurulum: sudoku/YAYIN.md
+  sudoku-ios:
+    name: Magic Sudoku iOS (App Store Connect)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    working_directory: sudoku
+    environment:
+      groups: [ray_ios]
+      node: 22
+      xcode: latest
+      vars:
+        ADMOB_APP_ID_IOS: ""          # ca-app-pub-…~…  (AdMob › Uygulamalar › Magic Sudoku iOS)
+        ADMOB_INTERSTITIAL_IOS: ""    # ca-app-pub-…/…  (geçiş reklamı birimi)
+        ADMOB_REWARDED_IOS: ""        # ca-app-pub-…/…  (ödüllü reklam birimi)
+        BUILD_NO: "1"
+    scripts:
+      - name: Ayarları denetle
+        script: |
+          set -e
+          tr1() { printf '%s' "$1" | tr -d ' \r\n\t'; }
+          KID=$(tr1 "$APPSTORE_API_KEY_ID"); ISS=$(tr1 "$APPSTORE_API_ISSUER_ID"); TID=$(tr1 "$APPLE_TEAM_ID")
+          [ -n "$KID" ] && [ -n "$ISS" ] && [ -n "$TID" ] && [ -n "$APPSTORE_API_KEY_P8_BASE64" ] || { echo "Eksik gizli değer: ray_ios grubu"; exit 1; }
+          for v in ADMOB_APP_ID_IOS ADMOB_INTERSTITIAL_IOS ADMOB_REWARDED_IOS; do
+            [ -n "${!v}" ] || { echo "$v boş: codemagic.yaml › sudoku-ios › vars (bkz. sudoku/YAYIN.md)"; exit 1; }
+            echo "${!v}" | grep -q 3940256099942544 && { echo "$v Google test kimliği olamaz"; exit 1; }
+          done
+          echo "$BUILD_NO" | grep -Eq '^[1-9][0-9]{0,9}$' || { echo "BUILD_NO pozitif tam sayı olmalı"; exit 1; }
+          VN=$(node -p "require('./package.json').version")
+          { echo "APPSTORE_API_KEY_ID=$KID"; echo "APPSTORE_API_ISSUER_ID=$ISS"; echo "APPLE_TEAM_ID=$TID"; echo "VERSION_CODE=$BUILD_NO"; echo "VERSION_NAME=$VN"; } >> "$CM_ENV"
+          printf '%s' "$APPSTORE_API_KEY_P8_BASE64" | base64 --decode > "$CM_BUILD_DIR/../AuthKey.p8"
+          grep -q 'BEGIN PRIVATE KEY' "$CM_BUILD_DIR/../AuthKey.p8" || { echo "APPSTORE_API_KEY_P8_BASE64 çözülemedi"; exit 1; }
+          V=$(xcodebuild -version | awk 'NR==1{print int($2)}'); [ "$V" -ge 26 ] || { echo "Capacitor 8 Xcode 26+ ister (bulunan: $V)"; exit 1; }
+          echo "Magic Sudoku $VN ($BUILD_NO) derlenecek"
+      - name: Bağımlılıklar, test ve yerel proje
+        script: |
+          set -e
+          npm ci --no-audit --no-fund
+          npx cap add ios
+          npx @capacitor/assets generate --ios --iconBackgroundColor '#140a2e' --splashBackgroundColor '#140a2e' --splashBackgroundColorDark '#140a2e'
+          bash tools/ios-hazirla.sh
+          grep -c 'window.SUDOKU_ADS' www/index.html
+          npx cap sync ios
+      - name: Arşivle (otomatik imza)
+        script: |
+          K="$CM_BUILD_DIR/../AuthKey.p8"
+          xcodebuild archive -project ios/App/App.xcodeproj -scheme App -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath build/Sudoku.xcarchive \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CURRENT_PROJECT_VERSION="$VERSION_CODE" CODE_SIGN_STYLE=Automatic \
+            -allowProvisioningUpdates -authenticationKeyPath "$K" \
+            -authenticationKeyID "$APPSTORE_API_KEY_ID" -authenticationKeyIssuerID "$APPSTORE_API_ISSUER_ID" > archive.log 2>&1 \
+            || { grep -E "error:" archive.log | sort -u | head -40; tail -60 archive.log; exit 1; }
+          grep -E "\*\* ARCHIVE" archive.log || true
+      - name: Arşivi denetle
+        script: |
+          set -e
+          A=build/Sudoku.xcarchive/Products/Applications/App.app
+          GAD=$(plutil -extract GADApplicationIdentifier raw -o - "$A/Info.plist"); echo "GAD: $GAD"
+          echo "$GAD" | grep -q 3940256099942544 && { echo "Test AdMob App ID yayın arşivinde"; exit 1; }
+          grep -q 'window.SUDOKU_ADS' "$A/public/index.html" || { echo "window.SUDOKU_ADS yok"; exit 1; }
+          CV=$(plutil -extract CFBundleVersion raw -o - "$A/Info.plist"); [ "$CV" = "$VERSION_CODE" ] || { echo "CFBundleVersion $CV, beklenen $VERSION_CODE"; exit 1; }
+          plutil -extract CFBundleIdentifier raw -o - "$A/Info.plist" | grep -qx com.osmanadali.sudoku || { echo "Paket kimliği yanlış"; exit 1; }
+          plutil -extract UIDeviceFamily json -o - "$A/Info.plist" | tr -d ' \n' | grep -qx '\[1,2\]' || { echo "iPhone + iPad değil"; exit 1; }
+          for l in en tr de es pt-BR fr ko ja zh-Hant; do plutil -extract CFBundleLocalizations json -o - "$A/Info.plist" | grep -q "\"$l\"" || { echo "$l dili yok"; exit 1; }; done
+          for f in sfx/music.mp3 img/bg.webp i18n.js ads.js; do [ -f "$A/public/$f" ] || { echo "$f pakette yok"; exit 1; }; done
+          echo "Magic Sudoku $VERSION_NAME ($CV) arşivlendi"
+      - name: Dışa aktar ve App Store Connect'e yükle
+        script: |
+          K="$CM_BUILD_DIR/../AuthKey.p8"
+          cat > ExportOptions.plist <<PL
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>teamID</key><string>$APPLE_TEAM_ID</string>
+            <key>signingStyle</key><string>automatic</string>
+          </dict></plist>
+          PL
+          sed -i '' 's/^ *//' ExportOptions.plist; plutil -lint ExportOptions.plist
+          xcodebuild -exportArchive -archivePath build/Sudoku.xcarchive -exportPath build/out -exportOptionsPlist ExportOptions.plist \
+            -allowProvisioningUpdates -authenticationKeyPath "$K" \
+            -authenticationKeyID "$APPSTORE_API_KEY_ID" -authenticationKeyIssuerID "$APPSTORE_API_ISSUER_ID" > export.log 2>&1 \
+            || { grep -iE "error" export.log | sort -u | head -40; tail -60 export.log; rm -f "$K"; exit 1; }
+          rm -f "$K"
+          grep -iE "upload|EXPORT SUCCEEDED" export.log | tail -5 || true
+          echo "Magic Sudoku $VERSION_NAME ($VERSION_CODE) App Store Connect'e yüklendi; 10-30 dk içinde TestFlight'ta görünür."
+    artifacts:
+      - sudoku/archive.log
+      - sudoku/export.log
+      - sudoku/build/Sudoku.xcarchive/dSYMs/**
