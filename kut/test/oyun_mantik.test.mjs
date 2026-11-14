@@ -186,6 +186,16 @@ ok(ozet.seviye >= 2 + 1, `maç sonunda savaş deneyimiyle seviye arttı (Sv ${oz
   ok(h.kaynastirBedel('kurt', 'anka') === 3 && h.kural().yenile === 1, 'Hızlı Maç: kaynaştırma 3, yenileme 1');
 }
 {
+  // kaynaşmış birimin satış değeri iki parçanın satış değerinin toplamı (bölüm 3.3)
+  const e = new Oyun(); await e.yeniMac('arena');
+  e.M.tahta = Array(12).fill(null); e.M.yedek = Array(7).fill(null);
+  e.M.tahta[0] = { h: 'koc', s: 2 }; e.M.tahta[1] = { h: 'anka', s: 1 }; e.M.altin = 20;
+  e.secili = null; e.yuvaDokun('tahta', 0); e.kaynasModDegistir(); e.yuvaDokun('tahta', 1);
+  const f = e.M.tahta[0];
+  ok(f.f === 'anka' && f.s === 1 && e.satisDegeri(f) === (2 * 3 - 1) + 3, `kaynaşmış ★2 K2 × ★1 K3 satışı 5 + 3 = ${e.satisDegeri(f)}`);
+  ok(e.satisDegeri({ h: 'kurt', s: 1, f: 'koc' }) === 3 && e.satisDegeri({ h: 'koc', s: 2 }) === 5 && e.satisDegeri({ h: 'anka', s: 3 }) === 26, 'satış: ★1 tam, ★2 3k−1, ★3 9k−1');
+}
+{
   // birikimli ekonomiden önce kaydedilmiş seviyeli yarım maç (seri yok, 5 can) kapatılır
   depo['kut.profil.v2'] = JSON.stringify({ kupa: 0, usta: {}, oyuncu: 'x', ad: 'O', sonTakim: null, istat: { mac: 0, birinci: 0 }, mac: { mod: 'arena', tur: 3, can: 5, tahta: Array(12).fill(null), yedek: Array(7).fill(null) } });
   ok(new Oyun().M === null, 'adım 1 biçimindeki seviyeli yarım maç kapatıldı');

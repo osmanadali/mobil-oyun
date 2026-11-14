@@ -158,7 +158,7 @@ export class Oyun {
       const bedel = this.kaynastirBedel(a.h, b.h);
       if (M.altin < bedel) return this.bildir(`${bedel} altın gerekli`, 'hata');
       M.altin -= bedel;
-      const yeni = { h: a.h, f: b.h, s: Math.min(a.s, b.s) };
+      const yeni = { h: a.h, f: b.h, s: Math.min(a.s, b.s), sh: a.s, sf: b.s }; // sh/sf: parçaların eski yıldızı (satış değeri için)
       this._koy(this.secili, yeni); this._koy(hedef, null);
       this._yay('kaynasti', { a: a.h, b: b.h, yer: this.secili });
       this.kaynasMod = false; this.bildir(`🔥 ${this.birimAd(yeni)} doğdu!`, 'iyi'); return this._degisti();
@@ -170,7 +170,11 @@ export class Oyun {
     this._koy(this.secili, b); this._koy(hedef, a); this.secili = null; this._degisti();
   }
   kaynasModDegistir() { this.kaynasMod = !this.kaynasMod; this._degisti(); }
-  satisDegeri(b) { const d = (h) => D.kahraman(h).kademe; return b.s === 1 ? d(b.h) + (b.f ? d(b.f) : 0) : d(b.h) * (b.s === 2 ? 3 : 9) - 1; }
+  /** Satış: ★1 tam iade, ★2 3×kademe−1, ★3 9×kademe−1. Kaynaşmış birim iki parçasının satış değerinin toplamını getirir (bölüm 3.3). */
+  satisDegeri(b) {
+    const tek = (h, s) => { const k = D.kahraman(h).kademe; return s === 1 ? k : k * (s === 2 ? 3 : 9) - 1; };
+    return tek(b.h, b.sh || b.s) + (b.f ? tek(b.f, b.sf || b.s) : 0);
+  }
   sat() { const b = this.al(this.secili); if (!b) return; this.M.altin += this.satisDegeri(b); this._koy(this.secili, null); this.secili = null; this.kaynasMod = false; this._yay('ses', 'sat'); this._degisti(); }
   birimAd(b) { return b.f ? D.kahraman(b.h).ad.split(' ')[0] + ' × ' + D.kahraman(b.f).ad.split(' ')[0] : D.kahraman(b.h).ad; }
   /** Tahta hücresi i → motor konumu: x = sütun (0..3), y = sıra (0 ön, 1 orta, 2 arka). */

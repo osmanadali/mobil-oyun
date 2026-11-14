@@ -1097,7 +1097,7 @@ export function hasarKivilcim(taraf = 1) {
   kalan.forEach((b, i) => {
     const s = Math.max(1, Math.min(3, b.u.b.s || 1)), bas = b.kok.position.clone().setY(ARENA_Y + (b.kok.userData.vfxBoy || 1) * 0.8);
     const son = hedef.clone().setX((i - (kalan.length - 1) / 2) * 0.5), sure = 0.6 + i * 0.09;
-    vfx.mermi(bas, son, sure, { tur: 'isik', renk: taraf === 1 ? '#ff6a5a' : '#6ab8ff', guc: 0.7 + 0.3 * s, yay: 1.1,
+    vfx.mermi(bas, son, sure, { tur: 'isik', renk: taraf === 1 ? '#ff6a5a' : '#6ab8ff', guc: 0.55 + 0.25 * s, yay: 1.1,
       bitis: () => { vfx.yapi.flas(son, { renk: '#ff8a6a', boy: 0.7 + 0.25 * s, sure: 0.25 }); if (i === kalan.length - 1) his.sarsinti(0.12, 0.2); } });
   });
   return kalan.length;
