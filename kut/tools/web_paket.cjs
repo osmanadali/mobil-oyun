@@ -5,10 +5,18 @@ const KUT = path.join(__dirname, '..'), WEB = path.join(KUT, 'web'), OUT = path.
 fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive: true });
 const kopya = (kaynak, hedef) => { fs.mkdirSync(path.dirname(path.join(OUT, hedef)), { recursive: true }); fs.copyFileSync(path.join(KUT, kaynak), path.join(OUT, hedef)); };
 const yolDuzelt = (s) => s.replace(/\.\.\/(vendor|arayuz|gorsel|data\.js|sim\.js|online\.js)/g, './$1');
-for (const f of ['index.html', 'arayuz.js', 'oyun.js', 'sahne3d.js']) fs.writeFileSync(path.join(OUT, f), yolDuzelt(fs.readFileSync(path.join(WEB, f), 'utf8')));
+for (const f of ['index.html', 'arayuz.js', 'oyun.js', 'sahne3d.js']) fs.writeFileSync(path.join(OUT, f), yolDuzelt(fs.readFileSync(path.join(WEB, f), 'utf8')).replace("'modeller/' + ad + '.glb'", "'modeller/' + ad + '.json'"));
 for (const f of ['data.js', 'sim.js', 'online.js']) kopya(f, f);
 for (const f of ['three.module.min.js', 'LICENSE', 'addons/loaders/GLTFLoader.js', 'addons/libs/meshopt_decoder.module.js', 'addons/utils/SkeletonUtils.js', 'addons/utils/BufferGeometryUtils.js']) kopya('vendor/three/' + f, 'vendor/three/' + f);
-for (const f of fs.readdirSync(path.join(WEB, 'modeller'))) if (f.endsWith('.glb')) kopya('web/modeller/' + f, 'modeller/' + f);
+// GLB → gömülü glTF (.json): Artifact yalnız bilinen türleri sunar; GLTFLoader içeriğe bakar, uzantıya değil.
+function glbJson(kaynak, hedef) {
+  const b = fs.readFileSync(kaynak); if (b.readUInt32LE(0) !== 0x46546c67) throw new Error('GLB değil: ' + kaynak);
+  let o = 12, json = null, bin = null;
+  while (o < b.length) { const uz = b.readUInt32LE(o), tur = b.readUInt32LE(o + 4), veri = b.subarray(o + 8, o + 8 + uz); if (tur === 0x4e4f534a) json = JSON.parse(veri.toString('utf8').replace(/\0+$/, '')); else if (tur === 0x004e4942) bin = veri; o += 8 + uz; }
+  if (bin) json.buffers[0].uri = 'data:application/octet-stream;base64,' + bin.toString('base64');
+  fs.mkdirSync(path.dirname(hedef), { recursive: true }); fs.writeFileSync(hedef, JSON.stringify(json));
+}
+for (const f of fs.readdirSync(path.join(WEB, 'modeller'))) if (f.endsWith('.glb')) glbJson(path.join(WEB, 'modeller', f), path.join(OUT, 'modeller', f.replace(/\.glb$/, '.json')));
 for (const f of fs.readdirSync(path.join(KUT, 'arayuz'))) if (f.endsWith('.png')) kopya('arayuz/' + f, 'arayuz/' + f);
 for (const f of fs.readdirSync(path.join(KUT, 'arayuz', 'portre'))) kopya('arayuz/portre/' + f, 'arayuz/portre/' + f);
 for (const f of ['gokyuzu.webp', 'doku_tas.webp', 'doku_cimen.webp']) kopya('gorsel/' + f, 'gorsel/' + f);

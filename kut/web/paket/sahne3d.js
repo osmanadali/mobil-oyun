@@ -83,7 +83,7 @@ export async function hazirla(tuval, kaplamaTuval, kok = '', { hafif = false } =
 }
 
 async function glb(ad, kok) {
-  if (!modelOnbellek[ad]) modelOnbellek[ad] = yukleyici.loadAsync(kok + 'modeller/' + ad + '.glb');
+  if (!modelOnbellek[ad]) modelOnbellek[ad] = yukleyici.loadAsync(kok + 'modeller/' + ad + '.json');
   return modelOnbellek[ad];
 }
 function golgeAc(o) { o.traverse(m => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; if (m.material) m.material.envMapIntensity = 1; } }); }

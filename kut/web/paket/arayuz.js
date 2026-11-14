@@ -264,10 +264,12 @@ function kutCiz(kullanan) {
 $('tuval3d').addEventListener('pointerdown', (e) => {
   if (!savasBilgi || savasBilgi.bitti) return;
   const r = $('tuval3d').getBoundingClientRect(); const u = S3.dokun(e.clientX - r.left, e.clientY - r.top);
-  if (u) { kutSecim = false; kutCiz(u); }
+  if (u) { kutSecim = false; savasBilgi.kutCizildi = true; kutCiz(u); }
 });
 function hudCiz() {
   const sim = savasBilgi.sim, t = Math.max(0, K.savasSuresi - sonDurum.t);
+  // Kut motorda kullanıldıysa (dokunuş ya da başka yol) düğmeyi kullanıldı durumuna getir
+  if (!sim.kutVar(0) && !savasBilgi.kutCizildi) { savasBilgi.kutCizildi = true; const kay = (oyun._savas && oyun._savas.kayit || []).filter(k => k.taraf === 0).pop(); const u = kay ? sim.birimler.find(o => o.taraf === 0 && o.i === kay.i) : null; kutSecim = false; kutCiz(u || { b: { h: 'golem' } }); }
   const oran = (tr) => { const l = sim.birimler.filter(o => o.taraf === tr); return Math.round(100 * l.reduce((s, o) => s + Math.max(0, o.hp), 0) / Math.max(1, l.reduce((s, o) => s + o.mx, 0))); };
   const a = oran(0), b = oran(1), s = $('savas');
   q('.skor', s).innerHTML = `<div class="taraf"><div class="ust"><span>Sen</span><b>%${a}</b></div><div class="takimCan"><i style="width:${a}%"></i></div></div>
