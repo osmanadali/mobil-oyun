@@ -165,7 +165,12 @@ async function glb(ad, kok) {
   }
   return modelOnbellek[ad];
 }
-function golgeAc(o) { o.traverse(m => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; if (m.material) m.material.envMapIntensity = 1; } }); }
+// İskeletli ağlar gölge geçişinde kendi (paylaşılan) derinlik malzemesini kullanır: three.js'in tek ortak derinlik malzemesi iskeletli
+// ve iskeletsiz ağlar arasında her karede gidip gelince program parametreleri her seferinde baştan kurulur (kare başına ayırma ve
+// işlemci). Malzeme three.js'inkiyle aynı (RGBA derinlik), görüntü değişmez.
+let iskeletDerinlik = null;
+function golgeAc(o) { o.traverse(m => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; if (m.material) m.material.envMapIntensity = 1;
+  if (m.isSkinnedMesh && !m.customDepthMaterial) m.customDepthMaterial = iskeletDerinlik || (iskeletDerinlik = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking })); } }); }
 function olcekle(o, hedefBoy, eksen = 'y') {
   const k = new THREE.Box3().setFromObject(o), s = k.getSize(new THREE.Vector3());
   const boy = eksen === 'max' ? Math.max(s.x, s.y, s.z) : s.y; o.scale.multiplyScalar(hedefBoy / boy);

@@ -16,8 +16,9 @@ let rs = 1; const rastgele = () => { rs = (rs + 0x6D2B79F5) | 0; let t = Math.im
 Math.random = rastgele;
 const D = require('../data.js'), S = require('../sim.js'), O = require('../online.js'), L = require('../lobi.js');
 const K = D.KURAL;
+if (process.env.YAMA) Object.assign(K, JSON.parse(process.env.YAMA)); // deneme: KURAL alanlarını geçici değiştir (ör. YAMA='{"bolumTabani":[...]}')
 const { Oyun } = await import('../web/oyun.js');
-const OLCEK = +(process.argv[2] || 1);
+const OLCEK = +(process.argv[2] || 1), BOLUM = process.argv[3] || 'ABCD'; // ör. node denge_benzetim.mjs 1 B
 const NA = Math.round(1500 * OLCEK), NB = Math.round(1200 * OLCEK), NC = Math.round(3000 * OLCEK);
 const medyan = (a) => { const b = a.slice().sort((x, y) => x - y); return b.length ? b[Math.floor(b.length / 2)] : NaN; };
 const dilim = (a, q) => { const b = a.slice().sort((x, y) => x - y); return b[Math.min(b.length - 1, Math.floor(b.length * q))]; };
@@ -26,7 +27,7 @@ const out = { olcek: OLCEK };
 const t0 = Date.now();
 
 // ───────────────────────── A) bot lobisi ─────────────────────────
-{
+if (BOLUM.includes('A')) {
   const botLobi = (tohum, kupa) => { const iz = O.lobiIzler(kupa, tohum, [], null, null, 8); return L.lobiYeni({ ad: iz[0].ad, kupa, iz: { bot: iz[0].bot } }, iz.slice(1), tohum); };
   const bitis = [], ilkEl = [], el = [], sure = [], b1 = [0, 0]; let sinir = 0, pvp = 0;
   const arm = {}, kayn = { var: [0, 0], yok: [0, 0] };
@@ -63,12 +64,12 @@ S.Savas = (a, b, opt) => (ajanKut === 'iyi' ? asilSavas(a, b, { ...opt, yz: [...
 const deger = (b) => { if (!b) return -1; const k = (h) => (D.kahraman(h) || { kademe: 1 }).kademe; const yil = [0, 1, 3, 9][b.s] || 1;
   return (k(b.h) + (b.f ? k(b.f) : 0) + (b.f2 ? k(b.f2) * 0.5 : 0)) * yil * (b.f ? 1.15 : 1) + (b.e ? b.e.length * 0.6 : 0); };
 function hazirlik(o, st, R) {
-  const M = o.M, r = M.tur - 1, p = L.turPlan(r), canDusuk = M.can < 35;
+  const M = o.M, r = M.tur - 1, p = L.turPlan(r), canDusuk = M.can < 30;
   // ekonomi yolu: elde tutulacak altın (yedek) ve hedef seviye (bot izi eğrisi)
   const hedefSv = Math.floor(O.izEgri(r)[0]);
   // bölüm 1: dengeli 8, biriktiren hepsini tutar (3.4: 2-1 başında 10–14 / 14)
   let yedekAltin = st.eko === 'harca' ? 0 : st.eko === 'faiz' ? (p.bolum >= 2 ? 50 : 14) : p.bolum <= 1 ? 8 : p.bolum === 2 ? 20 : p.bolum <= 4 ? 30 : 10;
-  if (canDusuk) yedekAltin = st.eko === 'faiz' ? 20 : 0;
+  if (canDusuk) yedekAltin = 0; // can azalınca herkes elindekini harcar
   const ayni = (h) => [...M.tahta, ...M.yedek].filter(b => b && !b.f && b.h === h && b.s === 1).length;
   const doluYedek = () => M.yedek.every(Boolean);
   const satZayif = () => { // yedeğin en zayıfı (çifti olmayan) satılır
@@ -79,7 +80,9 @@ function hazirlik(o, st, R) {
       const id = M.dukkan[i]; if (!id) continue; const kd = D.kahraman(id).kademe, cift = ayni(id) >= 1;
       const ust = !cift && kd >= Math.max(1, Math.min(3, hedefSv - 3)) && (o.tahtaSay() < o.yuva() || !doluYedek());
       if (!(cift || ust)) continue;
-      if (M.altin - kd < (cift || zorunlu ? Math.min(yedekAltin, 10) : yedekAltin)) continue;
+      // faiz basamağını bozmayan alım her zaman serbest (boş tahta yuvası ya da çift); yoksa yedek altının üstündeki parayla
+      const basamak = Math.floor((M.altin - kd) / 10) >= Math.min(5, Math.floor(M.altin / 10)) && (cift || o.tahtaSay() < o.yuva());
+      if (!basamak && M.altin - kd < (cift || zorunlu ? Math.min(yedekAltin, 10) : yedekAltin)) continue;
       if (doluYedek() && o.tahtaSay() >= o.yuva() && ayni(id) < 2 && !satZayif()) continue;
       o.satinAl(i);
     }
@@ -148,7 +151,7 @@ async function ajanMac(tohum, st) {
   }
   return kayit;
 }
-{
+if (BOLUM.includes('B')) {
   const t1 = Date.now(), sonuc = [];
   const EKO = ['dengeli', 'faiz', 'harca'];
   for (let n = 0; n < NB; n++) {
@@ -168,7 +171,7 @@ async function ajanMac(tohum, st) {
 }
 
 // ───────────────────────── C) Kut hedefi ─────────────────────────
-{
+if (BOLUM.includes('C')) {
   const v = { iyi: 0, rastgele: 0, yok: 0 };
   for (let n = 0; n < NC; n++) {
     const r = 8 + (n % 18), g1 = (n % 5) / 4, g2 = ((n * 3) % 5) / 4;
