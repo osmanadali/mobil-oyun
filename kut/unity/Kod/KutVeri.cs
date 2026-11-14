@@ -91,14 +91,31 @@ namespace Kut
             new Alamet { Id = "yaz", Ad = "Yaz Sıcağı", Emoji = "☀️", M = "Od soyu 2 kat yakar; Ayaz soyu -%15 can." },
         };
 
-        // Ekonomi ve maç sabitleri (data.js KURAL)
-        public const int AltinTur = 10, Yenile = 1, Kaynastir = 3, SatisIade = 1, Dukkan = 5, Yedek = 4, BaslangicCan = 5, ZaferHedef = 7;
+        // Ortak sabitler ve seviyeli maç (data.js KURAL)
+        public const int SatisIade = 1, Dukkan = 5, Yedek = 7, TahtaSutun = 4, TahtaSira = 3, TakimTavan = 8;
+        public const int CanBaslangic = 100, SeviyeBaslangic = 2, SeviyeTavan = 8, PasifXp = 2, XpBedel = 4, XpMiktar = 4;
         public const double SavasSuresi = 30.0;
         public static readonly double[] YildizCarpan = { 0.0, 1.0, 1.8, 3.0 };
-        static readonly int[] yuvaTablo = { 3, 3, 4, 4, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 };
-        public static int Yuva(int tur) => yuvaTablo[System.Math.Min(System.Math.Max(tur, 1), yuvaTablo.Length) - 1];
-        static readonly double[][] olasilikTablo = { new[] { 1.0, 0.0, 0.0 }, new[] { 1.0, 0.0, 0.0 }, new[] { 0.65, 0.35, 0.0 }, new[] { 0.65, 0.35, 0.0 }, new[] { 0.45, 0.4, 0.15 }, new[] { 0.45, 0.4, 0.15 }, new[] { 0.3, 0.4, 0.3 }, new[] { 0.3, 0.4, 0.3 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 } };
-        public static double[] KademeOlasilik(int tur) => olasilikTablo[System.Math.Min(System.Math.Max(tur, 1), olasilikTablo.Length) - 1];
+        /// <summary>İndeks = mevcut seviye → sonraki seviyeye gereken deneyim.</summary>
+        public static readonly int[] XpTablo = { 0, 0, 2, 6, 10, 20, 32, 48 };
+        /// <summary>İndeks = yıldız → havuzdan tutulan kopya (★1 = 1, ★2 = 3, ★3 = 9).</summary>
+        public static readonly int[] YildizKopya = { 0, 1, 3, 9 };
+        /// <summary>İndeks = kademe → havuzdaki kopya sayısı.</summary>
+        public static readonly int[] HavuzAdet = { 0, 22, 18, 14 };
+        public static int TakimBoyutu(int seviye) => seviye;
+        static readonly double[][] seviyeOlasilik = { new[] { 1.0, 0.0, 0.0 }, new[] { 1.0, 0.0, 0.0 }, new[] { 1.0, 0.0, 0.0 }, new[] { 0.75, 0.25, 0.0 }, new[] { 0.55, 0.4, 0.05 }, new[] { 0.4, 0.45, 0.15 }, new[] { 0.3, 0.45, 0.25 }, new[] { 0.2, 0.4, 0.4 }, new[] { 0.15, 0.35, 0.5 } };
+        /// <summary>Seviyeye bağlı dükkân kademe olasılıkları [K1, K2, …].</summary>
+        public static double[] KademeOlasilik(int seviye) => seviyeOlasilik[System.Math.Min(System.Math.Max(seviye, 2), seviyeOlasilik.Length - 1)];
+
+        /// <summary>Hızlı Maç: prototipin kuralları (data.js KURAL.hizli).</summary>
+        public static class Hizli
+        {
+            public const int AltinTur = 10, Yenile = 1, Kaynastir = 3, Yedek = 4, BaslangicCan = 5, ZaferHedef = 7;
+            static readonly int[] yuvaTablo = { 3, 3, 4, 4, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 };
+            public static int Yuva(int tur) => yuvaTablo[System.Math.Min(System.Math.Max(tur, 1), yuvaTablo.Length) - 1];
+            static readonly double[][] olasilikTablo = { new[] { 1.0, 0.0, 0.0 }, new[] { 1.0, 0.0, 0.0 }, new[] { 0.65, 0.35, 0.0 }, new[] { 0.65, 0.35, 0.0 }, new[] { 0.45, 0.4, 0.15 }, new[] { 0.45, 0.4, 0.15 }, new[] { 0.3, 0.4, 0.3 }, new[] { 0.3, 0.4, 0.3 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 } };
+            public static double[] KademeOlasilik(int tur) => olasilikTablo[System.Math.Min(System.Math.Max(tur, 1), olasilikTablo.Length) - 1];
+        }
 
         static Dictionary<string, Kahraman> _kahraman;
         public static Kahraman KahramanBul(string id)

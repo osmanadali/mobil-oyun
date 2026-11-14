@@ -1,6 +1,6 @@
 /* KUT ARENA — arayüz ve maç akışı. Çizim yer tutucudur (emoji + renkli daire); sanat gelince `ciz*` işlevleri değişir. */
 (() => {
-  const D = KUT_DATA, S = KUT_SIM, O = KUT_ONLINE, K = D.KURAL;
+  const D = KUT_DATA, S = KUT_SIM, O = KUT_ONLINE, K = Object.assign({}, D.KURAL, D.KURAL.hizli); // ilk prototip: Hızlı Maç kuralları
   const $ = (id) => document.getElementById(id);
   const kh = (id) => D.kahraman(id);
 
@@ -54,7 +54,7 @@
     pencere(`<h3>🤝 Düello Kodu</h3>
       <p>Son maçındaki takımın bir koda dönüşür. Arkadaşına at; o da kendi koduyla seninkini dövüştürsün. Sunucu gerekmez.</p>
       ${kod ? `<div class="kodKutu" id="dKod">${kod}</div><button class="btn kucuk" id="dKopya">📋 Kopyala / Paylaş</button>` : '<p><i>Önce bir maç oyna — son takımın kaydedilir.</i></p>'}
-      <p>Arkadaşının kodu:</p><textarea id="dGir" placeholder="KUT1-..."></textarea>
+      <p>Arkadaşının kodu:</p><textarea id="dGir" placeholder="KUT2-..."></textarea>
       <button class="btn ana" id="dDovus">⚔️ Dövüştür</button><button class="btn" data-kapat>Kapat</button>`);
     if (kod) $('dKopya').onclick = async () => {
       try { if (navigator.share) await navigator.share({ text: 'Kut Arena takımım: ' + kod }); else { await navigator.clipboard.writeText(kod); bildir('Kopyalandı'); } } catch (e) {}
@@ -166,7 +166,7 @@
     if (!M.rakip) return bildir('Rakip aranıyor…');
     savasBaslat({ benim: takim, rakip: M.rakip, alamet: M.alamet, tohum: M.tohum + M.tur });
   };
-  const takimAl = () => M.tahta.map((b, i) => b && { h: b.h, s: b.s, ...(b.f ? { f: b.f } : {}), x: i % 3, y: Math.floor(i / 3) }).filter(Boolean);
+  const takimAl = () => M.tahta.map((b, i) => b && { h: b.h, s: b.s, ...(b.f ? { f: b.f } : {}), x: i % 3, y: Math.floor(i / 3) * 2 }).filter(Boolean); // 3×2 prototip tahtası: ön sıra → 0, arka sıra → 2 (4×3 motorda)
 
   // ── Maç ekranı çizimi ──
   function birimHTML(b) {

@@ -29,9 +29,10 @@ function konum(p, out = new THREE.Vector3()) { // Vector3 | Object3D | {x,y,z}
 }
 
 // ───────────────────────── doku atlası ─────────────────────────
-const IZGARA = 5;
+const IZGARA = 6;
 const KARE = { parilti: 0, yildiz4: 1, yildiz6: 2, halka: 3, duman: 4, kesik: 5, run: 6, alev: 7, buz: 8, yaprak: 9, damla: 10, isin: 11, tuy: 12, goz: 13, catlak: 14,
-  kabarcik: 15, tas: 16, kivilcim: 17, sok: 18, kar: 19, pence: 20, arti: 21, dalga: 22, girdap: 23, toz: 24 };
+  kabarcik: 15, tas: 16, kivilcim: 17, sok: 18, kar: 19, pence: 20, arti: 21, dalga: 22, girdap: 23, toz: 24,
+  run_kut: 25, run_golge: 26, run_ates: 27, kafatasi: 28, catlakYer: 29 };
 function mulberry(a) { return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
 function atlasUret(C) {
@@ -236,6 +237,45 @@ function atlasUret(C) {
   });
   // 24 toz (yoğun, altı koyu)
   ciz(KARE.toz, r => bulut(r, 120, 0.95));
+  // 25 Kut rünü: sekiz köşeli güneş mührü (altın; yalnız Kut)
+  ciz(KARE.run_kut, r => {
+    parla(0.04, 0.9); x.strokeStyle = g(255, 1); x.lineCap = 'round'; x.lineJoin = 'round';
+    x.lineWidth = C * 0.022; x.beginPath(); x.arc(0, 0, r * 0.96, 0, TAU); x.stroke();
+    x.lineWidth = C * 0.01; x.beginPath(); x.arc(0, 0, r * 0.84, 0, TAU); x.stroke();
+    const u = []; for (let k = 0; k < 16; k++) u.push(k % 2 ? r * 0.36 : r * 0.8); x.lineWidth = C * 0.016; yildizYol(u, r * 0.3); x.stroke();
+    for (let k = 0; k < 8; k++) { x.save(); x.rotate(k * TAU / 8 + TAU / 16); x.beginPath(); x.moveTo(0, -r * 0.86); x.lineTo(0, -r * 0.94); x.stroke(); x.restore(); }
+    sondur(); x.fillStyle = radyal(r * 0.34, [[0, 255, 0.9], [0.5, 240, 0.5], [1, 220, 0]]); x.beginPath(); x.arc(0, 0, r * 0.34, 0, TAU); x.fill();
+  });
+  // 26 gölge rünü: kırık halka + göz biçimi (mor)
+  ciz(KARE.run_golge, r => {
+    parla(0.04, 0.8); x.strokeStyle = g(255, 1); x.lineCap = 'round';
+    x.lineWidth = C * 0.02; for (let k = 0; k < 7; k++) { const a = k * TAU / 7; x.beginPath(); x.arc(0, 0, r * 0.94, a + 0.12, a + TAU / 7 - 0.12); x.stroke(); }
+    x.lineWidth = C * 0.016; x.beginPath(); x.moveTo(-r * 0.72, 0); x.quadraticCurveTo(0, -r * 0.55, r * 0.72, 0); x.quadraticCurveTo(0, r * 0.55, -r * 0.72, 0); x.stroke();
+    x.beginPath(); x.arc(0, 0, r * 0.18, 0, TAU); x.stroke();
+    for (let k = 0; k < 10; k++) { x.save(); x.rotate(k * TAU / 10); x.beginPath(); x.moveTo(0, -r * 0.62); x.lineTo(r * 0.05, -r * 0.8); x.stroke(); x.restore(); }
+    sondur();
+  });
+  // 27 ateş rünü: alev dişli halka (turuncu)
+  ciz(KARE.run_ates, r => {
+    parla(0.04, 0.8); x.strokeStyle = g(255, 1); x.lineWidth = C * 0.018; x.lineJoin = 'round';
+    x.beginPath(); for (let k = 0; k <= 48; k++) { const a = k * TAU / 48, rr2 = r * (k % 2 ? 0.8 : 0.96); k ? x.lineTo(Math.cos(a) * rr2, Math.sin(a) * rr2) : x.moveTo(Math.cos(a) * rr2, Math.sin(a) * rr2); } x.stroke();
+    x.beginPath(); x.arc(0, 0, r * 0.6, 0, TAU); x.stroke(); sondur();
+  });
+  // 28 kafatası/zehir damlası simgesi (zehir durumu)
+  ciz(KARE.kafatasi, r => {
+    x.fillStyle = g(250, 1); x.beginPath(); x.ellipse(0, -r * 0.12, r * 0.62, r * 0.56, 0, 0, TAU); x.fill(); x.beginPath(); x.roundRect(-r * 0.36, r * 0.2, r * 0.72, r * 0.42, r * 0.1); x.fill();
+    x.fillStyle = g(30, 1); x.beginPath(); x.ellipse(-r * 0.24, -r * 0.1, r * 0.15, r * 0.18, 0, 0, TAU); x.fill(); x.beginPath(); x.ellipse(r * 0.24, -r * 0.1, r * 0.15, r * 0.18, 0, 0, TAU); x.fill();
+    x.fillRect(-r * 0.2, r * 0.36, r * 0.06, r * 0.22); x.fillRect(-r * 0.03, r * 0.36, r * 0.06, r * 0.22); x.fillRect(r * 0.14, r * 0.36, r * 0.06, r * 0.22);
+    x.strokeStyle = g(40, 1); x.lineWidth = C * 0.02; x.beginPath(); x.ellipse(0, -r * 0.12, r * 0.62, r * 0.56, 0, 0, TAU); x.stroke();
+  });
+  // 29 yer çatlağı (koyu, keskin; boynuz/toynak vuruşu)
+  ciz(KARE.catlakYer, r => {
+    x.strokeStyle = g(255, 1); x.lineCap = 'round'; x.lineJoin = 'round';
+    const dal = (px, py, a, L, w, d) => { let cx = px, cy = py; x.lineWidth = w; x.beginPath(); x.moveTo(cx, cy);
+      for (let i = 0; i < 4; i++) { a += (R() - 0.5) * 0.8; cx += Math.cos(a) * L / 4; cy += Math.sin(a) * L / 4; x.lineTo(cx, cy); if (d > 0 && R() < 0.4) { x.stroke(); dal(cx, cy, a + (R() < 0.5 ? 0.7 : -0.7), L * 0.5, w * 0.6, d - 1); x.lineWidth = w; x.beginPath(); x.moveTo(cx, cy); } }
+      x.stroke(); };
+    for (let k = 0; k < 6; k++) dal(0, 0, k * TAU / 6 + R() * 0.5, r * (0.7 + R() * 0.25), C * 0.026, 2);
+  });
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.NoColorSpace; tex.generateMipmaps = true; tex.minFilter = THREE.LinearMipmapLinearFilter; tex.magFilter = THREE.LinearFilter; tex.anisotropy = 4;
   return { tex, cv };
@@ -268,14 +308,15 @@ void main(){
   vCol = iCol; vHot = iHot;
 }`;
 const FS = `
-uniform sampler2D uMap;
+uniform sampler2D uMap; uniform float uYogun;
 varying vec2 vUv; varying vec4 vCol; varying float vHot;
 void main(){
   vec4 t = texture2D(uMap, vUv);
   float a = t.a * vCol.a; if (a < 0.004) discard;
   float L = t.r;
-  vec3 c = vCol.rgb * (0.38 + 0.62 * L);
-  c = mix(c, vec3(1.0), smoothstep(0.8, 1.0, L) * vHot);
+  // renk dokunun parlaklığıyla gölgelenir (beyaza boğulmaz); yalnız en parlak çekirdek beyaza çıkar ve (yüksekte) HDR olur → yalnız o bloom alır
+  vec3 c = vCol.rgb * (0.25 + 0.75 * L) * uYogun;
+  c += vec3(smoothstep(0.85, 1.0, L) * vHot * 0.6 * uYogun);
   gl_FragColor = vec4(c, a);
 }`;
 // parçacık alanları (tek Float32Array, adım S)
@@ -284,18 +325,18 @@ const PX = 0, PY = 1, PZ = 2, VX = 3, VY = 4, VZ = 5, GR = 6, DRAG = 7, AGE = 8,
   FI = 30, FO = 31, ORB = 32, OCX = 33, OCY = 34, OCZ = 35, ORAD = 36, OANG = 37, OW = 38, ORV = 39, SAL = 40, FAZ = 41, SEK = 42, TX = 43, TY = 44, TZ = 45, HOM = 46, HIZ = 47, YONR = 48, S = 49;
 
 class Sistem {
-  constructor(max, karisim, sira, harita) {
+  constructor(max, karisim, sira, harita, yogun = 1) {
     this.max = max; this.n = 0; this.d = new Float32Array(max * S); this.tk = new Array(max).fill(null);
     const g = new THREE.InstancedBufferGeometry(); const pl = new THREE.PlaneGeometry(1, 1);
     g.index = pl.index; g.setAttribute('position', pl.attributes.position); g.setAttribute('uv', pl.attributes.uv);
     const at = (ad, k) => { const a = new THREE.InstancedBufferAttribute(new Float32Array(max * k), k); a.setUsage(THREE.DynamicDrawUsage); g.setAttribute(ad, a); return a; };
     this.aPos = at('iPos', 3); this.aDir = at('iDir', 4); this.aCol = at('iCol', 4); this.aSz = at('iSz', 4); this.aHot = at('iHot', 1);
     g.instanceCount = 0; this.g = g;
-    this.mat = new THREE.ShaderMaterial({ uniforms: { uMap: { value: harita }, uG: { value: IZGARA }, uPad: { value: 0.015 } }, vertexShader: VS, fragmentShader: FS,
+    this.mat = new THREE.ShaderMaterial({ uniforms: { uMap: { value: harita }, uG: { value: IZGARA }, uPad: { value: 0.015 }, uYogun: { value: yogun } }, vertexShader: VS, fragmentShader: FS,
       transparent: true, depthWrite: false, depthTest: true, blending: karisim, side: THREE.DoubleSide, fog: false });
     this.mesh = new THREE.Mesh(g, this.mat); this.mesh.frustumCulled = false; this.mesh.renderOrder = sira; this.mesh.name = 'vfx_parcacik';
   }
-  ekle() { if (this.n >= this.max) return -1; const i = this.n++; this.d.fill(0, i * S, i * S + S); this.tk[i] = null; return i; }
+  ekle(on = 1) { if (this.n >= this.max) return -1; if (on < 2 && this.n > this.max * (on ? 0.95 : 0.85)) return -1; const i = this.n++; this.d.fill(0, i * S, i * S + S); this.tk[i] = null; return i; }
   sil(i) { const son = this.n - 1; if (i !== son) { this.d.copyWithin(i * S, son * S, son * S + S); this.tk[i] = this.tk[son]; } this.tk[son] = null; this.n--; }
   guncelle(dt) {
     const d = this.d; let i = 0;
@@ -362,6 +403,7 @@ let kareNo = 0; const takipOn = new Map();
 const kayaHavuz = [], kalkanHavuz = []; let isik = null, isikGuc = 0, isikSure = 0.0001, isikYas = 1;
 const durumlar = new Map();   // Object3D → Map(tur → denetleyici)
 let sarsGuc = 0, sarsT = 0, flasRenk = [1, 1, 1], flasGuc = 0, flasBas = 0, flasSure = 0.0001, durakBitis = 0, durakOlcek = 1;
+let kutKisma = 1, kutBas = -9, kutP = new THREE.Vector3();   // Kut anı: öbür sürekli efektler yarı hızda doğar; ekranda karartma + hız çizgileri
 const simdi = () => performance.now() / 1000;
 const N = (n) => Math.max(1, Math.round(n * OLCEK));
 
@@ -373,8 +415,9 @@ function takipPoz(o) {
 }
 
 // Tek parçacık. p: konum (Object3D 'takip' verilirse ona göre göreli). Diğer alanlar isteğe bağlı.
+let ONCELIK = 1;   // 0 süs (aura, durum, iz), 1 normal, 2 darbe/Kut — havuz dolarken düşük öncelikli doğumlar düşer
 function P(o) {
-  const sys = o.normal ? sNrm : sAdd; const i = sys.ekle(); if (i < 0) return -1;
+  const sys = o.normal ? sNrm : sAdd; const i = sys.ekle(o.on === undefined ? ONCELIK : o.on); if (i < 0) return -1;
   const d = sys.d, b = i * S, p = o.p || _v1;
   d[b + PX] = p.x; d[b + PY] = p.y; d[b + PZ] = p.z;
   if (o.v) { d[b + VX] = o.v.x; d[b + VY] = o.v.y; d[b + VZ] = o.v.z; }
@@ -384,7 +427,9 @@ function P(o) {
   const c0 = rgb(o.renk || '#ffffff'), c1 = o.renk2 ? rgb(o.renk2) : c0;
   d[b + R0] = c0[0]; d[b + G0] = c0[1]; d[b + B0] = c0[2]; d[b + R1] = c1[0]; d[b + G1] = c1[1]; d[b + B1] = c1[2];
   d[b + AL] = o.a === undefined ? 1 : o.a; d[b + ROT] = o.rot === 'r' ? RND() * TAU : (o.rot || 0); d[b + ROTV] = o.rotHiz || 0;
-  d[b + FR] = KARE[o.kare || 'parilti']; d[b + MOD] = o.mod || 0; d[b + HOT] = o.hot === undefined ? 0.4 : o.hot; d[b + UZAT] = o.uzat || 0;
+  d[b + FR] = KARE[o.kare || 'parilti']; d[b + MOD] = o.mod || 0; let hot = o.hot === undefined ? 0.4 : o.hot;
+  if ((!o.kare || o.kare === 'parilti') && Math.max(b0, d[b + S1]) > 0.22) hot = Math.min(hot, 0.45);   // geniş parıltılar beyaz leke olmasın
+  d[b + HOT] = hot; d[b + UZAT] = o.uzat || 0;
   const ek = o.eksen; if (ek) { d[b + DX] = ek.x; d[b + DY] = ek.y; d[b + DZ] = ek.z; } else { d[b + DY] = 1; }
   d[b + FI] = o.fi === undefined ? 0.08 : o.fi; d[b + FO] = o.fo === undefined ? 0.45 : o.fo;
   if (o.yorunge) { const y = o.yorunge; d[b + ORB] = 1; d[b + OCX] = p.x; d[b + OCY] = p.y; d[b + OCZ] = p.z; d[b + ORAD] = y.r || 0.5; d[b + OANG] = y.aci === undefined ? RND() * TAU : y.aci; d[b + OW] = y.w || 3; d[b + ORV] = y.rv || 0; d[b + VY] = y.vy || 0;
@@ -401,8 +446,20 @@ function kureY(out, yukari = 0) { const u = RND() * 2 - 1 + yukari, a = RND() * 
 function zamanla(gecikme, fn) { isler.push({ g: gecikme, tek: true, fn }); }
 function surec(sure, fn, gecikme = 0) { const is = { g: gecikme, s: sure, yas: 0, fn, acik: true }; isler.push(is); return is; }
 
+// ───────────────────────── element renkleri (ana, çekirdek, koyu) ─────────────────────────
+// Altın yalnız Kut, ★3, birleşme ve ışık içindir; diğer efektler kendi element renginden gelir.
+export const ELEMENT = {
+  ates: ['#ff6a1f', '#ffd36a', '#5a1206'], buz: ['#6fd0ff', '#e9fbff', '#1b3f8a'], zehir: ['#5fdc2a', '#c8ff8a', '#1f4a10'],
+  golge: ['#9a4dff', '#e0c2ff', '#2a0f4a'], ses: ['#ff9a2e', '#ffe1a0', '#5a2a06'], isik: ['#ffe45a', '#fff9e0', '#7a5a10'],
+  toprak: ['#c98a4a', '#f0d2a0', '#3a2414'], ruzgar: ['#7fe8cf', '#e6fff8', '#12493f'], kan: ['#ff3d5a', '#ffd0da', '#4a0a1a'], kristal: ['#7fc8ff', '#e9fbff', '#1b3f8a'],
+};
 // ───────────────────────── yapı taşları ─────────────────────────
 const Z = () => zeminY;
+// koyu, doygun zemin alt katmanı (normal karışım): parlak taş zeminde efekti ayırır
+function altKatman(p, renk, r = 0.7, sure = 0.7) {
+  _v3.set(p.x, Z() + 0.025, p.z);
+  P({ p: _v3, mod: 1, normal: true, omur: sure, boy: r * 1.2, boy2: r * 1.7, renk, kare: 'duman', rot: 'r', hot: 0, a: 0.6, fi: 0.05, fo: 0.4 });
+}
 // patlama: kıvılcım çizgileri + parıltılar + isteğe bağlı yıldızlar
 function patlama(p, o = {}) {
   const renk = o.renk || '#ffd76a', renk2 = o.renk2 || renk, guc = o.guc || 1, n = N((o.n || 14) * guc), hiz = (o.hiz || 3) * Math.sqrt(guc), yon = o.yon;
@@ -417,11 +474,12 @@ function patlama(p, o = {}) {
 }
 // darbe parlaması: kameraya dönük kısa, parlak disk + yıldız
 function flas(p, o = {}) {
-  const renk = o.renk || '#ffe6a0', b = o.boy || 0.9, s = o.sure || 0.18;
+  const renk = o.renk || '#ffffff', b = o.boy || 0.9, s = o.sure || 0.18; const onceki = ONCELIK; ONCELIK = 2;
   P({ p, omur: s, boy: b * 0.5, boy2: b, renk, kare: 'parilti', hot: 0.7, a: (o.a || 1) * 0.75, fi: 0, fo: 0.15 });
   P({ p, omur: s * 0.8, boy: b * 0.7, boy2: b * 1.1, renk, kare: 'yildiz4', rot: o.rot === undefined ? rr(-0.3, 0.3) : o.rot, hot: 0.9, a: 0.9, fi: 0, fo: 0.1 });
   if (o.halka !== false) P({ p, omur: s * 1.5, boy: b * 0.3, boy2: b * 1.4, renk, kare: 'halka', normal: true, hot: 0.3, a: 0.75, fi: 0, fo: 0.2 });
   if (o.isik !== false) isikYak(p, renk, (o.isikGuc || 6) * (b / 0.9), s * 1.6);
+  ONCELIK = onceki;
 }
 // şok dalgası: yerde genişleyen halka + yükselen toz
 function sok(p, o = {}) {
@@ -438,10 +496,10 @@ function sok(p, o = {}) {
 }
 // yerde rün çemberi
 function run(p, o = {}) {
-  const renk = o.renk || '#c98bff', r = o.r || 1.2, s = o.sure || 1.0; _v3.set(p.x, Z() + 0.05, p.z);
-  P({ p: _v3, mod: 1, omur: s, boy: r * 1.6, boy2: r * 2, renk, renk2: o.renk2 || renk, kare: 'run', normal: true, rot: 'r', rotHiz: o.donus === undefined ? 1.2 : o.donus, hot: 0.2, a: o.a || 0.95, fi: 0.18, fo: 0.6 });
-  P({ p: _v3, mod: 1, omur: s, boy: r * 1.75, boy2: r * 2.15, renk: o.renk2 || renk, kare: 'run', rot: 'r', rotHiz: o.donus === undefined ? 1.2 : o.donus, hot: 0.5, a: 0.45, fi: 0.18, fo: 0.6 });
-  P({ p: _v3, mod: 1, omur: s, boy: r * 2.6, boy2: r * 2.8, renk: o.renk2 || renk, kare: 'parilti', hot: 0.1, a: 0.4, fi: 0.2, fo: 0.5 });
+  const renk = o.renk || '#c98bff', r = o.r || 1.2, s = o.sure || 1.0, kr = o.kare || 'run', al = o.a || 0.95; _v3.set(p.x, Z() + 0.05, p.z);
+  P({ p: _v3, mod: 1, omur: s, boy: r * 1.6, boy2: r * 2, renk, renk2: o.renk2 || renk, kare: kr, normal: true, rot: 'r', rotHiz: o.donus === undefined ? 1.2 : o.donus, hot: 0.2, a: al, fi: 0.18, fo: 0.6 });
+  P({ p: _v3, mod: 1, omur: s, boy: r * 1.75, boy2: r * 2.15, renk: o.renk2 || renk, kare: kr, rot: 'r', rotHiz: o.donus === undefined ? 1.2 : o.donus, hot: 0.5, a: 0.45 * al, fi: 0.18, fo: 0.6 });
+  P({ p: _v3, mod: 1, omur: s, boy: r * 2.6, boy2: r * 2.8, renk: o.renk2 || renk, kare: 'parilti', hot: 0.1, a: 0.2 * al, fi: 0.2, fo: 0.5 });
 }
 // yükselen ışık sütunu
 function sutun(p, o = {}) {
@@ -493,15 +551,16 @@ function dekal(p, o = {}) {
 function izParca(a, b, o) {
   const e = _v2.copy(b).sub(a), L = e.length(); if (L < 1e-4) return;
   const m = _v1.copy(a).add(b).multiplyScalar(0.5);
-  P({ p: m, mod: 2, eksen: e, omur: o.omur || 0.22, boy: o.en || 0.16, boy2: 0.01, en: 1, uz: (L / (o.en || 0.16)) * 1.35, renk: o.renk, renk2: o.renk2, kare: 'isin', hot: o.hot === undefined ? 0.7 : o.hot, a: o.a || 0.9, fi: 0, fo: 0.05, normal: o.normal });
+  const en = (o.en || 0.16) * 1.8;
+  P({ p: m, mod: 2, eksen: e, omur: Math.max(0.35, (o.omur || 0.22) * 1.5), boy: en, boy2: 0.01, en: 1, uz: (L / en) * 1.35, renk: o.renk, renk2: o.renk2, kare: 'isin', hot: o.hot === undefined ? 0.5 : o.hot, a: o.a || 0.9, fi: 0, fo: 0.05, normal: o.normal, on: 0 });
 }
 // aura: nesne çevresinde dönen parçacıklar (sure boyunca)
 function aura(nesne, o = {}) {
   const renk = o.renk || '#ffd76a', s = o.sure || 1.5, h = boyAl(nesne, o.boy);
   const obj = !!(nesne && nesne.isObject3D), sabit = obj ? null : konum(nesne, new THREE.Vector3());
-  return surec(s, (k, dt, yas, is) => { if (obj && !nesne.visible) return; is.acc = (is.acc || 0) + dt * (o.oran || 20) * OLCEK;
+  return surec(s, (k, dt, yas, is) => { if (obj && !nesne.visible) return; is.acc = (is.acc || 0) + dt * (o.oran || 20) * OLCEK * kutKisma;
     while (is.acc >= 1) { is.acc--; _v3.set(0, rr(0.02, 0.2) * h, 0); if (sabit) _v3.add(sabit);
-      P({ p: _v3, takip: obj ? nesne : null, yorunge: { r: rr(0.35, 0.5) * h, w: rr(2.5, 4) * (o.ters ? -1 : 1), vy: rr(0.5, 1.2) * h }, omur: rr(0.6, 1), boy: rr(0.08, 0.15), boy2: 0.02, renk, renk2: o.renk2, kare: o.kare || 'parilti', hot: 1, fo: 0.5 }); } });
+      P({ p: _v3, takip: obj ? nesne : null, yorunge: { r: rr(0.35, 0.5) * h, w: rr(2.5, 4) * (o.ters ? -1 : 1), vy: rr(0.5, 1.2) * h }, omur: rr(0.6, 1), boy: rr(0.08, 0.15), boy2: 0.02, renk, renk2: o.renk2, kare: o.kare || 'parilti', hot: 1, fo: 0.5, on: 0 }); } });
 }
 function boyAl(nesne, ver) {
   if (ver) return ver; if (!nesne || !nesne.isObject3D) return 1;
@@ -515,6 +574,7 @@ function isikYak(p, renk, guc, sure) { if (!isik || guc * 0.6 < isikGuc * Math.m
 function kayaAl() { for (const k of kayaHavuz) if (!k.visible) { k.visible = true; return k; } return null; }
 
 // ───────────────────────── mermiler ─────────────────────────
+const KOYU_MERMI = { ates: '#5a1206', buz: '#1b3f8a', zehir: '#1f4a10', isik: '#7a5a10', ok: '#2a0f4a', ses: '#5a2a06', buyu: '#2a0f4a' };
 const MERMI = {
   buyu: { yay: 0.35 }, ok: { yay: 0.08 }, kaya: { yay: 1.3 }, ates: { yay: 0.4 }, buz: { yay: 0.2 }, zehir: { yay: 0.9 }, isik: { yay: 0.25 }, ses: { yay: 0.0 },
 };
@@ -528,46 +588,49 @@ function mermi(bas, son, sure, o = {}) {
   surec(sure, (k, dt) => {
     const B = hedefAl(); cur.lerpVectors(A, B, k); cur.y += Math.sin(k * Math.PI) * yay * Math.max(0.5, A.distanceTo(B) * 0.35);
     yon.copy(cur).sub(onceki); const L = yon.length(); if (L > 1e-5) yon.divideScalar(L); else yon.copy(B).sub(A).normalize();
+    const BB = 1.6 * guc, koyu = KOYU_MERMI[tur] || '#2a0f4a';
+    // koyu dış çizgi (normal karışım, bir boy büyük): mermi açık zeminde ve gökte okunsun
+    if (tur !== 'kaya') P({ p: cur, omur: -1, boy: (tur === 'ok' ? 0.42 : 0.5) * BB * 1.25, renk: koyu, kare: 'parilti', normal: true, hot: 0, a: 0.6 });
     switch (tur) {
       case 'ok':
-        P({ p: cur, mod: 2, eksen: yon, omur: -1, boy: 1, en: 0.16 * guc, uz: 0.7 * guc, renk: '#ffffff', kare: 'kivilcim', hot: 1 });
-        P({ p: cur, mod: 2, eksen: yon, omur: -1, boy: 1, en: 0.45 * guc, uz: 0.95 * guc, renk, kare: 'isin', hot: 0.5, a: 0.85 });
-        P({ p: cur, omur: -1, boy: 0.35 * guc, renk, kare: 'parilti', hot: 0.6, a: 0.8 });
+        P({ p: cur, mod: 2, eksen: yon, omur: -1, boy: 1, en: 0.16 * BB, uz: 1.1 * BB, renk: '#ffffff', kare: 'kivilcim', hot: 1 });
+        P({ p: cur, mod: 2, eksen: yon, omur: -1, boy: 1, en: 0.45 * BB, uz: 1.4 * BB, renk, kare: 'isin', hot: 0.5, a: 0.85 });
+        P({ p: cur, omur: -1, boy: 0.35 * BB, renk, kare: 'parilti', hot: 0.6, a: 0.8 });
         izParca(onceki, cur, { renk, en: 0.08 * guc, omur: 0.2 }); break;
       case 'kaya':
-        if (kaya) { kaya.position.copy(cur); kaya.rotation.x += dt * 9; kaya.rotation.z += dt * 6; }
+        if (kaya) { kaya.position.copy(cur); kaya.rotation.x += dt * 9; kaya.rotation.z += dt * 6; kaya.children[0].material.emissiveIntensity = 1.2 + Math.sin(k * 30) * 0.6; }
         else P({ p: cur, omur: -1, boy: 0.32 * guc, renk: '#a3775a', kare: 'tas', normal: true, rot: k * 12, hot: 0 });
-        if (RND() < 0.7 * OLCEK) P({ p: cur, v: kureY(_v2, 0.2).multiplyScalar(0.3), drag: 2, omur: rr(0.35, 0.55), boy: 0.18 * guc, boy2: 0.4 * guc, renk: '#b99772', renk2: '#e6d4b8', kare: 'toz', normal: true, rot: 'r', a: 0.6, hot: 0 });
+        if (RND() < 0.7 * OLCEK) P({ p: cur, v: kureY(_v2, 0.2).multiplyScalar(0.3), drag: 2, omur: rr(0.35, 0.55), boy: 0.18 * guc, boy2: 0.4 * guc, renk: '#b99772', renk2: '#e6d4b8', kare: 'toz', normal: true, rot: 'r', a: 0.6, hot: 0, on: 0 });
         break;
       case 'ates':
-        P({ p: cur, omur: -1, boy: 0.5 * guc, renk: '#ff6a1f', kare: 'parilti', hot: 1 });
-        P({ p: cur, mod: 2, eksen: _v3.copy(yon).negate(), omur: -1, boy: 0.42 * guc, uz: 1.3, renk: '#ffb347', kare: 'alev', normal: true, hot: 0.45 });
-        for (let i = 0; i < 2; i++) if (RND() < OLCEK) P({ p: cur, v: kureY(_v2, 0.8).multiplyScalar(0.6), g: -1.5, drag: 1.5, omur: rr(0.25, 0.4), boy: rr(0.16, 0.26) * guc, boy2: 0.04, renk: '#ffd36a', renk2: '#ff3d1a', kare: 'alev', normal: true, hot: 0.45, rot: rr(-0.4, 0.4) });
+        P({ p: cur, omur: -1, boy: 0.5 * BB, renk: '#ff6a1f', kare: 'parilti', hot: 1 });
+        P({ p: cur, mod: 2, eksen: _v3.copy(yon).negate(), omur: -1, boy: 0.42 * BB, uz: 1.3, renk: '#ffb347', kare: 'alev', normal: true, hot: 0.45 });
+        for (let i = 0; i < 2; i++) if (RND() < OLCEK) P({ p: cur, v: kureY(_v2, 0.8).multiplyScalar(0.6), g: -1.5, drag: 1.5, omur: rr(0.25, 0.4), boy: rr(0.16, 0.26) * BB, boy2: 0.04, renk: '#ffd36a', renk2: '#ff3d1a', kare: 'alev', normal: true, hot: 0.45, rot: rr(-0.4, 0.4), on: 0 });
         izParca(onceki, cur, { renk: '#ff7a2e', renk2: '#ff2a00', en: 0.16 * guc, omur: 0.25 }); break;
       case 'buz':
-        P({ p: cur, mod: 2, eksen: yon, omur: -1, boy: 0.42 * guc, en: 0.7, renk: '#dff6ff', kare: 'buz', hot: 0.6 });
-        P({ p: cur, omur: -1, boy: 0.45 * guc, renk, kare: 'parilti', hot: 0.8, a: 0.7 });
-        if (RND() < 0.6 * OLCEK) P({ p: cur, v: kureY(_v2, 0).multiplyScalar(0.4), g: 0.6, drag: 1, omur: rr(0.4, 0.7), boy: rr(0.07, 0.12), renk: '#ffffff', renk2: renk, kare: 'kar', rot: 'r', rotHiz: rr(-3, 3), hot: 1 });
+        P({ p: cur, mod: 2, eksen: yon, omur: -1, boy: 0.42 * BB, en: 0.7, renk: '#dff6ff', kare: 'buz', hot: 0.6 });
+        P({ p: cur, omur: -1, boy: 0.45 * BB, renk, kare: 'parilti', hot: 0.8, a: 0.7 });
+        if (RND() < 0.6 * OLCEK) P({ p: cur, v: kureY(_v2, 0).multiplyScalar(0.4), g: 0.6, drag: 1, omur: rr(0.4, 0.7), boy: rr(0.07, 0.12) * 1.4, renk: '#ffffff', renk2: renk, kare: 'kar', rot: 'r', rotHiz: rr(-3, 3), hot: 1, on: 0 });
         izParca(onceki, cur, { renk, en: 0.12 * guc, omur: 0.28 }); break;
       case 'zehir':
-        P({ p: cur, omur: -1, boy: 0.5 * guc, renk: '#3fbf2a', kare: 'parilti', normal: true, hot: 0.5, a: 1 });
-        P({ p: cur, omur: -1, boy: 0.36 * guc, renk: '#c8ff8a', kare: 'kabarcik', hot: 0.6, a: 1 });
-        if (RND() < 0.5 * OLCEK) P({ p: cur, v: _v2.set(rr(-0.2, 0.2), -0.3, rr(-0.2, 0.2)), g: 6, omur: rr(0.3, 0.45), boy: rr(0.07, 0.11), renk: '#a6ff6a', kare: 'damla', mod: 2, uzat: 0.12, hot: 0.4 });
+        P({ p: cur, omur: -1, boy: 0.5 * BB, renk: '#3fbf2a', kare: 'parilti', normal: true, hot: 0.5, a: 1 });
+        P({ p: cur, omur: -1, boy: 0.36 * BB, renk: '#c8ff8a', kare: 'kabarcik', hot: 0.6, a: 1 });
+        if (RND() < 0.5 * OLCEK) P({ p: cur, v: _v2.set(rr(-0.2, 0.2), -0.3, rr(-0.2, 0.2)), g: 6, omur: rr(0.3, 0.45), boy: rr(0.07, 0.11) * 1.4, renk: '#a6ff6a', kare: 'damla', mod: 2, uzat: 0.12, hot: 0.4, on: 0 });
         izParca(onceki, cur, { renk: '#6fdc3a', en: 0.14 * guc, omur: 0.3, a: 0.7 }); break;
       case 'isik':
-        P({ p: cur, omur: -1, boy: 0.42 * guc, renk: '#fff6c8', kare: 'yildiz6', rot: k * 8, hot: 1 });
-        P({ p: cur, omur: -1, boy: 0.7 * guc, renk, kare: 'parilti', hot: 0.8, a: 0.8 });
-        if (RND() < 0.5 * OLCEK) P({ p: cur, v: kureY(_v2, 0.3).multiplyScalar(0.3), drag: 1, omur: rr(0.4, 0.6), boy: rr(0.06, 0.1), renk: '#fff1a8', kare: 'yildiz4', rot: 'r', hot: 1 });
+        P({ p: cur, omur: -1, boy: 0.42 * BB, renk: '#fff6c8', kare: 'yildiz6', rot: k * 8, hot: 1 });
+        P({ p: cur, omur: -1, boy: 0.7 * BB, renk, kare: 'parilti', hot: 0.8, a: 0.8 });
+        if (RND() < 0.5 * OLCEK) P({ p: cur, v: kureY(_v2, 0.3).multiplyScalar(0.3), drag: 1, omur: rr(0.4, 0.6), boy: rr(0.06, 0.1) * 1.4, renk: '#fff1a8', kare: 'yildiz4', rot: 'r', hot: 1, on: 0 });
         izParca(onceki, cur, { renk, en: 0.14 * guc, omur: 0.3 }); break;
       case 'ses': {
-        P({ p: cur, omur: -1, boy: 0.3 * guc, renk, kare: 'parilti', hot: 1, a: 0.9 });
-        const ii = (o._i = (o._i || 0) + dt); if (ii > 0.05) { o._i = 0; P({ p: cur, omur: 0.3, boy: 0.12 * guc, boy2: 0.55 * guc, renk, kare: 'halka', hot: 0.8, a: 0.9, fi: 0, fo: 0.2 }); }
+        P({ p: cur, omur: -1, boy: 0.3 * BB, renk, kare: 'parilti', hot: 1, a: 0.9 });
+        const ii = (o._i = (o._i || 0) + dt); if (ii > 0.05) { o._i = 0; P({ p: cur, omur: 0.3, boy: 0.12 * BB, boy2: 0.55 * BB, renk, kare: 'halka', hot: 0.8, a: 0.9, fi: 0, fo: 0.2 }); }
         break; }
       default:
-        P({ p: cur, omur: -1, boy: 0.34 * guc, renk, kare: 'yildiz4', rot: k * 10, hot: 0.9 });
-        P({ p: cur, omur: -1, boy: 0.42 * guc, renk, kare: 'parilti', normal: true, hot: 0.6, a: 0.85 });
-        P({ p: cur, omur: -1, boy: 0.7 * guc, renk, kare: 'parilti', hot: 0.5, a: 0.7 });
-        if (RND() < 0.6 * OLCEK) P({ p: cur, v: kureY(_v2, 0).multiplyScalar(0.35), drag: 1.5, omur: rr(0.25, 0.45), boy: rr(0.06, 0.12), boy2: 0.02, renk, kare: 'parilti', hot: 1 });
+        P({ p: cur, omur: -1, boy: 0.34 * BB, renk, kare: 'yildiz4', rot: k * 10, hot: 0.9 });
+        P({ p: cur, omur: -1, boy: 0.42 * BB, renk, kare: 'parilti', normal: true, hot: 0.6, a: 0.85 });
+        P({ p: cur, omur: -1, boy: 0.7 * BB, renk, kare: 'parilti', hot: 0.5, a: 0.7 });
+        if (RND() < 0.6 * OLCEK) P({ p: cur, v: kureY(_v2, 0).multiplyScalar(0.35), drag: 1.5, omur: rr(0.25, 0.45), boy: rr(0.06, 0.12) * 1.4, boy2: 0.02, renk, kare: 'parilti', hot: 1, on: 0 });
         izParca(onceki, cur, { renk, en: 0.12 * guc, omur: 0.24 });
     }
     onceki.copy(cur);
@@ -587,23 +650,44 @@ function ekranAci(p, yon) { // yön vektörünün ekrandaki açısı (kesik izin
   const a = _v3.copy(p).project(kamera), b = _v4.copy(p).add(yon).project(kamera);
   return Math.atan2(b.y - a.y, (b.x - a.x) * (kamera.aspect || 1.6));
 }
+const ELEMENT_TUR = { ates: 'ates', buz: 'buz', zehir: 'zehir', isik: 'isik', ses: 'ses', kaya: 'toprak' };
 function vurus(pos, o = {}) {
-  const p = konum(pos, new THREE.Vector3()), renk = o.renk || '#ffe08a', guc = Math.max(0.3, o.guc || 1), yon = o.yon ? _v1.copy(o.yon).normalize().clone() : null, tur = o.tur;
+  const p = konum(pos, new THREE.Vector3()), renk = o.renk || '#ffffff', guc = Math.max(0.3, o.guc || 1), yon = o.yon ? _v1.copy(o.yon).normalize().clone() : null, tur = o.tur;
+  const onceki = ONCELIK; ONCELIK = 2;
   flas(p, { renk, boy: 0.55 + 0.35 * guc, sure: 0.12 + 0.05 * guc, isikGuc: 3 * guc });
   patlama(p, { renk, guc: guc * 0.8, n: 10, hiz: 3, yon, boy: 0.08 });
+  const el = ELEMENT[o.element || ELEMENT_TUR[tur]]; if (el) altKatman(p, el[2], 0.45 + 0.2 * guc, 0.55);
+  const r = ekranAci(p, yon);
+  // ekran düzleminde kesik açısına dik kaydırma (pençe izlerini yan yana dizmek için)
+  const dik = (d) => { if (!kamera) return _v4.set(d, 0, 0); const a = r + Math.PI / 2; _v2.setFromMatrixColumn(kamera.matrixWorld, 0).multiplyScalar(Math.cos(a) * d); _v3.setFromMatrixColumn(kamera.matrixWorld, 1).multiplyScalar(Math.sin(a) * d); return _v4.copy(_v2).add(_v3); };
   if (!tur || tur === 'yakin') { // yakın dövüş: hız yönünde yay kesiği
-    const r = ekranAci(p, yon);
     P({ p, omur: 0.18, boy: 0.5 * guc, boy2: 0.85 * guc, en: 1.4, renk: '#ffffff', renk2: renk, kare: 'kesik', rot: r + rr(-0.35, 0.35), hot: 1, fi: 0, fo: 0.25 });
+  } else if (tur === 'pence') { // üç paralel pençe izi, 0,06 sn arayla
+    for (let j = 0; j < 3; j++) { const q = p.clone().add(dik((j - 1) * 0.13 * guc)); zamanla(j * 0.06, () => { const on2 = ONCELIK; ONCELIK = 2;
+      P({ p: q, omur: 0.2, boy: 0.45 * guc, boy2: 0.75 * guc, en: 1.5, renk: '#ffffff', renk2: renk, kare: 'kesik', rot: r + 0.5, hot: 1, fi: 0, fo: 0.3 }); ONCELIK = on2; }); }
+  } else if (tur === 'boynuz') { // toslama: yerde şok, toz, çatlak, hafif sarsıntı
+    sok(p, { renk, r: 0.7 * guc, toz: true, tozRenk: '#b49a7a', tozN: 8, sure: 0.4 });
+    _v3.set(p.x, Z() + 0.03, p.z); P({ p: _v3, mod: 1, normal: true, omur: 1.2, boy: 0.9 * guc, boy2: 1.0 * guc, renk: '#3a2414', kare: 'catlakYer', rot: 'r', hot: 0, a: 0.8, fi: 0.02, fo: 0.55 });
+    sars(0.05 * guc);
+  } else if (tur === 'yumruk') { // ağır yumruk: kameraya dönük büyük halka + taş kırıntısı
+    P({ p, omur: 0.26, boy: 0.25, boy2: 1.25 * guc, renk, kare: 'sok', normal: true, rot: 'r', hot: 0.2, a: 0.9, fi: 0, fo: 0.25 });
+    for (let i = 0, n = N(6 * guc); i < n; i++) { kureY(_v2, 0.6).multiplyScalar(rr(1.5, 3)); if (yon) _v2.addScaledVector(yon, 1.5); P({ p, v: _v2, g: 9, drag: 0.6, omur: rr(0.5, 0.8), boy: rr(0.08, 0.15), renk: '#9a7656', kare: 'tas', normal: true, rot: 'r', rotHiz: rr(-8, 8), hot: 0, sek: 0.05, fo: 0.7 }); }
+  } else if (tur === 'isirik') { // ısırık: üstten ve alttan kapanan iki kesik + damlacık
+    const ust = p.clone().setY(p.y + 0.16 * guc), alt = p.clone().setY(p.y - 0.16 * guc);
+    P({ p: ust, v: _v2.set(0, -1.4, 0), drag: 6, omur: 0.2, boy: 0.5 * guc, boy2: 0.7 * guc, en: 1.4, renk: '#ffffff', renk2: renk, kare: 'kesik', rot: Math.PI, hot: 1, fi: 0, fo: 0.3 });
+    P({ p: alt, v: _v2.set(0, 1.4, 0), drag: 6, omur: 0.2, boy: 0.5 * guc, boy2: 0.7 * guc, en: 1.4, renk: '#ffffff', renk2: renk, kare: 'kesik', rot: 0, hot: 1, fi: 0, fo: 0.3 });
+    for (let i = 0, n = N(6); i < n; i++) { kureY(_v2, 0.7).multiplyScalar(rr(1, 2.2)); P({ p, v: _v2, g: 8, omur: rr(0.3, 0.5), boy: rr(0.07, 0.11), renk, kare: 'damla', mod: 2, uzat: 0.1, hot: 0.3 }); }
   }
   if (tur === 'kaya') { for (let i = 0, n = N(8 * guc); i < n; i++) { kureY(_v2, 0.7).multiplyScalar(rr(1.5, 3.2)); P({ p, v: _v2, g: 9, drag: 0.6, omur: rr(0.6, 0.9), boy: rr(0.1, 0.2), renk: '#a3775a', kare: 'tas', normal: true, rot: 'r', rotHiz: rr(-8, 8), hot: 0, sek: 0.05, fo: 0.7 }); }
     sok(p, { renk: '#e9c48f', r: 0.8 * guc, toz: true, tozRenk: '#b49272', tozN: 8 }); }
   if (tur === 'ates') for (let i = 0, n = N(6 * guc); i < n; i++) { kureY(_v2, 0.9).multiplyScalar(rr(0.6, 1.5)); P({ p, v: _v2, g: -2, drag: 2, omur: rr(0.3, 0.55), boy: rr(0.2, 0.32), boy2: 0.05, renk: '#ffd36a', renk2: '#ff3d1a', kare: 'alev', normal: true, hot: 0.45 }); }
   if (tur === 'buz') for (let i = 0, n = N(6 * guc); i < n; i++) { kureY(_v2, 0.6).multiplyScalar(rr(1, 2.4)); P({ p, v: _v2, g: 7, drag: 1, omur: rr(0.4, 0.6), boy: rr(0.14, 0.24), renk: '#e9fbff', renk2: '#8fd6ff', kare: 'buz', rot: 'r', rotHiz: rr(-6, 6), hot: 0.6, sek: 0.04 }); }
   if (tur === 'zehir') { for (let i = 0, n = N(9 * guc); i < n; i++) { kureY(_v2, 0.8).multiplyScalar(rr(1, 2.4)); P({ p, v: _v2, g: 8, omur: rr(0.35, 0.55), boy: rr(0.08, 0.14), renk: '#a6ff6a', renk2: '#3c9a22', kare: 'damla', mod: 2, uzat: 0.1, hot: 0.4 }); }
-    for (let i = 0, n = N(4); i < n; i++) { _v3.set(p.x + rr(-0.2, 0.2), p.y + rr(-0.1, 0.2), p.z + rr(-0.2, 0.2)); P({ p: _v3, v: _v2.set(0, rr(0.3, 0.6), 0), omur: rr(0.5, 0.8), boy: rr(0.12, 0.2), renk: '#9cff6a', kare: 'kabarcik', hot: 0.5, salin: 0.05 }); } }
+    for (let i = 0, n = N(4); i < n; i++) { _v3.set(p.x + rr(-0.2, 0.2), p.y + rr(-0.1, 0.2), p.z + rr(-0.2, 0.2)); P({ p: _v3, v: _v2.set(0, rr(0.3, 0.6), 0), omur: rr(0.5, 0.8), boy: rr(0.12, 0.2), renk: '#3f9a2a', kare: 'kabarcik', normal: true, hot: 0.3, a: 0.9, salin: 0.05 }); } }
   if (tur === 'isik') for (let i = 0, n = N(5); i < n; i++) { kureY(_v2, 0.5).multiplyScalar(rr(0.5, 1.4)); P({ p, v: _v2, g: -0.5, drag: 2, omur: rr(0.5, 0.8), boy: rr(0.12, 0.2), boy2: 0.03, renk: '#fff1a8', kare: 'yildiz4', rot: 'r', rotHiz: rr(-3, 3), hot: 1 }); }
   if (tur === 'ses') { P({ p, omur: 0.35, boy: 0.2, boy2: 1.4 * guc, renk, kare: 'halka', hot: 0.8, fi: 0, fo: 0.2 }); P({ p, omur: 0.45, boy: 0.2, boy2: 1.0 * guc, renk, kare: 'halka', hot: 0.8, fi: 0.2, fo: 0.3 }); }
   if (guc >= 1.5) sars(0.06 * guc);
+  ONCELIK = onceki;
   return { sure: 0.3 };
 }
 
@@ -619,7 +703,7 @@ const YETENEK = {
     const el = new THREE.Vector3().copy(k.p).setY(k.p.y + 0.95 * k.h);
     flas(el, { renk: '#ffcf8a', boy: 0.6, sure: 0.2 });
     for (let i = 0, n = N(10); i < n; i++) { _v3.set(el.x + rr(-0.5, 0.5), Z() + 0.05, el.z + rr(-0.5, 0.5)); P({ p: _v3, hedef: el, hom: 6, hiz: 2.5, v: _v2.set(0, 1, 0), omur: 0.4, boy: 0.18, boy2: 0.05, renk: '#ffd9a0', kare: 'parilti', hot: 1 }); }
-    mermi(el, h.o || h.p, ON_SURE.tasFirlat, { tur: 'kaya', guc: 1.5 * g, kayaBoy: 1.2, varisGuc: 1.2, bitis: (B) => {
+    mermi(el, h.o || h.p, ON_SURE.tasFirlat, { tur: 'kaya', guc: 1.5 * g, kayaBoy: 0.8, varisGuc: 1.2, bitis: (B) => {
       sok(B, { renk: '#ffd08a', r: 1.5 * g, toz: true, tozRenk: '#a98361', tozN: 16 }); dekal(B, { r: 0.9 * g, renk: '#2b1c10', a: 0.8 }); sars(0.22 * g);
       for (let i = 0, n = N(6); i < n; i++) { const a = RND() * TAU; _v3.set(B.x + Math.cos(a) * 0.3, Z() + 0.05, B.z + Math.sin(a) * 0.3); P({ p: _v3, v: _v2.set(Math.cos(a) * 0.5, rr(2, 3.5), Math.sin(a) * 0.5), g: 9, omur: 0.7, boy: rr(0.22, 0.32), renk: '#8e6a4c', kare: 'tas', normal: true, rot: 'r', rotHiz: rr(-6, 6), hot: 0, sek: 0.06, fo: 0.75 }); }
     } });
@@ -744,7 +828,7 @@ const YETENEK = {
     flas(_v3.copy(c).setY(Z() + 0.4), { renk: '#ff8a3a', boy: 1.0, sure: 0.25 });
     sok(c, { renk: '#ff8a3a', r: R, sure: 0.45 });
     _v3.set(c.x, Z() + 0.04, c.z); P({ p: _v3, mod: 1, omur: 1.4, boy: R * 1.2, boy2: R * 2.15, renk: '#ff7a1f', kare: 'halka', normal: true, hot: 0.3, a: 0.75, fi: 0.1, fo: 0.7 });
-    P({ p: _v3, mod: 1, omur: 1.4, boy: R * 1.6, boy2: R * 2.0, renk: '#ff9a2e', renk2: '#ff4a1a', kare: 'run', normal: true, rot: 'r', rotHiz: 1.5, hot: 0.25, a: 0.8, fi: 0.15, fo: 0.6 });
+    P({ p: _v3, mod: 1, omur: 1.4, boy: R * 1.6, boy2: R * 2.0, renk: '#ff9a2e', renk2: '#ff4a1a', kare: 'run_ates', normal: true, rot: 'r', rotHiz: 1.5, hot: 0.25, a: 0.8, fi: 0.15, fo: 0.6 });
     P({ p: _v3, mod: 1, omur: 1.4, boy: R * 2.2, boy2: R * 2.4, renk: '#ff5a1f', kare: 'parilti', hot: 0.1, a: 0.45, fi: 0.15, fo: 0.6 });
     surec(1.35, (kk, dt, yas, is) => { const r = R * Math.min(1, yas / 0.3); is.acc = (is.acc || 0) + dt * 110 * OLCEK; const sol = kk > 0.75 ? (1 - kk) / 0.25 : 1;
       while (is.acc >= 1) { is.acc--; const a = RND() * TAU, rj = r * rr(0.9, 1.05); _v3.set(c.x + Math.cos(a) * rj, Z() + 0.05, c.z + Math.sin(a) * rj);
@@ -790,6 +874,7 @@ const YETENEK = {
       patlama(hp, { renk: '#c98bff', renk2: '#7a2cff', n: 14, guc: g });
       dekal(h.p, { r: 0.85, renk: '#24103a', a: 0.85 });
       dekal(h.p, { r: 0.7, renk: '#a46cff', additive: true, a: 0.6, sure: 1.0 });
+      run(h.p, { kare: 'run_golge', renk: '#9a4dff', renk2: '#e0c2ff', r: 0.55, a: 0.7, sure: 0.9, donus: -1.5 });
       const goz = _v4.copy(h.p).setY(h.p.y + h.h + 0.45).clone();
       zamanla(0.15, () => { P({ p: goz, omur: 1.0, boy: 0.3, boy2: 0.95, renk: '#c48cff', renk2: '#8a3cff', kare: 'goz', normal: true, hot: 0.6, fi: 0.1, fo: 0.65 }); P({ p: goz, omur: 0.6, boy: 0.4, boy2: 1.2, renk: '#7a2cff', kare: 'parilti', hot: 0.4, a: 0.8 }); });
     });
@@ -865,8 +950,11 @@ const YETENEK = {
 };
 function iyiles(d, renk) {
   const p = konum(d.o || d.p || d, new THREE.Vector3()), h = d.h || 1;
-  for (let i = 0, n = N(8); i < n; i++) { _v3.set(p.x + rr(-0.3, 0.3), p.y + rr(0.1, 0.8) * h, p.z + rr(-0.3, 0.3)); P({ p: _v3, v: _v2.set(0, rr(0.6, 1.2), 0), omur: rr(0.6, 0.9), boy: rr(0.12, 0.2), renk, renk2: '#ffffff', kare: RND() < 0.6 ? 'arti' : 'parilti', hot: 0.8, fo: 0.6 }); }
-  _v3.set(p.x, Z() + 0.05, p.z); P({ p: _v3, mod: 1, omur: 0.6, boy: 0.5, boy2: 1.1, renk, kare: 'halka', hot: 0.6, a: 0.8, fi: 0, fo: 0.3 });
+  // halka biçiminde yükselen artılar + yerden yumuşak ışık sütunu (kabarcık yok: iyileşme tek bakışta okunsun)
+  for (let i = 0, n = N(8); i < n; i++) { const a = i / n * TAU + rr(0, 0.3); _v3.set(p.x + Math.cos(a) * 0.34, p.y + rr(0.05, 0.3) * h, p.z + Math.sin(a) * 0.34);
+    P({ p: _v3, v: _v2.set(0, rr(0.8, 1.3), 0), drag: 0.6, omur: rr(0.7, 0.95), boy: rr(0.14, 0.2), renk, renk2: '#ffffff', kare: 'arti', hot: 0.6, fo: 0.6 }); }
+  sutun(p, { renk, ic: '#efffe8', h: 1.5 * h, en: 0.55, sure: 0.55, zerre: false });
+  _v3.set(p.x, Z() + 0.05, p.z); P({ p: _v3, mod: 1, omur: 0.6, boy: 0.5, boy2: 1.1, renk, kare: 'halka', hot: 0.5, a: 0.8, fi: 0, fo: 0.3 });
 }
 
 // ───────────────────────── durum (sürekli) efektleri ─────────────────────────
@@ -885,9 +973,10 @@ const DURUM = {
       else P({ p: _v3, v: _v2.set(rr(-0.3, 0.3), rr(1, 2), rr(-0.3, 0.3)), omur: 0.5, boy: 0.07, uz: 2, en: 0.6, renk: '#ffd36a', renk2: '#ff6a1f', kare: 'kivilcim', mod: 2, uzat: 0.12, hot: 1 }); }
     _v3.set(p.x, p.y + 0.45 * h, p.z); P({ p: _v3, omur: -1, boy: 1.1 * h, renk: '#ff6a1f', kare: 'parilti', hot: 0.2, a: 0.35 + Math.sin(t * 17) * 0.08 }); },
   zehir(c, dt, t, p, h) { c.acc += dt * 13 * OLCEK; while (c.acc >= 1) { c.acc--; _v3.set(p.x + rr(-0.3, 0.3), p.y + rr(0.3, 0.95) * h, p.z + rr(-0.3, 0.3));
-      if (RND() < 0.75) P({ p: _v3, v: _v2.set(0, rr(0.3, 0.6), 0), omur: rr(0.5, 0.8), boy: rr(0.12, 0.2), boy2: rr(0.2, 0.26), renk: '#9cff5a', renk2: '#3fbf2a', kare: 'kabarcik', normal: true, hot: 0.5, salin: 0.04, fo: 0.85 });
+      if (RND() < 0.75) P({ p: _v3, v: _v2.set(0, rr(0.3, 0.6), 0), omur: rr(0.5, 0.8), boy: rr(0.12, 0.2), boy2: rr(0.2, 0.26), renk: '#3f9a2a', renk2: '#1f5a14', kare: 'kabarcik', normal: true, hot: 0.3, a: 0.92, salin: 0.04, fo: 0.85 });
       else P({ p: _v3, v: _v2.set(0, -0.3, 0), g: 4, omur: 0.4, boy: 0.12, renk: '#5fd03a', kare: 'damla', normal: true, mod: 2, uzat: 0.1, hot: 0.4 }); }
-    _v3.set(p.x, Z() + 0.04, p.z); P({ p: _v3, mod: 1, omur: -1, boy: 1.0, renk: '#4fcf2a', kare: 'duman', normal: true, rot: t * 0.3, hot: 0, a: 0.45 }); },
+    c.kf = (c.kf || 0) + dt; if (c.kf > 1.3) { c.kf = 0; _v3.set(p.x, p.y + h + 0.25, p.z); P({ p: _v3, v: _v2.set(0, 0.35, 0), omur: 0.9, boy: 0.18, boy2: 0.32, renk: '#9cff5a', kare: 'kafatasi', normal: true, hot: 0, a: 0.95, fi: 0.15, fo: 0.6 }); }
+    _v3.set(p.x, Z() + 0.04, p.z); P({ p: _v3, mod: 1, omur: -1, boy: 1.0, renk: '#2f8a1a', kare: 'duman', normal: true, rot: t * 0.3, hot: 0, a: 0.45 }); },
   lanet(c, dt, t, p, h) { _v3.set(p.x, p.y + h + 0.38 + Math.sin(t * 3) * 0.05, p.z); const n = 1 + Math.sin(t * 6) * 0.08;
     P({ p: _v3, omur: -1, boy: 0.95 * n, renk: '#7a2cff', kare: 'parilti', hot: 0.2, a: 0.55 }); P({ p: _v3, omur: -1, boy: 0.6 * n, renk: '#c48cff', kare: 'goz', normal: true, hot: 0.6 });
     c.acc += dt * 8 * OLCEK; while (c.acc >= 1) { c.acc--; _v4.set(p.x + rr(-0.3, 0.3), p.y + rr(0.1, 0.6) * h, p.z + rr(-0.3, 0.3)); P({ p: _v4, v: _v2.set(0, rr(0.3, 0.6), 0), omur: rr(0.7, 1), boy: rr(0.22, 0.32), boy2: 0.45, renk: '#4a2270', renk2: '#1a0a2a', kare: 'duman', normal: true, rot: 'r', a: 0.55, hot: 0 }); } },
@@ -918,13 +1007,20 @@ function kur(sahne_, kamera_, o = {}) {
   sahne = sahne_; kamera = kamera_; kalite = o.kalite === 'hafif' ? 'hafif' : 'yuksek'; OLCEK = kalite === 'hafif' ? 0.55 : 1; zeminY = o.zeminY || 0;
   atlas = atlasUret(kalite === 'hafif' ? 128 : 224);
   const maxAdd = kalite === 'hafif' ? 560 : 1100, maxNrm = kalite === 'hafif' ? 220 : 450; // toplam ≈1550 / ≈780
-  sNrm = new Sistem(maxNrm, THREE.NormalBlending, 30, atlas.tex);
-  sAdd = new Sistem(maxAdd, THREE.AdditiveBlending, 31, atlas.tex);
+  sNrm = new Sistem(maxNrm, THREE.NormalBlending, 30, atlas.tex, 1.0);
+  sAdd = new Sistem(maxAdd, THREE.AdditiveBlending, 31, atlas.tex, kalite === 'hafif' ? 1.1 : 1.6);   // yüksekte çekirdekler HDR → yalnız onlar bloom alır
   sahne.add(sNrm.mesh); sahne.add(sAdd.mesh);
   // kaya havuzu (paylaşımlı geometri + malzeme)
-  const kg = new THREE.IcosahedronGeometry(0.17, 0), km = new THREE.MeshStandardMaterial({ color: '#8d6a4c', roughness: 0.95, flatShading: true });
-  const kristal = new THREE.MeshStandardMaterial({ color: '#ffcf8a', emissive: '#ff9a3a', emissiveIntensity: 1.2, flatShading: true }), kgk = new THREE.OctahedronGeometry(0.06, 0);
-  for (let i = 0; i < 4; i++) { const m = new THREE.Mesh(kg, km); const kk = new THREE.Mesh(kgk, kristal); kk.position.set(0.1, 0.08, 0.06); m.add(kk); m.visible = false; m.castShadow = kalite !== 'hafif'; m.name = 'vfx_kaya'; sahne.add(m); kayaHavuz.push(m); }
+  // kaya: gürültüyle bozulmuş yumuşak gölgeli taş; köşe renkleri açık/koyu kahve lekeler + üstte yosun (el boyaması yaratıklarla uyumlu)
+  const kg = new THREE.DodecahedronGeometry(0.17, 1); { const pa = kg.attributes.position, R2 = mulberry(7), renk = new Float32Array(pa.count * 3), tmp = new THREE.Vector3(), ana = new Map();
+    for (let i = 0; i < pa.count; i++) { tmp.fromBufferAttribute(pa, i); const key = tmp.x.toFixed(3) + ',' + tmp.y.toFixed(3) + ',' + tmp.z.toFixed(3); let d = ana.get(key); if (d === undefined) { d = (R2() - 0.5) * 0.05; ana.set(key, d); }
+      const L = tmp.length(); tmp.multiplyScalar((L + d) / L); pa.setXYZ(i, tmp.x, tmp.y, tmp.z);
+      const lek = Math.sin(tmp.x * 40) * Math.sin(tmp.z * 37) * 0.5 + 0.5, yosun = THREE.MathUtils.smoothstep(tmp.y, 0.07, 0.13);
+      const c = karis(karis('#6a4a34', '#b08a62', lek), '#7a9a3a', yosun); renk.set(c, i * 3); }
+    kg.setAttribute('color', new THREE.BufferAttribute(renk, 3)); kg.computeVertexNormals(); }
+  const km = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92 });
+  const kristal = new THREE.MeshStandardMaterial({ color: '#ffcf8a', emissive: '#ff9a3a', emissiveIntensity: 1.2 }), kgk = new THREE.OctahedronGeometry(0.06, 0);
+  for (let i = 0; i < 4; i++) { const m = new THREE.Mesh(kg, km); const kk = new THREE.Mesh(kgk, kristal.clone()); kk.position.set(0.1, 0.08, 0.06); m.add(kk); m.visible = false; m.castShadow = kalite !== 'hafif'; m.name = 'vfx_kaya'; sahne.add(m); kayaHavuz.push(m); }
   // kalkan kabarcıkları (paylaşımlı küre; havuz başına bir kez malzeme)
   const kureG = new THREE.SphereGeometry(0.5, kalite === 'hafif' ? 18 : 28, kalite === 'hafif' ? 12 : 18);
   for (let i = 0; i < 12; i++) {
@@ -932,7 +1028,10 @@ function kur(sahne_, kamera_, o = {}) {
       vertexShader: `varying vec3 vN; varying vec3 vV; varying vec3 vP; void main(){ vec4 w = modelMatrix * vec4(position,1.0); vN = normalize(mat3(modelMatrix) * normal); vV = normalize(cameraPosition - w.xyz); vP = position; gl_Position = projectionMatrix * viewMatrix * w; }`,
       fragmentShader: `uniform float uA; uniform float uT; uniform vec3 uR; varying vec3 vN; varying vec3 vV; varying vec3 vP;
         void main(){ float f = pow(1.0 - abs(dot(normalize(vN), vV)), 2.2); float bant = smoothstep(0.85, 1.0, sin(vP.y * 22.0 - uT * 4.0) * 0.5 + 0.5);
-          float alt = smoothstep(-0.5, -0.1, vP.y); float a = uA * (0.07 + f * 0.85 + bant * 0.12 * f) * alt; gl_FragColor = vec4(mix(uR, vec3(1.0), f * 0.6), a); }` });
+          float alt = smoothstep(-0.5, -0.1, vP.y);
+          vec2 hq = vec2(atan(vP.z, vP.x) * 1.9, vP.y * 7.0); vec2 hr = vec2(1.0, 1.732); vec2 ha = mod(hq, hr) - hr * 0.5, hb = mod(hq - hr * 0.5, hr) - hr * 0.5;
+          vec2 hg = dot(ha, ha) < dot(hb, hb) ? ha : hb; float hk = max(abs(hg.x) * 0.866 + abs(hg.y) * 0.5, abs(hg.y)); float hex = smoothstep(0.4, 0.47, hk);
+          float a = uA * (0.03 + f * 0.8 + bant * 0.1 * f + hex * 0.22) * alt; gl_FragColor = vec4(mix(uR, vec3(1.0), f * 0.6), a); }` });
     const m = new THREE.Mesh(kureG, mat); m.visible = false; m.renderOrder = 32; m.name = 'vfx_kalkan'; sahne.add(m); kalkanHavuz.push(m);
   }
   if (kalite === 'yuksek' && o.isik !== false) { isik = new THREE.PointLight('#ffd08a', 0, 5.5, 1.6); isik.position.set(0, -50, 0); sahne.add(isik); }
@@ -948,6 +1047,7 @@ function birak() {
 function guncelle(dt) {
   if (!sahne) return;
   dt = Math.max(0, Math.min(0.1, dt || 0)); kareNo++;
+  kutKisma = simdi() - kutBas < 1.2 ? 0.5 : 1;
   // 1) yaşlandır / öldür
   sAdd.guncelle(dt); sNrm.guncelle(dt);
   // 2) zamanlanmış işler (yeni parçacık doğurur)
@@ -964,7 +1064,7 @@ function guncelle(dt) {
     const p = takipPoz(nesne), h = boyAl(nesne), gor = nesne.visible !== false && !!nesne.parent;
     for (const [tur, c] of harita) {
       if (c.kapan >= 0) { c.kapan += dt; if (tur === 'kalkan') DURUM.kalkan(c, dt, t, p, h); if (c.kapan > 0.2 || tur !== 'kalkan') { if (c.mesh) { c.mesh.visible = false; c.mesh.userData.dolu = false; } harita.delete(tur); } continue; }
-      if (gor && DURUM[tur]) DURUM[tur](c, dt, t, p, h);
+      if (gor && DURUM[tur]) { ONCELIK = 0; DURUM[tur](c, dt, t, p, h); ONCELIK = 1; }
     }
     if (!harita.size) durumlar.delete(nesne);
   }
@@ -978,10 +1078,29 @@ const _sars = new THREE.Vector3();
 function sarsintiOfset() { const e = sarsGuc * Math.exp(-(simdi() - sarsT) * 9); if (e < 0.002) return _sars.set(0, 0, 0); const t = simdi() * 60; return _sars.set(Math.sin(t * 1.3) * e, Math.sin(t * 1.7 + 1) * e * 0.6, Math.cos(t * 1.1) * e * 0.5); }
 function ekranFlas(renk = '#ffe6a0', guc = 0.5, sure = 0.35) { flasRenk = rgb(renk); flasGuc = guc; flasBas = simdi(); flasSure = sure; }
 function ekranCiz(ctx, w, h) {
-  const k = (simdi() - flasBas) / flasSure; if (k >= 1 || flasGuc <= 0) return; const a = flasGuc * (1 - k) * (1 - k);
+  const t = simdi();
+  // Kut anı: sahneyi kahraman dışında karart (spot ışığı), 0,25 sn'de patlama ile ışınsal hız çizgileri
+  const kt = t - kutBas;
+  if (kt >= 0 && kt < 1.25) {
+    let sx = w / 2, sy = h / 2; if (kamera) { const v = _v3.copy(kutP).project(kamera); sx = (v.x + 1) / 2 * w; sy = (1 - v.y) / 2 * h; }
+    const env = kt < 0.25 ? kt / 0.25 : kt < 0.85 ? 1 : Math.max(0, 1 - (kt - 0.85) / 0.4);
+    const R = Math.min(w, h) * 0.17;
+    ctx.save(); const g = ctx.createRadialGradient(sx, sy, R * 0.55, sx, sy, Math.max(w, h) * 0.75);
+    g.addColorStop(0, 'rgba(18,6,36,0)'); g.addColorStop(0.18, `rgba(18,6,36,${0.42 * env})`); g.addColorStop(1, `rgba(12,4,26,${0.62 * env})`);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    if (kt >= 0.22 && kt < 0.75) {
+      const e = (kt - 0.22) / 0.53, al = 0.38 * (e < 0.15 ? e / 0.15 : 1 - (e - 0.15) / 0.85), L = Math.max(w, h);
+      ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = `rgba(164,108,255,${al})`;
+      for (let i = 0; i < 24; i++) { const a = i / 24 * TAU + kt * 0.4 + (i % 3) * 0.07, r0 = R * (1.1 + (i % 4) * 0.25) + e * R * 1.5, gen = 0.012 + (i % 2) * 0.008;
+        ctx.beginPath(); ctx.moveTo(sx + Math.cos(a) * r0, sy + Math.sin(a) * r0); ctx.lineTo(sx + Math.cos(a - gen) * L, sy + Math.sin(a - gen) * L); ctx.lineTo(sx + Math.cos(a + gen) * L, sy + Math.sin(a + gen) * L); ctx.closePath(); ctx.fill(); }
+    }
+    ctx.restore();
+  }
+  // ekran parlaması: ortası şeffaf, yalnız kenarlarda renkli vinyet (sahne beyaza boğulmaz)
+  const k = (t - flasBas) / flasSure; if (k >= 1 || flasGuc <= 0) return; const a = flasGuc * (1 - k) * (1 - k);
   const c = flasRenk.map(v => Math.round(v * 255)).join(',');
-  ctx.save(); ctx.globalCompositeOperation = 'lighter'; const g = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, Math.max(w, h) * 0.7);
-  g.addColorStop(0, `rgba(${c},${a * 0.55})`); g.addColorStop(1, `rgba(${c},${a})`); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h); ctx.restore();
+  ctx.save(); const g = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.3, w / 2, h / 2, Math.max(w, h) * 0.72);
+  g.addColorStop(0, `rgba(${c},0)`); g.addColorStop(0.6, `rgba(164,108,255,${a * 0.6})`); g.addColorStop(1, `rgba(${c},${Math.min(0.35, a * 1.4)})`); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h); ctx.restore();
 }
 function durak(sure = 0.06, olcek = 0.05) { durakBitis = Math.max(durakBitis, simdi() + sure); durakOlcek = Math.min(olcek, simdi() < durakBitis ? durakOlcek : 1); }
 function zamanOlcek() { if (simdi() < durakBitis) return durakOlcek; durakOlcek = 1; return 1; }
@@ -1010,16 +1129,21 @@ export const vfx = {
   onSure(ad) { return ON_SURE[ad] || 0; },
   kut(pos, o = {}) {
     if (!sahne) return null; const p = konum(pos, new THREE.Vector3()).setY(Z());
-    sutun(p, { renk: '#b27bff', ic: '#ffe9a8', h: 11, en: 1.5, sure: 1.25 });
-    run(p, { renk: '#ffd76a', renk2: '#a46cff', r: 1.25, sure: 1.4, donus: 1.6 });
-    zamanla(0.1, () => run(p, { renk: '#d7a6ff', renk2: '#ffd76a', r: 0.8, sure: 1.1, donus: -2.4 }));
-    sok(p, { renk: '#ffd76a', r: 1.6, toz: true, tozRenk: '#e9d6ff', tozN: 14 });
-    flas(_v3.copy(p).setY(Z() + 0.6), { renk: '#ffe6a0', boy: 1.8, sure: 0.35, isikGuc: 9 });
-    surec(0.6, (k, dt, yas, is) => { is.acc = (is.acc || 0) + dt * 50 * OLCEK; while (is.acc >= 1) { is.acc--; const a = RND() * TAU, r = rr(0.9, 1.6);
-      _v3.set(p.x + Math.cos(a) * r, Z() + rr(0.05, 0.3), p.z + Math.sin(a) * r); _v4.set(p.x, Z() + rr(0.8, 2.2), p.z);
-      P({ p: _v3, v: _v2.set(0, 1.5, 0), hedef: _v4, hom: 5, hiz: 3.5, omur: 0.6, boy: rr(0.08, 0.14), boy2: 0.03, renk: RND() < 0.5 ? '#ffd76a' : '#d7a6ff', kare: RND() < 0.35 ? 'yildiz4' : 'parilti', hot: 1, fo: 0.7 }); } });
-    const tetik = { flas: { renk: '#ffe6a0', guc: 0.5, sure: 0.4 }, yavas: { olcek: 0.35, sure: 0.15 }, sars: 0.1 };
-    if (o.otomatik !== false) { ekranFlas(tetik.flas.renk, tetik.flas.guc, tetik.flas.sure); sars(tetik.sars); }
+    const h = (pos && pos.isObject3D && boyAl(pos)) || 1.2; kutBas = simdi(); kutP.copy(p).setY(Z() + 0.6 * h);
+    const onceki = ONCELIK; ONCELIK = 2;
+    // (a) 0–0,25 sn toplanma: mor-altın zerreler kahramana akar, ayak altında Kut mührü belirir
+    surec(0.3, (k, dt, yas, is) => { is.acc = (is.acc || 0) + dt * 90 * OLCEK; while (is.acc >= 1) { is.acc--; const a = RND() * TAU, r = rr(1.0, 1.8);
+      _v3.set(p.x + Math.cos(a) * r, Z() + rr(0.1, 1.4), p.z + Math.sin(a) * r); _v4.set(p.x, Z() + 0.6 * h, p.z);
+      P({ p: _v3, hedef: _v4, hom: 8, hiz: 5.5, omur: 0.4, boy: rr(0.08, 0.14), boy2: 0.04, renk: RND() < 0.5 ? '#ffd76a' : '#b27bff', kare: RND() < 0.35 ? 'yildiz4' : 'parilti', hot: 1, fo: 0.8, on: 2 }); } });
+    run(p, { kare: 'run_kut', renk: '#ffd76a', renk2: '#b27bff', r: 0.9, a: 0.45, sure: 1.4, donus: 1.6 });
+    // (b) 0,25 sn patlama: ışık sütunu (yalnız sıcak çekirdek), şok dalgası, kısa ışık
+    zamanla(0.25, () => { const o2 = ONCELIK; ONCELIK = 2;
+      sutun(p, { renk: '#b27bff', ic: '#ffe9a8', h: 9, en: 1.1, sure: 1.0 });
+      sok(p, { renk: '#ffd76a', r: 1.5, toz: true, tozRenk: '#c9b0e8', tozN: 12 });
+      flas(_v3.copy(p).setY(Z() + 0.6 * h), { renk: '#ffe6a0', boy: 1.3, sure: 0.3, isikGuc: 8, halka: false });
+      ekranFlas('#ffd76a', 0.2, 0.4); sars(0.12); ONCELIK = o2; });
+    ONCELIK = onceki;
+    const tetik = { flas: { renk: '#ffd76a', guc: 0.2, sure: 0.4 }, yavas: { olcek: 0.35, sure: 0.15 }, sars: 0.1 };
     return tetik;
   },
   olum(pos, o = {}) {
@@ -1051,8 +1175,7 @@ export const vfx = {
   },
   spawn(pos) {
     if (!sahne) return; const b = birim(pos), p = b.p.clone().setY(Z());
-    run(p, { renk: '#ffd76a', renk2: '#a46cff', r: 0.65, sure: 0.8, donus: 2.5 });
-    sutun(p, { renk: '#d7a6ff', ic: '#fff2c4', h: 2.6, en: 0.8, sure: 0.55 });
+    sutun(p, { renk: '#d7a6ff', ic: '#fff2c4', h: 1.8, en: 0.5, sure: 0.45, zerre: false });
     patlama(_v3.copy(p).setY(Z() + 0.4), { renk: '#ffe08a', n: 10, hiz: 2.5 });
     sok(p, { renk: '#ffe0a0', r: 0.7, toz: true, tozRenk: '#d8c8b0', tozN: 8 });
   },

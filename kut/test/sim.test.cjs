@@ -39,4 +39,30 @@ ok(s[0][1] - s[s.length - 1][1] < 0.40, 'en güçlü/en zayıf kahraman farkı <
 const kod = O.kodla(a, 'Osman'); const c = O.coz(kod);
 ok(c && c.ad === 'Osman' && JSON.stringify(c.takim.map(({ h, s, f, x, y }) => ({ h, s, f, x, y }))) === JSON.stringify(a.map(({ h, s, f, x, y }) => ({ h, s, f, x, y }))), 'düello kodu gidiş-dönüş (' + kod.length + ' karakter)');
 ok(O.coz('çöp') === null, 'bozuk kod reddedilir');
+// 5) 4×3 tahta: motor konumları, yerleştirme, seviyeli bot takımı, KUT1 eski kod
+{
+  const sv = S.Savas([{ h: 'golem', s: 1, x: 0, y: 0 }, { h: 'kugu', s: 1, x: 3, y: 2 }, { h: 'semender', s: 1, x: 1, y: 1 }], [{ h: 'kurt', s: 1, x: 2, y: 0 }, { h: 'tilki', s: 1, x: 3, y: 2 }], { tohum: 3 });
+  const k = (u) => [u.x, u.y].join(',');
+  ok(sv.birimler.map(k).join(' ') === '0.75,5 5.25,7 2.25,6 3.75,3 5.25,1', 'konum: x = 0,75 + 1,5·sütun; taraf 0 y 5/6/7, taraf 1 y 3/2/1');
+  let hep = true, sekiz = true;
+  for (let i = 0; i < 200; i++) {
+    const sv8 = 2 + i % 7, t = O.botTakim(1 + i % 20, 300 + i, (i % 5) / 4, sv8);
+    if (t.length !== sv8) sekiz = false;
+    const hucre = new Set(t.map(b => b.y * 4 + b.x));
+    if (hucre.size !== t.length || t.some(b => b.x < 0 || b.x > 3 || b.y < 0 || b.y > 2)) hep = false;
+    const sira = (y) => t.filter(o => o.y === y).length;
+    for (const b of t) { const m = D.kahraman(b.h).menzil; if (m === 1 && b.y !== 0 && sira(0) < 4) hep = false; if (m === 3 && b.y !== 2 && sira(2) < 4) hep = false; }
+  }
+  ok(sekiz, 'seviyeli bot: takım boyu = seviye (2–8)');
+  ok(hep, 'yerleştirme: farklı hücreler, yakın dövüşçü önde, menzil 3 arkada (sıra doluysa taşar)');
+  const t8 = O.botTakim(12, 77, 0.8, 8), r8 = S.Savas(t8, O.botTakim(12, 78, 0.8, 8), { tohum: 4, yz: [0, 1] }).sonunaKadar();
+  ok(t8.length === 8 && r8 && r8.kazanan !== undefined && r8.kalanSayi >= 0, '8 kahramanlı takımlar savaşır (' + r8.sure + ' sn)');
+  const H1 = O.botTakim(6, 11); ok(H1.length === D.KURAL.hizli.yuva(6), 'Hızlı Maç botu: takım tura bağlı (' + H1.length + ')');
+  // KUT1 (eski 3×2) kodu: ön → y 0, arka → y 2, x aynen
+  const eski = 'KUT1-' + btoa(unescape(encodeURIComponent('Eski|0.2.-1.1.0_10.1.3.2.1'))).replace(/=+$/, '');
+  const ce = O.coz(eski);
+  ok(ce && ce.ad === 'Eski' && JSON.stringify(ce.takim) === JSON.stringify([{ h: 'golem', s: 2, x: 1, y: 0 }, { h: 'kugu', s: 1, x: 2, y: 2, f: 'yarasa' }]), 'KUT1 kodu çözülür (arka → y 2)');
+  const e2 = O.coz(O.kodla([{ h: 'golem', s: 1, x: 3, y: 2, e: ['a', 'b'] }], 'E'));
+  ok(e2 && e2.takim[0].x === 3 && e2.takim[0].y === 2 && e2.takim[0].e.join() === 'a,b', 'KUT2 kodu sütun 3, sıra 2 ve eşyaları taşır');
+}
 process.exit(hata ? 1 : 0);

@@ -117,12 +117,15 @@ export class Oyun {
     } else { const yi = M.yedek.findIndex(x => !x), ti = M.tahta.findIndex(x => !x); yer = yi >= 0 ? { yer: 'yedek', i: yi } : { yer: 'tahta', i: ti }; }
     this._koy(yer, { h: id, s: 1 }); M.altin -= f; M.dukkan[i] = null;
     this._yay('satinAlindi', { id, yer });
-    this._birlestir(id); this._degisti();
+    this._birlestir(id, yer); this._degisti();
   }
-  _birlestir(id) {
+  /** 3 aynı kahraman → bir üst yıldız. Yeni alınan kopya son sıraya konur: birleşen birim eldeki kopyanın yerinde oluşur
+      (yedek doluyken tahtaya geçici konan kopya takım sınırını aşmasın). */
+  _birlestir(id, yeni) {
     const M = this.M;
     for (const s of [1, 2]) {
       const yerler = []; for (const yer of ['tahta', 'yedek']) M[yer].forEach((b, i) => { if (b && !b.f && b.h === id && b.s === s) yerler.push({ yer, i }); });
+      if (yeni) yerler.sort((p, q) => (p.yer === yeni.yer && p.i === yeni.i ? 1 : 0) - (q.yer === yeni.yer && q.i === yeni.i ? 1 : 0));
       if (yerler.length >= 3) { const [ilk, ...kalan] = yerler.slice(0, 3); kalan.forEach(y => this._koy(y, null)); this._koy(ilk, { h: id, s: s + 1 }); this._yay('birlesti', { id, s: s + 1, yer: ilk }); this.bildir(`⭐ ${D.kahraman(id).ad} ★${s + 1}!`, 'iyi'); }
     }
   }

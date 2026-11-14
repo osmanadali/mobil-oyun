@@ -18,25 +18,28 @@ import { EffectComposer } from '../vendor/three/addons/postprocessing/EffectComp
 import { RenderPass } from '../vendor/three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from '../vendor/three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from '../vendor/three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from '../vendor/three/addons/postprocessing/ShaderPass.js';
 
 // ── Ayarlar (canlı değiştirilebilir; test sayfası ve hata ayıklama için dışa açık) ──
 export const AYAR = {
   ton: 'notr',            // 'notr' (NeutralToneMapping, renk/doygunluk korur) | 'agx' | 'aces'
   pozlama: 0.9, 
-  ortamYogunluk: 0.4,     // sahne.environmentIntensity (arena, nesneler)
+  ortamYogunluk: 0.32,     // sahne.environmentIntensity (arena, nesneler)
   yaratikOrtam: 0.55,     // yaratık malzemelerinin envMapIntensity'si (kendi envMap'leri ile)
-  bloomGuc: 0.38, bloomYaricap: 0.4, bloomEsik: 1.0,
+  bloomGuc: 0.5, bloomYaricap: 0.4, bloomEsik: 1.1,   // eşik 1'in üstünde: yalnız HDR efekt çekirdekleri parlar, geniş alanlar değil
   bloomOlcek: 0.5,        // bloom çözünürlüğü (ekranın oranı)
   puruzluluk: 0.58, metallik: 0.0, normalOlcek: 1.25,
-  doygunluk: 1.1,         // doku doygunluk çarpanı (1 = değişmez)
-  kontrast: 1.12,
-  rimGuc: 0.45, rimUs: 2.8,
+  doygunluk: 1.18,        // doku doygunluk çarpanı (1 = değişmez)
+  kontrast: 1.18,
+  rimGuc: 0.5, rimUs: 2.8,
+  vinyet: 0.22,           // yalnız 'yuksek': kenarlar bu oranda kararır (yaratıklar ortada öne çıksın)
   parlama: 1.4,           // dokudaki yerel olarak parlak-doygun ayrıntıların (kristal, göz, desen) kendinden ışıması
   parlamaEsik: 0.1,       // piksel ile çevresinin (bulanık mip) parlaklık farkı eşiği (doğrusal)
   parlamaBulanik: 5.0,    // çevre için mip sapması (büyük = daha geniş çevre)      // doygunluk×parlaklık eşiği (doğrusal uzayda)
 };
 // Taraf kenar ışığı renkleri: bizimki soğuk mavi-beyaz, rakip çok hafif sıcak kırmızımsı
-export const RIM = { biz: new THREE.Color('#a8ccff'), rakip: new THREE.Color('#ffb4a0'), notr: new THREE.Color('#ffe6c8') };
+export const RIM = { biz: new THREE.Color('#6ab8ff'), rakip: new THREE.Color('#ff6a50'), notr: new THREE.Color('#ffe6c8') };
+export const RIM_GUC = { biz: 0.5, rakip: 0.6, notr: 0.45 };
 // Kahramana özel ince ayar (doku yapısına göre): parlama maskesi çok geniş kalanlar kısılır
 export const KAHRAMAN_AYAR = {};
 
@@ -73,6 +76,12 @@ export function kur(renderer, sahne, kamera, { kalite: k = 'yuksek', ton, pozlam
     composer.addPass(new RenderPass(S, K));
     bloom = new UnrealBloomPass(new THREE.Vector2(w * AYAR.bloomOlcek, h * AYAR.bloomOlcek), AYAR.bloomGuc, AYAR.bloomYaricap, AYAR.bloomEsik);
     composer.addPass(bloom);
+    // ucuz vinyet + hafif doygunluk (6 satır): kenarlar kararır, yaratıklar ortada öne çıkar
+    composer.addPass(new ShaderPass({ uniforms: { tDiffuse: { value: null }, uVin: { value: AYAR.vinyet } },
+      vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+      fragmentShader: `uniform sampler2D tDiffuse; uniform float uVin; varying vec2 vUv;
+        void main(){ vec4 c = texture2D(tDiffuse, vUv); vec2 d = vUv - 0.5; float v = 1.0 - uVin * smoothstep(0.18, 0.62, dot(d, d) * 1.6);
+          float l = dot(c.rgb, vec3(0.2126, 0.7152, 0.0722)); c.rgb = max(mix(vec3(l), c.rgb, 1.06), 0.0) * v; gl_FragColor = c; }` }));
     composer.addPass(new OutputPass());   // ton eşleme + sRGB burada
   }
   return { composer, ortamDoku };
@@ -134,17 +143,19 @@ let isiklar = null;
 export function isikKur(sahne = S, { kalite: k = kalite, alan = 7 } = {}) {
   if (isiklar) for (const l of Object.values(isiklar)) l.parent?.remove(l);
   // gökten dolgu: üst lavanta-mavi, alt sıcak mor (yansıyan ada ışığı)
-  const gok = new THREE.HemisphereLight('#d9ccff', '#5a3550', 0.6);
+  const gok = new THREE.HemisphereLight('#d9ccff', '#4a2a48', 0.38);
   // ana ışık: sol-önden alçak altın güneş (rakiplerin yüzü ve bizimkilerin sırtı okunsun), yumuşak gölge
-  const gunes = new THREE.DirectionalLight('#ffe6c8', 2.7);
-  gunes.position.set(-7, 8, 4);
+  // alçak ve yandan: yaratıklarda koyu-açık form ayrımı (portrelerdeki hacim) belirginleşir
+  const gunes = new THREE.DirectionalLight('#ffe2c0', 3.0);
+  gunes.position.set(-8, 6, 2);
   gunes.castShadow = true;
   gunes.shadow.mapSize.setScalar(k === 'hafif' ? 1024 : 2048);
   Object.assign(gunes.shadow.camera, { left: -alan, right: alan, top: alan, bottom: -alan, near: 1, far: 40 });
   gunes.shadow.bias = -0.0004; gunes.shadow.normalBias = 0.025; gunes.shadow.radius = k === 'hafif' ? 2 : 4;
   // kenar ışığı: arkadan (batan güneş yönü, -Z) turuncu-pembe, gölgesiz — siluetleri gökten ayırır
-  const kenar = new THREE.DirectionalLight('#ff9a6a', 2.2);
-  kenar.position.set(3.5, 4.5, -9);
+  // yukarıdan bakan kameradan da görünsün diye daha yüksekte
+  const kenar = new THREE.DirectionalLight('#ff9a6a', 2.8);
+  kenar.position.set(2, 7, -6);
   // soğuk karşı dolgu: sağ-önden çok hafif mavi (gölge tarafı ölü siyah kalmasın)
   const dolgu = new THREE.DirectionalLight('#9ab8ff', 0.45);
   dolgu.position.set(6, 5, 7);
@@ -209,7 +220,7 @@ export function malzemeIyilestir(model, { renk = 'biz', kahraman = null, parlama
       if (ortamDoku) { y.envMap = ortamDoku; y.envMapIntensity = AYAR.yaratikOrtam; }
       if (y.normalMap) y.normalScale.setScalar(AYAR.normalOlcek);
       y.userData.kut = {
-        uRimRenk: { value: rim.clone() }, uRimGuc: { value: rimGuc ?? AYAR.rimGuc }, uRimUs: { value: AYAR.rimUs },
+        uRimRenk: { value: rim.clone() }, uRimGuc: { value: rimGuc ?? ((typeof renk === 'string' && RIM_GUC[renk]) || AYAR.rimGuc) }, uRimUs: { value: AYAR.rimUs },
         uDoy: { value: doygunluk ?? AYAR.doygunluk }, uKontrast: { value: AYAR.kontrast },
         uParla: { value: parlama ?? ozel.parlama ?? AYAR.parlama }, uParlaEsik: { value: AYAR.parlamaEsik }, uParlaBias: { value: AYAR.parlamaBulanik },
         uVurusRenk: { value: new THREE.Color('#ffffff') }, uVurus: { value: 0 },

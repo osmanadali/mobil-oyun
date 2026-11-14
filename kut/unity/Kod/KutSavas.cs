@@ -38,8 +38,9 @@ namespace Kut
         public string H;      // kahraman id
         public int S = 1;     // yıldız 1..3
         public string F;      // kaynaşan kahraman id (yoksa null)
-        public int X, Y;      // X: 0..2, Y: 0 ön | 1 arka
-        public TakimBirimi Kopya() => new TakimBirimi { H = H, S = S, F = F, X = X, Y = Y };
+        public int X, Y;      // X: 0..3 (sütun), Y: 0 ön | 1 orta | 2 arka (tahta 4×3)
+        public List<string> E = new List<string>(); // eşya kimlikleri (0–3); motor henüz kullanmaz, düello kodu taşır
+        public TakimBirimi Kopya() => new TakimBirimi { H = H, S = S, F = F, X = X, Y = Y, E = new List<string>(E ?? new List<string>()) };
     }
 
     public sealed class BirimStat
@@ -58,7 +59,8 @@ namespace Kut
 
     public sealed class KutKaydi { public double T; public int Taraf, I; }
 
-    public sealed class SavasSonucu { public int Kazanan; public double Sure; public double Kalan; }
+    /// <summary>Kalan: eski ölçü (Σ kc × kademe). KalanPuan: kazanan taraftaki sağ birimlerin yıldız toplamı (lobi hasarı). KalanSayi: sağ birim sayısı.</summary>
+    public sealed class SavasSonucu { public int Kazanan; public double Sure; public double Kalan; public int KalanPuan, KalanSayi; }
 
     public sealed class SavasBirimi
     {
@@ -121,6 +123,7 @@ namespace Kut
         readonly bool[] kutKullanildi = new bool[2];
         readonly List<KutKaydi> kutSira; readonly List<KutKaydi> kayit;
 
+        static readonly double[] Y0 = { 5, 6, 7 }, Y1 = { 3, 2, 1 };
         static readonly double[] GOK = { 0, 0.15, 0.35 }, ATLI = { 0, 0.4, 0.9 }, KIS = { 0, 0.15, 0.3 }, AVCI = { 0, 0.2, 0.45 }, KARA = { 0, 0.2, 0.5 },
             DEV = { 0, 0.12, 0.28 }, YER = { 0, 150, 400 }, SU = { 0, 0.02, 0.05 }, BILGE = { 0, 0.3, 0.7 }, OD_SURE = { 0, 2, 3 }, OD_DEGER = { 0, 12, 28 };
 
@@ -140,7 +143,8 @@ namespace Kut
                 for (int i = 0; i < takimlar[taraf].Count; i++)
                 {
                     var b = takimlar[taraf][i]; var st = KutMotor.BirimStatHesapla(b);
-                    double x = b.X * 2 + 1, y = taraf == 0 ? (b.Y != 0 ? 6.6 : 5) : (b.Y != 0 ? 1.4 : 3);
+                    // tahta 4 sütun × 3 sıra: x = 0,75 + 1,5·sütun; taraf 0 y = 5/6/7, taraf 1 y = 3/2/1 (ön, orta, arka)
+                    double x = 0.75 + b.X * 1.5, y = taraf == 0 ? Y0[b.Y] : Y1[b.Y];
                     double can = st.Can;
                     int y1 = Sv(taraf, "yer"); can += YER[y1] * 1;
                     if (this.alamet == "tutulma" && st.Soy.Contains("karanlik")) can *= 1.3;
@@ -369,8 +373,9 @@ namespace Kut
         void Bitir(int k)
         {
             Bitti = true;
-            double kalan = 0; foreach (var o in Birimler) if (!o.Olu && o.Taraf == k) kalan += o.Kc * KutVeri.KahramanBul(o.B.H).Kademe;
-            Sonuc = new SavasSonucu { Kazanan = k, Sure = Math.Round(T, 2, MidpointRounding.AwayFromZero), Kalan = kalan };
+            double kalan = 0; int puan = 0, sayi = 0;
+            foreach (var o in Birimler) if (!o.Olu && o.Taraf == k) { kalan += o.Kc * KutVeri.KahramanBul(o.B.H).Kademe; puan += o.B.S == 0 ? 1 : o.B.S; sayi++; }
+            Sonuc = new SavasSonucu { Kazanan = k, Sure = Math.Round(T, 2, MidpointRounding.AwayFromZero), Kalan = kalan, KalanPuan = puan, KalanSayi = sayi };
         }
         public SavasSonucu SonunaKadar() { int n = 0; while (!Bitti && n++ < 100000) Adim(); return Sonuc; }
     }

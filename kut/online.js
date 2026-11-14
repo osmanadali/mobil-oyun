@@ -68,8 +68,11 @@
       const ic = decodeURIComponent(escape(atob(k.replace(/^KUT[12]-/, ''))));
       const [ad, ham] = ic.split('|');
       const takim = ham.split('_').map(p => {
-        const parca = p.split('.'); const [h, s, f, x, y] = parca.slice(0, 5).map(Number);
-        if (!KAHRAMANLAR[h] || !Number.isInteger(x) || !Number.isInteger(y)) throw new Error('bozuk');
+        const parca = p.split('.');
+        // ilk beş alan tam sayı olmalı (C# KutHayalet.Coz ile aynı kural: isteğe bağlı eksi, 1–6 rakam); konum eksi olamaz
+        if (parca.length < 5 || !parca.slice(0, 5).every(z => /^-?[0-9]{1,6}$/.test(z))) throw new Error('bozuk');
+        const [h, s, f, x, y] = parca.slice(0, 5).map(Number);
+        if (!KAHRAMANLAR[h] || x < 0 || y < 0) throw new Error('bozuk');
         const b = v2 ? { h: KAHRAMANLAR[h].id, s: Math.max(1, Math.min(3, s)), x: x % KURAL.tahtaSutun, y: y % KURAL.tahtaSira }
                      : { h: KAHRAMANLAR[h].id, s: Math.max(1, Math.min(3, s)), x: x % 3, y: (y % 2) * 2 }; // KUT1: ön → ön, arka → arka
         if (f >= 0) { if (!KAHRAMANLAR[f]) throw new Error('bozuk'); b.f = KAHRAMANLAR[f].id; }

@@ -177,7 +177,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .rakipKim span{font-size:12px;white-space:nowrap;color:var(--yazi2);font-weight:700;display:flex;align-items:center;gap:4px}
 .rakipKim span .ik{color:var(--altin)}
 .etiket{display:inline-block;font-size:11px;font-weight:900;padding:1px 6px;border-radius:6px;background:rgba(63,214,143,.18);color:#9ff5cc;border:1px solid rgba(63,214,143,.55)}
-.miniTahta{display:grid;grid-template-columns:22px repeat(3,1fr);gap:5px;padding:4px 10px 2px}
+.miniTahta{display:grid;grid-template-columns:22px repeat(4,1fr);gap:4px;padding:4px 10px 2px}
 .miniTahta .sAd{writing-mode:vertical-rl;transform:rotate(180deg);display:grid;place-items:center;font-size:11px;font-weight:900;color:#ffc4cf;border-radius:6px;background:rgba(255,61,99,.18)}
 .miniTahta .sAd.arka{color:var(--altinA);background:rgba(242,191,74,.12)}
 .miniTahta .m{position:relative;height:clamp(40px,5.8vh,52px);border-radius:9px;border:2px solid var(--kc,#5a3a7a);overflow:hidden;
@@ -211,14 +211,14 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 
 /* --- Tahta --- */
 .tahtaPanel{display:flex;flex-direction:column;min-height:0;padding-bottom:8px;--gemc:var(--k3)}
-.tahtaAlan{flex:1;min-height:0;display:grid;grid-template-columns:28px 1fr;grid-template-rows:auto 1fr 1fr;gap:6px;padding:6px 10px 4px}
+.tahtaAlan{flex:1;min-height:0;display:grid;grid-template-columns:28px 1fr;grid-template-rows:auto 1fr 1fr 1fr;gap:5px;padding:6px 10px 4px}
 .dusmanOk{grid-column:2;display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;font-weight:900;color:#ffc4cf;height:17px;white-space:nowrap}
 .dusmanOk i{flex:1;height:2px;background:linear-gradient(90deg,transparent,#ff6a86,transparent)}
 .dusmanOk .ik{width:14px;height:14px}
 .siraAd{writing-mode:vertical-rl;transform:rotate(180deg);display:grid;place-items:center;font-size:12px;font-weight:900;color:var(--altinA);
   border-radius:8px;background:rgba(242,191,74,.12);border:1px solid rgba(242,191,74,.35);white-space:nowrap}
 .siraAd.on{color:#ffd0d8;background:rgba(255,61,99,.16);border-color:rgba(255,61,99,.45)}
-.sira{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;min-height:0}
+.sira{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;min-height:0}
 .yuva{position:relative;min-height:0;border-radius:14px;overflow:hidden;
   background:linear-gradient(180deg,rgba(40,18,70,.3),rgba(20,8,36,.75)),url(../gorsel/doku_tas.webp) center/cover;
   border:3px solid #8e6a34;box-shadow:inset 0 0 0 2px rgba(0,0,0,.4),inset 0 -14px 24px rgba(0,0,0,.45),0 4px 0 rgba(0,0,0,.35)}
@@ -256,7 +256,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .yedekBas{display:flex;align-items:center;gap:8px;padding:2px 10px 4px 48px;font-size:13px;font-weight:900;color:var(--altinA);white-space:nowrap}
 .yedekBas em{font-style:normal;font-size:12px;font-weight:700;color:#fff3b0;overflow:hidden;text-overflow:ellipsis}
 .yedekBas i{flex:1;height:2px;background:linear-gradient(90deg,rgba(242,191,74,.55),transparent);min-width:10px}
-.yedek{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 10px 0 44px;height:clamp(76px,12vh,96px)}
+.yedek{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;padding:0 10px 0 44px;height:clamp(76px,12vh,96px)}
 .yedek .yuva .port{bottom:16px;height:calc(100% - 20px)}
 .yedek .yuva .plaka{height:18px;font-size:12px}
 .yedek .yuva .soylar .soyIk{width:18px;height:18px}
@@ -306,6 +306,10 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .dukkanSol .btn{flex:1;flex-direction:column;gap:3px;padding:0 6px;font-size:16px}
 .dukkanSol .btn small{display:flex;align-items:center;gap:3px}
 .dukkanSol .btn small .ik{width:15px;height:15px}
+.dukkanSol .btn.xpBtn{font-size:14px}
+.xpCubuk{display:block;width:84%;height:6px;border-radius:3px;background:rgba(0,0,0,.45);overflow:hidden}
+.xpCubuk i{display:block;height:100%;background:linear-gradient(90deg,#7fdcff,#c47bff)}
+.kart .havuzEt{position:absolute;right:4px;bottom:29px;font-size:11px;font-weight:900;padding:1px 6px;border-radius:7px;background:rgba(10,4,20,.75);color:var(--yazi2)}
 .dukkan{padding:0 10px 10px;display:flex;flex-direction:column;--gemc:var(--ametist)}
 .dukkan .pn-bas{margin:0 -10px}
 .kartlar{flex:1;min-height:0;display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding-top:8px}
@@ -663,7 +667,8 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
         <button class="btn mor"><svg class="ik"><use href="#i-kitap"/></svg>Kahramanlar</button>
         <button class="btn mor"><svg class="ik"><use href="#i-soru"/></svg>Nasıl Oynanır</button>
       </div>
-      <button class="yeniMac">Yeni maç başlat (~7 dk)</button>
+      <button class="yeniMac">Yeni maç başlat</button>
+      <button class="yeniMac hizliMac">Hızlı Maç (~7 dk · seviye yok)</button>
     </div>
     <div class="altSerit"><span><i class="nokta"></i>Çevrimiçi hayalet havuzu bağlı</span><span>Güç satılmaz · bütün kahramanlar herkese açık</span></div>
   </div>
@@ -704,6 +709,8 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
           <div class="dusmanOk"><i></i><svg class="ik"><use href="#i-ok"/></svg>Düşman bu yönde<i></i></div>
           <div class="siraAd on">Ön sıra</div>
           <div class="sira" id="onSira"></div>
+          <div class="siraAd">Orta sıra</div>
+          <div class="sira" id="ortaSira"></div>
           <div class="siraAd">Arka sıra</div>
           <div class="sira" id="arkaSira"></div>
         </div>
@@ -718,6 +725,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
       <div class="dukkanSol">
         <button class="btn mor"><svg class="ik"><use href="#i-yenile"/></svg>Yenile<small><svg class="ik"><use href="#i-coin"/></svg>1</small></button>
         <button class="btn mor"><svg class="ik"><use href="#i-kilitAcik"/></svg>Kilitle</button>
+        <button class="btn mor xpBtn" style="display:none">Deneyim</button>
       </div>
       <div class="pn kalin gem dukkan">
         <div class="pn-bas"><span class="elmas"></span>Dükkân<span class="sag">Şans: K1 %45 · K2 %40 · K3 %15</span></div>

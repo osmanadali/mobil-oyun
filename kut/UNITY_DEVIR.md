@@ -104,7 +104,7 @@ Assets/Kut/
 |---|---|
 | `data.js` | `KutVeri.cs` (ScriptableObject ya da JSON); kahraman, soy, alamet, `KURAL` |
 | `sim.js` | `KutSavas.cs`: `Adim()`, `Kut(taraf, i)`, `fx` olay listesi |
-| `online.js` | `Hayalet.cs`: bot takım, düello kodu (`KUT1-` biçimi aynı kalsın, iki sürüm birbirinin kodunu çözebilsin), uzak havuz arayüzü |
+| `online.js` | `Hayalet.cs`: bot takım, düello kodu (`KUT2-` biçimi; eski `KUT1-` kodları da çözülür; iki sürüm birbirinin kodunu çözebilsin), uzak havuz arayüzü |
 | `game.js` | Unity arayüzü (UGUI ya da UI Toolkit) ve `SavasSahnesi.cs` (fx olaylarını animasyon ve efekte çevirir) |
 
 **fx olayı → görsel:**
