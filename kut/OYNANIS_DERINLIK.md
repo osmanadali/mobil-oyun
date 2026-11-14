@@ -2,7 +2,7 @@
 
 Bu belge, prototipin sade kurallarını (her tur 10 altın, seviye yok, eşya yok, 1'e 1 hayalet rakip, 5 can/7 zafer) türün en iyi oyunları düzeyinde stratejik derinliğe taşıyan sistemleri anlatır. Sistemler seviye ve deneyim, birikimli ekonomi, eşyalar, 8 kişilik hayalet lobi, Kut Armağanı, canavar turları ve tur yapısıdır. Bütün sayılar ilk denge değeridir. Uygulayıcı bunları `data.js` → `KURAL` ve yeni tablolara olduğu gibi yazar, sonra bölüm 11'deki benzetim testleriyle ayarlar.
 
-Okuma sırası: önce `TASARIM.md`, sonra bu belge. Arayüz yerleşimi için `ARAYUZ_TASARIM.md` geçerli kalır; bu belgenin getirdiği yeni arayüz öğeleri bölüm 10'da listelenir.
+Okuma sırası: önce `TASARIM.md`, sonra bu belge. Ekran yerleşimi `ARAYUZ_V2.md`'de, öğretici ve bütün açıklayıcı metinler `OGRETICI.md`'de, aşamalar ve prototip/Unity ayrımı `YOL_HARITASI.md`'dedir. Çelişkide kural ve sayıda bu belge, ekranda `ARAYUZ_V2.md`, metinde ve öğreticide `OGRETICI.md` geçerlidir. Bu belgenin getirdiği yeni arayüz öğeleri bölüm 10'da listelenir.
 
 **İlkeler**
 
@@ -17,7 +17,7 @@ Okuma sırası: önce `TASARIM.md`, sonra bu belge. Arayüz yerleşimi için `AR
 | Konu | Prototip (şimdi) | Asıl oyun (bu belge) |
 |---|---|---|
 | Maç biçimi | 1 oyuncu, her tur 1 hayalet rakip; 5 can, 7 zafer | 8 kişilik hayalet lobi; 100 can; son kalan birinci. Eski biçim **Hızlı Maç** olarak kalır. |
-| Süre | En çok 11 tur, 6–8 dk | 22–26 tur, birinci için 17–20 dk; erken elenen 10–14 dk |
+| Süre | En çok 11 tur, 6–8 dk | 22–26 tur, birinci için 18–20 dk; erken elenen 12–15 dk |
 | Altın | Her tur 10, birikmez | Birikir; taban gelir 5, faiz (her 10'a 1, en çok 5), seri bonusu, galibiyet +1 |
 | Takım boyutu | Tura bağlı (3→6) | **Seviyeye** bağlı (2→8); deneyim satın alınır |
 | Dükkân olasılıkları | Tura bağlı | Seviyeye bağlı; kahraman havuzu sınırlı (hayaletler de çeker) |
@@ -87,7 +87,7 @@ Hedef: süre sınırına kalan savaş %5'in altında.
 - Oyuncu **Seviye 2** ile başlar. En yüksek seviye **8**.
 - **Takım boyutu = seviye.** Tahtaya seviyeden fazla kahraman konamaz.
 - Her savaş turunun (PvP ya da canavar) sonunda **+2 deneyim** gelir. Bu 1-2'den başlar; 1-1 sonunda gelmez. Kervan turu deneyim vermez.
-- **Deneyim satın alma**: 4 altın = 4 deneyim. Hazırlıkta istenildiği kadar basılır. Dükkânın solunda, Yenile'nin üstünde durur.
+- **Deneyim satın alma**: 4 altın = 4 deneyim. Hazırlıkta istenildiği kadar basılır. Düğmenin adı **Deneyim Al**; dükkân şeridinin en solundaki seviye bloğunda durur (`ARAYUZ_V2.md` §4.5).
 - Artan deneyim bir sonraki seviyeye taşınır. Seviye 8'de deneyim düğmesi kapanır.
 
 | Seviyeden | Sonrakine gereken deneyim | Toplam (Sv2'den) | Kendiliğinden ulaşılan tur (hiç alım yoksa) |
@@ -226,14 +226,14 @@ Her turun hazırlığı başında, lobi tohumundan (`lobi.tohum + r × 7919`) be
 1. Yaşayan oyuncular listelenir (canlı oyuncu dahil).
 2. Her oyuncunun son `K = min(3, yaşayan − 2)` turdaki rakipleri yasaklıdır.
 3. Lobi RNG'siyle karıştırılmış sırada açgözlü eşleştirme yapılır. Yasağı çiğnemeden eşleşme bulunamazsa 50 denemeye kadar yeniden karılır. Sonra yasak birer birer gevşetilir (önce en eski tur).
-4. **Tek sayıda** yaşayan varsa biri **Yankı** ile dövüşür. Yankı, rastgele seçilen başka bir yaşayan oyuncunun bu turki kadrosunun kopyasıdır. Yankıya kaybeden normal hasar alır. Yankıyı yenmek ise kopyalanan oyuncuya hasar vermez. Geçen tur Yankı'yla dövüşen bu tur dövüşmez.
+4. **Tek sayıda** yaşayan varsa biri **Yansıma** ile dövüşür. Yansıma, lobi RNG'siyle seçilen başka bir yaşayan oyuncunun bu turki kadrosunun kopyasıdır. Yansımaya kaybeden normal hasar alır. Yansımayı yenmek ise kopyalanan oyuncuya hasar vermez. Geçen tur Yansıma'yla dövüşen bu tur dövüşmez. (Ad, "Kut Yankısı" ile karışmasın diye Yansıma'dır; `OGRETICI.md` §7.3.)
 
 Canavar turunda herkes kendi canavar dalgasıyla dövüşür, eşleşme kurulmaz.
 
 ### 4.3 Rakibi önceden görme (imza, lobide)
 
 - Hazırlık başında **sıradaki rakibin bu turda savaşacağı kadro** gösterilir: konumlar, yıldızlar, eşyalar, armağanlar ve soy sayaçları. Hayaletin kadrosu kayıtta hazır olduğundan bu "tam okuma" ancak bizde mümkündür.
-- **Gözcü paneli**: diğer 6 hayaletin bir önceki turki kadrosu, canı, seviyesi ve seri durumu. Sol paneldeki rakip kartı kaydırılarak açılır.
+- **Gözcü paneli**: diğer 6 hayaletin bir önceki turki kadrosu, canı, seviyesi ve seri durumu. Sol üstteki rakip kartına kısa dokunuşla ya da kartı sağa kaydırarak açılır. Rakip kartına basılı tutmak ise rakibin bu turki takımını tahtanın karşı yarısında hayalet olarak gösterir (`ARAYUZ_V2.md` §4.3).
 - **Sıradaki alamet**: bu turun alametinin yanında bir sonraki turunki de soluk olarak görünür.
 - Canavar turunda dalga önceden görünür; canavarların yetenek metinleri de okunur.
 
@@ -441,7 +441,7 @@ Canavar turunda kaybedilse de ganimet verilir. Canavar öldükçe görsel olarak
 | 5-7 | 1 Yıldız Yiyen |
 | 6-7 ve sonrası | 1 Yıldız Yiyen + 2 Kadim Bekçi |
 
-1-1 ve 1-2 öğretici turlardır: bilerek kolaydır ve ilk Kut dokunuşu burada zorla gösterilir. 1-3 yanlış dizilişte kaybedilebilir, ama hasar vermez.
+1-1 ve 1-2 bilerek kolaydır (öğretim Çıraklık Maçı'ndadır, `OGRETICI.md` §2). 1-3 yanlış dizilişte kaybedilebilir, ama hasar vermez.
 
 ---
 
@@ -450,9 +450,9 @@ Canavar turunda kaybedilse de ganimet verilir. Canavar öldükçe görsel olarak
 ### 6.1 Kurallar
 
 - Üç aşama: **2-1, 3-2, 4-3**. Her aşamada **3 armağandan 1'i** seçilir. Seçim süresi 15 sn; süre dolarsa ilk kart seçilir.
-- Bir aşamada üç kartın kademesi aynıdır. Kademeler: **Kıvılcım**, **Alev**, **Yıldız**.
+- Bir aşamada üç kartın kademesi aynıdır. Kademeler: **Kıvılcım**, **Alev**, **Güneş** (★ yıldızıyla karışmasın diye "Yıldız" değil).
 
-| Aşama | Kıvılcım | Alev | Yıldız |
+| Aşama | Kıvılcım | Alev | Güneş |
 |---|---|---|---|
 | 2-1 | %50 | %40 | %10 |
 | 3-2 | %30 | %50 | %20 |
@@ -467,14 +467,14 @@ Canavar turunda kaybedilse de ganimet verilir. Canavar öldükçe görsel olarak
 
 | # | Ad | Kademe | Etki | Tür |
 |---|---|---|---|---|
-| 1 | **Çifte Kut** | Yıldız | Savaş başına 2 Kut hakkı; ikincisi ilkinden en az 4 sn sonra kullanılabilir. | Kut |
+| 1 | **Çifte Kut** | Güneş | Savaş başına 2 Kut hakkı; ikincisi ilkinden en az 4 sn sonra kullanılabilir. | Kut |
 | 2 | **Uyanış** | Kıvılcım | Kut verilen birim savaş sonuna dek +%25 saldırı hızı kazanır. | Kut |
 | 3 | **Kut Mirası** | Alev | Kut verilen birim ölürse Kut hakkı bir kez geri gelir (savaş başına 1). | Kut |
 | 4 | **Işık Sütunu** | Alev | Kut, hedefin 2 hücre çevresindeki dostlara da azami manalarının %50'si kadar mana verir. | Kut |
 | 5 | **Saklı Kut** | Kıvılcım | Bir savaşta Kut'u kullanmazsan savaş sonunda 3 altın kazanırsın. | Kut / ekonomi |
 | 6 | **Ocak Ustası** | Kıvılcım | Kaynaştırma 1 altın. Hemen 1 bedava kaynaştırma hakkı. | Kaynaştırma |
 | 7 | **Kusursuz Melez** | Alev | Kaynaşmış birimlerin istatistik çarpanı ×1,15 yerine ×1,30. | Kaynaştırma |
-| 8 | **Üçlü Kaynaşma** | Yıldız | Kaynaşmış bir birim bir kez daha kaynaşabilir. Üçüncü kahramandan yalnız soyları ve +%10 istatistik gelir; yetenek ve pasif değişmez. | Kaynaştırma |
+| 8 | **Üçlü Kaynaşma** | Güneş | Kaynaşmış bir birim bir kez daha kaynaşabilir. Üçüncü kahramandan yalnız soyları ve +%10 istatistik gelir; yetenek ve pasif değişmez. | Kaynaştırma |
 | 9 | **Soy Mührü** | Alev | Seçtiğin bir soyun Mührü'nü (özel eşya) ve 1 bileşen al. | Eşya / soy |
 | 10 | **Gözcü Baykuşu** | Kıvılcım | Sonraki 2 turun rakibini de görürsün. Hemen 4 altın. | Önceden görme |
 | 11 | **Karşı Hamle** | Alev | Önizlenen rakibin en kalabalık soyu, senin takımına karşı savaşta bir eşik düşük sayılır. | Önceden görme |
@@ -485,7 +485,7 @@ Canavar turunda kaybedilse de ganimet verilir. Canavar öldükçe görsel olarak
 | 16 | **Altın Yumurta** | Alev | 5 savaş turu sonra yumurta çatlar: 22 altın. | Ekonomi |
 | 17 | **Hızlı Büyüme** | Kıvılcım | Hemen +8 deneyim; deneyim alımı 4 yerine 3 altın. | Seviye |
 | 18 | **Ganimet Kesesi** | Kıvılcım | Hemen 2 rastgele bileşen. | Eşya |
-| 19 | **Usta Demirci** | Yıldız | 3 tam eşyadan birini seç, ayrıca 1 Söküm Taşı. | Eşya |
+| 19 | **Usta Demirci** | Güneş | 3 tam eşyadan birini seç, ayrıca 1 Söküm Taşı. | Eşya |
 | 20 | **Son Direniş** | Alev | Canın 40'ın altındaysa takımın +%20 can kazanır. Seçince hemen 1 bileşen. | Geri dönüş |
 
 Çıkışta toplam 45–60 armağan hedeflenir: kademe başına 15–20, her imza mekaniği için en az 6.
@@ -577,17 +577,17 @@ Eşitlikte birim sırası (`i`) küçük olan seçilir.
 
 ## 10. Açıklayıcılık: yeni sistemlerin ekranda anlatılması
 
-Bu belge yerleşim vermez (o `ARAYUZ_TASARIM.md`'nin işi). Ama her yeni sistemin oyuncuya nasıl anlatılacağı oynanış kararıdır ve şu kurallar zorunludur:
+Bu belge yerleşim vermez (o `ARAYUZ_V2.md`'nin işi; metinler `OGRETICI.md`'de). Ama her yeni sistemin oyuncuya nasıl anlatılacağı oynanış kararıdır ve şu kurallar zorunludur:
 
-1. **Seviye rozeti** (dükkânın solu): "Sv 5 · 12/20" ve ilerleme çubuğu. Dokununca o seviyenin ve bir sonrakinin kademe olasılıkları tablo hâlinde açılır.
-2. **Altın rozeti**: yanında faiz göstergesi olarak 5 küçük sikke yuvası (her 10 altında biri dolar) ve "+7 sonraki tur" tahmini (taban + faiz + seri + galibiyet).
-3. **Seri**: altın rozetinin yanında ateş (kazanma) ya da buz (kaybetme) simgesi ve sayısı. Dokununca bonus tablosu açılır.
+1. **Seviye bloğu** (dükkân şeridinin en solu): "Sv 5 · 12/20", ilerleme çubuğu ve altında Deneyim Al. Dokununca o seviyenin ve bir sonrakinin kademe olasılıkları tablo hâlinde açılır.
+2. **Altın bloğu**: 5 **faiz boncuğu** (her 10 altında biri dolar; bölüm 1'de soluk ve "Faiz 2-1'de başlar") ve "+N sonraki tur" tahmini. Tahmin şu anki altınla canlı hesaplanır: `taban(r+1) + min(faizTavan, floor(altin/10)) + seriBonus(kazanırsa) + 1 + alamet(r+1)`. Sıradaki alamet önceden bilindiği için Bereketli Pazar tahmine girer. Dokununca döküm iki satır olur: "Kazanırsan +N · Kaybedersen +M".
+3. **Seri hapı**: altın bloğunun üstünde; kazanma serisinde turuncu-kırmızı ve yukarı ok, kaybetme serisinde buz mavisi ve aşağı ok, "Seri 3 · +2". Seri 0–1 iken gizli. Dokununca bonus tablosu açılır.
 4. **Eşya**: bileşen bir kahramanın üstüne sürüklenirken, oluşacak tam eşyanın adı ve etkisi baloncukta görünür. Rafta bir bileşene uzun basınca 8 tarifi gösteren **tarif çarkı** açılır.
 5. **Kut Yankısı**: Kut seçim kipinde her birimde yankı simgeleri (bölüm 7.1).
-6. **Lobi şeridi** (sağ kenar): 8 oyuncunun portresi, can çubuğu ve sırası. Sıradaki rakip vurgulu, elenenler gri. Dokununca Gözcü paneli açılır.
-7. **Hasar önizlemesi**: Savaşa! düğmesinin altında "Kaybedersen ~11 can" (taban + rakibin olası kalan puanı ortalaması).
+6. **Lobi şeridi** (sağ kenar): 8 oyuncunun portresi, can çubuğu ve sırası. Sıradaki rakip vurgulu, elenenler gri. Bir satıra dokununca o oyuncunun son bilinen takımı rakip yarısında hayalet olarak görünür. Gözcü paneli rakip kartından açılır (bölüm 4.3).
+7. **Hasar önizlemesi**: SAVAŞA düğmesinin altında "Kaybedersen ~11 can". Formül belirlenimci ve sonuç sızdırmaz: `bolumTabani(bolum) + sonUc/sonIki eki + floor(0,5 × Σ rakip tahtasındaki yıldız puanı + 0,5)` (★1 = 1, ★2 = 2, ★3 = 3; canavar 1). Motor önceden koşturulmaz; kazanma olasılığı hiçbir yerde gösterilmez (`OGRETICI.md` §3.6).
 8. **Bölüm haritası** (üst çubuk): bölümün 7 turu küçük simgelerle; savaş, Kervan, canavar ve armağan farklı simge. Şimdiki tur vurgulu.
-9. **Öğretici sırası**: 1-1 Kut (zorla), 1-2 yıldız birleşmesi, 1-3 bileşen takma, 2-1 armağan, 2-2 rakibi önceden görme, 2-4 Kervan, ilk fırsatta kaynaştırma. Her biri tek cümlelik bant ve parmak işaretiyle.
+9. **Öğretici**: ayrı, 7 turluk **Çıraklık Maçı** olarak `OGRETICI.md` §2'de tanımlıdır (bu belgenin eski 1-1…2-4 sırasının yerini alır). Lobideki sistemler (faiz, seri, Armağan, Kervan, Gözcü, havuz, Gün Batımı, Kut Yankısı, hasar, Söküm Taşı) ilk karşılaşıldıkları anda tek seferlik **İlk kez kartı** ile anlatılır (`OGRETICI.md` §2.6). Arena'nın 1-1 ve 1-2 canavar turları bu yüzden zorla öğretim içermez; yalnız kolaydır.
 
 ---
 
@@ -599,7 +599,7 @@ Bu belge yerleşim vermez (o `ARAYUZ_TASARIM.md`'nin işi). Ama her yeni sistemi
 |---|---|
 | Maçın bittiği tur (ortanca) | 5-2 ile 5-4 arası |
 | İlk elenme turu (ortanca) | 4-1 ± 2 tur |
-| Birincinin toplam süresi (tahmin: tur sayısı × süre tablosu) | 17–20 dk |
+| Birincinin toplam süresi (tahmin: tur sayısı × süre tablosu) | 18–20 dk |
 | Savaş süresi ortanca / %90 dilim | 16–20 sn / ≤ 28 sn |
 | Süre sınırıyla biten savaş | < %5 |
 | Her tam eşyanın taşıyıcı kazanma oranı | ortalamanın ±%5'i |
@@ -685,7 +685,7 @@ Her madde JS'te ve C#'ta birlikte uygulanır. Sıra: önce JS, sonra C#. Ardınd
 ### 12.4 Yeni modül `lobi.js` → `KutLobi.cs` (saf, belirlenimci)
 
 - `lobiYeni(canliOyuncu, izler, tohum)` → `{oyuncular[8]: {ad, can: 100, olu, siraBitis, gecmisRakip[], seri}, tohum, r}`.
-- `eslesmeKur(lobi, r)` (bölüm 4.2; Yankı dahil).
+- `eslesmeKur(lobi, r)` (bölüm 4.2; Yansıma dahil).
 - `golgeSavaslari(lobi, r, alamet)` → hayalet × hayalet eşleşmelerini `Savas(...).sonunaKadar()` ile oynatır.
 - `hasarUygula(lobi, r, sonuclar)` (bölüm 4.4; Son Üç ve Son İki ekleri).
 - `siralamaGuncelle(lobi, r)` ve `bitti(lobi)`.
@@ -729,4 +729,4 @@ Her madde JS'te ve C#'ta birlikte uygulanır. Sıra: önce JS, sonra C#. Ardınd
 6. Kut Yankısı ve Kut hakkı sayacı.
 7. Kut Armağanı (20 örnek), Kervan, yeni alametler.
 8. Uzak iz havuzu (Firestore: `iz/{surum}_{kupaKovasi}/maclar/{macId}`).
-9. Öğretici akışı (bölüm 10.9).
+9. Öğretici akışı: `OGRETICI.md` §2 (Çıraklık Maçı) ve §2.6 (İlk kez kartları). Hangi adımın prototipte, hangisinin Unity'de yapılacağı `YOL_HARITASI.md`'de.

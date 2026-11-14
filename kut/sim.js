@@ -6,9 +6,10 @@
   const D = g.KUT_DATA || (typeof require !== 'undefined' ? require('./data.js') : null);
   const { SOYLAR, KURAL } = D;
 
+  const Y0 = [5, 6, 7], Y1 = [3, 2, 1]; // sıra (ön, orta, arka) → arena y
   function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
-  // Takım birimi: { h: kahramanId, s: yıldız 1..3, f?: kaynaşan kahramanId (pasif + soy ondan), x: 0..2, y: 0 ön | 1 arka }
+  // Takım birimi: { h: kahramanId, s: yıldız 1..3, f?: kaynaşan kahramanId (pasif + soy ondan), x: 0..3 (sütun), y: 0 ön | 1 orta | 2 arka }
   function birimStat(b) {
     const A = D.kahraman(b.h), B = b.f ? D.kahraman(b.f) : null;
     const c = KURAL.yildizCarpan[b.s || 1];
@@ -42,8 +43,9 @@
     [takimA, takimB].forEach((takim, taraf) => {
       takim.forEach((b, i) => {
         const st = birimStat(b);
-        // arena: genişlik 6, yükseklik 8. Taraf 0 altta (ön y=5, arka y=6.6), taraf 1 üstte (ön y=3, arka y=1.4).
-        const x = b.x * 2 + 1, y = taraf === 0 ? (b.y ? 6.6 : 5) : (b.y ? 1.4 : 3);
+        // arena: genişlik 6, yükseklik 8. Tahta 4 sütun × 3 sıra: x = 0,75 / 2,25 / 3,75 / 5,25.
+        // Taraf 0 altta (ön y=5, orta 6, arka 7), taraf 1 üstte (ön y=3, orta 2, arka 1).
+        const x = 0.75 + b.x * 1.5, y = taraf === 0 ? Y0[b.y] : Y1[b.y];
         let can = st.can;
         const y1 = sv(taraf, 'yer'); can += [0, 150, 400][y1] * (st.kc > 1 ? 1 : 1);
         if (alamet === 'tutulma' && st.soy.includes('karanlik')) can *= 1.3;
@@ -221,8 +223,10 @@
     }
     function bitir(k) {
       bitti = true;
-      const kalan = birimler.filter(o => !o.olu && o.taraf === k).reduce((s, o) => s + o.kc * D.kahraman(o.b.h).kademe, 0);
-      sonuc = { kazanan: k, sure: +t.toFixed(2), kalan };
+      const sag = birimler.filter(o => !o.olu && o.taraf === k);
+      const kalan = sag.reduce((s, o) => s + o.kc * D.kahraman(o.b.h).kademe, 0); // eski ölçü (uyumluluk)
+      const kalanPuan = sag.reduce((s, o) => s + (o.b.s || 1), 0);               // lobi hasarı: ★1 = 1, ★2 = 2, ★3 = 3
+      sonuc = { kazanan: k, sure: +t.toFixed(2), kalan, kalanPuan, kalanSayi: sag.length };
     }
     function sonunaKadar() { let n = 0; while (!bitti && n++ < 100000) adim(); return sonuc; }
 

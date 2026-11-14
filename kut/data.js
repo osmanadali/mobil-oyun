@@ -87,11 +87,11 @@
     { id: 'yaz',      ad: 'Yaz Sıcağı',   emoji: '☀️', m: 'Od soyu 2 kat yakar; Ayaz soyu -%15 can.' },
   ];
 
-  // ── Dengeli sabitler ──
-  const KURAL = {
+  // ── Hızlı Maç: prototipin kuralları (her tur 10 altın, seviye yok, 5 can / 7 zafer, tura bağlı takım ve dükkân) ──
+  const HIZLI = {
     altinTur: 10,           // her tur yeniden 10 altın (faiz yok → kartopu yok, geride kalan toparlar)
-    yenile: 1, kaynastir: 3, satisIade: 1,
-    dukkan: 5, yedek: 4,
+    yenile: 1, kaynastir: 3,
+    yedek: 4,
     can: 5, zaferHedef: 7,  // 5 can, 7 zafer: bir maç en fazla 11 tur (~6–8 dk)
     yuva: (tur) => Math.min(6, 2 + Math.ceil(tur / 2)), // takım sınırı: 3,3,4,4,5,5,6…
     kademeOlasilik(tur) {   // dükkân kademe olasılıkları [k1,k2,k3]
@@ -101,11 +101,44 @@
       if (tur <= 8) return [0.3, 0.4, 0.3];
       return [0.2, 0.35, 0.45];
     },
-    yildizCarpan: [0, 1, 1.8, 3],
-    savasSuresi: 30,        // sn; sonunda kalan can yüzdesi karar verir
   };
 
-  const api = { SOYLAR, KAHRAMANLAR, YETENEK, PASIF, ALAMETLER, KURAL,
+  // ── Seviyeye bağlı dükkân olasılıkları (OYNANIS_DERINLIK.md 2.2). Satır = seviye, sütun = kademe (K1, K2, K3). ──
+  // Kademe sayısı tablodan okunur (sabit 3 yazılmaz); 5 kademe gelince sütunlar uzar.
+  const KADEME_OLASILIK = {
+    2: [1, 0, 0],
+    3: [0.75, 0.25, 0],
+    4: [0.55, 0.4, 0.05],
+    5: [0.4, 0.45, 0.15],
+    6: [0.3, 0.45, 0.25],
+    7: [0.2, 0.4, 0.4],
+    8: [0.15, 0.35, 0.5],
+  };
+
+  // ── Asıl oyunun kuralları (OYNANIS_DERINLIK.md 12.1). Hızlı Maç kuralları KURAL.hizli altında. ──
+  const KURAL = {
+    // ortak
+    satisIade: 1, dukkan: 5,
+    yildizCarpan: [0, 1, 1.8, 3],
+    savasSuresi: 30,        // sn; sonunda kalan can yüzdesi karar verir
+    // tahta: 4 sütun × 3 sıra (ön, orta, arka); en çok 8 kahraman
+    tahtaSutun: 4, tahtaSira: 3, takimTavan: 8,
+    yedek: 7,
+    // seviye ve deneyim (bölüm 2.1)
+    canBaslangic: 100,
+    seviyeBaslangic: 2, seviyeTavan: 8,
+    xpTablo: [0, 0, 2, 6, 10, 20, 32, 48], // indeks = mevcut seviye → sonraki seviyeye gereken deneyim
+    pasifXp: 2,             // her savaş turu sonunda (ilk tur hariç)
+    xpBedel: 4, xpMiktar: 4, // 4 altın = 4 deneyim
+    takimBoyutu: (sv) => sv,
+    kademeOlasilik(sv) { return KADEME_OLASILIK[Math.max(2, Math.min(8, sv))]; },
+    // sınırlı kahraman havuzu (bölüm 2.3): kademe → kopya sayısı
+    havuzAdet: { 1: 22, 2: 18, 3: 14 },
+    yildizKopya: [0, 1, 3, 9], // ★1 = 1, ★2 = 3, ★3 = 9 kopya
+    hizli: HIZLI,
+  };
+
+  const api = { SOYLAR, KAHRAMANLAR, YETENEK, PASIF, ALAMETLER, KURAL, KADEME_OLASILIK,
     kahraman: (id) => KAHRAMANLAR.find(k => k.id === id) };
   g.KUT_DATA = api;
   if (typeof module !== 'undefined') module.exports = api;

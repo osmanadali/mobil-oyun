@@ -15,7 +15,7 @@ Bu belge `ARAYUZ_TASARIM.md`'nin yerine geçer. O belgedeki renk belirteçleri, 
 - soy eşikleri 2/4/6;
 - Gün Batımı.
 
-İki belge çelişirse kuralda `OYNANIS_DERINLIK.md`, ekranda bu belge geçerlidir.
+İki belge çelişirse kuralda `OYNANIS_DERINLIK.md`, ekranda bu belge, metinde, öğreticide, bilgi kartı içeriğinde ve savaş okunurluğunda (uçan sayı renkleri, durum simgeleri, Kut ipucu) `OGRETICI.md` geçerlidir. Hangi işin prototipte, hangisinin Unity'de yapılacağı `YOL_HARITASI.md`'dedir.
 
 **Görsel karşılığı:** `tasarim/v2/index.html`.
 
@@ -65,7 +65,7 @@ Web prototipi kuralları ve motoru sınamak için yapıldı. Asıl oyunda arayü
 | Maç | Dükkân tam genişlikte kalın bir panel. Yenile ve Kilitle sol kenarda, SAVAŞA sağ kenarda dev bir blok; ekranın alt %25'i dükkâna gidiyor. | Dükkân 128 px'lik yarı saydam bir şerit. Tahta onun arkasından görünmeye devam eder. |
 | Maç | Rakip önizleme, sol üstte tahtadan kopuk küçük bir kart. Oyuncu onu kendi tahtasıyla ilişkilendirmiyor. | Kart kaldı, "karşı ipucu" satırı eklendi. Basılı tutunca rakip tahtası sahnede belirir (§4.3). |
 | Savaş | Üst skor şeridi, alamet, rakip kartı, alt soldaki mini liste ve hız düğmeleri dağınık: savaşta 6 ayrı öğe var. | Üst ortada skor ve süre, solda etkin soylar, sağda lobi, sağ altta KUT. Başka bir şey yok. |
-| Savaş | "KUT HAZIR" açıklaması her savaşta kalıcı ve uzun. | İpucu yalnız ilk 3 maçta çıkar. Sonra yalnız düğmenin nabzı kalır. |
+| Savaş | "KUT HAZIR" açıklaması her savaşta kalıcı ve uzun. | Kalıcı metin kalkar. İlk 10 maçta Kut 8. saniyeye kadar kullanılmazsa tek seferlik ipucu çıkar (`OGRETICI.md` H10). Sonra yalnız düğmenin nabzı kalır. |
 | Ana | Arka plan boş gökyüzü; oyunun kalbi olan ada hiç görünmüyor. 3 eşit mor düğme ana eylemle yarışıyor. "Yeni maç başlat" metin bağlantısı kolay kaçırılıyor. | Arka plan, oyuncunun adası ve seçtiği 4 yaratık. Tek altın OYNA düğmesi ve üstünde mod seçici. Geri kalan her şey alt gezinme çubuğunda. |
 | Maç sonu | 8 kutu, iki sütun ve 3 renkte düğme. 80 karakterlik düello kodu ilk bakışta en çok yer kaplayan şey. | Sıra unvanı, takımın podyumu ve 3 bilgi kutusu. Düello kodu "Takımı paylaş"ın içinde. Birincil eylem tek. |
 | Kodeks | 4×4 kart ızgarası ve soy listesi iyi, ama tek ekrana 26 öğe sıkışıyor. Metinler 12–13 px, ayrıntı penceresi küçük. | Koleksiyon 4 sekmeye ayrılır: kahramanlar, soylar, eşyalar, alametler. Kahraman ayrıntısı tam ekran ve döndürülebilir 3D model içerir (§8.3). |
@@ -269,7 +269,7 @@ Sol üstteki kartın içeriği:
 - **Kimlik:** rakibin avatarı, adı, "58 can · Sv 6".
 - **Mini kadro:** 4×3 ızgara, hücre ≈46 px, `OYNANIS_DERINLIK.md` §4.3'e göre **bu turki** kadro. Satırlar yukarıdan aşağı ön, orta, arka sıradır; ızgara, oyuncunun kendi tahtasına bakışının aynasıdır. Her hücrede portre, yıldız ve kademe rengi kenar bulunur; eşyalar burada gösterilmez, sahnede görünür.
 - **Soylar:** rakibin etkin ilk iki soyu, haplar hâlinde.
-- **Karşı ipucu:** tek satırlık öneri (`arayuz.js` → `IPUCU`, rakibin en kalabalık soyuna göre).
+- **Karşı ipucu:** tek satırlık öneri, rakibin en kalabalık etkin soyuna göre `OGRETICI.md` §7.4 tablosundan (eski `arayuz.js` → `IPUCU` tablosu yanlışlar içerdiği için kullanılmaz).
 
 Kartın davranışı:
 
@@ -277,9 +277,10 @@ Kartın davranışı:
   - Hayaletler eşyalarıyla birlikte görünür: mor fresnel shader, alfa 0,55, 0,25 sn'de içeriden beliren modeller. Parmak kalkınca 0,15 sn'de sönerler.
   - Oyuncu konumları kendi diziliminin karşısında görür. Örneğin: "Gölge Tilki arkada ve sağda; benim en sağdaki ön kahramanım ona en yakın."
 - **Kısa dokunuş:** kart sağa doğru 420 px'lik **Gözcü paneli**ne genişler. Panelde iki bölüm var:
-  - sıradaki rakibin tam bilgisi (kadro, eşyalar, armağanlar, soy eşik açıklamaları);
+  - sıradaki rakibin tam bilgisi: `OGRETICI.md` §3.6 rakip kartı şablonu (kadro, eşyalar, armağanlar, soylar, Tehdit, Karşı fikir, Son karşılaşma);
   - diğer 6 hayaletin **geçen turki** kadrosu, canı, seviyesi ve seri durumu, satır başı 56 px.
   - Panel kartın sağ kenarından yatay kaydırarak da açılır.
+  - **Çıraklık ve Hızlı Maç'ta** lobi olmadığı için panel yalnız ilk bölümü (sıradaki rakip) gösterir ve 420 yerine 300 px açılır.
 - **Canavar turunda** kart "SIRADAKİ DALGA" olur. Canavarlar hayalet olarak gösterilir; basılı tutunca yetenek metinleri çıkar.
 - **Değişim:** rakip tur başında belirlenir. Kart o anda 0,4 sn'lik yakut bir ışıltıyla güncellenir.
 
@@ -304,7 +305,7 @@ Ekranın ortasında 620×≈380 bir kart açılır, arkası %55 karartılır (`s
 
 - **Seviye bloğu:**
   - Mor daire içinde seviye (44 px, sayı 20 px), yanında "Sv 6 · 12/20" ve mavi çubuk.
-  - Altında **Deneyim** düğmesi (mor, 40 yüksek, "+4 · 4 altın").
+  - Altında **Deneyim Al** düğmesi (mor, 40 yüksek; üst satır "Deneyim Al", alt satır "+4 · 4 altın").
   - Daireye dokununca bu ve sonraki seviyenin kademe olasılıkları küçük bir tabloda açılır (`OYNANIS_DERINLIK.md` §10.1).
   - Seviye atlanınca daire 0,5 sn altın parlar, tahtada bir hücre daha kullanılabilir olur ve tahta sayacı "6/7"ye döner (§6.4).
   - Sv 8'de düğme pasifleşir ve "En üst" yazar.
@@ -319,7 +320,7 @@ Ekranın ortasında 620×≈380 bir kart açılır, arkası %55 karartılır (`s
   - kademe renginde kenar (K4 ve K5 eklenirse: K4 ametist `#c47bff`, K5 gün batımı degrade).
   - Durumları §9'da.
 - **Kart etkileşimleri:**
-  - Dokunmak **satın alır**: kahraman yedekteki ilk boş kaideye uçar (0,35 sn yay).
+  - Dokunmak **satın alır** ve kahraman 0,35 sn'lik bir yayla uçar. Hedef sırası: alım bir yıldız birleşmesi yaratıyorsa doğrudan birleşen kopyanın yerine; değilse tahtadaki kahraman sayısı seviyeden azsa ilk boş tahta hücresine (ön sıra, sütun 1, 2, 0, 3 sırasıyla; ön sıra doluysa orta, sonra arka); değilse yedekteki ilk boş kaideye. Bu kural yeni oyuncunun "aldım ama takımda yok" hatasını önler; yanlış sıraya düşen menzilli için H02 ipucu vardır (`OGRETICI.md` §5.4).
   - Yedek doluysa ve alım yıldız birleşmesi yaratmıyorsa kart sallanır ve "Yedek dolu" etiketi çıkar.
   - Karttan sürüklemek kahramanı doğrudan istenen tahta yuvasına koyar.
   - Basılı tutmak bilgi kartını açar, satın almaz.
@@ -327,7 +328,8 @@ Ekranın ortasında 620×≈380 bir kart açılır, arkası %55 karartılır (`s
   - Üstte **seri hapı**: kazanma serisinde turuncu-kırmızı ve yukarı ok ("Seri 3 · +2"), kaybetme serisinde buz mavisi ve aşağı ok. Seri yoksa hap gizlidir. Dokununca seri tablosu açılır.
   - Büyük altın sayısı (32 px, sikke 30 px).
   - **Faiz boncukları:** 5 adet; her 10 altın için biri dolar. Bereket Küpü armağanıyla 7'ye çıkar.
-  - Alt satırda **"+11 sonraki tur"**: taban + faiz + seri + galibiyet. Galibiyet payı "kazanırsan" varsayımıyla eklenir; dokununca dökümü açılır.
+  - Alt satırda **"+11 sonraki tur"**: taban + faiz + seri + galibiyet + sıradaki alametin altını. Galibiyet ve seri payı "kazanırsan" varsayımıyla eklenir; faiz şu anki altınla canlı hesaplanır, yani harcadıkça sayı düşer. Dokununca döküm açılır: "Kazanırsan +11 · Kaybedersen +9" ve kalem kalem satırlar. Formül `OYNANIS_DERINLIK.md` §10.2'dedir. Sonraki tur Kervan ise yazı "Kervan · gelir yok" olur ve tahmin bir sonraki savaş turuna kayar.
+  - **Bölüm 1'de** faiz yoktur: boncuklar soluk durur, üstlerinde "Faiz 2-1'de başlar" yazar.
   - Altın değişince sayı 0,3 sn'de sayarak değişir; azalınca kısa bir yakut, artınca zümrüt parlama olur.
 
 ### 4.6 Eşya rafı ve eşya takma
@@ -384,7 +386,7 @@ Ekranın ortasında 620×≈380 bir kart açılır, arkası %55 karartılır (`s
 - **Durumlar:**
   - kendi satırın altın çerçeveli;
   - **sıradaki rakip** yakut çerçeveli ve sağ üstünde göz rozeti;
-  - **Yankı** ile eşleşilen turda rakip satırında ince bir "yankı" simgesi;
+  - **Yansıma** ile eşleşilen turda rakip satırında ince bir "yansıma" (ayna) simgesi; rakip kartındaki etiket "Yansıma" olur;
   - elenenler %40 opak, gri avatarlı, elenme sırasıyla en altta.
 - **Dokunma:** o oyuncunun son bilinen takımı rakip yarısında hayalet olarak gösterilir (§4.3'teki görsel). Yalnız bilgi amaçlıdır.
 - **Son İki ve Son Üç:** lobide 3 kişi kalınca başlık "SON ÜÇ · taban +3" olur. 2 kişi kalınca "FİNAL DÜELLOSU" olur ve iki satır altın kenar alır.
@@ -394,7 +396,7 @@ Ekranın ortasında 620×≈380 bir kart açılır, arkası %55 karartılır (`s
 - **Bölüm haritası:** "3-3" yazısı ve bölümün 7 turu için 22 px kare simgeler.
   - Simgeler: savaş çapraz kılıç, armağan yıldız, Kervan bayrak, canavar kafatası.
   - Geçmiş turlar soluk, şimdiki altın dolgulu ve parlayan. Kazanılan geçmiş savaşın altında 3 px'lik zümrüt, kaybedilenin altında yakut çizgi bulunur.
-  - Dokununca bölümün tam planı açılır.
+  - Dokununca bölümün tam planı açılır. Geçmiş bir savaş karesine dokunmak o savaşın **Savaş özeti**ni açar (`OGRETICI.md` §4.6); prototipteki ayrı "Son savaş" simgesi yoktur.
 - **Alamet hapı:** yakut zemin, alamet simgesi, ad ve kısa etki. Dokununca tam metin açılır.
 - **Sıradaki alamet:** sağında soluk ve küçük bir hap ("Sonra: Sis").
   - Alamet Bilgesi armağanında 3 turun alameti görünür.
@@ -402,7 +404,9 @@ Ekranın ortasında 620×≈380 bir kart açılır, arkası %55 karartılır (`s
 - **Hazırlık sayacı:** 300×8 çubuk ve saniye. Bölüm 1'de 20 sn, sonra 25 sn.
   - Son 5 saniyede çubuk yakuta döner, saniye yazısı 1,15 kat büyür ve her saniye tıklar (§10).
   - Süre bitince savaş kendiliğinden başlar, aynı SAVAŞA geçişiyle.
-  - **Rahat** ve **Hızlı Maç**'ta sayaç durdurulabilir; çubuğun solunda 32 px'lik bir duraklat düğmesi çıkar.
+  - **Rahat** ve **Hızlı Maç**'ta sayaç durdurulabilir; çubuğun solunda 32 px'lik bir duraklat düğmesi çıkar. **Çıraklık Maçı**'nda sayaç yoktur ve çubuk gizlidir.
+  - Sayaç bittiğinde tahtada boş yer ve yedekte kahraman varsa boş hücreler yedekten en yüksek değerli (kademe × yıldız) kahramanla dolar; bildirim hapı "Boş yerine ‹ad› kondu" der.
+  - **İlk kez kartı** (`OGRETICI.md` §2.6) açıkken sayaç durur; dereceli maçta bile, çünkü kart hesap başına bir kez çıkar.
 
 ### 4.11 SAVAŞA
 
@@ -411,7 +415,8 @@ Ekranın ortasında 620×≈380 bir kart açılır, arkası %55 karartılır (`s
   - "‹Rakip›'na karşı" (13 px);
   - **hasar önizlemesi**: "Kaybedersen ~11 can" (13 px, koyu turuncu).
 - SAVAŞA'ya basmak hazırlığı erken bitirir; dereceli maçta bu yalnız oyuncunun kendi bekleme süresini kısaltır (hayaletler beklemez).
-- **Tahtada boş yer varken ve yedekte yaratık dururken basılırsa** düğme "Tahtada 1 boş yer var · yine de başla" der ve 2 sn içinde ikinci basış ister. Eğitimden sonra bu uyarı Ayarlar'dan kapatılabilir.
+- **Tahtada boş yer varken ve yedekte yaratık dururken basılırsa** düğme "Tahtada 1 boş yer var · yine de başla" der ve 2 sn içinde ikinci basış ister (`OGRETICI.md` §5.5 bu metni kullanır). Eğitimden sonra bu uyarı Ayarlar'dan kapatılabilir.
+- Tahtada hiç kahraman yoksa düğme pasiftir; basınca titrer ve "Tahtaya en az 1 kahraman koy" der.
 - **KUT düğmesi aynı noktada belirir** (§7); oyuncunun eli savaş boyunca aynı yerde kalır.
 
 ### 4.12 Kut Armağanı seçimi (2-1, 3-2, 4-3)
@@ -419,7 +424,7 @@ Ekranın ortasında 620×≈380 bir kart açılır, arkası %55 karartılır (`s
 `shot_hazirlik-armagan_*.png`
 
 - Tur başında hazırlıktan önce açılır. Sahne %55 kararır, HUD görünür kalır ama dokunulamaz.
-- **Başlık:** "KUT ARMAĞANI · ALEV" (26 px). Kademe adı rengiyle yazılır: Kıvılcım gümüş, Alev turuncu, Yıldız altın-pembe.
+- **Başlık:** "KUT ARMAĞANI · ALEV" (26 px). Kademe adı rengiyle yazılır: Kıvılcım gümüş, Alev turuncu, Güneş altın-pembe.
 - **Alt satır:** "Üçünden birini seç · 0:12" (15 sn sayaç).
 - **3 kart** (260×≈220, aralarında 16):
   - 56 px'lik simge yuvarlağı;
@@ -430,7 +435,7 @@ Ekranın ortasında 620×≈380 bir kart açılır, arkası %55 karartılır (`s
 - **Seçme:** bir karta dokunmak onu seçer: kart 6 px yükselir, beyaz-altın kenar ve ışıma alır. Alt düğme "Seç: ‹ad›" olur. Seçili karta ikinci kez dokunmak da onaylar.
 - **Yenile (1):** üç kartın hepsini değiştirir, aşama başına bir kez.
 - **Süre biterse:** seçili kart, seçim yoksa ilk kart alınır.
-- **Seçimden sonra:** kart sol üstteki rakip kartının altına küçük bir **armağan rozeti** (32 px) olarak uçar. Seçilen armağanlar orada yan yana durur; basılı tutunca açıklama gösterilir.
+- **Seçimden sonra:** kart, seviye bloğundaki seviye dairesinin üstüne küçük bir **armağan rozeti** (32 px) olarak uçar. Seçilen armağanlar orada yan yana durur (en çok 3); basılı tutunca açıklama gösterilir. Rakibin armağanları ise rakip kartındaki kimlik satırının altında aynı rozetlerle görünür.
 
 ### 4.13 Kervan (x-4) ve canavar turu (x-7)
 
@@ -448,15 +453,20 @@ Ekranın ortasında 620×≈380 bir kart açılır, arkası %55 karartılır (`s
 
 ---
 
-## 5. Bilgi kartı (basılı tutma)
+## 5. Bilgi kartı (basılı tutma ve kısa dokunuş)
 
 `shot_hazirlik-bilgi_*.png`
 
-- **Boyut:** 300×≈330, cam zemin, altın kenar.
+Kart iki boydadır. İçerik şablonu `OGRETICI.md` §3'tedir; bu bölüm yalnız boyut ve konumu verir.
+
+- **Kısa kart** (basılı tutma, parmak kalkınca kapanır): aşağıdaki içerik, 300×≈330.
+- **Tam kart** (kısa dokunuş, dışarı dokununca kapanır): `OGRETICI.md` §3.2 kahraman şablonunun tamamı. Genişlik yine 300, yükseklik en çok 560; sığmayan alt kısım kartın içinde kaydırılır. Konum kuralı aynıdır.
+- Tahtaya bağlı olmayan kartlar (soy, alamet, eşya, armağan, rakip, durum) `OGRETICI.md` §3.1'deki gibi açan öğenin yanında, en çok 440×520 açılır.
+- **Boyut (kısa kart):** 300×≈330, cam zemin, altın kenar.
 - **Konum kuralı:** kart her zaman kahramanın **karşı yarısındaki** yan sütunun üstüne açılır. Kahraman ekranın sağ yarısındaysa kart sol sütunu örter (sol 12, üst 64); sol yarısındaysa sağ sütunu örter. Kart, tahtayı ve kahramanı asla örtmez.
 - **İçerik:**
   - portre (62), ad (19), kademe hapı, yıldız, soy hapları;
-  - 6 stat (3×2 ızgara): can, saldırı, hız, menzil, mana, yetenek gücü;
+  - 6 stat (3×2 ızgara): can, saldırı, saldırı hızı (dar yerde "Sal. hızı"), menzil, yetenek manası, yetenek gücü (etiketler `OGRETICI.md` §7.1);
   - yetenek ve pasif kutuları (13,5 px, tam metin);
   - eşyalar (her biri adı ve tek satır etkiyle);
   - en altta 13 px'lik ipucu satırı: "Sürükle: taşı · Başka kahramanın üstüne tut: kaynaştır · Dükkâna sürükle: sat (+2)".
@@ -484,7 +494,8 @@ Ekranın ortasında 620×≈380 bir kart açılır, arkası %55 karartılır (`s
 - **Sonuç bandı:** motor bitince sahne 0,3 sn yavaşlar (zaman ölçeği 0,3) ve ortada bant açılır.
   - "ZAFER" ya da "YENİLGİ" yazar.
   - Altında yenilgide "−11 can · 53 kaldı" yazar ve hasarın dökümü küçük harfle verilir: "taban 5 + 6 sağ birim".
-  - Zaferde "+1 altın · Seri 4" yazar.
+  - Zaferde "‹Rakip› −9 can · +1 altın · Seri 4" yazar.
+  - Bandın sağında **Özet** düğmesi (mor, 140×58) bulunur; savaş özetini açar (`OGRETICI.md` §4.6). Özet açıkken geçiş bekler; dereceli maçta özet hazırlık sayacının içinden yer, sayaç durmaz.
 - **Kazananlar:** sağ kalan yaratıklar `zafer` animasyonunu oynar.
 - **Yenilgide:**
   - ekran kenarında 0,6 sn'lik yakut bir nabız atar;
@@ -529,38 +540,41 @@ Ekranın ortasında 620×≈380 bir kart açılır, arkası %55 karartılır (`s
   - ortada süre (26 px), altında "kalan";
   - sağda "%41 ‹rakip›" ve sağdan sola dolan kırmızı çubuk.
   - Yüzdeler takımların toplam kalan canıdır.
-- **Gün Batımı:** 20. saniyede (Uzun Gölge'de 12.) süre kutusunun altında turuncu bir hap belirir: "GÜN BATIMI ×1,3". Çarpan her saniye güncellenir: `1 + 0,1 × floor(t − 20)`. Gökyüzü kızıllaşır ve hasar sayıları turuncuya kayar. Son 5 saniyede süre yakut olur ve her saniye tıklar.
+- **Gün Batımı:** 20. saniyede (Uzun Gölge'de 12.) süre kutusunun altında turuncu bir hap belirir: "GÜN BATIMI ×1,3" (`OGRETICI.md` §4.5 bu hapı kullanır; ayrı bir "Hasar +%" satırı yoktur). Çarpan her saniye güncellenir: `1 + 0,1 × floor(t − 20)`. Gökyüzü kızıllaşır ve hasar sayıları turuncuya kayar. Son 5 saniyede süre yakut olur ve her saniye tıklar.
 - **Sağ üst:** alamet hapı (kısa ad) ve bölüm haritası (yalnız "3-3"). Menü düğmesi duraklat simgesini taşır.
   - **Dereceli maçta** duraklatma yoktur; düğme yalnız ses ve ayarlar kartını açar, motor sürer.
   - **Rahat ve Hızlı Maç'ta** motor durur.
 - **Etkin soylar:** solda dikey, 44 yüksek haplar (simge, ad, sayı). Yalnız eşiğe ulaşanlar görünür.
+- **Olay şeridi** (`OGRETICI.md` §4.2): etkin soy haplarının altında, en çok 3 satır (ölüm, Kut, diriliş).
 - **Lobi:** sağda, skor şeridinin altında (üst 118). Diğer eşleşmelerin sonuçları savaş sırasında satırlarda küçük bir kılıç simgesiyle "sürüyor" görünür. Sonuç gelince can çubukları güncellenir.
 - **Yaratıkların üstünde:**
   - can çubuğu (oyuncu yeşil, rakip kırmızı; 0,9 m × 9 px) ve altında mavi mana çubuğu;
   - kalkan, can çubuğunun sağında beyaz bir bindirme;
   - yıldızlar çubuğun üstünde, eşya şeridi ayakta.
-- **Durum etiketleri** (Sersem, Donmuş, Zehir): çubuğun üstünde 1 sn görünür, sonra yalnız simgesi kalır.
-- **Hasar sayıları:**
-  - normal vuruş beyaz, 26 px;
-  - kritik ya da yetenek altın, 34 px ve "!" ekli;
-  - iyileşme yeşil "+".
+- **Durum etiketleri** (Sersem, Yavaş, Zehir…; ad ve simgeler `OGRETICI.md` §4.5 sözlüğünden): çubuğun üstünde 1 sn görünür, sonra yalnız simgesi kalır.
+- **Hasar sayıları** (renk sözlüğü `OGRETICI.md` §4.1'dedir; bu belge yalnız boyu verir):
+  - vuruş 26 px;
+  - yetenek 31 px (1,2 kat) ve "!" ekli;
+  - zaman içi hasar 0,5 sn'de bir toplanarak, 22 px;
+  - motor kritik vuruş üretmez; ayrı bir "kritik" biçimi yoktur.
   - Sayılar 0,7 sn'de 40 px yükselip söner. Aynı yaratık 0,15 sn içinde birden çok sayı alırsa sayılar toplanır.
   - Ayarlar'dan azaltılabilir (§8.4).
 - **KUT düğmesi** (sağ alt, 156 px daire):
-  - Altın-turuncu degrade, ortada "KUT" (40 px), altında hak sayısı "1/1" (Çifte Kut ve Final Düellosu'nda "2/2").
+  - Altın-turuncu degrade, ortada "KUT" (40 px), altında hak sayısı "1/1" (Çifte Kut ve Final Düellosu'nda "2/2"). Belgelerin hepsinde adı **KUT düğmesi**dir; "madalyon" sözcüğü yalnız kaynaşmış kahramanın ikinci portresi için kullanılır.
   - Hazırken 1,2 sn'lik bir nabız atar.
   - **Kut kipi:**
     - Düğmeye dokunmak kipi açar. Dost yaratıkların ayağında altın halkalar yanar.
     - Her dostun üstünde, Kut verilirse alacağı **yankı simgeleri** görünür (eşya şeridinden yükselir).
     - Görüntü 0,35 hıza yavaşlar; kip en çok 3 sn sürer.
     - Bir dost yaratığa dokunmak Kut'u ona verir.
-    - Boşluğa dokunmak ya da 3 sn beklemek kipi iptal eder.
+    - Boşluğa ya da KUT düğmesine yeniden dokunmak ya da 3 sn (gerçek zaman) beklemek kipi iptal eder.
+    - Birim üstü önizlemenin tamamı (yetenek adı, mana yüzdesi, yankı simgeleri, "Zaten dolu", "Sersem" rozetleri) `OGRETICI.md` §4.4'tedir.
   - **Yavaşlama ve belirlenimcilik:** yavaşlama yalnız görüntü saatine ve motorun adımlama temposuna uygulanır. Motorun `t` değeri ve 0,05 sn'lik adımı değişmez; Kut motora dokunuş anının `t`'si artı 0,4 sn olarak yazılır (`ANIMASYON_PLANI.md` §1). Belirlenimcilik ve tekrar izleme bozulmaz.
-  - **Kestirme:** düğmeye basmadan bir dost yaratığa **çift dokunmak** Kut'u hemen verir.
+  - **Kestirmeler:** düğmeye basmadan bir dost yaratığa **çift dokunmak** (iki dokunuş arası ≤ 300 ms) ya da KUT düğmesinden bir yaratığa **sürüklemek** Kut'u hemen verir. Ayarlar → Oynanış'ta "Tek dokunuşla Kut" (varsayılan kapalı) açılırsa savaşta yaratığa tek dokunuş Kut verir, bilgi kartı ise basılı tutmayla açılır.
   - **Kullanıldıktan sonra** düğme grileşir; içinde Kut'u alan yaratığın portresi ve zümrüt onay işareti görünür.
   - **Kut Sessizliği** alametinde düğme kilitli durur ve "Bu tur Kut yok" yazar.
-- **Kut ipucu kartı:** KUT'un solunda. Yalnız ilk 3 maçta ve Kut kullanılmamışken görünür; 4. saniyede açılır ve 4 sn durur.
-- **Hız düğmeleri:** KUT'un üstünde, 1× ve 2×. Yalnız tekrar izlemede ve Rahat/Hızlı Maç'ta görünür. Dereceli maçta savaş hızı herkes için 1×'tir; 2× hayaletlerle süre eşitliğini bozardı.
+- **Kut ipucu:** KUT'un solunda açılan ipucu bandı; `OGRETICI.md` H10 kuralıyla çalışır (ilk 10 maç, 8. saniyede Kut kullanılmamışsa, savaş başına bir kez, 6 sn).
+- **Hız düğmeleri:** KUT'un üstünde, 1× ve 2×. Yalnız tekrar izlemede, Rahat/Hızlı Maç'ta ve Çıraklık'ın 3. turundan sonra görünür. Dereceli maçta savaş hızı herkes için 1×'tir; 2× hayaletlerle süre eşitliğini bozardı.
 - **Oyuncu elendiyse:** ekranın ortasında "ELENDİN · 6. sıra" bandı çıkar. Altında iki düğme bulunur: "Maç sonu" ve "İzlemeye devam et". İzlemede kalan hayaletlerin savaşları bir sonraki eşleşmeye atlayarak gösterilir.
 
 ---
@@ -582,11 +596,12 @@ Ekranın ortasında 620×≈380 bir kart açılır, arkası %55 karartılır (`s
     - Dereceli (8 kişi, sayaç zorunlu);
     - Rahat (8 kişi, sayaç durur, kupa yok);
     - Hızlı Maç (eski kurallar, ~7 dk);
-    - Öğretici.
+    - Çıraklık (öğretici; bitirilene kadar diğer modlar kilitli ve üstlerinde "Önce Çıraklık Maçı" yazar).
   - **OYNA:** 380×92, altın. "OYNA" 36 px; alt satırda moda göre süre ("~18 dk · 8 kişilik hayalet lobi").
   - Altında yarım kalan maç satırı: "Yarım kalan maç: 3-3 · 64 can · 2. sırada — Devam et ›". Yarım maç varsa OYNA'nın yazısı DEVAM ET olur, satır "Yeni maç başlat ›"a döner.
 - **Alt gezinme çubuğu** (alt orta, 5 × 104×64):
   - Arena, Koleksiyon, Profil, Düello, Rehber; simge 24 px, yazı 13 px.
+  - **Koleksiyon** ve **Rehber** aynı **Kodeks** ekranını açar (`OGRETICI.md` §6): Koleksiyon onu Kahramanlar sekmesinde, Rehber Temeller sekmesinde açar.
   - Yeni içerik varsa yakut nokta görünür.
 
 **Düzeltilen sorunlar:**
@@ -611,9 +626,9 @@ Ana ekran sahnesi bulanıklaşır (8 px). Soldan 380 px'lik, tam yükseklikte bi
 - **Vitrin:** 4 yuva. Dokununca koleksiyondan yaratık ve görünüm seçilir.
 - **Avatar ve çerçeve:** ustalık ve Kürsü sayacıyla açılır.
 
-### 8.3 Koleksiyon (eski Kodeks)
+### 8.3 Kodeks (Koleksiyon ve Rehber)
 
-Tam ekran. Üstte geri düğmesi (56×52), başlık ve **4 sekme**: Kahramanlar, Soylar, Eşyalar, Alametler. Sağda ustalık rozeti.
+Tam ekran. Üstte geri düğmesi (56×52), başlık "Kodeks", arama kutusu ve sağda ustalık rozeti. Solda 180 px'lik dikey sekme sütunu: Temeller · Kahramanlar · Soylar · Eşyalar · Alametler · Armağanlar · Durumlar · Canavarlar · Melezler · Sözlük · Kısa dersler (içerik `OGRETICI.md` §6). Bu bölüm yalnız görsel ağırlığı olan dört sekmeyi tanımlar; Kahramanlar sekmesinin kendi filtre şeridi sekme sütununun sağında durur.
 
 - **Kahramanlar:**
   - Solda dikey **filtre şeridi** (180): Hepsi, K1…K5 ve 10 soy simgesi (çoklu seçim).
@@ -626,7 +641,7 @@ Tam ekran. Üstte geri düğmesi (56×52), başlık ve **4 sekme**: Kahramanlar,
   - Ustalık yolu: Sv 2 çerçeve, Sv 5 ikinci görünüm, Sv 10 efsane görünüm.
 - **Soylar:** soy başına bir satır (72 yüksek): simge, ad, üç eşiğin açıklaması, o soyu taşıyan kahramanların portreleri (32 px). Portreye dokunmak kahraman ayrıntısını açar.
 - **Eşyalar:**
-  - Üstte 8 bileşen, altında **8×8 tarif tablosu**. Satır ve sütun bileşenlerdir; kesişimde tam eşyanın simgesi durur.
+  - Üstte 8 bileşen, altında **8×8 tarif tablosu** (başlık satırı ve sütunuyla 9×9 ızgara; `OGRETICI.md` §6.2'deki "9×9" aynı tablodur). Satır ve sütun bileşenlerdir; kesişimde tam eşyanın simgesi durur; tablo simetrik olduğu için üst üçgen soluktur.
   - Bir hücreye dokununca sağda ayrıntı açılır: ad, istatistik, etki, Kut Yankısı.
   - Özel eşyalar (Kut Taşı, Söküm Taşı, Soy Mühürleri) ayrı satırdadır.
 - **Alametler:** kartlar (görsel, ad, etki), altında "Hangi soyu güçlendirir/zayıflatır" satırı.
@@ -646,6 +661,9 @@ Ortada 560 genişlikte bir kart ve dört sekme. Değişiklikler anında uygulan�
   - "Renk körü kipi": kademe ve takım renklerine biçim eklenir, kırmızı/yeşil çubuklar turuncu/mavi olur.
 - **Oynanış:**
   - "Kaynaştırma bekletmesi": 300, 500 ya da 800 ms.
+  - "Tek dokunuşla Kut" (varsayılan kapalı; §7).
+  - "İpucu sıklığı": Çok, Az, Kapalı (`OGRETICI.md` §5.3).
+  - "Öğreticiyi atla" (yalnız Çıraklık sürerken ve 3. adımdan sonra).
   - "Satışta onay iste" (varsayılan kapalı, geri al var).
   - "Boş yuva uyarısı".
   - "Savaş hızı varsayılanı" (Rahat ve Hızlı Maç için).
@@ -713,7 +731,7 @@ Ortada 560 genişlikte bir kart ve dört sekme. Değişiklikler anında uygulan�
 | **Soy satırı** | 216×35 | etkin değil (sönük); eşik 1/2/3 (altın / beyaz-altın / gün batımı altıgen); açık (altın çerçeve + açıklama); vurgulu (dükkân kartından) |
 | **Rakip kartı** | 216×≈320 | normal; basılı (hayalet tahta açık, kart kenarı parlar); Gözcü paneli (420 genişlik); canavar dalgası (mor kenar); güncellendi (yakut ışıltı) |
 | **Armağan rozeti** | 32 daire | kademe rengi; basılı (açıklama) |
-| **Lobi satırı** | 200×42 / 76×50 | ben; sıradaki rakip; yankı; normal; elenmiş; savaşta (kılıç simgesi); Son Üç / Final (altın kenar) |
+| **Lobi satırı** | 200×42 / 76×50 | ben; sıradaki rakip; yansıma; normal; elenmiş; savaşta (kılıç simgesi); Son Üç / Final (altın kenar) |
 | **Seviye bloğu** | 150×100 | normal; seviye atladı (altın parlama); en üst (düğme pasif) |
 | **Altın bloğu** | 126×112 | normal; artış (zümrüt); azalış (yakut); faiz boncuğu doldu (boncuk parlar); seri (kazanma turuncu / kaybetme buz) |
 | **Eşya rafı yuvası** | 34×34 | boş; bileşen; tam eşya; sürükleniyor; birleşebilir (iki parça üst üste: altın halka); taşan (rafın üstünde rozet) |
@@ -778,7 +796,7 @@ Sahne içindeki yazılar (yaratık adları, kaynaşma adı, "SAVAŞ!") dünya uz
 | Rakip önizleme basılı tut | `hayalet_ac`: mor fısıltı | hafif |
 | Bilgi kartı aç | `kart_ac`: kâğıt hışırtısı | — |
 | Hazırlık son 5 sn | `sure_tik` (her saniye, perdesi giderek yükselir) | son saniyede hafif |
-| Kut Armağanı açılışı | `armagan_ac`: 3 kartın çan dizisi (kademeye göre: Kıvılcım tek, Alev iki, Yıldız üç çan) | orta |
+| Kut Armağanı açılışı | `armagan_ac`: 3 kartın çan dizisi (kademeye göre: Kıvılcım tek, Alev iki, Güneş üç çan) | orta |
 | Armağan seçimi | `armagan_sec`: sıcak "vuuş" + parıltı | başarı |
 | Kervan açılışı | `kervan`: uzak çanlar ve tekerlek | hafif |
 | Alamet açılışı | `alamet_<id>` (12 ayrı; ör. Kan Ayı derin davul, Sis rüzgâr, Tipi uğultu, Kut Yağmuru çanlar, Pazar sikke, Tutulma alçak drone, Yaz ağustos böceği, Durgun Gök kuş, Kut Sessizliği sessizlik + tek nefes) | orta |
@@ -823,19 +841,14 @@ Müzik kültürden bağımsızdır: belli bir ülkenin çalgısı ya da makamı 
 
 ## 11. Öğretici bağlantıları
 
-Sıra `OYNANIS_DERINLIK.md` §10.9'dan gelir. Her adım tek bir parlayan hedef ve tek cümlelik bir bantla anlatılır; ekranın geri kalanı %60 kararır.
+Öğretici `OGRETICI.md`'nin işidir; o belgenin eski sürümündeki 1-1…2-4 sırası (bu bölümün önceki hâli) geçersizdir. Ekran tarafında bilinmesi gerekenler:
 
-1. **1-1:** "Bir kahramana dokun: satın al" → "Tahtaya sürükle" → savaş. 4. saniyede zaman durur: "KUT'a bas, sonra kahramanına dokun".
-2. **1-2:** yıldız birleşmesi. Dükkânda üçüncü kopya çıkar: "★2 olur" rozetine işaret.
-3. **1-3:** "Bu bileşeni bir kahramanın üstüne sürükle". Sonuç baloncuğu gösterilir.
-4. **2-1:** Kut Armağanı kartlarında "Neden seç?" satırına işaret.
-5. **2-2:** "Sıradaki rakibi görmek için bu kartı basılı tut". Hayalet tahta belirir.
-6. **2-4:** Kervan.
-7. **İlk fırsatta kaynaştırma:** "Birini ötekinin üstünde tut". Onay kartı açılır; bu ilk kaynaştırma ücretsizdir.
-
-Satış, faiz, seri ve seviye yazıyla değil, ilk karşılaşıldıklarında çıkan tek seferlik baloncuklarla anlatılır.
-
----
+- **Çıraklık Maçı** (`OGRETICI.md` §2): 7 tur, 13 adım, sayaçsız. Rehber balonu, spot ışığı ve parmak işareti `OgreticiKatmani` Canvas'ında (`Pencereler`'in üstünde, sıralama 50) durur.
+- **Kademeli açılma:** Çıraklık'ta HUD öğeleri anlatıldıkları turda açılır (`OGRETICI.md` §2.2 tablosu). Henüz açılmamış öğe sahnede yoktur, yerinde boşluk kalmaz: geniş düzen kendini kapanmış öğe yokmuş gibi kurar. Örneğin tur 1–2'de sol sütun ve lobi yoktur. Tur 1–6'da satış alanı sürüklemede görünmez.
+- **Kaynaştırma adımı** (adım 12) bu belgenin §4.2 hareketini öğretir: sürükle, üstünde 500 ms tut, bırak, onay kartı.
+- **Rakip adımı** (adım 7) §4.3 basılı tutmayı öğretir: hayalet tahta.
+- **KUT adımı** (adım 5) §7'deki düğmeyi ve iki dokunuşu öğretir; motor 3,0. saniyede durdurulur.
+- **İlk kez kartları** (`OGRETICI.md` §2.6) Arena'da ilgili öğe ilk göründüğünde açılır; hazırlık sayacını durdurur.
 
 ## 12. Motor, oynanış belgesi ve Hızlı Maç
 

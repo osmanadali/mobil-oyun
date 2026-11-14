@@ -10,7 +10,7 @@ Kullanıcının şikâyeti şu: yeni oyuncu neyi neden yapacağını bilmiyor. B
 
 Sonda mevcut metinlerin düzeltilmiş hâlleri, veri ve motor değişiklikleri ile kabul ölçütleri var.
 
-Okuma sırası: `TASARIM.md`, `OYNANIS_DERINLIK.md` (asıl oyunun kuralları: seviye, birikimli altın, eşya, 8 kişilik hayalet lobi, Kut Armağanı, Kervan, canavar turları), `ARAYUZ_TASARIM.md` (renk, yazı ve yerleşim belirteçleri). Bu belge o üçünün üstüne kurulur. Çelişki olursa **açıklayıcılık konusunda bu belge geçerlidir**. `OYNANIS_DERINLIK.md` bölüm 10.9'daki öğretici sırasının yerini bu belgenin 2. bölümü alır.
+Okuma sırası: `TASARIM.md`, `OYNANIS_DERINLIK.md` (asıl oyunun kuralları: seviye, birikimli altın, eşya, 8 kişilik hayalet lobi, Kut Armağanı, Kervan, canavar turları), `ARAYUZ_V2.md` (tek sahne, yerleşim, sürükle-bırak, ölçek; renk ve yazı belirteçleri için `ARAYUZ_TASARIM.md` geçerli kalır). Bu belge o üçünün üstüne kurulur. Çelişki olursa kuralda `OYNANIS_DERINLIK.md`, ekran yerleşimi ve hareket eşiklerinde `ARAYUZ_V2.md`, **metin, öğretici ve açıklayıcılıkta bu belge** geçerlidir. `OYNANIS_DERINLIK.md` bölüm 10.9'daki ve `ARAYUZ_V2.md` §11'deki eski öğretici sırasının yerini bu belgenin 2. bölümü alır. Yazı boyları `ARAYUZ_V2.md` §3.2'ye uyar: hiçbir yazı 13 mantıksal px'in altına inmez.
 
 **İlkeler**
 
@@ -72,7 +72,7 @@ Bütün öğretici adımları, İlk kez kartları ve ipuçları aynı dört bile
 
 1. Öğe %0 saydamlık ve %90 ölçekten 300 ms'de *back-out* eğrisiyle gelir.
 2. Altın bir ışık süpürmesi soldan sağa bir kez geçer (250 ms).
-3. Sağ üst köşesine "YENİ" etiketi (yeşil `zumrut` hap, 11 px Black) yapışır. Etiket, öğe ilk kullanılınca ya da 2 tur sonra kalkar.
+3. Sağ üst köşesine "YENİ" etiketi (yeşil `zumrut` hap, 13 px Black) yapışır. Etiket, öğe ilk kullanılınca ya da 2 tur sonra kalkar.
 
 Öğreticiden sonra açılan her yeni sistem (Armağan, Kervan, Gözcü…) de ilk göründüğünde aynı açılmayı kullanır.
 
@@ -100,13 +100,15 @@ Bütün öğretici adımları, İlk kez kartları ve ipuçları aynı dört bile
 
 | Tur | Rakip | Alamet | Adımlar (her biri tek kavram) | Açılan öğeler |
 |---|---|---|---|---|
-| 1 | Canavar: 2 Çakıl Kıpırı | Durgun Gök (gizli) | 1 Satın al · 2 Yerleştir · 3 Savaş | Dükkân, tahta, altın, SAVAŞA! |
-| 2 | Canavar: 3 Çakıl Kıpırı | Durgun Gök (gizli) | 4 Üçlü birleştirme · 5 KUT | Yedek, Kut madalyonu |
-| 3 | Alıştırma: Taşçı | Durgun Gök (gizli) | 6 Soy · 7 Rakibi önceden görme · 8 Savaş özeti | Soy paneli, rakip paneli, Özet düğmesi |
-| 4 | Alıştırma: Kor | Kan Ayı | 9 Eşya · 10 Alamet | Eşya rafı, alamet şeridi |
-| 5 | Alıştırma: Gölge | Bereketli Pazar | 11 Seviye | Seviye rozeti, Deneyim Al, faiz göstergesi |
-| 6 | Alıştırma: Sürü | Durgun Gök | 12 KAYNAŞTIR | KAYNAŞTIR düğmesi |
-| 7 | Alıştırma Ustası | Tipi | 13 Kendi başına | Yenile, Kilitle, Sat; ipuçları açık |
+| 1 | Canavar: 2 Çakıl Kıpırı | Durgun Gök (gizli) | 1 Satın al · 2 Yerleştir · 3 Savaş | Dükkân, tahta, altın, SAVAŞA! (yedek, ilk kez yedeğe kahraman inince kendiliğinden açılır) |
+| 2 | Canavar: 3 Çakıl Kıpırı | Durgun Gök (gizli) | 4 Üçlü birleştirme · 5 KUT | Yedek (açılmadıysa), KUT düğmesi |
+| 3 | Alıştırma: Taşçı | Durgun Gök (gizli) | 6 Soy · 7 Rakibi önceden görme · 8 Savaş özeti | Soy izleyici, rakip kartı, Özet düğmesi |
+| 4 | Alıştırma: Kor | Kan Ayı | 9 Eşya · 10 Alamet | Eşya rafı, alamet hapı |
+| 5 | Alıştırma: Gölge | Bereketli Pazar | 11 Seviye | Seviye bloğu, Deneyim Al, faiz boncukları |
+| 6 | Alıştırma: Sürü | Durgun Gök | 12 KAYNAŞTIR | Kaynaştırma bekletmesi (sürükle-tut) |
+| 7 | Alıştırma Ustası | Tipi | 13 Kendi başına | Yenile, Kilitle, satış alanı; ipuçları açık |
+
+Çıraklık'ta lobi, bölüm haritası, seri hapı, Armağan, Kervan ve Gözcü yoktur. Bunlar Arena'da İlk kez kartlarıyla gelir (bölüm 2.6).
 
 Kut tur 2'ye konur, çünkü oyunun imzasıdır ve "izle-bekle" hissini ilk savaşın hemen ardından kırar. Kaynaştırma tur 6'ya konur, çünkü yetenek, pasif ve soy anlaşılmadan kaynaşma anlaşılmaz.
 
@@ -157,19 +159,19 @@ Her adım şu alanları taşır: **metin** (rehber balonu), **vurgu** (spot ış
 - Vurgu yok, ekran hafif kararır. Düğme: "Başlayalım".
 
 **Adım 1: Satın al**
-- Açılan: dükkân, altın rozeti (3), tahta (yalnız Sv 2 kadar hücre aydınlık, diğerleri soluk ve kilitli).
+- Açılan: dükkân, altın bloğu (3), tahta. Tahta sayacı "0/2" der; seviye kadar (2) kahraman konabilir, sınır dolunca boş plakalar %40 opaklığa iner (`ARAYUZ_V2.md` §2.1).
 - Metin: "Bu senin altının. Kahraman almak için karta dokun: **Kaya Golemi** 1 altın."
-- Vurgu: dükkân kart 1 (Kaya Golemi) ve altın rozeti. Parmak: kart 1'e dokun.
+- Vurgu: dükkân kart 1 (Kaya Golemi) ve altın bloğu. Parmak: kart 1'e dokun.
 - Eylem: kart 1'e dokun. Ardından ikinci balon: "Şimdi **Rüzgâr Ruhu**'nu da al." Vurgu kart 2.
 - Geçiş: tahtada Kaya Golemi ve Rüzgâr Ruhu var.
 - Takıldıysan: "Parlayan karta bir kez dokunman yeterli."
 - Sonra: "Satın aldığın kahraman tahtaya iner. Altının 1 kaldı."
-- Not: Diğer kartlar bu adımda karartılmıştır. Adımdan sonra oyuncu kalan 1 altınla istediği kartı alabilir; alınan yedeğe iner.
+- Not: Satın alınan kahraman, tahtada yer varsa ilk boş ön sıra hücresine (sütun 1, sonra 2) iner (`ARAYUZ_V2.md` §4.5 hedef sırası). Diğer kartlar bu adımda karartılmıştır. Adımdan sonra oyuncu kalan 1 altınla istediği kartı alabilir; tahta 2/2 dolu olduğu için alınan yedeğe iner ve yedek sırası o anda açılır (bölüm 1.4).
 
 **Adım 2: Yerleştir**
-- Rüzgâr Ruhu satın alınınca ilk boş hücreye, yani ön sıraya iner. Bu bilerek böyle bırakılır.
+- Rüzgâr Ruhu satın alınınca ilk boş hücreye, yani ön sıranın 2. sütununa iner. Bu bilerek böyle bırakılır.
 - Metin: "Rüzgâr Ruhu **uzaktan** vurur. Onu arka sıraya sürükle, önde Golem korusun."
-- Vurgu: Rüzgâr Ruhu yuvası ve arka sıranın ortadaki hücresi. Parmak: sürükle. Tahtanın ön sıra etiketi "Ön sıra · önce bunlar vurulur", arka sıra etiketi "Arka sıra · güvende" olarak bu adımda bir kez belirir.
+- Vurgu: Rüzgâr Ruhu yuvası ve arka sıranın 2. sütunundaki hücresi. Parmak: sürükle (`ARAYUZ_V2.md` §4.2: 12 px hareketle başlar, yaratık parmağın 70 px üstünde durur). Tahtanın ön sıra etiketi "Ön sıra · önce bunlar vurulur", arka sıra etiketi "Arka sıra · güvende" olarak bu adımda bir kez belirir. Bu adımda satış alanı ve kaynaştırma bekletmesi kapalıdır.
 - Eylem: Rüzgâr Ruhu'nu arka sıradaki herhangi bir hücreye taşı.
 - Geçiş: Rüzgâr Ruhu `y = 2`.
 - Takıldıysan: "Rüzgâr Ruhu'na basılı tut ve parmağını arka sıraya kaydır."
@@ -192,22 +194,22 @@ Her adım şu alanları taşır: **metin** (rehber balonu), **vurgu** (spot ış
 - Vurgu: dükkân kart 1 ve 2 (iki Golem) ve tahtadaki Golem. Kartlarda zaten "Elinde 1/3" ve sonra "↑ ★2 olur · 2/3" rozetleri görünür; balonun kuyruğu bu rozete bakar.
 - Eylem: iki Golem kartını al. Oyuncu tur 1'de ikinci Golem'i almışsa metin "Bir Kaya Golemi daha al." olur ve tek kart vurgulanır.
 - Geçiş: tahtada Kaya Golemi ★2 var.
-- Birleşme animasyonu (`ARAYUZ_TASARIM.md` 6) bittikten sonra Golem'in bilgi kartı 2,5 sn kendiliğinden açılır. Kartta can ve saldırı eski ve yeni değerle görünür: "Can 820 → 1 476 · Saldırı 48 → 86".
+- Birleşme animasyonu (`ARAYUZ_V2.md` §6.4) bittikten sonra Golem'in bilgi kartı 2,5 sn kendiliğinden açılır. Kartta can ve saldırı eski ve yeni değerle görünür: "Can 820 → 1 476 · Saldırı 48 → 86".
 - Sonra: "★2 kahraman 1,8 kat güçlüdür. Üç ★2 de ★3 yapar (3 kat)."
 - Takıldıysan: "Parlayan iki Golem kartına sırayla dokun."
 
 **Adım 5: KUT**
 - Savaş öncesi okuma yok. Oyuncu SAVAŞA!'ya kendisi basar; vurgu yalnız düğmede.
-- Açılan: Kut madalyonu (savaş ekranı sağ alt). İlk 3 sn madalyon gri ve kilitlidir.
-- **3,0. sn**: öğretici **motoru ve görüntüyü durdurur**. Motor görüntüden 0,4 sn önde koştuğu için (`ANIMASYON_PLANI.md`) durdurma motordan yapılır; Kut dokunuşu motorun o anki `t` değerine yazılır. Madalyon açılır (bölüm 1.4).
+- Açılan: KUT düğmesi (savaş ekranı sağ alt, `ARAYUZ_V2.md` §7). İlk 3 sn düğme gri ve kilitlidir.
+- **3,0. sn** (motor zamanı): öğretici **motoru ve görüntüyü durdurur**. Motor görüntüden 0,4 sn önde koştuğu için (`ANIMASYON_PLANI.md`) durdurma motordan yapılır; Kut dokunuşu motorun o anki `t` değerine yazılır, görüntü motoru yakalayana kadar ışık sütunu "toplanma" efektini oynatır. Düğme açılır (bölüm 1.4).
 - Metin: "Bu senin **Kut** gücün: her savaşta bir kez, bir kahramanının manasını anında doldurur. KUT'a dokun."
-- Vurgu: Kut madalyonu. Eylem: dokun → Kut seçim kipi açılır (bölüm 4.4).
+- Vurgu: KUT düğmesi. Eylem: dokun → Kut seçim kipi açılır (bölüm 4.4). Bu adımda motor durduğu için kipin 3 sn zaman aşımı işlemez.
 - İkinci metin: "Şimdi **Kaya Golemi**'ne dokun. Kaya Fırlat hemen patlayacak."
 - Vurgu: Golem'in ayağındaki altın halka. Eylem: Golem'e dokun.
 - Geçiş: motorda `kut` olayı oluştu. Savaş 1× hızla sürer.
 - Kut animasyonu biter bitmez bant çıkar: "Kut, mana dolmasını beklemeden yeteneği açar. Sersemlemiş düşmana bak."
 - Savaş sonunda: "Kut'u **doğru anda** kullanmak savaşı çevirir. Kalabalığa sersemletme, ölmek üzere olana kalkan gibi."
-- Takıldıysan: "Önce sağ alttaki büyük altın KUT düğmesine, sonra Golem'e dokun."
+- Takıldıysan: "Önce sağ alttaki büyük altın KUT düğmesine, sonra Golem'e dokun." Çift dokunuş ve sürükleme kestirmeleri de adımı geçirir.
 - Not: Oyuncu Kut'u Golem yerine başka bir kahramana verirse adım yine geçer; metin "Kut'u Rüzgâr Ruhu'na verdin: Kasırga hemen esti." biçiminde o kahramanın yetenek adıyla yazılır.
 
 **Tur 2 sonu (adım değil, bildirim)**: +2 deneyim gelir ve Sv 3 olunur. Tahtada üçüncü hücre açılma animasyonuyla aydınlanır. Bant: "Seviye 3: takımına 1 kahraman daha koyabilirsin." Seviye kavramı tur 5'te ayrıca anlatılır; burada yalnız sonucu gösterilir.
@@ -215,25 +217,26 @@ Her adım şu alanları taşır: **metin** (rehber balonu), **vurgu** (spot ış
 #### Tur 3
 
 **Adım 6: Soy**
-- Açılan: soy paneli (sol alt).
+- Açılan: soy izleyici (sol sütun, `ARAYUZ_V2.md` §4.8).
 - Metin: "Her kahramanın iki **soyu** var. Aynı soydan 2 kahraman koyarsan soy gücü açılır."
-- Vurgu: Rüzgâr Ruhu'nun Gök simgesi ve soy panelindeki "Gök 1/2" satırı. Okuma için kısa bir "Tamam".
+- Vurgu: Rüzgâr Ruhu'nun Gök simgesi ve soy izleyicideki "Gök 1/2" satırı. Okuma için kısa bir "Tamam".
 - İkinci metin: "**Davulcu Kurbağa** da Gök. Onu al ve takıma koy: Gök kahramanları %15 hızlı vurur."
 - Vurgu: dükkân kart 1 (Kurbağa). Kartın Gök simgesi bu adımda altın halkalıdır. Parmak: dokun.
 - Eylem: Kurbağa'yı al. Tahtada boş hücre (Sv 3) olduğu için tahtaya iner. Ön sıraya inerse adım 2'deki kural için kısa bir ek balon çıkar: "Kurbağa da uzaktan vurur: arkaya al." Bu adımın parçasıdır, ayrı adım sayılmaz.
 - Geçiş: `soySay(takim).gok.seviye ≥ 1`.
 - Soy satırı altın yanar, eşik kutusu `[2]` dolar, satırın altında "Gök kahramanları +%15 saldırı hızı" yazısı belirir.
-- Sonra: "Eşikler 2 ve 4. Panel hangi soyun kaç kahramanı olduğunu hep gösterir."
+- Sonra: "Eşikler 2, 4 ve 6. Sol sütun hangi soyun kaç kahramanı olduğunu hep gösterir." (6. eşik soy denge işi bitene kadar veride yoksa metin "Eşikler 2 ve 4." olarak kalır; `OYNANIS_DERINLIK.md` §7.3.4.)
 - Takıldıysan: "Sol üst köşesinde bulut simgesi olan karta dokun."
 
 **Adım 7: Rakibi önceden görme**
-- Açılan: rakip paneli (sol üst). Panel soldan kayarak gelir, yakut ışıma bir kez parlar.
-- Metin: "Sıradaki **rakibini** savaştan önce görürsün. Paneline dokun, ne kurduğuna bak."
-- Vurgu: rakip paneli. Eylem: dokun → rakip bilgi kartı açılır (bölüm 3.5).
-- Kartın "Tehdit" ve "Karşı fikir" satırları bu adımda altın çerçevelidir. Örnek metin: "Tehdit: önde Kaya Golemi, %20 az hasar alır. Karşı fikir: arkadan vuranlar onu uzun sürede indirir; önce Kurt'a yüklen."
+- Açılan: rakip kartı (sol üst, `ARAYUZ_V2.md` §4.3). Kart soldan kayarak gelir, yakut ışıma bir kez parlar.
+- Metin: "Sıradaki **rakibini** savaştan önce görürsün. Kartına basılı tut: takımı tahtanın karşısında belirir."
+- Vurgu: rakip kartı ve tahtanın rakip yarısı. Eylem: basılı tut (≥ 300 ms) → rakip takımı mor hayaletler olarak belirir.
+- İkinci metin: "Şimdi karta bir kez dokun: ne kurduğunu oku." Eylem: kısa dokunuş → rakip kartı tam hâliyle açılır (bölüm 3.6; Çıraklık'ta Gözcü'nün yalnız ilk bölümü).
+- Kartın "Tehdit" ve "Karşı fikir" satırları bu adımda altın çerçevelidir. Örnek metin: "Tehdit: önde Kaya Golemi, Taş Deri ile %20 az hasar alır. Karşı fikir: arkadan vuranlar onu uzun sürede indirir; önce Kurt'a yüklen."
 - Geçiş: oyuncu kartı kapattı.
 - Sonra: "Her tur rakibine göre dizilişini değiştirebilirsin."
-- Takıldıysan: "Sol üstteki kırmızı panele dokun."
+- Takıldıysan: "Sol üstteki kırmızı karta parmağını bastır ve bekle."
 
 **Adım 8: Savaş özeti**
 - Savaş sonu bandında "Devam"ın solunda **Özet** düğmesi (mor, 140×58) açılır.
@@ -247,7 +250,7 @@ Her adım şu alanları taşır: **metin** (rehber balonu), **vurgu** (spot ış
 **Adım 9: Eşya**
 - Hazırlık başında tahtanın ortasına ganimet küresi düşer.
 - Metin: "Bir **ganimet**! Dokun, içindeki eşya parçaları rafa insin."
-- Vurgu: küre. Eylem: dokun. Açılan: eşya rafı (tahtanın solunda dikey, `OYNANIS_DERINLIK.md` 9).
+- Vurgu: küre. Eylem: dokun. Açılan: eşya rafı (geniş düzende sağ sütunda lobinin yerinde, kompakt düzende sol altta; `ARAYUZ_V2.md` §3.3). Çıraklık'ta lobi olmadığı için geniş düzende raf sağ sütunun üstüne çıkar.
 - İkinci metin: "Bunlar **bileşen**. Yürek'i Kaya Golemi'nin üstüne sürükle."
 - Vurgu: raftaki Yürek ve Golem. Parmak: sürükle. Sürükleme sırasında Golem'in üstünde baloncuk: "Yürek · +180 can".
 - Üçüncü metin: "Şimdi **Kabuk**'u da Golem'e ver. İki bileşen birleşip tam eşya olur."
@@ -257,23 +260,23 @@ Her adım şu alanları taşır: **metin** (rehber balonu), **vurgu** (spot ış
 - Takıldıysan: "Raftaki parçaya basılı tut, Golem'in üstüne bırak."
 
 **Adım 10: Alamet**
-- Açılan: alamet şeridi (üst çubuk). Şerit kızıl degradeyle açılır, ay simgesi bir kez dolar.
-- Metin: "Her turun bir **alameti** var: o turun kuralı. Bu tur Kan Ayı. Şeride dokun."
-- Vurgu: alamet şeridi. Eylem: dokun → alamet kartı açılır (bölüm 3.4). Kartın "Senin takımına" satırı vurgulanır: "Herkes %20 fazla vurur: sen de, rakip de. Savaş kısa ve sert geçer."
+- Açılan: alamet hapı (üst orta şerit, `ARAYUZ_V2.md` §4.10). Tur başında alamet kartı ortada açılır ve haba uçar (§6.5); hap kızıl degradeyle açılır, ay simgesi bir kez dolar.
+- Metin: "Her turun bir **alameti** var: o turun kuralı. Bu tur Kan Ayı. Haba dokun."
+- Vurgu: alamet hapı. Eylem: dokun → alamet kartı açılır (bölüm 3.4). Kartın "Senin takımına" satırı vurgulanır: "Herkes %20 fazla vurur: sen de, rakip de. Savaş kısa ve sert geçer."
 - Geçiş: kart kapandı.
 - Sonra: "Sağdaki soluk simge sıradaki turun alameti. Ona göre hazırlan."
 
 #### Tur 5
 
 **Adım 11: Seviye**
-- Açılan: seviye rozeti ("Sv 3 · 4/6"), Deneyim Al düğmesi (Yenile'nin üstünde), altın rozetinin faiz göstergesi.
+- Açılan: seviye bloğu ("Sv 3 · 4/6") ve altındaki Deneyim Al düğmesi (dükkân şeridinin en solu), altın bloğunun faiz boncukları.
 - Metin: "Bu senin **seviyen**. Seviye kadar kahraman koyabilirsin. Deneyim Al'a dokun: 4 altın = 4 deneyim."
-- Vurgu: Deneyim Al ve seviye rozeti. Eylem: bir kez dokun.
+- Vurgu: Deneyim Al ve seviye bloğu. Eylem: bir kez dokun.
 - Geçiş: Sv 4.
-- Seviye atlayınca: tahtada dördüncü hücre açılır, seviye rozeti altın parlar, dükkân başlığındaki olasılık satırı değişim animasyonuyla güncellenir ("K1 %75 → %55 · K2 %25 → %40 · K3 %0 → %5").
+- Seviye atlayınca: tahta sayacı "3/4" olur, seviye dairesi altın parlar ve dairenin üstünde olasılık tablosu 3 sn kendiliğinden açılır, değişen hücreler animasyonla güncellenir ("K1 %75 → %55 · K2 %25 → %40 · K3 %0 → %5").
 - Sonra: "Seviye yükseldikçe takımın büyür ve dükkâna güçlü kahramanlar daha sık gelir. Boş yere bir kahraman koy."
 - Ardından (adımın parçası, ayrı kavram sayılmaz): boş hücre kesikli altın çerçeveyle "Buraya bir kahraman" der; oyuncu yedekten ya da dükkândan bir kahraman koyunca adım biter.
-- Takıldıysan: "Dükkânın solundaki yukarı oklu düğmeye dokun."
+- Takıldıysan: "Dükkânın en solundaki mor Deneyim Al düğmesine dokun."
 - Not: Faiz bu adımda **anlatılmaz**. Faiz göstergesi görünür ama ilk açıklaması tur 6 hazırlığında İpucu H03 olarak gelir (bölüm 5.4). Böylece adım tek kavramda kalır.
 
 #### Tur 6
@@ -281,20 +284,20 @@ Her adım şu alanları taşır: **metin** (rehber balonu), **vurgu** (spot ış
 **Adım 12: KAYNAŞTIR**
 - Metin: "Şimdi oyunun en güzel hilesi. Dükkândan **Kristal Kurt** ve **Sis Yarasası**'nı al."
 - Vurgu: kart 1 ve 2. Eylem: ikisini al (oyuncuda zaten varsa o kart atlanır).
-- İkinci metin: "Kristal Kurt'a dokun, sonra **KAYNAŞTIR**'a bas."
-- Açılan: seçili kahraman panelindeki KAYNAŞTIR düğmesi. Vurgu: önce Kurt, sonra düğme.
-- Üçüncü metin: "Şimdi Sis Yarasası'na dokun. İlki **yeteneğini**, ikincisi **pasifini** verir."
-- Uygun yuvalar pembe kesikli halkayla nabız atar. Kaynaşma şeması önizlemesi büyür: `[Kurt] + [Yarasa] = Uluma + Can Emici · Çevik, Avcı, Karanlık, Su`.
+- İkinci metin: "Sis Yarasası'nı sürükle, **Kristal Kurt**'un üstünde bekle."
+- Açılan: kaynaştırma bekletmesi (`ARAYUZ_V2.md` §4.2). Vurgu: Yarasa (kaynak) ve Kurt (hedef) birlikte. Parmak: Yarasa'dan Kurt'a sürükle, hedefte 500 ms dur.
+- Hedefte durunca pembe halka 500 ms'de dolar ve etiket "Bırak: Kaynaştır · Kristal Kurt × Sis Yarasası · 3 altın" olur. Bant: "Pembe halka dolunca bırak."
+- Üçüncü metin (onay kartı açıkken, `ARAYUZ_V2.md` §4.4): "Üstüne koyduğun **Kurt** yeteneğini ve gövdesini, taşıdığın **Yarasa** pasifini verir. KAYNAŞTIR'a bas." Formül satırı: `[Kurt · Uluma] + [Yarasa · Can Emici] = Kurt × Yarasa · Çevik, Avcı, Karanlık, Su`. "Rolleri çevir" düğmesi bu adımda görünür ama vurgulanmaz.
 - Geçiş: kaynaşmış birim oluştu.
 - Kaynaşma animasyonundan sonra kart 3 sn açık kalır: "Kristal Kurt × Sis Yarasası · Yetenek: Uluma · Pasif: Can Emici · 4 soy". Ardından ilk melez rozeti "Yeni kaynaşma!" çıkar.
 - Sonra: "İki farklı kahraman tek kahraman oldu ve dört soyu birden sayılır. Bedeli 2 + en yüksek kademe."
-- Takıldıysan: "Önce Kurt, sonra pembe düğme, sonra Yarasa."
-- Not: Oyuncu sırayı ters yaparsa (önce Yarasa) kaynaşma yine geçerlidir; metin sonuçta "Yarasa × Kurt: yetenek Can Emme, pasif Sürü" diye doğru adları yazar.
+- Takıldıysan: "Yarasa'yı Kurt'un üstüne taşı ve parmağını kaldırmadan bekle."
+- Not: Oyuncu Kurt'u Yarasa'nın üstüne bırakırsa ya da onay kartında rolleri çevirirse kaynaşma yine geçerlidir; metin sonuçta "Yarasa × Kurt: yetenek Can Emme, pasif Sürü" diye doğru adları yazar. İki kahraman da K1 olduğu için bedel 3'tür; altın güvencesi bunu karşılar.
 
 #### Tur 7
 
 **Adım 13: Kendi başına**
-- Açılan: Yenile, Kilitle, Sat düğmeleri. Bağlamsal ipuçları (bölüm 5) açılır.
+- Açılan: Yenile, Kilitle ve sürüklemede satış alanı (dükkân şeridine sürükleyip bırakınca satılır, 4 sn "Geri al"). Bağlamsal ipuçları (bölüm 5) açılır.
 - Metin: "Artık her şey açık. Bu son alıştırma: rakip Karanlık kurmuş, ona göre diz ve kazan!"
 - Düğme: "Tamam". Vurgu yok.
 - Bu turda öğretici hiçbir eylemi zorlamaz. Bağlamsal ipuçları **Çok** kipinde çalışır.
@@ -302,7 +305,7 @@ Her adım şu alanları taşır: **metin** (rehber balonu), **vurgu** (spot ış
 
 ### 2.5 Çıraklık sonu ekranı
 
-- Maç sonu kartının (`ARAYUZ_TASARIM.md` 4.4) öğretici sürümüdür. Şeritte "ÇIRAKLIK TAMAM" yazar.
+- Maç sonu kartının (`ARAYUZ_V2.md` §8.5) öğretici sürümüdür. Şeritte "ÇIRAKLIK TAMAM" yazar.
 - Sol sütunda **öğrendiklerin** listesi yer alır. Her satır simge ve tek cümledir; 13 adımın kavramları 7 satırda toplanır:
   1. Kahraman al, önde dayananlar, arkada uzaktan vuranlar.
   2. 3 aynı kahraman → ★2, 3 tane ★2 → ★3.
@@ -323,16 +326,16 @@ Her adım şu alanları taşır: **metin** (rehber balonu), **vurgu** (spot ış
 | Kimlik | Tetik | Metin | Vurgu |
 |---|---|---|---|
 | IK1 Lobi | İlk Arena maçı, 1-1 hazırlığı | "Bu lobide sen ve 7 hayalet var. **Hayalet**, başka bir oyuncunun gerçek maç kaydıdır. Herkes 100 canla başlar; son kalan kazanır." | Lobi şeridi (sağ kenar) |
-| IK2 Bölüm haritası | İlk Arena maçı, 1-1 | "Üstteki iz bu bölümün turlarını gösterir: kılıç savaş, pençe canavar, deve Kervan, güneş Armağan." | Bölüm haritası |
-| IK3 Faiz | İlk kez altın ≥ 10 olunca | "Her 10 altın için turda +1 faiz gelir, en çok +5. Harcamadan önce sikkelere bak." | Altın rozetinin 5 sikke yuvası |
-| IK4 Seri | İlk kez 2 PvP üst üste aynı sonuç | "Üst üste kazanmak da kaybetmek de **seri** altını getirir: 2'de +1, 3–4'te +2, 5+'ta +3." | Seri simgesi |
+| IK2 Bölüm haritası | İlk Arena maçı, 1-1 | "Üstteki iz bu bölümün turlarını gösterir: kılıç savaş, kafatası canavar, bayrak Kervan, yıldız Armağan." | Bölüm haritası |
+| IK3 Faiz | İlk kez altın ≥ 10 olunca (bölüm 2 ve sonrası) | "Her 10 altın için turda +1 faiz gelir, en çok +5. Harcamadan önce boncuklara bak." | Altın bloğunun 5 faiz boncuğu |
+| IK4 Seri | İlk kez 2 PvP üst üste aynı sonuç | "Üst üste kazanmak da kaybetmek de **seri** altını getirir: 2'de +1, 3–4'te +2, 5+'ta +3." | Seri hapı |
 | IK5 Kut Armağanı | İlk 2-1 | "**Kut Armağanı**: üç karttan birini seç. Bu maç boyunca seninle kalır. Her aşamada 1 kez yenileyebilirsin." | Armağan kartları |
 | IK6 Kervan | İlk 2-4 | "**Kervan**: üstünde eşya olan kahramanlardan birini seç. Sıralamada gerideysen daha çok seçeneğin olur." | Kervan seçenekleri |
-| IK7 Gözcü | İlk 2-2 hazırlığı | "Rakip panelini kaydır: lobideki diğer 6 hayaletin geçen turki takımı **Gözcü**'de." | Rakip paneli kaydırma tutamağı |
+| IK7 Gözcü | İlk 2-1 hazırlığı (Armağan seçiminden sonra) | "Rakip kartına basılı tut: takımı tahtada belirir. Bir kez dokun: **Gözcü** açılır, diğer 6 hayaletin takımı da orada." | Rakip kartı |
 | IK8 Havuz | İlk kez bir kartta "Havuzda ≤ 6" | "Her kahramanın sınırlı kopyası var; hayaletler de aynı havuzdan alır. Az kalan kahramanı ★3 yapmak zordur." | Kart altındaki havuz yazısı |
 | IK9 Gün Batımı | İlk kez bir savaş 20. sn'yi geçince | "**Gün Batımı**: 20. saniyeden sonra bütün hasar her saniye %10 artar." | Skor bileşenindeki süre kutusu |
 | IK10 Kut Yankısı | İlk kez eşyalı bir birim varken Kut seçim kipi | "Eşyalı kahramana verilen Kut **yankı** yapar: her bileşen ek bir etki katar. Simgeler neyi kazanacağını gösterir." | Birimlerin üstündeki yankı simgeleri |
-| IK11 Hasar | İlk PvP yenilgisi | "Kaybedince bölüm tabanı + rakibin ayakta kalan kahramanları kadar can gider. Savaşa! altında tahmini yazar." | Can çubuğu ve Savaşa! altı |
+| IK11 Hasar | İlk PvP yenilgisi | "Kaybedince bölüm tabanı + rakibin ayakta kalan kahramanlarının yıldızları kadar can gider. SAVAŞA altında tahmini yazar." | Lobideki kendi satırın ve SAVAŞA altı |
 | IK12 Söküm Taşı | İlk kez rafa gelince | "**Söküm Taşı** bir kahramanın bütün eşyalarını rafa geri indirir." | Taş |
 
 ---
@@ -341,13 +344,13 @@ Her adım şu alanları taşır: **metin** (rehber balonu), **vurgu** (spot ış
 
 ### 3.1 Ortak davranış
 
-- **Açılma**:
-  - Dükkân kartı: uzun bas (350 ms). Dokunmak satın alır.
-  - Tahta ve yedek birimi: dokun. Seçer ve sağdaki Seçili kahraman panelini doldurur; bu panel kahraman kartının kendisidir.
+- **Açılma** (eşikler `ARAYUZ_V2.md` §4.2):
+  - Dükkân kartı: basılı tut (300 ms) → kısa kart. Dokunmak satın alır.
+  - Tahta ve yedek birimi: basılı tut (300 ms) → kısa kart, parmak kalkınca kapanır; kısa dokunuş → tam kart (bu bölümün şablonları), dışarı dokununca kapanır. Asıl oyunda ayrı bir "Seçili kahraman" paneli yoktur.
   - Rakip mini tahtası, soy satırı, alamet şeridi, eşya, armağan, durum simgesi ve lobi şeridi portresi: dokun.
   - Savaşta birim: dokun. Kut seçim kipi açıksa dokunuş Kut verir, değilse kart açar (bölüm 4.4).
-- **Yerleşim**: Kart, açan öğenin yanında açılır ve onu örtmez. Yüzen kartlar en çok 440×520 px boyutundadır, ince panel kullanır ve kuyruğu öğeye bakar. Dışarı dokununca kapanır. Savaşta yüzen kart savaşı durdurmaz; birim ölürse kart "Düştü" etiketiyle gri kalır.
-- **Yazı**: Başlık 19 px Black. Gövde 14 px Bold (tablet okunurluğu için `ARAYUZ_TASARIM.md`'deki 12–13 px gövde, kartlarda 14 px'e çıkar). Sayılar Black kalınlıktadır. Etiketler 12 px `soluk` renktedir.
+- **Yerleşim**: Kahraman kartları (tahta, yedek, dükkân, rakip hayaleti, savaşta birim) `ARAYUZ_V2.md` §5 konum kuralına uyar: kahramanın karşı yarısındaki yan sütunun üstüne, 300 px genişlikte açılır, tahtayı ve kahramanı örtmez. Diğer yüzen kartlar açan öğenin yanında açılır, onu örtmez, en çok 440×520 px'tir, ince panel kullanır ve kuyruğu öğeye bakar. Dışarı dokununca kapanır. Savaşta yüzen kart savaşı durdurmaz; birim ölürse kart "Düştü" etiketiyle gri kalır.
+- **Yazı** (`ARAYUZ_V2.md` §3.2): Başlık 19 px Black. Gövde 15 px Bold. Sayılar Black kalınlıktadır. Etiketler 13 px `soluk` renktedir. 13 px'in altına inilmez.
 - **Sayı biçimi**: Türkçe biçim kullanılır: binlik ayraç boşluk (1 476), ondalık virgül (0,85), yüzde işareti önde (%20). Süre "1,5 sn".
 - **Renk dili**: Yetenek `safir` sol çizgi. Pasif `ametist`. Soy altın. Eşya `kor-altın` (`k3`). Durum kategorisinin rengi bölüm 4.3'te.
 - **Kart içi bağlantı**: Kart metnindeki terimler (soy adı, durum adı, "yetenek gücü") altı noktalı çizilir. Dokununca o terimin kartı ikinci katman olarak açılır. En çok 2 katman açılır, üçüncüsü ikincinin yerini alır.
@@ -517,7 +520,7 @@ Son karşılaşma: {Tur 3-2: kazandın | kaybettin | ilk kez}
 
 ### 3.7 Armağan ve canavar kartları
 
-- **Armağan**: başlık, kademe (Kıvılcım / Alev / Güneş, bkz. 7.3), tek cümle etki ve "Neden seç?" satırı (`OYNANIS_DERINLIK.md` 6.1). Alınmış armağanlar oyuncunun avatarının altında simge sırası olarak durur; dokununca bu kart açılır.
+- **Armağan**: başlık, kademe (Kıvılcım / Alev / Güneş, bkz. 7.3), tek cümle etki ve "Neden seç?" satırı (`OYNANIS_DERINLIK.md` 6.1). Alınmış armağanlar seviye bloğunun üstünde 32 px'lik rozetler olarak durur (`ARAYUZ_V2.md` §4.12); dokununca bu kart açılır.
 - **Canavar**: ad, can, saldırı, hız, menzil, yetenek ya da pasif, ve "Ganimet: {bu turun ganimeti}". Soy satırı yerine "Canavarların soyu yok" yazar.
 
 ---
@@ -526,7 +529,7 @@ Son karşılaşma: {Tur 3-2: kazandın | kaybettin | ilk kez}
 
 ### 4.1 Birim üstü düzeni
 
-`ARAYUZ_TASARIM.md` 4.3 geçerlidir. Ek kurallar:
+`ARAYUZ_V2.md` §7 geçerlidir (çubuk boyu, sayı boyları). Ek kurallar ve renk sözlüğü bu bölümdedir; `ANIMASYON_PLANI.md` §5'teki eski sayı renkleri yerine bu bölüm uygulanır:
 
 - **Takım halkası**: her birimin ayağında 4 px elips halka. Dost `#3FD68F` alfa 0,55, düşman `#FF3D63` alfa 0,55. Kut seçim kipinde dost halkası altın olur ve nabız atar.
 - **Uçan sayı rengi**:
@@ -544,22 +547,21 @@ Son karşılaşma: {Tur 3-2: kazandın | kaybettin | ilk kez}
 
 ### 4.2 Kim kime vuruyor
 
-1. **Hedef değişimi izi**: Bir birim yeni hedef seçince (motorda `u.hedef` değişince) saldırgandan hedefe 300 ms'lik ince bir iz çizilir. İz 2 px, takım rengi, saldırgandan hedefe doğru söner. Yalnız 1× ve 2× hızda gösterilir.
+1. **Hedef değişimi izi**: Bir birim yeni hedef seçince (motorda `u.hedef` değişince) saldırgandan hedefe 300 ms'lik ince bir iz çizilir. İz 2 px, takım rengi, saldırgandan hedefe doğru söner.
 2. **Mermi**: Menzilli vuruşlarda mermi zaten hedefe gider (`ANIMASYON_PLANI.md`). Mermi rengi saldırganın soy rengidir.
 3. **Seçili birim**: Savaşta bir birime dokununca kartı açılır (bölüm 3). Kart açıkken o birimden hedefine kalıcı kesikli çizgi çizilir ve hedefin ayağına beyaz nişan halkası konur. Birim hedef değiştirdikçe çizgi güncellenir.
-4. **Olay şeridi**: Sol kenarda, ayakta kalanlar panelinin üstünde en çok 3 satır. Satırlar 4 sn kalır, yenisi üstten iter. Yalnız şu olaylar yazılır:
+4. **Olay şeridi**: Sol kenarda, etkin soy haplarının altında (`ARAYUZ_V2.md` §7) en çok 3 satır. Satırlar 4 sn kalır, yenisi üstten iter. Yalnız şu olaylar yazılır:
    - **Ölüm**: `[saldırgan portresi] → [ölen portresi, çarpı]`. Zaman içi hasar ile öldüyse saldırgan portresinin köşesinde alev ya da damla simgesi bulunur.
    - **Kut**: `[portre] KUT · {yetenek adı}`, altın zemin.
    - **Diriliş**: `[Anka] Küllerinden doğdu`.
    
-   3× hızda şerit gizlenir.
 
 ### 4.3 Yetenek balonu
 
 - Bir birim yeteneğini kullanınca (`fx tip: 'yetenek'`) başının üstünde balon çıkar: "{yetenek adı}!" 15 px Black.
   - Dost balonu altın zemin ve koyu yazıdır. Düşman balonu yakut kenar, koyu zemin ve beyaz yazıdır.
   - Kut ile patlayan yetenekte balon 1,4 kat büyür, solunda küçük güneş simgesi olur.
-- **Süre**: gerçek zamanda en az 0,9 sn (hız 3× olsa bile). Motor zamanında 1,2 sn.
+- **Süre**: gerçek zamanda en az 0,9 sn (hız 2× olsa bile). Motor zamanında 1,2 sn.
 - **Eşzamanlılık**: Aynı anda en çok 2 balon. Üçüncüsü sıraya girer. Sıradaki 0,6 sn içinde açılamazsa düşer. Kut balonu her zaman öne geçer.
 - **Etkilenenler**: Balon açılırken yeteneğin isabet ettiği birimler (bölüm 8.2'deki `hedefler` alanı) 200 ms beyaz parlar.
 
@@ -567,9 +569,9 @@ Son karşılaşma: {Tur 3-2: kazandın | kaybettin | ilk kez}
 
 Prototipte tuvale dokunmak Kut'u hemen harcar. Bu yanlışlıkla Kut harcamaya ve "birime dokunup bilgi alamama" sorununa yol açar. Asıl oyunda:
 
-- **Varsayılan, iki dokunuş**: Önce KUT madalyonuna dokunulur ve seçim kipi açılır: dost halkalar altın nabız atar, zaman %60 hıza iner. Sonra kendi kahramanına dokunulur ve Kut verilir. Kip açıkken madalyona yeniden dokunmak ya da 4 sn hiçbir şey yapmamak kipi kapatır.
-- **Sürükle**: Madalyondan kahramana sürüklemek tek hareketle Kut verir.
-- **Ayar**: "Tek dokunuşla Kut" (kip açmadan kahramana dokununca Kut). Varsayılan kapalıdır. İlk 10 maçtan sonra bir kez önerilir.
+- **Varsayılan, iki dokunuş**: Önce KUT düğmesine dokunulur ve seçim kipi açılır: dost halkalar altın nabız atar, görüntü 0,35 hıza iner (`ARAYUZ_V2.md` §7). Sonra kendi kahramanına dokunulur ve Kut verilir. Kip açıkken düğmeye yeniden dokunmak, boşluğa dokunmak ya da 3 sn (gerçek zaman) hiçbir şey yapmamak kipi kapatır.
+- **Kestirmeler**: KUT düğmesinden kahramana sürüklemek ya da kahramana çift dokunmak tek hareketle Kut verir.
+- **Ayar**: "Tek dokunuşla Kut" (kip açmadan kahramana dokununca Kut; bilgi kartı o zaman basılı tutmayla açılır). Varsayılan kapalıdır. İlk 10 maçtan sonra bir kez önerilir.
 - **Seçim kipinde birim üstü önizleme**: her dost birimin üstünde şunlar görünür:
   - Yeteneğinin adı.
   - Mana yüzdesi.
@@ -608,11 +610,11 @@ Gösterim önceliği bu sıradır: kontrol, zarar, zayıflatma, güçlendirme, k
 | (asıl oyun) kükreme | Kükreme | ünlem halkası, hedef olanın üstünde | Kontrol | "Yakındaki düşmanlar yalnız onu hedef alır." |
 | (asıl oyun) yankı | Yankı | bileşen simgeleri, 3 sn | Güçlendirme | Kut Yankısı'nın etkisi. |
 
-Soy bonusları birim üstünde **gösterilmez**; savaş öncesi soy panelinde ve özette görünür. Gün Batımı birime değil HUD'a yazılır: 20. sn'de süre kutusu kızıla döner ve altına "Hasar +%{10×n}" satırı eklenir.
+Soy bonusları birim üstünde **gösterilmez**; savaş öncesi soy izleyicide ve özette görünür. Gün Batımı birime değil HUD'a yazılır: 20. sn'de (Uzun Gölge'de 12.) süre kutusu kızıla döner ve altında "GÜN BATIMI ×1,3" hapı belirir (`ARAYUZ_V2.md` §7).
 
 ### 4.6 Savaş özeti
 
-**Açılış**: Sonuç bandındaki **Özet** düğmesi. Asıl oyunda hazırlık ekranında üst çubuktaki "Son savaş" simgesi de aynı ekranı açar; maçın bütün savaşları buradan geriye doğru seçilebilir.
+**Açılış**: Sonuç bandındaki **Özet** düğmesi. Asıl oyunda hazırlıkta bölüm haritasının geçmiş bir savaş karesine dokunmak da o savaşın özetini açar (`ARAYUZ_V2.md` §4.10); maçın bütün savaşları buradan geriye doğru seçilebilir. Dereceli maçta özet açıkken hazırlık sayacı durmaz.
 
 **Yerleşim** (tam ekran perde üstünde kalın panel, 1 040×640):
 
@@ -684,20 +686,20 @@ Kodeks → Kısa dersler'de "Susturulmuş ipuçlarını sıfırla" düğmesi bul
 |---|---|---|---|---|---|
 | H01 Boş yuva | 1 | Hazırlıkta tahtadaki kahraman < seviye ve yedekte kahraman var | "Takımında {k} boş yer var: yedekten kahraman taşı." | Boş tahta hücresi | İpucusuz, savaştan önce boş yuvayı doldurdu |
 | H02 Menzilli önde | 2 | Menzili ≥ 2 bir birim ön sırada, aynı takımda menzili 1 bir birim arka sırada | "{ad} uzaktan vurur: arka sıraya al, daha uzun yaşar." | İki birim | Menzilliyi arkaya taşıdı |
-| H03 Faiz eşiği | 3 | Altın `10k−1` ile `10k−2` arasında (k ≤ 5), bu tur yapılacak alım yok ve bölüm ≥ 2 | "{1|2} altın daha biriktirirsen sonraki tur +1 faiz gelir." | Faiz sikkeleri | Tur sonunu 10'un katında bitirdi (2 kez) |
+| H03 Faiz eşiği | 3 | Altın `10k−1` ile `10k−2` arasında (k ≤ 5), bu tur yapılacak alım yok ve bölüm ≥ 2 | "{1|2} altın daha biriktirirsen sonraki tur +1 faiz gelir." | Faiz boncukları | Tur sonunu 10'un katında bitirdi (2 kez) |
 | H04 ★2 yakın | 4 | Dükkânda, elde 1 kopyası olan bir kahraman kartı var ve altın ≥ 2 × kademe | "Bu kahramandan 2 tane daha alırsan ★2 olur." | O kart | İkinci kopyayı aldı |
 | H05 ★2 tek adım | 4 | Dükkânda, elde 2 kopyası olan kart var ve altın ≥ kademe | "Bunu alırsan üçü birleşir: {ad} ★2." | O kart (zümrüt ışıma) | Üçüncü kopyayı aldı |
 | H06 Deneyim | 5 | Altın ≥ 4, sonraki seviyeye ≤ 4 deneyim kaldı, alım faiz eşiğinin altına düşürmüyor (`altin − 4 ≥ 10 × floor(altin/10)` ya da altın ≥ 54) | "Altının yetiyor: deneyim al, Sv {s+1} olursun ve {s+1} kahraman koyarsın." | Deneyim Al | Deneyim aldı |
 | H07 Soy bir eksik | 6 | Bir soy `n = eşik − 1` ve dükkânda o soyu taşıyan, elde olmayan bir kart var | "{soy} 1 eksik: bu kart {soy} {eşik}'yi açar." | Kart ve soy satırı | O soyun eşiğini tamamladı |
 | H08 Raf boşta | 7 | Rafta 2 tur boyunca takılmamış bileşen var | "Raftaki {bileşen} boşta duruyor: bir kahramanın üstüne sürükle." | Raftaki bileşen | Bileşen taktı |
 | H09 Kaynaştırma fırsatı | 8 | İlk 5 maç, yedekte iki farklı ★1 kaynaşmamış kahraman ve altın ≥ bedel | "Yedekteki {A} ve {B}'yi kaynaştırabilirsin: {A} yeteneği + {B} pasifi." | İki yuva | Kaynaştırma yaptı |
-| H10 Kut bekliyor | 9 | Savaşta 8. sn geçti, Kut kullanılmadı, ilk 10 maç; savaş başına 1 kez | "Kut hâlâ hazır: manası boş bir kahramanına ver." | Kut madalyonu | İlk 8 sn içinde Kut kullandı |
-| H11 Yedek dolu | 10 | Yedek dolu ve oyuncu bir karta dokundu ama yer yok | "Yedek dolu: birini sat ya da kaynaştır." | Sat ve KAYNAŞTIR | Yedeği boşalttı |
-| H12 Rakip soyu | 11 | Rakipte eşik ≥ 4 bir soy var | "Rakipte {soy} {n}: {soy metni}. {karşı fikir}" | Rakip paneli | Rakip kartını açtı |
-| H13 Alamet seni etkiliyor | 12 | Alamet kişisel satırı "Doğrudan etkilemiyor" değil | "{alamet}: {kişisel satır}" | Alamet şeridi | Alamet kartını açtı |
-| H14 Can düşük | 13 | Can < 30 ve altın ≥ 30 | "Canın az: altını şimdi harca, takımını güçlendir." | Altın rozeti | Bu durumda altını 20'nin altına indirdi |
+| H10 Kut bekliyor | 9 | Savaşta 8. sn geçti, Kut kullanılmadı, Kut Sessizliği yok, ilk 10 maç; savaş başına 1 kez | "Kut hâlâ hazır: manası boş bir kahramanına ver." | KUT düğmesi | İlk 8 sn içinde Kut kullandı |
+| H11 Yedek dolu | 10 | Yedek dolu ve oyuncu bir karta dokundu ama yer yok | "Yedek dolu: birini dükkâna sürükleyip sat ya da bir başkasının üstünde tutup kaynaştır." | Yedek sırası ve dükkân şeridi | Yedeği boşalttı |
+| H12 Rakip soyu | 11 | Rakipte eşik ≥ 4 bir soy var | "Rakipte {soy} {n}: {soy metni}. {karşı fikir}" | Rakip kartı | Rakip kartını açtı |
+| H13 Alamet seni etkiliyor | 12 | Alamet kişisel satırı "Doğrudan etkilemiyor" değil | "{alamet}: {kişisel satır}" | Alamet hapı | Alamet kartını açtı |
+| H14 Can düşük | 13 | Can < 30 ve altın ≥ 30 | "Canın az: altını şimdi harca, takımını güçlendir." | Altın bloğu | Bu durumda altını 20'nin altına indirdi |
 | H15 Kilitle | 14 | Dükkânda elde kopyası olan kart var, altın yetmiyor, tur sonuna 10 sn | "Kart kalsın istiyorsan dükkânı kilitle." | Kilitle | Kilitledi |
-| H16 Seri | 15 | 3'lük kaybetme serisi | "Kaybetme serisi de altın getirir: +2." | Seri simgesi | (bilgi; 1 kez) |
+| H16 Seri | 15 | 3'lük kaybetme serisi | "Kaybetme serisi de altın getirir: +2." | Seri hapı | (bilgi; 1 kez) |
 | H17 Kut Ocağı | 16 | Kut Ocağı takılı birim var ve Kut başka birime verildi (savaş sonrası) | "Kut Ocağı taşıyan {ad}'a verilen Kut 1,5 kat güçlü olur." | O birim | Kut'u Kut Ocağı taşıyana verdi |
 | H18 Kaynaşmış yıldız | 17 | Kaynaşmış A×B birimi var ve dükkânda A kartı var | "{A} kopyaları kaynaşmış {A}×{B}'yi ★2 yapar." | Kart | Kaynaşmış birimi yükseltti |
 | H19 Sat | 18 | Yedekte 3+ tur hiç kullanılmamış birim ve altın < 2 | "{ad} uzun süredir yedekte: satarsan {değer} altın." | Birim | Sattı |
@@ -706,7 +708,7 @@ Kodeks → Kısa dersler'de "Susturulmuş ipuçlarını sıfırla" düğmesi bul
 
 Bunlar ipucu sayılmaz, her zaman çalışır:
 - Tahtada hiç kahraman yoksa düğme pasiftir. Basınca titrer ve "Tahtaya en az 1 kahraman koy" der.
-- Boş yuva varken ve yedekte kahraman varken basılırsa düğme altında 2 sn "Boş yer var: yine de savaş?" sorusu çıkar; ikinci dokunuş onaylar. Dereceli maçta sayaç bitince boş yuvalar yedekten en yüksek değerli birimle kendiliğinden dolar ve bant bunu söyler: "Boş yerine {ad} kondu."
+- Boş yuva varken ve yedekte kahraman varken basılırsa düğme "Tahtada {k} boş yer var · yine de başla" der; 2 sn içinde ikinci dokunuş onaylar (`ARAYUZ_V2.md` §4.11). Dereceli maçta sayaç bitince boş yuvalar yedekten en yüksek değerli birimle kendiliğinden dolar ve bant bunu söyler: "Boş yerine {ad} kondu."
 - Asıl oyunda düğmenin altında "Kaybedersen ~{x} can" satırı bulunur (`OYNANIS_DERINLIK.md` 10.7).
 
 ---
@@ -715,7 +717,7 @@ Bunlar ipucu sayılmaz, her zaman çalışır:
 
 ### 6.1 Yapı
 
-- **Giriş**: ana ekrandaki "Kahramanlar" düğmesi **Kodeks** adını alır. Ayrıca her bilgi kartının sağ üstünde küçük kitap simgesi vardır; dokununca Kodeks o maddede açılır. Maç içinde açılırsa sayaç durmaz; Kodeks yarı saydam perde olarak açılır ve sol üstte kalan süre görünür.
+- **Giriş**: ana ekranın alt gezinme çubuğundaki **Koleksiyon** (Kahramanlar sekmesinde açar) ve **Rehber** (Temeller sekmesinde açar) düğmeleri (`ARAYUZ_V2.md` §8.1, §8.3). Ayrıca her bilgi kartının sağ üstünde küçük kitap simgesi vardır; dokununca Kodeks o maddede açılır. Maç içinde açılırsa sayaç durmaz; Kodeks yarı saydam perde olarak açılır ve sol üstte kalan süre görünür.
 - **Üst çubuk**: Geri, başlık "Kodeks", **arama kutusu** (ad, soy, eşya, durum ve sözlük terimlerinde arar; Türkçe büyük-küçük harf ve şapka duyarsızdır: "ruzgar" Rüzgâr'ı bulur), Ustalık rozeti.
 - **Sol sekme sütunu** (180 px, dikey): Temeller · Kahramanlar · Soylar · Eşyalar · Alametler · Armağanlar · Durumlar · Canavarlar · Melezler · Sözlük · Kısa dersler. Yeni içerik (sezonla gelen kahraman, ilk kez görülen eşya) sekmede yeşil nokta ile işaretlenir.
 - **İçerik alanı**: her sekmede sol liste ya da ızgara, sağda seçili maddenin kartı. Kart bölüm 3 şablonlarının **genişletilmiş** hâlidir: aynı alanlar, ayrıca aşağıdaki ek bilgiler.
@@ -729,7 +731,7 @@ Bunlar ipucu sayılmaz, her zaman çalışır:
 4. *Bize özgü dört şey*: Kut, Kaynaştırma, rakibi önceden görme, Alamet. Her biri tek cümle ve simgeyle.
 5. *Kazanmak*: "Herkes 100 canla başlar. Kaybedince can gider; son kalan birincidir. İlk 4'e girmek kupa getirir." Hızlı Maç'ta bu kart "5 can, 7 zafer" metniyle gösterilir.
 
-**Kahramanlar**: mevcut 4×4 ızgara (`ARAYUZ_TASARIM.md` 4.5) kalır. Ekler:
+**Kahramanlar**: ızgara `ARAYUZ_V2.md` §8.3'teki gibidir (4:3'te 4, 16:10'da 5 sütun). Ekler:
 - Filtreler: Kademe, Soy (10 simge, çoklu seçim), Menzil (yakın/uzak), Rol (Ön cephe / Vurucu / Büyücü / Destek). Rol, veriye eklenen `rol` alanıdır (bölüm 8.1).
 - Kahraman kartı (genişletilmiş):
   - 3D modelin döndürülebilir önizlemesi (yalnız bekleme animasyonu).
@@ -741,7 +743,7 @@ Bunlar ipucu sayılmaz, her zaman çalışır:
 
 **Soylar**: mevcut 10 satırlık liste. Satıra dokununca soy kartı (bölüm 3.3) açılır. Ekler: kapsam satırı, "Karşısında ne işe yarar" (bölüm 7.4 tablosu) ve "Bu soyla iyi giden eşyalar" (o soyun tema bileşeni ve 2 tam eşya).
 
-**Eşyalar**: 9×9 **tarif tablosu**. Başlık satırı ve sütunu 8 bileşen; hücrelerde tam eşya simgesi. Simetrik olduğu için üst üçgen soluk gösterilir. Hücreye dokununca tam eşya kartı açılır. Tablonun altında özel eşyalar (Söküm Taşı, Kut Taşı, Soy Mührü) ve "Kut Yankısı" açıklaması (8 bileşenin yankı tablosu) yer alır.
+**Eşyalar**: 8×8 **tarif tablosu** (başlık satırı ve sütunuyla 9×9 ızgara). Başlık satırı ve sütunu 8 bileşen; hücrelerde tam eşya simgesi. Simetrik olduğu için üst üçgen soluk gösterilir. Hücreye dokununca tam eşya kartı açılır. Tablonun altında özel eşyalar (Söküm Taşı, Kut Taşı, Soy Mührü) ve "Kut Yankısı" açıklaması (8 bileşenin yankı tablosu) yer alır.
 
 **Alametler**: 12 kart ızgarası. Kartta simge, ad, etki ve "Kimi sever / kimi zorlar" satırı. Örnek, Tipi: "Ayaz takımını sever, hızlı vuran Gök takımını zorlar."
 
@@ -924,7 +926,7 @@ Bu bölüm açıklayıcılığın gerektirdiği değişiklikleri listeler. Sava�
 4. **Soya `kapsam` alanı**: `'takim' | 'soy' | 'dusman'` (7.2) ve `karsi` metni (7.4). Eşik metinleri dizi olarak kalır, 6. eşik geldiğinde uzar.
 5. **Eşyaya `kimIcin` alanı** (3.4), 36 cümle.
 6. **Alamete `kisisel` kuralı**: koşul türü (`her`, `soyVar`, `soyYok`, `menzilli`) ve metin şablonu (3.5).
-7. **`OGRETICI` tablosu**: turlar (dükkân, gelir, alamet, ganimet, rakip), adımlar (kimlik, metin anahtarı, vurgu hedefi, eylem türü, geçiş koşulu, takıldıysan anahtarı, sonra anahtarı, açılan öğeler). Vurgu hedefleri arayüz öğe kimlikleriyle verilir (`dukkan.kart[0]`, `tahta.hucre[1,2]`, `kut.madalyon` …).
+7. **`OGRETICI` tablosu**: turlar (dükkân, gelir, alamet, ganimet, rakip), adımlar (kimlik, metin anahtarı, vurgu hedefi, eylem türü, geçiş koşulu, takıldıysan anahtarı, sonra anahtarı, açılan öğeler). Vurgu hedefleri arayüz öğe kimlikleriyle verilir (`dukkan.kart[0]`, `tahta.hucre[1,2]`, `kut.dugme`, `rakip.kart`, `seviye.deneyim` …).
 8. **`IPUCU_KURALLARI`** (5.4) ve **`ILK_KEZ`** (2.6) tabloları. Koşullar kod tarafında adlandırılmış işlevlerdir; tablo yalnız kimlik, öncelik, metin anahtarı ve vurgu hedefini taşır.
 9. `tools/csharp_veri.cjs` üreticisi yeni alanları da `KutVeri.cs`'e yazacak şekilde genişletilir.
 
@@ -974,7 +976,7 @@ Hepsi yalnız bilgi amaçlıdır. Hiçbiri `R()` çağırmaz ve hiçbir karar da
 - **Metin denetimi** (`test/metin.test.cjs`):
   - Bütün metin anahtarları tabloda tanımlıdır.
   - Balon metinleri 2 cümleyi ve cümle başına 90 karakteri aşmaz.
-  - Sözlükteki yasak eşleşmeler geçmez: görünen metinde "Yankı" yalnız "Kut Yankısı" içinde geçer; "Sv" yalnız oyuncu seviyesinde geçer.
+  - Sözlükteki yasak eşleşmeler geçmez: görünen metinde "Yankı" yalnız "Kut Yankısı" içinde geçer; "Sv" yalnız oyuncu seviyesinde geçer; "madalyon" yalnız kaynaşmış kahramanın ikinci portresi için geçer (Kut'un düğmesi "KUT düğmesi"dir); armağan kademesinde "Yıldız" geçmez.
 - **Tarayıcı testi** (`test/oyun.test.cjs` genişletilir): Playwright öğreticiyi baştan sona parmak hedeflerine dokunarak oynar, her adımın ekran görüntüsünü `test-out/ogretici_<adim>.png` olarak kaydeder.
 
 ### 9.2 Ölçüm (yayından sonra)

@@ -4,6 +4,7 @@ Bu belge, Unity'ye bağlı (bilgisayardaki) Claude oturumunun işi kaldığı ye
 
 ## 0. Yeni belgeler (önce bunları oku)
 
+- **`YOL_HARITASI.md`** (en önce): prototip ile asıl oyun arasındaki farklar, aşamalar ve hangi işin Unity'de yapılacağı. Asıl oyunun kuralları `OYNANIS_DERINLIK.md`, ekranları `ARAYUZ_V2.md` (aşağıdaki `ARAYUZ_TASARIM.md`'nin yapısal yerini alır; renk, yazı ve 9-slice belirteçleri orada kalır), öğretici ve bütün metinler `OGRETICI.md`'dedir.
 - **`ARAYUZ_TASARIM.md`**: tablet arayüzünün son tasarımı. Renk ve yazı belirteçleri, her ekranın yerleşimi (16:10 ve 4:3), bileşen durumları, 9-slice payları, geri bildirim animasyonları ve ChatGPT ile çizdirilecek 12 raster parçanın listesi. Görsel karşılığı `tasarim/final/index.html` (`?ekran=ana|mac|savas|son|kodeks`) ve `tasarim/final/shot_*.png`. Unity'de UGUI ile birebir kur.
 - **`ANIMASYON_PLANI.md`**: savaşın nasıl canlanacağı. Motor 0,4 sn önde, görüntü arkada; UAL kliplerinin darbe anları; 16 yaratığın saldırı ve yetenek animasyonları; dört ayaklı ve yılan için kodlu hareket kuralları; Kut, kaynaşma ve birleşme efektleri.
 - **Çalışan örnek (tarayıcı):** `web/` klasörü bu iki belgenin oynanır uygulaması. `web/sahne3d.js` (3D savaş: UAL aktarımı, dört ayaklı hareket, motor-önde zamanlama, efektler), `web/arayuz.js` (ekranlar), `web/oyun.js` (maç mantığı). Unity'de takıldığın her yerde önce buradaki çözüme bak: kemik eşlemesi, hangi klibin hangi anda başladığı, kamera açısı ve HUD aynıdır.
