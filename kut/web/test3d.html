@@ -1,0 +1,19 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>html,body{margin:0;height:100%;background:#1b1230;overflow:hidden}#t,#k{position:absolute;inset:0;width:100%;height:100%}#k{pointer-events:none}</style>
+<script type="importmap">{"imports":{"three":"../vendor/three/three.module.min.js"}}</script></head>
+<body><canvas id="t"></canvas><canvas id="k"></canvas>
+<script src="../data.js"></script><script src="../sim.js"></script><script src="../online.js"></script>
+<script type="module">
+import * as S3 from './sahne3d.js';
+const q=new URLSearchParams(location.search);
+const tur=+(q.get('tur')||7), tohum=+(q.get('tohum')||3);
+let A=KUT_ONLINE.botTakim(tur,tohum,0.6), B=KUT_ONLINE.botTakim(tur,tohum+50,0.6);
+if(q.get('takim')==='hepsi'){ const H=KUT_DATA.KAHRAMANLAR.map(h=>h.id); A=H.slice(0,6).map((h,k)=>({h,s:1+(k%3),x:k%3,y:Math.floor(k/3)})); B=H.slice(6,12).map((h,k)=>({h,s:1,x:k%3,y:Math.floor(k/3)})); }
+if(q.get('takim')==='hepsi2'){ const H=KUT_DATA.KAHRAMANLAR.map(h=>h.id); A=H.slice(10,16).map((h,k)=>({h,s:1,x:k%3,y:Math.floor(k/3)})); B=H.slice(0,6).map((h,k)=>({h,s:2,x:k%3,y:Math.floor(k/3)})); }
+await S3.hazirla(document.getElementById('t'), document.getElementById('k'));
+const sim=KUT_SIM.Savas(A,B,{tohum, alamet:'yok', yz:[1]});
+await S3.savasKur(sim);
+window.HAZIR=true; window.SAHNE=S3; window.SIM=sim;
+window.ilerlet=(sn)=>{ const n=Math.round(sn*60); let r; for(let i=0;i<n;i++){ r=S3.kare(1/60); } return r; };
+if(!q.get('elle')) (function d(){ S3.kare(); requestAnimationFrame(d); })();
+</script></body></html>
