@@ -73,7 +73,7 @@
     for (const id of liste) for (const i of sira) { const t = L.esyaTak(out[i], id); if (t) { out[i].e = t.e; break; } }
     return out;
   }
-  /** Bot izinin r. turu: { r, seviye, takim (x, y, e dahil), yedek: [], armagan: [], kut: null }. guc 0–1: ★2 ve eşya sayısı × (0,8 + 0,4 × guc).
+  /** Bot izinin r. turu: { r, seviye, takim (x, y, e dahil), yedek: [], armagan: [id…], kut: null }. guc 0–1: ★2 ve eşya sayısı × (0,8 + 0,4 × guc).
       Sevilen iki soy maç boyu aynı (tohumdan); kadro her tur o turun tohumuyla kurulur. ★ önce düşük kademelilere, kaynaşma yüksek kademelilere. */
   function botIzTur(tohum, guc, r) {
     const B = KURAL.botIz, eg = izEgri(Math.max(0, r + (guc - 0.5) * B.gucTur)), f = B.gucTaban + B.gucAdim * guc;
@@ -104,7 +104,8 @@
     const tam = Math.floor(eg[3] * f + 0.5), bil = r < 1 ? 0 : tam === 0 ? Math.min(B.bilesen, r) : 1, liste = [];
     for (let k = 0; k < tam; k++) liste.push(D.ESYALAR[Math.floor(R() * D.ESYALAR.length)].id);
     for (let k = 0; k < bil; k++) liste.push(D.BILESENLER[Math.floor(R() * D.BILESENLER.length)].id);
-    return { r, seviye: sv, takim: yerlestir(esyaYig(takim, liste)), yedek: [], armagan: [], kut: null };
+    // armağanlar (4.8): her aşamada (2-1, 3-2, 4-3) botun tohumuyla ilk kart
+    return { r, seviye: sv, takim: yerlestir(esyaYig(takim, liste)), yedek: [], armagan: lobiAl().botArmagan(tohum, r), kut: null };
   }
   function botIz(tohum, guc, n = 40) { return Array.from({ length: n }, (_, r) => botIzTur(tohum, guc, r)); }
   /** Kayıtlı izin r. turu (bölüm 4.7): r'ye kadarki en son tur (yoksa ilk tur). İz tükendiyse (r, izdeki son turdan büyük) her ek tur
@@ -128,7 +129,7 @@
     return { r, seviye: son.seviye || 0, takim, yedek: son.yedek || [], armagan: son.armagan || [], kut: son.kut || null };
   }
   /** Lobi için 7 iz (bölüm 4.7): önce verilen kayıtlar (kendi izi değil, kupa ±150, aynı sürüm; oyuncu başına en çok 1; ilk 4'e girmiş izler önde),
-      eksik kalan bot izi { ad, kupa, bot: {tohum, guc} }. Bot adları birbirinden farklı; güç kupadan (0,35 + kupa/2000), ±0,15 oynar. Saf, belirlenimci. */
+      eksik kalan bot izi { ad, kupa, bot: {tohum, guc} }. Bot adları birbirinden farklı; güç kupadan (0,35 + kupa/2000), ±0,25 oynar (0–1 arasında kırpılır). Saf, belirlenimci. */
   function lobiIzler(kupa, tohum, kayitlar, oyuncu, surum, adet) {
     if (adet == null) adet = KURAL.lobiBoyut - 1;
     const R = S.rng(tohum * 13 + 7), out = [], gorulen = [];
@@ -203,7 +204,7 @@
     yaz(l) { try { localStorage.setItem(ANAHTAR, JSON.stringify(l.slice(-300))); } catch (e) {} },
   };
   // Maç izleri (bölüm 4.7): yerel anahtar kut.iz.v2, en çok 60 iz
-  const IZ_ANAHTAR = 'kut.iz.v2', IZ_TAVAN = 60;
+  const IZ_ANAHTAR = 'kut.iz.v2', IZ_TAVAN = 60, IZ_GUN = 14;
   const yerelIz = {
     oku() { try { return JSON.parse(localStorage.getItem(IZ_ANAHTAR) || '[]'); } catch (e) { return []; } },
     yaz(l) { try { localStorage.setItem(IZ_ANAHTAR, JSON.stringify(l.slice(-IZ_TAVAN))); } catch (e) {} },
@@ -212,6 +213,7 @@
     /** Maç izini havuza yaz: {macId, oyuncu, ad, kupa, surum, sira?, turlar: [{r, seviye, takim, yedek, armagan, kut}]}.
         Tur sonunda kısmi, maç sonunda tam yazılır (aynı macId'nin üstüne). Uzak havuz KUT_UZAK.izYaz ile. */
     async izBirak(iz) {
+      iz = { ...iz, zaman: iz.zaman || Date.now() };   // lobi kurarken yalnız son 14 günün izleri alınır (bölüm 4.7)
       const l = yerelIz.oku().filter(z => z.macId !== iz.macId); l.push(iz); yerelIz.yaz(l);
       if (g.KUT_UZAK && g.KUT_UZAK.izYaz) try { await g.KUT_UZAK.izYaz(iz); } catch (e) {}
     },
@@ -221,7 +223,8 @@
       if (g.KUT_UZAK && g.KUT_UZAK.lobiBul && (typeof navigator === 'undefined' || navigator.onLine !== false)) {
         try { kayit = (await g.KUT_UZAK.lobiBul({ kupa, oyuncu, adet: KURAL.lobiBoyut - 1, surum })) || []; } catch (e) { kayit = []; }
       }
-      return lobiIzler(kupa, tohum, [...kayit, ...yerelIz.oku()], oyuncu, surum);
+      const sinir = Date.now() - IZ_GUN * 86400000, taze = (z) => !z || !z.zaman || z.zaman >= sinir;
+      return lobiIzler(kupa, tohum, [...kayit, ...yerelIz.oku()].filter(taze), oyuncu, surum);
     },
     // her tur sonunda çağrılır: kendi fotoğrafını havuza bırakır (başkalarının rakibi olur)
     async birak(kayit) { // {tur, kupa, takim, ad, oyuncu, mod, seviye?}

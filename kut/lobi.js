@@ -27,6 +27,7 @@
       if (!b) continue;
       say[b.h] = (say[b.h] || 0) + K.yildizKopya[b.s || 1];
       if (b.f) say[b.f] = (say[b.f] || 0) + 1;
+      if (b.f && b.f2) say[b.f2] = (say[b.f2] || 0) + 1; // Üçlü Kaynaşma'nın üçüncü kahramanı da 1 kopya
     }
     return say;
   }
@@ -74,15 +75,16 @@
   // ── Ekonomi (bölüm 3) ──
   function tabanGelir(r) { const p = turPlan(r); return p.bolum === 1 ? K.tabanGelirBolum1[p.tur - 1] : K.tabanGelir; }
   // Faiz gelir eklenmeden önceki altına göre: her 10 altına 1, en çok 5. Bölüm 1'de faiz yok.
-  function faiz(altin, r) { return turPlan(r).bolum === 1 ? 0 : Math.min(K.faizTavan, Math.floor(Math.max(0, altin) / K.faizAdim)); }
+  // tavan: faiz tavanı (Bereket Küpü armağanıyla 7; verilmezse 5).
+  function faiz(altin, r, tavan) { return turPlan(r).bolum === 1 ? 0 : Math.min(tavan || K.faizTavan, Math.floor(Math.max(0, altin) / K.faizAdim)); }
   // Seri bonusu: n = 0–1 → 0, 2 → 1, 3–4 → 2, 5+ → 3 (kazanma da kaybetme serisi de).
   function seriBonus(n) { return K.seriTablo[Math.max(0, Math.min(n, K.seriTablo.length - 1))]; }
   /** Hazırlık başı geliri. seri: {tip: 'G'|'M'|null, n}; galibiyet: önceki PvP savaşı kazanıldı mı; alamet: bu turun alameti.
       Kervan turunda gelir yoktur. */
-  function gelirHesapla(r, altin, seri, galibiyet, alamet) {
+  function gelirHesapla(r, altin, seri, galibiyet, alamet, faizTavan) {
     const g = { taban: 0, faiz: 0, seri: 0, galibiyet: 0, alamet: 0, toplam: 0 };
     if (turPlan(r).tip === 'kervan') return g;
-    g.taban = tabanGelir(r); g.faiz = faiz(altin, r); g.seri = seriBonus(seri ? seri.n : 0);
+    g.taban = tabanGelir(r); g.faiz = faiz(altin, r, faizTavan); g.seri = seriBonus(seri ? seri.n : 0);
     g.galibiyet = galibiyet ? K.galibiyetBonus : 0; g.alamet = alamet === 'pazar' ? K.pazarBonus : 0;
     g.toplam = g.taban + g.faiz + g.seri + g.galibiyet + g.alamet;
     return g;
@@ -124,7 +126,9 @@
 
   // ── Tur başı ve tur sonu: oyuncu durumu d = {altin, can, seri, galibiyet, seviye, xp} yerinde değişir ──
   // (oyun.js'te maç nesnesi M, lobide her oyuncu bu alanları taşır.)
-  function turBasi(d, r, alamet) { const g = gelirHesapla(r, d.altin, d.seri, d.galibiyet, alamet); d.altin += g.toplam; return g; }
+  // d.armagan (varsa): Bereket Küpü faiz tavanını 7 yapar.
+  function faizTavan(armagan) { return armagan && armagan.includes('bereketKupu') ? K.armaganSayi.bereketFaiz : K.faizTavan; }
+  function turBasi(d, r, alamet) { const g = gelirHesapla(r, d.altin, d.seri, d.galibiyet, alamet, faizTavan(d.armagan)); d.altin += g.toplam; return g; }
   /** Savaş sonucu (sim sonucu: kazanan, kalanPuan, kalanSayi) işlenir: hasar, seri, galibiyet, ganimet altını, savaş deneyimi.
       Galibiyet bonusu son PvP savaşına bakar; canavar turu onu değiştirmez. Deneyim 1-1 sonunda ve Kervan'da gelmez. */
   function turSonu(d, r, sonuc, yasayan) {
@@ -286,15 +290,53 @@
     return o.iz.bot ? ONL().botIzTur(o.iz.bot.tohum, o.iz.bot.guc, r) : (ONL().izTur(o.iz, r) || { r, seviye: 0, takim: [], yedek: [], armagan: [], kut: null });
   }
   /** Lobinin r. turunun alameti (bölüm 8): lobinin tamamına aynı; bölüm 1'de ve Kervan'da Durgun Gök; aynı alamet art arda gelmez. */
+  // Ağırlıklı seçim (bölüm 8: Durgun Gök 2, diğerleri 1); önceki tur çıkan alamet havuzdan çıkarılır (art arda gelmez).
   function lobiAlamet(tohum, r) {
     let once = null, al = 'yok';
     for (let q = 0; q <= r; q++) {
       const p = turPlan(q);
       if (p.bolum === 1 || p.tip === 'kervan') { al = 'yok'; continue; }
       const l = D.ALAMETLER.filter(a => a.id !== once), R = SIM().rng(tohum + q * 7919 + 3);
-      al = l[Math.floor(R() * l.length)].id; once = al;
+      let top = 0; for (const a of l) top += a.w;
+      let x = R() * top; al = l[l.length - 1].id;
+      for (const a of l) { x -= a.w; if (x < 0) { al = a.id; break; } }
+      once = al;
     }
     return al;
+  }
+  /** r'den başlayarak n turun alameti (bölüm 4.3: sıradaki alamet önceden görünür; Alamet Bilgesi 3 tur). */
+  function alametSirasi(tohum, r, n) { return Array.from({ length: n }, (_, k) => lobiAlamet(tohum, r + k)); }
+
+  // ── Kut Armağanı (bölüm 6) ──
+  /** Aşamanın kademesi (bölüm → olasılık) ve 3 seçenek. alinan: bu maçta alınmış armağanlar (bir daha çıkmaz). R: oyuncuya özel sim.rng.
+      Önce 1 kademe zarı, sonra her seçenek için 1 zar. Dönen: { kademe, secenek: [id…] }. */
+  function armaganSecenek(bolum, R, alinan) {
+    const A = K.armagan, ol = A.olasilik[bolum] || A.olasilik[Math.max(...Object.keys(A.olasilik).map(Number))];
+    const kd = A.kademeler[kademeZar(ol, R()) - 1];
+    return { kademe: kd, secenek: armaganCek(kd, R, alinan, []) };
+  }
+  /** Kademe kd'den 3 farklı armağan (ARMAGANLAR sırasından çekiliş). alinan ve haric (yenilemede şu anki kartlar) dışarıda; kademede yetmezse
+      önce alt kademeler (yakından uzağa), sonra üst kademeler; yine yetmezse haric olanlar geri gelir. */
+  function armaganCek(kd, R, alinan, haric) {
+    const A = K.armagan, ki = A.kademeler.indexOf(kd), sira = [ki];
+    for (let k = ki - 1; k >= 0; k--) sira.push(k);
+    for (let k = ki + 1; k < A.kademeler.length; k++) sira.push(k);
+    const out = [], al = alinan || [], hr = haric || [];
+    for (const izin of [false, true]) for (const k of sira) {
+      const l = D.ARMAGANLAR.filter(a => a.kademe === A.kademeler[k] && !al.includes(a.id) && !out.includes(a.id) && (izin || !hr.includes(a.id))).map(a => a.id);
+      while (out.length < A.secenek && l.length) out.push(l.splice(Math.floor(R() * l.length), 1)[0]);
+    }
+    return out;
+  }
+  /** Savaşta motorun kullanacağı armağanlar (savas: true). Son Direniş yalnız can 40'ın altındayken. */
+  function savasArmagan(liste, can) {
+    return (liste || []).filter(id => { const a = D.armagan(id); return a && a.savas && (id !== 'sonDirenis' || (can != null && can < K.armaganSayi.sonDirenisCan)); });
+  }
+  /** Bot ve hayalet armağanları (bölüm 4.8): r'ye kadarki her aşamada (2-1, 3-2, 4-3) botun tohumuyla ilk kart. */
+  function botArmagan(tohum, r) {
+    const out = [];
+    for (let q = 0; q <= r; q++) { const p = turPlan(q); if (!p.armagan) continue; const s = armaganSecenek(p.bolum, SIM().rng(tohum * 7919 + q * 104729 + 29), out); if (s.secenek.length) out.push(s.secenek[0]); }
+    return out;
   }
   function karistir(l, R) { const a = l.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
   function yasakli(lobi, a, b, k) {
@@ -337,31 +379,35 @@
     return null;
   }
   // Hayalet savaşı: Kut kayıttaki dokunuşla ({i, t}); kayıt yoksa yapay zekâ (bölüm 4.6, 7.4). Gün Batımı açık.
-  function golgeSavas(ka, kb, alamet, tohum, pve) {
-    const kut = [], yz = [];
-    if (ka.kut) kut.push({ t: ka.kut.t, taraf: 0, i: ka.kut.i }); else yz.push(0);
-    if (!pve) { if (kb.kut) kut.push({ t: kb.kut.t, taraf: 1, i: kb.kut.i }); else yz.push(1); }
-    return SIM().Savas(ka.takim, kb.takim, { tohum, alamet, kut, yz, gunBatimi: K.gunBatimi.basla }).sonunaKadar();
+  // Kayıttaki dokunuşu olan tarafta yapay zekâ yalnız yedek: kayıttaki birim ölmüşse ya da ikinci hak (Çifte Kut, Son İki) için (7.4).
+  // Armağanlar (6.1) iki taraf için de motora verilir; Son İki'de iki tarafın 2 Kut hakkı olur (4.4). canA/canB: Son Direniş için.
+  function golgeSavas(ka, kb, alamet, tohum, pve, yasayan, canA, canB) {
+    const kut = [], yz = [], yzYedek = [];
+    if (ka.kut) { kut.push({ t: ka.kut.t, taraf: 0, i: ka.kut.i }); yzYedek.push(0); } else yz.push(0);
+    if (!pve) { if (kb.kut) { kut.push({ t: kb.kut.t, taraf: 1, i: kb.kut.i }); yzYedek.push(1); } else yz.push(1); }
+    const hak = yasayan === 2 ? K.kut.sonIkiHak : K.kut.hak;
+    return SIM().Savas(ka.takim, kb.takim, { tohum, alamet, kut, yz, yzYedek, gunBatimi: K.gunBatimi.basla, kutHak: [hak, pve ? 0 : hak],
+      armagan: [savasArmagan(ka.armagan, canA), pve ? [] : savasArmagan(kb.armagan, canB)] }).sonunaKadar();
   }
   /** Hayalet × hayalet savaşları (bölüm 4.6): canlı oyuncunun dahil olmadığı bütün eşleşmeler motorda sonuna kadar oynanır.
       Canavar turunda her hayalet kendi dalgasıyla. ops.canliTakim: Yansıma canlı oyuncuyu kopyalarsa kullanılır.
       Dönen: [{ a, b (Yansıma'da kopya, canavarda -1), tip: 'pvp'|'yansima'|'pve', kazanan (a'ya göre), kalanPuan, kalanSayi, sure }]. */
   function golgeSavaslari(lobi, r, alamet, es, ops = {}) {
-    const p = turPlan(r), out = [], canli = (i) => lobi.oyuncular[i].canli;
+    const p = turPlan(r), out = [], canli = (i) => lobi.oyuncular[i].canli, yas = yasayanSay(lobi), can = (i) => lobi.oyuncular[i].can;
     const bir = (a, b, tip, s) => ({ a, b, tip, kazanan: s.kazanan, kalanPuan: s.kalanPuan, kalanSayi: s.kalanSayi, sure: s.sure });
     if (p.tip === 'pve') {
       const dalga = { takim: pveDalga(r), kut: null };
-      for (const i of yasayanlar(lobi)) if (!canli(i)) out.push(bir(i, -1, 'pve', golgeSavas(lobiKadro(lobi, i, r), dalga, alamet, lobi.tohum + r * 104729 + i * 7907 + 50021, true)));
+      for (const i of yasayanlar(lobi)) if (!canli(i)) out.push(bir(i, -1, 'pve', golgeSavas(lobiKadro(lobi, i, r), dalga, alamet, lobi.tohum + r * 104729 + i * 7907 + 50021, true, yas, can(i), 0)));
       return out;
     }
     if (p.tip !== 'pvp') return out;
     es.ciftler.forEach(([a, b], k) => {
       if (canli(a) || canli(b)) return;
-      out.push(bir(a, b, 'pvp', golgeSavas(lobiKadro(lobi, a, r), lobiKadro(lobi, b, r), alamet, lobi.tohum + r * 104729 + k * 7907 + 1, false)));
+      out.push(bir(a, b, 'pvp', golgeSavas(lobiKadro(lobi, a, r), lobiKadro(lobi, b, r), alamet, lobi.tohum + r * 104729 + k * 7907 + 1, false, yas, can(a), can(b))));
     });
     if (es.yansima && !canli(es.yansima.a)) {
       const y = es.yansima;
-      out.push(bir(y.a, y.kopya, 'yansima', golgeSavas(lobiKadro(lobi, y.a, r), lobiKadro(lobi, y.kopya, r, ops.canliTakim), alamet, lobi.tohum + r * 104729 + 97, false)));
+      out.push(bir(y.a, y.kopya, 'yansima', golgeSavas(lobiKadro(lobi, y.a, r), lobiKadro(lobi, y.kopya, r, ops.canliTakim), alamet, lobi.tohum + r * 104729 + 97, false, yas, can(y.a), can(y.kopya))));
     }
     return out;
   }
@@ -412,9 +458,25 @@
     return yeni.map(o => o.i);
   }
   function lobiBitti(lobi) { return yasayanSay(lobi) <= 1; }
-  /** Lobiyi sona kadar oynat (canlı oyuncu elendikten sonra kalan turlar anında, bölüm 4.6). Tur tavanında kalanlar cana göre sıralanır. */
+  /** Gözcü Baykuşu (6.2): i. oyuncunun sonraki n PvP turundaki rakibinin tahmini. Lobi kopyası üzerinde yalnız eşleşmeler ilerletilir
+      (bu turun eşleşmesi es verilirse o yazılır); elenmeler bilinmediği için tahmindir. Dönen: [{ r, j, yansima }]. */
+  function gelecekRakip(lobi, i, r, n, es) {
+    const lb = JSON.parse(JSON.stringify(lobi)), out = [];
+    const yaz = (e) => { for (const k of yasayanlar(lb)) { const rk = lobiRakip(e, k), o = lb.oyuncular[k]; o.gecmisRakip.push(rk ? (rk.yansima ? -1 : rk.j) : -1); o.sonYansima = !!(rk && rk.yansima); } };
+    let q = r;
+    if (es && turPlan(r).tip === 'pvp') { yaz(es); q = r + 1; }
+    for (; out.length < n && q < r + 30; q++) {
+      if (turPlan(q).tip !== 'pvp') continue;
+      const e = eslesmeKur(lb, q), rk = lobiRakip(e, i); yaz(e);
+      if (rk) out.push({ r: q, j: rk.j, yansima: rk.yansima });
+    }
+    return out;
+  }
+  /** Lobiyi sona kadar oynat (canlı oyuncu elendikten sonra kalan turlar anında, bölüm 4.6). Tur tavanında kalanlar cana göre sıralanır.
+      ops'tan yalnız canliTakim kullanılır: eşleşme her tur yeniden kurulur, canlı oyuncunun tek turluk sonucu tekrar uygulanmaz (C# LobiSonaKadar ile aynı). */
   function lobiSonaKadar(lobi, ops = {}) {
-    while (!lobiBitti(lobi) && lobi.r < K.lobiTurTavan) lobiTurOyna(lobi, lobi.r, ops);
+    const o2 = ops.canliTakim ? { canliTakim: ops.canliTakim } : {};
+    while (!lobiBitti(lobi) && lobi.r < K.lobiTurTavan) lobiTurOyna(lobi, lobi.r, o2);
     if (!lobiBitti(lobi)) {
       const l = lobi.oyuncular.filter(o => !o.olu).sort((a, b) => b.can - a.can || a.i - b.i);
       l.forEach((o, k) => { o.sira = k + 1; o.olu = k > 0; if (k > 0) o.elenmeR = lobi.r - 1; });
@@ -439,7 +501,7 @@
     return havuzKalan(gr);
   }
 
-  const api = { lobiYeni, yasayanSay, lobiKadro, lobiAlamet, eslesmeKur, lobiRakip, golgeSavaslari, lobiTurOyna, siralamaGuncelle, lobiBitti, lobiSonaKadar, lobiSira, kupaDegisim, havuzLobi,
+  const api = { lobiYeni, yasayanSay, alametSirasi, armaganSecenek, armaganCek, savasArmagan, botArmagan, faizTavan, farkliEsya, gelecekRakip, lobiKadro, lobiAlamet, eslesmeKur, lobiRakip, golgeSavaslari, lobiTurOyna, siralamaGuncelle, lobiBitti, lobiSonaKadar, lobiSira, kupaDegisim, havuzLobi,
     xpGerek, xpEkle, kopyaSay, havuzKalan, kademeZar, dukkanCek,
     turPlan, turAd, tabanGelir, faiz, seriBonus, gelirHesapla, seriGuncelle, kaynastirBedel, ganimetPlan, ganimetAltin, bolumTaban, kayipHasar, turBasi, turSonu,
     birimSoy, esyaTak, esyaToplaBirim, rafBirlestir, pveDalga, kahramanCek, ganimet, kervanAdet, kervanSecenek, ganimetEsya, baslangicSecenek };

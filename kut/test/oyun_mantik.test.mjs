@@ -362,6 +362,14 @@ ok(ozet.seviye >= 2 + 1, `maç sonunda savaş deneyimiyle seviye arttı (Sv ${oz
   ok(b2.M.lobi.oyuncular.some(x => x.iz && x.iz.turlar), 'başka oyuncunun lobisinde bu maçın izi hayalet olarak yer alır');
   const b3 = new Oyun(); b3.P.kupa = 300; b3.P.oyuncu = o.P.oyuncu; await b3.yeniMac('lobi');
   ok(b3.M.lobi.oyuncular.every(x => x.canli || x.iz.bot), 'oyuncunun kendi izi kendi lobisine girmez');
+  // 14 günden eski ya da başka sürümün izi lobiye girmez (bölüm 4.7)
+  { const sakla = depo['kut.iz.v2'], l = JSON.parse(sakla);
+    depo['kut.iz.v2'] = JSON.stringify(l.map(z => ({ ...z, zaman: Date.now() - 15 * 86400000 })));
+    const e1 = new Oyun(); e1.P.kupa = 300; e1.P.oyuncu = 'baska2'; await e1.yeniMac('lobi');
+    depo['kut.iz.v2'] = JSON.stringify(l.map(z => ({ ...z, surum: 99 })));
+    const e2 = new Oyun(); e2.P.kupa = 300; e2.P.oyuncu = 'baska3'; await e2.yeniMac('lobi');
+    depo['kut.iz.v2'] = sakla;
+    ok(e1.M.lobi.oyuncular.every(x => x.canli || x.iz.bot) && e2.M.lobi.oyuncular.every(x => x.canli || x.iz.bot), '14 günden eski ve başka sürümün izleri lobiye girmez'); }
   // yarım lobi maçı sayfa yenilenince sürer
   b3.ilkSec(0); const b4 = new Oyun(); ok(b4.M && b4.M.mod === 'lobi' && b4.lobiMi() && b4.M.lobi.oyuncular.length === 8, 'yarım lobi maçı kayıttan açılır');
 }

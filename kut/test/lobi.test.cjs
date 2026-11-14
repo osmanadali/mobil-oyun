@@ -104,6 +104,13 @@ ok(K.botIz.egri.slice(1).map(l => l.slice(0, 6).join('/')).join(' ') === '2/3/0.
   const l3 = botLobi(23, 300); l3.oyuncular.forEach(o => { if (o.i > 2) { o.olu = true; o.sira = 9 - o.i; } }); l3.r = 17;
   const r3 = L.lobiTurOyna(l3, 17), s3 = r3.sonuclar.find(s => s.tip === 'pvp');
   ok(r3.yasayan === 3 && s3 && Math.max(...s3.hasar) === (s3.kazanan === -1 ? K.bolumTabani[4] + 3 : K.bolumTabani[4] + 3 + s3.kalanPuan), 'Son Üç: taban +3');
+  const l2 = botLobi(24, 300); l2.oyuncular.forEach(o => { if (o.i > 1) { o.olu = true; o.sira = 9 - o.i; } }); l2.r = 17;
+  const r2 = L.lobiTurOyna(l2, 17), s2 = r2.sonuclar[0];
+  ok(r2.yasayan === 2 && r2.sonuclar.length === 1 && s2.tip === 'pvp' && Math.max(...s2.hasar) === (s2.kazanan === -1 ? K.bolumTabani[4] + 5 : K.bolumTabani[4] + 5 + s2.kalanPuan), 'Son İki: taban +5');
+  // lobiSonaKadar tek turluk eşleşmeyi ve canlı oyuncu sonucunu tekrar kullanmaz (her tur eşleşme yeniden kurulur)
+  { const la = botLobi(25, 300), lb2 = botLobi(25, 300), e0 = L.eslesmeKur(la, 3);
+    L.lobiSonaKadar(la, { eslesme: e0, canliSonuc: { kazanan: 1, kalanPuan: 9, kalanSayi: 9, sure: 1 } }); L.lobiSonaKadar(lb2);
+    ok(JSON.stringify(la.oyuncular.map(o => [o.sira, o.can, o.elenmeR])) === JSON.stringify(lb2.oyuncular.map(o => [o.sira, o.can, o.elenmeR])), 'lobiSonaKadar: eşleşme her tur yeniden kurulur, tek turluk seçenekler tekrar uygulanmaz'); }
   // elenme ve sıra: aynı turda elenenlerde tur başı canı fazla olan önde
   const le = botLobi(24, 300); le.oyuncular[2].can = 1; le.oyuncular[5].can = 3; le.oyuncular[2].turBasiCan = 1; le.oyuncular[5].turBasiCan = 3;
   le.oyuncular.forEach(o => { if (o.i === 2 || o.i === 5) o.can = 0; });
@@ -177,8 +184,8 @@ ok([5, 8].map(s => L.kupaDegisim(s, 300)).join() === '-5,-20' && L.kupaDegisim(8
   const oe = medyan(ortaElenme);
   ok(oe >= 21 && oe <= 26, `elenen oyuncuların ortanca elenme turu ${L.turAd(oe)} (belge: ortalama oyuncu 4-6 … 5-3; 1 tur pay)`);
   const dk = medyan(birinciDk);
-  ok(dk >= 17 && dk <= 22, `birincinin tahmini süresi ortanca ${dk.toFixed(1)} dk (hedef 18–20 dk; tur sayısı × süre tablosu 1.2)`);
-  ok(medyan(savasSure) >= 14 && medyan(savasSure) <= 20 && dilim(savasSure, 0.9) <= 28, `savaş süresi ortanca ${medyan(savasSure)} sn, %90 dilim ${dilim(savasSure, 0.9)} sn (hedef 16–20 / ≤ 28)`);
+  ok(dk >= 18 && dk <= 20, `birincinin tahmini süresi ortanca ${dk.toFixed(1)} dk (hedef 18–20 dk; tur sayısı × süre tablosu 1.2)`);
+  ok(medyan(savasSure) >= 16 && medyan(savasSure) <= 20 && dilim(savasSure, 0.9) <= 28, `savaş süresi ortanca ${medyan(savasSure)} sn, %90 dilim ${dilim(savasSure, 0.9)} sn (hedef 16–20 / ≤ 28)`);
   ok(sinir / pvp < 0.05, `süre sınırıyla biten savaş %${(100 * sinir / pvp).toFixed(1)} (hedef < %5)`);
   ok(b1Kayip.length / Math.max(1, b1) <= 0.1, `bölüm 1'de canavarı kaybetme %${(100 * b1Kayip.length / Math.max(1, b1)).toFixed(1)} (hedef ≤ %10)`);
 }

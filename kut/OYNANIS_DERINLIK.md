@@ -306,7 +306,7 @@ Her maç sonunda (ve her tur sonunda, kopmaya karşı) oyuncunun **maç izi** ha
 
 Eşyalar en yüksek kademeli birime yığılır (3'e dolana kadar). Bot Kut'u yapay zekâ kuralıyla kullanır.
 
-Uygulamada (`online.js botIzTur`, `data.js KURAL.botIz`) `guc` ayrıca eğride kayma yapar: bot, eğriyi `r + (guc − 0,5) × 4` turunda okur (güçlü bot 2 tur önde, zayıf bot 2 tur geride). Bu olmadan botlar birbirine çok yakın kalıyor, ilk elenme 4-5'e kayıyordu.
+Uygulamada (`online.js botIzTur`, `data.js KURAL.botIz`) `guc` ayrıca eğride kayma yapar: bot, eğriyi `r + (guc − 0,5) × 4` turunda okur (güçlü bot 2 tur önde, zayıf bot 2 tur geride). Bu olmadan botlar birbirine çok yakın kalıyor, ilk elenme 4-5'e kayıyordu. Lobideki 7 botun gücü de kupadan gelen değerin çevresinde ±0,25 oynar (`online.js lobiIzler`, 0–1 arasında kırpılır).
 
 ---
 

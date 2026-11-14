@@ -482,7 +482,7 @@ export async function savasKur(yeniSim, kok = '') {
   const liste = await Promise.all(sim.birimler.map(u => birimKur(u, kok)));
   for (const b of liste) birimler.set(b.uid, b);
   birimDizi = liste; liste.forEach((b, i) => { b.si = i; });
-  kotuKare = 0; G.golgeYenile();
+  kotuKare = 0; G.golgeYenile(); uyarlaSifirla(1000);   // kurulumdan sonraki ilk saniye (gölgelendirici derleme) ölçülmez
   // gökten giriş: taraf içinde sırayla, rakip biraz sonra (giriş sürerken görüntü zamanı bekler → motor da bekler)
   const sira = [0, 0];
   for (const b of liste) { const tr = b.u.taraf ? 1 : 0; his.giris(b, sira[tr]++ * 0.08 + (tr ? 0.15 : 0)); if ((b.u.b.s || 1) >= 3) vfx.durum(b.kok, 'yildiz3', true); }
@@ -1179,8 +1179,9 @@ export function kare(dtSabit) {
         const kal = a.kalkan > 0; if (b.vd.kalkan !== kal) { b.vd.kalkan = kal; vfx.durum(b.kok, 'kalkan', kal); }
       }
     }
-    // yüzen sayılar: süresi dolan, sonuncuyla yer değiştirip atılır (yeni dizi yok)
-    for (let i = yazilar.length - 1; i >= 0; i--) { const y = yazilar[i]; y.yas += dt; if (y.yas >= 0.95) { yazilar[i] = yazilar[yazilar.length - 1]; yazilar.pop(); } }
+    // yüzen sayılar: süresi dolan yerinde atılır (yeni dizi yok). Yer değiştirerek silme (swap-remove) çizim sırasını bozup eski
+    // sayıyı yenisinin üstüne çıkarıyordu (büyük KRİTİK sayısı küçük sayının altında kalıyordu); sıra koruyan sıkıştırma da O(n) ve ayırmasız.
+    { let k = 0; for (let i = 0; i < yazilar.length; i++) { const y = yazilar[i]; y.yas += dt; if (y.yas < 0.95) yazilar[k++] = y; } yazilar.length = k; }
     balonGuncelle(dt, dtGercek);
     let ky = 0;
     for (let j = 0; j < efektler.length; j++) { const e = efektler[j]; let kal = true;
@@ -1223,7 +1224,7 @@ function kareOlc(z) {
   if (typeof document !== 'undefined' && document.hidden) { sonKareZ = 0; return; }
   if (sonKareZ) {
     const ara = z - sonKareZ;
-    if (ara < 250) {   // çok uzun boşluk: sekme dönüşü / hata ayıklayıcı; ölçüme katılmaz
+    if (ara < 5000) {   // 5 sn'den uzun boşluk: hata ayıklayıcı / sistem uykusu; ölçüme katılmaz (sekme gizliyken zaten ölçülmez)
       olcAra[olcI] = ara; olcZ[olcI] = z; olcJs[olcI] = _olc.toplam; olcI = (olcI + 1) % OLC_N;
       if (ara > 33.4) kotuKare++;
       if (sim) uyarla(z, ara);
@@ -1283,13 +1284,15 @@ function olcerKur() {
   if (olcerEl || typeof document === 'undefined') return;
   olcerEl = document.createElement('div'); olcerEl.id = 'kutOlcer';
   olcerEl.style.cssText = 'position:fixed;left:6px;bottom:6px;z-index:9999;pointer-events:none;font:600 11px/1.35 ui-monospace,Menlo,Consolas,monospace;color:#e8f6ff;background:rgba(10,6,24,.72);padding:5px 7px;border-radius:7px;white-space:pre';
+  olcerEl.textContent = 'Kare hızı savaşta ölçülür';
   document.body.appendChild(olcerEl);
 }
 function olcerYaz(z) {
   if (z - olcerT < 500) return; olcerT = z;
   // son 2 sn: ortalama fps ve en kötü kare
+  // (çok yavaş cihazda 2 sn'de 3'ten az kare varsa son 3 kare)
   let n = 0, top = 0, enKotu = 0, js = 0;
-  for (let i = 0; i < OLC_N; i++) { if (z - olcZ[i] > 2000 || !olcZ[i]) continue; n++; top += olcAra[i]; js += olcJs[i]; if (olcAra[i] > enKotu) enKotu = olcAra[i]; }
+  for (let j = 1; j <= OLC_N; j++) { const i = (olcI - j + OLC_N) % OLC_N; if (!olcZ[i] || (z - olcZ[i] > 2000 && n >= 3)) break; n++; top += olcAra[i]; js += olcJs[i]; if (olcAra[i] > enKotu) enKotu = olcAra[i]; }
   const ci = G.cizimBilgi(), fps = n ? 1000 / (top / n) : 0, v = (x) => x.toFixed(1).replace('.', ',');
   olcerEl.textContent = `${fps.toFixed(0)} fps · en kötü ${v(enKotu)} ms (2 sn)\n33 ms üstü: ${kotuKare} · çizim ${ci ? ci.calls : 0} · üçgen ${ci ? Math.round(ci.triangles / 1000) : 0} bin\n` +
     `JS ${v(n ? js / n : _olc.toplam)} ms (çizim ${v(_olc.ciz)}) · kademe ${G.kademeAl()} ${G.kademeAd()}${UY.sabit >= 0 ? ' (sabit)' : UY.acik ? '' : ' (elle)'}`;

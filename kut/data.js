@@ -83,16 +83,51 @@
   };
 
   // ── Alametler: her tur başında görünen tur kuralı (taslağı her tur değiştirir). ──
+  // w: lobide seçilme ağırlığı (bölüm 8: Durgun Gök 2, diğerleri 1). lobi: yalnız seviyeli maçta (Arena, Lobi) çıkar; Hızlı Maç ve
+  // düello eski 8 alameti kullanır (sıra aynı kaldığı için Hızlı Maç'ın alamet zarı eskisiyle aynı sonucu verir).
   const ALAMETLER = [
-    { id: 'yok',      ad: 'Durgun Gök',   emoji: '🌤️', m: 'Bu tur özel bir şey yok.' },
-    { id: 'kanAyi',   ad: 'Kan Ayı',      emoji: '🌕', m: 'Herkes +%20 hasar verir.' },
-    { id: 'sis',      ad: 'Sis',          emoji: '🌫️', m: 'Menzilliler -1 menzil.' },
-    { id: 'tipi',     ad: 'Tipi',         emoji: '🌨️', m: 'Herkes -%20 saldırı hızı; Ayaz soyu etkilenmez.' },
-    { id: 'kutYagmur',ad: 'Kut Yağmuru',  emoji: '✨', m: 'Herkes savaşa %40 mana ile başlar.' },
-    { id: 'pazar',    ad: 'Bereketli Pazar', emoji: '🪙', m: 'Bu tur +2 altın.' },
-    { id: 'tutulma',  ad: 'Tutulma',      emoji: '🌒', m: 'Karanlık soyu +%30 can.' },
-    { id: 'yaz',      ad: 'Yaz Sıcağı',   emoji: '☀️', m: 'Od soyu 2 kat yakar; Ayaz soyu -%15 can.' },
+    { id: 'yok',      ad: 'Durgun Gök',   emoji: '🌤️', w: 2, m: 'Bu tur özel bir şey yok.' },
+    { id: 'kanAyi',   ad: 'Kan Ayı',      emoji: '🌕', w: 1, m: 'Herkes +%20 hasar verir.' },
+    { id: 'sis',      ad: 'Sis',          emoji: '🌫️', w: 1, m: 'Menzilliler -1 menzil.' },
+    { id: 'tipi',     ad: 'Tipi',         emoji: '🌨️', w: 1, m: 'Herkes -%20 saldırı hızı; Ayaz soyu etkilenmez.' },
+    { id: 'kutYagmur',ad: 'Kut Yağmuru',  emoji: '✨', w: 1, m: 'Herkes savaşa %40 mana ile başlar.' },
+    { id: 'pazar',    ad: 'Bereketli Pazar', emoji: '🪙', w: 1, m: 'Bu tur +2 altın.' },
+    { id: 'tutulma',  ad: 'Tutulma',      emoji: '🌒', w: 1, m: 'Karanlık soyu +%30 can.' },
+    { id: 'yaz',      ad: 'Yaz Sıcağı',   emoji: '☀️', w: 1, m: 'Od soyu 2 kat yakar; Ayaz soyu -%15 can.' },
+    // bölüm 8: lobi alametleri
+    { id: 'demirci',  ad: 'Demirci Ateşi', emoji: '⚒️', w: 1, lobi: true, m: 'Bu turun savaşını kazanan 1 rastgele bileşen alır.' },
+    { id: 'gocMevsimi', ad: 'Göç Mevsimi', emoji: '🍂', w: 1, lobi: true, m: 'Bu hazırlıkta ilk 2 yenileme bedava.' },
+    { id: 'kutSessiz', ad: 'Kut Sessizliği', emoji: '🌑', w: 1, lobi: true, m: 'Bu tur Kut yok; herkes savaşa %25 mana ile başlar.' },
+    { id: 'uzunGolge', ad: 'Uzun Gölge',  emoji: '🌇', w: 1, lobi: true, m: 'Gün Batımı 20. yerine 12. saniyede başlar.' },
   ];
+  // Hızlı Maç ve düello alametleri: eski 8 (lobi alametleri yok)
+  const ALAMETLER_HIZLI = ALAMETLER.filter(a => !a.lobi);
+
+  // ── Kut Armağanı (OYNANIS_DERINLIK.md bölüm 6): 2-1, 3-2, 4-3'te 3'ten 1 seçilir. kademe: kivilcim | alev | gunes.
+  // savas: motorda opt.armagan ile çalışır (sim.js). tur: Kut, Kaynaştırma, Eşya, Önceden görme, Alamet, Ekonomi, Seviye, Geri dönüş.
+  const ARMAGANLAR = [
+    { id: 'cifteKut',      ad: 'Çifte Kut',        kademe: 'gunes',    tur: 'Kut', savas: true,  m: 'Savaş başına 2 Kut hakkı; ikincisi ilkinden en az 4 sn sonra kullanılabilir.', neden: 'Kut\'u iki kez patlatmak istiyorsan.' },
+    { id: 'uyanis',        ad: 'Uyanış',           kademe: 'kivilcim', tur: 'Kut', savas: true,  m: 'Kut verilen birim savaş sonuna dek +%25 saldırı hızı kazanır.', neden: 'Kut\'u vuruşçu bir kahramana veriyorsan.' },
+    { id: 'kutMirasi',     ad: 'Kut Mirası',       kademe: 'alev',     tur: 'Kut', savas: true,  m: 'Kut verilen birim ölürse Kut hakkı bir kez geri gelir.', neden: 'Kut\'u öndeki kahramana veriyorsan.' },
+    { id: 'isikSutunu',    ad: 'Işık Sütunu',      kademe: 'alev',     tur: 'Kut', savas: true,  m: 'Kut, hedefin 2 hücre çevresindeki dostlara da azami manalarının %50\'si kadar mana verir.', neden: 'Kahramanların sık diziliyse.' },
+    { id: 'sakliKut',      ad: 'Saklı Kut',        kademe: 'kivilcim', tur: 'Kut', savas: false, m: 'Bir savaşta Kut\'u kullanmazsan savaş sonunda 3 altın kazanırsın.', neden: 'Altın biriktiriyorsan.' },
+    { id: 'ocakUstasi',    ad: 'Ocak Ustası',      kademe: 'kivilcim', tur: 'Kaynaştırma', savas: false, m: 'Kaynaştırma 1 altın. Hemen 1 bedava kaynaştırma hakkı.', neden: 'Çok kaynaştırmak istiyorsan.' },
+    { id: 'kusursuzMelez', ad: 'Kusursuz Melez',   kademe: 'alev',     tur: 'Kaynaştırma', savas: true, m: 'Kaynaşmış birimlerin istatistik çarpanı ×1,15 yerine ×1,30.', neden: 'Takımında kaynaşmış kahramanlar varsa.' },
+    { id: 'ucluKaynasma',  ad: 'Üçlü Kaynaşma',    kademe: 'gunes',    tur: 'Kaynaştırma', savas: false, m: 'Kaynaşmış bir birim bir kez daha kaynaşabilir. Üçüncü kahramandan yalnız soyları ve +%10 istatistik gelir.', neden: 'Soy eşiklerini doldurmak istiyorsan.' },
+    { id: 'soyMuhru',      ad: 'Soy Mührü',        kademe: 'alev',     tur: 'Eşya', savas: false, m: 'Seçtiğin bir soyun Mührü\'nü (özel eşya) ve 1 bileşen al.', neden: 'Bir soy eşiğine bir kahraman eksikse.' },
+    { id: 'gozcuBaykusu',  ad: 'Gözcü Baykuşu',    kademe: 'kivilcim', tur: 'Önceden görme', savas: false, m: 'Sonraki 2 turun rakibini de görürsün. Hemen 4 altın.', neden: 'Takımını rakibe göre kuruyorsan.' },
+    { id: 'karsiHamle',    ad: 'Karşı Hamle',      kademe: 'alev',     tur: 'Önceden görme', savas: true, m: 'Rakibin en kalabalık soyu, senin takımına karşı savaşta bir eşik düşük sayılır.', neden: 'Rakiplerin tek soya yükleniyorsa.' },
+    { id: 'alametBilgesi', ad: 'Alamet Bilgesi',   kademe: 'kivilcim', tur: 'Alamet', savas: false, m: 'Sonraki 3 turun alametini görürsün. Her bölümde bir kez kendi savaşının alametini Durgun Gök yapabilirsin.', neden: 'Alametler takımını bozuyorsa.' },
+    { id: 'kizilGok',      ad: 'Kızıl Gök Çocuğu', kademe: 'alev',     tur: 'Alamet', savas: true,  m: 'Alametin Durgun Gök olmadığı turlarda takımın +%10 hasar verir.', neden: 'Alametler sık değişiyorsa.' },
+    { id: 'bereketKupu',   ad: 'Bereket Küpü',     kademe: 'kivilcim', tur: 'Ekonomi', savas: false, m: 'Faiz tavanı 5\'ten 7\'ye çıkar (70 altında doyar).', neden: 'Altın biriktiriyorsan.' },
+    { id: 'pazarDostu',    ad: 'Pazar Dostu',      kademe: 'kivilcim', tur: 'Ekonomi', savas: false, m: 'Her hazırlıkta ilk yenileme bedava.', neden: 'Aynı kahramanı arıyorsan.' },
+    { id: 'altinYumurta',  ad: 'Altın Yumurta',    kademe: 'alev',     tur: 'Ekonomi', savas: false, m: '5 savaş turu sonra yumurta çatlar: 22 altın.', neden: 'Şimdi güçlüysen, sonrası için.' },
+    { id: 'hizliBuyume',   ad: 'Hızlı Büyüme',     kademe: 'kivilcim', tur: 'Seviye', savas: false, m: 'Hemen +8 deneyim; deneyim alımı 4 yerine 3 altın.', neden: 'Erken seviye atlamak istiyorsan.' },
+    { id: 'ganimetKesesi', ad: 'Ganimet Kesesi',   kademe: 'kivilcim', tur: 'Eşya', savas: false, m: 'Hemen 2 rastgele bileşen.', neden: 'Eşya taşıyıcın hazırsa.' },
+    { id: 'ustaDemirci',   ad: 'Usta Demirci',     kademe: 'gunes',    tur: 'Eşya', savas: false, m: '3 tam eşyadan birini seç, ayrıca 1 Söküm Taşı.', neden: 'Eşyalarını yeniden dağıtmak istiyorsan.' },
+    { id: 'sonDirenis',    ad: 'Son Direniş',      kademe: 'alev',     tur: 'Geri dönüş', savas: true, m: 'Canın 40\'ın altındaysa takımın +%20 can kazanır. Seçince hemen 1 bileşen.', neden: 'Canın azaldıysa.' },
+  ];
+  const ARMAGAN_KADEME = { kivilcim: 'Kıvılcım', alev: 'Alev', gunes: 'Güneş' };
 
   // ── Eşyalar (OYNANIS_DERINLIK.md bölüm 5). Bileşen istatistikleri tam eşyada toplanır: tam eşya = iki bileşen + kendi etkisi. ──
   // stat alanları: atk (saldırı çarpanı), as (saldırı hızı, hizCarpan'a eklenir), yg (yetenek gücü), mana0 (savaşa başlarken mana),
@@ -237,8 +272,8 @@
   const BOT_IZ = {
     egri: [[0, 2, 0.1, 0, 0, 0], [2, 3, 0.2, 0, 0, 0], [5, 4, 0.35, 0, 1, 0], [12, 6, 0.55, 0, 3, 1], [19, 7, 0.75, 0.05, 5, 1], [26, 8, 0.85, 0.12, 7, 2]],
     tavan: [0, 8, 0.95, 0.3, 10, 3],  // sütun başına üst sınır (r sütunu kullanılmaz)
-    gucTaban: 0.8, gucAdim: 0.4,
-    gucTur: 4,                         // güç eğride öne/arkaya kaydırır: r + (güç − 0,5) × 4 (güç 1 → 2 tur önde, 0 → 2 tur geride)       // ★2 ve eşya sayısı × (0,8 + 0,4 × güç): güç 0 → −%20, güç 1 → +%20
+    gucTaban: 0.8, gucAdim: 0.4,       // ★2 ve eşya sayısı × (0,8 + 0,4 × güç): güç 0 → −%20, güç 1 → +%20
+    gucTur: 4,                         // güç eğride öne/arkaya kaydırır: r + (güç − 0,5) × 4 (güç 1 → 2 tur önde, 0 → 2 tur geride)
     bilesen: 2,                        // tam eşyası olmayan bot, 1-2'den sonra en çok 2 bileşen taşır; tam eşyalıda 1 artan bileşen
   };
 
@@ -294,6 +329,19 @@
     ustalikKursu: 2, ustalikBirinci: 4, // ilk 3'teki takımda her kahramana +2 ustalık, birinciye +4
     lobiEsles: 150,                      // lobi kurarken iz seçimi: kupa ±150
     botIz: BOT_IZ,
+    // Kut (bölüm 7): savaş başına hak; ikinci hak ilkinden en az `ara` sn sonra. Yapay zekâ (7.4): ilk hak yzZaman, sonrakiler yzZaman2 sn'de;
+    // puan = (mana − mp) × kc + yzBilesen × bileşen sayısı + (Kut Ocağı varsa yzOcak). Kut Sessizliği'nde herkes savaşa sessizMana ile başlar.
+    kut: { hak: 1, ara: 4, yzZaman: 5, yzZaman2: 12, yzBilesen: 20, yzOcak: 60, sessizMana: 0.25, uzunGolge: 12, sonIkiHak: 2 },
+    // Kut Yankısı (7.1): bileşen başına; tam eşya iki bileşen sayılır, Kut Taşı sayıları ikiye katlar (birden çok taş da ×2), Kut Ocağı ek ×1,5.
+    // kabukTavan: Kabuk yankılarının toplam azaltması en çok (belgede yok; 2 Kabuk + Kut Taşı %160 olmasın diye).
+    kutYanki: { disVurus: 3, disOran: 0.5, tuySure: 3, tuyOran: 0.5, kor: 1.25, ciy: 30, kabukSure: 3, kabukOran: 0.4, kabukTavan: 0.8,
+      yurek: 0.15, pulSure: 3, pulOran: 0.4, buz: 150, kutTasi: 2, ocak: 1.5 },
+    // Kut Armağanı (bölüm 6): bölüm → kademe olasılıkları [Kıvılcım, Alev, Güneş]; aşama başına 1 yenileme; aynı armağan bir maçta iki kez çıkmaz.
+    armagan: { kademeler: ['kivilcim', 'alev', 'gunes'], olasilik: { 2: [0.5, 0.4, 0.1], 3: [0.3, 0.5, 0.2], 4: [0.2, 0.45, 0.35] }, secenek: 3, yenileme: 1, sure: 15 },
+    // armağan sayıları (6.2)
+    armaganSayi: { uyanis: 0.25, isikSutunu: 0.5, isikMenzil: 2.1, sakliKut: 3, ocakUstasi: 1, kaynasCarpan: 1.15, kusursuzMelez: 1.3, ucluKaynas: 0.1,
+      gozcuAltin: 4, gozcuTur: 2, alametBilge: 3, kizilGok: 0.1, bereketFaiz: 7, yumurtaTur: 5, yumurtaAltin: 22, hizliXp: 8, hizliBedel: 3,
+      ganimetKesesi: 2, sonDirenisCan: 40, sonDirenisOran: 0.2, gocYenile: 2, pazarDostu: 1 },
     hizli: HIZLI,
   };
 
@@ -313,7 +361,8 @@
 
   // kahraman(id): bulamazsa CANAVARLAR'a bakar (canavarın kademe 0, soy []). canavar(id): yalnız canavarlar.
   const canavar = (id) => CANAVARLAR.find(c => c.id === id);
-  const api = { SOYLAR, KAHRAMANLAR, YETENEK, PASIF, ALAMETLER, KURAL, KADEME_OLASILIK, BILESENLER, ESYALAR, OZEL_ESYA, CANAVARLAR, esya, tarif, canavar,
+  const armagan = (id) => ARMAGANLAR.find(a => a.id === id) || null;
+  const api = { SOYLAR, KAHRAMANLAR, YETENEK, PASIF, ALAMETLER, ALAMETLER_HIZLI, ARMAGANLAR, ARMAGAN_KADEME, armagan, KURAL, KADEME_OLASILIK, BILESENLER, ESYALAR, OZEL_ESYA, CANAVARLAR, esya, tarif, canavar,
     kahraman: (id) => KAHRAMANLAR.find(k => k.id === id) || canavar(id) };
   g.KUT_DATA = api;
   if (typeof module !== 'undefined') module.exports = api;

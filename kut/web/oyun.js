@@ -88,7 +88,7 @@ export class Oyun {
     this.M = this.P.mac;
     if (mod === 'lobi') {
       // 7 hayalet: uzak havuz, yerel izler, eksik kalan bot izi (bölüm 4.7); lobi tohumu maç tohumundan
-      const M = this.M, izler = await O.Hayalet.lobiKur({ kupa: this.P.kupa, oyuncu: this.P.oyuncu, tohum: M.tohum });
+      const M = this.M, izler = await O.Hayalet.lobiKur({ kupa: this.P.kupa, oyuncu: this.P.oyuncu, tohum: M.tohum, surum: IZ_SURUM });
       M.lobi = L.lobiYeni({ ad: this.P.ad, kupa: this.P.kupa }, izler, (M.tohum * 2654435761) >>> 0);
       M.macId = this.P.oyuncu + '-' + M.tohum; M.iz = []; M.lobiEs = null;
     }
