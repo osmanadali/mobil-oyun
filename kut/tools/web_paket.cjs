@@ -4,9 +4,9 @@ const fs = require('fs'), path = require('path');
 const KUT = path.join(__dirname, '..'), WEB = path.join(KUT, 'web'), OUT = path.join(WEB, 'paket');
 fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive: true });
 const kopya = (kaynak, hedef) => { fs.mkdirSync(path.dirname(path.join(OUT, hedef)), { recursive: true }); fs.copyFileSync(path.join(KUT, kaynak), path.join(OUT, hedef)); };
-const yolDuzelt = (s) => s.replace(/\.\.\/(vendor|arayuz|gorsel|data\.js|sim\.js|online\.js)/g, './$1');
+const yolDuzelt = (s) => s.replace(/\.\.\/(vendor|arayuz|gorsel|data\.js|sim\.js|online\.js|lobi\.js)/g, './$1');
 for (const f of ['index.html', 'arayuz.js', 'oyun.js', 'sahne3d.js', 'ses.js', 'gorunum.js', 'vfx.js', 'hareket.js']) fs.writeFileSync(path.join(OUT, f), yolDuzelt(fs.readFileSync(path.join(WEB, f), 'utf8')).replace("kok + 'modeller/' + ad + '.glb'", "kok + 'modeller/' + ad + '.json'"));
-for (const f of ['data.js', 'sim.js', 'online.js']) kopya(f, f);
+for (const f of ['data.js', 'sim.js', 'online.js', 'lobi.js']) kopya(f, f);
 for (const f of ['three.module.min.js', 'LICENSE', 'addons/loaders/GLTFLoader.js', 'addons/utils/SkeletonUtils.js', 'addons/utils/BufferGeometryUtils.js',
   // görüntü kalitesi (gorunum.js): çevre ışığı + son işlem (bloom); hepsi kodla çalışır, WASM/worker/data: yok
   'addons/environments/RoomEnvironment.js', 'addons/postprocessing/EffectComposer.js', 'addons/postprocessing/RenderPass.js', 'addons/postprocessing/UnrealBloomPass.js',
