@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kut Arena Arayüz v2</title>
+<style>
+:root{
+  --mor0:#12071f; --mor1:#1f0d36; --mor2:#34175a; --mor3:#542a86; --mor4:#7a45b8;
+  --altin:#f2bf4a; --altinA:#ffe9a6; --altinK:#a8691a; --altinKK:#3d2106;
+  --yakut:#ff3d63; --zumrut:#3fd68f; --safir:#43a6ff; --ametist:#c47bff; --kor:#ff7a2a; --pembe:#ff6f9a;
+  --k1:#b9c3cf; --k2:#43a6ff; --k3:#ff9e2c;
+  --yazi:#fff4dc; --yazi2:#e2d3f5; --soluk:#b9a8d2;
+  --cam:rgba(24,10,44,.78); --camK:rgba(14,5,28,.86);
+  --gunbatimi:linear-gradient(180deg,#ffd27a 0%,#ff8a4c 34%,#ff5d86 66%,#b03fd0 100%);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--mor0)}
+body{font-family:"Trebuchet MS","Segoe UI",system-ui,-apple-system,Roboto,"DejaVu Sans",sans-serif;color:var(--yazi);-webkit-font-smoothing:antialiased;user-select:none;font-size:15px}
+img{display:block;-webkit-user-drag:none}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.ik{width:1em;height:1em;flex:none;display:inline-block;vertical-align:-.12em}
+.gok{position:fixed;inset:0;background:url(../../gorsel/gokyuzu.webp) center/cover no-repeat}
+.gok::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(18,7,31,0) 40%,rgba(18,7,31,.55) 100%)}
+#ui{position:fixed;left:0;top:0;transform-origin:0 0}
+.ekran{position:absolute;inset:0;display:none}
+.ekran.aktif{display:block}
+
+/* ---------- ortak ---------- */
+.cam{background:var(--cam);border:1.5px solid rgba(242,191,74,.55);border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,233,166,.12);backdrop-filter:blur(6px)}
+.bas{display:flex;align-items:center;gap:8px;font-weight:900;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--altinA)}
+.bas .sag{margin-left:auto;font-size:13px;letter-spacing:0;text-transform:none;color:var(--soluk);font-weight:700}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;font-weight:900;border-radius:14px;position:relative;text-shadow:0 1px 0 rgba(0,0,0,.4)}
+.btn.altin{background:linear-gradient(180deg,#ffe58a,#f6b93a 55%,#d98a1c);color:#3a1d04;text-shadow:0 1px 0 rgba(255,255,255,.4);box-shadow:0 4px 0 #8a4a0c,0 8px 18px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.6)}
+.btn.mor{background:linear-gradient(180deg,#8a54d0,#5b2e98);box-shadow:0 3px 0 #2a1150,0 6px 14px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.3);border:1.5px solid rgba(242,191,74,.6)}
+.btn.gb{background:var(--gunbatimi);color:#fff;box-shadow:0 4px 0 #6a1f7a,0 0 22px rgba(255,111,154,.45),inset 0 2px 0 rgba(255,255,255,.5)}
+.btn.sade{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.18)}
+.fiyat{display:inline-flex;align-items:center;gap:3px;font-weight:900}
+.fiyat .ik{font-size:1.05em}
+.hap{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 9px;border-radius:12px;font-size:13px;font-weight:800;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14)}
+.soyIk{width:22px;height:22px}
+.k1{--kc:var(--k1)}.k2{--kc:var(--k2)}.k3{--kc:var(--k3)}
+
+/* ---------- 3D SAHNE (Unity'de gerçek sahne) ---------- */
+.sahne{position:absolute}
+.sahne>.ada{position:absolute;inset:0;width:100%;height:100%}
+.katman{position:absolute;inset:0}
+.yuva{position:absolute;width:12%;aspect-ratio:1.9;transform:translate(-50%,-50%);border-radius:50%;
+  border:2px dashed rgba(255,233,166,.55);background:radial-gradient(ellipse,rgba(255,220,130,.16),rgba(255,220,130,0) 70%)}
+.yuva.dolu{border-style:solid;border-color:rgba(255,233,166,.75)}
+.yuva.kilitli{border-color:rgba(255,255,255,.18);background:none}
+.yuva.hedef{border:3px solid #fff3c4;box-shadow:0 0 24px rgba(255,220,120,.8)}
+.yuva.kaynasHedef{border:3px solid #ff8ab0;box-shadow:0 0 30px rgba(255,111,154,.9),inset 0 0 20px rgba(255,111,154,.6);background:radial-gradient(ellipse,rgba(255,111,154,.35),rgba(255,111,154,0) 70%)}
+.birim{position:absolute;transform:translate(-50%,-88%);width:var(--bw,11%);aspect-ratio:1;pointer-events:none}
+.birim img.p{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 6px 4px rgba(0,0,0,.45))}
+.birim .yz{position:absolute;left:50%;top:-4%;transform:translateX(-50%);display:flex;gap:1px;color:var(--altin);font-size:clamp(11px,1.2vw,16px)}
+.birim.s2 .yz{color:#e8f4ff}
+.birim .mad{position:absolute;right:2%;bottom:6%;width:36%;aspect-ratio:1;border-radius:50%;border:3px solid #ff8ab0;background:#2a1240;overflow:hidden;box-shadow:0 0 12px rgba(255,111,154,.8)}
+.birim .mad img{width:100%;height:100%;object-fit:cover}
+.birim.surukle{filter:drop-shadow(0 18px 10px rgba(0,0,0,.5)) brightness(1.08);transform:translate(-50%,-100%) scale(1.12)}
+.birim.soluk{opacity:.4}
+.cubuk{position:absolute;left:14%;right:14%;top:-14%;height:9px;border-radius:5px;background:#1b0b2c;border:1.5px solid #000;overflow:hidden}
+.cubuk i{display:block;height:62%;background:linear-gradient(180deg,#8dfcb8,#2fbf6f)}
+.cubuk b{display:block;height:38%;background:#4db4ff}
+.dusman .cubuk i{background:linear-gradient(180deg,#ff8b9d,#e03a55)}
+.sayi{position:absolute;font-weight:900;font-size:26px;color:#fff;text-shadow:0 2px 0 #000,0 0 8px rgba(0,0,0,.7);transform:translate(-50%,-50%)}
+.sayi.iyi{color:#7dffa8}.sayi.kritik{color:#ffd45c;font-size:34px}
+.etiket{position:absolute;transform:translate(-50%,-50%);font-weight:900;font-size:14px;padding:3px 10px;border-radius:10px;background:rgba(20,8,36,.85);border:1.5px solid rgba(255,233,166,.6);white-space:nowrap}
+.takimSayac{position:absolute;transform:translate(-50%,-50%);font-weight:900;font-size:15px;padding:4px 14px;border-radius:12px;background:rgba(20,8,36,.8);border:1.5px solid var(--altin);color:var(--altinA)}
+
+/* ---------- HUD: üst ---------- */
+.ust{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;gap:8px;align-items:center;height:44px}
+.ust .p{height:44px;display:flex;align-items:center;gap:8px;padding:0 14px;border-radius:22px;background:var(--camK);border:1.5px solid rgba(242,191,74,.6);font-weight:900;white-space:nowrap}
+.ust .can{color:#ff5a78;font-size:18px}
+.ust .alamet{border-color:#ff5a78;background:linear-gradient(90deg,rgba(120,18,40,.92),rgba(40,10,40,.9))}
+.ust .alamet .top{width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffd0d6,#ff3d5a 50%,#7a0c22)}
+.ust .alamet small{font-weight:700;color:#ffd2da;font-size:13px}
+.elmas{display:inline-flex;gap:3px}.elmas i{width:11px;height:11px;transform:rotate(45deg);border:1.5px solid var(--altin);display:block}.elmas i.v{background:var(--altin)}
+.menuBtn{position:absolute;top:10px;right:12px;width:44px;height:44px;border-radius:50%;font-size:22px}
+
+/* ---------- sol: rakip + soylar + tılsım ---------- */
+.sol{position:absolute;left:12px;top:64px;width:216px;display:flex;flex-direction:column;gap:10px}
+.rakip{padding:10px;border-color:rgba(255,61,99,.75);background:linear-gradient(180deg,rgba(90,16,44,.85),rgba(28,8,36,.88))}
+.rakip .bas{color:#ffd2da}
+.rakip .ad{display:flex;align-items:center;gap:8px;margin:8px 0 6px}
+.rakip .ad .av{width:34px;height:34px;border-radius:50%;background:#2a1240;border:2px solid #ff8b9d;overflow:hidden}
+.rakip .ad .av img{width:100%;height:100%;object-fit:cover}
+.rakip .ad b{font-size:15px;display:block}.rakip .ad small{color:#ffc7d1;font-size:12.5px}
+.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.mini div{aspect-ratio:1.15;border-radius:8px;background:rgba(0,0,0,.35);border:1.5px solid var(--kc,rgba(255,255,255,.15));position:relative;overflow:hidden}
+.mini img{width:100%;height:100%;object-fit:contain}
+.mini span{position:absolute;left:3px;top:1px;font-size:10px;color:var(--altin);letter-spacing:-1px}
+.rakip .soyS{display:flex;gap:5px;margin-top:7px}
+.soylar{padding:10px 8px}
+.soy{display:flex;align-items:center;gap:8px;height:38px;padding:0 6px;border-radius:10px}
+.soy .hex{width:30px;height:30px;display:grid;place-items:center;clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%);background:#3b2a52}
+.soy.s1 .hex{background:linear-gradient(180deg,#ffe08a,#c98a1c)}
+.soy.s2 .hex{background:linear-gradient(180deg,#fff,#ffd45c 40%,#ff9e2c)}
+.soy .hex img{width:22px;height:22px}
+.soy .ad{font-weight:900;font-size:15px;flex:1;white-space:nowrap}
+.soy .es{display:flex;gap:3px;font-weight:900;font-size:13px}
+.soy .es em{font-style:normal;min-width:20px;height:20px;display:grid;place-items:center;border-radius:5px;background:rgba(255,255,255,.08);color:var(--soluk)}
+.soy .es em.y{background:var(--altin);color:#3a1d04}
+.soy.s0{opacity:.55}.soy.s0 .ad{font-weight:700}
+.soy.acik{background:rgba(242,191,74,.14);outline:1.5px solid rgba(242,191,74,.6)}
+.soyAcik{margin:2px 6px 6px 44px;font-size:13px;color:var(--yazi2);line-height:1.35}
+.soyAcik b{color:var(--altinA)}
+.tilsim{padding:10px}
+.tilsim .izg{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:8px}
+.tilsim .izg div{aspect-ratio:1;border-radius:9px;background:rgba(0,0,0,.3);border:1.5px dashed rgba(255,255,255,.18);display:grid;place-items:center;font-size:20px}
+.tilsim .izg div.d{border:1.5px solid var(--tc);background:radial-gradient(circle at 40% 35%,rgba(255,255,255,.25),rgba(0,0,0,.2));color:var(--tc)}
+
+/* ---------- sağ: oyuncu listesi ---------- */
+.sag{position:absolute;right:12px;top:64px;width:200px;padding:8px}
+.oy{display:flex;align-items:center;gap:8px;height:42px;padding:0 6px;border-radius:10px;position:relative}
+.oy .sira{width:14px;font-size:12px;font-weight:900;color:var(--soluk);text-align:center}
+.oy .av{width:32px;height:32px;border-radius:50%;background:#2a1240;border:2px solid rgba(255,255,255,.25);overflow:hidden;flex:none;position:relative}
+.oy .av img{width:100%;height:100%;object-fit:cover}
+.oy .bilgi{flex:1;min-width:0}
+.oy .bilgi b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.oy .cb{display:flex;align-items:center;gap:5px;margin-top:3px}
+.oy .cb .bar{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}
+.oy .cb .bar i{display:block;height:100%;background:linear-gradient(90deg,#ff5a78,#ff8b9d)}
+.oy .cb em{font-style:normal;font-weight:900;font-size:13px;color:#ff8b9d;width:12px;text-align:right}
+.oy .zf{font-size:12px;font-weight:900;color:var(--altinA)}
+.oy.ben{background:rgba(242,191,74,.16);outline:1.5px solid var(--altin)}
+.oy.rk{background:rgba(255,61,99,.18);outline:1.5px solid #ff5a78}
+.oy.elendi{opacity:.4}.oy.elendi .av{filter:grayscale(1)}
+.oy .gozR{position:absolute;right:-8px;top:-6px;width:20px;height:20px;border-radius:50%;background:#ff3d63;display:grid;place-items:center;font-size:12px;border:1.5px solid #fff}
+
+/* ---------- alt: dükkân şeridi ---------- */
+.dukkan{position:absolute;left:0;right:0;bottom:0;height:128px;background:linear-gradient(180deg,rgba(20,8,38,.55),rgba(16,6,30,.9) 30%);border-top:2px solid rgba(242,191,74,.55);display:flex;align-items:center;gap:10px;padding:0 14px;backdrop-filter:blur(4px)}
+.svBlok{width:150px;display:flex;flex-direction:column;gap:6px}
+.svBlok .ust2{display:flex;align-items:center;gap:8px}
+.svBlok .sv{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:20px;background:radial-gradient(circle at 40% 30%,#9a68e0,#3d1b6e);border:2px solid var(--altin)}
+.svBlok .dn{flex:1}.svBlok .dn small{font-size:12.5px;color:var(--soluk);font-weight:700;display:block}
+.svBlok .dn .bar{height:8px;border-radius:4px;background:rgba(255,255,255,.12);margin-top:4px;overflow:hidden}
+.svBlok .dn .bar i{display:block;height:100%;width:60%;background:linear-gradient(90deg,#43a6ff,#9ad6ff)}
+.svBlok .btn{height:40px;font-size:14px}
+.ykBlok{display:flex;flex-direction:column;gap:6px;width:96px}
+.ykBlok .btn{height:46px;font-size:14px;flex-direction:column;gap:0;line-height:1.1}
+.ykBlok .btn small{font-size:12.5px;display:flex;align-items:center;gap:3px}
+.ykBlok .btn.kilitli{background:linear-gradient(180deg,#ffe58a,#d98a1c);color:#3a1d04}
+.kartlar{flex:1;display:flex;gap:8px;min-width:0;height:112px}
+.kart{flex:1;min-width:0;border-radius:12px;position:relative;overflow:hidden;border:2.5px solid var(--kc);
+  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(0,0,0,.35)),radial-gradient(ellipse at 50% 30%,color-mix(in srgb,var(--kc) 40%,transparent),transparent 70%),#22103a;box-shadow:0 4px 10px rgba(0,0,0,.4)}
+.kart img{position:absolute;left:50%;top:2px;height:78%;transform:translateX(-50%)}
+.kart .ad{position:absolute;left:0;right:0;bottom:0;height:28px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;background:linear-gradient(180deg,rgba(0,0,0,.2),rgba(0,0,0,.8));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
+.kart .fy{position:absolute;right:5px;top:5px;height:24px;padding:0 7px;border-radius:12px;background:rgba(0,0,0,.65);font-size:15px}
+.kart .sy{position:absolute;left:4px;top:4px;display:flex;flex-direction:column;gap:2px}
+.kart .sy img{width:20px;height:20px}
+.kart .rz{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);font-size:12px;font-weight:900;padding:2px 8px;border-radius:9px;background:var(--zumrut);color:#073a20;white-space:nowrap}
+.kart.yukselir{box-shadow:0 0 0 2px var(--zumrut),0 0 16px rgba(63,214,143,.6)}
+.kart.alinamaz{opacity:.6}.kart.alinamaz .fy{color:#ff8b9d}
+.kart.bos{border-style:dashed;border-color:rgba(255,255,255,.18);background:rgba(0,0,0,.2)}
+.altinBlok{width:126px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.altinBlok .miktar{display:flex;align-items:center;gap:6px;font-weight:900;font-size:32px;line-height:1}
+.altinBlok .miktar .ik{font-size:30px}
+.faiz{display:flex;gap:4px}.faiz i{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--altin);display:block}.faiz i.v{background:radial-gradient(circle at 35% 30%,#fff2b0,#f2bf4a 60%,#a8691a)}
+.altinBlok small{font-size:12.5px;color:var(--altinA);font-weight:700;white-space:nowrap}
+.satAlan{flex:1;height:112px;border-radius:14px;border:3px dashed #ff8b9d;background:repeating-linear-gradient(135deg,rgba(255,61,99,.22) 0 14px,rgba(255,61,99,.12) 14px 28px);display:none;align-items:center;justify-content:center;gap:14px;font-weight:900;font-size:24px;color:#ffe1e6}
+.satAlan .fiyat{font-size:26px;color:var(--altinA)}
+.surukleMod .kartlar{display:none}.surukleMod .satAlan{display:flex}
+.eylem{position:absolute;right:12px;bottom:142px;width:200px;height:84px;font-size:26px;letter-spacing:.04em;flex-direction:column;gap:0}
+.eylem small{font-size:13px;font-weight:700;letter-spacing:0}
+.eylem .ik{font-size:24px}
+
+/* ---------- açılır kartlar ---------- */
+.bilgiKart{position:absolute;width:300px;padding:12px;z-index:5;border-color:var(--altin)}
+.bilgiKart .ust3{display:flex;gap:10px;align-items:center}
+.bilgiKart .por{width:62px;height:62px;border-radius:12px;border:2px solid var(--kc);background:#22103a;overflow:hidden}
+.bilgiKart .por img{width:100%;height:100%;object-fit:contain}
+.bilgiKart h3{font-size:19px}
+.bilgiKart .stat{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:10px 0}
+.bilgiKart .stat div{background:rgba(255,255,255,.06);border-radius:8px;padding:4px 7px;font-size:12px;color:var(--soluk);font-weight:700}
+.bilgiKart .stat b{display:block;font-size:16px;color:var(--yazi)}
+.yt{border-radius:10px;padding:7px 9px;margin-top:6px;font-size:13.5px;line-height:1.35;background:rgba(67,166,255,.12);border-left:3px solid var(--safir)}
+.yt.ps{background:rgba(196,123,255,.12);border-left-color:var(--ametist)}
+.yt b{display:block;font-size:14px}
+.bilgiKart .ipucu{font-size:13px;color:var(--soluk);margin-top:8px;line-height:1.35}
+.surukleEtiket{position:absolute;transform:translate(-50%,-100%);padding:8px 14px;border-radius:12px;background:var(--gunbatimi);font-weight:900;font-size:15px;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.5);color:#fff;text-align:center;line-height:1.25}
+.surukleEtiket small{display:block;font-weight:700;font-size:12.5px}
+.perde{position:absolute;inset:0;background:rgba(10,4,20,.55);z-index:8}
+.kaynasKart{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:620px;padding:18px 20px;z-index:9;border:2.5px solid #ff8ab0;box-shadow:0 0 40px rgba(255,111,154,.35),0 20px 40px rgba(0,0,0,.6)}
+.kaynasKart h2{text-align:center;font-size:22px;letter-spacing:.04em}
+.kaynasKart .formul{display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0}
+.kaynasKart .formul .p{width:96px;text-align:center;font-size:13px;font-weight:800}
+.kaynasKart .formul .p div{width:96px;height:96px;border-radius:14px;border:2.5px solid var(--kc);background:#22103a;margin-bottom:4px}
+.kaynasKart .formul .p img{width:100%;height:100%;object-fit:contain}
+.kaynasKart .formul .op{font-size:28px;font-weight:900;color:var(--altinA)}
+.kaynasKart .formul .sonuc div{width:120px;height:120px;border:3px solid #ff8ab0;box-shadow:0 0 22px rgba(255,111,154,.6);position:relative}
+.kaynasKart .formul .sonuc{width:120px}
+.kaynasKart .formul .sonuc .mad2{position:absolute;right:-8px;bottom:-8px;width:46px;height:46px;border-radius:50%;border:3px solid #ff8ab0;overflow:hidden;background:#2a1240}
+.kaynasKart .iki{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kaynasKart .degisim{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.kaynasKart .degisim .hap.y{background:rgba(63,214,143,.18);border-color:var(--zumrut);color:#b6ffd6}
+.kaynasKart .alt{display:flex;gap:10px;margin-top:16px}
+.kaynasKart .alt .btn{height:54px;font-size:16px}
+
+/* ---------- savaş ---------- */
+.skor{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:6px 12px;height:56px}
+.skor .tr{width:200px}.skor .tr b{font-size:13px;display:flex;justify-content:space-between}
+.skor .tr .bar{height:12px;border-radius:6px;background:#1b0b2c;border:1.5px solid #000;overflow:hidden;margin-top:3px}
+.skor .tr .bar i{display:block;height:100%}
+.skor .sure{font-weight:900;font-size:26px;width:76px;text-align:center;line-height:1}
+.skor .sure small{display:block;font-size:11px;color:var(--soluk);font-weight:700}
+.kutBtn{position:absolute;right:20px;bottom:24px;width:156px;height:156px;border-radius:50%;display:grid;place-items:center;text-align:center;
+  background:radial-gradient(circle at 40% 30%,#fff1b8,#ffc444 35%,#ff8a2a 70%,#b2480c);border:4px solid #fff0b8;box-shadow:0 0 0 4px var(--altinKK),0 0 46px rgba(255,190,70,.75),0 10px 20px rgba(0,0,0,.5);color:#3a1404}
+.kutBtn b{font-size:40px;letter-spacing:.04em;display:block;line-height:1}.kutBtn small{font-weight:800;font-size:14px}
+.kutIpucu{position:absolute;right:186px;bottom:58px;padding:10px 14px;max-width:270px;font-size:14px;line-height:1.35}
+.kutIpucu b{color:var(--altinA);font-size:15px;display:block}
+.hiz{position:absolute;right:20px;bottom:196px;display:flex;flex-direction:column;gap:6px}
+.hiz .btn{width:52px;height:40px;font-size:15px}
+.hiz .btn.secili{background:linear-gradient(180deg,#ffe58a,#d98a1c);color:#3a1d04}
+.solMini{position:absolute;left:12px;top:64px;display:flex;flex-direction:column;gap:6px}
+.solMini .soy{height:44px;padding:0 10px 0 6px;background:var(--camK);border:1.5px solid rgba(242,191,74,.4);border-radius:12px;gap:8px}
+.solMini .soy .ad{font-size:14px}
+
+/* ---------- ana menü ---------- */
+.anaSahne{position:absolute;inset:0;background:url(../../gorsel/arena_konsept.webp) center 60%/cover no-repeat;filter:saturate(1.05)}
+.anaSahne::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(18,7,31,.35),rgba(18,7,31,.15) 40%,rgba(18,7,31,.85))}
+.anaKahraman{position:absolute;bottom:96px;width:260px}
+.profil{position:absolute;left:14px;top:12px;display:flex;align-items:center;gap:10px;padding:6px 14px 6px 6px;border-radius:30px}
+.profil .av{width:46px;height:46px;border-radius:50%;border:2px solid var(--altin);overflow:hidden;background:#2a1240}
+.profil .av img{width:100%;height:100%;object-fit:cover}
+.profil b{font-size:16px;display:block}.profil small{font-size:13px;color:var(--soluk);font-weight:700}
+.lig{position:absolute;left:50%;top:12px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:6px 16px;border-radius:30px}
+.lig .ik{font-size:28px;color:var(--altin)}.lig b{font-size:18px}.lig small{display:block;font-size:12.5px;color:var(--soluk);font-weight:700}
+.lig .bar{width:140px;height:8px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden}.lig .bar i{display:block;height:100%;width:70%;background:var(--altin)}
+.logo{position:absolute;left:50%;top:64px;transform:translateX(-50%);width:420px}
+.oynaBlok{position:absolute;left:50%;bottom:120px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px}
+.oynaBlok .oyna{width:380px;height:92px;font-size:36px;letter-spacing:.06em;flex-direction:column;gap:0}
+.oynaBlok .oyna small{font-size:14px;letter-spacing:0;font-weight:800}
+.mod{display:flex;gap:6px;padding:5px;border-radius:16px}
+.mod button{height:40px;padding:0 16px;border-radius:12px;font-weight:900;font-size:14px;color:var(--yazi2)}
+.mod button.s{background:rgba(242,191,74,.2);color:var(--altinA);outline:1.5px solid var(--altin)}
+.devam{font-size:14px;font-weight:800;color:var(--altinA)}
+.altNav{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:6px;padding:6px;border-radius:20px}
+.altNav button{width:104px;height:64px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-weight:800;font-size:13px;color:var(--yazi2);position:relative}
+.altNav button .ik{font-size:24px}
+.altNav button.s{background:linear-gradient(180deg,rgba(242,191,74,.3),rgba(242,191,74,.08));color:var(--altinA);outline:1.5px solid var(--altin)}
+.altNav .nokta{position:absolute;top:6px;right:22px;width:10px;height:10px;border-radius:50%;background:var(--yakut);border:1.5px solid #fff}
+.gorev{position:absolute;right:14px;top:72px;width:250px;padding:12px}
+.gorev .g{margin-top:8px;font-size:13.5px}
+.gorev .g .bar{height:7px;border-radius:4px;background:rgba(255,255,255,.12);margin-top:4px;overflow:hidden}.gorev .g .bar i{display:block;height:100%;background:var(--zumrut)}
+
+/* ---------- maç sonu ---------- */
+.sonKart{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);width:760px;padding:24px 28px;text-align:center}
+.sonKart .unvan{font-size:56px;font-weight:900;letter-spacing:.08em;background:linear-gradient(180deg,#fff6c8,#f2bf4a 60%,#b8680e);-webkit-background-clip:text;color:transparent;filter:drop-shadow(0 3px 0 rgba(0,0,0,.6));line-height:1}
+.sonKart .alt1{font-size:17px;font-weight:800;color:var(--yazi2);margin-top:6px}
+.podyum{display:flex;justify-content:center;align-items:flex-end;gap:4px;margin:18px 0 6px;height:150px}
+.podyum div{width:96px;position:relative}
+.podyum img{width:100%}
+.podyum div::after{content:"";position:absolute;left:10%;right:10%;bottom:2px;height:14px;border-radius:50%;background:radial-gradient(ellipse,rgba(255,220,130,.5),transparent 70%)}
+.podyum .yildizM img{width:130%;margin-left:-15%}
+.sonSatir{display:flex;gap:12px;justify-content:center;margin-top:14px}
+.sonSatir .kutu{flex:1;padding:12px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);text-align:left}
+.sonSatir .kutu small{font-size:12.5px;color:var(--soluk);font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.sonSatir .kutu b{display:block;font-size:22px;margin-top:2px}
+.sonSatir .kutu .bar{height:8px;border-radius:4px;background:rgba(255,255,255,.12);margin-top:8px;overflow:hidden}.sonSatir .kutu .bar i{display:block;height:100%;width:62%;background:var(--altin)}
+.turlar{display:flex;gap:4px;margin-top:8px}.turlar i{flex:1;height:12px;border-radius:3px;background:var(--zumrut)}.turlar i.k{background:var(--yakut)}
+.sonEylem{display:flex;gap:12px;justify-content:center;margin-top:20px}
+.sonEylem .btn{height:60px;font-size:17px;padding:0 22px}
+.sonEylem .btn.altin{width:280px;font-size:22px;height:68px}
+.isin{position:absolute;left:50%;top:-30%;width:1400px;height:1400px;transform:translateX(-50%);background:repeating-conic-gradient(rgba(255,230,150,.10) 0 8deg,transparent 8deg 18deg);border-radius:50%;mask:radial-gradient(circle,#000 20%,transparent 60%)}
+
+/* ---------- dikey uyarı ---------- */
+.dikey{position:fixed;inset:0;z-index:99;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--mor1);text-align:center;padding:24px;font-size:18px;font-weight:800}
+.dikey .tel{width:70px;height:110px;border:5px solid var(--altin);border-radius:14px;animation:don 2.4s ease-in-out infinite}
+@keyframes don{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
+body.dikeyMod .dikey{display:flex}
+
+/* ---------- kompakt (4:3 ve kareye yakın) ---------- */
+.kompakt .sag{width:76px;padding:6px}
+.kompakt .oy{justify-content:center;padding:0;height:50px}
+.kompakt .oy .bilgi,.kompakt .oy .sira,.kompakt .oy .zf,.kompakt .sag .bas{display:none}
+.kompakt .oy .av{width:40px;height:40px}
+.kompakt .oy .canR{display:grid}
+.oy .canR{display:none;position:absolute;right:4px;bottom:2px;min-width:20px;height:20px;border-radius:10px;background:#ff3d63;font-size:12px;font-weight:900;place-items:center;border:1.5px solid #fff;padding:0 4px}
+.kompakt .svBlok{width:132px}
+.kompakt .altinBlok{width:112px}
+.kompakt .eylem{width:180px;right:100px}
+.kompakt .kutIpucu{right:186px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="gAltin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2b0"/><stop offset=".45" stop-color="#ffcc4a"/><stop offset="1" stop-color="#b8680e"/></linearGradient>
+  </defs>
+  <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5" fill="url(#gAltin)" stroke="#5a3108" stroke-width="1.5"/><circle cx="12" cy="12" r="6.8" fill="none" stroke="#a8601a" stroke-width="1.4"/><path d="M12 7.6l3.2 4.4-3.2 4.4-3.2-4.4z" fill="#fff6c8" stroke="#a8601a" stroke-width=".8"/></symbol>
+  <symbol id="i-kalp" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21C6 16.6 2 13.2 2 8.6 2 5.5 4.4 3 7.4 3c1.9 0 3.6 1 4.6 2.6C13 4 14.7 3 16.6 3 19.6 3 22 5.5 22 8.6c0 4.6-4 8-10 12.4z"/><path fill="#fff" opacity=".45" d="M6.5 5.2c-1.6.3-2.7 1.7-2.6 3.4.4-1 1.2-1.9 2.6-2.2z"/></symbol>
+  <symbol id="i-kupa" viewBox="0 0 24 24"><path fill="currentColor" d="M7 3h10v2h4v3c0 2.8-2.1 5-4.8 5.3A5 5 0 0 1 13 16v2h3v3H8v-3h3v-2a5 5 0 0 1-3.2-2.7C5.1 13 3 10.8 3 8V5h4zM5 7v1c0 1.5 1 2.8 2.3 3.2C7.1 10.5 7 9.8 7 9V7zm14 0h-2v2c0 .8-.1 1.5-.3 2.2C18 10.8 19 9.5 19 8z"/></symbol>
+  <symbol id="i-yildiz" viewBox="0 0 24 24"><path fill="currentColor" stroke="#2a1406" stroke-width="1.6" stroke-linejoin="round" d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 20.9l1.6-7L2 9.2l7.1-.6z"/></symbol>
+  <symbol id="i-goz" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M12 5C6.5 5 2.7 9 1.5 12c1.2 3 5 7 10.5 7s9.3-4 10.5-7C21.3 9 17.5 5 12 5zm0 11.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9zm0-2.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></symbol>
+  <symbol id="i-yenile" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M19.5 3v4.5H15"/></g></symbol>
+  <symbol id="i-kilit" viewBox="0 0 24 24"><path fill="currentColor" d="M7 10V7a5 5 0 0 1 10 0v3h1.5c.8 0 1.5.7 1.5 1.5v8c0 .8-.7 1.5-1.5 1.5h-13C4.7 21 4 20.3 4 19.5v-8C4 10.7 4.7 10 5.5 10zm2.5 0h5V7a2.5 2.5 0 0 0-5 0z"/></symbol>
+  <symbol id="i-kilitAcik" viewBox="0 0 24 24"><path fill="currentColor" d="M9.5 10V7a2.5 2.5 0 0 1 4.9-.7l2.4-.8A5 5 0 0 0 7 7v3H5.5C4.7 10 4 10.7 4 11.5v8c0 .8.7 1.5 1.5 1.5h13c.8 0 1.5-.7 1.5-1.5v-8c0-.8-.7-1.5-1.5-1.5z"/></symbol>
+  <symbol id="i-kilic" viewBox="0 0 24 24"><g id="kl1" fill="currentColor"><path d="M2.5 2.5h4l9.5 9.5-3.5 3.5-9.5-9.5h-.5z"/><path d="M10.6 17.2l6.6-6.6 1.6 1.6-6.6 6.6z"/><path d="M15.6 16.6l1.4-1.4 3.6 3.6-1.4 1.4z"/><circle cx="21" cy="21" r="1.8"/></g><use href="#kl1" transform="matrix(-1 0 0 1 24 0)"/></symbol>
+  <symbol id="i-kaynas" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.6"><circle cx="8.5" cy="12" r="5.5"/><circle cx="15.5" cy="12" r="5.5"/></g><path fill="currentColor" d="M12 8.2a5.5 5.5 0 0 1 0 7.6 5.5 5.5 0 0 1 0-7.6z"/></symbol>
+  <symbol id="i-paylas" viewBox="0 0 24 24"><g fill="currentColor"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/></g><path d="M8.6 10.6l6.8-4M8.6 13.4l6.8 4" stroke="currentColor" stroke-width="2.2"/></symbol>
+  <symbol id="i-kitap" viewBox="0 0 24 24"><path fill="currentColor" d="M3 5c3-1.5 6-1.5 8.5.5V21C9 19 6 19 3 20.3zM21 5c-3-1.5-6-1.5-8.5.5V21c2.5-2 5.5-2 8.5-.7z"/></symbol>
+  <symbol id="i-soru" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M9 9.3a3 3 0 1 1 4.3 2.7c-.9.5-1.3 1.1-1.3 2v.6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="17.6" r="1.5" fill="currentColor"/></symbol>
+  <symbol id="i-zincir" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></g></symbol>
+  <symbol id="i-ayar" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="4" stroke-dasharray="3.2 3.08"/><circle cx="12" cy="12" r="6.6" fill="currentColor"/><circle cx="12" cy="12" r="2.7" fill="#2c1250"/></symbol>
+  <symbol id="i-tac" viewBox="0 0 24 24"><path fill="currentColor" d="M3 7.5l4.6 4L12 4l4.4 7.5L21 7.5 19 19H5zM5.5 20.5h13V22h-13z"/></symbol>
+  <symbol id="i-kilic1" viewBox="0 0 24 24"><path fill="currentColor" d="M20.5 2.5l1 1-1.5 6L10 19.5 4.5 14 14.5 4zM4 15.5l4.5 4.5-1.4 1.4-1.6-1.6-2.4 2.4-1.4-1.4 2.4-2.4-1.6-1.6z"/></symbol>
+  <symbol id="i-simsek" viewBox="0 0 24 24"><path fill="currentColor" d="M13.5 2L4 14h7l-1.5 8L19 10h-7z"/></symbol>
+  <symbol id="i-hedef" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/></g><circle cx="12" cy="12" r="1.8" fill="currentColor"/></symbol>
+  <symbol id="i-damla" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2s7 7.5 7 12.5A7 7 0 0 1 5 14.5C5 9.5 12 2 12 2z"/></symbol>
+  <symbol id="i-ev" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3l9.5 8.2-1.4 1.6-1.1-.9V21h-5.5v-6h-3v6H5v-9.1l-1.1.9-1.4-1.6z"/></symbol>
+  <symbol id="i-oyna" viewBox="0 0 24 24"><path fill="currentColor" d="M7 4.5v15c0 .8.9 1.3 1.6.9l12-7.5c.6-.4.6-1.4 0-1.8l-12-7.5C7.9 3.2 7 3.7 7 4.5z"/></symbol>
+  <symbol id="i-durdur" viewBox="0 0 24 24"><path fill="currentColor" d="M6 4h4.5v16H6zM13.5 4H18v16h-4.5z"/></symbol>
+  <symbol id="i-el" viewBox="0 0 24 24"><path fill="currentColor" d="M9 3.5a1.5 1.5 0 0 1 3 0V11h.5V8.5a1.5 1.5 0 0 1 3 0V11h.5V9.5a1.5 1.5 0 0 1 3 0v6.2c0 3.5-2.6 6.3-6 6.3h-1c-2 0-3.4-.8-4.6-2.4L4.2 15a1.6 1.6 0 0 1 2.4-2l2.4 2.2z"/></symbol>
+  <symbol id="i-kopya" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.4"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 5V4.5A1.5 1.5 0 0 0 14.5 3h-9A1.5 1.5 0 0 0 4 4.5v11A1.5 1.5 0 0 0 5.5 17H6"/></g></symbol>
+  <symbol id="i-ok" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3l8 9h-5v9H9v-9H4z"/></symbol>
+  <symbol id="i-kalkan" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/></symbol>
+  <symbol id="i-onay" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.5l5 5L19.5 6.5"/></symbol>
+  <symbol id="i-geri" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" d="M15 4.5L7.5 12l7.5 7.5"/></symbol>
+  <symbol id="i-isik" viewBox="0 0 24 24"><path fill="currentColor" d="M9 21h6v-1.5H9zM12 2a7 7 0 0 0-4 12.7V18h8v-3.3A7 7 0 0 0 12 2z"/></symbol>
+  <symbol id="i-sersem" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l1.8 4.2L18 8l-4.2 1.8L12 14l-1.8-4.2L6 8l4.2-1.8zM19 14l1 2.2 2 .8-2 .8-1 2.2-1-2.2-2-.8 2-.8zM5 15l.8 1.7 1.7.8-1.7.8L5 20l-.8-1.7-1.7-.8 1.7-.8z"/></symbol>
+</svg>
+
+<div class="gok"></div>
+<div id="ui">
+
+<!-- ================= HAZIRLIK ================= -->
+<section class="ekran" id="hazirlik">
+  <div class="sahne" data-sahne>
+    <img class="ada" src="../../gorsel/arena_konsept.webp" alt="">
+    <div class="katman" id="hzKatman"></div>
+  </div>
+
+  <div class="ust">
+    <div class="p"><span class="can">&#9829;</span> 4 can</div>
+    <div class="p">Tur 6</div>
+    <div class="p alamet"><span class="top"></span><span>Kan Ayı <small>· herkes +%20 hasar</small></span></div>
+    <div class="p">Zafer <span class="elmas"><i class="v"></i><i class="v"></i><i class="v"></i><i class="v"></i><i></i><i></i><i></i></span> 4/7</div>
+  </div>
+  <button class="btn mor menuBtn" aria-label="Menü"><svg class="ik"><use href="#i-ayar"/></svg></button>
+
+  <div class="sol">
+    <div class="cam rakip">
+      <div class="bas"><svg class="ik"><use href="#i-goz"/></svg>Sıradaki rakip<span class="sag" style="color:#ffc7d1">basılı tut</span></div>
+      <div class="ad"><div class="av"><img src="../../arayuz/portre/tilki.png" alt=""></div><div><b>SisAvcısı</b><small>4 can · Sv 6</small></div></div>
+      <div class="mini">
+        <div class="k3"><img src="../../arayuz/portre/tilki.png" alt=""><span>★★</span></div>
+        <div class="k3"><img src="../../arayuz/portre/ayi.png" alt=""><span>★</span></div>
+        <div class="k1"><img src="../../arayuz/portre/yarasa.png" alt=""><span>★★</span></div>
+        <div class="k1"><img src="../../arayuz/portre/kurbaga.png" alt=""><span>★</span></div>
+        <div></div>
+        <div class="k3"><img src="../../arayuz/portre/baykus.png" alt=""><span>★</span></div>
+      </div>
+      <div class="soyS"><span class="hap"><img class="soyIk" src="../../arayuz/soy_karanlik.png" alt="">Karanlık 3</span><span class="hap"><img class="soyIk" src="../../arayuz/soy_bilge.png" alt="">2</span></div>
+    </div>
+    <div class="cam soylar" id="soyListe"></div>
+    <div class="cam tilsim">
+      <div class="bas">Tılsımlar<span class="sag">3</span></div>
+      <div class="izg">
+        <div class="d" style="--tc:#ff7a2a"><svg class="ik"><use href="#i-kilic1"/></svg></div>
+        <div class="d" style="--tc:#43a6ff"><svg class="ik"><use href="#i-damla"/></svg></div>
+        <div class="d" style="--tc:#c47bff"><svg class="ik"><use href="#i-kalkan"/></svg></div>
+        <div></div><div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cam sag" id="oyListe"></div>
+
+  <button class="btn altin eylem" id="savasaBtn"><span><svg class="ik"><use href="#i-kilic"/></svg> SAVAŞA</span><small>SisAvcısı'na karşı</small></button>
+
+  <div class="dukkan" id="dukkan">
+    <div class="svBlok">
+      <div class="ust2"><div class="sv">6</div><div class="dn"><small>Seviye · 12/20 dny</small><div class="bar"><i></i></div></div></div>
+      <button class="btn mor"><svg class="ik"><use href="#i-ok"/></svg>Deneyim <span class="fiyat"><svg class="ik"><use href="#i-coin"/></svg>4</span></button>
+    </div>
+    <div class="ykBlok">
+      <button class="btn mor"><span><svg class="ik"><use href="#i-yenile"/></svg> Yenile</span><small><svg class="ik"><use href="#i-coin"/></svg>2</small></button>
+      <button class="btn mor"><span><svg class="ik"><use href="#i-kilitAcik"/></svg> Kilitle</span></button>
+    </div>
+    <div class="kartlar" id="kartlar"></div>
+    <div class="satAlan"><svg class="ik" style="font-size:30px"><use href="#i-coin"/></svg>Buraya bırak: <b>Sat</b> <span class="fiyat">+1</span></div>
+    <div class="altinBlok">
+      <div class="miktar"><svg class="ik"><use href="#i-coin"/></svg>34</div>
+      <div class="faiz"><i class="v"></i><i class="v"></i><i class="v"></i><i></i><i></i></div>
+      <small>Faiz +3 · 6 daha → +4</small>
+    </div>
+  </div>
+  <div id="hzEk"></div>
+</section>
+
+<!-- ================= SAVAŞ ================= -->
+<section class="ekran" id="savas">
+  <div class="sahne" data-sahne>
+    <img class="ada" src="../../gorsel/arena_konsept.webp" alt="">
+    <div class="katman" id="svKatman"></div>
+  </div>
+  <div class="cam skor">
+    <div class="tr"><b><span>Sen</span><span>%72</span></b><div class="bar"><i style="width:72%;background:linear-gradient(90deg,#2fbf6f,#8dfcb8)"></i></div></div>
+    <div class="sure">0:18<small>kalan</small></div>
+    <div class="tr"><b><span>%41</span><span>SisAvcısı</span></b><div class="bar" style="transform:scaleX(-1)"><i style="width:41%;background:linear-gradient(90deg,#e03a55,#ff8b9d)"></i></div></div>
+  </div>
+  <div class="ust" style="left:auto;right:68px;transform:none"><div class="p alamet"><span class="top"></span><span>Kan Ayı</span></div></div>
+  <button class="btn mor menuBtn" aria-label="Duraklat"><svg class="ik"><use href="#i-durdur"/></svg></button>
+  <div class="solMini" id="svSoy"></div>
+  <div class="cam sag" id="oyListe2" style="top:118px"></div>
+  <div class="hiz"><button class="btn mor">1×</button><button class="btn mor secili">2×</button></div>
+  <div class="cam kutIpucu"><b>KUT HAZIR</b>Kendi kahramanına dokun: yeteneği hemen patlar. Savaşta 1 kez.</div>
+  <button class="kutBtn"><span><b>KUT</b><small>1/1</small></span></button>
+</section>
+
+<!-- ================= ANA MENÜ ================= -->
+<section class="ekran" id="ana">
+  <div class="anaSahne"></div>
+  <img class="anaKahraman" style="left:2%;width:300px" src="../../arayuz/portre/golem.png" alt="">
+  <img class="anaKahraman" style="left:16%;width:230px;bottom:84px" src="../../arayuz/portre/kurt.png" alt="">
+  <img class="anaKahraman" style="right:16%;width:220px;bottom:90px" src="../../arayuz/portre/anka.png" alt="">
+  <img class="anaKahraman" style="right:1%;width:300px" src="../../arayuz/portre/ayi.png" alt="">
+  <div class="cam profil"><div class="av"><img src="../../arayuz/portre/anka.png" alt=""></div><div><b>Gökyolcu</b><small>Ustalık Sv 23</small></div></div>
+  <div class="cam lig"><svg class="ik"><use href="#i-kupa"/></svg><div><b>Gümüş Lig · 1 240</b><div class="bar"><i></i></div><small>Altın Lig'e 220 kupa</small></div></div>
+  <button class="btn mor menuBtn" aria-label="Ayarlar"><svg class="ik"><use href="#i-ayar"/></svg></button>
+  <img class="logo" src="../../arayuz/logo.png" alt="Kut Arena">
+  <div class="cam gorev">
+    <div class="bas">Bugünün görevleri<span class="sag">2/3</span></div>
+    <div class="g">2 kaynaşma yap<div class="bar"><i style="width:100%"></i></div></div>
+    <div class="g">Kut ile 3 düşman devir<div class="bar"><i style="width:66%"></i></div></div>
+    <div class="g">Bir maçta 5 zafer al<div class="bar"><i style="width:20%"></i></div></div>
+  </div>
+  <div class="oynaBlok">
+    <div class="cam mod"><button class="s">Dereceli</button><button>Serbest</button><button>Düello kodu</button><button>Öğretici</button></div>
+    <button class="btn altin oyna"><span><svg class="ik"><use href="#i-oyna"/></svg> OYNA</span><small>~7 dk · 8 kişilik hayalet lobi</small></button>
+    <div class="devam">Yarım kalan maç: Tur 6 · 4/7 zafer — Devam et ›</div>
+  </div>
+  <div class="cam altNav">
+    <button class="s"><svg class="ik"><use href="#i-ev"/></svg>Arena</button>
+    <button><svg class="ik"><use href="#i-kitap"/></svg>Koleksiyon<span class="nokta"></span></button>
+    <button><svg class="ik"><use href="#i-tac"/></svg>Profil</button>
+    <button><svg class="ik"><use href="#i-zincir"/></svg>Düello</button>
+    <button><svg class="ik"><use href="#i-soru"/></svg>Rehber</button>
+  </div>
+</section>
+
+<!-- ================= MAÇ SONU ================= -->
+<section class="ekran" id="son">
+  <div class="anaSahne" style="filter:blur(3px) brightness(.7)"></div>
+  <div class="isin"></div>
+  <div class="cam sonKart" style="border-width:2.5px;border-color:var(--altin)">
+    <div class="unvan">1. SIRA</div>
+    <div class="alt1">Arena senin · 7 zafer · 3 can kaldı · 9 tur</div>
+    <div class="podyum">
+      <div><img src="../../arayuz/portre/kurbaga.png" alt=""></div>
+      <div><img src="../../arayuz/portre/kurt.png" alt=""></div>
+      <div class="yildizM" style="width:120px"><img src="../../arayuz/portre/golem.png" alt=""></div>
+      <div><img src="../../arayuz/portre/koc.png" alt=""></div>
+      <div><img src="../../arayuz/portre/semender.png" alt=""></div>
+    </div>
+    <div style="font-size:14px;font-weight:800;color:var(--altinA)">Maçın yıldızı: Kaya Golemi × Anka · 1 840 hasar</div>
+    <div class="sonSatir">
+      <div class="kutu"><small>Kupa</small><b>1 240 → 1 280 <span style="color:var(--zumrut)">+40</span></b><div class="bar"><i></i></div></div>
+      <div class="kutu"><small>Turlar · 7 kazanıldı</small><b style="font-size:16px;margin-top:6px">Tur 1 → 9</b><div class="turlar"><i></i><i></i><i class="k"></i><i></i><i></i><i class="k"></i><i></i><i></i><i></i></div></div>
+      <div class="kutu"><small>Açıldı</small><b style="font-size:16px;margin-top:6px">Dağ Koçu çerçevesi</b><div style="font-size:13px;color:var(--soluk);margin-top:4px">Ustalık Sv 2</div></div>
+    </div>
+    <div class="sonEylem">
+      <button class="btn mor"><svg class="ik"><use href="#i-ev"/></svg>Ana ekran</button>
+      <button class="btn gb"><svg class="ik"><use href="#i-paylas"/></svg>Takımı paylaş</button>
+      <button class="btn altin"><svg class="ik"><use href="#i-kilic"/></svg>Yeniden oyna</button>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="dikey"><div class="tel"></div>Kut Arena yatay oynanır.<br><span style="font-weight:600;font-size:15px;color:var(--soluk)">Cihazını yan çevir.</span></div>
+
+<script>
+const P = id => `../../arayuz/portre/${id}.png`, SY = id => `../../arayuz/soy_${id}.png`;
+const ik = n => `<svg class="ik"><use href="#i-${n}"/></svg>`;
+const qs = new URLSearchParams(location.search);
+const ekran = qs.get('ekran') || 'hazirlik', durum = qs.get('durum') || '';
+document.getElementById(ekran).classList.add('aktif');
+
+/* Ölçek: Unity CanvasScaler karşılığı. s = clamp(min(W/1280, H/800), 0.85, 1.5) */
+const ui = document.getElementById('ui');
+function olcek() {
+  const W = innerWidth, H = innerHeight;
+  const s = Math.max(.85, Math.min(1.5, Math.min(W / 1280, H / 800)));
+  const w = W / s, h = H / s;
+  ui.style.width = w + 'px'; ui.style.height = h + 'px'; ui.style.transform = `scale(${s})`;
+  document.body.classList.toggle('kompakt', W / H < 1.45);
+  document.body.classList.toggle('dikeyMod', W / H < 0.8);
+  // 3D sahne kutusu: üst HUD (56) ile dükkân şeridi (128) arası; ada 3:2.
+  const ust = 56, alt = ekran === 'savas' ? 20 : 128 - 34;
+  const aw = w, ah = h - ust - alt;
+  let bw = Math.min(aw, ah * 1.5), bh = bw / 1.5;
+  document.querySelectorAll('[data-sahne]').forEach(el => {
+    el.style.width = bw + 'px'; el.style.height = bh + 'px';
+    el.style.left = (w - bw) / 2 + 'px'; el.style.top = ust + (ah - bh) / 2 + 'px';
+  });
+}
+addEventListener('resize', olcek); olcek();
+
+/* ---- tahta konumları (ada görselinin %'si; Unity'de dünya koordinatı) ---- */
+const OYUNCU = { on: [[37, 57], [50, 57], [63, 57]], arka: [[35.5, 69.5], [50, 69.5], [64.5, 69.5]] };
+const DUSMAN = { on: [[38.5, 38], [50, 38], [61.5, 38]], arka: [[39.5, 26.5], [50, 26.5], [60.5, 26.5]] };
+const YEDEK = [30, 38, 46, 54, 62, 70].map(x => [x, 84.5]);
+function birim(id, x, y, o = {}) {
+  const yz = '★'.repeat(o.s || 1);
+  return `<div class="birim s${o.s || 1} ${o.cls || ''}" style="left:${x}%;top:${y}%;--bw:${o.w || 11}%">
+    ${o.cubuk ? `<div class="cubuk"><i style="width:${o.cubuk}%"></i><b style="width:${o.mana || 40}%"></b></div>` : ''}
+    <div class="yz">${yz}</div><img class="p" src="${P(id)}" alt="">${o.f ? `<div class="mad"><img src="${P(o.f)}" alt=""></div>` : ''}</div>`;
+}
+function yuva(x, y, cls = '', w = 12) { return `<div class="yuva ${cls}" style="left:${x}%;top:${y}%;width:${w}%"></div>`; }
+
+/* ---- HAZIRLIK ---- */
+if (ekran === 'hazirlik') {
+  const k = document.getElementById('hzKatman'); let h = '';
+  const tahta = [['kurt', 0, 0, { s: 2 }], ['golem', 1, 0, { f: 'anka' }], ['koc', 2, 0, {}], ['kurbaga', 0, 1, {}], ['semender', 2, 1, {}]];
+  OYUNCU.on.forEach(([x, y]) => h += yuva(x, y + 1, 'dolu'));
+  OYUNCU.arka.forEach(([x, y], i) => h += yuva(x, y + 1, i === 1 ? '' : 'dolu', 13));
+  YEDEK.forEach(([x, y], i) => h += yuva(x, y + .5, i < 3 ? 'dolu' : '', 7.4));
+  h += `<div class="takimSayac" style="left:50%;top:46%">Takım 5 / 6</div>`;
+  for (const [id, c, r, o] of tahta) {
+    const [x, y] = (r ? OYUNCU.arka : OYUNCU.on)[c];
+    let cls = '';
+    if (durum === 'surukle' && id === 'koc') cls = '';
+    h += birim(id, x, y + 1, { ...o, w: r ? 12 : 11, cls });
+  }
+  const yedek = ['yilan', 'yilan', 'baykus'];
+  yedek.forEach((id, i) => {
+    const [x, y] = YEDEK[i];
+    if (durum === 'surukle' && id === 'baykus') return;
+    h += birim(id, x, y + .5, { w: 8 });
+  });
+  if (durum === 'surukle') {
+    h = h.replace('class="yuva dolu" style="left:63%;top:58%', 'class="yuva kaynasHedef" style="left:63%;top:58%');
+    h += yuva(YEDEK[2][0], YEDEK[2][1] + .5, '', 7.4);
+    h += birim('baykus', 66, 52, { w: 11, cls: 'surukle' });
+    h += `<div class="surukleEtiket" style="left:63%;top:31%">Bırak: Kaynaştır<small>Dağ Koçu × Ayaz Baykuşu · 3 altın</small></div>`;
+    h += `<div class="etiket" style="left:50%;top:46%;border-color:#fff3c4">Boş yuvaya bırak = taşı · Üstüne bırak = kaynaştır</div>`;
+    h = h.replace('<div class="takimSayac" style="left:50%;top:46%">Takım 5 / 6</div>', '');
+    document.getElementById('dukkan').classList.add('surukleMod');
+    document.querySelector('.satAlan').innerHTML = `${ik('coin')}Satmak için buraya bırak <span class="fiyat">+3</span>`;
+  }
+  k.innerHTML = h;
+
+  // soy izleyici
+  const soylar = [['yer', 'Yer', 2, 1, 2], ['ates', 'Od', 2, 1, 2], ['gok', 'Gök', 2, 1, 2], ['atli', 'Çevik', 2, 1, 2], ['avci', 'Avcı', 1, 0, 2], ['bilge', 'Bilge', 1, 0, 2], ['dev', 'Dev', 1, 0, 2]];
+  let sl = `<div class="bas" style="padding:0 6px 6px">Soylar<span class="sag">4 etkin</span></div>`;
+  soylar.forEach(([id, ad, n, sv, sonraki], i) => {
+    const acik = durum === 'bilgi' && id === 'yer';
+    sl += `<div class="soy s${sv} ${acik ? 'acik' : ''}"><div class="hex"><img src="${SY(id)}" alt=""></div><div class="ad">${ad}</div><div class="es"><em class="${n >= 2 ? 'y' : ''}">${n >= 2 ? 2 : n + '/2'}</em><em>4</em></div></div>`;
+    if (acik) sl += `<div class="soyAcik"><b>2:</b> +150 can (etkin)<br><b>4:</b> +400 can<br>Golem, Koç</div>`;
+  });
+  document.getElementById('soyListe').innerHTML = sl;
+
+  // dükkân kartları
+  const dk = [['yilan', 2, ['su', 'bilge'], 'Zümrüt Yılan', 'yukselir'], ['ayi', 3, ['karanlik', 'dev'], 'Gece Ayısı', ''], ['kurbaga', 1, ['bilge', 'gok'], 'Davulcu Kurbağa', ''], ['kugu', 3, ['gok', 'su'], 'Işık Kuğusu', ''], ['bulutat', 2, ['gok', 'atli'], 'Bulut Atı', '']];
+  document.getElementById('kartlar').innerHTML = dk.map(([id, f, s, ad, c]) =>
+    `<div class="kart k${f} ${c}"><img src="${P(id)}" alt=""><div class="sy">${s.map(x => `<img src="${SY(x)}" alt="">`).join('')}</div><div class="fy fiyat">${ik('coin')}${f}</div>${c === 'yukselir' ? '<div class="rz">★2 olur</div>' : ''}<div class="ad">${ad}</div></div>`).join('');
+
+  if (durum === 'bilgi') {
+    document.getElementById('hzEk').innerHTML = `<div class="cam bilgiKart k2" id="bk">
+      <div class="ust3"><div class="por"><img src="${P('koc')}" alt=""></div><div><h3>Dağ Koçu</h3>
+      <div style="display:flex;gap:5px;margin-top:4px"><span class="hap" style="color:var(--k2)">K2</span><span class="hap" style="color:var(--altin)">★</span><span class="hap"><img class="soyIk" src="${SY('yer')}" alt="">Yer</span><span class="hap"><img class="soyIk" src="${SY('atli')}" alt="">Çevik</span></div></div></div>
+      <div class="stat"><div>Can<b>680</b></div><div>Saldırı<b>62</b></div><div>Hız<b>0,85</b></div><div>Menzil<b>1</b></div><div>Mana<b>90</b></div><div>Sıra<b>Ön</b></div></div>
+      <div class="yt"><b>Yetenek · Boynuz Öfkesi</b>Sonraki 3 vuruşu 2 kat; canının %20'sini yeniler.</div>
+      <div class="yt ps"><b>Pasif · Gözü Kara</b>Canı yarının altındayken +%50 hasar.</div>
+      <div class="ipucu">Sürükle: taşı · Başka kahramanın üstüne bırak: kaynaştır · Dükkâna sürükle: sat (+2)</div></div>`;
+    const sahne = document.querySelector('#hazirlik .sahne');
+    const r = sahne.getBoundingClientRect(), s = r.width / sahne.offsetWidth;
+    const bk = document.getElementById('bk');
+    const xL = (sahne.offsetLeft + sahne.offsetWidth * .70), yT = sahne.offsetTop + sahne.offsetHeight * .22;
+    bk.style.left = Math.min(xL, ui.offsetWidth - 300 - 100) + 'px'; bk.style.top = yT + 'px';
+    document.querySelector('#hzKatman').innerHTML += `<div class="yuva hedef" style="left:63%;top:58%;width:12%"></div>`;
+  }
+  if (durum === 'kaynas') {
+    document.getElementById('hzEk').innerHTML = `<div class="perde"></div><div class="cam kaynasKart">
+      <h2>KAYNAŞTIR</h2>
+      <div class="formul">
+        <div class="p k2"><div><img src="${P('koc')}" alt=""></div>Dağ Koçu<br><span style="color:var(--safir)">yetenek + gövde</span></div>
+        <div class="op">+</div>
+        <div class="p k3"><div><img src="${P('baykus')}" alt=""></div>Ayaz Baykuşu<br><span style="color:var(--ametist)">pasif</span></div>
+        <div class="op">=</div>
+        <div class="p sonuc"><div><img src="${P('koc')}" alt=""><span class="mad2"><img src="${P('baykus')}" alt=""></span></div>Koç × Baykuş</div>
+      </div>
+      <div class="iki">
+        <div class="yt"><b>Yetenek · Boynuz Öfkesi</b>Sonraki 3 vuruşu 2 kat; canının %20'sini yeniler.</div>
+        <div class="yt ps"><b>Pasif · Kış Nefesi</b>Savaşa %50 mana ile başlar.</div>
+      </div>
+      <div class="degisim"><span class="hap">Can 713</span><span class="hap">Saldırı 60</span><span class="hap">Hız 0,78</span><span class="hap y">Ayaz 1 → 2 · eşik açılır</span><span class="hap y">Bilge 1 → 2 · eşik açılır</span><span class="hap">Yer, Çevik korunur</span></div>
+      <div class="alt"><button class="btn sade" style="width:150px">İptal</button><button class="btn mor" style="width:170px">⇄ Rolleri çevir</button><button class="btn gb" style="flex:1">${ik('kaynas')} KAYNAŞTIR <span class="fiyat">${ik('coin')}3</span></button></div>
+    </div>`;
+  }
+}
+
+/* ---- oyuncu listesi ---- */
+const OYUNCULAR = [['Gökyolcu', 'anka', 5, 4, 'ben'], ['TaşYürek', 'golem', 5, 5, ''], ['SisAvcısı', 'tilki', 4, 4, 'rk'], ['Ayazkanat', 'baykus', 4, 3, ''], ['Korbaşı', 'semender', 3, 3, ''], ['Yıldızçoban', 'kugu', 2, 2, ''], ['Bulutsu', 'bulutat', 1, 1, ''], ['Sessizİz', 'yarasa', 0, 1, 'elendi']];
+function oyListe() {
+  let h = `<div class="bas" style="padding:2px 6px 6px">Lobi<span class="sag">7/8 ayakta</span></div>`;
+  OYUNCULAR.forEach(([ad, av, can, zf, c], i) => {
+    h += `<div class="oy ${c}"><span class="sira">${i + 1}</span><div class="av"><img src="${P(av)}" alt=""></div>
+      <div class="bilgi"><b>${ad}</b><div class="cb"><div class="bar"><i style="width:${can * 20}%"></i></div><em>${can}</em></div></div>
+      <span class="zf">${zf}★</span><span class="canR">${can}</span>${c === 'rk' ? `<span class="gozR">${ik('goz')}</span>` : ''}</div>`;
+  });
+  return h;
+}
+if (ekran === 'hazirlik') document.getElementById('oyListe').innerHTML = oyListe();
+
+/* ---- SAVAŞ ---- */
+if (ekran === 'savas') {
+  document.getElementById('oyListe2').innerHTML = oyListe();
+  const k = document.getElementById('svKatman'); let h = '';
+  const ben = [['kurt', 0, 0, { s: 2, cubuk: 70, mana: 80 }], ['golem', 1, 0, { f: 'anka', cubuk: 55, mana: 30 }], ['koc', 2, 0, { cubuk: 90, mana: 60 }], ['kurbaga', 0, 1, { cubuk: 100, mana: 95 }], ['semender', 2, 1, { cubuk: 80, mana: 20 }]];
+  const rk = [['tilki', 1, 1, { s: 2, cubuk: 60 }], ['ayi', 1, 0, { cubuk: 35 }], ['yarasa', 0, 0, { s: 2, cubuk: 20 }], ['kurbaga', 0, 1, { cubuk: 50 }], ['baykus', 2, 1, { cubuk: 70 }]];
+  YEDEK.forEach(([x, y], i) => { if (i < 3) h += birim(['yilan', 'yilan', 'baykus'][i], x, y + .5, { w: 7, cls: 'soluk' }); });
+  for (const [id, c, r, o] of rk) { const [x, y] = (r ? DUSMAN.arka : DUSMAN.on)[c]; h += `<div class="dusman">${birim(id, x, y, { ...o, w: r ? 8.5 : 9.5 })}</div>`; }
+  for (const [id, c, r, o] of ben) { const [x, y] = (r ? OYUNCU.arka : OYUNCU.on)[c]; h += birim(id, x, y - 4, { ...o, w: r ? 12 : 11 }); }
+  h += `<div class="sayi" style="left:44%;top:16%">-212</div><div class="sayi kritik" style="left:57%;top:20%">-340!</div><div class="sayi iyi" style="left:31%;top:43%">+110</div>`;
+  h += `<div class="etiket" style="left:38.5%;top:40%;border-color:#7fd3ff;color:#bfe9ff">Sersem</div>`;
+  h += `<div class="etiket" style="left:50%;top:60%;border-color:#ff8ab0;color:#ffd1e0">Kaynaşık</div>`;
+  k.innerHTML = h;
+  const ss = [['yer', 'Yer 2'], ['ates', 'Od 2'], ['gok', 'Gök 2'], ['atli', 'Çevik 2']];
+  document.getElementById('svSoy').innerHTML = ss.map(([id, ad]) => `<div class="soy s1"><div class="hex"><img src="${SY(id)}" alt=""></div><div class="ad">${ad}</div></div>`).join('');
+}
+</script>
+</body>
+</html>
