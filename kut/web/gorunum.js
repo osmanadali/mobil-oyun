@@ -30,13 +30,13 @@ export const AYAR = {
   puruzluluk: 0.58, metallik: 0.0, normalOlcek: 1.25,
   doygunluk: 1.1,         // doku doygunluk çarpanı (1 = değişmez)
   kontrast: 1.12,
-  rimGuc: 0.55, rimUs: 2.6,
+  rimGuc: 0.45, rimUs: 2.8,
   parlama: 1.4,           // dokudaki yerel olarak parlak-doygun ayrıntıların (kristal, göz, desen) kendinden ışıması
   parlamaEsik: 0.1,       // piksel ile çevresinin (bulanık mip) parlaklık farkı eşiği (doğrusal)
   parlamaBulanik: 5.0,    // çevre için mip sapması (büyük = daha geniş çevre)      // doygunluk×parlaklık eşiği (doğrusal uzayda)
 };
 // Taraf kenar ışığı renkleri: bizimki soğuk mavi-beyaz, rakip çok hafif sıcak kırmızımsı
-export const RIM = { biz: new THREE.Color('#bfe0ff'), rakip: new THREE.Color('#ffb4a0'), notr: new THREE.Color('#ffe6c8') };
+export const RIM = { biz: new THREE.Color('#a8ccff'), rakip: new THREE.Color('#ffb4a0'), notr: new THREE.Color('#ffe6c8') };
 // Kahramana özel ince ayar (doku yapısına göre): parlama maskesi çok geniş kalanlar kısılır
 export const KAHRAMAN_AYAR = {};
 
