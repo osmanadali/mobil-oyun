@@ -54,3 +54,5 @@ o_sokum Söküm Taşı · o_kuttasi Kut Taşı · o_muhur Soy Mührü (gri, moto
 ## Diğer
 
 arm_kivilcim / arm_alev / arm_yildiz: Kut Armağanı kart çerçeveleri · lobi_plaka / lobi_plaka_ben: lobi oyuncu satırı · sonuc_serit: maç sonu kurdelesi (gri, altın/kırmızı boyanır)
+
+sira_1..sira_8: lobi sıralama rozetleri (ortası saydam, sayı oyunda yazılır)
