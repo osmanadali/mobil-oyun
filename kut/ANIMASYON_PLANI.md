@@ -30,6 +30,24 @@ Savaş motoru bir vuruşu anında uygular, ama gerçek bir yumrukta elin hedefe 
 | Dance_Loop | 1,00 sn | — | Zafer, davul dansı |
 | Jump_Start / Jump_Land | 1,33 / 1,25 sn | — | Yeniden doğuş, sıçrama |
 
+**UAL2 klipleri** (`web/modeller/ual2.glb`, Unreal adlı iskelet). Yükleme anında önce UAL iskeletine aktarılır (`sahne3d.js` `ual2Aktar`: iki iskelet A duruşunda, kemik başına model-göreli dünya dönüş farkı, kemik yönleri hizalanır), sonra her yaratığa UAL klipleri gibi aktarılır. Darbe anları aktarılmış klipte ölçüldü (60 kare/sn; elin kalçaya göre en ileri gittiği kare ve el hızının tepesi):
+
+| Klip | Süre | Darbe anı | Kullanım |
+|---|---|---|---|
+| Melee_Hook | 0,47 sn | **0,28 sn** | Kanca yumruk (Golem, Ayı) |
+| Sword_Regular_A | 0,43 sn | **0,24 sn** | Yatay pençe savuruşu (Ayı, Yarasa) |
+| Sword_Regular_B | 0,53 sn | **0,25 sn** | Ters savuruş (Ayı; A'nın bitiş duruşundan başlar) |
+| Sword_Regular_C | 2,00 sn | **0,64 sn** | Geniş savuruş (yedek) |
+| Zombie_Scratch | 1,80 sn | **0,58 sn** | Çift pençe tırmalama (Yarasa) |
+| Agir_Ezme | 1,60 sn | **0,62 sn** | Sword_Heavy_Combo'nun 2,0–3,6 sn kesiti: iki elle tepeden ezme (Ayı yeteneği) |
+| OverhandThrow | 1,33 sn | **0,36 sn** (bırakma) | Kaya Fırlat (Golem), Gölge Ok (Tilki), Kül Doğuşu (Anka) |
+| Sword_Dash | 1,57 sn | **0,30 sn** | Hücum (yedek) |
+| NinjaJump_Start / Land | 0,97 / 1,27 sn | sıçrama: klip sonu; iniş çömelmesi **0,18 sn** | Davul dansı (Kurbağa), Anka'nın alevden doğuşu |
+| Hit_Knockback | 0,83 sn | — | İlk 0,2 sn'lik geri savrulma, ileri-geri, üste eklenen (güçlü darbe) |
+| Idle_FoldArms_Loop, Idle_No_Loop, Yes | 2,50 sn | — | Golem beklemesi, ara hareket, zafer |
+
+Not: Sword_Heavy_Combo (4,33 sn) dört vuruşludur; bütünü bir saldırı aralığına sığmaz, yalnız son ezme vuruşu kesit olarak kullanılır. Hit_Knockback 0,3 sn'den sonra yere düşer; bu yüzden yalnız ilk savrulma alınır.
+
 **Saldırı hızı uyumu:** iki saldırı arası `1 / (as × hızÇarpanı)` saniyedir. Klip bu süreden uzunsa oynatma hızı `klipSüresi × as × hızÇarpanı` kadar artırılır (en az 1). Böylece klip bir sonraki vuruştan önce biter. Darbe anı da aynı oranda kısalır; önceden başlatma süresi buna göre hesaplanır.
 
 **Yürüme hızı:** motor hızı 1,7 hücre/sn, Çevik soyunda 2,4. Walk_Loop oynatma hızı, ayakların kaymadığı değere sahnede ayarlanır (başlangıç: 1,0 ve Jog için 1,0); Çevik soyu Jog_Fwd_Loop kullanır.
@@ -38,22 +56,22 @@ Savaş motoru bir vuruşu anında uygular, ama gerçek bir yumrukta elin hedefe 
 
 | Yaratık | Normal saldırı | Darbe anı | Özel güç (yetenek) animasyonu | Efekt |
 |---|---|---|---|---|
-| Kaya Golemi | Punch_Cross | 0,30 sn | Spell_Simple_Enter → Shoot (kaya fırlatma) | Göğüs kristali parlar, kaya mermisi, hedefte toz ve sersemleme yıldızları |
-| Davulcu Kurbağa | Spell_Simple_Shoot (ses dalgası) | 0,00 sn | Dance_Loop × 1 (davul dansı) | Her vuruşta halka şeklinde ses dalgası; takımın üstünde turuncu güç aurası 4 sn |
-| Sis Yarasası | Punch_Jab (pençe) | 0,21 sn | Spell_Simple_Enter → Idle_Loop 0,6 sn | Hedeften yarasaya kızıl can akışı (çizgi parçacık) |
+| Kaya Golemi | Punch_Cross / Melee_Hook | 0,30 / 0,28 sn | OverhandThrow (kaya fırlatma, bırakma 0,36 sn) | Göğüs kristali parlar, kaya mermisi, hedefte toz ve sersemleme yıldızları |
+| Davulcu Kurbağa | Spell_Simple_Shoot (ses dalgası) | 0,04 sn | NinjaJump_Start → Land (sıçrayıp yere vurma) | Her vuruşta halka şeklinde ses dalgası; takımın üstünde turuncu güç aurası 4 sn |
+| Sis Yarasası | Zombie_Scratch / Sword_Regular_A (pençe) | 0,58 / 0,24 sn | Spell_Simple_Enter → Idle_Loop 0,6 sn | Hedeften yarasaya kızıl can akışı (çizgi parçacık) |
 | Rüzgâr Ruhu | Spell_Simple_Shoot | 0,00 sn | Spell_Simple_Enter → Shoot | Yaprak dolu küçük kasırga, düşmanları geri iter |
 | Işık Kuğusu | Spell_Simple_Shoot | 0,00 sn | Spell_Simple_Enter → Idle_Loop 0,8 sn | Kanatlardan yükselen ışık tüyleri; dostlarda kalkan kabarcığı |
-| Gece Ayısı | Punch_Cross | 0,30 sn | Sword_Attack (tepeden ezme) | Mor gölge pençesi, hedefte lanet işareti (5 sn) |
-| Anka | Spell_Simple_Shoot (ateş tüyü) | 0,00 sn | Spell_Simple_Enter → Shoot | Hedef çevresine kül yağmuru; ölünce küle dönüp Jump_Land ile alevden doğuş |
+| Gece Ayısı | Melee_Hook / Sword_Regular_A / B | 0,28 / 0,24 / 0,25 sn | Agir_Ezme (tepeden ezme, 0,62 sn) | Mor gölge pençesi, hedefte lanet işareti (5 sn) |
+| Anka | Spell_Simple_Shoot (ateş tüyü) | 0,04 sn | OverhandThrow (alev tüyü fırlatma, 0,36 sn) | Hedef çevresine kül yağmuru; ölünce küle dönüp NinjaJump_Land ile alevden doğuş |
 | Ayaz Baykuşu | Spell_Simple_Shoot (buz kıymığı) | 0,00 sn | Spell_Simple_Enter → Idle_Loop 0,8 sn → Shoot | Bütün sahaya kırağı dalgası, düşmanlarda buz kaplaması |
-| Gölge Tilki | Spell_Simple_Shoot (ok) | 0,00 sn | Spell_Simple_Enter (yay germe) → Shoot | Yay ipine ışık çizgisi; canı en düşük düşmana gölge oku |
+| Gölge Tilki | Pistol_Aim → Pistol_Shoot (ok) | 0,03 sn | OverhandThrow (gölge oku fırlatma, 0,36 sn) | Yay ipine ışık çizgisi; canı en düşük düşmana gölge oku |
 | Fırtına Ejderi | Spell_Simple_Shoot | 0,00 sn | Jump_Start (yarısı) → Shoot | Gökten 3 yıldırım; hedeflerde sersemleme |
 
 Her iki ayaklı için ayrıca:
 - **Bekleme:** Idle_Loop. Aynı türden birkaç yaratık senkron görünmesin diye her birinin başlangıç zamanı rastgele kaydırılır.
-- **Vurulma:** yalnız 60'tan büyük darbede Hit_Chest (0,33 sn), üst katmanda ve yarı ağırlıkla. Yürüme ya da saldırı kesilmez.
+- **Vurulma:** Hit_Chest / Hit_Head sırayla, üste eklenen (additive) katmanda; güçlü darbede (yetenek ya da büyük vuruş, his gücü ≥ 0,7) UAL2 Hit_Knockback'in ilk savrulması. Yürüme ya da saldırı kesilmez.
 - **Ölüm:** Death01. Yere çarpma anında toz efekti; 1,8 sn sonra 0,6 sn içinde erir.
-- **Zafer:** savaş kazanılınca yaşayanlar Dance_Loop.
+- **Zafer:** savaş kazanılınca yaşayanlar Dance_Loop ya da Yes (yaratık tablosunda).
 - **Kanatlılar** (Kuğu, Anka, Yarasa) kolu kanat olarak kullanır. Bekleme ve yürümede kanatlara küçük, kodlu bir çırpma (±8°, 1,6 Hz) eklenir.
 - **İri kollular** (Golem, Ayı): Idle'da kollar gövdeye giriyor. Humanoid avatarda omuz ve kol kas sınırlarıyla ya da kollara +12° dışa açı ekleyen ek bir katmanla düzelt.
 

@@ -89,4 +89,51 @@ ok(ozet.seviye >= 2 + 1, `maç sonunda savaş deneyimiyle seviye arttı (Sv ${oz
   }
   ok(oz && oz.bitti && oz.mod === 'hizli' && (oz.kazandi ? oz.zafer === K.hizli.zaferHedef : true), `Hızlı Maç bitti (${n} tur)`);
 }
+
+// ── denetim ekleri: yer yokken 3. kopya, havuza alış/satış, dükkân tohumu, deneyim parası, eski kayıt ──
+{
+  // yedek dolu, takım dolu: 3. kopya birleşir, takım sınırı aşılmaz, birleşen birim eldeki kopyanın yerinde
+  const p = new Oyun(); await p.yeniMac('arena');
+  p.M.seviye = 3; p.M.altin = 50; p.M.tahta = Array(12).fill(null); p.M.yedek = Array(7).fill(null);
+  ['kurt', 'yarasa', 'ruzgar'].forEach((h, i) => { p.M.tahta[i] = { h, s: 1 }; });
+  for (let i = 0; i < 7; i++) p.M.yedek[i] = i < 2 ? { h: 'golem', s: 1 } : { h: 'kurbaga', s: 2 };
+  p.M.dukkan = ['golem', null, null, null, null]; p.satinAl(0);
+  ok(p.tahtaSay() === 3 && p.M.yedek[0] && p.M.yedek[0].h === 'golem' && p.M.yedek[0].s === 2 && !p.M.yedek[1], 'yer yokken 3. kopya: ★2 yedekte oluşur, takım 3/3 kalır');
+  // aynı ★2 zinciri: iki ★2 tahtada + iki ★1 → ★3
+  p.M.tahta = Array(12).fill(null); p.M.yedek = Array(7).fill(null);
+  p.M.tahta[0] = { h: 'golem', s: 2 }; p.M.tahta[1] = { h: 'golem', s: 2 }; p.M.yedek[0] = { h: 'golem', s: 1 }; p.M.yedek[1] = { h: 'golem', s: 1 };
+  p.M.dukkan = ['golem', null, null, null, null]; p.satinAl(0);
+  ok(p.M.tahta[0] && p.M.tahta[0].s === 3 && [...p.M.tahta, ...p.M.yedek].filter(Boolean).length === 1, '★2 + ★2 + (★1 ×3) → ★3 ilk ★2\'nin yerinde');
+}
+{
+  // havuz: alınan kopya düşer, satılan geri döner; ★2 satışı 3 kopya iade eder
+  const q = new Oyun(); await q.yeniMac('arena'); q.M.rakip = { ad: 'x', takim: [] };
+  q.M.altin = 20; q.M.tahta = Array(12).fill(null); q.M.yedek = Array(7).fill(null);
+  q.M.dukkan = ['golem', 'golem', 'golem', null, null]; q.satinAl(0); q.satinAl(1);
+  ok(q.havuzBilgi('golem').kalan === 20, 'havuz: 2 golem alındı → 20/22');
+  q.satinAl(2); ok(q.havuzBilgi('golem').kalan === 19, '★2 golem 3 kopya tutar → 19/22');
+  const yer = ['tahta', 'yedek'].map(y => ({ yer: y, i: q.M[y].findIndex(Boolean) })).find(s => s.i >= 0);
+  q.secili = yer; q.sat(); ok(q.havuzBilgi('golem').kalan === 22, 'satılan ★2 havuza 3 kopya döner → 22/22');
+  // kaynaşmış birim: ikinci kahraman 1 kopya
+  q.M.tahta[0] = { h: 'kurt', f: 'golem', s: 1 }; ok(q.havuzBilgi('golem').kalan === 21 && q.havuzBilgi('kurt').kalan === 21, 'kaynaşmış kurt × golem: ikisi de 1 kopya');
+}
+{
+  // dükkân: aynı maç tohumu, tur ve yenileme sayacı → aynı kartlar (belirlenimci)
+  const a = new Oyun(); await a.yeniMac('arena'); const b = new Oyun(); await b.yeniMac('arena');
+  b.M.tohum = a.M.tohum; b.M.rakip = a.M.rakip; b.M.tahta = a.M.tahta.slice(); b.M.yedek = a.M.yedek.slice();
+  a.M.yenileN = 5; b.M.yenileN = 5; a._dukkanDoldur(); b._dukkanDoldur();
+  ok(JSON.stringify(a.M.dukkan) === JSON.stringify(b.M.dukkan), 'seviyeli dükkân aynı tohumla aynı');
+  // yenileme: altın düşer, kartlar yeni tohumla çekilir
+  a.M.altin = 5; const n0 = a.M.yenileN; a.yenile(); ok(a.M.altin === 5 - a.kural().yenile && a.M.yenileN === n0 + 1, 'yenile: altın düştü, sayaç arttı');
+  // deneyim: altın yetmezse alınmaz
+  a.M.altin = K.xpBedel - 1; const sv0 = a.M.seviye, xp0 = a.M.xp; a.xpAl();
+  ok(a.M.altin === K.xpBedel - 1 && a.M.seviye === sv0 && a.M.xp === xp0, 'deneyim: altın yetmezse alınmaz');
+}
+{
+  // eski biçimde (3×2, mod yok) kaydedilmiş yarım maç açılışta kapatılır; Hızlı Maç kaydı korunur
+  depo['kut.profil.v2'] = JSON.stringify({ kupa: 0, usta: {}, oyuncu: 'x', ad: 'O', sonTakim: null, istat: { mac: 0, birinci: 0 }, mac: { tur: 3, tahta: Array(6).fill(null), yedek: Array(4).fill(null) } });
+  ok(new Oyun().M === null, 'eski 3×2 yarım maç kapatıldı');
+  const h = new Oyun(); await h.yeniMac('hizli'); h.kaydet();
+  const h2 = new Oyun(); ok(h2.M && h2.M.mod === 'hizli' && h2.M.tahta.length === 12, 'Hızlı Maç kaydı yeniden açılınca sürüyor');
+}
 process.exit(hata ? 1 : 0);
