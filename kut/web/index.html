@@ -405,6 +405,12 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .hizlar small{font-size:11px;font-weight:800;color:var(--soluk);text-align:center}
 .duraklat{position:absolute;left:12px;top:50%;transform:translateY(-50%)}
 .duraklat .btn{width:58px;height:58px;padding:0}
+.duraklat{display:flex;flex-direction:column;gap:10px}
+.duraklat .btn.sonaGec{height:52px;font-size:12px;line-height:1.1;font-weight:900}
+.saat.son10{border-color:#ff5a5a;box-shadow:0 0 0 2px #5a0a14,0 0 14px rgba(255,60,60,.55);background:linear-gradient(180deg,#5a1020,#24060e)}
+.saat.son10 b{color:#ff6a6a;animation:saatNabiz 1s ease-out}
+@keyframes saatNabiz{0%{transform:scale(1.28);color:#fff}35%{transform:scale(1.04)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.saat.son10 b{animation:none}}
 .ayakta{position:absolute;left:12px;bottom:12px;display:flex;flex-direction:column;gap:6px;padding:8px 10px}
 .ayakta .s{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:900;white-space:nowrap}
 .ayakta .s>span{width:44px}
@@ -817,7 +823,7 @@ img.ik{object-fit:contain;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
     </div>
     <div class="alametK"><span class="ay"></span><div><b>Kan Ayı</b><span>herkes +%20 hasar</span></div></div>
   </div>
-  <div class="duraklat"><button class="btn mor" aria-label="Duraklat"><svg class="ik"><use href="#i-durdur"/></svg></button></div>
+  <div class="duraklat"><button class="btn mor" aria-label="Duraklat"><svg class="ik"><use href="#i-durdur"/></svg></button><button class="btn mor sonaGec" aria-label="Sonuca geç">Sonuca<br>geç</button></div>
   <div class="pn hizlar">
     <button class="btn mor">1×</button>
     <button class="btn altin secik">2×</button>

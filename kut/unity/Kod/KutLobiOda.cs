@@ -55,10 +55,15 @@ namespace Kut
                 var p = TurPlan(q);
                 if (p.Bolum == 1 || p.Tip == "kervan") { al = "yok"; continue; }
                 var l = KutVeri.Alametler.Where(a => a.Id != once).ToList(); var R = new KutRng(tohum + q * 7919.0 + 3);
-                al = l[(int)System.Math.Floor(R.Sonraki() * l.Count)].Id; once = al;
+                double top = 0; foreach (var a in l) top += a.W; // ağırlıklı (bölüm 8: Durgun Gök 2)
+                double x = R.Sonraki() * top; al = l[l.Count - 1].Id;
+                foreach (var a in l) { x -= a.W; if (x < 0) { al = a.Id; break; } }
+                once = al;
             }
             return al;
         }
+        /// <summary>r'den başlayarak n turun alameti (sıradaki alamet önceden görünür).</summary>
+        public static List<string> AlametSirasi(double tohum, int r, int n) { var l = new List<string>(); for (int k = 0; k < n; k++) l.Add(LobiAlamet(tohum, r + k)); return l; }
 
         static List<int> Karistir(List<int> l, KutRng R)
         {
@@ -108,23 +113,27 @@ namespace Kut
             foreach (var c in es.Ciftler) { if (c[0] == i) return (c[1], false); if (c[1] == i) return (c[0], false); }
             return null;
         }
-        static SavasSonucu GolgeSavas(IzTur ka, IzTur kb, string alamet, double tohum, bool pve)
+        /// <summary>Kayıttaki dokunuşu olan tarafta yapay zekâ yedek (ölü birim, ikinci hak); armağanlar iki taraf için; Son İki'de 2 Kut hakkı.</summary>
+        static SavasSonucu GolgeSavas(IzTur ka, IzTur kb, string alamet, double tohum, bool pve, int yasayan, int canA, int canB)
         {
-            var kut = new List<KutKaydi>(); var yz = new List<int>();
-            if (ka.Kut != null) kut.Add(new KutKaydi { T = ka.Kut.T, Taraf = 0, I = ka.Kut.I }); else yz.Add(0);
-            if (!pve) { if (kb.Kut != null) kut.Add(new KutKaydi { T = kb.Kut.T, Taraf = 1, I = kb.Kut.I }); else yz.Add(1); }
-            return new KutSavas(ka.Takim, kb.Takim, tohum, alamet, kut, yz.ToArray(), gunBatimi: KutVeri.GunBatimiBasla).SonunaKadar();
+            var kut = new List<KutKaydi>(); var yz = new List<int>(); var yzYedek = new List<int>();
+            if (ka.Kut != null) { kut.Add(new KutKaydi { T = ka.Kut.T, Taraf = 0, I = ka.Kut.I }); yzYedek.Add(0); } else yz.Add(0);
+            if (!pve) { if (kb.Kut != null) { kut.Add(new KutKaydi { T = kb.Kut.T, Taraf = 1, I = kb.Kut.I }); yzYedek.Add(1); } else yz.Add(1); }
+            int hak = yasayan == 2 ? KutVeri.SonIkiKutHak : KutVeri.KutHak;
+            var ar = new List<IList<string>> { SavasArmagan(ka.Armagan, canA), pve ? new List<string>() : SavasArmagan(kb.Armagan, canB) };
+            return new KutSavas(ka.Takim, kb.Takim, tohum, alamet, kut, yz.ToArray(), gunBatimi: KutVeri.GunBatimiBasla,
+                armagan: ar, kutHak: new[] { hak, pve ? 0 : hak }, yzYedek: yzYedek.ToArray()).SonunaKadar();
         }
         static LobiSonuc Bir(int a, int b, string tip, SavasSonucu s) => new LobiSonuc { A = a, B = b, Tip = tip, Kazanan = s.Kazanan, KalanPuan = s.KalanPuan, KalanSayi = s.KalanSayi, Sure = s.Sure };
         /// <summary>Hayalet × hayalet savaşları (bölüm 4.6): canlı oyuncunun dahil olmadığı eşleşmeler; canavar turunda her hayalet kendi dalgasıyla.</summary>
         public static List<LobiSonuc> GolgeSavaslari(Lobi lb, int r, string alamet, Eslesme es, List<TakimBirimi> canliTakim = null)
         {
-            var p = TurPlan(r); var outp = new List<LobiSonuc>();
+            var p = TurPlan(r); var outp = new List<LobiSonuc>(); int yas = Yasayanlar(lb).Count;
             if (p.Tip == "pve")
             {
                 var dalga = new IzTur { Takim = PveDalga(r) };
                 foreach (int i in Yasayanlar(lb)) if (!lb.Oyuncular[i].Canli)
-                    outp.Add(Bir(i, -1, "pve", GolgeSavas(LobiKadro(lb, i, r), dalga, alamet, lb.Tohum + r * 104729.0 + i * 7907.0 + 50021, true)));
+                    outp.Add(Bir(i, -1, "pve", GolgeSavas(LobiKadro(lb, i, r), dalga, alamet, lb.Tohum + r * 104729.0 + i * 7907.0 + 50021, true, yas, lb.Oyuncular[i].Can, 0)));
                 return outp;
             }
             if (p.Tip != "pvp") return outp;
@@ -132,10 +141,10 @@ namespace Kut
             {
                 int a = es.Ciftler[k][0], b = es.Ciftler[k][1];
                 if (lb.Oyuncular[a].Canli || lb.Oyuncular[b].Canli) continue;
-                outp.Add(Bir(a, b, "pvp", GolgeSavas(LobiKadro(lb, a, r), LobiKadro(lb, b, r), alamet, lb.Tohum + r * 104729.0 + k * 7907.0 + 1, false)));
+                outp.Add(Bir(a, b, "pvp", GolgeSavas(LobiKadro(lb, a, r), LobiKadro(lb, b, r), alamet, lb.Tohum + r * 104729.0 + k * 7907.0 + 1, false, yas, lb.Oyuncular[a].Can, lb.Oyuncular[b].Can)));
             }
             if (es.Yansima != null && !lb.Oyuncular[es.Yansima[0]].Canli)
-                outp.Add(Bir(es.Yansima[0], es.Yansima[1], "yansima", GolgeSavas(LobiKadro(lb, es.Yansima[0], r), LobiKadro(lb, es.Yansima[1], r, canliTakim), alamet, lb.Tohum + r * 104729.0 + 97, false)));
+                outp.Add(Bir(es.Yansima[0], es.Yansima[1], "yansima", GolgeSavas(LobiKadro(lb, es.Yansima[0], r), LobiKadro(lb, es.Yansima[1], r, canliTakim), alamet, lb.Tohum + r * 104729.0 + 97, false, yas, lb.Oyuncular[es.Yansima[0]].Can, lb.Oyuncular[es.Yansima[1]].Can)));
             return outp;
         }
 

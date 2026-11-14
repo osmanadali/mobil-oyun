@@ -1014,12 +1014,15 @@ const DURUM = {
   lanet(c, dt, t, p, h) { _v3.set(p.x, p.y + h + 0.38 + Math.sin(t * 3) * 0.05, p.z); const n = 1 + Math.sin(t * 6) * 0.08;
     DP.lanetPar.boy = 0.95 * n; P(DP.lanetPar); DP.lanetGoz.boy = 0.6 * n; P(DP.lanetGoz);
     c.acc += dt * 8 * OLCEK; while (c.acc >= 1) { c.acc--; _v4.set(p.x + rr(-0.3, 0.3), p.y + rr(0.1, 0.6) * h, p.z + rr(-0.3, 0.3)); const o = DP.lanetDuman; _v2.set(0, rr(0.3, 0.6), 0); o.omur = rr(0.7, 1); o.boy = rr(0.22, 0.32); P(o); } },
+  // kalkan: birimi saran ince kabuk (gövdeye göre elips: yatayda gövde yarıçapı, dikeyde boy), içi neredeyse saydam, kenarı parlar
   kalkan(c, dt, t, p, h) {
     const m = c.mesh; if (!m) return; c.yas += dt; m.position.set(p.x, p.y + h * 0.5, p.z);
     const pop = c.kapan >= 0 ? Math.max(0, 1 - c.kapan / 0.2) : Math.min(1, c.yas / 0.18);
-    const s = h * 1.25 * (c.kapan >= 0 ? 1 + (1 - pop) * 0.3 : (0.6 + 0.4 * pop + Math.sin(Math.min(1, c.yas / 0.35) * Math.PI) * 0.12)); m.scale.setScalar(s);
-    m.material.uniforms.uA.value = 0.9 * pop; m.material.uniforms.uT.value = t;
-    if (RND() < dt * 4 * OLCEK) { kureY(_v2, 0.2).multiplyScalar(s * 0.5); _v3.set(p.x, p.y + h * 0.5, p.z).add(_v2); P(DP.kalkanY); } },
+    const k = c.kapan >= 0 ? 1 + (1 - pop) * 0.25 : (0.7 + 0.3 * pop + Math.sin(Math.min(1, c.yas / 0.35) * Math.PI) * 0.08);
+    const yr = (c.nesne && c.nesne.userData.yaricap) || h * 0.3, rx = Math.max(h * 0.28, Math.min(h * 0.52, yr * 1.05)) * 2, ry = h * 1.0;
+    m.scale.set(rx * k, ry * k, rx * k);
+    m.material.uniforms.uA.value = 0.85 * pop; m.material.uniforms.uT.value = t;
+    if (RND() < dt * 2 * OLCEK) { kureY(_v2, 0.2).multiplyScalar(rx * 0.5); _v3.set(p.x, p.y + h * 0.5, p.z).add(_v2); P(DP.kalkanY); } },
   davul(c, dt, t, p, h) { _v3.set(p.x, Z() + 0.05, p.z); const s = DP.davulSok; s.boy = 1.15 + Math.sin(t * 8) * 0.08; s.rot = t; P(s);
     c.acc += dt * 14 * OLCEK; while (c.acc >= 1) { c.acc--; _v3.set(0, rr(0, 0.2) * h, 0); const y = DP.davulYor, o = DP.davulKiv; y.r = rr(0.32, 0.45); y.w = rr(2.5, 4); y.vy = rr(0.6, 1.2) * h;
       o.takip = c.nesne; o.yorunge = y; o.omur = rr(0.6, 0.9); o.boy = rr(0.12, 0.18); o.kare = RND() < 0.4 ? 'yildiz4' : 'parilti'; P(o); o.takip = null; } },
@@ -1060,13 +1063,16 @@ function kur(sahne_, kamera_, o = {}) {
   const kureG = new THREE.SphereGeometry(0.5, kalite === 'hafif' ? 18 : 28, kalite === 'hafif' ? 12 : 18);
   for (let i = 0; i < 12; i++) {
     const mat = new THREE.ShaderMaterial({ uniforms: { uA: { value: 0 }, uT: { value: 0 }, uR: { value: new THREE.Vector3(...rgb('#ffe9a8')) } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
-      vertexShader: `varying vec3 vN; varying vec3 vV; varying vec3 vP; void main(){ vec4 w = modelMatrix * vec4(position,1.0); vN = normalize(mat3(modelMatrix) * normal); vV = normalize(cameraPosition - w.xyz); vP = position; gl_Position = projectionMatrix * viewMatrix * w; }`,
+      // elips ölçekte doğru normal: köşegen ölçek için normal / ölçek² (bu ağlar döndürülmez)
+      vertexShader: `varying vec3 vN; varying vec3 vV; varying vec3 vP; void main(){ vec4 w = modelMatrix * vec4(position,1.0); vec3 sc = vec3(length(modelMatrix[0].xyz), length(modelMatrix[1].xyz), length(modelMatrix[2].xyz));
+        vN = normalize(mat3(modelMatrix) * (normal / max(sc * sc, vec3(1e-4)))); vV = normalize(cameraPosition - w.xyz); vP = position; gl_Position = projectionMatrix * viewMatrix * w; }`,
+      // ince kabuk: iç yüzey neredeyse saydam, kenar (fresnel) dar ve parlak; altıgen desen yalnız kenara yakın, çok hafif
       fragmentShader: `uniform float uA; uniform float uT; uniform vec3 uR; varying vec3 vN; varying vec3 vV; varying vec3 vP;
-        void main(){ float f = pow(1.0 - abs(dot(normalize(vN), vV)), 2.2); float bant = smoothstep(0.85, 1.0, sin(vP.y * 22.0 - uT * 4.0) * 0.5 + 0.5);
-          float alt = smoothstep(-0.5, -0.1, vP.y);
+        void main(){ float f = pow(1.0 - abs(dot(normalize(vN), vV)), 3.2); float bant = smoothstep(0.88, 1.0, sin(vP.y * 22.0 - uT * 4.0) * 0.5 + 0.5);
+          float alt = smoothstep(-0.5, -0.2, vP.y);
           vec2 hq = vec2(atan(vP.z, vP.x) * 1.9, vP.y * 7.0); vec2 hr = vec2(1.0, 1.732); vec2 ha = mod(hq, hr) - hr * 0.5, hb = mod(hq - hr * 0.5, hr) - hr * 0.5;
-          vec2 hg = dot(ha, ha) < dot(hb, hb) ? ha : hb; float hk = max(abs(hg.x) * 0.866 + abs(hg.y) * 0.5, abs(hg.y)); float hex = smoothstep(0.4, 0.47, hk);
-          float a = uA * (0.03 + f * 0.8 + bant * 0.1 * f + hex * 0.22) * alt; gl_FragColor = vec4(mix(uR, vec3(1.0), f * 0.6), a); }` });
+          vec2 hg = dot(ha, ha) < dot(hb, hb) ? ha : hb; float hk = max(abs(hg.x) * 0.866 + abs(hg.y) * 0.5, abs(hg.y)); float hex = smoothstep(0.42, 0.47, hk);
+          float a = uA * (0.008 + f * 0.75 + bant * 0.08 * f + hex * (0.025 + 0.12 * f)) * alt; gl_FragColor = vec4(mix(uR, vec3(1.0), f * 0.7), a); }` });
     const m = new THREE.Mesh(kureG, mat); m.visible = false; m.renderOrder = 32; m.name = 'vfx_kalkan'; sahne.add(m); kalkanHavuz.push(m);
   }
   if (kalite === 'yuksek' && o.isik !== false) { isik = new THREE.PointLight('#ffd08a', 0, 5.5, 1.6); isik.position.set(0, -50, 0); sahne.add(isik); }

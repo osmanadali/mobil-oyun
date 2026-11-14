@@ -45,33 +45,32 @@ export const KAHRAMAN_AYAR = {};
 
 let R = null, S = null, K = null, composer = null, bloom = null, ortamDoku = null, kalite = 'yuksek';
 let boyut = { w: 1, h: 1, dpr: 1 };
-let golgeBirikim = 0;
-const GOLGE_ARALIK = 1 / 30;   // gölge haritası en çok 30 Hz (60 Hz'de iki karede bir, 120 Hz'de dört karede bir)
+let golgeBirikim = 0;   // gölge haritası yenileme aralığı kademeye bağlı (KADEMELER.golgeHz; Tam kademede her karede)
 
 // ── Kalite kademeleri (uyarlanır kalite) ──
 // 0 bugünkü görüntünün aynısı. Cihaz yetişemezse sırayla iner: önce çözünürlük, sonra bloom, en son MSAA ve gölge.
 // 1 numara yüksek yenilemeli ekranın (120 Hz) kare bütçesi içindir: bloom %35 çözünürlük ve 2× MSAA, piksel yoğunluğu aynı.
 // dpr: üst sınır (cihazınki ve 1,5 ile ayrıca sınırlı) · bloom: bloom çözünürlük çarpanı (0 kapalı) · msaa: son işlem hedefi örnek sayısı ·
-// golge: gölge haritası boyu (0 gölge yok) · sonIslem: false ise composer hiç kurulmaz (doğrudan tuvale çizim)
+// golge: gölge haritası boyu (0 gölge yok) · golgeHz: gölge haritası en çok kaç Hz yenilenir (0: her karede, bugünkü gibi) · sonIslem: false ise composer hiç kurulmaz (doğrudan tuvale çizim)
 export const KADEMELER = [
-  { ad: 'Tam', dpr: 1.5, bloom: 1, msaa: 4, golge: 2048, sonIslem: true },
-  { ad: '120 Hz bütçesi', dpr: 1.5, bloom: 0.7, msaa: 2, golge: 2048, sonIslem: true },
-  { ad: 'Çözünürlük 1,25', dpr: 1.25, bloom: 0.7, msaa: 2, golge: 2048, sonIslem: true },
-  { ad: 'Çözünürlük 1', dpr: 1, bloom: 0.7, msaa: 2, golge: 2048, sonIslem: true },
-  { ad: 'Bloom yarım', dpr: 1, bloom: 0.5, msaa: 2, golge: 2048, sonIslem: true },
-  { ad: 'Bloom kapalı', dpr: 1, bloom: 0, msaa: 2, golge: 2048, sonIslem: true },
-  { ad: 'MSAA kapalı, gölge 1024', dpr: 1, bloom: 0, msaa: 0, golge: 1024, sonIslem: true },
-  { ad: 'Son işlem kapalı', dpr: 1, bloom: 0, msaa: 0, golge: 1024, sonIslem: false },
-  { ad: 'En düşük', dpr: 0.75, bloom: 0, msaa: 0, golge: 512, sonIslem: false },
+  { ad: 'Tam', dpr: 1.5, bloom: 1, msaa: 4, golge: 2048, golgeHz: 0, sonIslem: true },
+  { ad: '120 Hz bütçesi', dpr: 1.5, bloom: 0.7, msaa: 2, golge: 2048, golgeHz: 60, sonIslem: true },
+  { ad: 'Çözünürlük 1,25', dpr: 1.25, bloom: 0.7, msaa: 2, golge: 2048, golgeHz: 30, sonIslem: true },
+  { ad: 'Çözünürlük 1', dpr: 1, bloom: 0.7, msaa: 2, golge: 2048, golgeHz: 30, sonIslem: true },
+  { ad: 'Bloom yarım', dpr: 1, bloom: 0.5, msaa: 2, golge: 2048, golgeHz: 30, sonIslem: true },
+  { ad: 'Bloom kapalı', dpr: 1, bloom: 0, msaa: 2, golge: 2048, golgeHz: 30, sonIslem: true },
+  { ad: 'MSAA kapalı, gölge 1024', dpr: 1, bloom: 0, msaa: 0, golge: 1024, golgeHz: 30, sonIslem: true },
+  { ad: 'Son işlem kapalı', dpr: 1, bloom: 0, msaa: 0, golge: 1024, golgeHz: 30, sonIslem: false },
+  { ad: 'En düşük', dpr: 0.75, bloom: 0, msaa: 0, golge: 512, golgeHz: 30, sonIslem: false },
 ];
 let kademe = 0;
 // kademenin bu kalitede ve bu cihazda gerçekten uygulanan ayarı (hafifte bloom/MSAA yok, gölge en çok 1024)
 function etkinKademe(n = kademe) {
   const k = KADEMELER[Math.max(0, Math.min(KADEMELER.length - 1, n))], yuksek = kalite === 'yuksek';
   return { dpr: Math.min(k.dpr, boyut.dprTaban || 1.5), bloom: yuksek && k.sonIslem ? k.bloom : 0, msaa: yuksek && k.sonIslem ? k.msaa : 0,
-    golge: Math.min(k.golge, yuksek ? 2048 : 1024), sonIslem: yuksek && k.sonIslem };
+    golge: Math.min(k.golge, yuksek ? 2048 : 1024), golgeHz: k.golgeHz, sonIslem: yuksek && k.sonIslem };
 }
-const ayniKademe = (a, b) => a.dpr === b.dpr && a.bloom === b.bloom && a.msaa === b.msaa && a.golge === b.golge && a.sonIslem === b.sonIslem;
+const ayniKademe = (a, b) => a.dpr === b.dpr && a.bloom === b.bloom && a.msaa === b.msaa && a.golge === b.golge && a.golgeHz === b.golgeHz && a.sonIslem === b.sonIslem;
 export function kademeAl() { return kademe; }
 export function kademeAd(n = kademe) { return KADEMELER[n] ? KADEMELER[n].ad : ''; }
 /** Kademeyi uygular (sayfa yenilemeden). Dönen: uygulanan kademe numarası. */
@@ -182,11 +181,13 @@ function gunBatimiOdasi() {
 }
 
 // ── Çizim ve boyut ──
-// dt (gerçek sn) verilirse gölge haritası en çok 30 Hz güncellenir; verilmezse her çizimde (eski davranış)
+// dt (gerçek sn) verilirse gölge haritası kademenin golgeHz sınırıyla güncellenir (Tam kademede her karede);
+// verilmezse her çizimde (eski davranış)
 export function ciz(sahne = S, kamera = K, dt) {
   R.info.reset();
-  if (dt === undefined) R.shadowMap.needsUpdate = true;
-  else { golgeBirikim += dt; if (golgeBirikim >= GOLGE_ARALIK - 0.004) { golgeBirikim = 0; R.shadowMap.needsUpdate = true; } }
+  const hz = KADEMELER[kademe].golgeHz;
+  if (dt === undefined || !hz) R.shadowMap.needsUpdate = true;
+  else { golgeBirikim += dt; if (golgeBirikim >= 1 / hz - 0.004) { golgeBirikim = 0; R.shadowMap.needsUpdate = true; } }
   if (composer && sahne === S && kamera === K) composer.render();
   else R.render(sahne, kamera);
 }

@@ -546,6 +546,14 @@ puan = (mana − mp) × kc + 20 × bileşenSayısı + (Kut Ocağı varsa 60)
 
 Eşitlikte birim sırası (`i`) küçük olan seçilir.
 
+**Uygulama notları (Adım 6-7, `sim.js` ve `KutSavas.cs`):** belgede açık kalan yerler şöyle yazıldı:
+- Kut Taşı yankı sayılarını ×2 yapar; birden çok Kut Taşı ikiyi aşmaz. Kut Ocağı'nın ×1,5'i Kor yankılarına eklenir, ikiye katlanmaz.
+- Kabuk yankılarının toplamı en çok %80 (`KURAL.kutYanki.kabukTavan`); Ana Kaya + Kut Taşı ile %100'ü aşmasın diye.
+- 4 sn arası yalnız Çifte Kut için değil, her ek hak için geçerli (Son İki, Kut Mirası).
+- Kayıtlı dokunuşu olan hayalette yapay zekâ yalnız yedektir: kayıttaki dokunuşlar bittikten sonra kalan hakları kullanır (birim ölmüşse ilk hak 5. sn'den itibaren, ikinci hak 12. sn'den itibaren).
+- Kut Sessizliği'nde Saklı Kut armağanı yine 3 altın verir (o savaşta Kut kullanılmadı).
+- Karşı Hamle "en kalabalık soyu" savaş başında rakibin soy sayımından alır (eşitlikte ilk görülen soy).
+
 ---
 
 ## 8. Alamet lobide

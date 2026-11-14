@@ -152,13 +152,14 @@ ok(ozet.seviye >= 2 + 1, `maç sonunda savaş deneyimiyle seviye arttı (Sv ${oz
   ok(e.turAd() === '1-2' && e.M.altin === 2 + e.M.gelir.toplam && e.M.gelir.taban === 3 && e.M.gelir.faiz === 0, '1-2: altın birikti (2 + 3), bölüm 1\'de faiz yok');
   const a12 = e.M.altin; r = bitir(0); ok(r.ganimet === 2 && e.M.altin === a12 + 2 && e.M.seviye === 3, '1-2 sonu: +2 ganimet altını, +2 deneyim (Sv 3)');
   // 2-1 PvP: galibiyet → sonraki tur +1; faiz biriken altına göre
-  e.M.tur = 4; await e.turBaslat(false); e.M.altin = 27; r = bitir(0); ok(e.M.galibiyet && e.M.seri.tip === 'G' && e.M.seri.n === 1, '2-1 galibiyeti: G1');
+  // 2-1 armağanı bu sınamada alınmaz (altını değiştirmesin)
+  e.M.tur = 4; await e.turBaslat(false); e.M.armaganSecim = null; e.M.altin = 27; r = bitir(0); ok(e.M.galibiyet && e.M.seri.tip === 'G' && e.M.seri.n === 1, '2-1 galibiyeti: G1');
   await e.turBaslat(false); const g = e.M.gelir;
   ok(e.turAd() === '2-2' && g.taban === 5 && g.faiz === 2 && g.galibiyet === 1 && g.seri === 0 && e.M.altin === 27 + g.toplam, `2-2 başı: 5 taban + 2 faiz + 1 galibiyet${g.alamet ? ' + 2 alamet' : ''} (27 → ${e.M.altin})`);
   ok(e.faizSonraki() === Math.min(5, Math.floor(e.M.altin / 10)), 'sonraki turun faizi gösterilir');
   r = bitir(1, 5); ok(r.hasar === 9 && e.M.can === 91 && !e.M.galibiyet && e.M.seri.tip === 'M', '2-2 yenilgisi: −9 can (taban 4 + 5 yıldız)');
   // yenileme 2 altın, kaynaştırma 2 + en yüksek kademe
-  e.M.altin = 10; e.yenile(); ok(e.M.altin === 8, 'yenileme 2 altın');
+  e.M.altin = 10; e.M.bedavaYenile = 0; e.yenile(); ok(e.M.altin === 8, 'yenileme 2 altın'); // (Göç Mevsimi alametinde ilk 2 yenileme bedava olurdu)
   e.M.tahta = Array(12).fill(null); e.M.yedek = Array(7).fill(null); e.M.tahta[0] = { h: 'kurt', s: 1 }; e.M.tahta[1] = { h: 'anka', s: 1 };
   ok(e.kaynastirBedel('kurt', 'anka') === 5 && e.kaynastirBedel('kurt') === 3, 'kaynaştırma bedeli: K1 × K3 = 5');
   e.M.altin = 4; e.secili = null; e.yuvaDokun('tahta', 0); e.kaynasModDegistir(); e.yuvaDokun('tahta', 1);
@@ -372,5 +373,100 @@ ok(ozet.seviye >= 2 + 1, `maç sonunda savaş deneyimiyle seviye arttı (Sv ${oz
     ok(e1.M.lobi.oyuncular.every(x => x.canli || x.iz.bot) && e2.M.lobi.oyuncular.every(x => x.canli || x.iz.bot), '14 günden eski ve başka sürümün izleri lobiye girmez'); }
   // yarım lobi maçı sayfa yenilenince sürer
   b3.ilkSec(0); const b4 = new Oyun(); ok(b4.M && b4.M.mod === 'lobi' && b4.lobiMi() && b4.M.lobi.oyuncular.length === 8, 'yarım lobi maçı kayıttan açılır');
+}
+// ── Kut Armağanı (bölüm 6), Kut hakkı ve lobi alametleri (7, 8) ──
+{
+  const LL = window.KUT_LOBI, DD = window.KUT_DATA, AS = K.armaganSayi;
+  const a = new Oyun(); await a.yeniMac('arena'); a.ilkSec(0);
+  ok(a.M.alamet === 'yok' && a.sonrakiAlametler().length === 1 && a.sonrakiAlamet() === LL.lobiAlamet(a.M.tohum, a.M.tur), 'Arena: sıradaki turun alameti önceden görünür (maç tohumundan)');
+  a.M.tur = 4; await a.turBaslat(false);
+  ok(a.turAd() === '2-1' && a.bekleyenSecim() === 'armagan' && a.M.armaganSecim.secenek.length === 3 && a.M.alamet === LL.lobiAlamet(a.M.tohum, 3), '2-1: Kut Armağanı seçimi bekliyor (3 kart), alamet sıradaki tahminle aynı');
+  const ilk = a.M.armaganSecim.secenek.slice(); a.armaganYenile();
+  ok(a.M.armaganSecim.yenile === 0 && a.M.armaganSecim.secenek.every(id => !ilk.includes(id) || DD.ARMAGANLAR.filter(x => x.kademe === a.M.armaganSecim.kademe).length < 6), 'yenileme: kartlar değişir, hak biter');
+  a.armaganYenile(); ok(a.M.armaganSecim.yenile === 0, 'ikinci yenileme yapılamaz');
+  const secilen = a.M.armaganSecim.secenek[1]; a.armaganSec(1);
+  ok(a.M.armagan.length === 1 && a.M.armagan[0] === secilen && !a.M.armaganSecim, `armağan seçildi: ${DD.armagan(secilen).ad}`);
+  // aynı tur yeniden başlarsa (sayfa yenileme) armağan bir daha sorulmaz
+  const a2 = new Oyun(); await a2.turBaslat(true); ok(!a2.M.armaganSecim && a2.M.armagan.length === 1, 'yenilemede armağan seçimi tekrar sorulmaz');
+  // 3-2 ve 4-3: aynı armağan bir maçta iki kez çıkmaz
+  a.M.tur = 12; await a.turBaslat(false); const s2 = a.M.armaganSecim; a.armaganSec(0);
+  a.M.tur = 20; await a.turBaslat(false); const s3 = a.M.armaganSecim; a.armaganSec(0);
+  ok(s2 && s3 && a.turAd() === '4-3' && a.M.armagan.length === 3 && new Set(a.M.armagan).size === 3 && !s3.secenek.some(id => a.M.armagan.slice(0, 2).includes(id)), `3-2 ve 4-3'te birer armağan, tekrar yok (${a.M.armagan.join(', ')})`);
+  // hemen etkili armağanlar
+  const t = new Oyun(); await t.yeniMac('arena'); t.ilkSec(0); t.M.tur = 4; await t.turBaslat(false);
+  const ver = (id) => { t.M.armaganSecim = { r: 3, kademe: DD.armagan(id).kademe, secenek: [id], yenile: 0, n: 0 }; t.armaganSec(0); };
+  let x0 = t.M.xp, sv0 = t.M.seviye; ver('hizliBuyume'); ok(t.M.seviye > sv0 || t.M.xp > x0, 'Hızlı Büyüme: hemen +8 deneyim');
+  t.M.altin = 10; t.M.seviye = 4; t.M.xp = 0; t.xpAl(); ok(t.M.altin === 7 && t.xpBedel() === 3, 'Hızlı Büyüme: deneyim 3 altın');
+  let raf0 = t.M.esyaRaf.length; ver('ganimetKesesi'); ok(t.M.esyaRaf.length === raf0 + 2 && t.M.esyaRaf.slice(-2).every(id => DD.esya(id).tip === 'bilesen'), 'Ganimet Kesesi: 2 bileşen');
+  let al0 = t.M.altin; ver('gozcuBaykusu'); ok(t.M.altin === al0 + AS.gozcuAltin, 'Gözcü Baykuşu: hemen 4 altın');
+  raf0 = t.M.esyaRaf.length; ver('soyMuhru'); ok(t.bekleyenSecim() === 'muhur' && t.M.esyaRaf.length === raf0 + 1, 'Soy Mührü: 1 bileşen, soy seçimi bekler');
+  t.muhurSec('ates'); ok(t.M.esyaRaf.includes('muhur-ates') && !t.M.muhurSecim, 'Soy Mührü: seçilen soyun mührü rafa');
+  ver('ustaDemirci'); ok(t.M.esyaRaf.includes('sokumTasi') && t.M.ganimetSecim && t.M.ganimetSecim.length === 3 && t.M.ganimetSecim.every(id => DD.esya(id).tip === 'tam'), 'Usta Demirci: Söküm Taşı + 3 tam eşyadan seçim');
+  t.ganimetSec(0);
+  // Ocak Ustası: 1 bedava kaynaştırma, sonra 1 altın
+  ver('ocakUstasi'); t.M.tahta = Array(12).fill(null); t.M.yedek = Array(7).fill(null); t.M.seviye = 8;
+  t.M.tahta[0] = { h: 'ayi', s: 1 }; t.M.tahta[1] = { h: 'tilki', s: 1 }; t.M.tahta[2] = { h: 'golem', s: 1 }; t.M.tahta[3] = { h: 'kurt', s: 1 };
+  al0 = t.M.altin = 5; t.secili = null; t.yuvaDokun('tahta', 0); t.kaynasModDegistir(); t.yuvaDokun('tahta', 1);
+  ok(t.M.tahta[0].f === 'tilki' && t.M.altin === 5 && t.M.bedavaKaynas === 0, 'Ocak Ustası: ilk kaynaştırma bedava');
+  t.secili = null; t.yuvaDokun('tahta', 2); t.kaynasModDegistir(); t.yuvaDokun('tahta', 3); ok(t.M.tahta[2].f === 'kurt' && t.M.altin === 4, 'Ocak Ustası: kaynaştırma 1 altın (K3 için de)');
+  // Üçlü Kaynaşma: kaynaşmış birim düz bir kahramanla bir kez daha
+  ver('ucluKaynasma'); t.M.tahta[4] = { h: 'yilan', s: 1 }; t.M.tahta[5] = { h: 'koc', s: 1 }; t.M.altin = 10;
+  t.secili = null; t.yuvaDokun('tahta', 0); t.kaynasModDegistir(); t.yuvaDokun('tahta', 4);
+  ok(t.M.tahta[0].f2 === 'yilan' && !t.M.tahta[4] && t.birimAd(t.M.tahta[0]).split('×').length === 3, `Üçlü Kaynaşma: ${t.birimAd(t.M.tahta[0])}`);
+  t.secili = null; t.yuvaDokun('tahta', 0); t.kaynasModDegistir(); t.yuvaDokun('tahta', 5); ok(t.M.tahta[5] && t.M.tahta[0].f2 === 'yilan', 'üçlü kaynaşmış birim bir daha kaynaşmaz');
+  t.secili = null; t.kaynasMod = false;
+  ok(t.takim().find(b => b.h === 'ayi').f2 === 'yilan' && LL.kopyaSay([t.M.tahta[0]]).yilan === 1, 'takım ve havuz üçüncü kahramanı sayar');
+  ok(t.satisDegeri(t.M.tahta[0]) === 3 + 3 + 2, 'üçlü birimin satış değeri üç parçanın toplamı');
+  // Altın Yumurta: 5 savaş turu sonra 22 altın
+  ver('altinYumurta'); let yum = 0;
+  for (let k = 0; k < 6 && t.M.yumurta; k++) { const al1 = t.M.altin; if (t.M.kervan) await t.kervanSec(0); const sm = t.savasHazirla(); if (!sm) break; const rr = t.savasBitti(sm.sonunaKadar()); if (rr.bitti) break; if (!t.M.yumurta) yum = t.M.altin - al1; await t.turBaslat(false); }
+  ok(!t.M.yumurta && yum >= AS.yumurtaAltin, `Altın Yumurta 5 savaştan sonra çatladı (+${yum} altın bu tur)`);
+  // Saklı Kut: Kut kullanılmazsa +3
+  const sk = new Oyun(); await sk.yeniMac('arena'); sk.ilkSec(0); sk.M.armagan = ['sakliKut'];
+  const sm = sk.savasHazirla(), al2 = sk.M.altin; const rs = sm.sonunaKadar(); const rr = sk.savasBitti(rs);
+  ok(rs.kut[0] === 0 && rr.ganimet >= AS.sakliKut && sk.M.altin === al2 + rr.ganimet, 'Saklı Kut: Kut kullanılmayan savaştan sonra +3 altın');
+  // Pazar Dostu ve Göç Mevsimi: bedava yenileme
+  const pz = new Oyun(); await pz.yeniMac('arena'); pz.ilkSec(0); pz.M.armagan = ['pazarDostu']; pz.M.tur = 5; await pz.turBaslat(false);
+  const bd = 1 + (pz.M.alamet === 'gocMevsimi' ? 2 : 0);
+  pz.M.altin = 10; ok(pz.M.bedavaYenile === bd, `Pazar Dostu: hazırlıkta ${bd} bedava yenileme`);
+  for (let k = 0; k < bd; k++) pz.yenile(); ok(pz.M.altin === 10 && pz.yenileBedel() === 2, 'Pazar Dostu: bedava yenileme altın düşmez, sonra 2 altın');
+  pz.M.alamet = 'gocMevsimi'; pz.M.bedavaYenile = 2; pz.yenile(); pz.yenile(); pz.yenile(); ok(pz.M.altin === 8, 'Göç Mevsimi: ilk 2 yenileme bedava');
+  // Pazar Dostu seçildiği hazırlıkta da bir bedava yenileme verir (armağan aşaması turBaslat'tan sonra seçilir)
+  { const pd = new Oyun(); await pd.yeniMac('arena'); pd.ilkSec(0); const b0 = pd.M.bedavaYenile;
+    pd.M.armaganSecim = { r: 4, kademe: 'kivilcim', secenek: ['pazarDostu'], yenile: 0, n: 0 }; pd.armaganSec(0);
+    ok(pd.M.bedavaYenile === b0 + AS.pazarDostu, 'Pazar Dostu: seçildiği hazırlıkta hemen +1 bedava yenileme'); }
+  // Bereket Küpü: faiz tavanı 7
+  pz.M.armagan = ['bereketKupu']; pz.M.altin = 75; ok(pz.faizSonraki() === 7, 'Bereket Küpü: faiz 7');
+  // Alamet Bilgesi: 3 alamet görünür, bölümde bir kez kendi savaşı Durgun Gök
+  const ab = new Oyun(); await ab.yeniMac('arena'); ab.ilkSec(0); ab.M.armagan = ['alametBilgesi'];
+  let bul = false; for (let r = 4; r < 11 && !bul; r++) { ab.M.tur = r; ab.M.kervan = null; await ab.turBaslat(false); if (ab.M.alamet !== 'yok' && ab.turTip() === 'pvp') bul = true; }
+  ok(ab.sonrakiAlametler().length === 3, 'Alamet Bilgesi: sonraki 3 turun alameti görünür');
+  ok(bul && ab.alametSusturabilir(), 'Alamet Bilgesi: susturma kullanılabilir');
+  ab.alametSustur(); const asv = ab.savasHazirla();
+  ok(ab._savas.alamet === 'yok' && !ab.alametSusturabilir(), 'kendi savaşının alameti Durgun Gök oldu; bu bölümde bir daha susturulamaz');
+  asv.sonunaKadar();
+  // Kut hakkı: savaşta motor armağanları ve rakibin armağanlarını alır; Son Direniş can 40 altındayken
+  const ks = new Oyun(); await ks.yeniMac('lobi'); ks.ilkSec(0); ks.M.armagan = ['cifteKut', 'sonDirenis']; ks.M.can = 30;
+  ks.M.dukkan = ['golem', null, null, null, null]; ks.M.altin = 5; ks.satinAl(0);
+  const kss = ks.savasHazirla(); ok(kss.kutHakSay(0) === 2 && kss.birimler.filter(u => u.taraf === 0).every(u => u.mx > 0), 'Çifte Kut: oyuncunun savaşında 2 Kut hakkı');
+  ok(kss.birimler[0].mx === Math.round(DD.kahraman(kss.birimler[0].b.h).can * 1.2), 'Son Direniş: can 40\'ın altında, takım +%20 can');
+  // lobide yalnız 2 kişi kalınca iki tarafın da 2 Kut hakkı (Son İki)
+  const si = new Oyun(); await si.yeniMac('lobi'); si.ilkSec(0);
+  for (const o2 of si.M.lobi.oyuncular.slice(2)) { o2.olu = true; o2.can = 0; o2.sira = 8; }
+  si.M.tur = 5; await si.turBaslat(false); si.M.alamet = 'yok'; si.M.dukkan = ['golem', null, null, null, null]; si.M.altin = 5; si.satinAl(0);
+  const sis = si.savasHazirla(), rc = (si.M.rakip.armagan || []).includes('cifteKut') ? 1 : 0;
+  ok(sis && sis.kutHakSay(0) === 2 && sis.kutHakSay(1) === 2 + rc, `Son İki: iki tarafın da 2 Kut hakkı${rc ? ' (rakibin Çifte Kut\'u +1)' : ''}`);
+  // Gözcü Baykuşu (lobide): sonraki 2 PvP turunun rakip tahmini
+  si.M.armagan = ['gozcuBaykusu']; const gz = si.gozcu(); ok(gz && gz.length === 2 && gz.every(x => x.ad && x.tur), `Gözcü: ${gz.map(x => x.tur + ' ' + x.ad).join(', ')}`);
+  // Demirci Ateşi: PvP'yi kazanana 1 bileşen
+  const dm = new Oyun(); await dm.yeniMac('arena'); dm.ilkSec(0); dm.M.tur = 5; await dm.turBaslat(false); dm.M.alamet = 'demirci';
+  dm.M.dukkan = ['ayi', 'ayi', 'tilki', null, null]; dm.M.altin = 9; dm.M.seviye = 8; dm.satinAl(0); dm.satinAl(1); dm.satinAl(2);
+  dm.M.rakip = { ad: 'zayıf', takim: [{ h: 'kurt', s: 1, x: 0, y: 2 }], kupa: 0, kaynak: 'bot' };
+  const raf1 = dm.M.esyaRaf.length, dr = dm.savasBitti(dm.savasHazirla().sonunaKadar());
+  ok(dr.kazanan === 0 && dm.M.esyaRaf.length === raf1 + 1 && DD.esya(dm.M.esyaRaf[dm.M.esyaRaf.length - 1]).tip === 'bilesen', 'Demirci Ateşi: PvP\'yi kazanana 1 bileşen');
+  // Hızlı Maç: armağan ve yeni alametler yok
+  const hz = new Oyun(); await hz.yeniMac('hizli');
+  let hzOk = true; for (let r = 1; r < 12; r++) { hz.M.tur = r; await hz.turBaslat(false); if (hz.M.armaganSecim || DD.ALAMETLER.find(x => x.id === hz.M.alamet).lobi) hzOk = false; }
+  ok(hzOk && hz.sonrakiAlamet() === null, 'Hızlı Maç: Kut Armağanı ve lobi alametleri yok');
 }
 process.exit(hata ? 1 : 0);

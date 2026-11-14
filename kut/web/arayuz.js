@@ -159,7 +159,10 @@ function ayarPencere() {
     <p><b>Uyarlanır kalite:</b> ${kb.uyarlanir ? 'Açık' : 'Kapalı'}${kb.uyarlanir && kb.kademe ? ` (şu an: ${kb.ad})` : ''}. Cihaz yetişemezse savaşta çözünürlük ve efektler kendiliğinden azalır.</p>
     <div class="eylemler" style="justify-content:flex-start"><button class="btn mor" id="aUyarla">${kb.uyarlanir ? 'Kapat (hep tam kalite)' : 'Aç'}</button>
     <button class="btn mor" id="aFps">${kb.olcer ? 'Kare hızı göstergesini gizle' : 'Kare hızı göstergesi'}</button></div>
+    <p><b>Kare hızı:</b> ${kb.fpsHedef === 'oto' ? 'Otomatik' : kb.fpsHedef}${kb.ekranHz > 60 ? ` (ekran ${kb.ekranHz} Hz)` : ''}. 60 pili korur; Otomatik ekranın hızını hedefler.</p>
+    <div class="eylemler" style="justify-content:flex-start" id="aHedef">${[['60', '60'], ['120', '120'], ['oto', 'Otomatik']].map(([v, ad]) => `<button class="btn ${kb.fpsHedef === v ? 'altin secik' : 'mor'}" data-v="${v}" aria-pressed="${kb.fpsHedef === v}">${ad}</button>`).join('')}</div>
     <div class="eylemler"><button class="btn altin" data-kapat>Tamam</button></div>`);
+  document.querySelectorAll('#aHedef .btn').forEach(b => b.onclick = () => { S3.fpsHedef(b.dataset.v); kapat(); ayarPencere(); });
   $('aGrafik').onclick = () => { try { localStorage.setItem('kut.hafif', hafif ? '0' : '1'); } catch (e) {} location.reload(); };
   $('aSes').onclick = () => { Ses.sesAc(!Ses.sesAcik()); kapat(); ayarPencere(); };
   $('aUyarla').onclick = () => { S3.uyarlanir(!kb.uyarlanir); kapat(); ayarPencere(); };
@@ -305,7 +308,8 @@ function secimDenetle(zorla = false) {
     ic = M.kervan.secenek.map((o, i) => `<button class="sc" data-s="${i}">${kart(o.birim.h, oyun.birimAd(o.birim) + (o.birim.s > 1 ? ' ★' + o.birim.s : ''), (D.esya(o.esya) || {}).ad || o.esya, esyaIk(o.esya))}</button>`).join('');
   } else if (tip === 'armagan') {
     const a = M.armaganSecim;
-    baslik = `Kut Armağanı · ${D.ARMAGAN_KADEME[a.kademe]}`; metin = 'Üç karttan birini seç: maç boyunca seninle kalır.' + (a.yenile > 0 ? ' Kartları bir kez yenileyebilirsin.' : '');
+    baslik = `Kut Armağanı · ${D.ARMAGAN_KADEME[a.kademe]}`; metin = 'Üç karttan birini seç: maç boyunca seninle kalır.' + (a.yenile > 0 ? ' Kartları bir kez yenileyebilirsin.' : '') + ' <b id="arSaat"></b>';
+    arSaatKur(a.r);
     ic = a.secenek.map((id, i) => { const x = D.armagan(id); return `<button class="sc" data-s="${i}"><span class="kd">${D.ARMAGAN_KADEME[x.kademe]} · ${x.tur}</span><b>${x.ad}</b><small>${x.m}</small><em>Neden seç? ${x.neden}</em></button>`; }).join('')
       + (a.yenile > 0 ? `<button class="sc" data-yenile="1" style="justify-content:center"><b>${ik('yenile')} Yenile</b><small>Üç kartın hepsi değişir, kademe aynı kalır</small></button>` : '');
   } else if (tip === 'muhur') {
@@ -322,6 +326,20 @@ function secimDenetle(zorla = false) {
   });
   document.querySelectorAll('#pencere .sc[data-yenile]').forEach(b => b.onclick = () => { kapat(); sonSecim = null; oyun.armaganYenile(); });
   document.querySelectorAll('#pencere .sc[data-soy]').forEach(b => b.onclick = () => { kapat(); sonSecim = null; oyun.muhurSec(b.dataset.soy); });
+}
+// Armağan seçim süresi (bölüm 6.1): aşama başına K.armagan.sure sn (yenileme süreyi uzatmaz); süre dolunca ilk kart seçilir.
+let arSure = null;
+function arSaatKur(r) {
+  if (arSure && arSure.r === r) return arSaat();
+  if (arSure) clearInterval(arSure.z);
+  arSure = { r, bitis: Date.now() + K.armagan.sure * 1000 }; arSure.z = setInterval(arSaat, 250); arSaat();
+}
+function arSaat() {
+  const M = oyun.M, a = M && M.armaganSecim;
+  if (!arSure || !a || a.r !== arSure.r) { if (arSure) clearInterval(arSure.z); arSure = null; return; }
+  const k = Math.max(0, Math.ceil((arSure.bitis - Date.now()) / 1000)), el = $('arSaat');
+  if (el) el.textContent = `${k} sn`;
+  if (k <= 0) { clearInterval(arSure.z); arSure = null; if (el) kapat(); sonSecim = null; oyun.armaganSec(0); }
 }
 // Eşya rafı (yalnız Arena): yedeğin altında 10 yuva. Dokun → seç; kahramana dokun → tak; ikinci bileşene dokun → rafta birleştir.
 function rafCiz() {
@@ -437,6 +455,8 @@ async function savasBaslat(sim, rakip) {
 function hizUygula() { S3.hiz(duraklat ? 0 : hizSecim); document.querySelectorAll('#savas .hizlar .btn').forEach((b, i) => { b.classList.toggle('secik', i + 1 === hizSecim); b.classList.toggle('altin', i + 1 === hizSecim); b.classList.toggle('mor', i + 1 !== hizSecim); }); q('#savas .duraklat .btn').innerHTML = ik(duraklat ? 'oyna' : 'durdur'); }
 document.querySelectorAll('#savas .hizlar .btn').forEach((b, i) => b.onclick = () => { hizSecim = i + 1; duraklat = false; hizUygula(); });
 q('#savas .duraklat .btn').onclick = () => { duraklat = !duraklat; hizUygula(); };
+// Sonuca geç: motor savaşı bitirir, görüntü sona sarılır; sonuç bandı bir sonraki karede her zamanki yoldan açılır
+q('#savas .sonaGec').onclick = () => { if (!savasBilgi || savasBilgi.bitti) return; kutSecim = false; if (S3.sonaSar()) { duraklat = false; hizUygula(); } };
 // Kut düğmesi: kalan hak sayacı (Çifte Kut ve Son İki'de 2; Kut Mirası bir hak geri verir), Kut Sessizliği'nde kapalı
 function kutCiz(kullanan) {
   const sim = savasBilgi && savasBilgi.sim; if (!sim) return;
@@ -470,7 +490,7 @@ function hudCiz() {
   // Gün Batımı (yalnız Arena): görünen saniyeye göre çarpan
   const gbT = sonDurum.t - (sim.gunBatimiBasla != null ? sim.gunBatimiBasla : K.gunBatimi.basla) + 1e-9, gbH = oyun.seviyeli() && !savasBilgi.rakip.duello && gbT >= 0 ? `<span class="gunBatimi">Gün Batımı ×${(1 + K.gunBatimi.artis * Math.floor(gbT)).toFixed(1).replace('.', ',')}</span>` : '';
   hudYaz(q('.skor', s), `<div class="taraf"><div class="ust"><span>Sen</span><b>%${a}</b></div><div class="takimCan"><i style="width:${a}%"></i></div></div>
-    <div class="saat"><b>0:${String(Math.ceil(t)).padStart(2, '0')}</b><small>kalan</small>${gbH}</div>
+    <div class="saat${Math.ceil(t) <= 10 && !savasBilgi.bitti ? ' son10' : ''}"><b>0:${String(Math.ceil(t)).padStart(2, '0')}</b><small>kalan</small>${gbH}</div>
     <div class="taraf sag"><div class="ust"><span>Rakip</span><b>%${b}</b></div><div class="takimCan"><i style="width:${b}%"></i></div></div>`);
   const ayk = (ad, cls, tr) => { const l = sim.birimler.filter(o => o.taraf === tr); return `<div class="s ${cls}"><span>${ad}</span>${l.map(o => `<div class="bas ${o.olu ? 'olu' : ''}"><img src="${P(o.b.h)}" alt=""></div>`).join('')}<em>${l.filter(o => !o.olu).length}/${l.length}</em></div>`; };
   hudYaz($('ayakta'), ayk('Sen', 'biz', 0) + ayk('Rakip', 'dus', 1));

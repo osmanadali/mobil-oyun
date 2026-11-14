@@ -63,7 +63,7 @@
       const r = O.coz($('dGir').value); if (!r) return bildir('Kod çözülemedi');
       if (!P.sonTakim) return bildir('Önce bir maç oyna');
       kapat();
-      const alamet = D.ALAMETLER[Math.floor(Math.random() * D.ALAMETLER.length)].id;
+      const alamet = D.ALAMETLER_HIZLI[Math.floor(Math.random() * D.ALAMETLER_HIZLI.length)].id;
       savasBaslat({ benim: P.sonTakim, rakip: { ad: r.ad || 'Arkadaş', takim: r.takim }, alamet, tohum: (Math.random() * 1e9) | 0, duello: true });
     };
   };
@@ -80,7 +80,7 @@
   async function turBaslat(devam) {
     M = P.mac; ekran('mac'); secili = null; kaynasMod = false;
     if (!devam) {
-      M.alamet = M.tur === 1 ? 'yok' : D.ALAMETLER[Math.floor(zar() * D.ALAMETLER.length)].id;
+      M.alamet = M.tur === 1 ? 'yok' : D.ALAMETLER_HIZLI[Math.floor(zar() * D.ALAMETLER_HIZLI.length)].id;
       M.altin = K.altinTur + (M.alamet === 'pazar' ? 2 : 0);
       if (!M.kilit || !M.dukkan.length) dukkanDoldur(); M.kilit = false;
       M.rakip = null; ciz();

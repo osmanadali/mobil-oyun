@@ -125,7 +125,7 @@ export class Oyun {
       if (this.lobiMi()) while (M.lobi.r < r && !L.lobiBitti(M.lobi)) L.lobiTurOyna(M.lobi, M.lobi.r, { canliTakim: this.takim() });
       // Kervan turu (x-4): savaş, gelir ve deneyim yok; kahraman + eşya çiftlerinden biri seçilir (bölüm 5.4). Dükkân aynen kalır.
       if (tip === 'kervan') {
-        M.alamet = 'yok'; M.gelir = L.turBasi(M, r, M.alamet); M.rakip = null; M.lobiEs = null; M.bedavaYenile = 0;
+        M.alamet = 'yok'; M.gelir = L.turBasi(M, r, M.alamet); M.rakip = null; M.lobiEs = null; M.bedavaYenile = this.armaganVar('pazarDostu') ? K.armaganSayi.pazarDostu : 0; // Pazar Dostu Kervan'da da
         M.kervan = { r, secenek: L.kervanSecenek(r, S.rng(M.tohum * 131 + r * 7919 + 17), L.kervanAdet(this.siraTahmin()), this.havuz()) };
         this._yay('kervan', M.kervan); return this._degisti();
       }
@@ -192,8 +192,9 @@ export class Oyun {
     else if (id === 'altinYumurta') M.yumurta = { kalan: AS.yumurtaTur };
     else if (id === 'hizliBuyume') this._xpEkle(AS.hizliXp);
     else if (id === 'ganimetKesesi') this._rafEkle(bil(AS.ganimetKesesi));
-    else if (id === 'ustaDemirci') { this._rafEkle(['sokumTasi']); M.ganimetSecim = L.farkliEsya('tam', 3, R); }
+    else if (id === 'ustaDemirci') { if (M.ganimetSecim) this.ganimetSec(0); this._rafEkle(['sokumTasi']); M.ganimetSecim = L.farkliEsya('tam', 3, R); } // bekleyen eski seçim önce kapanır
     else if (id === 'sonDirenis') this._rafEkle(bil(1));
+    else if (id === 'pazarDostu') M.bedavaYenile += AS.pazarDostu; // seçildiği hazırlıkta da ilk yenileme bedava
     this._yay('armagan', { id }); this.bildir(`Kut Armağanı: ${D.armagan(id).ad}`, 'iyi'); this._degisti();
   }
   /** Armağan kartlarını yenile (aşama başına 1 hak): üç kart değişir, kademe aynı kalır. */

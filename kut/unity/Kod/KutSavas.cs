@@ -38,9 +38,10 @@ namespace Kut
         public string H;      // kahraman id
         public int S = 1;     // yıldız 1..3
         public string F;      // kaynaşan kahraman id (yoksa null)
+        public string F2;     // Üçlü Kaynaşma'nın üçüncü kahramanı (yalnız soy ve +%10 istatistik; yoksa null)
         public int X, Y;      // X: 0..3 (sütun), Y: 0 ön | 1 orta | 2 arka (tahta 4×3)
         public List<string> E = new List<string>(); // eşya kimlikleri (0–3): bileşen, tam eşya ya da özel (KutVeri.EsyaBul)
-        public TakimBirimi Kopya() => new TakimBirimi { H = H, S = S, F = F, X = X, Y = Y, E = new List<string>(E ?? new List<string>()) };
+        public TakimBirimi Kopya() => new TakimBirimi { H = H, S = S, F = F, F2 = F2, X = X, Y = Y, E = new List<string>(E ?? new List<string>()) };
     }
 
     public sealed class BirimStat
@@ -50,6 +51,7 @@ namespace Kut
         public double AsEk, Yg, Mana0, Azalt, Cal, Kalkan0;
         public List<string> Esya = new List<string>();                         // tam eşyalar (yuva sırasıyla, tekrarsız): etkileri bir kez çalışır
         public Dictionary<string, int> KutYanki = new Dictionary<string, int>(); // bileşen → sayı (Kut Yankısı için)
+        public List<string> YankiSira = new List<string>();                     // yankı sırası: yuva 0, 1, 2; tam eşyada tarif sırası
         public int KutTasi;
     }
 
@@ -65,7 +67,8 @@ namespace Kut
     public sealed class KutKaydi { public double T; public int Taraf, I; }
 
     /// <summary>Kalan: eski ölçü (Σ kc × kademe). KalanPuan: kazanan taraftaki sağ birimlerin yıldız toplamı (lobi hasarı). KalanSayi: sağ birim sayısı.</summary>
-    public sealed class SavasSonucu { public int Kazanan; public double Sure; public double Kalan; public int KalanPuan, KalanSayi; }
+    /// <summary>Kut: tarafların kullandığı Kut sayısı (Saklı Kut armağanı için).</summary>
+    public sealed class SavasSonucu { public int Kazanan; public double Sure; public double Kalan; public int KalanPuan, KalanSayi; public int[] Kut = new int[2]; }
 
     public sealed class SavasBirimi
     {
@@ -74,6 +77,9 @@ namespace Kut
         public double Mx, Hp, X, Y, X0, Y0, Mp, Cd, Kalkan; public bool Olu, Dirildi; public int Vurus, PayYigin, Ofke;
         public double AsEk, Yg, Azalt, Cal, Kalkan0, Mana0, VurusMana = 10, KutCarpan = 1; public bool IlkVurusYapildi; public int SonHedefUid = -1;
         public HashSet<string> Ef = new HashSet<string>(), EsikTetik = new HashSet<string>();
+        // Kut Yankısı (7.1): bileşen sayıları ve sırası, Kut Taşı; Diş yankısının kalan vuruşu ve oranı, Çiy yankısının bekleyen manası; Kut Mirası işareti
+        public Dictionary<string, int> KutYanki = new Dictionary<string, int>(); public List<string> YankiSira = new List<string>(); public int KutTasi, BilesenSay;
+        public int YankiDis; public double YankiDisOran, YankiCiy; public bool KutMiras;
         public bool E(string id) => Ef.Contains(id);
         public Dictionary<string, Durum> Durum = new Dictionary<string, Durum>();
         public SavasBirimi Hedef;
@@ -85,40 +91,43 @@ namespace Kut
         public static double JsRound(double x) => Math.Floor(x + 0.5);
 
         /// <summary>sim.js esyaTopla: istatistikler yuva sırasıyla (0, 1, 2), tam eşyada tarif sırasıyla toplanır.</summary>
-        static void EsyaTopla(List<string> e, EsyaStat st, List<string> esya, Dictionary<string, int> yanki, List<string> muhur, ref int kutTasi)
+        static void EsyaTopla(List<string> e, EsyaStat st, List<string> esya, Dictionary<string, int> yanki, List<string> sira, List<string> muhur, ref int kutTasi)
         {
             if (e == null) return;
             for (int i = 0; i < e.Count && i < KutVeri.EsyaYuva; i++)
             {
                 var x = KutVeri.EsyaBul(e[i]); if (x == null) continue;
-                if (x.Tip == "bilesen") Bilesen(x, st, yanki);
-                else if (x.Tip == "tam") { Bilesen(KutVeri.EsyaBul(x.Tarif[0]), st, yanki); Bilesen(KutVeri.EsyaBul(x.Tarif[1]), st, yanki); if (!esya.Contains(x.Id)) esya.Add(x.Id); }
+                if (x.Tip == "bilesen") Bilesen(x, st, yanki, sira);
+                else if (x.Tip == "tam") { Bilesen(KutVeri.EsyaBul(x.Tarif[0]), st, yanki, sira); Bilesen(KutVeri.EsyaBul(x.Tarif[1]), st, yanki, sira); if (!esya.Contains(x.Id)) esya.Add(x.Id); }
                 else if (x.Soy != null) { if (!muhur.Contains(x.Soy)) muhur.Add(x.Soy); }
                 else if (x.Id == "kutTasi") kutTasi++;
             }
             st.Azalt = Math.Min(KutVeri.EsyaAzaltTavan, st.Azalt);
         }
-        static void Bilesen(Esya b, EsyaStat st, Dictionary<string, int> yanki)
+        static void Bilesen(Esya b, EsyaStat st, Dictionary<string, int> yanki, List<string> sira)
         {
             var s = b.Stat;
             st.Atk += s.Atk; st.As += s.As; st.Yg += s.Yg; st.Mana0 += s.Mana0; st.Azalt += s.Azalt; st.Can += s.Can; st.Cal += s.Cal; st.Kalkan0 += s.Kalkan0;
-            yanki.TryGetValue(b.Id, out int n); yanki[b.Id] = n + 1;
+            yanki.TryGetValue(b.Id, out int n); yanki[b.Id] = n + 1; sira.Add(b.Id);
         }
 
-        public static BirimStat BirimStatHesapla(TakimBirimi b)
+        /// <param name="kaynasCarpan">Kaynaşmış birimin istatistik çarpanı (1,15; Kusursuz Melez 1,30). Üçlü Kaynaşma (F2): soylar ve ×1,10 can/saldırı.</param>
+        public static BirimStat BirimStatHesapla(TakimBirimi b, double kaynasCarpan = KutVeri.KaynasCarpan)
         {
-            var A = KutVeri.KahramanBul(b.H); var B = b.F != null ? KutVeri.KahramanBul(b.F) : null;
-            double c = KutVeri.YildizCarpan[b.S == 0 ? 1 : b.S];
+            var A = KutVeri.KahramanBul(b.H); var B = b.F != null ? KutVeri.KahramanBul(b.F) : null; var C = B != null && b.F2 != null ? KutVeri.KahramanBul(b.F2) : null;
+            double c = KutVeri.YildizCarpan[b.S == 0 ? 1 : b.S], kk = kaynasCarpan;
             double can = A.Can, atk = A.Atk, hiz = A.As;
-            if (B != null) { can = (A.Can + B.Can) / 2 * 1.15; atk = (A.Atk + B.Atk) / 2 * 1.15; hiz = (A.As + B.As) / 2; }
+            if (B != null) { can = (A.Can + B.Can) / 2 * kk; atk = (A.Atk + B.Atk) / 2 * kk; hiz = (A.As + B.As) / 2; }
+            if (C != null) { can = can * (1 + KutVeri.ArmUcluKaynas); atk = atk * (1 + KutVeri.ArmUcluKaynas); }
             var soy = new List<string>(A.Soy);
             if (B != null) foreach (var s in B.Soy) if (!soy.Contains(s)) soy.Add(s);
-            var st = new EsyaStat(); var esya = new List<string>(); var yanki = new Dictionary<string, int>(); var muhur = new List<string>(); int kutTasi = 0;
-            EsyaTopla(b.E, st, esya, yanki, muhur, ref kutTasi);
+            if (C != null) foreach (var s in C.Soy) if (!soy.Contains(s)) soy.Add(s);
+            var st = new EsyaStat(); var esya = new List<string>(); var yanki = new Dictionary<string, int>(); var sira = new List<string>(); var muhur = new List<string>(); int kutTasi = 0;
+            EsyaTopla(b.E, st, esya, yanki, sira, muhur, ref kutTasi);
             foreach (var s in muhur) if (!soy.Contains(s)) soy.Add(s); // Soy Mührü
-            return new BirimStat { Ad = B != null ? A.Ad + " × " + B.Ad : A.Ad, Can = JsRound(can * c) + st.Can, Atk = JsRound(atk * c * (1 + st.Atk)), As = hiz, Menzil = A.Menzil, Mana = A.Mana,
+            return new BirimStat { Ad = B != null ? A.Ad + " × " + B.Ad + (C != null ? " × " + C.Ad : "") : A.Ad, Can = JsRound(can * c) + st.Can, Atk = JsRound(atk * c * (1 + st.Atk)), As = hiz, Menzil = A.Menzil, Mana = A.Mana,
                 Yetenek = A.Yetenek, Pasif = B != null ? B.Pasif : A.Pasif, Soy = soy, Kc = c, Kademe = A.Kademe,
-                AsEk = st.As, Yg = st.Yg, Mana0 = st.Mana0, Azalt = st.Azalt, Cal = st.Cal, Kalkan0 = st.Kalkan0, Esya = esya, KutYanki = yanki, KutTasi = kutTasi };
+                AsEk = st.As, Yg = st.Yg, Mana0 = st.Mana0, Azalt = st.Azalt, Cal = st.Cal, Kalkan0 = st.Kalkan0, Esya = esya, KutYanki = yanki, YankiSira = sira, KutTasi = kutTasi };
         }
 
         /// <summary>Soy sayımı (aynı kahraman iki kez sayılmaz; kaynaşmış birim kendi kimliğiyle sayılır). Sıra: ilk görülme.</summary>
@@ -129,7 +138,7 @@ namespace Kut
                 foreach (var s in BirimStatHesapla(b).Soy)
                 {
                     if (!say.ContainsKey(s)) { say[s] = new HashSet<string>(); sira.Add(s); }
-                    say[s].Add(b.H + (b.F != null ? "+" + b.F : ""));
+                    say[s].Add(b.H + (b.F != null ? "+" + b.F : "") + (b.F != null && b.F2 != null ? "+" + b.F2 : ""));
                 }
             var outp = new List<KeyValuePair<string, SoyDurum>>();
             foreach (var k in sira)
@@ -152,10 +161,14 @@ namespace Kut
         public SavasSonucu Sonuc { get; private set; }
         public readonly List<KeyValuePair<string, SoyDurum>>[] Soylar = new List<KeyValuePair<string, SoyDurum>>[2];
 
-        readonly KutRng R; readonly string alamet; readonly int[] yz; readonly double yzZaman;
+        readonly KutRng R; readonly string alamet; readonly int[] yz, yzYedek, yzTaraf; readonly double yzZaman, yzZaman2;
         readonly double? gbBas; bool gbBasladi; // Gün Batımı başlangıcı (null: yok)
-        readonly bool[] kutKullanildi = new bool[2];
+        // Kut hakkı (7.2): kalan hak, kullanılan, son Kut anı (ikinci hak KutAra sn sonra), Kut Mirası kullanıldı mı; Kut Sessizliği
+        readonly int[] kutKalan = new int[2], kutSayac = new int[2]; readonly double[] sonKutT = { -1e9, -1e9 }; readonly bool[] kutMirasK = new bool[2];
+        public readonly bool KutYok;
+        readonly HashSet<string>[] ar = { new HashSet<string>(), new HashSet<string>() }; // Kut Armağanları (savas: true olanlar)
         readonly List<KutKaydi> kutSira; readonly List<KutKaydi> kayit;
+        bool Ar(int taraf, string id) => ar[taraf].Contains(id);
 
         static readonly double[] Y0 = { 5, 6, 7 }, Y1 = { 3, 2, 1 };
         static readonly double[] GOK = { 0, 0.15, 0.35 }, ATLI = { 0, 0.4, 0.9 }, KIS = { 0, 0.15, 0.3 }, AVCI = { 0, 0.2, 0.45 }, KARA = { 0, 0.2, 0.5 },
@@ -164,32 +177,50 @@ namespace Kut
         /// <param name="kut">Tekrar oynatma için Kut dokunuşları (t, taraf, i).</param>
         /// <param name="yz">Kut'u yapay zekânın kullanacağı taraflar (ör. bot rakip: {1}).</param>
         /// <param name="kayit">Verilirse oyuncunun Kut dokunuşları buraya yazılır (paylaşım / doğrulama için).</param>
-        /// <param name="gunBatimi">Gün Batımı'nın başladığı saniye (Arena: KutVeri.GunBatimiBasla); null: yok (Hızlı Maç).</param>
+        /// <param name="gunBatimi">Gün Batımı'nın başladığı saniye (Arena: KutVeri.GunBatimiBasla); null: yok (Hızlı Maç). Uzun Gölge alametinde 12.</param>
+        /// <param name="armagan">İki tarafın savaş armağanları (sim.js opt.armagan; Son Direniş'in can koşulu çağıranda: KutLobi.SavasArmagan).</param>
+        /// <param name="kutHak">Tarafların Kut hakkı (varsayılan 1; Son İki'de 2). Çifte Kut +1.</param>
+        /// <param name="yzYedek">Kayıtlı dokunuşu olan taraflar: yapay zekâ yalnız kayıttaki dokunuşlar bittikten sonra kalan hakları kullanır.</param>
         public KutSavas(IList<TakimBirimi> takimA, IList<TakimBirimi> takimB, double tohum = 1, string alamet = "yok",
-            IEnumerable<KutKaydi> kut = null, int[] yz = null, double yzZaman = 5, List<KutKaydi> kayit = null, double? gunBatimi = null)
+            IEnumerable<KutKaydi> kut = null, int[] yz = null, double yzZaman = KutVeri.KutYzZaman, List<KutKaydi> kayit = null, double? gunBatimi = null,
+            IList<IList<string>> armagan = null, int[] kutHak = null, int[] yzYedek = null, double yzZaman2 = KutVeri.KutYzZaman2, bool kutYok = false)
         {
-            R = new KutRng(tohum == 0 ? 1 : tohum); gbBas = gunBatimi;
-            this.alamet = alamet ?? "yok"; this.yz = yz ?? new int[0]; this.yzZaman = yzZaman; this.kayit = kayit;
+            R = new KutRng(tohum == 0 ? 1 : tohum);
+            this.alamet = alamet ?? "yok"; this.yz = yz ?? new int[0]; this.yzZaman = yzZaman; this.yzZaman2 = yzZaman2; this.kayit = kayit;
+            this.yzYedek = yzYedek ?? new int[0]; yzTaraf = this.yz.Concat(this.yzYedek).Distinct().ToArray();
+            gbBas = !gunBatimi.HasValue ? (double?)null : this.alamet == "uzunGolge" ? Math.Min(gunBatimi.Value, KutVeri.UzunGolgeBasla) : gunBatimi.Value;
+            if (armagan != null) for (int t = 0; t < 2 && t < armagan.Count; t++) if (armagan[t] != null) foreach (var id in armagan[t]) ar[t].Add(id);
+            KutYok = this.alamet == "kutSessiz" || kutYok;
+            for (int t = 0; t < 2; t++) kutKalan[t] = KutYok ? 0 : (kutHak != null ? kutHak[t] : KutVeri.KutHak) + (Ar(t, "cifteKut") ? 1 : 0);
             kutSira = (kut ?? Enumerable.Empty<KutKaydi>()).OrderBy(k => k.T).ToList();
             Soylar[0] = KutMotor.SoySay(takimA); Soylar[1] = KutMotor.SoySay(takimB);
+            // Karşı Hamle: rakibin en kalabalık soyu (eşitlikte ilk görülen) bu savaşta bir eşik düşük
+            for (int t = 0; t < 2; t++) if (Ar(t, "karsiHamle"))
+            {
+                var l = Soylar[1 - t]; int en = -1;
+                for (int q = 0; q < l.Count; q++) if (en < 0 || l[q].Value.N > l[en].Value.N) en = q;
+                if (en >= 0) l[en] = new KeyValuePair<string, SoyDurum>(l[en].Key, new SoyDurum { N = l[en].Value.N, Seviye = Math.Max(0, l[en].Value.Seviye - 1) });
+            }
 
             var takimlar = new[] { takimA, takimB };
             for (int taraf = 0; taraf < 2; taraf++)
                 for (int i = 0; i < takimlar[taraf].Count; i++)
                 {
-                    var b = takimlar[taraf][i]; var st = KutMotor.BirimStatHesapla(b);
+                    var b = takimlar[taraf][i]; var st = KutMotor.BirimStatHesapla(b, Ar(taraf, "kusursuzMelez") ? KutVeri.ArmKusursuzMelez : KutVeri.KaynasCarpan);
                     // tahta 4 sütun × 3 sıra: x = 0,75 + 1,5·sütun; taraf 0 y = 5/6/7, taraf 1 y = 3/2/1 (ön, orta, arka)
                     double x = 0.75 + b.X * 1.5, y = taraf == 0 ? Y0[b.Y] : Y1[b.Y];
                     double can = st.Can;
                     int y1 = Sv(taraf, "yer"); can += YER[y1] * 1;
                     if (this.alamet == "tutulma" && st.Soy.Contains("karanlik")) can *= 1.3;
                     if (this.alamet == "yaz" && st.Soy.Contains("kis")) can *= 0.85;
+                    if (Ar(taraf, "sonDirenis")) can *= 1 + KutVeri.ArmSonDirenisOran; // Son Direniş
                     can = KutMotor.JsRound(can);
                     var ef = new HashSet<string>(st.Esya);
                     double mana = ef.Contains("dolunayTestisi") ? Math.Floor(st.Mana * 0.8 + 0.5) : st.Mana; // Dolunay Testisi
                     Birimler.Add(new SavasBirimi { Uid = taraf * 10 + i, Taraf = taraf, I = i, B = b, Ad = st.Ad, Yetenek = st.Yetenek, Pasif = st.Pasif, Atk = st.Atk, As = st.As,
                         Mana = mana, Kc = st.Kc, Menzil = st.Menzil, Kademe = st.Kademe, Soy = st.Soy, Mx = can, Hp = can, X = x, Y = y, X0 = x, Y0 = y, Mp = 0, Cd = 0.3 + R.Sonraki() * 0.3,
-                        AsEk = st.AsEk, Yg = st.Yg, Azalt = st.Azalt, Cal = st.Cal, Kalkan0 = st.Kalkan0, Mana0 = st.Mana0, Ef = ef, VurusMana = ef.Contains("keskinGoz") ? 15 : 10 });
+                        AsEk = st.AsEk, Yg = st.Yg, Azalt = st.Azalt, Cal = st.Cal, Kalkan0 = st.Kalkan0, Mana0 = st.Mana0, Ef = ef, VurusMana = ef.Contains("keskinGoz") ? 15 : 10,
+                        KutYanki = st.KutYanki, YankiSira = st.YankiSira, KutTasi = st.KutTasi, BilesenSay = st.YankiSira.Count });
                 }
 
             // Savaş başı etkileri
@@ -197,6 +228,7 @@ namespace Kut
             {
                 if (u.Pasif == "kisNefesi") u.Mp = u.Mana * 0.5;
                 if (this.alamet == "kutYagmur") u.Mp = Math.Max(u.Mp, u.Mana * 0.4);
+                if (this.alamet == "kutSessiz") u.Mp = Math.Max(u.Mp, u.Mana * KutVeri.KutSessizMana);
                 if (u.Pasif == "ana") foreach (var d in Dostlar(u)) if (d != u && Mesafe(u, d) <= 2.6) KalkanVer(d, 90 * u.Kc);
             }
             // Eşyaların savaş başı etkileri (birim sırasıyla). "2 hücre" = 2,1; "2,5 hücre" = 2,6.
@@ -246,6 +278,8 @@ namespace Kut
             if (u.Var("cosku")) k += 0.4;
             if (u.Var("canRuzgar")) k += 0.4;
             if (u.Var("geceKanat")) k += 0.6;
+            if (u.Var("yankiTuy")) k += u.Durum["yankiTuy"].Deger; // Tüy yankısı
+            if (u.Var("uyanis")) k += u.Durum["uyanis"].Deger;     // Uyanış
             int kis = Sv(1 - u.Taraf, "kis"); if (kis != 0) k -= KIS[kis];
             if (u.Var("yavas")) k -= u.Durum["yavas"].Deger;
             if (alamet == "tipi" && !u.Soy.Contains("kis")) k -= 0.2;
@@ -271,6 +305,8 @@ namespace Kut
                 if (kaynak.PayYigin != 0) m *= 1 + 0.12 * kaynak.PayYigin;
                 if (tur == "vurus" && kaynak.Ofke > 0) { m *= 2; kaynak.Ofke--; }
                 if (kaynak.Var("ofkeT")) m *= 1.35; // Öfke Tılsımı
+                if (tur == "vurus" && kaynak.YankiDis > 0) { m *= 1 + kaynak.YankiDisOran; kaynak.YankiDis--; } // Diş yankısı
+                if (Ar(kaynak.Taraf, "kizilGok") && alamet != "yok") m *= 1 + KutVeri.ArmKizilGok;             // Kızıl Gök Çocuğu
             }
             // Gün Batımı: bütün türlerde (yansıma hariç: artmış vuruştan hesaplanır)
             if (gbBas.HasValue && tur != "yansima") { double gt = T - gbBas.Value + 1e-9; if (gt >= 0) m *= 1 + KutVeri.GunBatimiArtis * Math.Floor(gt); }
@@ -279,6 +315,7 @@ namespace Kut
             int dv = Sv(hedef.Taraf, "dev"); if (dv != 0 && hedef.Soy.Contains("dev")) m *= 1 - DEV[dv];
             if (hedef.Pasif == "tasDeri") m *= 0.8;
             double az = Math.Min(KutVeri.EsyaAzaltTavan, hedef.Azalt + (hedef.Var("ofkeT") ? 0.2 : 0)); if (az > 0) m *= 1 - az;
+            if (hedef.Var("yankiKabuk")) m *= 1 - hedef.Durum["yankiKabuk"].Deger; // Kabuk yankısı
             if (hedef.Kalkan > 0) { double e = Math.Min(hedef.Kalkan, m); hedef.Kalkan -= e; m -= e; }
             m = Math.Max(0, m);
             hedef.Hp -= m;
@@ -286,8 +323,9 @@ namespace Kut
             if (m >= 1) Ekle(tur == "dot" ? "dot" : "hasar", hedef, KutMotor.JsRound(m), kaynak != null ? kaynak.Uid : -1);
             if (kaynak != null && kaynak.Pasif == "canEmici" && tur != "dot" && tur != "yansima") Iyiles(kaynak, m * 0.2);
             if (kaynak != null && tur != "dot" && tur != "yansima")
-            {   // can çalma: Pul (vuruşta), Gece Kanadı (vuruşta +%30), Gölge Mürekkebi (yetenekte %25)
-                double o = tur == "vurus" ? kaynak.Cal + (kaynak.Var("geceKanat") ? 0.3 : 0) : tur == "yetenek" && kaynak.E("golgeMurekkebi") ? 0.25 : 0;
+            {   // can çalma: Pul (vuruşta), Gece Kanadı (vuruşta +%30), Gölge Mürekkebi (yetenekte %25), Pul yankısı (ikisinde)
+                double yp = kaynak.Var("yankiPul") ? kaynak.Durum["yankiPul"].Deger : 0;
+                double o = tur == "vurus" ? kaynak.Cal + (kaynak.Var("geceKanat") ? 0.3 : 0) + yp : tur == "yetenek" ? (kaynak.E("golgeMurekkebi") ? 0.25 : 0) + yp : 0;
                 if (o > 0) Iyiles(kaynak, m * o);
             }
             // Diken Kabuk (%25) ve Diken Kirpi'nin Diken Sırt'ı (%15)
@@ -320,6 +358,7 @@ namespace Kut
         {
             if (u.Pasif == "yenidenDogus" && !u.Dirildi) { u.Dirildi = true; u.Hp = u.Mx * 0.4; u.Durum = new Dictionary<string, Durum>(); Ekle("dirilis", u); return; }
             u.Olu = true; u.Hp = 0; Ekle("olum", u);
+            if (u.KutMiras && Ar(u.Taraf, "kutMirasi") && !kutMirasK[u.Taraf]) { kutMirasK[u.Taraf] = true; kutKalan[u.Taraf]++; Ekle("kutMiras", u); } // Kut Mirası
             if (u.E("geceYuregi")) foreach (var d in Dostlar(u)) if (Mesafe(u, d) <= 2.1) KalkanVer(d, u.Mx * 0.25);
             foreach (var d in Birimler)
             {
@@ -376,6 +415,7 @@ namespace Kut
             if (u.E("buzPinari")) foreach (var d in Dostlar(u)) if (d != u && Mesafe(d, u) <= 2.1) KalkanVer(d, 80 * u.Kc);
             if (u.E("bilgeAsasi")) u.Mp = Math.Min(u.Mana, u.Mp + 25);
             if (u.E("ruzgarCani")) DurumVer(u, "canRuzgar", 3);
+            if (u.YankiCiy != 0) { u.Mp = Math.Min(u.Mana, u.Mp + u.YankiCiy); u.YankiCiy = 0; } // Çiy yankısı
         }
 
         void YetenekCalis(SavasBirimi u, double c, SavasBirimi h)
@@ -432,23 +472,59 @@ namespace Kut
             }
         }
 
-        /// <summary>Kut: savaş başına bir kez, kendi biriminin manasını anında doldurur. Oyuncu dokunuşunda çağır.</summary>
+        /// <summary>Kut: kendi biriminin manasını anında doldurur (oyuncu dokunuşunda çağır). Hak sayısı kutHak (+Çifte Kut); ikinci hak KutAra sn sonra.
+        /// Kut Yankısı (7.1) ve Kut armağanları (Uyanış, Kut Mirası, Işık Sütunu) burada.</summary>
         public bool Kut(int taraf, int i)
         {
-            if (kutKullanildi[taraf] || Bitti) return false;
+            if (KutYok || kutKalan[taraf] <= 0 || Bitti) return false;
+            if (T - sonKutT[taraf] + 1e-9 < KutVeri.KutAra) return false;
             var u = Birimler.FirstOrDefault(o => o.Taraf == taraf && o.I == i && !o.Olu); if (u == null) return false;
-            kutKullanildi[taraf] = true; u.Mp = u.Mana; Ekle("kut", u);
-            u.KutCarpan = u.E("kutOcagi") ? 1.5 : 1; // Kut Ocağı
+            kutKalan[taraf]--; kutSayac[taraf]++; sonKutT[taraf] = T;
+            u.Mp = u.Mana; Ekle("kut", u);
+            KutYankiUygula(u);
+            if (Ar(taraf, "uyanis")) DurumVer(u, "uyanis", 999, KutVeri.ArmUyanis);
+            if (Ar(taraf, "kutMirasi")) u.KutMiras = true;
+            if (Ar(taraf, "isikSutunu")) foreach (var d in Dostlar(u)) if (d != u && Mesafe(u, d) <= KutVeri.ArmIsikMenzil) d.Mp = Math.Min(d.Mana, d.Mp + d.Mana * KutVeri.ArmIsikSutunu);
             if (kayit != null) kayit.Add(new KutKaydi { T = Math.Round(T, 2, MidpointRounding.AwayFromZero), Taraf = taraf, I = i });
             return true;
         }
-        public bool KutVar(int taraf) => !kutKullanildi[taraf];
+        /// <summary>Yankılar: fx yuva/tarif sırasıyla (bileşen başına bir "kutYanki"); etkiler sabit sırayla Kor, Diş, Tüy, Kabuk, Yürek, Pul, Buz (Çiy yetenekten sonra).</summary>
+        void KutYankiUygula(SavasBirimi u)
+        {
+            foreach (var id in u.YankiSira) Ekle("kutYanki", u, 0, -1, id);
+            double kat = u.KutTasi > 0 ? KutVeri.YankiKutTasi : 1;
+            Func<string, double> n = id => (u.KutYanki.TryGetValue(id, out int c) ? c : 0) * kat;
+            double kc = 1; for (int k = 0; k < n("kor"); k++) kc *= KutVeri.YankiKor;
+            if (u.E("kutOcagi")) kc *= KutVeri.YankiOcak; // Kut Ocağı: ek ×1,5
+            u.KutCarpan = kc;
+            if (n("dis") != 0) { u.YankiDis = KutVeri.YankiDisVurus; u.YankiDisOran = KutVeri.YankiDisOran * n("dis"); }
+            if (n("tuy") != 0) DurumVer(u, "yankiTuy", KutVeri.YankiTuySure, KutVeri.YankiTuyOran * n("tuy"));
+            if (n("kabuk") != 0) DurumVer(u, "yankiKabuk", KutVeri.YankiKabukSure, Math.Min(KutVeri.YankiKabukTavan, KutVeri.YankiKabukOran * n("kabuk")));
+            if (n("yurek") != 0) Iyiles(u, u.Mx * KutVeri.YankiYurek * n("yurek"));
+            if (n("pul") != 0) DurumVer(u, "yankiPul", KutVeri.YankiPulSure, KutVeri.YankiPulOran * n("pul"));
+            if (n("buz") != 0) KalkanVer(u, KutVeri.YankiBuz * u.Kc * n("buz"));
+            if (n("ciy") != 0) u.YankiCiy = KutVeri.YankiCiy * n("ciy");
+        }
+        /// <summary>Kut hakkı kaldı mı.</summary>
+        public bool KutVar(int taraf) => !KutYok && kutKalan[taraf] > 0;
+        /// <summary>Kut şu an kullanılabilir mi (ikinci hakta ara süresi).</summary>
+        public bool KutHazir(int taraf) => KutVar(taraf) && T - sonKutT[taraf] + 1e-9 >= KutVeri.KutAra;
+        public int KutKalanSay(int taraf) => kutKalan[taraf];
+        public int KutHakSay(int taraf) => kutKalan[taraf] + kutSayac[taraf];
         /// <summary>Şu anki Gün Batımı hasar çarpanı (yoksa ya da başlamadıysa 1).</summary>
         public double GunBatimiCarpan() { if (!gbBas.HasValue) return 1; double gt = T - gbBas.Value + 1e-9; return gt >= 0 ? 1 + KutVeri.GunBatimiArtis * Math.Floor(gt) : 1; }
+        public double? GunBatimiBasla => gbBas;
+        /// <summary>Yapay zekâ Kut'u (7.4): puan = (mana − mp) × kc + 20 × bileşen + (Kut Ocağı 60); eşitlikte küçük i.</summary>
         void KutYZ(int taraf)
         {
-            var ad = Birimler.Where(o => o.Taraf == taraf && !o.Olu).OrderByDescending(o => (o.Mana - o.Mp) * o.Kc).FirstOrDefault();
-            if (ad != null) Kut(taraf, ad.I);
+            SavasBirimi en = null; double ep = double.NegativeInfinity;
+            foreach (var o in Birimler)
+            {
+                if (o.Taraf != taraf || o.Olu) continue;
+                double p = (o.Mana - o.Mp) * o.Kc + KutVeri.KutYzBilesen * o.BilesenSay + (o.E("kutOcagi") ? KutVeri.KutYzOcak : 0);
+                if (p > ep) { ep = p; en = o; }
+            }
+            if (en != null) Kut(taraf, en.I);
         }
 
         public void Adim()
@@ -456,7 +532,8 @@ namespace Kut
             if (Bitti) return;
             Fx.Clear();
             while (kutSira.Count > 0 && kutSira[0].T <= T + 1e-9) { var k = kutSira[0]; kutSira.RemoveAt(0); Kut(k.Taraf, k.I); }
-            foreach (int tr in yz) if (!kutKullanildi[tr] && T >= yzZaman) KutYZ(tr);
+            foreach (int tr in yzTaraf)
+                if (kutKalan[tr] > 0 && T >= (kutSayac[tr] != 0 ? yzZaman2 : yzZaman) && (!yzYedek.Contains(tr) || !kutSira.Any(k => k.Taraf == tr))) KutYZ(tr);
             if (gbBas.HasValue && !gbBasladi && T - gbBas.Value + 1e-9 >= 0) { gbBasladi = true; Fx.Add(new Fx { T = T, Tip = "gunBatimi" }); }
 
             foreach (var u in Birimler)
@@ -524,7 +601,7 @@ namespace Kut
             Bitti = true;
             double kalan = 0; int puan = 0, sayi = 0;
             foreach (var o in Birimler) if (!o.Olu && o.Taraf == k) { kalan += o.Kc * o.Kademe; puan += o.B.S == 0 ? 1 : o.B.S; sayi++; }
-            Sonuc = new SavasSonucu { Kazanan = k, Sure = Math.Round(T, 2, MidpointRounding.AwayFromZero), Kalan = kalan, KalanPuan = puan, KalanSayi = sayi };
+            Sonuc = new SavasSonucu { Kazanan = k, Sure = Math.Round(T, 2, MidpointRounding.AwayFromZero), Kalan = kalan, KalanPuan = puan, KalanSayi = sayi, Kut = new[] { kutSayac[0], kutSayac[1] } };
         }
         public SavasSonucu SonunaKadar() { int n = 0; while (!Bitti && n++ < 100000) Adim(); return Sonuc; }
     }

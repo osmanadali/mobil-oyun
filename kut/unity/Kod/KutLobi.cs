@@ -24,6 +24,8 @@ namespace Kut
     {
         public int Altin, Can = KutVeri.CanBaslangic, Seviye = KutVeri.SeviyeBaslangic, Xp;
         public Seri Seri = new Seri(); public bool Galibiyet;
+        /// <summary>Alınan Kut Armağanları (Bereket Küpü faiz tavanını 7 yapar).</summary>
+        public List<string> Armagan = new List<string>();
     }
 
     /// <summary>Tur sonu dökümü: alınan hasar, ganimet altını, savaş deneyimi.</summary>
@@ -61,6 +63,7 @@ namespace Kut
                 if (b == null) continue;
                 say.TryGetValue(b.H, out int n); say[b.H] = n + KutVeri.YildizKopya[b.S == 0 ? 1 : b.S];
                 if (b.F != null) { say.TryGetValue(b.F, out int m); say[b.F] = m + 1; }
+                if (b.F != null && b.F2 != null) { say.TryGetValue(b.F2, out int m2); say[b.F2] = m2 + 1; } // Üçlü Kaynaşma'nın üçüncüsü 1 kopya
             }
             return say;
         }
@@ -90,13 +93,15 @@ namespace Kut
         // ── Ekonomi (bölüm 3) ──
         public static int TabanGelir(int r) { var p = TurPlan(r); return p.Bolum == 1 ? KutVeri.TabanGelirBolum1[p.Tur - 1] : KutVeri.TabanGelir; }
         /// <summary>Gelir eklenmeden önceki altına göre: her 10 altına 1, en çok 5. Bölüm 1'de 0.</summary>
-        public static int Faiz(int altin, int r) => TurPlan(r).Bolum == 1 ? 0 : System.Math.Min(KutVeri.FaizTavan, System.Math.Max(0, altin) / KutVeri.FaizAdim);
+        /// <param name="tavan">Faiz tavanı (Bereket Küpü ile 7; 0 ya da verilmezse 5).</param>
+        public static int Faiz(int altin, int r, int tavan = 0) => TurPlan(r).Bolum == 1 ? 0 : System.Math.Min(tavan != 0 ? tavan : KutVeri.FaizTavan, System.Math.Max(0, altin) / KutVeri.FaizAdim);
+        public static int FaizTavanAl(IList<string> armagan) => armagan != null && armagan.Contains("bereketKupu") ? KutVeri.ArmBereketFaiz : KutVeri.FaizTavan;
         public static int SeriBonus(int n) => KutVeri.SeriTablo[System.Math.Max(0, System.Math.Min(n, KutVeri.SeriTablo.Length - 1))];
-        public static Gelir GelirHesapla(int r, int altin, Seri seri, bool galibiyet, string alamet)
+        public static Gelir GelirHesapla(int r, int altin, Seri seri, bool galibiyet, string alamet, int faizTavan = 0)
         {
             var g = new Gelir();
             if (TurPlan(r).Tip == "kervan") return g;
-            g.Taban = TabanGelir(r); g.Faiz = Faiz(altin, r); g.Seri = SeriBonus(seri != null ? seri.N : 0);
+            g.Taban = TabanGelir(r); g.Faiz = Faiz(altin, r, faizTavan); g.Seri = SeriBonus(seri != null ? seri.N : 0);
             g.Galibiyet = galibiyet ? KutVeri.GalibiyetBonus : 0; g.Alamet = alamet == "pazar" ? KutVeri.PazarBonus : 0;
             g.Toplam = g.Taban + g.Faiz + g.Seri + g.Galibiyet + g.Alamet;
             return g;
@@ -139,7 +144,46 @@ namespace Kut
         }
 
         // ── Tur başı ve tur sonu: durum yerinde değişir ──
-        public static Gelir TurBasi(EkonomiDurum d, int r, string alamet) { var g = GelirHesapla(r, d.Altin, d.Seri, d.Galibiyet, alamet); d.Altin += g.Toplam; return g; }
+        public static Gelir TurBasi(EkonomiDurum d, int r, string alamet) { var g = GelirHesapla(r, d.Altin, d.Seri, d.Galibiyet, alamet, FaizTavanAl(d.Armagan)); d.Altin += g.Toplam; return g; }
+
+        // ── Kut Armağanı (bölüm 6; lobi.js armaganSecenek, armaganCek, savasArmagan, botArmagan) ──
+        public sealed class ArmaganSecim { public string Kademe; public List<string> Secenek; }
+        /// <summary>Aşamanın kademesi (bölüm → olasılık; 1 zar) ve 3 seçenek (her biri 1 zar). Alınanlar bir daha çıkmaz.</summary>
+        public static ArmaganSecim ArmaganSecenek(int bolum, KutRng R, IList<string> alinan)
+        {
+            double[] ol; if (!KutVeri.ArmaganOlasilik.TryGetValue(bolum, out ol)) ol = KutVeri.ArmaganOlasilik[KutVeri.ArmaganOlasilik.Keys.Max()];
+            string kd = KutVeri.ArmaganKademeler[KademeZar(ol, R.Sonraki()) - 1];
+            return new ArmaganSecim { Kademe = kd, Secenek = ArmaganCek(kd, R, alinan, null) };
+        }
+        /// <summary>Kademeden 3 farklı armağan: alınanlar ve haric dışarıda; yetmezse alt kademeler (yakından uzağa), sonra üstler; yine yetmezse haric geri gelir.</summary>
+        public static List<string> ArmaganCek(string kd, KutRng R, IList<string> alinan, IList<string> haric)
+        {
+            var K = KutVeri.ArmaganKademeler; int ki = System.Array.IndexOf(K, kd); var sira = new List<int> { ki };
+            for (int k = ki - 1; k >= 0; k--) sira.Add(k);
+            for (int k = ki + 1; k < K.Length; k++) sira.Add(k);
+            var outp = new List<string>(); var al = alinan ?? new List<string>(); var hr = haric ?? new List<string>();
+            foreach (bool izin in new[] { false, true })
+                foreach (int k in sira)
+                {
+                    var l = KutVeri.Armaganlar.Where(a => a.Kademe == K[k] && !al.Contains(a.Id) && !outp.Contains(a.Id) && (izin || !hr.Contains(a.Id))).Select(a => a.Id).ToList();
+                    while (outp.Count < KutVeri.ArmaganSecenekSayi && l.Count > 0) { int j = (int)System.Math.Floor(R.Sonraki() * l.Count); outp.Add(l[j]); l.RemoveAt(j); }
+                }
+            return outp;
+        }
+        /// <summary>Motorun kullanacağı armağanlar (Savas); Son Direniş yalnız can 40'ın altındayken.</summary>
+        public static List<string> SavasArmagan(IList<string> liste, int? can)
+        {
+            var outp = new List<string>(); if (liste == null) return outp;
+            foreach (var id in liste) { var a = KutVeri.ArmaganBul(id); if (a != null && a.Savas && (id != "sonDirenis" || (can.HasValue && can.Value < KutVeri.ArmSonDirenisCan))) outp.Add(id); }
+            return outp;
+        }
+        /// <summary>Bot armağanları: r'ye kadarki her aşamada botun tohumuyla ilk kart.</summary>
+        public static List<string> BotArmagan(double tohum, int r)
+        {
+            var outp = new List<string>();
+            for (int q = 0; q <= r; q++) { var p = TurPlan(q); if (!p.Armagan) continue; var s = ArmaganSecenek(p.Bolum, new KutRng(tohum * 7919 + q * 104729.0 + 29), outp); if (s.Secenek.Count > 0) outp.Add(s.Secenek[0]); }
+            return outp;
+        }
         public static TurSonuOzet TurSonu(EkonomiDurum d, int r, int kazanan, int kalanPuan, int kalanSayi, int yasayan = 0)
         {
             var p = TurPlan(r); var o = new TurSonuOzet();

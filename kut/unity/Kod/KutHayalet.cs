@@ -219,7 +219,7 @@ namespace Kut
             var liste = new List<string>();
             for (int k = 0; k < tam; k++) liste.Add(KutVeri.Esyalar[(int)Math.Floor(R.Sonraki() * KutVeri.Esyalar.Length)].Id);
             for (int k = 0; k < bil; k++) liste.Add(KutVeri.Bilesenler[(int)Math.Floor(R.Sonraki() * KutVeri.Bilesenler.Length)].Id);
-            return new IzTur { R = r, Seviye = sv, Takim = Yerlestir(EsyaYig(takim, liste)) };
+            return new IzTur { R = r, Seviye = sv, Takim = Yerlestir(EsyaYig(takim, liste)), Armagan = KutLobi.BotArmagan(tohum, r) };
         }
         public static List<IzTur> BotIz(double tohum, double guc, int n = 40) => Enumerable.Range(0, n).Select(r => BotIzTur(tohum, guc, r)).ToList();
 

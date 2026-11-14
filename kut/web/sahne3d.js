@@ -308,8 +308,16 @@ export function boyutla() {
   kam.tabanP.set(0, dar ? 9.6 : 8.5, dar ? 8.0 : 7.3); kam.tabanH.set(0, 0, dar ? 0.1 : -0.2);
   kamera.position.copy(kam.tabanP); kamera.lookAt(kam.tabanH); kam.ilk = true; kam.serbest = false;
   kamera.updateProjectionMatrix(); kamera.updateMatrixWorld(true);   // görüş alanı denetimi ilk karede de doğru olsun
-  // 2D kaplama en çok 1,5 piksel oranında (tam ekran tuval her karede baştan çizilir; 2× bant genişliği gereksiz)
-  const dpr = Math.min(1.5, window.devicePixelRatio || 1);
+  kaplamaBoyutla();
+}
+// 2D kaplama (sayılar, çubuklar): Tam ve 120 Hz kademesinde bugünkü gibi en çok 2 piksel oranı; daha düşük kademede en çok 1,5
+// (tam ekran tuval her karede baştan çizilir; yetişemeyen cihazda bant genişliği kazanılır)
+let kapKademe = -1;
+function kaplamaBoyutla() {
+  if (!kaplama || !renderer) return;
+  const c = renderer.domElement, w = c.clientWidth, h = c.clientHeight; if (!w || !h) return;
+  kapKademe = G.kademeAl();
+  const dpr = Math.min(kapKademe <= 1 ? 2 : 1.5, window.devicePixelRatio || 1);
   kapW = kaplama.clientWidth || w; kapH = kaplama.clientHeight || h; kapDpr = dpr;
   kaplama.width = Math.round(w * dpr); kaplama.height = Math.round(h * dpr); kcx.setTransform(dpr, 0, 0, dpr, 0, 0);
   canGrad.hh = -1; _balonGrad = null; hudT = -1;
@@ -580,7 +588,7 @@ function olayPlanla(f, liste = [f], i = 0) {
   } else if (f.tip === 'yetenek') {
     const b = birimler.get(f.u); if (!b) return;
     const { hedefler, dostlar } = yetenekHedefleri(f, liste, i, b);
-    const kut = kutlu.delete(f.u);
+    const kut = kutlu.delete(f.u); f._kut = kut;   // ardıl hasar sayıları Kut önceliği alsın
     const on = vfx.onSure(f.ad);
     ekle(f.t - Math.max(b.gor.yetOn || 0.35, on), () => yetenekBaslat(b, f.ad, f.t - on));
     ekle(f.t - on, () => { if (b.olumT < 0) vfx.yetenek(f.ad, b.kok, hedefler.filter(o => o.olumT < 0 || o === b).map(o => o.kok), { dostlar: dostlar.map(o => o.kok), kut }); });
@@ -588,12 +596,14 @@ function olayPlanla(f, liste = [f], i = 0) {
     if (f.ad === 'uluma') for (const o of hedefler) { ekle(f.t, () => vfx.durum(o.kok, 'hiz', true)); ekle(f.t + 4, () => vfx.durum(o.kok, 'hiz', false)); }
     if (f.ad === 'deliOfke') { ekle(f.t, () => vfx.durum(b.kok, 'ofke', true)); ekle(f.t + 3, () => vfx.durum(b.kok, 'ofke', false)); }
   } else if (f.tip === 'hasar' || f.tip === 'dot' || f.tip === 'iyi' || f.tip === 'kalkan' || f.tip === 'kac') {
-    ekle(f.t, () => sayiGoster(f));
-    if (f.tip === 'hasar') {
+    if (f.tip !== 'hasar') ekle(f.t, () => sayiGoster(f, null));
+    else {
       const neden = onceki(liste, i);
       const yakin = neden && neden.tip === 'vurus' && !neden.menzilli && neden.k === f.k;
       const buyuk = !!(neden && neden.tip === 'yetenek');
       let olumcul = false; for (let j = i + 1; j < liste.length; j++) if (liste[j].tip === 'olum' && liste[j].u === f.u) { olumcul = true; break; }
+      const so = { buyuk, olumcul, kut: !!(buyuk && neden._kut) };
+      ekle(f.t, () => sayiGoster(f, so));
       ekle(f.t, () => darbeGoster(f, { yakin, buyuk, olumcul }));
       ekle(f.t, () => vuruldu(birimler.get(f.u), his.hasarGucu(f.n, { buyuk }), olumcul));
     }
@@ -759,10 +769,22 @@ function ekran(p, out = _ekO) { const v = _ekV.copy(p).project(kamera); out.x = 
 // birimin can çubuğu / balon çapası (başın biraz üstü)
 function basUstu(b) { return _ekP.set(b.kok.position.x, b.kok.position.y + 1.12 * (b.kok.userData.vfxBoy || 1) + 0.12, b.kok.position.z); }
 // sayılar aynı birimde en az 0,12 sn arayla çıkar (zaman kuyruğu); yetenek adı ayrı bant yuvasında (sayılarla çakışmaz)
-function yaziEkle(b, metin, renk, olcek = 1, buyuk = false, ek = {}) {
+// Ekranda aynı anda en çok YAZI_EN_COK sayı (sıradakiler dahil). Dolunca en düşük öncelikli ve en eski sayı düşer;
+// yeni sayı hepsinden düşük öncelikliyse hiç eklenmez. Öncelik: 3 kritik/yetenek/Kut · 2 ölüm vuruşu · 1 normal · 0 süreli hasar (DOT).
+const YAZI_EN_COK = 18, BIRLES_SN = 0.25, BIRLES_DOT_SN = 0.5;   // motor DOT'u her 0,05 sn'de yayıyor: 0,5 sn'de bir tek sayı
+function yaziEkle(b, metin, renk, o) {
+  if (yazilar.length >= YAZI_EN_COK) {
+    let v = -1, vp = Infinity;
+    for (let i = 0; i < yazilar.length; i++) { const y = yazilar[i], p = y.onc * 100 - y.yas; if (p < vp) { vp = p; v = i; } }
+    if (v < 0 || yazilar[v].onc > o.onc) return null;
+    for (let i = v + 1; i < yazilar.length; i++) yazilar[i - 1] = yazilar[i]; yazilar.length--;   // sıra korunur
+  }
   const gec = Math.max(0, b.yaziSon + 0.12 - gorselT); b.yaziSon = gorselT + gec;
   const yon = ((b.yaziSira = (b.yaziSira || 0) + 1) % 2 ? 1 : -1);
-  yazilar.push({ uid: b.uid, b, p: b.kok.position.clone().add(new THREE.Vector3(0, 1.25 * (b.kok.userData.vfxBoy || 1), 0)), metin, renk, yas: -gec, olcek, buyuk, yon, ...ek });
+  const p = b.kok.position.clone(); p.y += 1.25 * (b.kok.userData.vfxBoy || 1);
+  const y = { uid: b.uid, b, p, metin, renk, yas: -gec, t0: gorselT, olcek: o.olcek, olcek0: o.olcek, buyuk: o.buyuk, kritik: o.kritik, kenar: o.kenar, yon,
+    onc: o.onc, tur: o.tur, n: o.n, alfa: o.alfa, bir: 0, nabiz: 0 };
+  yazilar.push(y); return y;
 }
 // Yetenek balonu (OGRETICI §4.3): aynı anda en çok 2; üçüncüsü sıraya girer, 0,6 sn'de açılamazsa düşer; Kut balonu öne geçer.
 // Süre: motor zamanında 1,2 sn ve gerçek zamanda en az 0,9 sn (2× hızda da okunur).
@@ -784,13 +806,34 @@ function balonGuncelle(dt, dtG) {
   for (let i = balonSira.length - 1; i >= 0; i--) if (balonSira[i].bekle > 0.6) balonSira.splice(i, 1);
   while (bantlar.length < 2 && balonSira.length) bantlar.push(balonSira.shift());
 }
-function sayiGoster(f) {
+// o: { buyuk (yetenek hasarı), olumcul, kut } (yalnız hasar olayında)
+// Kritik (altın, KRİTİK etiketi) yalnız yetenek ya da Kut ile 200+ hasarda. Aynı hedefe BIRLES_SN içinde gelen küçük sayılar
+// (normal vuruş, DOT, iyileşme) tek sayıda toplanır ve her eklemede biraz büyüyüp nabız atar.
+// DOT sayıları küçük ve soluk; rakibin bizim birimlere vurduğu normal sayılar da biraz küçük ve soluk.
+const SAYI_OPS = { onc: 1, tur: '', n: 0, olcek: 1, buyuk: false, kritik: false, kenar: null, alfa: 1 };
+function sayiGoster(f, o) {
   const b = birimler.get(f.u); if (!b) return;
-  const k = birimler.get(f.k), el = k ? ELEMENT_H[k.u.b.h] : null, kritik = f.tip === 'hasar' && f.n >= 200;
-  const hasarRenk = kritik ? '#ffd84a' : (f.tip === 'dot' ? (SAYI_RENK[el] || '#ffb36a') : '#ffffff');
-  const m = { hasar: ['-' + f.n, hasarRenk], dot: ['-' + f.n, hasarRenk], iyi: ['+' + f.n, '#7dffa0'], kalkan: ['🛡' + f.n, '#dfe9ff'], kac: ['kaçtı', '#cfcfcf'] }[f.tip];
-  if (!m || (f.tip !== 'kac' && f.n < 5)) return;
-  yaziEkle(b, m[0], m[1], kritik ? 1.25 : 1, kritik, { kritik, kenar: (f.tip === 'hasar' && !kritik && el) ? SAYI_RENK[el] : null });
+  if (f.tip !== 'kac' && !(f.n >= 5 || (f.tip === 'dot' && f.n >= 1))) return;
+  const k = birimler.get(f.k), el = k ? ELEMENT_H[k.u.b.h] : null, yet = !!(o && (o.buyuk || o.kut));
+  const kritik = f.tip === 'hasar' && f.n >= 200 && yet, iri = f.tip === 'hasar' && f.n >= 200;
+  const onc = f.tip === 'dot' ? 0 : yet ? 3 : (o && o.olumcul) ? 2 : 1;
+  const renk = kritik ? '#ffd84a' : f.tip === 'dot' ? (SAYI_RENK[el] || '#ffb36a') : f.tip === 'hasar' ? '#ffffff' : f.tip === 'iyi' ? '#7dffa0' : f.tip === 'kalkan' ? '#dfe9ff' : '#cfcfcf';
+  // birleştirme: aynı hedef, aynı tür ve renk, öncelik ≤ 1, ilk sayıdan bu yana BIRLES_SN'den az
+  if (onc <= 1 && (f.tip === 'hasar' || f.tip === 'dot' || f.tip === 'iyi')) {
+    for (let i = yazilar.length - 1; i >= 0; i--) {
+      const y = yazilar[i]; if (gorselT - y.t0 >= BIRLES_DOT_SN) break; if (gorselT - y.t0 >= (f.tip === 'dot' ? BIRLES_DOT_SN : BIRLES_SN)) continue;
+      if (y.uid !== f.u || y.tur !== f.tip || y.onc !== onc || y.renk !== renk) continue;
+      y.n += f.n; y.bir++; y.metin = (f.tip === 'iyi' ? '+' : '-') + y.n;
+      y.olcek = y.olcek0 * Math.min(1.45, 1 + 0.1 * y.bir + (y.n >= 200 ? 0.12 : 0)); y.nabiz = 0.14; if (y.n >= 200 && f.tip === 'hasar') y.buyuk = true;
+      return;
+    }
+  }
+  const dusman = k && k.u.taraf === 1 && b.u.taraf === 0;
+  const s = SAYI_OPS; s.onc = onc; s.tur = f.tip; s.n = f.n; s.kritik = kritik; s.buyuk = kritik || iri;
+  s.olcek = kritik ? 1.25 : f.tip === 'dot' ? 0.78 : (onc === 1 && dusman && f.tip === 'hasar') ? 0.8 : 1;
+  s.alfa = f.tip === 'dot' ? 0.62 : (onc === 1 && dusman && f.tip === 'hasar') ? 0.72 : 1;
+  s.kenar = (f.tip === 'hasar' && !kritik && el) ? SAYI_RENK[el] : null;
+  yaziEkle(b, f.tip === 'kac' ? 'kaçtı' : f.tip === 'kalkan' ? '🛡' + f.n : (f.tip === 'iyi' ? '+' : '-') + f.n, renk, s);
 }
 const YAZI_FONT = '"Trebuchet MS","Segoe UI",system-ui,sans-serif';
 // ── Birim üstü çubuk (TFT düzeyi) ──
@@ -990,8 +1033,8 @@ function kaplamaCiz(dt = 0, dtG = dt) {
   for (let i = 0; i < yazilar.length; i++) {
     const y = yazilar[i];
     if (y.yas < 0) continue;
-    const p = ekran(y.p); const e = y.yas / 0.95; kcx.globalAlpha = Math.max(0, 1 - Math.pow(Math.max(0, e - 0.35) / 0.65, 2));
-    const taban = y.kritik ? 26 : y.buyuk ? 20 : 17, sc = e < 0.12 ? 1.7 - 5.8 * e : 1, ol = y.olcek * sc, boy = taban * ol;
+    const p = ekran(y.p); const e = y.yas / 0.95; kcx.globalAlpha = y.alfa * Math.max(0, 1 - Math.pow(Math.max(0, e - 0.35) / 0.65, 2));
+    const taban = y.kritik ? 26 : y.buyuk ? 20 : 17, sc = (e < 0.12 ? 1.7 - 5.8 * e : 1) * (1 + y.nabiz * 2.2), ol = y.olcek * sc, boy = taban * ol;
     const xx = p.x + y.yon * e * 18, yy = p.y - (50 * e - 40 * e * e) - 8;
     const f = SAYI_FONT[taban]; if (f !== sonFont) { kcx.font = f; sonFont = f; }
     kcx.setTransform(kapDpr * ol, 0, 0, kapDpr * ol, kapDpr * xx, kapDpr * yy);
@@ -1066,8 +1109,12 @@ const _gorM = new THREE.Matrix4(), _gorF = new THREE.Frustum(), _gorK = new THRE
 function ekranda(b) { const h = b.kok.userData.vfxBoy || 1; _gorK.center.set(b.kok.position.x, b.kok.position.y + h * 0.5, b.kok.position.z); _gorK.radius = h + 0.9; return _gorF.intersectsSphere(_gorK); }
 export function kare(dtSabit) {
   if (!renderer) { KARE_SONUC.bitti = false; return KARE_SONUC; }
-  const kareBas = performance.now();
-  if (dtSabit === undefined) kareOlc(kareBas);
+  let kareBas = performance.now();
+  if (dtSabit === undefined) {
+    hamOlc(kareBas);
+    if (kareAtla(kareBas)) return KARE_SONUC;   // 60/120 sınırı: yüksek yenilemeli ekranda bu rAF çizilmez (sonuç bir önceki karenin)
+    kareOlc(kareBas);
+  }
   const dtGercek = dtSabit !== undefined ? dtSabit : Math.min(0.05, saat.getDelta());
   const t = kareBas / 1000;
   for (let j = 0; j < efektler.length; j++) { const e = efektler[j]; if (e.kalici) e.guncelle(t); }
@@ -1181,7 +1228,7 @@ export function kare(dtSabit) {
     }
     // yüzen sayılar: süresi dolan yerinde atılır (yeni dizi yok). Yer değiştirerek silme (swap-remove) çizim sırasını bozup eski
     // sayıyı yenisinin üstüne çıkarıyordu (büyük KRİTİK sayısı küçük sayının altında kalıyordu); sıra koruyan sıkıştırma da O(n) ve ayırmasız.
-    { let k = 0; for (let i = 0; i < yazilar.length; i++) { const y = yazilar[i]; y.yas += dt; if (y.yas < 0.95) yazilar[k++] = y; } yazilar.length = k; }
+    { let k = 0; for (let i = 0; i < yazilar.length; i++) { const y = yazilar[i]; y.yas += dt; if (y.nabiz > 0) y.nabiz = Math.max(0, y.nabiz - dt); if (y.yas < 0.95) yazilar[k++] = y; } yazilar.length = k; }
     balonGuncelle(dt, dtGercek);
     let ky = 0;
     for (let j = 0; j < efektler.length; j++) { const e = efektler[j]; let kal = true;
@@ -1194,8 +1241,9 @@ export function kare(dtSabit) {
   // kamera: his (sarsıntı + yakınlaştırma) ve vfx sarsıntısı yalnız bu kare için uygulanır, sonra taban duruşa döner
   his.kameraUygula();
   const so = vfx.sarsintiOfset(); if (so.lengthSq() > 0) { kamera.position.add(so); kamera.updateMatrixWorld(true); }
+  if (kapKademe !== G.kademeAl()) kaplamaBoyutla();   // uyarlanır kalite kademe değiştirdi
   const cizBas = performance.now();
-  G.ciz(undefined, undefined, dtGercek);   // gölge haritası 30 Hz
+  G.ciz(undefined, undefined, dtGercek);   // gölge haritası kademenin sınırıyla (Tam kademede her karede)
   const cizSon = performance.now();
   kcx.clearRect(0, 0, kapW, kapH);
   if (sim) kaplamaCiz(dt, dtGercek);
@@ -1215,11 +1263,36 @@ const OLC_N = 512, olcAra = new Float32Array(OLC_N), olcZ = new Float64Array(OLC
 let olcI = 0, sonKareZ = 0, kotuKare = 0, olcerAcik = false, olcerEl = null, olcerT = 0;
 // uyarlanır kalite durumu: 0,5 sn'lik kovalar; son 6 kova (3 sn) kötüyse kademe iner, art arda 20 kova (10 sn) rahatsa çıkar
 const UY = { acik: true, sabit: -1, kovaBas: 0, kovaN: 0, kovaTop: 0, kotu: 0, kotuYumusak: 0, rahat: 0, rahat120: 0, bekle: 0,
-  ilk: true, ilkN: 0, ilkTop: 0, ilkAra: [], yuksekYenileme: false, basarisiz: new Uint8Array(16), son: '',
+  ilk: true, ilkN: 0, ilkTop: 0, yuksekYenileme: false, basarisiz: new Uint8Array(16), son: '',
   kova: new Float32Array(6), kovaI: 0, denetle: null, inisYasak: 0 };
-const HEDEF_ARA = 1000 / 55, RAHAT_ARA = 1000 / 57.5, HEDEF120_ARA = 1000 / 105, RAHAT120_ARA = 1000 / 114;
+const HEDEF_ARA = 1000 / 55, RAHAT_ARA = 1000 / 57.5;
 function ayarOku(ad) { try { return localStorage.getItem(ad); } catch (e) { return null; } }
 function ayarYaz(ad, d) { try { localStorage.setItem(ad, d); } catch (e) {} }
+// ── Kare hızı hedefi (kut.fps_hedef: '60' | '120' | 'oto') ve ekran yenileme hızı ──
+// Ekran yenileme hızı her rAF çağrısının (çizilmeyenler dahil) aralığından ölçülür: 32 aralığın alt çeyreği; oturum boyunca görülen en yüksek
+// değer tutulur (yük altında yavaşlayan kare, ekranı 60 Hz sanmasın). 75 Hz altı 60 sayılır.
+// Otomatik: hedef ekranın hızı. 120: en çok 120. 60: 60'ta sabit; yüksek yenilemeli ekranda rAF çağrıları atlanarak.
+// Uyarlanır kalite hedefe göre çalışır: hedef 100 fps ve üstüyse "120 Hz bütçesi" kademesi devreye girer.
+let fpsHedefAyar = (() => { const v = ayarOku('kut.fps_hedef'); return v === '60' || v === '120' ? v : 'oto'; })();
+let ekranHz = 60, hamZ = 0, hamI = 0, sonCizZ = 0;
+const hamAra = new Float32Array(32), hamSira = new Float32Array(32);
+function hamOlc(z) {
+  if (hamZ && !(typeof document !== 'undefined' && document.hidden)) {
+    const d = z - hamZ;
+    if (d > 2 && d < 100) { hamAra[hamI++] = d; if (hamI === 32) { hamI = 0; hamSira.set(hamAra); hamSira.sort(); const hz = 1000 / hamSira[8]; if (hz >= 75 && hz > ekranHz + 3) ekranHz = Math.min(360, Math.round(hz)); } }
+  }
+  hamZ = z;
+}
+function kapHz() { return fpsHedefAyar === '60' ? 60 : fpsHedefAyar === '120' ? 120 : 0; }
+function hedefHz() { const k = kapHz(); return k ? Math.min(k, ekranHz) : ekranHz; }
+function kareAtla(z) {
+  const k = kapHz();
+  if (!k || ekranHz < k * 1.1) { sonCizZ = z; return false; }
+  const ara = 1000 / k, gecen = z - sonCizZ;
+  if (sonCizZ && gecen < ara - Math.min(2, ara * 0.12)) return true;
+  sonCizZ = sonCizZ && gecen < 2 * ara ? sonCizZ + ara : z;   // faz kaymadan: 144 Hz ekranda da ortalama 60
+  return false;
+}
 function kareOlc(z) {
   if (typeof document !== 'undefined' && document.hidden) { sonKareZ = 0; return; }
   if (sonKareZ) {
@@ -1247,7 +1320,6 @@ function uyarla(z, ara) {
   if (!UY.acik || UY.sabit >= 0 || z < UY.bekle) return;
   if (!UY.kovaBas) UY.kovaBas = z;
   UY.kovaN++; UY.kovaTop += ara;
-  if (UY.ilk) { if (UY.ilkAra.length < 400) UY.ilkAra.push(ara); }
   if (z - UY.kovaBas < 500) return;
   const ort = UY.kovaTop / UY.kovaN; UY.kovaN = 0; UY.kovaTop = 0; UY.kovaBas = z;
   UY.kova[UY.kovaI] = ort; UY.kovaI = (UY.kovaI + 1) % 6;
@@ -1259,23 +1331,23 @@ function uyarla(z, ara) {
   // açılış: ilk 3 sn sessiz ölçüm → ekran yenileme sınıfı ve başlangıç kademesi
   if (UY.ilk) {
     UY.ilkN++; UY.ilkTop += ort; if (UY.ilkN < 6) return;
-    UY.ilk = false; const l = UY.ilkAra.slice().sort((a, b) => a - b), p20 = l[Math.floor(l.length * 0.2)] || 16.7;
-    UY.yuksekYenileme = p20 < 10.5;   // 100 Hz ve üstü
+    UY.ilk = false;
     const fps = 1000 / (UY.ilkTop / UY.ilkN); let adim = fps < 22 ? 4 : fps < 35 ? 2 : fps < 50 ? 1 : 0, n = k;
     while (adim-- > 0) n = G.kademeKomsu(+1, n);
     if (n !== k) kademeGec(n, 'açılış ölçümü ' + fps.toFixed(0) + ' fps');
     return;
   }
-  // iniş: 3 sn boyunca 55 fps altı → bir kademe; 120 Hz ekranda 105 fps altı → yalnız "120 Hz bütçesi" kademesine
+  // iniş: 3 sn boyunca 55 fps altı → bir kademe; hedef 100 fps ve üstüyse (120 Hz) hedefin %87,5'i altı → yalnız "120 Hz bütçesi" kademesine
+  const hh = hedefHz(), yuksek = hh >= 100; UY.yuksekYenileme = yuksek;
   UY.kotu = ort > HEDEF_ARA ? UY.kotu + 1 : 0;
-  UY.kotuYumusak = UY.yuksekYenileme && ort > HEDEF120_ARA ? UY.kotuYumusak + 1 : 0;
+  UY.kotuYumusak = yuksek && ort > 1000 / (hh * 0.875) ? UY.kotuYumusak + 1 : 0;
   if (z < UY.inisYasak) { UY.kotu = 0; UY.kotuYumusak = 0; }
   if (UY.kotu >= 6) { const n = G.kademeKomsu(+1); if (n !== k) { UY.basarisiz[k] = Math.min(9, UY.basarisiz[k] + 1); kademeGec(n, (1000 / ort).toFixed(0) + ' fps, 3 sn'); } else UY.kotu = 0; return; }
   if (UY.kotuYumusak >= 6 && k === 0) { UY.basarisiz[0] = Math.min(9, UY.basarisiz[0] + 1); kademeGec(1, '120 Hz bütçesi'); return; }
   // çıkış: 10 sn rahat (her başarısızlıkta bekleme iki katı, üç başarısızlıktan sonra o kademeye dönülmez)
   if (k === 0) return;
   const ust = G.kademeKomsu(-1); if (ust === k) return;
-  const rahat = UY.yuksekYenileme && ust === 0 ? ort <= RAHAT120_ARA : ort <= RAHAT_ARA;
+  const rahat = yuksek && ust === 0 ? ort <= 1000 / (hh * 0.95) : ort <= RAHAT_ARA;
   UY.rahat = rahat ? UY.rahat + 1 : 0;
   const b = UY.basarisiz[ust]; if (b >= 3) return;
   if (UY.rahat >= 20 * (1 << b)) kademeGec(ust, 'rahat ' + (10 << b) + ' sn');
@@ -1295,7 +1367,8 @@ function olcerYaz(z) {
   for (let j = 1; j <= OLC_N; j++) { const i = (olcI - j + OLC_N) % OLC_N; if (!olcZ[i] || (z - olcZ[i] > 2000 && n >= 3)) break; n++; top += olcAra[i]; js += olcJs[i]; if (olcAra[i] > enKotu) enKotu = olcAra[i]; }
   const ci = G.cizimBilgi(), fps = n ? 1000 / (top / n) : 0, v = (x) => x.toFixed(1).replace('.', ',');
   olcerEl.textContent = `${fps.toFixed(0)} fps · en kötü ${v(enKotu)} ms (2 sn)\n33 ms üstü: ${kotuKare} · çizim ${ci ? ci.calls : 0} · üçgen ${ci ? Math.round(ci.triangles / 1000) : 0} bin\n` +
-    `JS ${v(n ? js / n : _olc.toplam)} ms (çizim ${v(_olc.ciz)}) · kademe ${G.kademeAl()} ${G.kademeAd()}${UY.sabit >= 0 ? ' (sabit)' : UY.acik ? '' : ' (elle)'}`;
+    `JS ${v(n ? js / n : _olc.toplam)} ms (çizim ${v(_olc.ciz)}) · kademe ${G.kademeAl()} ${G.kademeAd()}${UY.sabit >= 0 ? ' (sabit)' : UY.acik ? '' : ' (elle)'}\n` +
+    `hedef ${fpsHedefAyar === 'oto' ? 'otomatik' : fpsHedefAyar} → ${hedefHz()} fps · ekran ${ekranHz} Hz`;
 }
 /** Kare hızı göstergesi aç/kapat (ayar kalıcı: kut.fps) */
 export function olcer(acik) {
@@ -1308,7 +1381,16 @@ export function uyarlanir(acik) {
   if (!acik && renderer) { G.kademeUygula(0); ayarYaz('kut.kademe', '0'); }
   uyarlaSifirla();
 }
-export function kaliteBilgi() { return { uyarlanir: UY.acik, kademe: G.kademeAl(), ad: G.kademeAd(), olcer: olcerAcik, son: UY.son }; }
+export function kaliteBilgi() { return { uyarlanir: UY.acik, kademe: G.kademeAl(), ad: G.kademeAd(), olcer: olcerAcik, son: UY.son, fpsHedef: fpsHedefAyar, ekranHz, hedefHz: hedefHz() }; }
+/** Kare hızı hedefi: '60' | '120' | 'oto' (kalıcı: kut.fps_hedef). 60'a inince "120 Hz bütçesi" kademesinden tam kaliteye döner. */
+export function fpsHedef(v) {
+  if (v === undefined) return fpsHedefAyar;
+  fpsHedefAyar = v === '60' || v === '120' ? v : 'oto'; ayarYaz('kut.fps_hedef', fpsHedefAyar); sonCizZ = 0;
+  UY.basarisiz.fill(0); UY.inisYasak = 0; UY.denetle = null;
+  if (renderer && UY.sabit < 0 && hedefHz() < 100 && G.kademeAl() === 1) kademeGec(0, 'kare hızı hedefi 60');
+  uyarlaSifirla(800);
+  return fpsHedefAyar;
+}
 /** hata ayıklama: kademeyi elle ver (uyarlama durur); −1 uyarlamaya döner */
 export function kademe(n) { UY.sabit = n; if (renderer) G.kademeUygula(n >= 0 ? n : 0); }
 
@@ -1356,6 +1438,40 @@ export function hasarKivilcim(taraf = 1) {
   });
   return kalan.length;
 }
+/** Sonuca geç: motor savaşı sona kadar koşar (istatistik dolar, anlıklar alınır, görsel olay planlanmaz → ses ve efekt seli yok),
+    görüntü son anlığa sarılır: ölüler gizlenir, sağ kalanlar son konumlarına geçer, bekleyen olaylar, yazılar ve balonlar atılır.
+    Sonraki kare() bitti döner; sonuç bandı, zafer sesi ve zafer dansı her zamanki yoldan çalışır. Dönen: sarıldıysa true. */
+export function sonaSar() {
+  if (!sim || !anlikSay) return false;
+  let n = 0;
+  while (!sim.bitti && n++ < 20000) {
+    const tOnce = sim.t; sim.adim();
+    const fx = sim.fx, liste = new Array(fx.length);
+    for (let i = 0; i < fx.length; i++) liste[i] = { ...fx[i], t: tOnce };
+    istatTopla(liste); anlikAl();
+  }
+  const sonT = (anlikSay - 1) * DT + ONDE_SN;
+  if (gorselT < sonT) gorselT = sonT;
+  kuyruk.length = 0; kuyrukKirli = false; yazilar.length = 0; bantlar.length = 0; balonSira.length = 0; kutKart = null; kutlu.clear();
+  for (const e of efektler) if (!e.kalici) { sahne.remove(e.o); if (e.bitis) e.bitis(); }
+  efektler = efektler.filter(e => e.kalici);
+  his.sifirla();   // hit-stop, Kut yavaşlaması, yakınlaşma, giriş düşüşü biter
+  const son = anlikSay - 1;
+  for (const b of birimDizi) {
+    const olu = anlikDeger(son, b.si, 7) === 1;
+    vfx.durumTemizle(b.kok); b.vd = {}; b.zk = null; b.zkSira = []; b.dizi = null;
+    const gr = b.model.userData.gorunum; if (gr) gr.kenar(b.u.taraf === 0 ? G.RIM.biz : G.RIM.rakip, b.u.taraf === 0 ? G.RIM_GUC.biz : G.RIM_GUC.rakip);
+    if (olu) { if (b.olumT < 0) b.olumT = gorselT - 5; b.govde.visible = false; b.kok.visible = false; for (const hl of b.halkalar) hl.visible = false; continue; }
+    if (b.olumT >= 0) { b.olumT = -1; b.kok.visible = true; b.leke.visible = true; for (const hl of b.halkalar) hl.visible = true; }
+    b.govde.visible = true; b.govde.position.set(0, 0, 0);
+    his.donma(b, 0);   // his durumunu yeniden kaydet (gövde yere oturur)
+    b.durum = ''; b.tekBitis = 0;
+    if (b.isk) oyna(b, b.isk.beklemeAd, { dongu: true, gecis: 0.15 });
+    if ((b.u.b.s || 1) >= 3) vfx.durum(b.kok, 'yildiz3', true);
+  }
+  kam.ilk = true;
+  return true;
+}
 export function temizle() { sim = null; for (const b of birimler.values()) vfx.durumTemizle(b.kok); }
 // hata ayıklama / ölçüm
 export function _ual() { return ual; }
@@ -1373,4 +1489,5 @@ export function _poz(uid, ad, t, yalniz = false) {
   i.aktif = e; i.aktifAd = ad; i.mix.update(0); aktar(b); return true;
 }
 export function _ciz() { G.ciz(); }
+export function _yazilar() { return yazilar.map(y => ({ m: y.metin, onc: y.onc, tur: y.tur, yas: +y.yas.toFixed(2), bir: y.bir })); }
 export function _balonlar() { return { acik: bantlar.map(b => b.metin), sira: balonSira.map(b => b.metin) }; }
