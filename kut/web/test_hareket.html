@@ -1,0 +1,154 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hareket Testi</title>
+<style>html,body{margin:0;height:100%;background:#2a1640;overflow:hidden;font:12px system-ui;color:#fff}#t{position:absolute;inset:0;width:100%;height:100%}#bilgi{position:absolute;left:8px;top:6px;text-shadow:0 1px 2px #000}</style>
+<script type="importmap">{"imports":{"three":"../vendor/three/three.module.min.js"}}</script></head>
+<body><canvas id="t"></canvas><div id="bilgi"></div>
+<script type="module">
+/* hareket.js test sahnesi: kurt + koç + golem + yılan (ya da ?a=kurt,kugu,...). Akış: giriş → bekleme → yürüme (koşu bandı) → saldırı → vurulma → yetenek → ölüm/çözülme → diriliş+giriş → zafer.
+   ?elle=1 ile kare kare: window.adim(sn). ?kamera=yan|oyun|yakin&odak=i */
+import * as THREE from 'three';
+import { GLTFLoader } from '../vendor/three/addons/loaders/GLTFLoader.js';
+import * as SkeletonUtils from '../vendor/three/addons/utils/SkeletonUtils.js';
+import { his, dortAyakliKur, dortAyakliGuncelle, yilanKur, yilanGuncelle, ikiAyakliKur, ikiAyakliGuncelle, onYonAci } from './hareket.js';
+globalThis.KUT_IMG_YUKLEYICI = true;
+const q = new URLSearchParams(location.search);
+const ADLAR = (q.get('a') || 'kurt,koc,golem,yilan').split(',');
+const IKI = ['golem','kurbaga','yarasa','ruzgar','kugu','ayi','anka','baykus','tilki','ejder'];
+const KANAT = ['yarasa','kugu','anka'], IRI = ['golem','ayi'];
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('t'), antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.shadowMap.enabled = !q.get('golgesiz');
+const sahne = new THREE.Scene(); sahne.background = new THREE.Color('#6d3f8c'); sahne.fog = new THREE.Fog('#8a5aa8', 14, 40);
+sahne.add(new THREE.HemisphereLight('#ffd9f2', '#4a2f5c', 1.2));
+const gunes = new THREE.DirectionalLight('#ffc27a', 2.6); gunes.position.set(-4, 9, 6); gunes.castShadow = true; gunes.shadow.mapSize.set(1024, 1024);
+Object.assign(gunes.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6, near: 1, far: 30 }); sahne.add(gunes);
+// zemin: kayan dama (koşu bandı) — ayak kaymasını görmek için
+const zc = document.createElement('canvas'); zc.width = zc.height = 64; const zx = zc.getContext('2d');
+zx.fillStyle = '#a07a8e'; zx.fillRect(0, 0, 64, 64); zx.fillStyle = '#7d5a72'; zx.fillRect(0, 0, 32, 32); zx.fillRect(32, 32, 32, 32); zx.fillStyle = '#ffd36a'; zx.fillRect(0, 0, 64, 2);
+const zd = new THREE.CanvasTexture(zc); zd.wrapS = zd.wrapT = THREE.RepeatWrapping; zd.repeat.set(10, 5); zd.colorSpace = THREE.SRGBColorSpace; zd.magFilter = THREE.NearestFilter;
+const zemin = new THREE.Mesh(new THREE.PlaneGeometry(20, 10), new THREE.MeshStandardMaterial({ map: zd, roughness: 0.95 })); zemin.rotation.x = -Math.PI / 2; zemin.receiveShadow = true; sahne.add(zemin);
+const kamera = new THREE.PerspectiveCamera(38, 16 / 10, 0.1, 100);
+const W = +(q.get('w') || 960), Hh = +(q.get('h') || 600); renderer.setSize(W, Hh, false); kamera.aspect = W / Hh;
+function kameraKur() {
+  const tip = q.get('kamera') || 'yan';
+  if (tip === 'yan') { const z = +(q.get('z') || 7.2); kamera.position.set(0, 0.6 + z * 0.15, z); kamera.lookAt(0, 0.5, 0); }
+  else if (tip === 'oyun') { kamera.position.set(0, 7.5, 6.5); kamera.lookAt(0, 0, 0); }
+  else if (tip === 'yakin') { const o = birimler[+(q.get('odak') || 0)]; const p = o.kok.position; kamera.position.set(p.x + 0.3, 1.1, p.z + 2.6); kamera.lookAt(p.x + 0.1, 0.5, p.z); }
+  kamera.updateProjectionMatrix();
+}
+his.kur(kamera, { kalite: q.get('kalite') || 'yuksek', sahne });
+// toz olayı: basit havuzlu halka (test için)
+const tozlar = []; const tozGeo = new THREE.RingGeometry(0.15, 0.32, 24);
+his.dinle('toz', ({ konum, guc }) => { let t = tozlar.find(x => !x.m.visible); if (!t) { t = { m: new THREE.Mesh(tozGeo, new THREE.MeshBasicMaterial({ color: '#e8d6c0', transparent: true, depthWrite: false })) }; t.m.rotation.x = -Math.PI / 2; sahne.add(t.m); tozlar.push(t); } t.m.visible = true; t.m.position.set(konum.x, 0.03, konum.z); t.y = 0; t.g = guc; });
+
+// ── yükleme (sahne3d.js birimKur/iskeleKur/aktar kopyası, en aza indirildi) ──
+const yuk = new GLTFLoader();
+const glb = async (ad) => { const r = await fetch('modeller/' + ad + '.glb'); const v = await r.arrayBuffer(); return new Promise((ok, no) => yuk.parse(v, '', ok, no)); };
+const MAP0 = { Hips: 'DEF-hips', Spine: 'DEF-spine.001', Spine1: 'DEF-spine.002', Spine2: 'DEF-spine.003', Neck: 'DEF-neck', Head: 'DEF-head', LeftShoulder: 'DEF-shoulder.L', LeftArm: 'DEF-upper_arm.L', LeftForeArm: 'DEF-forearm.L', LeftHand: 'DEF-hand.L', RightShoulder: 'DEF-shoulder.R', RightArm: 'DEF-upper_arm.R', RightForeArm: 'DEF-forearm.R', RightHand: 'DEF-hand.R', LeftUpLeg: 'DEF-thigh.L', LeftLeg: 'DEF-shin.L', LeftFoot: 'DEF-foot.L', LeftToeBase: 'DEF-toe.L', RightUpLeg: 'DEF-thigh.R', RightLeg: 'DEF-shin.R', RightFoot: 'DEF-foot.R', RightToeBase: 'DEF-toe.R' };
+const MAP = {}; for (const k in MAP0) MAP[k] = MAP0[k].replace(/\./g, '');
+const COCUK = { Hips: 'Spine', Spine: 'Spine1', Spine1: 'Spine2', Spine2: 'Neck', Neck: 'Head', LeftShoulder: 'LeftArm', LeftArm: 'LeftForeArm', LeftForeArm: 'LeftHand', RightShoulder: 'RightArm', RightArm: 'RightForeArm', RightForeArm: 'RightHand', LeftUpLeg: 'LeftLeg', LeftLeg: 'LeftFoot', LeftFoot: 'LeftToeBase', RightUpLeg: 'RightLeg', RightLeg: 'RightFoot', RightFoot: 'RightToeBase' };
+const SIRA = Object.keys(MAP0);
+const wq = (o) => o.getWorldQuaternion(new THREE.Quaternion()), wp = (o) => o.getWorldPosition(new THREE.Vector3());
+let ual;
+function olcekle(o, boy, eksen) { const s = new THREE.Box3().setFromObject(o).getSize(new THREE.Vector3()); o.scale.multiplyScalar(boy / (eksen === 'max' ? Math.max(s.x, s.y, s.z) : s.y)); return new THREE.Box3().setFromObject(o); }
+async function birimKur(ad, x, uid) {
+  const tur = IKI.includes(ad) ? 'iki' : ad === 'yilan' ? 'yilan' : 'dort';
+  const g = await glb(ad); const model = SkeletonUtils.clone(g.scene); model.traverse(m => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } });
+  const kok = new THREE.Group(), govde = new THREE.Group(); kok.add(govde); govde.add(model);
+  const kemik = {}; model.traverse(o => { if (o.isBone) kemik[o.name.replace('mixamorig', '').replace(':', '')] = o; });
+  if (tur !== 'iki') model.rotation.y = onYonAci(model, kemik);
+  model.updateMatrixWorld(true);
+  const kk = olcekle(model, tur === 'iki' ? 1.15 : 1.25, tur === 'iki' ? 'y' : 'max');
+  model.position.y -= kk.min.y; const k2 = new THREE.Box3().setFromObject(model); model.position.x -= (k2.min.x + k2.max.x) / 2; model.position.z -= (k2.min.z + k2.max.z) / 2;
+  kok.position.set(x, 0, 0); kok.rotation.y = Math.PI / 2; sahne.add(kok);
+  const b = { uid, ad, kok, govde, model, kemik, gor: { tur, kanat: KANAT.includes(ad), iri: IRI.includes(ad) }, faz: (uid * 0.37) % 1 };
+  if (tur === 'iki') { iskeleKur(b); b.ik = ikiAyakliKur(b); }
+  else if (tur === 'dort') b.da = dortAyakliKur(model, kemik, { tur: ad, faz: b.faz });
+  else b.yi = yilanKur(model, kemik, { faz: b.faz });
+  his.hazirla(b);
+  return b;
+}
+function iskeleKur(b) {
+  const kaynak = SkeletonUtils.clone(ual.sahne); kaynak.traverse(m => { if (m.isMesh || m.isSkinnedMesh) m.visible = false; });
+  const SB = {}; kaynak.traverse(m => { if (m.isBone) SB[m.name.replace(/\./g, '')] = m; }); sahne.add(kaynak); kaynak.position.set(0, -50, 0);
+  const mix = new THREE.AnimationMixer(kaynak); const eylem = {}; for (const a in ual.klip) eylem[a] = mix.clipAction(ual.klip[a]);
+  eylem.A_TPose.play(); mix.setTime(0); kaynak.updateMatrixWorld(true);
+  const sRef = {}, sRefP = {}; for (const k in MAP) if (SB[MAP[k]]) { sRef[k] = wq(SB[MAP[k]]); sRefP[k] = wp(SB[MAP[k]]).sub(kaynak.position); }
+  eylem.A_TPose.stop(); b.model.updateMatrixWorld(true);
+  const TB = b.kemik, G0inv = wq(b.model).invert(), tRel = {}, tRelP = {}, al = {};
+  for (const k in MAP) if (TB[k]) { tRel[k] = G0inv.clone().multiply(wq(TB[k])); tRelP[k] = b.model.worldToLocal(wp(TB[k])); }
+  for (const k in MAP) { if (!TB[k] || !sRef[k]) continue; const c = COCUK[k]; const A = new THREE.Quaternion(); if (c && tRelP[c] && sRefP[c]) { A.setFromUnitVectors(tRelP[c].clone().sub(tRelP[k]).normalize(), sRefP[c].clone().sub(sRefP[k]).normalize()); } al[k] = A.multiply(tRel[k].clone()); }
+  const kutu = new THREE.Box3().setFromObject(b.model); const tabanYerel = b.model.worldToLocal(kutu.min.clone()).y;
+  const hipS = TB.Hips && sRefP.Hips ? (tRelP.Hips.y - tabanYerel) / Math.max(1e-4, sRefP.Hips.y) : 1;
+  b.isk = { kaynak, SB, mix, eylem, sRef, sRefP, al, tRelP, hipS, aktif: null };
+  oyna(b, 'Idle_Loop', { dongu: true, gecis: 0 });
+}
+function oyna(b, ad, { dongu = false, gecis = 0.15, hiz = 1, tut = false } = {}) {
+  const i = b.isk; const e = i.eylem[ad]; if (!e) return; e.reset(); e.setLoop(dongu ? THREE.LoopRepeat : THREE.LoopOnce, Infinity); e.clampWhenFinished = !dongu || tut; e.timeScale = hiz; e.enabled = true; e.setEffectiveWeight(1);
+  if (i.aktif && i.aktif !== e) e.crossFadeFrom(i.aktif, gecis, false); e.play(); i.aktif = e; i.aktifAd = ad;
+}
+function aktar(b) {
+  const i = b.isk; i.kaynak.updateMatrixWorld(true); b.model.updateMatrixWorld(true); const M = wq(b.model);
+  for (const k of SIRA) { const t = b.kemik[k], s = i.SB[MAP[k]]; if (!t || !s || !i.al[k]) continue;
+    const delta = wq(s).multiply(i.sRef[k].clone().invert()); t.quaternion.copy(wq(t.parent).invert().multiply(M.clone().multiply(delta).multiply(i.al[k])));
+    if (k === 'Hips') { const off = wp(s).sub(i.kaynak.position).sub(i.sRefP.Hips).multiplyScalar(i.hipS); t.position.copy(t.parent.worldToLocal(b.model.localToWorld(i.tRelP.Hips.clone().add(off)))); }
+    t.updateMatrixWorld(true); }
+}
+
+ual = await (async () => { const g = await glb('ual'); return { sahne: g.scene, klip: Object.fromEntries(g.animations.map(c => [c.name, c])) }; })();
+const ARA = 1.55, x0 = -(ADLAR.length - 1) * ARA / 2;
+const birimler = await Promise.all(ADLAR.map((a, i) => birimKur(a, x0 + i * ARA, i + 1)));
+kameraKur();
+
+// ── zaman çizelgesi ──
+const AKIS = [
+  [0.0, 'giris'], [2.0, 'yuru'], [4.4, 'dur'], [4.6, 'saldir'], [5.25, 'saldir'], [5.9, 'vurul'], [6.5, 'yetenek'], [8.0, 'olum'], [11.0, 'dirilis'], [12.1, 'zafer'], [14.0, 'son'],
+];
+let T = 0, akisI = 0, hiz = 0, zaferVar = false; const olu = new Set();
+const ileri = new THREE.Vector3(1, 0, 0);
+function olay(ad) {
+  for (const b of birimler) {
+    const hedef = b.kok.position.clone().add(new THREE.Vector3(1.0, 0, 0));
+    if (ad === 'giris') his.giris(b, b.uid * 0.12);
+    if (ad === 'yuru') hiz = 1.7;
+    if (ad === 'dur') hiz = 0;
+    if (ad === 'saldir') {
+      if (b.isk) { const klip = 'Punch_Cross', dr = 0.3; oyna(b, klip, { gecis: 0.08 }); b.bitis = T + ual.klip[klip].duration; b.tetik = { saldiri: { darbe: dr } }; his.atil(b, hedef, dr); }
+      else { b.tetik = { saldiri: true }; his.atil(b, hedef, b.yi ? 0.22 : 0.15, { mesafe: 0.22 }); }
+    }
+    if (ad === 'vurul') { his.darbe(b, new THREE.Vector3(-1, 0, 0), 0.85); if (b.isk) { oyna(b, 'Hit_Chest', { gecis: 0.05 }); b.bitis = T + 0.33; } b.tetik = { vurul: 0.9 }; }
+    if (ad === 'yetenek') { if (b.isk) { oyna(b, 'Spell_Simple_Enter', { gecis: 0.08 }); b.dizi = ['Spell_Simple_Shoot']; b.bitis = T + 0.5; } b.tetik = { yetenek: true }; }
+    if (ad === 'olum') { olu.add(b); if (b.isk) oyna(b, 'Death01', { gecis: 0.1, tut: true }); his.olum(b, { yakinlastir: b.uid === 1 }); }
+    if (ad === 'dirilis') { olu.delete(b); his.dirilis(b); if (b.isk) oyna(b, 'Idle_Loop', { dongu: true, gecis: 0 }); his.giris(b, b.uid * 0.12); }
+    if (ad === 'zafer') { zaferVar = true; his.zafer(b); if (b.isk) oyna(b, 'Dance_Loop', { dongu: true, gecis: 0.2 }); }
+  }
+  if (ad === 'vurul') his.sarsinti(0.45, 0.35, new THREE.Vector3(-1, 0, 0));
+}
+let sonOlay = '';
+window.adim = (sn) => {
+  const n = Math.max(1, Math.round(sn * 60));
+  for (let s = 0; s < n; s++) {
+    const { dtGorsel } = his.guncelle(1 / 60);
+    const dt = dtGorsel;
+    while (akisI < AKIS.length && AKIS[akisI][0] <= T) { sonOlay = AKIS[akisI][1]; olay(sonOlay); akisI++; }
+    T += dt;
+    zd.offset.x += hiz * dt * (10 / 20);
+    for (const b of birimler) {
+      const tt = b.tetik || {}; b.tetik = null; const ol = olu.has(b);
+      if (b.isk) {
+        if (b.bitis && T >= b.bitis && !ol && !zaferVar) { if (b.dizi && b.dizi.length) { const k = b.dizi.shift(); oyna(b, k, { gecis: 0.06 }); b.bitis = T + ual.klip[k].duration; } else { b.bitis = 0; } }
+        if (!b.bitis && !ol && !zaferVar) { const ist = hiz > 0 ? 'Walk_Loop' : 'Idle_Loop'; if (b.isk.aktifAd !== ist) oyna(b, ist, { dongu: true, gecis: 0.2 }); }
+        b.isk.mix.update(dt); aktar(b);
+        ikiAyakliGuncelle(b.ik, dt, { hareket: hiz > 0 && !ol, ...tt, olum: ol, zafer: zaferVar });
+      } else if (b.da) { const r = dortAyakliGuncelle(b.da, dt, { hiz: ol ? 0 : hiz, ...tt, olum: ol, zafer: zaferVar }); if (r.olay) b.sonOlay = r.olay; }
+      else if (b.yi) { const r = yilanGuncelle(b.yi, dt, { hiz: ol ? 0 : hiz, ...tt, olum: ol, zafer: zaferVar }); if (r.olay) b.sonOlay = r.olay; }
+    }
+    for (const t of tozlar) if (t.m.visible) { t.y += 1 / 60; const e = t.y / 0.45; t.m.scale.setScalar(1 + e * 2.5 * t.g); t.m.material.opacity = 0.8 * (1 - e); if (e >= 1) t.m.visible = false; }
+  }
+  his.kameraUygula(); renderer.render(sahne, kamera); his.kameraGeriAl();
+  document.getElementById('bilgi').textContent = `t=${T.toFixed(2)}  ${sonOlay}`;
+  return { T, olay: sonOlay };
+};
+window.B = birimler; window.HAZIR = true;
+if (!q.get('elle')) { let once = performance.now(); (function d() { const s = performance.now(); window.adim(Math.min(0.05, (s - once) / 1000)); once = s; if (T > 14.2 && q.get('dongu') !== '0') location.reload(); requestAnimationFrame(d); })(); }
+</script></body></html>

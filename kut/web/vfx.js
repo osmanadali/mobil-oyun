@@ -211,8 +211,8 @@ function atlasUret(C) {
   // 20 pençe izi (üç paralel kesik)
   ciz(KARE.pence, r => {
     x.rotate(-0.55); parla(0.05, 0.8);
-    for (const ox of [-0.36, 0, 0.36]) { x.save(); x.translate(r * ox - r * 0.25, r * 0.9 + Math.abs(ox) * r * 0.25); hilal(r * 1.25, r * 0.15, Math.PI * 1.32, Math.PI * 1.68);
-      x.fillStyle = dogrusal(0, -r * 1.25, 0, -r * 0.9, [[0, 255, 1], [1, 210, 0.8]]); x.fill(); x.restore(); }
+    for (const oy of [-0.34, 0, 0.34]) { x.save(); x.translate(r * oy * 0.25, r * (0.62 + oy)); hilal(r * 0.9, r * 0.17, Math.PI * 1.2, Math.PI * 1.8);
+      x.fillStyle = dogrusal(0, -r * 0.9, 0, -r * 0.4, [[0, 255, 1], [1, 215, 0.85]]); x.fill(); x.restore(); }
     sondur();
   });
   // 21 artı (iyileşme)
@@ -275,7 +275,7 @@ void main(){
   float a = t.a * vCol.a; if (a < 0.004) discard;
   float L = t.r;
   vec3 c = vCol.rgb * (0.38 + 0.62 * L);
-  c = mix(c, vec3(1.0), smoothstep(0.72, 1.0, L) * vHot);
+  c = mix(c, vec3(1.0), smoothstep(0.8, 1.0, L) * vHot);
   gl_FragColor = vec4(c, a);
 }`;
 // parçacık alanları (tek Float32Array, adım S)
@@ -335,7 +335,7 @@ class Sistem {
       const e = 1 - (1 - k) * (1 - k);
       const s = d[o + S0] + (d[o + S1] - d[o + S0]) * e;
       const fi = d[o + FI], fo = d[o + FO];
-      let a = d[o + AL] * (fi > 0 ? Math.min(1, k / fi) : 1); if (k > fo) a *= Math.max(0, 1 - (k - fo) / (1 - fo + 1e-5));
+      let a = d[o + AL]; if (life > 0) { if (fi > 0) a *= Math.min(1, k / fi); if (k > fo) a *= Math.max(0, 1 - (k - fo) / (1 - fo + 1e-5)); } // tek karelik: tam opak
       Cl[i * 4] = d[o + R0] + (d[o + R1] - d[o + R0]) * k; Cl[i * 4 + 1] = d[o + G0] + (d[o + G1] - d[o + G0]) * k; Cl[i * 4 + 2] = d[o + B0] + (d[o + B1] - d[o + B0]) * k; Cl[i * 4 + 3] = a;
       let w = s * d[o + EN], h = s * d[o + UZ];
       const mod = d[o + MOD];
@@ -384,7 +384,7 @@ function P(o) {
   const c0 = rgb(o.renk || '#ffffff'), c1 = o.renk2 ? rgb(o.renk2) : c0;
   d[b + R0] = c0[0]; d[b + G0] = c0[1]; d[b + B0] = c0[2]; d[b + R1] = c1[0]; d[b + G1] = c1[1]; d[b + B1] = c1[2];
   d[b + AL] = o.a === undefined ? 1 : o.a; d[b + ROT] = o.rot === 'r' ? RND() * TAU : (o.rot || 0); d[b + ROTV] = o.rotHiz || 0;
-  d[b + FR] = KARE[o.kare || 'parilti']; d[b + MOD] = o.mod || 0; d[b + HOT] = o.hot === undefined ? 0.6 : o.hot; d[b + UZAT] = o.uzat || 0;
+  d[b + FR] = KARE[o.kare || 'parilti']; d[b + MOD] = o.mod || 0; d[b + HOT] = o.hot === undefined ? 0.4 : o.hot; d[b + UZAT] = o.uzat || 0;
   const ek = o.eksen; if (ek) { d[b + DX] = ek.x; d[b + DY] = ek.y; d[b + DZ] = ek.z; } else { d[b + DY] = 1; }
   d[b + FI] = o.fi === undefined ? 0.08 : o.fi; d[b + FO] = o.fo === undefined ? 0.45 : o.fo;
   if (o.yorunge) { const y = o.yorunge; d[b + ORB] = 1; d[b + OCX] = p.x; d[b + OCY] = p.y; d[b + OCZ] = p.z; d[b + ORAD] = y.r || 0.5; d[b + OANG] = y.aci === undefined ? RND() * TAU : y.aci; d[b + OW] = y.w || 3; d[b + ORV] = y.rv || 0; d[b + VY] = y.vy || 0;
@@ -418,17 +418,17 @@ function patlama(p, o = {}) {
 // darbe parlaması: kameraya dönük kısa, parlak disk + yıldız
 function flas(p, o = {}) {
   const renk = o.renk || '#ffe6a0', b = o.boy || 0.9, s = o.sure || 0.18;
-  P({ p, omur: s, boy: b * 0.45, boy2: b, renk, kare: 'parilti', hot: 1, a: o.a || 1, fi: 0, fo: 0.15 });
-  P({ p, omur: s * 0.85, boy: b * 0.9, boy2: b * 1.4, renk: '#ffffff', renk2: renk, kare: 'yildiz4', rot: o.rot === undefined ? rr(-0.3, 0.3) : o.rot, hot: 1, a: 0.95, fi: 0, fo: 0.1 });
-  if (o.halka !== false) P({ p, omur: s * 1.4, boy: b * 0.3, boy2: b * 1.5, renk, kare: 'halka', hot: 0.6, a: 0.8, fi: 0, fo: 0.2 });
+  P({ p, omur: s, boy: b * 0.5, boy2: b, renk, kare: 'parilti', hot: 0.7, a: (o.a || 1) * 0.75, fi: 0, fo: 0.15 });
+  P({ p, omur: s * 0.8, boy: b * 0.7, boy2: b * 1.1, renk, kare: 'yildiz4', rot: o.rot === undefined ? rr(-0.3, 0.3) : o.rot, hot: 0.9, a: 0.9, fi: 0, fo: 0.1 });
+  if (o.halka !== false) P({ p, omur: s * 1.5, boy: b * 0.3, boy2: b * 1.4, renk, kare: 'halka', normal: true, hot: 0.3, a: 0.75, fi: 0, fo: 0.2 });
   if (o.isik !== false) isikYak(p, renk, (o.isikGuc || 6) * (b / 0.9), s * 1.6);
 }
 // şok dalgası: yerde genişleyen halka + yükselen toz
 function sok(p, o = {}) {
   const renk = o.renk || '#ffe0a0', r = o.r || 1.5, s = o.sure || 0.5, y = Z() + 0.04;
   _v3.set(p.x, y, p.z);
-  P({ p: _v3, mod: 1, omur: s, boy: r * 0.25, boy2: r * 2.1, renk, kare: 'sok', hot: 0.5, a: o.a || 0.95, fi: 0, fo: 0.25, rot: 'r' });
-  P({ p: _v3, mod: 1, omur: s * 0.6, boy: r * 0.2, boy2: r * 1.3, renk: '#ffffff', renk2: renk, kare: 'halka', hot: 0.8, a: 0.7, fi: 0, fo: 0.1 });
+  P({ p: _v3, mod: 1, omur: s, boy: r * 0.25, boy2: r * 2.1, renk, kare: 'sok', normal: true, hot: 0.25, a: (o.a || 1) * 0.9, fi: 0, fo: 0.3, rot: 'r' });
+  P({ p: _v3, mod: 1, omur: s * 0.6, boy: r * 0.2, boy2: r * 1.4, renk, kare: 'halka', hot: 0.5, a: (o.a || 1) * 0.5, fi: 0, fo: 0.1 });
   if (o.toz) {
     const tr = o.tozRenk || '#c9a982', m = N(o.tozN || 12);
     for (let i = 0; i < m; i++) { const a = i / m * TAU + rr(0, 0.4); _v4.set(p.x + Math.cos(a) * r * 0.25, y + 0.08, p.z + Math.sin(a) * r * 0.25);
@@ -439,8 +439,9 @@ function sok(p, o = {}) {
 // yerde rün çemberi
 function run(p, o = {}) {
   const renk = o.renk || '#c98bff', r = o.r || 1.2, s = o.sure || 1.0; _v3.set(p.x, Z() + 0.05, p.z);
-  P({ p: _v3, mod: 1, omur: s, boy: r * 1.6, boy2: r * 2, renk, renk2: o.renk2 || renk, kare: 'run', rot: 'r', rotHiz: o.donus === undefined ? 1.2 : o.donus, hot: 0.7, a: o.a || 1, fi: 0.18, fo: 0.6 });
-  P({ p: _v3, mod: 1, omur: s, boy: r * 2.6, boy2: r * 2.8, renk: o.renk2 || renk, kare: 'parilti', hot: 0.2, a: 0.55, fi: 0.2, fo: 0.5 });
+  P({ p: _v3, mod: 1, omur: s, boy: r * 1.6, boy2: r * 2, renk, renk2: o.renk2 || renk, kare: 'run', normal: true, rot: 'r', rotHiz: o.donus === undefined ? 1.2 : o.donus, hot: 0.2, a: o.a || 0.95, fi: 0.18, fo: 0.6 });
+  P({ p: _v3, mod: 1, omur: s, boy: r * 1.75, boy2: r * 2.15, renk: o.renk2 || renk, kare: 'run', rot: 'r', rotHiz: o.donus === undefined ? 1.2 : o.donus, hot: 0.5, a: 0.45, fi: 0.18, fo: 0.6 });
+  P({ p: _v3, mod: 1, omur: s, boy: r * 2.6, boy2: r * 2.8, renk: o.renk2 || renk, kare: 'parilti', hot: 0.1, a: 0.4, fi: 0.2, fo: 0.5 });
 }
 // yükselen ışık sütunu
 function sutun(p, o = {}) {
@@ -465,7 +466,7 @@ function isin(a, b, o = {}) {
 }
 // zincir yıldırım: dallanan, titreyen kırık çizgi (her ~45 ms yeniden şekillenir)
 function zincir(a, b, o = {}) {
-  const renk = o.renk || '#fff27a', s = o.sure || 0.3, kal = o.kalin || 0.14, dal = o.dal === undefined ? 2 : o.dal;
+  const renk = o.renk || '#fff27a', s = o.sure || 0.3, kal = o.kalin || 0.2, dal = o.dal === undefined ? 2 : o.dal;
   const A = konum(a, new THREE.Vector3()), B = konum(b, new THREE.Vector3());
   const nok = []; for (let i = 0; i < 18; i++) nok.push(new THREE.Vector3());
   const kir = (p0, p1, n, sap, out) => { out[0].copy(p0); out[n].copy(p1); const ek = _v2.copy(p1).sub(p0), L = ek.length();
@@ -497,9 +498,10 @@ function izParca(a, b, o) {
 // aura: nesne çevresinde dönen parçacıklar (sure boyunca)
 function aura(nesne, o = {}) {
   const renk = o.renk || '#ffd76a', s = o.sure || 1.5, h = boyAl(nesne, o.boy);
-  return surec(s, (k, dt, yas, is) => { if (!nesne.visible) return; is.acc = (is.acc || 0) + dt * (o.oran || 20) * OLCEK;
-    while (is.acc >= 1) { is.acc--; _v3.set(0, rr(0.02, 0.2) * h, 0);
-      P({ p: _v3, takip: nesne, yorunge: { r: rr(0.35, 0.5) * h, w: rr(2.5, 4) * (o.ters ? -1 : 1), vy: rr(0.5, 1.2) * h }, omur: rr(0.6, 1), boy: rr(0.08, 0.15), boy2: 0.02, renk, renk2: o.renk2, kare: o.kare || 'parilti', hot: 1, fo: 0.5 }); } });
+  const obj = !!(nesne && nesne.isObject3D), sabit = obj ? null : konum(nesne, new THREE.Vector3());
+  return surec(s, (k, dt, yas, is) => { if (obj && !nesne.visible) return; is.acc = (is.acc || 0) + dt * (o.oran || 20) * OLCEK;
+    while (is.acc >= 1) { is.acc--; _v3.set(0, rr(0.02, 0.2) * h, 0); if (sabit) _v3.add(sabit);
+      P({ p: _v3, takip: obj ? nesne : null, yorunge: { r: rr(0.35, 0.5) * h, w: rr(2.5, 4) * (o.ters ? -1 : 1), vy: rr(0.5, 1.2) * h }, omur: rr(0.6, 1), boy: rr(0.08, 0.15), boy2: 0.02, renk, renk2: o.renk2, kare: o.kare || 'parilti', hot: 1, fo: 0.5 }); } });
 }
 function boyAl(nesne, ver) {
   if (ver) return ver; if (!nesne || !nesne.isObject3D) return 1;
@@ -507,7 +509,7 @@ function boyAl(nesne, ver) {
   const k = new THREE.Box3().setFromObject(nesne); const h = isFinite(k.max.y) ? Math.max(0.4, Math.min(2.5, k.max.y - k.min.y)) : 1; nesne.userData.vfxBoy = h; return h;
 }
 // nokta ışığı parlaması (yalnız yuksek kalitede tek, kalıcı ışık; ışık sayısı değişmez → shader yeniden derlenmez)
-function isikYak(p, renk, guc, sure) { if (!isik || guc * 0.6 < isikGuc * Math.max(0, 1 - isikYas / isikSure)) return; isik.position.set(p.x, Math.max(p.y, Z() + 0.6), p.z); isik.color.set(new THREE.Color().setRGB(...rgb(renk), THREE.SRGBColorSpace)); isikGuc = guc; isikSure = sure; isikYas = 0; }
+function isikYak(p, renk, guc, sure) { if (!isik || guc * 0.6 < isikGuc * Math.max(0, 1 - isikYas / isikSure)) return; isik.position.set(p.x, Math.max(p.y, Z() + 0.6), p.z); const c = rgb(renk); isik.color.setRGB(c[0], c[1], c[2], THREE.SRGBColorSpace); isikGuc = guc; isikSure = sure; isikYas = 0; }
 
 // kaya ağı havuzu
 function kayaAl() { for (const k of kayaHavuz) if (!k.visible) { k.visible = true; return k; } return null; }
@@ -518,7 +520,7 @@ const MERMI = {
 };
 function mermi(bas, son, sure, o = {}) {
   const tur = o.tur || 'buyu', renk = o.renk || ({ ates: '#ff7a2e', buz: '#a8e4ff', zehir: '#7be35a', isik: '#fff1a8', kaya: '#c9a46b', ok: '#ffd76a', ses: '#ffb347' }[tur] || '#c98bff');
-  const guc = o.guc || 1, yay = o.yay === undefined ? MERMI[tur].yay : o.yay;
+  const guc = o.guc || 1, yay = o.yay === undefined ? (MERMI[tur] || MERMI.buyu).yay : o.yay;
   const A = konum(bas, new THREE.Vector3()), Bt = new THREE.Vector3(), onceki = A.clone(), cur = new THREE.Vector3(), yon = new THREE.Vector3();
   const hedefAl = () => { konum(son, Bt); if (son && son.isObject3D) Bt.y += boyAl(son) * 0.5; return Bt; };
   const kaya = tur === 'kaya' ? kayaAl() : null; if (kaya) { kaya.scale.setScalar(guc * (o.kayaBoy || 1)); kaya.position.copy(A); }
@@ -528,8 +530,9 @@ function mermi(bas, son, sure, o = {}) {
     yon.copy(cur).sub(onceki); const L = yon.length(); if (L > 1e-5) yon.divideScalar(L); else yon.copy(B).sub(A).normalize();
     switch (tur) {
       case 'ok':
-        P({ p: cur, mod: 2, eksen: yon, omur: -1, boy: 1, en: 0.12 * guc, uz: 0.55 * guc, renk: '#ffffff', kare: 'kivilcim', hot: 1 });
-        P({ p: cur, mod: 2, eksen: yon, omur: -1, boy: 1, en: 0.35 * guc, uz: 0.8 * guc, renk, kare: 'isin', hot: 0.5, a: 0.8 });
+        P({ p: cur, mod: 2, eksen: yon, omur: -1, boy: 1, en: 0.16 * guc, uz: 0.7 * guc, renk: '#ffffff', kare: 'kivilcim', hot: 1 });
+        P({ p: cur, mod: 2, eksen: yon, omur: -1, boy: 1, en: 0.45 * guc, uz: 0.95 * guc, renk, kare: 'isin', hot: 0.5, a: 0.85 });
+        P({ p: cur, omur: -1, boy: 0.35 * guc, renk, kare: 'parilti', hot: 0.6, a: 0.8 });
         izParca(onceki, cur, { renk, en: 0.08 * guc, omur: 0.2 }); break;
       case 'kaya':
         if (kaya) { kaya.position.copy(cur); kaya.rotation.x += dt * 9; kaya.rotation.z += dt * 6; }
@@ -538,8 +541,8 @@ function mermi(bas, son, sure, o = {}) {
         break;
       case 'ates':
         P({ p: cur, omur: -1, boy: 0.5 * guc, renk: '#ff6a1f', kare: 'parilti', hot: 1 });
-        P({ p: cur, mod: 2, eksen: _v3.copy(yon).negate(), omur: -1, boy: 0.42 * guc, uz: 1.3, renk: '#ffb347', kare: 'alev', hot: 1 });
-        for (let i = 0; i < 2; i++) if (RND() < OLCEK) P({ p: cur, v: kureY(_v2, 0.8).multiplyScalar(0.6), g: -1.5, drag: 1.5, omur: rr(0.25, 0.4), boy: rr(0.16, 0.26) * guc, boy2: 0.04, renk: '#ffd36a', renk2: '#ff3d1a', kare: 'alev', hot: 0.8, rot: rr(-0.4, 0.4) });
+        P({ p: cur, mod: 2, eksen: _v3.copy(yon).negate(), omur: -1, boy: 0.42 * guc, uz: 1.3, renk: '#ffb347', kare: 'alev', normal: true, hot: 0.45 });
+        for (let i = 0; i < 2; i++) if (RND() < OLCEK) P({ p: cur, v: kureY(_v2, 0.8).multiplyScalar(0.6), g: -1.5, drag: 1.5, omur: rr(0.25, 0.4), boy: rr(0.16, 0.26) * guc, boy2: 0.04, renk: '#ffd36a', renk2: '#ff3d1a', kare: 'alev', normal: true, hot: 0.45, rot: rr(-0.4, 0.4) });
         izParca(onceki, cur, { renk: '#ff7a2e', renk2: '#ff2a00', en: 0.16 * guc, omur: 0.25 }); break;
       case 'buz':
         P({ p: cur, mod: 2, eksen: yon, omur: -1, boy: 0.42 * guc, en: 0.7, renk: '#dff6ff', kare: 'buz', hot: 0.6 });
@@ -547,8 +550,8 @@ function mermi(bas, son, sure, o = {}) {
         if (RND() < 0.6 * OLCEK) P({ p: cur, v: kureY(_v2, 0).multiplyScalar(0.4), g: 0.6, drag: 1, omur: rr(0.4, 0.7), boy: rr(0.07, 0.12), renk: '#ffffff', renk2: renk, kare: 'kar', rot: 'r', rotHiz: rr(-3, 3), hot: 1 });
         izParca(onceki, cur, { renk, en: 0.12 * guc, omur: 0.28 }); break;
       case 'zehir':
-        P({ p: cur, omur: -1, boy: 0.32 * guc, renk: '#8cff5a', kare: 'kabarcik', hot: 0.6, a: 1 });
-        P({ p: cur, omur: -1, boy: 0.5 * guc, renk: '#3fae2a', kare: 'parilti', hot: 0.3, a: 0.9 });
+        P({ p: cur, omur: -1, boy: 0.5 * guc, renk: '#3fbf2a', kare: 'parilti', normal: true, hot: 0.5, a: 1 });
+        P({ p: cur, omur: -1, boy: 0.36 * guc, renk: '#c8ff8a', kare: 'kabarcik', hot: 0.6, a: 1 });
         if (RND() < 0.5 * OLCEK) P({ p: cur, v: _v2.set(rr(-0.2, 0.2), -0.3, rr(-0.2, 0.2)), g: 6, omur: rr(0.3, 0.45), boy: rr(0.07, 0.11), renk: '#a6ff6a', kare: 'damla', mod: 2, uzat: 0.12, hot: 0.4 });
         izParca(onceki, cur, { renk: '#6fdc3a', en: 0.14 * guc, omur: 0.3, a: 0.7 }); break;
       case 'isik':
@@ -561,8 +564,9 @@ function mermi(bas, son, sure, o = {}) {
         const ii = (o._i = (o._i || 0) + dt); if (ii > 0.05) { o._i = 0; P({ p: cur, omur: 0.3, boy: 0.12 * guc, boy2: 0.55 * guc, renk, kare: 'halka', hot: 0.8, a: 0.9, fi: 0, fo: 0.2 }); }
         break; }
       default:
-        P({ p: cur, omur: -1, boy: 0.26 * guc, renk: '#ffffff', kare: 'yildiz4', rot: k * 10, hot: 1 });
-        P({ p: cur, omur: -1, boy: 0.55 * guc, renk, kare: 'parilti', hot: 0.8, a: 0.9 });
+        P({ p: cur, omur: -1, boy: 0.34 * guc, renk, kare: 'yildiz4', rot: k * 10, hot: 0.9 });
+        P({ p: cur, omur: -1, boy: 0.42 * guc, renk, kare: 'parilti', normal: true, hot: 0.6, a: 0.85 });
+        P({ p: cur, omur: -1, boy: 0.7 * guc, renk, kare: 'parilti', hot: 0.5, a: 0.7 });
         if (RND() < 0.6 * OLCEK) P({ p: cur, v: kureY(_v2, 0).multiplyScalar(0.35), drag: 1.5, omur: rr(0.25, 0.45), boy: rr(0.06, 0.12), boy2: 0.02, renk, kare: 'parilti', hot: 1 });
         izParca(onceki, cur, { renk, en: 0.12 * guc, omur: 0.24 });
     }
@@ -593,7 +597,7 @@ function vurus(pos, o = {}) {
   }
   if (tur === 'kaya') { for (let i = 0, n = N(8 * guc); i < n; i++) { kureY(_v2, 0.7).multiplyScalar(rr(1.5, 3.2)); P({ p, v: _v2, g: 9, drag: 0.6, omur: rr(0.6, 0.9), boy: rr(0.1, 0.2), renk: '#a3775a', kare: 'tas', normal: true, rot: 'r', rotHiz: rr(-8, 8), hot: 0, sek: 0.05, fo: 0.7 }); }
     sok(p, { renk: '#e9c48f', r: 0.8 * guc, toz: true, tozRenk: '#b49272', tozN: 8 }); }
-  if (tur === 'ates') for (let i = 0, n = N(6 * guc); i < n; i++) { kureY(_v2, 0.9).multiplyScalar(rr(0.6, 1.5)); P({ p, v: _v2, g: -2, drag: 2, omur: rr(0.3, 0.55), boy: rr(0.2, 0.32), boy2: 0.05, renk: '#ffd36a', renk2: '#ff3d1a', kare: 'alev', hot: 0.8 }); }
+  if (tur === 'ates') for (let i = 0, n = N(6 * guc); i < n; i++) { kureY(_v2, 0.9).multiplyScalar(rr(0.6, 1.5)); P({ p, v: _v2, g: -2, drag: 2, omur: rr(0.3, 0.55), boy: rr(0.2, 0.32), boy2: 0.05, renk: '#ffd36a', renk2: '#ff3d1a', kare: 'alev', normal: true, hot: 0.45 }); }
   if (tur === 'buz') for (let i = 0, n = N(6 * guc); i < n; i++) { kureY(_v2, 0.6).multiplyScalar(rr(1, 2.4)); P({ p, v: _v2, g: 7, drag: 1, omur: rr(0.4, 0.6), boy: rr(0.14, 0.24), renk: '#e9fbff', renk2: '#8fd6ff', kare: 'buz', rot: 'r', rotHiz: rr(-6, 6), hot: 0.6, sek: 0.04 }); }
   if (tur === 'zehir') { for (let i = 0, n = N(9 * guc); i < n; i++) { kureY(_v2, 0.8).multiplyScalar(rr(1, 2.4)); P({ p, v: _v2, g: 8, omur: rr(0.35, 0.55), boy: rr(0.08, 0.14), renk: '#a6ff6a', renk2: '#3c9a22', kare: 'damla', mod: 2, uzat: 0.1, hot: 0.4 }); }
     for (let i = 0, n = N(4); i < n; i++) { _v3.set(p.x + rr(-0.2, 0.2), p.y + rr(-0.1, 0.2), p.z + rr(-0.2, 0.2)); P({ p: _v3, v: _v2.set(0, rr(0.3, 0.6), 0), omur: rr(0.5, 0.8), boy: rr(0.12, 0.2), renk: '#9cff6a', kare: 'kabarcik', hot: 0.5, salin: 0.05 }); } }
@@ -624,11 +628,11 @@ const YETENEK = {
   uluma(k, hs, o) {
     const bas = new THREE.Vector3().copy(k.p).setY(k.p.y + 0.75 * k.h), g = o.guc;
     for (let d = 0; d < 3; d++) zamanla(d * 0.13, () => {
-      P({ p: bas, omur: 0.55, boy: 0.3, boy2: 2.4 * g, renk: '#7fd4ff', renk2: '#3d7bff', kare: 'sok', hot: 0.8, a: 0.95, fi: 0, fo: 0.3, rot: 'r' });
-      P({ p: bas, omur: 0.4, boy: 0.2, boy2: 1.6 * g, renk: '#e8fbff', kare: 'halka', hot: 1, a: 0.8, fi: 0, fo: 0.2 });
-      sok(k.p, { renk: '#8fdcff', r: 1.1 + d * 0.5, sure: 0.5, a: 0.8 });
+      P({ p: bas, omur: 0.55, boy: 0.3, boy2: 2.4 * g, renk: '#9fe4ff', renk2: '#3d7bff', kare: 'sok', normal: true, hot: 0.3, a: 0.9, fi: 0, fo: 0.3, rot: 'r' });
+      P({ p: bas, omur: 0.4, boy: 0.2, boy2: 1.6 * g, renk: '#4fa8ff', kare: 'halka', hot: 0.6, a: 0.6, fi: 0, fo: 0.2 });
+      sok(k.p, { renk: '#5fb8ff', r: 1.1 + d * 0.5, sure: 0.5, a: 0.8 });
     });
-    flas(bas, { renk: '#9fe2ff', boy: 0.9, sure: 0.25 });
+    flas(bas, { renk: '#5fb8ff', boy: 0.8, sure: 0.22 });
     for (let i = 0, n = N(12 * g); i < n; i++) { kureY(_v2, 0.9).multiplyScalar(rr(1.5, 3)); P({ p: bas, v: _v2, g: 5, drag: 1.2, omur: rr(0.5, 0.8), boy: rr(0.16, 0.28), renk: '#e9fbff', renk2: '#6fb8ff', kare: 'buz', rot: 'r', rotHiz: rr(-5, 5), hot: 0.7, sek: 0.05 }); }
     hs.forEach((h, j) => zamanla(0.12 + j * 0.05, () => {
       for (let i = 0, n = N(8); i < n; i++) { const a = RND() * TAU; _v3.set(h.p.x + Math.cos(a) * 0.32, Z() + rr(0, 0.3), h.p.z + Math.sin(a) * 0.32); P({ p: _v3, v: _v2.set(0, rr(2.5, 4), 0), drag: 2, omur: rr(0.35, 0.55), boy: rr(0.1, 0.14), uz: 1.5, en: 0.5, renk: '#bfefff', renk2: '#4f8bff', kare: 'kivilcim', mod: 2, uzat: 0.25, hot: 1 }); }
@@ -641,10 +645,10 @@ const YETENEK = {
     for (let d = 0; d < 4; d++) zamanla(d * 0.2, () => {
       const r = (d === 3 ? 2.6 : 1.8) * g;
       sok(k.p, { renk: d % 2 ? '#ffb347' : '#ff7a2e', r, sure: 0.55 });
-      flas(merkez, { renk: '#ffb347', boy: d === 3 ? 1.1 : 0.7, sure: 0.15, halka: false });
+      flas(merkez, { renk: '#ff8a2e', boy: d === 3 ? 0.9 : 0.6, sure: 0.15, halka: false });
       const m = N(10); for (let i = 0; i < m; i++) { const a = i / m * TAU + d * 0.3; _v3.set(k.p.x + Math.cos(a) * 0.35, Z() + 0.06, k.p.z + Math.sin(a) * 0.35);
-        P({ p: _v3, mod: 1, v: _v2.set(Math.cos(a) * 3.2 * g, 0, Math.sin(a) * 3.2 * g), drag: 1.2, omur: 0.6, boy: 0.42, boy2: 0.7, renk: '#ffc46a', renk2: '#ff6a1f', kare: 'dalga', rot: -a - Math.PI / 2, hot: 0.8, fi: 0, fo: 0.4 }); }
-      P({ p: merkez, omur: 0.35, boy: 0.3, boy2: 1.3, renk: '#ffd08a', kare: 'dalga', hot: 1, fi: 0, fo: 0.3 });
+        P({ p: _v3, mod: 1, v: _v2.set(Math.cos(a) * 3.2 * g, 0, Math.sin(a) * 3.2 * g), drag: 1.2, omur: 0.6, boy: 0.42, boy2: 0.75, renk: '#ffb02e', renk2: '#ff5a1f', kare: 'dalga', normal: true, rot: -a - Math.PI / 2, hot: 0.2, fi: 0, fo: 0.4 }); }
+      P({ p: merkez, omur: 0.35, boy: 0.3, boy2: 1.3, renk: '#ff9a2e', kare: 'dalga', normal: true, hot: 0.3, fi: 0, fo: 0.3 });
     });
     hs.forEach((h, j) => zamanla(0.25 + j * 0.04, () => {
       sutun(h.p, { renk: '#ff8a2e', ic: '#ffe1a0', h: 1.8, en: 0.75, sure: 0.6, zerre: false });
@@ -657,9 +661,11 @@ const YETENEK = {
     const hp = new THREE.Vector3().copy(h.p).setY(h.p.y + 0.5 * h.h), kp = new THREE.Vector3().copy(k.p).setY(k.p.y + 0.55 * k.h);
     flas(hp, { renk: '#ff3d5a', boy: 0.8, sure: 0.2 });
     for (let i = 0, n = N(10); i < n; i++) { kureY(_v2, 0.3).multiplyScalar(rr(1, 2.2)); P({ p: hp, v: _v2, drag: 2, g: -0.5, omur: rr(0.5, 0.8), boy: rr(0.28, 0.45), boy2: 0.7, renk: '#5a0f2a', renk2: '#2a0a1a', kare: 'duman', normal: true, rot: 'r', a: 0.55, hot: 0 }); }
-    surec(0.75, (kk, dt, yas, is) => { is.acc = (is.acc || 0) + dt * 55 * OLCEK * g; while (is.acc >= 1) { is.acc--;
-      kureY(_v2, 0.4).multiplyScalar(rr(1.5, 3)); _v3.copy(hp).add(_v4.set(rr(-0.15, 0.15), rr(-0.1, 0.2), rr(-0.15, 0.15)));
-      P({ p: _v3, v: _v2, hedef: kp, hom: rr(3, 5), hiz: rr(3.5, 5), omur: 1.4, boy: rr(0.12, 0.22), boy2: 0.08, renk: RND() < 0.3 ? '#ffd0da' : '#ff2d4d', renk2: '#a0103a', kare: RND() < 0.2 ? 'yildiz4' : 'parilti', mod: 0, hot: 0.8, fo: 0.8 }); } });
+    surec(0.8, (kk, dt, yas, is) => { is.acc = (is.acc || 0) + dt * 75 * OLCEK * g; while (is.acc >= 1) { is.acc--;
+      kureY(_v2, 0.5).multiplyScalar(rr(1.5, 3)); _v3.copy(hp).add(_v4.set(rr(-0.15, 0.15), rr(-0.1, 0.2), rr(-0.15, 0.15))); const t = RND();
+      if (t < 0.45) P({ p: _v3, v: _v2, hedef: kp, hom: rr(3, 5), hiz: rr(3.5, 5), omur: 1.4, boy: rr(0.14, 0.22), uz: 2.2, en: 0.7, renk: '#ffd0da', renk2: '#ff2d4d', kare: 'kivilcim', mod: 2, uzat: 0.08, hot: 0.7, fo: 0.85 });
+      else if (t < 0.8) P({ p: _v3, v: _v2, hedef: kp, hom: rr(3, 5), hiz: rr(3.5, 5), omur: 1.4, boy: rr(0.3, 0.45), boy2: 0.16, renk: '#ff2d4d', renk2: '#c0103a', kare: 'parilti', hot: 0.5, fo: 0.85 });
+      else P({ p: _v3, v: _v2, hedef: kp, hom: rr(3, 5), hiz: rr(3.2, 4.5), omur: 1.4, boy: rr(0.28, 0.4), boy2: 0.14, renk: '#9a0f30', renk2: '#5a0820', kare: 'duman', normal: true, rot: 'r', rotHiz: 3, a: 0.75, hot: 0, fo: 0.8 }); } });
     zamanla(0.45, () => { flas(kp, { renk: '#ff5a7a', boy: 0.9, sure: 0.3 }); aura(k.o || k.p, { renk: '#ff4d6d', renk2: '#ffd0da', sure: 0.6, oran: 30, boy: k.h }); });
   },
   // Rüzgâr Ruhu: rüzgâr mermisi → hedefte yapraklı dönen hortum, yerde toz halkası
@@ -671,9 +677,14 @@ const YETENEK = {
       surec(1.15, (kk, dt, yas, is) => { is.acc = (is.acc || 0) + dt * 90 * OLCEK * g; const sol = kk > 0.8 ? (1 - kk) / 0.2 : 1;
         while (is.acc >= 1) { is.acc--; const r0 = rr(0.12, 0.3), yap = RND() < 0.35;
           _v3.set(c.x, Z() + rr(0, 0.15), c.z);
-          P({ p: _v3, yorunge: { r: r0, w: rr(8, 11), vy: rr(1.6, 2.6), rv: rr(0.35, 0.6) }, omur: rr(0.7, 1.0), boy: yap ? rr(0.14, 0.2) : rr(0.12, 0.2), boy2: yap ? 0.12 : 0.05,
+          P({ p: _v3, yorunge: { r: r0, w: rr(8, 11), vy: rr(1.6, 2.6), rv: rr(0.35, 0.6) }, omur: rr(0.7, 1.0), boy: yap ? rr(0.18, 0.26) : rr(0.2, 0.3), boy2: yap ? 0.16 : 0.08,
             renk: yap ? (RND() < 0.5 ? '#7dd35a' : '#c9e85a') : '#e8fff9', renk2: yap ? '#4a9a3a' : '#7fc8c0', kare: yap ? 'yaprak' : 'kivilcim', mod: yap ? 0 : 2, uzat: yap ? 0 : 0.09, en: yap ? 1 : 0.5,
             rot: 'r', rotHiz: rr(-8, 8), normal: yap, hot: yap ? 0 : 0.9, a: (yap ? 1 : 0.7) * sol, fo: 0.6 }); }
+        is.acc2 = (is.acc2 || 0) + dt * 34 * OLCEK; while (is.acc2 >= 1) { is.acc2--; _v3.set(c.x, Z() + 0.05, c.z);
+          P({ p: _v3, yorunge: { r: 0.08, w: rr(6, 8), vy: rr(2.0, 2.6), rv: rr(0.45, 0.6) }, omur: rr(0.9, 1.1), boy: 0.3, boy2: 0.7, renk: '#e6fff8', renk2: '#8fd8c8', kare: 'duman', normal: true, rot: 'r', rotHiz: 4, a: 0.6 * sol, hot: 0, fi: 0.1, fo: 0.55 }); }
+        for (let i = 0; i < 7; i++) { const y = 0.12 + i * 0.28, w = (0.45 + i * 0.24) * g, sal = Math.sin(yas * 7 + i) * 0.06 * i; _v3.set(c.x + sal, Z() + y, c.z);
+          P({ p: _v3, omur: -1, boy: w, en: 1, uz: 0.55, renk: '#c8fff0', kare: 'girdap', normal: true, rot: -yas * 14 + i * 1.3, hot: 0.4, a: 0.75 * sol });
+          P({ p: _v3, omur: -1, boy: w * 1.1, en: 1, uz: 0.6, renk: '#3fbfa8', kare: 'girdap', rot: -yas * 11 + i * 2.1, hot: 0.3, a: 0.5 * sol }); }
         if (RND() < 0.5 * OLCEK) { _v3.set(c.x, Z() + 0.05, c.z); P({ p: _v3, mod: 1, omur: 0.3, boy: 0.8, boy2: 1.4, renk: '#cfffee', kare: 'girdap', rot: yas * 10, rotHiz: -10, hot: 0.6, a: 0.5 * sol, fi: 0.2 }); }
       });
       hs.slice(1).concat([h]).forEach(t => patlama(_v4.copy(t.p).setY(t.p.y + 0.5 * t.h), { renk: '#bff7ea', n: 6, yildiz: false }));
@@ -693,11 +704,11 @@ const YETENEK = {
   zehir(k, hs, o) {
     const h = hs[0]; if (!h) return; const g = o.guc;
     mermi(new THREE.Vector3().copy(k.p).setY(k.p.y + 0.7 * k.h), h.o || h.p, ON_SURE.zehir, { tur: 'zehir', guc: 1.4 * g, bitis: (B) => {
-      _v3.copy(B).setY(Z()); dekal(_v3, { r: 0.75 * g, renk: '#3cbf2a', kare: 'duman', a: 0.55, sure: 1.8 });
-      surec(1.6, (kk, dt, yas, is) => { is.acc = (is.acc || 0) + dt * 22 * OLCEK; while (is.acc >= 1) { is.acc--; const a = RND() * TAU, r = rr(0, 0.55) * g;
+      _v3.copy(B).setY(Z()); dekal(_v3, { r: 1.0 * g, renk: '#3cbf2a', kare: 'duman', a: 0.7, sure: 1.8 });
+      surec(1.6, (kk, dt, yas, is) => { is.acc = (is.acc || 0) + dt * 30 * OLCEK; while (is.acc >= 1) { is.acc--; const a = RND() * TAU, r = rr(0, 0.55) * g;
         _v3.set(B.x + Math.cos(a) * r, Z() + rr(0.05, 0.5), B.z + Math.sin(a) * r);
-        if (RND() < 0.6) P({ p: _v3, v: _v2.set(0, rr(0.4, 0.9), 0), omur: rr(0.5, 0.9), boy: rr(0.08, 0.18), boy2: rr(0.18, 0.26), renk: '#b4ff7a', renk2: '#5fd03a', kare: 'kabarcik', hot: 0.6, salin: 0.06, fo: 0.85 });
-        else P({ p: _v3, v: _v2.set(0, rr(0.2, 0.5), 0), drag: 1, omur: rr(0.7, 1.0), boy: rr(0.3, 0.45), boy2: 0.75, renk: '#4fb33a', renk2: '#2a6a2a', kare: 'duman', normal: true, rot: 'r', a: 0.4, hot: 0 }); } });
+        if (RND() < 0.6) P({ p: _v3, v: _v2.set(0, rr(0.4, 0.9), 0), omur: rr(0.5, 0.9), boy: rr(0.12, 0.22), boy2: rr(0.24, 0.34), renk: '#b4ff7a', renk2: '#5fd03a', kare: 'kabarcik', hot: 0.6, salin: 0.06, fo: 0.85 });
+        else P({ p: _v3, v: _v2.set(0, rr(0.2, 0.5), 0), drag: 1, omur: rr(0.7, 1.0), boy: rr(0.4, 0.55), boy2: 0.95, renk: '#5fcf3a', renk2: '#2a7a2a', kare: 'duman', normal: true, rot: 'r', a: 0.55, hot: 0 }); } });
     } });
     for (const d of (o.dostlar || [])) zamanla(ON_SURE.zehir + 0.1, () => iyiles(d, '#7dff8a'));
   },
@@ -708,21 +719,21 @@ const YETENEK = {
     const yon = hp.clone().sub(agiz); const L = yon.length(); yon.normalize(); agiz.addScaledVector(yon, 0.3);
     const yan = new THREE.Vector3(-yon.z, 0, yon.x).normalize(), ust = new THREE.Vector3().crossVectors(yan, yon);
     surec(0.42, (kk, dt, yas, is) => { is.acc = (is.acc || 0) + dt * 130 * OLCEK; while (is.acc >= 1) { is.acc--;
-      const hiz = rr(5, 7), ac = rr(-0.3, 0.3), ac2 = rr(-0.18, 0.22); _v2.copy(yon).addScaledVector(yan, ac).addScaledVector(ust, ac2).normalize().multiplyScalar(hiz);
+      const hiz = rr(5, 7), ac = rr(-0.34, 0.34), ac2 = rr(-0.2, 0.26); _v2.copy(yon).addScaledVector(yan, ac).addScaledVector(ust, ac2).normalize().multiplyScalar(hiz);
       const omur = L / hiz * rr(0.9, 1.2), t = RND();
-      if (t < 0.4) P({ p: agiz, v: _v2, drag: 0.6, omur, boy: 0.12, boy2: 0.55, renk: '#e9fbff', renk2: '#a8dcff', kare: 'duman', normal: true, rot: 'r', a: 0.5, hot: 0, fo: 0.5 });
-      else if (t < 0.65) P({ p: agiz, v: _v2, drag: 0.5, omur, boy: rr(0.1, 0.18), boy2: rr(0.18, 0.3), renk: '#ffffff', renk2: '#8fd6ff', kare: 'buz', rot: 'r', rotHiz: rr(-6, 6), hot: 0.7 });
-      else if (t < 0.85) P({ p: agiz, v: _v2, drag: 0.5, omur, boy: rr(0.06, 0.12), renk: '#ffffff', kare: 'kar', rot: 'r', rotHiz: rr(-4, 4), hot: 1 });
+      if (t < 0.4) P({ p: agiz, v: _v2, drag: 0.6, omur, boy: 0.2, boy2: 0.9, renk: '#f2fcff', renk2: '#8fd0ff', kare: 'duman', normal: true, rot: 'r', a: 0.6, hot: 0, fo: 0.5 });
+      else if (t < 0.65) P({ p: agiz, v: _v2, drag: 0.5, omur, boy: rr(0.16, 0.26), boy2: rr(0.26, 0.4), renk: '#e9fbff', renk2: '#4fa8ff', kare: 'buz', normal: true, rot: 'r', rotHiz: rr(-6, 6), hot: 0.4 });
+      else if (t < 0.85) P({ p: agiz, v: _v2, drag: 0.5, omur, boy: rr(0.1, 0.16), renk: '#bfeaff', kare: 'kar', rot: 'r', rotHiz: rr(-4, 4), hot: 0.6 });
       else P({ p: agiz, v: _v2, drag: 0.5, omur: omur * 0.8, boy: 0.1, uz: 1.4, en: 0.5, renk: '#ffffff', renk2: '#7fd4ff', kare: 'kivilcim', mod: 2, uzat: 0.08, hot: 1 }); } });
     flas(agiz, { renk: '#bfeaff', boy: 0.6, sure: 0.2 });
     hs.forEach((t, j) => zamanla(ON_SURE.buzNefes + j * 0.04, () => {
       const tp = _v4.copy(t.p).setY(t.p.y + 0.35 * t.h).clone();
       flas(tp, { renk: '#bfeaff', boy: 1.0 * g, sure: 0.2 });
       for (let i = 0, n = N(14 * g); i < n; i++) { const a = RND() * TAU; _v3.set(tp.x + Math.cos(a) * 0.15, Z() + 0.05, tp.z + Math.sin(a) * 0.15);
-        P({ p: _v3, v: _v2.set(Math.cos(a) * rr(0.6, 1.8), rr(2.5, 4.5), Math.sin(a) * rr(0.6, 1.8)), g: 9, drag: 0.5, omur: rr(0.6, 0.9), boy: rr(0.2, 0.38), renk: '#f2fdff', renk2: '#7fc4ff', kare: 'buz', rot: rr(-0.4, 0.4), rotHiz: rr(-5, 5), hot: 0.6, sek: 0.06, fo: 0.7 }); }
+        P({ p: _v3, v: _v2.set(Math.cos(a) * rr(0.6, 1.8), rr(2.5, 4.5), Math.sin(a) * rr(0.6, 1.8)), g: 9, drag: 0.5, omur: rr(0.6, 0.9), boy: rr(0.24, 0.4), renk: '#e9fbff', renk2: '#4fa8ff', kare: 'buz', normal: true, rot: rr(-0.4, 0.4), rotHiz: rr(-5, 5), hot: 0.4, sek: 0.06, fo: 0.7 }); }
       // yerden fışkıran kristal kümesi (eksenli, yukarı)
       for (let i = 0, n = N(5); i < n; i++) { const a = i / 5 * TAU; _v3.set(t.p.x + Math.cos(a) * 0.28, Z() + 0.2, t.p.z + Math.sin(a) * 0.28); _v2.set(Math.cos(a) * 0.5, 1, Math.sin(a) * 0.5);
-        P({ p: _v3, mod: 2, eksen: _v2, omur: 0.9, boy: 0.15, boy2: 0.42, en: 1, uz: 1.3, renk: '#e9fbff', renk2: '#9fdcff', kare: 'buz', hot: 0.6, fi: 0.05, fo: 0.6 }); }
+        P({ p: _v3, mod: 2, eksen: _v2, omur: 0.9, boy: 0.2, boy2: 0.55, en: 1, uz: 1.3, renk: '#e9fbff', renk2: '#6fb8ff', kare: 'buz', normal: true, hot: 0.4, fi: 0.05, fo: 0.6 }); }
       dekal(t.p, { r: 0.8, renk: '#cfefff', kare: 'kar', additive: true, a: 0.6, sure: 1.6 });
       sok(t.p, { renk: '#bfeaff', r: 0.9, toz: false });
     }));
@@ -732,13 +743,14 @@ const YETENEK = {
     const g = o.guc, R = 2 * g, c = new THREE.Vector3().copy(k.p).setY(Z());
     flas(_v3.copy(c).setY(Z() + 0.4), { renk: '#ff8a3a', boy: 1.0, sure: 0.25 });
     sok(c, { renk: '#ff8a3a', r: R, sure: 0.45 });
-    _v3.set(c.x, Z() + 0.04, c.z); P({ p: _v3, mod: 1, omur: 1.4, boy: R * 1.2, boy2: R * 2.15, renk: '#ff6a1f', kare: 'halka', hot: 0.5, a: 0.9, fi: 0.1, fo: 0.7 });
-    P({ p: _v3, mod: 1, omur: 1.4, boy: R * 1.6, boy2: R * 2.0, renk: '#ffb347', renk2: '#ff4a1a', kare: 'run', rot: 'r', rotHiz: 1.5, hot: 0.5, a: 0.75, fi: 0.15, fo: 0.6 });
+    _v3.set(c.x, Z() + 0.04, c.z); P({ p: _v3, mod: 1, omur: 1.4, boy: R * 1.2, boy2: R * 2.15, renk: '#ff7a1f', kare: 'halka', normal: true, hot: 0.3, a: 0.75, fi: 0.1, fo: 0.7 });
+    P({ p: _v3, mod: 1, omur: 1.4, boy: R * 1.6, boy2: R * 2.0, renk: '#ff9a2e', renk2: '#ff4a1a', kare: 'run', normal: true, rot: 'r', rotHiz: 1.5, hot: 0.25, a: 0.8, fi: 0.15, fo: 0.6 });
+    P({ p: _v3, mod: 1, omur: 1.4, boy: R * 2.2, boy2: R * 2.4, renk: '#ff5a1f', kare: 'parilti', hot: 0.1, a: 0.45, fi: 0.15, fo: 0.6 });
     surec(1.35, (kk, dt, yas, is) => { const r = R * Math.min(1, yas / 0.3); is.acc = (is.acc || 0) + dt * 110 * OLCEK; const sol = kk > 0.75 ? (1 - kk) / 0.25 : 1;
       while (is.acc >= 1) { is.acc--; const a = RND() * TAU, rj = r * rr(0.9, 1.05); _v3.set(c.x + Math.cos(a) * rj, Z() + 0.05, c.z + Math.sin(a) * rj);
-        if (RND() < 0.8) P({ p: _v3, v: _v2.set(0, rr(1, 2), 0), g: -1, drag: 1, omur: rr(0.35, 0.55), boy: rr(0.28, 0.42), boy2: 0.08, en: 0.8, uz: 1.2, renk: '#ffe08a', renk2: '#ff2a10', kare: 'alev', rot: rr(-0.25, 0.25), hot: 0.8, a: sol, fo: 0.4 });
+        if (RND() < 0.8) P({ p: _v3, v: _v2.set(0, rr(1, 2), 0), g: -1, drag: 1, omur: rr(0.35, 0.55), boy: rr(0.42, 0.6), boy2: 0.1, en: 0.85, uz: 1.25, renk: '#ffb02e', renk2: '#ff2a10', kare: 'alev', normal: true, rot: rr(-0.25, 0.25), hot: 0.3, a: sol, fo: 0.4 });
         else P({ p: _v3, v: _v2.set(rr(-0.4, 0.4), rr(2, 3.5), rr(-0.4, 0.4)), g: 1, omur: rr(0.5, 0.8), boy: 0.05, uz: 2, en: 0.6, renk: '#ffd36a', renk2: '#ff4a1a', kare: 'kivilcim', mod: 2, uzat: 0.1, hot: 1, a: sol }); } });
-    for (const d of (o.dostlar || hs)) zamanla(0.3, () => iyiles(d, '#ffd36a'));
+    for (const d of (o.dostlar.length ? o.dostlar : [k])) zamanla(0.3, () => iyiles(d, '#ffd36a'));
   },
   // Bulut Atı: arkasında kabarık bulut izi → varışta şok, toz, parlama
   dortnal(k, hs, o) {
@@ -757,7 +769,7 @@ const YETENEK = {
     flas(gov, { renk: '#fff1a8', boy: 1.3 * g, sure: 0.3 });
     sutun(k.p, { renk: '#fff1a8', ic: '#ffffff', h: 3, en: 0.8, sure: 0.8 });
     for (let i = 0, n = N(20 * g); i < n; i++) { const a = RND() * TAU; _v3.set(gov.x + Math.cos(a) * 0.3, gov.y + rr(-0.1, 0.3), gov.z + Math.sin(a) * 0.3);
-      P({ p: _v3, v: _v2.set(Math.cos(a) * rr(0.8, 1.8), rr(1.5, 3), Math.sin(a) * rr(0.8, 1.8)), drag: 2.2, g: 0.4, omur: rr(1.0, 1.5), boy: rr(0.2, 0.32), renk: '#fffbe8', renk2: '#ffd76a', kare: 'tuy', rot: 'r', rotHiz: rr(-2, 2), salin: 0.12, hot: 0.6, fo: 0.6 }); }
+      P({ p: _v3, v: _v2.set(Math.cos(a) * rr(0.8, 1.8), rr(1.5, 3), Math.sin(a) * rr(0.8, 1.8)), drag: 2.2, g: 0.4, omur: rr(1.0, 1.5), boy: rr(0.26, 0.38), renk: '#fff6d8', renk2: '#ffc83a', kare: 'tuy', normal: true, rot: 'r', rotHiz: rr(-2, 2), salin: 0.12, hot: 0.35, fo: 0.6 }); }
     hs.forEach((h, j) => zamanla(0.2 + j * 0.06, () => {
       const hp = _v4.copy(h.p).setY(h.p.y + 0.5 * h.h).clone();
       P({ p: hp, omur: 0.5, boy: 0.3, boy2: 1.5 * h.h, renk: '#fff6d0', renk2: '#ffe08a', kare: 'kabarcik', hot: 0.8, a: 1, fi: 0, fo: 0.4 });
@@ -769,7 +781,8 @@ const YETENEK = {
   // Gece Ayısı: mor gölge pençesi + üç kesik, kara duman, hedefte lanet gözü, gölge çatlağı
   karaGolge(k, hs, o) {
     const h = hs[0]; if (!h) return; const g = o.guc, hp = new THREE.Vector3().copy(h.p).setY(h.p.y + 0.55 * h.h);
-    _v3.copy(hp).setY(hp.y + 0.5); P({ p: _v3, v: _v2.set(0, -3, 0), drag: 4, omur: 0.42, boy: 1.1 * g, boy2: 1.7 * g, renk: '#d9b0ff', renk2: '#7a2cff', kare: 'pence', rot: -0.15, hot: 1, fi: 0.15, fo: 0.4 });
+    _v3.copy(hp).setY(hp.y + 0.5); P({ p: _v3, v: _v2.set(0, -3, 0), drag: 4, omur: 0.5, boy: 1.5 * g, boy2: 2.3 * g, renk: '#b46cff', renk2: '#5a1aa8', kare: 'pence', normal: true, rot: -0.15, hot: 0.6, a: 0.95, fi: 0.15, fo: 0.45 });
+    P({ p: _v3, v: _v2.set(0, -3, 0), drag: 4, omur: 0.45, boy: 1.6 * g, boy2: 2.4 * g, renk: '#a46cff', kare: 'pence', rot: -0.15, hot: 0.5, a: 0.6, fi: 0.15, fo: 0.4 });
     zamanla(ON_SURE.karaGolge, () => {
       for (let j = 0; j < 3; j++) zamanla(j * 0.05, () => P({ p: _v3.copy(hp).add(_v4.set((j - 1) * 0.18, 0, 0)), omur: 0.25, boy: 0.7 * g, boy2: 1.1 * g, en: 1.5, renk: '#ffffff', renk2: '#a46cff', kare: 'kesik', rot: -0.9 + j * 0.08, hot: 1, fi: 0, fo: 0.3 }));
       flas(hp, { renk: '#b46cff', boy: 1.1 * g, sure: 0.22 }); sars(0.16 * g);
@@ -778,7 +791,7 @@ const YETENEK = {
       dekal(h.p, { r: 0.85, renk: '#24103a', a: 0.85 });
       dekal(h.p, { r: 0.7, renk: '#a46cff', additive: true, a: 0.6, sure: 1.0 });
       const goz = _v4.copy(h.p).setY(h.p.y + h.h + 0.45).clone();
-      zamanla(0.15, () => { P({ p: goz, omur: 0.9, boy: 0.2, boy2: 0.7, renk: '#e0b8ff', renk2: '#a46cff', kare: 'goz', hot: 1, fi: 0.1, fo: 0.6 }); P({ p: goz, omur: 0.6, boy: 0.4, boy2: 1.2, renk: '#7a2cff', kare: 'parilti', hot: 0.4, a: 0.8 }); });
+      zamanla(0.15, () => { P({ p: goz, omur: 1.0, boy: 0.3, boy2: 0.95, renk: '#c48cff', renk2: '#8a3cff', kare: 'goz', normal: true, hot: 0.6, fi: 0.1, fo: 0.65 }); P({ p: goz, omur: 0.6, boy: 0.4, boy2: 1.2, renk: '#7a2cff', kare: 'parilti', hot: 0.4, a: 0.8 }); });
     });
   },
   // Anka: gökten kor yağmuru → yerde alev öbekleri, yanık izi
@@ -789,18 +802,19 @@ const YETENEK = {
     nok.forEach((n, i) => {
       const gec = (i / adet) * 0.45, bas = n.clone().add(_v2.set(0.9, 6, -0.6)), hiz = bas.distanceTo(n) / dus, v = n.clone().sub(bas).normalize().multiplyScalar(hiz);
       zamanla(gec, () => {
-        P({ p: bas, v, omur: dus, boy: 0.35, en: 0.9, uz: 1.2, renk: '#ffe08a', renk2: '#ff4a1a', kare: 'alev', mod: 2, uzat: 0.06, hot: 1, fi: 0.05, fo: 0.95, eksen: v });
+        P({ p: bas, v, omur: dus, boy: 0.35, en: 0.9, uz: 1.2, renk: '#ffe08a', renk2: '#ff4a1a', kare: 'alev', normal: true, mod: 2, uzat: 0.06, hot: 0.45, fi: 0.05, fo: 0.95, eksen: v });
         P({ p: bas, v, omur: dus, boy: 0.5, renk: '#ff6a1f', kare: 'parilti', hot: 0.8, a: 0.8, fi: 0.05, fo: 0.95 });
         zamanla(dus, () => {
           flas(_v3.copy(n).setY(Z() + 0.2), { renk: '#ff8a3a', boy: 0.7, sure: 0.15, halka: false, isik: i % 3 === 0 });
           for (let j = 0, m = N(5); j < m; j++) { kureY(_v2, 0.9).multiplyScalar(rr(1, 2.5)); P({ p: n, v: _v2, g: 6, omur: rr(0.3, 0.5), boy: 0.06, uz: 2, en: 0.6, renk: '#ffd36a', renk2: '#ff3d1a', kare: 'kivilcim', mod: 2, uzat: 0.1, hot: 1 }); }
-          surec(0.9, (kk, dt, yas, is) => { is.acc = (is.acc || 0) + dt * 14 * OLCEK; while (is.acc >= 1) { is.acc--; _v3.set(n.x + rr(-0.12, 0.12), Z() + 0.05, n.z + rr(-0.12, 0.12));
-            P({ p: _v3, v: _v2.set(0, rr(0.8, 1.5), 0), g: -0.5, omur: rr(0.35, 0.5), boy: rr(0.2, 0.3) * (1 - kk * 0.6), boy2: 0.05, renk: '#ffd36a', renk2: '#ff2a10', kare: 'alev', rot: rr(-0.3, 0.3), hot: 0.8 }); } });
+          surec(0.9, (kk, dt, yas, is) => { is.acc = (is.acc || 0) + dt * 20 * OLCEK; while (is.acc >= 1) { is.acc--; _v3.set(n.x + rr(-0.12, 0.12), Z() + 0.05, n.z + rr(-0.12, 0.12));
+            P({ p: _v3, v: _v2.set(0, rr(0.8, 1.5), 0), g: -0.5, omur: rr(0.35, 0.5), boy: rr(0.32, 0.46) * (1 - kk * 0.6), boy2: 0.06, renk: '#ffb02e', renk2: '#ff2a10', kare: 'alev', normal: true, rot: rr(-0.3, 0.3), hot: 0.3 }); } });
+          dekal(n, { r: 0.4, renk: '#ff5a1f', kare: 'parilti', additive: true, a: 0.7, sure: 0.9 });
           if (i % 2 === 0) dekal(n, { r: 0.35, renk: '#1e120c', a: 0.7, sure: 1.8 });
         });
       });
     });
-    zamanla(dus + 0.2, () => { sok(c, { renk: '#ff8a3a', r: Rr * 1.1, toz: true, tozRenk: '#5a4a44', tozN: 10 }); sars(0.15 * g); });
+    zamanla(dus + 0.2, () => { sok(c, { renk: '#ff8a3a', r: Rr * 1.1, toz: true, tozRenk: '#9a7a6a', tozN: 8 }); sars(0.15 * g); });
   },
   // Ayaz Baykuşu: bütün sahaya yayılan kırağı dalgası; düşmanlarda buz patlaması
   ayaz(k, hs, o) {
@@ -808,8 +822,9 @@ const YETENEK = {
     flas(_v3.copy(k.p).setY(k.p.y + 0.7 * k.h), { renk: '#cfefff', boy: 1.4, sure: 0.3 });
     for (let i = 0, n = N(16); i < n; i++) { kureY(_v2, 0.6).multiplyScalar(rr(1, 2.5)); P({ p: _v3, v: _v2, drag: 1.5, g: 0.5, omur: rr(0.8, 1.2), boy: rr(0.1, 0.18), renk: '#ffffff', renk2: '#9fdcff', kare: 'kar', rot: 'r', rotHiz: rr(-3, 3), hot: 1 }); }
     _v3.set(c.x, Z() + 0.05, c.z);
-    P({ p: _v3, mod: 1, omur: MAX / HIZ, boy: 0.5, boy2: MAX * 2, renk: '#dff6ff', renk2: '#7fc4ff', kare: 'sok', hot: 0.6, a: 0.95, fi: 0, fo: 0.5, rot: 'r' });
-    P({ p: _v3, mod: 1, omur: MAX / HIZ * 1.1, boy: 0.5, boy2: MAX * 1.9, renk: '#a8e4ff', kare: 'halka', hot: 0.6, a: 0.6, fi: 0, fo: 0.4 });
+    P({ p: _v3, mod: 1, omur: 0.75, boy: 0.5, boy2: 13, renk: '#dff6ff', renk2: '#6fb8ff', kare: 'halka', normal: true, hot: 0.3, a: 0.6, fi: 0, fo: 0.35, rot: 'r' });
+    P({ p: _v3, mod: 1, omur: 0.6, boy: 0.5, boy2: 10, renk: '#6fb8ff', kare: 'halka', hot: 0.4, a: 0.3, fi: 0, fo: 0.3 });
+    P({ p: _v3, mod: 1, omur: 1.2, boy: 0.5, boy2: 5.5, renk: '#dff6ff', kare: 'kar', normal: true, rot: 'r', rotHiz: 0.6, hot: 0.2, a: 0.4, fi: 0.1, fo: 0.5 });
     surec(MAX / HIZ, (kk, dt, yas, is) => { const r = HIZ * yas * 0.95; is.acc = (is.acc || 0) + dt * 160 * OLCEK;
       while (is.acc >= 1) { is.acc--; const a = RND() * TAU; const x = c.x + Math.cos(a) * r, z = c.z + Math.sin(a) * r; if (Math.abs(x) > 3.6 || Math.abs(z) > 4.6) continue;
         _v3.set(x, Z() + 0.08, z);
@@ -832,7 +847,7 @@ const YETENEK = {
       sars(0.12 * g);
     } });
     // gölge izi: okun ardında kara duman
-    surec(ON_SURE.golgeOk, (kk, dt, yas, is) => { _v3.lerpVectors(el, _v4.copy(h.p).setY(h.p.y + 0.5 * h.h), kk); for (let i = 0; i < 2; i++) P({ p: _v3, v: kureY(_v2, 0).multiplyScalar(0.2), drag: 2, omur: rr(0.4, 0.6), boy: 0.18, boy2: 0.4, renk: '#2a1442', kare: 'duman', normal: true, rot: 'r', a: 0.6, hot: 0 }); });
+    surec(ON_SURE.golgeOk, (kk, dt, yas, is) => { _v3.lerpVectors(el, _v4.copy(h.p).setY(h.p.y + 0.5 * h.h), kk); for (let i = 0; i < 3; i++) { _v4.copy(_v3).addScaledVector(kureY(_v2, 0), 0.05); P({ p: _v4, v: kureY(_v2, 0).multiplyScalar(0.25), drag: 2, omur: rr(0.45, 0.65), boy: 0.24, boy2: 0.5, renk: '#3a1a5a', renk2: '#140a22', kare: 'duman', normal: true, rot: 'r', a: 0.65, hot: 0 }); } });
   },
   // Fırtına Ejderi: gökten 3 yıldırım; yerde şok, kıvılcım, yanık
   yildirim(k, hs, o) {
@@ -857,39 +872,44 @@ function iyiles(d, renk) {
 // ───────────────────────── durum (sürekli) efektleri ─────────────────────────
 function kalkanAl() { for (const k of kalkanHavuz) if (!k.userData.dolu) { k.userData.dolu = true; return k; } return null; }
 const DURUM = {
-  sersem(c, dt, t, p, h) { const y = p.y + h + 0.18; for (let i = 0; i < 3; i++) { const a = t * 5 + i * TAU / 3; _v3.set(p.x + Math.cos(a) * 0.3, y + Math.sin(a * 2) * 0.04, p.z + Math.sin(a) * 0.3);
-      P({ p: _v3, omur: -1, boy: 0.2, renk: '#ffe45a', kare: 'yildiz4', rot: t * 3 + i, hot: 1 }); if (RND() < dt * 10 * OLCEK) P({ p: _v3, omur: 0.3, boy: 0.08, boy2: 0.02, renk: '#fff1a8', kare: 'parilti', hot: 1 }); } },
-  buz(c, dt, t, p, h) { for (let i = 0; i < 5; i++) { const a = i * TAU / 5 + 0.4; _v3.set(p.x + Math.cos(a) * 0.3, Z() + 0.16, p.z + Math.sin(a) * 0.3); _v2.set(Math.cos(a) * 0.45, 1, Math.sin(a) * 0.45);
-      P({ p: _v3, mod: 2, eksen: _v2, omur: -1, boy: 0.32 + (i % 2) * 0.08, en: 0.9, uz: 1.3, renk: '#dff6ff', kare: 'buz', hot: 0.5, a: 0.95 }); }
-    _v3.set(p.x, Z() + 0.04, p.z); P({ p: _v3, mod: 1, omur: -1, boy: 1.0, renk: '#9fdcff', kare: 'kar', rot: 0.3, hot: 0.5, a: 0.5 });
-    if (RND() < dt * 6 * OLCEK) { _v3.set(p.x + rr(-0.3, 0.3), p.y + rr(0.2, 0.8) * h, p.z + rr(-0.3, 0.3)); P({ p: _v3, v: _v2.set(0, -0.2, 0), omur: 0.8, boy: 0.08, renk: '#ffffff', kare: 'kar', rot: 'r', rotHiz: 2, hot: 1 }); } },
-  yanik(c, dt, t, p, h) { c.acc += dt * 16 * OLCEK; while (c.acc >= 1) { c.acc--; _v3.set(p.x + rr(-0.25, 0.25), p.y + rr(0.15, 0.75) * h, p.z + rr(-0.25, 0.25));
-      if (RND() < 0.8) P({ p: _v3, v: _v2.set(0, rr(0.8, 1.4), 0), omur: rr(0.35, 0.5), boy: rr(0.16, 0.26), boy2: 0.04, renk: '#ffd36a', renk2: '#ff3d1a', kare: 'alev', rot: rr(-0.3, 0.3), hot: 0.8 });
-      else P({ p: _v3, v: _v2.set(rr(-0.3, 0.3), rr(1, 2), rr(-0.3, 0.3)), omur: 0.5, boy: 0.05, uz: 2, en: 0.6, renk: '#ffd36a', kare: 'kivilcim', mod: 2, uzat: 0.12, hot: 1 }); } },
-  zehir(c, dt, t, p, h) { c.acc += dt * 8 * OLCEK; while (c.acc >= 1) { c.acc--; _v3.set(p.x + rr(-0.28, 0.28), p.y + rr(0.3, 0.9) * h, p.z + rr(-0.28, 0.28));
-      if (RND() < 0.75) P({ p: _v3, v: _v2.set(0, rr(0.3, 0.6), 0), omur: rr(0.5, 0.8), boy: rr(0.07, 0.13), boy2: rr(0.13, 0.18), renk: '#b4ff7a', renk2: '#5fd03a', kare: 'kabarcik', hot: 0.6, salin: 0.04, fo: 0.85 });
-      else P({ p: _v3, v: _v2.set(0, -0.3, 0), g: 4, omur: 0.4, boy: 0.08, renk: '#8cff5a', kare: 'damla', mod: 2, uzat: 0.1, hot: 0.4 }); } },
-  lanet(c, dt, t, p, h) { _v3.set(p.x, p.y + h + 0.32 + Math.sin(t * 3) * 0.04, p.z); const n = 1 + Math.sin(t * 6) * 0.08;
-    P({ p: _v3, omur: -1, boy: 0.42 * n, renk: '#e0b8ff', kare: 'goz', hot: 0.9 }); P({ p: _v3, omur: -1, boy: 0.8 * n, renk: '#7a2cff', kare: 'parilti', hot: 0.3, a: 0.6 });
-    c.acc += dt * 7 * OLCEK; while (c.acc >= 1) { c.acc--; _v4.set(p.x + rr(-0.3, 0.3), p.y + rr(0.1, 0.6) * h, p.z + rr(-0.3, 0.3)); P({ p: _v4, v: _v2.set(0, rr(0.3, 0.6), 0), omur: rr(0.7, 1), boy: rr(0.18, 0.28), boy2: 0.4, renk: '#3a1a5a', renk2: '#1a0a2a', kare: 'duman', normal: true, rot: 'r', a: 0.45, hot: 0 }); } },
+  sersem(c, dt, t, p, h) { const y = p.y + h + 0.22; for (let i = 0; i < 3; i++) { const a = t * 4.5 + i * TAU / 3; _v3.set(p.x + Math.cos(a) * 0.34, y + Math.sin(a * 2) * 0.05, p.z + Math.sin(a) * 0.34);
+      P({ p: _v3, omur: -1, boy: 0.3, renk: '#ffd23a', kare: 'yildiz4', normal: true, rot: t * 3 + i, hot: 0.55 }); P({ p: _v3, omur: -1, boy: 0.42, renk: '#ffb02e', kare: 'parilti', hot: 0.4, a: 0.6 });
+      if (RND() < dt * 10 * OLCEK) P({ p: _v3, omur: 0.3, boy: 0.1, boy2: 0.02, renk: '#fff1a8', kare: 'parilti', hot: 1 }); } },
+  buz(c, dt, t, p, h) { for (let i = 0; i < 5; i++) { const a = i * TAU / 5 + 0.4; _v3.set(p.x + Math.cos(a) * 0.32, Z() + 0.2, p.z + Math.sin(a) * 0.32); _v2.set(Math.cos(a) * 0.5, 1, Math.sin(a) * 0.5);
+      P({ p: _v3, mod: 2, eksen: _v2, omur: -1, boy: 0.42 + (i % 2) * 0.1, en: 0.9, uz: 1.3, renk: '#d6f3ff', kare: 'buz', normal: true, hot: 0.4, a: 0.95 }); }
+    _v3.set(p.x, Z() + 0.04, p.z); P({ p: _v3, mod: 1, omur: -1, boy: 1.15, renk: '#bfe9ff', kare: 'kar', normal: true, rot: 0.3, hot: 0.3, a: 0.55 });
+    P({ p: _v3, mod: 1, omur: -1, boy: 1.4, renk: '#4fa8ff', kare: 'parilti', hot: 0.2, a: 0.45 });
+    if (RND() < dt * 8 * OLCEK) { _v3.set(p.x + rr(-0.3, 0.3), p.y + rr(0.2, 0.9) * h, p.z + rr(-0.3, 0.3)); P({ p: _v3, v: _v2.set(0, -0.2, 0), omur: 0.8, boy: 0.12, renk: '#9fdcff', kare: 'kar', rot: 'r', rotHiz: 2, hot: 0.6 }); } },
+  yanik(c, dt, t, p, h) { c.acc += dt * 24 * OLCEK; while (c.acc >= 1) { c.acc--; _v3.set(p.x + rr(-0.26, 0.26), p.y + rr(0.15, 0.8) * h, p.z + rr(-0.26, 0.26));
+      if (RND() < 0.8) P({ p: _v3, v: _v2.set(0, rr(0.9, 1.5), 0), omur: rr(0.35, 0.5), boy: rr(0.26, 0.38), boy2: 0.06, renk: '#ffd23a', renk2: '#ff3d1a', kare: 'alev', normal: true, rot: rr(-0.3, 0.3), hot: 0.45 });
+      else P({ p: _v3, v: _v2.set(rr(-0.3, 0.3), rr(1, 2), rr(-0.3, 0.3)), omur: 0.5, boy: 0.07, uz: 2, en: 0.6, renk: '#ffd36a', renk2: '#ff6a1f', kare: 'kivilcim', mod: 2, uzat: 0.12, hot: 1 }); }
+    _v3.set(p.x, p.y + 0.45 * h, p.z); P({ p: _v3, omur: -1, boy: 1.1 * h, renk: '#ff6a1f', kare: 'parilti', hot: 0.2, a: 0.35 + Math.sin(t * 17) * 0.08 }); },
+  zehir(c, dt, t, p, h) { c.acc += dt * 13 * OLCEK; while (c.acc >= 1) { c.acc--; _v3.set(p.x + rr(-0.3, 0.3), p.y + rr(0.3, 0.95) * h, p.z + rr(-0.3, 0.3));
+      if (RND() < 0.75) P({ p: _v3, v: _v2.set(0, rr(0.3, 0.6), 0), omur: rr(0.5, 0.8), boy: rr(0.12, 0.2), boy2: rr(0.2, 0.26), renk: '#9cff5a', renk2: '#3fbf2a', kare: 'kabarcik', normal: true, hot: 0.5, salin: 0.04, fo: 0.85 });
+      else P({ p: _v3, v: _v2.set(0, -0.3, 0), g: 4, omur: 0.4, boy: 0.12, renk: '#5fd03a', kare: 'damla', normal: true, mod: 2, uzat: 0.1, hot: 0.4 }); }
+    _v3.set(p.x, Z() + 0.04, p.z); P({ p: _v3, mod: 1, omur: -1, boy: 1.0, renk: '#4fcf2a', kare: 'duman', normal: true, rot: t * 0.3, hot: 0, a: 0.45 }); },
+  lanet(c, dt, t, p, h) { _v3.set(p.x, p.y + h + 0.38 + Math.sin(t * 3) * 0.05, p.z); const n = 1 + Math.sin(t * 6) * 0.08;
+    P({ p: _v3, omur: -1, boy: 0.95 * n, renk: '#7a2cff', kare: 'parilti', hot: 0.2, a: 0.55 }); P({ p: _v3, omur: -1, boy: 0.6 * n, renk: '#c48cff', kare: 'goz', normal: true, hot: 0.6 });
+    c.acc += dt * 8 * OLCEK; while (c.acc >= 1) { c.acc--; _v4.set(p.x + rr(-0.3, 0.3), p.y + rr(0.1, 0.6) * h, p.z + rr(-0.3, 0.3)); P({ p: _v4, v: _v2.set(0, rr(0.3, 0.6), 0), omur: rr(0.7, 1), boy: rr(0.22, 0.32), boy2: 0.45, renk: '#4a2270', renk2: '#1a0a2a', kare: 'duman', normal: true, rot: 'r', a: 0.55, hot: 0 }); } },
   kalkan(c, dt, t, p, h) {
     const m = c.mesh; if (!m) return; c.yas += dt; m.position.set(p.x, p.y + h * 0.5, p.z);
     const pop = c.kapan >= 0 ? Math.max(0, 1 - c.kapan / 0.2) : Math.min(1, c.yas / 0.18);
     const s = h * 1.25 * (c.kapan >= 0 ? 1 + (1 - pop) * 0.3 : (0.6 + 0.4 * pop + Math.sin(Math.min(1, c.yas / 0.35) * Math.PI) * 0.12)); m.scale.setScalar(s);
     m.material.uniforms.uA.value = 0.9 * pop; m.material.uniforms.uT.value = t;
-    if (RND() < dt * 4 * OLCEK) { kureY(_v2, 0.2).multiplyScalar(s * 0.5); _v3.set(p.x, p.y + h * 0.5, p.z).add(_v2); P({ p: _v3, omur: 0.4, boy: 0.1, boy2: 0.02, renk: '#fff6d0', kare: 'yildiz4', rot: 'r', hot: 1 }); } },
-  davul(c, dt, t, p, h) { _v3.set(p.x, Z() + 0.05, p.z); P({ p: _v3, mod: 1, omur: -1, boy: 1.1 + Math.sin(t * 8) * 0.08, renk: '#ff8a2e', kare: 'halka', hot: 0.6, a: 0.6 });
-    c.acc += dt * 12 * OLCEK; while (c.acc >= 1) { c.acc--; _v3.set(0, rr(0, 0.2) * h, 0); P({ p: _v3, takip: c.nesne, yorunge: { r: rr(0.3, 0.42), w: rr(2.5, 4), vy: rr(0.6, 1.2) * h }, omur: rr(0.6, 0.9), boy: rr(0.07, 0.12), boy2: 0.02, renk: '#ffb347', kare: RND() < 0.3 ? 'yildiz4' : 'parilti', hot: 1 }); } },
-  hiz(c, dt, t, p, h) { c.acc += dt * 12 * OLCEK; while (c.acc >= 1) { c.acc--; const a = RND() * TAU; _v3.set(p.x + Math.cos(a) * 0.32, p.y + rr(0, 0.5) * h, p.z + Math.sin(a) * 0.32);
-      P({ p: _v3, v: _v2.set(0, rr(1.5, 2.5), 0), drag: 1.5, omur: rr(0.3, 0.45), boy: 0.09, uz: 1.5, en: 0.5, renk: '#bfefff', renk2: '#4f8bff', kare: 'kivilcim', mod: 2, uzat: 0.25, hot: 1 }); }
-    _v3.set(p.x, Z() + 0.05, p.z); P({ p: _v3, mod: 1, omur: -1, boy: 0.95, renk: '#6fb8ff', kare: 'halka', hot: 0.5, a: 0.45 }); },
-  ofke(c, dt, t, p, h) { c.acc += dt * 6 * OLCEK; while (c.acc >= 1) { c.acc--; _v3.set(p.x + rr(-0.15, 0.15), p.y + h * 0.85, p.z + rr(-0.15, 0.15));
-      P({ p: _v3, v: _v2.set(rr(-0.3, 0.3), rr(0.8, 1.3), rr(-0.3, 0.3)), drag: 1.8, omur: rr(0.6, 0.9), boy: 0.14, boy2: 0.45, renk: '#ffffff', renk2: '#e0d6dc', kare: 'duman', normal: true, rot: 'r', a: 0.6, hot: 0 }); }
-    _v3.set(p.x, Z() + 0.05, p.z); P({ p: _v3, mod: 1, omur: -1, boy: 1.05 + Math.sin(t * 10) * 0.06, renk: '#ff3d2a', kare: 'halka', hot: 0.5, a: 0.55 });
-    if (RND() < dt * 8 * OLCEK) { _v3.set(p.x + rr(-0.3, 0.3), p.y + rr(0.1, 0.6) * h, p.z + rr(-0.3, 0.3)); P({ p: _v3, v: _v2.set(0, rr(1, 2), 0), omur: 0.5, boy: 0.05, uz: 2, en: 0.6, renk: '#ff6a2a', kare: 'kivilcim', mod: 2, uzat: 0.12, hot: 1 }); } },
+    if (RND() < dt * 4 * OLCEK) { kureY(_v2, 0.2).multiplyScalar(s * 0.5); _v3.set(p.x, p.y + h * 0.5, p.z).add(_v2); P({ p: _v3, omur: 0.4, boy: 0.12, boy2: 0.02, renk: '#fff6d0', kare: 'yildiz4', rot: 'r', hot: 1 }); } },
+  davul(c, dt, t, p, h) { _v3.set(p.x, Z() + 0.05, p.z); P({ p: _v3, mod: 1, omur: -1, boy: 1.15 + Math.sin(t * 8) * 0.08, renk: '#ff8a1f', kare: 'sok', normal: true, rot: t, hot: 0.3, a: 0.7 });
+    c.acc += dt * 14 * OLCEK; while (c.acc >= 1) { c.acc--; _v3.set(0, rr(0, 0.2) * h, 0); P({ p: _v3, takip: c.nesne, yorunge: { r: rr(0.32, 0.45), w: rr(2.5, 4), vy: rr(0.6, 1.2) * h }, omur: rr(0.6, 0.9), boy: rr(0.12, 0.18), boy2: 0.03, renk: '#ff9a1f', kare: RND() < 0.4 ? 'yildiz4' : 'parilti', hot: 0.7 }); } },
+  hiz(c, dt, t, p, h) { c.acc += dt * 14 * OLCEK; while (c.acc >= 1) { c.acc--; const a = RND() * TAU; _v3.set(p.x + Math.cos(a) * 0.34, p.y + rr(0, 0.5) * h, p.z + Math.sin(a) * 0.34);
+      P({ p: _v3, v: _v2.set(0, rr(1.5, 2.5), 0), drag: 1.5, omur: rr(0.3, 0.45), boy: 0.13, uz: 1.6, en: 0.5, renk: '#9fe4ff', renk2: '#2f6bff', kare: 'kivilcim', mod: 2, uzat: 0.25, hot: 0.7 }); }
+    _v3.set(p.x, Z() + 0.05, p.z); P({ p: _v3, mod: 1, omur: -1, boy: 1.05, renk: '#4f9bff', kare: 'halka', normal: true, hot: 0.3, a: 0.6 }); },
+  ofke(c, dt, t, p, h) { c.acc += dt * 7 * OLCEK; while (c.acc >= 1) { c.acc--; _v3.set(p.x + rr(-0.15, 0.15), p.y + h * 0.85, p.z + rr(-0.15, 0.15));
+      P({ p: _v3, v: _v2.set(rr(-0.3, 0.3), rr(0.8, 1.3), rr(-0.3, 0.3)), drag: 1.8, omur: rr(0.6, 0.9), boy: 0.2, boy2: 0.55, renk: '#ffffff', renk2: '#e0d6dc', kare: 'duman', normal: true, rot: 'r', a: 0.7, hot: 0 }); }
+    _v3.set(p.x, Z() + 0.05, p.z); P({ p: _v3, mod: 1, omur: -1, boy: 1.1 + Math.sin(t * 10) * 0.06, renk: '#ff3d2a', kare: 'sok', normal: true, rot: -t, hot: 0.3, a: 0.7 });
+    _v3.set(p.x, p.y + 0.5 * h, p.z); P({ p: _v3, omur: -1, boy: 1.2 * h, renk: '#ff2a10', kare: 'parilti', hot: 0.1, a: 0.3 + Math.sin(t * 12) * 0.08 });
+    if (RND() < dt * 10 * OLCEK) { _v3.set(p.x + rr(-0.3, 0.3), p.y + rr(0.1, 0.6) * h, p.z + rr(-0.3, 0.3)); P({ p: _v3, v: _v2.set(0, rr(1, 2), 0), omur: 0.5, boy: 0.07, uz: 2, en: 0.6, renk: '#ff6a2a', kare: 'kivilcim', mod: 2, uzat: 0.12, hot: 1 }); } },
   yildiz3(c, dt, t, p, h) { // ★3: ayak altında altın parıltı halkası
-    _v3.set(p.x, Z() + 0.035, p.z); P({ p: _v3, mod: 1, omur: -1, boy: 1.15, renk: '#ffd76a', kare: 'halka', hot: 0.6, a: 0.7 }); P({ p: _v3, mod: 1, omur: -1, boy: 1.2, renk: '#ffd76a', kare: 'run', rot: t * 0.5, hot: 0.4, a: 0.35 });
-    if (RND() < dt * 5 * OLCEK) { const a = RND() * TAU; _v3.set(p.x + Math.cos(a) * 0.5, Z() + 0.1, p.z + Math.sin(a) * 0.5); P({ p: _v3, v: _v2.set(0, 0.6, 0), omur: 0.6, boy: 0.09, renk: '#fff1a8', kare: 'yildiz4', rot: 'r', hot: 1 }); } },
+    _v3.set(p.x, Z() + 0.035, p.z); P({ p: _v3, mod: 1, omur: -1, boy: 1.15, renk: '#ffc83a', kare: 'halka', normal: true, hot: 0.4, a: 0.75 }); P({ p: _v3, mod: 1, omur: -1, boy: 1.2, renk: '#ffd76a', kare: 'run', rot: t * 0.5, hot: 0.4, a: 0.45 });
+    if (RND() < dt * 6 * OLCEK) { const a = RND() * TAU; _v3.set(p.x + Math.cos(a) * 0.5, Z() + 0.1, p.z + Math.sin(a) * 0.5); P({ p: _v3, v: _v2.set(0, 0.6, 0), omur: 0.6, boy: 0.12, renk: '#ffe45a', kare: 'yildiz4', rot: 'r', hot: 0.8 }); } },
 };
 
 // ───────────────────────── dışa açık API ─────────────────────────
@@ -897,7 +917,7 @@ function kur(sahne_, kamera_, o = {}) {
   if (sahne) birak();
   sahne = sahne_; kamera = kamera_; kalite = o.kalite === 'hafif' ? 'hafif' : 'yuksek'; OLCEK = kalite === 'hafif' ? 0.55 : 1; zeminY = o.zeminY || 0;
   atlas = atlasUret(kalite === 'hafif' ? 128 : 224);
-  const maxAdd = kalite === 'hafif' ? 600 : 1150, maxNrm = kalite === 'hafif' ? 160 : 350;
+  const maxAdd = kalite === 'hafif' ? 560 : 1100, maxNrm = kalite === 'hafif' ? 220 : 450; // toplam ≈1550 / ≈780
   sNrm = new Sistem(maxNrm, THREE.NormalBlending, 30, atlas.tex);
   sAdd = new Sistem(maxAdd, THREE.AdditiveBlending, 31, atlas.tex);
   sahne.add(sNrm.mesh); sahne.add(sAdd.mesh);
@@ -906,14 +926,14 @@ function kur(sahne_, kamera_, o = {}) {
   const kristal = new THREE.MeshStandardMaterial({ color: '#ffcf8a', emissive: '#ff9a3a', emissiveIntensity: 1.2, flatShading: true }), kgk = new THREE.OctahedronGeometry(0.06, 0);
   for (let i = 0; i < 4; i++) { const m = new THREE.Mesh(kg, km); const kk = new THREE.Mesh(kgk, kristal); kk.position.set(0.1, 0.08, 0.06); m.add(kk); m.visible = false; m.castShadow = kalite !== 'hafif'; m.name = 'vfx_kaya'; sahne.add(m); kayaHavuz.push(m); }
   // kalkan kabarcıkları (paylaşımlı küre; havuz başına bir kez malzeme)
-  const kur = new THREE.SphereGeometry(0.5, kalite === 'hafif' ? 18 : 28, kalite === 'hafif' ? 12 : 18);
+  const kureG = new THREE.SphereGeometry(0.5, kalite === 'hafif' ? 18 : 28, kalite === 'hafif' ? 12 : 18);
   for (let i = 0; i < 12; i++) {
     const mat = new THREE.ShaderMaterial({ uniforms: { uA: { value: 0 }, uT: { value: 0 }, uR: { value: new THREE.Vector3(...rgb('#ffe9a8')) } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
       vertexShader: `varying vec3 vN; varying vec3 vV; varying vec3 vP; void main(){ vec4 w = modelMatrix * vec4(position,1.0); vN = normalize(mat3(modelMatrix) * normal); vV = normalize(cameraPosition - w.xyz); vP = position; gl_Position = projectionMatrix * viewMatrix * w; }`,
       fragmentShader: `uniform float uA; uniform float uT; uniform vec3 uR; varying vec3 vN; varying vec3 vV; varying vec3 vP;
         void main(){ float f = pow(1.0 - abs(dot(normalize(vN), vV)), 2.2); float bant = smoothstep(0.85, 1.0, sin(vP.y * 22.0 - uT * 4.0) * 0.5 + 0.5);
           float alt = smoothstep(-0.5, -0.1, vP.y); float a = uA * (0.07 + f * 0.85 + bant * 0.12 * f) * alt; gl_FragColor = vec4(mix(uR, vec3(1.0), f * 0.6), a); }` });
-    const m = new THREE.Mesh(kur, mat); m.visible = false; m.renderOrder = 32; m.name = 'vfx_kalkan'; sahne.add(m); kalkanHavuz.push(m);
+    const m = new THREE.Mesh(kureG, mat); m.visible = false; m.renderOrder = 32; m.name = 'vfx_kalkan'; sahne.add(m); kalkanHavuz.push(m);
   }
   if (kalite === 'yuksek' && o.isik !== false) { isik = new THREE.PointLight('#ffd08a', 0, 5.5, 1.6); isik.position.set(0, -50, 0); sahne.add(isik); }
   return vfx;
@@ -1005,9 +1025,9 @@ export const vfx = {
   olum(pos, o = {}) {
     if (!sahne) return; const b = birim(pos), p = b.p, renk = o.renk || '#d8c8b0';
     const yap = () => {
-      sok(p, { renk: '#ffffff', r: 0.8, toz: true, tozRenk: '#c8b8a8', tozN: 12, a: 0.5 });
+      sok(p, { renk: '#fff3e0', r: 1.0, toz: true, tozRenk: '#c8b8a8', tozN: 14, a: 0.6 });
       _v3.copy(p).setY(Z() + 0.4); for (let i = 0, n = N(10); i < n; i++) { kureY(_v2, 0.8).multiplyScalar(rr(0.5, 1.2)); P({ p: _v3, v: _v2, g: -0.6, drag: 1.5, omur: rr(0.7, 1.1), boy: rr(0.1, 0.18), boy2: 0.03, renk, renk2: '#ffffff', kare: RND() < 0.4 ? 'yildiz4' : 'parilti', hot: 1, salin: 0.05 }); }
-      _v3.copy(p).setY(Z() + 0.5); P({ p: _v3, v: _v2.set(0, 1.0, 0), omur: 1.3, boy: 0.4, boy2: 0.2, renk, renk2: '#ffffff', kare: 'parilti', hot: 1, salin: 0.1, fo: 0.5 });
+      _v3.copy(p).setY(Z() + 0.5); P({ p: _v3, v: _v2.set(0, 1.1, 0), omur: 1.4, boy: 0.7, boy2: 0.3, renk, renk2: '#ffffff', kare: 'parilti', hot: 0.8, salin: 0.1, fo: 0.5 }); P({ p: _v3, v: _v2.set(0, 1.1, 0), omur: 1.4, boy: 0.35, boy2: 0.15, renk, kare: 'parilti', normal: true, hot: 0.6, a: 0.8, salin: 0.1, fo: 0.5 });
     };
     if (o.gecikme) zamanla(o.gecikme, yap); else yap();
   },
@@ -1018,7 +1038,7 @@ export const vfx = {
       flas(_v3.copy(p).setY(Z() + 0.6), { renk: '#ff8a3a', boy: 2.0, sure: 0.35, isikGuc: 10 }); sars(0.15); ekranFlas('#ff9a4a', 0.3, 0.3);
       sutun(p, { renk: '#ff6a1f', ic: '#ffe08a', h: 4, en: 1.2, sure: 0.9 }); sok(p, { renk: '#ff8a3a', r: 1.6, toz: false });
       for (let i = 0, n = N(24); i < n; i++) { const a = i / n * TAU; _v3.set(p.x + Math.cos(a) * 0.4, Z() + 0.05, p.z + Math.sin(a) * 0.4);
-        P({ p: _v3, v: _v2.set(Math.cos(a) * 0.8, rr(2.5, 4), Math.sin(a) * 0.8), g: 1, drag: 1.2, omur: rr(0.5, 0.8), boy: rr(0.35, 0.5), boy2: 0.08, en: 0.8, uz: 1.3, renk: '#ffe08a', renk2: '#ff2a10', kare: 'alev', hot: 0.9 }); }
+        P({ p: _v3, v: _v2.set(Math.cos(a) * 0.8, rr(2.5, 4), Math.sin(a) * 0.8), g: 1, drag: 1.2, omur: rr(0.5, 0.8), boy: rr(0.35, 0.5), boy2: 0.08, en: 0.8, uz: 1.3, renk: '#ffe08a', renk2: '#ff2a10', kare: 'alev', normal: true, hot: 0.45 }); }
       for (let i = 0, n = N(14); i < n; i++) { kureY(_v2, 0.9).multiplyScalar(rr(1.5, 3)); _v3.copy(p).setY(Z() + 0.6); P({ p: _v3, v: _v2, drag: 2, g: 0.3, omur: rr(0.9, 1.3), boy: rr(0.2, 0.3), renk: '#ffd36a', renk2: '#ff4a1a', kare: 'tuy', rot: 'r', rotHiz: rr(-3, 3), salin: 0.1, hot: 0.8 }); }
       patlama(_v3.copy(p).setY(Z() + 0.6), { renk: '#ffb347', renk2: '#ff3d1a', n: 20, hiz: 4 });
     });

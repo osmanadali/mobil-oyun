@@ -1,0 +1,68 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VFX deneme</title>
+<style>html,body{margin:0;height:100%;background:#1b1230;overflow:hidden;font-family:system-ui,sans-serif}#t,#k{position:absolute;inset:0;width:100%;height:100%}#k{pointer-events:none}
+#ad{position:absolute;left:16px;top:12px;color:#ffe9a8;font-weight:700;font-size:20px;text-shadow:0 2px 6px #000a}</style>
+<script type="importmap">{"imports":{"three":"../vendor/three/three.module.min.js"}}</script></head>
+<body><canvas id="t"></canvas><canvas id="k"></canvas><div id="ad"></div>
+<script type="module">
+import * as THREE from 'three';
+import { vfx } from './vfx.js';
+const q = new URLSearchParams(location.search);
+const tuval = document.getElementById('t'), kap = document.getElementById('k'), kx = kap.getContext('2d');
+const renderer = new THREE.WebGLRenderer({ canvas: tuval, antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+const sahne = new THREE.Scene(); sahne.background = new THREE.Color('#7d4d9e'); sahne.fog = new THREE.Fog('#8a5aa8', 30, 75);
+const kamera = new THREE.PerspectiveCamera(34, 16 / 10, 0.1, 200);
+const taban = new THREE.Vector3(0, 8.9, 7.6);
+const tl = new THREE.TextureLoader();
+const gok = tl.load('../gorsel/gokyuzu.webp'); gok.colorSpace = THREE.SRGBColorSpace;
+const kure = new THREE.Mesh(new THREE.SphereGeometry(90, 32, 16), new THREE.MeshBasicMaterial({ map: gok, side: THREE.BackSide, fog: false })); kure.rotation.y = Math.PI; kure.position.y = 6; sahne.add(kure);
+sahne.add(new THREE.HemisphereLight('#ffd9f2', '#4a2f5c', 1.15));
+const gunes = new THREE.DirectionalLight('#ffc27a', 2.6); gunes.position.set(-6, 10, -8); sahne.add(gunes);
+const dolgu = new THREE.DirectionalLight('#9fc4ff', 0.7); dolgu.position.set(5, 6, 8); sahne.add(dolgu);
+const tas = tl.load('../gorsel/doku_tas.webp'); tas.colorSpace = THREE.SRGBColorSpace; tas.wrapS = tas.wrapT = THREE.RepeatWrapping; tas.repeat.set(1, 8 / 6);
+const tahta = new THREE.Mesh(new THREE.PlaneGeometry(6, 8), new THREE.MeshStandardMaterial({ map: tas, roughness: 0.9 })); tahta.rotation.x = -Math.PI / 2; tahta.position.y = 0.012; sahne.add(tahta);
+const cim = tl.load('../gorsel/doku_cimen.webp'); cim.colorSpace = THREE.SRGBColorSpace; cim.wrapS = cim.wrapT = THREE.RepeatWrapping; cim.repeat.set(4, 4);
+const ada = new THREE.Mesh(new THREE.CircleGeometry(6.4, 48), new THREE.MeshStandardMaterial({ map: cim, roughness: 1 })); ada.rotation.x = -Math.PI / 2; sahne.add(ada);
+// basit yaratık kuklaları (en fazla 4)
+const gG = new THREE.CapsuleGeometry(0.26, 0.32, 4, 12), bG = new THREE.SphereGeometry(0.22, 16, 12), eG = new THREE.SphereGeometry(0.045, 8, 6), em = new THREE.MeshBasicMaterial({ color: '#1a1020' });
+function kukla(renk, x, z, ry) { const g = new THREE.Group(); const m = new THREE.MeshStandardMaterial({ color: renk, roughness: 0.6 });
+  const gv = new THREE.Mesh(gG, m); gv.position.y = 0.42; g.add(gv); const b = new THREE.Mesh(bG, m); b.position.y = 0.88; g.add(b);
+  for (const s of [-1, 1]) { const e = new THREE.Mesh(eG, em); e.position.set(s * 0.08, 0.92, 0.19); g.add(e); }
+  g.position.set(x, 0, z); g.rotation.y = ry; g.userData.vfxBoy = 1.1; sahne.add(g); return g; }
+const K = kukla('#c9a24a', 0, 2.2, Math.PI), D = kukla('#7fc8c0', 1.5, 2.7, Math.PI), H1 = kukla('#b4435a', -0.7, -1.4, 0), H2 = kukla('#5b3f7a', 1.0, -2.2, 0);
+const UZAK = new THREE.Vector3(-1.7, 0, -2.6);
+function boyutla() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); kamera.aspect = w / h; kamera.position.copy(taban); kamera.lookAt(0, 0, 0.35); kamera.updateProjectionMatrix(); kap.width = w; kap.height = h; }
+boyutla(); addEventListener('resize', boyutla);
+vfx.kur(sahne, kamera, { kalite: q.get('kalite') === 'hafif' ? 'hafif' : 'yuksek' });
+
+const DOST = ['uluma', 'davul', 'kanat'];
+const SENARYO = {};
+for (const ad of vfx.YETENEKLER) SENARYO[ad] = () => {
+  const hed = DOST.includes(ad) ? [K, D] : ad === 'yildirim' || ad === 'ayaz' ? [H1, H2, UZAK] : [H1, H2];
+  return vfx.yetenek(ad, K, hed, { dostlar: ad === 'zehir' || ad === 'ocak' ? [D] : [], kut: q.get('kut') === '1' });
+};
+Object.assign(SENARYO, {
+  kut: () => vfx.kut(K), olum: () => vfx.olum(H1, { renk: '#ff8aa0' }), dirilis: () => vfx.dirilis(H1), birlesme: () => vfx.birlesme(K), spawn: () => vfx.spawn(D),
+  vurus: () => vfx.vurus(new THREE.Vector3(-0.7, 0.55, -1.4), { renk: '#ffe08a', guc: 1.2, yon: new THREE.Vector3(0.3, 0, -1) }),
+  mermiler: () => { const t = ['buyu', 'ok', 'kaya', 'ates', 'buz', 'zehir', 'isik', 'ses']; t.forEach((tur, i) => { const x = -2.6 + i * 0.75; vfx.mermi(new THREE.Vector3(x, 0.7, 2.6), new THREE.Vector3(x, 0.5, -2.8), 0.6, { tur }); }); },
+  durumlar: () => { vfx.durum(H1, 'sersem', true); vfx.durum(H2, 'lanet', true); vfx.durum(D, 'kalkan', true); vfx.durum(K, 'yanik', true); },
+  durumlar2: () => { vfx.durum(H1, 'buz', true); vfx.durum(H2, 'zehir', true); vfx.durum(D, 'davul', true); vfx.durum(K, 'hiz', true); },
+  durumlar3: () => { vfx.durum(K, 'ofke', true); vfx.durum(D, 'yildiz3', true); vfx.durum(H1, 'kalkan', true); vfx.durum(H2, 'yanik', true); },
+  zincir: () => { vfx.zincir(new THREE.Vector3(-0.7, 0.6, -1.4), new THREE.Vector3(1.0, 0.6, -2.2), { sure: 0.5 }); },
+});
+window.SENARYO = SENARYO; window.vfx = vfx;
+window.temizle = () => { for (const n of [K, D, H1, H2]) vfx.durumTemizle(n); for (let i = 0; i < 240; i++) vfx.guncelle(1 / 60); };
+window.oyna = (ad) => { document.getElementById('ad').textContent = ad; return SENARYO[ad](); };
+window.ilerlet = (sn) => { const n = Math.round(sn * 60); for (let i = 0; i < n; i++) vfx.guncelle(1 / 60); return vfx.sayac; };
+window.foto = () => { kamera.position.copy(taban).add(vfx.sarsintiOfset()); renderer.render(sahne, kamera); kx.clearRect(0, 0, kap.width, kap.height); vfx.ekranCiz(kx, kap.width, kap.height);
+  const c = document.createElement('canvas'); c.width = tuval.width; c.height = tuval.height; const x = c.getContext('2d'); x.drawImage(tuval, 0, 0); x.drawImage(kap, 0, 0, c.width, c.height);
+  x.fillStyle = '#ffe9a8'; x.font = 'bold 22px sans-serif'; x.fillText(document.getElementById('ad').textContent, 16, 32); return c.toDataURL('image/png'); };
+window.atlas = () => { const a = vfx.atlasTuval, c = document.createElement('canvas'); c.width = a.width; c.height = a.height; const x = c.getContext('2d'); x.fillStyle = '#3a2050'; x.fillRect(0, 0, c.width, c.height); x.drawImage(a, 0, 0); return c.toDataURL('image/png'); };
+window.HAZIR = true;
+if (!q.get('elle')) { // gözle bakmak için: sırayla bütün efektler
+  const sira = Object.keys(SENARYO); let i = 0, t = 0; const saat = new THREE.Clock();
+  (function d() { const dt = Math.min(0.05, saat.getDelta()) * vfx.zamanOlcek(); t -= dt; if (t <= 0) { window.temizle(); oyna(sira[i++ % sira.length]); t = 2.2; }
+    vfx.guncelle(dt); kamera.position.copy(taban).add(vfx.sarsintiOfset()); renderer.render(sahne, kamera); kx.clearRect(0, 0, kap.width, kap.height); vfx.ekranCiz(kx, kap.width, kap.height); requestAnimationFrame(d); })();
+}
+</script></body></html>
