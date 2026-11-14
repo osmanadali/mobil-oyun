@@ -2,6 +2,13 @@
 
 Bu belge, Unity'ye bağlı (bilgisayardaki) Claude oturumunun işi kaldığı yerden alması için yazıldı. Önce bunu, sonra `TASARIM.md` ve `GORSEL_REHBERI.md` dosyalarını oku.
 
+## 0. Yeni belgeler (önce bunları oku)
+
+- **`ARAYUZ_TASARIM.md`**: tablet arayüzünün son tasarımı. Renk ve yazı belirteçleri, her ekranın yerleşimi (16:10 ve 4:3), bileşen durumları, 9-slice payları, geri bildirim animasyonları ve ChatGPT ile çizdirilecek 12 raster parçanın listesi. Görsel karşılığı `tasarim/final/index.html` (`?ekran=ana|mac|savas|son|kodeks`) ve `tasarim/final/shot_*.png`. Unity'de UGUI ile birebir kur.
+- **`ANIMASYON_PLANI.md`**: savaşın nasıl canlanacağı. Motor 0,4 sn önde, görüntü arkada; UAL kliplerinin darbe anları; 16 yaratığın saldırı ve yetenek animasyonları; dört ayaklı ve yılan için kodlu hareket kuralları; Kut, kaynaşma ve birleşme efektleri.
+- **Çalışan örnek (tarayıcı):** `web/` klasörü bu iki belgenin oynanır uygulaması. `web/sahne3d.js` (3D savaş: UAL aktarımı, dört ayaklı hareket, motor-önde zamanlama, efektler), `web/arayuz.js` (ekranlar), `web/oyun.js` (maç mantığı). Unity'de takıldığın her yerde önce buradaki çözüme bak: kemik eşlemesi, hangi klibin hangi anda başladığı, kamera açısı ve HUD aynıdır.
+- **Portreler:** `arayuz/portre/<id>.png`, 3D modellerden şeffaf, 512 px. Dükkân kartları ve HUD için.
+
 ## 1. Durum
 
 - **Oyun tasarımı bitti** ve tarayıcı prototipiyle sınandı (`kut/*.js`). Kurallar, denge sayıları ve kahraman verisi `data.js`'te; savaş motoru `sim.js`'te. Motor belirlenimci: aynı takımlar, tohum ve Kut zamanı aynı sonucu verir.

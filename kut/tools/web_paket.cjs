@@ -1,0 +1,28 @@
+// node kut/tools/web_paket.cjs → kut/web/paket/  (yayınlanabilir tek klasör: index.html kökte, bütün yollar ./ ile)
+// Geliştirme sürümü (kut/web/) üst klasördeki ortak dosyaları ../ ile kullanır; paket bunları içine kopyalar ve yolları düzeltir.
+const fs = require('fs'), path = require('path');
+const KUT = path.join(__dirname, '..'), WEB = path.join(KUT, 'web'), OUT = path.join(WEB, 'paket');
+fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive: true });
+const kopya = (kaynak, hedef) => { fs.mkdirSync(path.dirname(path.join(OUT, hedef)), { recursive: true }); fs.copyFileSync(path.join(KUT, kaynak), path.join(OUT, hedef)); };
+const yolDuzelt = (s) => s.replace(/\.\.\/(vendor|arayuz|gorsel|data\.js|sim\.js|online\.js)/g, './$1');
+for (const f of ['index.html', 'arayuz.js', 'oyun.js', 'sahne3d.js']) fs.writeFileSync(path.join(OUT, f), yolDuzelt(fs.readFileSync(path.join(WEB, f), 'utf8')));
+for (const f of ['data.js', 'sim.js', 'online.js']) kopya(f, f);
+for (const f of ['three.module.min.js', 'LICENSE', 'addons/loaders/GLTFLoader.js', 'addons/libs/meshopt_decoder.module.js', 'addons/utils/SkeletonUtils.js', 'addons/utils/BufferGeometryUtils.js']) kopya('vendor/three/' + f, 'vendor/three/' + f);
+for (const f of fs.readdirSync(path.join(WEB, 'modeller'))) if (f.endsWith('.glb')) kopya('web/modeller/' + f, 'modeller/' + f);
+for (const f of fs.readdirSync(path.join(KUT, 'arayuz'))) if (f.endsWith('.png')) kopya('arayuz/' + f, 'arayuz/' + f);
+for (const f of fs.readdirSync(path.join(KUT, 'arayuz', 'portre'))) kopya('arayuz/portre/' + f, 'arayuz/portre/' + f);
+for (const f of ['gokyuzu.webp', 'doku_tas.webp', 'doku_cimen.webp']) kopya('gorsel/' + f, 'gorsel/' + f);
+// kalan ../ yolu var mı?
+const kalan = ['index.html', 'arayuz.js', 'sahne3d.js'].flatMap(f => fs.readFileSync(path.join(OUT, f), 'utf8').split('\n').filter(l => !/^\s*(\/\*|\/\/|\*)/.test(l) && /['"`]\.\.\//.test(l)).map(l => f + ': ' + l.trim().slice(0, 80)));
+let toplam = 0, sayi = 0; (function gez(d) { for (const f of fs.readdirSync(d)) { const p = path.join(d, f); if (fs.statSync(p).isDirectory()) gez(p); else { toplam += fs.statSync(p).size; sayi++; } } })(OUT);
+console.log(`paket: ${sayi} dosya, ${(toplam / 1e6).toFixed(1)} MB → ${OUT}`);
+if (kalan.length) { console.log('UYARI, düzeltilmemiş yollar:', kalan); process.exit(1); }
+// claude.ai Artifact sürümü: platform sayfa iskeletini kendisi ekler; doctype/html/head/body etiketleri ve meta satırları çıkarılır.
+{
+  const h = fs.readFileSync(path.join(OUT, 'index.html'), 'utf8');
+  const bas = h.slice(h.indexOf('<head>') + 6, h.indexOf('</head>')), govde = h.slice(h.indexOf('<body>') + 6, h.lastIndexOf('</body>'));
+  const temizBas = bas.split('\n').filter(l => !/^\s*<meta\s/i.test(l)).join('\n');
+  const title = (temizBas.match(/<title>.*?<\/title>/) || ['<title>Kut Arena</title>'])[0];
+  fs.writeFileSync(path.join(OUT, 'artifact.html'), title + '\n' + temizBas.replace(title, '') + '\n' + govde);
+  console.log('artifact.html yazıldı');
+}

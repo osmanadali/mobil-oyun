@@ -147,8 +147,8 @@ export function boyutla() {
   renderer.setSize(w, h, false); kamera.aspect = w / h;
   // tahtanın tamamı görünsün: yatay tablette kamera oyuncu tarafının arkasında, ~52° eğik
   const dar = w / h < 1.45;
-  kamera.fov = dar ? 44 : 38;
-  kamera.position.set(0, dar ? 10.6 : 9.6, dar ? 9.6 : 8.6); kamera.lookAt(0, 0, 0.55);
+  kamera.fov = dar ? 40 : 34;
+  kamera.position.set(0, dar ? 9.8 : 8.9, dar ? 8.4 : 7.6); kamera.lookAt(0, 0, 0.35);
   kamera.updateProjectionMatrix();
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   kaplama.width = w * dpr; kaplama.height = h * dpr; kcx.setTransform(dpr, 0, 0, dpr, 0, 0);
