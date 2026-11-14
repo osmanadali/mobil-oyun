@@ -3,6 +3,7 @@
 // (deneyim, havuz, dükkân çekimi) sonuçlarını kaydeder; C# testi (cd kut/unity/Test && dotnet run) aynısını üretmeli.
 global.btoa = s => Buffer.from(s, 'binary').toString('base64');
 const D = require('../data.js'), S = require('../sim.js'), O = require('../online.js'), L = require('../lobi.js');
+const K0 = D.KURAL;
 const H = D.KAHRAMANLAR.map(h => h.id);
 const savas = [];
 function oyna(A, B, opt) {
@@ -48,6 +49,83 @@ for (let j = 0; j < 96; j++) {
   const opt = { tohum: 4242 + j * 3, alamet: D.ALAMETLER[(j * 5) % D.ALAMETLER.length].id, yz: j % 2 ? [0, 1] : [1] };
   if (j % 2 === 0) opt.kut = [{ t: +(0.3 + (j % 20) * 0.15).toFixed(2), taraf: 0, i: j % A.length }];
   savas.push({ elle: true, A, B, opt, sonuc: oyna(A, B, opt), kod: O.kodla(A, 'Dört Üç ' + j) });
+}
+
+// 4b) eşyalı savaşlar: her tam eşya, bileşen ve özel eşya; elle kurulmuş 4×3 takımlar (Kut Ocağı için çoğunda Kut dokunuşu)
+const TAM = D.ESYALAR.map(e => e.id), BIL = D.BILESENLER.map(b => b.id), SOYID = Object.keys(D.SOYLAR);
+const OZEL = ['kutTasi', 'sokumTasi', 'muhur-ates', 'muhur-dev', 'muhur-' + SOYID[3], 'yok-boyle', 'muhur-yok'];
+for (let j = 0; j < 288; j++) {
+  const tip = j % 4; // 0: tam eşya ağırlıklı, 1: bileşen, 2: karışık + özel, 3: tek taşıyıcıda 3 tam eşya
+  const yap = (bas, n, taraf) => Array.from({ length: n }, (_, k) => {
+    const hucre = (k * 7 + j + taraf * 3) % 12;
+    const b = { h: H[(bas + k * 5) % 16], s: 1 + ((j + k + taraf) % 3), x: hucre % 4, y: Math.floor(hucre / 4) };
+    if ((j + k) % 6 === 0) { const f = H[(bas + k + 7) % 16]; if (f !== b.h) b.f = f; }
+    const z = j * 3 + k * 11 + taraf * 17;
+    if (tip === 0) b.e = [TAM[(j + k * 9 + taraf * 4) % 36], ...(k % 2 ? [TAM[(z + 5) % 36]] : [])];
+    else if (tip === 1) b.e = Array.from({ length: 1 + k % 3 }, (_, q) => BIL[(z + q * 3) % 8]);
+    else if (tip === 2) b.e = [TAM[(j + k) % 36], BIL[z % 8], OZEL[(j + k + taraf) % OZEL.length]];
+    else if (k === 0) b.e = [TAM[j % 36], TAM[(j + 13) % 36], TAM[(j + 25) % 36]];
+    else if (k < 3) b.e = [TAM[(j * 5 + k * 7 + taraf) % 36]];
+    return b;
+  });
+  const A = yap(j, 5 + j % 4, 0), B = yap(j + 9, 5 + (j + 2) % 4, 1);
+  // her tam eşya en az bir kez taraf 0'ın ilk biriminde: Kut dokunuşu da ona
+  if (tip !== 3) A[0].e = [TAM[j % 36], ...(A[0].e || []).slice(0, 2)];
+  const opt = { tohum: 9100 + j * 7, alamet: D.ALAMETLER[(j * 3) % D.ALAMETLER.length].id, yz: j % 3 === 2 ? [0, 1] : [1] };
+  if (j % 3 !== 2) opt.kut = [{ t: +(0.2 + (j % 25) * 0.2).toFixed(2), taraf: 0, i: j % 3 === 0 ? 0 : j % A.length }];
+  savas.push({ elle: true, A, B, opt, sonuc: oyna(A, B, opt), kod: O.kodla(A, 'Eşya ' + j) });
+}
+// 4c) eşyalı seviyeli botlar: botEsya (r turuna kadarki eşya ganimeti, en güçlü birime yığılır)
+for (let i = 0; i < 240; i++) {
+  const r = 1 + (i * 7) % 45, sv = O.botSeviye(r), svB = O.botSeviye((r + i) % 45), gA = (i % 5) / 4, gB = ((i * 3) % 5) / 4, tur = r + 1;
+  const tA = 3000 + i * 13, tB = 8000 + i * 11;
+  const A = O.botEsya(O.botTakim(tur, tA, gA, sv), r, tA), B = O.botEsya(O.botTakim(tur, tB, gB, svB), (r + i) % 45, tB);
+  const opt = { tohum: i * 19 + 5, alamet: D.ALAMETLER[(i * 5) % D.ALAMETLER.length].id, yz: i % 2 ? [0, 1] : [1] };
+  if (i % 2 === 0) opt.kut = [{ t: +((i % 30) * 0.15 + 0.3).toFixed(2), taraf: 0, i: i % A.length }];
+  savas.push({ tur, sv, svB, tohumA: tA, gucA: gA, tohumB: tB, gucB: gB, esyaR: r, esyaRB: (r + i) % 45, A, B, opt, sonuc: oyna(A, B, opt), kod: O.kodla(A, 'Botlu ' + i) });
+}
+
+// 4d) canavar turları: eşyalı seviyeli bot × canavar dalgası (Gün Batımı açık; canavar Kut kullanmaz). B, lobi.pveDalga(pveR) ile yeniden kurulur.
+const PVE_R = [0, 1, 2, 9, 16, 23, 30, 37, 44];
+for (let i = 0; i < 270; i++) {
+  const r = PVE_R[i % PVE_R.length], sv = O.botSeviye(r), gA = (i % 5) / 4, tur = r + 1, tA = 4000 + i * 17;
+  const A = O.botEsya(O.botTakim(tur, tA, gA * 0.6, sv), r, tA), B = L.pveDalga(r);
+  const opt = { tohum: i * 23 + 11, alamet: D.ALAMETLER[(i * 7) % D.ALAMETLER.length].id, yz: i % 3 ? [0] : [], gunBatimi: K0.gunBatimi.basla };
+  if (i % 3 === 0) opt.kut = [{ t: +((i % 20) * 0.25 + 0.2).toFixed(2), taraf: 0, i: i % A.length }];
+  if (i % 9 === 4) opt.kut = [...(opt.kut || []), { t: 1.5, taraf: 1, i: 0 }]; // canavara Kut: yeteneği erken çalışsın
+  savas.push({ tur, sv, svB: 0, tohumA: tA, gucA: gA * 0.6, esyaR: r, pveR: r, A, B, opt, sonuc: oyna(A, B, opt), kod: O.kodla(A, 'Canavar ' + i) });
+}
+// 4e) Gün Batımı'na giden PvP savaşları: eşyalı seviyeli botlar, Gün Batımı 20 sn (bir kısmı 12 sn: Uzun Gölge alameti için)
+for (let i = 0; i < 240; i++) {
+  const r = 3 + (i * 11) % 40, sv = O.botSeviye(r), svB = O.botSeviye((r + 3) % 45), gA = (i % 5) / 4, gB = ((i * 2) % 5) / 4, tur = r + 1;
+  const tA = 6000 + i * 7, tB = 11000 + i * 5;
+  const A = O.botEsya(O.botTakim(tur, tA, gA, sv), r, tA), B = O.botEsya(O.botTakim(tur, tB, gB, svB), r, tB);
+  const opt = { tohum: i * 29 + 1, alamet: D.ALAMETLER[(i * 3) % D.ALAMETLER.length].id, yz: i % 2 ? [0, 1] : [1], gunBatimi: i % 4 === 3 ? 12 : K0.gunBatimi.basla };
+  if (i % 2 === 0) opt.kut = [{ t: +((i % 30) * 0.2 + 0.4).toFixed(2), taraf: 0, i: i % A.length }];
+  savas.push({ tur, sv, svB, tohumA: tA, gucA: gA, tohumB: tB, gucB: gB, esyaR: r, esyaRB: r, A, B, opt, sonuc: oyna(A, B, opt), kod: O.kodla(A, 'Gün Batımı ' + i) });
+}
+// 4f) elle kurulmuş canavar dalgaları: her canavar her iki tarafta, kahramanlara karşı, eşyalı (Diken Kirpi'ye yakın dövüşçüler vurur)
+const CAN = D.CANAVARLAR.map(c => c.id);
+for (let j = 0; j < 96; j++) {
+  const B = Array.from({ length: 1 + j % 3 }, (_, k) => ({ h: CAN[(j + k * 3) % 8], s: 1, x: (j + k) % 4, y: (j + k * 2) % 3 }));
+  const A = Array.from({ length: 3 + j % 5 }, (_, k) => { const hucre = (k * 5 + j) % 12; const b = { h: H[(j * 3 + k * 7) % 16], s: 1 + (j + k) % 3, x: hucre % 4, y: Math.floor(hucre / 4) };
+    if ((j + k) % 4 === 0) b.e = [TAM[(j + k * 5) % 36]]; return b; });
+  const [X, Y] = j % 2 ? [B, A] : [A, B];
+  const opt = { tohum: 13000 + j * 3, alamet: D.ALAMETLER[j % D.ALAMETLER.length].id, yz: [0, 1], ...(j % 3 ? { gunBatimi: 20 } : {}) };
+  // düello kodu canavar taşımaz: kod yalnız kahraman tarafı A iken
+  savas.push({ elle: true, A: X, B: Y, opt, sonuc: oyna(X, Y, opt), ...(X === A ? { kod: O.kodla(X, 'Elle canavar ' + j) } : {}) });
+}
+
+// 4g) uzun tank savaşları: Diken Kabuk ve Diken Kirpi yansıması Gün Batımı'nda (yansıma bir daha çarpılmaz)
+const TANK = ['golem', 'kaplumbaga', 'ayi', 'koc', 'kurt', 'bulutat'];
+for (let j = 0; j < 60; j++) {
+  const yap = (bas, taraf) => [
+    { h: j % 2 ? 'kirpi' : 'tasKabuk', s: 1, x: (bas + 1) % 4, y: 0 },
+    ...Array.from({ length: 2 + j % 3 }, (_, k) => ({ h: TANK[(bas + k * 2 + taraf) % 6], s: 1 + (j + k) % 2, x: (bas + k + 2) % 4, y: k % 2, e: ['dikenKabuk', ...(k % 2 ? ['anaKaya'] : ['uluKok'])] })),
+  ].filter((b, i, l) => l.findIndex(o => o.x === b.x && o.y === b.y) === i);
+  const A = yap(j, 0), B = yap(j + 3, 1);
+  const opt = { tohum: 17000 + j * 5, alamet: 'yok', yz: [], gunBatimi: j % 3 === 0 ? 12 : j % 3 === 1 ? 16 : 20 };
+  savas.push({ elle: true, A, B, opt, sonuc: oyna(A, B, opt) });
 }
 
 // 5) eski KUT1- kodları (3×2 tahta): çözülünce x aynen, arka → y 2
@@ -147,11 +225,59 @@ for (let z = 0; z < 120; z++) {
   zincir.push({ yasayan, turlar });
 }
 
+// 8) eşya kuralları (lobi.js) ve birim istatistiği (sim.birimStat)
+const tumEsya = [...TAM, ...BIL, ...OZEL, ...SOYID.map(x => 'muhur-' + x)];
+const rastEsya = () => tumEsya[Math.floor(R0() * tumEsya.length)];
+const rastEBirim = () => { const b = rastBirim(); const n = Math.floor(R0() * 5); if (n) b.e = Array.from({ length: n }, rastEsya); return b; };
+const esyaStat = [];
+for (let i = 0; i < 300; i++) {
+  const b = rastEBirim(), st = S.birimStat(b);
+  esyaStat.push({ b, sonuc: { can: st.can, atk: st.atk, asEk: st.asEk, yg: st.yg, mana0: st.mana0, azalt: st.azalt, cal: st.cal, kalkan0: st.kalkan0, esya: st.esya, soy: st.soy, kutTasi: st.kutTasi, yanki: st.kutYanki } });
+}
+const esyaTak = [];
+for (let i = 0; i < 400; i++) { const b = rastEBirim(), id = i % 3 === 0 ? BIL[Math.floor(R0() * 8)] : rastEsya(); esyaTak.push({ b, id, sonuc: L.esyaTak(b, id) }); }
+const esyaTopla = [];
+for (let i = 0; i < 200; i++) {
+  const b = rastBirim(), listeler = Array.from({ length: 2 + Math.floor(R0() * 2) }, () => Array.from({ length: Math.floor(R0() * 4) }, () => (R0() < 0.4 ? BIL[Math.floor(R0() * 8)] : rastEsya())));
+  esyaTopla.push({ b, listeler, sonuc: L.esyaToplaBirim(b, listeler) });
+}
+const rafBirlestir = [];
+for (let i = 0; i < 150; i++) {
+  const raf = Array.from({ length: 1 + Math.floor(R0() * 10) }, () => (R0() < 0.6 ? BIL[Math.floor(R0() * 8)] : rastEsya()));
+  const a = Math.floor(R0() * raf.length), b2 = Math.floor(R0() * raf.length);
+  rafBirlestir.push({ raf, i: a, j: b2, sonuc: L.rafBirlestir(raf, a, b2) });
+}
+const ganimetEsya = [];
+for (let i = 0; i < 300; i++) { const r = i % 60, tohum = 5000 + i * 37; ganimetEsya.push({ r, tohum, sonuc: L.ganimetEsya(r, S.rng(tohum)) }); }
+
+// 9) canavar turu, ganimet, Kervan, bedava kahraman seçimi (lobi.js)
+const rastKalan = (tip) => { const k = {}; for (const h of D.KAHRAMANLAR) { const tam = K.havuzAdet[h.kademe];
+  k[h.id] = tip === 0 ? tam : tip === 1 ? Math.floor(R0() * (tam + 1)) : tip === 2 ? (R0() < 0.7 ? 0 : 1 + Math.floor(R0() * 3)) : (R0() < 0.9 ? 0 : 1); } return k; };
+const pveDalga = Array.from({ length: 60 }, (_, r) => L.pveDalga(r));
+const ganimetV = [];
+for (let i = 0; i < 600; i++) {
+  const r = [0, 1, 2, 9, 16, 23, 30, 37, 44, 3, 6][i % 11] + (i % 23 === 0 ? 1 : 0), tohum = 21000 + i * 41, kalan = i % 5 === 4 ? null : rastKalan(i % 4);
+  ganimetV.push({ r, tohum, kalan, sonuc: L.ganimet(r, S.rng(tohum), kalan) });
+}
+const kervanV = [];
+for (let i = 0; i < 400; i++) {
+  const r = [6, 13, 20, 27, 34, 41, 48, 5][i % 8], tohum = 31000 + i * 43, adet = L.kervanAdet(1 + i % 8), kalan = i % 5 === 4 ? null : rastKalan(i % 4);
+  kervanV.push({ r, tohum, adet, kalan, sonuc: L.kervanSecenek(r, S.rng(tohum), adet, kalan) });
+}
+const baslangic = [];
+for (let i = 0; i < 150; i++) { const tohum = 41000 + i * 7, kalan = i % 3 === 2 ? null : rastKalan(i % 4); baslangic.push({ tohum, kalan, sonuc: L.baslangicSecenek(S.rng(tohum), kalan) }); }
+const kervanAdet = Array.from({ length: 11 }, (_, i) => L.kervanAdet(i - 1));
+
 const fs = require('fs'), path = require('path');
 const out = path.join(__dirname, '..', 'unity', 'Test', 'esdeger.json');
-fs.writeFileSync(out, JSON.stringify({ savas, kut1, kut2, xp, havuz, dukkan, botSeviye, ekonomi: { turPlan, gelir, seri, hasar, kaynastir, ganimet, zincir } }));
+fs.writeFileSync(out, JSON.stringify({ savas, kut1, kut2, xp, havuz, dukkan, botSeviye, ekonomi: { turPlan, gelir, seri, hasar, kaynastir, ganimet, zincir },
+  esya: { stat: esyaStat, tak: esyaTak, topla: esyaTopla, raf: rafBirlestir, ganimet: ganimetEsya },
+  canavar: { pveDalga, ganimet: ganimetV, kervan: kervanV, baslangic, kervanAdet } }));
 const k = savas.map(v => v.sonuc.sonuc.kazanan);
 console.log('savaş', savas.length, '(A kazanır', k.filter(x => x === 0).length, '· B', k.filter(x => x === 1).length, '· berabere', k.filter(x => x === -1).length + ')',
   '| KUT1 kodu', kut1.length, '| KUT2 kodu', kut2.length, '(bozuk ' + kut2.filter(v => !v.cozum).length + ')', '| deneyim', xp.length, '| havuz', havuz.length, '| dükkân', dukkan.length,
   '| ekonomi: tur planı', turPlan.length, 'gelir', gelir.length, 'seri', seri.length, 'hasar', hasar.length, 'kaynaştırma', kaynastir.length, 'ganimet', ganimet.length,
-  'zincir', zincir.length, '(' + zincir.reduce((t, z) => t + z.turlar.length, 0) + ' tur)', '→', out);
+  'zincir', zincir.length, '(' + zincir.reduce((t, z) => t + z.turlar.length, 0) + ' tur)',
+  '| eşya: savaş', savas.filter(v => [...v.A, ...v.B].some(b => b.e && b.e.length)).length, 'istatistik', esyaStat.length, 'takma', esyaTak.length, 'toplama', esyaTopla.length, 'raf', rafBirlestir.length, 'ganimet', ganimetEsya.length,
+  '| canavar: savaş', savas.filter(v => [...v.A, ...v.B].some(b => D.canavar(b.h))).length, 'Gün Batımı', savas.filter(v => v.opt.gunBatimi != null).length,
+  '(30 sn\'ye kalan', savas.filter(v => v.opt.gunBatimi != null && v.sonuc.sonuc.sure >= 30).length + ')', 'dalga', pveDalga.length, 'ganimet', ganimetV.length, 'Kervan', kervanV.length, 'bedava seçim', baslangic.length, '→', out);

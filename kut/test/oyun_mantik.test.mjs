@@ -25,8 +25,11 @@ o.M.altin = 5; o.yuvaDokun('tahta', ki); o.kaynasModDegistir(); o.yuvaDokun('tah
 ok(o.M.tahta[ki] && o.M.tahta[ki].f === 'kurbaga' && o.M.altin === 2, 'kaynaştırma: kurt × kurbağa, 3 altın düştü');
 // maçı sonuna kadar oyna (görüntüsüz)
 let ozet = null, tur = 0;
+let kervanSay = 0, canavarSay = 0;
 while (!ozet && tur++ < 40) {
+  if (o.M.kervan) { kervanSay++; await o.kervanSec(0); }
   if (!o.M.rakip) await o.turBaslat(false);
+  if (o.M.rakip.pve) canavarSay++;
   // parası yettikçe al, tahtayı doldur
   for (let i = 0; i < 5; i++) if (o.M.dukkan[i] && o.M.altin >= window.KUT_DATA.kahraman(o.M.dukkan[i]).kademe) o.satinAl(i);
   for (let i = 0; i < 4; i++) { const yi = o.M.yedek.findIndex(Boolean), ti = o.M.tahta.findIndex(x => !x); if (yi < 0 || ti < 0 || o.tahtaSay() >= o.yuva()) break; o.yuvaDokun('yedek', yi); o.yuvaDokun('tahta', ti); }
@@ -35,6 +38,7 @@ while (!ozet && tur++ < 40) {
 }
 ok(ozet && ozet.bitti && ozet.kod.startsWith('KUT2-') && (ozet.kazandi ? ozet.can > 0 && ozet.turAd === '5-3' : ozet.can === 0), `maç bitti (${tur} tur, ${ozet && ozet.turAd}, ${ozet && ozet.kazandi ? 'kazandı' : 'elendi'}, ${ozet && ozet.can} can, kupa ${ozet && ozet.fark})`);
 ok(o.P.mac === null && JSON.parse(depo['kut.profil.v2']).istat.mac === 1, 'profil kaydedildi, maç kapandı');
+ok(canavarSay >= 3 && (ozet.turAd < '2-4' || kervanSay >= 1), `maçta canavar turları (${canavarSay}) ve Kervan (${kervanSay}) oynandı`);
 const d = o.duelloHazirla(ozet.kod); ok(d && d.sonunaKadar().kazanan !== undefined, 'düello kodu ile savaş');
 ok(ozet.seviye >= 2 + 1, `maç sonunda savaş deneyimiyle seviye arttı (Sv ${ozet.seviye})`);
 
@@ -160,10 +164,13 @@ ok(ozet.seviye >= 2 + 1, `maç sonunda savaş deneyimiyle seviye arttı (Sv ${oz
   e.M.altin = 4; e.secili = null; e.yuvaDokun('tahta', 0); e.kaynasModDegistir(); e.yuvaDokun('tahta', 1);
   ok(!e.M.tahta[0].f && e.M.altin === 4, 'altın 4 iken K1 × K3 kaynaşmaz');
   e.M.altin = 6; e.yuvaDokun('tahta', 1); ok(e.M.tahta[0].f === 'anka' && e.M.altin === 1, 'K1 × K3 kaynaştı, 5 altın düştü');
-  // 2-3'ten sonra 2-4 Kervan atlanır: gelir yok, sonraki tur 2-5
+  // 2-3'ten sonra 2-4 Kervan: savaş ve gelir yok; seçim yapılınca 2-5 başlar (gelir bir kez)
   e.M.tur = 6; e.secili = null; e.kaynasMod = false; bitir(0); const once = e.M.altin; await e.turBaslat(false);
-  ok(e.turAd() === '2-5' && e.M.altin === once + e.M.gelir.toplam, 'Kervan turu (2-4) şimdilik atlanır, gelir bir kez eklenir');
-  // 2-7 canavar turu (şimdilik bota karşı): seri bozulmaz; yenilgide taban + kalan sayısı
+  ok(e.turAd() === '2-4' && e.M.kervan && e.M.kervan.secenek.length >= 3 && e.M.altin === once && e.M.gelir.toplam === 0 && !e.M.rakip && e.savasHazirla() === null, 'Kervan turu (2-4): gelir yok, rakip yok, savaş başlamaz, seçenekler hazır');
+  const kv = e.M.kervan.secenek[1], raf0 = e.M.esyaRaf.length; await e.kervanSec(1);
+  ok(e.turAd() === '2-5' && !e.M.kervan && e.M.esyaRaf.length === raf0 + 1 && e.M.esyaRaf[e.M.esyaRaf.length - 1] === kv.esya && [...e.M.tahta, ...e.M.yedek].some(b => b && b.h === kv.birim.h)
+    && e.M.altin === once + e.M.gelir.toplam, 'Kervan seçimi: kahraman yedeğe, eşya rafa; 2-5 başladı, gelir bir kez eklendi');
+  // 2-7 canavar turu: seri bozulmaz; yenilgide taban + kalan sayısı
   e.M.tur = 10; e.M.seri = { tip: 'G', n: 3 }; r = bitir(1, 9, 3); ok(r.hasar === 5 && e.M.seri.n === 3, '2-7 canavar yenilgisi: −5 (2 + 3 kalan), seri bozulmadı');
   // ölüm: can 0 → maç biter
   e.M.can = 6; e.M.tur = 18; await e.turBaslat(true); r = bitir(1, 4); ok(r.bitti && !r.kazandi && r.can === 0 && r.turAd === '4-1', `can bitti: ${r.turAd} turunda elendi (kupa ${r.fark})`);
@@ -199,5 +206,108 @@ ok(ozet.seviye >= 2 + 1, `maç sonunda savaş deneyimiyle seviye arttı (Sv ${oz
   // birikimli ekonomiden önce kaydedilmiş seviyeli yarım maç (seri yok, 5 can) kapatılır
   depo['kut.profil.v2'] = JSON.stringify({ kupa: 0, usta: {}, oyuncu: 'x', ad: 'O', sonTakim: null, istat: { mac: 0, birinci: 0 }, mac: { mod: 'arena', tur: 3, can: 5, tahta: Array(12).fill(null), yedek: Array(7).fill(null) } });
   ok(new Oyun().M === null, 'adım 1 biçimindeki seviyeli yarım maç kapatıldı');
+}
+// ── eşyalar (bölüm 5.1): raf, takma, rafta birleştirme, satış, ★ birleşme ve kaynaştırmada toplama, Söküm Taşı, taşan ganimet ──
+{
+  const DD = window.KUT_DATA;
+  const e = new Oyun(); await e.yeniMac('arena');
+  ok(Array.isArray(e.M.esyaRaf) && e.M.esyaRaf.length === 0, 'yeni maç: boş eşya rafı');
+  // 1-1 savaşından sonra ganimet: 1 bileşen
+  e.M.dukkan = ['golem', null, null, null, null]; e.satinAl(0);
+  const r1 = e.savasBitti(e.savasHazirla().sonunaKadar());
+  ok(e.M.esyaRaf.length === 1 && DD.esya(e.M.esyaRaf[0]).tip === 'bilesen' && r1.esya.length === 1, '1-1 ganimeti: rafa 1 bileşen (' + e.M.esyaRaf[0] + ')');
+  await e.turBaslat(false);
+  ok(e.M.rakip.pve && e.M.rakip.takim.length === 3 && e.M.rakip.takim.every(b => b.h === 'cakil'), '1-2 rakibi canavar dalgası: 3 Çakıl Kıpırı');
+  { const t = new Oyun(); await t.yeniMac('arena'); t.M.tur = 4; await t.turBaslat(false);
+    const deger = t.M.rakip.takim.reduce((n, b) => n + (b.e || []).reduce((q, id) => q + (DD.esya(id).tip === 'tam' ? 2 : 1), 0), 0);
+    ok(!t.M.rakip.pve && deger === 2, '2-1 bot rakibi bölüm 1 ganimetini (1-1 bileşen + 1-3 seçimi) taşıyor'); }
+  // takma: raftaki eşyaya dokun, sonra kahramana
+  const gi = e.M.tahta.findIndex(b => b && b.h === 'golem');
+  e.M.esyaRaf = ['dis', 'tuy', 'kor', 'isikKalkani'];
+  e.esyaSec(0); ok(e.seciliEsya === 0, 'raftaki eşya seçildi');
+  e.yuvaDokun('tahta', gi); ok(e.M.tahta[gi].e.join() === 'dis' && e.M.esyaRaf.join() === 'tuy,kor,isikKalkani' && e.seciliEsya === null, 'Diş golem\'e takıldı');
+  e.esyaSec(1); e.yuvaDokun('tahta', gi); ok(e.M.tahta[gi].e.join() === 'kizginDis', 'Kor + yarım Diş → Kızgın Diş');
+  ok(e.takim()[0].e.join() === 'kizginDis', 'takım (motor) eşyaları taşır');
+  // rafta birleştirme
+  e.M.esyaRaf = ['tuy', 'isikKalkani', 'buz']; e.esyaSec(0); e.esyaSec(2);
+  ok(e.M.esyaRaf.join() === 'karTanesi,isikKalkani', 'rafta Tüy + Buz → Kar Tanesi');
+  e.esyaSec(1); e.esyaSec(0); ok(e.seciliEsya === 0 && e.M.esyaRaf.length === 2, 'tam eşyalar rafta birleşmez (seçim değişir)'); e.esyaSec(0);
+  // dolu kahraman
+  e.M.tahta[gi].e = ['kizginDis', 'isikKalkani', 'anaKaya']; e.M.esyaRaf = ['dis'];
+  e.esyaSec(0); e.yuvaDokun('tahta', gi); ok(e.M.esyaRaf.join() === 'dis' && e.M.tahta[gi].e.length === 3, 'dolu kahramana takılmaz, eşya rafta kalır');
+  // Söküm Taşı: bütün eşyalar rafa iner, taş harcanır
+  e.M.esyaRaf = ['sokumTasi']; e.esyaSec(0); e.yuvaDokun('tahta', gi);
+  ok(!e.M.tahta[gi].e && e.M.esyaRaf.join() === 'kizginDis,isikKalkani,anaKaya', 'Söküm Taşı: 3 eşya rafa döndü, taş harcandı');
+  // satış: eşyalar rafa döner
+  e.M.esyaRaf = []; e.M.tahta[gi].e = ['yelKanadi', 'pul']; e.yuvaDokun('tahta', gi); e.sat();
+  ok(!e.M.tahta[gi] && e.M.esyaRaf.join() === 'yelKanadi,pul', 'satılan kahramanın eşyaları rafa döner');
+  // raf dolu: taşan bekler, raf boşalınca iner
+  e.M.esyaRaf = Array(10).fill('dis'); e._rafEkle(['buz', 'kor']);
+  ok(e.M.esyaRaf.length === 10 && e.M.esyaTasan.join() === 'buz,kor', 'raf 10 eşyada doluyor, fazlası taşan olarak bekliyor');
+  e.esyaSec(0); e.esyaSec(1); ok(e.M.esyaRaf.length === 10 && e.M.esyaRaf[0] === 'yirticiPence' && e.M.esyaRaf[9] === 'buz' && e.M.esyaTasan.join() === 'kor', 'raf boşalınca taşan iner');
+  // ★ birleşme: üç kopyanın eşyaları toplanır, aşan rafa
+  e.M.tahta = Array(12).fill(null); e.M.yedek = Array(7).fill(null); e.M.esyaRaf = []; e.M.esyaTasan = []; e.M.altin = 50;
+  e.M.tahta[0] = { h: 'kurt', s: 1, e: ['dis', 'isikKalkani'] }; e.M.yedek[0] = { h: 'kurt', s: 1, e: ['tuy', 'anaKaya'] };
+  e.M.dukkan = ['kurt', null, null, null, null]; e.satinAl(0);
+  const yk = [...e.M.tahta, ...e.M.yedek].find(b => b && b.h === 'kurt' && b.s === 2);
+  ok(yk && yk.e.join() === 'avCoskusu,isikKalkani,anaKaya' && e.M.esyaRaf.length === 0, '★2 birleşme: eşyalar toplandı, Diş + Tüy birleşti (' + (yk && yk.e) + ')');
+  e.M.tahta[1] = { h: 'golem', s: 1, e: ['yirticiPence', 'kor'] }; e.M.tahta[2] = { h: 'semender', s: 1, e: ['buz', 'muhur-ates'] };
+  e.yuvaDokun('tahta', 1); e.kaynasModDegistir(); e.yuvaDokun('tahta', 2);
+  ok(e.M.tahta[1].f === 'semender' && e.M.tahta[1].e.join() === 'yirticiPence,ayazAsasi' && e.M.esyaRaf.join() === 'muhur-ates', 'kaynaştırma: önce birinci kahramanın eşyaları; Kor + Buz birleşti, Od zaten taşındığı için mühür rafa döndü');
+  // Hızlı Maç'ta eşya yok
+  const h = new Oyun(); await h.yeniMac('hizli'); h.M.dukkan = ['golem', null, null, null, null]; h.satinAl(0);
+  h.savasBitti(h.savasHazirla().sonunaKadar()); ok(h.M.esyaRaf.length === 0, 'Hızlı Maç: eşya ganimeti yok');
+  // eşyalardan önce kaydedilmiş Arena yarım maçı açılır, boş raf eklenir
+  const k = JSON.parse(depo['kut.profil.v2']); k.mac = { ...e.M }; delete k.mac.esyaRaf; delete k.mac.esyaTasan; depo['kut.profil.v2'] = JSON.stringify(k);
+  const y = new Oyun(); ok(y.M && Array.isArray(y.M.esyaRaf) && y.M.esyaRaf.length === 0, 'eşyasız kayıttaki yarım maç boş rafla sürüyor');
+  // seviyeli maçta bot rakipler eşya taşır (geç turlarda)
+  const b = new Oyun(); await b.yeniMac('arena'); b.M.tur = 20; await b.turBaslat(false);
+  ok(b.M.rakip.takim.some(x => x.e && x.e.length), '4-x turunda bot rakip eşya taşır');
+}
+// ── canavar turları, ganimet, Kervan, bedava kahraman, Gün Batımı (bölüm 1.1, 1.4, 5.4, 5.5) ──
+{
+  const DD = window.KUT_DATA, LL = window.KUT_LOBI;
+  const e = new Oyun(); await e.yeniMac('arena');
+  ok(e.bekleyenSecim() === 'ilk' && e.M.ilkSecim.length === 3 && e.M.ilkSecim.every(id => DD.kahraman(id).kademe === 1), 'yeni Arena maçı: 3 kademe-1 kahramandan biri bedava');
+  const sec = e.M.ilkSecim[1], a0 = e.M.altin; e.ilkSec(1);
+  ok(!e.M.ilkSecim && e.M.tahta.some(b => b && b.h === sec) && e.M.altin === a0 && e.bekleyenSecim() === null, 'bedava seçim tahtaya kondu, altın düşmedi');
+  ok(e.M.rakip.pve && e.M.rakip.kaynak === 'canavar' && e.M.rakip.takim.map(b => b.h).join() === 'cakil,cakil' && e.turTip() === 'pve' && e.turUzun() === 'Bölüm 1 · Tur 1', '1-1 rakibi canavar dalgası (2 Çakıl Kıpırı), "Bölüm 1 · Tur 1"');
+  const sim = e.savasHazirla();
+  ok(sim.birimler.filter(u => u.taraf === 1).every(u => u.b.canavar === 'cakil' && u.b.h === 'golem' && u.mx === 280), 'savaşta canavar: motor canavar istatistiğiyle, sahneye görünüm kahramanı (u.b.h) ve gerçek kimlik (u.b.canavar)');
+  ok(e.birimAd(sim.birimler.find(u => u.taraf === 1).b) === 'Çakıl Kıpırı', 'hasar özetinde canavarın adı');
+  let r = e.savasBitti(sim.sonunaKadar());
+  ok(r.pve && r.esya.length === 1 && e.M.esyaRaf.length === 1 && r.hasar === 0, '1-1 ganimeti: 1 bileşen, bölüm 1\'de can gitmez');
+  // 1-2: kahraman + 2 altın (kaybedilse de)
+  await e.turBaslat(false); e.M.yedek = Array(7).fill(null);
+  const a12 = e.M.altin; e.savasHazirla(); r = e.savasBitti({ kazanan: 1, kalanPuan: 3, kalanSayi: 3, kalan: 0, sure: 9 });
+  ok(r.kahraman.length === 1 && DD.kahraman(r.kahraman[0].h).kademe === 1 && e.M.yedek.some(b => b && b.h === r.kahraman[0].h) && e.M.altin === a12 + 2 && r.ganimet === 2, '1-2 yenilgisinde de ganimet: K1 kahraman yedeğe, +2 altın');
+  // 1-3: iki bileşenden biri seçilir
+  await e.turBaslat(false); e.savasHazirla(); r = e.savasBitti({ kazanan: 0, kalanPuan: 3, kalanSayi: 3, kalan: 0, sure: 9 });
+  ok(r.secim && r.secim.length === 2 && e.bekleyenSecim() === 'ganimet', '1-3: 2 bileşen gösterildi, seçim bekliyor');
+  const s2 = e.M.ganimetSecim[1], n0 = e.M.esyaRaf.length; e.ganimetSec(1);
+  ok(e.M.esyaRaf.length === n0 + 1 && e.M.esyaRaf[n0] === s2 && !e.M.ganimetSecim, 'seçilen bileşen rafa indi');
+  // seçilmeyen ganimet savaştan önce ilk seçenek olur
+  e.M.ganimetSecim = ['dis', 'tuy']; await e.turBaslat(false); e.savasHazirla(); ok(!e.M.ganimetSecim && e.M.esyaRaf.includes('dis'), 'seçilmeyen ganimet savaşta ilk seçenek olur');
+  e.savasBitti({ kazanan: 0, kalanPuan: 3, kalanSayi: 3, kalan: 0, sure: 9 });
+  ok(e.turTip() === 'pvp' && e.turAd() === '2-2', 'bölüm 1 bitti: 2-1 PvP oynandı, sıra 2-2');
+  // PvP savaşında Gün Batımı var, canavar ganimeti yok
+  await e.turBaslat(false); const ps = e.savasHazirla(); let t25 = 0; while (!ps.bitti && ps.t < 25.2) { ps.adim(); if (Math.abs(ps.t - 25.5) < 0.03) t25 = ps.gunBatimiCarpan(); }
+  ok(!e.M.rakip.pve && (ps.bitti || ps.gunBatimiCarpan() === 1.5), 'Arena PvP savaşında Gün Batımı (25. sn ×1,5)');
+  // 2-7 zarfı
+  e.M.tur = 10; await e.turBaslat(false); ok(e.M.rakip.pve && e.M.rakip.takim.length === 4, '2-7 rakibi: 3 Kum Akrebi + Ana Akrep');
+  const a27 = e.M.altin; e.savasHazirla(); r = e.savasBitti({ kazanan: 1, kalanPuan: 4, kalanSayi: 2, kalan: 0, sure: 9 });
+  ok(r.hasar === 2 + 2 && r.zarf && (r.zarf === 'altin' ? e.M.altin === a27 + 3 && r.ganimet === 3 : r.zarf === 'bilesen' ? r.esya.length === 2 : r.kahraman.length === 1 && DD.kahraman(r.kahraman[0].h).kademe === 2), `2-7 yenilgisi: −4 can (2 + 2 canavar), bileşen + zarf (${r.zarf})`);
+  // Kervan: yedek doluyken kahraman satış değerine çevrilir; 3-4'te ilk seçenek kaynaşmış
+  e.M.tur = 14; await e.turBaslat(false);
+  ok(e.turAd() === '3-4' && e.M.kervan && e.M.kervan.secenek[0].birim.f && e.M.kervan.secenek.length === LL.kervanAdet(e.siraTahmin()), '3-4 Kervan: ilk seçenek hazır kaynaşmış birim');
+  e.M.yedek = Array(7).fill(null).map((_, i) => ({ h: ['golem', 'kurt', 'kurbaga', 'yarasa', 'ruzgar', 'koc', 'yilan'][i], s: 1 }));
+  const ak = e.M.altin, ilk = e.M.kervan.secenek[0], dg = e.satisDegeri(ilk.birim); await e.kervanSec(0);
+  ok(e.M.altin === ak + dg + e.M.gelir.toplam && e.M.esyaRaf.includes(ilk.esya) && e.turAd() === '3-5', `yedek doluyken Kervan kahramanı ${dg} altına çevrildi, eşya rafa indi, 3-5 başladı`);
+  e.M.can = 40; ok(LL.kervanAdet(e.siraTahmin()) === 5, 'canı az olan Kervan\'da daha çok seçenek görür (geçici sıra tahmini)');
+  // Hızlı Maç: canavar, Kervan, ganimet, Gün Batımı yok
+  const h = new Oyun(); await h.yeniMac('hizli');
+  ok(!h.M.ilkSecim && !h.M.rakip.pve && h.turTip() === 'pvp', 'Hızlı Maç: bedava seçim ve canavar turu yok');
+  h.M.dukkan = ['golem', null, null, null, null]; h.satinAl(0); const hs = h.savasHazirla(); while (!hs.bitti && hs.t < 26) hs.adim();
+  ok(hs.gunBatimiCarpan() === 1, 'Hızlı Maç: Gün Batımı yok');
 }
 process.exit(hata ? 1 : 0);

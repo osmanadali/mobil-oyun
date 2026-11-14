@@ -122,16 +122,35 @@ namespace Kut
             catch { return null; }
         }
 
+        /// <summary>Bot eşyaları (online.js botEsya): r'den önceki turların eşya ganimeti, botun tohumuyla. Bileşenler ikişer birleşir;
+        /// tam eşyalar, Kut Taşı ve artan bileşen en güçlü (kademe × yıldız) birime yığılır, 3'e dolunca sonrakine.</summary>
+        public static List<TakimBirimi> BotEsya(IList<TakimBirimi> takim, int r, double tohum)
+        {
+            var bil = new List<string>(); var diger = new List<string>();
+            for (int rr = 0; rr < r; rr++) foreach (var id in KutLobi.GanimetEsya(rr, new KutRng(tohum * 977 + rr * 7919))) (KutVeri.EsyaBul(id).Tip == "bilesen" ? bil : diger).Add(id);
+            var liste = new List<string>();
+            for (int i = 0; i + 1 < bil.Count; i += 2) liste.Add(KutVeri.Tarif(bil[i], bil[i + 1]));
+            foreach (var id in diger) if (id != "sokumTasi") liste.Add(id);
+            if (bil.Count % 2 == 1) liste.Add(bil[bil.Count - 1]);
+            Func<TakimBirimi, int> guc = b => KutVeri.KahramanBul(b.H).Kademe * (b.S == 0 ? 1 : b.S);
+            var sira = Enumerable.Range(0, takim.Count).OrderByDescending(i => guc(takim[i])).ToList();
+            var outp = takim.Select(b => b.Kopya()).ToList();
+            foreach (var id in liste) foreach (int i in sira) { var t = KutLobi.EsyaTak(outp[i], id); if (t != null) { outp[i].E = t.E; break; } }
+            return outp;
+        }
+
         /// <summary>Rakip bul: önce uzak havuz, yoksa kupaya göre güçlenen bot.</summary>
         /// <param name="sv">Seviyeli maçta rakibin seviyesi (0: Hızlı Maç).</param>
-        public static Rakip RakipBul(int tur, int kupa, string oyuncu, double tohum, IHayaletHavuzu havuz = null, int sv = 0)
+        /// <param name="r">Seviyeli maçta tur sırası (0'dan): verilirse bot o tura kadarki eşya ganimetini taşır.</param>
+        public static Rakip RakipBul(int tur, int kupa, string oyuncu, double tohum, IHayaletHavuzu havuz = null, int sv = 0, int r = -1)
         {
             if (havuz != null)
             {
-                try { var r = havuz.Bul(tur, kupa, oyuncu, sv > 0 ? "arena" : "hizli"); if (r != null && r.Takim != null && r.Takim.Count > 0) { r.Kaynak = "cevrimici"; return r; } } catch { }
+                try { var uz = havuz.Bul(tur, kupa, oyuncu, sv > 0 ? "arena" : "hizli"); if (uz != null && uz.Takim != null && uz.Takim.Count > 0) { uz.Kaynak = "cevrimici"; return uz; } } catch { }
             }
             double guc = Math.Max(0, Math.Min(1, 0.35 + kupa / 2000.0));
-            return new Rakip { Ad = BotAd((int)(tohum + tur)), Takim = BotTakim(tur, tohum, guc, sv), Kupa = kupa, Kaynak = "bot", Seviye = sv };
+            var takim = BotTakim(tur, tohum, guc, sv);
+            return new Rakip { Ad = BotAd((int)(tohum + tur)), Takim = r > 0 ? BotEsya(takim, r, tohum) : takim, Kupa = kupa, Kaynak = "bot", Seviye = sv };
         }
     }
 }

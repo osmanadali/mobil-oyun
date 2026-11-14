@@ -681,7 +681,8 @@ function mermiAt(a, h, sure) {
 // Kut: (a) toplanma + sahne kararır (spot ışığı kahramanda), (b) 0,25 sn'de sütun + şok + hız çizgileri, (c) ışık 0,4 sn'de döner.
 // Soldan kayan portre kartı kimin Kut kullandığını söyler (hafifte de; ucuz).
 const portreler = {};
-function portreAl(id) { if (!portreler[id]) { const im = new Image(); im.src = kokYol + '../arayuz/portre/' + id + '.png'; portreler[id] = im; } return portreler[id]; }
+function portreAl(id) { id = (D.canavar && D.canavar(id) || {}).gorunum || id;   // canavarın kendi portresi yok: yerine gösterilen kahramanınki
+  if (!portreler[id]) { const im = new Image(); im.src = kokYol + '../arayuz/portre/' + id + '.png'; portreler[id] = im; } return portreler[id]; }
 let kutKart = null;
 function kutSutun(b) {
   if (!b || gorselT - b.sonKut < 1.0) return; b.sonKut = gorselT;
@@ -854,14 +855,19 @@ function balonCiz(w, O) {
   }
   kcx.textBaseline = 'alphabetic';
 }
+let hudEl;
 function kaplamaCiz(dt = 0, dtG = dt) {
   const w = kaplama.clientWidth, h = kaplama.clientHeight;
   const s = anlikGorsel(), O = cubukOlcu(w, h), BH = O.hh + O.mh + 5, liste = [];
+  // üst HUD (skor paneli) altında kalan çubuk okunmaz: panelin yatay aralığındaysa çubuk panelin hemen altına iner (sonra kalabalık ayrımı)
+  let hud = null; if (hudEl === undefined) hudEl = document.querySelector('.savasUst .skor');
+  if (hudEl && hudEl.offsetParent) { const r = hudEl.getBoundingClientRect(), k = kaplama.getBoundingClientRect(); hud = { x0: r.left - k.left - O.gw / 2, x1: r.right - k.left + O.gw / 2, y: r.bottom - k.top + 13 * O.o + 3 }; }
   if (s) for (const [uid, b] of birimler) {
     const i = sim.birimler.findIndex(u => u.uid === uid), a = s[i]; b._cubuk = null; if (!a || a.olu) continue;
     izGuncelle(b, a, dt);
     const p = ekran(b.kok.position.clone().add(new THREE.Vector3(0, 1.12 * (b.kok.userData.vfxBoy || 1) + 0.12, 0)));
     if (p.z > 1) continue;
+    if (hud && p.x > hud.x0 && p.x < hud.x1 && p.y < hud.y) p.y = hud.y;
     liste.push({ b, a, x: p.x, y: p.y, ox: 0, oy: 0 });
   }
   // kalabalık: çakışan çubukları dikeyde (aynı sıradalarsa yatayda da) birkaç px ayır; hedef ofset yumuşatılır

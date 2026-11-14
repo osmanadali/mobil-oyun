@@ -55,6 +55,11 @@
     ayaz:      { ad: 'Ayaz',         m: 'Bütün düşmanlara 70 hasar, 3 sn -%40 saldırı hızı.' },
     golgeOk:   { ad: 'Gölge Oku',    m: 'Canı en az düşmana 320 hasar.' },
     yildirim:  { ad: 'Yıldırım',     m: '3 rastgele düşmana 150 hasar, 0,6 sn sersemletir.' },
+    // canavar yetenekleri (bölüm 5.5)
+    akrepZehir:  { ad: 'Akrep Zehri',     m: 'Hedefi 4 sn zehirler (60/sn).' },
+    balinaSarki: { ad: 'Balina Şarkısı',  m: 'Bütün düşmanlara 110 hasar.' },
+    bekciDarbe:  { ad: 'Bekçi Darbesi',   m: 'Hedefe 250 hasar, 1,5 sn sersemletir.' },
+    yildizYutan: { ad: 'Yıldız Yutan',    m: 'En yakın 3 düşmana 220 hasar.' },
   };
   const PASIF = {
     tasDeri:      { ad: 'Taş Deri',      m: 'Alınan hasar -%20.' },
@@ -73,6 +78,8 @@
     kisNefesi:    { ad: 'Kış Nefesi',    m: 'Savaşa %50 mana ile başlar.' },
     avKoku:       { ad: 'Av Kokusu',     m: 'Canı %30’un altındaki düşmana 2 kat hasar.' },
     gokGurultu:   { ad: 'Gök Gürültüsü', m: 'Her 4. vuruş yakındaki 2 düşmana sıçrar.' },
+    // canavar pasifi
+    dikenKirpi:   { ad: 'Diken Sırt',    m: 'Aldığı yakın vuruş hasarının %15’ini saldırgana geri verir.' },
   };
 
   // ── Alametler: her tur başında görünen tur kuralı (taslağı her tur değiştirir). ──
@@ -87,8 +94,118 @@
     { id: 'yaz',      ad: 'Yaz Sıcağı',   emoji: '☀️', m: 'Od soyu 2 kat yakar; Ayaz soyu -%15 can.' },
   ];
 
+  // ── Eşyalar (OYNANIS_DERINLIK.md bölüm 5). Bileşen istatistikleri tam eşyada toplanır: tam eşya = iki bileşen + kendi etkisi. ──
+  // stat alanları: atk (saldırı çarpanı), as (saldırı hızı, hizCarpan'a eklenir), yg (yetenek gücü), mana0 (savaşa başlarken mana),
+  // azalt (alınan hasar azaltma; eşyalardan en çok %40), can (azami can), cal (vuruşta can çalma), kalkan0 (savaş başı kalkan).
+  const BILESENLER = [
+    { id: 'dis',   ad: 'Diş',   simge: 'b_dis',   stat: { atk: 0.15 },   m: '+%15 saldırı' },
+    { id: 'tuy',   ad: 'Tüy',   simge: 'b_tuy',   stat: { as: 0.15 },    m: '+%15 saldırı hızı' },
+    { id: 'kor',   ad: 'Kor',   simge: 'b_kor',   stat: { yg: 0.2 },     m: '+%20 yetenek gücü' },
+    { id: 'ciy',   ad: 'Çiy',   simge: 'b_ciy',   stat: { mana0: 15 },   m: 'Savaşa +15 mana ile başlar' },
+    { id: 'kabuk', ad: 'Kabuk', simge: 'b_kabuk', stat: { azalt: 0.1 },  m: 'Alınan hasar −%10' },
+    { id: 'yurek', ad: 'Yürek', simge: 'b_yurek', stat: { can: 180 },    m: '+180 can' },
+    { id: 'pul',   ad: 'Pul',   simge: 'b_pul',   stat: { cal: 0.1 },    m: '%10 can çalma (vuruşta)' },
+    { id: 'buz',   ad: 'Buz',   simge: 'b_buz',   stat: { kalkan0: 120 }, m: 'Savaş başında 120 kalkan' },
+  ];
+  // 36 tam eşya: tarif sırası önemsiz (Diş+Tüy = Tüy+Diş). Sıra tablo 5.3 ile aynı (simge e01…e36).
+  const ESYALAR = [
+    ['yirticiPence', 'Yırtıcı Pençe', 'dis', 'dis', 'Her 3. vuruş, hedefin azami canının %8\'i kadar ek hasar.'],
+    ['avCoskusu', 'Av Coşkusu', 'dis', 'tuy', 'Takımından biri düşman öldürünce 3 sn +%40 saldırı hızı.'],
+    ['kizginDis', 'Kızgın Diş', 'dis', 'kor', 'Yeteneğinin vurduğu her düşman 3 sn yanar: 30/sn ×★×YG.'],
+    ['keskinGoz', 'Keskin Göz', 'dis', 'ciy', 'Vuruş başına mana 10 yerine 15.'],
+    ['ofkeTilsimi', 'Öfke Tılsımı', 'dis', 'kabuk', 'Canı ilk kez yarının altına inince 5 sn +%35 saldırı ve −%20 alınan hasar.'],
+    ['devYumrugu', 'Dev Yumruğu', 'dis', 'yurek', 'Vuruşlar, kendi azami canının %2\'si kadar ek hasar verir.'],
+    ['geceAvcisi', 'Gece Avcısı', 'dis', 'pul', 'Bir düşmanı öldürünce onun azami canının %20\'si kadar iyileşir.'],
+    ['buzMizragi', 'Buz Mızrağı', 'dis', 'buz', 'Her yeni hedefe ilk vuruşu 0,8 sn sersemletir.'],
+    ['yelKanadi', 'Yel Kanadı', 'tuy', 'tuy', 'Her 5. vuruşun ardından anında bir vuruş daha yapar.'],
+    ['simsekTuyu', 'Şimşek Tüyü', 'tuy', 'kor', 'Her 5. vuruşta hedefe en yakın 2 düşmana 70 ×★×YG yıldırım.'],
+    ['ruzgarCani', 'Rüzgâr Çanı', 'tuy', 'ciy', 'Yetenek kullandıktan sonra 3 sn +%40 saldırı hızı.'],
+    ['sisPelerini', 'Sis Pelerini', 'tuy', 'kabuk', 'Savaşın ilk 2,5 sn\'si hedef alınamaz.'],
+    ['bulutNali', 'Bulut Nalı', 'tuy', 'yurek', 'Hareket hızı +%50; savaştaki ilk vuruşu 2 kat.'],
+    ['geceKanadi', 'Gece Kanadı', 'tuy', 'pul', 'Canı ilk kez %30\'un altına inince 3 sn +%60 saldırı hızı ve %30 can çalma.'],
+    ['karTanesi', 'Kar Tanesi', 'tuy', 'buz', 'Vuruşları hedefe 2 sn −%15 saldırı hızı verir.'],
+    ['kutOcagi', 'Kut Ocağı', 'kor', 'kor', 'Kut ile patlayan yeteneği ×1,5.'],
+    ['bilgeAsasi', 'Bilge Asası', 'kor', 'ciy', 'Yeteneğin ardından 25 mana geri kazanır.'],
+    ['tasMuhur', 'Taş Mühür', 'kor', 'kabuk', 'Her yetenek kullanımında kendine 120 ×★×YG kalkan.'],
+    ['canAtesi', 'Can Ateşi', 'kor', 'yurek', 'Her yetenek, en yaralı dosta 100 ×★×YG iyileştirme de verir.'],
+    ['golgeMurekkebi', 'Gölge Mürekkebi', 'kor', 'pul', 'Can çalma yetenek hasarına da uygulanır, yeteneklerde %25 olur.'],
+    ['ayazAsasi', 'Ayaz Asası', 'kor', 'buz', 'Yeteneğin vurduğu düşmanlar 2 sn −%30 saldırı hızı alır.'],
+    ['dolunayTestisi', 'Dolunay Testisi', 'ciy', 'ciy', 'Yetenek için gereken mana −%20.'],
+    ['sabirTasi', 'Sabır Taşı', 'ciy', 'kabuk', 'Hasar alınca kazanılan mana iki katı.'],
+    ['sifaPinari', 'Şifa Pınarı', 'ciy', 'yurek', 'Saniyede azami canının %2\'si kadar iyileşir.'],
+    ['ruhTestisi', 'Ruh Testisi', 'ciy', 'pul', 'Bir dost ölünce 30 mana kazanır ve azami canının %10\'u kadar iyileşir.'],
+    ['buzPinari', 'Buz Pınarı', 'ciy', 'buz', 'Yetenek kullanınca 2 hücre içindeki dostlara 80 ×★ kalkan.'],
+    ['anaKaya', 'Ana Kaya', 'kabuk', 'kabuk', 'Canı ilk kez %40\'ın altına inince 2 sn hiç hasar almaz.'],
+    ['devKukremesi', 'Dev Kükremesi', 'kabuk', 'yurek', 'Savaş başında 2,5 hücre içindeki düşmanlar 3 sn yalnız onu hedef alır.'],
+    ['dikenKabuk', 'Diken Kabuk', 'kabuk', 'pul', 'Aldığı yakın vuruş hasarının %25\'ini saldırgana geri verir.'],
+    ['buzulZirh', 'Buzul Zırh', 'kabuk', 'buz', 'Ona vuran 2 sn −%20 saldırı hızı alır.'],
+    ['uluKok', 'Ulu Kök', 'yurek', 'yurek', 'Savaş başında 2 hücre içindeki dostlara +150 azami can.'],
+    ['geceYuregi', 'Gece Yüreği', 'yurek', 'pul', 'Ölünce 2 hücre içindeki dostlara kendi azami canının %25\'i kadar kalkan.'],
+    ['buzDagi', 'Buz Dağı', 'yurek', 'buz', 'Savaş başında azami canının %20\'si kadar ek kalkan.'],
+    ['golgePelerini', 'Gölge Pelerini', 'pul', 'pul', 'Bir düşmanı öldürünce 1,5 sn hedef alınamaz.'],
+    ['karaBuz', 'Kara Buz', 'pul', 'buz', 'Canı ilk kez yarının altına inince 2 hücre içindeki düşmanlar 1 sn sersemler.'],
+    ['isikKalkani', 'Işık Kalkanı', 'buz', 'buz', 'Savaş başında 2 hücre içindeki dostlara 120 kalkan.'],
+  ].map(([id, ad, a, b, m], i) => ({ id, ad, tarif: [a, b], m, simge: 'e' + String(i + 1).padStart(2, '0') }));
+  // Özel eşyalar (tarifle yapılmaz). Soy Mührü kimliği 'muhur-<soy>' (ör. muhur-ates).
+  const OZEL_ESYA = [
+    { id: 'sokumTasi', ad: 'Söküm Taşı', simge: 'o_sokum', m: 'Bir kahramana bırakılınca bütün eşyalarını rafa geri indirir; taş harcanır.' },
+    { id: 'kutTasi', ad: 'Kut Taşı', simge: 'o_kuttasi', m: 'Yuva kaplar. Taşıyana Kut verilince Kut Yankısı iki kat çalışır.' },
+    { id: 'muhur', ad: 'Soy Mührü', simge: 'o_muhur', m: 'Yuva kaplar. Taşıyan bu soyu da taşır.' },
+  ];
+
+  // ── Canavarlar (OYNANIS_DERINLIK.md 5.5): soyları yok, kahraman havuzuna girmez, kademe 0. Yeteneksizlerin manası 9999.
+  // gorunum: 3D modeli gelene kadar sahnede yerine gösterilen kahraman modeli (yalnız görsel; motor kullanmaz).
+  const CANAVARLAR = [
+    { id: 'cakil',      ad: 'Çakıl Kıpırı', emoji: '🪨', renk: '#9a8f80', gorunum: 'golem',      can: 280,  atk: 22,  as: 0.70, menzil: 1, mana: 9999, yetenek: null,          pasif: null },
+    { id: 'kirpi',      ad: 'Diken Kirpi',  emoji: '🦔', renk: '#a0764e', gorunum: 'kaplumbaga', can: 420,  atk: 30,  as: 0.80, menzil: 1, mana: 9999, yetenek: null,          pasif: 'dikenKirpi' },
+    { id: 'tasKabuk',   ad: 'Taş Kabuk',    emoji: '🐚', renk: '#8c8c8c', gorunum: 'kaplumbaga', can: 900,  atk: 28,  as: 0.50, menzil: 1, mana: 9999, yetenek: null,          pasif: null },
+    { id: 'kumAkrebi',  ad: 'Kum Akrebi',   emoji: '🦂', renk: '#d4a95a', gorunum: 'semender',   can: 700,  atk: 50,  as: 0.80, menzil: 1, mana: 9999, yetenek: null,          pasif: null },
+    { id: 'anaAkrep',   ad: 'Ana Akrep',    emoji: '🦂', renk: '#b8742c', gorunum: 'semender',   can: 1500, atk: 70,  as: 0.70, menzil: 1, mana: 80,   yetenek: 'akrepZehir',  pasif: null },
+    { id: 'gokBalinasi',ad: 'Gök Balinası', emoji: '🐋', renk: '#7fb8e6', gorunum: 'kugu',       can: 5200, atk: 85,  as: 0.50, menzil: 3, mana: 100,  yetenek: 'balinaSarki', pasif: null },
+    { id: 'kadimBekci', ad: 'Kadim Bekçi',  emoji: '🗿', renk: '#8a9a7a', gorunum: 'golem',      can: 3200, atk: 110, as: 0.60, menzil: 1, mana: 90,   yetenek: 'bekciDarbe',  pasif: null },
+    { id: 'yildizYiyen',ad: 'Yıldız Yiyen', emoji: '🌌', renk: '#5a3f9a', gorunum: 'ejder',      can: 9000, atk: 140, as: 0.60, menzil: 3, mana: 100,  yetenek: 'yildizYutan', pasif: null },
+  ].map(c => ({ ...c, kademe: 0, soy: [] }));
+  // Canavar dalgaları: 'bölüm-tur' → birimler (taraf 1'de; x sütun 0..3, y sıra 0 ön | 1 orta | 2 arka). 6. bölüm ve sonrası: PVE_DALGA_GEC.
+  const PVE_DALGA = {
+    '1-1': [['cakil', 1, 0], ['cakil', 2, 0]],
+    '1-2': [['cakil', 1, 0], ['cakil', 2, 0], ['cakil', 0, 0]],
+    '1-3': [['tasKabuk', 1, 0], ['kirpi', 2, 0], ['kirpi', 0, 1]],
+    '2-7': [['kumAkrebi', 1, 0], ['kumAkrebi', 2, 0], ['kumAkrebi', 0, 0], ['anaAkrep', 2, 1]],
+    '3-7': [['gokBalinasi', 1, 2]],
+    '4-7': [['kadimBekci', 1, 0], ['kadimBekci', 2, 0]],
+    '5-7': [['yildizYiyen', 1, 2]],
+  };
+  const PVE_DALGA_GEC = [['yildizYiyen', 1, 2], ['kadimBekci', 1, 0], ['kadimBekci', 2, 0]];
+
+  // ── Ganimet planı (bölüm 5.4). Toplam değer herkes için aynı, yalnız türü değişir (kötü şans koruması).
+  // Parçalar: bilesen (n rastgele bileşen), altin (n), kahraman (bir kademe-k kahraman, ★1), secim (n farklı eşyadan biri seçilir; tur 'bilesen'|'tam'),
+  // zarf (ZARF tablosundan biri), esya (sabit kimlik). Kervan turlarının ganimeti KERVAN tablosunda. Anahtar 'bölüm-tur'.
+  const GANIMET = {
+    '1-1': [{ tip: 'bilesen', n: 1 }],
+    '1-2': [{ tip: 'kahraman', kademe: 1 }, { tip: 'altin', n: 2 }],
+    '1-3': [{ tip: 'secim', tur: 'bilesen', n: 2 }, { tip: 'altin', n: 2 }],
+    '2-7': [{ tip: 'bilesen', n: 1 }, { tip: 'zarf' }],
+    '3-7': [{ tip: 'bilesen', n: 2 }, { tip: 'altin', n: 3 }],
+    '4-7': [{ tip: 'secim', tur: 'tam', n: 3 }],
+    '5-7': [{ tip: 'esya', id: 'kutTasi' }, { tip: 'esya', id: 'sokumTasi' }],
+  };
+  // 6. bölüm ve sonrası: tur → ganimet (6-7 ve sonrası: 3 tam eşyadan biri)
+  const GANIMET_GEC = { 7: [{ tip: 'secim', tur: 'tam', n: 3 }] };
+  // 2-7 zarfı: ağırlık w (toplam 1)
+  const ZARF = [{ tip: 'altin', n: 3, w: 0.4 }, { tip: 'bilesen', n: 1, w: 0.3 }, { tip: 'kahraman', kademe: 2, w: 0.3 }];
+  // Kervan (x-4): her seçenek bir kahraman + üstünde bir eşya. secenek satırları seçenek sırasıyla döner (n % uzunluk);
+  // kademe dizisinde birden çok değer varsa biri eşit olasılıkla seçilir. kaynasmis: ilk seçenek hazır kaynaşmış [kademe, kademe] birim.
+  // Anahtar bölüm; KERVAN_GEC_BOLUM ve sonrası son satırı kullanır.
+  const KERVAN = {
+    2: { secenek: [{ kademe: [1, 2], s: 1 }], esya: 'bilesen' },
+    3: { kaynasmis: [2, 1], secenek: [{ kademe: [2, 3], s: 1 }], esya: 'bilesen' },
+    4: { secenek: [{ kademe: [3], s: 1 }, { kademe: [2], s: 2 }], esya: 'bilesen' },
+    5: { secenek: [{ kademe: [3], s: 1 }], esya: 'tam' },
+  };
+
   // ── Hızlı Maç: prototipin kuralları (her tur 10 altın, seviye yok, 5 can / 7 zafer, tura bağlı takım ve dükkân) ──
   const HIZLI = {
+    gunBatimi: null,        // Hızlı Maç'ta Gün Batımı yok (eski savaşlar bit bit aynı kalır)
     altinTur: 10,           // her tur yeniden 10 altın (faiz yok → kartopu yok, geride kalan toparlar)
     yenile: 1, kaynastir: 3,
     yedek: 4,
@@ -145,16 +262,42 @@
     galibiyetBonus: 1, pazarBonus: 2,           // önceki PvP savaşı kazanıldıysa +1; Bereketli Pazar +2
     yenile: 2,                                  // yenileme 2 altın (Hızlı Maç'ta 1)
     kaynastirTaban: 2,                          // kaynaştırma = 2 + en yüksek kademe (3–5); lobi.kaynastirBedel
-    // ganimetin altın kısmı (bölüm 5.4); bileşenler ve kahramanlar ganimet adımında eklenir. Anahtar 'bölüm-tur'.
-    ganimetAltin: { '1-2': 2, '1-3': 2, '3-7': 3 },
+    // savaş içi Gün Batımı (bölüm 1.4): basla. saniyeden sonra her tam saniye bütün hasar +%10 (carpan = 1 + artis × floor(t − basla))
+    gunBatimi: { basla: 20, artis: 0.10 },
+    // bölüm 1: 1-1'den önce bedava seçilen kademe-1 kahraman sayısı
+    baslangicSecenek: 3,
+    // ganimet (bölüm 5.4): GANIMET, GANIMET_GEC (ganimetGecBolum ve sonrası), ZARF; sabit altın kısmı lobi.ganimetAltin ile turSonu'nda eklenir
+    ganimet: GANIMET, ganimetGec: GANIMET_GEC, ganimetGecBolum: 6, zarf: ZARF,
+    // Kervan (5.4): seçenekler; sıralamaya göre seçenek sayısı (indeks = sıra 1..8): 1–2. 3, 3–4. 4, 5–8. 5
+    kervan: KERVAN, kervanGecBolum: 5, kervanAdet: [0, 3, 3, 4, 4, 5, 5, 5, 5],
+    // canavar dalgaları (5.5)
+    pveDalga: PVE_DALGA, pveDalgaGec: PVE_DALGA_GEC, pveDalgaGecBolum: 6,
     // kaybedince alınan hasar (bölüm 4.4): bölüm tabanı + kazanan taraftaki sağ birimlerin yıldızları
     bolumTabani: [0, 0, 2, 5, 8, 12, 15, 18],   // indeks = bölüm (7 ve sonrası son değer); bölüm 1 canavar, hasar yok
     sonUcEk: 3, sonIkiEk: 5,                    // lobide 3 kişi kalınca taban +3, 2 kişi kalınca +5
+    // eşyalar (bölüm 5): birim başına 3 yuva, raf en çok 10, eşyalardan alınan hasar azaltma en çok %40
+    esyaYuva: 3, esyaRaf: 10, esyaAzaltTavan: 0.4,
     hizli: HIZLI,
   };
 
-  const api = { SOYLAR, KAHRAMANLAR, YETENEK, PASIF, ALAMETLER, KURAL, KADEME_OLASILIK,
-    kahraman: (id) => KAHRAMANLAR.find(k => k.id === id) };
+  // Eşya arama: bileşen → {tip: 'bilesen'}, tam eşya → {tip: 'tam'}, özel → {tip: 'ozel'}; 'muhur-<soy>' → Soy Mührü (soy alanıyla). Bilinmeyen → null.
+  const _esya = {};
+  for (const b of BILESENLER) _esya[b.id] = { ...b, tip: 'bilesen' };
+  for (const e of ESYALAR) _esya[e.id] = { ...e, tip: 'tam' };
+  for (const o of OZEL_ESYA) if (o.id !== 'muhur') _esya[o.id] = { ...o, tip: 'ozel' };
+  function esya(id) {
+    if (typeof id !== 'string') return null;
+    if (Object.prototype.hasOwnProperty.call(_esya, id)) return _esya[id];
+    if (id.startsWith('muhur-') && Object.prototype.hasOwnProperty.call(SOYLAR, id.slice(6))) { const m = OZEL_ESYA[2], s = id.slice(6); return { ...m, id, tip: 'ozel', soy: s, ad: m.ad + ' (' + SOYLAR[s].ad + ')' }; }
+    return null;
+  }
+  // İki bileşenin tam eşyası (sıra önemsiz); yoksa null.
+  function tarif(a, b) { for (const e of ESYALAR) if ((e.tarif[0] === a && e.tarif[1] === b) || (e.tarif[0] === b && e.tarif[1] === a)) return e.id; return null; }
+
+  // kahraman(id): bulamazsa CANAVARLAR'a bakar (canavarın kademe 0, soy []). canavar(id): yalnız canavarlar.
+  const canavar = (id) => CANAVARLAR.find(c => c.id === id);
+  const api = { SOYLAR, KAHRAMANLAR, YETENEK, PASIF, ALAMETLER, KURAL, KADEME_OLASILIK, BILESENLER, ESYALAR, OZEL_ESYA, CANAVARLAR, esya, tarif, canavar,
+    kahraman: (id) => KAHRAMANLAR.find(k => k.id === id) || canavar(id) };
   g.KUT_DATA = api;
   if (typeof module !== 'undefined') module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

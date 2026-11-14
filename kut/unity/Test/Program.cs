@@ -25,16 +25,23 @@ foreach (var v in kok.GetProperty("savas").EnumerateArray())
     {
         int svA = v.TryGetProperty("sv", out var s1) ? s1.GetInt32() : 0, svB = v.TryGetProperty("svB", out var s2) ? s2.GetInt32() : 0;
         var a2 = KutHayalet.BotTakim(v.GetProperty("tur").GetInt32(), v.GetProperty("tohumA").GetDouble(), v.GetProperty("gucA").GetDouble(), svA);
-        var b2 = KutHayalet.BotTakim(v.GetProperty("tur").GetInt32(), v.GetProperty("tohumB").GetDouble(), v.GetProperty("gucB").GetDouble(), svB);
+        bool pve = v.TryGetProperty("pveR", out var pr);
+        var b2 = pve ? KutLobi.PveDalga(pr.GetInt32()) : KutHayalet.BotTakim(v.GetProperty("tur").GetInt32(), v.GetProperty("tohumB").GetDouble(), v.GetProperty("gucB").GetDouble(), svB);
+        if (v.TryGetProperty("esyaR", out var er)) a2 = KutHayalet.BotEsya(a2, er.GetInt32(), v.GetProperty("tohumA").GetDouble());
+        if (v.TryGetProperty("esyaRB", out var erb)) b2 = KutHayalet.BotEsya(b2, erb.GetInt32(), v.GetProperty("tohumB").GetDouble());
         if (!Ayni(a2, A) || !Ayni(b2, B)) { takimHata++; if (takimHata < 4) Console.WriteLine($"✗ vaka {i}: bot takımı farklı"); }
     }
-    var kod = v.GetProperty("kod").GetString(); var ad = KutHayalet.Coz(kod);
-    if (ad == null || !Ayni(ad.Takim, A) || KutHayalet.Kodla(A, ad.Ad) != kod) { kodHata++; if (kodHata < 4) Console.WriteLine($"✗ vaka {i}: düello kodu farklı"); }
+    if (v.TryGetProperty("kod", out var kodE))
+    {
+        var kod = kodE.GetString(); var ad = KutHayalet.Coz(kod);
+        if (ad == null || !Ayni(ad.Takim, A) || KutHayalet.Kodla(A, ad.Ad) != kod) { kodHata++; if (kodHata < 4) Console.WriteLine($"✗ vaka {i}: düello kodu farklı"); }
+    }
 
     var o = v.GetProperty("opt");
     var kut = o.TryGetProperty("kut", out var ke) ? ke.EnumerateArray().Select(k => new KutKaydi { T = k.GetProperty("t").GetDouble(), Taraf = k.GetProperty("taraf").GetInt32(), I = k.GetProperty("i").GetInt32() }).ToList() : null;
     var yz = o.TryGetProperty("yz", out var ye) ? ye.EnumerateArray().Select(x => x.GetInt32()).ToArray() : null;
-    var sv = new KutSavas(A, B, o.GetProperty("tohum").GetDouble(), o.GetProperty("alamet").GetString(), kut, yz);
+    double? gb = o.TryGetProperty("gunBatimi", out var gbE) ? gbE.GetDouble() : (double?)null;
+    var sv = new KutSavas(A, B, o.GetProperty("tohum").GetDouble(), o.GetProperty("alamet").GetString(), kut, yz, gunBatimi: gb);
     int n = 0; while (!sv.Bitti && n < 100000) { sv.Adim(); n++; }
     var s = v.GetProperty("sonuc"); var so = s.GetProperty("sonuc");
     var hp = s.GetProperty("hp").EnumerateArray().Select(x => x.GetDouble()).ToArray();
@@ -168,6 +175,76 @@ foreach (var z in ek.GetProperty("zincir").EnumerateArray())
 Console.WriteLine($"{e1} ekonomi vakası (tur planı, gelir, seri, hasar, kaynaştırma, ganimet, {zTur} turluk zincirler): {e1 - eHata} aynı");
 toplamHata += eHata;
 
-int toplam = i + k1 + k2 + x1 + h1 + d1 + e1;
+// ── 7) eşyalar: birim istatistiği, takma, toplama, raf birleştirme, ganimet ──
+var es = kok.GetProperty("esya");
+int q1 = 0, qHata = 0;
+void EsKontrol(bool ok, string ne) { q1++; if (!ok) { qHata++; if (qHata < 8) Console.WriteLine($"✗ eşya: {ne}"); } }
+static List<string> Liste(JsonElement e) => e.EnumerateArray().Select(z => z.GetString()).ToList();
+foreach (var v in es.GetProperty("stat").EnumerateArray())
+{
+    var st = KutMotor.BirimStatHesapla(Birim(v.GetProperty("b"))); var c = v.GetProperty("sonuc");
+    var yk = c.GetProperty("yanki").EnumerateObject().ToDictionary(p => p.Name, p => p.Value.GetInt32());
+    bool ok = st.Can == c.GetProperty("can").GetDouble() && st.Atk == c.GetProperty("atk").GetDouble() && st.AsEk == c.GetProperty("asEk").GetDouble()
+        && st.Yg == c.GetProperty("yg").GetDouble() && st.Mana0 == c.GetProperty("mana0").GetDouble() && st.Azalt == c.GetProperty("azalt").GetDouble()
+        && st.Cal == c.GetProperty("cal").GetDouble() && st.Kalkan0 == c.GetProperty("kalkan0").GetDouble() && st.KutTasi == c.GetProperty("kutTasi").GetInt32()
+        && st.Esya.SequenceEqual(Liste(c.GetProperty("esya"))) && st.Soy.SequenceEqual(Liste(c.GetProperty("soy")))
+        && yk.Count == st.KutYanki.Count && yk.All(p => st.KutYanki.TryGetValue(p.Key, out int n) && n == p.Value);
+    EsKontrol(ok, $"istatistik {q1}: can {st.Can}/{c.GetProperty("can").GetDouble()} atk {st.Atk}/{c.GetProperty("atk").GetDouble()}");
+}
+foreach (var v in es.GetProperty("tak").EnumerateArray())
+{
+    var r = KutLobi.EsyaTak(Birim(v.GetProperty("b")), v.GetProperty("id").GetString()); var c = v.GetProperty("sonuc");
+    bool ok = c.ValueKind == JsonValueKind.Null ? r == null
+        : r != null && r.E.SequenceEqual(Liste(c.GetProperty("e"))) && r.Birlesen == (c.GetProperty("birlesen").ValueKind == JsonValueKind.Null ? null : c.GetProperty("birlesen").GetString());
+    EsKontrol(ok, $"takma {q1}");
+}
+foreach (var v in es.GetProperty("topla").EnumerateArray())
+{
+    var ls = v.GetProperty("listeler").EnumerateArray().Select(l => (IList<string>)Liste(l)).ToList();
+    var r = KutLobi.EsyaToplaBirim(Birim(v.GetProperty("b")), ls); var c = v.GetProperty("sonuc");
+    EsKontrol(r.E.SequenceEqual(Liste(c.GetProperty("e"))) && r.Tasan.SequenceEqual(Liste(c.GetProperty("tasan"))), $"toplama {q1}");
+}
+foreach (var v in es.GetProperty("raf").EnumerateArray())
+{
+    var r = KutLobi.RafBirlestir(Liste(v.GetProperty("raf")), v.GetProperty("i").GetInt32(), v.GetProperty("j").GetInt32()); var c = v.GetProperty("sonuc");
+    EsKontrol(c.ValueKind == JsonValueKind.Null ? r == null : r != null && r.SequenceEqual(Liste(c)), $"raf {q1}");
+}
+foreach (var v in es.GetProperty("ganimet").EnumerateArray())
+    EsKontrol(KutLobi.GanimetEsya(v.GetProperty("r").GetInt32(), new KutRng(v.GetProperty("tohum").GetDouble())).SequenceEqual(Liste(v.GetProperty("sonuc"))), $"ganimet {q1}");
+Console.WriteLine($"{q1} eşya vakası (istatistik, takma, toplama, raf, ganimet): {q1 - qHata} aynı");
+toplamHata += qHata;
+
+// ── 8) canavar dalgaları, ganimet, Kervan, bedava kahraman seçimi ──
+var cv = kok.GetProperty("canavar");
+int c1 = 0, cHata = 0;
+void CKontrol(bool ok, string ne) { c1++; if (!ok) { cHata++; if (cHata < 8) Console.WriteLine($"✗ canavar: {ne}"); } }
+static Dictionary<string, int> Kalan(JsonElement e) => e.ValueKind == JsonValueKind.Null ? null : e.EnumerateObject().ToDictionary(p => p.Name, p => p.Value.GetInt32());
+static bool BirimAyni(TakimBirimi a, JsonElement e) => a.H == e.GetProperty("h").GetString() && a.S == e.GetProperty("s").GetInt32()
+    && a.F == (e.TryGetProperty("f", out var f) ? f.GetString() : null);
+{ int r = 0; foreach (var v in cv.GetProperty("pveDalga").EnumerateArray()) { var d = KutLobi.PveDalga(r); CKontrol(Ayni(d, Takim(v)), $"dalga r {r}"); r++; } }
+foreach (var v in cv.GetProperty("ganimet").EnumerateArray())
+{
+    int r = v.GetProperty("r").GetInt32(); var g = KutLobi.Ganimet(r, new KutRng(v.GetProperty("tohum").GetDouble()), Kalan(v.GetProperty("kalan"))); var c = v.GetProperty("sonuc");
+    var ks = c.GetProperty("kahraman").EnumerateArray().ToList();
+    bool ok = g.Altin == c.GetProperty("altin").GetInt32() && g.EkAltin == c.GetProperty("ekAltin").GetInt32() && g.Esya.SequenceEqual(Liste(c.GetProperty("esya")))
+        && g.Kahraman.Count == ks.Count && g.Kahraman.Zip(ks).All(p => BirimAyni(p.First, p.Second))
+        && (c.GetProperty("secim").ValueKind == JsonValueKind.Null ? g.Secim == null : g.Secim != null && g.Secim.SequenceEqual(Liste(c.GetProperty("secim"))))
+        && g.Zarf == (c.GetProperty("zarf").ValueKind == JsonValueKind.Null ? null : c.GetProperty("zarf").GetString());
+    CKontrol(ok, $"ganimet r {r}");
+}
+foreach (var v in cv.GetProperty("kervan").EnumerateArray())
+{
+    int r = v.GetProperty("r").GetInt32();
+    var l = KutLobi.KervanSecenek(r, new KutRng(v.GetProperty("tohum").GetDouble()), v.GetProperty("adet").GetInt32(), Kalan(v.GetProperty("kalan")));
+    var c = v.GetProperty("sonuc").EnumerateArray().ToList();
+    CKontrol(l.Count == c.Count && l.Zip(c).All(p => BirimAyni(p.First.Birim, p.Second.GetProperty("birim")) && p.First.Esya == p.Second.GetProperty("esya").GetString()), $"Kervan r {r}");
+}
+foreach (var v in cv.GetProperty("baslangic").EnumerateArray())
+    CKontrol(KutLobi.BaslangicSecenek(new KutRng(v.GetProperty("tohum").GetDouble()), Kalan(v.GetProperty("kalan"))).SequenceEqual(Liste(v.GetProperty("sonuc"))), "bedava seçim");
+{ int s0 = -1; foreach (var v in cv.GetProperty("kervanAdet").EnumerateArray()) { CKontrol(KutLobi.KervanAdet(s0) == v.GetInt32(), $"Kervan adet {s0}"); s0++; } }
+Console.WriteLine($"{c1} canavar/ganimet vakası (dalga, ganimet, Kervan, bedava seçim): {c1 - cHata} aynı");
+toplamHata += cHata;
+
+int toplam = i + k1 + k2 + x1 + h1 + d1 + e1 + q1 + c1;
 Console.WriteLine($"TOPLAM: {toplam - toplamHata}/{toplam} birebir aynı");
 return toplamHata == 0 ? 0 : 1;

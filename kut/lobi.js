@@ -1,7 +1,8 @@
 /* KUT ARENA — seviyeli maçın saf, belirlenimci kuralları (tarayıcı + node). C# karşılığı: unity/Kod/KutLobi.cs.
    Şimdilik: deneyim ve seviye, sınırlı kahraman havuzu, seviyeye bağlı dükkân çekimi (OYNANIS_DERINLIK.md 2.1–2.3),
-   tur planı (1.1), birikimli ekonomi (3: gelir, faiz, seri, galibiyet, ganimet altını) ve kaybedince alınan hasar (4.4).
-   Sonraki adımlarda eşleşme, hasar, sıralama ve Kervan da buraya gelir (bölüm 12.4).
+   tur planı (1.1), birikimli ekonomi (3: gelir, faiz, seri, galibiyet, ganimet altını), kaybedince alınan hasar (4.4),
+   eşya kuralları (5.1), canavar dalgaları (5.5), ganimet ve Kervan seçenekleri (5.4), bölüm 1'in bedava kahraman seçimi (1.1).
+   Sonraki adımlarda eşleşme, lobi hasarı ve sıralama da buraya gelir (bölüm 12.4).
    Kurallar: Math.random / Date yok; rastgelelik yalnız dışarıdan verilen mulberry32 (sim.rng) ile; döngüler hep KAHRAMANLAR sırasıyla. */
 (function (g) {
   const D = g.KUT_DATA || (typeof require !== 'undefined' ? require('./data.js') : null);
@@ -94,8 +95,13 @@
   }
   // Kaynaştırma bedeli: 2 + iki kahramanın en yüksek kademesi (3–5).
   function kaynastirBedel(ka, kb) { return K.kaynastirTaban + Math.max(ka, kb || 0); }
-  // Ganimetin altın kısmı (bölüm 5.4).
-  function ganimetAltin(r) { return K.ganimetAltin[turAd(r)] || 0; }
+  // Turun ganimet planı (bölüm 5.4): GANIMET['bölüm-tur'], 6. bölüm ve sonrası GANIMET_GEC[tur]. Kervan turunda boş (seçenekler kervanSecenek'te).
+  function ganimetPlan(r) {
+    const p = turPlan(r);
+    return (p.bolum >= K.ganimetGecBolum ? K.ganimetGec[p.tur] : K.ganimet[p.bolum + '-' + p.tur]) || [];
+  }
+  // Ganimetin sabit altın kısmı (bölüm 5.4): turSonu ekler. Zarftan çıkan altın ganimet().ekAltin'dedir.
+  function ganimetAltin(r) { return ganimetPlan(r).reduce((s, x) => s + (x.tip === 'altin' ? x.n : 0), 0); }
 
   // ── Kaybedince alınan hasar (bölüm 4.4) ──
   function bolumTaban(bolum, yasayan) {
@@ -132,8 +138,134 @@
     return o;
   }
 
+  // ── Eşyalar (bölüm 5.1) ──
+  // Birimin taşıdığı soylar: kahraman + kaynaşan kahraman + Soy Mühürleri (sim.birimStat ile aynı sıra).
+  function birimSoy(b) {
+    const soy = D.kahraman(b.h).soy.slice();
+    if (b.f) for (const s of D.kahraman(b.f).soy) if (!soy.includes(s)) soy.push(s);
+    for (const id of (b.e || []).slice(0, K.esyaYuva)) { const x = D.esya(id); if (x && x.soy && !soy.includes(x.soy)) soy.push(x.soy); }
+    return soy;
+  }
+  /** Birime eşya takma kuralı (saf). Bileşen, birimdeki ilk tamamlanmamış bileşenle kendiliğinden tam eşyaya dönüşür (dolu birimde de);
+      yoksa boş yuvaya takılır (en çok 3). Söküm Taşı takılmaz. Soy Mührü, birimin zaten taşıdığı soyu veremez.
+      Dönen: { e: yeni eşya listesi, birlesen: oluşan tam eşya ya da null }; takılamıyorsa null. */
+  function esyaTak(b, id) {
+    const x = D.esya(id); if (!x || id === 'sokumTasi') return null;
+    const e = (b.e || []).slice(0, K.esyaYuva);
+    if (x.tip === 'bilesen') {
+      for (let j = 0; j < e.length; j++) { const y = D.esya(e[j]); if (y && y.tip === 'bilesen') { const t = D.tarif(e[j], id); e[j] = t; return { e, birlesen: t }; } }
+    }
+    if (e.length >= K.esyaYuva) return null;
+    if (x.soy && birimSoy(b).includes(x.soy)) return null;
+    e.push(id); return { e, birlesen: null };
+  }
+  /** ★ birleşmesinde ve kaynaştırmada eşyaların toplanması: listeler sırayla (önce birinci birim) yeni birime takılır;
+      takılamayanlar (3'ü aşan, tekrar mühür) rafa döner. b: oluşan birim (soy denetimi için; e alanı yok sayılır). */
+  function esyaToplaBirim(b, listeler) {
+    let u = { ...b, e: [] }; const tasan = [];
+    for (const l of listeler) for (const id of (l || [])) { const t = esyaTak(u, id); if (t) u = { ...u, e: t.e }; else tasan.push(id); }
+    return { e: u.e, tasan };
+  }
+  /** Rafta iki bileşeni birleştir: tam eşya küçük indekse yazılır, öbürü çıkar. İkisi de bileşen değilse null. */
+  function rafBirlestir(raf, i, j) {
+    if (i === j || !raf[i] || !raf[j]) return null;
+    const a = D.esya(raf[i]), b = D.esya(raf[j]);
+    if (!a || !b || a.tip !== 'bilesen' || b.tip !== 'bilesen') return null;
+    const t = D.tarif(raf[i], raf[j]), k = Math.min(i, j), z = Math.max(i, j), out = raf.slice();
+    out[k] = t; out.splice(z, 1); return out;
+  }
+  // ── Canavar turu, ganimet ve Kervan (bölüm 5.4, 5.5) ──
+  // Canavar dalgası: 'bölüm-tur' → birimler (★1), 6. bölüm ve sonrası PVE_DALGA_GEC. Canavar turu değilse boş.
+  function pveDalga(r) {
+    const p = turPlan(r); if (p.tip !== 'pve') return [];
+    const l = p.bolum >= K.pveDalgaGecBolum ? K.pveDalgaGec : (K.pveDalga[p.bolum + '-' + p.tur] || []);
+    return l.map(([h, x, y]) => ({ h, s: 1, x, y }));
+  }
+  // Havuz kopyası: kalan verilmezse tam havuz. Sıra hep KAHRAMANLAR sırası.
+  function havuzKopya(kalan) { const k = {}; for (const h of D.KAHRAMANLAR) k[h.id] = kalan ? (kalan[h.id] || 0) : K.havuzAdet[h.kademe]; return k; }
+  /** Kademe-kd kahraman: en az `kopya` kopyası kalanlar arasından kalan sayısıyla ağırlıklı; seçilenin kopyası k'dan düşer.
+      O kademede yeterli kopya kalmadıysa kademedeki kahramanlardan eşit olasılıkla (havuz düşülmez). Her çağrı tam 1 zar atar. */
+  function kahramanCek(kd, k, R, kopya = 1) {
+    const aday = D.KAHRAMANLAR.filter(h => h.kademe === kd && k[h.id] >= kopya), top = aday.reduce((s, h) => s + k[h.id], 0);
+    if (top <= 0) { const hep = D.KAHRAMANLAR.filter(h => h.kademe === kd); return hep[Math.floor(R() * hep.length)].id; }
+    let x = R() * top, sec = aday[aday.length - 1];
+    for (const h of aday) { x -= k[h.id]; if (x < 0) { sec = h; break; } }
+    k[sec.id] -= kopya; return sec.id;
+  }
+  const rastBilesen = (R) => D.BILESENLER[Math.floor(R() * D.BILESENLER.length)].id;
+  const rastTam = (R) => D.ESYALAR[Math.floor(R() * D.ESYALAR.length)].id;
+  // n farklı eşya (bileşen ya da tam), çekiliş sırasıyla.
+  function farkliEsya(tur, n, R) {
+    const l = (tur === 'tam' ? D.ESYALAR : D.BILESENLER).map(x => x.id), out = [];
+    for (let i = 0; i < n && l.length; i++) out.push(l.splice(Math.floor(R() * l.length), 1)[0]);
+    return out;
+  }
+  /** Canavar turunun ganimeti (bölüm 5.4; kaybedilse de verilir). R: oyuncuya özel sim.rng; kalan: havuzda kalan kopyalar (kahraman ganimeti için).
+      Dönen: { altin (toplam), ekAltin (zarftan; sabit kısım ganimetAltin ile turSonu'nda), esya [kimlik], kahraman [{h, s}],
+      secim: null | [kimlik] (biri seçilir), zarf: null | 'altin' | 'bilesen' | 'kahraman' }. Parçalar plan sırasıyla zar atar. */
+  function ganimet(r, R, kalan) {
+    const out = { altin: 0, ekAltin: 0, esya: [], kahraman: [], secim: null, zarf: null }, k = havuzKopya(kalan);
+    for (const x of ganimetPlan(r)) {
+      if (x.tip === 'bilesen') for (let i = 0; i < x.n; i++) out.esya.push(rastBilesen(R));
+      else if (x.tip === 'altin') out.altin += x.n;
+      else if (x.tip === 'kahraman') out.kahraman.push({ h: kahramanCek(x.kademe, k, R), s: 1 });
+      else if (x.tip === 'secim') out.secim = farkliEsya(x.tur, x.n, R);
+      else if (x.tip === 'esya') out.esya.push(x.id);
+      else if (x.tip === 'zarf') {
+        const z = R(); let top = 0, sec = K.zarf[K.zarf.length - 1];
+        for (const y of K.zarf) { top += y.w; if (z < top) { sec = y; break; } }
+        out.zarf = sec.tip;
+        if (sec.tip === 'altin') { out.altin += sec.n; out.ekAltin += sec.n; }
+        else if (sec.tip === 'bilesen') for (let i = 0; i < sec.n; i++) out.esya.push(rastBilesen(R));
+        else if (sec.tip === 'kahraman') out.kahraman.push({ h: kahramanCek(sec.kademe, k, R), s: 1 });
+      }
+    }
+    return out;
+  }
+  // Kervan seçenek sayısı: sıralamada geride olan çok görür (1–2. 3, 3–4. 4, 5–8. 5).
+  function kervanAdet(sira) { return K.kervanAdet[Math.max(1, Math.min(K.kervanAdet.length - 1, sira | 0))]; }
+  /** Kervan seçenekleri (bölüm 5.4): [{ birim: {h, s, f?, sh?, sf?}, esya }], adet kadar. Kervan turu değilse boş.
+      Seçenekler sırasıyla: (kaynaşmış ilk seçenek: iki kahraman zarı) ya da (kademe zarı, birden çok kademe varsa + kahraman zarı), sonra eşya zarı.
+      ★2 seçenek havuzdan 3 kopya tutar. kalan verilmezse tam havuz (botlar). */
+  function kervanSecenek(r, R, adet, kalan) {
+    const p = turPlan(r); if (p.tip !== 'kervan') return [];
+    const plan = K.kervan[Math.min(p.bolum, K.kervanGecBolum)], k = havuzKopya(kalan), out = [];
+    for (let n = 0; n < adet; n++) {
+      let birim;
+      if (plan.kaynasmis && n === 0) {
+        const h = kahramanCek(plan.kaynasmis[0], k, R), f = kahramanCek(plan.kaynasmis[1], k, R);
+        birim = { h, f, s: 1, sh: 1, sf: 1 };
+      } else {
+        const sp = plan.secenek[n % plan.secenek.length];
+        const kd = sp.kademe.length > 1 ? sp.kademe[Math.floor(R() * sp.kademe.length)] : sp.kademe[0];
+        birim = { h: kahramanCek(kd, k, R, K.yildizKopya[sp.s]), s: sp.s };
+      }
+      out.push({ birim, esya: plan.esya === 'tam' ? rastTam(R) : rastBilesen(R) });
+    }
+    return out;
+  }
+  /** Bot ve hayaletler için turun eşya ganimeti: seçimlerde ilk seçenek, Kervan'da ilk seçeneğin eşyası (kahramanlar alınmaz). */
+  function ganimetEsya(r, R) {
+    if (turPlan(r).tip === 'kervan') { const l = kervanSecenek(r, R, kervanAdet(1), null); return l.length ? [l[0].esya] : []; }
+    const g = ganimet(r, R, null);
+    return g.secim ? [...g.esya, g.secim[0]] : g.esya;
+  }
+  /** Bölüm 1: 1-1'den önce bedava seçilecek farklı kademe-1 kahramanlar (havuzda kalanla ağırlıklı). */
+  function baslangicSecenek(R, kalan, adet = K.baslangicSecenek) {
+    const k = havuzKopya(kalan), out = [];
+    for (let n = 0; n < adet; n++) {
+      const aday = D.KAHRAMANLAR.filter(h => h.kademe === 1 && k[h.id] > 0 && !out.includes(h.id)), top = aday.reduce((s, h) => s + k[h.id], 0);
+      if (top <= 0) break;
+      let x = R() * top, sec = aday[aday.length - 1];
+      for (const h of aday) { x -= k[h.id]; if (x < 0) { sec = h; break; } }
+      out.push(sec.id);
+    }
+    return out;
+  }
+
   const api = { xpGerek, xpEkle, kopyaSay, havuzKalan, kademeZar, dukkanCek,
-    turPlan, turAd, tabanGelir, faiz, seriBonus, gelirHesapla, seriGuncelle, kaynastirBedel, ganimetAltin, bolumTaban, kayipHasar, turBasi, turSonu };
+    turPlan, turAd, tabanGelir, faiz, seriBonus, gelirHesapla, seriGuncelle, kaynastirBedel, ganimetPlan, ganimetAltin, bolumTaban, kayipHasar, turBasi, turSonu,
+    birimSoy, esyaTak, esyaToplaBirim, rafBirlestir, pveDalga, kahramanCek, ganimet, kervanAdet, kervanSecenek, ganimetEsya, baslangicSecenek };
   g.KUT_LOBI = api;
   if (typeof module !== 'undefined') module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

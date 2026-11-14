@@ -7,6 +7,18 @@ namespace Kut
     public sealed class Kahraman { public string Id, Ad, Emoji, Renk, Yetenek, Pasif; public int Kademe, Menzil; public string[] Soy; public double Can, Atk, As, Mana; }
     public sealed class Metin { public string Ad, M; }
     public sealed class Alamet { public string Id, Ad, Emoji, M; }
+    /// <summary>Bileşen istatistiği (tam eşyada iki bileşeninki toplanır).</summary>
+    public sealed class EsyaStat { public double Atk, As, Yg, Mana0, Azalt, Can, Cal, Kalkan0; }
+    /// <summary>Eşya: Tip "bilesen" | "tam" | "ozel". Tam eşyada Tarif iki bileşen; Soy Mührü'nde Soy dolu.</summary>
+    public sealed class Esya { public string Id, Ad, Simge, M, Tip, Soy; public string[] Tarif; public EsyaStat Stat; }
+    /// <summary>Ganimet parçası (OYNANIS_DERINLIK.md 5.4). Tip: "bilesen" | "altin" | "kahraman" | "secim" | "zarf" | "esya"; Tur (seçimde): "bilesen" | "tam"; W: zarf ağırlığı.</summary>
+    public sealed class GanimetParca { public string Tip, Tur, Id; public int N, Kademe; public double W; }
+    /// <summary>Kervan seçenek satırı: kademe adayları ve yıldız.</summary>
+    public sealed class KervanSatir { public int[] Kademe; public int S; }
+    /// <summary>Bir bölümün Kervan planı: Kaynasmis (ilk seçenek hazır kaynaşmış, [kademe, kademe]) ya da null; Esya "bilesen" | "tam".</summary>
+    public sealed class KervanPlan { public int[] Kaynasmis; public KervanSatir[] Secenek; public string Esya; }
+    /// <summary>Canavar dalgasındaki birim: canavar kimliği ve tahta konumu (taraf 1).</summary>
+    public sealed class DalgaBirim { public string H; public int X, Y; }
 
     public static class KutVeri
     {
@@ -42,6 +54,18 @@ namespace Kut
             new Kahraman { Id = "ejder", Ad = "Fırtına Ejderi", Emoji = "🐉", Renk = "#ffd84a", Kademe = 3, Soy = new[] { "ates", "bilge" }, Can = 560.0, Atk = 46.0, As = 0.75, Menzil = 3, Mana = 110.0, Yetenek = "yildirim", Pasif = "gokGurultu" },
         };
 
+        /// <summary>Canavarlar (5.5): kademe 0, soy yok; yeteneksizlerin manası 9999. KahramanBul bunlara da bakar.</summary>
+        public static readonly Kahraman[] Canavarlar = {
+            new Kahraman { Id = "cakil", Ad = "Çakıl Kıpırı", Emoji = "🪨", Renk = "#9a8f80", Kademe = 0, Soy = new string[0], Can = 280.0, Atk = 22.0, As = 0.7, Menzil = 1, Mana = 9999.0, Yetenek = null, Pasif = null },
+            new Kahraman { Id = "kirpi", Ad = "Diken Kirpi", Emoji = "🦔", Renk = "#a0764e", Kademe = 0, Soy = new string[0], Can = 420.0, Atk = 30.0, As = 0.8, Menzil = 1, Mana = 9999.0, Yetenek = null, Pasif = "dikenKirpi" },
+            new Kahraman { Id = "tasKabuk", Ad = "Taş Kabuk", Emoji = "🐚", Renk = "#8c8c8c", Kademe = 0, Soy = new string[0], Can = 900.0, Atk = 28.0, As = 0.5, Menzil = 1, Mana = 9999.0, Yetenek = null, Pasif = null },
+            new Kahraman { Id = "kumAkrebi", Ad = "Kum Akrebi", Emoji = "🦂", Renk = "#d4a95a", Kademe = 0, Soy = new string[0], Can = 700.0, Atk = 50.0, As = 0.8, Menzil = 1, Mana = 9999.0, Yetenek = null, Pasif = null },
+            new Kahraman { Id = "anaAkrep", Ad = "Ana Akrep", Emoji = "🦂", Renk = "#b8742c", Kademe = 0, Soy = new string[0], Can = 1500.0, Atk = 70.0, As = 0.7, Menzil = 1, Mana = 80.0, Yetenek = "akrepZehir", Pasif = null },
+            new Kahraman { Id = "gokBalinasi", Ad = "Gök Balinası", Emoji = "🐋", Renk = "#7fb8e6", Kademe = 0, Soy = new string[0], Can = 5200.0, Atk = 85.0, As = 0.5, Menzil = 3, Mana = 100.0, Yetenek = "balinaSarki", Pasif = null },
+            new Kahraman { Id = "kadimBekci", Ad = "Kadim Bekçi", Emoji = "🗿", Renk = "#8a9a7a", Kademe = 0, Soy = new string[0], Can = 3200.0, Atk = 110.0, As = 0.6, Menzil = 1, Mana = 90.0, Yetenek = "bekciDarbe", Pasif = null },
+            new Kahraman { Id = "yildizYiyen", Ad = "Yıldız Yiyen", Emoji = "🌌", Renk = "#5a3f9a", Kademe = 0, Soy = new string[0], Can = 9000.0, Atk = 140.0, As = 0.6, Menzil = 3, Mana = 100.0, Yetenek = "yildizYutan", Pasif = null },
+        };
+
         public static readonly Dictionary<string, Metin> Yetenekler = new Dictionary<string, Metin> {
             { "tasFirlat", new Metin { Ad = "Kaya Fırlat", M = "Hedefe 200 hasar, 1,5 sn sersemletir." } },
             { "uluma", new Metin { Ad = "Uluma", M = "Kendisi ve 2 hücredeki dostlar 4 sn +%45 saldırı hızı." } },
@@ -59,6 +83,10 @@ namespace Kut
             { "ayaz", new Metin { Ad = "Ayaz", M = "Bütün düşmanlara 70 hasar, 3 sn -%40 saldırı hızı." } },
             { "golgeOk", new Metin { Ad = "Gölge Oku", M = "Canı en az düşmana 320 hasar." } },
             { "yildirim", new Metin { Ad = "Yıldırım", M = "3 rastgele düşmana 150 hasar, 0,6 sn sersemletir." } },
+            { "akrepZehir", new Metin { Ad = "Akrep Zehri", M = "Hedefi 4 sn zehirler (60/sn)." } },
+            { "balinaSarki", new Metin { Ad = "Balina Şarkısı", M = "Bütün düşmanlara 110 hasar." } },
+            { "bekciDarbe", new Metin { Ad = "Bekçi Darbesi", M = "Hedefe 250 hasar, 1,5 sn sersemletir." } },
+            { "yildizYutan", new Metin { Ad = "Yıldız Yutan", M = "En yakın 3 düşmana 220 hasar." } },
         };
 
         public static readonly Dictionary<string, Metin> Pasifler = new Dictionary<string, Metin> {
@@ -78,6 +106,64 @@ namespace Kut
             { "kisNefesi", new Metin { Ad = "Kış Nefesi", M = "Savaşa %50 mana ile başlar." } },
             { "avKoku", new Metin { Ad = "Av Kokusu", M = "Canı %30’un altındaki düşmana 2 kat hasar." } },
             { "gokGurultu", new Metin { Ad = "Gök Gürültüsü", M = "Her 4. vuruş yakındaki 2 düşmana sıçrar." } },
+            { "dikenKirpi", new Metin { Ad = "Diken Sırt", M = "Aldığı yakın vuruş hasarının %15’ini saldırgana geri verir." } },
+        };
+
+        /// <summary>Sekiz bileşen (OYNANIS_DERINLIK.md 5.2).</summary>
+        public static readonly Esya[] Bilesenler = {
+            new Esya { Id = "dis", Ad = "Diş", Simge = "b_dis", M = "+%15 saldırı", Tip = "bilesen", Stat = new EsyaStat { Atk = 0.15 } },
+            new Esya { Id = "tuy", Ad = "Tüy", Simge = "b_tuy", M = "+%15 saldırı hızı", Tip = "bilesen", Stat = new EsyaStat { As = 0.15 } },
+            new Esya { Id = "kor", Ad = "Kor", Simge = "b_kor", M = "+%20 yetenek gücü", Tip = "bilesen", Stat = new EsyaStat { Yg = 0.2 } },
+            new Esya { Id = "ciy", Ad = "Çiy", Simge = "b_ciy", M = "Savaşa +15 mana ile başlar", Tip = "bilesen", Stat = new EsyaStat { Mana0 = 15.0 } },
+            new Esya { Id = "kabuk", Ad = "Kabuk", Simge = "b_kabuk", M = "Alınan hasar −%10", Tip = "bilesen", Stat = new EsyaStat { Azalt = 0.1 } },
+            new Esya { Id = "yurek", Ad = "Yürek", Simge = "b_yurek", M = "+180 can", Tip = "bilesen", Stat = new EsyaStat { Can = 180.0 } },
+            new Esya { Id = "pul", Ad = "Pul", Simge = "b_pul", M = "%10 can çalma (vuruşta)", Tip = "bilesen", Stat = new EsyaStat { Cal = 0.1 } },
+            new Esya { Id = "buz", Ad = "Buz", Simge = "b_buz", M = "Savaş başında 120 kalkan", Tip = "bilesen", Stat = new EsyaStat { Kalkan0 = 120.0 } },
+        };
+        /// <summary>36 tam eşya (5.3), tablo sırasıyla.</summary>
+        public static readonly Esya[] Esyalar = {
+            new Esya { Id = "yirticiPence", Ad = "Yırtıcı Pençe", Simge = "e01", M = "Her 3. vuruş, hedefin azami canının %8'i kadar ek hasar.", Tip = "tam", Tarif = new[] { "dis", "dis" } },
+            new Esya { Id = "avCoskusu", Ad = "Av Coşkusu", Simge = "e02", M = "Takımından biri düşman öldürünce 3 sn +%40 saldırı hızı.", Tip = "tam", Tarif = new[] { "dis", "tuy" } },
+            new Esya { Id = "kizginDis", Ad = "Kızgın Diş", Simge = "e03", M = "Yeteneğinin vurduğu her düşman 3 sn yanar: 30/sn ×★×YG.", Tip = "tam", Tarif = new[] { "dis", "kor" } },
+            new Esya { Id = "keskinGoz", Ad = "Keskin Göz", Simge = "e04", M = "Vuruş başına mana 10 yerine 15.", Tip = "tam", Tarif = new[] { "dis", "ciy" } },
+            new Esya { Id = "ofkeTilsimi", Ad = "Öfke Tılsımı", Simge = "e05", M = "Canı ilk kez yarının altına inince 5 sn +%35 saldırı ve −%20 alınan hasar.", Tip = "tam", Tarif = new[] { "dis", "kabuk" } },
+            new Esya { Id = "devYumrugu", Ad = "Dev Yumruğu", Simge = "e06", M = "Vuruşlar, kendi azami canının %2'si kadar ek hasar verir.", Tip = "tam", Tarif = new[] { "dis", "yurek" } },
+            new Esya { Id = "geceAvcisi", Ad = "Gece Avcısı", Simge = "e07", M = "Bir düşmanı öldürünce onun azami canının %20'si kadar iyileşir.", Tip = "tam", Tarif = new[] { "dis", "pul" } },
+            new Esya { Id = "buzMizragi", Ad = "Buz Mızrağı", Simge = "e08", M = "Her yeni hedefe ilk vuruşu 0,8 sn sersemletir.", Tip = "tam", Tarif = new[] { "dis", "buz" } },
+            new Esya { Id = "yelKanadi", Ad = "Yel Kanadı", Simge = "e09", M = "Her 5. vuruşun ardından anında bir vuruş daha yapar.", Tip = "tam", Tarif = new[] { "tuy", "tuy" } },
+            new Esya { Id = "simsekTuyu", Ad = "Şimşek Tüyü", Simge = "e10", M = "Her 5. vuruşta hedefe en yakın 2 düşmana 70 ×★×YG yıldırım.", Tip = "tam", Tarif = new[] { "tuy", "kor" } },
+            new Esya { Id = "ruzgarCani", Ad = "Rüzgâr Çanı", Simge = "e11", M = "Yetenek kullandıktan sonra 3 sn +%40 saldırı hızı.", Tip = "tam", Tarif = new[] { "tuy", "ciy" } },
+            new Esya { Id = "sisPelerini", Ad = "Sis Pelerini", Simge = "e12", M = "Savaşın ilk 2,5 sn'si hedef alınamaz.", Tip = "tam", Tarif = new[] { "tuy", "kabuk" } },
+            new Esya { Id = "bulutNali", Ad = "Bulut Nalı", Simge = "e13", M = "Hareket hızı +%50; savaştaki ilk vuruşu 2 kat.", Tip = "tam", Tarif = new[] { "tuy", "yurek" } },
+            new Esya { Id = "geceKanadi", Ad = "Gece Kanadı", Simge = "e14", M = "Canı ilk kez %30'un altına inince 3 sn +%60 saldırı hızı ve %30 can çalma.", Tip = "tam", Tarif = new[] { "tuy", "pul" } },
+            new Esya { Id = "karTanesi", Ad = "Kar Tanesi", Simge = "e15", M = "Vuruşları hedefe 2 sn −%15 saldırı hızı verir.", Tip = "tam", Tarif = new[] { "tuy", "buz" } },
+            new Esya { Id = "kutOcagi", Ad = "Kut Ocağı", Simge = "e16", M = "Kut ile patlayan yeteneği ×1,5.", Tip = "tam", Tarif = new[] { "kor", "kor" } },
+            new Esya { Id = "bilgeAsasi", Ad = "Bilge Asası", Simge = "e17", M = "Yeteneğin ardından 25 mana geri kazanır.", Tip = "tam", Tarif = new[] { "kor", "ciy" } },
+            new Esya { Id = "tasMuhur", Ad = "Taş Mühür", Simge = "e18", M = "Her yetenek kullanımında kendine 120 ×★×YG kalkan.", Tip = "tam", Tarif = new[] { "kor", "kabuk" } },
+            new Esya { Id = "canAtesi", Ad = "Can Ateşi", Simge = "e19", M = "Her yetenek, en yaralı dosta 100 ×★×YG iyileştirme de verir.", Tip = "tam", Tarif = new[] { "kor", "yurek" } },
+            new Esya { Id = "golgeMurekkebi", Ad = "Gölge Mürekkebi", Simge = "e20", M = "Can çalma yetenek hasarına da uygulanır, yeteneklerde %25 olur.", Tip = "tam", Tarif = new[] { "kor", "pul" } },
+            new Esya { Id = "ayazAsasi", Ad = "Ayaz Asası", Simge = "e21", M = "Yeteneğin vurduğu düşmanlar 2 sn −%30 saldırı hızı alır.", Tip = "tam", Tarif = new[] { "kor", "buz" } },
+            new Esya { Id = "dolunayTestisi", Ad = "Dolunay Testisi", Simge = "e22", M = "Yetenek için gereken mana −%20.", Tip = "tam", Tarif = new[] { "ciy", "ciy" } },
+            new Esya { Id = "sabirTasi", Ad = "Sabır Taşı", Simge = "e23", M = "Hasar alınca kazanılan mana iki katı.", Tip = "tam", Tarif = new[] { "ciy", "kabuk" } },
+            new Esya { Id = "sifaPinari", Ad = "Şifa Pınarı", Simge = "e24", M = "Saniyede azami canının %2'si kadar iyileşir.", Tip = "tam", Tarif = new[] { "ciy", "yurek" } },
+            new Esya { Id = "ruhTestisi", Ad = "Ruh Testisi", Simge = "e25", M = "Bir dost ölünce 30 mana kazanır ve azami canının %10'u kadar iyileşir.", Tip = "tam", Tarif = new[] { "ciy", "pul" } },
+            new Esya { Id = "buzPinari", Ad = "Buz Pınarı", Simge = "e26", M = "Yetenek kullanınca 2 hücre içindeki dostlara 80 ×★ kalkan.", Tip = "tam", Tarif = new[] { "ciy", "buz" } },
+            new Esya { Id = "anaKaya", Ad = "Ana Kaya", Simge = "e27", M = "Canı ilk kez %40'ın altına inince 2 sn hiç hasar almaz.", Tip = "tam", Tarif = new[] { "kabuk", "kabuk" } },
+            new Esya { Id = "devKukremesi", Ad = "Dev Kükremesi", Simge = "e28", M = "Savaş başında 2,5 hücre içindeki düşmanlar 3 sn yalnız onu hedef alır.", Tip = "tam", Tarif = new[] { "kabuk", "yurek" } },
+            new Esya { Id = "dikenKabuk", Ad = "Diken Kabuk", Simge = "e29", M = "Aldığı yakın vuruş hasarının %25'ini saldırgana geri verir.", Tip = "tam", Tarif = new[] { "kabuk", "pul" } },
+            new Esya { Id = "buzulZirh", Ad = "Buzul Zırh", Simge = "e30", M = "Ona vuran 2 sn −%20 saldırı hızı alır.", Tip = "tam", Tarif = new[] { "kabuk", "buz" } },
+            new Esya { Id = "uluKok", Ad = "Ulu Kök", Simge = "e31", M = "Savaş başında 2 hücre içindeki dostlara +150 azami can.", Tip = "tam", Tarif = new[] { "yurek", "yurek" } },
+            new Esya { Id = "geceYuregi", Ad = "Gece Yüreği", Simge = "e32", M = "Ölünce 2 hücre içindeki dostlara kendi azami canının %25'i kadar kalkan.", Tip = "tam", Tarif = new[] { "yurek", "pul" } },
+            new Esya { Id = "buzDagi", Ad = "Buz Dağı", Simge = "e33", M = "Savaş başında azami canının %20'si kadar ek kalkan.", Tip = "tam", Tarif = new[] { "yurek", "buz" } },
+            new Esya { Id = "golgePelerini", Ad = "Gölge Pelerini", Simge = "e34", M = "Bir düşmanı öldürünce 1,5 sn hedef alınamaz.", Tip = "tam", Tarif = new[] { "pul", "pul" } },
+            new Esya { Id = "karaBuz", Ad = "Kara Buz", Simge = "e35", M = "Canı ilk kez yarının altına inince 2 hücre içindeki düşmanlar 1 sn sersemler.", Tip = "tam", Tarif = new[] { "pul", "buz" } },
+            new Esya { Id = "isikKalkani", Ad = "Işık Kalkanı", Simge = "e36", M = "Savaş başında 2 hücre içindeki dostlara 120 kalkan.", Tip = "tam", Tarif = new[] { "buz", "buz" } },
+        };
+        /// <summary>Özel eşyalar. Soy Mührü kimliği "muhur-<soy>".</summary>
+        public static readonly Esya[] OzelEsyalar = {
+            new Esya { Id = "sokumTasi", Ad = "Söküm Taşı", Simge = "o_sokum", M = "Bir kahramana bırakılınca bütün eşyalarını rafa geri indirir; taş harcanır.", Tip = "ozel" },
+            new Esya { Id = "kutTasi", Ad = "Kut Taşı", Simge = "o_kuttasi", M = "Yuva kaplar. Taşıyana Kut verilince Kut Yankısı iki kat çalışır.", Tip = "ozel" },
+            new Esya { Id = "muhur", Ad = "Soy Mührü", Simge = "o_muhur", M = "Yuva kaplar. Taşıyan bu soyu da taşır.", Tip = "ozel" },
         };
 
         public static readonly Alamet[] Alametler = {
@@ -119,8 +205,23 @@ namespace Kut
         public static readonly int[] BolumTabani = { 0, 0, 2, 5, 8, 12, 15, 18 };
         /// <summary>Bölüm → Kut Armağanı'nın geldiği tur.</summary>
         public static readonly Dictionary<int, int> ArmaganTur = new Dictionary<int, int> { { 2, 1 }, { 3, 2 }, { 4, 3 } };
-        /// <summary>"bölüm-tur" → ganimetin altın kısmı.</summary>
-        public static readonly Dictionary<string, int> GanimetAltin = new Dictionary<string, int> { { "1-2", 2 }, { "1-3", 2 }, { "3-7", 3 } };
+        public const int EsyaYuva = 3, EsyaRaf = 10;
+        public const double EsyaAzaltTavan = 0.4;
+        /// <summary>Ganimet planı (5.4): "bölüm-tur" → parçalar. GanimetGecBolum ve sonrası GanimetGec (tur → parçalar).</summary>
+        public static readonly Dictionary<string, GanimetParca[]> Ganimet = new Dictionary<string, GanimetParca[]> { { "1-1", new[] { new GanimetParca { Tip = "bilesen", N = 1 } } }, { "1-2", new[] { new GanimetParca { Tip = "kahraman", Kademe = 1 }, new GanimetParca { Tip = "altin", N = 2 } } }, { "1-3", new[] { new GanimetParca { Tip = "secim", Tur = "bilesen", N = 2 }, new GanimetParca { Tip = "altin", N = 2 } } }, { "2-7", new[] { new GanimetParca { Tip = "bilesen", N = 1 }, new GanimetParca { Tip = "zarf" } } }, { "3-7", new[] { new GanimetParca { Tip = "bilesen", N = 2 }, new GanimetParca { Tip = "altin", N = 3 } } }, { "4-7", new[] { new GanimetParca { Tip = "secim", Tur = "tam", N = 3 } } }, { "5-7", new[] { new GanimetParca { Tip = "esya", Id = "kutTasi" }, new GanimetParca { Tip = "esya", Id = "sokumTasi" } } } };
+        public static readonly Dictionary<int, GanimetParca[]> GanimetGec = new Dictionary<int, GanimetParca[]> { { 7, new[] { new GanimetParca { Tip = "secim", Tur = "tam", N = 3 } } } };
+        /// <summary>2-7 zarfı: ağırlıklı (W) parçalar.</summary>
+        public static readonly GanimetParca[] Zarf = new[] { new GanimetParca { Tip = "altin", N = 3, W = 0.4 }, new GanimetParca { Tip = "bilesen", N = 1, W = 0.3 }, new GanimetParca { Tip = "kahraman", Kademe = 2, W = 0.3 } };
+        public const int GanimetGecBolum = 6, KervanGecBolum = 5, PveDalgaGecBolum = 6, BaslangicSecenek = 3;
+        /// <summary>Kervan planı (5.4): bölüm → plan; KervanGecBolum ve sonrası son satır.</summary>
+        public static readonly Dictionary<int, KervanPlan> Kervan = new Dictionary<int, KervanPlan> { { 2, new KervanPlan { Kaynasmis = null, Secenek = new[] { new KervanSatir { Kademe = new[] { 1, 2 }, S = 1 } }, Esya = "bilesen" } }, { 3, new KervanPlan { Kaynasmis = new[] { 2, 1 }, Secenek = new[] { new KervanSatir { Kademe = new[] { 2, 3 }, S = 1 } }, Esya = "bilesen" } }, { 4, new KervanPlan { Kaynasmis = null, Secenek = new[] { new KervanSatir { Kademe = new[] { 3 }, S = 1 }, new KervanSatir { Kademe = new[] { 2 }, S = 2 } }, Esya = "bilesen" } }, { 5, new KervanPlan { Kaynasmis = null, Secenek = new[] { new KervanSatir { Kademe = new[] { 3 }, S = 1 } }, Esya = "tam" } } };
+        /// <summary>İndeks = sıralama (1..8) → Kervan seçenek sayısı.</summary>
+        public static readonly int[] KervanAdet = { 0, 3, 3, 4, 4, 5, 5, 5, 5 };
+        /// <summary>Canavar dalgaları (5.5): "bölüm-tur" → birimler; PveDalgaGecBolum ve sonrası PveDalgaGec.</summary>
+        public static readonly Dictionary<string, DalgaBirim[]> PveDalga = new Dictionary<string, DalgaBirim[]> { { "1-1", new[] { new DalgaBirim { H = "cakil", X = 1, Y = 0 }, new DalgaBirim { H = "cakil", X = 2, Y = 0 } } }, { "1-2", new[] { new DalgaBirim { H = "cakil", X = 1, Y = 0 }, new DalgaBirim { H = "cakil", X = 2, Y = 0 }, new DalgaBirim { H = "cakil", X = 0, Y = 0 } } }, { "1-3", new[] { new DalgaBirim { H = "tasKabuk", X = 1, Y = 0 }, new DalgaBirim { H = "kirpi", X = 2, Y = 0 }, new DalgaBirim { H = "kirpi", X = 0, Y = 1 } } }, { "2-7", new[] { new DalgaBirim { H = "kumAkrebi", X = 1, Y = 0 }, new DalgaBirim { H = "kumAkrebi", X = 2, Y = 0 }, new DalgaBirim { H = "kumAkrebi", X = 0, Y = 0 }, new DalgaBirim { H = "anaAkrep", X = 2, Y = 1 } } }, { "3-7", new[] { new DalgaBirim { H = "gokBalinasi", X = 1, Y = 2 } } }, { "4-7", new[] { new DalgaBirim { H = "kadimBekci", X = 1, Y = 0 }, new DalgaBirim { H = "kadimBekci", X = 2, Y = 0 } } }, { "5-7", new[] { new DalgaBirim { H = "yildizYiyen", X = 1, Y = 2 } } } };
+        public static readonly DalgaBirim[] PveDalgaGec = new[] { new DalgaBirim { H = "yildizYiyen", X = 1, Y = 2 }, new DalgaBirim { H = "kadimBekci", X = 1, Y = 0 }, new DalgaBirim { H = "kadimBekci", X = 2, Y = 0 } };
+        /// <summary>Gün Batımı (1.4): GunBatimiBasla saniyesinden sonra her tam saniye hasar +GunBatimiArtis.</summary>
+        public const double GunBatimiBasla = 20.0, GunBatimiArtis = 0.1;
 
         /// <summary>Hızlı Maç: prototipin kuralları (data.js KURAL.hizli).</summary>
         public static class Hizli
@@ -135,10 +236,28 @@ namespace Kut
         static Dictionary<string, Kahraman> _kahraman;
         public static Kahraman KahramanBul(string id)
         {
-            if (_kahraman == null) { _kahraman = new Dictionary<string, Kahraman>(); foreach (var h in Kahramanlar) _kahraman[h.Id] = h; }
+            if (_kahraman == null) { _kahraman = new Dictionary<string, Kahraman>(); foreach (var h in Kahramanlar) _kahraman[h.Id] = h; foreach (var c in Canavarlar) if (!_kahraman.ContainsKey(c.Id)) _kahraman[c.Id] = c; }
             return _kahraman[id];
         }
+        /// <summary>Yalnız canavarlar; bulamazsa null.</summary>
+        public static Kahraman CanavarBul(string id) { foreach (var c in Canavarlar) if (c.Id == id) return c; return null; }
         public static int KahramanSira(string id) { for (int i = 0; i < Kahramanlar.Length; i++) if (Kahramanlar[i].Id == id) return i; return -1; }
         public static SoyBilgi SoyBul(string id) { foreach (var x in Soylar) if (x.Id == id) return x; return null; }
+        static Dictionary<string, Esya> _esya;
+        /// <summary>data.js esya(id): bileşen, tam eşya, özel; "muhur-<soy>" Soy Mührü. Bilinmeyen → null.</summary>
+        public static Esya EsyaBul(string id)
+        {
+            if (id == null) return null;
+            if (_esya == null) { _esya = new Dictionary<string, Esya>(); foreach (var b in Bilesenler) _esya[b.Id] = b; foreach (var e in Esyalar) _esya[e.Id] = e; foreach (var o in OzelEsyalar) if (o.Id != "muhur") _esya[o.Id] = o; }
+            if (_esya.TryGetValue(id, out var x)) return x;
+            if (id.StartsWith("muhur-", System.StringComparison.Ordinal) && SoyBul(id.Substring(6)) != null)
+            {
+                var m = OzelEsyalar[2]; var sy = id.Substring(6);
+                var yeni = new Esya { Id = id, Ad = m.Ad + " (" + SoyBul(sy).Ad + ")", Simge = m.Simge, M = m.M, Tip = "ozel", Soy = sy }; _esya[id] = yeni; return yeni;
+            }
+            return null;
+        }
+        /// <summary>İki bileşenin tam eşyası (sıra önemsiz); yoksa null.</summary>
+        public static string Tarif(string a, string b) { foreach (var e in Esyalar) if ((e.Tarif[0] == a && e.Tarif[1] == b) || (e.Tarif[0] == b && e.Tarif[1] == a)) return e.Id; return null; }
     }
 }

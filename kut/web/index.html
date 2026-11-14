@@ -398,6 +398,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .alametK .ay{width:38px;height:38px}
 .alametK b{display:block;font-size:16px}
 .alametK span{display:block;font-size:12px;color:#ffe2e8;font-weight:700}
+.alametK>div{min-width:0}.alametK>div>b,.alametK>div>span{overflow:hidden;text-overflow:ellipsis}   /* dar ekranda uzun alamet metni kesilir, taşmaz */
 .hizlar{position:absolute;right:12px;top:24%;display:flex;flex-direction:column;gap:8px;padding:8px}
 .hizlar .btn{width:58px;height:54px;padding:0;font-size:19px}
 .hizlar .btn.secik{outline:3px solid #fff3b0;outline-offset:1px}
@@ -454,8 +455,11 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .sonucBant .sDugmeler{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
 .sonucBant #sOzet{min-width:0;font-size:17px;padding:0 18px}
 .sonucBant #sOzet.secik{outline:3px solid #fff3b0;outline-offset:1px}
+#savas.bitti .kutAlan,#savas.bitti .kutParlama,#savas.bitti .duraklat,#savas.bitti .hizlar{display:none}
+/* alçak (yatay telefon) ekran: hız düğmeleri sağ üstte yatay sıra, Kut küçülür; ikisi üst üste binmesin */
+@media (max-height:520px){#savas .hizlar{top:72px;flex-direction:row;align-items:center;gap:6px;padding:5px}#savas .hizlar .btn{width:50px;height:44px;font-size:17px}#savas .hizlar small{display:none}#savas .kut{width:132px;height:132px}#savas .kut .isin{inset:-20px}#savas .kut .yz big{font-size:32px}}
 /* savaş sonu hasar özeti (sonuç bandının solunda açılır) */
-.hasarOzet{position:absolute;left:12px;top:74px;max-height:calc(100% - 86px);width:min(360px,calc(100% - 24px));z-index:6;display:flex;flex-direction:column;gap:8px;padding:10px 12px 10px;
+.hasarOzet{position:absolute;left:12px;top:92px;max-height:calc(100% - 104px);width:min(360px,calc(100% - 24px));z-index:6;display:flex;flex-direction:column;gap:8px;padding:10px 12px 10px;
   background:linear-gradient(180deg,rgba(36,16,64,.97),rgba(22,10,40,.97));box-shadow:0 0 0 2px var(--altinKK),0 10px 24px rgba(0,0,0,.55)}
 .hasarOzet[hidden]{display:none}
 .hasarOzet .ust{display:flex;align-items:center;justify-content:space-between}
@@ -488,7 +492,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .hasarOzet .c em{position:absolute;right:5px;top:-1px;font-style:normal;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);text-shadow:0 1px 1px #000}
 .hasarOzet .toplam{font-size:12px;font-weight:700;color:var(--soluk);text-align:center}
 .hasarOzet .toplam b{color:var(--yazi)}
-@media (max-height:520px){.hasarOzet{top:64px;max-height:calc(100% - 72px);gap:5px;padding:7px 10px}.hasarOzet .lejant{display:none}.hasarOzet .ust b{font-size:16px}.hasarOzet .kapat{width:40px;height:40px;min-width:40px;min-height:40px}.hasarOzet .sekmeler button{min-height:40px}}
+@media (max-height:520px){.hasarOzet{top:86px;max-height:calc(100% - 92px);gap:5px;padding:7px 10px}.hasarOzet .lejant{display:none}.hasarOzet .ust b{font-size:16px}.hasarOzet .kapat{width:40px;height:40px;min-width:40px;min-height:40px}.hasarOzet .sekmeler button{min-height:40px}}
 
 /* ===================== MAÇ SONU ===================== */
 #son .isinlar{position:absolute;left:50%;top:12%;width:120vmax;height:120vmax;transform:translate(-50%,-50%);border-radius:50%;

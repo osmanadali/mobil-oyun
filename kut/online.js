@@ -38,6 +38,22 @@
     }
     return yerlestir(takim);
   }
+  // ── Bot eşyaları: oyuncunun alacağı ganimetin aynısı (lobi.ganimetEsya, r'den önceki turlar), botun kendi tohumuyla.
+  // Bileşenler ikişer birleşir; tam eşyalar, Kut Taşı ve artan bileşen en yüksek kademeli (kademe × yıldız) birime yığılır, 3'e dolunca sonrakine (bölüm 4.8).
+  const lobiAl = () => g.KUT_LOBI || require('./lobi.js');
+  function botEsya(takim, r, tohum) {
+    const L = lobiAl(), bil = [], diger = [];
+    for (let rr = 0; rr < r; rr++) for (const id of L.ganimetEsya(rr, S.rng(tohum * 977 + rr * 7919))) (D.esya(id).tip === 'bilesen' ? bil : diger).push(id);
+    const liste = [];
+    for (let i = 0; i + 1 < bil.length; i += 2) liste.push(D.tarif(bil[i], bil[i + 1]));
+    for (const id of diger) if (id !== 'sokumTasi') liste.push(id);
+    if (bil.length % 2) liste.push(bil[bil.length - 1]);
+    const guc = (b) => D.kahraman(b.h).kademe * (b.s || 1);
+    const sira = takim.map((b, i) => i).sort((a, b) => guc(takim[b]) - guc(takim[a]));
+    const out = takim.map(b => ({ ...b }));
+    for (const id of liste) for (const i of sira) { const t = L.esyaTak(out[i], id); if (t) { out[i].e = t.e; break; } }
+    return out;
+  }
   // Seviyeli maçta botun seviyesi (r = 0'dan başlayan tur sırası). OYNANIS_DERINLIK.md 4.8 eğrisinin kaba hâli; bot izi gelince onun yerini alır.
   function botSeviye(r) { return r < 1 ? 2 : r < 5 ? 3 : r < 9 ? 4 : r < 12 ? 5 : r < 19 ? 6 : r < 26 ? 7 : 8; }
 
@@ -98,18 +114,20 @@
     },
     // rakip: önce uzak havuz (aynı tur, ±150 kupa, kendin değil), sonra bot
     // sv: seviyeli maçta rakibin seviyesi (verilmezse Hızlı Maç); mod: 'arena' | 'hizli' (uzak havuz ayrı tutar)
-    async bul({ tur, kupa, oyuncu, tohum, sv = 0, mod = 'hizli' }) {
+    // r: verilirse (seviyeli maç) bot, o tura kadarki eşya ganimetini taşır (botEsya)
+    async bul({ tur, kupa, oyuncu, tohum, sv = 0, mod = 'hizli', r = null }) {
       if (g.KUT_UZAK && (typeof navigator === 'undefined' || navigator.onLine !== false)) {
         try { const r = await g.KUT_UZAK.bul({ tur, kupa, oyuncu, mod }); if (r && r.takim && r.takim.length) return { ...r, kaynak: 'cevrimici' }; } catch (e) {}
       }
       const guc = Math.max(0, Math.min(1, 0.35 + kupa / 2000));
-      return { ad: botAd(tohum + tur), takim: botTakim(tur, tohum, guc, sv), kupa, kaynak: 'bot', ...(sv ? { seviye: sv } : {}) };
+      const takim = botTakim(tur, tohum, guc, sv);
+      return { ad: botAd(tohum + tur), takim: r !== null && r > 0 ? botEsya(takim, r, tohum) : takim, kupa, kaynak: 'bot', ...(sv ? { seviye: sv } : {}) };
     },
   };
   const ADLAR = ['Kara Bulut', 'Ak Doğan', 'Demir Yay', 'Mavi Kıvılcım', 'Yalın Kılıç', 'Gece Rüzgârı', 'Taş Yürek', 'Ay Kaya', 'Sessiz Ok', 'Kor Göz', 'Bulut Avcısı', 'Buz Pençe'];
   const botAd = (n) => ADLAR[Math.abs(n) % ADLAR.length];
 
-  const api = { botTakim, botSeviye, kademeZar, yerlestir, kodla, coz, Hayalet };
+  const api = { botTakim, botEsya, botSeviye, kademeZar, yerlestir, kodla, coz, Hayalet };
   g.KUT_ONLINE = api;
   if (typeof module !== 'undefined') module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

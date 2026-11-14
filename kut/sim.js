@@ -9,15 +9,36 @@
   const Y0 = [5, 6, 7], Y1 = [3, 2, 1]; // sıra (ön, orta, arka) → arena y
   function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
-  // Takım birimi: { h: kahramanId, s: yıldız 1..3, f?: kaynaşan kahramanId (pasif + soy ondan), x: 0..3 (sütun), y: 0 ön | 1 orta | 2 arka }
+  // Takım birimi: { h: kahramanId, s: yıldız 1..3, f?: kaynaşan kahramanId (pasif + soy ondan), x: 0..3 (sütun), y: 0 ön | 1 orta | 2 arka,
+  //   e?: eşya kimlikleri (0–3; bileşen, tam eşya ya da özel) }
+  const STAT0 = () => ({ atk: 0, as: 0, yg: 0, mana0: 0, azalt: 0, can: 0, cal: 0, kalkan0: 0 });
+  const STAT_AD = ['atk', 'as', 'yg', 'mana0', 'azalt', 'can', 'cal', 'kalkan0'];
+  // Eşya istatistikleri: yuva sırasıyla (0, 1, 2), her tam eşyada tarif sırasıyla toplanır. Bilinmeyen kimlik yok sayılır.
+  function esyaTopla(e) {
+    const st = STAT0(), esya = [], yanki = {}, muhur = []; let kutTasi = 0;
+    const bilesen = (id) => { const b = D.esya(id); for (const k of STAT_AD) if (b.stat[k]) st[k] += b.stat[k]; yanki[id] = (yanki[id] || 0) + 1; };
+    for (const id of (e || []).slice(0, KURAL.esyaYuva)) {
+      const x = D.esya(id); if (!x) continue;
+      if (x.tip === 'bilesen') bilesen(id);
+      else if (x.tip === 'tam') { bilesen(x.tarif[0]); bilesen(x.tarif[1]); if (!esya.includes(id)) esya.push(id); }
+      else if (x.soy) { if (!muhur.includes(x.soy)) muhur.push(x.soy); }
+      else if (id === 'kutTasi') kutTasi++;
+    }
+    st.azalt = Math.min(KURAL.esyaAzaltTavan, st.azalt);
+    return { st, esya, yanki, muhur, kutTasi };
+  }
   function birimStat(b) {
     const A = D.kahraman(b.h), B = b.f ? D.kahraman(b.f) : null;
     const c = KURAL.yildizCarpan[b.s || 1];
     let can = A.can, atk = A.atk, as = A.as;
     if (B) { can = (A.can + B.can) / 2 * 1.15; atk = (A.atk + B.atk) / 2 * 1.15; as = (A.as + B.as) / 2; }
     const soy = B ? [...new Set([...A.soy, ...B.soy])] : A.soy.slice();
-    return { ad: B ? A.ad + ' × ' + B.ad : A.ad, can: Math.round(can * c), atk: Math.round(atk * c), as, menzil: A.menzil, mana: A.mana,
-      yetenek: A.yetenek, pasif: B ? B.pasif : A.pasif, soy, kc: c };
+    const E = esyaTopla(b.e);
+    for (const s of E.muhur) if (!soy.includes(s)) soy.push(s); // Soy Mührü
+    const st = E.st;
+    return { ad: B ? A.ad + ' × ' + B.ad : A.ad, can: Math.round(can * c) + st.can, atk: Math.round(atk * c * (1 + st.atk)), as, menzil: A.menzil, mana: A.mana,
+      yetenek: A.yetenek, pasif: B ? B.pasif : A.pasif, soy, kc: c, kademe: A.kademe,
+      asEk: st.as, yg: st.yg, mana0: st.mana0, azalt: st.azalt, cal: st.cal, kalkan0: st.kalkan0, esya: E.esya, kutYanki: E.yanki, kutTasi: E.kutTasi };
   }
 
   function soySay(takim) {
@@ -39,6 +60,11 @@
     let t = 0, bitti = false, sonuc = null;
     const soylar = [soySay(takimA), soySay(takimB)];
     const sv = (taraf, soy) => (soylar[taraf][soy] || {}).seviye || 0;
+    // Gün Batımı (bölüm 1.4): opt.gunBatimi saniyesinden sonra her tam saniye bütün hasar +%10. Verilmezse yok (Hızlı Maç, eski savaşlar).
+    // t, 0,05'lik adımlarla biriktiği için floor'dan önce 1e-9 eklenir (20,000…01 ile 19,999…9 aynı saniye sayılır).
+    const gbBas = opt.gunBatimi == null ? null : opt.gunBatimi, gbArtis = KURAL.gunBatimi.artis;
+    let gbBasladi = false;
+    function gunBatimiCarpan() { if (gbBas === null) return 1; const gt = t - gbBas + 1e-9; return gt >= 0 ? 1 + gbArtis * Math.floor(gt) : 1; }
 
     [takimA, takimB].forEach((takim, taraf) => {
       takim.forEach((b, i) => {
@@ -51,8 +77,12 @@
         if (alamet === 'tutulma' && st.soy.includes('karanlik')) can *= 1.3;
         if (alamet === 'yaz' && st.soy.includes('kis')) can *= 0.85;
         can = Math.round(can);
-        birimler.push({ uid: taraf * 10 + i, taraf, i, b, ...st, mx: can, hp: can, x, y, x0: x, y0: y,
-          mp: 0, cd: 0.3 + R() * 0.3, durum: {}, kalkan: 0, olu: false, dirildi: false, vurus: 0, payYigin: 0, ofke: 0, hedef: null });
+        const ef = {}; for (const id of st.esya) ef[id] = true;
+        // Dolunay Testisi: yetenek için gereken mana −%20
+        const mana = ef.dolunayTestisi ? Math.floor(st.mana * 0.8 + 0.5) : st.mana;
+        birimler.push({ uid: taraf * 10 + i, taraf, i, b, ...st, mana, ef, mx: can, hp: can, x, y, x0: x, y0: y,
+          mp: 0, cd: 0.3 + R() * 0.3, durum: {}, kalkan: 0, olu: false, dirildi: false, vurus: 0, payYigin: 0, ofke: 0, hedef: null,
+          vurusMana: ef.keskinGoz ? 15 : 10, ilkVurusYapildi: false, sonHedefUid: -1, esikTetik: {}, kutCarpan: 1 });
       });
     });
 
@@ -62,11 +92,29 @@
       if (alamet === 'kutYagmur') u.mp = Math.max(u.mp, u.mana * 0.4);
       if (u.pasif === 'ana') for (const d of dostlar(u)) if (d !== u && mesafe(u, d) <= 2.6) kalkanVer(d, 90 * u.kc);
     }
+    // Eşyaların savaş başı etkileri (birim sırasıyla; OYNANIS_DERINLIK.md 12.2). "2 hücre" = 2,1; "2,5 hücre" = 2,6 (Koruyucu Tüy ile aynı ölçü).
+    for (const u of birimler) {
+      if (u.mana0) u.mp = Math.min(u.mana - 1, u.mp + u.mana0);
+      if (u.kalkan0) kalkanVer(u, u.kalkan0);
+      if (u.ef.buzDagi) kalkanVer(u, u.mx * 0.2);
+      if (u.ef.isikKalkani) for (const d of dostlar(u)) if (d !== u && mesafe(u, d) <= 2.1) kalkanVer(d, 120);
+      if (u.ef.uluKok) for (const d of dostlar(u)) if (d !== u && mesafe(u, d) <= 2.1) { d.mx += 150; d.hp += 150; }
+      if (u.ef.devKukremesi) for (const o of dusmanlar(u)) if (mesafe(u, o) <= 2.6) durumVer(o, 'zorla', 3, u.uid);
+      if (u.ef.sisPelerini) durumVer(u, 'hedefAlinmaz', 2.5);
+    }
 
     function dostlar(u) { return birimler.filter(o => o.taraf === u.taraf && !o.olu); }
     function dusmanlar(u) { return birimler.filter(o => o.taraf !== u.taraf && !o.olu); }
     function mesafe(a, b) { const dx = a.x - b.x, dy = a.y - b.y; return Math.sqrt(dx * dx + dy * dy); } // hypot değil: C# ile bit bit aynı sonuç
-    function enYakin(u) { let en = null, m = 1e9; for (const o of dusmanlar(u)) { const d = mesafe(u, o) + o.i * 1e-4; if (d < m) { m = d; en = o; } } return en; }
+    // Hedef seçimi: Dev Kükremesi'nin zorladığı hedef (yaşıyorsa); sonra hedef alınabilenler arasından en yakın; hepsi hedef alınamazsa en yakın.
+    function enYakin(u) {
+      if (u.durum.zorla) { const z = birimler.find(o => o.uid === u.durum.zorla.deger && !o.olu); if (z) return z; }
+      let en = null, m = 1e9;
+      for (const o of dusmanlar(u)) { if (o.durum.hedefAlinmaz) continue; const d = mesafe(u, o) + o.i * 1e-4; if (d < m) { m = d; en = o; } }
+      if (en) return en;
+      for (const o of dusmanlar(u)) { const d = mesafe(u, o) + o.i * 1e-4; if (d < m) { m = d; en = o; } }
+      return en;
+    }
     function kalkanVer(u, n) { u.kalkan += n; fx.push({ t, tip: 'kalkan', u: u.uid, n: Math.round(n) }); }
     function iyiles(u, n) { if (u.olu) return; const v = Math.min(u.mx - u.hp, n); u.hp += v; if (v > 1) fx.push({ t, tip: 'iyi', u: u.uid, n: Math.round(v) }); }
     function durumVer(u, ad, sure, deger) { const d = u.durum[ad]; if (!d || d.sure < sure || (deger || 0) > (d.deger || 0)) u.durum[ad] = { sure, deger }; }
@@ -76,16 +124,22 @@
       const atl = sv(u.taraf, 'atli'); if (atl && u.soy.includes('atli') && t < 4) k += [0, 0.4, 0.9][atl];
       if (u.pasif === 'ruzgar' && t < 5) k += 0.35;
       if (u.durum.uluma) k += 0.45;
+      k += u.asEk;
+      if (u.durum.cosku) k += 0.4;
+      if (u.durum.canRuzgar) k += 0.4;
+      if (u.durum.geceKanat) k += 0.6;
       const kis = sv(1 - u.taraf, 'kis'); if (kis) k -= [0, 0.15, 0.3][kis];
       if (u.durum.yavas) k -= u.durum.yavas.deger;
       if (alamet === 'tipi' && !u.soy.includes('kis')) k -= 0.2;
       return Math.max(0.25, k);
     }
 
+    let yetenekSahip = null, vurulan = null; // yetenek() sırasında vurulan düşmanlar (Kızgın Diş, Ayaz Asası)
     function hasar(kaynak, hedef, miktar, tur) {
       if (hedef.olu) return 0;
+      if (vurulan && kaynak === yetenekSahip && tur === 'yetenek' && !vurulan.includes(hedef)) vurulan.push(hedef);
       let m = miktar;
-      if (kaynak) {
+      if (kaynak && tur !== 'yansima') {
         const av = sv(kaynak.taraf, 'avci'); if (av && kaynak.soy.includes('avci')) m *= 1 + [0, 0.2, 0.45][av];
         const kr = sv(kaynak.taraf, 'karanlik'); if (kr && hedef.hp < hedef.mx * 0.5) m *= 1 + [0, 0.2, 0.5][kr];
         if (alamet === 'kanAyi') m *= 1.2;
@@ -96,30 +150,66 @@
         if (kaynak.pasif === 'suru') m *= 1 + 0.06 * (dostlar(kaynak).length - 1);
         if (kaynak.payYigin) m *= 1 + 0.12 * kaynak.payYigin;
         if (tur === 'vurus' && kaynak.ofke > 0) { m *= 2; kaynak.ofke--; }
+        if (kaynak.durum.ofkeT) m *= 1.35; // Öfke Tılsımı
       }
+      // Gün Batımı: bütün hasar türlerinde (zaman içi hasar dahil); yansıma zaten artmış vuruştan hesaplandığı için bir daha çarpılmaz
+      if (gbBas !== null && tur !== 'yansima') { const gt = t - gbBas + 1e-9; if (gt >= 0) m *= 1 + gbArtis * Math.floor(gt); }
       if (tur === 'vurus' && hedef.pasif === 'kacis' && R() < 0.25) { fx.push({ t, tip: 'kac', u: hedef.uid }); return 0; }
+      if (hedef.durum.dokunulmaz) return 0; // Ana Kaya
       const dv = sv(hedef.taraf, 'dev'); if (dv && hedef.soy.includes('dev')) m *= 1 - [0, 0.12, 0.28][dv];
       if (hedef.pasif === 'tasDeri') m *= 0.8;
+      // eşyalardan alınan hasar azaltma (Kabuk, Öfke Tılsımı), toplamı en çok %40
+      const az = Math.min(KURAL.esyaAzaltTavan, hedef.azalt + (hedef.durum.ofkeT ? 0.2 : 0)); if (az > 0) m *= 1 - az;
       if (hedef.kalkan > 0) { const e = Math.min(hedef.kalkan, m); hedef.kalkan -= e; m -= e; }
       m = Math.max(0, m);
       hedef.hp -= m;
-      if (tur !== 'dot') hedef.mp = Math.min(hedef.mana, hedef.mp + m * 0.05);
+      if (tur !== 'dot' && tur !== 'yansima') hedef.mp = Math.min(hedef.mana, hedef.mp + m * (hedef.ef.sabirTasi ? 0.1 : 0.05));
       if (m >= 1) fx.push({ t, tip: tur === 'dot' ? 'dot' : 'hasar', u: hedef.uid, n: Math.round(m), k: kaynak ? kaynak.uid : -1 });
-      if (kaynak && kaynak.pasif === 'canEmici' && tur !== 'dot') iyiles(kaynak, m * 0.2);
+      if (kaynak && kaynak.pasif === 'canEmici' && tur !== 'dot' && tur !== 'yansima') iyiles(kaynak, m * 0.2);
+      if (kaynak && tur !== 'dot' && tur !== 'yansima') { // can çalma: Pul (vuruşta), Gece Kanadı (vuruşta +%30), Gölge Mürekkebi (yetenekte %25)
+        const o = tur === 'vurus' ? kaynak.cal + (kaynak.durum.geceKanat ? 0.3 : 0) : tur === 'yetenek' && kaynak.ef.golgeMurekkebi ? 0.25 : 0;
+        if (o > 0) iyiles(kaynak, m * o);
+      }
+      // Diken Kabuk (%25) ve Diken Kirpi'nin Diken Sırt'ı (%15): yakın vuruş hasarı saldırgana döner (geri dönen hasar yansımaz, mana vermez)
+      if (tur === 'vurus' && kaynak && kaynak.menzil <= 1 && m > 0 && !kaynak.olu) {
+        const yo = (hedef.ef.dikenKabuk ? 0.25 : 0) + (hedef.pasif === 'dikenKirpi' ? 0.15 : 0);
+        if (yo > 0) hasar(hedef, kaynak, m * yo, 'yansima');
+      }
+      if (tur === 'vurus' && kaynak && hedef.ef.buzulZirh && !kaynak.olu) durumVer(kaynak, 'yavas', 2, 0.2); // Buzul Zırh
+      if (hedef.hp > 0) esikKontrol(hedef);
       if (hedef.hp <= 0) olum(hedef, kaynak);
       return m;
+    }
+    // "Canı ilk kez %N'nin altına inince" etkileri: savaş başına bir kez
+    function esikKontrol(u) {
+      const ef = u.ef, e = u.esikTetik, oran = u.hp / u.mx;
+      if (ef.ofkeTilsimi && !e.ofke && oran < 0.5) { e.ofke = true; durumVer(u, 'ofkeT', 5); fx.push({ t, tip: 'esya', u: u.uid, ad: 'ofkeTilsimi' }); }
+      if (ef.geceKanadi && !e.geceKanat && oran < 0.3) { e.geceKanat = true; durumVer(u, 'geceKanat', 3); fx.push({ t, tip: 'esya', u: u.uid, ad: 'geceKanadi' }); }
+      if (ef.anaKaya && !e.anaKaya && oran < 0.4) { e.anaKaya = true; durumVer(u, 'dokunulmaz', 2); fx.push({ t, tip: 'esya', u: u.uid, ad: 'anaKaya' }); }
+      if (ef.karaBuz && !e.karaBuz && oran < 0.5) {
+        e.karaBuz = true; fx.push({ t, tip: 'esya', u: u.uid, ad: 'karaBuz' });
+        for (const o of dusmanlar(u)) if (mesafe(u, o) <= 2.1) durumVer(o, 'sersem', 1);
+      }
     }
 
     function olum(u, katil) {
       if (u.pasif === 'yenidenDogus' && !u.dirildi) { u.dirildi = true; u.hp = u.mx * 0.4; u.durum = {}; fx.push({ t, tip: 'dirilis', u: u.uid }); return; }
       u.olu = true; u.hp = 0; fx.push({ t, tip: 'olum', u: u.uid });
+      if (u.ef.geceYuregi) for (const d of dostlar(u)) if (mesafe(u, d) <= 2.1) kalkanVer(d, u.mx * 0.25);
       for (const d of birimler) {
         if (d.olu) continue;
         if (d.taraf === u.taraf && d.pasif === 'ruhBagi') d.mp = Math.min(d.mana, d.mp + 35);
         if (d.taraf !== u.taraf && d.pasif === 'karanlikPay') d.payYigin++;
+        if (d.taraf === u.taraf && d.ef.ruhTestisi) { d.mp = Math.min(d.mana, d.mp + 30); iyiles(d, d.mx * 0.1); }
+        if (d.taraf !== u.taraf && d.ef.avCoskusu) durumVer(d, 'cosku', 3);
+      }
+      if (katil && !katil.olu && katil.taraf !== u.taraf) {
+        if (katil.ef.geceAvcisi) iyiles(katil, u.mx * 0.2);
+        if (katil.ef.golgePelerini) durumVer(katil, 'hedefAlinmaz', 1.5);
       }
     }
 
+    let yeniHedef = false; // bu vuruş yeni bir hedefe mi (Buz Mızrağı)
     function vurusEtki(u, h) {
       const od = sv(u.taraf, 'ates');
       if (od && u.soy.includes('ates')) durumVer(h, 'yanik', [0, 2, 3][od], [0, 12, 28][od] * (alamet === 'yaz' ? 2 : 1));
@@ -129,10 +219,35 @@
         const yak = dusmanlar(u).filter(o => o !== h).sort((a, b) => mesafe(h, a) - mesafe(h, b)).slice(0, 2);
         for (const o of yak) { hasar(u, o, u.atk * 0.7, 'yetenek'); fx.push({ t, tip: 'simsek', k: h.uid, u: o.uid }); }
       }
+      if (h.olu) return;
+      const ef = u.ef;
+      if (ef.buzMizragi && yeniHedef) durumVer(h, 'sersem', 0.8);
+      if (ef.karTanesi) durumVer(h, 'yavas', 2, 0.15);
+      if (ef.simsekTuyu && u.vurus % 5 === 0) {
+        const yak = dusmanlar(u).filter(o => o !== h).sort((a, b) => mesafe(h, a) - mesafe(h, b)).slice(0, 2);
+        for (const o of yak) { hasar(u, o, 70 * u.kc * (1 + u.yg), 'yetenek'); fx.push({ t, tip: 'simsek', k: h.uid, u: o.uid }); }
+      }
+      if (ef.yelKanadi && u.vurus % 5 === 0 && !h.olu) { fx.push({ t, tip: 'vurus', k: u.uid, u: h.uid, menzilli: u.menzil > 1 }); hasar(u, h, u.atk, 'vurus'); }
     }
 
     function yetenek(u) {
-      const c = u.kc, h = u.hedef && !u.hedef.olu ? u.hedef : enYakin(u);
+      const c = u.kc * (1 + u.yg) * u.kutCarpan, h = u.hedef && !u.hedef.olu ? u.hedef : enYakin(u);
+      u.kutCarpan = 1;
+      yetenekSahip = u; vurulan = [];
+      yetenekCalis(u, c, h);
+      const v = vurulan; vurulan = null; yetenekSahip = null;
+      // yetenek sonrası eşya kancaları (sabit sıra)
+      const ef = u.ef, ky = u.kc * (1 + u.yg);
+      if (ef.kizginDis) for (const o of v) if (!o.olu) durumVer(o, 'yanik', 3, 30 * ky);
+      if (ef.ayazAsasi) for (const o of v) if (!o.olu) durumVer(o, 'yavas', 2, 0.3);
+      if (u.olu) return;
+      if (ef.tasMuhur) kalkanVer(u, 120 * ky);
+      if (ef.canAtesi) { const y = dostlar(u).sort((a, b) => a.hp / a.mx - b.hp / b.mx)[0]; if (y) iyiles(y, 100 * ky); }
+      if (ef.buzPinari) for (const d of dostlar(u)) if (d !== u && mesafe(d, u) <= 2.1) kalkanVer(d, 80 * u.kc);
+      if (ef.bilgeAsasi) u.mp = Math.min(u.mana, u.mp + 25);
+      if (ef.ruzgarCani) durumVer(u, 'canRuzgar', 3);
+    }
+    function yetenekCalis(u, c, h) {
       fx.push({ t, tip: 'yetenek', u: u.uid, ad: u.yetenek });
       const cevre = (merkez, r) => dusmanlar(u).filter(o => mesafe(o, merkez) <= r);
       switch (u.yetenek) {
@@ -151,6 +266,11 @@
         case 'kulDogus': if (h) for (const o of cevre(h, 1.6)) { hasar(u, o, 170 * c, 'yetenek'); durumVer(o, 'yanik', 3, 25 * c); } break;
         case 'ayaz': for (const o of dusmanlar(u)) { hasar(u, o, 70 * c, 'yetenek'); durumVer(o, 'yavas', 3, 0.4); } break;
         case 'golgeOk': { const z = dusmanlar(u).sort((a, b) => a.hp - b.hp)[0]; if (z) hasar(u, z, 320 * c, 'yetenek'); } break;
+        // canavar yetenekleri (bölüm 5.5)
+        case 'akrepZehir': if (h) durumVer(h, 'zehir', 4, 60 * c); break;
+        case 'balinaSarki': for (const o of dusmanlar(u)) hasar(u, o, 110 * c, 'yetenek'); break;
+        case 'bekciDarbe': if (h) { hasar(u, h, 250 * c, 'yetenek'); durumVer(h, 'sersem', 1.5); } break;
+        case 'yildizYutan': for (const o of dusmanlar(u).sort((a, b) => mesafe(u, a) - mesafe(u, b)).slice(0, 3)) hasar(u, o, 220 * c, 'yetenek'); break;
         case 'yildirim': { const ds = dusmanlar(u); for (let k = 0; k < 3 && ds.length; k++) { const o = ds.splice(Math.floor(R() * ds.length), 1)[0]; hasar(u, o, 150 * c, 'yetenek'); durumVer(o, 'sersem', 0.6); fx.push({ t, tip: 'simsek', k: u.uid, u: o.uid }); } } break;
       }
     }
@@ -162,6 +282,7 @@
       if (kutKullanildi[taraf] || bitti) return false;
       const u = birimler.find(o => o.taraf === taraf && o.i === i && !o.olu); if (!u) return false;
       kutKullanildi[taraf] = true; u.mp = u.mana; fx.push({ t, tip: 'kut', u: u.uid });
+      u.kutCarpan = u.ef.kutOcagi ? 1.5 : 1; // Kut Ocağı: Kut ile patlayan yetenek ×1,5
       if (opt.kayit) opt.kayit.push({ t: +t.toFixed(2), taraf, i });
       return true;
     }
@@ -177,6 +298,7 @@
       fx.length = 0;
       while (kutSira.length && kutSira[0].t <= t + 1e-9) { const k = kutSira.shift(); kut(k.taraf, k.i); }
       for (const tr of (opt.yz || [])) if (!kutKullanildi[tr] && t >= (opt.yzZaman || 5)) kutYZ(tr);
+      if (gbBas !== null && !gbBasladi && t - gbBas + 1e-9 >= 0) { gbBasladi = true; fx.push({ t, tip: 'gunBatimi' }); }
 
       for (const u of birimler) {
         if (u.olu) continue;
@@ -186,6 +308,7 @@
         if (u.olu) continue;
         const su = sv(u.taraf, 'su'); if (su && u.soy.includes('su')) iyilesSessiz(u, u.mx * [0, 0.02, 0.05][su] * DT);
         if (u.pasif === 'sicakKalp') iyilesSessiz(u, u.mx * 0.03 * DT);
+        if (u.ef.sifaPinari) iyilesSessiz(u, u.mx * 0.02 * DT);
         if (u.durum.sersem) continue;
 
         if (u.mp >= u.mana) { u.mp = 0; yetenek(u); if (bittiMi()) return; continue; }
@@ -193,7 +316,7 @@
         const h = u.hedef; if (!h) continue;
         const d = mesafe(u, h);
         if (d > menzil(u) + 0.05) {
-          const hiz = (u.soy.includes('atli') ? 2.4 : 1.7) * DT;
+          const hiz = (u.soy.includes('atli') ? 2.4 : 1.7) * (u.ef.bulutNali ? 1.5 : 1) * DT;
           u.x += (h.x - u.x) / d * Math.min(hiz, d - menzil(u));
           u.y += (h.y - u.y) / d * Math.min(hiz, d - menzil(u));
         } else {
@@ -201,14 +324,21 @@
           if (u.cd <= 0) {
             u.cd = 1 / u.as; u.vurus++;
             fx.push({ t, tip: 'vurus', k: u.uid, u: h.uid, menzilli: u.menzil > 1 });
-            hasar(u, h, u.atk, 'vurus');
-            if (!h.olu) vurusEtki(u, h);
+            let vm = u.atk;
+            if (u.ef.yirticiPence && u.vurus % 3 === 0) vm += h.mx * 0.08;
+            if (u.ef.devYumrugu) vm += u.mx * 0.02;
+            if (u.ef.bulutNali && !u.ilkVurusYapildi) vm *= 2;
+            u.ilkVurusYapildi = true; yeniHedef = h.uid !== u.sonHedefUid; u.sonHedefUid = h.uid;
+            hasar(u, h, vm, 'vurus');
+            if (!h.olu && !u.olu) vurusEtki(u, h);
             const bl = sv(u.taraf, 'bilge') && u.soy.includes('bilge') ? [0, 0.3, 0.7][sv(u.taraf, 'bilge')] : 0;
-            u.mp = Math.min(u.mana, u.mp + 10 * (1 + bl));
+            if (!u.olu) u.mp = Math.min(u.mana, u.mp + u.vurusMana * (1 + bl));
           }
         }
         if (bittiMi()) return;
       }
+      // son düşman zaman içi hasarla öldüyse ve kalanlar hedefsiz kaldıysa (kimse vurmadı) savaş bu adımda biter
+      if (bittiMi()) return;
       t += DT;
       if (t >= KURAL.savasSuresi) {
         const oran = [0, 1].map(tr => birimler.filter(o => o.taraf === tr).reduce((s, o) => s + Math.max(0, o.hp) / o.mx, 0));
@@ -224,14 +354,14 @@
     function bitir(k) {
       bitti = true;
       const sag = birimler.filter(o => !o.olu && o.taraf === k);
-      const kalan = sag.reduce((s, o) => s + o.kc * D.kahraman(o.b.h).kademe, 0); // eski ölçü (uyumluluk)
+      const kalan = sag.reduce((s, o) => s + o.kc * o.kademe, 0); // eski ölçü (uyumluluk); canavar kademe 0
       const kalanPuan = sag.reduce((s, o) => s + (o.b.s || 1), 0);               // lobi hasarı: ★1 = 1, ★2 = 2, ★3 = 3
       sonuc = { kazanan: k, sure: +t.toFixed(2), kalan, kalanPuan, kalanSayi: sag.length };
     }
     function sonunaKadar() { let n = 0; while (!bitti && n++ < 100000) adim(); return sonuc; }
 
     return { birimler, fx, adim, sonunaKadar, kut, get t() { return t; }, get bitti() { return bitti; }, get sonuc() { return sonuc; },
-      kutVar: (taraf) => !kutKullanildi[taraf], soylar, DT };
+      kutVar: (taraf) => !kutKullanildi[taraf], soylar, DT, gunBatimiCarpan };
   }
 
   const api = { Savas, birimStat, soySay, rng };
