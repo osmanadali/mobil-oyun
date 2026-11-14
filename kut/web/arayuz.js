@@ -1,6 +1,7 @@
 /* Kut Arena — oynanır tablet sürümü: son tasarımı (../tasarim/final) oyun mantığına (oyun.js) ve 3D sahneye (sahne3d.js) bağlar. */
 import { Oyun } from './oyun.js';
 import * as S3 from './sahne3d.js';
+import * as Ses from './ses.js';
 
 const D = window.KUT_DATA, SIM = window.KUT_SIM, K = D.KURAL;
 const oyun = new Oyun();
@@ -27,6 +28,14 @@ function goster(id) { aktifEkran = id; document.querySelectorAll('.ekran').forEa
 let bildirimZ;
 function bildir(m, tur = 'bilgi') { const b = $('bildirim'); b.textContent = m; b.className = 'bildirim acik ' + tur; clearTimeout(bildirimZ); bildirimZ = setTimeout(() => b.classList.remove('acik'), 1800); }
 oyun.on('bildirim', ({ m, tur }) => bildir(m, tur));
+// ── SES ── (ElevenLabs ile üretilmiş efektler; ilk dokunuştan sonra açılır)
+Ses.kur('');
+S3.dinle('ses', (f, k, h) => Ses.olay(f, k, h));
+oyun.on('satinAlindi', () => Ses.cal('satin_al'));
+oyun.on('birlesti', () => Ses.cal('birlesme', { aralik: 0.3 }));
+oyun.on('kaynasti', () => Ses.cal('kaynasma'));
+oyun.on('ses', (ad) => { if (ad === 'yenile') Ses.cal('yenile'); else if (ad === 'sat') Ses.cal('satin_al', { hiz: 0.8 }); });
+document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('button, .btn'); if (b && !b.disabled) Ses.cal('dugme', { aralik: 0.05 }); }, true);
 function pencere(html) { $('pencere').innerHTML = html; $('perde').classList.add('acik'); }
 function kapat() { $('perde').classList.remove('acik'); }
 $('perde').addEventListener('click', (e) => { if (e.target.id === 'perde' || e.target.closest('[data-kapat]')) kapat(); });
@@ -81,11 +90,14 @@ function duelloPencere() {
 function ayarPencere() {
   const hafif = ayarOku('kut.hafif') === '1';
   pencere(`<h3>Ayarlar</h3>
+    <p><b>Ses:</b> ${Ses.sesAcik() ? 'Açık' : 'Kapalı'}</p>
+    <div class="eylemler" style="justify-content:flex-start"><button class="btn mor" id="aSes">${Ses.sesAcik() ? 'Sesi kapat' : 'Sesi aç'}</button></div>
     <p><b>Grafik:</b> ${hafif ? 'Hafif (gölge yok, düşük çözünürlük)' : 'Yüksek'}. Değişiklik sayfa yenilenince uygulanır.</p>
     <div class="eylemler" style="justify-content:flex-start"><button class="btn mor" id="aGrafik">${hafif ? 'Yüksek grafiğe geç' : 'Hafif grafiğe geç'}</button>
     ${oyun.P.mac ? `<button class="btn sat" id="aCik">Maçtan çık (ana ekran)</button>` : ''}</div>
     <div class="eylemler"><button class="btn altin" data-kapat>Tamam</button></div>`);
   $('aGrafik').onclick = () => { try { localStorage.setItem('kut.hafif', hafif ? '0' : '1'); } catch (e) {} location.reload(); };
+  $('aSes').onclick = () => { Ses.sesAc(!Ses.sesAcik()); kapat(); ayarPencere(); };
   if ($('aCik')) $('aCik').onclick = () => { kapat(); anaCiz(); goster('ana'); };
 }
 
@@ -251,6 +263,7 @@ async function savasBaslat(sim, rakip) {
   }
   $('yukleniyor').classList.remove('acik');
   kutCiz(); hizUygula(); kutSecim = false;
+  Ses.cal('savas_basla');
   const s = $('savas');
   q('.rakipK', s).innerHTML = `<div class="amb"><img src="${P((rakip.takim || [])[0] ? rakip.takim[0].h : 'tilki')}" alt=""></div><div style="min-width:0"><small>${rakip.duello ? 'Düello' : 'Rakip · Tur ' + oyun.M.tur}</small><b>${rakip.ad}</b><span>${rakip.kaynak === 'bot' ? 'Bot' : 'Kupa ' + sayi(rakip.kupa || 0)}</span></div>`;
   const a = savasBilgi.alamet; q('.alametK', s).innerHTML = `<span class="ay" style="background:radial-gradient(circle at 35% 35%,#fff,${ALAMET_RENK[a.id]} 55%,#3a0820)"></span><div><b>${a.ad}</b><span>${a.m}</span></div>`;
@@ -296,6 +309,7 @@ function savasKare() {
 }
 function sonucGoster(sonuc) {
   const k = sonuc.kazanan; if (k === 0) S3.zafer(0); else if (k === 1) S3.zafer(1);
+  Ses.cal(k === 1 ? 'yenilgi' : 'zafer', { hiz: k === 0 || k === 1 ? 1 : 0.9 });
   const r = oyun.savasBitti(sonuc); savasBilgi.sonucIslem = r;
   const M = oyun.M;
   const bil = r && r.duello ? `<span>Düello</span>` : k === 0 ? `<em>+1 zafer · ${r.bitti ? 7 : M.zafer}/7</em>` : k === 1 ? `<span>−1 can · ${r.bitti ? 0 : M.can} can kaldı</span>` : `<span>Berabere: can gitmedi</span>`;

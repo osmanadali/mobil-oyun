@@ -344,12 +344,23 @@ function simIlerlet() {
   while (!sim.bitti && sim.t < gorselT + ONDE_SN) {
     const tOnce = sim.t; sim.adim();
     for (const f of sim.fx) olayPlanla({ ...f, t: tOnce });
+    const onceki = anlik[anlik.length - 1];
     anlikAl();
+    // kalkan kırıldı mı? (motor ayrı olay yaymaz; anlık farkından çıkar)
+    const yeni = anlik[anlik.length - 1];
+    if (onceki) for (let j = 0; j < yeni.length; j++) if (onceki[j].kalkan > 0 && yeni[j].kalkan <= 0 && !yeni[j].olu) { const u = sim.birimler[j]; kuyruk.push({ t: tOnce, is: () => sesBildir({ tip: 'kalkanKir', u: u.uid }) }); }
   }
 }
 // Olaya göre görsel eylemleri zamanla
+function sesBildir(f) {
+  if (!dinleyici.ses) return;
+  const bul = (id) => sim && sim.birimler.find(o => o.uid === id);
+  dinleyici.ses(f, bul(f.k), bul(f.u));
+}
 function olayPlanla(f) {
   const ekle = (t, is) => kuyruk.push({ t, is });
+  if (f.tip === 'vurus' || f.tip === 'yetenek' || f.tip === 'olum' || f.tip === 'dirilis') ekle(f.t, () => sesBildir(f));
+  if (f.tip === 'vurus' && f.menzilli && birimler.get(f.k)) ekle(f.t - mesafeAl(f.k, f.u, f.t) / 12, () => sesBildir({ tip: 'atis', k: f.k, u: f.u }));
   const kaynak = birimler.get(f.k), hedef = birimler.get(f.u);
   if (f.tip === 'vurus' && kaynak) {
     const klip = kaynak.gor.tur === 'iki' ? kaynak.gor.saldir : null;
@@ -366,7 +377,7 @@ function olayPlanla(f) {
     if (f.tip === 'hasar' && f.n > 60) ekle(f.t, () => vuruldu(birimler.get(f.u)));
   } else if (f.tip === 'olum') ekle(f.t, () => olumBaslat(birimler.get(f.u)));
   else if (f.tip === 'dirilis') ekle(f.t, () => dirilis(birimler.get(f.u)));
-  else if (f.tip === 'kut') { /* dokunuş anında zaten gösterildi; tekrar oynatmada da göster */ ekle(f.t - ONDE_SN, () => kutSutun(birimler.get(f.u))); }
+  else if (f.tip === 'kut') { /* dokunuş anında zaten gösterildi; tekrar oynatmada da göster */ ekle(f.t - ONDE_SN, () => { kutSutun(birimler.get(f.u)); sesBildir(f); }); }
   else if (f.tip === 'simsek') ekle(f.t, () => simsekCiz(f.k, f.u));
 }
 function mesafeAl(a, b, t) {
