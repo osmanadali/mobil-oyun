@@ -45,6 +45,62 @@ export const KAHRAMAN_AYAR = {};
 
 let R = null, S = null, K = null, composer = null, bloom = null, ortamDoku = null, kalite = 'yuksek';
 let boyut = { w: 1, h: 1, dpr: 1 };
+let golgeBirikim = 0;
+const GOLGE_ARALIK = 1 / 30;   // gölge haritası en çok 30 Hz (60 Hz'de iki karede bir, 120 Hz'de dört karede bir)
+
+// ── Kalite kademeleri (uyarlanır kalite) ──
+// 0 bugünkü görüntünün aynısı. Cihaz yetişemezse sırayla iner: önce çözünürlük, sonra bloom, en son MSAA ve gölge.
+// 1 numara yüksek yenilemeli ekranın (120 Hz) kare bütçesi içindir: bloom %35 çözünürlük ve 2× MSAA, piksel yoğunluğu aynı.
+// dpr: üst sınır (cihazınki ve 1,5 ile ayrıca sınırlı) · bloom: bloom çözünürlük çarpanı (0 kapalı) · msaa: son işlem hedefi örnek sayısı ·
+// golge: gölge haritası boyu (0 gölge yok) · sonIslem: false ise composer hiç kurulmaz (doğrudan tuvale çizim)
+export const KADEMELER = [
+  { ad: 'Tam', dpr: 1.5, bloom: 1, msaa: 4, golge: 2048, sonIslem: true },
+  { ad: '120 Hz bütçesi', dpr: 1.5, bloom: 0.7, msaa: 2, golge: 2048, sonIslem: true },
+  { ad: 'Çözünürlük 1,25', dpr: 1.25, bloom: 0.7, msaa: 2, golge: 2048, sonIslem: true },
+  { ad: 'Çözünürlük 1', dpr: 1, bloom: 0.7, msaa: 2, golge: 2048, sonIslem: true },
+  { ad: 'Bloom yarım', dpr: 1, bloom: 0.5, msaa: 2, golge: 2048, sonIslem: true },
+  { ad: 'Bloom kapalı', dpr: 1, bloom: 0, msaa: 2, golge: 2048, sonIslem: true },
+  { ad: 'MSAA kapalı, gölge 1024', dpr: 1, bloom: 0, msaa: 0, golge: 1024, sonIslem: true },
+  { ad: 'Son işlem kapalı', dpr: 1, bloom: 0, msaa: 0, golge: 1024, sonIslem: false },
+  { ad: 'En düşük', dpr: 0.75, bloom: 0, msaa: 0, golge: 512, sonIslem: false },
+];
+let kademe = 0;
+// kademenin bu kalitede ve bu cihazda gerçekten uygulanan ayarı (hafifte bloom/MSAA yok, gölge en çok 1024)
+function etkinKademe(n = kademe) {
+  const k = KADEMELER[Math.max(0, Math.min(KADEMELER.length - 1, n))], yuksek = kalite === 'yuksek';
+  return { dpr: Math.min(k.dpr, boyut.dprTaban || 1.5), bloom: yuksek && k.sonIslem ? k.bloom : 0, msaa: yuksek && k.sonIslem ? k.msaa : 0,
+    golge: Math.min(k.golge, yuksek ? 2048 : 1024), sonIslem: yuksek && k.sonIslem };
+}
+const ayniKademe = (a, b) => a.dpr === b.dpr && a.bloom === b.bloom && a.msaa === b.msaa && a.golge === b.golge && a.sonIslem === b.sonIslem;
+export function kademeAl() { return kademe; }
+export function kademeAd(n = kademe) { return KADEMELER[n] ? KADEMELER[n].ad : ''; }
+/** Kademeyi uygular (sayfa yenilemeden). Dönen: uygulanan kademe numarası. */
+export function kademeUygula(n) {
+  n = Math.max(0, Math.min(KADEMELER.length - 1, n | 0));
+  if (!R) { kademe = n; return n; }
+  const once = etkinKademe(), sonra = etkinKademe(n); kademe = n;
+  if (once.msaa !== sonra.msaa || once.sonIslem !== sonra.sonIslem) sonIslemKur();
+  else if (bloom) bloom.enabled = sonra.bloom > 0;
+  if (isiklar && isiklar.gunes.shadow.mapSize.x !== sonra.golge) {
+    isiklar.gunes.shadow.mapSize.setScalar(sonra.golge);
+    if (isiklar.gunes.shadow.map) { isiklar.gunes.shadow.map.dispose(); isiklar.gunes.shadow.map = null; }
+  }
+  R.shadowMap.needsUpdate = true;
+  boyutla(boyut.w, boyut.h, boyut.dprTaban);
+  return n;
+}
+/** Bir sonraki (yon +1: daha düşük kalite, −1: daha yüksek) ve gerçekten farklı görünen kademe; yoksa şimdiki. */
+export function kademeKomsu(yon, bas = kademe) {
+  const simdi = etkinKademe(bas);
+  for (let n = bas + yon; n >= 0 && n < KADEMELER.length; n += yon) if (!ayniKademe(etkinKademe(n), simdi)) {
+    // aynı görünen kademelerin en ucuna değil, ilk farklı olanına git (yukarı çıkarken en yüksek eşdeğeri seç)
+    if (yon < 0) { let m = n; while (m - 1 >= 0 && ayniKademe(etkinKademe(m - 1), etkinKademe(n))) m--; return m; }
+    return n;
+  }
+  return bas;
+}
+/** Son karenin çizim çağrısı ve üçgen sayısı (bütün geçişler dahil) */
+export function cizimBilgi() { return R ? R.info.render : null; }
 
 const TON = { notr: THREE.NeutralToneMapping, agx: THREE.AgXToneMapping, aces: THREE.ACESFilmicToneMapping };
 
@@ -67,14 +123,26 @@ export function kur(renderer, sahne, kamera, { kalite: k = 'yuksek', ton, pozlam
   }
   S.environment = ortamDoku;
   S.environmentIntensity = AYAR.ortamYogunluk;
-  // son işlem (yalnız 'yuksek')
+  // gölge haritası elle güncellenir (ciz(): 30 Hz); ışık ve arena sabit, yalnız birimler hareket eder
+  R.shadowMap.autoUpdate = false; R.shadowMap.needsUpdate = true; golgeBirikim = 0;
+  // çizim istatistiği karenin bütün geçişlerini toplasın (ciz() başında sıfırlanır)
+  R.info.autoReset = false;
+  sonIslemKur();
+  return { composer, ortamDoku };
+}
+
+// Son işlem zinciri (yalnız 'yuksek'): MSAA'lı HalfFloat hedef → sahne → bloom → vinyet → çıkış. Kademe değişince yeniden kurulur.
+function sonIslemKur() {
+  if (composer) { composer.renderTarget1.dispose(); composer.renderTarget2.dispose(); for (const p of composer.passes) if (p.dispose) p.dispose(); }
   composer = null; bloom = null;
-  if (kalite === 'yuksek') {
+  const kd = etkinKademe();
+  if (kalite === 'yuksek' && kd.sonIslem) {
     const c = R.domElement, w = Math.max(1, c.width), h = Math.max(1, c.height);
-    const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: 4 });
+    const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: kd.msaa });
     composer = new EffectComposer(R, rt);
     composer.addPass(new RenderPass(S, K));
     bloom = new UnrealBloomPass(new THREE.Vector2(w * AYAR.bloomOlcek, h * AYAR.bloomOlcek), AYAR.bloomGuc, AYAR.bloomYaricap, AYAR.bloomEsik);
+    bloom.enabled = kd.bloom > 0;
     composer.addPass(bloom);
     // ucuz vinyet + hafif doygunluk (6 satır): kenarlar kararır, yaratıklar ortada öne çıkar
     composer.addPass(new ShaderPass({ uniforms: { tDiffuse: { value: null }, uVin: { value: AYAR.vinyet } },
@@ -84,7 +152,6 @@ export function kur(renderer, sahne, kamera, { kalite: k = 'yuksek', ton, pozlam
           float l = dot(c.rgb, vec3(0.2126, 0.7152, 0.0722)); c.rgb = max(mix(vec3(l), c.rgb, 1.06), 0.0) * v; gl_FragColor = c; }` }));
     composer.addPass(new OutputPass());   // ton eşleme + sRGB burada
   }
-  return { composer, ortamDoku };
 }
 
 export function tonUygula() {
@@ -115,27 +182,36 @@ function gunBatimiOdasi() {
 }
 
 // ── Çizim ve boyut ──
-export function ciz(sahne = S, kamera = K) {
+// dt (gerçek sn) verilirse gölge haritası en çok 30 Hz güncellenir; verilmezse her çizimde (eski davranış)
+export function ciz(sahne = S, kamera = K, dt) {
+  R.info.reset();
+  if (dt === undefined) R.shadowMap.needsUpdate = true;
+  else { golgeBirikim += dt; if (golgeBirikim >= GOLGE_ARALIK - 0.004) { golgeBirikim = 0; R.shadowMap.needsUpdate = true; } }
   if (composer && sahne === S && kamera === K) composer.render();
   else R.render(sahne, kamera);
 }
+/** Gölge haritasını bir sonraki çizimde yenile (sahne bir anda değişince: savaş kurulumu, kamera atlaması) */
+export function golgeYenile() { if (R) R.shadowMap.needsUpdate = true; }
 
-export function boyutla(w, h, dpr = 1) {
+export function boyutla(w, h, dprTaban = 1) {
   if (!R || !w || !h) return;
-  boyut = { w, h, dpr };
+  boyut.w = w; boyut.h = h; boyut.dprTaban = dprTaban;
+  const kd = etkinKademe(), dpr = kd.dpr; boyut.dpr = dpr;
   R.setPixelRatio(dpr); R.setSize(w, h, false);
   if (composer) {
     composer.setPixelRatio(dpr); composer.setSize(w, h);
     // bloom ekranın bir kesrinde çalışsın (tablet bant genişliği)
-    bloom.setSize(Math.max(2, Math.round(w * dpr * AYAR.bloomOlcek)), Math.max(2, Math.round(h * dpr * AYAR.bloomOlcek)));
+    const bo = AYAR.bloomOlcek * (kd.bloom || 1);
+    bloom.setSize(Math.max(2, Math.round(w * dpr * bo)), Math.max(2, Math.round(h * dpr * bo)));
   }
+  R.shadowMap.needsUpdate = true;
 }
 
 export function kaliteDegistir(k) {
   if (!R) return;
   kur(R, S, K, { kalite: k });
-  boyutla(boyut.w, boyut.h, boyut.dpr);
-  if (isiklar) isiklar.gunes.shadow.mapSize.setScalar(k === 'hafif' ? 1024 : 2048), isiklar.gunes.shadow.map?.dispose(), isiklar.gunes.shadow.map = null;
+  boyutla(boyut.w, boyut.h, boyut.dprTaban);
+  if (isiklar) { isiklar.gunes.shadow.mapSize.setScalar(etkinKademe().golge); isiklar.gunes.shadow.map?.dispose(); isiklar.gunes.shadow.map = null; }
 }
 
 // ── Işık düzeni: gün batımı ana ışık + gökten dolgu + arkadan kenar ışığı ──
@@ -149,7 +225,7 @@ export function isikKur(sahne = S, { kalite: k = kalite, alan = 7 } = {}) {
   const gunes = new THREE.DirectionalLight('#ffe2c0', 3.0);
   gunes.position.set(-8, 6, 2);
   gunes.castShadow = true;
-  gunes.shadow.mapSize.setScalar(k === 'hafif' ? 1024 : 2048);
+  gunes.shadow.mapSize.setScalar(Math.min(k === 'hafif' ? 1024 : 2048, etkinKademe().golge));
   Object.assign(gunes.shadow.camera, { left: -alan, right: alan, top: alan, bottom: -alan, near: 1, far: 40 });
   gunes.shadow.bias = -0.0004; gunes.shadow.normalBias = 0.025; gunes.shadow.radius = k === 'hafif' ? 2 : 4;
   // kenar ışığı: arkadan (batan güneş yönü, -Z) turuncu-pembe, gölgesiz — siluetleri gökten ayırır
@@ -269,4 +345,4 @@ export function golgeLekesi(yaricap = 0.5, koyuluk = 0.45) {
   return m;
 }
 
-export function durum() { return { kalite, composer: !!composer, ton: AYAR.ton, ortam: !!ortamDoku }; }
+export function durum() { return { kalite, composer: !!composer, ton: AYAR.ton, ortam: !!ortamDoku, kademe, ayar: etkinKademe(), dpr: boyut.dpr }; }

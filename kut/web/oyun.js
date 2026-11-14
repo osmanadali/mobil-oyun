@@ -1,6 +1,7 @@
 /* Kut Arena — oyun mantığı (arayüzden bağımsız). Kurallar ../TASARIM.md ve ../OYNANIS_DERINLIK.md.
-   İki biçim: 'arena' (seviye ve deneyim, seviyeye bağlı dükkân, sınırlı kahraman havuzu, 4×3 tahta, 7 yedek)
-   ve 'hizli' (Hızlı Maç: prototipin kuralları, KURAL.hizli). İkisi de 4×3 tahtayı kullanır.
+   Üç biçim: 'arena' (seviye ve deneyim, seviyeye bağlı dükkân, sınırlı kahraman havuzu, 4×3 tahta, 7 yedek; her tur tek hayalet/bot rakip),
+   'lobi' (aynı kurallar, 8 kişilik hayalet lobi: eşleşme, hayalet × hayalet savaşları, lobi hasarı ve sıralama; OYNANIS_DERINLIK.md bölüm 4)
+   ve 'hizli' (Hızlı Maç: prototipin kuralları, KURAL.hizli). Hepsi 4×3 tahtayı kullanır.
    Arayüz yalnız durumu okur (oyun.P, oyun.M) ve eylemleri çağırır; her değişiklikten sonra 'degisti' olayı gelir. */
 const D = window.KUT_DATA, S = window.KUT_SIM, O = window.KUT_ONLINE, L = window.KUT_LOBI, K = D.KURAL, H = K.hizli;
 const PANAHTAR = 'kut.profil.v2';
@@ -8,6 +9,8 @@ const SUTUN = K.tahtaSutun, HUCRE = K.tahtaSutun * K.tahtaSira;
 /** Geçici maç sonu: 8 kişilik lobi (adım 5) gelene kadar seviyeli maç, can bitmeden bu turu (r, 0'dan) bitirince kazanılır.
     r 26 = 5-3: belgedeki beklenen maç sonu 5-2 ile 5-5 arası. */
 const GECICI_SON_R = 26;
+/** Maç izi sürümü (bölüm 4.7): lobi kurarken yalnız aynı sürümün izleri alınır. */
+const IZ_SURUM = 1;
 
 export class Oyun {
   constructor() {
@@ -16,10 +19,12 @@ export class Oyun {
     if (this.P.mac && (!this.P.mac.mod || this.P.mac.tahta.length !== HUCRE)) this.P.mac = null;
     // birikimli ekonomiden önce (5 can, seri yok) kaydedilmiş seviyeli yarım maç da kapatılır
     if (this.P.mac && this.P.mac.mod === 'arena' && !this.P.mac.seri) this.P.mac = null;
+    // lobisi olmayan lobi maçı açılamaz
+    if (this.P.mac && this.P.mac.mod === 'lobi' && !this.P.mac.lobi) this.P.mac = null;
     // eşyalardan önce kaydedilmiş yarım maça boş raf eklenir
     if (this.P.mac && !this.P.mac.esyaRaf) { this.P.mac.esyaRaf = []; this.P.mac.esyaTasan = []; }
     // canavar turlarından önce kaydedilmiş Arena yarım maçında rakip bot olabilir: canavar turuysa dalga kurulur
-    if (this.P.mac && this.P.mac.mod === 'arena' && this.P.mac.rakip && L.turPlan(this.P.mac.tur - 1).tip === 'pve' && !this.P.mac.rakip.pve) this.P.mac.rakip = this._dalgaRakip(this.P.mac.tur - 1);
+    if (this.P.mac && this.P.mac.mod !== 'hizli' && this.P.mac.rakip && L.turPlan(this.P.mac.tur - 1).tip === 'pve' && !this.P.mac.rakip.pve) this.P.mac.rakip = this._dalgaRakip(this.P.mac.tur - 1);
     this.M = this.P.mac; this.secili = null; this.seciliEsya = null; this.kaynasMod = false; this._dinle = {};
   }
   on(olay, fn) { (this._dinle[olay] = this._dinle[olay] || []).push(fn); }
@@ -34,7 +39,9 @@ export class Oyun {
   ustaToplam() { return Object.keys(this.P.usta).reduce((s, k) => s + this.ustaSv(k), 0); }
 
   // ── biçim kuralları ──
-  seviyeli() { return !!this.M && this.M.mod === 'arena'; }
+  seviyeli() { return !!this.M && (this.M.mod === 'arena' || this.M.mod === 'lobi'); }
+  /** 8 kişilik hayalet lobi mi (bölüm 4)? */
+  lobiMi() { return !!this.M && this.M.mod === 'lobi' && !!this.M.lobi; }
   /** Ekonomi ve maç sonu kuralları. Seviyeli maçta altın birikir (gelir lobi.turBasi ile), yenileme 2, 100 can, zafer hedefi yok
       (kaynastir burada en düşük bedeldir; gerçek bedel kaynastirBedel(a, b)). Hızlı Maç: her tur 10 altın, 5 can, 7 zafer. */
   kural() {
@@ -49,8 +56,16 @@ export class Oyun {
   turTip() { return this.seviyeli() ? L.turPlan(this.M.tur - 1).tip : 'pvp'; }
   /** Uzun tur adı: "Bölüm 3 · Tur 2" (bölüm 1.1). */
   turUzun() { if (!this.seviyeli()) return 'Tur ' + this.M.tur; const p = L.turPlan(this.M.tur - 1); return `Bölüm ${p.bolum} · Tur ${p.tur}`; }
-  /** Geçici sıralama tahmini (lobi adımı gelene kadar): cana göre 1–8. Kervan seçenek sayısını belirler. */
-  siraTahmin() { return Math.max(1, Math.min(8, 1 + Math.floor((K.canBaslangic - this.M.can) / 12))); }
+  /** Sıralama: lobide gerçek anlık sıra (cana göre); Arena'da cana göre tahmin 1–8. Kervan seçenek sayısını belirler. */
+  siraTahmin() { if (this.lobiMi()) return L.lobiSira(this.M.lobi, 0); return Math.max(1, Math.min(8, 1 + Math.floor((K.canBaslangic - this.M.can) / 12))); }
+  /** Lobi şeridi ve gözcü için oyuncular: [{ i, ad, can, olu, sira (yaşayanda anlık), seri, sen, rakip }]. Lobi değilse null. */
+  lobiDurum() {
+    if (!this.lobiMi()) return null; const lb = this.M.lobi, rk = this.M.rakip;
+    return lb.oyuncular.map(o => ({ i: o.i, ad: o.canli ? this.P.ad : o.ad, can: o.can, olu: o.olu, sira: L.lobiSira(lb, o.i), seri: o.seri, sen: o.canli,
+      rakip: !!(rk && rk.lobiI === o.i), elenme: o.olu ? L.turAd(o.elenmeR) : null }));
+  }
+  /** Lobide bir sonraki turun alameti (bölüm 4.3: önceden görünür). */
+  sonrakiAlamet() { return this.lobiMi() ? L.lobiAlamet(this.M.lobi.tohum, this.M.tur) : null; }
   /** Seviyeli maçta şu anki altının sonraki tur getireceği faiz (bölüm 1'de 0). */
   faizSonraki() { return this.seviyeli() ? L.faiz(this.M.altin, this.M.tur) : 0; }
   yuva() { return this.seviyeli() ? K.takimBoyutu(this.M.seviye) : H.yuva(this.M.tur); }
@@ -60,10 +75,10 @@ export class Oyun {
   xpGerek() { return this.seviyeli() ? L.xpGerek(this.M.seviye) : 0; }
 
   // ── maç ──
-  /** mod: 'arena' (varsayılan, seviyeli) ya da 'hizli' (Hızlı Maç). */
-  yeniMac(mod = 'arena') {
-    const sev = mod === 'arena';
-    this.P.mac = { mod: sev ? 'arena' : 'hizli', tur: 1, can: sev ? K.canBaslangic : H.can, zafer: 0, altin: 0,
+  /** mod: 'arena' (varsayılan, seviyeli), 'lobi' (8 kişilik hayalet lobi) ya da 'hizli' (Hızlı Maç). */
+  async yeniMac(mod = 'arena') {
+    const sev = mod === 'arena' || mod === 'lobi';
+    this.P.mac = { mod: mod === 'lobi' ? 'lobi' : sev ? 'arena' : 'hizli', tur: 1, can: sev ? K.canBaslangic : H.can, zafer: 0, altin: 0,
       seviye: sev ? K.seviyeBaslangic : 0, xp: 0,
       seri: { tip: null, n: 0 }, galibiyet: false, gelir: null, sonHasar: 0,
       tahta: Array(HUCRE).fill(null), yedek: Array(sev ? K.yedek : H.yedek).fill(null), dukkan: [], kilit: false,
@@ -71,6 +86,12 @@ export class Oyun {
       ilkSecim: null, kervan: null, ganimetSecim: null, // bekleyen seçimler: 1-1 öncesi bedava kahraman, Kervan, ganimet eşyası
       tohum: (Math.random() * 1e9) | 0, zar: 1, yenileN: 0, alamet: 'yok', rakip: null, gecmis: [] };
     this.M = this.P.mac;
+    if (mod === 'lobi') {
+      // 7 hayalet: uzak havuz, yerel izler, eksik kalan bot izi (bölüm 4.7); lobi tohumu maç tohumundan
+      const M = this.M, izler = await O.Hayalet.lobiKur({ kupa: this.P.kupa, oyuncu: this.P.oyuncu, tohum: M.tohum });
+      M.lobi = L.lobiYeni({ ad: this.P.ad, kupa: this.P.kupa }, izler, (M.tohum * 2654435761) >>> 0);
+      M.macId = this.P.oyuncu + '-' + M.tohum; M.iz = []; M.lobiEs = null;
+    }
     // bölüm 1: 1-1'den önce 3 kademe-1 kahramandan biri bedava (bölüm 1.1)
     if (sev) this.M.ilkSecim = L.baslangicSecenek(S.rng(this.M.tohum * 31 + 7), this.havuz());
     return this.turBaslat(false);
@@ -80,19 +101,26 @@ export class Oyun {
     const M = this.M = this.P.mac; this.secili = null; this.seciliEsya = null; this.kaynasMod = false;
     if (!devam) {
       const tip = this.turTip(), r = M.tur - 1;
+      // lobi bu turun gerisindeyse (eski kayıt) savaşsız turlar ilerletilir
+      if (this.lobiMi()) while (M.lobi.r < r && !L.lobiBitti(M.lobi)) L.lobiTurOyna(M.lobi, M.lobi.r, { canliTakim: this.takim() });
       // Kervan turu (x-4): savaş, gelir ve deneyim yok; kahraman + eşya çiftlerinden biri seçilir (bölüm 5.4). Dükkân aynen kalır.
       if (tip === 'kervan') {
-        M.alamet = 'yok'; M.gelir = L.turBasi(M, r, M.alamet); M.rakip = null;
+        M.alamet = 'yok'; M.gelir = L.turBasi(M, r, M.alamet); M.rakip = null; M.lobiEs = null;
         M.kervan = { r, secenek: L.kervanSecenek(r, S.rng(M.tohum * 131 + r * 7919 + 17), L.kervanAdet(this.siraTahmin()), this.havuz()) };
         this._yay('kervan', M.kervan); return this._degisti();
       }
-      M.alamet = M.tur === 1 ? 'yok' : D.ALAMETLER[Math.floor(this._zar() * D.ALAMETLER.length)].id;
+      // lobide alamet lobinin tamamına aynı (bölüm 8); diğer biçimlerde oyuncunun zarı
+      M.alamet = this.lobiMi() ? L.lobiAlamet(M.lobi.tohum, r) : M.tur === 1 ? 'yok' : D.ALAMETLER[Math.floor(this._zar() * D.ALAMETLER.length)].id;
       if (this.seviyeli()) M.gelir = L.turBasi(M, r, M.alamet); // birikimli: taban + faiz + seri + galibiyet + alamet
       else M.altin = H.altinTur + (M.alamet === 'pazar' ? 2 : 0);
       const istek = { tur: M.tur, kupa: this.P.kupa, oyuncu: this.P.oyuncu, tohum: M.tohum + M.tur * 31, mod: M.mod };
       if (tip === 'pve') {
         // canavar turu (1-1…1-3, x-7): rakip canavar dalgası (bölüm 5.5)
-        M.rakip = this._dalgaRakip(r);
+        M.rakip = this._dalgaRakip(r); M.lobiEs = null;
+        if (!M.kilit || !M.dukkan.length) this._dukkanDoldur(); M.kilit = false;
+      } else if (this.lobiMi()) {
+        // lobi: eşleşme lobi tohumundan (bölüm 4.2); rakip hayaletin bu turki kadrosu ya da Yansıma
+        M.lobiEs = L.eslesmeKur(M.lobi, r); M.rakip = this._lobiRakip(M.lobiEs, r);
         if (!M.kilit || !M.dukkan.length) this._dukkanDoldur(); M.kilit = false;
       } else if (this.seviyeli()) {
         // rakip önce gelir: havuz onun kadrosundaki kopyaları da düşer
@@ -106,6 +134,13 @@ export class Oyun {
       }
     }
     this._degisti();
+  }
+  /** Lobide oyuncunun bu turki rakibi: eşleştiği hayaletin kadrosu ya da Yansıma (başka bir yaşayanın kopyası). */
+  _lobiRakip(es, r) {
+    const lb = this.M.lobi, rk = L.lobiRakip(es, 0); if (!rk) return null;
+    const o = lb.oyuncular[rk.j], k = L.lobiKadro(lb, rk.j, r);
+    return { ad: rk.yansima ? 'Yansıma: ' + o.ad : o.ad, takim: k.takim, kupa: o.kupa, seviye: k.seviye, kut: k.kut || null,
+      kaynak: rk.yansima ? 'yansima' : o.iz && o.iz.bot ? 'bot' : 'cevrimici', lobiI: rk.j, yansima: rk.yansima, can: o.can };
   }
   /** Canavar turunun rakibi: dalga (taraf 1), adı canavar sayılarıyla. */
   _dalgaRakip(r) {
@@ -135,6 +170,7 @@ export class Oyun {
   async kervanSec(k) {
     const M = this.M; if (!M || !M.kervan) return;
     const s = M.kervan.secenek[Math.max(0, Math.min(M.kervan.secenek.length - 1, k | 0))]; M.kervan = null;
+    if (this.lobiMi() && M.lobi.r === M.tur - 1) L.lobiTurOyna(M.lobi, M.tur - 1); // lobide Kervan turu: savaş yok, tur ilerler
     this._kahramanVer(s.birim); this._rafEkle([s.esya]);
     this._yay('ganimet', { esya: [s.esya], kahraman: [s.birim] });
     this.bildir(`Kervan: ${this.birimAd(s.birim)}${s.birim.s > 1 ? ' ★' + s.birim.s : ''} + ${D.esya(s.esya).ad}`, 'iyi');
@@ -149,6 +185,14 @@ export class Oyun {
   /** Havuzdaki kalan kopyalar: oyuncunun tahta+yedeği ve rakibin kadrosu düşülür (bölüm 2.3). Hızlı Maç'ta havuz yok. */
   havuz() {
     const M = this.M; if (!this.seviyeli()) return null;
+    if (this.lobiMi()) {
+      // lobide 7 hayaletin bu turki kadrosu düşülür (bölüm 2.3); hayaletlerin payı tur başına bir kez hesaplanır
+      const r = M.tur - 1, ol = M.lobi.oyuncular.map(o => o.olu ? 0 : 1).join('');
+      if (!this._lobiHv || this._lobiHv.r !== r || this._lobiHv.ol !== ol || this._lobiHv.lobi !== M.lobi) this._lobiHv = { r, ol, lobi: M.lobi, kalan: L.havuzLobi(M.lobi, r, []) };
+      const say = L.kopyaSay([...M.tahta, ...M.yedek]), out = {};
+      for (const h of D.KAHRAMANLAR) out[h.id] = Math.max(0, this._lobiHv.kalan[h.id] - (say[h.id] || 0));
+      return out;
+    }
     return L.havuzKalan([[...M.tahta, ...M.yedek], M.rakip ? M.rakip.takim : []]);
   }
   havuzBilgi(id) { const h = this.havuz(); return h ? { kalan: h[id], toplam: K.havuzAdet[D.kahraman(id).kademe] } : null; }
@@ -312,7 +356,9 @@ export class Oyun {
     const pve = !!M.rakip.pve;
     this._savas = { benim: takim, rakip: M.rakip, alamet: M.alamet, tohum: M.tohum + M.tur, kayit: [], pve };
     // Arena: Gün Batımı (bölüm 1.4); canavarlar Kut kullanmaz
-    const sim = S.Savas(takim, M.rakip.takim, { tohum: this._savas.tohum, alamet: M.alamet, yz: pve ? [] : [1], kayit: this._savas.kayit,
+    // lobi hayaleti kayıttaki Kut dokunuşunu kullanır ({i, t}); kayıt yoksa yapay zekâ (bölüm 4.6, 7.4)
+    const rk = !pve && M.rakip.kut ? [{ t: M.rakip.kut.t, taraf: 1, i: M.rakip.kut.i }] : null;
+    const sim = S.Savas(takim, M.rakip.takim, { tohum: this._savas.tohum, alamet: M.alamet, yz: pve || rk ? [] : [1], kayit: this._savas.kayit, ...(rk ? { kut: rk } : {}),
       ...(this.seviyeli() ? { gunBatimi: K.gunBatimi.basla } : {}) });
     // 3D sahne canavar modellerini bilmiyor (SAHNE_GEREKSINIM.md, Adım 4): savaş kurulduktan sonra canavarın görsel birimi yerine
     // gorunum kahramanı konur (motor u.b'yi kurulumdan sonra okumaz). Gerçek kimlik u.b.canavar'da.
@@ -331,28 +377,47 @@ export class Oyun {
     const b = this._savas, k = sonuc.kazanan; if (!b) return null;
     if (b.duello) { this._savas = null; return { duello: true, kazanan: k }; }
     const M = this.M, kr = this.kural();
-    if (!b.pve) O.Hayalet.birak({ tur: M.tur, kupa: this.P.kupa, takim: b.benim, ad: this.P.ad, oyuncu: this.P.oyuncu, mod: M.mod, ...(this.seviyeli() ? { seviye: M.seviye } : {}) });
-    if (k === 0) { M.zafer++; for (const t of b.benim) { this.P.usta[t.h] = (this.P.usta[t.h] || 0) + 1; if (t.f) this.P.usta[t.f] = (this.P.usta[t.f] || 0) + 1; } }
+    if (!b.pve && !this.lobiMi()) O.Hayalet.birak({ tur: M.tur, kupa: this.P.kupa, takim: b.benim, ad: this.P.ad, oyuncu: this.P.oyuncu, mod: M.mod, ...(this.seviyeli() ? { seviye: M.seviye } : {}) });
+    if (k === 0) { M.zafer++; if (!this.lobiMi()) for (const t of b.benim) { this.P.usta[t.h] = (this.P.usta[t.h] || 0) + 1; if (t.f) this.P.usta[t.f] = (this.P.usta[t.f] || 0) + 1; } }
     M.gecmis.push(k); this.P.sonTakim = b.benim; this._savas = null;
-    let ts = { hasar: 0, altin: 0, xp: 0 };
-    if (this.seviyeli()) {
+    let ts = { hasar: 0, altin: 0, xp: 0 }, lr = null;
+    if (this.lobiMi()) {
+      // lobi turu: hayalet × hayalet savaşları, herkesin hasarı, elenme ve sıralama (bölüm 4.4–4.6). Oyuncunun izi yazılır (4.7).
+      const r = M.tur - 1, yas = L.yasayanSay(M.lobi), kut = (b.kayit || []).find(x => x.taraf === 0);
+      M.iz.push({ r, seviye: M.seviye, takim: b.benim, yedek: M.yedek.filter(Boolean).map(x => ({ h: x.h, s: x.s, ...(x.f ? { f: x.f } : {}) })), armagan: [], kut: kut ? { i: kut.i, t: kut.t } : null });
+      if (M.lobi.r === r) lr = L.lobiTurOyna(M.lobi, r, { canliTakim: b.benim, canliSonuc: sonuc, eslesme: M.lobiEs || undefined });
+      ts = this._seviyeliSonu(b, sonuc, yas); M.can = M.lobi.oyuncular[0].can;
+      ts.lobi = lr ? { hasar: lr.hasar, elenen: lr.elenen.map(i => M.lobi.oyuncular[i].ad), yasayan: L.yasayanSay(M.lobi), sira: L.lobiSira(M.lobi, 0) } : null;
+      if (M.can <= 0 || L.lobiBitti(M.lobi)) { L.lobiSonaKadar(M.lobi); return this._macBitti(ts); }
+      O.Hayalet.izBirak(this._iz());
+    } else if (this.seviyeli()) {
       // hasar (PvP: bölüm tabanı + rakibin sağ kalan yıldızları; canavar: taban + kalan canavar, bölüm 1'de yok), seri, galibiyet,
       // ganimetin sabit altını, savaş deneyimi (1-1 sonunda yok); canavar turunda ganimet (kaybedilse de)
-      const once = M.seviye; ts = L.turSonu(M, M.tur - 1, sonuc); M.sonHasar = ts.hasar;
-      if (M.seviye > once) { this._yay('seviye', { seviye: M.seviye }); this.bildir(`Seviye ${M.seviye}: takımına ${K.takimBoyutu(M.seviye)} kahraman koyabilirsin`, 'iyi'); }
-      const g = b.pve ? this._ganimet(M.tur - 1) : null;
-      ts.esya = g ? g.esya : []; ts.kahraman = g ? g.kahraman : []; ts.secim = g ? g.secim : null; ts.zarf = g ? g.zarf : null;
-      if (g) ts.altin += g.ekAltin;
-      if (ts.altin) this.bildir(`Ganimet: +${ts.altin} altın`, 'iyi');
+      ts = this._seviyeliSonu(b, sonuc);
       if (M.can <= 0 || M.tur - 1 >= GECICI_SON_R) return this._macBitti(ts);
     } else {
       if (k === 1) M.can--;
       if (M.zafer >= kr.zaferHedef || M.can <= 0) return this._macBitti(ts);
     }
     M.tur++; this.kaydet();
-    return { devam: true, kazanan: k, hasar: ts.hasar, ganimet: ts.altin, esya: ts.esya || [], kahraman: ts.kahraman || [], secim: ts.secim || null, zarf: ts.zarf || null, pve: !!b.pve, can: M.can };
+    return { devam: true, kazanan: k, hasar: ts.hasar, lobi: ts.lobi || null, ganimet: ts.altin, esya: ts.esya || [], kahraman: ts.kahraman || [], secim: ts.secim || null, zarf: ts.zarf || null, pve: !!b.pve, can: M.can };
   }
+  /** Seviyeli maçın (Arena, Lobi) tur sonu: hasar (PvP: bölüm tabanı + rakibin sağ kalan yıldızları; canavar: taban + kalan canavar,
+      bölüm 1'de yok; lobide Son Üç / Son İki ekleri), seri, galibiyet, ganimetin sabit altını, savaş deneyimi (1-1 sonunda yok);
+      canavar turunda ganimet (kaybedilse de). */
+  _seviyeliSonu(b, sonuc, yasayan) {
+    const M = this.M, once = M.seviye, ts = L.turSonu(M, M.tur - 1, sonuc, yasayan); M.sonHasar = ts.hasar;
+    if (M.seviye > once) { this._yay('seviye', { seviye: M.seviye }); this.bildir(`Seviye ${M.seviye}: takımına ${K.takimBoyutu(M.seviye)} kahraman koyabilirsin`, 'iyi'); }
+    const g = b.pve ? this._ganimet(M.tur - 1) : null;
+    ts.esya = g ? g.esya : []; ts.kahraman = g ? g.kahraman : []; ts.secim = g ? g.secim : null; ts.zarf = g ? g.zarf : null;
+    if (g) ts.altin += g.ekAltin;
+    if (ts.altin) this.bildir(`Ganimet: +${ts.altin} altın`, 'iyi');
+    return ts;
+  }
+  /** Oyuncunun maç izi (bölüm 4.7). */
+  _iz(sira) { const M = this.M; return { macId: M.macId, oyuncu: this.P.oyuncu, ad: this.P.ad, kupa: this.P.kupa, surum: IZ_SURUM, ...(sira ? { sira } : {}), turlar: M.iz }; }
   _macBitti(ts = { hasar: 0, altin: 0 }) {
+    if (this.lobiMi()) return this._lobiMacBitti(ts);
     const M = this.M, sev = this.seviyeli();
     // Seviyeli maç (geçici, lobi gelene kadar): can bitmeden son tura ulaşan kazanır; kupa ulaşılan bölüme göre.
     const bolum = sev ? L.turPlan(M.tur - 1).bolum : 0;
@@ -361,6 +426,20 @@ export class Oyun {
     this.P.kupa = Math.max(0, this.P.kupa + fark); this.P.istat.mac++; if (kazandi) this.P.istat.birinci++;
     const ozet = { bitti: true, kazandi, fark, kupa: this.P.kupa, gecmis: M.gecmis.slice(), kod: O.kodla(this.P.sonTakim, this.P.ad), takim: this.P.sonTakim, zafer: M.zafer, tur: M.tur, mod: M.mod, seviye: M.seviye,
       can: M.can, turAd: this.turAd(), hasar: ts.hasar, kazanan: M.gecmis[M.gecmis.length - 1] };
+    this.P.mac = null; this.M = null; this.kaydet(); return ozet;
+  }
+  /** Lobi maçı bitti (bölüm 4.5): sıra, kupa tablosu (0–400 kupada kayıp yarı), ilk 3'teki takıma ustalık (+2, birinciye +4), iz yazılır. */
+  _lobiMacBitti(ts) {
+    const M = this.M, lb = M.lobi, sira = lb.oyuncular[0].sira || L.lobiSira(lb, 0), kazandi = sira === 1;
+    const fark = L.kupaDegisim(sira, this.P.kupa);
+    O.Hayalet.izBirak(this._iz(sira));
+    this.P.kupa = Math.max(0, this.P.kupa + fark); this.P.istat.mac++; if (kazandi) this.P.istat.birinci++;
+    if (sira <= 3) { this.P.istat.kursu = (this.P.istat.kursu || 0) + 1; const u = kazandi ? K.ustalikBirinci : K.ustalikKursu;
+      for (const t of this.P.sonTakim || []) { this.P.usta[t.h] = (this.P.usta[t.h] || 0) + u; if (t.f) this.P.usta[t.f] = (this.P.usta[t.f] || 0) + u; } }
+    const siralama = lb.oyuncular.slice().sort((a, b) => a.sira - b.sira).map(o => ({ sira: o.sira, ad: o.canli ? this.P.ad : o.ad, sen: o.canli, can: o.can,
+      elenme: o.sira === 1 ? null : L.turAd(o.elenmeR) }));
+    const ozet = { bitti: true, kazandi, fark, kupa: this.P.kupa, gecmis: M.gecmis.slice(), kod: O.kodla(this.P.sonTakim, this.P.ad), takim: this.P.sonTakim, zafer: M.zafer, tur: M.tur, mod: M.mod, seviye: M.seviye,
+      can: M.can, turAd: this.turAd(), hasar: ts.hasar, kazanan: M.gecmis[M.gecmis.length - 1], sira, siralama, lobi: ts.lobi || null };
     this.P.mac = null; this.M = null; this.kaydet(); return ozet;
   }
   duelloKodu() { return this.P.sonTakim ? O.kodla(this.P.sonTakim, this.P.ad) : null; }

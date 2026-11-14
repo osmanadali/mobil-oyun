@@ -246,7 +246,9 @@ kalanPuan = kazanan taraftaki sağ birimlerin toplamı (★1 = 1, ★2 = 2, ★3
 
 | Bölüm | 1 | 2 | 3 | 4 | 5 | 6 | 7+ |
 |---|---|---|---|---|---|---|---|
-| Taban | 0 (canavar, hasar yok) | 2 | 5 | 8 | 12 | 15 | 18 |
+| Taban | 0 (canavar, hasar yok) | 4 | 8 | 12 | 16 | 20 | 24 |
+
+Taban, lobi benzetimiyle (`test/lobi.test.cjs`) ayarlandı; ilk değer 2/5/8/12/15/18 idi ve maç ortanca 6-1'de bitiyordu. Yeni değerlerle maç ortanca 5-3'te biter, ilk elenme 4-1'dedir.
 
 - **Beraberlik**: iki taraf da yalnız tabanı alır.
 - **Canavar turu** (bölüm 2 ve sonrası): kaybeden `taban + kalan canavar sayısı` kadar hasar alır. Ganimet yine verilir (bölüm 5.3).
@@ -303,6 +305,8 @@ Her maç sonunda (ve her tur sonunda, kopmaya karşı) oyuncunun **maç izi** ha
 | 5-3 | 8 | 0,85 | 0,12 | 7 | 2 | 3 |
 
 Eşyalar en yüksek kademeli birime yığılır (3'e dolana kadar). Bot Kut'u yapay zekâ kuralıyla kullanır.
+
+Uygulamada (`online.js botIzTur`, `data.js KURAL.botIz`) `guc` ayrıca eğride kayma yapar: bot, eğriyi `r + (guc − 0,5) × 4` turunda okur (güçlü bot 2 tur önde, zayıf bot 2 tur geride). Bu olmadan botlar birbirine çok yakın kalıyor, ilk elenme 4-5'e kayıyordu.
 
 ---
 

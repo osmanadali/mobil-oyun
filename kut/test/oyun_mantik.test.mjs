@@ -156,7 +156,7 @@ ok(ozet.seviye >= 2 + 1, `maç sonunda savaş deneyimiyle seviye arttı (Sv ${oz
   await e.turBaslat(false); const g = e.M.gelir;
   ok(e.turAd() === '2-2' && g.taban === 5 && g.faiz === 2 && g.galibiyet === 1 && g.seri === 0 && e.M.altin === 27 + g.toplam, `2-2 başı: 5 taban + 2 faiz + 1 galibiyet${g.alamet ? ' + 2 alamet' : ''} (27 → ${e.M.altin})`);
   ok(e.faizSonraki() === Math.min(5, Math.floor(e.M.altin / 10)), 'sonraki turun faizi gösterilir');
-  r = bitir(1, 5); ok(r.hasar === 7 && e.M.can === 93 && !e.M.galibiyet && e.M.seri.tip === 'M', '2-2 yenilgisi: −7 can (taban 2 + 5 yıldız)');
+  r = bitir(1, 5); ok(r.hasar === 9 && e.M.can === 91 && !e.M.galibiyet && e.M.seri.tip === 'M', '2-2 yenilgisi: −9 can (taban 4 + 5 yıldız)');
   // yenileme 2 altın, kaynaştırma 2 + en yüksek kademe
   e.M.altin = 10; e.yenile(); ok(e.M.altin === 8, 'yenileme 2 altın');
   e.M.tahta = Array(12).fill(null); e.M.yedek = Array(7).fill(null); e.M.tahta[0] = { h: 'kurt', s: 1 }; e.M.tahta[1] = { h: 'anka', s: 1 };
@@ -171,7 +171,7 @@ ok(ozet.seviye >= 2 + 1, `maç sonunda savaş deneyimiyle seviye arttı (Sv ${oz
   ok(e.turAd() === '2-5' && !e.M.kervan && e.M.esyaRaf.length === raf0 + 1 && e.M.esyaRaf[e.M.esyaRaf.length - 1] === kv.esya && [...e.M.tahta, ...e.M.yedek].some(b => b && b.h === kv.birim.h)
     && e.M.altin === once + e.M.gelir.toplam, 'Kervan seçimi: kahraman yedeğe, eşya rafa; 2-5 başladı, gelir bir kez eklendi');
   // 2-7 canavar turu: seri bozulmaz; yenilgide taban + kalan sayısı
-  e.M.tur = 10; e.M.seri = { tip: 'G', n: 3 }; r = bitir(1, 9, 3); ok(r.hasar === 5 && e.M.seri.n === 3, '2-7 canavar yenilgisi: −5 (2 + 3 kalan), seri bozulmadı');
+  e.M.tur = 10; e.M.seri = { tip: 'G', n: 3 }; r = bitir(1, 9, 3); ok(r.hasar === 7 && e.M.seri.n === 3, '2-7 canavar yenilgisi: −7 (4 + 3 kalan), seri bozulmadı');
   // ölüm: can 0 → maç biter
   e.M.can = 6; e.M.tur = 18; await e.turBaslat(true); r = bitir(1, 4); ok(r.bitti && !r.kazandi && r.can === 0 && r.turAd === '4-1', `can bitti: ${r.turAd} turunda elendi (kupa ${r.fark})`);
   // son tura (5-3) canlı ulaşan kazanır
@@ -180,7 +180,7 @@ ok(ozet.seviye >= 2 + 1, `maç sonunda savaş deneyimiyle seviye arttı (Sv ${oz
   ok(z.bitti && z.kazandi && z.fark === 40 && z.turAd === '5-3' && z.can === 12, '5-3 sonu canlı: maç kazanıldı, +40 kupa');
   const w2 = new Oyun(); await w2.yeniMac('arena'); w2.M.dukkan = ['golem', null, null, null, null]; w2.satinAl(0);
   w2.M.tur = 27; w2.M.can = 12; w2.savasHazirla(); const z2 = w2.savasBitti({ kazanan: 1, kalanPuan: 0, kalanSayi: 0, kalan: 0.4, sure: 9 });
-  ok(z2.bitti && !z2.kazandi && z2.can === 0, '5-3 yenilgisi 12 can götürür (taban 12): son turda elendi');
+  ok(z2.bitti && !z2.kazandi && z2.can === 0, '5-3 yenilgisi 16 can götürür (taban 16): son turda elendi');
 }
 {
   // Hızlı Maç ekonomisi aynen: her tur 10 altın (birikmez), yenileme 1, yenilgide 1 can
@@ -296,7 +296,7 @@ ok(ozet.seviye >= 2 + 1, `maç sonunda savaş deneyimiyle seviye arttı (Sv ${oz
   // 2-7 zarfı
   e.M.tur = 10; await e.turBaslat(false); ok(e.M.rakip.pve && e.M.rakip.takim.length === 4, '2-7 rakibi: 3 Kum Akrebi + Ana Akrep');
   const a27 = e.M.altin; e.savasHazirla(); r = e.savasBitti({ kazanan: 1, kalanPuan: 4, kalanSayi: 2, kalan: 0, sure: 9 });
-  ok(r.hasar === 2 + 2 && r.zarf && (r.zarf === 'altin' ? e.M.altin === a27 + 3 && r.ganimet === 3 : r.zarf === 'bilesen' ? r.esya.length === 2 : r.kahraman.length === 1 && DD.kahraman(r.kahraman[0].h).kademe === 2), `2-7 yenilgisi: −4 can (2 + 2 canavar), bileşen + zarf (${r.zarf})`);
+  ok(r.hasar === 4 + 2 && r.zarf && (r.zarf === 'altin' ? e.M.altin === a27 + 3 && r.ganimet === 3 : r.zarf === 'bilesen' ? r.esya.length === 2 : r.kahraman.length === 1 && DD.kahraman(r.kahraman[0].h).kademe === 2), `2-7 yenilgisi: −6 can (4 + 2 canavar), bileşen + zarf (${r.zarf})`);
   // Kervan: yedek doluyken kahraman satış değerine çevrilir; 3-4'te ilk seçenek kaynaşmış
   e.M.tur = 14; await e.turBaslat(false);
   ok(e.turAd() === '3-4' && e.M.kervan && e.M.kervan.secenek[0].birim.f && e.M.kervan.secenek.length === LL.kervanAdet(e.siraTahmin()), '3-4 Kervan: ilk seçenek hazır kaynaşmış birim');
@@ -309,5 +309,60 @@ ok(ozet.seviye >= 2 + 1, `maç sonunda savaş deneyimiyle seviye arttı (Sv ${oz
   ok(!h.M.ilkSecim && !h.M.rakip.pve && h.turTip() === 'pvp', 'Hızlı Maç: bedava seçim ve canavar turu yok');
   h.M.dukkan = ['golem', null, null, null, null]; h.satinAl(0); const hs = h.savasHazirla(); while (!hs.bitti && hs.t < 26) hs.adim();
   ok(hs.gunBatimiCarpan() === 1, 'Hızlı Maç: Gün Batımı yok');
+  const hr = h.savasBitti(hs.sonunaKadar());
+  ok(hr && (hr.bitti || (!hr.pve && !hr.esya.length && !hr.kahraman.length && !hr.secim && !h.M.esyaRaf.length && !h.M.ganimetSecim)), 'Hızlı Maç: savaş sonunda ganimet yok');
+  // kayıtlı yarım maç: Kervan ve canavar turunda sayfa yenilenince seçim / dalga korunur
+  const y = new Oyun(); await y.yeniMac('arena'); y.ilkSec(0);
+  y.M.tur = 7; await y.turBaslat(false); const kvS = JSON.stringify(y.M.kervan.secenek);
+  const y2 = new Oyun(); ok(y2.M.kervan && JSON.stringify(y2.M.kervan.secenek) === kvS && y2.bekleyenSecim() === 'kervan' && y2.savasHazirla() === null, 'yenilemede Kervan seçenekleri aynı kalır, savaş açılmaz');
+  await y2.kervanSec(2); ok(y2.turAd() === '2-5' && !y2.M.kervan && !y2.M.rakip.pve, 'yenilemeden sonra Kervan seçimi 2-5\'i başlatır');
+  y2.M.tur = 10; await y2.turBaslat(false); const y3 = new Oyun();
+  ok(y3.M.rakip.pve && y3.M.rakip.takim.map(b => b.h).join() === 'kumAkrebi,kumAkrebi,kumAkrebi,anaAkrep', 'yenilemede canavar dalgası korunur');
+}
+// ── Lobi Maçı: 8 kişilik hayalet lobi (bölüm 4) ──
+{
+  const LL = window.KUT_LOBI, DD = window.KUT_DATA;
+  const o = new Oyun(); o.P.kupa = 300; await o.yeniMac('lobi');
+  ok(o.M.mod === 'lobi' && o.lobiMi() && o.seviyeli() && o.M.lobi.oyuncular.length === 8 && o.M.lobi.oyuncular[0].canli && o.M.can === 100, 'Lobi Maçı: 8 oyuncu (sen + 7 hayalet), 100 can, seviyeli kurallar');
+  ok(o.M.ilkSecim && o.M.rakip && o.M.rakip.pve && o.lobiDurum().length === 8 && o.lobiDurum()[0].sen, '1-1: bedava kahraman seçimi ve canavar dalgası; lobi durumu okunur');
+  o.ilkSec(0);
+  const iz0 = JSON.parse(depo['kut.iz.v2'] || '[]').length;
+  let oz = null, n = 0, pvpGordu = false, rakipDogru = true, canAyni = true, havuzOk = true, alametOk = true;
+  while (!oz && n++ < 70) {
+    if (o.M.kervan) { await o.kervanSec(0); continue; }
+    const r = o.M.tur - 1;
+    if (o.turTip() === 'pvp') {
+      pvpGordu = true; const rk = LL.lobiRakip(o.M.lobiEs, 0);
+      if (!rk || o.M.rakip.lobiI !== rk.j || JSON.stringify(o.M.rakip.takim) !== JSON.stringify(LL.lobiKadro(o.M.lobi, rk.j, r).takim)) rakipDogru = false;
+      if (o.M.alamet !== LL.lobiAlamet(o.M.lobi.tohum, r)) alametOk = false;
+      const h = o.havuz(), gh = LL.havuzLobi(o.M.lobi, r, [...o.M.tahta, ...o.M.yedek]);
+      if (DD.KAHRAMANLAR.some(x => h[x.id] !== gh[x.id])) havuzOk = false;
+    }
+    for (let i = 0; i < 5; i++) if (o.M.dukkan[i] && o.M.altin >= 5) o.satinAl(i);
+    while (o.M.altin >= 10 && o.M.seviye < 8) o.xpAl();
+    for (let i = 0; i < o.M.yedek.length; i++) { const b = o.M.yedek[i], ti = o.M.tahta.findIndex(x => !x); if (b && ti >= 0 && o.tahtaSay() < o.yuva()) { o.M.tahta[ti] = b; o.M.yedek[i] = null; } }
+    for (let q = 0; q < 3 && o.M.esyaRaf.length; q++) o.esyaTak(0, 'tahta', o.M.tahta.findIndex(Boolean));
+    const sim = o.savasHazirla(); if (!sim) break;
+    const res = o.savasBitti(sim.sonunaKadar());
+    if (res.bitti) oz = res;
+    else { if (o.M.can !== o.M.lobi.oyuncular[0].can || !res.lobi) canAyni = false; await o.turBaslat(false); }
+  }
+  ok(pvpGordu && rakipDogru, 'PvP turunda rakip, lobi eşleşmesindeki hayaletin bu turki kadrosu (ya da Yansıma)');
+  ok(alametOk, 'lobide alamet lobinin tamamına aynı (lobi tohumundan)');
+  ok(havuzOk, 'lobide havuz 7 hayaletin kadrolarını da düşer');
+  ok(canAyni, 'oyuncunun canı lobideki canıyla aynı; savaş sonucu lobi raporunu taşır');
+  ok(oz && oz.bitti && oz.sira >= 1 && oz.sira <= 8 && oz.siralama.length === 8 && oz.siralama.map(x => x.sira).sort().join() === '1,2,3,4,5,6,7,8' && oz.siralama.filter(x => x.sen).length === 1,
+    `maç sonu: ${oz ? oz.sira : '?'}. sıra, 8 kişilik sıralama (her sıra bir kez)`);
+  ok(oz && oz.fark === LL.kupaDegisim(oz.sira, 300) && o.P.kupa === 300 + oz.fark, `kupa sıralama tablosundan (${oz ? oz.fark : '?'})`);
+  const izler = JSON.parse(depo['kut.iz.v2'] || '[]');
+  ok(izler.length === iz0 + 1 && izler[izler.length - 1].sira === oz.sira && izler[izler.length - 1].turlar.length >= 5 && izler[izler.length - 1].turlar.every(t => t.takim && t.r >= 0), 'maç izi havuza yazıldı (tur tur kadro, sıra)');
+  ok(!o.P.mac, 'maç kapandı');
+  // kendi izi kendi lobisine girmez; başka oyuncunun izi girer
+  const b2 = new Oyun(); b2.P.kupa = 300; b2.P.oyuncu = 'baska'; await b2.yeniMac('lobi');
+  ok(b2.M.lobi.oyuncular.some(x => x.iz && x.iz.turlar), 'başka oyuncunun lobisinde bu maçın izi hayalet olarak yer alır');
+  const b3 = new Oyun(); b3.P.kupa = 300; b3.P.oyuncu = o.P.oyuncu; await b3.yeniMac('lobi');
+  ok(b3.M.lobi.oyuncular.every(x => x.canli || x.iz.bot), 'oyuncunun kendi izi kendi lobisine girmez');
+  // yarım lobi maçı sayfa yenilenince sürer
+  b3.ilkSec(0); const b4 = new Oyun(); ok(b4.M && b4.M.mod === 'lobi' && b4.lobiMi() && b4.M.lobi.oyuncular.length === 8, 'yarım lobi maçı kayıttan açılır');
 }
 process.exit(hata ? 1 : 0);

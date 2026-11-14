@@ -7,7 +7,7 @@ let hata = 0; const ok = (c, m) => { if (!c) { hata++; console.log('✗', m); } 
 // 1) KURAL: belgedeki sayılar
 ok(K.tabanGelirBolum1.join() === '3,3,4' && K.tabanGelir === 5 && K.faizAdim === 10 && K.faizTavan === 5, 'taban 3/3/4 sonra 5; faiz her 10 altına 1, en çok 5');
 ok(K.galibiyetBonus === 1 && K.pazarBonus === 2 && K.yenile === 2 && K.hizli.yenile === 1, 'galibiyet +1, Bereketli Pazar +2, yenileme 2 (Hızlı Maç 1)');
-ok(K.canBaslangic === 100 && K.bolumTabani.join() === '0,0,2,5,8,12,15,18' && K.sonUcEk === 3 && K.sonIkiEk === 5, '100 can, bölüm tabanı 0/2/5/8/12/15/18, Son Üç +3, Son İki +5');
+ok(K.canBaslangic === 100 && K.bolumTabani.join() === '0,0,4,8,12,16,20,24' && K.sonUcEk === 3 && K.sonIkiEk === 5, '100 can, bölüm tabanı 0/4/8/12/16/20/24 (lobi benzetimiyle ayarlı), Son Üç +3, Son İki +5');
 
 // 2) tur planı (bölüm 1.1)
 const adlar = Array.from({ length: 25 }, (_, r) => L.turAd(r));
@@ -37,13 +37,13 @@ ok(L.ganimetAltin(0) === 0 && L.ganimetAltin(1) === 2 && L.ganimetAltin(2) === 2
 
 // 6) kaybedince alınan hasar (bölüm 4.4)
 const r2 = 4, r3 = 10, r4 = 17, r5 = 24, r7 = 3 + 7 * 5;
-ok(L.kayipHasar(r2, 1, 4, 3)[0] === 6 && L.kayipHasar(r2, 1, 4, 3)[1] === 0, '2-2 yenilgi: 2 + 4 kalan yıldız = 6');
-ok(L.kayipHasar(r3, 0, 5, 3).join() === '0,10' && L.kayipHasar(r4, 1, 7, 4)[0] === 15 && L.kayipHasar(r5, 1, 3, 2)[0] === 15 && L.kayipHasar(r7, 1, 0, 0)[0] === 18, 'taban bölüm 3: 5, 4: 8, 5: 12, 7+: 18');
-ok(L.kayipHasar(r3, -1, 0, 0).join() === '5,5', 'beraberlik: iki taraf da yalnız taban');
+ok(L.kayipHasar(r2, 1, 4, 3)[0] === 8 && L.kayipHasar(r2, 1, 4, 3)[1] === 0, '2-2 yenilgi: 4 + 4 kalan yıldız = 8');
+ok(L.kayipHasar(r3, 0, 5, 3).join() === '0,13' && L.kayipHasar(r4, 1, 7, 4)[0] === 19 && L.kayipHasar(r5, 1, 3, 2)[0] === 19 && L.kayipHasar(r7, 1, 0, 0)[0] === 24, 'taban bölüm 3: 8, 4: 12, 5: 16, 7+: 24');
+ok(L.kayipHasar(r3, -1, 0, 0).join() === '8,8', 'beraberlik: iki taraf da yalnız taban');
 ok(L.kayipHasar(0, 1, 6, 3).join() === '0,0' && L.kayipHasar(2, 1, 6, 3).join() === '0,0', 'bölüm 1 canavar: hasar yok');
-ok(L.kayipHasar(9, 1, 6, 3).join() === '5,0' && L.kayipHasar(9, 0, 0, 0).join() === '0,0', '2-7 canavar yenilgisi: taban 2 + kalan canavar sayısı 3; canavar can kaybetmez');
+ok(L.kayipHasar(9, 1, 6, 3).join() === '7,0' && L.kayipHasar(9, 0, 0, 0).join() === '0,0', '2-7 canavar yenilgisi: taban 4 + kalan canavar sayısı 3; canavar can kaybetmez');
 ok(L.kayipHasar(6, 1, 9, 9).join() === '0,0', 'Kervan turunda hasar yok');
-ok(L.kayipHasar(r4, 1, 2, 2, 3)[0] === 13 && L.kayipHasar(r4, 1, 2, 2, 2)[0] === 15 && L.kayipHasar(r4, -1, 0, 0, 2).join() === '13,13', 'Son Üç taban +3, Son İki +5');
+ok(L.kayipHasar(r4, 1, 2, 2, 3)[0] === 17 && L.kayipHasar(r4, 1, 2, 2, 2)[0] === 19 && L.kayipHasar(r4, -1, 0, 0, 2).join() === '17,17', 'Son Üç taban +3, Son İki +5');
 
 // 7) tur sonu: durum yerinde değişir
 {
@@ -54,7 +54,7 @@ ok(L.kayipHasar(r4, 1, 2, 2, 3)[0] === 13 && L.kayipHasar(r4, 1, 2, 2, 2)[0] ===
   ok(d.altin === 8 && o.altin === 2 && d.seviye === 3 && !d.galibiyet && d.seri.n === 0, '1-2: +3 gelir, +2 ganimet, +2 deneyim (Sv 3); canavar galibiyeti seri ve galibiyet saymaz');
   L.turBasi(d, 3, 'yok'); L.turSonu(d, 3, { kazanan: 0, kalanPuan: 2, kalanSayi: 2 }); ok(d.galibiyet && d.seri.tip === 'G' && d.seri.n === 1, '2-1 PvP galibiyeti: galibiyet bonusu hazır, G1');
   const once = d.altin; const gl = L.turBasi(d, 4, 'yok'); ok(gl.galibiyet === 1 && gl.faiz === Math.floor(once / 10) && d.altin === once + gl.toplam, '2-2 başı: galibiyet +1 ve faiz eklendi');
-  o = L.turSonu(d, 4, { kazanan: 1, kalanPuan: 5, kalanSayi: 3 }); ok(o.hasar === 7 && d.can === 93 && !d.galibiyet && d.seri.tip === 'M', '2-2 yenilgi: −7 can (2 + 5), galibiyet bonusu düştü');
+  o = L.turSonu(d, 4, { kazanan: 1, kalanPuan: 5, kalanSayi: 3 }); ok(o.hasar === 9 && d.can === 91 && !d.galibiyet && d.seri.tip === 'M', '2-2 yenilgi: −9 can (4 + 5), galibiyet bonusu düştü');
   d.can = 4; L.turSonu(d, 17, { kazanan: 1, kalanPuan: 6, kalanSayi: 4 }); ok(d.can === 0, 'can 0\'ın altına inmez');
   const tavan = { altin: 0, can: 50, seri: { tip: null, n: 0 }, galibiyet: false, seviye: 8, xp: 0 };
   ok(L.turSonu(tavan, 5, { kazanan: 0, kalanPuan: 1, kalanSayi: 1 }).xp === 0 && tavan.seviye === 8 && tavan.xp === 0, 'Sv 8: savaş deneyimi eklenmez');

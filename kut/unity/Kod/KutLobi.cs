@@ -38,7 +38,7 @@ namespace Kut
     /// <summary>Kervan seçeneği: kahraman (kaynaşmış olabilir) ve üstündeki eşya.</summary>
     public sealed class KervanSecenekSonuc { public TakimBirimi Birim; public string Esya; }
 
-    public static class KutLobi
+    public static partial class KutLobi
     {
         /// <summary>Sonraki seviyeye gereken deneyim (tavanda 0).</summary>
         public static int XpGerek(int seviye) => seviye >= KutVeri.SeviyeTavan ? 0 : KutVeri.XpTablo[seviye];

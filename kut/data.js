@@ -232,6 +232,16 @@
     8: [0.15, 0.35, 0.5],
   };
 
+  // ── Bot izi eğrisi (OYNANIS_DERINLIK.md 4.8): tur sırası r → [r, seviye, ★2 oranı, ★3 oranı, tam eşya, kaynaşmış birim].
+  // r 2 = 1-3, 5 = 2-3, 12 = 3-3, 19 = 4-3, 26 = 5-3; ilk satır (r 0) başlangıç. Arası doğrusal; son satırdan sonra son eğimle, tavana kadar.
+  const BOT_IZ = {
+    egri: [[0, 2, 0.1, 0, 0, 0], [2, 3, 0.2, 0, 0, 0], [5, 4, 0.35, 0, 1, 0], [12, 6, 0.55, 0, 3, 1], [19, 7, 0.75, 0.05, 5, 1], [26, 8, 0.85, 0.12, 7, 2]],
+    tavan: [0, 8, 0.95, 0.3, 10, 3],  // sütun başına üst sınır (r sütunu kullanılmaz)
+    gucTaban: 0.8, gucAdim: 0.4,
+    gucTur: 4,                         // güç eğride öne/arkaya kaydırır: r + (güç − 0,5) × 4 (güç 1 → 2 tur önde, 0 → 2 tur geride)       // ★2 ve eşya sayısı × (0,8 + 0,4 × güç): güç 0 → −%20, güç 1 → +%20
+    bilesen: 2,                        // tam eşyası olmayan bot, 1-2'den sonra en çok 2 bileşen taşır; tam eşyalıda 1 artan bileşen
+  };
+
   // ── Asıl oyunun kuralları (OYNANIS_DERINLIK.md 12.1). Hızlı Maç kuralları KURAL.hizli altında. ──
   const KURAL = {
     // ortak
@@ -273,10 +283,17 @@
     // canavar dalgaları (5.5)
     pveDalga: PVE_DALGA, pveDalgaGec: PVE_DALGA_GEC, pveDalgaGecBolum: 6,
     // kaybedince alınan hasar (bölüm 4.4): bölüm tabanı + kazanan taraftaki sağ birimlerin yıldızları
-    bolumTabani: [0, 0, 2, 5, 8, 12, 15, 18],   // indeks = bölüm (7 ve sonrası son değer); bölüm 1 canavar, hasar yok
+    bolumTabani: [0, 0, 4, 8, 12, 16, 20, 24],  // indeks = bölüm (7 ve sonrası son değer); bölüm 1 canavar, hasar yok. İlk değer 2/5/8/12/15/18; lobi benzetimiyle (test/lobi.test.cjs) maç 5-3'te bitsin diye artırıldı
     sonUcEk: 3, sonIkiEk: 5,                    // lobide 3 kişi kalınca taban +3, 2 kişi kalınca +5
     // eşyalar (bölüm 5): birim başına 3 yuva, raf en çok 10, eşyalardan alınan hasar azaltma en çok %40
     esyaYuva: 3, esyaRaf: 10, esyaAzaltTavan: 0.4,
+    // 8 kişilik hayalet lobi (bölüm 4): eşleşme yasağı son 3 tur (yaşayan − 2 ile sınırlı), 50 karıştırma denemesi, sonra yasak gevşer
+    lobiBoyut: 8, yasakTur: 3, eslesmeDeneme: 50, lobiTurTavan: 80,
+    // sıralama ödülü (4.5): indeks = sıra (1..8) → kupa; 0–400 kupada kayıplar yarıya iner, kupa 0'ın altına düşmez
+    kupaTablo: [0, 40, 30, 20, 10, -10, -20, -30, -40], kupaKoruma: 400,
+    ustalikKursu: 2, ustalikBirinci: 4, // ilk 3'teki takımda her kahramana +2 ustalık, birinciye +4
+    lobiEsles: 150,                      // lobi kurarken iz seçimi: kupa ±150
+    botIz: BOT_IZ,
     hizli: HIZLI,
   };
 

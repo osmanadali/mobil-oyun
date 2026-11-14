@@ -202,7 +202,7 @@ namespace Kut
         /// <summary>İndeks = seri uzunluğu (sonuncusu tavan) → seri bonusu.</summary>
         public static readonly int[] SeriTablo = { 0, 0, 1, 2, 2, 3 };
         /// <summary>İndeks = bölüm (sonuncusu tavan) → kaybedince alınan hasarın tabanı.</summary>
-        public static readonly int[] BolumTabani = { 0, 0, 2, 5, 8, 12, 15, 18 };
+        public static readonly int[] BolumTabani = { 0, 0, 4, 8, 12, 16, 20, 24 };
         /// <summary>Bölüm → Kut Armağanı'nın geldiği tur.</summary>
         public static readonly Dictionary<int, int> ArmaganTur = new Dictionary<int, int> { { 2, 1 }, { 3, 2 }, { 4, 3 } };
         public const int EsyaYuva = 3, EsyaRaf = 10;
@@ -222,6 +222,15 @@ namespace Kut
         public static readonly DalgaBirim[] PveDalgaGec = new[] { new DalgaBirim { H = "yildizYiyen", X = 1, Y = 2 }, new DalgaBirim { H = "kadimBekci", X = 1, Y = 0 }, new DalgaBirim { H = "kadimBekci", X = 2, Y = 0 } };
         /// <summary>Gün Batımı (1.4): GunBatimiBasla saniyesinden sonra her tam saniye hasar +GunBatimiArtis.</summary>
         public const double GunBatimiBasla = 20.0, GunBatimiArtis = 0.1;
+        // 8 kişilik hayalet lobi (bölüm 4)
+        public const int LobiBoyut = 8, YasakTur = 3, EslesmeDeneme = 50, LobiTurTavan = 80, KupaKoruma = 400, UstalikKursu = 2, UstalikBirinci = 4, LobiEsles = 150;
+        /// <summary>İndeks = sıra (1..8) → kupa değişimi (bölüm 4.5).</summary>
+        public static readonly int[] KupaTablo = { 0, 40, 30, 20, 10, -10, -20, -30, -40 };
+        /// <summary>Bot izi eğrisi (4.8): satır [r, seviye, ★2 oranı, ★3 oranı, tam eşya, kaynaşmış]; Tavan sütun başına üst sınır.</summary>
+        public static readonly double[][] BotIzEgri = { new[] { 0.0, 2.0, 0.1, 0.0, 0.0, 0.0 }, new[] { 2.0, 3.0, 0.2, 0.0, 0.0, 0.0 }, new[] { 5.0, 4.0, 0.35, 0.0, 1.0, 0.0 }, new[] { 12.0, 6.0, 0.55, 0.0, 3.0, 1.0 }, new[] { 19.0, 7.0, 0.75, 0.05, 5.0, 1.0 }, new[] { 26.0, 8.0, 0.85, 0.12, 7.0, 2.0 } };
+        public static readonly double[] BotIzTavan = { 0.0, 8.0, 0.95, 0.3, 10.0, 3.0 };
+        public const double BotIzGucTaban = 0.8, BotIzGucAdim = 0.4, BotIzGucTur = 4.0;
+        public const int BotIzBilesen = 2;
 
         /// <summary>Hızlı Maç: prototipin kuralları (data.js KURAL.hizli).</summary>
         public static class Hizli

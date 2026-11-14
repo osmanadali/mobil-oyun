@@ -268,11 +268,66 @@ const baslangic = [];
 for (let i = 0; i < 150; i++) { const tohum = 41000 + i * 7, kalan = i % 3 === 2 ? null : rastKalan(i % 4); baslangic.push({ tohum, kalan, sonuc: L.baslangicSecenek(S.rng(tohum), kalan) }); }
 const kervanAdet = Array.from({ length: 11 }, (_, i) => L.kervanAdet(i - 1));
 
+// 10) 8 kişilik hayalet lobi: bot izi, kayıtlı iz, lobi izleri, alamet, eşleşme, kupa, tam lobi benzetimleri (online.js, lobi.js)
+const RL = S.rng(424242);
+const izEgriV = Array.from({ length: 140 }, (_, i) => { const r = i * 0.37; return { r, v: O.izEgri(r) }; });
+const botIzV = [];
+for (let i = 0; i < 400; i++) { const tohum = Math.floor(RL() * 1e9), guc = [0, 0.25, 0.5, 0.75, 1, RL()][i % 6], r = i % 46; botIzV.push({ tohum, guc, r, sonuc: O.botIzTur(tohum, guc, r) }); }
+const izKayit = (t, g, n, kutlu) => O.botIz(t, g, n).filter((x, k) => L.turPlan(k).tip !== 'kervan' && (k % 3 !== 1 || n % 2)).map((x, k) => (kutlu && k % 2 ? { ...x, kut: { i: k % x.takim.length, t: 2 + (k % 7) * 0.65 } } : x));
+const izTurV = [];
+for (let i = 0; i < 200; i++) { const turlar = izKayit(100 + i * 31, (i % 5) / 4, 2 + i % 24, i % 4 === 1), r = (i * 7) % 52; izTurV.push({ turlar, r, sonuc: O.izTur({ turlar }, r) }); }
+const lobiIzV = [];
+for (let i = 0; i < 80; i++) {
+  const kupa = (i * 53) % 900, tohum = 7000 + i * 11;
+  const kayit = i % 2 ? [] : Array.from({ length: i % 11 }, (_, k) => ({ macId: 'm' + k, oyuncu: k % 5 === 4 ? null : 'o' + (k % 4), ad: k % 6 === 5 ? '' : 'Ad' + k, kupa: kupa + ((k * 67) % 400) - 200, sira: k % 9, surum: k % 3 === 0 ? 2 : 1, turlar: [O.botIzTur(k + 1, 0.5, 3 + k)] }));
+  const oyuncu = i % 3 ? 'o1' : null, surum = i % 4 === 0 ? 1 : null;
+  lobiIzV.push({ kupa, tohum, kayit, oyuncu, surum, sonuc: O.lobiIzler(kupa, tohum, kayit, oyuncu, surum) });
+}
+const alametV = Array.from({ length: 200 }, (_, i) => { const tohum = Math.floor(RL() * 4294967296), r = i % 50; return { tohum, r, al: L.lobiAlamet(tohum, r) }; });
+const kupaV = [];
+for (const sira of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]) for (const kupa of [0, 5, 20, 399, 400, 401, 1000]) kupaV.push({ sira, kupa, d: L.kupaDegisim(sira, kupa) });
+const lobiKur = (tohum, kupa, kayitli, canli) => {
+  const iz = O.lobiIzler(kupa, tohum, [], null, null, 8);
+  if (kayitli) for (let k = 1; k < 8; k += 3) iz[k] = { ad: iz[k].ad, kupa, turlar: izKayit(iz[k].bot.tohum, iz[k].bot.guc, 8 + k * 3, true) };
+  return L.lobiYeni(canli ? { ad: 'Sen', kupa } : { ad: iz[0].ad, kupa, iz: iz[0].bot ? { bot: iz[0].bot } : { turlar: iz[0].turlar } }, iz.slice(1), tohum * 2654435761);
+};
+const eslesmeV = [];
+for (let i = 0; i < 300; i++) {
+  const lb = lobiKur(500 + i, 300, false, false);
+  for (const o of lb.oyuncular) { o.olu = RL() < 0.3; o.sonYansima = RL() < 0.3; o.gecmisRakip = Array.from({ length: Math.floor(RL() * 6) }, () => Math.floor(RL() * 9) - 1); }
+  const r = 3 + (i % 40);
+  eslesmeV.push({ tohum: lb.tohum, olu: lb.oyuncular.map(o => o.olu), sonYansima: lb.oyuncular.map(o => o.sonYansima), gecmis: lb.oyuncular.map(o => o.gecmisRakip), r, es: L.eslesmeKur(lb, r) });
+}
+const lobiV = [];
+for (let n = 0; n < 24; n++) {
+  const tohum = 90000 + n * 977, kupa = (n * 41) % 700, kayitli = n % 3 === 1, canli = n % 4 === 3;
+  const lb = lobiKur(tohum, kupa, kayitli, canli), turlar = [];
+  while (!L.lobiBitti(lb) && lb.r < K.lobiTurTavan) {
+    const r = lb.r, p = L.turPlan(r), es = p.tip === 'pvp' ? L.eslesmeKur(lb, r) : null, kayit = { r, es };
+    const ops = { eslesme: es || undefined };
+    if (canli && !lb.oyuncular[0].olu && p.tip !== 'kervan') {
+      // canlı oyuncu: bot izi kadrosuyla kendi savaşını oynar (oyun.js gibi), sonucu lobiye verilir
+      const ct = O.botIzTur(tohum + 5, 0.6, r).takim, rk = es ? L.lobiRakip(es, 0) : null;
+      const rakip = p.tip === 'pve' ? L.pveDalga(r) : rk ? L.lobiKadro(lb, rk.j, r, ct).takim : null;
+      if (rakip) { const s2 = S.Savas(ct, rakip, { tohum: tohum + r, alamet: L.lobiAlamet(lb.tohum, r), yz: p.tip === 'pve' ? [0] : [0, 1], gunBatimi: K.gunBatimi.basla }).sonunaKadar();
+        ops.canliTakim = ct; ops.canliSonuc = { kazanan: s2.kazanan, kalanPuan: s2.kalanPuan, kalanSayi: s2.kalanSayi, sure: s2.sure }; kayit.canliTakim = ct; kayit.canliSonuc = ops.canliSonuc; }
+    }
+    const rp = L.lobiTurOyna(lb, r, ops);
+    kayit.alamet = rp.alamet; kayit.sonuclar = rp.sonuclar; kayit.hasar = rp.hasar; kayit.elenen = rp.elenen; kayit.can = lb.oyuncular.map(o => o.can);
+    kayit.sira = lb.oyuncular.map(o => L.lobiSira(lb, o.i)); kayit.seri = lb.oyuncular.map(o => (o.seri.tip || '') + o.seri.n);
+    if (r % 6 === 2) kayit.havuz = L.havuzLobi(lb, r, O.botIzTur(tohum, 0.5, r).takim);
+    turlar.push(kayit);
+  }
+  L.lobiSonaKadar(lb);
+  lobiV.push({ tohum, kupa, kayitli, canli, turlar, sira: lb.oyuncular.map(o => o.sira), elenmeR: lb.oyuncular.map(o => o.elenmeR) });
+}
+
 const fs = require('fs'), path = require('path');
 const out = path.join(__dirname, '..', 'unity', 'Test', 'esdeger.json');
 fs.writeFileSync(out, JSON.stringify({ savas, kut1, kut2, xp, havuz, dukkan, botSeviye, ekonomi: { turPlan, gelir, seri, hasar, kaynastir, ganimet, zincir },
   esya: { stat: esyaStat, tak: esyaTak, topla: esyaTopla, raf: rafBirlestir, ganimet: ganimetEsya },
-  canavar: { pveDalga, ganimet: ganimetV, kervan: kervanV, baslangic, kervanAdet } }));
+  canavar: { pveDalga, ganimet: ganimetV, kervan: kervanV, baslangic, kervanAdet },
+  lobi: { izEgri: izEgriV, botIz: botIzV, izTur: izTurV, lobiIz: lobiIzV, alamet: alametV, kupa: kupaV, eslesme: eslesmeV, lobi: lobiV } }));
 const k = savas.map(v => v.sonuc.sonuc.kazanan);
 console.log('savaş', savas.length, '(A kazanır', k.filter(x => x === 0).length, '· B', k.filter(x => x === 1).length, '· berabere', k.filter(x => x === -1).length + ')',
   '| KUT1 kodu', kut1.length, '| KUT2 kodu', kut2.length, '(bozuk ' + kut2.filter(v => !v.cozum).length + ')', '| deneyim', xp.length, '| havuz', havuz.length, '| dükkân', dukkan.length,
@@ -280,4 +335,6 @@ console.log('savaş', savas.length, '(A kazanır', k.filter(x => x === 0).length
   'zincir', zincir.length, '(' + zincir.reduce((t, z) => t + z.turlar.length, 0) + ' tur)',
   '| eşya: savaş', savas.filter(v => [...v.A, ...v.B].some(b => b.e && b.e.length)).length, 'istatistik', esyaStat.length, 'takma', esyaTak.length, 'toplama', esyaTopla.length, 'raf', rafBirlestir.length, 'ganimet', ganimetEsya.length,
   '| canavar: savaş', savas.filter(v => [...v.A, ...v.B].some(b => D.canavar(b.h))).length, 'Gün Batımı', savas.filter(v => v.opt.gunBatimi != null).length,
-  '(30 sn\'ye kalan', savas.filter(v => v.opt.gunBatimi != null && v.sonuc.sonuc.sure >= 30).length + ')', 'dalga', pveDalga.length, 'ganimet', ganimetV.length, 'Kervan', kervanV.length, 'bedava seçim', baslangic.length, '→', out);
+  '(30 sn\'ye kalan', savas.filter(v => v.opt.gunBatimi != null && v.sonuc.sonuc.sure >= 30).length + ')', 'dalga', pveDalga.length, 'ganimet', ganimetV.length, 'Kervan', kervanV.length, 'bedava seçim', baslangic.length,
+  '| lobi: eğri', izEgriV.length, 'bot izi', botIzV.length, 'kayıtlı iz', izTurV.length, 'lobi izleri', lobiIzV.length, 'alamet', alametV.length, 'kupa', kupaV.length, 'eşleşme', eslesmeV.length,
+  'tam lobi', lobiV.length, '(' + lobiV.reduce((t, l) => t + l.turlar.length, 0) + ' tur, ' + lobiV.reduce((t, l) => t + l.turlar.reduce((u, x) => u + x.sonuclar.length, 0), 0) + ' lobi savaşı)', '→', out);

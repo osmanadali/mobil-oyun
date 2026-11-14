@@ -121,6 +121,16 @@ satir.push(`        public static readonly Dictionary<string, DalgaBirim[]> PveD
 satir.push(`        public static readonly DalgaBirim[] PveDalgaGec = ${dalga(K.pveDalgaGec)};`);
 satir.push(`        /// <summary>Gün Batımı (1.4): GunBatimiBasla saniyesinden sonra her tam saniye hasar +GunBatimiArtis.</summary>`);
 satir.push(`        public const double GunBatimiBasla = ${sayi(K.gunBatimi.basla)}, GunBatimiArtis = ${sayi(K.gunBatimi.artis)};`);
+satir.push('        // 8 kişilik hayalet lobi (bölüm 4)');
+satir.push(`        public const int LobiBoyut = ${K.lobiBoyut}, YasakTur = ${K.yasakTur}, EslesmeDeneme = ${K.eslesmeDeneme}, LobiTurTavan = ${K.lobiTurTavan}, KupaKoruma = ${K.kupaKoruma}, UstalikKursu = ${K.ustalikKursu}, UstalikBirinci = ${K.ustalikBirinci}, LobiEsles = ${K.lobiEsles};`);
+satir.push(`        /// <summary>İndeks = sıra (1..8) → kupa değişimi (bölüm 4.5).</summary>`);
+satir.push(`        public static readonly int[] KupaTablo = { ${K.kupaTablo.join(', ')} };`);
+const BI = K.botIz;
+satir.push(`        /// <summary>Bot izi eğrisi (4.8): satır [r, seviye, ★2 oranı, ★3 oranı, tam eşya, kaynaşmış]; Tavan sütun başına üst sınır.</summary>`);
+satir.push(`        public static readonly double[][] BotIzEgri = { ${BI.egri.map(l => `new[] { ${dizi(l)} }`).join(', ')} };`);
+satir.push(`        public static readonly double[] BotIzTavan = { ${dizi(BI.tavan)} };`);
+satir.push(`        public const double BotIzGucTaban = ${sayi(BI.gucTaban)}, BotIzGucAdim = ${sayi(BI.gucAdim)}, BotIzGucTur = ${sayi(BI.gucTur)};`);
+satir.push(`        public const int BotIzBilesen = ${BI.bilesen};`);
 satir.push('');
 satir.push('        /// <summary>Hızlı Maç: prototipin kuralları (data.js KURAL.hizli).</summary>');
 satir.push('        public static class Hizli');
