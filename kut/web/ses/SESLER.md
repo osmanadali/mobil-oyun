@@ -32,3 +32,9 @@ Düzeyler: sık çalanlar kısık (vuruş 0.4, atış 0.3, düğme 0.35); büyü
 - `Assets/Audio/SFX/` altına koyun. Import: *Decompress On Load* (kısa sesler), *Force To Mono*.
 - Bir `SesYoneticisi` yazın: 10 kaynaklı AudioSource havuzu, ad→clip sözlüğü, pitch ±0.08. `KutSavas` olaylarını görsel zamanla (darbe anında) çalın, motor zamanıyla değil.
 - İleride: müzik (dükkân ve savaş döngüsü), soy etkinleşme sesi, altın/faiz sesi.
+
+## Seçim (kullanıcı, 4 çeşit arasından)
+
+`vurus_yumruk=4 vurus_pence=eski vurus_isirma=3 atis_buyu=2 atis_ok=2 isabet_buyu=1 kaya_firlat=2 uluma=1 davul=eski can_emme=1 kasirga=2 boynuz=1 zehir=1 buz=3 ates_halkasi=2 dortnal=4 isik_kanat=4 kara_golge=eski kul_yagmuru=4 ayaz=4 yildirim=2 kut=4 olum=1 dirilis=eski kalkan_kir=3 savas_basla=1 zafer=eski yenilgi=eski satin_al=1 yenile=eski birlesme=1 kaynasma=eski dugme=eski golge_ok=eski`
+
+Adaylar `kut/ses_aday/` altında duruyor (ad_1..4.mp3).
