@@ -1,0 +1,96 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Görünüm testi</title>
+<style>html,body{margin:0;height:100%;background:#1b1230;overflow:hidden}#t{position:absolute;inset:0;width:100%;height:100%}
+#bilgi{position:absolute;left:8px;top:6px;color:#fff;font:13px sans-serif;text-shadow:0 1px 2px #000}</style>
+<script type="importmap">{"imports":{"three":"../vendor/three/three.module.min.js"}}</script></head>
+<body><canvas id="t"></canvas><div id="bilgi"></div>
+<script type="module">
+/* ?mod=once  → sahne3d.js'in şimdiki ışık/ton ayarı (karşılaştırma)
+   ?mod=sonra → gorunum.js   (&ton=notr|agx|aces  &kalite=yuksek|hafif  &gorus=yakin|arena  &y=golem,tilki,kurt) */
+import * as THREE from 'three';
+import { GLTFLoader } from '../vendor/three/addons/loaders/GLTFLoader.js';
+import * as G from './gorunum.js';
+globalThis.KUT_IMG_YUKLEYICI = true;
+const q = new URLSearchParams(location.search);
+const mod = q.get('mod') || 'sonra', kalite = q.get('kalite') || 'yuksek', gorus = q.get('gorus') || 'yakin';
+const ids = (q.get('y') || 'golem,tilki,kurt').split(',');
+for (const k of Object.keys(G.AYAR)) if (q.has(k)) G.AYAR[k] = isNaN(+q.get(k)) ? q.get(k) : +q.get(k);
+document.getElementById('bilgi').textContent = mod + ' ' + (mod === 'sonra' ? G.AYAR.ton + ' ' + kalite : 'ACES') + ' ' + gorus;
+
+const tuval = document.getElementById('t');
+const renderer = new THREE.WebGLRenderer({ canvas: tuval, antialias: true, preserveDrawingBuffer: true });
+const sahne = new THREE.Scene(), kamera = new THREE.PerspectiveCamera(34, 16 / 10, 0.1, 200);
+const tl = new THREE.TextureLoader(), yk = new GLTFLoader();
+const glb = (ad) => fetch('modeller/' + ad + '.glb').then(r => r.arrayBuffer()).then(b => new Promise((ok, no) => yk.parse(b, '', ok, no)));
+
+// gökyüzü + sis (sahne3d ile aynı)
+const gok = tl.load('../gorsel/gokyuzu.webp'); gok.colorSpace = THREE.SRGBColorSpace;
+const kure = new THREE.Mesh(new THREE.SphereGeometry(90, 64, 32), new THREE.MeshBasicMaterial({ map: gok, side: THREE.BackSide, fog: false }));
+kure.rotation.y = Math.PI; kure.position.y = 6; sahne.add(kure);
+sahne.background = new THREE.Color('#7d4d9e'); sahne.fog = new THREE.Fog('#8a5aa8', 30, 75);
+
+if (mod === 'once') {
+  renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  sahne.add(new THREE.HemisphereLight('#ffd9f2', '#4a2f5c', 1.15));
+  const gunes = new THREE.DirectionalLight('#ffc27a', 2.6); gunes.position.set(-6, 10, -8); gunes.castShadow = true;
+  gunes.shadow.mapSize.set(2048, 2048); Object.assign(gunes.shadow.camera, { left: -7, right: 7, top: 7, bottom: -7, near: 1, far: 40 }); gunes.shadow.bias = -0.0005;
+  sahne.add(gunes);
+  const dolgu = new THREE.DirectionalLight('#9fc4ff', 0.7); dolgu.position.set(5, 6, 8); sahne.add(dolgu);
+} else {
+  G.kur(renderer, sahne, kamera, { kalite });
+  G.isikKur(sahne, { kalite });
+}
+
+const olcekle = (o, boy, eksen = 'y') => { const s = new THREE.Box3().setFromObject(o).getSize(new THREE.Vector3()); o.scale.multiplyScalar(boy / (eksen === 'max' ? Math.max(s.x, s.y, s.z) : s.y)); };
+const golgeAc = (o) => o.traverse(m => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } });
+const DORT = new Set(['kurt', 'koc', 'kaplumbaga', 'semender', 'bulutat', 'yilan']);
+
+// arena
+const [ada, kristal, kemer] = await Promise.all(['ada', 'kristal', 'kemer'].map(glb));
+{ const a = ada.scene; golgeAc(a); const s0 = new THREE.Box3().setFromObject(a).getSize(new THREE.Vector3()); a.scale.multiplyScalar(12.5 / Math.max(s0.x, s0.z));
+  const k = new THREE.Box3().setFromObject(a); a.position.y -= k.max.y - 0.02; a.position.x -= (k.min.x + k.max.x) / 2; a.position.z -= (k.min.z + k.max.z) / 2; sahne.add(a);
+  const tas = tl.load('../gorsel/doku_tas.webp'); tas.colorSpace = THREE.SRGBColorSpace; tas.wrapS = tas.wrapT = THREE.RepeatWrapping; tas.repeat.set(1, 8 / 6); tas.anisotropy = 8;
+  const tahta = new THREE.Mesh(new THREE.PlaneGeometry(6, 8), new THREE.MeshStandardMaterial({ map: tas, roughness: 0.9 })); tahta.rotation.x = -Math.PI / 2; tahta.position.y = 0.012; tahta.receiveShadow = true; sahne.add(tahta);
+  const cizgi = new THREE.Mesh(new THREE.PlaneGeometry(6.4, 0.07), new THREE.MeshBasicMaterial({ color: mod === 'sonra' ? G.parlakRenk('#ffc94a', 1.6) : '#ffc94a', transparent: true, opacity: 0.95 }));
+  cizgi.rotation.x = -Math.PI / 2; cizgi.position.y = 0.02; sahne.add(cizgi);
+  for (const [x, z] of [[-4.4, 3.6], [4.4, -2.2]]) { const o = kristal.scene.clone(); golgeAc(o); olcekle(o, 1.1); const kk = new THREE.Box3().setFromObject(o); o.position.set(x, -kk.min.y, z); sahne.add(o); }
+  { const o = kemer.scene; golgeAc(o); olcekle(o, 3.2); const kk = new THREE.Box3().setFromObject(o); o.position.set(0, -kk.min.y, -6.2); sahne.add(o); }
+}
+
+// yaratıklar
+const modeller = await Promise.all(ids.map(glb));
+const yer = gorus === 'yakin' ? ids.map((_, i) => [(i - (ids.length - 1) / 2) * 1.35, 1.5]) : [[-1.5, 1.5], [0.5, 2.5], [-0.5, -1.5], [1.5, -2.5]];
+ids.forEach((id, i) => {
+  const model = modeller[i].scene; golgeAc(model);
+  const kemik = {}; model.traverse(o => { if (o.isBone) kemik[o.name.replace('mixamorig', '').replace(':', '')] = o; });
+  model.updateMatrixWorld(true);
+  if (DORT.has(id)) { const bas = kemik.tripoHead_0 || kemik.tripoHead_1, arka = kemik.tripoSpine_0 || kemik.tripoRoot;
+    if (bas && arka) { const v = bas.getWorldPosition(new THREE.Vector3()).sub(arka.getWorldPosition(new THREE.Vector3())); v.y = 0; if (v.lengthSq() > 1e-6) model.rotation.y = -Math.atan2(v.x, v.z); } }
+  model.updateMatrixWorld(true);
+  olcekle(model, DORT.has(id) ? 1.25 : 1.15, DORT.has(id) ? 'max' : 'y');
+  const kk = new THREE.Box3().setFromObject(model); model.position.y -= kk.min.y; const k2 = new THREE.Box3().setFromObject(model);
+  model.position.x -= (k2.min.x + k2.max.x) / 2; model.position.z -= (k2.min.z + k2.max.z) / 2;
+  const kok = new THREE.Group(); kok.add(model);
+  const [x, z] = yer[i]; kok.position.set(x, 0, z);
+  const taraf = gorus === 'yakin' ? 1 : (z > 0 ? 0 : 1);
+  kok.rotation.y = gorus === 'yakin' ? (DORT.has(id) ? 0.5 : 0.25) : (taraf === 0 ? Math.PI : 0);
+  if (mod === 'sonra') { G.malzemeIyilestir(model, { renk: taraf === 0 ? 'biz' : 'rakip', kahraman: id }); kok.add(G.golgeLekesi(DORT.has(id) ? 0.6 : 0.42)); }
+  sahne.add(kok);
+});
+
+function boyut() {
+  const w = tuval.clientWidth, h = tuval.clientHeight; kamera.aspect = w / h;
+  if (gorus === 'yakin') { kamera.fov = 30; kamera.position.set(0, 1.5, 6.2); kamera.lookAt(0, 0.62, 1.5); }
+  else { kamera.fov = 34; kamera.position.set(0, 8.9, 7.6); kamera.lookAt(0, 0, 0.35); }
+  kamera.updateProjectionMatrix();
+  if (mod === 'sonra') G.boyutla(w, h, 1); else { renderer.setPixelRatio(1); renderer.setSize(w, h, false); }
+}
+boyut();
+window.ciz = () => { if (mod === 'sonra') G.ciz(); else renderer.render(sahne, kamera); };
+// dokular img ile yükleniyor; birkaç kare bekle
+await new Promise(r => setTimeout(r, 1500));
+window.ciz();
+window.HAZIR = true;
+if (!q.get('elle')) (function d() { window.ciz(); requestAnimationFrame(d); })();
+</script></body></html>
