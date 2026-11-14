@@ -51,7 +51,7 @@ button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer
 
 /* ---------- Şişkin düğme ---------- */
 .tb{--a:var(--altin);--b:var(--altin2);--k:var(--altinK);
-  position:relative;display:flex;align-items:center;justify-content:center;gap:10px;min-height:56px;min-width:56px;
+  position:relative;display:flex;align-items:center;justify-content:center;gap:10px;min-height:60px;min-width:60px;
   padding:0 20px 6px;border-radius:22px;border:4px solid var(--cizgi);font-weight:900;font-size:20px;color:#fff;
   background:linear-gradient(180deg,var(--a) 0%,var(--b) 100%);
   box-shadow:inset 0 -7px 0 var(--k),0 6px 0 var(--cizgi),0 12px 16px rgba(20,4,50,.35);
@@ -118,7 +118,7 @@ button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer
    2) MAÇ (DÜKKÂN + TAHTA)
    ===================================================================== */
 #mac .gok::after{background:linear-gradient(180deg,rgba(29,11,61,.55),rgba(29,11,61,.25) 30%,rgba(29,11,61,.55))}
-.macIzgara{position:absolute;inset:0;padding:12px 16px 18px;display:grid;grid-template-columns:272px 1fr 296px;grid-template-rows:58px 1fr 176px;gap:16px 16px}
+.macIzgara{position:absolute;inset:0;padding:12px 16px 18px;display:grid;grid-template-columns:272px 1fr 296px;grid-template-rows:62px 1fr 176px;gap:14px 16px}
 /* üst çubuk */
 .ustCubuk{grid-column:1/-1;display:flex;align-items:center;gap:12px}
 .canlar{display:flex;gap:2px;align-items:center}
@@ -137,7 +137,7 @@ button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer
 .altinHap .para{width:40px;height:40px;font-size:20px;border-width:3px}
 
 /* sol sütun */
-.solSutun{display:flex;flex-direction:column;gap:24px;min-height:0}
+.solSutun{display:flex;flex-direction:column;gap:22px;min-height:0}
 .rakipKart{padding:20px 12px 12px;background:linear-gradient(180deg,#fff6e6,#ffe8d2)}
 .rakipKart .baslikSerit{background:linear-gradient(#ff7aa8,#e2408f);font-size:15px}
 .rakipKart .baslikSerit svg{width:20px;height:20px}
@@ -156,19 +156,19 @@ button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer
 .soyCip img{width:26px;height:26px}
 .rakipIpucu{margin-top:8px;padding:6px 10px;border-radius:14px;background:#ffe3f0;border:2px dashed #e2408f;font-size:13px;font-weight:800;color:#8d1d5a;line-height:1.25}
 
-.soyPanel{flex:1;min-height:0;padding:20px 10px 8px;display:flex;flex-direction:column}
+.soyPanel{flex:1;min-height:0;padding:18px 10px 8px;display:flex;flex-direction:column}
 .soyPanel .baslikSerit{background:linear-gradient(#9b63ff,#6a35b8)}
-.soyListe{display:flex;flex-direction:column;gap:5px;overflow:hidden}
-.soySatir{display:flex;align-items:center;gap:8px;height:37px;flex:none;padding:0 8px 0 3px;border-radius:16px;background:#fff;border:3px solid #d9c9f0}
-.soySatir img{width:31px;height:31px}
+.soyListe{display:flex;flex-direction:column;gap:4px;overflow:hidden}
+.soySatir{display:flex;align-items:center;gap:8px;height:33px;flex:none;padding:0 8px 0 3px;border-radius:14px;background:#fff;border:3px solid #d9c9f0}
+.soySatir img{width:27px;height:27px}
 .soyDiger{display:flex;flex-wrap:nowrap;gap:4px;margin-top:1px}
 .soyDiger .soyCip{font-size:13px;opacity:.75;border-color:#cbb9e8;padding-right:6px;border-width:2px}
 .soyDiger .soyCip img{width:22px;height:22px;filter:grayscale(.6)}
 .soyDigerB{font-size:10.5px;font-weight:900;color:#8a74b3;letter-spacing:1px;margin-top:1px}
-.soySatir .ad{flex:1;font-weight:900;font-size:16px;line-height:1}
-.soySatir .ad small{display:block;font-size:11.5px;font-weight:800;color:#7a5aa8;margin-top:2px;white-space:nowrap}
+.soySatir .ad{flex:1;font-weight:900;font-size:15px;line-height:1}
+.soySatir .ad small{display:block;font-size:11px;font-weight:800;color:#7a5aa8;margin-top:2px;white-space:nowrap}
 .esik{display:flex;align-items:center;gap:3px;font-weight:900;font-size:13px;color:#a593c4}
-.esik i{display:grid;place-items:center;width:24px;height:24px;border-radius:8px;background:#ece4f8;border:2px solid #cbb9e8;font-style:normal}
+.esik i{display:grid;place-items:center;width:22px;height:22px;border-radius:8px;background:#ece4f8;border:2px solid #cbb9e8;font-style:normal}
 .soySatir.aktif{border-color:var(--cizgi);background:linear-gradient(90deg,#fff7d6,#fff);box-shadow:0 3px 0 var(--cizgi)}
 .soySatir.aktif .esik i.on{background:linear-gradient(#ffe066,#ffab1a);border-color:var(--cizgi);color:var(--cizgi)}
 .soySatir.pasif{opacity:.62}
@@ -246,7 +246,7 @@ button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer
 .kaynastirTb .metin small{font-size:12.5px;white-space:nowrap;display:flex;align-items:center;gap:4px;margin-top:3px}
 .kaynastirTb::after{content:"YENİ";position:absolute;right:-8px;top:-12px;padding:2px 8px 3px;border-radius:999px;background:var(--altin);border:3px solid var(--cizgi);color:var(--cizgi);font-size:11px;text-shadow:none;transform:rotate(8deg)}
 .satSira{display:flex;gap:10px}
-.satSira .tb{flex:1;font-size:18px;min-height:52px}
+.satSira .tb{flex:1;font-size:18px;min-height:60px}
 
 /* alt: dükkân */
 .dukkanCubuk{grid-column:1/-1;display:flex;gap:14px;align-items:stretch;padding:14px 14px 14px;border-radius:32px;
@@ -330,7 +330,7 @@ button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer
 .alametMini{display:flex;align-items:center;gap:8px;height:50px;padding:0 14px 0 4px;border-radius:999px;background:linear-gradient(90deg,#8d1636,#d93a4f);border:3px solid var(--cizgi);color:#fff;font-weight:900;font-size:15px;box-shadow:0 4px 0 var(--cizgi)}
 .alametMini .ay{width:32px;height:32px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ffd0b0,#ff5a3a 55%,#a3122a);border:2px solid #fff}
 .hizSec{display:flex;padding:4px;border-radius:24px;background:var(--krem);border:4px solid var(--cizgi);box-shadow:inset 0 -5px 0 var(--krem2),0 5px 0 var(--cizgi);gap:4px}
-.hizSec button{width:56px;height:50px;border-radius:17px;font-weight:900;font-size:21px;color:#8a74b3}
+.hizSec button{width:62px;height:58px;border-radius:17px;font-weight:900;font-size:21px;color:#8a74b3}
 .hizSec button.on{background:linear-gradient(var(--mavi),var(--mavi2));color:#fff;border:3px solid var(--cizgi);box-shadow:inset 0 -4px 0 var(--maviK);text-shadow:0 2px 0 rgba(0,0,0,.25)}
 .durdurTb{width:62px;height:62px;padding:0 0 6px;border-radius:22px;font-size:26px}
 .durdurTb::before{left:10px;right:10px}
@@ -376,7 +376,7 @@ button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer
    4) MAÇ SONU
    ===================================================================== */
 #son .kartAlan{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:44px 24px 24px}
-.sonKart{width:900px;padding:58px 34px 28px;display:flex;flex-direction:column;gap:18px}
+.sonKart{width:960px;padding:58px 34px 28px;display:flex;flex-direction:column;gap:18px}
 .sonSerit{position:absolute;left:50%;top:-56px;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;width:520px;height:100px;border-radius:34px;
   background:linear-gradient(180deg,#5af08a,#1fae55);border:5px solid var(--cizgi);box-shadow:inset 0 -9px 0 rgba(0,0,0,.18),0 7px 0 var(--cizgi)}
 .sonSerit h2{font-size:64px;font-weight:900;letter-spacing:3px}
@@ -386,11 +386,11 @@ button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer
 .bolum{display:flex;align-items:center;gap:16px}
 .bolum>label{width:120px;font-weight:900;font-size:15px;color:#7a5aa8;text-align:right;flex:none;line-height:1.15}
 .turGecmis{display:flex;gap:8px;flex-wrap:wrap}
-.turTop{width:52px;height:56px;border-radius:18px;border:3px solid var(--cizgi);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;color:#fff;box-shadow:inset 0 -5px 0 rgba(0,0,0,.18),0 4px 0 var(--cizgi);text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.turTop{width:50px;height:56px;border-radius:18px;border:3px solid var(--cizgi);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;color:#fff;box-shadow:inset 0 -5px 0 rgba(0,0,0,.18),0 4px 0 var(--cizgi);text-shadow:0 2px 0 rgba(0,0,0,.25)}
 .turTop small{font-size:10px;opacity:.9}
 .turTop b{font-size:21px;line-height:1}
 .turTop.k{background:linear-gradient(#5af08a,#22b552)}.turTop.y{background:linear-gradient(#ff8a96,#e2304a)}
-.kupaSatir{flex:1;display:flex;align-items:center;gap:14px}
+.kupaSatir{flex:1;min-width:0;display:flex;align-items:center;gap:14px}
 .kupaBar{flex:1;height:30px;border-radius:999px;background:#e9def8;border:3px solid var(--cizgi);position:relative;overflow:hidden}
 .kupaBar i{position:absolute;left:0;top:0;bottom:0;width:62%;background:linear-gradient(#ffe066,#ffab1a);border-radius:999px}
 .kupaBar i.yeni{left:62%;width:9%;background:linear-gradient(#7af59a,#22b552);border-radius:0 999px 999px 0}
@@ -407,9 +407,9 @@ button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer
 .sonTakim .miniP .ek img{position:static;width:120%;margin:0 0 0 -10%}
 .ustalikCip{display:flex;align-items:center;gap:5px;padding:4px 12px 5px 4px;border-radius:999px;background:#f1e9ff;border:3px solid var(--mor2);font-weight:900;font-size:14px;color:var(--mor2);margin-left:auto}
 .ustalikCip .rz{width:28px;height:28px;border-radius:50%;background:linear-gradient(#b98bff,#7339e0);display:grid;place-items:center;color:#fff;border:2px solid var(--cizgi)}
-.kodSatir{flex:1;display:flex;gap:10px;align-items:center}
-.kodKutu{flex:1;min-width:0;height:60px;display:flex;align-items:center;padding:0 16px;border-radius:18px;background:#2a1250;border:4px solid var(--cizgi);color:#ffe066;font-family:"JetBrains Mono",ui-monospace,monospace;font-weight:800;font-size:17px;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:inset 0 5px 0 rgba(0,0,0,.35)}
-.kodSatir .tb{min-height:60px;font-size:18px;padding:0 16px 6px;flex:none}
+.kodSatir{flex:1;min-width:0;display:flex;gap:10px;align-items:center}
+.kodKutu{flex:1;min-width:0;height:60px;display:flex;align-items:center;padding:0 16px;border-radius:18px;background:#2a1250;border:4px solid var(--cizgi);color:#ffe066;font-family:"JetBrains Mono",ui-monospace,monospace;font-weight:800;font-size:15px;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:inset 0 5px 0 rgba(0,0,0,.35)}
+.kodSatir .tb{min-height:60px;font-size:18px;padding:0 14px 6px;flex:none}
 .sonDugme{display:flex;gap:16px;justify-content:center;margin-top:6px}
 .sonDugme .tb{min-height:78px;font-size:28px;border-radius:28px;padding:0 34px 7px}
 .sonDugme .tb svg{width:32px;height:32px}
@@ -505,7 +505,7 @@ button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer
         <div class="hap" style="padding:0 16px;font-size:20px"><span style="font-size:13px;color:#7a5aa8;margin-right:2px">TUR</span>5</div>
         <div class="alametSerit"><div class="ay"></div><div style="min-width:0;display:flex;flex-direction:column"><small>ALAMET</small><b>Kan Ayı</b></div><span>— herkes +%20 hasar verir</span></div>
         <div class="hap altinHap"><span class="para">K</span>10</div>
-        <button class="tb krem yuvarlakTb" style="width:56px;height:56px;font-size:26px" aria-label="Ayarlar"><svg class="i"><use href="#i-cark"/></svg></button>
+        <button class="tb krem yuvarlakTb" style="width:62px;height:62px;font-size:26px" aria-label="Ayarlar"><svg class="i"><use href="#i-cark"/></svg></button>
       </div>
 
       <!-- sol -->
@@ -591,7 +591,7 @@ button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer
     <div class="kartAlan">
       <div class="panel sonKart">
         <div class="sonSerit"><div class="kup s"><svg class="i"><use href="#i-yildiz"/></svg></div><h2 class="kontur">ŞAMPİYON!</h2><div class="kup g"><svg class="i"><use href="#i-kupa"/></svg></div></div>
-        <div class="sonAlt">7 zafer · 9 turda · 2 can kaldı</div>
+        <div class="sonAlt">7 zafer · 10 turda · 2 can kaldı</div>
         <div class="bolum"><label>TUR<br>GEÇMİŞİ</label><div class="turGecmis" id="turGecmis"></div></div>
         <div class="bolum"><label>KUPA</label>
           <div class="kupaSatir"><div class="say"><svg class="i"><use href="#i-kupa"/></svg>1200</div><div class="kupaBar"><i></i><i class="yeni"></i></div><div class="say"><svg class="i"><use href="#i-kupa"/></svg>1240</div><div class="degisim">+40</div></div></div>
@@ -726,7 +726,7 @@ button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer
     <div class="hasar" style="left:28%;top:24%">-62</div>
     <div class="hasar yet" style="left:61%;top:33%">-320</div>
     <div class="yetEtiket" style="left:61%;top:26.5%">Kara Gölge!</div>
-    <div class="hasar iyi" style="left:45%;top:64%">+110</div>
+    <div class="hasar iyi" style="left:47%;top:69%">+110</div>
     <div class="hasar kalk" style="left:28%;top:49%">+90 kalkan</div>
     <div class="hasar" style="left:71%;top:50%">-48</div>`);
   $('skorB').innerHTML=[1,1,1,1,1].map(()=>'<i></i>').join('');
@@ -751,7 +751,7 @@ button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer
   }
 
   /* ----- SON ----- */
-  const turlar=['k','k','y','k','y','k','k','y','k'];
+  const turlar=['k','k','y','k','y','k','k','y','k','k'];
   $('turGecmis').innerHTML=turlar.map((t,i)=>`<div class="turTop ${t}"><small>TUR</small><b>${i+1}</b></div>`).join('');
   const sonT=[['golem',3],['ayi',2,'anka'],['koc',2],['semender',1],['kurbaga',2],['baykus',1]];
   $('sonTakim').innerHTML=sonT.map(([id,s,f])=>f
