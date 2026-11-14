@@ -599,6 +599,22 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 @keyframes dondurA{50%{transform:rotate(-90deg)}}
 @media (orientation:portrait) and (max-width:900px){.dondur{display:grid}}
 :root{color-scheme:dark}
+
+/* ---------- ÇİZİM PARÇALARI (ChatGPT, arayuz/ui) ---------- */
+.pn{border-color:transparent;background:none;border-image:url(../arayuz/ui/w_panel.png) 30 fill / 13px / 7px stretch;box-shadow:0 10px 22px rgba(0,0,0,.35)}
+.pn.kalin{border-image-width:15px;border-image-outset:8px}
+.btn.altin,.btn.mor,.btn.sat{background:none;box-shadow:none;border:3px solid transparent;border-image:url(../arayuz/ui/w_dugme_altin.png) 42 44 50 fill / 12px 14px 16px / 4px 3px 4px stretch;filter:drop-shadow(0 5px 6px rgba(0,0,0,.45))}
+.btn.altin:active{border-image-source:url(../arayuz/ui/w_dugme_altin_b.png)}
+.btn.mor{border-image-source:url(../arayuz/ui/w_dugme_mor.png);color:#fff}
+.btn.mor:active{border-image-source:url(../arayuz/ui/w_dugme_mor_b.png)}
+.btn.sat{border-image-source:url(../arayuz/ui/w_dugme_sat.png);color:#fff;text-shadow:0 2px 0 rgba(80,0,20,.7)}
+.btn.sat:active{border-image-source:url(../arayuz/ui/w_dugme_sat_b.png)}
+.btn.altin.secik{filter:drop-shadow(0 0 8px rgba(255,214,100,.9)) drop-shadow(0 5px 6px rgba(0,0,0,.45))}
+.btn.gb{background:none;box-shadow:none;border:3px solid transparent;border-image:url(../arayuz/ui/w_gunbatimi.png) 52 64 56 fill / 17px 21px 18px / 6px 7px 6px stretch}
+.btn:disabled{filter:grayscale(.75) brightness(.8)}
+.kut{background:url(../arayuz/ui/w_kut_hazir.png) center/contain no-repeat;border:0;box-shadow:none;filter:drop-shadow(0 0 24px rgba(255,170,60,.75)) drop-shadow(0 6px 10px rgba(0,0,0,.5))}
+.kut.bitti{background:url(../arayuz/ui/w_kut_bitti.png) center/contain no-repeat;box-shadow:none;filter:drop-shadow(0 6px 10px rgba(0,0,0,.5))}
+.kut .yz big{text-shadow:0 2px 0 rgba(255,240,200,.8),0 0 10px rgba(255,255,255,.6)}
 </style>
 </head>
 <body>

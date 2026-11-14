@@ -22,6 +22,7 @@ function glbJson(kaynak, hedef) {
 }
 for (const f of fs.readdirSync(path.join(WEB, 'modeller'))) if (f.endsWith('.glb')) glbJson(path.join(WEB, 'modeller', f), path.join(OUT, 'modeller', f.replace(/\.glb$/, '.json')));
 for (const f of fs.readdirSync(path.join(KUT, 'arayuz'))) if (f.endsWith('.png')) kopya('arayuz/' + f, 'arayuz/' + f);
+for (const f of fs.readdirSync(path.join(KUT, 'arayuz', 'ui'))) if (f.startsWith('w_')) kopya('arayuz/ui/' + f, 'arayuz/ui/' + f);
 for (const f of fs.readdirSync(path.join(KUT, 'arayuz', 'portre'))) kopya('arayuz/portre/' + f, 'arayuz/portre/' + f);
 for (const f of fs.readdirSync(path.join(WEB, 'ses'))) if (f.endsWith('.mp3')) { fs.mkdirSync(path.join(OUT, 'ses'), { recursive: true }); fs.copyFileSync(path.join(WEB, 'ses', f), path.join(OUT, 'ses', f)); }
 for (const f of ['gokyuzu.webp', 'doku_tas.webp', 'doku_cimen.webp']) kopya('gorsel/' + f, 'gorsel/' + f);
