@@ -265,8 +265,9 @@ export function boyutla() {
   G.boyutla(w, h, Math.min(1.5, window.devicePixelRatio || 1)); kamera.aspect = w / h;
   // taban kadraj: tahtanın tamamı (savaş öncesi/sonu); savaşta kadraj kamerası yaşayanların sınır kutusuna yaklaşır (kare())
   const dar = w / h < 1.45;
-  kamera.fov = dar ? 38 : 32;
-  kam.tabanP.set(0, dar ? 9.6 : 8.5, dar ? 8.2 : 7.3); kam.tabanH.set(0, 0, dar ? 0.3 : 0.2);
+  // 4×3 tahta: rakibin arka sırası (z ≈ −3) ve can çubukları üst kenarda kesilmesin
+  kamera.fov = dar ? 41 : 35;
+  kam.tabanP.set(0, dar ? 9.6 : 8.5, dar ? 8.0 : 7.3); kam.tabanH.set(0, 0, dar ? 0.1 : -0.2);
   kamera.position.copy(kam.tabanP); kamera.lookAt(kam.tabanH); kam.ilk = true; kam.serbest = false;
   kamera.updateProjectionMatrix();
   const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -712,7 +713,7 @@ function kadraj(dtR) {
   if (sim && !sim.bitti) for (const b of birimler.values()) { if (b.olumT >= 0) continue; const p = b.kok.position; x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); z0 = Math.min(z0, p.z); z1 = Math.max(z1, p.z); n++; }
   let olcek = 1, mx = 0, mz = kam.tabanH.z;
   if (n >= 2) {
-    const gen = x1 - x0 + 2.2, der = z1 - z0 + 2.4;
+    const gen = x1 - x0 + 2.2, der = z1 - z0 + 3.2;
     olcek = Math.min(1, Math.max(0.66, Math.max(gen / 7.2, der / 8.6)));
     mx = (x0 + x1) / 2 * 0.5; mz = (z0 + z1) / 2 + 0.25;
   }

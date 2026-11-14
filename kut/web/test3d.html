@@ -11,10 +11,11 @@ let A=KUT_ONLINE.botTakim(tur,tohum,0.6), B=KUT_ONLINE.botTakim(tur,tohum+50,0.6
 if(q.get('takim')==='hepsi'){ const H=KUT_DATA.KAHRAMANLAR.map(h=>h.id); A=H.slice(0,6).map((h,k)=>({h,s:1+(k%3),x:k%3,y:Math.floor(k/3)})); B=H.slice(6,12).map((h,k)=>({h,s:1,x:k%3,y:Math.floor(k/3)})); }
 if(q.get('takim')==='hepsi2'){ const H=KUT_DATA.KAHRAMANLAR.map(h=>h.id); A=H.slice(10,16).map((h,k)=>({h,s:1,x:k%3,y:Math.floor(k/3)})); B=H.slice(0,6).map((h,k)=>({h,s:2,x:k%3,y:Math.floor(k/3)})); }
 if(q.get('a')){ const yap=(l)=>l.split(',').map((h,k)=>({h,s:1,x:k%3,y:Math.floor(k/3)})); A=yap(q.get('a')); B=yap(q.get('b')); }
+if(q.get('takim')==='sekiz'){ const H=KUT_DATA.KAHRAMANLAR.map(h=>h.id); const y=(l)=>l.map((h,k)=>({h,s:1,x:k%4,y:Math.floor(k/4)*2})); A=y(H.slice(0,8)); B=y(H.slice(8,16)); }
 await S3.hazirla(document.getElementById('t'), document.getElementById('k'), '', {hafif: !!q.get('hafif')});
 const sim=KUT_SIM.Savas(A,B,{tohum, alamet:'yok', yz:[1]});
 await S3.savasKur(sim);
 window.HAZIR=true; window.SAHNE=S3; window.SIM=sim;
-window.ilerlet=(sn)=>{ const n=Math.round(sn*60); let r; for(let i=0;i<n;i++){ r=S3.kare(1/60); } return r; };
+window.ilerlet=(sn)=>{ const n=Math.max(1,Math.round(sn*10)); let r; for(let i=0;i<n;i++){ r=S3.kare(1/10); } return r; };
 if(!q.get('elle')) (function d(){ S3.kare(); requestAnimationFrame(d); })();
 </script></body></html>
