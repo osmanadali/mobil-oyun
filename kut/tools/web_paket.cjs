@@ -26,6 +26,7 @@ for (const f of fs.readdirSync(path.join(KUT, 'arayuz', 'ui'))) if (/^(w|ik|al)_
 if (fs.existsSync(path.join(KUT, 'arayuz', 'ui', 'esya'))) for (const f of fs.readdirSync(path.join(KUT, 'arayuz', 'ui', 'esya'))) if (f.endsWith('.png')) kopya('arayuz/ui/esya/' + f, 'arayuz/ui/esya/' + f);   // eşya simgeleri
 for (const f of fs.readdirSync(path.join(KUT, 'arayuz', 'portre'))) kopya('arayuz/portre/' + f, 'arayuz/portre/' + f);
 for (const f of fs.readdirSync(path.join(WEB, 'ses'))) if (f.endsWith('.mp3')) { fs.mkdirSync(path.join(OUT, 'ses'), { recursive: true }); fs.copyFileSync(path.join(WEB, 'ses', f), path.join(OUT, 'ses', f)); }
+for (const f of fs.readdirSync(path.join(WEB, 'muzik'))) if (f.endsWith('.mp3')) { fs.mkdirSync(path.join(OUT, 'muzik'), { recursive: true }); fs.copyFileSync(path.join(WEB, 'muzik', f), path.join(OUT, 'muzik', f)); }
 for (const f of ['gokyuzu.webp', 'doku_tas.webp', 'doku_cimen.webp']) kopya('gorsel/' + f, 'gorsel/' + f);
 // kalan ../ yolu var mı?
 const kalan = ['index.html', 'arayuz.js', 'sahne3d.js', 'gorunum.js', 'vfx.js', 'hareket.js'].flatMap(f => fs.readFileSync(path.join(OUT, f), 'utf8').split('\n').filter(l => !/^\s*(\/\*|\/\/|\*)/.test(l) && /['"`]\.\.\//.test(l)).map(l => f + ': ' + l.trim().slice(0, 80)));

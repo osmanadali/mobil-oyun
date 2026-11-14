@@ -31,6 +31,7 @@ export function kur(kokYolu = '') {
     const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
     ctx = new AC(); ana = ctx.createGain(); ana.gain.value = acik ? duzey : 0; ana.connect(ctx.destination);
     for (const d of DOSYALAR) yukle(d);
+    muzikKur();
   };
   for (const o of ['pointerdown', 'keydown', 'touchstart']) window.addEventListener(o, ac, { capture: true, passive: true });
 }
@@ -74,8 +75,41 @@ export function olay(f, kaynakBirim, hedefBirim) {
   }
 }
 
+// --- Müzik: hazırlık ve savaş döngüleri (ElevenLabs, 30 sn, kesintisiz döngü). Ayrı kazanç, geçişte yumuşak kesişme.
+const MUZIK = { hazirlik: 0.32, savas: 0.28 };
+let muzikKazanc = null, muzikAcik = true, istenen = null, calanM = null;
+const muzikTampon = {};
+try { if (localStorage.getItem('kut.muzik') === '0') muzikAcik = false; } catch (e) { /* depolama kapalı */ }
+function muzikKur() {
+  muzikKazanc = ctx.createGain(); muzikKazanc.gain.value = muzikAcik && acik ? 1 : 0; muzikKazanc.connect(ctx.destination);
+  for (const ad of Object.keys(MUZIK)) fetch(kok + 'muzik/' + ad + '.mp3').then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status))
+    .then(b => new Promise((ok, red) => ctx.decodeAudioData(b, ok, red))).then(t => { muzikTampon[ad] = t; if (istenen === ad && (!calanM || calanM.ad !== ad)) muzikCal(ad); })
+    .catch(() => { /* müzik yoksa sessiz */ });
+}
+// ad: 'hazirlik' | 'savas' | null (sustur)
+export function muzikCal(ad) {
+  istenen = ad;
+  if (!ctx || !muzikKazanc) return;
+  if (calanM && calanM.ad === ad) return;
+  const t0 = ctx.currentTime, SOL = 1.2;
+  if (calanM) { const e = calanM; e.g.gain.cancelScheduledValues(t0); e.g.gain.setValueAtTime(e.g.gain.value, t0); e.g.gain.linearRampToValueAtTime(0, t0 + SOL); e.k.stop(t0 + SOL + 0.05); calanM = null; }
+  const t = ad && muzikTampon[ad]; if (!t) return;
+  const k = ctx.createBufferSource(); k.buffer = t; k.loop = true;
+  // MP3 kodlayıcı baştaki/sondaki boşluğu döngüde tıkırtı yapmasın
+  k.loopStart = Math.min(0.03, t.duration / 10); k.loopEnd = Math.max(k.loopStart + 1, t.duration - 0.03);
+  const g = ctx.createGain(); g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(MUZIK[ad], t0 + SOL);
+  k.connect(g); g.connect(muzikKazanc); k.start(t0, k.loopStart);
+  calanM = { ad, k, g };
+}
+export function muzikAcikMi() { return muzikAcik; }
+export function muzikAc(a) {
+  muzikAcik = !!a; try { localStorage.setItem('kut.muzik', muzikAcik ? '1' : '0'); } catch (e) { /* depolama kapalı */ }
+  if (muzikKazanc) muzikKazanc.gain.value = muzikAcik && acik ? 1 : 0;
+}
+
 export function sesAcik() { return acik; }
 export function sesAc(a) {
   acik = !!a; try { localStorage.setItem('kut.ses', acik ? '1' : '0'); } catch (e) { /* depolama kapalı */ }
   if (ana) ana.gain.value = acik ? duzey : 0;
+  if (muzikKazanc) muzikKazanc.gain.value = muzikAcik && acik ? 1 : 0;
 }
