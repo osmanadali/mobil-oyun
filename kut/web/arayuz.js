@@ -69,12 +69,12 @@ const IPUCU = {
 
 // ── genel ──
 let aktifEkran = 'ana';
-function goster(id) { aktifEkran = id; document.querySelectorAll('.ekran').forEach(e => e.classList.toggle('aktif', e.id === id)); }
+function goster(id) { aktifEkran = id; document.querySelectorAll('.ekran').forEach(e => e.classList.toggle('aktif', e.id === id)); if (ogr.adim >= 0) setTimeout(ogrTik, 0); }
 let bildirimZ;
 function bildir(m, tur = 'bilgi') { const b = $('bildirim'); b.textContent = m; b.className = 'bildirim acik ' + tur; clearTimeout(bildirimZ); bildirimZ = setTimeout(() => b.classList.remove('acik'), 1800); }
 oyun.on('bildirim', ({ m, tur }) => bildir(m, tur));
 // ── SES ── (ElevenLabs ile üretilmiş efektler; ilk dokunuştan sonra açılır)
-Ses.kur('');
+Ses.kur(''); Ses.muzikCal('hazirlik');
 S3.dinle('ses', (f, k, h) => Ses.olay(f, k, h));
 oyun.on('satinAlindi', () => Ses.cal('satin_al'));
 oyun.on('birlesti', () => Ses.cal('birlesme', { aralik: 0.3 }));
@@ -152,7 +152,7 @@ function ayarPencere() {
   const hafif = ayarOku('kut.hafif') === '1', kb = S3.kaliteBilgi();
   pencere(`<h3>Ayarlar</h3>
     <p><b>Ses:</b> ${Ses.sesAcik() ? 'Açık' : 'Kapalı'}</p>
-    <div class="eylemler" style="justify-content:flex-start"><button class="btn mor" id="aSes">${Ses.sesAcik() ? 'Sesi kapat' : 'Sesi aç'}</button></div>
+    <div class="eylemler" style="justify-content:flex-start"><button class="btn mor" id="aSes">${Ses.sesAcik() ? 'Sesi kapat' : 'Sesi aç'}</button><button class="btn mor" id="aMuzik">${Ses.muzikAcikMi() ? 'Müziği kapat' : 'Müziği aç'}</button></div>
     <p><b>Grafik:</b> ${hafif ? 'Hafif (gölge yok, düşük çözünürlük)' : 'Yüksek'}. Değişiklik sayfa yenilenince uygulanır.</p>
     <div class="eylemler" style="justify-content:flex-start"><button class="btn mor" id="aGrafik">${hafif ? 'Yüksek grafiğe geç' : 'Hafif grafiğe geç'}</button>
     ${oyun.P.mac ? `<button class="btn sat" id="aCik">Maçtan çık (ana ekran)</button>` : ''}</div>
@@ -161,10 +161,14 @@ function ayarPencere() {
     <button class="btn mor" id="aFps">${kb.olcer ? 'Kare hızı göstergesini gizle' : 'Kare hızı göstergesi'}</button></div>
     <p><b>Kare hızı:</b> ${kb.fpsHedef === 'oto' ? 'Otomatik' : kb.fpsHedef}${kb.ekranHz > 60 ? ` (ekran ${kb.ekranHz} Hz)` : ''}. 60 pili korur; Otomatik ekranın hızını hedefler.</p>
     <div class="eylemler" style="justify-content:flex-start" id="aHedef">${[['60', '60'], ['120', '120'], ['oto', 'Otomatik']].map(([v, ad]) => `<button class="btn ${kb.fpsHedef === v ? 'altin secik' : 'mor'}" data-v="${v}" aria-pressed="${kb.fpsHedef === v}">${ad}</button>`).join('')}</div>
+    <p><b>Öğretici:</b> ${ogr.adim >= 0 ? `açık (adım ${ogr.adim + 1}/${OGR_ADIMLAR.length})` : 'kapalı'}. Temelleri adım adım yeniden gösterir.</p>
+    <div class="eylemler" style="justify-content:flex-start"><button class="btn mor" id="aOgr">Öğreticiyi yeniden başlat</button></div>
     <div class="eylemler"><button class="btn altin" data-kapat>Tamam</button></div>`);
+  $('aOgr').onclick = () => { kapat(); if (ogr.adim >= 0) ogrKapat(false); anaCiz(); goster('ana'); ogrBaslat(true); };
   document.querySelectorAll('#aHedef .btn').forEach(b => b.onclick = () => { S3.fpsHedef(b.dataset.v); kapat(); ayarPencere(); });
   $('aGrafik').onclick = () => { try { localStorage.setItem('kut.hafif', hafif ? '0' : '1'); } catch (e) {} location.reload(); };
   $('aSes').onclick = () => { Ses.sesAc(!Ses.sesAcik()); kapat(); ayarPencere(); };
+  $('aMuzik').onclick = () => { Ses.muzikAc(!Ses.muzikAcikMi()); kapat(); ayarPencere(); };
   $('aUyarla').onclick = () => { S3.uyarlanir(!kb.uyarlanir); kapat(); ayarPencere(); };
   $('aFps').onclick = () => { S3.olcer(!kb.olcer); kapat(); ayarPencere(); };
   if ($('aCik')) $('aCik').onclick = () => { kapat(); anaCiz(); goster('ana'); };
@@ -446,7 +450,7 @@ async function savasBaslat(sim, rakip) {
   }
   $('yukleniyor').classList.remove('acik');
   kutCiz(); hizUygula(); kutSecim = false;
-  Ses.cal('savas_basla');
+  Ses.cal('savas_basla'); Ses.muzikCal('savas');
   const s = $('savas');
   q('.rakipK', s).innerHTML = `<div class="amb"><img src="${P((rakip.takim || [])[0] ? rakip.takim[0].h : 'tilki')}" alt=""></div><div style="min-width:0"><small>${rakip.duello ? 'Düello' : 'Rakip · Tur ' + oyun.turAd()}</small><b>${rakip.ad}</b><span>${rakip.kaynak === 'bot' ? 'Bot' : 'Kupa ' + sayi(rakip.kupa || 0)}</span></div>`;
   const a = savasBilgi.alamet; q('.alametK', s).innerHTML = `<span class="ay resim" style="${alametArka(a.id)}">${alametIc(a.id)}</span><div><b>${a.ad}</b><span>${a.m}</span></div>`;
@@ -507,7 +511,7 @@ function savasKare() {
 }
 function sonucGoster(sonuc) {
   const k = sonuc.kazanan; if (k === 0) S3.zafer(0); else if (k === 1) S3.zafer(1);
-  Ses.cal(k === 1 ? 'yenilgi' : 'zafer', { hiz: k === 0 || k === 1 ? 1 : 0.9 });
+  Ses.muzikCal('hazirlik'); Ses.cal(k === 1 ? 'yenilgi' : 'zafer', { hiz: k === 0 || k === 1 ? 1 : 0.9 });
   const r = oyun.savasBitti(sonuc); savasBilgi.sonucIslem = r;
   if (r && r.hasar > 0 && k === 1 && S3.hasarKivilcim) S3.hasarKivilcim(1);   // rakibin sağ birimlerinden oyuncuya can hasarı ışıkları
   const M = oyun.M, zh = K.hizli.zaferHedef, arena = r && !r.duello && (r.bitti ? r.mod !== 'hizli' : oyun.seviyeli());
@@ -603,9 +607,160 @@ function kodeksCiz() {
 }
 q('#kodeks .kodUst .btn').onclick = () => { anaCiz(); goster('ana'); };
 
+// ── ÖĞRETİCİ (OGRETICI.md bölüm 1–2'nin prototip sürümü) ──
+// İlk açılışta (localStorage kut.ogretici yoksa) adım adım ipucu: parlayan çerçeve + rehber balonu + Anladım / Öğreticiyi atla.
+// Adımlar oyuncunun gerçek eylemiyle geçer; okuma adımları Anladım ile. İlerleme kut.ogreticiAdim'da, bitince kut.ogretici = 'bitti'.
+// Döngü yalnız öğretici açıkken 250 ms'de bir çalışır (savaş karesine bağlı değil).
+const OGR_ANAHTAR = 'kut.ogretici', OGR_ADIM = 'kut.ogreticiAdim';
+const ayarYaz = (k, v) => { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} };
+const ogr = { adim: -1, olay: new Set(), z: null, html: '', durdurdu: false, gosterildi: -1, salla: 0 };
+const perdeAcik = () => $('perde').classList.contains('acik');
+const ogrMac = () => aktifEkran === 'mac' && !!oyun.M && !perdeAcik();
+const OGR_ADIMLAR = [
+  { id: 'hosgeldin', ekran: 'ana', hedef: ['#ana .oyna'], parmak: true,
+    hazir: () => aktifEkran === 'ana' && !perdeAcik(), bitti: () => aktifEkran !== 'ana',
+    metin: () => `Arena'ya hoş geldin! Takımını kur, savaşı izle, doğru anda <b>Kut</b> ile araya gir.<small>Başlamak için ${oyun.P.mac ? 'DEVAM ET' : 'OYNA'}'ya dokun.</small>` },
+  { id: 'sec', ekran: 'mac', hedef: ['#pencere .secimler'], parmak: true,
+    gecerli: () => !!(oyun.M && oyun.M.ilkSecim),
+    hazir: () => aktifEkran === 'mac' && perdeAcik() && !!q('#pencere .sc[data-s]'), bitti: () => !oyun.M || !oyun.M.ilkSecim,
+    metin: () => `Önce bir <b>başlangıç kahramanı</b> seç. Bu ilk kahraman bedava.` },
+  { id: 'satin', ekran: 'mac', hedef: ['#kartlar', '#mac .altinRozet'], parmak: true,
+    hazir: ogrMac, bitti: () => ogr.olay.has('satin'),
+    metin: () => `Bu senin altının. Dükkândan bir karta dokun: <b>kahraman</b> tahtaya iner.<small>Fiyat kartın üstünde yazar.</small>` },
+  { id: 'yerlestir', ekran: 'mac', hedef: ['#mac .tahtaAlan'], parmak: true,
+    hazir: () => ogrMac() && oyun.tahtaSay() + oyun.M.yedek.filter(Boolean).length > 0, bitti: () => ogr.olay.has('tasi'),
+    metin: () => oyun.secili ? `Şimdi gitmesini istediğin <b>yuvaya</b> dokun.<small>Dolu yuvaya dokunursan ikisi yer değiştirir.</small>`
+      : `Bir kahramanına dokun, sonra başka bir yuvaya: <b>yerini</b> değiştirir.<small>Önde dayananlar, arkada uzaktan vuranlar durur.</small>` },
+  { id: 'soy', ekran: 'mac', hedef: ['#mac .soyPanel'], oku: true, hazir: ogrMac,
+    metin: () => `Her kahramanın iki <b>soyu</b> var: kart köşesindeki simgeler.<small>Aynı soydan 2 kahraman koyarsan soy gücü açılır.</small>` },
+  { id: 'savas', ekran: 'mac', hedef: ['#mac .savasBtn'], parmak: true,
+    hazir: () => ogrMac() && !!oyun.M.rakip && !oyun.M.kervan, bitti: () => aktifEkran === 'savas',
+    metin: () => `Hazırsın. <b>SAVAŞA!</b>'ya dokun: savaş kendi kendine oynar.` },
+  { id: 'kut', ekran: 'savas', hedef: ['#kutAlan'], hafif: true, parmak: true,
+    gecerli: () => aktifEkran === 'savas' && !!savasBilgi && !savasBilgi.sim.kutYok,
+    hazir: () => aktifEkran === 'savas' && !!savasBilgi && !savasBilgi.bitti && !!$('kutDugme') && !$('yukleniyor').classList.contains('acik') && sonDurum.t >= 1.5,
+    bitti: () => aktifEkran !== 'savas' || !savasBilgi || savasBilgi.bitti || !!savasBilgi.kutKullanan,
+    // savaş bu adımda durur: Kut dokunuşu motorun o anki zamanına yazılır (S3.dokun), sonra savaş sürer
+    goster: () => { if (!duraklat) { duraklat = true; ogr.durdurdu = true; hizUygula(); } },
+    son: () => { if (ogr.durdurdu) { ogr.durdurdu = false; duraklat = false; hizUygula(); } if (savasBilgi && savasBilgi.kutKullanan) bildir('Kut, mana dolmasını beklemeden yeteneği açtı', 'iyi'); },
+    metin: () => kutSecim ? `Şimdi savaştaki <b>kendi kahramanlarından</b> birine dokun: yeteneği hemen patlar.`
+      : `Savaş durdu. Bu senin <b>Kut</b> gücün: savaşta bir kez bir kahramanının yeteneğini hemen açar.<small>KUT'a, sonra kendi kahramanına dokun.</small>` },
+  { id: 'sonuc', ekran: 'savas', hedef: ['#sOzet', '#sDevam'],
+    gecerli: () => aktifEkran === 'savas',
+    hazir: () => aktifEkran === 'savas' && !!savasBilgi && savasBilgi.bitti && !!$('sDevam') && $('sDevam').style.visibility !== 'hidden' && $('hasarOzet').hidden,
+    bitti: () => aktifEkran !== 'savas',
+    metin: () => `Savaş bitti. <b>Hasar özeti</b> kimin ne yaptığını gösterir.<small>Hazır olunca Devam'a dokun.</small>` },
+  { id: 'seviye', ekran: 'mac', hedef: ['#mac .dukkanSol .xpBtn', '#mac .tahtaPanel .pn-bas'], parmak: true,
+    gecerli: () => oyun.seviyeli(),
+    hazir: () => ogrMac() && oyun.M.tur >= 2 && !oyun.M.kervan, bitti: () => ogr.olay.has('xp'),
+    oku: () => oyun.M.altin < oyun.xpBedel(),
+    metin: () => `Bu senin <b>seviyen</b>: seviye kadar kahraman koyabilirsin. Savaştan sonra 2 deneyim gelir.`
+      + (oyun.M.altin < oyun.xpBedel() ? `<small>Altının yetince Deneyim Al'a dokun: ${oyun.xpBedel()} altın = ${K.xpMiktar} deneyim.</small>` : `<small>Deneyim Al'a dokun: ${oyun.xpBedel()} altın = ${K.xpMiktar} deneyim.</small>`) },
+  { id: 'esya', ekran: 'mac', hedef: () => oyun.seciliEsya !== null ? ['#esyaRaf', '#mac .tahtaAlan'] : ['#esyaRaf'], parmak: true,
+    // eşya öğreticiden önce takıldıysa ve rafta eşya kalmadıysa adım atlanır
+    gecerli: () => oyun.seviyeli() && !(!(oyun.M.esyaRaf || []).length && [...oyun.M.tahta, ...oyun.M.yedek].some(b => b && b.e && b.e.length)),
+    hazir: () => ogrMac() && (oyun.M.esyaRaf || []).some(id => id !== 'sokumTasi'),
+    bitti: () => ogr.olay.has('esya'),
+    metin: () => oyun.seciliEsya !== null ? `Şimdi eşyayı takacağın <b>kahramana</b> dokun.<small>İki bileşen aynı kahramanda birleşip tam eşya olur.</small>`
+      : `Canavarlar <b>eşya</b> bıraktı. Raftaki eşyaya dokun, sonra bir kahramanına.<small>Her kahraman en çok ${K.esyaYuva} eşya taşır.</small>` },
+  { id: 'faiz', ekran: 'mac', hedef: ['#mac .altinRozet'], oku: true,
+    gecerli: () => oyun.seviyeli(),
+    hazir: () => ogrMac() && L.turPlan(oyun.M.tur - 1).bolum >= 2 && !oyun.M.kervan,
+    metin: () => `Harcamadığın her ${K.faizAdim} altın sonraki tura +1 <b>faiz</b> getirir, en çok +${K.faizTavan}.<small>Altın biriktir: rozette "Faiz +${oyun.faizSonraki()}" yazıyor.</small>` },
+  { id: 'bitis', ekran: 'mac', hedef: [], oku: true, sonAdim: true, hazir: ogrMac,
+    metin: () => `Temeller bu kadar! <b>Kaynaştır</b> ile iki farklı kahramanı tek kahraman yapabilirsin.<small>Gerisi Nasıl Oynanır'da. İyi savaşlar!</small>` },
+];
+function ogrBaslat(bastan) {
+  if (bastan) { ayarYaz(OGR_ANAHTAR, null); ayarYaz(OGR_ADIM, '0'); }
+  if (ayarOku(OGR_ANAHTAR) === 'bitti') return;
+  ogr.adim = Math.max(0, Math.min(OGR_ADIMLAR.length - 1, +(ayarOku(OGR_ADIM) || 0) || 0)); ogr.olay.clear(); ogr.gosterildi = -1; ogr.html = '';
+  $('ogr').hidden = false;
+  if (!ogr.z) ogr.z = setInterval(ogrTik, 250);
+  ogrTik();
+}
+function ogrKapat(bitir) {
+  const a = OGR_ADIMLAR[ogr.adim]; if (a && a.son && ogr.gosterildi === ogr.adim) a.son();
+  if (bitir) { ayarYaz(OGR_ANAHTAR, 'bitti'); ayarYaz(OGR_ADIM, null); }
+  ogr.adim = -1; clearInterval(ogr.z); ogr.z = null; $('ogr').hidden = true;
+}
+function ogrIlerle() {
+  const a = OGR_ADIMLAR[ogr.adim]; if (a && a.son && ogr.gosterildi === ogr.adim) a.son();
+  ogr.adim++; ogr.olay.clear(); ogr.html = '';
+  if (ogr.adim >= OGR_ADIMLAR.length) return ogrKapat(true);
+  ayarYaz(OGR_ADIM, String(ogr.adim)); ogrTik();
+}
+const ogrOku = (a) => typeof a.oku === 'function' ? a.oku() : !!a.oku;
+function ogrTik() {
+  if (ogr.adim < 0) return;
+  const a = OGR_ADIMLAR[ogr.adim];
+  // bu maçta olmayan adım (gösterilmeden) atlanır; gösterilen adım eylemi yapılınca geçer
+  if (ogr.gosterildi !== ogr.adim) { if (a.gecerli && !a.hazir() && !a.gecerli()) return ogrIlerle(); }
+  else if (a.bitti && a.bitti()) return ogrIlerle();
+  // maç sürerken ana ekrana dönüldüyse: devam çağrısı
+  let hedef, metin, oku, parmak, hafif = false;
+  if (aktifEkran === 'ana' && a.ekran !== 'ana' && !perdeAcik() && oyun.P.mac) {
+    hedef = ['#ana .oyna']; metin = `Öğretici seni bekliyor. Maça dönmek için <b>DEVAM ET</b>'e dokun.`; oku = false; parmak = true;
+  } else if (a.hazir()) {
+    if (ogr.gosterildi !== ogr.adim) { ogr.gosterildi = ogr.adim; if (a.goster) a.goster(); }
+    hedef = typeof a.hedef === 'function' ? a.hedef() : a.hedef; metin = a.metin(); oku = ogrOku(a); parmak = a.parmak && !oku; hafif = !!a.hafif;
+  } else { $('ogr').hidden = true; return; }
+  const kok = $('ogr'), bal = $('ogrBalon'); kok.hidden = false;
+  const html = metin + '|' + oku + '|' + ogr.adim;
+  if (html !== ogr.html) {
+    ogr.html = html; $('ogrMetin').innerHTML = metin;
+    $('ogrTamam').textContent = a.sonAdim ? 'Bitir' : oku ? 'Anladım' : 'Geç';
+    $('ogrTamam').className = 'btn ' + (oku ? 'altin' : 'mor');
+    $('ogrAtla').style.display = a.sonAdim ? 'none' : '';
+    $('ogrSay').textContent = `${ogr.adim + 1}/${OGR_ADIMLAR.length}`;
+    bal.style.animation = 'none'; void bal.offsetWidth; bal.style.animation = '';
+    const el = $('ogrEl'); el.classList.remove('oyna'); void el.offsetWidth; el.classList.toggle('oyna', parmak);
+  }
+  // çerçeveler: görünen hedefler (en çok iki); ilki ekranı karartır
+  const kutular = [];
+  for (const s of hedef) { const e = q(s); if (!e || !e.offsetParent && getComputedStyle(e).position !== 'fixed') continue; const r = e.getBoundingClientRect(); if (r.width > 0 && r.height > 0) kutular.push(r); if (kutular.length === 2) break; }
+  kok.classList.toggle('karart', !kutular.length);
+  [$('ogrC1'), $('ogrC2')].forEach((c, i) => {
+    const r = kutular[i]; c.style.display = r ? 'block' : 'none'; if (!r) return;
+    const p = 6; c.style.left = (r.left - p) + 'px'; c.style.top = (r.top - p) + 'px'; c.style.width = (r.width + 2 * p) + 'px'; c.style.height = (r.height + 2 * p) + 'px';
+    if (i === 0) c.classList.toggle('hafif', hafif);
+  });
+  if (kutular[0]) { const r = kutular[0], el = $('ogrEl'); el.style.left = (r.left + r.width / 2) + 'px'; el.style.top = (r.top + r.height / 2) + 'px'; }
+  ogrYerlestir(bal, kutular);
+}
+// Balon hedefi örtmez: üst, sol, sağ, alt sırayla denenir; hiçbiri sığmazsa hedeflerle en az örtüşen yer seçilir. Kenara 12 px'ten yakın olmaz.
+function ogrYerlestir(bal, kutular) {
+  const W = innerWidth, H = innerHeight, bw = bal.offsetWidth, bh = bal.offsetHeight, m = 12, g = 16;
+  const sinir = (v, a, b) => Math.max(a, Math.min(b, v));
+  let x = (W - bw) / 2, y = (H - bh) / 2;
+  if (kutular.length) {
+    const r = kutular[0], cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    const aday = [[cx - bw / 2, r.top - g - bh], [r.left - g - bw, cy - bh / 2], [r.right + g, cy - bh / 2], [cx - bw / 2, r.bottom + g]];
+    let en = null, enO = Infinity;
+    for (const [ax, ay] of aday) {
+      const px = sinir(ax, m, W - m - bw), py = sinir(ay, m, H - m - bh);
+      let o = 0; for (const k of kutular) o += Math.max(0, Math.min(px + bw, k.right) - Math.max(px, k.left)) * Math.max(0, Math.min(py + bh, k.bottom) - Math.max(py, k.top));
+      if (o < enO - 1) { enO = o; en = [px, py]; } if (o === 0) break;
+    }
+    [x, y] = en;
+  }
+  bal.style.left = Math.round(x) + 'px'; bal.style.top = Math.round(y) + 'px';
+}
+$('ogrTamam').onclick = () => ogrIlerle();
+$('ogrAtla').onclick = () => { ogrKapat(true); bildir('Öğretici kapandı. Ayarlar\'dan yeniden başlatabilirsin.'); };
+// gerçek eylemler: satın alma, taşıma, deneyim, eşya takma
+oyun.on('satinAlindi', () => ogr.olay.add('satin'));
+oyun.on('esyaTakildi', () => ogr.olay.add('esya'));
+oyun.on('degisti', () => { if (ogr.adim >= 0) ogrTik(); });
+{ const yd = oyun.yuvaDokun.bind(oyun);
+  oyun.yuvaDokun = (yer, i) => { const s = oyun.secili, tasi = !!s && !oyun.kaynasMod && oyun.seciliEsya === null && !(s.yer === yer && s.i === i);
+    const r = yd(yer, i); if (tasi && !oyun.secili) ogr.olay.add('tasi'); if (ogr.adim >= 0) ogrTik(); return r; }; }
+{ const xa = oyun.xpAl.bind(oyun);
+  oyun.xpAl = () => { const M = oyun.M, once = M ? M.seviye * 1000 + M.xp : 0; const r = xa(); if (M && M.seviye * 1000 + M.xp !== once) ogr.olay.add('xp'); if (ogr.adim >= 0) ogrTik(); return r; }; }
+
 // ── başlangıç ──
 document.title = 'Kut Arena';
 anaCiz(); goster('ana');
+if (!/[?&]ogretici=0\b/.test(location.search)) ogrBaslat();
 // arka planda 3D sahneyi ısıt (ilk savaşta bekleme olmasın)
 setTimeout(() => { sahneyiHazirla().catch(e => { console.error(e); sahneHazir = null; }); }, 600);
-window.KUT_TEST = { oyun, S3, goster, macCiz, sonCiz };
+window.KUT_TEST = { oyun, S3, goster, macCiz, sonCiz, ogr, ogrBaslat, ogrKapat, OGR_ADIMLAR };

@@ -671,6 +671,43 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .kut.bitti .isin{display:none}
 img.ik{object-fit:contain;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
 .ay.resim{background-size:cover!important;border:0;box-shadow:0 0 10px rgba(0,0,0,.4)}
+/* ---------- ÖĞRETİCİ (OGRETICI.md bölüm 1: rehber balonu, spot ışığı, parmak) ---------- */
+.ogr{position:fixed;inset:0;z-index:45;pointer-events:none}
+.ogr[hidden]{display:none}
+.ogr.karart{background:rgba(18,7,31,.5)}
+.ogrCerceve{position:fixed;left:0;top:0;width:0;height:0;border-radius:16px;pointer-events:none;display:none;
+  box-shadow:0 0 0 200vmax rgba(18,7,31,.5);transition:left .2s,top .2s,width .2s,height .2s}
+.ogrCerceve.ek{box-shadow:none}
+.ogrCerceve.hafif{box-shadow:0 0 0 200vmax rgba(18,7,31,.28)}
+.ogrCerceve::after{content:"";position:absolute;inset:-3px;border-radius:inherit;border:3px solid var(--altinA);
+  box-shadow:0 0 0 1px var(--altinKK),0 0 14px 2px rgba(255,212,92,.75),inset 0 0 12px rgba(255,212,92,.35);animation:ogrNabiz 1.2s ease-in-out infinite}
+@keyframes ogrNabiz{50%{transform:scale(1.03);box-shadow:0 0 0 1px var(--altinKK),0 0 26px 6px rgba(255,212,92,.9),inset 0 0 16px rgba(255,212,92,.45)}}
+.ogrEl{position:fixed;left:0;top:0;width:56px;height:56px;margin:-6px 0 0 -10px;display:none;color:#fff;pointer-events:none;
+  filter:drop-shadow(0 0 2px #3a1606) drop-shadow(0 3px 4px rgba(0,0,0,.6))}
+.ogrEl .ik{width:100%;height:100%}
+.ogrEl.oyna{display:block;animation:ogrDokun 1.1s ease-in-out 3 forwards}
+@keyframes ogrDokun{0%{opacity:0;transform:translate(10px,-16px)}25%{opacity:1;transform:translate(0,0)}50%{transform:scale(.88)}75%{opacity:1;transform:scale(1)}100%{opacity:0;transform:translate(10px,-16px)}}
+.ogrBalon{position:fixed;left:0;top:0;width:min(420px,calc(100vw - 32px));display:grid;grid-template-columns:64px minmax(0,1fr);gap:4px 12px;
+  padding:14px 16px 12px;pointer-events:auto;animation:ogrGel .18s ease-out}
+.ogrBalon.salla{animation:ogrSalla .32s}
+@keyframes ogrGel{from{opacity:0;transform:scale(.92)}}
+@keyframes ogrSalla{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.ogrPor{width:64px;height:64px;border-radius:50%;object-fit:contain;background:radial-gradient(circle at 50% 35%,#7a6aa8,#241640);
+  border:3px solid var(--altin);box-shadow:0 0 0 2px var(--altinKK),0 0 12px rgba(255,212,92,.5);grid-row:span 2}
+.ogrMetin{font-size:17px;font-weight:700;line-height:1.35;color:var(--yazi);text-shadow:0 1px 0 #000;align-self:center}
+.ogrMetin b{color:var(--altinA);font-weight:900}
+.ogrMetin small{display:block;margin-top:4px;font-size:14px;font-weight:700;color:var(--yazi2)}
+.ogrDug{display:flex;align-items:center;gap:10px;justify-content:flex-end;margin-top:4px}
+.ogrDug .btn{min-height:46px;min-width:112px;padding:0 16px;font-size:17px}
+.ogrDug .atla{margin-right:auto;font-size:14px;font-weight:800;color:var(--soluk);text-decoration:underline;padding:10px 4px;min-height:44px}
+.ogrSay{font-size:13px;font-weight:900;color:var(--soluk);white-space:nowrap}
+@media (max-height:520px){
+  .ogrBalon{width:min(360px,calc(100vw - 24px));grid-template-columns:44px minmax(0,1fr);padding:9px 12px 8px;gap:2px 9px}
+  .ogrPor{width:44px;height:44px;border-width:2px}
+  .ogrMetin{font-size:14px;line-height:1.3}.ogrMetin small{font-size:13px;margin-top:2px}
+  .ogrDug{margin-top:2px;gap:8px}.ogrDug .btn{min-height:40px;min-width:96px;font-size:15px;padding:0 12px}.ogrDug .atla{font-size:13px;min-height:40px}
+}
+@media (prefers-reduced-motion:reduce){.ogrCerceve::after,.ogrEl.oyna,.ogrBalon{animation:none}.ogrEl.oyna{opacity:1}}
 </style>
 </head>
 <body>
@@ -913,6 +950,11 @@ img.ik{object-fit:contain;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
 
 <div class="dondur"><i></i><b>Tableti ya da telefonu yatay çevir</b><span>Kut Arena yatay ekran için tasarlandı.</span></div>
 <div class="bildirim" id="bildirim"></div>
+<div class="ogr" id="ogr" hidden><div class="ogrCerceve" id="ogrC1"></div><div class="ogrCerceve ek" id="ogrC2"></div>
+  <div class="ogrEl" id="ogrEl"><svg class="ik"><use href="#i-el"/></svg></div>
+  <div class="pn kalin gem ogrBalon" id="ogrBalon" role="dialog" aria-live="polite"><img class="ogrPor" src="../arayuz/portre/baykus.png" alt="">
+    <div class="ogrMetin" id="ogrMetin"></div>
+    <div class="ogrDug"><button class="atla" id="ogrAtla">Öğreticiyi atla</button><span class="ogrSay" id="ogrSay"></span><button class="btn altin" id="ogrTamam">Anladım</button></div></div></div>
 <div class="perde" id="perde"><div class="pn kalin gem pencere" id="pencere"></div></div>
 <script src="../data.js"></script>
 <script src="../sim.js"></script>
