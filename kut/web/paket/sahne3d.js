@@ -3,7 +3,6 @@
    saldırı klipleri darbe karesi olay zamanına denk gelecek şekilde önceden başlatılır. */
 import * as THREE from 'three';
 import { GLTFLoader } from './vendor/three/addons/loaders/GLTFLoader.js';
-import { MeshoptDecoder } from './vendor/three/addons/libs/meshopt_decoder.module.js';
 import * as SkeletonUtils from './vendor/three/addons/utils/SkeletonUtils.js';
 
 const D = window.KUT_DATA;
@@ -63,7 +62,7 @@ export async function hazirla(tuval, kaplamaTuval, kok = '', { hafif = false } =
   sahne = new THREE.Scene();
   kamera = new THREE.PerspectiveCamera(38, 16 / 10, 0.1, 200);
   saat = new THREE.Clock();
-  yukleyici = new GLTFLoader(); yukleyici.setMeshoptDecoder(MeshoptDecoder);
+  yukleyici = new GLTFLoader();
   const tl = new THREE.TextureLoader();
   // gökyüzü: büyük küre iç yüzü
   const gok = tl.load(kok + './gorsel/gokyuzu.webp'); gok.colorSpace = THREE.SRGBColorSpace;
@@ -82,8 +81,35 @@ export async function hazirla(tuval, kaplamaTuval, kok = '', { hafif = false } =
   window.addEventListener('resize', boyutla);
 }
 
+// Model yükleme. Yayın paketinde modeller gömülü glTF (.json) olarak gelir: data: bağlantısı görüntüleyicide engellenebildiği için
+// base64 veriyi burada çözüp bellekte GLB kurar ve öyle ayrıştırırız (ağ isteği yalnız .json dosyasının kendisi).
+let yuklenen = 0, yuklenecek = 0; export const yukleme = { olay: null };
+// Kısıtlı içerik politikasında (claude.ai) blob: adresine fetch yasak: GLTFLoader dokuları <img> ile okusun (vendor yaması, satır ~2591)
+globalThis.KUT_IMG_YUKLEYICI = true;
+function jsonDanGlb(json) {
+  const b = json.buffers && json.buffers[0]; let bin = new Uint8Array(0);
+  if (b && b.uri && b.uri.startsWith('data:')) { const ham = atob(b.uri.slice(b.uri.indexOf(',') + 1)); bin = new Uint8Array(ham.length); for (let i = 0; i < ham.length; i++) bin[i] = ham.charCodeAt(i); delete b.uri; }
+  const js = new TextEncoder().encode(JSON.stringify(json)); const jsPad = (4 - js.length % 4) % 4, binPad = (4 - bin.length % 4) % 4;
+  const toplam = 12 + 8 + js.length + jsPad + (bin.length ? 8 + bin.length + binPad : 0);
+  const out = new ArrayBuffer(toplam), dv = new DataView(out), u8 = new Uint8Array(out); let o = 0;
+  dv.setUint32(o, 0x46546c67, true); dv.setUint32(o + 4, 2, true); dv.setUint32(o + 8, toplam, true); o = 12;
+  dv.setUint32(o, js.length + jsPad, true); dv.setUint32(o + 4, 0x4e4f534a, true); u8.set(js, o + 8); u8.fill(0x20, o + 8 + js.length, o + 8 + js.length + jsPad); o += 8 + js.length + jsPad;
+  if (bin.length) { dv.setUint32(o, bin.length + binPad, true); dv.setUint32(o + 4, 0x004e4942, true); u8.set(bin, o + 8); }
+  return out;
+}
 async function glb(ad, kok) {
-  if (!modelOnbellek[ad]) modelOnbellek[ad] = yukleyici.loadAsync(kok + 'modeller/' + ad + '.json');
+  if (!modelOnbellek[ad]) {
+    yuklenecek++;
+    modelOnbellek[ad] = (async () => {
+      const yol = kok + 'modeller/' + ad + '.json';
+      let veri;
+      if (yol.endsWith('.json')) { const r = await fetch(yol); if (!r.ok) throw new Error(ad + ' yüklenemedi (' + r.status + ')'); veri = jsonDanGlb(await r.json()); }
+      else { const r = await fetch(yol); if (!r.ok) throw new Error(ad + ' yüklenemedi (' + r.status + ')'); veri = await r.arrayBuffer(); }
+      const g = await new Promise((tamam, hata) => yukleyici.parse(veri, '', tamam, (e) => hata(new Error(ad + ': ' + (e && e.message || e)))));
+      yuklenen++; if (yukleme.olay) yukleme.olay(yuklenen, yuklenecek, ad);
+      return g;
+    })();
+  }
   return modelOnbellek[ad];
 }
 function golgeAc(o) { o.traverse(m => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; if (m.material) m.material.envMapIntensity = 1; } }); }

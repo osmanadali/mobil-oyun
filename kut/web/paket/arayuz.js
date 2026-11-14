@@ -239,8 +239,16 @@ async function savasBaslat(sim, rakip) {
   savasBilgi = { sim, rakip, alamet: D.ALAMETLER.find(a => a.id === (oyun.M ? oyun.M.alamet : 'yok')), bitti: false };
   goster('savas'); $('sonucYer').innerHTML = ''; $('ayakta').style.display = '';
   $('yukleniyor').classList.add('acik');
-  await sahneyiHazirla(); S3.boyutla();
-  await S3.savasKur(sim);
+  S3.yukleme.olay = (n, top, ad) => { $('yukYuzde').textContent = `Modeller: ${n}/${top}`; };
+  try {
+    await sahneyiHazirla(); S3.boyutla();
+    await S3.savasKur(sim);
+  } catch (e) {
+    console.error(e); sahneHazir = null;
+    $('yukleniyor').innerHTML = `<b>Arena yüklenemedi</b><span style="max-width:640px;text-align:center">${String(e && e.message || e).replace(/</g, '&lt;')}</span><button class="btn altin" id="yGeri" style="min-height:52px;padding:0 24px;margin-top:10px">Dükkâna dön</button>`;
+    $('yGeri').onclick = () => { $('yukleniyor').classList.remove('acik'); $('yukleniyor').innerHTML = '<b>Arena hazırlanıyor…</b><span id="yukYuzde"></span>'; goster('mac'); macCiz(); };
+    return;
+  }
   $('yukleniyor').classList.remove('acik');
   kutCiz(); hizUygula(); kutSecim = false;
   const s = $('savas');
@@ -354,5 +362,5 @@ q('#kodeks .kodUst .btn').onclick = () => { anaCiz(); goster('ana'); };
 document.title = 'Kut Arena';
 anaCiz(); goster('ana');
 // arka planda 3D sahneyi ısıt (ilk savaşta bekleme olmasın)
-setTimeout(() => { sahneyiHazirla().catch(e => console.error(e)); }, 600);
+setTimeout(() => { sahneyiHazirla().catch(e => { console.error(e); sahneHazir = null; }); }, 600);
 window.KUT_TEST = { oyun, S3, goster, macCiz };

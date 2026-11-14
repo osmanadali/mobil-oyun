@@ -5,9 +5,9 @@ const KUT = path.join(__dirname, '..'), WEB = path.join(KUT, 'web'), OUT = path.
 fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive: true });
 const kopya = (kaynak, hedef) => { fs.mkdirSync(path.dirname(path.join(OUT, hedef)), { recursive: true }); fs.copyFileSync(path.join(KUT, kaynak), path.join(OUT, hedef)); };
 const yolDuzelt = (s) => s.replace(/\.\.\/(vendor|arayuz|gorsel|data\.js|sim\.js|online\.js)/g, './$1');
-for (const f of ['index.html', 'arayuz.js', 'oyun.js', 'sahne3d.js']) fs.writeFileSync(path.join(OUT, f), yolDuzelt(fs.readFileSync(path.join(WEB, f), 'utf8')).replace("'modeller/' + ad + '.glb'", "'modeller/' + ad + '.json'"));
+for (const f of ['index.html', 'arayuz.js', 'oyun.js', 'sahne3d.js']) fs.writeFileSync(path.join(OUT, f), yolDuzelt(fs.readFileSync(path.join(WEB, f), 'utf8')).replace("kok + 'modeller/' + ad + '.glb'", "kok + 'modeller/' + ad + '.json'"));
 for (const f of ['data.js', 'sim.js', 'online.js']) kopya(f, f);
-for (const f of ['three.module.min.js', 'LICENSE', 'addons/loaders/GLTFLoader.js', 'addons/libs/meshopt_decoder.module.js', 'addons/utils/SkeletonUtils.js', 'addons/utils/BufferGeometryUtils.js']) kopya('vendor/three/' + f, 'vendor/three/' + f);
+for (const f of ['three.module.min.js', 'LICENSE', 'addons/loaders/GLTFLoader.js', 'addons/utils/SkeletonUtils.js', 'addons/utils/BufferGeometryUtils.js']) kopya('vendor/three/' + f, 'vendor/three/' + f);
 // GLB → gömülü glTF (.json): Artifact yalnız bilinen türleri sunar; GLTFLoader içeriğe bakar, uzantıya değil.
 function glbJson(kaynak, hedef) {
   const b = fs.readFileSync(kaynak); if (b.readUInt32LE(0) !== 0x46546c67) throw new Error('GLB değil: ' + kaynak);
