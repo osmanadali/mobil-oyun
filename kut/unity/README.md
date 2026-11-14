@@ -8,6 +8,7 @@
 | `KutSavas.cs` | Savaş motoru. `new KutSavas(takimA, takimB, tohum, alamet, kut, yz, kayit)`, her 0,05 sn'de `Adim()`, olaylar `Fx` listesinde, oyuncu dokunuşu `Kut(0, i)`. |
 | `KutHayalet.cs` | Bot rakip (`BotTakim`; `sv > 0` ise seviyeli maç: takım boyu = seviye), 4×3 yerleştirme (`Yerlestir`), düello kodu (`Kodla` / `Coz`; `KUT2-`, eski `KUT1-` de çözülür), uzak havuz arayüzü `IHayaletHavuzu`. |
 | `KutLobi.cs` | Seviyeli maç kuralları (`kut/lobi.js` karşılığı): deneyim ve seviye (`XpEkle`), kahraman havuzu (`KopyaSay`, `HavuzKalan`), seviyeye bağlı dükkân çekimi (`DukkanCek`), tur planı ve ekonomi (`TurPlan`, `GelirHesapla`, `TurSonu`), eşya kuralları (`EsyaTak`), canavar dalgaları (`PveDalga`), ganimet (`Ganimet`, `GanimetEsya`), Kervan (`KervanSecenek`), bedava kahraman seçimi (`BaslangicSecenek`). |
+| `KutLobiOda.cs` | 8 kişilik hayalet lobi (`kut/lobi.js`'in lobi bölümü): eşleşme ve Yansıma (`EslesmeKur`), hayalet × hayalet savaşları (`GolgeSavaslari`), tur (`LobiTurOyna`), sıralama, kupa (`KupaDegisim`), lobi alameti, lobide havuz. Armağan kuralları `KutLobi.cs`'te (`ArmaganSecenek`, `SavasArmagan`, `BotArmagan`). |
 
 ## Tarayıcı sürümüyle eşdeğerlik
 
@@ -18,7 +19,7 @@ node kut/test/esdeger_uret.cjs          # JS'ten 1996 savaş + kural vakaları �
 cd kut/unity/Test && dotnet run         # C# aynı vakaları oynar, karşılaştırır
 ```
 
-Son sonuç: 7022/7022 birebir aynı. 1996 savaş: Hızlı Maç botları, Sv 2–8 botları, elle kurulmuş 3×2 ve 4×3 takımlar, eşyalı savaşlar, canavar dalgaları (`pveR`), Gün Batımı'na giden savaşlar (`opt.gunBatimi`, 30 sn'ye kalanlar dahil) ve Diken Kabuk/Diken Kirpi yansımalı uzun tank savaşları. Kural vakaları: KUT1/KUT2 kodları, deneyim, havuz, dükkân, ekonomi (tur planı, gelir, seri, hasar, zincirler), eşya (istatistik, takma, toplama, raf, ganimet), canavar dalgası, ganimet, Kervan ve bedava kahraman seçimi. Bot takımı ve düello kodu farkı 0.
+Son sonuç: 9596/9596 birebir aynı (2356 savaş ve 7240 kural vakası; lobi ve armağan dahil). Ayrıntılı dosya listesi ve Unity işleri: `kut/UNITY_DEVIR.md` bölüm 9. Savaşlar: Hızlı Maç botları, Sv 2–8 botları, elle kurulmuş 3×2 ve 4×3 takımlar, eşyalı savaşlar, canavar dalgaları (`pveR`), Gün Batımı'na giden savaşlar (`opt.gunBatimi`, 30 sn'ye kalanlar dahil) ve Diken Kabuk/Diken Kirpi yansımalı uzun tank savaşları. Kural vakaları: KUT1/KUT2 kodları, deneyim, havuz, dükkân, ekonomi (tur planı, gelir, seri, hasar, zincirler), eşya (istatistik, takma, toplama, raf, ganimet), canavar dalgası, ganimet, Kervan ve bedava kahraman seçimi. Bot takımı ve düello kodu farkı 0.
 
 Kuralları değiştirirken iki tarafı birlikte değiştir: önce `sim.js` / `online.js` / `lobi.js`, sonra `KutSavas.cs` / `KutHayalet.cs` / `KutLobi.cs`. Ardından iki komutu yeniden çalıştır.
 

@@ -19,22 +19,22 @@
   // kademe: 1–3 (fiyat = kademe). menzil hücre cinsinden. as = saniyede saldırı. mana: yetenek için gereken.
   // yetenek: aktif (mana dolunca). pasif: hep açık. Kaynaşmada biri yeteneği, öbürü pasifi verir.
   const KAHRAMANLAR = [
-    { id: 'golem', ad: 'Kaya Golemi', emoji: '🪨', renk: '#a3775a', kademe: 1, soy: ['yer', 'dev'],        can: 820, atk: 48, as: 0.65, menzil: 1, mana: 80,  yetenek: 'tasFirlat',  pasif: 'tasDeri' },
+    { id: 'golem', ad: 'Kaya Golemi', emoji: '🪨', renk: '#a3775a', kademe: 1, soy: ['yer', 'dev'],        can: 700, atk: 37, as: 0.65, menzil: 1, mana: 80,  yetenek: 'tasFirlat',  pasif: 'tasDeri' },
     { id: 'kurt', ad: 'Kristal Kurt', emoji: '🐺', renk: '#8c97a8', kademe: 1, soy: ['atli', 'avci'],      can: 520, atk: 52, as: 0.95, menzil: 1, mana: 60,  yetenek: 'uluma',      pasif: 'suru' },
-    { id: 'kurbaga', ad: 'Davulcu Kurbağa', emoji: '🐸', renk: '#c9a24a', kademe: 1, soy: ['bilge', 'gok'],      can: 500, atk: 38, as: 0.70, menzil: 3, mana: 60,  yetenek: 'davul',      pasif: 'ruhBagi' },
+    { id: 'kurbaga', ad: 'Davulcu Kurbağa', emoji: '🐸', renk: '#c9a24a', kademe: 1, soy: ['bilge', 'gok'],      can: 610, atk: 42, as: 0.85, menzil: 3, mana: 60,  yetenek: 'davul',      pasif: 'ruhBagi' },
     { id: 'yarasa', ad: 'Sis Yarasası', emoji: '🦇', renk: '#b4435a', kademe: 1, soy: ['karanlik', 'su'],    can: 500, atk: 50, as: 0.85, menzil: 1, mana: 70,  yetenek: 'ruhEmme',    pasif: 'canEmici' },
     { id: 'ruzgar', ad: 'Rüzgâr Ruhu', emoji: '🌪️', renk: '#7fc8c0', kademe: 1, soy: ['gok', 'avci'],       can: 430, atk: 44, as: 0.90, menzil: 3, mana: 80,  yetenek: 'kasirga',    pasif: 'kacis' },
     { id: 'koc', ad: 'Dağ Koçu', emoji: '🐏', renk: '#d06a3c', kademe: 2, soy: ['yer', 'atli'],       can: 680, atk: 62, as: 0.85, menzil: 1, mana: 90,  yetenek: 'deliOfke',   pasif: 'deliCesaret' },
-    { id: 'yilan', ad: 'Zümrüt Yılan', emoji: '🐍', renk: '#5aa86a', kademe: 2, soy: ['su', 'bilge'],       can: 560, atk: 40, as: 0.75, menzil: 3, mana: 80,  yetenek: 'zehir',      pasif: 'zehirDis' },
-    { id: 'kaplumbaga', ad: 'Buz Kaplumbağası', emoji: '🐢', renk: '#7aa6d6', kademe: 2, soy: ['kis', 'dev'],        can: 860, atk: 46, as: 0.60, menzil: 1, mana: 90,  yetenek: 'buzNefes',   pasif: 'soguk' },
+    { id: 'yilan', ad: 'Zümrüt Yılan', emoji: '🐍', renk: '#5aa86a', kademe: 2, soy: ['su', 'bilge'],       can: 610, atk: 41, as: 0.75, menzil: 3, mana: 80,  yetenek: 'zehir',      pasif: 'zehirDis' },
+    { id: 'kaplumbaga', ad: 'Buz Kaplumbağası', emoji: '🐢', renk: '#7aa6d6', kademe: 2, soy: ['kis', 'dev'],        can: 820, atk: 38, as: 0.60, menzil: 1, mana: 90,  yetenek: 'buzNefes',   pasif: 'soguk' },
     { id: 'semender', ad: 'Kor Semenderi', emoji: '🦎', renk: '#ef8a3a', kademe: 2, soy: ['ates', 'su'],        can: 600, atk: 42, as: 0.75, menzil: 2, mana: 90,  yetenek: 'ocak',       pasif: 'sicakKalp' },
     { id: 'bulutat', ad: 'Bulut Atı', emoji: '🦄', renk: '#e7d9b5', kademe: 2, soy: ['gok', 'atli'],       can: 540, atk: 58, as: 1.00, menzil: 1, mana: 70,  yetenek: 'dortnal',    pasif: 'ruzgar' },
     { id: 'kugu', ad: 'Işık Kuğusu', emoji: '🦢', renk: '#f1e7a6', kademe: 3, soy: ['gok', 'su'],         can: 640, atk: 38, as: 0.70, menzil: 3, mana: 90,  yetenek: 'kanat',      pasif: 'ana' },
     { id: 'ayi', ad: 'Gece Ayısı', emoji: '🐻', renk: '#5b3f7a', kademe: 3, soy: ['karanlik', 'dev'],   can: 920, atk: 60, as: 0.70, menzil: 1, mana: 100, yetenek: 'karaGolge',  pasif: 'karanlikPay' },
     { id: 'anka', ad: 'Anka', emoji: '🐦‍🔥', renk: '#ff6a3d', kademe: 3, soy: ['ates', 'gok'],     can: 600, atk: 56, as: 0.80, menzil: 3, mana: 100, yetenek: 'kulDogus',   pasif: 'yenidenDogus' },
     { id: 'baykus', ad: 'Ayaz Baykuşu', emoji: '🦉', renk: '#bfe0ff', kademe: 3, soy: ['kis', 'bilge'],      can: 560, atk: 42, as: 0.70, menzil: 3, mana: 100, yetenek: 'ayaz',       pasif: 'kisNefesi' },
-    { id: 'tilki', ad: 'Gölge Tilki', emoji: '🦊', renk: '#4a5578', kademe: 3, soy: ['karanlik', 'avci'],  can: 520, atk: 70, as: 0.85, menzil: 3, mana: 80,  yetenek: 'golgeOk',    pasif: 'avKoku' },
-    { id: 'ejder', ad: 'Fırtına Ejderi', emoji: '🐉', renk: '#ffd84a', kademe: 3, soy: ['ates', 'bilge'],     can: 560, atk: 46, as: 0.75, menzil: 3, mana: 110, yetenek: 'yildirim',   pasif: 'gokGurultu' },
+    { id: 'tilki', ad: 'Gölge Tilki', emoji: '🦊', renk: '#4a5578', kademe: 3, soy: ['karanlik', 'avci'],  can: 520, atk: 58, as: 0.85, menzil: 3, mana: 80,  yetenek: 'golgeOk',    pasif: 'avKoku' },
+    { id: 'ejder', ad: 'Fırtına Ejderi', emoji: '🐉', renk: '#ffd84a', kademe: 3, soy: ['ates', 'bilge'],     can: 600, atk: 51, as: 0.75, menzil: 3, mana: 110, yetenek: 'yildirim',   pasif: 'gokGurultu' },
   ];
 
   // ── Yetenek / pasif metinleri (kart ve bilgi penceresi için). Sayılar ★1 değeri; ★2 ×1.8, ★3 ×3. ──
@@ -119,7 +119,7 @@
     { id: 'karsiHamle',    ad: 'Karşı Hamle',      kademe: 'alev',     tur: 'Önceden görme', savas: true, m: 'Rakibin en kalabalık soyu, senin takımına karşı savaşta bir eşik düşük sayılır.', neden: 'Rakiplerin tek soya yükleniyorsa.' },
     { id: 'alametBilgesi', ad: 'Alamet Bilgesi',   kademe: 'kivilcim', tur: 'Alamet', savas: false, m: 'Sonraki 3 turun alametini görürsün. Her bölümde bir kez kendi savaşının alametini Durgun Gök yapabilirsin.', neden: 'Alametler takımını bozuyorsa.' },
     { id: 'kizilGok',      ad: 'Kızıl Gök Çocuğu', kademe: 'alev',     tur: 'Alamet', savas: true,  m: 'Alametin Durgun Gök olmadığı turlarda takımın +%10 hasar verir.', neden: 'Alametler sık değişiyorsa.' },
-    { id: 'bereketKupu',   ad: 'Bereket Küpü',     kademe: 'kivilcim', tur: 'Ekonomi', savas: false, m: 'Faiz tavanı 5\'ten 7\'ye çıkar (70 altında doyar).', neden: 'Altın biriktiriyorsan.' },
+    { id: 'bereketKupu',   ad: 'Bereket Küpü',     kademe: 'kivilcim', tur: 'Ekonomi', savas: false, m: 'Faiz tavanı 5\'ten 7\'ye çıkar (56 altında doyar).', neden: 'Altın biriktiriyorsan.' },
     { id: 'pazarDostu',    ad: 'Pazar Dostu',      kademe: 'kivilcim', tur: 'Ekonomi', savas: false, m: 'Her hazırlıkta ilk yenileme bedava.', neden: 'Aynı kahramanı arıyorsan.' },
     { id: 'altinYumurta',  ad: 'Altın Yumurta',    kademe: 'alev',     tur: 'Ekonomi', savas: false, m: '5 savaş turu sonra yumurta çatlar: 22 altın.', neden: 'Şimdi güçlüysen, sonrası için.' },
     { id: 'hizliBuyume',   ad: 'Hızlı Büyüme',     kademe: 'kivilcim', tur: 'Seviye', savas: false, m: 'Hemen +8 deneyim; deneyim alımı 4 yerine 3 altın.', neden: 'Erken seviye atlamak istiyorsan.' },
@@ -168,7 +168,7 @@
     ['dolunayTestisi', 'Dolunay Testisi', 'ciy', 'ciy', 'Yetenek için gereken mana −%20.'],
     ['sabirTasi', 'Sabır Taşı', 'ciy', 'kabuk', 'Hasar alınca kazanılan mana iki katı.'],
     ['sifaPinari', 'Şifa Pınarı', 'ciy', 'yurek', 'Saniyede azami canının %2\'si kadar iyileşir.'],
-    ['ruhTestisi', 'Ruh Testisi', 'ciy', 'pul', 'Bir dost ölünce 30 mana kazanır ve azami canının %10\'u kadar iyileşir.'],
+    ['ruhTestisi', 'Ruh Testisi', 'ciy', 'pul', 'Bir dost ölünce 20 mana kazanır ve azami canının %10\'u kadar iyileşir.'],
     ['buzPinari', 'Buz Pınarı', 'ciy', 'buz', 'Yetenek kullanınca 2 hücre içindeki dostlara 80 ×★ kalkan.'],
     ['anaKaya', 'Ana Kaya', 'kabuk', 'kabuk', 'Canı ilk kez %40\'ın altına inince 2 sn hiç hasar almaz.'],
     ['devKukremesi', 'Dev Kükremesi', 'kabuk', 'yurek', 'Savaş başında 2,5 hücre içindeki düşmanlar 3 sn yalnız onu hedef alır.'],
@@ -177,7 +177,7 @@
     ['uluKok', 'Ulu Kök', 'yurek', 'yurek', 'Savaş başında 2 hücre içindeki dostlara +150 azami can.'],
     ['geceYuregi', 'Gece Yüreği', 'yurek', 'pul', 'Ölünce 2 hücre içindeki dostlara kendi azami canının %25\'i kadar kalkan.'],
     ['buzDagi', 'Buz Dağı', 'yurek', 'buz', 'Savaş başında azami canının %20\'si kadar ek kalkan.'],
-    ['golgePelerini', 'Gölge Pelerini', 'pul', 'pul', 'Bir düşmanı öldürünce 1,5 sn hedef alınamaz.'],
+    ['golgePelerini', 'Gölge Pelerini', 'pul', 'pul', 'Bir düşmanı öldürünce 1,5 sn hedef alınamaz ve azami canının %15\'i kadar iyileşir.'],
     ['karaBuz', 'Kara Buz', 'pul', 'buz', 'Canı ilk kez yarının altına inince 2 hücre içindeki düşmanlar 1 sn sersemler.'],
     ['isikKalkani', 'Işık Kalkanı', 'buz', 'buz', 'Savaş başında 2 hücre içindeki dostlara 120 kalkan.'],
   ].map(([id, ad, a, b, m], i) => ({ id, ad, tarif: [a, b], m, simge: 'e' + String(i + 1).padStart(2, '0') }));
@@ -302,7 +302,8 @@
     armaganTur: { 2: 1, 3: 2, 4: 3 }, // bölüm → Kut Armağanı'nın geldiği tur (2-1, 3-2, 4-3)
     // birikimli ekonomi (bölüm 3): gelir = taban + faiz + seri + galibiyet + alamet; hazırlık başında, Kervan'da yok
     tabanGelirBolum1: [3, 3, 4], tabanGelir: 5, // 1-1: 3 (başlangıç), 1-2: 3, 1-3: 4, 2-1 ve sonrası: 5
-    faizAdim: 10, faizTavan: 5,                 // her 10 altına 1, en çok 5 (50'de doyar); bölüm 1'de faiz yok
+    faizAdim: 8, faizTavan: 5,                  // her 8 altına 1, en çok 5 (40'ta doyar); bölüm 1'de faiz yok. Belgede 10'du (50'de doyar);
+                                                // denge benzetimiyle (test/denge_benzetim.mjs, DENGE_RAPORU.md) biriktiren ile harcayan arasındaki sıra farkı 0,8'in altına insin diye 8
     seriTablo: [0, 0, 1, 2, 2, 3],              // indeks = seri uzunluğu (5 ve üstü son değer): 2 → 1, 3–4 → 2, 5+ → 3
     galibiyetBonus: 1, pazarBonus: 2,           // önceki PvP savaşı kazanıldıysa +1; Bereketli Pazar +2
     yenile: 2,                                  // yenileme 2 altın (Hızlı Maç'ta 1)

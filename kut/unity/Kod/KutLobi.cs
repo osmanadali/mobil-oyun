@@ -92,7 +92,7 @@ namespace Kut
 
         // ── Ekonomi (bölüm 3) ──
         public static int TabanGelir(int r) { var p = TurPlan(r); return p.Bolum == 1 ? KutVeri.TabanGelirBolum1[p.Tur - 1] : KutVeri.TabanGelir; }
-        /// <summary>Gelir eklenmeden önceki altına göre: her 10 altına 1, en çok 5. Bölüm 1'de 0.</summary>
+        /// <summary>Gelir eklenmeden önceki altına göre: her KutVeri.FaizAdim (8) altına 1, en çok 5. Bölüm 1'de 0.</summary>
         /// <param name="tavan">Faiz tavanı (Bereket Küpü ile 7; 0 ya da verilmezse 5).</param>
         public static int Faiz(int altin, int r, int tavan = 0) => TurPlan(r).Bolum == 1 ? 0 : System.Math.Min(tavan != 0 ? tavan : KutVeri.FaizTavan, System.Math.Max(0, altin) / KutVeri.FaizAdim);
         public static int FaizTavanAl(IList<string> armagan) => armagan != null && armagan.Contains("bereketKupu") ? KutVeri.ArmBereketFaiz : KutVeri.FaizTavan;

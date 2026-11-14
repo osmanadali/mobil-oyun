@@ -59,7 +59,7 @@ satir.push('## Okuma notları');
 satir.push('');
 satir.push('- Tarama tek taşıyıcı ve tek eşyayla yapılır. Eşyanın doğal taşıyıcısı (ör. Kut Ocağı için yetenekçi, Diken Kabuk için ön sıradaki tank) her vakada seçilmez; taşıyıcı yalnız kademe × yıldıza göre seçilir. Takım etkili eşyalar (Işık Kalkanı, Ulu Kök, Av Coşkusu) ve Kut\'a bağlı eşyalar bu yüzden olduğundan zayıf ya da güçlü görünebilir.');
 satir.push('- Bir tam eşya iki bileşenin istatistiğini de verir; "tabana göre" sütunu bu toplamın etkisidir. Eşyanın kendi etkisinin payı için iki bileşenin satırlarına bakılabilir.');
-satir.push('- Sayılar belgedeki değerlerle (bölüm 5.2–5.3) ölçüldü; ayar yapılmadı. Ayar kararı denge adımında (bölüm 11, lobi benzetimi) verilmeli.');
+satir.push('- Sayılar belgedeki değerlerle (bölüm 5.2–5.3) ölçüldü; son denetimde iki eşya ayarlandı: Ruh Testisi dost ölünce 30 yerine 20 mana, Gölge Pelerini öldürünce ek %15 iyileşme. Ayrıntı: `test/DENGE_RAPORU.md`.');
 const md = path.join(__dirname, 'esya_denge_sonuc.md'), js = path.join(__dirname, 'esya_denge_sonuc.json');
 fs.writeFileSync(md, satir.join('\n') + '\n');
 fs.writeFileSync(js, JSON.stringify({ N, taban, ortalama: ort, sonuc }, null, 1));

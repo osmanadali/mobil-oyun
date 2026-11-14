@@ -39,22 +39,22 @@ namespace Kut
         };
 
         public static readonly Kahraman[] Kahramanlar = {
-            new Kahraman { Id = "golem", Ad = "Kaya Golemi", Emoji = "🪨", Renk = "#a3775a", Kademe = 1, Soy = new[] { "yer", "dev" }, Can = 820.0, Atk = 48.0, As = 0.65, Menzil = 1, Mana = 80.0, Yetenek = "tasFirlat", Pasif = "tasDeri" },
+            new Kahraman { Id = "golem", Ad = "Kaya Golemi", Emoji = "🪨", Renk = "#a3775a", Kademe = 1, Soy = new[] { "yer", "dev" }, Can = 700.0, Atk = 37.0, As = 0.65, Menzil = 1, Mana = 80.0, Yetenek = "tasFirlat", Pasif = "tasDeri" },
             new Kahraman { Id = "kurt", Ad = "Kristal Kurt", Emoji = "🐺", Renk = "#8c97a8", Kademe = 1, Soy = new[] { "atli", "avci" }, Can = 520.0, Atk = 52.0, As = 0.95, Menzil = 1, Mana = 60.0, Yetenek = "uluma", Pasif = "suru" },
-            new Kahraman { Id = "kurbaga", Ad = "Davulcu Kurbağa", Emoji = "🐸", Renk = "#c9a24a", Kademe = 1, Soy = new[] { "bilge", "gok" }, Can = 500.0, Atk = 38.0, As = 0.7, Menzil = 3, Mana = 60.0, Yetenek = "davul", Pasif = "ruhBagi" },
+            new Kahraman { Id = "kurbaga", Ad = "Davulcu Kurbağa", Emoji = "🐸", Renk = "#c9a24a", Kademe = 1, Soy = new[] { "bilge", "gok" }, Can = 610.0, Atk = 42.0, As = 0.85, Menzil = 3, Mana = 60.0, Yetenek = "davul", Pasif = "ruhBagi" },
             new Kahraman { Id = "yarasa", Ad = "Sis Yarasası", Emoji = "🦇", Renk = "#b4435a", Kademe = 1, Soy = new[] { "karanlik", "su" }, Can = 500.0, Atk = 50.0, As = 0.85, Menzil = 1, Mana = 70.0, Yetenek = "ruhEmme", Pasif = "canEmici" },
             new Kahraman { Id = "ruzgar", Ad = "Rüzgâr Ruhu", Emoji = "🌪️", Renk = "#7fc8c0", Kademe = 1, Soy = new[] { "gok", "avci" }, Can = 430.0, Atk = 44.0, As = 0.9, Menzil = 3, Mana = 80.0, Yetenek = "kasirga", Pasif = "kacis" },
             new Kahraman { Id = "koc", Ad = "Dağ Koçu", Emoji = "🐏", Renk = "#d06a3c", Kademe = 2, Soy = new[] { "yer", "atli" }, Can = 680.0, Atk = 62.0, As = 0.85, Menzil = 1, Mana = 90.0, Yetenek = "deliOfke", Pasif = "deliCesaret" },
-            new Kahraman { Id = "yilan", Ad = "Zümrüt Yılan", Emoji = "🐍", Renk = "#5aa86a", Kademe = 2, Soy = new[] { "su", "bilge" }, Can = 560.0, Atk = 40.0, As = 0.75, Menzil = 3, Mana = 80.0, Yetenek = "zehir", Pasif = "zehirDis" },
-            new Kahraman { Id = "kaplumbaga", Ad = "Buz Kaplumbağası", Emoji = "🐢", Renk = "#7aa6d6", Kademe = 2, Soy = new[] { "kis", "dev" }, Can = 860.0, Atk = 46.0, As = 0.6, Menzil = 1, Mana = 90.0, Yetenek = "buzNefes", Pasif = "soguk" },
+            new Kahraman { Id = "yilan", Ad = "Zümrüt Yılan", Emoji = "🐍", Renk = "#5aa86a", Kademe = 2, Soy = new[] { "su", "bilge" }, Can = 610.0, Atk = 41.0, As = 0.75, Menzil = 3, Mana = 80.0, Yetenek = "zehir", Pasif = "zehirDis" },
+            new Kahraman { Id = "kaplumbaga", Ad = "Buz Kaplumbağası", Emoji = "🐢", Renk = "#7aa6d6", Kademe = 2, Soy = new[] { "kis", "dev" }, Can = 820.0, Atk = 38.0, As = 0.6, Menzil = 1, Mana = 90.0, Yetenek = "buzNefes", Pasif = "soguk" },
             new Kahraman { Id = "semender", Ad = "Kor Semenderi", Emoji = "🦎", Renk = "#ef8a3a", Kademe = 2, Soy = new[] { "ates", "su" }, Can = 600.0, Atk = 42.0, As = 0.75, Menzil = 2, Mana = 90.0, Yetenek = "ocak", Pasif = "sicakKalp" },
             new Kahraman { Id = "bulutat", Ad = "Bulut Atı", Emoji = "🦄", Renk = "#e7d9b5", Kademe = 2, Soy = new[] { "gok", "atli" }, Can = 540.0, Atk = 58.0, As = 1.0, Menzil = 1, Mana = 70.0, Yetenek = "dortnal", Pasif = "ruzgar" },
             new Kahraman { Id = "kugu", Ad = "Işık Kuğusu", Emoji = "🦢", Renk = "#f1e7a6", Kademe = 3, Soy = new[] { "gok", "su" }, Can = 640.0, Atk = 38.0, As = 0.7, Menzil = 3, Mana = 90.0, Yetenek = "kanat", Pasif = "ana" },
             new Kahraman { Id = "ayi", Ad = "Gece Ayısı", Emoji = "🐻", Renk = "#5b3f7a", Kademe = 3, Soy = new[] { "karanlik", "dev" }, Can = 920.0, Atk = 60.0, As = 0.7, Menzil = 1, Mana = 100.0, Yetenek = "karaGolge", Pasif = "karanlikPay" },
             new Kahraman { Id = "anka", Ad = "Anka", Emoji = "🐦‍🔥", Renk = "#ff6a3d", Kademe = 3, Soy = new[] { "ates", "gok" }, Can = 600.0, Atk = 56.0, As = 0.8, Menzil = 3, Mana = 100.0, Yetenek = "kulDogus", Pasif = "yenidenDogus" },
             new Kahraman { Id = "baykus", Ad = "Ayaz Baykuşu", Emoji = "🦉", Renk = "#bfe0ff", Kademe = 3, Soy = new[] { "kis", "bilge" }, Can = 560.0, Atk = 42.0, As = 0.7, Menzil = 3, Mana = 100.0, Yetenek = "ayaz", Pasif = "kisNefesi" },
-            new Kahraman { Id = "tilki", Ad = "Gölge Tilki", Emoji = "🦊", Renk = "#4a5578", Kademe = 3, Soy = new[] { "karanlik", "avci" }, Can = 520.0, Atk = 70.0, As = 0.85, Menzil = 3, Mana = 80.0, Yetenek = "golgeOk", Pasif = "avKoku" },
-            new Kahraman { Id = "ejder", Ad = "Fırtına Ejderi", Emoji = "🐉", Renk = "#ffd84a", Kademe = 3, Soy = new[] { "ates", "bilge" }, Can = 560.0, Atk = 46.0, As = 0.75, Menzil = 3, Mana = 110.0, Yetenek = "yildirim", Pasif = "gokGurultu" },
+            new Kahraman { Id = "tilki", Ad = "Gölge Tilki", Emoji = "🦊", Renk = "#4a5578", Kademe = 3, Soy = new[] { "karanlik", "avci" }, Can = 520.0, Atk = 58.0, As = 0.85, Menzil = 3, Mana = 80.0, Yetenek = "golgeOk", Pasif = "avKoku" },
+            new Kahraman { Id = "ejder", Ad = "Fırtına Ejderi", Emoji = "🐉", Renk = "#ffd84a", Kademe = 3, Soy = new[] { "ates", "bilge" }, Can = 600.0, Atk = 51.0, As = 0.75, Menzil = 3, Mana = 110.0, Yetenek = "yildirim", Pasif = "gokGurultu" },
         };
 
         /// <summary>Canavarlar (5.5): kademe 0, soy yok; yeteneksizlerin manası 9999. KahramanBul bunlara da bakar.</summary>
@@ -149,7 +149,7 @@ namespace Kut
             new Esya { Id = "dolunayTestisi", Ad = "Dolunay Testisi", Simge = "e22", M = "Yetenek için gereken mana −%20.", Tip = "tam", Tarif = new[] { "ciy", "ciy" } },
             new Esya { Id = "sabirTasi", Ad = "Sabır Taşı", Simge = "e23", M = "Hasar alınca kazanılan mana iki katı.", Tip = "tam", Tarif = new[] { "ciy", "kabuk" } },
             new Esya { Id = "sifaPinari", Ad = "Şifa Pınarı", Simge = "e24", M = "Saniyede azami canının %2'si kadar iyileşir.", Tip = "tam", Tarif = new[] { "ciy", "yurek" } },
-            new Esya { Id = "ruhTestisi", Ad = "Ruh Testisi", Simge = "e25", M = "Bir dost ölünce 30 mana kazanır ve azami canının %10'u kadar iyileşir.", Tip = "tam", Tarif = new[] { "ciy", "pul" } },
+            new Esya { Id = "ruhTestisi", Ad = "Ruh Testisi", Simge = "e25", M = "Bir dost ölünce 20 mana kazanır ve azami canının %10'u kadar iyileşir.", Tip = "tam", Tarif = new[] { "ciy", "pul" } },
             new Esya { Id = "buzPinari", Ad = "Buz Pınarı", Simge = "e26", M = "Yetenek kullanınca 2 hücre içindeki dostlara 80 ×★ kalkan.", Tip = "tam", Tarif = new[] { "ciy", "buz" } },
             new Esya { Id = "anaKaya", Ad = "Ana Kaya", Simge = "e27", M = "Canı ilk kez %40'ın altına inince 2 sn hiç hasar almaz.", Tip = "tam", Tarif = new[] { "kabuk", "kabuk" } },
             new Esya { Id = "devKukremesi", Ad = "Dev Kükremesi", Simge = "e28", M = "Savaş başında 2,5 hücre içindeki düşmanlar 3 sn yalnız onu hedef alır.", Tip = "tam", Tarif = new[] { "kabuk", "yurek" } },
@@ -158,7 +158,7 @@ namespace Kut
             new Esya { Id = "uluKok", Ad = "Ulu Kök", Simge = "e31", M = "Savaş başında 2 hücre içindeki dostlara +150 azami can.", Tip = "tam", Tarif = new[] { "yurek", "yurek" } },
             new Esya { Id = "geceYuregi", Ad = "Gece Yüreği", Simge = "e32", M = "Ölünce 2 hücre içindeki dostlara kendi azami canının %25'i kadar kalkan.", Tip = "tam", Tarif = new[] { "yurek", "pul" } },
             new Esya { Id = "buzDagi", Ad = "Buz Dağı", Simge = "e33", M = "Savaş başında azami canının %20'si kadar ek kalkan.", Tip = "tam", Tarif = new[] { "yurek", "buz" } },
-            new Esya { Id = "golgePelerini", Ad = "Gölge Pelerini", Simge = "e34", M = "Bir düşmanı öldürünce 1,5 sn hedef alınamaz.", Tip = "tam", Tarif = new[] { "pul", "pul" } },
+            new Esya { Id = "golgePelerini", Ad = "Gölge Pelerini", Simge = "e34", M = "Bir düşmanı öldürünce 1,5 sn hedef alınamaz ve azami canının %15'i kadar iyileşir.", Tip = "tam", Tarif = new[] { "pul", "pul" } },
             new Esya { Id = "karaBuz", Ad = "Kara Buz", Simge = "e35", M = "Canı ilk kez yarının altına inince 2 hücre içindeki düşmanlar 1 sn sersemler.", Tip = "tam", Tarif = new[] { "pul", "buz" } },
             new Esya { Id = "isikKalkani", Ad = "Işık Kalkanı", Simge = "e36", M = "Savaş başında 2 hücre içindeki dostlara 120 kalkan.", Tip = "tam", Tarif = new[] { "buz", "buz" } },
         };
@@ -199,7 +199,7 @@ namespace Kut
             new Armagan { Id = "karsiHamle", Ad = "Karşı Hamle", Kademe = "alev", Tur = "Önceden görme", Savas = true, M = "Rakibin en kalabalık soyu, senin takımına karşı savaşta bir eşik düşük sayılır.", Neden = "Rakiplerin tek soya yükleniyorsa." },
             new Armagan { Id = "alametBilgesi", Ad = "Alamet Bilgesi", Kademe = "kivilcim", Tur = "Alamet", Savas = false, M = "Sonraki 3 turun alametini görürsün. Her bölümde bir kez kendi savaşının alametini Durgun Gök yapabilirsin.", Neden = "Alametler takımını bozuyorsa." },
             new Armagan { Id = "kizilGok", Ad = "Kızıl Gök Çocuğu", Kademe = "alev", Tur = "Alamet", Savas = true, M = "Alametin Durgun Gök olmadığı turlarda takımın +%10 hasar verir.", Neden = "Alametler sık değişiyorsa." },
-            new Armagan { Id = "bereketKupu", Ad = "Bereket Küpü", Kademe = "kivilcim", Tur = "Ekonomi", Savas = false, M = "Faiz tavanı 5'ten 7'ye çıkar (70 altında doyar).", Neden = "Altın biriktiriyorsan." },
+            new Armagan { Id = "bereketKupu", Ad = "Bereket Küpü", Kademe = "kivilcim", Tur = "Ekonomi", Savas = false, M = "Faiz tavanı 5'ten 7'ye çıkar (56 altında doyar).", Neden = "Altın biriktiriyorsan." },
             new Armagan { Id = "pazarDostu", Ad = "Pazar Dostu", Kademe = "kivilcim", Tur = "Ekonomi", Savas = false, M = "Her hazırlıkta ilk yenileme bedava.", Neden = "Aynı kahramanı arıyorsan." },
             new Armagan { Id = "altinYumurta", Ad = "Altın Yumurta", Kademe = "alev", Tur = "Ekonomi", Savas = false, M = "5 savaş turu sonra yumurta çatlar: 22 altın.", Neden = "Şimdi güçlüysen, sonrası için." },
             new Armagan { Id = "hizliBuyume", Ad = "Hızlı Büyüme", Kademe = "kivilcim", Tur = "Seviye", Savas = false, M = "Hemen +8 deneyim; deneyim alımı 4 yerine 3 altın.", Neden = "Erken seviye atlamak istiyorsan." },
@@ -227,7 +227,7 @@ namespace Kut
 
         // Tur planı (bölüm 1.1), birikimli ekonomi (bölüm 3), kaybedince hasar (bölüm 4.4)
         public const int Bolum1Tur = 3, BolumTur = 7, KervanTur = 4, CanavarTur = 7;
-        public const int TabanGelir = 5, FaizAdim = 10, FaizTavan = 5, GalibiyetBonus = 1, PazarBonus = 2;
+        public const int TabanGelir = 5, FaizAdim = 8, FaizTavan = 5, GalibiyetBonus = 1, PazarBonus = 2;
         public const int Yenile = 2, KaynastirTaban = 2, SonUcEk = 3, SonIkiEk = 5;
         /// <summary>Bölüm 1'in turlarındaki taban gelir (1-1, 1-2, 1-3).</summary>
         public static readonly int[] TabanGelirBolum1 = { 3, 3, 4 };

@@ -118,7 +118,7 @@ q('#ana .ayarBtn').onclick = ayarPencere;
 
 function nasilPencere() {
   pencere(`<h3>Nasıl oynanır</h3><ul>
-    <li><b>Altın birikir.</b> Her tur başında gelir gelir: 5 altın (ilk turlarda 3–4), elindeki her 10 altına +1 faiz (en çok +5), üst üste kazanma ya da kaybetme serisine +1/+2/+3, son savaşı kazandıysan +1. Kahraman fiyatı kademesi kadar, yenileme 2 altın.</li>
+    <li><b>Altın birikir.</b> Her tur başında gelir gelir: 5 altın (ilk turlarda 3–4), elindeki her 8 altına +1 faiz (en çok +5, 40 altında doyar), üst üste kazanma ya da kaybetme serisine +1/+2/+3, son savaşı kazandıysan +1. Kahraman fiyatı kademesi kadar, yenileme 2 altın.</li>
     <li><b>Seviye:</b> takımına seviyen kadar kahraman koyabilirsin (Sv 2 ile başlarsın, en çok 8). Her savaştan sonra 2 deneyim gelir; <b>4 altınla 4 deneyim</b> da alabilirsin. Seviye yükseldikçe dükkâna pahalı kahramanlar daha sık gelir.</li>
     <li><b>Havuz:</b> her kahramandan sınırlı sayıda var (K1 22, K2 18, K3 14). Senin ve rakibinin elindekiler havuzdan düşer.</li>
     <li><b>Tahta:</b> 4 sütun, 3 sıra (ön, orta, arka). Yedekte 7 yer var.</li>
@@ -212,7 +212,7 @@ function macCiz() {
   const sonr = oyun.sonrakiAlametler(), sus = M.alametSusTur === M.tur;
   q('.alamet', m).innerHTML = `<div class="ay resim" style="${alametArka(M.alamet)}">${alametIc(M.alamet)}</div><div class="t"><small>Bu turun alameti${sus ? ' · senin savaşında susturuldu' : ''}</small><b>${al.ad}</b> <span>— ${al.m}</span>`
     + (sonr.length ? `<span class="sirada">Sıradaki: ${sonr.map(alametAd).join(' → ')}</span>` : '') + `</div>`;
-  // seviyeli maçta bu turun geliri ve sonraki turun faizi (her 10 altına 1, en çok 5)
+  // seviyeli maçta bu turun geliri ve sonraki turun faizi (her K.faizAdim altına 1, en çok 5)
   const gl = sev && M.gelir, fz = oyun.faizSonraki();
   q('.altinRozet', m).innerHTML = `<div class="top">${ik('coin')}</div>${M.altin}` + (sev ? `<div class="yz" style="padding-left:6px;font-size:13px;line-height:1.2"><small>${gl ? `Gelir +${gl.toplam}` : 'Gelir'}</small><span style="color:var(--altinA)">Faiz +${fz}</span></div>` : '');
   q('.altinRozet', m).title = gl ? `Bu tur: taban ${gl.taban} · faiz ${gl.faiz} · seri ${gl.seri} · galibiyet ${gl.galibiyet}${gl.alamet ? ' · alamet ' + gl.alamet : ''}` : '';

@@ -5,7 +5,7 @@ const K = D.KURAL;
 let hata = 0; const ok = (c, m) => { if (!c) { hata++; console.log('✗', m); } else console.log('✓', m); };
 
 // 1) KURAL: belgedeki sayılar
-ok(K.tabanGelirBolum1.join() === '3,3,4' && K.tabanGelir === 5 && K.faizAdim === 10 && K.faizTavan === 5, 'taban 3/3/4 sonra 5; faiz her 10 altına 1, en çok 5');
+ok(K.tabanGelirBolum1.join() === '3,3,4' && K.tabanGelir === 5 && K.faizAdim === 8 && K.faizTavan === 5, 'taban 3/3/4 sonra 5; faiz her 8 altına 1, en çok 5 (denge benzetimiyle 10 → 8)');
 ok(K.galibiyetBonus === 1 && K.pazarBonus === 2 && K.yenile === 2 && K.hizli.yenile === 1, 'galibiyet +1, Bereketli Pazar +2, yenileme 2 (Hızlı Maç 1)');
 ok(K.canBaslangic === 100 && K.bolumTabani.join() === '0,0,4,8,12,16,20,24' && K.sonUcEk === 3 && K.sonIkiEk === 5, '100 can, bölüm tabanı 0/4/8/12/16/20/24 (lobi benzetimiyle ayarlı), Son Üç +3, Son İki +5');
 
@@ -17,10 +17,10 @@ ok(L.turPlan(3).armagan && L.turPlan(11).armagan && L.turPlan(19).armagan && adl
 
 // 3) gelir
 ok([0, 1, 2, 3, 10, 40].map(L.tabanGelir).join() === '3,3,4,5,5,5', 'taban geliri tura göre');
-ok(L.faiz(49, 2) === 0 && L.faiz(9, 3) === 0 && L.faiz(10, 3) === 1 && L.faiz(37, 3) === 3 && L.faiz(50, 3) === 5 && L.faiz(200, 3) === 5 && L.faiz(-4, 3) === 0, 'faiz: bölüm 1 yok, floor(altın/10), 50 altında doyar');
+ok(L.faiz(49, 2) === 0 && L.faiz(7, 3) === 0 && L.faiz(8, 3) === 1 && L.faiz(37, 3) === 4 && L.faiz(39, 3) === 4 && L.faiz(40, 3) === 5 && L.faiz(200, 3) === 5 && L.faiz(-4, 3) === 0, 'faiz: bölüm 1 yok, floor(altın/8), 40 altında doyar');
 ok([0, 1, 2, 3, 4, 5, 6, 12].map(L.seriBonus).join() === '0,0,1,2,2,3,3,3', 'seri bonusu: 2 → 1, 3–4 → 2, 5+ → 3');
-const g = L.gelirHesapla(5, 37, { tip: 'M', n: 3 }, true, 'pazar');
-ok(g.taban === 5 && g.faiz === 3 && g.seri === 2 && g.galibiyet === 1 && g.alamet === 2 && g.toplam === 13, 'gelir = taban + faiz + seri + galibiyet + alamet (5+3+2+1+2 = 13)');
+const g = L.gelirHesapla(5, 31, { tip: 'M', n: 3 }, true, 'pazar');
+ok(g.taban === 5 && g.faiz === 3 && g.seri === 2 && g.galibiyet === 1 && g.alamet === 2 && g.toplam === 13, 'gelir = taban + faiz + seri + galibiyet + alamet (5+3+2+1+2 = 13; 31 altın → faiz 3)');
 ok(L.gelirHesapla(6, 50, { tip: 'G', n: 6 }, true, 'pazar').toplam === 0, 'Kervan turunda gelir yok');
 ok(L.gelirHesapla(0, 0, null, false, 'yok').toplam === 3 && L.gelirHesapla(2, 30, { tip: 'G', n: 2 }, false, 'yok').toplam === 5, '1-1 başlangıç 3; bölüm 1\'de faiz yok (seri varsa sayılır)');
 
@@ -62,12 +62,13 @@ ok(L.kayipHasar(r4, 1, 2, 2, 3)[0] === 17 && L.kayipHasar(r4, 1, 2, 2, 2)[0] ===
 
 // 8) beklenen altın eğrisi (bölüm 3.4). "An" = o turun hazırlığı başında, gelir eklenmeden önceki altın.
 //   Dengeli: bölüm 1'de tur başına 1 altın harcar, sonra her tur 5 altın (kahraman, yenileme); 3-5'ten sonra Sv 6 için deneyim alır.
-//   Biriktiren: bölüm 1'de harcamaz, sonra her tur 3 altın harcar, deneyim almaz; 50'nin üstünü harcar (faiz 50'de doyar).
+//   Biriktiren: bölüm 1'de harcamaz, sonra her tur 3 altın harcar, deneyim almaz; faiz tavanının (8 × 5 = 40) üstünü harcar.
+//   Faiz adımı 10 → 8 olunca (DENGE_RAPORU.md) biriktirenin hedefleri tavana göre: 3-1 ve 4-1'de tavanda (40+), tavana ilk 2-6 … 3-3.
 function benzet(harca, sonuc) {
   const d = { altin: 0, can: 100, seri: { tip: null, n: 0 }, galibiyet: false, seviye: 2, xp: 0 }, iz = {}; let elli = null;
   for (let r = 0; r <= 24; r++) {
     const p = L.turPlan(r), ad = L.turAd(r);
-    iz[ad] = { altin: d.altin, sv: d.seviye }; if (elli === null && d.altin >= 50) elli = ad;
+    iz[ad] = { altin: d.altin, sv: d.seviye }; if (elli === null && d.altin >= K.faizAdim * K.faizTavan) elli = ad;
     L.turBasi(d, r, 'yok');
     if (p.tip === 'kervan') continue;
     harca(d, p);
@@ -82,16 +83,16 @@ const dengeli = (d, p) => {
   if ((p.bolum > 3 || (p.bolum === 3 && p.tur >= 5)) && d.seviye < 6) while (d.seviye < 6 && d.altin >= K.xpBedel && butce > 0) { xpAl(d); butce -= K.xpBedel; }
   d.altin -= Math.min(d.altin, Math.max(0, butce));
 };
-const biriktiren = (d, p) => { if (p.bolum === 1) return; d.altin -= Math.min(d.altin, 3); if (d.altin > 50) d.altin -= Math.min(d.altin - 50, 8); };
+const biriktiren = (d, p) => { if (p.bolum === 1) return; d.altin -= Math.min(d.altin, 3); const tv = K.faizAdim * K.faizTavan; if (d.altin > tv) d.altin -= Math.min(d.altin - tv, 8); };
 const yariYariya = (r) => (r % 2 ? 0 : 1), hepYenilgi = () => 1;
 const ar = (x, a, b) => x >= a && x <= b;
 for (const [ad, s] of [['yarı yarıya', yariYariya], ['hep yenilgi', hepYenilgi]]) {
   const dn = benzet(dengeli, s).iz, bi = benzet(biriktiren, s);
   const yaz = (iz) => ['2-1', '3-1', '4-1'].map(k => `${k} ${iz[k].altin} (Sv${iz[k].sv})`).join(', ');
-  console.log(`  ${ad}: dengeli ${yaz(dn)} · biriktiren ${yaz(bi.iz)} · 50'ye ilk ${bi.elli}`);
+  console.log(`  ${ad}: dengeli ${yaz(dn)} · biriktiren ${yaz(bi.iz)} · faiz tavanına (40) ilk ${bi.elli}`);
   if (ad === 'yarı yarıya') ok(ar(dn['2-1'].altin, 10, 14) && ar(dn['3-1'].altin, 20, 30) && ar(dn['4-1'].altin, 30, 50) && dn['4-1'].sv === 6, `dengeli oyuncu (${ad}): 2-1 10–14, 3-1 20–30, 4-1 30–50 ve Sv 6`);
-  ok(bi.iz['2-1'].altin === 14 && ar(bi.iz['3-1'].altin, 40, 50) && bi.iz['4-1'].altin >= 50 && bi.iz['4-1'].sv === 5, `biriktiren oyuncu (${ad}): 2-1 14, 3-1 40–50, 4-1 50+ ve Sv 5`);
-  ok(['3-2', '3-3', '3-5'].includes(bi.elli), `biriktiren (${ad}) 50 altına 3-2 ile 3-5 arasında ulaşır (${bi.elli})`);
+  ok(bi.iz['2-1'].altin === 14 && ar(bi.iz['3-1'].altin, 38, 50) && bi.iz['4-1'].altin >= 40 && bi.iz['4-1'].sv === 5, `biriktiren oyuncu (${ad}): 2-1 14, 3-1 38–50, 4-1 40+ ve Sv 5`);
+  ok(['2-6', '2-7', '3-1', '3-2', '3-3'].includes(bi.elli), `biriktiren (${ad}) faiz tavanına (40) 2-6 ile 3-3 arasında ulaşır (${bi.elli})`);
 }
 
 console.log(hata ? `${hata} HATA` : 'hepsi geçti');

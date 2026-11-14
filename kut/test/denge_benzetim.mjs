@@ -7,6 +7,7 @@
 //      armağan seçimi (rastgele kart) maç başına tohumdan atanır. Ölçülenler: sıra, ilk-4, altın eğrisi (3.4), armağan ilk-4 oranları.
 //   C) Kut hedefi: aynı savaşlarda taraf 0 Kut'u en iyi hedefe (yapay zekâ puanı, 7.4) ya da rastgele bir sağ birime verir.
 //   D) Eşya taraması: test/esya_denge.cjs'in sonucu (ayrı çalıştırılır; burada okunur).
+//   E) Kahraman ve soy kazanma oranları (4×3, seviyeye bağlı takım boyu, eşyalı bot izi takımları).
 // Belirlenimci: Math.random ajan tohumuyla değiştirilir. Çıktı: test/denge_sonuc.json (rapor: test/DENGE_RAPORU.md elle yazılır).
 import { createRequire } from 'module'; import fs from 'fs'; import path from 'path'; import { fileURLToPath } from 'url';
 const require = createRequire(import.meta.url), BURA = path.dirname(fileURLToPath(import.meta.url));
@@ -18,12 +19,14 @@ const D = require('../data.js'), S = require('../sim.js'), O = require('../onlin
 const K = D.KURAL;
 if (process.env.YAMA) Object.assign(K, JSON.parse(process.env.YAMA)); // deneme: KURAL alanlarını geçici değiştir (ör. YAMA='{"bolumTabani":[...]}')
 const { Oyun } = await import('../web/oyun.js');
-const OLCEK = +(process.argv[2] || 1), BOLUM = process.argv[3] || 'ABCD'; // ör. node denge_benzetim.mjs 1 B
+const OLCEK = +(process.argv[2] || 1), BOLUM = process.argv[3] || 'ABCDE'; // ör. node denge_benzetim.mjs 1 B
 const NA = Math.round(1500 * OLCEK), NB = Math.round(1200 * OLCEK), NC = Math.round(3000 * OLCEK);
 const medyan = (a) => { const b = a.slice().sort((x, y) => x - y); return b.length ? b[Math.floor(b.length / 2)] : NaN; };
 const dilim = (a, q) => { const b = a.slice().sort((x, y) => x - y); return b[Math.min(b.length - 1, Math.floor(b.length * q))]; };
 const ort = (a) => a.length ? a.reduce((s, x) => s + x, 0) / a.length : NaN;
-const out = { olcek: OLCEK };
+// kısmi çalıştırmada (ör. yalnız E) önceki sonuçlar korunur
+let out = {}; try { out = JSON.parse(fs.readFileSync(path.join(BURA, 'denge_sonuc.json'), 'utf8')); } catch (e) {}
+out.olcek = OLCEK;
 const t0 = Date.now();
 
 // ───────────────────────── A) bot lobisi ─────────────────────────
@@ -68,7 +71,8 @@ function hazirlik(o, st, R) {
   // ekonomi yolu: elde tutulacak altın (yedek) ve hedef seviye (bot izi eğrisi)
   const hedefSv = Math.floor(O.izEgri(r)[0]);
   // bölüm 1: dengeli 8, biriktiren hepsini tutar (3.4: 2-1 başında 10–14 / 14)
-  let yedekAltin = st.eko === 'harca' ? 0 : st.eko === 'faiz' ? (p.bolum >= 2 ? 50 : 14) : p.bolum <= 1 ? 8 : p.bolum === 2 ? 20 : p.bolum <= 4 ? 30 : 10;
+  const tavan = K.faizAdim * K.faizTavan; // faizin doyduğu altın (40)
+  let yedekAltin = st.eko === 'harca' ? 0 : st.eko === 'faiz' ? (p.bolum >= 2 ? tavan : 14) : p.bolum <= 1 ? 8 : p.bolum === 2 ? 20 : p.bolum <= 4 ? 30 : 10;
   if (canDusuk) yedekAltin = 0; // can azalınca herkes elindekini harcar
   const ayni = (h) => [...M.tahta, ...M.yedek].filter(b => b && !b.f && b.h === h && b.s === 1).length;
   const doluYedek = () => M.yedek.every(Boolean);
@@ -91,7 +95,7 @@ function hazirlik(o, st, R) {
   // deneyim: hedef seviyeye kadar (faiz yolunda yalnız 50'nin üstündeki altınla; harca yolunda hedefin 1 üstü)
   const svHedef = st.eko === 'harca' ? Math.min(8, hedefSv + 1) : hedefSv;
   while (M.seviye < svHedef && M.seviye < K.seviyeTavan && M.altin - o.xpBedel() >= yedekAltin && p.bolum >= 2) o.xpAl();
-  if (st.eko === 'faiz' && !canDusuk) while (M.seviye < K.seviyeTavan && M.altin - o.xpBedel() >= 50 && M.seviye < hedefSv + 1) o.xpAl();
+  if (st.eko === 'faiz' && !canDusuk) while (M.seviye < K.seviyeTavan && M.altin - o.xpBedel() >= tavan && M.seviye < hedefSv + 1) o.xpAl();
   // yenileme
   let n = 0;
   const yenileEsik = st.eko === 'harca' ? 2 : yedekAltin + 6;
@@ -138,7 +142,7 @@ async function ajanMac(tohum, st) {
     if (o.M.kervan) { await o.kervanSec(0); continue; }
     const M = o.M, r = M.tur - 1, ad = L.turAd(r);
     if (['2-1', '3-1', '4-1'].includes(ad)) { kayit.altin[ad] = { once: M.altin - (M.gelir ? M.gelir.toplam : 0), sonra: M.altin }; }
-    if (kayit.ilk50 === null && M.altin >= 50) kayit.ilk50 = r;
+    if (kayit.ilk50 === null && M.altin >= K.faizAdim * K.faizTavan) kayit.ilk50 = r; // faiz tavanına ilk ulaşılan tur
     hazirlik(o, st, R); secimler(o, R, st, kayit);
     if (['2-1', '3-1', '4-1'].includes(ad)) kayit.seviye[ad] = M.seviye;
     if (M.tahta.some(b => b && b.f)) kayit.kaynasti = true;
@@ -192,6 +196,37 @@ if (BOLUM.includes('C')) {
   }
   out.C = { N: NC, iyi: v.iyi / NC, rastgele: v.rastgele / NC, yok: v.yok / NC, fark: (v.iyi - v.rastgele) / NC };
   console.log(`C) Kut: en iyi hedef %${(100 * out.C.iyi).toFixed(1)} · rastgele %${(100 * out.C.rastgele).toFixed(1)} · Kut yok %${(100 * out.C.yok).toFixed(1)} · fark ${(100 * out.C.fark).toFixed(1)} puan`);
+}
+
+// ───────────────────────── E) kahraman ve soy (4×3, seviyeye bağlı takım, eşyalı bot izi) ─────────────────────────
+// Kahraman: bot izi takımındaki aynı kademeden ilk birim (kaynaşmamış) o kahramana çevrilir (yıldız ve eşyalar aynı kalır; her vaka o kademenin
+// bütün kahramanları için aynı yuvadır) ve takım menzile göre yeniden dizilir;
+// kazanma oranı kademesinin ortalamasıyla karşılaştırılır. Soy: değiştirilmemiş savaşlarda eşiği açık (seviye ≥ 1) soyu taşıyan tarafın kazanma oranı.
+if (BOLUM.includes('E')) {
+  const NE = Math.round(500 * OLCEK), p = (s, tr) => (s.kazanan === tr ? 1 : s.kazanan === -1 ? 0.5 : 0);
+  const vak = [];
+  for (let n = 0; n < NE; n++) { const r = 9 + (n % 17); vak.push({ A: O.botIzTur(40000 + n * 13, (n % 5) / 4, r), B: O.botIzTur(60000 + n * 17, ((n * 3) % 5) / 4, r), tohum: 7000 + n * 7 }); }
+  const opt = (v) => ({ tohum: v.tohum, alamet: 'yok', yz: [0, 1], gunBatimi: K.gunBatimi.basla, armagan: [L.savasArmagan(v.A.armagan, 100), L.savasArmagan(v.B.armagan, 100)] });
+  const kh = {};
+  for (const h of D.KAHRAMANLAR) {
+    let k = 0, m = 0;
+    for (const v of vak) {
+      const j = v.A.takim.findIndex(b => !b.f && D.kahraman(b.h).kademe === h.kademe); if (j < 0) continue;
+      // aynı yuva bütün kademe kahramanları için ortak; takım menzile göre yeniden dizilir (yakın dövüşçü önde, online.js yerlestir)
+      const A = O.yerlestir(v.A.takim.map((b, q) => (q === j ? { ...b, h: h.id } : b)));
+      k += p(asilSavas(A, v.B.takim, opt(v)).sonunaKadar(), 0); m++;
+    }
+    kh[h.id] = { ad: h.ad, kademe: h.kademe, oran: k / m, n: m };
+  }
+  for (const kd of [1, 2, 3]) { const l = Object.values(kh).filter(x => x.kademe === kd), o = ort(l.map(x => x.oran)); for (const x of l) x.fark = x.oran - o; }
+  const soy = {};
+  for (const v of vak) {
+    const s = asilSavas(v.A.takim, v.B.takim, opt(v)).sonunaKadar();
+    for (const [tr, t] of [[0, v.A.takim], [1, v.B.takim]]) { const sy = S.soySay(t); for (const [id, x] of Object.entries(sy)) if (x.seviye >= 1) { soy[id] = soy[id] || [0, 0]; soy[id][0] += p(s, tr); soy[id][1]++; } }
+  }
+  out.E = { N: NE, kahraman: kh, soy: Object.fromEntries(Object.entries(soy).map(([id, v]) => [id, { ad: D.SOYLAR[id].ad, oran: v[0] / v[1], n: v[1], sik: v[1] / (2 * NE) }])) };
+  console.log('E) kahraman (kademe ortalamasına göre): ' + Object.entries(kh).sort((a, b) => b[1].fark - a[1].fark).map(([id, x]) => `${id} ${(100 * x.fark).toFixed(1)}`).join(' · '));
+  console.log('E) soy (eşik açıkken kazanma): ' + Object.entries(out.E.soy).sort((a, b) => b[1].oran - a[1].oran).map(([id, x]) => `${id} %${(100 * x.oran).toFixed(1)}`).join(' · '));
 }
 
 // ───────────────────────── D) eşya taraması (esya_denge.cjs) ─────────────────────────

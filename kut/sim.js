@@ -225,12 +225,12 @@
         if (d.olu) continue;
         if (d.taraf === u.taraf && d.pasif === 'ruhBagi') d.mp = Math.min(d.mana, d.mp + 35);
         if (d.taraf !== u.taraf && d.pasif === 'karanlikPay') d.payYigin++;
-        if (d.taraf === u.taraf && d.ef.ruhTestisi) { d.mp = Math.min(d.mana, d.mp + 30); iyiles(d, d.mx * 0.1); }
+        if (d.taraf === u.taraf && d.ef.ruhTestisi) { d.mp = Math.min(d.mana, d.mp + 20); iyiles(d, d.mx * 0.1); } // denge: 30 → 20 mana (DENGE_RAPORU.md)
         if (d.taraf !== u.taraf && d.ef.avCoskusu) durumVer(d, 'cosku', 3);
       }
       if (katil && !katil.olu && katil.taraf !== u.taraf) {
         if (katil.ef.geceAvcisi) iyiles(katil, u.mx * 0.2);
-        if (katil.ef.golgePelerini) durumVer(katil, 'hedefAlinmaz', 1.5);
+        if (katil.ef.golgePelerini) { durumVer(katil, 'hedefAlinmaz', 1.5); iyiles(katil, katil.mx * 0.15); } // denge: + %15 iyileşme (DENGE_RAPORU.md)
       }
     }
 

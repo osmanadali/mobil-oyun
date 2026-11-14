@@ -20,15 +20,15 @@ ok(D.BILESENLER.length === 8 && D.ESYALAR.length === 36 && D.OZEL_ESYA.length ==
 
 // ── 2) birim istatistiği ──
 {
-  const yalin = S.birimStat({ h: 'golem', s: 2 });
+  const G = D.kahraman('golem'), yalin = S.birimStat({ h: 'golem', s: 2 });
   const st = S.birimStat({ h: 'golem', s: 2, e: ['yirticiPence', 'yurek', 'kor'] });
-  ok(st.atk === Math.round(48 * 1.8 * 1.3) && st.can === yalin.can + 180 && Math.abs(st.yg - 0.2) < 1e-12, 'istatistik: Yırtıcı Pençe +%30 saldırı, Yürek +180 can (yıldızla çarpılmaz), Kor +%20 YG');
+  ok(st.atk === Math.round(G.atk * 1.8 * 1.3) && st.can === yalin.can + 180 && Math.abs(st.yg - 0.2) < 1e-12, 'istatistik: Yırtıcı Pençe +%30 saldırı, Yürek +180 can (yıldızla çarpılmaz), Kor +%20 YG');
   ok(st.esya.join() === 'yirticiPence' && st.kutYanki.dis === 2 && st.kutYanki.yurek === 1, 'tam eşya iki bileşen sayılır (Kut Yankısı sayacı)');
   const az = S.birimStat({ h: 'golem', s: 1, e: ['anaKaya', 'anaKaya', 'kabuk'] });
   ok(az.azalt === 0.4 && az.esya.length === 1, 'hasar azaltma eşyalardan en çok %40; aynı tam eşyanın etkisi bir kez');
   const m = S.birimStat({ h: 'golem', s: 1, e: ['muhur-ates', 'muhur-ates', 'kutTasi', 'kilic'] });
   ok(m.soy.join() === 'yer,dev,ates' && m.kutTasi === 1 && m.can === S.birimStat({ h: 'golem', s: 1 }).can, 'Soy Mührü soyu ekler, Kut Taşı yuva kaplar, bilinmeyen kimlik yok sayılır');
-  ok(S.birimStat({ h: 'golem', s: 1, e: ['yurek', 'yurek', 'yurek', 'yurek'] }).can === 820 + 540, 'en çok 3 yuva okunur');
+  ok(S.birimStat({ h: 'golem', s: 1, e: ['yurek', 'yurek', 'yurek', 'yurek'] }).can === D.kahraman('golem').can + 540, 'en çok 3 yuva okunur');
   const soy = S.soySay([{ h: 'golem', s: 1, e: ['muhur-ates'] }, { h: 'semender', s: 1 }]);
   ok(soy.ates && soy.ates.n === 2 && soy.ates.seviye === 1, 'mühür soyu soy sayımına girer (Od 2)');
 }
@@ -55,7 +55,7 @@ const tek = (A, B, opt = {}) => S.Savas(A, B, { tohum: 3, ...opt });
   const [g, k, ku] = sv.birimler;
   // Işık Kuğusu'nun Koruyucu Tüy pasifi komşulara 90 kalkan verir
   ok(g.kalkan === 240 + 90 && k.kalkan === 120 + 90 && Math.abs(ku.kalkan - (120 + ku.mx * 0.2 + 120)) < 1e-9, 'savaş başı kalkan: Buz bileşenleri, Işık Kalkanı (2 hücre dostlar), Buz Dağı (%20 azami can)');
-  ok(k.mx === S.birimStat({ h: 'kurt', s: 1 }).can + 150 && g.mx === 820 + 360, 'Ulu Kök: 2 hücre içindeki dostlara +150 azami can');
+  ok(k.mx === S.birimStat({ h: 'kurt', s: 1 }).can + 150 && g.mx === D.kahraman('golem').can + 360, 'Ulu Kök: 2 hücre içindeki dostlara +150 azami can');
   ok(g.mana === 64 && ku.mp === 15 && ku.vurusMana === 15, 'Dolunay Testisi mana −%20 (80 → 64); Çiy +15 başlangıç manası; Keskin Göz vuruş başına 15 mana');
 }
 {
@@ -132,7 +132,7 @@ const tek = (A, B, opt = {}) => S.Savas(A, B, { tohum: 3, ...opt });
   };
   const yak = (a, b) => Math.abs(a - b) < 1e-6;
   const p = vuruslar(['yirticiPence']), atkP = Math.round(52 * 1.3);
-  ok(yak(p[0].d, atkP * 0.8) && yak(p[1].d, atkP * 0.8) && yak(p[2].d, (atkP + 820 * 0.08) * 0.8) && yak(p[5].d, (atkP + 820 * 0.08) * 0.8),
+  ok(yak(p[0].d, atkP * 0.8) && yak(p[1].d, atkP * 0.8) && yak(p[2].d, (atkP + D.kahraman('golem').can * 0.08) * 0.8) && yak(p[5].d, (atkP + D.kahraman('golem').can * 0.08) * 0.8),
     `Yırtıcı Pençe: her 3. vuruş hedefin azami canının %8'i kadar ek (${p.map(x => x.d.toFixed(1))})`);
   const b = vuruslar(['bulutNali']);
   ok(yak(b[0].d, 52 * 2 * 0.8) && yak(b[1].d, 52 * 0.8), `Bulut Nalı: ilk vuruş 2 kat (${b.map(x => x.d.toFixed(1))})`);
@@ -144,13 +144,13 @@ const tek = (A, B, opt = {}) => S.Savas(A, B, { tohum: 3, ...opt });
 {
   // "İlk kez" eşik etkileri savaşta bir kez tetiklenir; Gölge Pelerini öldürünce hedef alınamaz; Buzul Zırh saldırganı yavaşlatır
   const sv = tek([{ h: 'kurbaga', s: 1, x: 1, y: 0, e: ['ofkeTilsimi', 'geceKanadi', 'karaBuz'] }, { h: 'golem', s: 1, x: 2, y: 0, e: ['anaKaya', 'buzulZirh'] }],
-    [{ h: 'ayi', s: 3, x: 1, y: 0 }, { h: 'koc', s: 3, x: 2, y: 0, e: ['golgePelerini'] }, { h: 'kurt', s: 2, x: 0, y: 0 }]);
+    [{ h: 'ayi', s: 3, x: 1, y: 0, e: ['golgePelerini'] }, { h: 'koc', s: 3, x: 2, y: 0, e: ['golgePelerini'] }, { h: 'kurt', s: 2, x: 0, y: 0, e: ['golgePelerini'] }]);
   const say = {}; let yavas = false, pelerin = false;
   for (let i = 0; i < 1200 && !sv.bitti; i++) {
     sv.adim();
     for (const f of sv.fx) if (f.tip === 'esya') say[f.ad] = (say[f.ad] || 0) + 1;
     if (sv.birimler.slice(2).some(u => !u.olu && u.durum.yavas && Math.abs(u.durum.yavas.deger - 0.2) < 1e-9)) yavas = true;
-    if (sv.fx.some(f => f.tip === 'olum' && f.u < 10) && sv.birimler[3].durum.hedefAlinmaz && sv.birimler[3].durum.hedefAlinmaz.sure > 1.4) pelerin = true;
+    if (sv.fx.some(f => f.tip === 'olum' && f.u < 10) && sv.birimler.slice(2).some(u => u.durum.hedefAlinmaz && u.durum.hedefAlinmaz.sure > 1.4)) pelerin = true;
   }
   ok(['ofkeTilsimi', 'geceKanadi', 'karaBuz', 'anaKaya'].every(a => say[a] === 1), `eşik etkileri birer kez tetiklenir (${JSON.stringify(say)})`);
   ok(yavas, 'Buzul Zırh: ona vuran 2 sn −%20 saldırı hızı alır');
@@ -167,6 +167,22 @@ const tek = (A, B, opt = {}) => S.Savas(A, B, { tohum: 3, ...opt });
 {
   // Hızlı Maç'ta eşya yok: eşyasız takımda birimStat eski alanlarını aynen verir
   const st = S.birimStat({ h: 'ejder', s: 2 });
-  ok(st.atk === Math.round(46 * 1.8) && st.can === Math.round(560 * 1.8) && st.asEk === 0 && st.yg === 0 && st.azalt === 0 && st.esya.length === 0, 'eşyasız birim: istatistikler eskisiyle aynı');
+  ok(st.atk === Math.round(D.kahraman('ejder').atk * 1.8) && st.can === Math.round(D.kahraman('ejder').can * 1.8) && st.asEk === 0 && st.yg === 0 && st.azalt === 0 && st.esya.length === 0, 'eşyasız birim: istatistikler eskisiyle aynı');
+}
+{
+  // Denge ayarı (DENGE_RAPORU.md): Ruh Testisi dost ölünce +20 mana (30'du), Gölge Pelerini öldürünce ek %15 iyileşme.
+  // Karşılaştırma: tam eşya ile aynı iki bileşen aynı istatistiği verir; savaşlar etkinin ilk tetiklendiği adıma kadar birebir aynı gider.
+  const ikiz = (A, B, esya, bil, tas, olay) => {
+    const kur = (e) => S.Savas(A.map((b, j) => (j === tas ? { ...b, e } : b)), B, { tohum: 77, alamet: 'yok', yz: [] });
+    const a = kur([esya]), b = kur(bil); let n = 0;
+    while (!a.bitti && n++ < 4000) { const once = a.birimler.map(u => [u.mp, u.hp]); a.adim(); b.adim();
+      const f = a.fx.find(olay); if (f) return { a, b, once, f }; }
+    return null; };
+  const r = ikiz([{ h: 'kugu', s: 1, x: 1, y: 2 }, { h: 'kurt', s: 1, x: 1, y: 0 }], [{ h: 'ayi', s: 3, x: 1, y: 0 }, { h: 'ejder', s: 2, x: 2, y: 2 }], 'ruhTestisi', ['ciy', 'pul'], 0,
+    f => f.tip === 'olum' && f.u === 1);
+  ok(r && (() => { const u = r.a.birimler[0], v = r.b.birimler[0]; return Math.abs((u.mp - v.mp) - Math.min(20, u.mana - v.mp)) < 1e-9; })(), 'Ruh Testisi: dost ölünce taşıyıcı 20 mana kazanır (denge: 30 → 20)');
+  const g = ikiz([{ h: 'koc', s: 3, x: 1, y: 0 }], [{ h: 'kurt', s: 1, x: 1, y: 0 }, { h: 'kurbaga', s: 1, x: 2, y: 0 }], 'golgePelerini', ['pul', 'pul'], 0,
+    f => f.tip === 'olum');
+  ok(g && (() => { const u = g.a.birimler[0], v = g.b.birimler[0]; return u.hp - v.hp > 0 && Math.abs((u.hp - v.hp) - Math.min(u.mx - v.hp, u.mx * 0.15)) < 1e-6 && u.durum.hedefAlinmaz; })(), 'Gölge Pelerini: öldürünce 1,5 sn hedef alınamaz ve azami canının %15\'i kadar iyileşir (denge eki)');
 }
 process.exit(hata ? 1 : 0);

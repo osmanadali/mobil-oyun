@@ -155,8 +155,8 @@ ok(ozet.seviye >= 2 + 1, `maç sonunda savaş deneyimiyle seviye arttı (Sv ${oz
   // 2-1 armağanı bu sınamada alınmaz (altını değiştirmesin)
   e.M.tur = 4; await e.turBaslat(false); e.M.armaganSecim = null; e.M.altin = 27; r = bitir(0); ok(e.M.galibiyet && e.M.seri.tip === 'G' && e.M.seri.n === 1, '2-1 galibiyeti: G1');
   await e.turBaslat(false); const g = e.M.gelir;
-  ok(e.turAd() === '2-2' && g.taban === 5 && g.faiz === 2 && g.galibiyet === 1 && g.seri === 0 && e.M.altin === 27 + g.toplam, `2-2 başı: 5 taban + 2 faiz + 1 galibiyet${g.alamet ? ' + 2 alamet' : ''} (27 → ${e.M.altin})`);
-  ok(e.faizSonraki() === Math.min(5, Math.floor(e.M.altin / 10)), 'sonraki turun faizi gösterilir');
+  ok(e.turAd() === '2-2' && g.taban === 5 && g.faiz === Math.floor(27 / K.faizAdim) && g.galibiyet === 1 && g.seri === 0 && e.M.altin === 27 + g.toplam, `2-2 başı: 5 taban + ${g.faiz} faiz + 1 galibiyet${g.alamet ? ' + 2 alamet' : ''} (27 → ${e.M.altin})`);
+  ok(e.faizSonraki() === Math.min(5, Math.floor(e.M.altin / K.faizAdim)), 'sonraki turun faizi gösterilir');
   r = bitir(1, 5); ok(r.hasar === 9 && e.M.can === 91 && !e.M.galibiyet && e.M.seri.tip === 'M', '2-2 yenilgisi: −9 can (taban 4 + 5 yıldız)');
   // yenileme 2 altın, kaynaştırma 2 + en yüksek kademe
   e.M.altin = 10; e.M.bedavaYenile = 0; e.yenile(); ok(e.M.altin === 8, 'yenileme 2 altın'); // (Göç Mevsimi alametinde ilk 2 yenileme bedava olurdu)

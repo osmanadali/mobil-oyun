@@ -79,8 +79,8 @@ const savas = (e, opt = {}, h = 'golem', s = 1) => S.Savas([{ h, s, x: 1, y: 0, 
   const ilk = S.Savas(A, B, { tohum: 4 }); let olumT = null; for (let i = 0; i < 800 && !ilk.bitti && olumT === null; i++) { ilk.adim(); if (ilk.birimler[0].olu) olumT = ilk.t; }
   const kay2 = []; const s3 = S.Savas(A, B, { tohum: 4, kut: [{ t: +(olumT + 1).toFixed(2), taraf: 0, i: 0 }], yzYedek: [0], kayit: kay2 }); s3.sonunaKadar();
   ok(olumT !== null && kay2.length === 1 && kay2[0].i === 1 && kay2[0].t >= olumT + 1 - 1e-9, `kayıttaki birim ölmüş: yapay zekâ yedeği hakkı kullandı (kurt ${olumT && olumT.toFixed(2)} sn'de öldü, Kut ${kay2.map(k => k.t)} sn)`);
-  const kay3 = []; S.Savas(A, B, { tohum: 4, kut: [{ t: 8, taraf: 0, i: 1 }], yzYedek: [0], kayit: kay3 }).sonunaKadar();
-  ok(kay3.length === 1 && kay3[0].t === 8, 'yedek taraf: kayıttaki dokunuştan önce yapay zekâ Kut kullanmaz');
+  const kay3 = []; S.Savas(A, B, { tohum: 4, kut: [{ t: 6, taraf: 0, i: 1 }], yzYedek: [0], kayit: kay3 }).sonunaKadar();
+  ok(kay3.length === 1 && kay3[0].t === 6, 'yedek taraf: kayıttaki dokunuştan önce yapay zekâ Kut kullanmaz');
 }
 
 // ── 4) Savaş armağanları ──
@@ -97,11 +97,11 @@ const savas = (e, opt = {}, h = 'golem', s = 1) => S.Savas([{ h, s, x: 1, y: 0, 
   ok(S.Savas(B, A, {}).soylar[1].dev.seviye === 1 && S.Savas(B, A, { armagan: [['karsiHamle'], []] }).soylar[1].dev.seviye === 0, 'Karşı Hamle: rakibin en kalabalık soyu (Dev 2) bir eşik düşük');
   const fu = { h: 'golem', s: 1, f: 'kurt', x: 1, y: 0 };
   const m1 = S.Savas([fu], B, {}).birimler[0], m2 = S.Savas([fu], B, { armagan: [['kusursuzMelez'], []] }).birimler[0];
-  ok(m1.mx === Math.round((820 + 520) / 2 * 1.15) && m2.mx === Math.round((820 + 520) / 2 * 1.3), 'Kusursuz Melez: kaynaşmış birim çarpanı ×1,15 → ×1,30');
+  ok(m1.mx === Math.round((D.kahraman('golem').can + 520) / 2 * 1.15) && m2.mx === Math.round((D.kahraman('golem').can + 520) / 2 * 1.3), 'Kusursuz Melez: kaynaşmış birim çarpanı ×1,15 → ×1,30');
   const u3 = S.birimStat({ h: 'golem', s: 1, f: 'kurt', f2: 'yilan' });
-  ok(u3.can === Math.round((820 + 520) / 2 * 1.15 * 1.1) && ['su', 'bilge'].every(x => u3.soy.includes(x)) && u3.pasif === 'suru' && u3.yetenek === 'tasFirlat', 'Üçlü Kaynaşma: üçüncüden soylar ve +%10; yetenek ve pasif değişmez');
+  ok(u3.can === Math.round((D.kahraman('golem').can + 520) / 2 * 1.15 * 1.1) && ['su', 'bilge'].every(x => u3.soy.includes(x)) && u3.pasif === 'suru' && u3.yetenek === 'tasFirlat', 'Üçlü Kaynaşma: üçüncüden soylar ve +%10; yetenek ve pasif değişmez');
   const c1 = S.Savas([{ h: 'golem', s: 1, x: 1, y: 0 }], B, { armagan: [['sonDirenis'], []] }).birimler[0];
-  ok(c1.mx === Math.round(820 * 1.2), 'Son Direniş: takım +%20 can');
+  ok(c1.mx === Math.round(D.kahraman('golem').can * 1.2), 'Son Direniş: takım +%20 can');
   ok(JSON.stringify(L.savasArmagan(['sonDirenis', 'cifteKut', 'pazarDostu'], 39)) === '["sonDirenis","cifteKut"]' && JSON.stringify(L.savasArmagan(['sonDirenis', 'cifteKut'], 40)) === '["cifteKut"]',
     'savasArmagan: yalnız savaş armağanları; Son Direniş can 40\'ın altındayken');
   ok(JSON.stringify(S.Savas([{ h: 'golem', s: 1, x: 1, y: 0 }], B, {}).birimler.map(u => u.mx)) === JSON.stringify(S.Savas([{ h: 'golem', s: 1, x: 1, y: 0 }], B, { armagan: [[], []] }).birimler.map(u => u.mx)), 'armağansız savaş değişmez');
@@ -132,7 +132,7 @@ const savas = (e, opt = {}, h = 'golem', s = 1) => S.Savas([{ h, s, x: 1, y: 0, 
   ok(D.ARMAGANLAR.length === 20 && D.ARMAGANLAR.every(a => a.ad && a.m && a.neden && D.ARMAGAN_KADEME[a.kademe]), '20 armağan: ad, etki, "Neden seç?" ve kademe');
   const ba = (r) => O.botIzTur(77, 0.5, r).armagan.length;
   ok(ba(2) === 0 && ba(3) === 1 && ba(10) === 1 && ba(11) === 2 && ba(19) === 3 && ba(40) === 3, 'bot izi armağanları: 2-1, 3-2, 4-3\'te birer');
-  ok(L.faiz(70, 10, L.faizTavan(['bereketKupu'])) === 7 && L.faiz(70, 10, L.faizTavan([])) === 5 && L.gelirHesapla(10, 65, null, false, 'yok', 7).faiz === 6, 'Bereket Küpü: faiz tavanı 7');
+  ok(L.faiz(70, 10, L.faizTavan(['bereketKupu'])) === 7 && L.faiz(70, 10, L.faizTavan([])) === 5 && L.gelirHesapla(10, 50, null, false, 'yok', 7).faiz === 6, 'Bereket Küpü: faiz tavanı 7');
 }
 
 // ── 6) Lobi alametleri (bölüm 8) ──

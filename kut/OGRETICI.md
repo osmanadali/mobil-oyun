@@ -194,7 +194,7 @@ Her adım şu alanları taşır: **metin** (rehber balonu), **vurgu** (spot ış
 - Vurgu: dükkân kart 1 ve 2 (iki Golem) ve tahtadaki Golem. Kartlarda zaten "Elinde 1/3" ve sonra "↑ ★2 olur · 2/3" rozetleri görünür; balonun kuyruğu bu rozete bakar.
 - Eylem: iki Golem kartını al. Oyuncu tur 1'de ikinci Golem'i almışsa metin "Bir Kaya Golemi daha al." olur ve tek kart vurgulanır.
 - Geçiş: tahtada Kaya Golemi ★2 var.
-- Birleşme animasyonu (`ARAYUZ_V2.md` §6.4) bittikten sonra Golem'in bilgi kartı 2,5 sn kendiliğinden açılır. Kartta can ve saldırı eski ve yeni değerle görünür: "Can 820 → 1 476 · Saldırı 48 → 86".
+- Birleşme animasyonu (`ARAYUZ_V2.md` §6.4) bittikten sonra Golem'in bilgi kartı 2,5 sn kendiliğinden açılır. Kartta can ve saldırı eski ve yeni değerle görünür: "Can 700 → 1 260 · Saldırı 37 → 67".
 - Sonra: "★2 kahraman 1,8 kat güçlüdür. Üç ★2 de ★3 yapar (3 kat)."
 - Takıldıysan: "Parlayan iki Golem kartına sırayla dokun."
 

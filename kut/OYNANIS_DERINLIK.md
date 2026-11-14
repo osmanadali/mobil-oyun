@@ -18,7 +18,7 @@ Okuma sırası: önce `TASARIM.md`, sonra bu belge. Ekran yerleşimi `ARAYUZ_V2.
 |---|---|---|
 | Maç biçimi | 1 oyuncu, her tur 1 hayalet rakip; 5 can, 7 zafer | 8 kişilik hayalet lobi; 100 can; son kalan birinci. Eski biçim **Hızlı Maç** olarak kalır. |
 | Süre | En çok 11 tur, 6–8 dk | 22–26 tur, birinci için 18–20 dk; erken elenen 12–15 dk |
-| Altın | Her tur 10, birikmez | Birikir; taban gelir 5, faiz (her 10'a 1, en çok 5), seri bonusu, galibiyet +1 |
+| Altın | Her tur 10, birikmez | Birikir; taban gelir 5, faiz (her 8'e 1, en çok 5; denge benzetiminden önce her 10'a 1), seri bonusu, galibiyet +1 |
 | Takım boyutu | Tura bağlı (3→6) | **Seviyeye** bağlı (2→8); deneyim satın alınır |
 | Dükkân olasılıkları | Tura bağlı | Seviyeye bağlı; kahraman havuzu sınırlı (hayaletler de çeker) |
 | Tahta | 3×2 (6 yuva) | 4×3 (12 hücre, en çok 8 kahraman) |
@@ -177,7 +177,7 @@ Gelir her savaş turunun **hazırlık başında** eklenir. Kervan turunda gelir 
 ```
 gelir = taban + faiz + seri + galibiyet + alamet
 taban   = 1-1: 3 (başlangıç), 1-2: 3, 1-3: 4, 2-1 ve sonrası: 5
-faiz    = min(5, floor(altin / 10))        // gelir eklenmeden önceki altına göre; bölüm 1'de faiz yok
+faiz    = min(5, floor(altin / 8))         // gelir eklenmeden önceki altına göre; bölüm 1'de faiz yok (ilk değer /10, bkz. not)
 seri    = seriBonus(n): n=2 → 1, n=3–4 → 2, n≥5 → 3  (kazanma ya da kaybetme serisi; n=0–1 → 0)
 galibiyet = önceki PvP savaşı kazanıldıysa 1
 alamet  = Bereketli Pazar ise 2
@@ -185,7 +185,8 @@ alamet  = Bereketli Pazar ise 2
 
 - Seri yalnız PvP sonuçlarıyla sayılır. Canavar turu seriyi bozmaz, uzatmaz.
 - Beraberlik seriyi bozmaz ve uzatmaz.
-- Elde tutulabilecek altın sınırsızdır, ama faiz 50'de doyar.
+- Elde tutulabilecek altın sınırsızdır, ama faiz 40'ta doyar.
+- **Denge notu (son denetim, `test/DENGE_RAPORU.md`):** faiz adımı 10'dan 8'e indi. Belgedeki 10 ile faizi tavanda tutan ajan, hiç biriktirmeyen ajandan ortalama 0,96 sıra gerideydi (hedef ≤ 0,8); 8 ile fark 0,7 civarına indi. Bölüm tabanını düşürmek de farkı kapatıyordu ama maçı 5-5'e uzatıyordu; faiz adımı lobi süresini etkilemiyor (botlar ekonomi oynamaz).
 
 ### 3.3 Harcamalar
 
@@ -207,7 +208,7 @@ Satış prototipteki gibi kalır: ★1 tam iade, ★2 için 3×kademe−1, ★3 
 | 3-1 başı | 20–30 | 40–50 |
 | 4-1 başı | 30–50 (Sv6) | 50+ (Sv5, sonra Sv7'ye atlar) |
 
-50 altına en erken 3-2 ile 3-5 arasında ulaşılabilmeli.
+50 altına en erken 3-2 ile 3-5 arasında ulaşılabilmeli. (Faiz adımı 8 olunca hedef tavana göre okunur: biriktiren 3-1 ve 4-1'de 40+ altında, faiz tavanına ilk 2-6 … 3-3; `test/ekonomi.test.cjs`.)
 
 ---
 
@@ -369,7 +370,7 @@ Tarif sırası önemsizdir (Diş+Tüy = Tüy+Diş). İstatistik sütunu iki bile
 | 22 | Çiy + Çiy | **Dolunay Testisi** | +30 mana | Yetenek için gereken mana −%20 (`floor(mana × 0,8 + 0,5)`). |
 | 23 | Çiy + Kabuk | **Sabır Taşı** | +15 mana, −%10 hasar | Hasar alınca kazanılan mana iki katı (%5 → %10). |
 | 24 | Çiy + Yürek | **Şifa Pınarı** | +15 mana, +180 can | Saniyede azami canının %2'si kadar iyileşir. |
-| 25 | Çiy + Pul | **Ruh Testisi** | +15 mana, %10 çalma | Bir dost ölünce 30 mana kazanır ve azami canının %10'u kadar iyileşir. |
+| 25 | Çiy + Pul | **Ruh Testisi** | +15 mana, %10 çalma | Bir dost ölünce 20 mana kazanır ve azami canının %10'u kadar iyileşir. (Denge: 30 → 20.) |
 | 26 | Çiy + Buz | **Buz Pınarı** | +15 mana, 120 kalkan | Yetenek kullanınca 2 hücre içindeki dostlara 80 ×★ kalkan. |
 | 27 | Kabuk + Kabuk | **Ana Kaya** | −%20 hasar | Canı ilk kez %40'ın altına inince 2 sn hiç hasar almaz. |
 | 28 | Kabuk + Yürek | **Dev Kükremesi** | −%10 hasar, +180 can | Savaş başında 2,5 hücre içindeki düşmanlar 3 sn yalnız onu hedef alır. |
@@ -378,7 +379,7 @@ Tarif sırası önemsizdir (Diş+Tüy = Tüy+Diş). İstatistik sütunu iki bile
 | 31 | Yürek + Yürek | **Ulu Kök** | +360 can | Savaş başında 2 hücre içindeki dostlara +150 azami can. |
 | 32 | Yürek + Pul | **Gece Yüreği** | +180 can, %10 çalma | Ölünce 2 hücre içindeki dostlara kendi azami canının %25'i kadar kalkan. |
 | 33 | Yürek + Buz | **Buz Dağı** | +180 can, 120 kalkan | Savaş başında azami canının %20'si kadar ek kalkan. |
-| 34 | Pul + Pul | **Gölge Pelerini** | %20 çalma | Bir düşmanı öldürünce 1,5 sn hedef alınamaz. |
+| 34 | Pul + Pul | **Gölge Pelerini** | %20 çalma | Bir düşmanı öldürünce 1,5 sn hedef alınamaz ve azami canının %15'i kadar iyileşir. (Denge: iyileşme eklendi.) |
 | 35 | Pul + Buz | **Kara Buz** | %10 çalma, 120 kalkan | Canı ilk kez %50'nin altına inince 2 hücre içindeki düşmanlar 1 sn sersemler. |
 | 36 | Buz + Buz | **Işık Kalkanı** | 240 kalkan | Savaş başında 2 hücre içindeki dostlara 120 kalkan. |
 
@@ -484,7 +485,7 @@ Canavar turunda kaybedilse de ganimet verilir. Canavar öldükçe görsel olarak
 | 11 | **Karşı Hamle** | Alev | Önizlenen rakibin en kalabalık soyu, senin takımına karşı savaşta bir eşik düşük sayılır. | Önceden görme |
 | 12 | **Alamet Bilgesi** | Kıvılcım | Sonraki 3 turun alametini görürsün. Her bölümde bir kez kendi savaşının alametini Durgun Gök yapabilirsin. | Alamet |
 | 13 | **Kızıl Gök Çocuğu** | Alev | Alametin Durgun Gök olmadığı turlarda takımın +%10 hasar verir. | Alamet |
-| 14 | **Bereket Küpü** | Kıvılcım | Faiz tavanı 5'ten 7'ye çıkar (70 altında doyar). | Ekonomi |
+| 14 | **Bereket Küpü** | Kıvılcım | Faiz tavanı 5'ten 7'ye çıkar (56 altında doyar). | Ekonomi |
 | 15 | **Pazar Dostu** | Kıvılcım | Her hazırlıkta ilk yenileme bedava. | Ekonomi |
 | 16 | **Altın Yumurta** | Alev | 5 savaş turu sonra yumurta çatlar: 22 altın. | Ekonomi |
 | 17 | **Hızlı Büyüme** | Kıvılcım | Hemen +8 deneyim; deneyim alımı 4 yerine 3 altın. | Seviye |
@@ -592,7 +593,7 @@ Eşitlikte birim sırası (`i`) küçük olan seçilir.
 Bu belge yerleşim vermez (o `ARAYUZ_V2.md`'nin işi; metinler `OGRETICI.md`'de). Ama her yeni sistemin oyuncuya nasıl anlatılacağı oynanış kararıdır ve şu kurallar zorunludur:
 
 1. **Seviye bloğu** (dükkân şeridinin en solu): "Sv 5 · 12/20", ilerleme çubuğu ve altında Deneyim Al. Dokununca o seviyenin ve bir sonrakinin kademe olasılıkları tablo hâlinde açılır.
-2. **Altın bloğu**: 5 **faiz boncuğu** (her 10 altında biri dolar; bölüm 1'de soluk ve "Faiz 2-1'de başlar") ve "+N sonraki tur" tahmini. Tahmin şu anki altınla canlı hesaplanır: `taban(r+1) + min(faizTavan, floor(altin/10)) + seriBonus(kazanırsa) + 1 + alamet(r+1)`. Sıradaki alamet önceden bilindiği için Bereketli Pazar tahmine girer. Dokununca döküm iki satır olur: "Kazanırsan +N · Kaybedersen +M".
+2. **Altın bloğu**: 5 **faiz boncuğu** (her 8 altında biri dolar; bölüm 1'de soluk ve "Faiz 2-1'de başlar") ve "+N sonraki tur" tahmini. Tahmin şu anki altınla canlı hesaplanır: `taban(r+1) + min(faizTavan, floor(altin/8)) + seriBonus(kazanırsa) + 1 + alamet(r+1)`. Sıradaki alamet önceden bilindiği için Bereketli Pazar tahmine girer. Dokununca döküm iki satır olur: "Kazanırsan +N · Kaybedersen +M".
 3. **Seri hapı**: altın bloğunun üstünde; kazanma serisinde turuncu-kırmızı ve yukarı ok, kaybetme serisinde buz mavisi ve aşağı ok, "Seri 3 · +2". Seri 0–1 iken gizli. Dokununca bonus tablosu açılır.
 4. **Eşya**: bileşen bir kahramanın üstüne sürüklenirken, oluşacak tam eşyanın adı ve etkisi baloncukta görünür. Rafta bir bileşene uzun basınca 8 tarifi gösteren **tarif çarkı** açılır.
 5. **Kut Yankısı**: Kut seçim kipinde her birimde yankı simgeleri (bölüm 7.1).
@@ -604,6 +605,8 @@ Bu belge yerleşim vermez (o `ARAYUZ_V2.md`'nin işi; metinler `OGRETICI.md`'de)
 ---
 
 ## 11. Denge hedefleri ve benzetim testleri
+
+> Son denetimin ölçümleri ve yapılan ayarlar: `test/DENGE_RAPORU.md` (benzetim `test/denge_benzetim.mjs`, eşya taraması `test/esya_denge.cjs`).
 
 `test/lobi.test.cjs` adıyla yeni bir test yazılır: 8 bot izinden oluşan 10.000 lobiyi motorla baştan sona oynatır, canlı oyuncu da bot olur. Hedefler:
 
@@ -631,7 +634,7 @@ Her madde JS'te ve C#'ta birlikte uygulanır. Sıra: önce JS, sonra C#. Ardınd
 
 ### 12.1 `data.js` → `KutVeri.cs` (`tools/csharp_veri.cjs` ile üretilir; üretici yeni tabloları da yazacak şekilde genişletilir)
 
-- `KURAL` yeni alanlar: `canBaslangic: 100`, `seviyeBaslangic: 2`, `seviyeTavan: 8`, `xpTablo: [_,_,2,6,10,20,32,48]` (indeks = mevcut seviye), `pasifXp: 2`, `xpBedel: 4`, `xpMiktar: 4`, `tabanGelir(r)`, `faizAdim: 10`, `faizTavan: 5`, `seriBonus(n)`, `galibiyetBonus: 1`, `yenile: 2`, `kaynastirBedel(a, b) = 2 + max(kademe)`, `takimBoyutu(sv) = sv`, `kademeOlasilik(sv)` (tablo 2.2), `havuzAdet: {1: 22, 2: 18, 3: 14}`, `yedek: 7`, `esyaYuva: 3`, `esyaRaf: 10`, `bolumTabani: [0, 0, 2, 5, 8, 12, 15, 18]`, `sonUcEk: 3`, `sonIkiEk: 5`, `gunBatimi: {basla: 20, artis: 0.10}`, `hazirlikSure`, `kervanSure`, `armaganSure`.
+- `KURAL` yeni alanlar: `canBaslangic: 100`, `seviyeBaslangic: 2`, `seviyeTavan: 8`, `xpTablo: [_,_,2,6,10,20,32,48]` (indeks = mevcut seviye), `pasifXp: 2`, `xpBedel: 4`, `xpMiktar: 4`, `tabanGelir(r)`, `faizAdim: 8` (ilk değer 10), `faizTavan: 5`, `seriBonus(n)`, `galibiyetBonus: 1`, `yenile: 2`, `kaynastirBedel(a, b) = 2 + max(kademe)`, `takimBoyutu(sv) = sv`, `kademeOlasilik(sv)` (tablo 2.2), `havuzAdet: {1: 22, 2: 18, 3: 14}`, `yedek: 7`, `esyaYuva: 3`, `esyaRaf: 10`, `bolumTabani: [0, 0, 2, 5, 8, 12, 15, 18]`, `sonUcEk: 3`, `sonIkiEk: 5`, `gunBatimi: {basla: 20, artis: 0.10}`, `hazirlikSure`, `kervanSure`, `armaganSure`.
 - Hızlı Maç için eski alanlar `KURAL.hizli` altına taşınır: `altinTur`, `can: 5`, `zaferHedef: 7`, `yuva(tur)`, tura bağlı `kademeOlasilik`, `yenile: 1`, `kaynastir: 3`.
 - Yeni tablolar: `BILESENLER` (8; `{id, ad, stat: {atk, as, yg, mana0, azalt, can, cal, kalkan0}}`), `ESYALAR` (36 + 3 özel; `{id, ad, tarif: [a, b], etki}`; istatistik tariften hesaplanır), `ARMAGANLAR` (`{id, ad, kademe, etki, savas: bool}`), `CANAVARLAR`, `PVE_DALGA` (`r → [{h, x, y}]`), `TUR_PLANI`, `GANIMET`, `KERVAN`.
 - `ALAMETLER`: 4 yeni alamet; seçim ağırlığı alanı `w`.

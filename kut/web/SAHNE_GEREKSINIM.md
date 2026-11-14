@@ -93,3 +93,8 @@ Bu dosya, oynanış/motor işinin `sahne3d.js`, `vfx.js`, `gorunum.js` ve `harek
 - [ ] **Üçlü Kaynaşma birimi.** Takım birimi yeni alan taşıyabilir: `f2` (Üçlü Kaynaşma armağanıyla üçüncü kahraman; yalnız soy ve +%10 güç verir, model değiştirmez). Görünüş için kaynaşmış birimin madalyonuna ikinci küçük madalyon ya da üç renkli taban halkası önerilir. Motor modeli yine `b.h`'den alır.
 - [ ] **Armağanlı rakip.** Lobide hayaletler ve botlar Kut Armağanı taşır (`oyun.M.rakip.armagan`); savaşı etkileyenler (Çifte Kut, Uyanış, Kut Mirası, Işık Sütunu, Kusursuz Melez, Karşı Hamle, Kızıl Gök Çocuğu, Son Direniş) motorda iki taraf için de çalışır. Rakibin Kut'u artık 12. saniyede ikinci kez de gelebilir (yapay zekâ ikinci hakkı 12. sn'de kullanır). Belge 4.3'e göre rakip kartında armağan rozetleri gösterilmeli (arayüz işi).
 - [x] **Bilgi (değişiklik gerektirmez):** savaş sonucu `sonuc.kut = [taraf 0'ın, taraf 1'in kullandığı Kut sayısı]` taşır (Saklı Kut armağanı için). Kut kayıt biçimi `{t, taraf, i}` değişmedi.
+
+## Son denetim: denge ayarları (test/DENGE_RAPORU.md)
+
+- [ ] **Gölge Pelerini iyileşmesi.** Öldüren taşıyıcı artık 1,5 sn hedef alınamazlığın yanında azami canının %15'i kadar iyileşir. Motor bunu mevcut `{tip: 'iyi', u, n}` olayıyla yayar (aynı adımda `olum` olayından sonra); yeni olay tipi yok. Öneri: hedef alınamazlık efektine (gölgeye bürünme) yeşil uçan sayı eşlik etsin.
+- [x] **Bilgi (değişiklik gerektirmez):** Ruh Testisi'nin mana kazancı 30 → 20, faiz adımı 10 → 8 ve altı kahramanın can/saldırı sayıları değişti (Kaya Golemi, Davulcu Kurbağa, Zümrüt Yılan, Buz Kaplumbağası, Gölge Tilki, Fırtına Ejderi). Sahne bu sayıları motordan okuduğu için ek iş yok; can çubuğu ölçeği yeni azami canlarla kendiliğinden doğru çizilmeli.

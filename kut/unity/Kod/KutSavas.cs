@@ -365,13 +365,13 @@ namespace Kut
                 if (d.Olu) continue;
                 if (d.Taraf == u.Taraf && d.Pasif == "ruhBagi") d.Mp = Math.Min(d.Mana, d.Mp + 35);
                 if (d.Taraf != u.Taraf && d.Pasif == "karanlikPay") d.PayYigin++;
-                if (d.Taraf == u.Taraf && d.E("ruhTestisi")) { d.Mp = Math.Min(d.Mana, d.Mp + 30); Iyiles(d, d.Mx * 0.1); }
+                if (d.Taraf == u.Taraf && d.E("ruhTestisi")) { d.Mp = Math.Min(d.Mana, d.Mp + 20); Iyiles(d, d.Mx * 0.1); }
                 if (d.Taraf != u.Taraf && d.E("avCoskusu")) DurumVer(d, "cosku", 3);
             }
             if (katil != null && !katil.Olu && katil.Taraf != u.Taraf)
             {
                 if (katil.E("geceAvcisi")) Iyiles(katil, u.Mx * 0.2);
-                if (katil.E("golgePelerini")) DurumVer(katil, "hedefAlinmaz", 1.5);
+                if (katil.E("golgePelerini")) { DurumVer(katil, "hedefAlinmaz", 1.5); Iyiles(katil, katil.Mx * 0.15); }
             }
         }
 

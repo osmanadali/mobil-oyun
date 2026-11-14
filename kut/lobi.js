@@ -74,7 +74,7 @@
 
   // ── Ekonomi (bölüm 3) ──
   function tabanGelir(r) { const p = turPlan(r); return p.bolum === 1 ? K.tabanGelirBolum1[p.tur - 1] : K.tabanGelir; }
-  // Faiz gelir eklenmeden önceki altına göre: her 10 altına 1, en çok 5. Bölüm 1'de faiz yok.
+  // Faiz gelir eklenmeden önceki altına göre: her K.faizAdim (8) altına 1, en çok 5 (40'ta doyar). Bölüm 1'de faiz yok.
   // tavan: faiz tavanı (Bereket Küpü armağanıyla 7; verilmezse 5).
   function faiz(altin, r, tavan) { return turPlan(r).bolum === 1 ? 0 : Math.min(tavan || K.faizTavan, Math.floor(Math.max(0, altin) / K.faizAdim)); }
   // Seri bonusu: n = 0–1 → 0, 2 → 1, 3–4 → 2, 5+ → 3 (kazanma da kaybetme serisi de).
