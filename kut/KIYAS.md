@@ -9,7 +9,7 @@ Ana hedef: oyun 60-120 fps arasında dönsün ve takılma hissi olmasın. Bu yü
 
 ## 1. Üstünlüklerimiz
 
-- **Savaş temposu.** Ortalama savaş 13-17 sn (medyan 12-16, p90 19-26). TFT'nin tahmini 15-25 sn bandının kısa ucunda. 1×, 2×, 3× hız ve duraklatma var.
+- **Savaş temposu (düzeltme: bu bir üstünlük değil).** Ortalama savaş 13-17 sn (medyan 12-16, p90 19-26). Bu, TFT'nin tahmini 15-25 sn bandının kısa ucunda. Üstelik savaş varsayılan olarak 2× hızda oynuyor, yani oyuncu bunu yarı sürede görüyor. Kısa ve seri savaş, taktik bir oyunda eksiktir. Ayrıntı için [OYNANIS_HIS.md](OYNANIS_HIS.md). Gerçek üstünlük yalnız şu: 1×, 2×, 3× hız seçeneği ve duraklatma var.
 - **Yönetilebilir olay yoğunluğu.** Birim başına saniyede 1,5-3,0 olay (DOT dahil), 0,6-1,2 yetenek. Ekranda ortalama 5-12 sayı/sn.
 - **His katmanları zengin.** Birime özel hit-stop (his.donuk), gücüne göre kademeli sarsıntı (yalnız güç ≥ 0,65), Kut anında 0,25 sn yavaşlama, yakınlaşma ve altın parlama, vurulma tepkileri, vuruş anına denk saldırı klipleri, elemente göre renkli darbe efektleri. Rakiplerin belgelenmiş durumundan zengin.
 - **Can çubuğu TFT düzeyinde.** Takım rengi, gecikmeli beyaz hasar izi, kalkan dilimi, 100/500 çentikleri, mana nabzı, yıldız rozeti. Çakışan çubuklar kendiliğinden ayrılıyor.
