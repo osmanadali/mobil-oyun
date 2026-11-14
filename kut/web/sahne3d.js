@@ -158,11 +158,14 @@ async function arenaKur(kok, tl) {
     efektler.push({ kalici: true, o: parilti, guncelle: (t) => { parilti.material.opacity = 0.75 + Math.sin(t * 2.2) * 0.25; } }); }
   // çevre nesneleri
   const koy = (g, x, z, boy, ry = 0, eksen = 'y') => { const o = g.scene.clone(); golgeAc(o); olcekle(o, boy, eksen); const kk = new THREE.Box3().setFromObject(o); o.position.set(x, -kk.min.y, z); o.rotation.y = ry; sahne.add(o); return o; };
-  koy(kemer, 0, -6.2, 3.2, 0); koy(kemer, -4.6, -4.6, 2.4, 0.75); koy(kemer, 4.6, -4.6, 2.4, -0.75);
-  for (const [x, z] of [[-4.4, 3.6], [4.4, 3.6], [-4.6, -2.2], [4.6, -2.2]]) koy(kristal, x, z, 1.1);
-  koy(mantar, -5.3, 0.6, 1.6, 0.4); koy(mantar, 5.3, 1.2, 1.4, -0.6);
-  for (const [x, z] of [[-3.6, 5.3], [3.6, 5.3]]) { const m = koy(mangal, x, z, 0.9); atesEkle(m.position.clone().add(new THREE.Vector3(0, 0.95, 0))); }
-  koy(kayalar, -5.4, 3.0, 0.7, 1); koy(kayalar, 5.5, -0.8, 0.6, 2);
+  // çevre nesneleri adanın üst yüzünde, çimen halkasında dizilir; açı +z'den (oyuncu tarafı) ölçülür, nesne merkeze bakar
+  const kutup = (derece, r) => { const a = derece * Math.PI / 180; return [Math.sin(a) * r, Math.cos(a) * r, a + Math.PI]; };
+  const halkaya = (g, derece, r, boy, eksen) => { const [x, z, ry] = kutup(derece, r); return koy(g, x, z, boy, ry, eksen); };
+  halkaya(kemer, 180, 5.5, 2.6); halkaya(kemer, 146, 5.55, 2.0); halkaya(kemer, 214, 5.55, 2.0);
+  for (const d of [55, 305, 118, 242]) halkaya(kristal, d, 5.65, 1.0);
+  halkaya(mantar, 88, 5.7, 1.4); halkaya(mantar, 272, 5.7, 1.25);
+  for (const d of [28, 332]) { const m = halkaya(mangal, d, 5.5, 0.85); atesEkle(m.position.clone().add(new THREE.Vector3(0, 0.9, 0))); }
+  halkaya(kayalar, 163, 5.8, 0.55); halkaya(kayalar, 197, 5.8, 0.5);
   for (const [x, y, z, s] of [[-11, 2.5, -9, 3.5], [12, 4, -12, 4.5], [-14, -1, 4, 3], [13, 0.5, 6, 2.6]]) { const o = yuzen.scene.clone(); olcekle(o, s, 'max'); o.position.set(x, y, z); sahne.add(o); efektler.push({ kalici: true, o, faz: x, guncelle: (t) => { o.position.y = y + Math.sin(t * 0.5 + x) * 0.25; } }); }
 }
 function atesEkle(p) {
@@ -562,5 +565,7 @@ export function dokun(x, y) {
 }
 export function zafer(taraf) { for (const b of birimler.values()) if (b.u.taraf === taraf && b.olumT < 0 && b.isk) { oyna(b, 'Dance_Loop', { dongu: true, gecis: 0.2 }); b.durum = 'zafer'; } }
 export function temizle() { sim = null; }
+// hata ayıklama: kamerayı yerleştir
+export function kameraYerlestir(y, z) { kamera.position.set(0, y, z); kamera.lookAt(0, 0, 0); kamera.fov = 50; kamera.updateProjectionMatrix(); }
 // hata ayıklama: yakın kamera
 export function yakinKamera(uid, uzak = 2.4, aci = 0.5) { const b = birimler.get(uid); if (!b) return; const p = b.kok.position; kamera.position.set(p.x + Math.sin(aci) * uzak, 1.4, p.z + Math.cos(aci) * uzak); kamera.lookAt(p.x, 0.6, p.z); }
