@@ -79,8 +79,8 @@ const tek = (A, B, opt = {}) => S.Savas(A, B, { tohum: 3, ...opt });
   // Kut Ocağı: Kut ile patlayan yetenek ×1,5
   const vur = (e) => { const sv = tek([{ h: 'golem', s: 1, x: 1, y: 0, e }], [{ h: 'golem', s: 1, x: 1, y: 0 }]); sv.kut(0, 0); sv.adim(); return sv.birimler[1].mx - sv.birimler[1].hp; };
   const a = vur(['kor']), b = vur(['kutOcagi']);
-  // kor: YG 0,2 → 200×1,2 = 240 (taş deri ×0,8); Kut Ocağı: YG 0,4 → 200×1,4×1,5 = 420 (×0,8)
-  ok(Math.abs(a - 240 * 0.8) < 1e-6 && Math.abs(b - 420 * 0.8) < 1e-6, `YG yetenek hasarını büyütür, Kut Ocağı Kut yeteneğini ×1,5 (${a.toFixed(1)} / ${b.toFixed(1)})`);
+  // kor: YG 0,2, Kor yankısı ×1,25 → 200×1,2×1,25 = 300 (taş deri ×0,8); Kut Ocağı (Kor+Kor): YG 0,4, iki Kor yankısı ×1,25² ve ek ×1,5 → 200×1,4×1,5625×1,5 (×0,8)
+  ok(Math.abs(a - 200 * 1.2 * 1.25 * 0.8) < 1e-6 && Math.abs(b - 200 * 1.4 * 1.25 * 1.25 * 1.5 * 0.8) < 1e-6, `YG yetenek hasarını büyütür, Kut Ocağı Kut yeteneğini Kor yankılarına ek ×1,5 (${a.toFixed(1)} / ${b.toFixed(1)})`);
 }
 {
   // Diken Kabuk: yakın vuruşun %25'i geri döner
@@ -162,7 +162,7 @@ const tek = (A, B, opt = {}) => S.Savas(A, B, { tohum: 3, ...opt });
   sv.kut(0, 0); sv.adim();
   const g = sv.birimler[0], k = sv.birimler[1], ky = 1.8 * (1 + 0.6);
   ok(k.durum.yanik && Math.abs(k.durum.yanik.deger - 30 * ky) < 1e-9 && k.durum.yavas && k.durum.yavas.deger === 0.3, 'Kızgın Diş yanığı ve Ayaz Asası yavaşlatması yeteneğin vurduğuna');
-  ok(Math.abs(g.kalkan - (120 + 120 * ky)) < 1e-9, 'Taş Mühür: yetenekte kendine 120 ×★×YG kalkan (Ayaz Asası\'nın Buz kalkanına ek)');
+  ok(Math.abs(g.kalkan - (120 + 150 * 1.8 + 120 * ky)) < 1e-9, 'Taş Mühür: yetenekte kendine 120 ×★×YG kalkan (Ayaz Asası\'nın Buz kalkanına ve Kut\'un Buz yankısına ek)');
 }
 {
   // Hızlı Maç'ta eşya yok: eşyasız takımda birimStat eski alanlarını aynen verir

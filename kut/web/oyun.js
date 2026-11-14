@@ -23,6 +23,8 @@ export class Oyun {
     if (this.P.mac && this.P.mac.mod === 'lobi' && !this.P.mac.lobi) this.P.mac = null;
     // eşyalardan önce kaydedilmiş yarım maça boş raf eklenir
     if (this.P.mac && !this.P.mac.esyaRaf) { this.P.mac.esyaRaf = []; this.P.mac.esyaTasan = []; }
+    // Kut Armağanı'ndan önce kaydedilmiş yarım maça boş armağan listesi
+    if (this.P.mac && !this.P.mac.armagan) Object.assign(this.P.mac, { armagan: [], armaganSecim: null, armaganR: -1, bedavaKaynas: 0, yumurta: null, muhurSecim: false, alametSusBolum: 0, alametSusTur: 0, bedavaYenile: 0 });
     // canavar turlarından önce kaydedilmiş Arena yarım maçında rakip bot olabilir: canavar turuysa dalga kurulur
     if (this.P.mac && this.P.mac.mod !== 'hizli' && this.P.mac.rakip && L.turPlan(this.P.mac.tur - 1).tip === 'pve' && !this.P.mac.rakip.pve) this.P.mac.rakip = this._dalgaRakip(this.P.mac.tur - 1);
     this.M = this.P.mac; this.secili = null; this.seciliEsya = null; this.kaynasMod = false; this._dinle = {};
@@ -49,7 +51,12 @@ export class Oyun {
     return { altinTur: H.altinTur, yenile: H.yenile, kaynastir: H.kaynastir, can: H.can, zaferHedef: H.zaferHedef };
   }
   /** Kaynaştırma bedeli: seviyeli maçta 2 + en yüksek kademe (b verilmezse yalnız a'ya göre, yani en az bedel); Hızlı Maç'ta 3. */
-  kaynastirBedel(a, b) { return this.seviyeli() ? L.kaynastirBedel(D.kahraman(a).kademe, b ? D.kahraman(b).kademe : 0) : H.kaynastir; }
+  kaynastirBedel(a, b) {
+    if (!this.seviyeli()) return H.kaynastir;
+    if (this.M.bedavaKaynas > 0) return 0;                                   // Ocak Ustası'nın bedava hakkı
+    if (this.armaganVar('ocakUstasi')) return K.armaganSayi.ocakUstasi;        // Ocak Ustası: kaynaştırma 1 altın
+    return L.kaynastirBedel(D.kahraman(a).kademe, b ? D.kahraman(b).kademe : 0);
+  }
   /** Ekranda tur adı: seviyeli maçta "2-3" (bölüm-tur), Hızlı Maç'ta tur sayısı. */
   turAd() { return this.seviyeli() ? L.turAd(this.M.tur - 1) : String(this.M.tur); }
   /** Turun tipi (seviyeli maçta 'pvp' | 'pve' | 'kervan'; Hızlı Maç'ta hep 'pvp'). */
@@ -64,10 +71,20 @@ export class Oyun {
     return lb.oyuncular.map(o => ({ i: o.i, ad: o.canli ? this.P.ad : o.ad, can: o.can, olu: o.olu, sira: L.lobiSira(lb, o.i), seri: o.seri, sen: o.canli,
       rakip: !!(rk && rk.lobiI === o.i), elenme: o.olu ? L.turAd(o.elenmeR) : null }));
   }
-  /** Lobide bir sonraki turun alameti (bölüm 4.3: önceden görünür). */
-  sonrakiAlamet() { return this.lobiMi() ? L.lobiAlamet(this.M.lobi.tohum, this.M.tur) : null; }
-  /** Seviyeli maçta şu anki altının sonraki tur getireceği faiz (bölüm 1'de 0). */
-  faizSonraki() { return this.seviyeli() ? L.faiz(this.M.altin, this.M.tur) : 0; }
+  /** Alamet tohumu: lobide lobi tohumu (lobinin tamamına aynı), Arena'da maç tohumu. Hızlı Maç'ta null (eski zar). */
+  _alametTohum() { return this.lobiMi() ? this.M.lobi.tohum : this.seviyeli() ? this.M.tohum : null; }
+  /** Bir sonraki turun alameti (bölüm 4.3 ve 8: önceden görünür). Hızlı Maç'ta null. */
+  sonrakiAlamet() { const t = this._alametTohum(); return t === null ? null : L.lobiAlamet(t, this.M.tur); }
+  /** Sonraki n turun alameti (Alamet Bilgesi ile 3, yoksa 1). */
+  sonrakiAlametler() { const t = this._alametTohum(); if (t === null) return []; return L.alametSirasi(t, this.M.tur, this.armaganVar('alametBilgesi') ? K.armaganSayi.alametBilge : 1); }
+  /** Seviyeli maçta şu anki altının sonraki tur getireceği faiz (bölüm 1'de 0; Bereket Küpü ile tavan 7). */
+  faizSonraki() { return this.seviyeli() ? L.faiz(this.M.altin, this.M.tur, L.faizTavan(this.M.armagan)) : 0; }
+  // ── Kut Armağanı (bölüm 6) ──
+  armaganVar(id) { return !!(this.M && this.M.armagan && this.M.armagan.includes(id)); }
+  /** Yenileme bedeli: bedava hak varsa 0 (Pazar Dostu, Göç Mevsimi). */
+  yenileBedel() { return this.M && this.M.bedavaYenile > 0 ? 0 : this.kural().yenile; }
+  /** Deneyim bedeli: 4 altın, Hızlı Büyüme ile 3. */
+  xpBedel() { return this.armaganVar('hizliBuyume') ? K.armaganSayi.hizliBedel : K.xpBedel; }
   yuva() { return this.seviyeli() ? K.takimBoyutu(this.M.seviye) : H.yuva(this.M.tur); }
   yedekSayi() { return this.seviyeli() ? K.yedek : H.yedek; }
   olasilik() { return this.seviyeli() ? K.kademeOlasilik(this.M.seviye) : H.kademeOlasilik(this.M.tur); }
@@ -84,6 +101,9 @@ export class Oyun {
       tahta: Array(HUCRE).fill(null), yedek: Array(sev ? K.yedek : H.yedek).fill(null), dukkan: [], kilit: false,
       esyaRaf: [], esyaTasan: [], // eşya rafı (en çok 10) ve raf doluyken bekleyen ganimet
       ilkSecim: null, kervan: null, ganimetSecim: null, // bekleyen seçimler: 1-1 öncesi bedava kahraman, Kervan, ganimet eşyası
+      // Kut Armağanı (bölüm 6): alınanlar, bekleyen seçim {r, kademe, secenek, yenile}, Ocak Ustası'nın bedava kaynaştırması, Altın Yumurta {kalan},
+      // Soy Mührü seçimi bekliyor mu, Alamet Bilgesi'nin kullanıldığı bölüm ve tur, bu hazırlıktaki bedava yenileme
+      armagan: [], armaganSecim: null, armaganR: -1, bedavaKaynas: 0, yumurta: null, muhurSecim: false, alametSusBolum: 0, alametSusTur: 0, bedavaYenile: 0,
       tohum: (Math.random() * 1e9) | 0, zar: 1, yenileN: 0, alamet: 'yok', rakip: null, gecmis: [] };
     this.M = this.P.mac;
     if (mod === 'lobi') {
@@ -105,12 +125,21 @@ export class Oyun {
       if (this.lobiMi()) while (M.lobi.r < r && !L.lobiBitti(M.lobi)) L.lobiTurOyna(M.lobi, M.lobi.r, { canliTakim: this.takim() });
       // Kervan turu (x-4): savaş, gelir ve deneyim yok; kahraman + eşya çiftlerinden biri seçilir (bölüm 5.4). Dükkân aynen kalır.
       if (tip === 'kervan') {
-        M.alamet = 'yok'; M.gelir = L.turBasi(M, r, M.alamet); M.rakip = null; M.lobiEs = null;
+        M.alamet = 'yok'; M.gelir = L.turBasi(M, r, M.alamet); M.rakip = null; M.lobiEs = null; M.bedavaYenile = 0;
         M.kervan = { r, secenek: L.kervanSecenek(r, S.rng(M.tohum * 131 + r * 7919 + 17), L.kervanAdet(this.siraTahmin()), this.havuz()) };
         this._yay('kervan', M.kervan); return this._degisti();
       }
-      // lobide alamet lobinin tamamına aynı (bölüm 8); diğer biçimlerde oyuncunun zarı
-      M.alamet = this.lobiMi() ? L.lobiAlamet(M.lobi.tohum, r) : M.tur === 1 ? 'yok' : D.ALAMETLER[Math.floor(this._zar() * D.ALAMETLER.length)].id;
+      // lobide alamet lobinin tamamına aynı (bölüm 8), Arena'da maç tohumundan (ikisinde de sıradaki alamet önceden görünür);
+      // Hızlı Maç'ta oyuncunun zarı ve eski 8 alamet
+      const at = this._alametTohum();
+      M.alamet = at !== null ? L.lobiAlamet(at, r) : M.tur === 1 ? 'yok' : D.ALAMETLER_HIZLI[Math.floor(this._zar() * D.ALAMETLER_HIZLI.length)].id;
+      // bedava yenileme: Pazar Dostu (her hazırlıkta 1), Göç Mevsimi (ilk 2)
+      M.bedavaYenile = (this.armaganVar('pazarDostu') ? K.armaganSayi.pazarDostu : 0) + (M.alamet === 'gocMevsimi' ? K.armaganSayi.gocYenile : 0);
+      // Kut Armağanı aşaması (2-1, 3-2, 4-3): 3'ten 1 seçim, oyuncunun tohumundan; aynı armağan bir maçta iki kez çıkmaz
+      if (this.seviyeli() && L.turPlan(r).armagan && M.armaganR !== r) {
+        M.armaganR = r; const a = L.armaganSecenek(L.turPlan(r).bolum, S.rng(M.tohum * 61 + r * 7919 + 23), M.armagan);
+        M.armaganSecim = { r, kademe: a.kademe, secenek: a.secenek, yenile: K.armagan.yenileme, n: 0 };
+      }
       if (this.seviyeli()) M.gelir = L.turBasi(M, r, M.alamet); // birikimli: taban + faiz + seri + galibiyet + alamet
       else M.altin = H.altinTur + (M.alamet === 'pazar' ? 2 : 0);
       const istek = { tur: M.tur, kupa: this.P.kupa, oyuncu: this.P.oyuncu, tohum: M.tohum + M.tur * 31, mod: M.mod };
@@ -139,7 +168,7 @@ export class Oyun {
   _lobiRakip(es, r) {
     const lb = this.M.lobi, rk = L.lobiRakip(es, 0); if (!rk) return null;
     const o = lb.oyuncular[rk.j], k = L.lobiKadro(lb, rk.j, r);
-    return { ad: rk.yansima ? 'Yansıma: ' + o.ad : o.ad, takim: k.takim, kupa: o.kupa, seviye: k.seviye, kut: k.kut || null,
+    return { ad: rk.yansima ? 'Yansıma: ' + o.ad : o.ad, takim: k.takim, kupa: o.kupa, seviye: k.seviye, kut: k.kut || null, armagan: k.armagan || [],
       kaynak: rk.yansima ? 'yansima' : o.iz && o.iz.bot ? 'bot' : 'cevrimici', lobiI: rk.j, yansima: rk.yansima, can: o.can };
   }
   /** Canavar turunun rakibi: dalga (taraf 1), adı canavar sayılarıyla. */
@@ -149,7 +178,52 @@ export class Oyun {
     return { ad: Object.entries(say).map(([h, n]) => (n > 1 ? n + ' ' : '') + D.kahraman(h).ad).join(' + '), takim, kupa: 0, kaynak: 'canavar', pve: true };
   }
   /** Bekleyen seçim: 'ilk' (bedava kahraman), 'kervan', 'ganimet' ya da null. */
-  bekleyenSecim() { const M = this.M; if (!M) return null; return M.ilkSecim ? 'ilk' : M.kervan ? 'kervan' : M.ganimetSecim ? 'ganimet' : null; }
+  bekleyenSecim() { const M = this.M; if (!M) return null; return M.ilkSecim ? 'ilk' : M.kervan ? 'kervan' : M.armaganSecim ? 'armagan' : M.muhurSecim ? 'muhur' : M.ganimetSecim ? 'ganimet' : null; }
+  /** Armağan seçimi (k: kart sırası). Hemen etkili armağanlar burada uygulanır (bölüm 6.2). */
+  armaganSec(k) {
+    const M = this.M; if (!M || !M.armaganSecim) return;
+    const a = M.armaganSecim, id = a.secenek[Math.max(0, Math.min(a.secenek.length - 1, k | 0))]; M.armaganSecim = null;
+    if (!id) return this._degisti();
+    M.armagan.push(id);
+    const AS = K.armaganSayi, R = S.rng(M.tohum * 53 + a.r * 7919 + 11), bil = (n) => Array.from({ length: n }, () => D.BILESENLER[Math.floor(R() * D.BILESENLER.length)].id);
+    if (id === 'ocakUstasi') M.bedavaKaynas = 1;
+    else if (id === 'soyMuhru') { M.muhurSecim = true; this._rafEkle(bil(1)); }
+    else if (id === 'gozcuBaykusu') M.altin += AS.gozcuAltin;
+    else if (id === 'altinYumurta') M.yumurta = { kalan: AS.yumurtaTur };
+    else if (id === 'hizliBuyume') this._xpEkle(AS.hizliXp);
+    else if (id === 'ganimetKesesi') this._rafEkle(bil(AS.ganimetKesesi));
+    else if (id === 'ustaDemirci') { this._rafEkle(['sokumTasi']); M.ganimetSecim = L.farkliEsya('tam', 3, R); }
+    else if (id === 'sonDirenis') this._rafEkle(bil(1));
+    this._yay('armagan', { id }); this.bildir(`Kut Armağanı: ${D.armagan(id).ad}`, 'iyi'); this._degisti();
+  }
+  /** Armağan kartlarını yenile (aşama başına 1 hak): üç kart değişir, kademe aynı kalır. */
+  armaganYenile() {
+    const M = this.M, a = M && M.armaganSecim; if (!a) return;
+    if (a.yenile <= 0) return this.bildir('Bu aşamada yenileme hakkın kalmadı', 'hata');
+    a.yenile--; a.n++;
+    a.secenek = L.armaganCek(a.kademe, S.rng(M.tohum * 61 + a.r * 7919 + 23 + a.n * 104729), M.armagan, a.secenek); this._degisti();
+  }
+  /** Soy Mührü armağanı: seçilen soyun mührü rafa iner. */
+  muhurSec(soy) {
+    const M = this.M; if (!M || !M.muhurSecim) return;
+    const s = D.SOYLAR[soy] ? soy : Object.keys(D.SOYLAR)[0]; M.muhurSecim = false;
+    this._rafEkle(['muhur-' + s]); this.bildir(`Soy Mührü (${D.SOYLAR[s].ad}) rafına indi`, 'iyi'); this._degisti();
+  }
+  /** Alamet Bilgesi: her bölümde bir kez bu turun kendi savaşının alameti Durgun Gök olur. */
+  alametSusturabilir() { const M = this.M; return !!(M && this.armaganVar('alametBilgesi') && M.alamet !== 'yok' && this.turTip() !== 'kervan' && M.alametSusBolum !== L.turPlan(M.tur - 1).bolum); }
+  alametSustur() {
+    const M = this.M; if (!this.alametSusturabilir()) return this.bildir('Bu bölümde alameti zaten susturdun', 'hata');
+    M.alametSusBolum = L.turPlan(M.tur - 1).bolum; M.alametSusTur = M.tur; this.bildir('Bu savaşın alameti Durgun Gök oldu', 'iyi'); this._degisti();
+  }
+  /** Savaşın alameti: Alamet Bilgesi ile susturulduysa Durgun Gök. */
+  savasAlamet() { const M = this.M; return M.alametSusTur === M.tur ? 'yok' : M.alamet; }
+  /** Gözcü Baykuşu: sonraki 2 PvP turunun rakip tahmini (lobide). [{ tur, ad, takim }] ya da null. */
+  gozcu() {
+    if (!this.lobiMi() || !this.armaganVar('gozcuBaykusu')) return null;
+    const M = this.M, r = M.tur - 1;
+    return L.gelecekRakip(M.lobi, 0, r, K.armaganSayi.gozcuTur, M.lobiEs).map(x => { const o = M.lobi.oyuncular[x.j];
+      return { tur: L.turAd(x.r), ad: (x.yansima ? 'Yansıma: ' : '') + o.ad, takim: o.canli ? [] : L.lobiKadro(M.lobi, x.j, x.r).takim }; });
+  }
   /** Kahramanı ele ver (ganimet, Kervan, bedava seçim): önce tahtaya (takım sınırı içinde, tahta=true ise), sonra yedeğe;
       yer yoksa satış değeri altın olur (bölüm 5.4). Birleşme kontrolü yapılır. Dönen: yer ya da {altin}. */
   _kahramanVer(b, tahta = false) {
@@ -213,15 +287,19 @@ export class Oyun {
   sahipMi(id) { return [...this.M.tahta, ...this.M.yedek].some(b => b && !b.f && b.h === id && b.s === 1); }
   birlesirMi(id) { return [...this.M.tahta, ...this.M.yedek].filter(b => b && !b.f && b.h === id && b.s === 1).length >= 2; }
 
-  yenile() { const M = this.M, b = this.kural().yenile; if (M.altin < b) return this.bildir('Altın yetmiyor', 'hata'); M.altin -= b; this._dukkanDoldur(); this._yay('ses', 'yenile'); this._degisti(); }
+  yenile() {
+    const M = this.M, b = this.yenileBedel(); if (M.altin < b) return this.bildir('Altın yetmiyor', 'hata');
+    if (M.bedavaYenile > 0) M.bedavaYenile--; else M.altin -= b;
+    this._dukkanDoldur(); this._yay('ses', 'yenile'); this._degisti();
+  }
   kilit() { this.M.kilit = !this.M.kilit; this._degisti(); }
 
   /** Deneyim satın al: 4 altın = 4 deneyim (yalnız seviyeli maçta). */
   xpAl() {
     const M = this.M; if (!this.seviyeli()) return;
     if (M.seviye >= K.seviyeTavan) return this.bildir('En yüksek seviyedesin', 'hata');
-    if (M.altin < K.xpBedel) return this.bildir('Altın yetmiyor', 'hata');
-    M.altin -= K.xpBedel; this._xpEkle(K.xpMiktar); this._yay('ses', 'yenile'); this._degisti();
+    const xb = this.xpBedel(); if (M.altin < xb) return this.bildir('Altın yetmiyor', 'hata');
+    M.altin -= xb; this._xpEkle(K.xpMiktar); this._yay('ses', 'yenile'); this._degisti();
   }
   _xpEkle(n) {
     const M = this.M, once = M.seviye, r = L.xpEkle(M.seviye, M.xp, n);
@@ -266,11 +344,26 @@ export class Oyun {
     if (this.secili && this.kaynasMod) {
       const a = this.al(this.secili);
       if (!b || (this.secili.yer === yer && this.secili.i === i)) { this.kaynasMod = false; return this._degisti(); }
+      // Üçlü Kaynaşma (armağan): kaynaşmış birim (üçüncüsü yoksa) düz bir kahramanla bir kez daha kaynaşır; üçüncüden yalnız soy ve +%10 istatistik
+      const uclu = this.seviyeli() && this.armaganVar('ucluKaynasma') && (a.f || b.f) && !(a.f && b.f);
+      if (uclu) {
+        const [ana, uc, anaYer, ucYer] = a.f ? [a, b, this.secili, hedef] : [b, a, hedef, this.secili];
+        if (ana.f2) return this.bildir('Bu birim zaten üçlü kaynaşmış', 'hata');
+        if (uc.h === ana.h || uc.h === ana.f) return this.bildir('Üçüncü kahraman ilk ikisinden farklı olmalı', 'hata');
+        const bedel = this.kaynastirBedel(ana.h, uc.h);
+        if (M.altin < bedel) return this.bildir(`${bedel} altın gerekli`, 'hata');
+        if (M.bedavaKaynas > 0) M.bedavaKaynas--; else M.altin -= bedel;
+        const yeni = { ...ana, f2: uc.h, sf2: uc.s }; delete yeni.e;
+        { const top = L.esyaToplaBirim(yeni, [ana.e, uc.e]); if (top.e.length) yeni.e = top.e; this._rafEkle(top.tasan); }
+        this._koy(anaYer, yeni); this._koy(ucYer, null);
+        this._yay('kaynasti', { a: ana.h, b: uc.h, yer: anaYer, uclu: true });
+        this.kaynasMod = false; this.secili = null; this.bildir(`🔥 ${this.birimAd(yeni)} doğdu!`, 'iyi'); return this._degisti();
+      }
       if (a.f || b.f) return this.bildir('Kaynaşmış kahraman tekrar kaynaşmaz', 'hata');
       if (a.h === b.h) return this.bildir('Aynı kahraman kaynaşmaz: üç tanesi zaten ★ olur', 'hata');
       const bedel = this.kaynastirBedel(a.h, b.h);
       if (M.altin < bedel) return this.bildir(`${bedel} altın gerekli`, 'hata');
-      M.altin -= bedel;
+      if (M.bedavaKaynas > 0) M.bedavaKaynas--; else M.altin -= bedel;
       const yeni = { h: a.h, f: b.h, s: Math.min(a.s, b.s), sh: a.s, sf: b.s }; // sh/sf: parçaların eski yıldızı (satış değeri için)
       { const top = L.esyaToplaBirim(yeni, [a.e, b.e]); if (top.e.length) yeni.e = top.e; this._rafEkle(top.tasan); } // eşyalar: önce birinci kahramanınkiler
       this._koy(this.secili, yeni); this._koy(hedef, null);
@@ -335,12 +428,13 @@ export class Oyun {
   /** Satış: ★1 tam iade, ★2 3×kademe−1, ★3 9×kademe−1. Kaynaşmış birim iki parçasının satış değerinin toplamını getirir (bölüm 3.3). */
   satisDegeri(b) {
     const tek = (h, s) => { const k = D.kahraman(h).kademe; return s === 1 ? k : k * (s === 2 ? 3 : 9) - 1; };
-    return tek(b.h, b.sh || b.s) + (b.f ? tek(b.f, b.sf || b.s) : 0);
+    return tek(b.h, b.sh || b.s) + (b.f ? tek(b.f, b.sf || b.s) : 0) + (b.f && b.f2 ? tek(b.f2, b.sf2 || 1) : 0);
   }
   sat() { const b = this.al(this.secili); if (!b) return; this.M.altin += this.satisDegeri(b); this._rafEkle(b.e || []); this._koy(this.secili, null); this.secili = null; this.kaynasMod = false; this._yay('ses', 'sat'); this._degisti(); }
-  birimAd(b) { if (b.canavar) return D.kahraman(b.canavar).ad; return b.f ? D.kahraman(b.h).ad.split(' ')[0] + ' × ' + D.kahraman(b.f).ad.split(' ')[0] : D.kahraman(b.h).ad; }
+  birimAd(b) { if (b.canavar) return D.kahraman(b.canavar).ad; const k = (id) => D.kahraman(id).ad.split(' ')[0];
+    return b.f ? k(b.h) + ' × ' + k(b.f) + (b.f2 ? ' × ' + k(b.f2) : '') : D.kahraman(b.h).ad; }
   /** Tahta hücresi i → motor konumu: x = sütun (0..3), y = sıra (0 ön, 1 orta, 2 arka). */
-  takim() { return this.M.tahta.map((b, i) => b && { h: b.h, s: b.s, ...(b.f ? { f: b.f } : {}), x: i % SUTUN, y: Math.floor(i / SUTUN), ...(b.e && b.e.length ? { e: b.e.slice() } : {}) }).filter(Boolean); }
+  takim() { return this.M.tahta.map((b, i) => b && { h: b.h, s: b.s, ...(b.f ? { f: b.f } : {}), ...(b.f && b.f2 ? { f2: b.f2 } : {}), x: i % SUTUN, y: Math.floor(i / SUTUN), ...(b.e && b.e.length ? { e: b.e.slice() } : {}) }).filter(Boolean); }
   soylar(takim) { return S.soySay(takim || this.takim()); }
 
   /** Savaşı hazırla: motor nesnesini döndürür (sahne onu oynatır). */
@@ -349,26 +443,33 @@ export class Oyun {
     if (M.kervan) { this.bildir('Kervan: önce bir kahraman seç', 'hata'); return null; }
     // bekleyen seçimler savaştan önce kapanır (seçilmediyse ilk seçenek)
     if (M.ilkSecim) this.ilkSec(0);
+    if (M.armaganSecim) this.armaganSec(0);
+    if (M.muhurSecim) this.muhurSec(this._enSoy());
     if (M.ganimetSecim) this.ganimetSec(0);
     const takim = this.takim();
     if (!takim.length) { this.bildir('Tahtaya en az 1 kahraman koy', 'hata'); return null; }
     if (!M.rakip) { this.bildir('Rakip aranıyor…'); return null; }
-    const pve = !!M.rakip.pve;
-    this._savas = { benim: takim, rakip: M.rakip, alamet: M.alamet, tohum: M.tohum + M.tur, kayit: [], pve };
-    // Arena: Gün Batımı (bölüm 1.4); canavarlar Kut kullanmaz
-    // lobi hayaleti kayıttaki Kut dokunuşunu kullanır ({i, t}); kayıt yoksa yapay zekâ (bölüm 4.6, 7.4)
+    const pve = !!M.rakip.pve, alamet = this.savasAlamet();
+    this._savas = { benim: takim, rakip: M.rakip, alamet, tohum: M.tohum + M.tur, kayit: [], pve };
+    // Arena: Gün Batımı (bölüm 1.4; Uzun Gölge'de 12. sn, motor alametten okur); canavarlar Kut kullanmaz
+    // lobi hayaleti kayıttaki Kut dokunuşunu kullanır ({i, t}); kayıt yoksa ya da birim ölmüşse / ikinci hak için yapay zekâ (bölüm 4.6, 7.4)
+    // armağanlar iki taraf için (bölüm 6.1); Son İki'de iki tarafın da 2 Kut hakkı (4.4)
     const rk = !pve && M.rakip.kut ? [{ t: M.rakip.kut.t, taraf: 1, i: M.rakip.kut.i }] : null;
-    const sim = S.Savas(takim, M.rakip.takim, { tohum: this._savas.tohum, alamet: M.alamet, yz: pve || rk ? [] : [1], kayit: this._savas.kayit, ...(rk ? { kut: rk } : {}),
-      ...(this.seviyeli() ? { gunBatimi: K.gunBatimi.basla } : {}) });
+    const sonIki = this.lobiMi() && L.yasayanSay(M.lobi) === 2, hak = sonIki ? K.kut.sonIkiHak : K.kut.hak;
+    const ek = this.seviyeli() ? { gunBatimi: K.gunBatimi.basla, kutHak: [hak, pve ? 0 : hak],
+      armagan: [L.savasArmagan(M.armagan, M.can), pve ? [] : L.savasArmagan(M.rakip.armagan || [], M.rakip.can)] } : {};
+    const sim = S.Savas(takim, M.rakip.takim, { tohum: this._savas.tohum, alamet, yz: pve || rk ? [] : [1], kayit: this._savas.kayit, ...(rk ? { kut: rk, yzYedek: [1] } : {}), ...ek });
     // 3D sahne canavar modellerini bilmiyor (SAHNE_GEREKSINIM.md, Adım 4): savaş kurulduktan sonra canavarın görsel birimi yerine
     // gorunum kahramanı konur (motor u.b'yi kurulumdan sonra okumaz). Gerçek kimlik u.b.canavar'da.
     if (pve) for (const u of sim.birimler) { const c = u.taraf === 1 && D.canavar(u.b.h); if (c) u.b = { ...u.b, h: c.gorunum, canavar: c.id }; }
     return sim;
   }
+  /** Soy Mührü için önerilen soy: tahtada en çok sayılan (eşitlikte soy sırası). */
+  _enSoy() { const sy = this.soylar(); let en = Object.keys(D.SOYLAR)[0], n = -1; for (const k of Object.keys(D.SOYLAR)) if (sy[k] && sy[k].n > n) { n = sy[k].n; en = k; } return en; }
   duelloHazirla(kod) {
     const r = O.coz(kod); if (!r) { this.bildir('Kod çözülemedi', 'hata'); return null; }
     if (!this.P.sonTakim) { this.bildir('Önce bir maç oyna', 'hata'); return null; }
-    const alamet = D.ALAMETLER[Math.floor(Math.random() * D.ALAMETLER.length)].id, tohum = (Math.random() * 1e9) | 0;
+    const alamet = D.ALAMETLER_HIZLI[Math.floor(Math.random() * D.ALAMETLER_HIZLI.length)].id, tohum = (Math.random() * 1e9) | 0;
     this._savas = { benim: this.P.sonTakim, rakip: { ad: r.ad || 'Arkadaş', takim: r.takim, kaynak: 'duello' }, alamet, tohum, duello: true, kayit: [] };
     return S.Savas(this.P.sonTakim, r.takim, { tohum, alamet, yz: [1], kayit: this._savas.kayit });
   }
@@ -384,7 +485,7 @@ export class Oyun {
     if (this.lobiMi()) {
       // lobi turu: hayalet × hayalet savaşları, herkesin hasarı, elenme ve sıralama (bölüm 4.4–4.6). Oyuncunun izi yazılır (4.7).
       const r = M.tur - 1, yas = L.yasayanSay(M.lobi), kut = (b.kayit || []).find(x => x.taraf === 0);
-      M.iz.push({ r, seviye: M.seviye, takim: b.benim, yedek: M.yedek.filter(Boolean).map(x => ({ h: x.h, s: x.s, ...(x.f ? { f: x.f } : {}) })), armagan: [], kut: kut ? { i: kut.i, t: kut.t } : null });
+      M.iz.push({ r, seviye: M.seviye, takim: b.benim, yedek: M.yedek.filter(Boolean).map(x => ({ h: x.h, s: x.s, ...(x.f ? { f: x.f } : {}), ...(x.f && x.f2 ? { f2: x.f2 } : {}) })), armagan: M.armagan.slice(), kut: kut ? { i: kut.i, t: kut.t } : null });
       if (M.lobi.r === r) lr = L.lobiTurOyna(M.lobi, r, { canliTakim: b.benim, canliSonuc: sonuc, eslesme: M.lobiEs || undefined });
       ts = this._seviyeliSonu(b, sonuc, yas); M.can = M.lobi.oyuncular[0].can;
       ts.lobi = lr ? { hasar: lr.hasar, elenen: lr.elenen.map(i => M.lobi.oyuncular[i].ad), yasayan: L.yasayanSay(M.lobi), sira: L.lobiSira(M.lobi, 0) } : null;
@@ -400,13 +501,22 @@ export class Oyun {
       if (M.zafer >= kr.zaferHedef || M.can <= 0) return this._macBitti(ts);
     }
     M.tur++; this.kaydet();
-    return { devam: true, kazanan: k, hasar: ts.hasar, lobi: ts.lobi || null, ganimet: ts.altin, esya: ts.esya || [], kahraman: ts.kahraman || [], secim: ts.secim || null, zarf: ts.zarf || null, pve: !!b.pve, can: M.can };
+    return { devam: true, kazanan: k, hasar: ts.hasar, lobi: ts.lobi || null, ganimet: ts.altin + (ts.armaganAltin || 0), esya: [...(ts.esya || []), ...(ts.demirci ? [ts.demirci] : [])], kahraman: ts.kahraman || [], secim: ts.secim || null, zarf: ts.zarf || null, pve: !!b.pve, can: M.can };
   }
   /** Seviyeli maçın (Arena, Lobi) tur sonu: hasar (PvP: bölüm tabanı + rakibin sağ kalan yıldızları; canavar: taban + kalan canavar,
       bölüm 1'de yok; lobide Son Üç / Son İki ekleri), seri, galibiyet, ganimetin sabit altını, savaş deneyimi (1-1 sonunda yok);
       canavar turunda ganimet (kaybedilse de). */
   _seviyeliSonu(b, sonuc, yasayan) {
     const M = this.M, once = M.seviye, ts = L.turSonu(M, M.tur - 1, sonuc, yasayan); M.sonHasar = ts.hasar;
+    // armağan ve alamet ödülleri (bölüm 6.2, 8): Saklı Kut (Kut kullanılmadıysa +3), Altın Yumurta (5 savaş turu sonra +22),
+    // Demirci Ateşi (PvP'yi kazanana 1 bileşen)
+    const AS = K.armaganSayi; ts.armaganAltin = 0; ts.demirci = null;
+    if (this.armaganVar('sakliKut') && sonuc.kut && sonuc.kut[0] === 0) { M.altin += AS.sakliKut; ts.armaganAltin += AS.sakliKut; this.bildir(`Saklı Kut: +${AS.sakliKut} altın`, 'iyi'); }
+    if (M.yumurta && --M.yumurta.kalan <= 0) { M.yumurta = null; M.altin += AS.yumurtaAltin; ts.armaganAltin += AS.yumurtaAltin; this.bildir(`Altın Yumurta çatladı: +${AS.yumurtaAltin} altın`, 'iyi'); }
+    if (!b.pve && b.alamet === 'demirci' && sonuc.kazanan === 0) {
+      const R = S.rng(M.tohum * 71 + M.tur * 7919 + 5); ts.demirci = D.BILESENLER[Math.floor(R() * D.BILESENLER.length)].id; this._rafEkle([ts.demirci]);
+      this.bildir('Demirci Ateşi: ' + D.esya(ts.demirci).ad, 'iyi');
+    }
     if (M.seviye > once) { this._yay('seviye', { seviye: M.seviye }); this.bildir(`Seviye ${M.seviye}: takımına ${K.takimBoyutu(M.seviye)} kahraman koyabilirsin`, 'iyi'); }
     const g = b.pve ? this._ganimet(M.tur - 1) : null;
     ts.esya = g ? g.esya : []; ts.kahraman = g ? g.kahraman : []; ts.secim = g ? g.secim : null; ts.zarf = g ? g.zarf : null;

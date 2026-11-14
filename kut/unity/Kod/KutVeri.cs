@@ -6,7 +6,10 @@ namespace Kut
     public sealed class SoyBilgi { public string Id, Ad, Emoji; public int[] Esik; public string[] Aciklama; }
     public sealed class Kahraman { public string Id, Ad, Emoji, Renk, Yetenek, Pasif; public int Kademe, Menzil; public string[] Soy; public double Can, Atk, As, Mana; }
     public sealed class Metin { public string Ad, M; }
-    public sealed class Alamet { public string Id, Ad, Emoji, M; }
+    /// <summary>Alamet: W lobide seçilme ağırlığı; Lobi yalnız seviyeli maçta çıkar (Hızlı Maç eski 8 alameti kullanır).</summary>
+    public sealed class Alamet { public string Id, Ad, Emoji, M; public double W; public bool Lobi; }
+    /// <summary>Kut Armağanı (bölüm 6): Kademe "kivilcim" | "alev" | "gunes"; Savas: motorda opt.armagan ile çalışır.</summary>
+    public sealed class Armagan { public string Id, Ad, Kademe, Tur, M, Neden; public bool Savas; }
     /// <summary>Bileşen istatistiği (tam eşyada iki bileşeninki toplanır).</summary>
     public sealed class EsyaStat { public double Atk, As, Yg, Mana0, Azalt, Can, Cal, Kalkan0; }
     /// <summary>Eşya: Tip "bilesen" | "tam" | "ozel". Tam eşyada Tarif iki bileşen; Soy Mührü'nde Soy dolu.</summary>
@@ -167,15 +170,44 @@ namespace Kut
         };
 
         public static readonly Alamet[] Alametler = {
-            new Alamet { Id = "yok", Ad = "Durgun Gök", Emoji = "🌤️", M = "Bu tur özel bir şey yok." },
-            new Alamet { Id = "kanAyi", Ad = "Kan Ayı", Emoji = "🌕", M = "Herkes +%20 hasar verir." },
-            new Alamet { Id = "sis", Ad = "Sis", Emoji = "🌫️", M = "Menzilliler -1 menzil." },
-            new Alamet { Id = "tipi", Ad = "Tipi", Emoji = "🌨️", M = "Herkes -%20 saldırı hızı; Ayaz soyu etkilenmez." },
-            new Alamet { Id = "kutYagmur", Ad = "Kut Yağmuru", Emoji = "✨", M = "Herkes savaşa %40 mana ile başlar." },
-            new Alamet { Id = "pazar", Ad = "Bereketli Pazar", Emoji = "🪙", M = "Bu tur +2 altın." },
-            new Alamet { Id = "tutulma", Ad = "Tutulma", Emoji = "🌒", M = "Karanlık soyu +%30 can." },
-            new Alamet { Id = "yaz", Ad = "Yaz Sıcağı", Emoji = "☀️", M = "Od soyu 2 kat yakar; Ayaz soyu -%15 can." },
+            new Alamet { Id = "yok", Ad = "Durgun Gök", Emoji = "🌤️", M = "Bu tur özel bir şey yok.", W = 2.0, Lobi = false },
+            new Alamet { Id = "kanAyi", Ad = "Kan Ayı", Emoji = "🌕", M = "Herkes +%20 hasar verir.", W = 1.0, Lobi = false },
+            new Alamet { Id = "sis", Ad = "Sis", Emoji = "🌫️", M = "Menzilliler -1 menzil.", W = 1.0, Lobi = false },
+            new Alamet { Id = "tipi", Ad = "Tipi", Emoji = "🌨️", M = "Herkes -%20 saldırı hızı; Ayaz soyu etkilenmez.", W = 1.0, Lobi = false },
+            new Alamet { Id = "kutYagmur", Ad = "Kut Yağmuru", Emoji = "✨", M = "Herkes savaşa %40 mana ile başlar.", W = 1.0, Lobi = false },
+            new Alamet { Id = "pazar", Ad = "Bereketli Pazar", Emoji = "🪙", M = "Bu tur +2 altın.", W = 1.0, Lobi = false },
+            new Alamet { Id = "tutulma", Ad = "Tutulma", Emoji = "🌒", M = "Karanlık soyu +%30 can.", W = 1.0, Lobi = false },
+            new Alamet { Id = "yaz", Ad = "Yaz Sıcağı", Emoji = "☀️", M = "Od soyu 2 kat yakar; Ayaz soyu -%15 can.", W = 1.0, Lobi = false },
+            new Alamet { Id = "demirci", Ad = "Demirci Ateşi", Emoji = "⚒️", M = "Bu turun savaşını kazanan 1 rastgele bileşen alır.", W = 1.0, Lobi = true },
+            new Alamet { Id = "gocMevsimi", Ad = "Göç Mevsimi", Emoji = "🍂", M = "Bu hazırlıkta ilk 2 yenileme bedava.", W = 1.0, Lobi = true },
+            new Alamet { Id = "kutSessiz", Ad = "Kut Sessizliği", Emoji = "🌑", M = "Bu tur Kut yok; herkes savaşa %25 mana ile başlar.", W = 1.0, Lobi = true },
+            new Alamet { Id = "uzunGolge", Ad = "Uzun Gölge", Emoji = "🌇", M = "Gün Batımı 20. yerine 12. saniyede başlar.", W = 1.0, Lobi = true },
         };
+
+        /// <summary>Kut Armağanları (6.2), tablo sırasıyla.</summary>
+        public static readonly Armagan[] Armaganlar = {
+            new Armagan { Id = "cifteKut", Ad = "Çifte Kut", Kademe = "gunes", Tur = "Kut", Savas = true, M = "Savaş başına 2 Kut hakkı; ikincisi ilkinden en az 4 sn sonra kullanılabilir.", Neden = "Kut'u iki kez patlatmak istiyorsan." },
+            new Armagan { Id = "uyanis", Ad = "Uyanış", Kademe = "kivilcim", Tur = "Kut", Savas = true, M = "Kut verilen birim savaş sonuna dek +%25 saldırı hızı kazanır.", Neden = "Kut'u vuruşçu bir kahramana veriyorsan." },
+            new Armagan { Id = "kutMirasi", Ad = "Kut Mirası", Kademe = "alev", Tur = "Kut", Savas = true, M = "Kut verilen birim ölürse Kut hakkı bir kez geri gelir.", Neden = "Kut'u öndeki kahramana veriyorsan." },
+            new Armagan { Id = "isikSutunu", Ad = "Işık Sütunu", Kademe = "alev", Tur = "Kut", Savas = true, M = "Kut, hedefin 2 hücre çevresindeki dostlara da azami manalarının %50'si kadar mana verir.", Neden = "Kahramanların sık diziliyse." },
+            new Armagan { Id = "sakliKut", Ad = "Saklı Kut", Kademe = "kivilcim", Tur = "Kut", Savas = false, M = "Bir savaşta Kut'u kullanmazsan savaş sonunda 3 altın kazanırsın.", Neden = "Altın biriktiriyorsan." },
+            new Armagan { Id = "ocakUstasi", Ad = "Ocak Ustası", Kademe = "kivilcim", Tur = "Kaynaştırma", Savas = false, M = "Kaynaştırma 1 altın. Hemen 1 bedava kaynaştırma hakkı.", Neden = "Çok kaynaştırmak istiyorsan." },
+            new Armagan { Id = "kusursuzMelez", Ad = "Kusursuz Melez", Kademe = "alev", Tur = "Kaynaştırma", Savas = true, M = "Kaynaşmış birimlerin istatistik çarpanı ×1,15 yerine ×1,30.", Neden = "Takımında kaynaşmış kahramanlar varsa." },
+            new Armagan { Id = "ucluKaynasma", Ad = "Üçlü Kaynaşma", Kademe = "gunes", Tur = "Kaynaştırma", Savas = false, M = "Kaynaşmış bir birim bir kez daha kaynaşabilir. Üçüncü kahramandan yalnız soyları ve +%10 istatistik gelir.", Neden = "Soy eşiklerini doldurmak istiyorsan." },
+            new Armagan { Id = "soyMuhru", Ad = "Soy Mührü", Kademe = "alev", Tur = "Eşya", Savas = false, M = "Seçtiğin bir soyun Mührü'nü (özel eşya) ve 1 bileşen al.", Neden = "Bir soy eşiğine bir kahraman eksikse." },
+            new Armagan { Id = "gozcuBaykusu", Ad = "Gözcü Baykuşu", Kademe = "kivilcim", Tur = "Önceden görme", Savas = false, M = "Sonraki 2 turun rakibini de görürsün. Hemen 4 altın.", Neden = "Takımını rakibe göre kuruyorsan." },
+            new Armagan { Id = "karsiHamle", Ad = "Karşı Hamle", Kademe = "alev", Tur = "Önceden görme", Savas = true, M = "Rakibin en kalabalık soyu, senin takımına karşı savaşta bir eşik düşük sayılır.", Neden = "Rakiplerin tek soya yükleniyorsa." },
+            new Armagan { Id = "alametBilgesi", Ad = "Alamet Bilgesi", Kademe = "kivilcim", Tur = "Alamet", Savas = false, M = "Sonraki 3 turun alametini görürsün. Her bölümde bir kez kendi savaşının alametini Durgun Gök yapabilirsin.", Neden = "Alametler takımını bozuyorsa." },
+            new Armagan { Id = "kizilGok", Ad = "Kızıl Gök Çocuğu", Kademe = "alev", Tur = "Alamet", Savas = true, M = "Alametin Durgun Gök olmadığı turlarda takımın +%10 hasar verir.", Neden = "Alametler sık değişiyorsa." },
+            new Armagan { Id = "bereketKupu", Ad = "Bereket Küpü", Kademe = "kivilcim", Tur = "Ekonomi", Savas = false, M = "Faiz tavanı 5'ten 7'ye çıkar (70 altında doyar).", Neden = "Altın biriktiriyorsan." },
+            new Armagan { Id = "pazarDostu", Ad = "Pazar Dostu", Kademe = "kivilcim", Tur = "Ekonomi", Savas = false, M = "Her hazırlıkta ilk yenileme bedava.", Neden = "Aynı kahramanı arıyorsan." },
+            new Armagan { Id = "altinYumurta", Ad = "Altın Yumurta", Kademe = "alev", Tur = "Ekonomi", Savas = false, M = "5 savaş turu sonra yumurta çatlar: 22 altın.", Neden = "Şimdi güçlüysen, sonrası için." },
+            new Armagan { Id = "hizliBuyume", Ad = "Hızlı Büyüme", Kademe = "kivilcim", Tur = "Seviye", Savas = false, M = "Hemen +8 deneyim; deneyim alımı 4 yerine 3 altın.", Neden = "Erken seviye atlamak istiyorsan." },
+            new Armagan { Id = "ganimetKesesi", Ad = "Ganimet Kesesi", Kademe = "kivilcim", Tur = "Eşya", Savas = false, M = "Hemen 2 rastgele bileşen.", Neden = "Eşya taşıyıcın hazırsa." },
+            new Armagan { Id = "ustaDemirci", Ad = "Usta Demirci", Kademe = "gunes", Tur = "Eşya", Savas = false, M = "3 tam eşyadan birini seç, ayrıca 1 Söküm Taşı.", Neden = "Eşyalarını yeniden dağıtmak istiyorsan." },
+            new Armagan { Id = "sonDirenis", Ad = "Son Direniş", Kademe = "alev", Tur = "Geri dönüş", Savas = true, M = "Canın 40'ın altındaysa takımın +%20 can kazanır. Seçince hemen 1 bileşen.", Neden = "Canın azaldıysa." },
+        };
+        public static Armagan ArmaganBul(string id) { foreach (var a in Armaganlar) if (a.Id == id) return a; return null; }
 
         // Ortak sabitler ve seviyeli maç (data.js KURAL)
         public const int SatisIade = 1, Dukkan = 5, Yedek = 7, TahtaSutun = 4, TahtaSira = 3, TakimTavan = 8;
@@ -231,6 +263,19 @@ namespace Kut
         public static readonly double[] BotIzTavan = { 0.0, 8.0, 0.95, 0.3, 10.0, 3.0 };
         public const double BotIzGucTaban = 0.8, BotIzGucAdim = 0.4, BotIzGucTur = 4.0;
         public const int BotIzBilesen = 2;
+        // Kut hakkı ve yapay zekâ (bölüm 7.2, 7.4), Kut Sessizliği ve Uzun Gölge (8)
+        public const int KutHak = 1, SonIkiKutHak = 2;
+        public const double KutAra = 4.0, KutYzZaman = 5.0, KutYzZaman2 = 12.0, KutYzBilesen = 20.0, KutYzOcak = 60.0, KutSessizMana = 0.25, UzunGolgeBasla = 12.0;
+        // Kut Yankısı (7.1)
+        public const int YankiDisVurus = 3;
+        public const double YankiDisOran = 0.5, YankiTuySure = 3.0, YankiTuyOran = 0.5, YankiKor = 1.25, YankiCiy = 30.0, YankiKabukSure = 3.0, YankiKabukOran = 0.4, YankiKabukTavan = 0.8;
+        public const double YankiYurek = 0.15, YankiPulSure = 3.0, YankiPulOran = 0.4, YankiBuz = 150.0, YankiKutTasi = 2.0, YankiOcak = 1.5;
+        // Kut Armağanı (bölüm 6): kademeler, bölüm → kademe olasılıkları, armağan sayıları (6.2)
+        public static readonly string[] ArmaganKademeler = { "kivilcim", "alev", "gunes" };
+        public static readonly Dictionary<int, double[]> ArmaganOlasilik = new Dictionary<int, double[]> { { 2, new[] { 0.5, 0.4, 0.1 } }, { 3, new[] { 0.3, 0.5, 0.2 } }, { 4, new[] { 0.2, 0.45, 0.35 } } };
+        public const int ArmaganSecenekSayi = 3, ArmaganYenileme = 1;
+        public const double ArmUyanis = 0.25, ArmIsikSutunu = 0.5, ArmIsikMenzil = 2.1, KaynasCarpan = 1.15, ArmKusursuzMelez = 1.3, ArmUcluKaynas = 0.1, ArmKizilGok = 0.1, ArmSonDirenisOran = 0.2;
+        public const int ArmBereketFaiz = 7, ArmSonDirenisCan = 40;
 
         /// <summary>Hızlı Maç: prototipin kuralları (data.js KURAL.hizli).</summary>
         public static class Hizli

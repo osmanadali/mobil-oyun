@@ -11,7 +11,11 @@ const q = (sel, kok = document) => kok.querySelector(sel);
 const P = (id) => `../arayuz/portre/${(D.canavar(id) || {}).gorunum || id}.png`, SY = (id) => `../arayuz/soy_${id}.png`;
 const IK_RESIM = { coin: 'ik_altin', kalp: 'ik_kalp', kupa: 'ik_kupa', tac: 'ik_tac', yildiz: 'ik_yildiz_altin' };
 const ik = (n, c = '') => IK_RESIM[n] ? `<img class="ik ${c}" alt="" src="../arayuz/ui/${IK_RESIM[n]}${n === 'kalp' && /\bbos\b/.test(c) ? '_bos' : ''}.png">` : `<svg class="ik ${c}"><use href="#i-${n}"/></svg>`;
-const alametArka = (id) => `background:url(../arayuz/ui/al_${id}.png) center/cover`;
+// yeni lobi alametlerinin (bölüm 8) resmi henüz yok: yerine emojisi
+const AL_RESIM = new Set(['yok', 'kanAyi', 'sis', 'tipi', 'kutYagmur', 'pazar', 'tutulma', 'yaz']);
+const alametArka = (id) => AL_RESIM.has(id) ? `background:url(../arayuz/ui/al_${id}.png) center/cover` : 'background:rgba(10,6,24,.6);display:grid;place-items:center;font-size:22px';
+const alametIc = (id) => AL_RESIM.has(id) ? '' : ((D.ALAMETLER.find(a => a.id === id) || {}).emoji || '');
+const alametAd = (id) => (D.ALAMETLER.find(a => a.id === id) || { ad: id }).ad;
 const yildiz = (s) => `<div class="yildizlar y${s}">${ik('yildiz').repeat(s)}</div>`;
 const soyIk = (s) => `<img class="soyIk" src="${SY(s)}" alt="${D.SOYLAR[s].ad}">`;
 const mad = (id) => `<div class="madalyon"><img src="${P(id)}" alt=""></div>`;
@@ -46,6 +50,14 @@ const esyaMetin = (id) => { const x = D.esya(id); if (!x) return id; if (x.tip !
   .secimler .sc:hover{border-color:#ffe48a;box-shadow:0 0 10px #ffd45c}
   .secimler .sc img.pp{width:64px;height:64px;object-fit:contain}.secimler .sc .esyaIk{width:34px;height:34px}
   .secimler .sc small{color:var(--yazi2);font-size:11px}
+  .armaganSerit{display:flex;align-items:center;gap:6px;padding:2px 10px 0 44px;min-height:26px;font-size:13px;flex-wrap:wrap}
+  .armaganSerit b{color:var(--altinA);font-weight:900}
+  .armaganSerit .ar{padding:2px 8px;border-radius:9px;border:1px solid rgba(242,191,74,.55);background:rgba(10,6,24,.6);color:#fff;cursor:help;white-space:nowrap}
+  .armaganSerit .ar.gunes{border-color:#ffd45c}.armaganSerit .ar.alev{border-color:#ff8a4c}.armaganSerit .ar.kivilcim{border-color:#bfe0ff}
+  .armaganSerit button{font:inherit;font-size:12px;padding:2px 8px;border-radius:9px;border:1px solid #c9b8e6;background:rgba(60,30,100,.6);color:#fff;cursor:pointer}
+  .secimler .sc .kd{font-size:11px;font-weight:900;letter-spacing:.4px;text-transform:uppercase;color:#ffe48a}
+  .secimler .sc em{font-style:normal;font-size:11px;color:#c9f0ff}
+  .alamet .sirada{display:block;font-size:12px;color:var(--yazi2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .gunBatimi{color:#ff9a5a;font-size:10px;font-weight:900;display:block;white-space:nowrap;line-height:1.1;letter-spacing:-.2px}`; document.head.appendChild(st); }
 const ALAMET_RENK = { yok: '#ffe08a', kanAyi: '#ff3d5a', sis: '#c9b8e6', tipi: '#bfe6ff', kutYagmur: '#ffd45c', pazar: '#ffcc4a', tutulma: '#7a4cc0', yaz: '#ff9a2e' };
 const IPUCU = {
@@ -119,8 +131,11 @@ function nasilPencere() {
     <li><b>Kaynaştır (2 + en yüksek kademe altın; Hızlı Maç'ta 3):</b> bir kahramanı seç, Kaynaştır'a bas, ikinci kahramana dokun. Yetenek birinciden, pasif ikinciden gelir; soyların hepsi sayılır.</li>
     <li><b>Rakibini önceden gör:</b> sol üstte sıradaki rakibin kadrosu ve soyları var. Ona göre kur.</li>
     <li><b>Alamet:</b> her turun kendi kuralı vardır (Kan Ayı, Sis, Tipi…).</li>
-    <li><b>Kut:</b> savaş kendi kendine oynar, ama bir kez kendi kahramanına dokunup yeteneğini anında patlatabilirsin.</li>
-    <li><b>100 can.</b> Kaybedince bölüm tabanı (bölüm 2'de 2, 3'te 5, 4'te 8, 5'te 12…) ve rakibin ayakta kalan kahramanlarının yıldızları kadar can gider; canavar turunda taban ve ayakta kalan canavar sayısı kadar. İlk üç turda can gitmez. Canın bitmeden 5-3'ü tamamlarsan arena senin.</li></ul>
+    <li><b>Kut:</b> savaş kendi kendine oynar, ama bir kez kendi kahramanına dokunup yeteneğini anında patlatabilirsin. Lobide son iki kişi kalınca 2 Kut hakkın olur (arada en az 4 sn).</li>
+    <li><b>Kut Yankısı:</b> eşyalı kahramana verilen Kut, taşıdığı her bileşen için ek etki yapar (tam eşya iki bileşen sayılır, Kut Taşı ikiye katlar): Diş sonraki 3 vuruşa +%50 hasar, Tüy 3 sn +%50 hız, Kor yeteneği ×1,25, Çiy yetenekten sonra 30 mana, Kabuk 3 sn −%40 hasar, Yürek canının %15'i, Pul 3 sn %40 can çalma, Buz 150 kalkan.</li>
+    <li><b>Kut Armağanı:</b> 2-1, 3-2 ve 4-3'te üç karttan birini seçersin (Kıvılcım, Alev ya da Güneş). Armağan maç boyunca seninle kalır; her aşamada kartları bir kez yenileyebilirsin.</li>
+    <li><b>Sıradaki alamet</b> önceden görünür. Yeni alametler: Demirci Ateşi (kazanana bileşen), Göç Mevsimi (2 bedava yenileme), Kut Sessizliği (Kut yok, herkes %25 mana ile başlar), Uzun Gölge (Gün Batımı 12. sn'de).</li>
+    <li><b>100 can.</b> Kaybedince bölüm tabanı (bölüm 2'de 4, 3'te 8, 4'te 12, 5'te 16…) ve rakibin ayakta kalan kahramanlarının yıldızları kadar can gider; canavar turunda taban ve ayakta kalan canavar sayısı kadar. İlk üç turda can gitmez. Canın bitmeden 5-3'ü tamamlarsan arena senin.</li></ul>
     <div class="eylemler"><button class="btn altin" data-kapat>Anladım</button></div>`);
 }
 function duelloPencere() {
@@ -164,10 +179,10 @@ function yuvaHTML(b, yer, i) {
   }
   const h = kh(b.h), esy = b.e && b.e.length ? `<div class="esyalar">${b.e.map(id => esyaIk(id)).join('')}</div>` : '';
   if (b.f) {
-    const f = kh(b.f); const soylar = [...new Set([...h.soy, ...f.soy])];
+    const f = kh(b.f); const soylar = [...new Set([...h.soy, ...f.soy, ...(b.f2 ? kh(b.f2).soy : [])])];
     return `<div class="yuva kaynas ${sec ? 'secili' : ''} ${hedefle ? 'hedefle' : ''}" ${ek}><div class="taban" style="--kc:${f.renk}"></div>
       <img class="port" src="${P(b.h)}" alt="">${mad(b.f)}${yildiz(b.s)}<div class="kaynasEt">${ik('kaynas')}KAYNAŞIK</div>
-      <div class="soylar">${soylar.map(soyIk).join('')}</div>${esy}<div class="plaka">${h.ad.split(' ')[0]} × ${f.ad.split(' ')[0]}</div></div>`;
+      <div class="soylar">${soylar.map(soyIk).join('')}</div>${esy}<div class="plaka">${oyun.birimAd(b)}</div></div>`;
   }
   return `<div class="yuva k${h.kademe} ${b.s > 1 ? 'yz2' : ''} ${sec ? 'secili' : ''} ${hedefle ? 'hedefle' : ''} ${kaynasHedef ? 'kaynasHedef' : ''}" ${ek}><div class="taban"></div>
     <img class="port" src="${P(b.h)}" alt="">${yildiz(b.s)}${sec ? '<div class="seciliEt">Seçili</div>' : ''}
@@ -190,7 +205,10 @@ function macCiz() {
   const tipAd = { pve: 'Canavar', kervan: 'Kervan', pvp: '' }[oyun.turTip()];
   roz[2].innerHTML = `<div class="yz"><small>${sev ? oyun.turUzun() + (tipAd ? ' · ' + tipAd : '') : 'Hızlı Maç · Tur'}</small>${oyun.turAd()}${sev ? ` <span style="color:var(--altinA)">· Sv ${M.seviye}</span>` : ''}</div>`;
   const al = D.ALAMETLER.find(a => a.id === M.alamet);
-  q('.alamet', m).innerHTML = `<div class="ay resim" style="${alametArka(M.alamet)}"></div><div class="t"><small>Bu turun alameti</small><b>${al.ad}</b> <span>— ${al.m}</span></div>`;
+  // bu turun alameti; seviyeli maçta sıradaki (Alamet Bilgesi ile 3) tur alameti önceden görünür (bölüm 4.3, 8)
+  const sonr = oyun.sonrakiAlametler(), sus = M.alametSusTur === M.tur;
+  q('.alamet', m).innerHTML = `<div class="ay resim" style="${alametArka(M.alamet)}">${alametIc(M.alamet)}</div><div class="t"><small>Bu turun alameti${sus ? ' · senin savaşında susturuldu' : ''}</small><b>${al.ad}</b> <span>— ${al.m}</span>`
+    + (sonr.length ? `<span class="sirada">Sıradaki: ${sonr.map(alametAd).join(' → ')}</span>` : '') + `</div>`;
   // seviyeli maçta bu turun geliri ve sonraki turun faizi (her 10 altına 1, en çok 5)
   const gl = sev && M.gelir, fz = oyun.faizSonraki();
   q('.altinRozet', m).innerHTML = `<div class="top">${ik('coin')}</div>${M.altin}` + (sev ? `<div class="yz" style="padding-left:6px;font-size:13px;line-height:1.2"><small>${gl ? `Gelir +${gl.toplam}` : 'Gelir'}</small><span style="color:var(--altinA)">Faiz +${fz}</span></div>` : '');
@@ -208,6 +226,8 @@ function macCiz() {
     }).join('')).join('');
     const rs = oyun.soylar(r.takim); const aktif = Object.entries(rs).filter(([, v]) => v.seviye).sort((a, b) => b[1].n - a[1].n);
     $('rakipSoy').innerHTML = aktif.length ? aktif.map(([s, v]) => `<span class="cip aktif"><img src="${SY(s)}" alt="">${D.SOYLAR[s].ad} ${v.n}</span>`).join('') : '<span class="cip">Aktif soy yok</span>';
+    const gz = oyun.gozcu();
+    if (gz && gz.length) q('.rakipKim', rp).insertAdjacentHTML('beforeend', `<span style="display:block;font-size:11px;color:#c9f0ff">Gözcü: ${gz.map(x => `${x.tur} ${x.ad}`).join(' · ')}</span>`);
     q('.ipucuSatir span', rp).textContent = r.pve ? 'Canavarların soyu yok: güçlü vuranları öne koy, uzun savaşta Gün Batımı hasarı artırır.' : aktif.length ? IPUCU[aktif[0][0]] : 'Rakip dağınık: en güçlü soyunu kur, birleştirmeye odaklan.';
   } else { rp.querySelector('.rakipKim').innerHTML = `<div style="padding:8px">${M.kervan ? 'Kervan turu: savaş yok. Bir kahraman + eşya seç.' : 'Rakip aranıyor…'}</div>`; $('rakipTahta').innerHTML = ''; $('rakipSoy').innerHTML = ''; }
   // soylar
@@ -227,7 +247,7 @@ function macCiz() {
   $('yedek').innerHTML = M.yedek.map((b, i) => yuvaHTML(b, 'yedek', i)).join('');
   $('yedek').style.gridTemplateColumns = `repeat(${M.yedek.length},1fr)`;
   q('.yedekBas', tp).innerHTML = `Yedek ${M.yedek.filter(Boolean).length}/${oyun.yedekSayi()}<em>${oyun.kaynasMod ? 'Kaynaşacak ikinci kahramana dokun' : oyun.secili ? 'Taşımak için bir yuvaya dokun' : 'Bir kahramana dokun: bilgi, sat, kaynaştır'}</em><i></i>`;
-  rafCiz();
+  rafCiz(); armaganCiz();
   m.querySelectorAll('.yuva[data-yer]').forEach(y => y.onclick = () => oyun.yuvaDokun(y.dataset.yer, +y.dataset.i));
   // seçili panel
   secCiz();
@@ -251,16 +271,17 @@ function macCiz() {
   const ol = oyun.olasilik();
   q('.dukkan .pn-bas .sag', m).textContent = (sev ? `Sv ${M.seviye} şansı: ` : 'Şans: ') + ol.map((o, k) => `K${k + 1} %${Math.round(o * 100)}`).join(' · ');
   const sb = m.querySelectorAll('.dukkanSol .btn');
-  sb[0].disabled = M.altin < kr.yenile;
-  sb[0].innerHTML = `${ik('yenile')}Yenile<small>${ik('coin')}${kr.yenile}</small>`;
+  const yb = oyun.yenileBedel();
+  sb[0].disabled = M.altin < yb;
+  sb[0].innerHTML = `${ik('yenile')}Yenile<small>${yb ? `${ik('coin')}${yb}` : `bedava${M.bedavaYenile > 1 ? ' ×' + M.bedavaYenile : ''}`}</small>`;
   // deneyim satın alma (yalnız seviyeli maç)
   const xb = sb[2];
   xb.style.display = sev ? '' : 'none';
   if (sev) {
     const tavan = M.seviye >= K.seviyeTavan, gerek = oyun.xpGerek();
-    xb.disabled = tavan || M.altin < K.xpBedel;
+    xb.disabled = tavan || M.altin < oyun.xpBedel();
     xb.innerHTML = tavan ? `Sv ${M.seviye}<small>en yüksek</small>`
-      : `Sv ${M.seviye} · ${M.xp}/${gerek}<span class="xpCubuk"><i style="width:${Math.round(100 * M.xp / gerek)}%"></i></span><small>Deneyim Al · ${ik('coin')}${K.xpBedel}</small>`;
+      : `Sv ${M.seviye} · ${M.xp}/${gerek}<span class="xpCubuk"><i style="width:${Math.round(100 * M.xp / gerek)}%"></i></span><small>Deneyim Al · ${ik('coin')}${oyun.xpBedel()}</small>`;
   }
   sb[1].innerHTML = `${ik(M.kilit ? 'kilit' : 'kilitAcik')}${M.kilit ? 'Kilitli' : 'Kilitle'}`; sb[1].classList.toggle('altin', M.kilit); sb[1].classList.toggle('mor', !M.kilit);
   q('.savasBtn', m).innerHTML = M.kervan ? `${ik('oyna')}KERVAN<small>Bir kahraman + eşya seç</small>` : `${ik('kilic')}SAVAŞA!<small>${r ? r.ad + (r.pve ? ' ile' : "'a karşı") : 'Rakip aranıyor…'}</small>`;
@@ -270,7 +291,7 @@ function macCiz() {
 let sonSecim = null;
 function secimDenetle(zorla = false) {
   const M = oyun.M, tip = oyun.bekleyenSecim();
-  const anahtar = tip ? tip + ':' + M.tur + ':' + JSON.stringify(tip === 'ilk' ? M.ilkSecim : tip === 'kervan' ? M.kervan.secenek : M.ganimetSecim) : null;
+  const anahtar = tip ? tip + ':' + M.tur + ':' + JSON.stringify(tip === 'ilk' ? M.ilkSecim : tip === 'kervan' ? M.kervan.secenek : tip === 'armagan' ? M.armaganSecim : tip === 'muhur' ? 1 : M.ganimetSecim) : null;
   if (!tip) { sonSecim = null; return; }
   if (!zorla && anahtar === sonSecim) return;
   sonSecim = anahtar;
@@ -282,6 +303,14 @@ function secimDenetle(zorla = false) {
   } else if (tip === 'kervan') {
     baslik = `Kervan · ${oyun.turAd()}`; metin = 'Savaş yok. Bir kahraman + eşya seç: kahraman yedeğe, eşya rafa iner (yedek doluysa kahraman altına çevrilir).';
     ic = M.kervan.secenek.map((o, i) => `<button class="sc" data-s="${i}">${kart(o.birim.h, oyun.birimAd(o.birim) + (o.birim.s > 1 ? ' ★' + o.birim.s : ''), (D.esya(o.esya) || {}).ad || o.esya, esyaIk(o.esya))}</button>`).join('');
+  } else if (tip === 'armagan') {
+    const a = M.armaganSecim;
+    baslik = `Kut Armağanı · ${D.ARMAGAN_KADEME[a.kademe]}`; metin = 'Üç karttan birini seç: maç boyunca seninle kalır.' + (a.yenile > 0 ? ' Kartları bir kez yenileyebilirsin.' : '');
+    ic = a.secenek.map((id, i) => { const x = D.armagan(id); return `<button class="sc" data-s="${i}"><span class="kd">${D.ARMAGAN_KADEME[x.kademe]} · ${x.tur}</span><b>${x.ad}</b><small>${x.m}</small><em>Neden seç? ${x.neden}</em></button>`; }).join('')
+      + (a.yenile > 0 ? `<button class="sc" data-yenile="1" style="justify-content:center"><b>${ik('yenile')} Yenile</b><small>Üç kartın hepsi değişir, kademe aynı kalır</small></button>` : '');
+  } else if (tip === 'muhur') {
+    baslik = 'Soy Mührü'; metin = 'Bir soy seç: o soyun Mührü rafına iner. Mührü taşıyan kahraman bu soyu da sayar.';
+    ic = Object.entries(D.SOYLAR).map(([sy, v]) => `<button class="sc" data-soy="${sy}"><img class="pp" src="${SY(sy)}" alt="" style="width:40px;height:40px"><b>${v.ad}</b><small>${v.aciklama[0]}</small></button>`).join('');
   } else {
     baslik = 'Ganimet seçimi'; metin = 'Canavarlar bunları bıraktı. Birini seç, rafına iner.';
     ic = M.ganimetSecim.map((id, i) => `<button class="sc" data-s="${i}">${esyaIk(id)}<b>${(D.esya(id) || {}).ad || id}</b><small>${esyaMetin(id)}</small></button>`).join('');
@@ -289,8 +318,10 @@ function secimDenetle(zorla = false) {
   pencere(`<h3>${baslik}</h3><p>${metin}</p><div class="secimler">${ic}</div>`);
   document.querySelectorAll('#pencere .sc[data-s]').forEach(b => b.onclick = async () => {
     const k = +b.dataset.s; kapat(); sonSecim = null;
-    if (tip === 'ilk') oyun.ilkSec(k); else if (tip === 'kervan') await oyun.kervanSec(k); else oyun.ganimetSec(k);
+    if (tip === 'ilk') oyun.ilkSec(k); else if (tip === 'kervan') await oyun.kervanSec(k); else if (tip === 'armagan') oyun.armaganSec(k); else oyun.ganimetSec(k);
   });
+  document.querySelectorAll('#pencere .sc[data-yenile]').forEach(b => b.onclick = () => { kapat(); sonSecim = null; oyun.armaganYenile(); });
+  document.querySelectorAll('#pencere .sc[data-soy]').forEach(b => b.onclick = () => { kapat(); sonSecim = null; oyun.muhurSec(b.dataset.soy); });
 }
 // Eşya rafı (yalnız Arena): yedeğin altında 10 yuva. Dokun → seç; kahramana dokun → tak; ikinci bileşene dokun → rafta birleştir.
 function rafCiz() {
@@ -306,6 +337,20 @@ function rafCiz() {
     + ((M.esyaTasan || []).length ? `<span class="tasan">+${M.esyaTasan.length} taşan</span>` : '') + `<em>${ipucu}</em>`;
   raf.querySelectorAll('.re[data-r]').forEach(e => e.onclick = () => oyun.esyaSec(+e.dataset.r));
 }
+// Alınan Kut Armağanları (yalnız seviyeli maç): rafın altında küçük rozetler; Alamet Bilgesi'nin susturma düğmesi ve bekleyen seçim.
+function armaganCiz() {
+  const M = oyun.M; let el = $('armaganSerit');
+  if (!el) { el = document.createElement('div'); el.id = 'armaganSerit'; el.className = 'armaganSerit'; $('esyaRaf').after(el); }
+  el.style.display = oyun.seviyeli() ? '' : 'none';
+  if (!oyun.seviyeli()) return;
+  const l = M.armagan || [];
+  el.innerHTML = `<b>Armağan</b>` + (l.length ? l.map(id => { const x = D.armagan(id); return `<span class="ar ${x.kademe}" title="${x.ad}: ${x.m}">${x.ad}</span>`; }).join('') : '<span style="color:var(--yazi2)">2-1, 3-2 ve 4-3\'te Kut Armağanı seçersin</span>')
+    + (M.yumurta ? `<span style="color:#ffe48a">Yumurta: ${M.yumurta.kalan} savaş</span>` : '') + (M.bedavaKaynas ? `<span style="color:#ffe48a">Bedava kaynaştırma</span>` : '')
+    + (oyun.alametSusturabilir() ? `<button id="alSus">Alameti sustur</button>` : '')
+    + (M.armaganSecim ? `<button id="arAc">Armağan seç</button>` : M.muhurSecim ? `<button id="arAc">Soy seç</button>` : '');
+  if ($('alSus')) $('alSus').onclick = () => oyun.alametSustur();
+  if ($('arAc')) $('arAc').onclick = () => secimDenetle(true);
+}
 function secCiz() {
   const sp = $('secPanel'), b = oyun.al(oyun.secili);
   if (!b) {
@@ -319,7 +364,9 @@ function secCiz() {
   }
   const h = kh(b.h), st = SIM.birimStat(b), soylar = st.soy;
   sp.className = `pn gem secPanel k${h.kademe}`;
-  const kBedel = oyun.kaynastirBedel(b.h), kaynasabilir = !b.f && oyun.M.altin >= kBedel;
+  // Üçlü Kaynaşma armağanıyla kaynaşmış birim (üçüncüsü yoksa) bir kez daha kaynaşabilir
+  const uclu = b.f && !b.f2 && oyun.armaganVar('ucluKaynasma');
+  const kBedel = oyun.kaynastirBedel(b.h), kaynasabilir = (!b.f || uclu) && oyun.M.altin >= kBedel;
   sp.innerHTML = `<div class="pn-bas"><span class="elmas"></span>Seçili kahraman</div>
     <div class="secUst"><div class="secPort"><img src="${P(b.h)}" alt="">${b.f ? mad(b.f) : ''}</div>
       <div class="secAd"><h3>${oyun.birimAd(b)}</h3><div class="alt">${yildiz(b.s)}<span class="kTag">K${h.kademe}</span>
@@ -336,10 +383,10 @@ function secCiz() {
     <div class="yetenek"><b><em>Yetenek</em>${D.YETENEK[st.yetenek].ad}</b>${D.YETENEK[st.yetenek].m}</div>
     <div class="yetenek pasif"><b><em>Pasif</em>${D.PASIF[st.pasif].ad}</b>${D.PASIF[st.pasif].m}</div>
     ${b.e && b.e.length ? `<div class="secEsya">${b.e.map(id => `<div>${esyaIk(id)}<span><b>${(D.esya(id) || { ad: id }).ad}.</b> ${esyaMetin(id)}</span></div>`).join('')}</div>` : ''}
-    <div class="secEylem">${b.f ? `<div style="padding:10px;color:var(--yazi2);font-size:15px">Kaynaşmış kahraman tekrar kaynaşmaz.</div>` : `
-      <button class="btn gb kaynastir" id="eKay" ${kaynasabilir ? '' : 'disabled'}><span class="ust">${ik('kaynas')}${oyun.kaynasMod ? 'İKİNCİYE DOKUN' : 'KAYNAŞTIR'}</span><small>${oyun.seviyeli() && kh(b.h).kademe < 3 ? kBedel + '–5' : kBedel} ${ik('coin')} · ${oyun.kaynasMod ? 'iptal için tekrar bas' : 'sonra 2. kahramana dokun'}</small></button>
+    <div class="secEylem">${b.f && !uclu ? `<div style="padding:10px;color:var(--yazi2);font-size:15px">${b.f2 ? 'Üçlü kaynaşmış kahraman.' : 'Kaynaşmış kahraman tekrar kaynaşmaz.'}</div>` : `
+      <button class="btn gb kaynastir" id="eKay" ${kaynasabilir ? '' : 'disabled'}><span class="ust">${ik('kaynas')}${oyun.kaynasMod ? 'İKİNCİYE DOKUN' : 'KAYNAŞTIR'}</span><small>${oyun.seviyeli() && kh(b.h).kademe < 3 && kBedel > 1 ? kBedel + '–5' : kBedel || 'bedava'} ${kBedel ? ik('coin') : ''} · ${oyun.kaynasMod ? 'iptal için tekrar bas' : 'sonra 2. kahramana dokun'}</small></button>
       <div class="kaynasSema"><div class="kk"><img src="${P(b.h)}" alt=""></div><span class="arti">+</span><div class="kk soru">?</div>
-        <p><b>Yetenek ${h.ad.split(' ')[0]}'dan,</b><br>pasif ikinciden gelir.</p></div>`}</div>`;
+        <p>${uclu ? '<b>Üçüncü kahramandan</b><br>soylar ve +%10 güç gelir.' : `<b>Yetenek ${h.ad.split(' ')[0]}'dan,</b><br>pasif ikinciden gelir.`}</p></div>`}</div>`;
   sp.querySelectorAll('.stat .ik').forEach((e, i) => e.style.color = ['#ff6a86', '#ffd45c', '#7fdcff', '#ffb36a', '#6aa8ff', '#d9c7ef'][i]);
   $('eSat').onclick = () => oyun.sat();
   if ($('eKay')) $('eKay').onclick = () => oyun.kaynasModDegistir();
@@ -366,7 +413,7 @@ async function sahneyiHazirla() {
   return sahneHazir;
 }
 async function savasBaslat(sim, rakip) {
-  savasBilgi = { sim, rakip, alamet: D.ALAMETLER.find(a => a.id === (oyun.M ? oyun.M.alamet : 'yok')), bitti: false };
+  savasBilgi = { sim, rakip, alamet: D.ALAMETLER.find(a => a.id === (oyun._savas ? oyun._savas.alamet : oyun.M ? oyun.M.alamet : 'yok')) || D.ALAMETLER[0], bitti: false };
   goster('savas'); $('sonucYer').innerHTML = ''; $('ayakta').style.display = ''; $('savas').classList.remove('bitti');
   $('yukleniyor').classList.add('acik');
   S3.yukleme.olay = (n, top, ad) => { $('yukYuzde').textContent = `Modeller: ${n}/${top}`; };
@@ -384,35 +431,44 @@ async function savasBaslat(sim, rakip) {
   Ses.cal('savas_basla');
   const s = $('savas');
   q('.rakipK', s).innerHTML = `<div class="amb"><img src="${P((rakip.takim || [])[0] ? rakip.takim[0].h : 'tilki')}" alt=""></div><div style="min-width:0"><small>${rakip.duello ? 'Düello' : 'Rakip · Tur ' + oyun.turAd()}</small><b>${rakip.ad}</b><span>${rakip.kaynak === 'bot' ? 'Bot' : 'Kupa ' + sayi(rakip.kupa || 0)}</span></div>`;
-  const a = savasBilgi.alamet; q('.alametK', s).innerHTML = `<span class="ay resim" style="${alametArka(a.id)}"></span><div><b>${a.ad}</b><span>${a.m}</span></div>`;
+  const a = savasBilgi.alamet; q('.alametK', s).innerHTML = `<span class="ay resim" style="${alametArka(a.id)}">${alametIc(a.id)}</span><div><b>${a.ad}</b><span>${a.m}</span></div>`;
   if (!savasDongu) { savasDongu = true; requestAnimationFrame(savasKare); }
 }
 function hizUygula() { S3.hiz(duraklat ? 0 : hizSecim); document.querySelectorAll('#savas .hizlar .btn').forEach((b, i) => { b.classList.toggle('secik', i + 1 === hizSecim); b.classList.toggle('altin', i + 1 === hizSecim); b.classList.toggle('mor', i + 1 !== hizSecim); }); q('#savas .duraklat .btn').innerHTML = ik(duraklat ? 'oyna' : 'durdur'); }
 document.querySelectorAll('#savas .hizlar .btn').forEach((b, i) => b.onclick = () => { hizSecim = i + 1; duraklat = false; hizUygula(); });
 q('#savas .duraklat .btn').onclick = () => { duraklat = !duraklat; hizUygula(); };
+// Kut düğmesi: kalan hak sayacı (Çifte Kut ve Son İki'de 2; Kut Mirası bir hak geri verir), Kut Sessizliği'nde kapalı
 function kutCiz(kullanan) {
-  const sim = savasBilgi && savasBilgi.sim, hazir = sim && sim.kutVar(0) && !kullanan;
-  $('kutAlan').innerHTML = hazir
-    ? `<div class="kutBant"><b>KUT HAZIR</b><span>Bir kahramanına dokun, yeteneği <em>hemen patlasın</em>. Savaşta 1 kez.</span></div>
-       <button class="kut ${kutSecim ? 'secim' : ''}" aria-label="Kut" id="kutDugme"><div class="isin"></div><div class="yz"><big>KUT</big><small>1/1</small></div><div class="el">${ik('el')}</div></button>`
-    : `<div class="kutBant bitti"><b>Kut kullanıldı</b><span class="satir"><em>${kullanan ? oyun.birimAd(kullanan.b) : ''}</em></span><span class="satir">Sonraki savaşta yenilenir</span></div>
-       <div class="kut bitti"><div class="kullanan">${kullanan ? `<img src="${P(kullanan.b.h)}" alt="">` : ''}</div><span class="sayac">0/1</span><div class="onay">${ik('onay')}</div></div>`;
+  const sim = savasBilgi && savasBilgi.sim; if (!sim) return;
+  const kalan = sim.kutKalanSay(0), hak = Math.max(1, sim.kutHakSay(0)), hazir = sim.kutVar(0);
+  if (kullanan) savasBilgi.kutKullanan = kullanan;
+  savasBilgi.kutCizilen = kalan;
+  const son = savasBilgi.kutKullanan;
+  $('kutAlan').innerHTML = sim.kutYok
+    ? `<div class="kutBant bitti"><b>Kut Sessizliği</b><span class="satir">Bu tur Kut yok</span><span class="satir">Herkes savaşa %25 mana ile başladı</span></div>
+       <div class="kut bitti"><span class="sayac">0/0</span></div>`
+    : hazir
+    ? `<div class="kutBant"><b>KUT HAZIR</b><span>Bir kahramanına dokun, yeteneği <em>hemen patlasın</em>. ${hak > 1 ? `Savaşta ${hak} kez (arada 4 sn).` : 'Savaşta 1 kez.'} Eşyalı kahramana verilen Kut <em>yankı</em> yapar.</span></div>
+       <button class="kut ${kutSecim ? 'secim' : ''}" aria-label="Kut" id="kutDugme"><div class="isin"></div><div class="yz"><big>KUT</big><small>${kalan}/${hak}</small></div><div class="el">${ik('el')}</div></button>`
+    : `<div class="kutBant bitti"><b>Kut kullanıldı</b><span class="satir"><em>${son ? oyun.birimAd(son.b) : ''}</em></span><span class="satir">Sonraki savaşta yenilenir</span></div>
+       <div class="kut bitti"><div class="kullanan">${son ? `<img src="${P(son.b.h)}" alt="">` : ''}</div><span class="sayac">0/${hak}</span><div class="onay">${ik('onay')}</div></div>`;
   $('kutParlama').style.background = hazir ? '' : 'none';
-  if ($('kutDugme')) $('kutDugme').onclick = () => { kutSecim = !kutSecim; kutCiz(); bildir('Kut için kendi kahramanına dokun'); };
+  if ($('kutDugme')) $('kutDugme').onclick = () => { if (!sim.kutHazir(0)) return bildir('İkinci Kut için 4 sn bekle'); kutSecim = !kutSecim; kutCiz(); bildir('Kut için kendi kahramanına dokun'); };
 }
 $('tuval3d').addEventListener('pointerdown', (e) => {
   if (!savasBilgi || savasBilgi.bitti) return;
   const r = $('tuval3d').getBoundingClientRect(); const u = S3.dokun(e.clientX - r.left, e.clientY - r.top);
-  if (u) { kutSecim = false; savasBilgi.kutCizildi = true; kutCiz(u); }
+  if (u) { kutSecim = false; kutCiz(u); }
 });
 function hudCiz() {
   const sim = savasBilgi.sim, t = Math.max(0, K.savasSuresi - sonDurum.t);
   // Kut motorda kullanıldıysa (dokunuş ya da başka yol) düğmeyi kullanıldı durumuna getir
-  if (!sim.kutVar(0) && !savasBilgi.kutCizildi) { savasBilgi.kutCizildi = true; const kay = (oyun._savas && oyun._savas.kayit || []).filter(k => k.taraf === 0).pop(); const u = kay ? sim.birimler.find(o => o.taraf === 0 && o.i === kay.i) : null; kutSecim = false; kutCiz(u || { b: { h: 'golem' } }); }
+  // Kut motorda kullanıldıysa ya da hak geri geldiyse (Kut Mirası) düğmeyi yeniden çiz
+  if (sim.kutKalanSay(0) !== savasBilgi.kutCizilen) { const kay = (oyun._savas && oyun._savas.kayit || []).filter(k => k.taraf === 0).pop(); const u = kay ? sim.birimler.find(o => o.taraf === 0 && o.i === kay.i) : null; kutSecim = false; kutCiz(u || savasBilgi.kutKullanan || { b: { h: 'golem' } }); }
   const oran = (tr) => { const l = sim.birimler.filter(o => o.taraf === tr); return Math.round(100 * l.reduce((s, o) => s + Math.max(0, o.hp), 0) / Math.max(1, l.reduce((s, o) => s + o.mx, 0))); };
   const a = oran(0), b = oran(1), s = $('savas');
   // Gün Batımı (yalnız Arena): görünen saniyeye göre çarpan
-  const gbT = sonDurum.t - K.gunBatimi.basla + 1e-9, gbH = oyun.seviyeli() && !savasBilgi.rakip.duello && gbT >= 0 ? `<span class="gunBatimi">Gün Batımı ×${(1 + K.gunBatimi.artis * Math.floor(gbT)).toFixed(1).replace('.', ',')}</span>` : '';
+  const gbT = sonDurum.t - (sim.gunBatimiBasla != null ? sim.gunBatimiBasla : K.gunBatimi.basla) + 1e-9, gbH = oyun.seviyeli() && !savasBilgi.rakip.duello && gbT >= 0 ? `<span class="gunBatimi">Gün Batımı ×${(1 + K.gunBatimi.artis * Math.floor(gbT)).toFixed(1).replace('.', ',')}</span>` : '';
   hudYaz(q('.skor', s), `<div class="taraf"><div class="ust"><span>Sen</span><b>%${a}</b></div><div class="takimCan"><i style="width:${a}%"></i></div></div>
     <div class="saat"><b>0:${String(Math.ceil(t)).padStart(2, '0')}</b><small>kalan</small>${gbH}</div>
     <div class="taraf sag"><div class="ust"><span>Rakip</span><b>%${b}</b></div><div class="takimCan"><i style="width:${b}%"></i></div></div>`);
