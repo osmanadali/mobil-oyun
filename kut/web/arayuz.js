@@ -423,7 +423,7 @@ q('#mac .savasBtn').onclick = () => { if (oyun.M && oyun.M.kervan) return secimD
 q('#mac .ayarBtn').onclick = ayarPencere;
 
 // ── SAVAŞ ──
-let sahneHazir = null, savasDongu = false, savasBilgi = null, sonHud = 0, hizSecim = 2, duraklat = false, kutSecim = false;
+let sahneHazir = null, savasDongu = false, savasBilgi = null, sonHud = 0, hizSecim = 1, duraklat = false, kutSecim = false;
 const ayarOku = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
 const hafif = ayarOku('kut.hafif') === '1';
 async function sahneyiHazirla() {
