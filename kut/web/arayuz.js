@@ -8,7 +8,9 @@ const oyun = new Oyun();
 const $ = (id) => document.getElementById(id);
 const q = (sel, kok = document) => kok.querySelector(sel);
 const P = (id) => `../arayuz/portre/${id}.png`, SY = (id) => `../arayuz/soy_${id}.png`;
-const ik = (n, c = '') => `<svg class="ik ${c}"><use href="#i-${n}"/></svg>`;
+const IK_RESIM = { coin: 'ik_altin', kalp: 'ik_kalp', kupa: 'ik_kupa', tac: 'ik_tac', yildiz: 'ik_yildiz_altin' };
+const ik = (n, c = '') => IK_RESIM[n] ? `<img class="ik ${c}" alt="" src="../arayuz/ui/${IK_RESIM[n]}${n === 'kalp' && /\bbos\b/.test(c) ? '_bos' : ''}.png">` : `<svg class="ik ${c}"><use href="#i-${n}"/></svg>`;
+const alametArka = (id) => `background:url(../arayuz/ui/al_${id}.png) center/cover`;
 const yildiz = (s) => `<div class="yildizlar y${s}">${ik('yildiz').repeat(s)}</div>`;
 const soyIk = (s) => `<img class="soyIk" src="${SY(s)}" alt="${D.SOYLAR[s].ad}">`;
 const mad = (id) => `<div class="madalyon"><img src="${P(id)}" alt=""></div>`;
@@ -138,7 +140,7 @@ function macCiz() {
   roz[1].innerHTML = `<div class="yz"><small>Zafer</small>${M.zafer}<span style="color:var(--soluk);font-size:14px">/${kr.zaferHedef}</span></div><div class="zaferler">${Array.from({ length: kr.zaferHedef }, (_, i) => `<i class="${i < M.zafer ? 'v' : ''}"></i>`).join('')}</div>`;
   roz[2].innerHTML = `<div class="yz"><small>${sev ? 'Tur · Seviye' : 'Hızlı Maç · Tur'}</small>${M.tur}${sev ? ` <span style="color:var(--altinA)">· Sv ${M.seviye}</span>` : ''}</div>`;
   const al = D.ALAMETLER.find(a => a.id === M.alamet);
-  q('.alamet', m).innerHTML = `<div class="ay" style="background:radial-gradient(circle at 35% 35%,#fff,${ALAMET_RENK[M.alamet]} 55%,#3a0820)"></div><div class="t"><small>Bu turun alameti</small><b>${al.ad}</b> <span>— ${al.m}</span></div>`;
+  q('.alamet', m).innerHTML = `<div class="ay resim" style="${alametArka(M.alamet)}"></div><div class="t"><small>Bu turun alameti</small><b>${al.ad}</b> <span>— ${al.m}</span></div>`;
   q('.altinRozet', m).innerHTML = `<div class="top">${ik('coin')}</div>${M.altin}`;
   // rakip
   const r = M.rakip, rp = q('.rakip', m);
@@ -285,7 +287,7 @@ async function savasBaslat(sim, rakip) {
   Ses.cal('savas_basla');
   const s = $('savas');
   q('.rakipK', s).innerHTML = `<div class="amb"><img src="${P((rakip.takim || [])[0] ? rakip.takim[0].h : 'tilki')}" alt=""></div><div style="min-width:0"><small>${rakip.duello ? 'Düello' : 'Rakip · Tur ' + oyun.M.tur}</small><b>${rakip.ad}</b><span>${rakip.kaynak === 'bot' ? 'Bot' : 'Kupa ' + sayi(rakip.kupa || 0)}</span></div>`;
-  const a = savasBilgi.alamet; q('.alametK', s).innerHTML = `<span class="ay" style="background:radial-gradient(circle at 35% 35%,#fff,${ALAMET_RENK[a.id]} 55%,#3a0820)"></span><div><b>${a.ad}</b><span>${a.m}</span></div>`;
+  const a = savasBilgi.alamet; q('.alametK', s).innerHTML = `<span class="ay resim" style="${alametArka(a.id)}"></span><div><b>${a.ad}</b><span>${a.m}</span></div>`;
   if (!savasDongu) { savasDongu = true; requestAnimationFrame(savasKare); }
 }
 function hizUygula() { S3.hiz(duraklat ? 0 : hizSecim); document.querySelectorAll('#savas .hizlar .btn').forEach((b, i) => { b.classList.toggle('secik', i + 1 === hizSecim); b.classList.toggle('altin', i + 1 === hizSecim); b.classList.toggle('mor', i + 1 !== hizSecim); }); q('#savas .duraklat .btn').innerHTML = ik(duraklat ? 'oyna' : 'durdur'); }
