@@ -3,7 +3,7 @@ import { Oyun } from './oyun.js';
 import * as S3 from './sahne3d.js';
 import * as Ses from './ses.js';
 
-const D = window.KUT_DATA, SIM = window.KUT_SIM, K = D.KURAL;
+const D = window.KUT_DATA, SIM = window.KUT_SIM, L = window.KUT_LOBI, K = D.KURAL;
 const oyun = new Oyun();
 const $ = (id) => document.getElementById(id);
 const q = (sel, kok = document) => kok.querySelector(sel);
@@ -58,8 +58,10 @@ function anaCiz() {
   const b = q('.oyna', a);
   const kr = oyun.kural();
   b.innerHTML = M
-    ? `<span class="ana">${ik('oyna')}DEVAM ET</span><small>${M.mod === 'hizli' ? 'Hızlı Maç · ' : 'Sv ' + M.seviye + ' · '}Tur ${M.tur} · ${M.zafer}/${kr.zaferHedef} zafer · ${M.can} can</small><span class="ilerleme">${Array.from({ length: kr.zaferHedef }, (_, i) => `<i class="${i < M.zafer ? 'v' : ''}"></i>`).join('')}</span>`
-    : `<span class="ana">${ik('oyna')}OYNA</span><small>Seviye atla, takımını 8 kahramana büyüt · ${kr.can} can · ${kr.zaferHedef} zafer</small>`;
+    ? (M.mod === 'hizli'
+      ? `<span class="ana">${ik('oyna')}DEVAM ET</span><small>Hızlı Maç · Tur ${M.tur} · ${M.zafer}/${K.hizli.zaferHedef} zafer · ${M.can} can</small><span class="ilerleme">${Array.from({ length: K.hizli.zaferHedef }, (_, i) => `<i class="${i < M.zafer ? 'v' : ''}"></i>`).join('')}</span>`
+      : `<span class="ana">${ik('oyna')}DEVAM ET</span><small>Sv ${M.seviye} · Tur ${L.turAd(M.tur - 1)} · ${M.can} can · ${M.altin} altın</small>`)
+    : `<span class="ana">${ik('oyna')}OYNA</span><small>Seviye atla, altın biriktir, takımını 8 kahramana büyüt · ${kr.can} can</small>`;
   q('.yeniMac', a).style.display = M ? '' : 'none';
   const alt = a.querySelectorAll('.altSerit span');
   if (alt[0]) alt[0].innerHTML = `<i class="nokta" style="background:#ffb84a"></i>Rakipler: hayalet botlar (çevrimiçi havuz yakında)`;
@@ -73,17 +75,17 @@ q('#ana .ayarBtn').onclick = ayarPencere;
 
 function nasilPencere() {
   pencere(`<h3>Nasıl oynanır</h3><ul>
-    <li><b>Her tur 10 altın.</b> Dükkândan kahraman al (fiyat = kademe). Altın biriktirilmez; geride kalan da eşit alışveriş yapar.</li>
+    <li><b>Altın birikir.</b> Her tur başında gelir gelir: 5 altın (ilk turlarda 3–4), elindeki her 10 altına +1 faiz (en çok +5), üst üste kazanma ya da kaybetme serisine +1/+2/+3, son savaşı kazandıysan +1. Kahraman fiyatı kademesi kadar, yenileme 2 altın.</li>
     <li><b>Seviye:</b> takımına seviyen kadar kahraman koyabilirsin (Sv 2 ile başlarsın, en çok 8). Her savaştan sonra 2 deneyim gelir; <b>4 altınla 4 deneyim</b> da alabilirsin. Seviye yükseldikçe dükkâna pahalı kahramanlar daha sık gelir.</li>
     <li><b>Havuz:</b> her kahramandan sınırlı sayıda var (K1 22, K2 18, K3 14). Senin ve rakibinin elindekiler havuzdan düşer.</li>
     <li><b>Tahta:</b> 4 sütun, 3 sıra (ön, orta, arka). Yedekte 7 yer var.</li>
-    <li><b>Hızlı Maç:</b> seviye yok; takım sınırı tura göre büyür (en çok 6), yedek 4.</li>
+    <li><b>Hızlı Maç:</b> eski kurallar: her tur 10 altın (birikmez), yenileme 1, seviye yok; takım sınırı tura göre büyür (en çok 6), yedek 4; 5 can, 7 zafer.</li>
     <li><b>3 aynı kahraman</b> kendiliğinden birleşir: ★2, sonra ★3.</li>
-    <li><b>Kaynaştır (3 altın):</b> bir kahramanı seç, Kaynaştır'a bas, ikinci kahramana dokun. Yetenek birinciden, pasif ikinciden gelir; soyların hepsi sayılır.</li>
+    <li><b>Kaynaştır (2 + en yüksek kademe altın; Hızlı Maç'ta 3):</b> bir kahramanı seç, Kaynaştır'a bas, ikinci kahramana dokun. Yetenek birinciden, pasif ikinciden gelir; soyların hepsi sayılır.</li>
     <li><b>Rakibini önceden gör:</b> sol üstte sıradaki rakibin kadrosu ve soyları var. Ona göre kur.</li>
     <li><b>Alamet:</b> her turun kendi kuralı vardır (Kan Ayı, Sis, Tipi…).</li>
     <li><b>Kut:</b> savaş kendi kendine oynar, ama bir kez kendi kahramanına dokunup yeteneğini anında patlatabilirsin.</li>
-    <li><b>${oyun.kural().can} can · ${oyun.kural().zaferHedef} zafer.</b> Kaybedince 1 can gider.</li></ul>
+    <li><b>100 can.</b> Kaybedince bölüm tabanı (bölüm 2'de 2, 3'te 5, 4'te 8, 5'te 12…) ve rakibin ayakta kalan kahramanlarının yıldızları kadar can gider. İlk üç turda can gitmez. Canın bitmeden 5-3'ü tamamlarsan arena senin.</li></ul>
     <div class="eylemler"><button class="btn altin" data-kapat>Anladım</button></div>`);
 }
 function duelloPencere() {
@@ -135,16 +137,26 @@ function macCiz() {
   const M = oyun.M; if (!M) return;
   const m = $('mac'), kr = oyun.kural(), sev = oyun.seviyeli();
   // üst şerit
-  $('kalpler').innerHTML = Array.from({ length: kr.can }, (_, i) => ik('kalp', i < M.can ? '' : 'bos')).join('');
   const roz = m.querySelectorAll('.macUst > .rozet');
-  roz[1].innerHTML = `<div class="yz"><small>Zafer</small>${M.zafer}<span style="color:var(--soluk);font-size:14px">/${kr.zaferHedef}</span></div><div class="zaferler">${Array.from({ length: kr.zaferHedef }, (_, i) => `<i class="${i < M.zafer ? 'v' : ''}"></i>`).join('')}</div>`;
-  roz[2].innerHTML = `<div class="yz"><small>${sev ? 'Tur · Seviye' : 'Hızlı Maç · Tur'}</small>${M.tur}${sev ? ` <span style="color:var(--altinA)">· Sv ${M.seviye}</span>` : ''}</div>`;
+  if (sev) {
+    // 100 can: tek kalp ve sayı; ikinci rozette seri ve son hasar
+    $('kalpler').innerHTML = `${ik('kalp')}<div class="yz" style="padding:0 6px"><small>Can</small>${M.can}</div>`;
+    const sr = M.seri && M.seri.n ? `${M.seri.n} ${M.seri.tip === 'G' ? 'galibiyet' : 'yenilgi'}${L.seriBonus(M.seri.n) ? ` · +${L.seriBonus(M.seri.n)} ${ik('coin')}` : ''}` : 'yok';
+    roz[1].innerHTML = `<div class="yz"><small>Seri</small><span style="font-size:15px">${sr}</span></div>${M.sonHasar ? `<div class="yz" style="padding-left:8px"><small>Son kayıp</small><span style="color:#ff8aa0">−${M.sonHasar}</span></div>` : ''}`;
+  } else {
+    $('kalpler').innerHTML = Array.from({ length: kr.can }, (_, i) => ik('kalp', i < M.can ? '' : 'bos')).join('');
+    roz[1].innerHTML = `<div class="yz"><small>Zafer</small>${M.zafer}<span style="color:var(--soluk);font-size:14px">/${kr.zaferHedef}</span></div><div class="zaferler">${Array.from({ length: kr.zaferHedef }, (_, i) => `<i class="${i < M.zafer ? 'v' : ''}"></i>`).join('')}</div>`;
+  }
+  roz[2].innerHTML = `<div class="yz"><small>${sev ? 'Tur · Seviye' : 'Hızlı Maç · Tur'}</small>${oyun.turAd()}${sev ? ` <span style="color:var(--altinA)">· Sv ${M.seviye}</span>` : ''}</div>`;
   const al = D.ALAMETLER.find(a => a.id === M.alamet);
   q('.alamet', m).innerHTML = `<div class="ay resim" style="${alametArka(M.alamet)}"></div><div class="t"><small>Bu turun alameti</small><b>${al.ad}</b> <span>— ${al.m}</span></div>`;
-  q('.altinRozet', m).innerHTML = `<div class="top">${ik('coin')}</div>${M.altin}`;
+  // seviyeli maçta bu turun geliri ve sonraki turun faizi (her 10 altına 1, en çok 5)
+  const gl = sev && M.gelir, fz = oyun.faizSonraki();
+  q('.altinRozet', m).innerHTML = `<div class="top">${ik('coin')}</div>${M.altin}` + (sev ? `<div class="yz" style="padding-left:6px;font-size:13px;line-height:1.2"><small>${gl ? `Gelir +${gl.toplam}` : 'Gelir'}</small><span style="color:var(--altinA)">Faiz +${fz}</span></div>` : '');
+  q('.altinRozet', m).title = gl ? `Bu tur: taban ${gl.taban} · faiz ${gl.faiz} · seri ${gl.seri} · galibiyet ${gl.galibiyet}${gl.alamet ? ' · alamet ' + gl.alamet : ''}` : '';
   // rakip
   const r = M.rakip, rp = q('.rakip', m);
-  rp.querySelector('.pn-bas .sag').textContent = `Tur ${M.tur}`;
+  rp.querySelector('.pn-bas .sag').textContent = `Tur ${oyun.turAd()}`;
   if (r) {
     const lider = r.takim.slice().sort((a, b) => kh(b.h).kademe * b.s - kh(a.h).kademe * a.s)[0];
     rp.querySelector('.rakipKim').innerHTML = `<div class="amb"><img src="${P(lider.h)}" alt=""></div><div style="min-width:0"><b>${r.ad} <span class="etiket">${r.kaynak === 'bot' ? 'Bot' : 'Gerçek'}</span></b><span>${ik('kupa')}${sayi(r.kupa || 0)} kupa · ${r.takim.length} kahraman</span></div>`;
@@ -223,7 +235,7 @@ function secCiz() {
   }
   const h = kh(b.h), st = SIM.birimStat(b), soylar = st.soy;
   sp.className = `pn gem secPanel k${h.kademe}`;
-  const kaynasabilir = !b.f && oyun.M.altin >= oyun.kural().kaynastir;
+  const kBedel = oyun.kaynastirBedel(b.h), kaynasabilir = !b.f && oyun.M.altin >= kBedel;
   sp.innerHTML = `<div class="pn-bas"><span class="elmas"></span>Seçili kahraman</div>
     <div class="secUst"><div class="secPort"><img src="${P(b.h)}" alt="">${b.f ? mad(b.f) : ''}</div>
       <div class="secAd"><h3>${oyun.birimAd(b)}</h3><div class="alt">${yildiz(b.s)}<span class="kTag">K${h.kademe}</span>
@@ -240,7 +252,7 @@ function secCiz() {
     <div class="yetenek"><b><em>Yetenek</em>${D.YETENEK[st.yetenek].ad}</b>${D.YETENEK[st.yetenek].m}</div>
     <div class="yetenek pasif"><b><em>Pasif</em>${D.PASIF[st.pasif].ad}</b>${D.PASIF[st.pasif].m}</div>
     <div class="secEylem">${b.f ? `<div style="padding:10px;color:var(--yazi2);font-size:15px">Kaynaşmış kahraman tekrar kaynaşmaz.</div>` : `
-      <button class="btn gb kaynastir" id="eKay" ${kaynasabilir ? '' : 'disabled'}><span class="ust">${ik('kaynas')}${oyun.kaynasMod ? 'İKİNCİYE DOKUN' : 'KAYNAŞTIR'}</span><small>${oyun.kural().kaynastir} ${ik('coin')} · ${oyun.kaynasMod ? 'iptal için tekrar bas' : 'sonra 2. kahramana dokun'}</small></button>
+      <button class="btn gb kaynastir" id="eKay" ${kaynasabilir ? '' : 'disabled'}><span class="ust">${ik('kaynas')}${oyun.kaynasMod ? 'İKİNCİYE DOKUN' : 'KAYNAŞTIR'}</span><small>${oyun.seviyeli() && kh(b.h).kademe < 3 ? kBedel + '–5' : kBedel} ${ik('coin')} · ${oyun.kaynasMod ? 'iptal için tekrar bas' : 'sonra 2. kahramana dokun'}</small></button>
       <div class="kaynasSema"><div class="kk"><img src="${P(b.h)}" alt=""></div><span class="arti">+</span><div class="kk soru">?</div>
         <p><b>Yetenek ${h.ad.split(' ')[0]}'dan,</b><br>pasif ikinciden gelir.</p></div>`}</div>`;
   sp.querySelectorAll('.stat .ik').forEach((e, i) => e.style.color = ['#ff6a86', '#ffd45c', '#7fdcff', '#ffb36a', '#6aa8ff', '#d9c7ef'][i]);
@@ -286,7 +298,7 @@ async function savasBaslat(sim, rakip) {
   kutCiz(); hizUygula(); kutSecim = false;
   Ses.cal('savas_basla');
   const s = $('savas');
-  q('.rakipK', s).innerHTML = `<div class="amb"><img src="${P((rakip.takim || [])[0] ? rakip.takim[0].h : 'tilki')}" alt=""></div><div style="min-width:0"><small>${rakip.duello ? 'Düello' : 'Rakip · Tur ' + oyun.M.tur}</small><b>${rakip.ad}</b><span>${rakip.kaynak === 'bot' ? 'Bot' : 'Kupa ' + sayi(rakip.kupa || 0)}</span></div>`;
+  q('.rakipK', s).innerHTML = `<div class="amb"><img src="${P((rakip.takim || [])[0] ? rakip.takim[0].h : 'tilki')}" alt=""></div><div style="min-width:0"><small>${rakip.duello ? 'Düello' : 'Rakip · Tur ' + oyun.turAd()}</small><b>${rakip.ad}</b><span>${rakip.kaynak === 'bot' ? 'Bot' : 'Kupa ' + sayi(rakip.kupa || 0)}</span></div>`;
   const a = savasBilgi.alamet; q('.alametK', s).innerHTML = `<span class="ay resim" style="${alametArka(a.id)}"></span><div><b>${a.ad}</b><span>${a.m}</span></div>`;
   if (!savasDongu) { savasDongu = true; requestAnimationFrame(savasKare); }
 }
@@ -332,11 +344,15 @@ function sonucGoster(sonuc) {
   const k = sonuc.kazanan; if (k === 0) S3.zafer(0); else if (k === 1) S3.zafer(1);
   Ses.cal(k === 1 ? 'yenilgi' : 'zafer', { hiz: k === 0 || k === 1 ? 1 : 0.9 });
   const r = oyun.savasBitti(sonuc); savasBilgi.sonucIslem = r;
-  const M = oyun.M, zh = oyun.kural().zaferHedef;
-  const bil = r && r.duello ? `<span>Düello</span>` : k === 0 ? `<em>+1 zafer · ${r.bitti ? r.zafer : M.zafer}/${zh}</em>` : k === 1 ? `<span>−1 can · ${r.bitti ? 0 : M.can} can kaldı</span>` : `<span>Berabere: can gitmedi</span>`;
+  if (r && r.hasar > 0 && k === 1 && S3.hasarKivilcim) S3.hasarKivilcim(1);   // rakibin sağ birimlerinden oyuncuya can hasarı ışıkları
+  const M = oyun.M, zh = K.hizli.zaferHedef, arena = r && !r.duello && (r.bitti ? r.mod === 'arena' : oyun.seviyeli());
+  const bil = r && r.duello ? `<span>Düello</span>`
+    : arena ? (r.hasar ? `<span>−${r.hasar} can · ${r.can} can kaldı</span>` : k === 0 ? `<em>Kazandın · ${r.can} can</em>` : `<span>Can gitmedi · ${r.can} can</span>`) + (r.ganimet ? `<em> · ganimet +${r.ganimet} altın</em>` : '')
+    : k === 0 ? `<em>+1 zafer · ${r.bitti ? r.zafer : M.zafer}/${zh}</em>` : k === 1 ? `<span>−1 can · ${r.bitti ? 0 : M.can} can kaldı</span>` : `<span>Berabere: can gitmedi</span>`;
   $('ayakta').style.display = 'none';
-  $('sonucYer').innerHTML = `<div class="sonucBant ${k === 1 ? 'yenilgi' : ''}"><b>${k === 0 ? 'ZAFER' : k === 1 ? 'YENİLGİ' : 'BERABERE'}</b><div class="bil">${bil}</div><button class="btn altin" id="sDevam" style="visibility:hidden">Devam ${ik('oyna')}</button></div>`;
+  $('sonucYer').innerHTML = `<div class="sonucBant ${k === 1 ? 'yenilgi' : ''}"><b>${k === 0 ? 'ZAFER' : k === 1 ? 'YENİLGİ' : 'BERABERE'}</b><div class="bil">${bil}</div><div class="sDugmeler"><button class="btn mor" id="sOzet" aria-expanded="false">${ik('kilic')} Hasar özeti</button><button class="btn altin" id="sDevam" style="visibility:hidden">Devam ${ik('oyna')}</button></div></div><div class="pn hasarOzet" id="hasarOzet" hidden></div>`;
   setTimeout(() => { if ($('sDevam')) $('sDevam').style.visibility = ''; }, 400);
+  hasarOzetKur(S3.istatistik ? S3.istatistik() : []);
   $('sDevam').onclick = async () => {
     S3.temizle(); savasBilgi = null;
     if (r && r.duello) { anaCiz(); goster('ana'); return; }
@@ -345,15 +361,41 @@ function sonucGoster(sonuc) {
   };
 }
 
+// Savaş sonu hasar özeti: sonuç bandının yanında açılır panel (Takımın / Rakip sekmeleri)
+function hasarOzetKur(liste) {
+  const pan = $('hasarOzet'), dug = $('sOzet'); if (!pan || !dug) return;
+  if (!liste.length) { dug.style.display = 'none'; return; }
+  let sekme = 0;
+  const ol = Math.max(1, ...liste.map(o => Math.max(o.verilen, o.alinan, o.iyi + o.kalkan)));   // iki takım için ortak ölçek
+  const cubuk = (cls, n, ad) => `<div class="c ${cls}"><i style="width:${n > 0 ? Math.max(2, 100 * n / ol).toFixed(1) : 0}%"></i><span>${sayi(Math.round(n))}</span><em>${ad}</em></div>`;
+  const ciz = () => {
+    const l = liste.filter(o => o.taraf === sekme), enCok = l.reduce((m, o) => (!m || o.verilen > m.verilen ? o : m), null);
+    const top = (a) => sayi(Math.round(l.reduce((s, o) => s + a(o), 0)));
+    pan.innerHTML = `<div class="ust"><b>Hasar özeti</b><button class="btn mor kapat" aria-label="Kapat">✕</button></div>
+      <div class="sekmeler" role="tablist">${['Takımın', 'Rakip'].map((ad, i) => `<button role="tab" class="${i === sekme ? 'on' : ''}" aria-selected="${i === sekme}">${ad}</button>`).join('')}</div>
+      <div class="lejant"><span class="v">Verilen</span><span class="a">Alınan</span><span class="i">İyileştirme</span></div>
+      <div class="satirlar">${l.map(o => `<div class="sr ${o.olu ? 'olu' : ''} ${o === enCok && o.verilen > 0 ? 'mvp' : ''}">
+        <div class="por ${sekme ? 'dus' : 'biz'}"><img src="${P(o.b.h)}" alt="">${o === enCok && o.verilen > 0 ? `<span class="tac">${ik('tac')}</span>` : ''}</div>
+        <div class="vb"><div class="ad"><b>${oyun.birimAd(o.b)}</b><small>${'★'.repeat(o.b.s || 1)}</small></div>
+          ${cubuk('v', o.verilen, 'verilen')}${cubuk('a', o.alinan, 'alınan')}${cubuk('i', o.iyi + o.kalkan, o.kalkan > 0 ? `iyileştirme · ${sayi(Math.round(o.kalkan))} kalkan` : 'iyileştirme')}</div></div>`).join('')}</div>
+      <div class="toplam">Toplam: <b>${top(o => o.verilen)}</b> verilen · <b>${top(o => o.alinan)}</b> alınan · <b>${top(o => o.iyi + o.kalkan)}</b> iyileştirme</div>`;
+    pan.querySelectorAll('.sekmeler button').forEach((b, i) => b.onclick = () => { sekme = i; ciz(); });
+    q('.kapat', pan).onclick = () => ac(false);
+  };
+  const ac = (v) => { pan.hidden = !v; dug.setAttribute('aria-expanded', String(v)); dug.classList.toggle('secik', v); if (v) ciz(); };
+  dug.onclick = () => ac(pan.hidden);
+}
+
 // ── MAÇ SONU ──
 function sonCiz(r) {
   const kayip = !r.kazandi, sr = $('sonSerit');
   sr.classList.toggle('kayip', kayip);
-  sr.innerHTML = kayip ? `<b>MAÇ BİTTİ</b><span>${r.zafer} zafer · ${r.gecmis.length} tur · iyi dövüştün</span>`
-    : `<span class="mad l">${ik('yildiz')}</span><b>ZAFER!</b><span>Arena senin · ${r.zafer} zafer</span><span class="mad r">${ik('yildiz')}</span>`;
+  const arena = r.mod === 'arena';
+  sr.innerHTML = kayip ? `<b>MAÇ BİTTİ</b><span>${arena ? `${r.turAd} turunda elendin · ` : ''}${r.zafer} zafer · ${r.gecmis.length} tur · iyi dövüştün</span>`
+    : `<span class="mad l">${ik('yildiz')}</span><b>ZAFER!</b><span>Arena senin · ${arena ? `${r.can} can kaldı` : `${r.zafer} zafer`}</span><span class="mad r">${ik('yildiz')}</span>`;
   q('#son .isinlar').style.display = kayip ? 'none' : '';
   const g = r.gecmis.filter(x => x === 0).length, kb = r.gecmis.filter(x => x === 1).length;
-  $('ozet').innerHTML = `<div><b style="color:#8dffb0">${g}</b><span>zafer</span></div><div><b style="color:#ff8aa0">${Math.max(0, oyun.kural().can - kb)}</b><span>can kaldı</span></div><div><b>${r.gecmis.length}</b><span>tur</span></div>`;
+  $('ozet').innerHTML = `<div><b style="color:#8dffb0">${g}</b><span>zafer</span></div><div><b style="color:#ff8aa0">${arena ? r.can : Math.max(0, K.hizli.can - kb)}</b><span>can kaldı</span></div><div><b>${r.gecmis.length}</b><span>tur</span></div>`;
   $('turSay').textContent = `${g} kazanıldı · ${kb} kaybedildi`;
   $('turlar').innerHTML = r.gecmis.map((t, i) => `<div class="tr ${t === 0 ? 'g' : t === 1 ? 'k' : ''}"><small>Tur</small>${i + 1}</div>`).join('');
   const once = r.kupa - r.fark;

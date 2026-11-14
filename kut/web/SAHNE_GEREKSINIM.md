@@ -15,3 +15,11 @@ Bu dosya, oynanış/motor işinin `sahne3d.js`, `vfx.js`, `gorunum.js` ve `harek
 - [ ] **Kut dokunuşu isabeti.** `dokun(x, y)` sık dizilişte yanlış birimi seçmemeli: en yakın birim ekranda ölçülen mesafeyle seçilmeli, isabet yarıçapı birim aralığının (1,5) yarısını aşmamalı.
 - [ ] **Tahta dokusu ve çizgiler.** Tahta (6 × 8 taş karo) aynı kalabilir. Hücre işareti, ışık lekesi ya da diziliş ızgarası çiziliyorsa 4 sütunluk yeni konumlara (x = 0,75 + 1,5k) ve 3 sıraya göre güncellenmeli.
 - [ ] **Bilgi (değişiklik gerektirmez):** savaş sonucu `sonuc` nesnesine `kalanPuan` (kazanan taraftaki sağ birimlerin yıldız toplamı) ve `kalanSayi` alanları eklendi. Sonuç gösteriminde ileride "kaybedersen ~N can" için kullanılacak.
+
+## Adım 2: Birikimli ekonomi, 100 can ve kaybedince alınan hasar (OYNANIS_DERINLIK.md bölüm 3 ve 4.4)
+
+- [ ] **Savaş sonu hasar anı.** Seviyeli maçta yenilgide can `bölüm tabanı + kalanPuan` kadar düşer (2-x'te 2, 3-x'te 5, 4-x'te 8, 5-x'te 12; bölüm 1'de 0). `oyun.savasBitti()` dönüşü artık `{ hasar, can, ganimet }` taşıyor. Sahne, rakibin sağ kalan birimlerinden oyuncunun tarafına doğru kısa bir "hasar kıvılcımı" (her sağ birimden bir ışık, yıldızı kadar parlak) uçurabilir; sayı (−N) sonuç bandında arayüzde yazıyor, sahnede tekrar yazılmasın.
+- [ ] **Ganimet altını.** 1-2, 1-3 ve 3-7 sonunda `ganimet` > 0 gelir (2, 2, 3 altın). Canavar turları (adım 4) gelene kadar bu turlar bota karşı oynanıyor. Kazanan tarafta düşen birimlerden "ganimet küresi" düşmesi adım 4'te istenecek; şimdilik gerek yok, yalnız `zafer()` anında hafif altın parıltısı yeterli.
+- [ ] **Savaş HUD'u (arayüz değil, sahne üstü yazılar).** "Rakip · Tur 2-3" gibi tur adı artık bölüm-tur biçiminde (`oyun.turAd()`); sahnede tur sayısı yazdırılan yer varsa aynı biçim kullanılmalı.
+- [ ] **Son Üç / Son İki için hazırlık (lobi, adım 5).** Final turlarında hasar tabanı +3 / +5 olur; ileride sahnede "Son Üç" ışık değişimi ve gökyüzü tonu istenebilir. Şimdilik işlem yok.
+- [ ] **Bilgi (değişiklik gerektirmez):** motorda (`sim.js`, `KutSavas.cs`) bu adımda değişiklik yok; ekonomi tamamen `lobi.js` / `KutLobi.cs` içinde.

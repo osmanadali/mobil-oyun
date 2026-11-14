@@ -331,14 +331,16 @@ async function birimKur(u, kok) {
   const yildiz = [1, 1, 1.12, 1.25][u.b.s || 1]; kok3.scale.setScalar(yildiz);
   kok3.userData.vfxBoy = modelBoy * yildiz;   // efektlerin (durum, mermi hedefi) ölçeği
   // gövde yatay yarıçapı (yakın dövüş teması ve görsel ayrıştırma için)
-  { const s3 = kk2.getSize(new THREE.Vector3()); kok3.userData.yaricap = 0.5 * Math.min(Math.max(s3.x, s3.z), gor.tur === 'iki' ? 1.0 : 1.4) * yildiz; }
+  { const s3 = kk2.getSize(new THREE.Vector3()); kok3.userData.yaricap = Math.min(0.68, 0.5 * Math.min(Math.max(s3.x, s3.z), gor.tur === 'iki' ? 1.0 : 1.4) * yildiz); }
   // taraf diski (paylaşımlı doku + taraf başına 2 malzeme; rakipte dışa bakan dikenler: renk körü oyuncu da ayırt eder) + kaynaşma halkası + temas gölgesi
-  const halka = new THREE.Mesh(DISK_GEO, tarafMalzeme(u.taraf)); halka.scale.setScalar(gor.tur === 'iki' ? 1 : 1.15);
+  // 4×3 tahtada komşular 1,5 aralıkta: diskin dikenli dış kenarı (birim ölçekte 0,58) dünyada ≤ 0,62 kalır (yıldız ölçeği dahil)
+  const diskS = Math.min(gor.tur === 'iki' ? 1 : 1.15, 0.62 / (0.58 * yildiz));
+  const halka = new THREE.Mesh(DISK_GEO, tarafMalzeme(u.taraf)); halka.scale.setScalar(diskS); halka.userData.s = diskS;
   halka.position.y = 0.03; halka.renderOrder = -1; kok3.add(halka);
   const halkalar = [halka];
   if (u.b.f) {
     const f = D.kahraman(u.b.f);
-    const h2 = new THREE.Mesh(new THREE.RingGeometry(0.49, 0.56, 40), new THREE.MeshBasicMaterial({ color: f.renk, transparent: true, opacity: 0.95, depthWrite: false }));
+    const h2 = new THREE.Mesh(new THREE.RingGeometry(0.49 * Math.min(1, 1.12 / yildiz), 0.56 * Math.min(1, 1.12 / yildiz), 40), new THREE.MeshBasicMaterial({ color: f.renk, transparent: true, opacity: 0.95, depthWrite: false }));
     h2.rotation.x = -Math.PI / 2; h2.position.y = 0.035; kok3.add(h2); halkalar.push(h2);
     // malzemeler malzemeIyilestir'de birime özel klonlandı: yeniden klonlamadan ışıma ver (yama korunur)
     model.traverse(m => { if (m.isMesh) for (const mm of [].concat(m.material)) if (mm && mm.emissive) { mm.emissive.set(f.renk); mm.emissiveIntensity = 0.18; } });
@@ -432,6 +434,7 @@ export async function savasKur(yeniSim, kok = '') {
   efektler = efektler.filter(e => e.kalici); kuyruk = []; yazilar = []; bantlar.length = 0; balonSira.length = 0; kutKart = null; birimler = new Map(); kutlu = new Set(); kam.ilk = true;
   his.sifirla();
   sim = yeniSim; gorselT = 0; anlik = [];
+  istatSifirla();
   const liste = await Promise.all(sim.birimler.map(u => birimKur(u, kok)));
   for (const b of liste) birimler.set(b.uid, b);
   // gökten giriş: taraf içinde sırayla, rakip biraz sonra (giriş sürerken görüntü zamanı bekler → motor da bekler)
@@ -450,6 +453,7 @@ function simIlerlet() {
     const tOnce = sim.t; sim.adim();
     const liste = sim.fx.map(f => ({ ...f, t: tOnce }));
     for (let i = 0; i < liste.length; i++) olayPlanla(liste[i], liste, i);
+    istatTopla(liste);
     const onceki = anlik[anlik.length - 1];
     anlikAl();
     // kalkan kırıldı mı? (motor ayrı olay yaymaz; anlık farkından çıkar)
@@ -457,6 +461,43 @@ function simIlerlet() {
     if (onceki) for (let j = 0; j < yeni.length; j++) if (onceki[j].kalkan > 0 && yeni[j].kalkan <= 0 && !yeni[j].olu) { const u = sim.birimler[j]; kuyruk.push({ t: tOnce, is: () => sesBildir({ tip: 'kalkanKir', u: u.uid }) }); }
   }
 }
+// ── Savaş sonu hasar özeti: motorun fx olaylarından birim başına verilen/alınan hasar ve iyileştirme ──
+// hasar: k kaynak uid · dot: k yok (−1) → yanığı/zehiri en son bulaştıran düşmana yazılır ·
+// iyi/kalkan: kaynak uid yok → aynı adımda önündeki yetenek/vuruş olayının sahibine, yoksa (Ana pasifi) yakındaki Ana'ya ya da kendisine
+let istat = new Map(), dotKaynak = new Map();
+const DOT_YETENEK = { zehir: 'hedef', ocak: 2.2, kulDogus: 'hasar' };
+function istatSifirla() {
+  istat = new Map(); dotKaynak = new Map();
+  for (const u of sim.birimler) istat.set(u.uid, { uid: u.uid, taraf: u.taraf ? 1 : 0, b: u.b, verilen: 0, alinan: 0, iyi: 0, kalkan: 0, olu: false });
+}
+function istatTopla(liste) {
+  const kay = (id) => istat.get(id), bul = (id) => sim.birimler.find(o => o.uid === id);
+  for (let i = 0; i < liste.length; i++) {
+    const f = liste[i];
+    if (f.tip === 'vurus') { const a = bul(f.k); if (a && (a.pasif === 'zehirDis' || (a.soy || []).includes('ates'))) dotKaynak.set(f.u, f.k); }
+    else if (f.tip === 'yetenek' && DOT_YETENEK[f.ad]) {
+      const a = bul(f.u), yol = DOT_YETENEK[f.ad]; if (!a) continue;
+      if (yol === 'hedef') { if (a.hedef) dotKaynak.set(a.hedef.uid, a.uid); }
+      else if (yol === 'hasar') { for (const g of ardil(liste, i)) if (g.tip === 'hasar' && g.k === a.uid) dotKaynak.set(g.u, a.uid); }
+      else for (const o of sim.birimler) if (o.taraf !== a.taraf && !o.olu && Math.hypot(o.x - a.x, o.y - a.y) <= yol + 0.3) dotKaynak.set(o.uid, a.uid);
+    }
+    else if (f.tip === 'hasar' || f.tip === 'dot') {
+      const h = kay(f.u); if (h) h.alinan += f.n;
+      const kid = f.tip === 'dot' ? dotKaynak.get(f.u) : f.k, k = kid != null && kid >= 0 ? kay(kid) : null;
+      if (k && h && k.taraf !== h.taraf) k.verilen += f.n;
+    }
+    else if (f.tip === 'iyi' || f.tip === 'kalkan') {
+      const o = onceki(liste, i); let kid = o ? (o.tip === 'yetenek' ? o.u : o.k) : -1;
+      if (kid < 0 || !kay(kid)) { const h = bul(f.u); const ana = h && sim.birimler.filter(d => d.taraf === h.taraf && d !== h && d.pasif === 'ana').sort((p, q) => Math.hypot(p.x - h.x, p.y - h.y) - Math.hypot(q.x - h.x, q.y - h.y))[0]; kid = ana ? ana.uid : f.u; }
+      const k = kay(kid); if (k) k[f.tip === 'iyi' ? 'iyi' : 'kalkan'] += f.n;
+    }
+    else if (f.tip === 'olum') { const h = kay(f.u); if (h) h.olu = true; }
+    else if (f.tip === 'dirilis') { const h = kay(f.u); if (h) h.olu = false; }
+  }
+}
+// dışa aktarım: [{ uid, taraf (0 oyuncu, 1 rakip), b, verilen, alinan, iyi, kalkan, olu }] (taraf, sonra verilen hasara göre sıralı)
+export function istatistik() { return [...istat.values()].map(o => ({ ...o })).sort((a, b) => a.taraf - b.taraf || b.verilen - a.verilen); }
+
 // Olaya göre görsel eylemleri zamanla
 function sesBildir(f) {
   if (!dinleyici.ses) return;
@@ -671,6 +712,7 @@ function bantEkle(b, metin, { renk = null, kut = false } = {}) {
   const bt = { uid: b.uid, b, metin, renk, kut, dost: b.u.taraf === 0, yas: 0, gercek: 0, bekle: 0, kapan: 0 };
   if (bantlar.length < 2) { bantlar.push(bt); return; }
   if (kut) { const eski = bantlar.find(x => !x.kut && !x.kapan); if (eski) eski.kapan = 1; balonSira.unshift(bt); }
+  else if (bt.dost) { const i = balonSira.findIndex(x => !x.kut && !x.dost); if (i < 0) balonSira.push(bt); else balonSira.splice(i, 0, bt); }   // oyuncunun yaratıkları sırada öne geçer
   else balonSira.push(bt);
 }
 function balonGuncelle(dt, dtG) {
@@ -713,10 +755,10 @@ function kalkanDesen() {
 }
 function cubukOlcu(w, h) {
   const o = Math.max(0.8, Math.min(1.3, Math.min(w * 0.8, h) / 800));
-  return { o, gw: Math.round(50 * o), hh: Math.max(5, Math.round(7 * o)), mh: Math.max(2, Math.round(3 * o)) };
+  return { o, gw: Math.round(56 * o), hh: Math.max(6, Math.round(8 * o)), mh: Math.max(2, Math.round(3 * o)) };
 }
 function cubukCiz(b, a, x, y, O, dost) {
-  const { o, gw, hh, mh } = O, tr = dost ? '#3fd68f' : '#ff3d63';
+  const { o, gw, hh, mh } = O, tr = dost ? '#59d0ff' : '#ff5a6a';
   const mx = Math.max(1, a.mx), hp = Math.max(0, a.hp), kal = Math.max(0, a.kalkan || 0), tot = Math.max(mx, hp + kal);
   const H = hh + 1 + mh, px = (v) => gw * Math.min(1, v / tot);
   // çerçeve: koyu zemin, dışta ince siyah, içte takım rengi
@@ -738,9 +780,8 @@ function cubukCiz(b, a, x, y, O, dost) {
   if (kw > 0.3) { kcx.fillStyle = kalkanDesen(); kcx.fillRect(x + hpw, y, kw, hh); kcx.fillStyle = '#ffffff'; kcx.fillRect(x + hpw, y, kw, 1); kcx.fillRect(x + hpw + kw - 1, y, 1, hh); }
   // çentikler: her 100 can ince (sığarsa), çok canlıda her 500 kalın
   const adim = gw * 100 / tot, kalin = mx >= 1000;
-  kcx.fillStyle = 'rgba(8,5,20,.8)';
-  if (adim >= 2.4) for (let v = 100; v < tot - 1; v += 100) { if (kalin && v % 500 === 0) continue; kcx.fillRect(Math.round(x + gw * v / tot), y, 1, Math.ceil(hh * 0.55)); }
-  if (kalin) for (let v = 500; v < tot - 1; v += 500) kcx.fillRect(Math.round(x + gw * v / tot) - 0.5, y, 2, hh);
+  if (adim >= 3) { kcx.fillStyle = 'rgba(8,5,20,.55)'; for (let v = 100; v < tot - 1; v += 100) { if (kalin && v % 500 === 0) continue; kcx.fillRect(Math.round(x + gw * v / tot), y, 1, Math.ceil(hh * 0.5)); } }
+  if (kalin) { kcx.fillStyle = 'rgba(8,5,20,.9)'; for (let v = 500; v < tot - 1; v += 500) kcx.fillRect(Math.round(x + gw * v / tot) - 0.5, y, 2, hh); }
   // mana: koyu oluk, mavi dolgu; dolunca nabız
   const my = y + hh + 1, dolu = a.mana > 0 && a.mp >= a.mana - 1e-6;
   kcx.fillStyle = 'rgba(20,30,60,.9)'; kcx.fillRect(x, my, gw, mh);
@@ -769,6 +810,49 @@ function izGuncelle(b, a, dt) {
   b.izSon = v;
   if (b.izBek > 0) { b.izBek -= dt; return; }
   const f = b.izCan - v; b.izCan -= Math.min(f, Math.max(f * dt * 5, a.mx * 0.3 * dt));
+}
+function balonCiz(w, O) {
+  // yetenek balonu (OGRETICI §4.3): dost altın zemin + koyu yazı; düşman koyu zemin + yakut kenar + beyaz yazı; Kut'ta 1,4 kat + güneş
+  for (const bt of bantlar) {
+    const b = bt.b; let ax, ay;
+    if (b._cubuk) { ax = b._cubuk.x; ay = b._cubuk.y - 3; }
+    else { const p = ekran(b.kok.position.clone().add(new THREE.Vector3(0, 1.12 * (b.kok.userData.vfxBoy || 1) + 0.12, 0))); ax = p.x; ay = p.y - 12; }
+    const e = Math.min(bt.yas / BALON_SURE, bt.gercek / BALON_GERCEK), g = bt.gercek;
+    const giris = Math.min(1, g / 0.18), sc0 = g < 0.18 ? 0.92 + 0.08 * (1 - Math.pow(1 - giris, 3)) + Math.sin(giris * Math.PI) * 0.06 : 1;
+    let al = Math.min(1, giris * 1.6); if (e > 0.85) al *= Math.max(0, (1 - e) / 0.15); if (bt.kapan) al *= Math.max(0, 1 - bt.kapan / 0.13);
+    if (al <= 0.01) continue;
+    const kat = (bt.kut ? 1.4 : 1) * O.o * sc0, fs = Math.round(15 * kat);
+    kcx.save(); kcx.globalAlpha = al;
+    kcx.font = `900 ${fs}px ${YAZI_FONT}`; kcx.textAlign = 'center'; kcx.textBaseline = 'middle';
+    const gun = bt.kut ? fs * 1.05 : 0, tw = kcx.measureText(bt.metin).width, bw = tw + 18 * kat + gun, bh = fs + 9 * kat, kuyruk = 6 * kat;
+    const yuk = e * 6 * O.o;
+    let cx = Math.max(16 + bw / 2, Math.min(w - 16 - bw / 2, ax)), by = ay - kuyruk - bh - yuk;
+    if (by < 8) by = 8;
+    // gövde + kuyruk tek yol
+    const bx = cx - bw / 2, r = bh / 2, tx = Math.max(bx + r, Math.min(bx + bw - r, ax));
+    kcx.beginPath(); kcx.moveTo(bx + r, by); kcx.arcTo(bx + bw, by, bx + bw, by + bh, r); kcx.arcTo(bx + bw, by + bh, bx, by + bh, r);
+    kcx.lineTo(tx + kuyruk * 0.8, by + bh); kcx.lineTo(tx, by + bh + kuyruk); kcx.lineTo(tx - kuyruk * 0.8, by + bh);
+    kcx.arcTo(bx, by + bh, bx, by, r); kcx.arcTo(bx, by, bx + bw, by, r); kcx.closePath();
+    let yazi, golge;
+    if (bt.dost) {
+      const gr = kcx.createLinearGradient(0, by, 0, by + bh); gr.addColorStop(0, '#fff0a8'); gr.addColorStop(0.5, '#ffc94a'); gr.addColorStop(1, '#e8902a');
+      kcx.shadowColor = bt.kut ? 'rgba(255,190,60,.9)' : 'rgba(0,0,0,.45)'; kcx.shadowBlur = (bt.kut ? 14 : 6) * O.o; kcx.shadowOffsetY = bt.kut ? 0 : 2;
+      kcx.fillStyle = gr; kcx.fill(); kcx.shadowColor = 'transparent';
+      kcx.lineWidth = 2; kcx.strokeStyle = '#6a3a08'; kcx.stroke(); yazi = bt.renk || '#2a1404'; golge = null;
+    } else {
+      kcx.shadowColor = bt.kut ? 'rgba(255,120,90,.85)' : 'rgba(0,0,0,.5)'; kcx.shadowBlur = (bt.kut ? 14 : 6) * O.o; kcx.shadowOffsetY = bt.kut ? 0 : 2;
+      kcx.fillStyle = 'rgba(28,10,24,.93)'; kcx.fill(); kcx.shadowColor = 'transparent';
+      kcx.lineWidth = 2; kcx.strokeStyle = '#ff3d63'; kcx.stroke(); yazi = bt.renk || '#ffffff'; golge = 'rgba(0,0,0,.6)';
+    }
+    // üst parlama
+    kcx.fillStyle = 'rgba(255,255,255,.22)'; yuvarlak(bx + 4 * kat, by + 2, bw - 8 * kat, bh * 0.36, bh * 0.18); kcx.fill();
+    if (bt.kut) gunesCiz(bx + 9 * kat + gun / 2, by + bh / 2, fs * 0.5);
+    const yx = cx + gun / 2, yy = by + bh / 2 + 1;
+    if (golge) { kcx.lineWidth = 3; kcx.lineJoin = 'round'; kcx.strokeStyle = golge; kcx.strokeText(bt.metin, yx, yy); }
+    kcx.fillStyle = yazi; kcx.fillText(bt.metin, yx, yy);
+    kcx.restore();
+  }
+  kcx.textBaseline = 'alphabetic';
 }
 function kaplamaCiz(dt = 0, dtG = dt) {
   const w = kaplama.clientWidth, h = kaplama.clientHeight;
@@ -799,47 +883,6 @@ function kaplamaCiz(dt = 0, dtG = dt) {
     const ust = cubukCiz(b, L.a, x, y, O, b.u.taraf === 0);
     b._cubuk = { x: x + O.gw / 2, y: ust };
   }
-  // yetenek balonu (OGRETICI §4.3): dost altın zemin + koyu yazı; düşman koyu zemin + yakut kenar + beyaz yazı; Kut'ta 1,4 kat + güneş
-  for (const bt of bantlar) {
-    const b = bt.b; let ax, ay;
-    if (b._cubuk) { ax = b._cubuk.x; ay = b._cubuk.y - 3; }
-    else { const p = ekran(b.kok.position.clone().add(new THREE.Vector3(0, 1.12 * (b.kok.userData.vfxBoy || 1) + 0.12, 0))); ax = p.x; ay = p.y - 12; }
-    const e = Math.min(bt.yas / BALON_SURE, bt.gercek / BALON_GERCEK), g = bt.gercek;
-    const giris = Math.min(1, g / 0.18), sc0 = g < 0.18 ? 0.92 + 0.08 * (1 - Math.pow(1 - giris, 3)) + Math.sin(giris * Math.PI) * 0.06 : 1;
-    let al = Math.min(1, giris * 1.6); if (e > 0.85) al *= Math.max(0, (1 - e) / 0.15); if (bt.kapan) al *= Math.max(0, 1 - bt.kapan / 0.13);
-    if (al <= 0.01) continue;
-    const kat = (bt.kut ? 1.4 : 1) * O.o * sc0, fs = Math.round(15 * kat);
-    kcx.save(); kcx.globalAlpha = al;
-    kcx.font = `900 ${fs}px ${YAZI_FONT}`; kcx.textAlign = 'center'; kcx.textBaseline = 'middle';
-    const gun = bt.kut ? fs * 1.05 : 0, tw = kcx.measureText(bt.metin).width, bw = tw + 18 * kat + gun, bh = fs + 9 * kat, kuyruk = 6 * kat;
-    const yuk = e * 6 * O.o;
-    let cx = Math.max(16 + bw / 2, Math.min(w - 16 - bw / 2, ax)), by = ay - kuyruk - bh - yuk;
-    if (by < 8) by = 8;
-    // gövde + kuyruk tek yol
-    const bx = cx - bw / 2, r = bh / 2, tx = Math.max(bx + r, Math.min(bx + bw - r, ax));
-    kcx.beginPath(); kcx.moveTo(bx + r, by); kcx.arcTo(bx + bw, by, bx + bw, by + bh, r); kcx.arcTo(bx + bw, by + bh, bx, by + bh, r);
-    kcx.lineTo(tx + kuyruk * 0.8, by + bh); kcx.lineTo(tx, by + bh + kuyruk); kcx.lineTo(tx - kuyruk * 0.8, by + bh);
-    kcx.arcTo(bx, by + bh, bx, by, r); kcx.arcTo(bx, by, bx + bw, by, r); kcx.closePath();
-    let yazi, golge;
-    if (bt.dost || bt.kut) {
-      const gr = kcx.createLinearGradient(0, by, 0, by + bh); gr.addColorStop(0, '#fff0a8'); gr.addColorStop(0.5, '#ffc94a'); gr.addColorStop(1, '#e8902a');
-      kcx.shadowColor = bt.kut ? 'rgba(255,190,60,.9)' : 'rgba(0,0,0,.45)'; kcx.shadowBlur = (bt.kut ? 14 : 6) * O.o; kcx.shadowOffsetY = bt.kut ? 0 : 2;
-      kcx.fillStyle = gr; kcx.fill(); kcx.shadowColor = 'transparent';
-      kcx.lineWidth = 2; kcx.strokeStyle = '#6a3a08'; kcx.stroke(); yazi = bt.renk || '#2a1404'; golge = null;
-    } else {
-      kcx.shadowColor = 'rgba(0,0,0,.5)'; kcx.shadowBlur = 6 * O.o; kcx.shadowOffsetY = 2;
-      kcx.fillStyle = 'rgba(28,10,24,.93)'; kcx.fill(); kcx.shadowColor = 'transparent';
-      kcx.lineWidth = 2; kcx.strokeStyle = '#ff3d63'; kcx.stroke(); yazi = bt.renk || '#ffffff'; golge = 'rgba(0,0,0,.6)';
-    }
-    // üst parlama
-    kcx.fillStyle = 'rgba(255,255,255,.22)'; yuvarlak(bx + 4 * kat, by + 2, bw - 8 * kat, bh * 0.36, bh * 0.18); kcx.fill();
-    if (bt.kut) gunesCiz(bx + 9 * kat + gun / 2, by + bh / 2, fs * 0.5);
-    const yx = cx + gun / 2, yy = by + bh / 2 + 1;
-    if (golge) { kcx.lineWidth = 3; kcx.lineJoin = 'round'; kcx.strokeStyle = golge; kcx.strokeText(bt.metin, yx, yy); }
-    kcx.fillStyle = yazi; kcx.fillText(bt.metin, yx, yy);
-    kcx.restore();
-  }
-  kcx.textBaseline = 'alphabetic';
   kcx.globalAlpha = 1;
   // sayılar: patlayarak büyür, sonra parabolik yayla yan-yukarı süzülür; kritikte büyük + altın kenar + KRİTİK
   for (const y of yazilar) {
@@ -854,6 +897,7 @@ function kaplamaCiz(dt = 0, dtG = dt) {
     if (y.kritik) { kcx.font = `900 11px ${YAZI_FONT}`; kcx.lineWidth = 3; kcx.strokeStyle = '#3a1800'; kcx.strokeText('KRİTİK', xx, yy - boy * 0.9); kcx.fillStyle = '#ffe9a0'; kcx.fillText('KRİTİK', xx, yy - boy * 0.9); }
   }
   kcx.globalAlpha = 1;
+  balonCiz(w, O);
   // Kut portre kartı: soldan kayar, 1,1 sn kalır
   if (kutKart) {
     const t = performance.now() / 1000 - kutKart.t0; if (t > 1.5) kutKart = null;
@@ -988,7 +1032,7 @@ export function kare(dtSabit) {
       }
       bay.saldiri = null; bay.yetenek = false; bay.vurul = 0;
       // taraf diski: vuruşta kısa nabız
-      if (b.halkalar[0]) { b.diskNabiz = Math.max(0, (b.diskNabiz || 0) - dtGercek); b.halkalar[0].material.opacity = 0.5; b.halkalar[0].scale.setScalar((b.gor.tur === 'iki' ? 1 : 1.15) * (1 + b.diskNabiz * 0.6)); }
+      if (b.halkalar[0]) { b.diskNabiz = Math.max(0, (b.diskNabiz || 0) - dtGercek); b.halkalar[0].material.opacity = 0.5; b.halkalar[0].scale.setScalar((b.halkalar[0].userData.s || 1) * (1 + b.diskNabiz * 0.6)); }
       // çözülme bitince kök (taraf halkası, temas gölgesi) de gizlenir
       if (olu && !b.govde.visible && gorselT - b.olumT > 0.5) b.kok.visible = false;
       // sürekli durum efektleri (yalnız değişimde)
@@ -1020,8 +1064,16 @@ export function dinle(olay, fn) { dinleyici[olay] = fn; }
 /** Oyuncu dokunuşu: ekran koordinatı → kendi yaratığı; Kut uygulanırsa true */
 export function dokun(x, y) {
   if (!sim || sim.bitti || !sim.kutVar(0)) return false;
-  let en = null, m = 70;
-  for (const [uid, b] of birimler) { if (b.u.taraf !== 0 || b.olumT >= 0) continue; const p = ekran(b.kok.position.clone().add(new THREE.Vector3(0, 0.6, 0))); const d = Math.hypot(p.x - x, p.y - y); if (d < m) { m = d; en = b; } }
+  // sık diziliş (komşular 1,5 birim arada): en yakın birim ekranda ölçülür; isabet yarıçapı, birimin ekrandaki 0,72 birimlik
+  // (aralığın yarısından az) yatay ölçüsünü aşmaz → iki komşunun arasına dokunmak yanlış birimi seçmez
+  let en = null, m = Infinity;
+  for (const [uid, b] of birimler) {
+    if (b.u.taraf !== 0 || b.olumT >= 0) continue;
+    const c = b.kok.position.clone().setY(ARENA_Y + 0.5 * (b.kok.userData.vfxBoy || 1)), p = ekran(c), p2 = ekran(c.clone().setX(c.x + 0.72));
+    const r = Math.min(80, Math.max(18, Math.hypot(p2.x - p.x, p2.y - p.y)));
+    // gövde dikeyde daha uzun: ayak ile baş arası da isabet sayılır (y ekseni hafif basık mesafe)
+    const d = Math.hypot(p.x - x, (p.y - y) * 0.7); if (d <= r && d < m) { m = d; en = b; }
+  }
   if (!en) return false;
   const u = sim.birimler.find(o => o.uid === en.uid); if (!u || u.olu) return false;
   if (sim.kut(0, u.i)) { kutlu.add(u.uid); kutSutun(en); return u; }
@@ -1031,7 +1083,24 @@ export function zafer(taraf) {
   for (const b of birimler.values()) if (b.u.taraf === taraf && b.olumT < 0) {
     if (b.isk) { b.zk = null; b.zkSira = []; const z = (b.gor.zafer && ual.klip[b.gor.zafer]) ? b.gor.zafer : 'Dance_Loop'; oyna(b, z, { dongu: true, gecis: 0.2 }); b.durum = 'zafer'; }
     b.zaferMi = true; his.zafer(b);
+    // hafif altın parıltısı (ganimet hazırlığı, SAHNE_GEREKSINIM adım 2): başın üstünden birkaç altın yıldız saçılır
+    const h = b.kok.userData.vfxBoy || 1, bas = b.kok.position.clone().setY(ARENA_Y + h * 0.95);
+    vfx.yapi.patlama(bas, { renk: '#ffd76a', n: hafif ? 5 : 8, hiz: 1.6, g: 1.5, yildiz: true });
   }
+}
+/** Yenilgide can hasarı anı: rakibin sağ kalan her biriminden oyuncunun tarafına bir ışık uçar (yıldızı kadar parlak).
+    Sayı (−N) sonuç bandında arayüzde yazar; sahnede tekrar yazılmaz. */
+export function hasarKivilcim(taraf = 1) {
+  if (!sim) return 0;
+  const kalan = [...birimler.values()].filter(b => b.u.taraf === taraf && b.olumT < 0);
+  const hedef = new THREE.Vector3(0, ARENA_Y + 0.5, taraf === 1 ? 4.7 : -4.7);
+  kalan.forEach((b, i) => {
+    const s = Math.max(1, Math.min(3, b.u.b.s || 1)), bas = b.kok.position.clone().setY(ARENA_Y + (b.kok.userData.vfxBoy || 1) * 0.8);
+    const son = hedef.clone().setX((i - (kalan.length - 1) / 2) * 0.5), sure = 0.6 + i * 0.09;
+    vfx.mermi(bas, son, sure, { tur: 'isik', renk: taraf === 1 ? '#ff6a5a' : '#6ab8ff', guc: 0.7 + 0.3 * s, yay: 1.1,
+      bitis: () => { vfx.yapi.flas(son, { renk: '#ff8a6a', boy: 0.7 + 0.25 * s, sure: 0.25 }); if (i === kalan.length - 1) his.sarsinti(0.12, 0.2); } });
+  });
+  return kalan.length;
 }
 export function temizle() { sim = null; for (const b of birimler.values()) vfx.durumTemizle(b.kok); }
 // hata ayıklama / ölçüm

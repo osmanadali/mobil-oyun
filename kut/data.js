@@ -135,6 +135,21 @@
     // sınırlı kahraman havuzu (bölüm 2.3): kademe → kopya sayısı
     havuzAdet: { 1: 22, 2: 18, 3: 14 },
     yildizKopya: [0, 1, 3, 9], // ★1 = 1, ★2 = 3, ★3 = 9 kopya
+    // tur planı (bölüm 1.1): bölüm 1'de 3 tur (canavar), sonraki bölümlerde 7 tur; x-4 Kervan, x-7 canavar
+    bolum1Tur: 3, bolumTur: 7, kervanTur: 4, canavarTur: 7,
+    armaganTur: { 2: 1, 3: 2, 4: 3 }, // bölüm → Kut Armağanı'nın geldiği tur (2-1, 3-2, 4-3)
+    // birikimli ekonomi (bölüm 3): gelir = taban + faiz + seri + galibiyet + alamet; hazırlık başında, Kervan'da yok
+    tabanGelirBolum1: [3, 3, 4], tabanGelir: 5, // 1-1: 3 (başlangıç), 1-2: 3, 1-3: 4, 2-1 ve sonrası: 5
+    faizAdim: 10, faizTavan: 5,                 // her 10 altına 1, en çok 5 (50'de doyar); bölüm 1'de faiz yok
+    seriTablo: [0, 0, 1, 2, 2, 3],              // indeks = seri uzunluğu (5 ve üstü son değer): 2 → 1, 3–4 → 2, 5+ → 3
+    galibiyetBonus: 1, pazarBonus: 2,           // önceki PvP savaşı kazanıldıysa +1; Bereketli Pazar +2
+    yenile: 2,                                  // yenileme 2 altın (Hızlı Maç'ta 1)
+    kaynastirTaban: 2,                          // kaynaştırma = 2 + en yüksek kademe (3–5); lobi.kaynastirBedel
+    // ganimetin altın kısmı (bölüm 5.4); bileşenler ve kahramanlar ganimet adımında eklenir. Anahtar 'bölüm-tur'.
+    ganimetAltin: { '1-2': 2, '1-3': 2, '3-7': 3 },
+    // kaybedince alınan hasar (bölüm 4.4): bölüm tabanı + kazanan taraftaki sağ birimlerin yıldızları
+    bolumTabani: [0, 0, 2, 5, 8, 12, 15, 18],   // indeks = bölüm (7 ve sonrası son değer); bölüm 1 canavar, hasar yok
+    sonUcEk: 3, sonIkiEk: 5,                    // lobide 3 kişi kalınca taban +3, 2 kişi kalınca +5
     hizli: HIZLI,
   };
 

@@ -107,9 +107,51 @@ for (let i = 0; i < 500; i++) {
 }
 const botSeviye = Array.from({ length: 40 }, (_, r) => O.botSeviye(r));
 
+// 7) tur planı, birikimli ekonomi ve kaybedince hasar (lobi.js)
+const turPlan = Array.from({ length: 90 }, (_, r) => ({ ...L.turPlan(r), ad: L.turAd(r) }));
+const rastSeri = () => { const n = Math.floor(R0() * 9); return n === 0 && R0() < 0.5 ? { tip: null, n: 0 } : { tip: R0() < 0.5 ? 'G' : 'M', n }; };
+const alametId = () => D.ALAMETLER[Math.floor(R0() * D.ALAMETLER.length)].id;
+const gelir = [];
+for (let i = 0; i < 400; i++) {
+  const r = Math.floor(R0() * 60), altin = Math.floor(R0() * 130) - (i % 50 === 0 ? 5 : 0), seri = rastSeri(), gal = R0() < 0.5, al = i % 7 === 0 ? 'pazar' : alametId();
+  gelir.push({ r, altin, seri, galibiyet: gal, alamet: al, sonuc: L.gelirHesapla(r, altin, seri, gal, al) });
+}
+const seri = [];
+for (let i = 0; i < 200; i++) {
+  const s0 = rastSeri(), k = Math.floor(R0() * 3) - 1, tip = ['pvp', 'pve', 'kervan'][i % 5 < 3 ? 0 : i % 5 === 3 ? 1 : 2];
+  seri.push({ seri: s0, kazanan: k, tip, sonuc: L.seriGuncelle(s0, k, tip) });
+}
+const hasar = [];
+for (let i = 0; i < 400; i++) {
+  const r = Math.floor(R0() * 70), k = Math.floor(R0() * 3) - 1, kp = Math.floor(R0() * 25), ks = Math.floor(R0() * 9), y = [0, 0, 2, 3, 4, 8][i % 6];
+  hasar.push({ r, kazanan: k, kalanPuan: kp, kalanSayi: ks, yasayan: y, sonuc: L.kayipHasar(r, k, kp, ks, y) });
+}
+const kaynastir = [];
+for (let a = 0; a <= 3; a++) for (let b = 0; b <= 3; b++) kaynastir.push({ a, b, sonuc: L.kaynastirBedel(a, b) });
+const ganimet = Array.from({ length: 60 }, (_, r) => L.ganimetAltin(r));
+// tam ekonomi zincirleri: her tur gelir → harcama (kayıtlı) → savaş sonucu (kayıtlı) → tur sonu; her adımın durumu kaydedilir
+const zincir = [];
+for (let z = 0; z < 120; z++) {
+  const d = { altin: 0, can: 100, seri: { tip: null, n: 0 }, galibiyet: false, seviye: 2, xp: 0 }, turlar = [];
+  const yasayan = z % 4 === 0 ? 3 : z % 4 === 1 ? 2 : 0;
+  for (let r = 0; r < 40 && d.can > 0; r++) {
+    const al = alametId(), gl = L.turBasi(d, r, al);
+    const harca = Math.min(d.altin, Math.floor(R0() * (d.altin + 1) * (z % 3 === 0 ? 0.3 : 0.8)));
+    d.altin -= harca;
+    const xpAl = d.altin >= 4 && R0() < 0.25 && d.seviye < 8; if (xpAl) { d.altin -= 4; const x = L.xpEkle(d.seviye, d.xp, 4); d.seviye = x.seviye; d.xp = x.xp; }
+    const sonuc = { kazanan: Math.floor(R0() * 3) - 1, kalanPuan: Math.floor(R0() * 16), kalanSayi: Math.floor(R0() * 8) };
+    if (sonuc.kazanan === -1 && R0() < 0.6) sonuc.kazanan = 1;
+    const ts = L.turSonu(d, r, sonuc, yasayan);
+    turlar.push({ r, alamet: al, harca, xpAl, sonuc, gelir: gl, ozet: ts, durum: JSON.parse(JSON.stringify(d)) });
+  }
+  zincir.push({ yasayan, turlar });
+}
+
 const fs = require('fs'), path = require('path');
 const out = path.join(__dirname, '..', 'unity', 'Test', 'esdeger.json');
-fs.writeFileSync(out, JSON.stringify({ savas, kut1, kut2, xp, havuz, dukkan, botSeviye }));
+fs.writeFileSync(out, JSON.stringify({ savas, kut1, kut2, xp, havuz, dukkan, botSeviye, ekonomi: { turPlan, gelir, seri, hasar, kaynastir, ganimet, zincir } }));
 const k = savas.map(v => v.sonuc.sonuc.kazanan);
 console.log('savaş', savas.length, '(A kazanır', k.filter(x => x === 0).length, '· B', k.filter(x => x === 1).length, '· berabere', k.filter(x => x === -1).length + ')',
-  '| KUT1 kodu', kut1.length, '| KUT2 kodu', kut2.length, '(bozuk ' + kut2.filter(v => !v.cozum).length + ')', '| deneyim', xp.length, '| havuz', havuz.length, '| dükkân', dukkan.length, '→', out);
+  '| KUT1 kodu', kut1.length, '| KUT2 kodu', kut2.length, '(bozuk ' + kut2.filter(v => !v.cozum).length + ')', '| deneyim', xp.length, '| havuz', havuz.length, '| dükkân', dukkan.length,
+  '| ekonomi: tur planı', turPlan.length, 'gelir', gelir.length, 'seri', seri.length, 'hasar', hasar.length, 'kaynaştırma', kaynastir.length, 'ganimet', ganimet.length,
+  'zincir', zincir.length, '(' + zincir.reduce((t, z) => t + z.turlar.length, 0) + ' tur)', '→', out);

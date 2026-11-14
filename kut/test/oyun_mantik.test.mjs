@@ -8,12 +8,12 @@ const { Oyun } = await import('../web/oyun.js');
 let hata = 0; const ok = (c, m) => { console.log((c ? '✓ ' : '✗ ') + m); if (!c) hata++; };
 const o = new Oyun(); const olaylar = []; o.on('birlesti', e => olaylar.push(['birlesti', e])); o.on('kaynasti', e => olaylar.push(['kaynasti', e]));
 await o.yeniMac();
-ok(o.M.mod === 'arena' && o.M.tur === 1 && o.M.altin === 10 && o.M.dukkan.length === 5 && o.M.rakip, 'maç başladı: tur 1, 10 altın, 5 kart, rakip hazır');
+ok(o.M.mod === 'arena' && o.M.tur === 1 && o.M.altin === 3 && o.M.can === 100 && o.M.dukkan.length === 5 && o.M.rakip, 'maç başladı: tur 1-1, başlangıç geliri 3 altın, 100 can, 5 kart, rakip hazır');
 ok(o.M.tahta.length === 12 && o.M.yedek.length === 7 && o.M.seviye === 2 && o.M.xp === 0 && o.yuva() === 2, 'seviyeli maç: 4×3 tahta, 7 yedek, Sv 2, takım 2');
 ok(o.M.dukkan.every(id => window.KUT_DATA.kahraman(id).kademe === 1), 'Sv 2 dükkânı yalnız K1');
 ok(o.M.rakip.takim.length === 2 && o.M.rakip.takim.every(b => b.x >= 0 && b.x < 4 && b.y >= 0 && b.y < 3), 'rakip bot Sv 2: 2 kahraman, 4×3 konumlar');
 // deneyim satın alma: 4 altın → 4 deneyim; Sv2→3 için 2 gerek, artan 2 taşınır
-o.xpAl(); ok(o.M.seviye === 3 && o.M.xp === 2 && o.M.altin === 6 && o.yuva() === 3, 'deneyim al: Sv 3, 2/6 deneyim, 6 altın kaldı');
+o.M.altin = 10; o.xpAl(); ok(o.M.seviye === 3 && o.M.xp === 2 && o.M.altin === 6 && o.yuva() === 3, 'deneyim al: Sv 3, 2/6 deneyim, 6 altın kaldı');
 o.M.altin = 10;
 // birleşme: aynı kahramandan 3 tane
 o.M.dukkan = ['golem', 'golem', 'golem', 'kurt', 'kurbaga']; o.satinAl(0); o.satinAl(1); o.satinAl(2);
@@ -25,7 +25,7 @@ o.M.altin = 5; o.yuvaDokun('tahta', ki); o.kaynasModDegistir(); o.yuvaDokun('tah
 ok(o.M.tahta[ki] && o.M.tahta[ki].f === 'kurbaga' && o.M.altin === 2, 'kaynaştırma: kurt × kurbağa, 3 altın düştü');
 // maçı sonuna kadar oyna (görüntüsüz)
 let ozet = null, tur = 0;
-while (!ozet && tur++ < 20) {
+while (!ozet && tur++ < 40) {
   if (!o.M.rakip) await o.turBaslat(false);
   // parası yettikçe al, tahtayı doldur
   for (let i = 0; i < 5; i++) if (o.M.dukkan[i] && o.M.altin >= window.KUT_DATA.kahraman(o.M.dukkan[i]).kademe) o.satinAl(i);
@@ -33,7 +33,7 @@ while (!ozet && tur++ < 20) {
   const sim = o.savasHazirla(); const s = sim.sonunaKadar(); const r = o.savasBitti(s);
   if (r.bitti) ozet = r; else await o.turBaslat(false);
 }
-ok(ozet && ozet.bitti && ozet.kod.startsWith('KUT2-') && (ozet.kazandi ? ozet.zafer === 7 : true), `maç bitti (${tur} tur, ${ozet && ozet.kazandi ? 'kazandı' : 'kaybetti'}, kupa ${ozet && ozet.fark})`);
+ok(ozet && ozet.bitti && ozet.kod.startsWith('KUT2-') && (ozet.kazandi ? ozet.can > 0 && ozet.turAd === '5-3' : ozet.can === 0), `maç bitti (${tur} tur, ${ozet && ozet.turAd}, ${ozet && ozet.kazandi ? 'kazandı' : 'elendi'}, ${ozet && ozet.can} can, kupa ${ozet && ozet.fark})`);
 ok(o.P.mac === null && JSON.parse(depo['kut.profil.v2']).istat.mac === 1, 'profil kaydedildi, maç kapandı');
 const d = o.duelloHazirla(ozet.kod); ok(d && d.sonunaKadar().kazanan !== undefined, 'düello kodu ile savaş');
 ok(ozet.seviye >= 2 + 1, `maç sonunda savaş deneyimiyle seviye arttı (Sv ${ozet.seviye})`);
@@ -135,5 +135,59 @@ ok(ozet.seviye >= 2 + 1, `maç sonunda savaş deneyimiyle seviye arttı (Sv ${oz
   ok(new Oyun().M === null, 'eski 3×2 yarım maç kapatıldı');
   const h = new Oyun(); await h.yeniMac('hizli'); h.kaydet();
   const h2 = new Oyun(); ok(h2.M && h2.M.mod === 'hizli' && h2.M.tahta.length === 12, 'Hızlı Maç kaydı yeniden açılınca sürüyor');
+}
+// ── birikimli ekonomi (bölüm 3) ve kaybedince hasar (4.4) oyun.js içinde ──
+{
+  const L = window.KUT_LOBI;
+  const e = new Oyun(); await e.yeniMac('arena');
+  const bitir = (kazanan, kalanPuan = 4, kalanSayi = 2) => { e.savasHazirla(); return e.savasBitti({ kazanan, kalanPuan, kalanSayi, kalan: 0.5, sure: 10 }); };
+  e.M.dukkan = ['golem', null, null, null, null]; e.satinAl(0); // 1 altın harcandı
+  ok(e.M.altin === 2 && e.turAd() === '1-1' && e.M.gelir && e.M.gelir.toplam === 3, '1-1: gelir 3, golem alındı, 2 altın kaldı');
+  let r = bitir(1, 6); ok(r.devam && r.hasar === 0 && e.M.can === 100, '1-1 yenilgisi: bölüm 1\'de can gitmez');
+  await e.turBaslat(false);
+  ok(e.turAd() === '1-2' && e.M.altin === 2 + e.M.gelir.toplam && e.M.gelir.taban === 3 && e.M.gelir.faiz === 0, '1-2: altın birikti (2 + 3), bölüm 1\'de faiz yok');
+  const a12 = e.M.altin; r = bitir(0); ok(r.ganimet === 2 && e.M.altin === a12 + 2 && e.M.seviye === 3, '1-2 sonu: +2 ganimet altını, +2 deneyim (Sv 3)');
+  // 2-1 PvP: galibiyet → sonraki tur +1; faiz biriken altına göre
+  e.M.tur = 4; await e.turBaslat(false); e.M.altin = 27; r = bitir(0); ok(e.M.galibiyet && e.M.seri.tip === 'G' && e.M.seri.n === 1, '2-1 galibiyeti: G1');
+  await e.turBaslat(false); const g = e.M.gelir;
+  ok(e.turAd() === '2-2' && g.taban === 5 && g.faiz === 2 && g.galibiyet === 1 && g.seri === 0 && e.M.altin === 27 + g.toplam, `2-2 başı: 5 taban + 2 faiz + 1 galibiyet${g.alamet ? ' + 2 alamet' : ''} (27 → ${e.M.altin})`);
+  ok(e.faizSonraki() === Math.min(5, Math.floor(e.M.altin / 10)), 'sonraki turun faizi gösterilir');
+  r = bitir(1, 5); ok(r.hasar === 7 && e.M.can === 93 && !e.M.galibiyet && e.M.seri.tip === 'M', '2-2 yenilgisi: −7 can (taban 2 + 5 yıldız)');
+  // yenileme 2 altın, kaynaştırma 2 + en yüksek kademe
+  e.M.altin = 10; e.yenile(); ok(e.M.altin === 8, 'yenileme 2 altın');
+  e.M.tahta = Array(12).fill(null); e.M.yedek = Array(7).fill(null); e.M.tahta[0] = { h: 'kurt', s: 1 }; e.M.tahta[1] = { h: 'anka', s: 1 };
+  ok(e.kaynastirBedel('kurt', 'anka') === 5 && e.kaynastirBedel('kurt') === 3, 'kaynaştırma bedeli: K1 × K3 = 5');
+  e.M.altin = 4; e.secili = null; e.yuvaDokun('tahta', 0); e.kaynasModDegistir(); e.yuvaDokun('tahta', 1);
+  ok(!e.M.tahta[0].f && e.M.altin === 4, 'altın 4 iken K1 × K3 kaynaşmaz');
+  e.M.altin = 6; e.yuvaDokun('tahta', 1); ok(e.M.tahta[0].f === 'anka' && e.M.altin === 1, 'K1 × K3 kaynaştı, 5 altın düştü');
+  // 2-3'ten sonra 2-4 Kervan atlanır: gelir yok, sonraki tur 2-5
+  e.M.tur = 6; e.secili = null; e.kaynasMod = false; bitir(0); const once = e.M.altin; await e.turBaslat(false);
+  ok(e.turAd() === '2-5' && e.M.altin === once + e.M.gelir.toplam, 'Kervan turu (2-4) şimdilik atlanır, gelir bir kez eklenir');
+  // 2-7 canavar turu (şimdilik bota karşı): seri bozulmaz; yenilgide taban + kalan sayısı
+  e.M.tur = 10; e.M.seri = { tip: 'G', n: 3 }; r = bitir(1, 9, 3); ok(r.hasar === 5 && e.M.seri.n === 3, '2-7 canavar yenilgisi: −5 (2 + 3 kalan), seri bozulmadı');
+  // ölüm: can 0 → maç biter
+  e.M.can = 6; e.M.tur = 18; await e.turBaslat(true); r = bitir(1, 4); ok(r.bitti && !r.kazandi && r.can === 0 && r.turAd === '4-1', `can bitti: ${r.turAd} turunda elendi (kupa ${r.fark})`);
+  // son tura (5-3) canlı ulaşan kazanır
+  const w = new Oyun(); await w.yeniMac('arena'); w.M.dukkan = ['golem', null, null, null, null]; w.satinAl(0);
+  w.M.tur = 27; w.M.can = 12; w.savasHazirla(); const z = w.savasBitti({ kazanan: 0, kalanPuan: 2, kalanSayi: 2, kalan: 0.4, sure: 9 });
+  ok(z.bitti && z.kazandi && z.fark === 40 && z.turAd === '5-3' && z.can === 12, '5-3 sonu canlı: maç kazanıldı, +40 kupa');
+  const w2 = new Oyun(); await w2.yeniMac('arena'); w2.M.dukkan = ['golem', null, null, null, null]; w2.satinAl(0);
+  w2.M.tur = 27; w2.M.can = 12; w2.savasHazirla(); const z2 = w2.savasBitti({ kazanan: 1, kalanPuan: 0, kalanSayi: 0, kalan: 0.4, sure: 9 });
+  ok(z2.bitti && !z2.kazandi && z2.can === 0, '5-3 yenilgisi 12 can götürür (taban 12): son turda elendi');
+}
+{
+  // Hızlı Maç ekonomisi aynen: her tur 10 altın (birikmez), yenileme 1, yenilgide 1 can
+  const h = new Oyun(); await h.yeniMac('hizli');
+  ok(h.M.altin === 10 || h.M.altin === 12, 'Hızlı Maç: tur başında 10 altın');
+  h.yenile(); ok(h.M.altin === 9 || h.M.altin === 11, 'Hızlı Maç: yenileme 1');
+  h.M.dukkan = ['golem', null, null, null, null]; h.satinAl(0); h.M.altin = 40; h.savasHazirla(); h.savasBitti({ kazanan: 1, kalanPuan: 6, kalanSayi: 3, kalan: 0.5, sure: 9 });
+  ok(h.M.can === K.hizli.can - 1, 'Hızlı Maç: yenilgide 1 can');
+  await h.turBaslat(false); ok(h.M.altin === 10 + (h.M.alamet === 'pazar' ? 2 : 0) && !h.M.gelir, 'Hızlı Maç: biriken altın sıfırlanır, faiz yok');
+  ok(h.kaynastirBedel('kurt', 'anka') === 3 && h.kural().yenile === 1, 'Hızlı Maç: kaynaştırma 3, yenileme 1');
+}
+{
+  // birikimli ekonomiden önce kaydedilmiş seviyeli yarım maç (seri yok, 5 can) kapatılır
+  depo['kut.profil.v2'] = JSON.stringify({ kupa: 0, usta: {}, oyuncu: 'x', ad: 'O', sonTakim: null, istat: { mac: 0, birinci: 0 }, mac: { mod: 'arena', tur: 3, can: 5, tahta: Array(12).fill(null), yedek: Array(7).fill(null) } });
+  ok(new Oyun().M === null, 'adım 1 biçimindeki seviyeli yarım maç kapatıldı');
 }
 process.exit(hata ? 1 : 0);

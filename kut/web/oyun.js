@@ -5,12 +5,17 @@
 const D = window.KUT_DATA, S = window.KUT_SIM, O = window.KUT_ONLINE, L = window.KUT_LOBI, K = D.KURAL, H = K.hizli;
 const PANAHTAR = 'kut.profil.v2';
 const SUTUN = K.tahtaSutun, HUCRE = K.tahtaSutun * K.tahtaSira;
+/** Geçici maç sonu: 8 kişilik lobi (adım 5) gelene kadar seviyeli maç, can bitmeden bu turu (r, 0'dan) bitirince kazanılır.
+    r 26 = 5-3: belgedeki beklenen maç sonu 5-2 ile 5-5 arası. */
+const GECICI_SON_R = 26;
 
 export class Oyun {
   constructor() {
     this.P = this._oku() || { kupa: 0, usta: {}, oyuncu: Math.random().toString(36).slice(2, 10), ad: 'Oyuncu', sonTakim: null, mac: null, istat: { mac: 0, birinci: 0 } };
     // eski biçimde (3×2 tahta) kaydedilmiş yarım maç yeni tahtaya taşınmaz: kapatılır
     if (this.P.mac && (!this.P.mac.mod || this.P.mac.tahta.length !== HUCRE)) this.P.mac = null;
+    // birikimli ekonomiden önce (5 can, seri yok) kaydedilmiş seviyeli yarım maç da kapatılır
+    if (this.P.mac && this.P.mac.mod === 'arena' && !this.P.mac.seri) this.P.mac = null;
     this.M = this.P.mac; this.secili = null; this.kaynasMod = false; this._dinle = {};
   }
   on(olay, fn) { (this._dinle[olay] = this._dinle[olay] || []).push(fn); }
@@ -26,9 +31,18 @@ export class Oyun {
 
   // ── biçim kuralları ──
   seviyeli() { return !!this.M && this.M.mod === 'arena'; }
-  /** Ekonomi ve maç sonu kuralları. Birikimli ekonomi (adım 2) ve 8 kişilik lobi (adım 5) gelene kadar
-      seviyeli maç da Hızlı Maç'ın altın, yenileme, kaynaştırma, can ve zafer sayılarını kullanır. */
-  kural() { return { altinTur: H.altinTur, yenile: H.yenile, kaynastir: H.kaynastir, can: H.can, zaferHedef: H.zaferHedef }; }
+  /** Ekonomi ve maç sonu kuralları. Seviyeli maçta altın birikir (gelir lobi.turBasi ile), yenileme 2, 100 can, zafer hedefi yok
+      (kaynastir burada en düşük bedeldir; gerçek bedel kaynastirBedel(a, b)). Hızlı Maç: her tur 10 altın, 5 can, 7 zafer. */
+  kural() {
+    if (this.M ? this.seviyeli() : true) return { altinTur: 0, yenile: K.yenile, kaynastir: K.kaynastirTaban + 1, can: K.canBaslangic, zaferHedef: 0 };
+    return { altinTur: H.altinTur, yenile: H.yenile, kaynastir: H.kaynastir, can: H.can, zaferHedef: H.zaferHedef };
+  }
+  /** Kaynaştırma bedeli: seviyeli maçta 2 + en yüksek kademe (b verilmezse yalnız a'ya göre, yani en az bedel); Hızlı Maç'ta 3. */
+  kaynastirBedel(a, b) { return this.seviyeli() ? L.kaynastirBedel(D.kahraman(a).kademe, b ? D.kahraman(b).kademe : 0) : H.kaynastir; }
+  /** Ekranda tur adı: seviyeli maçta "2-3" (bölüm-tur), Hızlı Maç'ta tur sayısı. */
+  turAd() { return this.seviyeli() ? L.turAd(this.M.tur - 1) : String(this.M.tur); }
+  /** Seviyeli maçta şu anki altının sonraki tur getireceği faiz (bölüm 1'de 0). */
+  faizSonraki() { return this.seviyeli() ? L.faiz(this.M.altin, this.M.tur) : 0; }
   yuva() { return this.seviyeli() ? K.takimBoyutu(this.M.seviye) : H.yuva(this.M.tur); }
   yedekSayi() { return this.seviyeli() ? K.yedek : H.yedek; }
   olasilik() { return this.seviyeli() ? K.kademeOlasilik(this.M.seviye) : H.kademeOlasilik(this.M.tur); }
@@ -39,8 +53,9 @@ export class Oyun {
   /** mod: 'arena' (varsayılan, seviyeli) ya da 'hizli' (Hızlı Maç). */
   yeniMac(mod = 'arena') {
     const sev = mod === 'arena';
-    this.P.mac = { mod: sev ? 'arena' : 'hizli', tur: 1, can: H.can, zafer: 0, altin: 0,
+    this.P.mac = { mod: sev ? 'arena' : 'hizli', tur: 1, can: sev ? K.canBaslangic : H.can, zafer: 0, altin: 0,
       seviye: sev ? K.seviyeBaslangic : 0, xp: 0,
+      seri: { tip: null, n: 0 }, galibiyet: false, gelir: null, sonHasar: 0,
       tahta: Array(HUCRE).fill(null), yedek: Array(sev ? K.yedek : H.yedek).fill(null), dukkan: [], kilit: false,
       tohum: (Math.random() * 1e9) | 0, zar: 1, yenileN: 0, alamet: 'yok', rakip: null, gecmis: [] };
     this.M = this.P.mac; return this.turBaslat(false);
@@ -49,8 +64,11 @@ export class Oyun {
   async turBaslat(devam) {
     const M = this.M = this.P.mac; this.secili = null; this.kaynasMod = false;
     if (!devam) {
+      // Kervan turu (x-4): seçim ekranı adım 7'de gelir; o zamana dek tur atlanır (savaş, gelir, deneyim yok)
+      if (this.seviyeli()) while (L.turPlan(M.tur - 1).tip === 'kervan') { this.bildir(`${L.turAd(M.tur - 1)} Kervan turu yakında: bu tur atlandı`); M.tur++; }
       M.alamet = M.tur === 1 ? 'yok' : D.ALAMETLER[Math.floor(this._zar() * D.ALAMETLER.length)].id;
-      M.altin = this.kural().altinTur + (M.alamet === 'pazar' ? 2 : 0);
+      if (this.seviyeli()) M.gelir = L.turBasi(M, M.tur - 1, M.alamet); // birikimli: taban + faiz + seri + galibiyet + alamet
+      else M.altin = H.altinTur + (M.alamet === 'pazar' ? 2 : 0);
       const istek = { tur: M.tur, kupa: this.P.kupa, oyuncu: this.P.oyuncu, tohum: M.tohum + M.tur * 31, mod: M.mod };
       if (this.seviyeli()) {
         // rakip önce gelir: havuz onun kadrosundaki kopyaları da düşer
@@ -131,12 +149,13 @@ export class Oyun {
   }
   /** Yuvaya dokunma: seçme, taşıma/yer değiştirme ya da kaynaştırma (kaynasMod açıksa). */
   yuvaDokun(yer, i) {
-    const M = this.M, hedef = { yer, i }, b = M[yer][i], bedel = this.kural().kaynastir;
+    const M = this.M, hedef = { yer, i }, b = M[yer][i];
     if (this.secili && this.kaynasMod) {
       const a = this.al(this.secili);
       if (!b || (this.secili.yer === yer && this.secili.i === i)) { this.kaynasMod = false; return this._degisti(); }
       if (a.f || b.f) return this.bildir('Kaynaşmış kahraman tekrar kaynaşmaz', 'hata');
       if (a.h === b.h) return this.bildir('Aynı kahraman kaynaşmaz: üç tanesi zaten ★ olur', 'hata');
+      const bedel = this.kaynastirBedel(a.h, b.h);
       if (M.altin < bedel) return this.bildir(`${bedel} altın gerekli`, 'hata');
       M.altin -= bedel;
       const yeni = { h: a.h, f: b.h, s: Math.min(a.s, b.s) };
@@ -180,17 +199,30 @@ export class Oyun {
     const M = this.M, kr = this.kural();
     O.Hayalet.birak({ tur: M.tur, kupa: this.P.kupa, takim: b.benim, ad: this.P.ad, oyuncu: this.P.oyuncu, mod: M.mod, ...(this.seviyeli() ? { seviye: M.seviye } : {}) });
     if (k === 0) { M.zafer++; for (const t of b.benim) { this.P.usta[t.h] = (this.P.usta[t.h] || 0) + 1; if (t.f) this.P.usta[t.f] = (this.P.usta[t.f] || 0) + 1; } }
-    else if (k === 1) M.can--;
     M.gecmis.push(k); this.P.sonTakim = b.benim; this._savas = null;
-    // savaş turu sonu deneyimi: ilk tur sonunda gelmez (bölüm 2.1)
-    if (this.seviyeli() && M.tur >= 2) this._xpEkle(K.pasifXp);
-    if (M.zafer >= kr.zaferHedef || M.can <= 0) return this._macBitti();
-    M.tur++; this.kaydet(); return { devam: true, kazanan: k };
+    let ts = { hasar: 0, altin: 0, xp: 0 };
+    if (this.seviyeli()) {
+      // hasar (bölüm tabanı + rakibin sağ kalan yıldızları), seri, galibiyet, ganimet altını, savaş deneyimi (1-1 sonunda yok)
+      // Not: canavar turları (adım 4) gelene kadar 1-1…1-3 ve x-7 bota karşı oynanır; kurallar canavar turununki (seri yok, bölüm 1'de hasar yok).
+      const once = M.seviye; ts = L.turSonu(M, M.tur - 1, sonuc); M.sonHasar = ts.hasar;
+      if (M.seviye > once) { this._yay('seviye', { seviye: M.seviye }); this.bildir(`Seviye ${M.seviye}: takımına ${K.takimBoyutu(M.seviye)} kahraman koyabilirsin`, 'iyi'); }
+      if (ts.altin) this.bildir(`Ganimet: +${ts.altin} altın`, 'iyi');
+      if (M.can <= 0 || M.tur - 1 >= GECICI_SON_R) return this._macBitti(ts);
+    } else {
+      if (k === 1) M.can--;
+      if (M.zafer >= kr.zaferHedef || M.can <= 0) return this._macBitti(ts);
+    }
+    M.tur++; this.kaydet(); return { devam: true, kazanan: k, hasar: ts.hasar, ganimet: ts.altin, can: M.can };
   }
-  _macBitti() {
-    const M = this.M, kazandi = M.zafer >= this.kural().zaferHedef, fark = kazandi ? 40 : M.zafer * 8 - 30;
+  _macBitti(ts = { hasar: 0, altin: 0 }) {
+    const M = this.M, sev = this.seviyeli();
+    // Seviyeli maç (geçici, lobi gelene kadar): can bitmeden son tura ulaşan kazanır; kupa ulaşılan bölüme göre.
+    const bolum = sev ? L.turPlan(M.tur - 1).bolum : 0;
+    const kazandi = sev ? M.can > 0 : M.zafer >= this.kural().zaferHedef;
+    const fark = kazandi ? 40 : sev ? [-30, -30, -30, -20, -10, 10][Math.min(bolum, 5)] : M.zafer * 8 - 30;
     this.P.kupa = Math.max(0, this.P.kupa + fark); this.P.istat.mac++; if (kazandi) this.P.istat.birinci++;
-    const ozet = { bitti: true, kazandi, fark, kupa: this.P.kupa, gecmis: M.gecmis.slice(), kod: O.kodla(this.P.sonTakim, this.P.ad), takim: this.P.sonTakim, zafer: M.zafer, tur: M.tur, mod: M.mod, seviye: M.seviye };
+    const ozet = { bitti: true, kazandi, fark, kupa: this.P.kupa, gecmis: M.gecmis.slice(), kod: O.kodla(this.P.sonTakim, this.P.ad), takim: this.P.sonTakim, zafer: M.zafer, tur: M.tur, mod: M.mod, seviye: M.seviye,
+      can: M.can, turAd: this.turAd(), hasar: ts.hasar, kazanan: M.gecmis[M.gecmis.length - 1] };
     this.P.mac = null; this.M = null; this.kaydet(); return ozet;
   }
   duelloKodu() { return this.P.sonTakim ? O.kodla(this.P.sonTakim, this.P.ad) : null; }

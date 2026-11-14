@@ -211,7 +211,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 
 /* --- Tahta --- */
 .tahtaPanel{display:flex;flex-direction:column;min-height:0;padding-bottom:8px;--gemc:var(--k3)}
-.tahtaAlan{flex:1;min-height:0;display:grid;grid-template-columns:28px 1fr;grid-template-rows:auto 1fr 1fr 1fr;gap:5px;padding:6px 10px 4px}
+.tahtaAlan{flex:1;min-height:0;overflow:hidden;display:grid;grid-template-columns:28px 1fr;grid-template-rows:auto repeat(3,minmax(0,1fr));gap:5px;padding:6px 10px 4px} /* 3 sıra: satırlar küçülebilir, yedeğin üstüne taşmaz */
 .dusmanOk{grid-column:2;display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;font-weight:900;color:#ffc4cf;height:17px;white-space:nowrap}
 .dusmanOk i{flex:1;height:2px;background:linear-gradient(90deg,transparent,#ff6a86,transparent)}
 .dusmanOk .ik{width:14px;height:14px}
@@ -219,6 +219,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
   border-radius:8px;background:rgba(242,191,74,.12);border:1px solid rgba(242,191,74,.35);white-space:nowrap}
 .siraAd.on{color:#ffd0d8;background:rgba(255,61,99,.16);border-color:rgba(255,61,99,.45)}
 .sira{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;min-height:0}
+.tahtaAlan .siraAd{min-height:0;overflow:hidden}
 .yuva{position:relative;min-height:0;border-radius:14px;overflow:hidden;
   background:linear-gradient(180deg,rgba(40,18,70,.3),rgba(20,8,36,.75)),url(../gorsel/doku_tas.webp) center/cover;
   border:3px solid #8e6a34;box-shadow:inset 0 0 0 2px rgba(0,0,0,.4),inset 0 -14px 24px rgba(0,0,0,.45),0 4px 0 rgba(0,0,0,.35)}
@@ -260,6 +261,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .yedek .yuva .port{bottom:16px;height:calc(100% - 20px)}
 .yedek .yuva .plaka{height:18px;font-size:12px}
 .yedek .yuva .soylar .soyIk{width:18px;height:18px}
+@media (max-height:640px){.yedek{height:clamp(44px,9vh,76px)}} /* alçak ekranda 3 sıralı tahtaya yer kalsın */
 
 /* --- Seçili kahraman --- */
 .secPanel{display:flex;flex-direction:column;min-height:0;--gemc:var(--safir)}
@@ -449,6 +451,44 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .sonucBant .bil{font-size:17px;font-weight:800;color:var(--yazi2);display:flex;gap:16px}
 .sonucBant .bil em{font-style:normal;color:#8dffb0}
 .sonucBant .btn{min-width:220px;min-height:58px;font-size:21px}
+.sonucBant .sDugmeler{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.sonucBant #sOzet{min-width:0;font-size:17px;padding:0 18px}
+.sonucBant #sOzet.secik{outline:3px solid #fff3b0;outline-offset:1px}
+/* savaş sonu hasar özeti (sonuç bandının solunda açılır) */
+.hasarOzet{position:absolute;left:12px;top:74px;max-height:calc(100% - 86px);width:min(360px,calc(100% - 24px));z-index:6;display:flex;flex-direction:column;gap:8px;padding:10px 12px 10px;
+  background:linear-gradient(180deg,rgba(36,16,64,.97),rgba(22,10,40,.97));box-shadow:0 0 0 2px var(--altinKK),0 10px 24px rgba(0,0,0,.55)}
+.hasarOzet[hidden]{display:none}
+.hasarOzet .ust{display:flex;align-items:center;justify-content:space-between}
+.hasarOzet .ust b{font-size:19px;font-weight:900;color:#ffe48a;text-shadow:0 2px 0 #3d2106}
+.hasarOzet .kapat{width:44px;height:44px;min-width:44px;min-height:44px;padding:0;font-size:18px}
+.hasarOzet .sekmeler{display:flex;gap:6px;padding:3px;border-radius:12px;background:rgba(0,0,0,.35)}
+.hasarOzet .sekmeler button{flex:1;min-height:44px;border-radius:9px;font:inherit;font-size:15px;font-weight:900;color:var(--soluk);background:none;border:0;cursor:pointer}
+.hasarOzet .sekmeler button.on{color:#3a1606;background:linear-gradient(180deg,#ffe48a,#e0a028);box-shadow:inset 0 -2px 0 rgba(0,0,0,.25)}
+.hasarOzet .lejant{display:flex;gap:12px;font-size:12px;font-weight:800;color:var(--yazi2)}
+.hasarOzet .lejant span::before{content:'';display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.hasarOzet .lejant .v::before,.hasarOzet .c.v i{background:linear-gradient(90deg,#ff8a4c,#ffd45c)}
+.hasarOzet .lejant .a::before,.hasarOzet .c.a i{background:linear-gradient(90deg,#8a7aa8,#c9b8e8)}
+.hasarOzet .lejant .i::before,.hasarOzet .c.i i{background:linear-gradient(90deg,#2fbf76,#8dffb0)}
+.hasarOzet .satirlar{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-right:2px}
+.hasarOzet .sr{display:flex;gap:9px;align-items:center;padding:5px 7px;border-radius:10px;background:rgba(255,255,255,.05)}
+.hasarOzet .sr.mvp{background:linear-gradient(90deg,rgba(255,212,92,.2),rgba(255,212,92,.04));box-shadow:inset 0 0 0 1.5px rgba(255,212,92,.55)}
+.hasarOzet .por{position:relative;flex:none;width:46px;height:46px;border-radius:50%;border:2px solid #4fd47a;background:#1a3a2a}
+.hasarOzet .por.dus{border-color:#ff6a86;background:#3a1020}
+.hasarOzet .por img{position:absolute;left:-10%;top:0;width:120%;height:120%;object-fit:contain;border-radius:0 0 50% 50%}
+.hasarOzet .por .tac{position:absolute;left:50%;top:-14px;transform:translateX(-50%) rotate(-8deg);filter:drop-shadow(0 2px 2px rgba(0,0,0,.6))}
+.hasarOzet .por .tac .ik{width:26px;height:26px}
+.hasarOzet .sr.olu .por img{filter:grayscale(1) brightness(.55)}
+.hasarOzet .vb{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.hasarOzet .ad{display:flex;align-items:baseline;gap:6px;font-size:13px;white-space:nowrap;overflow:hidden}
+.hasarOzet .ad b{overflow:hidden;text-overflow:ellipsis}
+.hasarOzet .ad small{font-size:10px;color:#ffd45c}
+.hasarOzet .c{position:relative;height:13px;border-radius:4px;background:rgba(0,0,0,.4);overflow:hidden}
+.hasarOzet .c i{position:absolute;left:0;top:0;bottom:0;border-radius:4px}
+.hasarOzet .c span{position:absolute;left:5px;top:-1px;font-size:11px;font-weight:900;color:#fff;text-shadow:0 1px 1px #000,0 0 3px #000}
+.hasarOzet .c em{position:absolute;right:5px;top:-1px;font-style:normal;font-size:10px;font-weight:700;color:rgba(255,255,255,.6);text-shadow:0 1px 1px #000}
+.hasarOzet .toplam{font-size:12px;font-weight:700;color:var(--soluk);text-align:center}
+.hasarOzet .toplam b{color:var(--yazi)}
+@media (max-height:520px){.hasarOzet{top:64px;max-height:calc(100% - 72px);gap:5px;padding:7px 10px}.hasarOzet .lejant{display:none}.hasarOzet .ust b{font-size:16px}.hasarOzet .kapat{width:40px;height:40px;min-width:40px;min-height:40px}.hasarOzet .sekmeler button{min-height:40px}}
 
 /* ===================== MAÇ SONU ===================== */
 #son .isinlar{position:absolute;left:50%;top:12%;width:120vmax;height:120vmax;transform:translate(-50%,-50%);border-radius:50%;

@@ -107,6 +107,21 @@ namespace Kut
         /// <summary>Seviyeye bağlı dükkân kademe olasılıkları [K1, K2, …].</summary>
         public static double[] KademeOlasilik(int seviye) => seviyeOlasilik[System.Math.Min(System.Math.Max(seviye, 2), seviyeOlasilik.Length - 1)];
 
+        // Tur planı (bölüm 1.1), birikimli ekonomi (bölüm 3), kaybedince hasar (bölüm 4.4)
+        public const int Bolum1Tur = 3, BolumTur = 7, KervanTur = 4, CanavarTur = 7;
+        public const int TabanGelir = 5, FaizAdim = 10, FaizTavan = 5, GalibiyetBonus = 1, PazarBonus = 2;
+        public const int Yenile = 2, KaynastirTaban = 2, SonUcEk = 3, SonIkiEk = 5;
+        /// <summary>Bölüm 1'in turlarındaki taban gelir (1-1, 1-2, 1-3).</summary>
+        public static readonly int[] TabanGelirBolum1 = { 3, 3, 4 };
+        /// <summary>İndeks = seri uzunluğu (sonuncusu tavan) → seri bonusu.</summary>
+        public static readonly int[] SeriTablo = { 0, 0, 1, 2, 2, 3 };
+        /// <summary>İndeks = bölüm (sonuncusu tavan) → kaybedince alınan hasarın tabanı.</summary>
+        public static readonly int[] BolumTabani = { 0, 0, 2, 5, 8, 12, 15, 18 };
+        /// <summary>Bölüm → Kut Armağanı'nın geldiği tur.</summary>
+        public static readonly Dictionary<int, int> ArmaganTur = new Dictionary<int, int> { { 2, 1 }, { 3, 2 }, { 4, 3 } };
+        /// <summary>"bölüm-tur" → ganimetin altın kısmı.</summary>
+        public static readonly Dictionary<string, int> GanimetAltin = new Dictionary<string, int> { { "1-2", 2 }, { "1-3", 2 }, { "3-7", 3 } };
+
         /// <summary>Hızlı Maç: prototipin kuralları (data.js KURAL.hizli).</summary>
         public static class Hizli
         {

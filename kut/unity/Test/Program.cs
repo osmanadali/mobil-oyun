@@ -116,6 +116,58 @@ foreach (var v in kok.GetProperty("dukkan").EnumerateArray())
 Console.WriteLine($"{d1} dükkân çekimi: {d1 - dHata} aynı");
 toplamHata += dHata;
 
-int toplam = i + k1 + k2 + x1 + h1 + d1;
+// ── 6) tur planı, birikimli ekonomi ve kaybedince hasar ──
+var ek = kok.GetProperty("ekonomi");
+static Seri SeriOku(JsonElement e) => new Seri { Tip = e.GetProperty("tip").ValueKind == JsonValueKind.Null ? null : e.GetProperty("tip").GetString(), N = e.GetProperty("n").GetInt32() };
+static bool SeriAyni(Seri a, JsonElement e) { var b = SeriOku(e); return a.Tip == b.Tip && a.N == b.N; }
+static bool GelirAyni(Gelir g, JsonElement e) => g.Taban == e.GetProperty("taban").GetInt32() && g.Faiz == e.GetProperty("faiz").GetInt32() && g.Seri == e.GetProperty("seri").GetInt32()
+    && g.Galibiyet == e.GetProperty("galibiyet").GetInt32() && g.Alamet == e.GetProperty("alamet").GetInt32() && g.Toplam == e.GetProperty("toplam").GetInt32();
+int e1 = 0, eHata = 0;
+void EkKontrol(bool ok, string ne) { e1++; if (!ok) { eHata++; if (eHata < 8) Console.WriteLine($"✗ ekonomi: {ne}"); } }
+foreach (var v in ek.GetProperty("turPlan").EnumerateArray())
+{
+    int r = v.GetProperty("r").GetInt32(); var p = KutLobi.TurPlan(r);
+    EkKontrol(p.Bolum == v.GetProperty("bolum").GetInt32() && p.Tur == v.GetProperty("tur").GetInt32() && p.Tip == v.GetProperty("tip").GetString()
+        && p.Armagan == v.GetProperty("armagan").GetBoolean() && KutLobi.TurAd(r) == v.GetProperty("ad").GetString(), $"tur planı r {r}");
+}
+foreach (var v in ek.GetProperty("gelir").EnumerateArray())
+{
+    var g = KutLobi.GelirHesapla(v.GetProperty("r").GetInt32(), v.GetProperty("altin").GetInt32(), SeriOku(v.GetProperty("seri")), v.GetProperty("galibiyet").GetBoolean(), v.GetProperty("alamet").GetString());
+    EkKontrol(GelirAyni(g, v.GetProperty("sonuc")), $"gelir r {v.GetProperty("r").GetInt32()} altın {v.GetProperty("altin").GetInt32()}");
+}
+foreach (var v in ek.GetProperty("seri").EnumerateArray())
+    EkKontrol(SeriAyni(KutLobi.SeriGuncelle(SeriOku(v.GetProperty("seri")), v.GetProperty("kazanan").GetInt32(), v.GetProperty("tip").GetString()), v.GetProperty("sonuc")), "seri");
+foreach (var v in ek.GetProperty("hasar").EnumerateArray())
+{
+    var h = KutLobi.KayipHasar(v.GetProperty("r").GetInt32(), v.GetProperty("kazanan").GetInt32(), v.GetProperty("kalanPuan").GetInt32(), v.GetProperty("kalanSayi").GetInt32(), v.GetProperty("yasayan").GetInt32());
+    EkKontrol(h.SequenceEqual(v.GetProperty("sonuc").EnumerateArray().Select(x => x.GetInt32())), $"hasar r {v.GetProperty("r").GetInt32()}");
+}
+foreach (var v in ek.GetProperty("kaynastir").EnumerateArray())
+    EkKontrol(KutLobi.KaynastirBedel(v.GetProperty("a").GetInt32(), v.GetProperty("b").GetInt32()) == v.GetProperty("sonuc").GetInt32(), "kaynaştırma bedeli");
+{ int r = 0; foreach (var v in ek.GetProperty("ganimet").EnumerateArray()) { EkKontrol(KutLobi.GanimetAltin(r) == v.GetInt32(), $"ganimet r {r}"); r++; } }
+int zTur = 0;
+foreach (var z in ek.GetProperty("zincir").EnumerateArray())
+{
+    var d = new EkonomiDurum(); int yasayan = z.GetProperty("yasayan").GetInt32(); bool zok = true;
+    foreach (var t in z.GetProperty("turlar").EnumerateArray())
+    {
+        int r = t.GetProperty("r").GetInt32(); var g = KutLobi.TurBasi(d, r, t.GetProperty("alamet").GetString());
+        d.Altin -= t.GetProperty("harca").GetInt32();
+        if (t.GetProperty("xpAl").GetBoolean()) { d.Altin -= KutVeri.XpBedel; var x = KutLobi.XpEkle(d.Seviye, d.Xp, KutVeri.XpMiktar); d.Seviye = x.Seviye; d.Xp = x.Xp; }
+        var so = t.GetProperty("sonuc");
+        var o = KutLobi.TurSonu(d, r, so.GetProperty("kazanan").GetInt32(), so.GetProperty("kalanPuan").GetInt32(), so.GetProperty("kalanSayi").GetInt32(), yasayan);
+        var oz = t.GetProperty("ozet"); var du = t.GetProperty("durum");
+        bool ok = GelirAyni(g, t.GetProperty("gelir")) && o.Hasar == oz.GetProperty("hasar").GetInt32() && o.Altin == oz.GetProperty("altin").GetInt32() && o.Xp == oz.GetProperty("xp").GetInt32()
+            && d.Altin == du.GetProperty("altin").GetInt32() && d.Can == du.GetProperty("can").GetInt32() && d.Seviye == du.GetProperty("seviye").GetInt32() && d.Xp == du.GetProperty("xp").GetInt32()
+            && d.Galibiyet == du.GetProperty("galibiyet").GetBoolean() && SeriAyni(d.Seri, du.GetProperty("seri"));
+        if (!ok && zok) { zok = false; Console.WriteLine($"✗ zincir tur r {r}: altın {d.Altin}/{du.GetProperty("altin").GetInt32()} can {d.Can}/{du.GetProperty("can").GetInt32()}"); }
+        zTur++;
+    }
+    EkKontrol(zok, "zincir");
+}
+Console.WriteLine($"{e1} ekonomi vakası (tur planı, gelir, seri, hasar, kaynaştırma, ganimet, {zTur} turluk zincirler): {e1 - eHata} aynı");
+toplamHata += eHata;
+
+int toplam = i + k1 + k2 + x1 + h1 + d1 + e1;
 Console.WriteLine($"TOPLAM: {toplam - toplamHata}/{toplam} birebir aynı");
 return toplamHata == 0 ? 0 : 1;
