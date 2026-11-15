@@ -12,29 +12,29 @@
     dev:      { ad: 'Dev',      emoji: '🗿', esik: [2, 4], aciklama: ['Alınan hasar -%12', 'Alınan hasar -%28'] },
     avci:     { ad: 'Avcı',     emoji: '🏹', esik: [2, 4], aciklama: ['+%20 hasar', '+%45 hasar'] },
     bilge:    { ad: 'Bilge',    emoji: '📜', esik: [2, 4], aciklama: ['+%30 mana kazanımı', '+%70 mana kazanımı'] },
-    atli:     { ad: 'Çevik',    emoji: '🐾', esik: [2, 4], aciklama: ['İlk 4 sn +%40 saldırı hızı', 'İlk 4 sn +%90 saldırı hızı'] },
+    atli:     { ad: 'Çevik',    emoji: '🐾', esik: [2, 4], aciklama: ['İlk 6 sn +%30 saldırı hızı', 'İlk 6 sn +%60 saldırı hızı'] },
   };
 
   // ── Kahramanlar: element yaratıkları ve büyülü hayvanlar. İnsan yok: cinsiyet, ırk, milliyet taşımazlar (evrensel). ──
   // kademe: 1–3 (fiyat = kademe). menzil hücre cinsinden. as = saniyede saldırı. mana: yetenek için gereken.
   // yetenek: aktif (mana dolunca). pasif: hep açık. Kaynaşmada biri yeteneği, öbürü pasifi verir.
   const KAHRAMANLAR = [
-    { id: 'golem', ad: 'Kaya Golemi', emoji: '🪨', renk: '#a3775a', kademe: 1, soy: ['yer', 'dev'],        can: 700, atk: 37, as: 0.65, menzil: 1, mana: 80,  yetenek: 'tasFirlat',  pasif: 'tasDeri' },
-    { id: 'kurt', ad: 'Kristal Kurt', emoji: '🐺', renk: '#8c97a8', kademe: 1, soy: ['atli', 'avci'],      can: 520, atk: 52, as: 0.95, menzil: 1, mana: 60,  yetenek: 'uluma',      pasif: 'suru' },
-    { id: 'kurbaga', ad: 'Davulcu Kurbağa', emoji: '🐸', renk: '#c9a24a', kademe: 1, soy: ['bilge', 'gok'],      can: 610, atk: 42, as: 0.85, menzil: 3, mana: 60,  yetenek: 'davul',      pasif: 'ruhBagi' },
-    { id: 'yarasa', ad: 'Sis Yarasası', emoji: '🦇', renk: '#b4435a', kademe: 1, soy: ['karanlik', 'su'],    can: 500, atk: 50, as: 0.85, menzil: 1, mana: 70,  yetenek: 'ruhEmme',    pasif: 'canEmici' },
-    { id: 'ruzgar', ad: 'Rüzgâr Ruhu', emoji: '🌪️', renk: '#7fc8c0', kademe: 1, soy: ['gok', 'avci'],       can: 430, atk: 44, as: 0.90, menzil: 3, mana: 80,  yetenek: 'kasirga',    pasif: 'kacis' },
-    { id: 'koc', ad: 'Dağ Koçu', emoji: '🐏', renk: '#d06a3c', kademe: 2, soy: ['yer', 'atli'],       can: 680, atk: 62, as: 0.85, menzil: 1, mana: 90,  yetenek: 'deliOfke',   pasif: 'deliCesaret' },
-    { id: 'yilan', ad: 'Zümrüt Yılan', emoji: '🐍', renk: '#5aa86a', kademe: 2, soy: ['su', 'bilge'],       can: 610, atk: 41, as: 0.75, menzil: 3, mana: 80,  yetenek: 'zehir',      pasif: 'zehirDis' },
-    { id: 'kaplumbaga', ad: 'Buz Kaplumbağası', emoji: '🐢', renk: '#7aa6d6', kademe: 2, soy: ['kis', 'dev'],        can: 820, atk: 38, as: 0.60, menzil: 1, mana: 90,  yetenek: 'buzNefes',   pasif: 'soguk' },
-    { id: 'semender', ad: 'Kor Semenderi', emoji: '🦎', renk: '#ef8a3a', kademe: 2, soy: ['ates', 'su'],        can: 600, atk: 42, as: 0.75, menzil: 2, mana: 90,  yetenek: 'ocak',       pasif: 'sicakKalp' },
-    { id: 'bulutat', ad: 'Bulut Atı', emoji: '🦄', renk: '#e7d9b5', kademe: 2, soy: ['gok', 'atli'],       can: 540, atk: 58, as: 1.00, menzil: 1, mana: 70,  yetenek: 'dortnal',    pasif: 'ruzgar' },
-    { id: 'kugu', ad: 'Işık Kuğusu', emoji: '🦢', renk: '#f1e7a6', kademe: 3, soy: ['gok', 'su'],         can: 640, atk: 38, as: 0.70, menzil: 3, mana: 90,  yetenek: 'kanat',      pasif: 'ana' },
-    { id: 'ayi', ad: 'Gece Ayısı', emoji: '🐻', renk: '#5b3f7a', kademe: 3, soy: ['karanlik', 'dev'],   can: 920, atk: 60, as: 0.70, menzil: 1, mana: 100, yetenek: 'karaGolge',  pasif: 'karanlikPay' },
-    { id: 'anka', ad: 'Anka', emoji: '🐦‍🔥', renk: '#ff6a3d', kademe: 3, soy: ['ates', 'gok'],     can: 600, atk: 56, as: 0.80, menzil: 3, mana: 100, yetenek: 'kulDogus',   pasif: 'yenidenDogus' },
-    { id: 'baykus', ad: 'Ayaz Baykuşu', emoji: '🦉', renk: '#bfe0ff', kademe: 3, soy: ['kis', 'bilge'],      can: 560, atk: 42, as: 0.70, menzil: 3, mana: 100, yetenek: 'ayaz',       pasif: 'kisNefesi' },
-    { id: 'tilki', ad: 'Gölge Tilki', emoji: '🦊', renk: '#4a5578', kademe: 3, soy: ['karanlik', 'avci'],  can: 520, atk: 58, as: 0.85, menzil: 3, mana: 80,  yetenek: 'golgeOk',    pasif: 'avKoku' },
-    { id: 'ejder', ad: 'Fırtına Ejderi', emoji: '🐉', renk: '#ffd84a', kademe: 3, soy: ['ates', 'bilge'],     can: 600, atk: 51, as: 0.75, menzil: 3, mana: 110, yetenek: 'yildirim',   pasif: 'gokGurultu' },
+    { id: 'golem', ad: 'Kaya Golemi', emoji: '🪨', renk: '#a3775a', kademe: 1, soy: ['yer', 'dev'],        can: 980, atk: 38, as: 0.50, menzil: 1, mana: 80,  yetenek: 'tasFirlat',  pasif: 'tasDeri' },
+    { id: 'kurt', ad: 'Kristal Kurt', emoji: '🐺', renk: '#8c97a8', kademe: 1, soy: ['atli', 'avci'],      can: 728, atk: 46, as: 0.85, menzil: 1, mana: 60,  yetenek: 'uluma',      pasif: 'suru' },
+    { id: 'kurbaga', ad: 'Davulcu Kurbağa', emoji: '🐸', renk: '#c9a24a', kademe: 1, soy: ['bilge', 'gok'],      can: 930, atk: 49, as: 0.65, menzil: 3, mana: 70,  yetenek: 'davul',      pasif: 'ruhBagi' },
+    { id: 'yarasa', ad: 'Sis Yarasası', emoji: '🦇', renk: '#b4435a', kademe: 1, soy: ['karanlik', 'su'],    can: 700, atk: 42, as: 0.80, menzil: 1, mana: 70,  yetenek: 'ruhEmme',    pasif: 'canEmici' },
+    { id: 'ruzgar', ad: 'Rüzgâr Ruhu', emoji: '🌪️', renk: '#7fc8c0', kademe: 1, soy: ['gok', 'avci'],       can: 602, atk: 45, as: 0.70, menzil: 3, mana: 80,  yetenek: 'kasirga',    pasif: 'kacis' },
+    { id: 'koc', ad: 'Dağ Koçu', emoji: '🐏', renk: '#d06a3c', kademe: 2, soy: ['yer', 'atli'],       can: 952, atk: 68, as: 0.60, menzil: 1, mana: 90,  yetenek: 'deliOfke',   pasif: 'deliCesaret' },
+    { id: 'yilan', ad: 'Zümrüt Yılan', emoji: '🐍', renk: '#5aa86a', kademe: 2, soy: ['su', 'bilge'],       can: 854, atk: 41, as: 0.60, menzil: 3, mana: 80,  yetenek: 'zehir',      pasif: 'zehirDis' },
+    { id: 'kaplumbaga', ad: 'Buz Kaplumbağası', emoji: '🐢', renk: '#7aa6d6', kademe: 2, soy: ['kis', 'dev'],        can: 1148, atk: 41, as: 0.45, menzil: 1, mana: 90,  yetenek: 'buzNefes',   pasif: 'soguk' },
+    { id: 'semender', ad: 'Kor Semenderi', emoji: '🦎', renk: '#ef8a3a', kademe: 2, soy: ['ates', 'su'],        can: 840, atk: 42, as: 0.60, menzil: 2, mana: 90,  yetenek: 'ocak',       pasif: 'sicakKalp' },
+    { id: 'bulutat', ad: 'Bulut Atı', emoji: '🦄', renk: '#e7d9b5', kademe: 2, soy: ['gok', 'atli'],       can: 800, atk: 58, as: 0.85, menzil: 1, mana: 70,  yetenek: 'dortnal',    pasif: 'ruzgar' },
+    { id: 'kugu', ad: 'Işık Kuğusu', emoji: '🦢', renk: '#f1e7a6', kademe: 3, soy: ['gok', 'su'],         can: 980, atk: 39, as: 0.55, menzil: 3, mana: 90,  yetenek: 'kanat',      pasif: 'ana' },
+    { id: 'ayi', ad: 'Gece Ayısı', emoji: '🐻', renk: '#5b3f7a', kademe: 3, soy: ['karanlik', 'dev'],   can: 1288, atk: 67, as: 0.50, menzil: 1, mana: 100, yetenek: 'karaGolge',  pasif: 'karanlikPay' },
+    { id: 'anka', ad: 'Anka', emoji: '🐦‍🔥', renk: '#ff6a3d', kademe: 3, soy: ['ates', 'gok'],     can: 840, atk: 56, as: 0.60, menzil: 3, mana: 100, yetenek: 'kulDogus',   pasif: 'yenidenDogus' },
+    { id: 'baykus', ad: 'Ayaz Baykuşu', emoji: '🦉', renk: '#bfe0ff', kademe: 3, soy: ['kis', 'bilge'],      can: 784, atk: 43, as: 0.55, menzil: 3, mana: 100, yetenek: 'ayaz',       pasif: 'kisNefesi' },
+    { id: 'tilki', ad: 'Gölge Tilki', emoji: '🦊', renk: '#4a5578', kademe: 3, soy: ['karanlik', 'avci'],  can: 728, atk: 50, as: 0.75, menzil: 3, mana: 90,  yetenek: 'golgeOk',    pasif: 'avKoku' },
+    { id: 'ejder', ad: 'Fırtına Ejderi', emoji: '🐉', renk: '#ffd84a', kademe: 3, soy: ['ates', 'bilge'],     can: 840, atk: 60, as: 0.55, menzil: 3, mana: 110, yetenek: 'yildirim',   pasif: 'gokGurultu' },
   ];
 
   // ── Yetenek / pasif metinleri (kart ve bilgi penceresi için). Sayılar ★1 değeri; ★2 ×1.8, ★3 ×3. ──
@@ -64,14 +64,14 @@
   const PASIF = {
     tasDeri:      { ad: 'Taş Deri',      m: 'Alınan hasar -%20.' },
     suru:         { ad: 'Sürü',          m: 'Yaşayan her dost için +%6 hasar.' },
-    ruhBagi:      { ad: 'Ruh Bağı',      m: 'Bir dost ölünce 35 mana kazanır.' },
+    ruhBagi:      { ad: 'Ruh Bağı',      m: 'Bir dost ölünce 25 mana kazanır.' },
     canEmici:     { ad: 'Can Emici',     m: 'Verdiği hasarın %20’si kadar can kazanır.' },
     kacis:        { ad: 'Yel Gibi',      m: 'Vuruşların %25’inden kaçar.' },
     deliCesaret:  { ad: 'Gözü Kara',  m: 'Canı yarının altındayken +%50 hasar.' },
     zehirDis:     { ad: 'Zehirli Diş',   m: 'Vuruşları 3 sn zehirler (18/sn).' },
     soguk:        { ad: 'Soğuk Dokunuş', m: 'Vuruşları 2 sn -%20 saldırı hızı verir.' },
     sicakKalp:    { ad: 'Sıcak Kalp',    m: 'Saniyede %3 can yeniler.' },
-    ruzgar:       { ad: 'Rüzgâr Ayak',   m: 'İlk 5 sn +%35 saldırı hızı.' },
+    ruzgar:       { ad: 'Rüzgâr Ayak',   m: 'İlk 7 sn +%35 saldırı hızı.' },
     ana:          { ad: 'Koruyucu Tüy',   m: 'Savaş başında komşu dostlara 90 kalkan.' },
     karanlikPay:  { ad: 'Karanlık Pay',  m: 'Her düşman ölümünde +%12 hasar (birikir).' },
     yenidenDogus: { ad: 'Yeniden Doğuş', m: 'İlk ölümde %40 canla dirilir.' },
@@ -98,7 +98,7 @@
     { id: 'demirci',  ad: 'Demirci Ateşi', emoji: '⚒️', w: 1, lobi: true, m: 'Bu turun savaşını kazanan 1 rastgele bileşen alır.' },
     { id: 'gocMevsimi', ad: 'Göç Mevsimi', emoji: '🍂', w: 1, lobi: true, m: 'Bu hazırlıkta ilk 2 yenileme bedava.' },
     { id: 'kutSessiz', ad: 'Kut Sessizliği', emoji: '🌑', w: 1, lobi: true, m: 'Bu tur Kut yok; herkes savaşa %25 mana ile başlar.' },
-    { id: 'uzunGolge', ad: 'Uzun Gölge',  emoji: '🌇', w: 1, lobi: true, m: 'Gün Batımı 20. yerine 12. saniyede başlar.' },
+    { id: 'uzunGolge', ad: 'Uzun Gölge',  emoji: '🌇', w: 1, lobi: true, m: 'Gün Batımı 30. yerine 20. saniyede başlar.' },
   ];
   // Hızlı Maç ve düello alametleri: eski 8 (lobi alametleri yok)
   const ALAMETLER_HIZLI = ALAMETLER.filter(a => !a.lobi);
@@ -106,7 +106,7 @@
   // ── Kut Armağanı (OYNANIS_DERINLIK.md bölüm 6): 2-1, 3-2, 4-3'te 3'ten 1 seçilir. kademe: kivilcim | alev | gunes.
   // savas: motorda opt.armagan ile çalışır (sim.js). tur: Kut, Kaynaştırma, Eşya, Önceden görme, Alamet, Ekonomi, Seviye, Geri dönüş.
   const ARMAGANLAR = [
-    { id: 'cifteKut',      ad: 'Çifte Kut',        kademe: 'gunes',    tur: 'Kut', savas: true,  m: 'Savaş başına 2 Kut hakkı; ikincisi ilkinden en az 4 sn sonra kullanılabilir.', neden: 'Kut\'u iki kez patlatmak istiyorsan.' },
+    { id: 'cifteKut',      ad: 'Çifte Kut',        kademe: 'gunes',    tur: 'Kut', savas: true,  m: 'Savaş başına 2 Kut hakkı; ikincisi ilkinden en az 6 sn sonra kullanılabilir.', neden: 'Kut\'u iki kez patlatmak istiyorsan.' },
     { id: 'uyanis',        ad: 'Uyanış',           kademe: 'kivilcim', tur: 'Kut', savas: true,  m: 'Kut verilen birim savaş sonuna dek +%25 saldırı hızı kazanır.', neden: 'Kut\'u vuruşçu bir kahramana veriyorsan.' },
     { id: 'kutMirasi',     ad: 'Kut Mirası',       kademe: 'alev',     tur: 'Kut', savas: true,  m: 'Kut verilen birim ölürse Kut hakkı bir kez geri gelir.', neden: 'Kut\'u öndeki kahramana veriyorsan.' },
     { id: 'isikSutunu',    ad: 'Işık Sütunu',      kademe: 'alev',     tur: 'Kut', savas: true,  m: 'Kut, hedefin 2 hücre çevresindeki dostlara da azami manalarının %50\'si kadar mana verir.', neden: 'Kahramanların sık diziliyse.' },
@@ -147,7 +147,7 @@
     ['yirticiPence', 'Yırtıcı Pençe', 'dis', 'dis', 'Her 3. vuruş, hedefin azami canının %8\'i kadar ek hasar.'],
     ['avCoskusu', 'Av Coşkusu', 'dis', 'tuy', 'Takımından biri düşman öldürünce 3 sn +%40 saldırı hızı.'],
     ['kizginDis', 'Kızgın Diş', 'dis', 'kor', 'Yeteneğinin vurduğu her düşman 3 sn yanar: 30/sn ×★×YG.'],
-    ['keskinGoz', 'Keskin Göz', 'dis', 'ciy', 'Vuruş başına mana 10 yerine 15.'],
+    ['keskinGoz', 'Keskin Göz', 'dis', 'ciy', 'Vuruş başına mana 8 yerine 12.'],
     ['ofkeTilsimi', 'Öfke Tılsımı', 'dis', 'kabuk', 'Canı ilk kez yarının altına inince 5 sn +%35 saldırı ve −%20 alınan hasar.'],
     ['devYumrugu', 'Dev Yumruğu', 'dis', 'yurek', 'Vuruşlar, kendi azami canının %2\'si kadar ek hasar verir.'],
     ['geceAvcisi', 'Gece Avcısı', 'dis', 'pul', 'Bir düşmanı öldürünce onun azami canının %20\'si kadar iyileşir.'],
@@ -191,14 +191,14 @@
   // ── Canavarlar (OYNANIS_DERINLIK.md 5.5): soyları yok, kahraman havuzuna girmez, kademe 0. Yeteneksizlerin manası 9999.
   // gorunum: 3D modeli gelene kadar sahnede yerine gösterilen kahraman modeli (yalnız görsel; motor kullanmaz).
   const CANAVARLAR = [
-    { id: 'cakil',      ad: 'Çakıl Kıpırı', emoji: '🪨', renk: '#9a8f80', gorunum: 'golem',      can: 280,  atk: 22,  as: 0.70, menzil: 1, mana: 9999, yetenek: null,          pasif: null },
-    { id: 'kirpi',      ad: 'Diken Kirpi',  emoji: '🦔', renk: '#a0764e', gorunum: 'kaplumbaga', can: 420,  atk: 30,  as: 0.80, menzil: 1, mana: 9999, yetenek: null,          pasif: 'dikenKirpi' },
-    { id: 'tasKabuk',   ad: 'Taş Kabuk',    emoji: '🐚', renk: '#8c8c8c', gorunum: 'kaplumbaga', can: 900,  atk: 28,  as: 0.50, menzil: 1, mana: 9999, yetenek: null,          pasif: null },
-    { id: 'kumAkrebi',  ad: 'Kum Akrebi',   emoji: '🦂', renk: '#d4a95a', gorunum: 'semender',   can: 700,  atk: 50,  as: 0.80, menzil: 1, mana: 9999, yetenek: null,          pasif: null },
-    { id: 'anaAkrep',   ad: 'Ana Akrep',    emoji: '🦂', renk: '#b8742c', gorunum: 'semender',   can: 1500, atk: 70,  as: 0.70, menzil: 1, mana: 80,   yetenek: 'akrepZehir',  pasif: null },
-    { id: 'gokBalinasi',ad: 'Gök Balinası', emoji: '🐋', renk: '#7fb8e6', gorunum: 'kugu',       can: 5200, atk: 85,  as: 0.50, menzil: 3, mana: 100,  yetenek: 'balinaSarki', pasif: null },
-    { id: 'kadimBekci', ad: 'Kadim Bekçi',  emoji: '🗿', renk: '#8a9a7a', gorunum: 'golem',      can: 3200, atk: 110, as: 0.60, menzil: 1, mana: 90,   yetenek: 'bekciDarbe',  pasif: null },
-    { id: 'yildizYiyen',ad: 'Yıldız Yiyen', emoji: '🌌', renk: '#5a3f9a', gorunum: 'ejder',      can: 9000, atk: 140, as: 0.60, menzil: 3, mana: 100,  yetenek: 'yildizYutan', pasif: null },
+    { id: 'cakil',      ad: 'Çakıl Kıpırı', emoji: '🪨', renk: '#9a8f80', gorunum: 'golem',      can: 392,  atk: 18,  as: 0.70, menzil: 1, mana: 9999, yetenek: null,          pasif: null },
+    { id: 'kirpi',      ad: 'Diken Kirpi',  emoji: '🦔', renk: '#a0764e', gorunum: 'kaplumbaga', can: 588,  atk: 24,  as: 0.80, menzil: 1, mana: 9999, yetenek: null,          pasif: 'dikenKirpi' },
+    { id: 'tasKabuk',   ad: 'Taş Kabuk',    emoji: '🐚', renk: '#8c8c8c', gorunum: 'kaplumbaga', can: 1260,  atk: 22,  as: 0.50, menzil: 1, mana: 9999, yetenek: null,          pasif: null },
+    { id: 'kumAkrebi',  ad: 'Kum Akrebi',   emoji: '🦂', renk: '#d4a95a', gorunum: 'semender',   can: 980,  atk: 40,  as: 0.80, menzil: 1, mana: 9999, yetenek: null,          pasif: null },
+    { id: 'anaAkrep',   ad: 'Ana Akrep',    emoji: '🦂', renk: '#b8742c', gorunum: 'semender',   can: 2100, atk: 56,  as: 0.70, menzil: 1, mana: 80,   yetenek: 'akrepZehir',  pasif: null },
+    { id: 'gokBalinasi',ad: 'Gök Balinası', emoji: '🐋', renk: '#7fb8e6', gorunum: 'kugu',       can: 7280, atk: 68,  as: 0.50, menzil: 3, mana: 100,  yetenek: 'balinaSarki', pasif: null },
+    { id: 'kadimBekci', ad: 'Kadim Bekçi',  emoji: '🗿', renk: '#8a9a7a', gorunum: 'golem',      can: 4480, atk: 88, as: 0.60, menzil: 1, mana: 90,   yetenek: 'bekciDarbe',  pasif: null },
+    { id: 'yildizYiyen',ad: 'Yıldız Yiyen', emoji: '🌌', renk: '#5a3f9a', gorunum: 'ejder',      can: 12600, atk: 112, as: 0.60, menzil: 3, mana: 100,  yetenek: 'yildizYutan', pasif: null },
   ].map(c => ({ ...c, kademe: 0, soy: [] }));
   // Canavar dalgaları: 'bölüm-tur' → birimler (taraf 1'de; x sütun 0..3, y sıra 0 ön | 1 orta | 2 arka). 6. bölüm ve sonrası: PVE_DALGA_GEC.
   const PVE_DALGA = {
@@ -282,7 +282,7 @@
     // ortak
     satisIade: 1, dukkan: 5,
     yildizCarpan: [0, 1, 1.8, 3],
-    savasSuresi: 30,        // sn; sonunda kalan can yüzdesi karar verir
+    savasSuresi: 45,        // sn; sonunda kalan can yüzdesi karar verir (tempo: 30 → 45; savaş ortancası 24–32 sn hedefi, DENGE_RAPORU.md)
     // tahta: 4 sütun × 3 sıra (ön, orta, arka); en çok 8 kahraman
     tahtaSutun: 4, tahtaSira: 3, takimTavan: 8,
     yedek: 7,
@@ -309,7 +309,7 @@
     yenile: 2,                                  // yenileme 2 altın (Hızlı Maç'ta 1)
     kaynastirTaban: 2,                          // kaynaştırma = 2 + en yüksek kademe (3–5); lobi.kaynastirBedel
     // savaş içi Gün Batımı (bölüm 1.4): basla. saniyeden sonra her tam saniye bütün hasar +%10 (carpan = 1 + artis × floor(t − basla))
-    gunBatimi: { basla: 20, artis: 0.10 },
+    gunBatimi: { basla: 30, artis: 0.10 },
     // bölüm 1: 1-1'den önce bedava seçilen kademe-1 kahraman sayısı
     baslangicSecenek: 3,
     // ganimet (bölüm 5.4): GANIMET, GANIMET_GEC (ganimetGecBolum ve sonrası), ZARF; sabit altın kısmı lobi.ganimetAltin ile turSonu'nda eklenir
@@ -319,7 +319,7 @@
     // canavar dalgaları (5.5)
     pveDalga: PVE_DALGA, pveDalgaGec: PVE_DALGA_GEC, pveDalgaGecBolum: 6,
     // kaybedince alınan hasar (bölüm 4.4): bölüm tabanı + kazanan taraftaki sağ birimlerin yıldızları
-    bolumTabani: [0, 0, 4, 8, 12, 16, 20, 24],  // indeks = bölüm (7 ve sonrası son değer); bölüm 1 canavar, hasar yok. İlk değer 2/5/8/12/15/18; lobi benzetimiyle (test/lobi.test.cjs) maç 5-3'te bitsin diye artırıldı
+    bolumTabani: [0, 0, 4, 9, 13, 17, 21, 25],  // indeks = bölüm (7 ve sonrası son değer); bölüm 1 canavar, hasar yok. İlk değer 2/5/8/12/15/18; lobi benzetimiyle (test/lobi.test.cjs) maç 5-3'te bitsin diye artırıldı (tempo ayarında 4/8/12/16/20/24 → 4/9/13/17/21/25)
     sonUcEk: 3, sonIkiEk: 5,                    // lobide 3 kişi kalınca taban +3, 2 kişi kalınca +5
     // eşyalar (bölüm 5): birim başına 3 yuva, raf en çok 10, eşyalardan alınan hasar azaltma en çok %40
     esyaYuva: 3, esyaRaf: 10, esyaAzaltTavan: 0.4,
@@ -332,7 +332,7 @@
     botIz: BOT_IZ,
     // Kut (bölüm 7): savaş başına hak; ikinci hak ilkinden en az `ara` sn sonra. Yapay zekâ (7.4): ilk hak yzZaman, sonrakiler yzZaman2 sn'de;
     // puan = (mana − mp) × kc + yzBilesen × bileşen sayısı + (Kut Ocağı varsa yzOcak). Kut Sessizliği'nde herkes savaşa sessizMana ile başlar.
-    kut: { hak: 1, ara: 4, yzZaman: 5, yzZaman2: 12, yzBilesen: 20, yzOcak: 60, sessizMana: 0.25, uzunGolge: 12, sonIkiHak: 2 },
+    kut: { hak: 1, ara: 6, yzZaman: 8, yzZaman2: 18, yzBilesen: 20, yzOcak: 60, sessizMana: 0.25, uzunGolge: 20, sonIkiHak: 2 },
     // Kut Yankısı (7.1): bileşen başına; tam eşya iki bileşen sayılır, Kut Taşı sayıları ikiye katlar (birden çok taş da ×2), Kut Ocağı ek ×1,5.
     // kabukTavan: Kabuk yankılarının toplam azaltması en çok (belgede yok; 2 Kabuk + Kut Taşı %160 olmasın diye).
     kutYanki: { disVurus: 3, disOran: 0.5, tuySure: 3, tuyOran: 0.5, kor: 1.25, ciy: 30, kabukSure: 3, kabukOran: 0.4, kabukTavan: 0.8,

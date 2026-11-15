@@ -7,7 +7,7 @@ let hata = 0; const ok = (c, m) => { if (!c) { hata++; console.log('✗', m); } 
 // 1) KURAL: belgedeki sayılar
 ok(K.tabanGelirBolum1.join() === '3,3,4' && K.tabanGelir === 5 && K.faizAdim === 8 && K.faizTavan === 5, 'taban 3/3/4 sonra 5; faiz her 8 altına 1, en çok 5 (denge benzetimiyle 10 → 8)');
 ok(K.galibiyetBonus === 1 && K.pazarBonus === 2 && K.yenile === 2 && K.hizli.yenile === 1, 'galibiyet +1, Bereketli Pazar +2, yenileme 2 (Hızlı Maç 1)');
-ok(K.canBaslangic === 100 && K.bolumTabani.join() === '0,0,4,8,12,16,20,24' && K.sonUcEk === 3 && K.sonIkiEk === 5, '100 can, bölüm tabanı 0/4/8/12/16/20/24 (lobi benzetimiyle ayarlı), Son Üç +3, Son İki +5');
+ok(K.canBaslangic === 100 && K.bolumTabani.join() === '0,0,4,9,13,17,21,25' && K.sonUcEk === 3 && K.sonIkiEk === 5, '100 can, bölüm tabanı 0/4/9/13/17/21/25 (lobi benzetimiyle ayarlı; tempo ayarında +1), Son Üç +3, Son İki +5');
 
 // 2) tur planı (bölüm 1.1)
 const adlar = Array.from({ length: 25 }, (_, r) => L.turAd(r));
@@ -38,12 +38,12 @@ ok(L.ganimetAltin(0) === 0 && L.ganimetAltin(1) === 2 && L.ganimetAltin(2) === 2
 // 6) kaybedince alınan hasar (bölüm 4.4)
 const r2 = 4, r3 = 10, r4 = 17, r5 = 24, r7 = 3 + 7 * 5;
 ok(L.kayipHasar(r2, 1, 4, 3)[0] === 8 && L.kayipHasar(r2, 1, 4, 3)[1] === 0, '2-2 yenilgi: 4 + 4 kalan yıldız = 8');
-ok(L.kayipHasar(r3, 0, 5, 3).join() === '0,13' && L.kayipHasar(r4, 1, 7, 4)[0] === 19 && L.kayipHasar(r5, 1, 3, 2)[0] === 19 && L.kayipHasar(r7, 1, 0, 0)[0] === 24, 'taban bölüm 3: 8, 4: 12, 5: 16, 7+: 24');
-ok(L.kayipHasar(r3, -1, 0, 0).join() === '8,8', 'beraberlik: iki taraf da yalnız taban');
+ok(L.kayipHasar(r3, 0, 5, 3).join() === '0,14' && L.kayipHasar(r4, 1, 7, 4)[0] === 20 && L.kayipHasar(r5, 1, 3, 2)[0] === 20 && L.kayipHasar(r7, 1, 0, 0)[0] === 25, 'taban bölüm 3: 9, 4: 13, 5: 17, 7+: 25');
+ok(L.kayipHasar(r3, -1, 0, 0).join() === '9,9', 'beraberlik: iki taraf da yalnız taban');
 ok(L.kayipHasar(0, 1, 6, 3).join() === '0,0' && L.kayipHasar(2, 1, 6, 3).join() === '0,0', 'bölüm 1 canavar: hasar yok');
 ok(L.kayipHasar(9, 1, 6, 3).join() === '7,0' && L.kayipHasar(9, 0, 0, 0).join() === '0,0', '2-7 canavar yenilgisi: taban 4 + kalan canavar sayısı 3; canavar can kaybetmez');
 ok(L.kayipHasar(6, 1, 9, 9).join() === '0,0', 'Kervan turunda hasar yok');
-ok(L.kayipHasar(r4, 1, 2, 2, 3)[0] === 17 && L.kayipHasar(r4, 1, 2, 2, 2)[0] === 19 && L.kayipHasar(r4, -1, 0, 0, 2).join() === '17,17', 'Son Üç taban +3, Son İki +5');
+ok(L.kayipHasar(r4, 1, 2, 2, 3)[0] === 18 && L.kayipHasar(r4, 1, 2, 2, 2)[0] === 20 && L.kayipHasar(r4, -1, 0, 0, 2).join() === '18,18', 'Son Üç taban +3, Son İki +5');
 
 // 7) tur sonu: durum yerinde değişir
 {

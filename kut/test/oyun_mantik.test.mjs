@@ -274,7 +274,7 @@ ok(ozet.seviye >= 2 + 1, `maç sonunda savaş deneyimiyle seviye arttı (Sv ${oz
   ok(!e.M.ilkSecim && e.M.tahta.some(b => b && b.h === sec) && e.M.altin === a0 && e.bekleyenSecim() === null, 'bedava seçim tahtaya kondu, altın düşmedi');
   ok(e.M.rakip.pve && e.M.rakip.kaynak === 'canavar' && e.M.rakip.takim.map(b => b.h).join() === 'cakil,cakil' && e.turTip() === 'pve' && e.turUzun() === 'Bölüm 1 · Tur 1', '1-1 rakibi canavar dalgası (2 Çakıl Kıpırı), "Bölüm 1 · Tur 1"');
   const sim = e.savasHazirla();
-  ok(sim.birimler.filter(u => u.taraf === 1).every(u => u.b.canavar === 'cakil' && u.b.h === 'golem' && u.mx === 280), 'savaşta canavar: motor canavar istatistiğiyle, sahneye görünüm kahramanı (u.b.h) ve gerçek kimlik (u.b.canavar)');
+  ok(sim.birimler.filter(u => u.taraf === 1).every(u => u.b.canavar === 'cakil' && u.b.h === 'golem' && u.mx === DD.canavar('cakil').can), 'savaşta canavar: motor canavar istatistiğiyle, sahneye görünüm kahramanı (u.b.h) ve gerçek kimlik (u.b.canavar)');
   ok(e.birimAd(sim.birimler.find(u => u.taraf === 1).b) === 'Çakıl Kıpırı', 'hasar özetinde canavarın adı');
   let r = e.savasBitti(sim.sonunaKadar());
   ok(r.pve && r.esya.length === 1 && e.M.esyaRaf.length === 1 && r.hasar === 0, '1-1 ganimeti: 1 bileşen, bölüm 1\'de can gitmez');
@@ -292,8 +292,8 @@ ok(ozet.seviye >= 2 + 1, `maç sonunda savaş deneyimiyle seviye arttı (Sv ${oz
   e.savasBitti({ kazanan: 0, kalanPuan: 3, kalanSayi: 3, kalan: 0, sure: 9 });
   ok(e.turTip() === 'pvp' && e.turAd() === '2-2', 'bölüm 1 bitti: 2-1 PvP oynandı, sıra 2-2');
   // PvP savaşında Gün Batımı var, canavar ganimeti yok
-  await e.turBaslat(false); const ps = e.savasHazirla(); let t25 = 0; while (!ps.bitti && ps.t < 25.2) { ps.adim(); if (Math.abs(ps.t - 25.5) < 0.03) t25 = ps.gunBatimiCarpan(); }
-  ok(!e.M.rakip.pve && (ps.bitti || ps.gunBatimiCarpan() === 1.5), 'Arena PvP savaşında Gün Batımı (25. sn ×1,5)');
+  await e.turBaslat(false); const ps = e.savasHazirla(); const GB = K.gunBatimi.basla; let t25 = 0; while (!ps.bitti && ps.t < GB + 5.2) { ps.adim(); if (Math.abs(ps.t - (GB + 5.5)) < 0.03) t25 = ps.gunBatimiCarpan(); }
+  ok(!e.M.rakip.pve && (ps.bitti || ps.gunBatimiCarpan() === 1.5), `Arena PvP savaşında Gün Batımı (${GB + 5}. sn ×1,5)`);
   // 2-7 zarfı
   e.M.tur = 10; await e.turBaslat(false); ok(e.M.rakip.pve && e.M.rakip.takim.length === 4, '2-7 rakibi: 3 Kum Akrebi + Ana Akrep');
   const a27 = e.M.altin; e.savasHazirla(); r = e.savasBitti({ kazanan: 1, kalanPuan: 4, kalanSayi: 2, kalan: 0, sure: 9 });

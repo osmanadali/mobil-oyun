@@ -184,8 +184,9 @@ ok([5, 8].map(s => L.kupaDegisim(s, 300)).join() === '-5,-20' && L.kupaDegisim(8
   const oe = medyan(ortaElenme);
   ok(oe >= 21 && oe <= 26, `elenen oyuncuların ortanca elenme turu ${L.turAd(oe)} (belge: ortalama oyuncu 4-6 … 5-3; 1 tur pay)`);
   const dk = medyan(birinciDk);
-  ok(dk >= 18 && dk <= 20, `birincinin tahmini süresi ortanca ${dk.toFixed(1)} dk (hedef 18–20 dk; tur sayısı × süre tablosu 1.2)`);
-  ok(medyan(savasSure) >= 16 && medyan(savasSure) <= 20 && dilim(savasSure, 0.9) <= 28, `savaş süresi ortanca ${medyan(savasSure)} sn, %90 dilim ${dilim(savasSure, 0.9)} sn (hedef 16–20 / ≤ 28)`);
+  // tempo ayarıyla (savaş ortancası 16 → 29 sn) hedef 18–20 dk'dan 22–26 dk'ya çıktı (DENGE_RAPORU.md)
+  ok(dk >= 22 && dk <= 26, `birincinin tahmini süresi ortanca ${dk.toFixed(1)} dk (hedef 22–26 dk; tur sayısı × süre tablosu 1.2)`);
+  ok(medyan(savasSure) >= 24 && medyan(savasSure) <= 32 && dilim(savasSure, 0.9) <= 42, `savaş süresi ortanca ${medyan(savasSure)} sn, %90 dilim ${dilim(savasSure, 0.9)} sn (hedef 24–32 / ≤ 42)`);
   ok(sinir / pvp < 0.05, `süre sınırıyla biten savaş %${(100 * sinir / pvp).toFixed(1)} (hedef < %5)`);
   ok(b1Kayip.length / Math.max(1, b1) <= 0.1, `bölüm 1'de canavarı kaybetme %${(100 * b1Kayip.length / Math.max(1, b1)).toFixed(1)} (hedef ≤ %10)`);
 }

@@ -6,9 +6,10 @@ let hata = 0; const ok = (c, m) => { if (!c) { hata++; console.log('✗', m); } 
 
 // ── 1) canavar verisi (tablo 5.5) ──
 {
-  const t = { cakil: [280, 22, 0.7, 1, null], kirpi: [420, 30, 0.8, 1, null], tasKabuk: [900, 28, 0.5, 1, null], kumAkrebi: [700, 50, 0.8, 1, null],
-    anaAkrep: [1500, 70, 0.7, 1, 'akrepZehir'], gokBalinasi: [5200, 85, 0.5, 3, 'balinaSarki'], kadimBekci: [3200, 110, 0.6, 1, 'bekciDarbe'], yildizYiyen: [9000, 140, 0.6, 3, 'yildizYutan'] };
-  ok(D.CANAVARLAR.length === 8 && D.CANAVARLAR.every(c => { const v = t[c.id]; return v && c.can === v[0] && c.atk === v[1] && c.as === v[2] && c.menzil === v[3] && c.yetenek === v[4]; }), '8 canavar: can, saldırı, hız, menzil, yetenek tablo 5.5 ile aynı');
+  // tempo ayarı: tablo 5.5'in canı ×1,4, saldırısı ×0,8 (kahramanlarla aynı oran; DENGE_RAPORU.md)
+  const t = { cakil: [392, 18, 0.7, 1, null], kirpi: [588, 24, 0.8, 1, null], tasKabuk: [1260, 22, 0.5, 1, null], kumAkrebi: [980, 40, 0.8, 1, null],
+    anaAkrep: [2100, 56, 0.7, 1, 'akrepZehir'], gokBalinasi: [7280, 68, 0.5, 3, 'balinaSarki'], kadimBekci: [4480, 88, 0.6, 1, 'bekciDarbe'], yildizYiyen: [12600, 112, 0.6, 3, 'yildizYutan'] };
+  ok(D.CANAVARLAR.length === 8 && D.CANAVARLAR.every(c => { const v = t[c.id]; return v && c.can === v[0] && c.atk === v[1] && c.as === v[2] && c.menzil === v[3] && c.yetenek === v[4]; }), '8 canavar: can, saldırı, hız, menzil, yetenek (tablo 5.5, tempo oranıyla)');
   const mana = { anaAkrep: 80, gokBalinasi: 100, kadimBekci: 90, yildizYiyen: 100 };
   ok(D.CANAVARLAR.every(c => c.mana === (mana[c.id] || 9999)), 'yeteneksizlerin manası 9999; Ana Akrep 80, Gök Balinası 100, Kadim Bekçi 90, Yıldız Yiyen 100');
   ok(D.CANAVARLAR.every(c => c.kademe === 0 && c.soy.length === 0 && D.kahraman(c.id) === c && D.canavar(c.id) === c), 'canavar: kademe 0, soy yok; kahraman(id) canavara da bakar');
@@ -57,37 +58,38 @@ let hata = 0; const ok = (c, m) => { if (!c) { hata++; console.log('✗', m); } 
     if (h && y && sv.fx.indexOf(y) === sv.fx.indexOf(h) + 1) { vuru = h; yans = y; } }
   ok(yans && Math.abs(yans.n - Math.round(vuru.n * 0.15)) <= 1, `Diken Sırt: yakın vuruşun %15'i geri döner (${vuru && vuru.n} → ${yans && yans.n})`);
   // canavarla tam savaş: biter, kalanPuan canavar başına 1, kalan (eski ölçü) 0
-  const r = S.Savas([{ h: 'golem', s: 1, x: 1, y: 0 }], L.pveDalga(1), { tohum: 2, gunBatimi: 20 }).sonunaKadar();
+  const r = S.Savas([{ h: 'golem', s: 1, x: 1, y: 0 }], L.pveDalga(1), { tohum: 2, gunBatimi: K.gunBatimi.basla }).sonunaKadar();
   ok(r && (r.kazanan !== 1 || (r.kalanPuan === r.kalanSayi && r.kalan === 0)), 'canavar savaşı biter; canavarın kalanPuan\'ı 1, eski kalan ölçüsü 0');
   // Arena'nın bot takımları canavarları ne sıklıkla yener (yalnız bilgi)
   const sat = [];
   for (const rr of [0, 1, 2, 9, 16, 23, 30, 37]) { let k = 0; for (let i = 0; i < 60; i++) { const A = O.botEsya(O.botTakim(rr + 1, 100 + i, 0.3, O.botSeviye(rr)), rr, 100 + i);
-    if (S.Savas(A, L.pveDalga(rr), { tohum: i + 1, yz: [0], gunBatimi: 20 }).sonunaKadar().kazanan === 0) k++; } sat.push(L.turAd(rr) + ' %' + Math.round(100 * k / 60)); }
+    if (S.Savas(A, L.pveDalga(rr), { tohum: i + 1, yz: [0], gunBatimi: K.gunBatimi.basla }).sonunaKadar().kazanan === 0) k++; } sat.push(L.turAd(rr) + ' %' + Math.round(100 * k / 60)); }
   console.log('  bot takımı canavara karşı kazanır:', sat.join(' · '));
 }
 
 // ── 4) Gün Batımı (1.4) ──
 {
-  // iki Taş Kabuk 30 sn'ye kadar dövüşür: 20. sn'den sonra her vuruş 28 × (1 + 0,1 × tam saniye)
+  // iki Taş Kabuk süre sınırına kadar dövüşür: GB. sn'den sonra her vuruş taban × (1 + 0,1 × tam saniye)
+  const GB = K.gunBatimi.basla, SS = K.savasSuresi, TAB = D.canavar('tasKabuk').atk;
   const A = [{ h: 'tasKabuk', s: 1, x: 1, y: 0 }], B = [{ h: 'tasKabuk', s: 1, x: 1, y: 0 }];
-  const sv = S.Savas(A, B, { tohum: 4, gunBatimi: 20 }); let olay = null, c25 = 0, c30 = 0, once = 0, sonra = 0, yanlis = [];
+  const sv = S.Savas(A, B, { tohum: 4, gunBatimi: GB }); let olay = null, c25 = 0, c30 = 0, once = 0, sonra = 0, yanlis = [];
   while (!sv.bitti) { sv.adim(); for (const f of sv.fx) { if (f.tip === 'gunBatimi') olay = f.t; if (f.tip !== 'hasar') continue;
-      const bek = Math.round(28 * (f.t < 20 ? 1 : 1 + 0.1 * Math.floor(f.t - 20 + 1e-9))); if (f.n !== bek) yanlis.push(f.t.toFixed(2) + ':' + f.n); if (f.t < 20) once++; else sonra++; }
-    if (Math.abs(sv.t - 25.5) < 0.01) c25 = sv.gunBatimiCarpan(); if (sv.t > 29.9 && !c30) c30 = sv.gunBatimiCarpan(); }
-  ok(!yanlis.length && once > 10 && sonra >= 4, `vuruş hasarı 20. sn'den sonra her saniye +%10 (${once} vuruş önce, ${sonra} sonra${yanlis.length ? '; yanlış ' + yanlis.join(' ') : ''})`);
-  ok(Math.abs(olay - 20) < 1e-6 && Math.abs(c25 - 1.5) < 1e-9 && Math.abs(c30 - 1.9) < 1e-9, `Gün Batımı olayı 20. sn'de; çarpan 25,5 sn ×${c25}, 29,9 sn ×${c30}`);
+      const bek = Math.round(TAB * (f.t < GB ? 1 : 1 + 0.1 * Math.floor(f.t - GB + 1e-9))); if (f.n !== bek) yanlis.push(f.t.toFixed(2) + ':' + f.n); if (f.t < GB) once++; else sonra++; }
+    if (Math.abs(sv.t - (GB + 5.5)) < 0.01) c25 = sv.gunBatimiCarpan(); if (sv.t > GB + 9.9 && !c30) c30 = sv.gunBatimiCarpan(); }
+  ok(!yanlis.length && once > 10 && sonra >= 4, `vuruş hasarı ${GB}. sn'den sonra her saniye +%10 (${once} vuruş önce, ${sonra} sonra${yanlis.length ? '; yanlış ' + yanlis.join(' ') : ''})`);
+  ok(Math.abs(olay - GB) < 1e-6 && Math.abs(c25 - 1.5) < 1e-9 && Math.abs(c30 - 1.9) < 1e-9, `Gün Batımı olayı ${GB}. sn'de; çarpan +5,5 sn ×${c25}, +9,9 sn ×${c30}`);
   const yok = S.Savas(A, B, { tohum: 4 }); while (!yok.bitti) yok.adim();
-  ok(yok.gunBatimiCarpan() === 1 && yok.sonuc.sure === 30 && sv.sonuc.sure === 30, 'Gün Batımı verilmezse (Hızlı Maç) çarpan 1');
-  ok(K.gunBatimi.basla === 20 && K.gunBatimi.artis === 0.1 && K.hizli.gunBatimi === null, 'KURAL.gunBatimi 20 sn, +%10; Hızlı Maç\'ta yok');
-  // zaman içi hasar da artar: 25. sn'de 100/sn yanık adımı 5 yerine 7,5
-  const yz = S.Savas(A, B, { tohum: 4, gunBatimi: 20 }); let dot = null;
-  while (!yz.bitti && dot === null) { if (Math.abs(yz.t - 25) < 0.026) yz.birimler[1].durum.yanik = { sure: 5, deger: 100 }; yz.adim(); const f = yz.fx.find(x => x.tip === 'dot' && x.u === 10); if (f && yz.t > 25) dot = f.n; }
+  ok(yok.gunBatimiCarpan() === 1 && yok.sonuc.sure === SS && sv.sonuc.sure === SS, 'Gün Batımı verilmezse (Hızlı Maç) çarpan 1');
+  ok(K.gunBatimi.basla === 30 && K.gunBatimi.artis === 0.1 && K.hizli.gunBatimi === null && SS === 45, 'KURAL.gunBatimi 30 sn, +%10 (süre sınırı 45 sn); Hızlı Maç\'ta yok');
+  // zaman içi hasar da artar: GB + 5. sn'de 100/sn yanık adımı 5 yerine 7,5
+  const yz = S.Savas(A, B, { tohum: 4, gunBatimi: GB }); let dot = null;
+  while (!yz.bitti && dot === null) { if (Math.abs(yz.t - (GB + 5)) < 0.026) yz.birimler[1].durum.yanik = { sure: 5, deger: 100 }; yz.adim(); const f = yz.fx.find(x => x.tip === 'dot' && x.u === 10); if (f && yz.t > GB + 5) dot = f.n; }
   ok(dot === Math.round(100 * 0.05 * 1.5), `zaman içi hasar da artar (yanık adımı ${dot})`);
   // süre sınırına kalan savaş %5'in altında (Arena bot takımları, eşyalı)
   let sayi = 0, sinir = 0;
   for (let i = 0; i < 300; i++) { const r = 3 + (i * 7) % 38; if (L.turPlan(r).tip !== 'pvp') continue; const sv8 = O.botSeviye(r);
     const a = O.botEsya(O.botTakim(r + 1, 500 + i, (i % 5) / 4, sv8), r, 500 + i), b = O.botEsya(O.botTakim(r + 1, 9000 + i, ((i * 3) % 5) / 4, sv8), r, 9000 + i);
-    const s = S.Savas(a, b, { tohum: i + 3, yz: [0, 1], gunBatimi: 20, alamet: D.ALAMETLER[i % 8].id }).sonunaKadar(); sayi++; if (s.sure >= 30) sinir++; }
+    const s = S.Savas(a, b, { tohum: i + 3, yz: [0, 1], gunBatimi: GB, alamet: D.ALAMETLER[i % 8].id }).sonunaKadar(); sayi++; if (s.sure >= SS) sinir++; }
   ok(sinir / sayi < 0.05, `süre sınırına kalan savaş %${(100 * sinir / sayi).toFixed(1)} (< %5, ${sayi} savaş)`);
 }
 

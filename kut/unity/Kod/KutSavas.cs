@@ -75,7 +75,7 @@ namespace Kut
         public int Uid, Taraf, I; public TakimBirimi B;
         public string Ad, Yetenek, Pasif; public double Atk, As, Mana, Kc; public int Menzil, Kademe; public List<string> Soy;
         public double Mx, Hp, X, Y, X0, Y0, Mp, Cd, Kalkan; public bool Olu, Dirildi; public int Vurus, PayYigin, Ofke;
-        public double AsEk, Yg, Azalt, Cal, Kalkan0, Mana0, VurusMana = 10, KutCarpan = 1; public bool IlkVurusYapildi; public int SonHedefUid = -1;
+        public double AsEk, Yg, Azalt, Cal, Kalkan0, Mana0, VurusMana = 8, KutCarpan = 1; public bool IlkVurusYapildi; public int SonHedefUid = -1;
         public HashSet<string> Ef = new HashSet<string>(), EsikTetik = new HashSet<string>();
         // Kut Yankısı (7.1): bileşen sayıları ve sırası, Kut Taşı; Diş yankısının kalan vuruşu ve oranı, Çiy yankısının bekleyen manası; Kut Mirası işareti
         public Dictionary<string, int> KutYanki = new Dictionary<string, int>(); public List<string> YankiSira = new List<string>(); public int KutTasi, BilesenSay;
@@ -171,13 +171,13 @@ namespace Kut
         bool Ar(int taraf, string id) => ar[taraf].Contains(id);
 
         static readonly double[] Y0 = { 5, 6, 7 }, Y1 = { 3, 2, 1 };
-        static readonly double[] GOK = { 0, 0.15, 0.35 }, ATLI = { 0, 0.4, 0.9 }, KIS = { 0, 0.15, 0.3 }, AVCI = { 0, 0.2, 0.45 }, KARA = { 0, 0.2, 0.5 },
+        static readonly double[] GOK = { 0, 0.15, 0.35 }, ATLI = { 0, 0.3, 0.6 }, KIS = { 0, 0.15, 0.3 }, AVCI = { 0, 0.2, 0.45 }, KARA = { 0, 0.2, 0.5 },
             DEV = { 0, 0.12, 0.28 }, YER = { 0, 150, 400 }, SU = { 0, 0.02, 0.05 }, BILGE = { 0, 0.3, 0.7 }, OD_SURE = { 0, 2, 3 }, OD_DEGER = { 0, 12, 28 };
 
         /// <param name="kut">Tekrar oynatma için Kut dokunuşları (t, taraf, i).</param>
         /// <param name="yz">Kut'u yapay zekânın kullanacağı taraflar (ör. bot rakip: {1}).</param>
         /// <param name="kayit">Verilirse oyuncunun Kut dokunuşları buraya yazılır (paylaşım / doğrulama için).</param>
-        /// <param name="gunBatimi">Gün Batımı'nın başladığı saniye (Arena: KutVeri.GunBatimiBasla); null: yok (Hızlı Maç). Uzun Gölge alametinde 12.</param>
+        /// <param name="gunBatimi">Gün Batımı'nın başladığı saniye (Arena: KutVeri.GunBatimiBasla); null: yok (Hızlı Maç). Uzun Gölge alametinde 20.</param>
         /// <param name="armagan">İki tarafın savaş armağanları (sim.js opt.armagan; Son Direniş'in can koşulu çağıranda: KutLobi.SavasArmagan).</param>
         /// <param name="kutHak">Tarafların Kut hakkı (varsayılan 1; Son İki'de 2). Çifte Kut +1.</param>
         /// <param name="yzYedek">Kayıtlı dokunuşu olan taraflar: yapay zekâ yalnız kayıttaki dokunuşlar bittikten sonra kalan hakları kullanır.</param>
@@ -219,7 +219,7 @@ namespace Kut
                     double mana = ef.Contains("dolunayTestisi") ? Math.Floor(st.Mana * 0.8 + 0.5) : st.Mana; // Dolunay Testisi
                     Birimler.Add(new SavasBirimi { Uid = taraf * 10 + i, Taraf = taraf, I = i, B = b, Ad = st.Ad, Yetenek = st.Yetenek, Pasif = st.Pasif, Atk = st.Atk, As = st.As,
                         Mana = mana, Kc = st.Kc, Menzil = st.Menzil, Kademe = st.Kademe, Soy = st.Soy, Mx = can, Hp = can, X = x, Y = y, X0 = x, Y0 = y, Mp = 0, Cd = 0.3 + R.Sonraki() * 0.3,
-                        AsEk = st.AsEk, Yg = st.Yg, Azalt = st.Azalt, Cal = st.Cal, Kalkan0 = st.Kalkan0, Mana0 = st.Mana0, Ef = ef, VurusMana = ef.Contains("keskinGoz") ? 15 : 10,
+                        AsEk = st.AsEk, Yg = st.Yg, Azalt = st.Azalt, Cal = st.Cal, Kalkan0 = st.Kalkan0, Mana0 = st.Mana0, Ef = ef, VurusMana = ef.Contains("keskinGoz") ? 12 : 8,
                         KutYanki = st.KutYanki, YankiSira = st.YankiSira, KutTasi = st.KutTasi, BilesenSay = st.YankiSira.Count });
                 }
 
@@ -271,8 +271,8 @@ namespace Kut
         {
             int g = Sv(u.Taraf, "gok");
             double k = 1 + GOK[g != 0 && u.Soy.Contains("gok") ? g : 0];
-            int atl = Sv(u.Taraf, "atli"); if (atl != 0 && u.Soy.Contains("atli") && T < 4) k += ATLI[atl];
-            if (u.Pasif == "ruzgar" && T < 5) k += 0.35;
+            int atl = Sv(u.Taraf, "atli"); if (atl != 0 && u.Soy.Contains("atli") && T < 6) k += ATLI[atl]; // tempo: ilk 4 sn → ilk 6 sn
+            if (u.Pasif == "ruzgar" && T < 7) k += 0.35;
             if (u.Var("uluma")) k += 0.45;
             k += u.AsEk;
             if (u.Var("cosku")) k += 0.4;
@@ -363,7 +363,7 @@ namespace Kut
             foreach (var d in Birimler)
             {
                 if (d.Olu) continue;
-                if (d.Taraf == u.Taraf && d.Pasif == "ruhBagi") d.Mp = Math.Min(d.Mana, d.Mp + 35);
+                if (d.Taraf == u.Taraf && d.Pasif == "ruhBagi") d.Mp = Math.Min(d.Mana, d.Mp + 25); // tempo: 35 → 25
                 if (d.Taraf != u.Taraf && d.Pasif == "karanlikPay") d.PayYigin++;
                 if (d.Taraf == u.Taraf && d.E("ruhTestisi")) { d.Mp = Math.Min(d.Mana, d.Mp + 20); Iyiles(d, d.Mx * 0.1); }
                 if (d.Taraf != u.Taraf && d.E("avCoskusu")) DurumVer(d, "cosku", 3);
@@ -554,7 +554,7 @@ namespace Kut
                 double dd = Mesafe(u, h);
                 if (dd > MenzilAl(u) + 0.05)
                 {
-                    double hiz = (u.Soy.Contains("atli") ? 2.4 : 1.7) * (u.E("bulutNali") ? 1.5 : 1) * DT;
+                    double hiz = (u.Soy.Contains("atli") ? 1.6 : 1.2) * (u.E("bulutNali") ? 1.5 : 1) * DT; // tempo: 1,7 → 1,2, Çevik 2,4 → 1,6
                     u.X += (h.X - u.X) / dd * Math.Min(hiz, dd - MenzilAl(u));
                     u.Y += (h.Y - u.Y) / dd * Math.Min(hiz, dd - MenzilAl(u));
                 }
@@ -582,7 +582,7 @@ namespace Kut
             // son düşman zaman içi hasarla öldüyse ve kalanlar hedefsiz kaldıysa savaş bu adımda biter
             if (BittiMi()) return;
             T += DT;
-            if (T >= KutVeri.SavasSuresi)
+            if (T + 1e-9 >= KutVeri.SavasSuresi) // T 0,05 adımlarla birikir: 45 sn 44,999… olarak gelir
             {
                 double o0 = 0, o1 = 0;
                 foreach (var o in Birimler) { if (o.Taraf == 0) o0 += Math.Max(0, o.Hp) / o.Mx; else o1 += Math.Max(0, o.Hp) / o.Mx; }

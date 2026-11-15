@@ -126,16 +126,16 @@ function nasilPencere() {
     <li><b>Hızlı Maç:</b> eski kurallar: her tur 10 altın (birikmez), yenileme 1, seviye yok; takım sınırı tura göre büyür (en çok 6), yedek 4; 5 can, 7 zafer.</li>
     <li><b>3 aynı kahraman</b> kendiliğinden birleşir: ★2, sonra ★3.</li>
     <li><b>Bölüm ve tur:</b> maç bölümlere ayrılır ("3-2" = Bölüm 3, Tur 2). Bölüm 1'in üç turu ve her bölümün 7. turu <b>canavar turudur</b>; kaybetsen de ganimet (bileşen, altın, kahraman) alırsın. Her bölümün 4. turu <b>Kervan</b>dır: savaş yok, kahraman + eşya çiftlerinden birini seçersin (canı az olan daha çok seçenek görür). Maçın başında 3 kahramandan biri bedava.</li>
-    <li><b>Gün Batımı:</b> savaşın 20. saniyesinden sonra her saniye bütün hasar %10 artar (25. sn ×1,5, 30. sn ×2).</li>
+    <li><b>Gün Batımı:</b> savaşın 30. saniyesinden sonra her saniye bütün hasar %10 artar (35. sn ×1,5, 40. sn ×2).</li>
     <li><b>Eşyalar:</b> canavar turlarında ve Kervan'da rafına bileşen düşer. Rafta bir eşyaya, sonra kahramana dokun: takılır. Kahramanda yarım bir bileşen varsa ikisi kendiliğinden tam eşyaya dönüşür; rafta iki bileşene arka arkaya dokunarak da birleştirebilirsin. Kahraman başına en çok 3 eşya; takılan eşya çıkmaz (Söküm Taşı hariç). Kahramanı satınca eşyaları rafa döner; birleşme ve kaynaştırmada eşyalar yeni birime geçer.</li>
     <li><b>Kaynaştır (2 + en yüksek kademe altın; Hızlı Maç'ta 3):</b> bir kahramanı seç, Kaynaştır'a bas, ikinci kahramana dokun. Yetenek birinciden, pasif ikinciden gelir; soyların hepsi sayılır.</li>
     <li><b>Rakibini önceden gör:</b> sol üstte sıradaki rakibin kadrosu ve soyları var. Ona göre kur.</li>
     <li><b>Alamet:</b> her turun kendi kuralı vardır (Kan Ayı, Sis, Tipi…).</li>
-    <li><b>Kut:</b> savaş kendi kendine oynar, ama bir kez kendi kahramanına dokunup yeteneğini anında patlatabilirsin. Lobide son iki kişi kalınca 2 Kut hakkın olur (arada en az 4 sn).</li>
+    <li><b>Kut:</b> savaş kendi kendine oynar, ama bir kez kendi kahramanına dokunup yeteneğini anında patlatabilirsin. Lobide son iki kişi kalınca 2 Kut hakkın olur (arada en az 6 sn).</li>
     <li><b>Kut Yankısı:</b> eşyalı kahramana verilen Kut, taşıdığı her bileşen için ek etki yapar (tam eşya iki bileşen sayılır, Kut Taşı ikiye katlar): Diş sonraki 3 vuruşa +%50 hasar, Tüy 3 sn +%50 hız, Kor yeteneği ×1,25, Çiy yetenekten sonra 30 mana, Kabuk 3 sn −%40 hasar, Yürek canının %15'i, Pul 3 sn %40 can çalma, Buz 150 kalkan.</li>
     <li><b>Kut Armağanı:</b> 2-1, 3-2 ve 4-3'te üç karttan birini seçersin (Kıvılcım, Alev ya da Güneş). Armağan maç boyunca seninle kalır; her aşamada kartları bir kez yenileyebilirsin.</li>
-    <li><b>Sıradaki alamet</b> önceden görünür. Yeni alametler: Demirci Ateşi (kazanana bileşen), Göç Mevsimi (2 bedava yenileme), Kut Sessizliği (Kut yok, herkes %25 mana ile başlar), Uzun Gölge (Gün Batımı 12. sn'de).</li>
-    <li><b>100 can.</b> Kaybedince bölüm tabanı (bölüm 2'de 4, 3'te 8, 4'te 12, 5'te 16…) ve rakibin ayakta kalan kahramanlarının yıldızları kadar can gider; canavar turunda taban ve ayakta kalan canavar sayısı kadar. İlk üç turda can gitmez. Canın bitmeden 5-3'ü tamamlarsan arena senin.</li></ul>
+    <li><b>Sıradaki alamet</b> önceden görünür. Yeni alametler: Demirci Ateşi (kazanana bileşen), Göç Mevsimi (2 bedava yenileme), Kut Sessizliği (Kut yok, herkes %25 mana ile başlar), Uzun Gölge (Gün Batımı 20. sn'de).</li>
+    <li><b>100 can.</b> Kaybedince bölüm tabanı (bölüm 2'de 4, 3'te 9, 4'te 13, 5'te 17…) ve rakibin ayakta kalan kahramanlarının yıldızları kadar can gider; canavar turunda taban ve ayakta kalan canavar sayısı kadar. İlk üç turda can gitmez. Canın bitmeden 5-3'ü tamamlarsan arena senin.</li></ul>
     <div class="eylemler"><button class="btn altin" data-kapat>Anladım</button></div>`);
 }
 function duelloPencere() {

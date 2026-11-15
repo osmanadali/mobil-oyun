@@ -384,6 +384,6 @@ console.log('savaş', savas.length, '(A kazanır', k.filter(x => x === 0).length
   'zincir', zincir.length, '(' + zincir.reduce((t, z) => t + z.turlar.length, 0) + ' tur)',
   '| eşya: savaş', savas.filter(v => [...v.A, ...v.B].some(b => b.e && b.e.length)).length, 'istatistik', esyaStat.length, 'takma', esyaTak.length, 'toplama', esyaTopla.length, 'raf', rafBirlestir.length, 'ganimet', ganimetEsya.length,
   '| canavar: savaş', savas.filter(v => [...v.A, ...v.B].some(b => D.canavar(b.h))).length, 'Gün Batımı', savas.filter(v => v.opt.gunBatimi != null).length,
-  '(30 sn\'ye kalan', savas.filter(v => v.opt.gunBatimi != null && v.sonuc.sonuc.sure >= 30).length + ')', 'dalga', pveDalga.length, 'ganimet', ganimetV.length, 'Kervan', kervanV.length, 'bedava seçim', baslangic.length,
+  '(' + K0.savasSuresi + ' sn\'ye kalan', savas.filter(v => v.opt.gunBatimi != null && v.sonuc.sonuc.sure >= K0.savasSuresi).length + ')', 'dalga', pveDalga.length, 'ganimet', ganimetV.length, 'Kervan', kervanV.length, 'bedava seçim', baslangic.length,
   '| lobi: eğri', izEgriV.length, 'bot izi', botIzV.length, 'kayıtlı iz', izTurV.length, 'lobi izleri', lobiIzV.length, 'alamet', alametV.length, 'kupa', kupaV.length, 'eşleşme', eslesmeV.length,
   'tam lobi', lobiV.length, '(' + lobiV.reduce((t, l) => t + l.turlar.length, 0) + ' tur, ' + lobiV.reduce((t, l) => t + l.turlar.reduce((u, x) => u + x.sonuclar.length, 0), 0) + ' lobi savaşı)', '→', out);

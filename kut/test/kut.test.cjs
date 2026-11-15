@@ -35,12 +35,12 @@ const savas = (e, opt = {}, h = 'golem', s = 1) => S.Savas([{ h, s, x: 1, y: 0, 
   const d = dene(['dis']); ok(d.yankiDis === 0, 'Diş yankısı 3 vuruştan sonra biter');
 }
 
-// ── 2) Kut hakkı: 1 hak; kutHak 2 / Çifte Kut ile 2, ikincisi en az 4 sn sonra; Kut Mirası; Kut Sessizliği ──
+// ── 2) Kut hakkı: 1 hak; kutHak 2 / Çifte Kut ile 2, ikincisi en az 6 sn sonra (KURAL.kut.ara); Kut Mirası; Kut Sessizliği ──
 {
   let sv = savas(null); ok(sv.kut(0, 0) && !sv.kut(0, 1) && sv.kutKalanSay(0) === 0 && !sv.kutVar(0), 'temel: savaş başına 1 Kut');
   sv = savas(null, { kutHak: [2, 2] }); ok(sv.kut(0, 0) && !sv.kut(0, 1) && sv.kutVar(0) && !sv.kutHazir(0), 'Son İki (kutHak 2): ikinci Kut hemen kullanılamaz');
-  for (let i = 0; i < 79; i++) sv.adim(); ok(!sv.kut(0, 1), 'ikinci Kut 3,95 sn sonra reddedilir');
-  sv.adim(); ok(sv.kutHazir(0) && sv.kut(0, 1) && sv.kutKalanSay(0) === 0 && sv.kutHakSay(0) === 2, 'ikinci Kut 4 sn sonra kullanılır (sayaç 0/2)');
+  for (let i = 0; i < 119; i++) sv.adim(); ok(K.kut.ara === 6 && !sv.kut(0, 1), 'ikinci Kut 5,95 sn sonra reddedilir');
+  sv.adim(); ok(sv.kutHazir(0) && sv.kut(0, 1) && sv.kutKalanSay(0) === 0 && sv.kutHakSay(0) === 2, 'ikinci Kut 6 sn sonra kullanılır (sayaç 0/2)');
   sv = savas(null, { armagan: [['cifteKut'], []] }); ok(sv.kutHakSay(0) === 2 && sv.kutHakSay(1) === 1, 'Çifte Kut: armağanı alan tarafın 2 hakkı var');
   sv = savas(null, { kutHak: [2, 2], armagan: [['cifteKut'], []] }); ok(sv.kutHakSay(0) === 3, 'Çifte Kut + Son İki: 3 hak');
   // Kut Mirası: Kut verilen birim ölünce hak bir kez geri gelir
@@ -49,31 +49,31 @@ const savas = (e, opt = {}, h = 'golem', s = 1) => S.Savas([{ h, s, x: 1, y: 0, 
   for (let i = 0; i < 800 && !sv.bitti; i++) { sv.adim(); if (sv.birimler[0].olu) { geri = sv.kutKalanSay(0) === 1 && sv.fx.some(f => f.tip === 'kutMiras') || geri; break; } }
   ok(geri, 'Kut Mirası: Kut verilen kurt ölünce Kut hakkı geri geldi');
   for (let i = 0; i < 100 && !sv.kutHazir(0) && !sv.bitti; i++) sv.adim();
-  ok(sv.kut(0, 1) && sv.kutKalanSay(0) === 0, 'geri gelen hak (4 sn arayla) kullanılabilir, bir kez');
+  ok(sv.kut(0, 1) && sv.kutKalanSay(0) === 0, 'geri gelen hak (6 sn arayla) kullanılabilir, bir kez');
   // Kut Sessizliği
   sv = savas(null, { alamet: 'kutSessiz' });
   ok(!sv.kutVar(0) && !sv.kut(0, 0) && sv.kutYok && sv.birimler.every(u => u.mp >= u.mana * 0.25 - 1e-9), 'Kut Sessizliği: Kut yok, herkes %25 mana ile başlar');
   const s2 = savas(null, { alamet: 'kutSessiz', yz: [0, 1] }).sonunaKadar(); ok(s2.kut[0] === 0 && s2.kut[1] === 0, 'Kut Sessizliği: yapay zekâ da Kut kullanamaz');
   // Uzun Gölge
-  ok(savas(null, { alamet: 'uzunGolge', gunBatimi: 20 }).gunBatimiBasla === 12 && savas(null, { alamet: 'uzunGolge' }).gunBatimiBasla === null && savas(null, { gunBatimi: 20 }).gunBatimiBasla === 20,
-    'Uzun Gölge: Gün Batımı 12. sn\'de (yalnız Gün Batımı açık savaşlarda; Hızlı Maç etkilenmez)');
+  ok(savas(null, { alamet: 'uzunGolge', gunBatimi: 30 }).gunBatimiBasla === 20 && savas(null, { alamet: 'uzunGolge' }).gunBatimiBasla === null && savas(null, { gunBatimi: 30 }).gunBatimiBasla === 30,
+    'Uzun Gölge: Gün Batımı 20. sn\'de (yalnız Gün Batımı açık savaşlarda; Hızlı Maç etkilenmez)');
   const r = savas(null, { kutHak: [2, 1], yz: [0, 1] }).sonunaKadar(); ok(Array.isArray(r.kut) && r.kut.length === 2, `sonuç tarafların kullandığı Kut sayısını taşır (${r.kut})`);
 }
 
-// ── 3) Yapay zekâ Kut'u (7.4): puan = (mana − mp) × kc + 20 × bileşen + (Kut Ocağı 60); eşitlikte küçük i; ikinci hak 12. sn ──
+// ── 3) Yapay zekâ Kut'u (7.4): puan = (mana − mp) × kc + 20 × bileşen + (Kut Ocağı 60); eşitlikte küçük i; ilk hak 8., ikinci hak 18. sn ──
 {
   const takim = (e1, e2) => [{ h: 'kurt', s: 1, x: 0, y: 0, ...(e1 ? { e: e1 } : {}) }, { h: 'kurt', s: 1, x: 3, y: 0, ...(e2 ? { e: e2 } : {}) }];
-  const kim = (A, ops = {}) => { const kay = []; const sv = S.Savas(A, [{ h: 'golem', s: 3, x: 1, y: 2 }], { tohum: 9, yz: [0], kayit: kay, ...ops }); for (let i = 0; i < 140 && !kay.length; i++) sv.adim(); return kay[0]; };
+  const kim = (A, ops = {}) => { const kay = []; const sv = S.Savas(A, [{ h: 'golem', s: 3, x: 1, y: 2 }], { tohum: 9, yz: [0], kayit: kay, ...ops }); for (let i = 0; i < 200 && !kay.length; i++) sv.adim(); return kay[0]; };
   // yzZaman küçük: iki birimin de manası 0 iken karar verilir
   const erken = { yzZaman: 0.01 };
   ok(kim(takim(), erken).i === 0, 'eşitlikte birim sırası küçük olan seçilir');
   ok(kim(takim(null, ['dis']), erken).i === 1 && kim(takim(['dis'], ['dis', 'tuy']), erken).i === 1, 'bileşen taşıyan önce (20 × bileşen)');
   ok(kim(takim(['yirticiPence'], ['kutOcagi']), erken).i === 1, 'Kut Ocağı +60: aynı bileşen sayısında Kut Ocağı taşıyan seçilir');
-  const k1 = kim(takim()); ok(k1 && k1.t >= 5 - 1e-9 && k1.t < 5.1, `ilk hak 5. sn'de (${k1.t})`);
+  const k1 = kim(takim()); ok(k1 && k1.t >= 8 - 1e-9 && k1.t < 8.1, `ilk hak 8. sn'de (${k1.t})`);
   const dayanikli = [{ h: 'golem', s: 3, x: 1, y: 0 }, { h: 'kaplumbaga', s: 3, x: 2, y: 0 }];
   const kay = []; const sv = S.Savas(dayanikli, [{ h: 'golem', s: 3, x: 1, y: 0 }, { h: 'kaplumbaga', s: 3, x: 2, y: 0 }], { tohum: 9, yz: [0], kayit: kay, kutHak: [2, 1] });
-  for (let i = 0; i < 300 && kay.length < 2 && !sv.bitti; i++) sv.adim();
-  ok(kay.length === 2 && kay[1].t >= 12 - 1e-9 && kay[1].t < 12.1, `ikinci hak 12. sn'de (${kay.map(k => k.t)})`);
+  for (let i = 0; i < 450 && kay.length < 2 && !sv.bitti; i++) sv.adim();
+  ok(kay.length === 2 && kay[1].t >= 18 - 1e-9 && kay[1].t < 18.1, `ikinci hak 18. sn'de (${kay.map(k => k.t)})`);
   // kayıtlı dokunuş + yedek: kayıttaki birim ölmüşse yapay zekâ kullanır; yedek taraf kendi kaydından önce Kut kullanmaz
   const A = [{ h: 'kurt', s: 1, x: 1, y: 0 }, { h: 'golem', s: 2, x: 2, y: 2 }], B = [{ h: 'ayi', s: 3, x: 1, y: 0 }, { h: 'koc', s: 3, x: 2, y: 0 }];
   const ilk = S.Savas(A, B, { tohum: 4 }); let olumT = null; for (let i = 0; i < 800 && !ilk.bitti && olumT === null; i++) { ilk.adim(); if (ilk.birimler[0].olu) olumT = ilk.t; }
@@ -97,9 +97,9 @@ const savas = (e, opt = {}, h = 'golem', s = 1) => S.Savas([{ h, s, x: 1, y: 0, 
   ok(S.Savas(B, A, {}).soylar[1].dev.seviye === 1 && S.Savas(B, A, { armagan: [['karsiHamle'], []] }).soylar[1].dev.seviye === 0, 'Karşı Hamle: rakibin en kalabalık soyu (Dev 2) bir eşik düşük');
   const fu = { h: 'golem', s: 1, f: 'kurt', x: 1, y: 0 };
   const m1 = S.Savas([fu], B, {}).birimler[0], m2 = S.Savas([fu], B, { armagan: [['kusursuzMelez'], []] }).birimler[0];
-  ok(m1.mx === Math.round((D.kahraman('golem').can + 520) / 2 * 1.15) && m2.mx === Math.round((D.kahraman('golem').can + 520) / 2 * 1.3), 'Kusursuz Melez: kaynaşmış birim çarpanı ×1,15 → ×1,30');
+  ok(m1.mx === Math.round((D.kahraman('golem').can + D.kahraman('kurt').can) / 2 * 1.15) && m2.mx === Math.round((D.kahraman('golem').can + D.kahraman('kurt').can) / 2 * 1.3), 'Kusursuz Melez: kaynaşmış birim çarpanı ×1,15 → ×1,30');
   const u3 = S.birimStat({ h: 'golem', s: 1, f: 'kurt', f2: 'yilan' });
-  ok(u3.can === Math.round((D.kahraman('golem').can + 520) / 2 * 1.15 * 1.1) && ['su', 'bilge'].every(x => u3.soy.includes(x)) && u3.pasif === 'suru' && u3.yetenek === 'tasFirlat', 'Üçlü Kaynaşma: üçüncüden soylar ve +%10; yetenek ve pasif değişmez');
+  ok(u3.can === Math.round((D.kahraman('golem').can + D.kahraman('kurt').can) / 2 * 1.15 * 1.1) && ['su', 'bilge'].every(x => u3.soy.includes(x)) && u3.pasif === 'suru' && u3.yetenek === 'tasFirlat', 'Üçlü Kaynaşma: üçüncüden soylar ve +%10; yetenek ve pasif değişmez');
   const c1 = S.Savas([{ h: 'golem', s: 1, x: 1, y: 0 }], B, { armagan: [['sonDirenis'], []] }).birimler[0];
   ok(c1.mx === Math.round(D.kahraman('golem').can * 1.2), 'Son Direniş: takım +%20 can');
   ok(JSON.stringify(L.savasArmagan(['sonDirenis', 'cifteKut', 'pazarDostu'], 39)) === '["sonDirenis","cifteKut"]' && JSON.stringify(L.savasArmagan(['sonDirenis', 'cifteKut'], 40)) === '["cifteKut"]',

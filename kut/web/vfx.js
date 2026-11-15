@@ -1021,7 +1021,7 @@ const YETENEK = {
     flas(el, { renk: '#b07cff', boy: 0.55, sure: 0.18, halka: false });
     P({ p: el, omur: 0.28, boy: 0.15, boy2: 1.0, renk: '#a46cff', kare: 'halka', hot: 0.8, a: 0.9, fi: 0, fo: 0.3 });
     P({ p: el, omur: 0.22, boy: 0.1, boy2: 0.6, renk: '#e0c2ff', kare: 'halka', hot: 1, a: 0.8, fi: 0, fo: 0.3 });
-    mermi(el, h.o || h.p, ON_SURE.golgeOk, { tur: 'ok', renk: '#a46cff', guc: 1.6 * g, varisGuc: 1.4, izEn: 0.2, izOmur: 0.32, bitis: (B) => {
+    mermi(el, h.o || h.p, ON_SURE.golgeOk, { tur: 'ok', renk: '#a46cff', guc: 0.9 * g, varisGuc: 1.4, izEn: 0.3, izOmur: 0.32, bitis: (B) => {
       for (const r of [-0.8, 0.8]) P({ p: B, omur: 0.3, boy: 0.8 * g, boy2: 1.2 * g, en: 1.6, renk: '#ffffff', renk2: '#a46cff', kare: 'kesik', rot: r + Math.PI / 2, hot: 1, fi: 0, fo: 0.3 });
       for (let i = 0, n = N(10); i < n; i++) { kureY(_v2, 0.3).multiplyScalar(rr(0.8, 2)); P({ p: B, v: _v2, drag: 2.5, omur: rr(0.5, 0.8), boy: rr(0.25, 0.4), boy2: 0.8, renk: '#2a1442', renk2: '#100818', kare: 'duman', normal: true, rot: 'r', a: 0.7, hot: 0 }); }
       sars(0.12 * g);
@@ -1200,7 +1200,7 @@ const HAZIR = {
         else P({ p: _v3, yorunge: { r: rr(0.1, 0.5), w: 3 }, omur: rr(0.06, 0.12), boy: rr(0.4, 0.7), renk: '#fff27a', kare: 'parilti', hot: 0.8, a: 0.8, on: 0 }); }
       if (yas < s) { is.ak = (is.ak || 0) + dt * 26 * OLCEK; while (is.ak >= 1) { is.ak--; const a = RND() * TAU, r = rr(0.12, 0.3) * k.h; _v3.set(p.x + Math.cos(a) * r, p.y + rr(0.25, 0.95) * k.h, p.z + Math.sin(a) * r);
         P({ p: _v3, v: kureY(_v2, 0.3).multiplyScalar(rr(0.8, 1.8)), drag: 4, omur: rr(0.08, 0.16), boy: 0.07, en: 0.5, renk: '#ffffff', renk2: '#fff27a', kare: 'kivilcim', mod: 2, uzat: 0.06, hot: 1 }); }
-        if (kem && kem.parent) P({ p: takipPoz(kem), omur: -1, boy: 0.15 + 0.35 * kk * kk, renk: '#fff27a', kare: 'parilti', hot: 0.9, a: 0.8 }); } });
+        if (kem && kem.parent) P({ p: takipPoz(kem), omur: -1, boy: 0.12 + 0.22 * kk * kk, renk: '#fff27a', kare: 'parilti', hot: 0.9, a: 0.7 }); } });
   },
 };
 // Işık Kanadı: tüy değince dostun üstünde kalkan kabarcığı açılır, yıldızlar saçılır, yukarıdan tek tüy süzülür

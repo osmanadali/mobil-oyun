@@ -452,7 +452,7 @@ export class Oyun {
     if (!M.rakip) { this.bildir('Rakip aranıyor…'); return null; }
     const pve = !!M.rakip.pve, alamet = this.savasAlamet();
     this._savas = { benim: takim, rakip: M.rakip, alamet, tohum: M.tohum + M.tur, kayit: [], pve };
-    // Arena: Gün Batımı (bölüm 1.4; Uzun Gölge'de 12. sn, motor alametten okur); canavarlar Kut kullanmaz
+    // Arena: Gün Batımı (bölüm 1.4; Uzun Gölge'de 20. sn, motor alametten okur); canavarlar Kut kullanmaz
     // lobi hayaleti kayıttaki Kut dokunuşunu kullanır ({i, t}); kayıt yoksa ya da birim ölmüşse / ikinci hak için yapay zekâ (bölüm 4.6, 7.4)
     // armağanlar iki taraf için (bölüm 6.1); Son İki'de iki tarafın da 2 Kut hakkı (4.4)
     const rk = !pve && M.rakip.kut ? [{ t: M.rakip.kut.t, taraf: 1, i: M.rakip.kut.i }] : null;

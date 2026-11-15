@@ -1,6 +1,49 @@
 # Denge raporu (son denetim)
 
-Belgenin 11. bölümündeki denge hedefleri benzetimle sınandı. Hedef dışı kalanlar `data.js` (ve gerekince `sim.js` + `KutSavas.cs`) değerleriyle ayarlandı. C# eşdeğerliği korundu: **9596/9596 birebir aynı**.
+Belgenin 11. bölümündeki denge hedefleri benzetimle sınandı. Hedef dışı kalanlar `data.js` (ve gerekince `sim.js` + `KutSavas.cs`) değerleriyle ayarlandı. C# eşdeğerliği korundu: **9596/9596 birebir aynı** (tempo ayarından sonra da).
+
+## 0. Tempo ayarı (2026-11-15)
+
+Kullanıcı isteği: savaş "mahalle kavgası" gibi hızlı ve seri; kahramanların vuruş sıklığı kişiliklerine göre belirgin farklı olsun, savaş TFT gibi sakin ve okunur aksın. Savaş süresi hedefi **16–20 sn'den 24–32 sn'ye** çıktı (aşağıdaki eski bölümlerdeki 16–20 sn hedefi bu ayardan öncesine aittir).
+
+| Değer | Önce | Sonra |
+|---|---|---|
+| Varsayılan oynatma hızı (`web/arayuz.js`) | 2× (ölçümde) | 1× |
+| Saldırı hızı (`as`) | 0,60–1,00 | ağır 0,45–0,60 (kaplumbağa, golem, ayı, koç) · orta 0,55–0,70 · çevik 0,75–0,85 (tilki, yarasa, kurt, bulut atı) |
+| Vuruş başı hasar (`atk`) | 37–62 | saniyede hasar × 0,8 korunarak frekansla ters: koç 68, ayı 67, ejder 60 … kurt 46, yarasa 42 |
+| Can (kahraman ve canavar) | — | × 1,4 (canavar saldırısı × 0,8) |
+| Vuruş başı mana (`sim.js`) | 10 (Keskin Göz 15) | 8 (Keskin Göz 12) |
+| Yürüme (`sim.js`) | 1,7 hücre/sn, Çevik 2,4 | 1,2, Çevik 1,6 |
+| Çevik soyu | ilk 4 sn +%40/+%90 | ilk 6 sn +%30/+%60 |
+| Rüzgâr Ayak | ilk 5 sn | ilk 7 sn |
+| `KURAL.savasSuresi` | 30 sn | 45 sn |
+| Gün Batımı / Uzun Gölge | 20 / 12 sn | 30 / 20 sn |
+| Kut: ara, yapay zekâ 1. ve 2. hak | 4 / 5 / 12 sn | 6 / 8 / 18 sn |
+| Kurbağa | mana 60, Ruh Bağı +35 | mana 70, Ruh Bağı +25 (savaş başına 3,9 → 3,7 yetenek) |
+| `bolumTabani` | 0/0/4/8/12/16/20/24 | 0/0/4/9/13/17/21/25 (maç yine 5-3'te bitsin) |
+| Süre sınırı karşılaştırması (`sim.js`, `KutSavas.cs`) | `t >= 30` | `t + 1e-9 >= 45` (0,05'lik adım birikimi 45,05'e taşmasın) |
+
+Kahraman ince ayarı (E bölümü, 1500 vaka): kurbağa can 930 / saldırı 49, tilki saldırı 50 / mana 90, kuğu can 980, bulut atı can 800 / saldırı 58, anka 56, ejder 60, koç 68, yarasa 42.
+
+Sonuçlar (`node test/denge_benzetim.mjs 0.3`, E bölümü 3 ile):
+
+| Ölçüt | Hedef | Sonuç |
+|---|---|---|
+| Savaş süresi ortanca / %90 dilim | 24–32 sn / ≤ 42 sn | 28,95 / 40,25 sn |
+| Süre sınırına kalan savaş | < %5 | %3,1 |
+| İlk ölüm ortancası | 5–8 sn | 6,5 sn (tempo ölçümü, 3166 savaş) |
+| Vuruş aralığı ortancası (bütün vuruşlar) | — | 1,15 → 1,40 sn; kaplumbağa 2,25 · golem 2,0 · ayı 1,75 … kurt 0,95 · bulut atı 0,8 |
+| Sahadaki vuruş sayısı | — | saniyede 5,9 → 4,8 |
+| Maçın bittiği tur / ilk elenme | 5-3 / 4-1 | 5-3 / 4-1 |
+| Birincinin tahmini süresi | 22–26 dk (önce 18–20) | 23,1 dk (lobi.test) |
+| Kahraman kazanma oranı (kademe ortalamasının ±5 puanı) | ±5 | 16/16 (−3,6 … +3,3) |
+| Kut en iyi hedef × rastgele | +8 … +15 | +8,4 puan |
+| Faiz × harca sıra farkı | ≤ 0,8 | 0,51 |
+| Bölüm 1 canavar kaybı | ≤ %10 | %0 |
+
+Açık nokta: Hızlı Maç'ta Gün Batımı yok; bot takımlarıyla (eşyasız) süre sınırına kalan savaş %2,8'den %7,7'ye çıktı. Hızlı Maç'a Gün Batımı eklemek bir kural kararı olduğu için yapılmadı.
+
+Görüntü tarafı (`web/sahne3d.js`, `web/hareket.js`): vuruş kurulması ağırlık sınıfına göre (ağır 0,7 · orta 0,45 · çevik 0,25 sn; dört ayaklıda 0,6 / 0,4 / 0,25); motor yalnız 0,4 sn önde olduğu için uzun kurulma, anlığa eklenen `cd` alanından vuruş anı tahmin edilerek önden başlar ve gerçek olay gelince darbeye bağlanır (motor değişmez). Klip hızlanma tavanı 1,3; ağır sınıfta yavaş toparlanma ve darbede 0,06 sn duraklama; yakın atılma 0,4 → 0,2 (ağır 0,12); ekranda en çok 10 sayı (hafif 8), birleştirme 0,5 sn (DOT 1 sn); kamera yakınlaşma alt sınırı 0,8.
 
 Üreten komutlar (belirlenimci; aynı sayıyla aynı sonuç):
 

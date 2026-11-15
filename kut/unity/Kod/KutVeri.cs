@@ -35,38 +35,38 @@ namespace Kut
             new SoyBilgi { Id = "dev", Ad = "Dev", Emoji = "🗿", Esik = new[] { 2, 4 }, Aciklama = new[] { "Alınan hasar -%12", "Alınan hasar -%28" } },
             new SoyBilgi { Id = "avci", Ad = "Avcı", Emoji = "🏹", Esik = new[] { 2, 4 }, Aciklama = new[] { "+%20 hasar", "+%45 hasar" } },
             new SoyBilgi { Id = "bilge", Ad = "Bilge", Emoji = "📜", Esik = new[] { 2, 4 }, Aciklama = new[] { "+%30 mana kazanımı", "+%70 mana kazanımı" } },
-            new SoyBilgi { Id = "atli", Ad = "Çevik", Emoji = "🐾", Esik = new[] { 2, 4 }, Aciklama = new[] { "İlk 4 sn +%40 saldırı hızı", "İlk 4 sn +%90 saldırı hızı" } },
+            new SoyBilgi { Id = "atli", Ad = "Çevik", Emoji = "🐾", Esik = new[] { 2, 4 }, Aciklama = new[] { "İlk 6 sn +%30 saldırı hızı", "İlk 6 sn +%60 saldırı hızı" } },
         };
 
         public static readonly Kahraman[] Kahramanlar = {
-            new Kahraman { Id = "golem", Ad = "Kaya Golemi", Emoji = "🪨", Renk = "#a3775a", Kademe = 1, Soy = new[] { "yer", "dev" }, Can = 700.0, Atk = 37.0, As = 0.65, Menzil = 1, Mana = 80.0, Yetenek = "tasFirlat", Pasif = "tasDeri" },
-            new Kahraman { Id = "kurt", Ad = "Kristal Kurt", Emoji = "🐺", Renk = "#8c97a8", Kademe = 1, Soy = new[] { "atli", "avci" }, Can = 520.0, Atk = 52.0, As = 0.95, Menzil = 1, Mana = 60.0, Yetenek = "uluma", Pasif = "suru" },
-            new Kahraman { Id = "kurbaga", Ad = "Davulcu Kurbağa", Emoji = "🐸", Renk = "#c9a24a", Kademe = 1, Soy = new[] { "bilge", "gok" }, Can = 610.0, Atk = 42.0, As = 0.85, Menzil = 3, Mana = 60.0, Yetenek = "davul", Pasif = "ruhBagi" },
-            new Kahraman { Id = "yarasa", Ad = "Sis Yarasası", Emoji = "🦇", Renk = "#b4435a", Kademe = 1, Soy = new[] { "karanlik", "su" }, Can = 500.0, Atk = 50.0, As = 0.85, Menzil = 1, Mana = 70.0, Yetenek = "ruhEmme", Pasif = "canEmici" },
-            new Kahraman { Id = "ruzgar", Ad = "Rüzgâr Ruhu", Emoji = "🌪️", Renk = "#7fc8c0", Kademe = 1, Soy = new[] { "gok", "avci" }, Can = 430.0, Atk = 44.0, As = 0.9, Menzil = 3, Mana = 80.0, Yetenek = "kasirga", Pasif = "kacis" },
-            new Kahraman { Id = "koc", Ad = "Dağ Koçu", Emoji = "🐏", Renk = "#d06a3c", Kademe = 2, Soy = new[] { "yer", "atli" }, Can = 680.0, Atk = 62.0, As = 0.85, Menzil = 1, Mana = 90.0, Yetenek = "deliOfke", Pasif = "deliCesaret" },
-            new Kahraman { Id = "yilan", Ad = "Zümrüt Yılan", Emoji = "🐍", Renk = "#5aa86a", Kademe = 2, Soy = new[] { "su", "bilge" }, Can = 610.0, Atk = 41.0, As = 0.75, Menzil = 3, Mana = 80.0, Yetenek = "zehir", Pasif = "zehirDis" },
-            new Kahraman { Id = "kaplumbaga", Ad = "Buz Kaplumbağası", Emoji = "🐢", Renk = "#7aa6d6", Kademe = 2, Soy = new[] { "kis", "dev" }, Can = 820.0, Atk = 38.0, As = 0.6, Menzil = 1, Mana = 90.0, Yetenek = "buzNefes", Pasif = "soguk" },
-            new Kahraman { Id = "semender", Ad = "Kor Semenderi", Emoji = "🦎", Renk = "#ef8a3a", Kademe = 2, Soy = new[] { "ates", "su" }, Can = 600.0, Atk = 42.0, As = 0.75, Menzil = 2, Mana = 90.0, Yetenek = "ocak", Pasif = "sicakKalp" },
-            new Kahraman { Id = "bulutat", Ad = "Bulut Atı", Emoji = "🦄", Renk = "#e7d9b5", Kademe = 2, Soy = new[] { "gok", "atli" }, Can = 540.0, Atk = 58.0, As = 1.0, Menzil = 1, Mana = 70.0, Yetenek = "dortnal", Pasif = "ruzgar" },
-            new Kahraman { Id = "kugu", Ad = "Işık Kuğusu", Emoji = "🦢", Renk = "#f1e7a6", Kademe = 3, Soy = new[] { "gok", "su" }, Can = 640.0, Atk = 38.0, As = 0.7, Menzil = 3, Mana = 90.0, Yetenek = "kanat", Pasif = "ana" },
-            new Kahraman { Id = "ayi", Ad = "Gece Ayısı", Emoji = "🐻", Renk = "#5b3f7a", Kademe = 3, Soy = new[] { "karanlik", "dev" }, Can = 920.0, Atk = 60.0, As = 0.7, Menzil = 1, Mana = 100.0, Yetenek = "karaGolge", Pasif = "karanlikPay" },
-            new Kahraman { Id = "anka", Ad = "Anka", Emoji = "🐦‍🔥", Renk = "#ff6a3d", Kademe = 3, Soy = new[] { "ates", "gok" }, Can = 600.0, Atk = 56.0, As = 0.8, Menzil = 3, Mana = 100.0, Yetenek = "kulDogus", Pasif = "yenidenDogus" },
-            new Kahraman { Id = "baykus", Ad = "Ayaz Baykuşu", Emoji = "🦉", Renk = "#bfe0ff", Kademe = 3, Soy = new[] { "kis", "bilge" }, Can = 560.0, Atk = 42.0, As = 0.7, Menzil = 3, Mana = 100.0, Yetenek = "ayaz", Pasif = "kisNefesi" },
-            new Kahraman { Id = "tilki", Ad = "Gölge Tilki", Emoji = "🦊", Renk = "#4a5578", Kademe = 3, Soy = new[] { "karanlik", "avci" }, Can = 520.0, Atk = 58.0, As = 0.85, Menzil = 3, Mana = 80.0, Yetenek = "golgeOk", Pasif = "avKoku" },
-            new Kahraman { Id = "ejder", Ad = "Fırtına Ejderi", Emoji = "🐉", Renk = "#ffd84a", Kademe = 3, Soy = new[] { "ates", "bilge" }, Can = 600.0, Atk = 51.0, As = 0.75, Menzil = 3, Mana = 110.0, Yetenek = "yildirim", Pasif = "gokGurultu" },
+            new Kahraman { Id = "golem", Ad = "Kaya Golemi", Emoji = "🪨", Renk = "#a3775a", Kademe = 1, Soy = new[] { "yer", "dev" }, Can = 980.0, Atk = 38.0, As = 0.5, Menzil = 1, Mana = 80.0, Yetenek = "tasFirlat", Pasif = "tasDeri" },
+            new Kahraman { Id = "kurt", Ad = "Kristal Kurt", Emoji = "🐺", Renk = "#8c97a8", Kademe = 1, Soy = new[] { "atli", "avci" }, Can = 728.0, Atk = 46.0, As = 0.85, Menzil = 1, Mana = 60.0, Yetenek = "uluma", Pasif = "suru" },
+            new Kahraman { Id = "kurbaga", Ad = "Davulcu Kurbağa", Emoji = "🐸", Renk = "#c9a24a", Kademe = 1, Soy = new[] { "bilge", "gok" }, Can = 930.0, Atk = 49.0, As = 0.65, Menzil = 3, Mana = 70.0, Yetenek = "davul", Pasif = "ruhBagi" },
+            new Kahraman { Id = "yarasa", Ad = "Sis Yarasası", Emoji = "🦇", Renk = "#b4435a", Kademe = 1, Soy = new[] { "karanlik", "su" }, Can = 700.0, Atk = 42.0, As = 0.8, Menzil = 1, Mana = 70.0, Yetenek = "ruhEmme", Pasif = "canEmici" },
+            new Kahraman { Id = "ruzgar", Ad = "Rüzgâr Ruhu", Emoji = "🌪️", Renk = "#7fc8c0", Kademe = 1, Soy = new[] { "gok", "avci" }, Can = 602.0, Atk = 45.0, As = 0.7, Menzil = 3, Mana = 80.0, Yetenek = "kasirga", Pasif = "kacis" },
+            new Kahraman { Id = "koc", Ad = "Dağ Koçu", Emoji = "🐏", Renk = "#d06a3c", Kademe = 2, Soy = new[] { "yer", "atli" }, Can = 952.0, Atk = 68.0, As = 0.6, Menzil = 1, Mana = 90.0, Yetenek = "deliOfke", Pasif = "deliCesaret" },
+            new Kahraman { Id = "yilan", Ad = "Zümrüt Yılan", Emoji = "🐍", Renk = "#5aa86a", Kademe = 2, Soy = new[] { "su", "bilge" }, Can = 854.0, Atk = 41.0, As = 0.6, Menzil = 3, Mana = 80.0, Yetenek = "zehir", Pasif = "zehirDis" },
+            new Kahraman { Id = "kaplumbaga", Ad = "Buz Kaplumbağası", Emoji = "🐢", Renk = "#7aa6d6", Kademe = 2, Soy = new[] { "kis", "dev" }, Can = 1148.0, Atk = 41.0, As = 0.45, Menzil = 1, Mana = 90.0, Yetenek = "buzNefes", Pasif = "soguk" },
+            new Kahraman { Id = "semender", Ad = "Kor Semenderi", Emoji = "🦎", Renk = "#ef8a3a", Kademe = 2, Soy = new[] { "ates", "su" }, Can = 840.0, Atk = 42.0, As = 0.6, Menzil = 2, Mana = 90.0, Yetenek = "ocak", Pasif = "sicakKalp" },
+            new Kahraman { Id = "bulutat", Ad = "Bulut Atı", Emoji = "🦄", Renk = "#e7d9b5", Kademe = 2, Soy = new[] { "gok", "atli" }, Can = 800.0, Atk = 58.0, As = 0.85, Menzil = 1, Mana = 70.0, Yetenek = "dortnal", Pasif = "ruzgar" },
+            new Kahraman { Id = "kugu", Ad = "Işık Kuğusu", Emoji = "🦢", Renk = "#f1e7a6", Kademe = 3, Soy = new[] { "gok", "su" }, Can = 980.0, Atk = 39.0, As = 0.55, Menzil = 3, Mana = 90.0, Yetenek = "kanat", Pasif = "ana" },
+            new Kahraman { Id = "ayi", Ad = "Gece Ayısı", Emoji = "🐻", Renk = "#5b3f7a", Kademe = 3, Soy = new[] { "karanlik", "dev" }, Can = 1288.0, Atk = 67.0, As = 0.5, Menzil = 1, Mana = 100.0, Yetenek = "karaGolge", Pasif = "karanlikPay" },
+            new Kahraman { Id = "anka", Ad = "Anka", Emoji = "🐦‍🔥", Renk = "#ff6a3d", Kademe = 3, Soy = new[] { "ates", "gok" }, Can = 840.0, Atk = 56.0, As = 0.6, Menzil = 3, Mana = 100.0, Yetenek = "kulDogus", Pasif = "yenidenDogus" },
+            new Kahraman { Id = "baykus", Ad = "Ayaz Baykuşu", Emoji = "🦉", Renk = "#bfe0ff", Kademe = 3, Soy = new[] { "kis", "bilge" }, Can = 784.0, Atk = 43.0, As = 0.55, Menzil = 3, Mana = 100.0, Yetenek = "ayaz", Pasif = "kisNefesi" },
+            new Kahraman { Id = "tilki", Ad = "Gölge Tilki", Emoji = "🦊", Renk = "#4a5578", Kademe = 3, Soy = new[] { "karanlik", "avci" }, Can = 728.0, Atk = 50.0, As = 0.75, Menzil = 3, Mana = 90.0, Yetenek = "golgeOk", Pasif = "avKoku" },
+            new Kahraman { Id = "ejder", Ad = "Fırtına Ejderi", Emoji = "🐉", Renk = "#ffd84a", Kademe = 3, Soy = new[] { "ates", "bilge" }, Can = 840.0, Atk = 60.0, As = 0.55, Menzil = 3, Mana = 110.0, Yetenek = "yildirim", Pasif = "gokGurultu" },
         };
 
         /// <summary>Canavarlar (5.5): kademe 0, soy yok; yeteneksizlerin manası 9999. KahramanBul bunlara da bakar.</summary>
         public static readonly Kahraman[] Canavarlar = {
-            new Kahraman { Id = "cakil", Ad = "Çakıl Kıpırı", Emoji = "🪨", Renk = "#9a8f80", Kademe = 0, Soy = new string[0], Can = 280.0, Atk = 22.0, As = 0.7, Menzil = 1, Mana = 9999.0, Yetenek = null, Pasif = null },
-            new Kahraman { Id = "kirpi", Ad = "Diken Kirpi", Emoji = "🦔", Renk = "#a0764e", Kademe = 0, Soy = new string[0], Can = 420.0, Atk = 30.0, As = 0.8, Menzil = 1, Mana = 9999.0, Yetenek = null, Pasif = "dikenKirpi" },
-            new Kahraman { Id = "tasKabuk", Ad = "Taş Kabuk", Emoji = "🐚", Renk = "#8c8c8c", Kademe = 0, Soy = new string[0], Can = 900.0, Atk = 28.0, As = 0.5, Menzil = 1, Mana = 9999.0, Yetenek = null, Pasif = null },
-            new Kahraman { Id = "kumAkrebi", Ad = "Kum Akrebi", Emoji = "🦂", Renk = "#d4a95a", Kademe = 0, Soy = new string[0], Can = 700.0, Atk = 50.0, As = 0.8, Menzil = 1, Mana = 9999.0, Yetenek = null, Pasif = null },
-            new Kahraman { Id = "anaAkrep", Ad = "Ana Akrep", Emoji = "🦂", Renk = "#b8742c", Kademe = 0, Soy = new string[0], Can = 1500.0, Atk = 70.0, As = 0.7, Menzil = 1, Mana = 80.0, Yetenek = "akrepZehir", Pasif = null },
-            new Kahraman { Id = "gokBalinasi", Ad = "Gök Balinası", Emoji = "🐋", Renk = "#7fb8e6", Kademe = 0, Soy = new string[0], Can = 5200.0, Atk = 85.0, As = 0.5, Menzil = 3, Mana = 100.0, Yetenek = "balinaSarki", Pasif = null },
-            new Kahraman { Id = "kadimBekci", Ad = "Kadim Bekçi", Emoji = "🗿", Renk = "#8a9a7a", Kademe = 0, Soy = new string[0], Can = 3200.0, Atk = 110.0, As = 0.6, Menzil = 1, Mana = 90.0, Yetenek = "bekciDarbe", Pasif = null },
-            new Kahraman { Id = "yildizYiyen", Ad = "Yıldız Yiyen", Emoji = "🌌", Renk = "#5a3f9a", Kademe = 0, Soy = new string[0], Can = 9000.0, Atk = 140.0, As = 0.6, Menzil = 3, Mana = 100.0, Yetenek = "yildizYutan", Pasif = null },
+            new Kahraman { Id = "cakil", Ad = "Çakıl Kıpırı", Emoji = "🪨", Renk = "#9a8f80", Kademe = 0, Soy = new string[0], Can = 392.0, Atk = 18.0, As = 0.7, Menzil = 1, Mana = 9999.0, Yetenek = null, Pasif = null },
+            new Kahraman { Id = "kirpi", Ad = "Diken Kirpi", Emoji = "🦔", Renk = "#a0764e", Kademe = 0, Soy = new string[0], Can = 588.0, Atk = 24.0, As = 0.8, Menzil = 1, Mana = 9999.0, Yetenek = null, Pasif = "dikenKirpi" },
+            new Kahraman { Id = "tasKabuk", Ad = "Taş Kabuk", Emoji = "🐚", Renk = "#8c8c8c", Kademe = 0, Soy = new string[0], Can = 1260.0, Atk = 22.0, As = 0.5, Menzil = 1, Mana = 9999.0, Yetenek = null, Pasif = null },
+            new Kahraman { Id = "kumAkrebi", Ad = "Kum Akrebi", Emoji = "🦂", Renk = "#d4a95a", Kademe = 0, Soy = new string[0], Can = 980.0, Atk = 40.0, As = 0.8, Menzil = 1, Mana = 9999.0, Yetenek = null, Pasif = null },
+            new Kahraman { Id = "anaAkrep", Ad = "Ana Akrep", Emoji = "🦂", Renk = "#b8742c", Kademe = 0, Soy = new string[0], Can = 2100.0, Atk = 56.0, As = 0.7, Menzil = 1, Mana = 80.0, Yetenek = "akrepZehir", Pasif = null },
+            new Kahraman { Id = "gokBalinasi", Ad = "Gök Balinası", Emoji = "🐋", Renk = "#7fb8e6", Kademe = 0, Soy = new string[0], Can = 7280.0, Atk = 68.0, As = 0.5, Menzil = 3, Mana = 100.0, Yetenek = "balinaSarki", Pasif = null },
+            new Kahraman { Id = "kadimBekci", Ad = "Kadim Bekçi", Emoji = "🗿", Renk = "#8a9a7a", Kademe = 0, Soy = new string[0], Can = 4480.0, Atk = 88.0, As = 0.6, Menzil = 1, Mana = 90.0, Yetenek = "bekciDarbe", Pasif = null },
+            new Kahraman { Id = "yildizYiyen", Ad = "Yıldız Yiyen", Emoji = "🌌", Renk = "#5a3f9a", Kademe = 0, Soy = new string[0], Can = 12600.0, Atk = 112.0, As = 0.6, Menzil = 3, Mana = 100.0, Yetenek = "yildizYutan", Pasif = null },
         };
 
         public static readonly Dictionary<string, Metin> Yetenekler = new Dictionary<string, Metin> {
@@ -95,14 +95,14 @@ namespace Kut
         public static readonly Dictionary<string, Metin> Pasifler = new Dictionary<string, Metin> {
             { "tasDeri", new Metin { Ad = "Taş Deri", M = "Alınan hasar -%20." } },
             { "suru", new Metin { Ad = "Sürü", M = "Yaşayan her dost için +%6 hasar." } },
-            { "ruhBagi", new Metin { Ad = "Ruh Bağı", M = "Bir dost ölünce 35 mana kazanır." } },
+            { "ruhBagi", new Metin { Ad = "Ruh Bağı", M = "Bir dost ölünce 25 mana kazanır." } },
             { "canEmici", new Metin { Ad = "Can Emici", M = "Verdiği hasarın %20’si kadar can kazanır." } },
             { "kacis", new Metin { Ad = "Yel Gibi", M = "Vuruşların %25’inden kaçar." } },
             { "deliCesaret", new Metin { Ad = "Gözü Kara", M = "Canı yarının altındayken +%50 hasar." } },
             { "zehirDis", new Metin { Ad = "Zehirli Diş", M = "Vuruşları 3 sn zehirler (18/sn)." } },
             { "soguk", new Metin { Ad = "Soğuk Dokunuş", M = "Vuruşları 2 sn -%20 saldırı hızı verir." } },
             { "sicakKalp", new Metin { Ad = "Sıcak Kalp", M = "Saniyede %3 can yeniler." } },
-            { "ruzgar", new Metin { Ad = "Rüzgâr Ayak", M = "İlk 5 sn +%35 saldırı hızı." } },
+            { "ruzgar", new Metin { Ad = "Rüzgâr Ayak", M = "İlk 7 sn +%35 saldırı hızı." } },
             { "ana", new Metin { Ad = "Koruyucu Tüy", M = "Savaş başında komşu dostlara 90 kalkan." } },
             { "karanlikPay", new Metin { Ad = "Karanlık Pay", M = "Her düşman ölümünde +%12 hasar (birikir)." } },
             { "yenidenDogus", new Metin { Ad = "Yeniden Doğuş", M = "İlk ölümde %40 canla dirilir." } },
@@ -128,7 +128,7 @@ namespace Kut
             new Esya { Id = "yirticiPence", Ad = "Yırtıcı Pençe", Simge = "e01", M = "Her 3. vuruş, hedefin azami canının %8'i kadar ek hasar.", Tip = "tam", Tarif = new[] { "dis", "dis" } },
             new Esya { Id = "avCoskusu", Ad = "Av Coşkusu", Simge = "e02", M = "Takımından biri düşman öldürünce 3 sn +%40 saldırı hızı.", Tip = "tam", Tarif = new[] { "dis", "tuy" } },
             new Esya { Id = "kizginDis", Ad = "Kızgın Diş", Simge = "e03", M = "Yeteneğinin vurduğu her düşman 3 sn yanar: 30/sn ×★×YG.", Tip = "tam", Tarif = new[] { "dis", "kor" } },
-            new Esya { Id = "keskinGoz", Ad = "Keskin Göz", Simge = "e04", M = "Vuruş başına mana 10 yerine 15.", Tip = "tam", Tarif = new[] { "dis", "ciy" } },
+            new Esya { Id = "keskinGoz", Ad = "Keskin Göz", Simge = "e04", M = "Vuruş başına mana 8 yerine 12.", Tip = "tam", Tarif = new[] { "dis", "ciy" } },
             new Esya { Id = "ofkeTilsimi", Ad = "Öfke Tılsımı", Simge = "e05", M = "Canı ilk kez yarının altına inince 5 sn +%35 saldırı ve −%20 alınan hasar.", Tip = "tam", Tarif = new[] { "dis", "kabuk" } },
             new Esya { Id = "devYumrugu", Ad = "Dev Yumruğu", Simge = "e06", M = "Vuruşlar, kendi azami canının %2'si kadar ek hasar verir.", Tip = "tam", Tarif = new[] { "dis", "yurek" } },
             new Esya { Id = "geceAvcisi", Ad = "Gece Avcısı", Simge = "e07", M = "Bir düşmanı öldürünce onun azami canının %20'si kadar iyileşir.", Tip = "tam", Tarif = new[] { "dis", "pul" } },
@@ -181,12 +181,12 @@ namespace Kut
             new Alamet { Id = "demirci", Ad = "Demirci Ateşi", Emoji = "⚒️", M = "Bu turun savaşını kazanan 1 rastgele bileşen alır.", W = 1.0, Lobi = true },
             new Alamet { Id = "gocMevsimi", Ad = "Göç Mevsimi", Emoji = "🍂", M = "Bu hazırlıkta ilk 2 yenileme bedava.", W = 1.0, Lobi = true },
             new Alamet { Id = "kutSessiz", Ad = "Kut Sessizliği", Emoji = "🌑", M = "Bu tur Kut yok; herkes savaşa %25 mana ile başlar.", W = 1.0, Lobi = true },
-            new Alamet { Id = "uzunGolge", Ad = "Uzun Gölge", Emoji = "🌇", M = "Gün Batımı 20. yerine 12. saniyede başlar.", W = 1.0, Lobi = true },
+            new Alamet { Id = "uzunGolge", Ad = "Uzun Gölge", Emoji = "🌇", M = "Gün Batımı 30. yerine 20. saniyede başlar.", W = 1.0, Lobi = true },
         };
 
         /// <summary>Kut Armağanları (6.2), tablo sırasıyla.</summary>
         public static readonly Armagan[] Armaganlar = {
-            new Armagan { Id = "cifteKut", Ad = "Çifte Kut", Kademe = "gunes", Tur = "Kut", Savas = true, M = "Savaş başına 2 Kut hakkı; ikincisi ilkinden en az 4 sn sonra kullanılabilir.", Neden = "Kut'u iki kez patlatmak istiyorsan." },
+            new Armagan { Id = "cifteKut", Ad = "Çifte Kut", Kademe = "gunes", Tur = "Kut", Savas = true, M = "Savaş başına 2 Kut hakkı; ikincisi ilkinden en az 6 sn sonra kullanılabilir.", Neden = "Kut'u iki kez patlatmak istiyorsan." },
             new Armagan { Id = "uyanis", Ad = "Uyanış", Kademe = "kivilcim", Tur = "Kut", Savas = true, M = "Kut verilen birim savaş sonuna dek +%25 saldırı hızı kazanır.", Neden = "Kut'u vuruşçu bir kahramana veriyorsan." },
             new Armagan { Id = "kutMirasi", Ad = "Kut Mirası", Kademe = "alev", Tur = "Kut", Savas = true, M = "Kut verilen birim ölürse Kut hakkı bir kez geri gelir.", Neden = "Kut'u öndeki kahramana veriyorsan." },
             new Armagan { Id = "isikSutunu", Ad = "Işık Sütunu", Kademe = "alev", Tur = "Kut", Savas = true, M = "Kut, hedefin 2 hücre çevresindeki dostlara da azami manalarının %50'si kadar mana verir.", Neden = "Kahramanların sık diziliyse." },
@@ -212,7 +212,7 @@ namespace Kut
         // Ortak sabitler ve seviyeli maç (data.js KURAL)
         public const int SatisIade = 1, Dukkan = 5, Yedek = 7, TahtaSutun = 4, TahtaSira = 3, TakimTavan = 8;
         public const int CanBaslangic = 100, SeviyeBaslangic = 2, SeviyeTavan = 8, PasifXp = 2, XpBedel = 4, XpMiktar = 4;
-        public const double SavasSuresi = 30.0;
+        public const double SavasSuresi = 45.0;
         public static readonly double[] YildizCarpan = { 0.0, 1.0, 1.8, 3.0 };
         /// <summary>İndeks = mevcut seviye → sonraki seviyeye gereken deneyim.</summary>
         public static readonly int[] XpTablo = { 0, 0, 2, 6, 10, 20, 32, 48 };
@@ -234,7 +234,7 @@ namespace Kut
         /// <summary>İndeks = seri uzunluğu (sonuncusu tavan) → seri bonusu.</summary>
         public static readonly int[] SeriTablo = { 0, 0, 1, 2, 2, 3 };
         /// <summary>İndeks = bölüm (sonuncusu tavan) → kaybedince alınan hasarın tabanı.</summary>
-        public static readonly int[] BolumTabani = { 0, 0, 4, 8, 12, 16, 20, 24 };
+        public static readonly int[] BolumTabani = { 0, 0, 4, 9, 13, 17, 21, 25 };
         /// <summary>Bölüm → Kut Armağanı'nın geldiği tur.</summary>
         public static readonly Dictionary<int, int> ArmaganTur = new Dictionary<int, int> { { 2, 1 }, { 3, 2 }, { 4, 3 } };
         public const int EsyaYuva = 3, EsyaRaf = 10;
@@ -253,7 +253,7 @@ namespace Kut
         public static readonly Dictionary<string, DalgaBirim[]> PveDalga = new Dictionary<string, DalgaBirim[]> { { "1-1", new[] { new DalgaBirim { H = "cakil", X = 1, Y = 0 }, new DalgaBirim { H = "cakil", X = 2, Y = 0 } } }, { "1-2", new[] { new DalgaBirim { H = "cakil", X = 1, Y = 0 }, new DalgaBirim { H = "cakil", X = 2, Y = 0 }, new DalgaBirim { H = "cakil", X = 0, Y = 0 } } }, { "1-3", new[] { new DalgaBirim { H = "tasKabuk", X = 1, Y = 0 }, new DalgaBirim { H = "kirpi", X = 2, Y = 0 }, new DalgaBirim { H = "kirpi", X = 0, Y = 1 } } }, { "2-7", new[] { new DalgaBirim { H = "kumAkrebi", X = 1, Y = 0 }, new DalgaBirim { H = "kumAkrebi", X = 2, Y = 0 }, new DalgaBirim { H = "kumAkrebi", X = 0, Y = 0 }, new DalgaBirim { H = "anaAkrep", X = 2, Y = 1 } } }, { "3-7", new[] { new DalgaBirim { H = "gokBalinasi", X = 1, Y = 2 } } }, { "4-7", new[] { new DalgaBirim { H = "kadimBekci", X = 1, Y = 0 }, new DalgaBirim { H = "kadimBekci", X = 2, Y = 0 } } }, { "5-7", new[] { new DalgaBirim { H = "yildizYiyen", X = 1, Y = 2 } } } };
         public static readonly DalgaBirim[] PveDalgaGec = new[] { new DalgaBirim { H = "yildizYiyen", X = 1, Y = 2 }, new DalgaBirim { H = "kadimBekci", X = 1, Y = 0 }, new DalgaBirim { H = "kadimBekci", X = 2, Y = 0 } };
         /// <summary>Gün Batımı (1.4): GunBatimiBasla saniyesinden sonra her tam saniye hasar +GunBatimiArtis.</summary>
-        public const double GunBatimiBasla = 20.0, GunBatimiArtis = 0.1;
+        public const double GunBatimiBasla = 30.0, GunBatimiArtis = 0.1;
         // 8 kişilik hayalet lobi (bölüm 4)
         public const int LobiBoyut = 8, YasakTur = 3, EslesmeDeneme = 50, LobiTurTavan = 80, KupaKoruma = 400, UstalikKursu = 2, UstalikBirinci = 4, LobiEsles = 150;
         /// <summary>İndeks = sıra (1..8) → kupa değişimi (bölüm 4.5).</summary>
@@ -265,7 +265,7 @@ namespace Kut
         public const int BotIzBilesen = 2;
         // Kut hakkı ve yapay zekâ (bölüm 7.2, 7.4), Kut Sessizliği ve Uzun Gölge (8)
         public const int KutHak = 1, SonIkiKutHak = 2;
-        public const double KutAra = 4.0, KutYzZaman = 5.0, KutYzZaman2 = 12.0, KutYzBilesen = 20.0, KutYzOcak = 60.0, KutSessizMana = 0.25, UzunGolgeBasla = 12.0;
+        public const double KutAra = 6.0, KutYzZaman = 8.0, KutYzZaman2 = 18.0, KutYzBilesen = 20.0, KutYzOcak = 60.0, KutSessizMana = 0.25, UzunGolgeBasla = 20.0;
         // Kut Yankısı (7.1)
         public const int YankiDisVurus = 3;
         public const double YankiDisOran = 0.5, YankiTuySure = 3.0, YankiTuyOran = 0.5, YankiKor = 1.25, YankiCiy = 30.0, YankiKabukSure = 3.0, YankiKabukOran = 0.4, YankiKabukTavan = 0.8;

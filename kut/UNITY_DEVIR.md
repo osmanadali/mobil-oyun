@@ -157,7 +157,7 @@ Prototipin oynanışı `OYNANIS_DERINLIK.md`'deki asıl oyuna genişletildi (13.
 ### 9.2 Yeni veriler (`KutVeri.cs`, kaynak `data.js`)
 
 - **Seviye ve havuz:** `SeviyeBaslangic 2`, `SeviyeTavan 8`, `XpTablo`, `XpBedel/XpMiktar 4/4`, `PasifXp 2`, seviyeye bağlı dükkân olasılıkları (tablo 2.2), `HavuzAdet {1: 22, 2: 18, 3: 14}`, `YildizKopya 1/3/9`, `Yedek 7`, 4×3 tahta (`TahtaSutun 4`, `TahtaSira 3`).
-- **Ekonomi:** 100 can, `TabanGelirBolum1 3/3/4` sonra `TabanGelir 5`, **faiz her 8 altına 1, en çok 5** (`FaizAdim 8`; belgede 10'du, denge benzetimiyle indi, `kut/test/DENGE_RAPORU.md`), `SeriTablo`, galibiyet +1, Bereketli Pazar +2, yenileme 2, kaynaştırma `2 + en yüksek kademe`, `BolumTabani 0/0/4/8/12/16/20/24` (belgede daha düşüktü; lobi süresi için artırıldı), Son Üç +3, Son İki +5.
+- **Ekonomi:** 100 can, `TabanGelirBolum1 3/3/4` sonra `TabanGelir 5`, **faiz her 8 altına 1, en çok 5** (`FaizAdim 8`; belgede 10'du, denge benzetimiyle indi, `kut/test/DENGE_RAPORU.md`), `SeriTablo`, galibiyet +1, Bereketli Pazar +2, yenileme 2, kaynaştırma `2 + en yüksek kademe`, `BolumTabani 0/0/4/9/13/17/21/25` (belgede daha düşüktü; lobi süresi için artırıldı, tempo ayarında +1), Son Üç +3, Son İki +5.
 - **Tur planı:** bölüm 1'de 3 tur, sonra 7; x-4 Kervan, x-7 canavar; armağan 2-1, 3-2, 4-3. Ganimet planı, 2-7 zarfı, Kervan planı ve seçenek sayısı (sıraya göre 3/4/5).
 - **Eşya:** `Bilesenler` (8), `Esyalar` (36), `OzelEsyalar` (Söküm Taşı, Kut Taşı, Soy Mührü `muhur-<soy>`), `EsyaBul`, `Tarif`, yuva 3, raf 10, azaltma tavanı %40.
 - **Canavar:** `Canavarlar` (8, kademe 0, soysuz), `PveDalga`, `PveDalgaGec` (6-7 ve sonrası).

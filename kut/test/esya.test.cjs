@@ -56,7 +56,7 @@ const tek = (A, B, opt = {}) => S.Savas(A, B, { tohum: 3, ...opt });
   // Işık Kuğusu'nun Koruyucu Tüy pasifi komşulara 90 kalkan verir
   ok(g.kalkan === 240 + 90 && k.kalkan === 120 + 90 && Math.abs(ku.kalkan - (120 + ku.mx * 0.2 + 120)) < 1e-9, 'savaş başı kalkan: Buz bileşenleri, Işık Kalkanı (2 hücre dostlar), Buz Dağı (%20 azami can)');
   ok(k.mx === S.birimStat({ h: 'kurt', s: 1 }).can + 150 && g.mx === D.kahraman('golem').can + 360, 'Ulu Kök: 2 hücre içindeki dostlara +150 azami can');
-  ok(g.mana === 64 && ku.mp === 15 && ku.vurusMana === 15, 'Dolunay Testisi mana −%20 (80 → 64); Çiy +15 başlangıç manası; Keskin Göz vuruş başına 15 mana');
+  ok(g.mana === Math.floor(D.kahraman('golem').mana * 0.8 + 0.5) && ku.mp === 15 && ku.vurusMana === 12, 'Dolunay Testisi mana −%20 (80 → 64); Çiy +15 başlangıç manası; Keskin Göz vuruş başına 12 mana (8 yerine)');
 }
 {
   // Sis Pelerini: ilk 2,5 sn hedef alınamaz (diğer düşman varken)
@@ -131,15 +131,16 @@ const tek = (A, B, opt = {}) => S.Savas(A, B, { tohum: 3, ...opt });
     return out;
   };
   const yak = (a, b) => Math.abs(a - b) < 1e-6;
-  const p = vuruslar(['yirticiPence']), atkP = Math.round(52 * 1.3);
+  const AK = D.kahraman('kurt').atk, CK = D.kahraman('kurt').can;
+  const p = vuruslar(['yirticiPence']), atkP = Math.round(AK * 1.3);
   ok(yak(p[0].d, atkP * 0.8) && yak(p[1].d, atkP * 0.8) && yak(p[2].d, (atkP + D.kahraman('golem').can * 0.08) * 0.8) && yak(p[5].d, (atkP + D.kahraman('golem').can * 0.08) * 0.8),
     `Yırtıcı Pençe: her 3. vuruş hedefin azami canının %8'i kadar ek (${p.map(x => x.d.toFixed(1))})`);
   const b = vuruslar(['bulutNali']);
-  ok(yak(b[0].d, 52 * 2 * 0.8) && yak(b[1].d, 52 * 0.8), `Bulut Nalı: ilk vuruş 2 kat (${b.map(x => x.d.toFixed(1))})`);
-  const dy = vuruslar(['devYumrugu']), atkD = Math.round(52 * 1.15), mxD = 520 + 180;
+  ok(yak(b[0].d, AK * 2 * 0.8) && yak(b[1].d, AK * 0.8), `Bulut Nalı: ilk vuruş 2 kat (${b.map(x => x.d.toFixed(1))})`);
+  const dy = vuruslar(['devYumrugu']), atkD = Math.round(AK * 1.15), mxD = CK + 180;
   ok(yak(dy[0].d, (atkD + mxD * 0.02) * 0.8), `Dev Yumruğu: vuruşa kendi azami canının %2'si eklenir (${dy[0].d.toFixed(1)})`);
   const y = vuruslar(['yelKanadi']);
-  ok(y[4].v === 2 && yak(y[4].d, 2 * 52 * 0.8) && y.filter((x, i) => i !== 4).every(x => x.v === 1 && yak(x.d, 52 * 0.8)), 'Yel Kanadı: 5. vuruşun ardından anında bir vuruş daha');
+  ok(y[4].v === 2 && yak(y[4].d, 2 * AK * 0.8) && y.filter((x, i) => i !== 4).every(x => x.v === 1 && yak(x.d, AK * 0.8)), 'Yel Kanadı: 5. vuruşun ardından anında bir vuruş daha');
 }
 {
   // "İlk kez" eşik etkileri savaşta bir kez tetiklenir; Gölge Pelerini öldürünce hedef alınamaz; Buzul Zırh saldırganı yavaşlatır

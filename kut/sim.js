@@ -75,7 +75,7 @@
     const sv = (taraf, soy) => (soylar[taraf][soy] || {}).seviye || 0;
     // Gün Batımı (bölüm 1.4): opt.gunBatimi saniyesinden sonra her tam saniye bütün hasar +%10. Verilmezse yok (Hızlı Maç, eski savaşlar).
     // t, 0,05'lik adımlarla biriktiği için floor'dan önce 1e-9 eklenir (20,000…01 ile 19,999…9 aynı saniye sayılır).
-    // Uzun Gölge alameti: Gün Batımı 12. saniyede (yalnız Gün Batımı açık savaşlarda)
+    // Uzun Gölge alameti: Gün Batımı 20. saniyede (yalnız Gün Batımı açık savaşlarda)
     const gbBas = opt.gunBatimi == null ? null : alamet === 'uzunGolge' ? Math.min(opt.gunBatimi, KU.uzunGolge) : opt.gunBatimi, gbArtis = KURAL.gunBatimi.artis;
     let gbBasladi = false;
     function gunBatimiCarpan() { if (gbBas === null) return 1; const gt = t - gbBas + 1e-9; return gt >= 0 ? 1 + gbArtis * Math.floor(gt) : 1; }
@@ -97,7 +97,7 @@
         const mana = ef.dolunayTestisi ? Math.floor(st.mana * 0.8 + 0.5) : st.mana;
         birimler.push({ uid: taraf * 10 + i, taraf, i, b, ...st, mana, ef, mx: can, hp: can, x, y, x0: x, y0: y,
           mp: 0, cd: 0.3 + R() * 0.3, durum: {}, kalkan: 0, olu: false, dirildi: false, vurus: 0, payYigin: 0, ofke: 0, hedef: null,
-          vurusMana: ef.keskinGoz ? 15 : 10, ilkVurusYapildi: false, sonHedefUid: -1, esikTetik: {}, kutCarpan: 1,
+          vurusMana: ef.keskinGoz ? 12 : 8, ilkVurusYapildi: false, sonHedefUid: -1, esikTetik: {}, kutCarpan: 1,
           bilesenSay: st.yankiSira.length, yankiDis: 0, yankiDisOran: 0, yankiCiy: 0, kutMiras: false });
       });
     });
@@ -138,8 +138,8 @@
     function menzil(u) { let m = u.menzil; if (alamet === 'sis' && m > 1) m -= 1; return m; }
     function hizCarpan(u) {
       let k = 1 + [0, 0.15, 0.35][sv(u.taraf, 'gok') && u.soy.includes('gok') ? sv(u.taraf, 'gok') : 0];
-      const atl = sv(u.taraf, 'atli'); if (atl && u.soy.includes('atli') && t < 4) k += [0, 0.4, 0.9][atl];
-      if (u.pasif === 'ruzgar' && t < 5) k += 0.35;
+      const atl = sv(u.taraf, 'atli'); if (atl && u.soy.includes('atli') && t < 6) k += [0, 0.3, 0.6][atl]; // tempo: ilk 4 sn +%40/+%90 → ilk 6 sn +%30/+%60
+      if (u.pasif === 'ruzgar' && t < 7) k += 0.35;
       if (u.durum.uluma) k += 0.45;
       k += u.asEk;
       if (u.durum.cosku) k += 0.4;
@@ -223,7 +223,7 @@
       if (u.ef.geceYuregi) for (const d of dostlar(u)) if (mesafe(u, d) <= 2.1) kalkanVer(d, u.mx * 0.25);
       for (const d of birimler) {
         if (d.olu) continue;
-        if (d.taraf === u.taraf && d.pasif === 'ruhBagi') d.mp = Math.min(d.mana, d.mp + 35);
+        if (d.taraf === u.taraf && d.pasif === 'ruhBagi') d.mp = Math.min(d.mana, d.mp + 25); // tempo: 35 → 25 (savaş uzadı, yetenek sıklığı)
         if (d.taraf !== u.taraf && d.pasif === 'karanlikPay') d.payYigin++;
         if (d.taraf === u.taraf && d.ef.ruhTestisi) { d.mp = Math.min(d.mana, d.mp + 20); iyiles(d, d.mx * 0.1); } // denge: 30 → 20 mana (DENGE_RAPORU.md)
         if (d.taraf !== u.taraf && d.ef.avCoskusu) durumVer(d, 'cosku', 3);
@@ -373,7 +373,8 @@
         const h = u.hedef; if (!h) continue;
         const d = mesafe(u, h);
         if (d > menzil(u) + 0.05) {
-          const hiz = (u.soy.includes('atli') ? 2.4 : 1.7) * (u.ef.bulutNali ? 1.5 : 1) * DT;
+          // yürüme (hücre/sn): tempo için 1,7 → 1,2, Çevik 2,4 → 1,6 (kim kime yürüdü okunsun)
+          const hiz = (u.soy.includes('atli') ? 1.6 : 1.2) * (u.ef.bulutNali ? 1.5 : 1) * DT;
           u.x += (h.x - u.x) / d * Math.min(hiz, d - menzil(u));
           u.y += (h.y - u.y) / d * Math.min(hiz, d - menzil(u));
         } else {
@@ -397,7 +398,7 @@
       // son düşman zaman içi hasarla öldüyse ve kalanlar hedefsiz kaldıysa (kimse vurmadı) savaş bu adımda biter
       if (bittiMi()) return;
       t += DT;
-      if (t >= KURAL.savasSuresi) {
+      if (t + 1e-9 >= KURAL.savasSuresi) { // t 0,05 adımlarla birikir: 45 sn 44,999… olarak gelir (1e-9 payı; C# ile aynı)
         const oran = [0, 1].map(tr => birimler.filter(o => o.taraf === tr).reduce((s, o) => s + Math.max(0, o.hp) / o.mx, 0));
         const fark = oran[0] - oran[1];
         bitir(Math.abs(fark) < 0.05 ? -1 : fark > 0 ? 0 : 1);

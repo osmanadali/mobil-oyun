@@ -17,7 +17,7 @@ let sure = [], beraber = 0;
 for (let i = 0; i < 300; i++) { const tur = 1 + i % 11; const r = S.Savas(O.botTakim(tur, i), O.botTakim(tur, i + 999), { tohum: i, yz: [0, 1], alamet: D.ALAMETLER[i % 8].id }).sonunaKadar(); sure.push(r.sure); if (r.kazanan === -1) beraber++; }
 sure.sort((x, y) => x - y);
 console.log('  savaş süresi medyan', sure[150], 'sn, %90', sure[270], 'sn, beraberlik', beraber);
-ok(sure[150] > 6 && sure[150] < 22, 'medyan savaş 6–22 sn');
+ok(sure[150] > 12 && sure[150] < 34, 'medyan savaş 12–34 sn (tempo: savaş ortancası 24–32 sn hedefi, Gün Batımı yok)');
 ok(beraber < 30, 'beraberlik %10 altı');
 
 // 3) kahraman denge: her kahraman ★2 tek başına 2 rastgele ★1'e karşı... yerine: aynı soy dağılımlı takımda kahramanı değiştir
