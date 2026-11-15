@@ -693,9 +693,9 @@ const ogrOku = (a) => typeof a.oku === 'function' ? a.oku() : !!a.oku;
 function ogrTik() {
   if (ogr.adim < 0) return;
   const a = OGR_ADIMLAR[ogr.adim];
-  // bu maçta olmayan adım (gösterilmeden) atlanır; gösterilen adım eylemi yapılınca geçer
-  if (ogr.gosterildi !== ogr.adim) { if (a.gecerli && !a.hazir() && !a.gecerli()) return ogrIlerle(); }
-  else if (a.bitti && a.bitti()) return ogrIlerle();
+  // eylemi yapılan adım geçer (balon henüz görünmeden yapılmış olsa da); bu maçta olmayan adım gösterilmeden atlanır
+  if (a.bitti && a.bitti()) return ogrIlerle();
+  if (ogr.gosterildi !== ogr.adim && a.gecerli && !a.hazir() && !a.gecerli()) return ogrIlerle();
   // maç sürerken ana ekrana dönüldüyse: devam çağrısı
   let hedef, metin, oku, parmak, hafif = false;
   if (aktifEkran === 'ana' && a.ekran !== 'ana' && !perdeAcik() && oyun.P.mac) {

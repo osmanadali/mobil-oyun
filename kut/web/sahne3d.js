@@ -6,7 +6,7 @@ import { GLTFLoader } from '../vendor/three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from '../vendor/three/addons/utils/SkeletonUtils.js';
 import * as G from './gorunum.js';
 import { vfx } from './vfx.js';
-import { his, dortAyakliKur, dortAyakliGuncelle, yilanKur, yilanGuncelle, ikiAyakliKur, ikiAyakliGuncelle, onYonAci, DA_DARBE, YILAN_DARBE } from './hareket.js';
+import { his, dortAyakliKur, dortAyakliGuncelle, yilanKur, yilanGuncelle, ikiAyakliKur, ikiAyakliGuncelle, onYonAci, DA_DARBE, YILAN_DARBE, yetPozVar } from './hareket.js';
 
 const D = window.KUT_DATA;
 export const ONDE_SN = 0.4;
@@ -16,7 +16,8 @@ const dunya = (x, y) => new THREE.Vector3(x - 3, ARENA_Y, y - 4);
 
 // ── Kahraman kişilik tablosu (ANIMASYON_PLANI §3–4) ──
 // bekle/yuru: döngü klipleri; saldir: sırayla dönen vuruş klipleri; hazir: menzilli atışın kurulma klibi (atış klibinin bırakma karesi
-// olay zamanına denk gelir); yetenek: klip dizisi (yetOn: olaydan kaç sn önce başlar); vurul: üste eklenen (additive) tepki klipleri;
+// olay zamanına denk gelir); yetenek: klip dizisi (yetOn: olaydan kaç sn önce başlar; yetSure: taban klip + yordamsal poz, süre pozdan;
+// yetHazir: [kurulma, atış] zamanlı klip çifti, atış karesi patlama anında); vurul: üste eklenen (additive) tepki klipleri;
 // zafer; ara: beklerken 4–7 sn'de bir oynayan kısa hareket; kolAci: tombul gövdede kolları dışa açma (rad); egim/bas: duruş ofsetleri;
 // boy: hedef boy çarpanı (tanklar iri); yuruHiz: yürüme klibi hız çarpanı (ağır yaratık yavaş adımlar).
 const IKI = { tur: 'iki' }, DORT = { tur: 'dort' }, YILAN = { tur: 'yilan' };
@@ -26,12 +27,12 @@ export const GORSEL = {
   kurbaga: { ...IKI, ...ATIS, yetenek: ['Idle_Loop'], yetOn: 0.36, yetSure: 1.0, zafer: 'Dance_Loop', ara: ['Idle_Talking_Loop'], kolAci: 0.36, egim: 0.05, bas: -0.08 },
   yarasa:  { ...IKI, saldir: ['Zombie_Scratch', 'Sword_Regular_A'], yetenek: ['Zombie_Scratch'], yetOn: 0.45, zafer: 'Yes', kanat: true, kolAci: 0.1, egim: 0.12 },
   ruzgar:  { ...IKI, ...ATIS, yetenek: ['Spell_Simple_Enter', 'Spell_Simple_Shoot'], yetOn: 0.4, zafer: 'Dance_Loop', ara: ['Idle_Talking_Loop'], idleHiz: 1.25, kolAci: 0.12 },
-  kugu:    { ...IKI, ...ATIS, yetenek: ['Spell_Simple_Enter', 'Spell_Simple_Idle_Loop'], zafer: 'Yes', kanat: true, kolAci: 0.16, bas: 0.06 },
+  kugu:    { ...IKI, ...ATIS, yetenek: ['Idle_Loop'], yetOn: 0.4, yetSure: 0.9, zafer: 'Yes', kanat: true, kolAci: 0.16, bas: 0.06 },
   ayi:     { ...IKI, bekle: 'Idle_Loop', saldir: ['Melee_Hook', 'Sword_Regular_A', 'Sword_Regular_B'], yetenek: ['Agir_Ezme'], yetOn: 0.5, zafer: 'Yes', ara: ['Idle_FoldArms_Loop'], iri: true, kolAci: 0.24, egim: 0.1, boy: 1.12, yuruHiz: 0.85 },
-  anka:    { ...IKI, ...ATIS, yetenek: ['OverhandThrow'], yetOn: 0.85, dogus: 'NinjaJump_Land', zafer: 'Dance_Loop', kanat: true, kolAci: 0.14 },
-  baykus:  { ...IKI, ...ATIS, yetenek: ['Spell_Simple_Enter', 'Spell_Simple_Idle_Loop', 'Spell_Simple_Shoot'], zafer: 'Yes', ara: ['Idle_Talking_Loop'], kolAci: 0.32, bas: -0.06, idleHiz: 0.85 },
-  tilki:   { ...IKI, hazir: 'Pistol_Aim_Neutral', saldir: ['Pistol_Shoot'], yetenek: ['OverhandThrow'], yetOn: 0.6, zafer: 'Yes', ara: ['Idle_Talking_Loop'], kolAci: 0.14, egim: 0.04 },
-  ejder:   { ...IKI, ...ATIS, yetenek: ['Jump_Start', 'Spell_Simple_Shoot'], zafer: 'Dance_Loop', ara: ['Idle_FoldArms_Loop'], kolAci: 0.26 },
+  anka:    { ...IKI, ...ATIS, yetenek: ['Idle_Loop'], yetOn: 0.4, yetSure: 0.85, dogus: 'NinjaJump_Land', zafer: 'Dance_Loop', kanat: true, kolAci: 0.14 },
+  baykus:  { ...IKI, ...ATIS, yetenek: ['Idle_Loop'], yetOn: 0.5, yetSure: 0.6, zafer: 'Yes', ara: ['Idle_Talking_Loop'], kolAci: 0.32, bas: -0.06, idleHiz: 0.85 },
+  tilki:   { ...IKI, hazir: 'Pistol_Aim_Neutral', saldir: ['Pistol_Shoot'], yetenek: ['Pistol_Aim_Neutral', 'Pistol_Shoot'], yetHazir: true, yetOn: 0.45, zafer: 'Yes', ara: ['Idle_Talking_Loop'], kolAci: 0.14, egim: 0.04 },
+  ejder:   { ...IKI, ...ATIS, yetenek: ['Idle_Loop'], yetOn: 0.45, yetSure: 0.65, zafer: 'Dance_Loop', ara: ['Idle_FoldArms_Loop'], kolAci: 0.26 },
   kurt: { ...DORT, yetOn: 0.32 }, koc: { ...DORT, yetOn: 0.36 }, kaplumbaga: { ...DORT, boy: 1.1 }, semender: { ...DORT }, bulutat: { ...DORT, kanat: true },
   yilan: { ...YILAN },
 };
@@ -69,12 +70,24 @@ const YET_IMZA = {
   ruhEmme:   { parla: ['#ff3d5a', 0.32], soket: 'Head' },
   kasirga:   { parla: ['#7fe8cf', 0.35], soket: 'eller' },
   deliOfke:  { parla: ['#ff3d1a', 0.36], soket: 'bas' },
+  zehir:     { parla: ['#6dff4a', 0.32], soket: 'bas' },
+  buzNefes:  { parla: ['#7fd0ff', 0.26], soket: 'bas' },
+  ocak:      { parla: ['#ff7a1f', 0.45], soket: 'kuyruk' },
+  dortnal:   { parla: ['#ffd76a', 0.2] },
+  kanat:     { parla: ['#ffd76a', 0.4], soket: 'Spine2', eller: true },
+  // grup 3 — bak: hazırlık boyunca yetenek hedefine döner (hedef birimin o anki hedefi olmayabilir); eller: VFX iki el kemiğinden de çıkar
+  karaGolge: { parla: ['#9a4dff', 0.18], soket: 'Head', bak: true },
+  kulDogus:  { parla: ['#ff6a1f', 0.45], soket: 'eller', eller: true, bak: true },
+  ayaz:      { parla: ['#8fd6ff', 0.32], soket: 'Head', eller: true },
+  golgeOk:   { parla: ['#9a4dff', 0.26], soket: 'eller', bak: true },
+  yildirim:  { parla: ['#fff27a', 0.4], soket: 'Head' },
 };
 const _soketV = new THREE.Vector3(), _soketV2 = new THREE.Vector3(), _ileriV = new THREE.Vector3();
 // soket kemiğinin dünya konumu (modül düzeyinde tek vektör; vfx kopyalar). Kemik yoksa null (vfx gövde oranına düşer)
 function soketKemik(b, ad) {
   const s = YET_IMZA[ad] && YET_IMZA[ad].soket; if (!s) return null;
-  if (s === 'bas') return b.dort && b.dort.basKemik || null;
+  if (s === 'bas') return (b.dort && b.dort.basKemik) || (b.yilan && b.yilan.boyun.length && b.yilan.boyun[b.yilan.boyun.length - 1]) || null;
+  if (s === 'kuyruk') { const q = b.dort && b.dort.kuyruk; return q && q.length ? q[q.length - 1] : null; }
   if (s === 'eller') return b.kemik.RightHand || null;
   return b.kemik[s] || null;
 }
@@ -84,6 +97,9 @@ function soketAl(b, ad) {
   if (YET_IMZA[ad].soket === 'eller' && b.kemik.LeftHand) _soketV.add(b.kemik.LeftHand.getWorldPosition(_soketV2)).multiplyScalar(0.5);
   return _soketV;
 }
+// iki elin dünya konumu (Işık Kanadı: tüy dalgası kanat uçlarından çıkar)
+const _elL = new THREE.Vector3(), _elR = new THREE.Vector3();
+function elAl(b, ad, v) { const k = b.kemik && b.kemik[ad]; return k ? k.getWorldPosition(v) : null; }
 function ileriAl(b) { const a = b.kok.rotation.y; return _ileriV.set(Math.sin(a), 0, Math.cos(a)); }
 // Boynuz Öfkesi: güçlenmiş vuruş sayacı (uid → kalan); motorun u.ofke'siyle her vuruşta eşlenir
 const ofkeSay = new Map();
@@ -632,11 +648,17 @@ function olayPlanla(f, liste = [f], i = 0) {
     const kut = kutlu.delete(f.u); f._kut = kut;   // ardıl hasar sayıları Kut önceliği alsın
     const on = vfx.onSure(f.ad);
     ekle(f.t - Math.max(b.gor.yetOn || 0.35, on), () => yetenekBaslat(b, f.ad, f.t - on, hedefler[0]));
-    ekle(f.t - on, () => { if (b.olumT < 0) vfx.yetenek(f.ad, b.kok, hedefler.filter(o => o.olumT < 0 || o === b).map(o => o.kok), { dostlar: dostlar.map(o => o.kok), kut, soket: soketAl(b, f.ad), ileri: ileriAl(b) }); });
+    ekle(f.t - on, () => { if (b.olumT >= 0) return;
+      if (f.ad === 'dortnal') kaymaBaslat(b, f.t);
+      vfx.yetenek(f.ad, b.kok, hedefler.filter(o => o.olumT < 0 || o === b).map(o => o.kok), { dostlar: dostlar.map(o => o.kok), kut, soket: soketAl(b, f.ad), ileri: ileriAl(b),
+        elL: YET_IMZA[f.ad] && YET_IMZA[f.ad].eller ? elAl(b, 'LeftHand', _elL) : null, elR: YET_IMZA[f.ad] && YET_IMZA[f.ad].eller ? elAl(b, 'RightHand', _elR) : null }); });
     ekle(f.t, () => yetenekEfekt(b, f.ad, kut));
-    yetenekHis(f, b, hedefler, ekle);
+    yetenekHis(f, b, hedefler, ekle, liste, i);
     if (f.ad === 'uluma') for (const o of hedefler) { ekle(f.t, () => vfx.durum(o.kok, 'hiz', true)); ekle(f.t + 4, () => vfx.durum(o.kok, 'hiz', false)); }
     if (f.ad === 'deliOfke') { ekle(f.t, () => vfx.durum(b.kok, 'ofke', true)); ekle(f.t + 3, () => vfx.durum(b.kok, 'ofke', false)); }
+    // Buz Nefesi: dondurulan her hedefi 1,2 sn yarı saydam buz kabuğu sarar (motorun 'sersem'i bu sürede yıldız göstermez), bitince kırılır
+    if (f.ad === 'buzNefes') for (const o of hedefler) { ekle(f.t, () => { if (o.olumT >= 0) return; o.buzKadar = f.t + 1.2; vfx.durum(o.kok, 'donKabuk', true); });
+      ekle(f.t + 1.2, () => vfx.durum(o.kok, 'donKabuk', false)); }
   } else if (f.tip === 'hasar' || f.tip === 'dot' || f.tip === 'iyi' || f.tip === 'kalkan' || f.tip === 'kac') {
     if (f.tip !== 'hasar') ekle(f.t, () => sayiGoster(f, null));
     else {
@@ -723,20 +745,38 @@ function saldiriBaslat(b, { darbeT, menzilli = false, hedef = null } = {}) {
     else his.atil(b, hedef.kok.position, Math.max(0.12, kalan), { mesafe: tur === 'yilan' ? 0.3 : 0.26, temas });
   }
 }
+// Bulut Hücumu: motor atı etki anında ışınlar; görüntü hücum başında (f.t − onSure) A'dan B'ye çıkış3 eğrisiyle kayar (yalnız görüntü)
+function kaymaBaslat(b, tEtki) {
+  const ub = uidIndeks.get(b.uid); if (ub === undefined) return;
+  // ışınlanmış konum etki adımının ARDINDAKİ anlıkta (görüntü o anlığa DT sonra ulaşır: o ana dek B'de tutulur)
+  const i = Math.min(anlikSay - 1, Math.max(0, Math.round(tEtki / DT) + 1));
+  const bx = anlikDeger(i, ub, 0) - 3, bz = anlikDeger(i, ub, 1) - 4, ax = b.kok.position.x - b.ayir.x, az = b.kok.position.z - b.ayir.y;
+  if (Math.hypot(bx - ax, bz - az) < 0.3) return;
+  b.kay = { ax, az, bx, bz, t0: gorselT, t1: Math.max(gorselT + 0.05, tEtki), son: Math.max(gorselT + 0.05, tEtki) + DT, aci: Math.atan2(bx - ax, bz - az) };
+}
 function yetenekBaslat(b, ad, olayT, hedef = null) {
   if (!b || b.olumT >= 0) return;
   const an = Math.max(0.05, (olayT != null ? olayT : gorselT + 0.35) - gorselT), imza = YET_IMZA[ad];
   // hazırlık: element renginde gövde parlaması (tepesi patlama anında) + yeteneğe özgü hazırlık efekti (kemiğe bağlı)
   if (imza && imza.parla) his.parla(b, imza.parla[0], imza.parla[1], an + 0.35, an);
-  vfx.hazirlik(ad, b.kok, { sure: an, kemik: soketKemik(b, ad), ileri: ileriAl(b).clone() });
+  vfx.hazirlik(ad, b.kok, { sure: an, kemik: soketKemik(b, ad), kemik2: imza && imza.soket === 'eller' ? b.kemik.LeftHand || null : null, ileri: ileriAl(b).clone(),
+    hedef: hedef && hedef !== b && hedef.olumT < 0 ? hedef.kok : null });
+  // yetenek hedefine dön (Kara Gölge en güçlü düşmana, Gölge Oku en zayıfa vurur; birimin o anki hedefi başka olabilir)
+  if (imza && imza.bak && hedef && hedef !== b && hedef.olumT < 0) { b.yetBak = hedef; b.yetBakSon = gorselT + an + 0.3; }
   if (ad === 'ruhEmme' && hedef && hedef.olumT < 0) his.atil(b, hedef.kok.position, an, { mesafe: 0.35, temas: (b.yaricap || 0.4) + (hedef.yaricap || 0.4), tut: 0.55, donus: 0.3 });
-  if (b.isk && b.gor.yetSure) {
+  if (b.isk && b.gor.yetSure && yetPozVar(ad)) {
     // sabit süreli yetenek: taban klip (döngü olabilir) + yordamsal poz (hareket.js YET_POZ); süre pozla belirlenir
     const ilk = (b.gor.yetenek || [])[0]; b.zk = null; b.zkSira = [];
     if (ilk && ual.klip[ilk]) oyna(b, ilk, { gecis: 0.12, dongu: ilk.endsWith('_Loop') });
     b.dizi = []; b.tekBitis = gorselT + an + b.gor.yetSure; b.durum = 'yetenek';
+  } else if (b.isk && b.gor.yetHazir) {
+    // Gölge Oku: kurulma klibi (yay germe) patlamadan 0,04 sn önce biter ve tutulur, atış klibinin bırakma karesi tam patlama anında
+    const [kur, at] = b.gor.yetenek, D = DARBE[at] || 0.03, darbeY = b.yerelT + an, atisBas = darbeY - D;
+    b.zk = null; b.zkSira = [];
+    if (ual.klip[kur] && ual.klip[at] && zkBaslat(b, kur, { bas: b.yerelT, darbe: Math.max(b.yerelT + 0.03, atisBas - 0.04), D: ual.klip[kur].duration, sonra: 0.01, egri: 'dogrusal' }))
+      b.zkSira.push(() => zkBaslat(b, at, { bas: atisBas, darbe: darbeY, D, sonra: 1.2, egri: 'dogrusal' }));
   } else if (b.isk) {
-    const dizi = (b.gor.yetenek || ['Spell_Simple_Enter', 'Spell_Simple_Shoot']).filter(x => ual.klip[x]); if (!dizi.length) dizi.push('Spell_Simple_Enter');
+    const dizi = ((!b.gor.yetSure && b.gor.yetenek) || ['Spell_Simple_Enter', 'Spell_Simple_Shoot']).filter(x => ual.klip[x]); if (!dizi.length) dizi.push('Spell_Simple_Enter');
     b.zk = null; b.zkSira = [];
     // kişilik tablosunda yetOn varsa: ilk klibin anahtar karesi (bırakma / iniş; yoksa sonu) efektin çıkış anına denk gelecek hızda oynar
     const ilk = ual.klip[dizi[0]].duration, anahtarK = DARBE[dizi[0]] != null ? DARBE[dizi[0]] : ilk, kalan = Math.max(0.15, (olayT || gorselT + 0.35) - gorselT);
@@ -746,7 +786,7 @@ function yetenekBaslat(b, ad, olayT, hedef = null) {
   b.bay.yetenek = { ad, an };   // hareket.js: kişiye özel poz patlama karesine (an sn sonra) kilitlenir
 }
 // Patlama anının hissi (yeteneğe özgü): hit-stop, kamera itmesi, ekran vinyeti, çok vuruşlu yeteneklerde alt ses olayları
-function yetenekHis(f, b, hedefler, ekle) {
+function yetenekHis(f, b, hedefler, ekle, liste = null, i = 0) {
   const h0 = hedefler[0];
   if (f.ad === 'davul') {
     for (let j = 1; j < 4; j++) ekle(f.t + 0.2 * j, () => sesBildir({ tip: 'yetenekAlt', ad: 'davul', n: j, k: f.u, u: f.u }));
@@ -757,6 +797,30 @@ function yetenekHis(f, b, hedefler, ekle) {
   else if (f.ad === 'kasirga') ekle(f.t - vfx.onSure('kasirga'), () => { if (b.olumT < 0 && h0) his.sarsinti(0.1, 0.2, _soketV2.copy(h0.kok.position).sub(b.kok.position)); });
   else if (f.ad === 'tasFirlat') ekle(f.t, () => { if (h0) his.donma(h0, 0.07); });
   else if (f.ad === 'deliOfke') { ofkeSay.set(f.u, 3); ekle(f.t, () => sayacGoster(b, 3)); }
+  // Kor Halkası: halka dönüşün son çeyreğinden çıkarken kısa hit-stop + sarsıntı
+  else if (f.ad === 'ocak') ekle(f.t, () => { if (b.olumT < 0) { his.donma(b, 0.05); his.sarsinti(0.1, 0.2); } });
+  // Buz Nefesi: koni çıkarken hafif kamera titremesi
+  else if (f.ad === 'buzNefes') ekle(f.t - vfx.onSure('buzNefes'), () => { if (b.olumT < 0) his.sarsinti(0.08, 0.15); });
+  // Bulut Hücumu: varışta boynuz öne savrulur → beyaz-altın boynuz kesiği, 0,08 sn duraklama, sarsıntı, kamera hücum yönünde hafif kayar
+  else if (f.ad === 'dortnal') ekle(f.t, () => { if (b.olumT >= 0) return; his.donma(b, 0.08);
+    if (h0 && h0.olumT < 0) { his.donma(h0, 0.08); const yon = _soketV2.copy(h0.kok.position).sub(b.kok.position);
+      vfx.vurus(_ileriV.copy(h0.kok.position).setY(h0.kok.position.y + 0.55 * (h0.kok.userData.vfxBoy || 1)), { renk: '#fff0c0', guc: 1.7, yon, tur: 'boynuz', element: 'isik' });
+      his.sarsinti(0.2, 0.25, yon); his.yakinlastir(_soketV2.copy(h0.kok.position).setY(0.6), 0.5, { oran: 0.035 }); } });
+  // ── grup 3 ──
+  // Kara Gölge: ezme karesinde (gölge şeridi yola çıkarken) ayıda 0,07 sn duraklama + sarsıntı; pençe yükselince hedefte duraklama
+  else if (f.ad === 'karaGolge') { ekle(f.t - vfx.onSure('karaGolge'), () => { if (b.olumT >= 0) return; his.donma(b, 0.07); his.sarsinti(0.22, 0.26); });
+    ekle(f.t, () => { if (h0 && h0.olumT < 0) his.donma(h0, 0.07); }); }
+  // Kül Yağmuru: kanat vuruşundan yağmurun sonuna dek kamera hedefin üstüne hafifçe bakar
+  else if (f.ad === 'kulDogus') ekle(f.t - vfx.onSure('kulDogus'), () => { if (b.olumT < 0 && h0) his.yakinlastir(_soketV2.copy(h0.kok.position).setY(2.4), 0.9, { oran: 0.025 }); });
+  // Ayaz: dalga ayak altından çıkarken 0,05 sn tam ekran duraklama, 0,5 sn buzlu kenar vinyeti
+  else if (f.ad === 'ayaz') ekle(f.t, () => { if (b.olumT >= 0) return; his.durdur(0.05); vfx.ekranFlas('#d8f3ff', hafif ? 0.24 : 0.34, 0.5, '#6fb8ff'); });
+  // Gölge Oku: varışta hedefte 0,08 sn duraklama; ok öldürürse 0,15 sn %60 zaman yavaşlaması (yalnız görüntü)
+  else if (f.ad === 'golgeOk') {
+    let olumcul = false; if (liste && h0) for (let j = i + 1; j < liste.length; j++) { const g = liste[j]; if (g.tip === 'vurus' || g.tip === 'yetenek') break; if (g.tip === 'olum' && g.u === h0.uid) { olumcul = true; break; } }
+    ekle(f.t, () => { if (h0 && h0.olumT < 0) his.donma(h0, 0.08); if (olumcul) his.yavaslat(0.15, 0.6); });
+  }
+  // Yıldırım: ilk şimşekte 0,06 sn tam ekran duraklama ve kısa beyaz kenar parlaması (hafifte soluk)
+  else if (f.ad === 'yildirim') ekle(f.t, () => { if (b.olumT >= 0) return; his.durdur(0.06); vfx.ekranFlas('#ffffff', hafif ? 0.16 : 0.3, 0.1, '#fff6c0'); });
 }
 // küçük sayaç (Boynuz Öfkesi: kalan güçlenmiş vuruş)
 function sayacGoster(b, n) { if (!b || b.olumT >= 0) return; const y = yaziEkle(b, '×' + n, '#ff6a3a', SAYAC_OPS); if (y) y.p.y += 0.25 * (b.kok.userData.vfxBoy || 1); }
@@ -1219,24 +1283,29 @@ export function kare(dtSabit) {
       const hareket = yol > 0.002 * Math.max(1, hizKati) || (dt <= 1e-5 && b.hizG > 0.05); b.oncekiX = a.x; b.oncekiY = a.y;
       const kz = Math.min(1, dt * 8); b.ayir.x += (b._it.x - b.ayir.x) * kz; b.ayir.y += (b._it.y - b.ayir.y) * kz;
       b.kok.position.x = hx + b.ayir.x; b.kok.position.z = hz + b.ayir.y; b.kok.position.y = ARENA_Y;
+      if (b.kay) { const ky = b.kay; if (gorselT >= ky.son || b.olumT >= 0) { b.kay = null; b.hizS = 0; }
+        else { const e = Math.max(0, Math.min(1, (gorselT - ky.t0) / (ky.t1 - ky.t0))), c = 1 - (1 - e) * (1 - e) * (1 - e);
+          b.kok.position.x = ky.ax + (ky.bx - ky.ax) * c + b.ayir.x; b.kok.position.z = ky.az + (ky.bz - ky.az) * c + b.ayir.y; } }
       const olu = b.olumT >= 0, bay = b.bay;
-      const donuk = his.donuk(b), dtB = donuk ? 0 : dt;     // yerel hit-stop: bu birimin animasyonu donar
+      const donuk = his.donuk(b) && !(b.kay && gorselT < b.kay.t1), dtB = donuk ? 0 : dt;   // hücumda gövde pozu kaymayla eş kalsın     // yerel hit-stop: bu birimin animasyonu donar
       b.yerelT += dtB;
       // bakış: yürürken hareket yönüne (yan/geri yürüme yok), dururken hedefe; bizim taraf beklerken yüzünü kameraya 25–30° çevirir
       if (!olu) {
         let aci = null;
         if (hareket && yol > 1e-4 && b.durum !== 'saldir' && b.durum !== 'yetenek') aci = Math.atan2(ddx, ddz);
         else if (a.hedef >= 0) { const hb = birimler.get(a.hedef); if (hb) aci = Math.atan2(hb.kok.position.x - b.kok.position.x, hb.kok.position.z - b.kok.position.z); }
+        if (b.yetBak) { if (gorselT < b.yetBakSon && b.yetBak.olumT < 0) aci = Math.atan2(b.yetBak.kok.position.x - b.kok.position.x, b.yetBak.kok.position.z - b.kok.position.z); else b.yetBak = null; }
         if (b.zaferMi) aci = Math.atan2(kamera.position.x - b.kok.position.x, kamera.position.z - b.kok.position.z);
+        if (b.kay) aci = b.kay.aci;
         if (aci !== null) b.hedefAci = aci;
         let ofs = 0;
-        if (b.u.taraf === 0 && !b.zaferMi && b.durum !== 'saldir' && b.durum !== 'yetenek') {
+        if (b.u.taraf === 0 && !b.zaferMi && !b.kay && b.durum !== 'saldir' && b.durum !== 'yetenek') {
           let f = acıFark(Math.atan2(kamera.position.x - b.kok.position.x, kamera.position.z - b.kok.position.z), b.hedefAci);
           if (Math.abs(f) > 2.8) f = (b.kok.position.x < 0 ? -1 : 1) * Math.PI;
           ofs = Math.max(-0.5, Math.min(0.5, f));
         }
         b.yuzOfs = (b.yuzOfs || 0) + (ofs - (b.yuzOfs || 0)) * Math.min(1, dt * (ofs ? 4 : 9));
-        const fark = acıFark(b.hedefAci + b.yuzOfs, b.kok.rotation.y); b.kok.rotation.y += fark * Math.min(1, dt * 8);
+        const fark = acıFark(b.hedefAci + b.yuzOfs, b.kok.rotation.y); b.kok.rotation.y += fark * Math.min(1, dt * (b.kay ? 22 : 8));
       }
       // görünmeyen birim (çözülmüş ölü, gizli kök) hiç güncellenmez; ekran dışındaki birim iskeletini erteler (süre birikir, görününce uygulanır)
       const gizli = !b.kok.visible || (olu && !b.govde.visible), gorunur = !gizli && ekranda(b);
@@ -1289,7 +1358,7 @@ export function kare(dtSabit) {
       if (olu && !b.govde.visible && gorselT - b.olumT > 0.5) b.kok.visible = false;
       // sürekli durum efektleri (yalnız değişimde)
       if (!olu && a && !a.olu) {
-        for (let k = 0; k < DURUM_TUR.length; k++) { const tur = DURUM_TUR[k], v = a[DURUM_ALAN[k]]; if (b.vd[tur] !== v) { b.vd[tur] = v; vfx.durum(b.kok, tur, v); } }
+        for (let k = 0; k < DURUM_TUR.length; k++) { const tur = DURUM_TUR[k], v = a[DURUM_ALAN[k]] && !(k === 0 && b.buzKadar > gorselT); if (b.vd[tur] !== v) { b.vd[tur] = v; vfx.durum(b.kok, tur, v); } }
         const kal = a.kalkan > 0; if (b.vd.kalkan !== kal) { b.vd.kalkan = kal; vfx.durum(b.kok, 'kalkan', kal); }
       }
     }
@@ -1526,7 +1595,7 @@ export function sonaSar() {
   const son = anlikSay - 1;
   for (const b of birimDizi) {
     const olu = anlikDeger(son, b.si, 7) === 1;
-    vfx.durumTemizle(b.kok); b.vd = {}; b.zk = null; b.zkSira = []; b.dizi = null;
+    vfx.durumTemizle(b.kok); b.vd = {}; b.zk = null; b.zkSira = []; b.dizi = null; b.yetBak = null;
     const gr = b.model.userData.gorunum; if (gr) gr.kenar(b.u.taraf === 0 ? G.RIM.biz : G.RIM.rakip, b.u.taraf === 0 ? G.RIM_GUC.biz : G.RIM_GUC.rakip);
     if (olu) { if (b.olumT < 0) b.olumT = gorselT - 5; b.govde.visible = false; b.kok.visible = false; for (const hl of b.halkalar) hl.visible = false; continue; }
     if (b.olumT >= 0) { b.olumT = -1; b.kok.visible = true; b.leke.visible = true; for (const hl of b.halkalar) hl.visible = true; }
@@ -1547,7 +1616,7 @@ export function kameraYerlestir(y, z) { kam.serbest = true; kamera.position.set(
 // hata ayıklama: yakın kamera
 export function yakinKamera(uid, uzak = 2.4, aci = 0.5) { const b = birimler.get(uid); if (!b) return; kam.serbest = true; const p = b.kok.position; kamera.position.set(p.x + Math.sin(aci) * uzak, 1.4, p.z + Math.cos(aci) * uzak); kamera.lookAt(p.x, 0.6, p.z); }
 // hata ayıklama: iki ayaklıyı bir klibin belirli anında dondur (klip ve darbe karesi denetimi) ve birim listesi
-export function _birimler() { return [...birimler.values()].map(b => ({ uid: b.uid, h: b.u.b.h, tur: b.gor.tur, taraf: b.u.taraf, rot: b.kok.rotation.y })); }
+export function _birimler() { return [...birimler.values()].map(b => ({ uid: b.uid, h: b.u.b.h, tur: b.gor.tur, taraf: b.u.taraf, rot: b.kok.rotation.y, x: +b.kok.position.x.toFixed(2), z: +b.kok.position.z.toFixed(2), kay: !!b.kay, tp: b.dort && b.dort.yet ? +b.dort.yet.tp.toFixed(3) : null })); }
 export function _poz(uid, ad, t, yalniz = false) {
   const b = birimler.get(uid); if (!b || !b.isk || !b.isk.eylem[ad]) return false;
   if (yalniz) for (const o of birimler.values()) { o.kok.visible = o === b; if (o === b) vfx.durumTemizle(o.kok); }
