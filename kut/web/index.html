@@ -708,6 +708,77 @@ img.ik{object-fit:contain;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
   .ogrDug{margin-top:2px;gap:8px}.ogrDug .btn{min-height:40px;min-width:96px;font-size:15px;padding:0 12px}.ogrDug .atla{font-size:13px;min-height:40px}
 }
 @media (prefers-reduced-motion:reduce){.ogrCerceve::after,.ogrEl.oyna,.ogrBalon{animation:none}.ogrEl.oyna{opacity:1}}
+/* ---------- TELEFON (yatay, ≤520 px yükseklik): maç ekranı sıkı düzen ----------
+   Tablet düzeni dokunulmaz. Telefonda 3 sıralı tahta, yedek ve eşya rafı birlikte sığsın diye: üst şerit ve dükkân alçalır,
+   yan sütunlar daralır, ikincil yazılar gizlenir (bilgiler uzun basışta ve Seçili kahraman panelinde durur). */
+@media (max-height:520px){
+  #mac .icerik{grid-template-rows:40px minmax(0,1fr) auto;gap:6px;padding:6px max(8px,env(safe-area-inset-right)) 6px max(8px,env(safe-area-inset-left))}
+  #mac .macUst{gap:6px}
+  #mac .macUst .rozet{height:40px;font-size:16px;padding:0 10px 0 4px;gap:5px}
+  #mac .macUst .rozet .top{width:30px;height:30px}
+  #mac .macUst .rozet small{font-size:10px}
+  #mac .altinRozet{font-size:20px!important;padding-right:10px!important}
+  #mac .altinRozet .top .ik{width:28px!important;height:28px!important}
+  #mac .alamet{height:40px;gap:6px;padding:0 8px 0 3px}
+  #mac .alamet .ay{width:32px;height:32px}
+  #mac .alamet .t b{font-size:14px}#mac .alamet .t span{font-size:12px}#mac .alamet .t small,#mac .alamet .sirada{display:none}
+  #mac .ayarBtn{width:40px!important;height:40px!important}#mac .ayarBtn .ik{width:22px!important;height:22px!important}
+  #mac .macOrta{grid-template-columns:186px minmax(0,1fr) 200px;gap:6px}
+  #mac .solKolon{gap:6px}
+  #mac .pn-bas{height:22px;font-size:12px;padding:0 9px}
+  #mac .rakipKim{padding:3px 8px 0}#mac .rakipKim .amb{width:28px;height:28px}#mac .rakipKim b{font-size:13px}#mac .rakipKim span{font-size:11px}
+  #mac .rakipKim span:nth-of-type(n+2){display:none}
+  #mac .miniTahta{grid-template-columns:16px repeat(4,1fr);gap:2px;padding:2px 8px 1px}
+  #mac .miniTahta .m{height:22px;border-radius:6px}#mac .miniTahta .m .yildizlar .ik{width:8px;height:8px}
+  #mac .rakipSoy{padding:2px 8px}#mac .rakipSoy .cip{height:22px;font-size:11px}
+  #mac .ipucuSatir{display:none}
+  #mac .soyListe{padding:3px 5px 5px;gap:3px;overflow:auto}
+  #mac .soyListe>div:not(.soyS){font-size:12px!important;padding:4px!important}
+  #mac .soyS{grid-template-columns:22px 1fr;gap:5px}#mac .soyS img{width:22px;height:22px}#mac .soyS .ust{font-size:12px}#mac .soyS .bonus{font-size:11px}
+  #mac .esik b{font-size:13px}#mac .esik span{min-width:16px;height:16px;font-size:10px}
+  #mac .soyPasif .ikc{width:16px;height:16px}#mac .soyPasif .not{display:none}
+  #mac .tahtaPanel{padding-bottom:4px}
+  #mac .tahtaAlan{grid-template-columns:18px 1fr;grid-template-rows:repeat(3,minmax(0,1fr));gap:3px;padding:3px 6px 2px}
+  #mac .dusmanOk{display:none}
+  #mac .siraAd{font-size:9px;border-radius:5px}
+  #mac .sira{gap:4px}
+  #mac .yuva{border-width:2px;border-radius:9px}
+  #mac .yuva .port{bottom:2px;height:calc(100% - 4px)}
+  #mac .yuva .plaka{display:none}
+  #mac .yuva .yildizlar{left:3px;top:2px}#mac .yuva .yildizlar .ik{width:9px;height:9px}
+  #mac .yuva .soylar{right:2px;top:2px}#mac .yuva .soylar .soyIk{width:13px;height:13px}
+  #mac .yuva .esyalar{bottom:2px!important;left:2px}#mac .yuva .esyalar .esyaIk{width:14px!important;height:14px!important}
+  #mac .yuva .seciliEt,#mac .yuva .kaynasEt{font-size:9px;padding:1px 4px;top:2px}
+  #mac .yuva.bos::after{width:12px;height:12px}
+  #mac .yedekBas{padding:0 6px 1px 26px;font-size:11px;gap:5px}#mac .yedekBas em{font-size:11px}
+  #mac .yedek{height:34px;gap:3px;padding:0 6px 0 24px}
+  #mac .yedek .yuva .port{bottom:1px;height:calc(100% - 2px)}
+  #mac .esyaRaf{min-height:30px;padding:2px 6px 0 24px;gap:3px}
+  #mac .esyaRaf .re{width:26px;height:26px;border-radius:7px;padding:1px}
+  #mac .esyaRaf .rafAd{font-size:11px}#mac .esyaRaf em{display:none}
+  #mac .armaganSerit:not(:has(button)){display:none!important}
+  #mac .armaganSerit{min-height:0;padding:1px 6px 0 24px;font-size:11px}
+  #mac .secPanel .secUst{padding:4px 7px 0;gap:3px 6px}
+  #mac .secPort{width:48px;border-width:2px;border-radius:9px}
+  #mac .secAd h3{font-size:14px}#mac .secAd .btn.sat{min-height:36px;height:36px;font-size:13px;padding:0 8px}
+  #mac .secUst .soyC .cip{height:22px;font-size:11px}#mac .secUst .soyC .cip img{width:18px;height:18px}#mac .secUst .soyC .not{display:none}
+  #mac .statlar{gap:3px;padding:3px 7px}#mac .stat{height:26px;font-size:12px;gap:3px;padding:0 4px}#mac .stat .ik{width:13px;height:13px}#mac .stat small{font-size:9px}
+  #mac .yetenek{margin:3px 7px 0;padding:3px 6px;font-size:11px;line-height:1.2}#mac .yetenek b{font-size:12px}
+  #mac .yetenek:not(.pasif){max-height:44px;overflow:hidden}#mac .yetenek.pasif{display:none}
+  #mac .secEylem{padding:4px 7px 6px;gap:4px}#mac .kaynastir{min-height:44px;font-size:15px}#mac .kaynastir small{font-size:10px!important;max-width:100%;overflow:hidden;white-space:nowrap}#mac .kaynasSema{display:none}
+  #mac .secPanel>div[style]{padding:8px 8px!important;font-size:12px!important;gap:6px!important}
+  #mac .dukkanSerit{grid-template-columns:96px minmax(0,1fr) 128px;grid-template-rows:minmax(0,1fr);gap:6px;height:104px}
+  #mac .dukkanSol{gap:4px;min-height:0}#mac .dukkanSol .btn{min-height:0;flex-direction:row;font-size:13px;gap:4px;padding:0 4px;border-image-width:8px 10px 11px}#mac .dukkanSol .btn .ik{width:15px;height:15px}
+  #mac .dukkanSol .btn small{font-size:11px}#mac .dukkanSol .btn.xpBtn{flex:1.3;flex-direction:column;gap:1px;font-size:11px;line-height:1.05}#mac .dukkanSol .xpCubuk{height:4px}
+  #mac .dukkan{padding:0 6px 5px;min-height:0;overflow:hidden}#mac .kart{min-height:0}#mac .dukkan .pn-bas{margin:0 -6px}
+  #mac .kartlar{gap:5px;padding-top:4px}
+  #mac .kart .havuzEt{display:none}
+  #mac .kart .solUst .soyIk{width:15px;height:15px}#mac .kart .solUst{gap:1px;left:2px;top:2px}#mac .kart .kTag{font-size:9px;padding:0 3px}
+  #mac .kart .fiyat{height:20px;font-size:13px;padding:0 5px 0 2px;right:2px;top:2px}#mac .kart .fiyat .ik{width:14px;height:14px}
+  #mac .kart .ad{height:18px;line-height:16px;font-size:11px}
+  #mac .kart .yukselEt,#mac .kart .sahipEt{height:16px;font-size:10px;padding:0 4px;bottom:2px}
+  #mac .savasBtn{font-size:20px!important;gap:2px}#mac .savasBtn .ik{width:28px!important;height:28px!important}#mac .savasBtn small{font-size:11px!important}
+}
 </style>
 </head>
 <body>

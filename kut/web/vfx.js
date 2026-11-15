@@ -693,29 +693,37 @@ function vurus(pos, o = {}) {
 
 // ───────────────────────── 16 yetenek ─────────────────────────
 // Önden başlatma (sn): darbe olay zamanına denk gelsin diye yetenek bu kadar ÖNCE çağrılmalı (mermi uçuşu, düşen kor vb.)
-const ON_SURE = { tasFirlat: 0.45, uluma: 0, davul: 0, ruhEmme: 0, kasirga: 0.22, deliOfke: 0, zehir: 0.36, buzNefes: 0.22, ocak: 0, dortnal: 0.25, kanat: 0, karaGolge: 0.08, kulDogus: 0.42, ayaz: 0, golgeOk: 0.2, yildirim: 0 };
+// Hazırlık bütçesi motorun önden gelişiyle (ONDE_SN 0,4) sınırlı: mermi uçuşu ne kadar uzunsa gövde hazırlığı o kadar kısalır.
+// Kaya Fırlat 0,2 (golem yakın dövüşçü, 1 hücre: ağır ve hızlı atış) ve Kasırga 0,1 (avuçtan çıkan rüzgâr darbesi) bu yüzden kısa.
+const ON_SURE = { tasFirlat: 0.2, uluma: 0, davul: 0, ruhEmme: 0, kasirga: 0.1, deliOfke: 0, zehir: 0.36, buzNefes: 0.22, ocak: 0, dortnal: 0.25, kanat: 0, karaGolge: 0.08, kulDogus: 0.42, ayaz: 0, golgeOk: 0.2, yildirim: 0 };
 const yukari = (p, h) => _v1.copy(p).setY(p.y + h);
 
 const YETENEK = {
   // Kaya Golemi: göğüste kristal parıltısı → yay çizen kaya → toz şoku, kaya kırıntısı, çatlak
   tasFirlat(k, hs, o) {
     const h = hs[0]; if (!h) return; const g = o.guc;
-    const el = new THREE.Vector3().copy(k.p).setY(k.p.y + 0.95 * k.h);
-    flas(el, { renk: '#ffcf8a', boy: 0.6, sure: 0.2 });
-    for (let i = 0, n = N(10); i < n; i++) { _v3.set(el.x + rr(-0.5, 0.5), Z() + 0.05, el.z + rr(-0.5, 0.5)); P({ p: _v3, hedef: el, hom: 6, hiz: 2.5, v: _v2.set(0, 1, 0), omur: 0.4, boy: 0.18, boy2: 0.05, renk: '#ffd9a0', kare: 'parilti', hot: 1 }); }
+    // kaya, hazırlıkta yerden koparılıp elde taşındığı yerden (el soketi) çıkar; soket yoksa göğüs hizası
+    const el = o.soket ? new THREE.Vector3().copy(o.soket) : new THREE.Vector3().copy(k.p).setY(k.p.y + 0.95 * k.h);
+    flas(el, { renk: '#ffcf8a', boy: 0.55, sure: 0.16, halka: false });
+    for (let i = 0, n = N(6); i < n; i++) { kureY(_v2, 0.2).multiplyScalar(rr(0.8, 1.6)); P({ p: el, v: _v2, g: 6, drag: 1, omur: rr(0.3, 0.5), boy: rr(0.08, 0.14), renk: '#8e6a4c', kare: 'tas', normal: true, rot: 'r', rotHiz: rr(-6, 6), hot: 0 }); }
     mermi(el, h.o || h.p, ON_SURE.tasFirlat, { tur: 'kaya', guc: 1.5 * g, kayaBoy: 0.8, varisGuc: 1.2, bitis: (B) => {
-      sok(B, { renk: '#ffd08a', r: 1.5 * g, toz: true, tozRenk: '#a98361', tozN: 16 }); dekal(B, { r: 0.9 * g, renk: '#2b1c10', a: 0.8 }); sars(0.22 * g);
+      sok(B, { renk: '#ffd08a', r: 1.5 * g, toz: true, tozRenk: '#a98361', tozN: 16 }); dekal(B, { r: 0.9 * g, renk: '#2b1c10', a: 0.8 }); sars(0.25 * g);
       for (let i = 0, n = N(6); i < n; i++) { const a = RND() * TAU; _v3.set(B.x + Math.cos(a) * 0.3, Z() + 0.05, B.z + Math.sin(a) * 0.3); P({ p: _v3, v: _v2.set(Math.cos(a) * 0.5, rr(2, 3.5), Math.sin(a) * 0.5), g: 9, omur: 0.7, boy: rr(0.22, 0.32), renk: '#8e6a4c', kare: 'tas', normal: true, rot: 'r', rotHiz: rr(-6, 6), hot: 0, sek: 0.06, fo: 0.75 }); }
     } });
   },
   // Kristal Kurt: başından mavi kristal ses halkaları, kristal kıymıkları; dostlarda hız çizgileri
   uluma(k, hs, o) {
-    const bas = new THREE.Vector3().copy(k.p).setY(k.p.y + 0.75 * k.h), g = o.guc;
+    // ağız soketi (baş kemiği) → göğe yükselen ses konisi: yatay halkalar yükseldikçe genişler; yerde şok halkaları
+    const bas = o.soket ? new THREE.Vector3().copy(o.soket) : new THREE.Vector3().copy(k.p).setY(k.p.y + 0.75 * k.h), g = o.guc;
     for (let d = 0; d < 3; d++) zamanla(d * 0.13, () => {
-      P({ p: bas, omur: 0.55, boy: 0.3, boy2: 2.4 * g, renk: '#9fe4ff', renk2: '#3d7bff', kare: 'sok', normal: true, hot: 0.3, a: 0.9, fi: 0, fo: 0.3, rot: 'r' });
-      P({ p: bas, omur: 0.4, boy: 0.2, boy2: 1.6 * g, renk: '#4fa8ff', kare: 'halka', hot: 0.6, a: 0.6, fi: 0, fo: 0.2 });
+      for (let j = 0; j < 3; j++) P({ p: bas, mod: 1, v: _v2.set(0, 2.2 + j * 0.9, 0), drag: 1.2, omur: 0.55, boy: 0.18 + j * 0.08, boy2: (0.9 + j * 0.45) * g, renk: '#bff0ff', renk2: '#3d7bff', kare: 'halka', hot: 0.7, a: 0.85 - j * 0.15, fi: 0, fo: 0.35 });
+      P({ p: bas, omur: 0.45, boy: 0.2, boy2: 1.1 * g, renk: '#4fa8ff', kare: 'halka', hot: 0.6, a: 0.5, fi: 0, fo: 0.2 });
       sok(k.p, { renk: '#5fb8ff', r: 1.1 + d * 0.5, sure: 0.5, a: 0.8 });
     });
+    _v3.copy(bas).setY(bas.y + 0.9); P({ p: _v3, mod: 2, eksen: _v4.set(0, 1, 0), omur: 0.5, boy: 1, en: 0.5 * g, uz: 1.8, boy2: 1.3, renk: '#7fd0ff', kare: 'isin', hot: 0.6, a: 0.7, fi: 0.05, fo: 0.5 });
+    // kurttan her dosta 0,1 sn arayla mavi bağ; dostun gövdesinde kısa parlama
+    let sira = 0; for (const h of hs) { if (h.o && h.o === k.o) continue; const hp = new THREE.Vector3().copy(h.p).setY(h.p.y + 0.55 * h.h);
+      zamanla(0.06 + 0.1 * sira++, () => { isin(bas, hp, { renk: '#6fc8ff', en: 0.09, sure: 0.32 }); flas(hp, { renk: '#8fdcff', boy: 0.55, sure: 0.18, halka: false, isik: false }); }); }
     flas(bas, { renk: '#5fb8ff', boy: 0.8, sure: 0.22 });
     for (let i = 0, n = N(12 * g); i < n; i++) { kureY(_v2, 0.9).multiplyScalar(rr(1.5, 3)); P({ p: bas, v: _v2, g: 5, drag: 1.2, omur: rr(0.5, 0.8), boy: rr(0.16, 0.28), renk: '#e9fbff', renk2: '#6fb8ff', kare: 'buz', rot: 'r', rotHiz: rr(-5, 5), hot: 0.7, sek: 0.05 }); }
     hs.forEach((h, j) => zamanla(0.12 + j * 0.05, () => {
@@ -729,7 +737,7 @@ const YETENEK = {
     for (let d = 0; d < 4; d++) zamanla(d * 0.2, () => {
       const r = (d === 3 ? 2.6 : 1.8) * g;
       sok(k.p, { renk: d % 2 ? '#ffb347' : '#ff7a2e', r, sure: 0.55 });
-      flas(merkez, { renk: '#ff8a2e', boy: d === 3 ? 0.9 : 0.6, sure: 0.15, halka: false });
+      flas(merkez, { renk: '#ff8a2e', boy: d === 3 ? 0.9 : 0.6, sure: 0.15, halka: false }); if (d === 3) sars(0.12 * g);
       const m = N(10); for (let i = 0; i < m; i++) { const a = i / m * TAU + d * 0.3; _v3.set(k.p.x + Math.cos(a) * 0.35, Z() + 0.06, k.p.z + Math.sin(a) * 0.35);
         P({ p: _v3, mod: 1, v: _v2.set(Math.cos(a) * 3.2 * g, 0, Math.sin(a) * 3.2 * g), drag: 1.2, omur: 0.6, boy: 0.42, boy2: 0.75, renk: '#ffb02e', renk2: '#ff5a1f', kare: 'dalga', normal: true, rot: -a - Math.PI / 2, hot: 0.2, fi: 0, fo: 0.4 }); }
       P({ p: merkez, omur: 0.35, boy: 0.3, boy2: 1.3, renk: '#ff9a2e', kare: 'dalga', normal: true, hot: 0.3, fi: 0, fo: 0.3 });
@@ -742,8 +750,11 @@ const YETENEK = {
   // Sis Yarasası: hedeften kaynağa kızıl ruh akışı (kıvrılan parçacıklar), kaynakta kan parıltısı
   ruhEmme(k, hs, o) {
     const h = hs[0]; if (!h) return; const g = o.guc;
-    const hp = new THREE.Vector3().copy(h.p).setY(h.p.y + 0.5 * h.h), kp = new THREE.Vector3().copy(k.p).setY(k.p.y + 0.55 * k.h);
+    // akış yarasanın ağzına (baş soketi; atılmış ve hedefi kavramış hâlde) varır; hedefte kızıl kesik
+    const hp = new THREE.Vector3().copy(h.p).setY(h.p.y + 0.5 * h.h), kp = o.soket ? new THREE.Vector3().copy(o.soket) : new THREE.Vector3().copy(k.p).setY(k.p.y + 0.55 * k.h);
     flas(hp, { renk: '#ff3d5a', boy: 0.8, sure: 0.2 });
+    _v4.copy(hp).sub(kp).setY(0); if (_v4.lengthSq() < 1e-6) _v4.set(0, 0, 1);
+    P({ p: hp, mod: 2, eksen: _v2.set(-_v4.z, 0.6, _v4.x).normalize(), omur: 0.3, boy: 1, en: 0.16, uz: 0.9, boy2: 1.2, renk: '#ff2d4d', kare: 'kesik', hot: 0.8, a: 1, fi: 0, fo: 0.4 });
     for (let i = 0, n = N(10); i < n; i++) { kureY(_v2, 0.3).multiplyScalar(rr(1, 2.2)); P({ p: hp, v: _v2, drag: 2, g: -0.5, omur: rr(0.5, 0.8), boy: rr(0.28, 0.45), boy2: 0.7, renk: '#5a0f2a', renk2: '#2a0a1a', kare: 'duman', normal: true, rot: 'r', a: 0.55, hot: 0 }); }
     surec(0.8, (kk, dt, yas, is) => { is.acc = (is.acc || 0) + dt * 75 * OLCEK * g; while (is.acc >= 1) { is.acc--;
       kureY(_v2, 0.5).multiplyScalar(rr(1.5, 3)); _v3.copy(hp).add(_v4.set(rr(-0.15, 0.15), rr(-0.1, 0.2), rr(-0.15, 0.15))); const t = RND();
@@ -755,8 +766,14 @@ const YETENEK = {
   // Rüzgâr Ruhu: rüzgâr mermisi → hedefte yapraklı dönen hortum, yerde toz halkası
   kasirga(k, hs, o) {
     const h = hs[0]; if (!h) return; const g = o.guc, c = new THREE.Vector3().copy(h.p).setY(Z());
-    mermi(new THREE.Vector3().copy(k.p).setY(k.p.y + 0.7 * k.h), c.clone().setY(Z() + 0.5), ON_SURE.kasirga, { renk: '#9ff0e0', guc: 1.2, tur: 'buyu' });
+    const avuc = o.soket ? new THREE.Vector3().copy(o.soket) : new THREE.Vector3().copy(k.p).setY(k.p.y + 0.7 * k.h);
+    flas(avuc, { renk: '#bff7ea', boy: 0.6, sure: 0.15, halka: false });
+    for (let i = 0, n = N(8); i < n; i++) { kureY(_v2, 0).multiplyScalar(rr(1, 2)); P({ p: avuc, v: _v2, drag: 2, omur: rr(0.3, 0.5), boy: rr(0.14, 0.2), renk: RND() < 0.5 ? '#7dd35a' : '#c9e85a', kare: 'yaprak', normal: true, rot: 'r', rotHiz: rr(-8, 8), hot: 0 }); }
+    mermi(avuc, c.clone().setY(Z() + 0.5), ON_SURE.kasirga, { renk: '#9ff0e0', guc: 1.2, tur: 'buyu' });
     zamanla(ON_SURE.kasirga, () => {
+      // itilen düşmanlar: savrulurken ayak altında sürtünme tozu (gövde savrulması his.darbe'de)
+      for (const t of hs) if (t.o) surec(0.35, (kk, dt, yas, is) => { is.acc = (is.acc || 0) + dt * 34 * OLCEK; const tp = takipPoz(t.o);
+        while (is.acc >= 1) { is.acc--; _v3.set(tp.x + rr(-0.15, 0.15), Z() + 0.06, tp.z + rr(-0.15, 0.15)); P({ p: _v3, v: _v2.set(rr(-0.3, 0.3), rr(0.3, 0.7), rr(-0.3, 0.3)), drag: 2.5, omur: rr(0.4, 0.6), boy: 0.16, boy2: 0.42, renk: '#cdbb9a', renk2: '#efe6d6', kare: 'toz', normal: true, rot: 'r', a: 0.7 * (1 - kk), hot: 0, on: 0 }); } });
       sok(c, { renk: '#bff7ea', r: 1.6 * g, toz: true, tozRenk: '#cfe3c8', tozN: 14 }); sars(0.08);
       surec(1.15, (kk, dt, yas, is) => { is.acc = (is.acc || 0) + dt * 90 * OLCEK * g; const sol = kk > 0.8 ? (1 - kk) / 0.2 : 1;
         while (is.acc >= 1) { is.acc--; const r0 = rr(0.12, 0.3), yap = RND() < 0.35;
@@ -776,13 +793,15 @@ const YETENEK = {
   },
   // Dağ Koçu: buhar bulutları, kızıl alev halkası, kor kıvılcımları, yerde kızgın çatlak
   deliOfke(k, hs, o) {
-    const g = o.guc, bas = new THREE.Vector3().copy(k.p).setY(k.p.y + 0.8 * k.h);
-    flas(bas, { renk: '#ff3d2a', boy: 1.0, sure: 0.25 });
+    // yere vurma anı (motorun etki anı): burun/boynuz soketinden buhar ve kor; aura seyrek (gövde okunsun)
+    const g = o.guc, bas = o.soket ? new THREE.Vector3().copy(o.soket) : new THREE.Vector3().copy(k.p).setY(k.p.y + 0.8 * k.h), il = new THREE.Vector3().copy(o.ileri || _v4.set(0, 0, 1));
+    flas(bas, { renk: '#ff3d2a', boy: 0.7, sure: 0.2 });
     sok(k.p, { renk: '#ff4a2a', r: 1.3 * g, toz: true, tozRenk: '#a07a60', tozN: 10 }); sars(0.12);
     dekal(k.p, { r: 0.8, renk: '#ff5a1f', additive: true, a: 0.9, sure: 1.2 });
-    for (let i = 0, n = N(14 * g); i < n; i++) { _v3.set(bas.x + rr(-0.2, 0.2), bas.y + rr(-0.1, 0.1), bas.z + rr(-0.2, 0.2)); P({ p: _v3, v: _v2.set(rr(-0.8, 0.8), rr(1.2, 2.4), rr(-0.8, 0.8)), drag: 2.2, g: -0.3, omur: rr(0.7, 1.1), boy: rr(0.18, 0.3), boy2: rr(0.6, 0.9), renk: '#ffffff', renk2: '#d9cfd8', kare: 'duman', normal: true, rot: 'r', rotHiz: rr(-1, 1), a: 0.8, hot: 0 }); }
-    patlama(bas, { renk: '#ff5a2a', renk2: '#ff2a10', n: 16, hiz: 3.5, guc: g });
-    aura(k.o || k.p, { renk: '#ff3d2a', renk2: '#ffb347', sure: 0.9, oran: 40, boy: k.h });
+    for (let i = 0, n = N(6 * g); i < n; i++) { const yan = i % 2 ? 0.06 : -0.06; _v3.set(bas.x + il.z * yan, bas.y - 0.03, bas.z - il.x * yan);
+      P({ p: _v3, v: _v2.set(il.x * rr(1.2, 1.8), rr(-0.2, 0.3), il.z * rr(1.2, 1.8)), drag: 2.4, g: -0.6, omur: rr(0.5, 0.8), boy: rr(0.12, 0.2), boy2: rr(0.45, 0.65), renk: '#ffffff', renk2: '#d9cfd8', kare: 'duman', normal: true, rot: 'r', rotHiz: rr(-1, 1), a: 0.7, hot: 0 }); }
+    patlama(bas, { renk: '#ff5a2a', renk2: '#ff2a10', n: 12, hiz: 3.5, guc: g });
+    aura(k.o || k.p, { renk: '#ff3d2a', renk2: '#ffb347', sure: 0.9, oran: 16, boy: k.h });
   },
   // Zümrüt Yılan: yeşil zehir topu → sıçrama, kabarcık bulutu, zehir gölü; en yaralı dosta iyileşme
   zehir(k, hs, o) {
@@ -948,6 +967,61 @@ const YETENEK = {
     }));
   },
 };
+// ───────────────────────── yetenek hazırlıkları (yetenekBaslat'ta; o.sure: patlamaya kalan sn, o.kemik: soket kemiği) ─────────────────────────
+const HAZIR = {
+  // Golem: sağ el yere iner → yer çatlar, toprak fışkırır, kaya kopar → kaya el kemiğinde başın üstüne taşınır; bırakmada mermi devralır
+  tasFirlat(k, o) {
+    const kem = o.kemik, kaya = kem ? kayaAl() : null; if (!kaya) return;
+    const s = Math.max(0.15, o.sure), zemin = new THREE.Vector3(), boy = 1.2; let koptu = false;
+    kaya.visible = false;
+    surec(s, (kk) => {
+      if (!kem.parent || (k.o && !k.o.visible)) { kaya.visible = false; return; }
+      const el = takipPoz(kem);
+      if (kk < 0.38) { zemin.set(el.x, Z() - 0.12, el.z); kaya.visible = false; }
+      else {
+        if (!koptu) { koptu = true; zemin.set(el.x, Z(), el.z);
+          dekal(zemin, { r: 0.55, renk: '#2b1c10', a: 0.8, sure: 1.4 });
+          for (let i = 0, n = N(8); i < n; i++) { const a = RND() * TAU; _v3.set(zemin.x + Math.cos(a) * 0.12, Z() + 0.05, zemin.z + Math.sin(a) * 0.12);
+            P({ p: _v3, v: _v2.set(Math.cos(a) * 0.6, rr(1.5, 2.6), Math.sin(a) * 0.6), g: 9, omur: 0.6, boy: rr(0.1, 0.18), renk: '#8e6a4c', kare: 'tas', normal: true, rot: 'r', rotHiz: rr(-6, 6), hot: 0, sek: 0.05, fo: 0.7 }); }
+          _v3.set(zemin.x, Z() + 0.08, zemin.z); P({ p: _v3, v: _v2.set(0, 0.5, 0), drag: 2, omur: 0.6, boy: 0.3, boy2: 0.7, renk: '#a98361', renk2: '#d8c4a4', kare: 'toz', normal: true, rot: 'r', a: 0.75, hot: 0 }); }
+        const e = Math.min(1, (kk - 0.38) / 0.14), y = e * e * (3 - 2 * e);
+        kaya.visible = true; kaya.position.lerpVectors(zemin, el, y); kaya.scale.setScalar(boy * (0.55 + 0.45 * y));
+        kaya.rotation.x += 0.05; kaya.rotation.z += 0.03; kaya.children[0].material.emissiveIntensity = 0.6 + 1.4 * kk;
+      }
+      if (kk >= 1) kaya.visible = false;
+    });
+  },
+  // Kurt: nefes alırken sırttaki kristal zerreleri başa akar
+  uluma(k, o) {
+    const s = Math.max(0.15, o.sure), hedef = o.kemik ? new THREE.Vector3().copy(takipPoz(o.kemik)) : new THREE.Vector3().copy(k.p).setY(k.p.y + 0.75 * k.h);
+    for (let i = 0, n = N(12); i < n; i++) { _v3.set(k.p.x + rr(-0.4, 0.4), k.p.y + rr(0.5, 0.9) * k.h, k.p.z + rr(-0.4, 0.4));
+      P({ p: _v3, hedef, hom: 5, hiz: 2.2, v: _v2.set(0, 0.4, 0), omur: s + 0.1, boy: rr(0.08, 0.14), boy2: 0.04, renk: '#bfefff', renk2: '#4f8bff', kare: RND() < 0.4 ? 'yildiz4' : 'parilti', hot: 1, fi: 0.2 }); }
+  },
+  // Yarasa: kanatlar açılırken kızıl sis sızar
+  ruhEmme(k, o) {
+    for (let i = 0, n = N(8); i < n; i++) { _v3.set(k.p.x + rr(-0.35, 0.35), k.p.y + rr(0.4, 0.8) * k.h, k.p.z + rr(-0.35, 0.35));
+      P({ p: _v3, v: _v2.set(rr(-0.4, 0.4), rr(0.1, 0.4), rr(-0.4, 0.4)), drag: 2, omur: rr(0.4, 0.6), boy: rr(0.14, 0.22), boy2: 0.4, renk: '#5a0f2a', renk2: '#2a0a1a', kare: 'duman', normal: true, rot: 'r', a: 0.5, hot: 0 }); }
+  },
+  // Rüzgâr Ruhu: dönerken çevresinde yapraklar ve rüzgâr çizgileri toplanır (yarıçap daralır)
+  kasirga(k, o) {
+    const s = Math.max(0.15, o.sure), p = k.p;
+    surec(s, (kk, dt, yas, is) => { if (k.o && !k.o.visible) return; is.acc = (is.acc || 0) + dt * 60 * OLCEK;
+      while (is.acc >= 1) { is.acc--; const yap = RND() < 0.55; _v3.set(p.x, Z() + rr(0.1, 0.4) * k.h, p.z);
+        P({ p: _v3, yorunge: { r: rr(0.6, 0.85), w: rr(7, 10), vy: rr(0.4, 0.9), rv: -rr(1.0, 1.5) }, omur: rr(0.35, 0.5), boy: yap ? rr(0.14, 0.2) : 0.16, boy2: yap ? 0.12 : 0.05,
+          renk: yap ? (RND() < 0.5 ? '#7dd35a' : '#c9e85a') : '#e8fff9', renk2: yap ? '#4a9a3a' : '#7fc8c0', kare: yap ? 'yaprak' : 'kivilcim', mod: yap ? 0 : 2, uzat: yap ? 0 : 0.08, en: yap ? 1 : 0.5,
+          rot: 'r', rotHiz: rr(-8, 8), normal: yap, hot: yap ? 0 : 0.9, a: yap ? 1 : 0.7, fo: 0.4 }); } });
+  },
+  // Koç: ön toynakla iki eşeleme (toz), burundan iki buhar
+  deliOfke(k, o) {
+    const il = o.ileri || _v4.set(0, 0, 1), s = Math.max(0.2, o.sure), kem = o.kemik;
+    for (let j = 0; j < 2; j++) zamanla(s * (0.3 + 0.3 * j), () => {
+      _v3.set(k.p.x + il.x * 0.32 * k.h + il.z * 0.1, Z() + 0.05, k.p.z + il.z * 0.32 * k.h - il.x * 0.1);
+      for (let i = 0, n = N(5); i < n; i++) P({ p: _v3, v: _v2.set(-il.x * rr(0.8, 1.4) + rr(-0.3, 0.3), rr(0.3, 0.8), -il.z * rr(0.8, 1.4) + rr(-0.3, 0.3)), drag: 2.5, omur: rr(0.4, 0.6), boy: 0.14, boy2: 0.38, renk: '#b49a7a', renk2: '#e8d8c0', kare: 'toz', normal: true, rot: 'r', a: 0.8, hot: 0 });
+      if (kem && kem.parent) { const b = takipPoz(kem); for (let i = 0; i < 2; i++) { _v3.set(b.x + il.z * (i ? 0.05 : -0.05), b.y - 0.04, b.z - il.x * (i ? 0.05 : -0.05));
+        P({ p: _v3, v: _v2.set(il.x * 0.9, -0.15, il.z * 0.9), drag: 2.5, g: -0.4, omur: 0.5, boy: 0.08, boy2: 0.3, renk: '#ffffff', renk2: '#d9cfd8', kare: 'duman', normal: true, rot: 'r', a: 0.65, hot: 0 }); } }
+    });
+  },
+};
 function iyiles(d, renk) {
   const p = konum(d.o || d.p || d, new THREE.Vector3()), h = d.h || 1;
   // halka biçiminde yükselen artılar + yerden yumuşak ışık sütunu (kabarcık yok: iyileşme tek bakışta okunsun)
@@ -1029,10 +1103,10 @@ const DURUM = {
   hiz(c, dt, t, p, h) { c.acc += dt * 14 * OLCEK; while (c.acc >= 1) { c.acc--; const a = RND() * TAU; _v3.set(p.x + Math.cos(a) * 0.34, p.y + rr(0, 0.5) * h, p.z + Math.sin(a) * 0.34);
       _v2.set(0, rr(1.5, 2.5), 0); DP.hizKiv.omur = rr(0.3, 0.45); P(DP.hizKiv); }
     _v3.set(p.x, Z() + 0.05, p.z); P(DP.hizHalka); },
-  ofke(c, dt, t, p, h) { c.acc += dt * 7 * OLCEK; while (c.acc >= 1) { c.acc--; _v3.set(p.x + rr(-0.15, 0.15), p.y + h * 0.85, p.z + rr(-0.15, 0.15));
+  ofke(c, dt, t, p, h) { c.acc += dt * 4 * OLCEK; while (c.acc >= 1) { c.acc--; _v3.set(p.x + rr(-0.15, 0.15), p.y + h * 0.85, p.z + rr(-0.15, 0.15));
       _v2.set(rr(-0.3, 0.3), rr(0.8, 1.3), rr(-0.3, 0.3)); DP.ofkeDuman.omur = rr(0.6, 0.9); P(DP.ofkeDuman); }
     _v3.set(p.x, Z() + 0.05, p.z); DP.ofkeSok.boy = 1.1 + Math.sin(t * 10) * 0.06; DP.ofkeSok.rot = -t; P(DP.ofkeSok);
-    _v3.set(p.x, p.y + 0.5 * h, p.z); DP.ofkePar.boy = 1.2 * h; DP.ofkePar.a = 0.3 + Math.sin(t * 12) * 0.08; P(DP.ofkePar);
+    _v3.set(p.x, p.y + 0.5 * h, p.z); DP.ofkePar.boy = 1.2 * h; DP.ofkePar.a = 0.15 + Math.sin(t * 12) * 0.05; P(DP.ofkePar);
     if (RND() < dt * 10 * OLCEK) { _v3.set(p.x + rr(-0.3, 0.3), p.y + rr(0.1, 0.6) * h, p.z + rr(-0.3, 0.3)); _v2.set(0, rr(1, 2), 0); P(DP.ofkeKiv); } },
   yildiz3(c, dt, t, p, h) { // ★3: ayak altında altın parıltı halkası
     _v3.set(p.x, Z() + 0.035, p.z); P(DP.y3Halka); DP.y3Run.rot = t * 0.5; P(DP.y3Run);
@@ -1180,6 +1254,8 @@ export const vfx = {
     return { sure: ON_SURE[ad] || 0 };
   },
   onSure(ad) { return ON_SURE[ad] || 0; },
+  // yetenek hazırlığı (yetenekBaslat anında): o.sure patlamaya kalan sn, o.kemik soket kemiği (Object3D), o.ileri birimin ön yönü
+  hazirlik(ad, kaynak, o = {}) { if (!sahne || !HAZIR[ad]) return; const k = birim(kaynak); if (k) HAZIR[ad](k, o); },
   kut(pos, o = {}) {
     if (!sahne) return null; const p = konum(pos, new THREE.Vector3()).setY(Z());
     const h = (pos && pos.isObject3D && boyAl(pos)) || 1.2; kutBas = simdi(); kutP.copy(p).setY(Z() + 0.6 * h);

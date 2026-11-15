@@ -56,10 +56,10 @@ Not: Sword_Heavy_Combo (4,33 sn) dört vuruşludur; bütünü bir saldırı aral
 
 | Yaratık | Normal saldırı | Darbe anı | Özel güç (yetenek) animasyonu | Efekt |
 |---|---|---|---|---|
-| Kaya Golemi | Punch_Cross / Melee_Hook | 0,30 / 0,28 sn | OverhandThrow (kaya fırlatma, bırakma 0,36 sn) | Göğüs kristali parlar, kaya mermisi, hedefte toz ve sersemleme yıldızları |
-| Davulcu Kurbağa | Spell_Simple_Shoot (ses dalgası) | 0,04 sn | NinjaJump_Start → Land (sıçrayıp yere vurma) | Her vuruşta halka şeklinde ses dalgası; takımın üstünde turuncu güç aurası 4 sn |
-| Sis Yarasası | Zombie_Scratch / Sword_Regular_A (pençe) | 0,58 / 0,24 sn | Spell_Simple_Enter → Idle_Loop 0,6 sn | Hedeften yarasaya kızıl can akışı (çizgi parçacık) |
-| Rüzgâr Ruhu | Spell_Simple_Shoot | 0,00 sn | Spell_Simple_Enter → Shoot | Yaprak dolu küçük kasırga, düşmanları geri iter |
+| Kaya Golemi | Punch_Cross / Melee_Hook | 0,30 / 0,28 sn | OverhandThrow + yordamsal çömelme, yerden kaya koparma (§7) | Göğüs kristali parlar, kaya mermisi, hedefte toz ve sersemleme yıldızları |
+| Davulcu Kurbağa | Spell_Simple_Shoot (ses dalgası) | 0,04 sn | Idle_Loop + yordamsal dört göbek vuruşu, son vuruşta sıçrayıp iniş (§7) | Her vuruşta halka şeklinde ses dalgası; takımın üstünde turuncu güç aurası 4 sn |
+| Sis Yarasası | Zombie_Scratch / Sword_Regular_A (pençe) | 0,58 / 0,24 sn | Zombie_Scratch (kavrama 0,58) + atılma, kanatla sarma, şişme (§7) | Hedeften yarasaya kızıl can akışı (çizgi parçacık) |
+| Rüzgâr Ruhu | Spell_Simple_Shoot | 0,00 sn | Spell_Simple_Enter → Shoot + yordamsal tam tur dönüş, iki kol itme (§7) | Yaprak dolu küçük kasırga, düşmanları geri iter |
 | Işık Kuğusu | Spell_Simple_Shoot | 0,00 sn | Spell_Simple_Enter → Idle_Loop 0,8 sn | Kanatlardan yükselen ışık tüyleri; dostlarda kalkan kabarcığı |
 | Gece Ayısı | Melee_Hook / Sword_Regular_A / B | 0,28 / 0,24 / 0,25 sn | Agir_Ezme (tepeden ezme, 0,62 sn) | Mor gölge pençesi, hedefte lanet işareti (5 sn) |
 | Anka | Spell_Simple_Shoot (ateş tüyü) | 0,04 sn | OverhandThrow (alev tüyü fırlatma, 0,36 sn) | Hedef çevresine kül yağmuru; ölünce küle dönüp NinjaJump_Land ile alevden doğuş |
@@ -95,8 +95,8 @@ UAL insan iskeleti içindir; dört ayaklılar Tripo'nun dört ayaklı iskeletini
 **Özel güçler:**
 | Yaratık | Hareket | Efekt |
 |---|---|---|
-| Kristal Kurt (Uluma) | Baş 40° yukarı, 0,6 sn tutar | Sırttaki kristaller parlar; yanındaki dostlarda mavi hız izleri |
-| Dağ Koçu (Boynuz Öfkesi) | Ön bacaklar 0,4 sn şahlanır, yere vurur | Boynuz desenleri kızıl yanar; 3 vuruş boyunca buhar |
+| Kristal Kurt (Uluma) | Nefes al (baş aşağı), yaslan, baş ~45° göğe, 0,6 sn tutar (§7) | Sırttaki kristaller parlar; yanındaki dostlarda mavi hız izleri |
+| Dağ Koçu (Boynuz Öfkesi) | Toynakla iki eşeleme, kısa şahlanma, 0,36 sn'de yere vurur (§7) | Boynuz desenleri kızıl yanar; 3 vuruş boyunca buhar |
 | Buz Kaplumbağası (Buz Nefesi) | Baş öne uzanır, 0,5 sn | Ağızdan koni şeklinde buz, hedefler donar |
 | Kor Semenderi (Kor Halkası) | Yerinde döner (360°, 0,5 sn) | Çevresinde ateş halkası; dostlarda iyileşme parıltısı |
 | Bulut Atı (Bulut Hücumu) | Şahlanır, sonra hedefe atılır (motor konumu ışınlar; görüntü 0,25 sn'de kayar) | Arkada bulut izi |
@@ -132,3 +132,24 @@ UAL insan iskeleti içindir; dört ayaklılar Tripo'nun dört ayaklı iskeletini
 - Yaratık başına farklılık (hangi saldırı klibi, darbe anı, yetenek dizisi) bir **AnimatorOverrideController** ve `KahramanGorsel` ScriptableObject ile verilir. Tablo yukarıda.
 - Dört ayaklılar ve yılan: `DortAyakliHareket.cs` ve `YilanHareket.cs`, LateUpdate'te kemik dönüşü yazar (kodla canlandırma).
 - Savaş sahnesi: `SavasSahnesi.cs`, motoru 0,4 sn önde çalıştırır, `Fx` olaylarını zaman damgalı kuyruğa koyar, her kare görüntü zamanına gelen olayları uygular.
+
+## 7. İmza yetenekleri (grup 1: Golem, Kurt, Kurbağa, Yarasa, Rüzgâr, Koç)
+
+**Zamanlama kuralı.** Motor görüntünün 0,4 sn önünde koştuğu için yetenek olayı görüntüye en fazla 0,35–0,4 sn önce gelir; mana dolumu önceden bilinemez. Bu yüzden her yeteneğin hazırlığı bu bütçeye sığar. "Patlama anı", efektin çıkış anıdır (vfx `onSure`; mermisiz yeteneklerde motorun etki anı). Poz anahtar kareleri patlama anına göre yazılır. Kalan süre hazırlıktan kısaysa yalnız hazırlık kısmı sıkıştırılır, patlama karesi yine tam o ana düşer. Unity'de de aynısı geçerli: `SavasSahnesi` yetenek olayını aldığında `an = olayT − onSure − şimdi` hesaplar ve Animator'a hazırlık hızını `hazırlık / an` olarak verir.
+
+Ortak yapı (tarayıcıda `hareket.js` `YET_POZ`, dört ayaklıda `DA`; `sahne3d.js` `YET_IMZA`, `yetenekHis`; `vfx.js` `HAZIR`):
+- İki ayaklı poz kanalları: eğilme (rad, + öne), çömelme (boy oranı; diz bükülür, ayak yerde kalır; eksi değer sıçrama), ölçek nabzı, kök dönüşü (Y), kollar yana, kollar öne, sağ kol, baş. Hepsi klibin üstüne eklenir. Unity'de bunlar additive bir katman ya da LateUpdate'te kemik dönüşüdür.
+- Hazırlık parlaması: gövde element renginde ışır, patlama anında en parlaktır, 0,35 sn sonra söner. Mevcut parlama uniform'u kullanılır, yeni malzeme gerekmez. Unity'de `_EmissionColor` × zarf.
+- Soket: efekt kemikten çıkar (el, ağız, iki elin ortası; dört ayaklıda boyun zincirinin ucu). Unity'de `KahramanGorsel.yetenekSoketi` (Transform adı).
+
+| Kahraman | Hazırlık (patlamadan önce) | Patlama (u = 0) | Toparlanma | Efekt ve his |
+|---|---|---|---|---|
+| Kaya Golemi (Kaya Fırlat) | Çömel (boyun %10'u), sağ el yere uzanır; yer çatlar, toprak fışkırır, kaya kopar ve el kemiğine bağlanıp başın üstüne kalkar. Göğüs turuncu parlar. | OverhandThrow bırakma karesi (0,36), gövde +0,34 rad öne. Kaya el soketinden ayrılır, 0,2 sn uçar (golem 1 hücreden atar; hazırlığa yer açmak için uçuş kısa). | 0,5 sn | İnişte toz şoku, çatlak, sarsıntı 0,25, hedefte 0,07 sn yerel duraklama; sersemlik yıldızları motor durumundan. |
+| Kristal Kurt (Uluma) | 0–0,22 sn nefes: baş ve göğüs aşağı, sırttaki kristal zerreleri başa akar, gövde mavi parlar. | 0,32 sn: arkaya yaslan (arka pivot), ön ayaklar gerilir, baş ~45° göğe. Çene kemiği olmadığı için baş kemiğine ölçek nabzı (ağız açılması yerine). Ağızdan göğe yükselen halka konisi ve ışın. | 0,9 sn'ye dek titreyerek tut, 1,2'de bitir | Kurttan her dosta 0,1 sn arayla mavi bağ çizgisi ve dostta kısa parlama; kamera 0,55 sn hafif yaklaşır. |
+| Davulcu Kurbağa (Savaş Davulu) | Kollar yana ve yukarı kalkar, gövde turuncu parlar. | Dört göbek vuruşu: u = 0 / 0,2 / 0,4 / 0,6. Her vuruşta kollar 0,08 sn kalkar, karna iner, gövde çöker, ölçek nabzı +%7. Her vuruş bir halka dalgasıyla eşleşir. Dördüncüden önce küçük sıçrama, inişte büyük halka. | 0,98 sn | Son vuruşta 0,05 sn yerel duraklama ve sarsıntı. Vuruş 2–4 için `yetenekAlt` ses olayı (ses.js'te karşılığı yoksa sessiz geçer). |
+| Sis Yarasası (Can Emme) | Kanatlar arkaya açılır, gövde geri yaslanır, kızıl sis sızar; hedefe 0,35 hücre atılma başlar. | Zombie_Scratch kavrama karesi (0,58) patlamaya kilitli; hedefte kızıl kesik. | Emme 0,55 sn: kanatlar öne kapanıp sarar, gövde nefes alır gibi +%8 şişer, can akışı ağız soketine akar; sonra 0,3 sn'de geri sıçrar. | Ekran kenarında 0,45 sn hafif kızıl vinyet, kavramada 0,06 sn yerel duraklama (yarasa ve hedef). |
+| Rüzgâr Ruhu (Kasırga) | Kollar yana açık, hızlanan tam tur (kök Y'de 360°); çevresinde yapraklar ve rüzgâr çizgileri daralarak toplanır. | Spell_Simple_Enter sonu (kollar ileri) mermi çıkışına kilitli; iki kol ileri itilir, gövde +0,26 rad öne. Rüzgâr darbesi iki avucun ortasından çıkar, 0,1 sn'de hedefe varır. | 0,45 sn | Kamera kasırga yönüne kısa tekme; itilen her düşmanın ayağı altında 0,35 sn sürtünme tozu (savrulma his.darbe'de). |
+| Dağ Koçu (Boynuz Öfkesi) | Baş aşağı, sağ ön toynakla iki kez eşeleme (toz), burundan iki buhar, gövde kızıl parlar. | 0,29'da kısa şahlanma, baş yukarı savrulur; 0,36'da yere vurma (motorun etki anı): şok, toz, sarsıntı, yakındaki düşmanlar sarsılır. | 0,68 sn | Aura ve öfke durumu seyreltildi, gövde okunur. Güçlenmiş 3 vuruşta kızıl boynuz kesiği (güç 1,6), 0,05 sn yerel duraklama; başın üstünde kalan sayaç (×3, ×2, ×1). |
+
+Unity için: Koç ile Bulut Atı artık ayrı stil kullanır (`ofke` / `sahlan`). Kurbağanın eski NinjaJump dizisi bırakıldı (davula vurmuyordu). Golem ve Rüzgâr'ın mermi uçuş süreleri kısaldı (0,45 → 0,2 ve 0,22 → 0,1). Bu sürelerin `KahramanGorsel` tablosunda da aynı olması gerekir, yoksa hazırlık 0,4 sn bütçesini aşar ve bırakma geç kalır.
+

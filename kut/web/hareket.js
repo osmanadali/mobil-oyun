@@ -511,19 +511,19 @@ const DA = {
   // baş nabzı (ağız) → 0,9'a dek titreyerek tut → 1,2 toparlan
   ulu:   [[0, 0, 0, 0, 0, 0, 0, 0, 0], [0.22, 0.02, -0.065, -0.1, -0.4, -0.22, 0, 0, 0], [0.32, -0.07, -0.02, 0.2, 0.8, 0.42, 0, 0, 0.12],
           [0.9, -0.07, -0.025, 0.23, 0.85, 0.46, 0, 0, 0.07], [1.2, 0, 0, 0, 0, 0, 0, 0, 0]],
-  // Boynuz Öfkesi (Dağ Koçu, yetOn 0,4): baş aşağı, sağ ön toynakla iki kez eşele (0,04–0,24) → kısa şahlanma, baş yukarı savrulur (0,33)
-  // → 0,40 yere vurma (yerVur, motorun etki anı) → 0,7 toparlan
-  ofke:  [[0, 0, 0, 0, 0, 0, 0, 0, 0], [0.06, -0.02, -0.025, -0.1, -0.32, -0.28, 0, 1, 0], [0.12, -0.03, -0.025, -0.1, -0.32, -0.28, 0, -0.7, 0],
-          [0.18, -0.03, -0.025, -0.1, -0.32, -0.28, 0, 1, 0], [0.24, -0.03, -0.025, -0.1, -0.32, -0.28, 0, -0.7, 0],
-          [0.33, -0.04, 0, 0.45, -0.12, 0.38, 0.85, 0, 0], [0.4, 0.09, -0.04, -0.09, -0.34, -0.32, 0, 0, 0], [0.48, 0.08, -0.035, -0.07, -0.3, -0.27, 0, 0, 0],
-          [0.72, 0, 0, 0, 0, 0, 0, 0, 0]],
+  // Boynuz Öfkesi (Dağ Koçu, yetOn 0,36): baş aşağı, sağ ön toynakla iki kez eşele (0,05–0,2) → kısa şahlanma, baş yukarı savrulur (0,29)
+  // → 0,36 yere vurma (yerVur, motorun etki anı) → 0,68 toparlan
+  ofke:  [[0, 0, 0, 0, 0, 0, 0, 0, 0], [0.05, -0.02, -0.025, -0.1, -0.32, -0.28, 0, 1, 0], [0.1, -0.03, -0.025, -0.1, -0.32, -0.28, 0, -0.7, 0],
+          [0.15, -0.03, -0.025, -0.1, -0.32, -0.28, 0, 1, 0], [0.2, -0.03, -0.025, -0.1, -0.32, -0.28, 0, -0.7, 0],
+          [0.29, -0.04, 0, 0.45, -0.12, 0.38, 0.85, 0, 0], [0.36, 0.09, -0.04, -0.09, -0.34, -0.32, 0, 0, 0], [0.44, 0.08, -0.035, -0.07, -0.3, -0.27, 0, 0, 0],
+          [0.68, 0, 0, 0, 0, 0, 0, 0, 0]],
   sahlan:[[0, 0, 0, 0, 0, 0, 0], [0.12, -0.03, 0, 0.3, -0.05, 0.1, 1], [0.27, -0.05, 0, 0.62, -0.25, 0.25, 1], [0.34, -0.04, 0, 0.6, -0.2, 0.2, 1], [0.4, 0.07, -0.03, -0.07, -0.3, -0.25, 0], [0.72, 0, 0, 0, 0, 0, 0]],
   uzan:  [[0, 0, 0, 0, 0, 0, 0], [0.2, 0.05, -0.02, -0.05, -0.45, 0.3, 0], [0.6, 0.06, -0.02, -0.05, -0.5, 0.34, 0], [0.85, 0, 0, 0, 0, 0, 0]],
   don:   [[0, 0, 0, 0, 0, 0, 0], [0.1, 0, 0.03, 0.05, 0.1, 0, 0], [0.5, 0, 0.03, 0.05, 0.1, 0, 0], [0.62, 0, 0, 0, 0, 0, 0]],
 };
 export const DA_DARBE = { isir: 0.26, tosla: 0.26 };
 export const YILAN_DARBE = 0.28;
-const DA_YERVUR = { sahlan: 0.4, ofke: 0.4 };
+const DA_YERVUR = { sahlan: 0.4, ofke: 0.36 };
 
 /** Her kare (aktar yerine). dt: görsel dt (dtGorsel × hizKati).
     ops: hiz (hücre/sn, birimin o anki görsel hızı), saldiri (true: bu karede başlat — darbe 0,15 sn sonra), yetenek (true | stil adı),
@@ -814,7 +814,12 @@ export function ikiAyakliGuncelle(d, dt, { hareket = false, hiz = 0, saldiri = n
   if (!d) return; dt = Math.min(0.1, Math.max(0, dt)); d.t += dt;
   const b = d.b, K = d.K;
   if (saldiri) { const dr = typeof saldiri === 'object' ? (saldiri.darbe || 0) : 0.25; d.sal = { t: 0, darbe: dr, menzilli: !!(saldiri && saldiri.menzilli) || dr < 0.08 }; }
-  if (yetenek) { const ad = typeof yetenek === 'object' ? yetenek.ad : null; d.yet = { t: 0, poz: (ad && YET_POZ[ad]) || null, an: typeof yetenek === 'object' && yetenek.an != null ? yetenek.an : 0.35 }; }
+  if (yetenek) {
+    // hazırlık bütçesi motorun önden gelişiyle sınırlı (ONDE_SN ≈ 0,35–0,4 sn): kalan süre pozun hazırlığından kısaysa hazırlık sıkıştırılır,
+    // patlama karesi yine tam patlama anına düşer (poz atlamaz)
+    const ad = typeof yetenek === 'object' ? yetenek.ad : null, poz = (ad && YET_POZ[ad]) || null, an = typeof yetenek === 'object' && yetenek.an != null ? yetenek.an : 0.35;
+    d.yet = { t: 0, poz, an, olc: poz ? Math.max(1, -poz.k[0][0] / Math.max(0.05, an)) : 1 };
+  }
   if (vurul) d.vur.v += -14 * (typeof vurul === 'number' ? kirp(vurul, 0.3, 1.3) : 0.8);
   d.agirlik += ((olum ? 0 : 1) - d.agirlik) * Math.min(1, dt * 6);
   const W = d.agirlik; if (W < 0.01) return;
@@ -848,7 +853,7 @@ export function ikiAyakliGuncelle(d, dt, { hareket = false, hiz = 0, saldiri = n
     const y = d.yet; y.t += dt;
     if (y.poz) {
       // kişiye özel poz: patlama karesine göre zaman (u = 0 patlama)
-      const u = y.t - y.an, kk = y.poz.k; anahtar(kk, u, YK); yetVar = true;
+      const u = y.t - y.an, kk = y.poz.k; anahtar(kk, u < 0 ? u * y.olc : u, YK); yetVar = true;
       egil += YK[0]; cirp = d.kanat && y.poz.cirp ? 1 : 0; if (u > kk[kk.length - 1][0]) d.yet = null;
     } else {
       egil += y.t < 0.33 ? -0.14 * yumusak(y.t / 0.33) : y.t < 0.45 ? karis(-0.14, 0.18, cikis3((y.t - 0.33) / 0.12)) : 0.18 * (1 - yumusak((y.t - 0.45) / 0.4));
