@@ -224,3 +224,51 @@ fr: ❤️∞ pack de vies illimitées
 ko: ❤️∞ 무제한 하트 팩
 ja: ❤️∞ ライフ無限パック
 zh: ❤️∞ 無限生命包
+@ I’m playing Ray: Metro Line Puzzle — rotate the rails and light up the city 🚇 Free and offline:
+de: Ich spiele Ray: Metro-Linienrätsel – Gleise drehen und die Stadt zum Leuchten bringen 🚇 Kostenlos und offline:
+es: Estoy jugando a Ray: Puzle de Líneas Metro: gira las vías e ilumina la ciudad 🚇 Gratis y sin conexión:
+pt: Estou jogando Ray: Quebra-Cabeça do Metrô: gire os trilhos e ilumine a cidade 🚇 Grátis e offline:
+fr: Je joue à Ray : Puzzle de Métro : tourne les rails et rallume la ville 🚇 Gratuit et hors ligne :
+ko: Ray: 지하철 노선 퍼즐을 하고 있어요. 선로를 돌려 도시에 불을 밝혀요 🚇 무료, 오프라인 가능:
+ja: Ray: メトロ路線パズルで遊んでいます。線路を回して街に明かりを灯そう 🚇 無料・オフライン対応:
+zh: 我在玩 Ray: 地鐵路線解謎，轉動軌道點亮城市 🚇 免費、可離線遊玩：
+@ Enjoying Ray?
+de: Gefällt dir Ray?
+es: ¿Te gusta Ray?
+pt: Está gostando do Ray?
+fr: Ray te plaît ?
+ko: Ray 재미있나요?
+ja: Rayを楽しんでいますか？
+zh: 喜歡 Ray 嗎？
+@ Recommend it to your friends and light up the city together.
+de: Empfiehl es deinen Freunden und bringt die Stadt gemeinsam zum Leuchten.
+es: Recomiéndalo a tus amigos e iluminad la ciudad juntos.
+pt: Recomende para seus amigos e iluminem a cidade juntos.
+fr: Recommande-le à tes amis et rallumez la ville ensemble.
+ko: 친구에게 추천하고 함께 도시를 밝혀요.
+ja: 友だちにすすめて、いっしょに街を明るくしよう。
+zh: 推薦給朋友，一起點亮城市。
+@ Recommend to a friend
+de: Einem Freund empfehlen
+es: Recomendar a un amigo
+pt: Recomendar a um amigo
+fr: Recommander à un ami
+ko: 친구에게 추천
+ja: 友だちにすすめる
+zh: 推薦給朋友
+@ Not now
+de: Jetzt nicht
+es: Ahora no
+pt: Agora não
+fr: Pas maintenant
+ko: 나중에
+ja: 今はしない
+zh: 稍後再說
+@ Rate Ray
+de: Ray bewerten
+es: Valorar Ray
+pt: Avaliar o Ray
+fr: Noter Ray
+ko: Ray 평가하기
+ja: Rayを評価
+zh: 為 Ray 評分
