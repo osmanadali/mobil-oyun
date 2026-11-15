@@ -884,6 +884,11 @@ function renderMap() {
       }).join('')}</div></div>`;
   }
   $('mapList').innerHTML = html;
+  // açılışta mevcut bölüme kaydır (uzun listede baştan aşağı kaydırmak gerekmesin): o hattın başlığı görünsün, bölüm ekranda kalsın
+  const box = $('mapList'), cur = box.querySelector('.lv.cur') || [...box.querySelectorAll('.line:not(.lockd)')].pop();
+  if (cur) { const line = cur.closest('.line') || cur, top = el => el.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop;
+    const y = top(line) - 8, yc = top(cur) + cur.offsetHeight - box.clientHeight + 24;   // hat başlığı üstte; uzun hatta bölüm altta kalmasın
+    box.scrollTop = Math.max(0, y, yc); }
 }
 $('mapList').onclick = e => { const b = e.target.closest('.lv'); if (b && !b.disabled) start('level', +b.dataset.l); };
 function lockedSheet(c) {
