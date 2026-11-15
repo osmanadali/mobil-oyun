@@ -814,6 +814,7 @@ function onKurulmaTahmin() {
       continue;
     }
     if (b.olumT >= 0 || b.kay || (!b.isk && !b.dort) || b.durum === 'saldir' || b.durum === 'yetenek' || (b.dort && b.dort.sal)) continue;
+    { const g = gorunum[b.si]; if (g && g.sersem) continue; }   // görüntüde hâlâ sersem: iptal koşuluyla aynı (başlat-iptal-başlat titremesi olmasın)
     const H = hazirSure(b), oL = (L * n + b.si) * ALAN, oP = oL - n * ALAN;
     if (V[oL + 7] || V[oL + 9] || V[oL + 4] >= V[oL + 5]) continue;          // ölü, sersem ya da mana dolu (sıradaki eylem yetenek)
     const cL = V[oL + 15], r = (V[oP + 15] - cL) / DT; if (!(r > 0.05) || !(cL > 0)) continue;   // menzilde değil (yürüyor) ya da yeni vurdu
@@ -1412,7 +1413,7 @@ export function kare(dtSabit) {
             let istek = i2.beklemeAd, ts = null;
             if (hareket) {
               const yH = (b.adimHiz && b.adimHiz.Walk_Loop) || 1.2, jH = (b.adimHiz && b.adimHiz.Jog_Fwd_Loop) || 2.4, kH = b.gor.yuruHiz || 1;
-              const jog = b.u.soy.includes('atli') || b.hizS / yH > 1.8;
+              const jog = b.u.soy.includes('atli') || b.hizS / yH > (i2.aktifAd === 'Jog_Fwd_Loop' ? 1.5 : 1.8);   // eşikte yürü-koş gidip gelmesin (histerezis)
               istek = jog ? 'Jog_Fwd_Loop' : 'Walk_Loop'; ts = Math.min(1.8, Math.max(0.6, b.hizS / (jog ? jH : yH))) * (jog ? 1 : kH);
             }
             if (i2.aktifAd !== istek) oyna(b, istek, { dongu: true, gecis: 0.2 }); if (ts !== null && i2.aktif) i2.aktif.timeScale = ts;
