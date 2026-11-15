@@ -909,7 +909,7 @@ export function ikiAyakliGuncelle(d, dt, { hareket = false, hiz = 0, saldiri = n
     // hazırlık bütçesi motorun önden gelişiyle sınırlı (ONDE_SN ≈ 0,35–0,4 sn): kalan süre pozun hazırlığından kısaysa hazırlık sıkıştırılır,
     // patlama karesi yine tam patlama anına düşer (poz atlamaz)
     const ad = typeof yetenek === 'object' ? yetenek.ad : null, poz = (ad && YET_POZ[ad]) || null, an = typeof yetenek === 'object' && yetenek.an != null ? yetenek.an : 0.35;
-    d.yet = { t: 0, poz, an, olc: poz ? Math.max(1, -poz.k[0][0] / Math.max(0.05, an)) : 1 };
+    d.yet = { t: 0, poz, an, olc: poz ? Math.max(1, -poz.k[0][0] / Math.max(0.05, an)) : 1, son: -1 };
   }
   if (vurul) d.vur.v += -14 * (typeof vurul === 'number' ? kirp(vurul, 0.3, 1.3) : 0.8);
   d.agirlik += ((olum ? 0 : 1) - d.agirlik) * Math.min(1, dt * 6);
@@ -945,6 +945,7 @@ export function ikiAyakliGuncelle(d, dt, { hareket = false, hiz = 0, saldiri = n
     if (y.poz) {
       // kişiye özel poz: patlama karesine göre zaman (u = 0 patlama)
       const u = y.t - y.an, kk = y.poz.k; anahtar(kk, u < 0 ? u * y.olc : u, YK); yetVar = true;
+      if (y.son >= 0) { y.son -= dt; const f = yumusak(Math.max(0, y.son) / YET_SON_SURE); for (let j = 0; j < YK.length; j++) YK[j] *= f; if (y.son <= 0) d.yet = null; }   // yürüyüşe geçişte söner
       egil += YK[0]; cirp = d.kanat && y.poz.cirp ? 1 : 0; if (u > kk[kk.length - 1][0]) d.yet = null;
     } else {
       egil += y.t < 0.33 ? -0.14 * yumusak(y.t / 0.33) : y.t < 0.45 ? karis(-0.14, 0.18, cikis3((y.t - 0.33) / 0.12)) : 0.18 * (1 - yumusak((y.t - 0.45) / 0.4));
@@ -1007,5 +1008,8 @@ function yetPozUygula(d, YK, W) {
   if (sag && K.RightArm) { dunyaDon(K.RightArm, _R, -sag); if (K.RightForeArm) dunyaDon(K.RightForeArm, _R, -0.3 * sag); }
   if (bas && K.Head) dunyaDon(K.Head, _R, -bas);
 }
+const YET_SON_SURE = 0.15;
+/** iki ayaklının kişiye özel yetenek pozunu YET_SON_SURE içinde söndürür (sahne3d: patlamadan sonra birim yürümeye başladı) */
+export function yetPozSondur(d) { if (d && d.yet && d.yet.poz && d.yet.son < 0) d.yet.son = YET_SON_SURE; }
 /** yetenek pozu var mı (sahne3d: yetenek dizisinin uzunluğu bu pozla belirlenir) */
 export function yetPozVar(ad) { return !!YET_POZ[ad]; }

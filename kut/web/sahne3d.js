@@ -6,7 +6,7 @@ import { GLTFLoader } from '../vendor/three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from '../vendor/three/addons/utils/SkeletonUtils.js';
 import * as G from './gorunum.js';
 import { vfx } from './vfx.js';
-import { his, dortAyakliKur, dortAyakliGuncelle, yilanKur, yilanGuncelle, ikiAyakliKur, ikiAyakliGuncelle, onYonAci, DA_DARBE, YILAN_DARBE, yetPozVar } from './hareket.js';
+import { his, dortAyakliKur, dortAyakliGuncelle, yilanKur, yilanGuncelle, ikiAyakliKur, ikiAyakliGuncelle, onYonAci, DA_DARBE, YILAN_DARBE, yetPozVar, yetPozSondur } from './hareket.js';
 
 const D = window.KUT_DATA;
 export const ONDE_SN = 0.4;
@@ -833,6 +833,7 @@ function kaymaBaslat(b, tEtki) {
   if (Math.hypot(bx - ax, bz - az) < 0.3) return;
   b.kay = { ax, az, bx, bz, t0: gorselT, t1: Math.max(gorselT + 0.05, tEtki), son: Math.max(gorselT + 0.05, tEtki) + DT, aci: Math.atan2(bx - ax, bz - az) };
 }
+const YET_YURU_PAY = 0.12;   // patlamadan sonra yürümeye geçmeden önce yetenek pozunun en az tutulduğu süre (sn)
 function yetenekBaslat(b, ad, olayT, hedef = null) {
   if (!b || b.olumT >= 0) return;
   b.onk.var = false;   // önden kurulma (tahmin edilen vuruş) yeteneğe yol verir
@@ -867,6 +868,7 @@ function yetenekBaslat(b, ad, olayT, hedef = null) {
     const hiz = b.gor.yetOn ? Math.min(2.2, Math.max(0.7, anahtarK / kalan)) : 1;
     oyna(b, dizi[0], { gecis: 0.08, hiz }); b.dizi = dizi.slice(1); b.tekBitis = gorselT + ilk / hiz; b.durum = 'yetenek';
   }
+  b.yetAn = gorselT + an;   // patlama anı (görsel saat); sonrasında yürürse yetenek klibi bırakılır
   b.bay.yetenek = { ad, an };   // hareket.js: kişiye özel poz patlama karesine (an sn sonra) kilitlenir
 }
 // Patlama anının hissi (yeteneğe özgü): hit-stop, kamera itmesi, ekran vinyeti, çok vuruşlu yeteneklerde alt ses olayları
@@ -1399,6 +1401,8 @@ export function kare(dtSabit) {
       if (b.isk && !gizli) {
         const i2 = b.isk;
         if (!olu) {
+          // yetenek patlaması geçtikten sonra motor birimi yürütüyorsa yetenek klibi bırakılır (yerinde kayarak poz tutmasın; yürüyüşe karışır)
+          if (hareket && b.durum === 'yetenek' && !b.kay && gorselT > b.yetAn + YET_YURU_PAY) { b.tekBitis = gorselT; if (b.dizi) b.dizi.length = 0; if (b.zk) { b.zk = null; b.zkSira.length = 0; } yetPozSondur(b.ik); }
           if ((b.durum === 'yetenek' || b.durum === 'vurul' || b.durum === 'ara' || (b.durum === 'saldir' && !b.zk)) && gorselT >= b.tekBitis) {
             if (b.dizi && b.dizi.length) { const n = b.dizi.shift(); const loop = n.endsWith('_Loop'); oyna(b, n, { gecis: 0.06 }); b.tekBitis = gorselT + (loop ? 0.6 : ual.klip[n].duration); }
             else b.durum = '';
