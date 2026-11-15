@@ -161,9 +161,12 @@ function ayarPencere() {
     <button class="btn mor" id="aFps">${kb.olcer ? 'Kare hızı göstergesini gizle' : 'Kare hızı göstergesi'}</button></div>
     <p><b>Kare hızı:</b> ${kb.fpsHedef === 'oto' ? 'Otomatik' : kb.fpsHedef}${kb.ekranHz > 60 ? ` (ekran ${kb.ekranHz} Hz)` : ''}. 60 pili korur; Otomatik ekranın hızını hedefler.</p>
     <div class="eylemler" style="justify-content:flex-start" id="aHedef">${[['60', '60'], ['120', '120'], ['oto', 'Otomatik']].map(([v, ad]) => `<button class="btn ${kb.fpsHedef === v ? 'altin secik' : 'mor'}" data-v="${v}" aria-pressed="${kb.fpsHedef === v}">${ad}</button>`).join('')}</div>
+    <p><b>Animasyonları azalt:</b> ${azHareket() ? 'Açık' : 'Kapalı'}${ayarOku('kut.azHareket') === null && azMedya && azMedya.matches ? ' (cihaz ayarı)' : ''}. Açıkken bitiş ekranlarında uçan kılıçlar, sarsıntı ve kamera yakın planı yerine sade geçiş gösterilir.</p>
+    <div class="eylemler" style="justify-content:flex-start"><button class="btn mor" id="aAz" aria-pressed="${azHareket()}">${azHareket() ? 'Animasyonları aç' : 'Animasyonları azalt'}</button></div>
     <p><b>Öğretici:</b> ${ogr.adim >= 0 ? `açık (adım ${ogr.adim + 1}/${OGR_ADIMLAR.length})` : 'kapalı'}. Temelleri adım adım yeniden gösterir.</p>
     <div class="eylemler" style="justify-content:flex-start"><button class="btn mor" id="aOgr">Öğreticiyi yeniden başlat</button></div>
     <div class="eylemler"><button class="btn altin" data-kapat>Tamam</button></div>`);
+  $('aAz').onclick = () => { ayarYaz('kut.azHareket', azHareket() ? '0' : '1'); azUygula(); kapat(); ayarPencere(); };
   $('aOgr').onclick = () => { kapat(); if (ogr.adim >= 0) ogrKapat(false); anaCiz(); goster('ana'); ogrBaslat(true); };
   document.querySelectorAll('#aHedef .btn').forEach(b => b.onclick = () => { S3.fpsHedef(b.dataset.v); kapat(); ayarPencere(); });
   $('aGrafik').onclick = () => { try { localStorage.setItem('kut.hafif', hafif ? '0' : '1'); } catch (e) {} location.reload(); };
@@ -436,7 +439,7 @@ async function sahneyiHazirla() {
 }
 async function savasBaslat(sim, rakip) {
   savasBilgi = { sim, rakip, alamet: D.ALAMETLER.find(a => a.id === (oyun._savas ? oyun._savas.alamet : oyun.M ? oyun.M.alamet : 'yok')) || D.ALAMETLER[0], bitti: false };
-  goster('savas'); $('sonucYer').innerHTML = ''; $('ayakta').style.display = ''; $('savas').classList.remove('bitti');
+  bitisTemizle(); goster('savas'); $('sonucYer').innerHTML = ''; $('ayakta').style.display = ''; $('savas').classList.remove('bitti');
   $('yukleniyor').classList.add('acik');
   S3.yukleme.olay = (n, top, ad) => { $('yukYuzde').textContent = `Modeller: ${n}/${top}`; };
   try {
@@ -450,7 +453,7 @@ async function savasBaslat(sim, rakip) {
   }
   $('yukleniyor').classList.remove('acik');
   kutCiz(); hizUygula(); kutSecim = false;
-  Ses.cal('savas_basla'); Ses.muzikCal('savas');
+  Ses.muzikCal('savas'); savasGirisGoster();   // savas_basla sesi SAVAŞ! bandındaki kılıç çarpışmasında çalar
   const s = $('savas');
   q('.rakipK', s).innerHTML = `<div class="amb"><img src="${P((rakip.takim || [])[0] ? rakip.takim[0].h : 'tilki')}" alt=""></div><div style="min-width:0"><small>${rakip.duello ? 'Düello' : 'Rakip · Tur ' + oyun.turAd()}</small><b>${rakip.ad}</b><span>${rakip.kaynak === 'bot' ? 'Bot' : 'Kupa ' + sayi(rakip.kupa || 0)}</span></div>`;
   const a = savasBilgi.alamet; q('.alametK', s).innerHTML = `<span class="ay resim" style="${alametArka(a.id)}">${alametIc(a.id)}</span><div><b>${a.ad}</b><span>${a.m}</span></div>`;
@@ -511,7 +514,7 @@ function savasKare() {
 }
 function sonucGoster(sonuc) {
   const k = sonuc.kazanan; if (k === 0) S3.zafer(0); else if (k === 1) S3.zafer(1);
-  Ses.muzikCal('hazirlik'); Ses.cal(k === 1 ? 'yenilgi' : 'zafer', { hiz: k === 0 || k === 1 ? 1 : 0.9 });
+  Ses.muzikCal('hazirlik'); sonucAnimBaslat(k === 0 || k === 1 ? k : 2);   // zafer/yenilgi sesi animasyonun çarpışma anında
   const r = oyun.savasBitti(sonuc); savasBilgi.sonucIslem = r;
   if (r && r.hasar > 0 && k === 1 && S3.hasarKivilcim) S3.hasarKivilcim(1);   // rakibin sağ birimlerinden oyuncuya can hasarı ışıkları
   const M = oyun.M, zh = K.hizli.zaferHedef, arena = r && !r.duello && (r.bitti ? r.mod !== 'hizli' : oyun.seviyeli());
@@ -521,11 +524,15 @@ function sonucGoster(sonuc) {
       + (r.kahraman && r.kahraman.length ? `<em> · ${r.kahraman.map(b => oyun.birimAd(b)).join(', ')}</em>` : '') + (r.secim ? `<em> · ganimet seçimi bekliyor</em>` : '') + lbB
     : k === 0 ? `<em>+1 zafer · ${r.bitti ? r.zafer : M.zafer}/${zh}</em>` : k === 1 ? `<span>−1 can · ${r.bitti ? 0 : M.can} can kaldı</span>` : `<span>Berabere: can gitmedi</span>`;
   $('ayakta').style.display = 'none'; $('savas').classList.add('bitti');   // sonuçta Kut, hız ve duraklat gizlenir
-  $('sonucYer').innerHTML = `<div class="sonucBant ${k === 1 ? 'yenilgi' : ''}"><b>${k === 0 ? 'ZAFER' : k === 1 ? 'YENİLGİ' : 'BERABERE'}</b><div class="bil">${bil}</div><div class="sDugmeler"><button class="btn mor" id="sOzet" aria-expanded="false">${ik('kilic')} Hasar özeti</button><button class="btn altin" id="sDevam" style="visibility:hidden">Devam ${ik('oyna')}</button></div></div><div class="pn hasarOzet" id="hasarOzet" hidden></div>`;
-  setTimeout(() => { if ($('sDevam')) $('sDevam').style.visibility = ''; }, 400);
-  hasarOzetKur(S3.istatistik ? S3.istatistik() : []);
+  const kt = k === 0 ? 0 : k === 1 ? 1 : 2;
+  $('sonucYer').innerHTML = `<div class="sonucBant ${['zafer', 'yenilgi', 'berabere'][kt]}">${sonucBaslikHTML(kt)}<div class="bil">${bil}</div><div class="sDugmeler"><button class="btn mor" id="sOzet" aria-expanded="false">${ik('kilic')} Hasar özeti</button><button class="btn altin" id="sDevam" style="visibility:hidden">Devam ${ik('oyna')}</button></div></div><div class="pn hasarOzet" id="hasarOzet" hidden></div>`;
+  bitisSonra(azHareket() ? 300 : 1100, () => { if ($('sDevam')) $('sDevam').style.visibility = ''; });   // başlık indikten sonra
+  const ist = S3.istatistik ? S3.istatistik() : [];
+  hasarOzetKur(ist);
+  // Maçın yıldızı: bant animasyonu bitince (1,6 sn) + 0,6 sn; yenilgide sade kart (kamera yok)
+  const mvpO = mvpSec(ist); if (mvpO) bitisSonra(azHareket() ? 900 : 2200, () => mvpAc(mvpO, k));
   $('sDevam').onclick = async () => {
-    S3.temizle(); savasBilgi = null;
+    bitisTemizle(); S3.temizle(); savasBilgi = null;
     if (r && r.duello) { anaCiz(); goster('ana'); return; }
     if (r && r.bitti) { sonCiz(r); goster('son'); return; }
     await oyun.turBaslat(false); goster('mac'); macCiz();
@@ -557,8 +564,121 @@ function hasarOzetKur(liste) {
   dug.onclick = () => ac(pan.hidden);
 }
 
+// ── BİTİŞ ANİMASYONLARI (zamanlamalar: ANIMASYON_PLANI.md "Bitiş ekranları") ──
+// Hepsi DOM/CSS (yalnız transform ve opaklık); her an için öğeler bir kez kurulur, kare başına nesne üretilmez.
+// Animasyonları azalt: Ayarlar (kut.azHareket '1' açık / '0' kapalı) ya da yoksa işletim sisteminin "hareketi azalt" tercihi → <html class="azHareket">
+const azMedya = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+function azHareket() { const v = ayarOku('kut.azHareket'); return v === '1' || (v !== '0' && !!(azMedya && azMedya.matches)); }
+function azUygula() { document.documentElement.classList.toggle('azHareket', azHareket()); }
+azUygula(); if (azMedya && azMedya.addEventListener) azMedya.addEventListener('change', azUygula);
+// bitiş ekranının bekleyen zamanlayıcıları (Devam, yeni savaş ya da ekran değişince hepsi iptal)
+let bitisZaman = [];
+const bitisSonra = (ms, fn) => { const z = setTimeout(fn, ms); bitisZaman.push(z); return z; };
+function bitisTemizle() { bitisZaman.forEach(clearTimeout); bitisZaman = []; mvpKapat(true); }
+const kilicSvg = (c) => `<svg class="kilic ${c}" aria-hidden="true"><use href="#s-kilic"/></svg>`;
+// kıvılcım patlaması: n çizgi, açıları ve uzaklıkları sabit dağılımlı (rastgele yok, her seferinde aynı)
+function kivilcimHTML(n, renk) { let h = ''; for (let i = 0; i < n; i++) h += `<i style="--a:${Math.round(i * 360 / n + (i % 2 ? 9 : -7))}deg;--d:${58 + (i * 37 % 5) * 13}px;--g:${(i % 3) * 30}ms"></i>`; return `<div class="kivilcim" style="--kc:${renk}">${h}</div>`; }
+function dumanHTML(n) { let h = ''; for (let i = 0; i < n; i++) h += `<i style="--x:${Math.round((i - (n - 1) / 2) * 34)}px;--y:${(i % 2) * 14 - 6}px;--g:${380 + i * 60}ms;--s:${1.4 + (i % 3) * 0.35}"></i>`; return `<div class="duman">${h}</div>`; }
+// sonuç bandı başlığı + amblem. k: 0 zafer, 1 yenilgi, 2 berabere
+function sonucBaslikHTML(k) {
+  if (k === 0) return `<div class="sBas"><div class="sAmblem"><div class="isik"></div><div class="halka"></div>${kilicSvg('sol')}${kilicSvg('sag')}${kivilcimHTML(14, '#ffe48a')}<div class="flas"></div></div>
+    <div class="sYazi"><b>ZAFER</b><i class="sParilti"></i></div></div>`;
+  if (k === 1) return `<div class="sBas"><div class="sAmblem"><div class="dusen">${kilicSvg('ust')}${kilicSvg('alt')}</div>${dumanHTML(6)}${kivilcimHTML(9, '#ffc0a8')}<div class="flas"></div></div>
+    <div class="sYazi"><b data-y="YENİLGİ"><span>YENİLGİ</span><svg class="catlakCizgi" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,62 18,48 30,60 46,38 58,55 72,36 86,52 100,40"/></svg></b></div></div>`;
+  return `<div class="sBas"><div class="sAmblem"><div class="halka"></div><svg class="kalkan sol" aria-hidden="true"><use href="#s-kalkan"/></svg><svg class="kalkan sag" aria-hidden="true"><use href="#s-kalkan"/></svg>${kivilcimHTML(12, '#a8e0ff')}<div class="flas"></div></div>
+    <div class="sYazi"><b>BERABERE</b><i class="sParilti"></i></div></div>`;
+}
+// çarpışma anı (sn): ses ve sarsıntı buraya hizalı; CSS gecikmeleri aynı sayılarla yazılı
+const CARPISMA = { 0: 0.45, 1: 0.35, 2: 0.4 };
+function sonucAnimBaslat(k) {
+  const az = azHareket(), t = az ? 0 : CARPISMA[k] * 1000;
+  bitisSonra(t, () => {
+    Ses.cal(k === 1 ? 'yenilgi' : 'zafer', { hiz: k === 2 ? 0.9 : 1 });
+    if (!az && S3.sarsinti) S3.sarsinti(k === 1 ? 0.18 : 0.26, 0.3);
+  });
+}
+// SAVAŞ! geçişi: hazırlıktan savaşa 0,8 sn; küçük kılıç çarpışması 0,3 sn'de (savas_basla sesi o an)
+function savasGirisGoster() {
+  const s = $('savas'), eski = $('savasGiris'); if (eski) eski.remove();
+  const az = azHareket();
+  s.insertAdjacentHTML('beforeend', `<div class="savasGiris" id="savasGiris" aria-hidden="true"><div class="sgBant"></div><div class="sgAmblem"><div class="halka"></div>${kilicSvg('sol')}${kilicSvg('sag')}${kivilcimHTML(10, '#fff0b0')}</div><b>SAVAŞ!</b></div>`);
+  bitisSonra(az ? 0 : 300, () => Ses.cal('savas_basla'));
+  bitisSonra(az ? 700 : 900, () => { const e = $('savasGiris'); if (e) e.remove(); });
+}
+// ── MAÇIN YILDIZI ──
+// Kendi takımında en çok hasar veren; eşitse en çok iyileştirme + kalkan (emme). Hiç katkı yoksa gösterilmez.
+function mvpSec(liste) {
+  let en = null;
+  for (const o of liste) if (o.taraf === 0 && (!en || o.verilen > en.verilen || (o.verilen === en.verilen && o.iyi + o.kalkan > en.iyi + en.kalkan))) en = o;
+  return en && (en.verilen > 0 || en.iyi + en.kalkan > 0) ? en : null;
+}
+// element rengi: kahramanın rengi, doygun ve parlak (koyu/soluk renk ışında kaybolmasın)
+function parlakRenk(hex) {
+  const n = parseInt((hex || '#ffd45c').slice(1), 16); let r = (n >> 16) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn; let h = 0;
+  if (d) h = mx === r ? ((g - b) / d + 6) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return `hsl(${Math.round(h * 60)} ${Math.max(62, Math.round((d ? d / (1 - Math.abs(2 * l - 1)) : 0) * 100))}% ${Math.min(66, Math.max(56, Math.round(l * 100)))}%)`;
+}
+let mvpDurum = null;
+const MVP_SURE = 4200;   // otomatik kapanma (ms); test KUT_TEST.mvpSure ile uzatabilir
+function mvpAc(o, k) {
+  const yer = $('sonucYer'); if (!savasBilgi || mvpDurum || !yer || !o) return;
+  if (ogr.adim >= 0 || perdeAcik() || ($('hasarOzet') && !$('hasarOzet').hidden)) return;   // öğretici, pencere ya da açık hasar özeti varken araya girmez
+  const h = kh(o.b.h) || {}, az = azHareket(), yenik = k === 1, renk = parlakRenk(h.renk);
+  const yakin = !yenik && !!S3.mvpGoster && S3.mvpGoster(o.uid, h.renk || '#ffd45c', { anlik: az });
+  const soylar = [...new Set([...(h.soy || []), ...(o.b.f ? kh(o.b.f).soy : []), ...(o.b.f2 ? kh(o.b.f2).soy : [])])].filter(s => D.SOYLAR[s]);
+  const destek = o.iyi + o.kalkan, s = Math.max(1, Math.min(3, o.b.s || 1));
+  yer.insertAdjacentHTML('beforeend', `<div class="yildizEkran ${yakin ? 'yakin' : 'orta'} ${yenik ? 'sade' : ''}" id="mvp" role="dialog" aria-label="Maçın yıldızı" style="--ec:${renk}">
+    <div class="mvpKart"><div class="mvpSerit"><b>MAÇIN YILDIZI</b></div>
+      <div class="mvpPor"><div class="mvpIsinlar"></div><div class="mvpHalka"></div><img src="${P(o.b.h)}" alt=""></div>
+      <div class="mvpBilgi"><b class="mvpAd">${oyun.birimAd(o.b)}</b><div class="mvpSoy">${soylar.map(soyIk).join('')}</div>
+        <div class="mvpSayi"><span id="mvpHasar">0</span><small>hasar</small></div>
+        ${destek > 0 ? `<div class="mvpEk">+${sayi(Math.round(destek))} ${o.kalkan > o.iyi ? 'kalkan' : 'iyileştirme'}</div>` : ''}
+        <div class="mvpYildiz">${Array.from({ length: s }, (_, i) => `<span style="--i:${i}">${ik('yildiz')}</span>`).join('')}</div></div></div>
+    <div class="mvpIpucu">Kapatmak için dokun</div></div>`);
+  const el = $('mvp'), bant = q('.sonucBant', yer); if (bant) bant.classList.add('gizli');
+  mvpDurum = { el, raf: 0, z: [] };
+  // hasar sayacı: 0,5–1,4 sn arası, çıkış yumuşak; DOM yalnız sayı değişince yazılır
+  const hedef = Math.round(o.verilen), sayEl = $('mvpHasar'), bas = performance.now() + (az ? 0 : 500), sure = az ? 1 : 900; let son = -1;
+  const say = (t) => { if (!mvpDurum || mvpDurum.el !== el) return; const e = Math.max(0, Math.min(1, (t - bas) / sure)), v = Math.round(hedef * (1 - (1 - e) ** 3));
+    if (v !== son) { son = v; sayEl.textContent = sayi(v); } if (e < 1) mvpDurum.raf = requestAnimationFrame(say); };
+  mvpDurum.raf = requestAnimationFrame(say);
+  el.addEventListener('pointerdown', () => mvpKapat(false));
+  mvpDurum.z.push(setTimeout(() => mvpKapat(false), (window.KUT_TEST && KUT_TEST.mvpSure) || MVP_SURE));
+}
+function mvpKapat(anlik) {
+  const m = mvpDurum; if (!m) return; mvpDurum = null;
+  cancelAnimationFrame(m.raf); m.z.forEach(clearTimeout);
+  if (S3.mvpBitir) S3.mvpBitir(anlik || azHareket());
+  const bant = q('#sonucYer .sonucBant'); if (bant) bant.classList.remove('gizli');
+  if (anlik) { m.el.remove(); return; }
+  m.el.classList.add('kapan'); setTimeout(() => m.el.remove(), 320);
+}
+// ── MAÇ SONU töreni: sıraya göre taç (1.), gümüş/bronz kupa (2.–3.), kalkan (4.+ ya da elenme) ──
+function torenAmblem(sira) {
+  return sira === 1 ? { svg: '<use href="#s-tac"/>', cls: 'tac', ad: 'BİRİNCİ' }
+    : sira === 2 ? { svg: '<use href="#s-kupa"/>', cls: 'kupa gumus', ad: 'İKİNCİ' }
+    : sira === 3 ? { svg: '<use href="#s-kupa"/>', cls: 'kupa bronz', ad: 'ÜÇÜNCÜ' }
+    : { svg: '<use href="#s-kalkan"/>', cls: 'kalkan', ad: sira ? `${sira}. SIRA` : 'MAÇ BİTTİ' };
+}
+function torenGoster(sira) {
+  const son = $('son'), eski = $('sonToren'); if (eski) eski.remove();
+  const a = torenAmblem(sira), az = azHareket();
+  son.classList.remove('torenBitti'); son.classList.add('toren');
+  son.insertAdjacentHTML('beforeend', `<div class="sonToren s${Math.min(sira || 9, 4)}" id="sonToren" aria-hidden="true"><div class="trIsin"></div><div class="halka"></div>
+    <svg class="trAmb ${a.cls}"><use href="${a.svg.match(/#[^"]+/)[0]}"/></svg>${sira && sira <= 3 ? kivilcimHTML(14, sira === 1 ? '#ffe48a' : sira === 2 ? '#e8f0ff' : '#ffc89a') : ''}
+    <div class="trYazi">${sira ? `<b>${sira}.</b>` : ''}<span>${a.ad}</span></div></div>`);
+  const bitir = () => { const e = $('sonToren'); son.classList.add('torenBitti'); son.classList.remove('toren'); if (e) { e.classList.add('kapan'); setTimeout(() => e.remove(), 400); } };
+  bitisSonra(az ? 600 : 1900, bitir);
+  $('sonToren').addEventListener('pointerdown', bitir);
+  // şerit madalyonları: sol = sıra amblemi
+  if (!q('#sonSerit .mad.l')) $('sonSerit').insertAdjacentHTML('afterbegin', '<span class="mad l"></span>');
+  const l = q('#sonSerit .mad.l'); if (l) l.innerHTML = `<svg class="ik trMini ${a.cls}"><use href="${a.svg.match(/#[^"]+/)[0]}"/></svg>`;
+}
+
 // ── MAÇ SONU ──
 function sonCiz(r) {
+  bitisTemizle();
   const kayip = !r.kazandi, sr = $('sonSerit');
   sr.classList.toggle('kayip', kayip);
   const arena = r.mod !== 'hizli';
@@ -585,6 +705,7 @@ function sonCiz(r) {
   const se = document.querySelectorAll('#son .sonEylem .btn');
   se[0].onclick = () => { anaCiz(); goster('ana'); };
   se[1].onclick = async () => { await oyun.yeniMac(r.mod || 'arena'); goster('mac'); macCiz(); };
+  torenGoster(r.siralama ? r.sira : kayip ? 0 : 1);
   const konfeti = $('konfeti'); konfeti.innerHTML = '';
   if (!kayip) { const renk = ['#ffd45c', '#ff6f9a', '#c47bff', '#3fd68f', '#ff8a4c', '#7fdcff']; let h = ''; for (let i = 0; i < 46; i++) { const x = Math.random() * 100, y = Math.random() ** 2 * 70; if (x > 16 && x < 84 && y > 6 && y < 92) continue; h += `<i style="left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;background:${renk[i % 6]};transform:rotate(${(Math.random() * 360) | 0}deg)"></i>`; } konfeti.innerHTML = h; }
 }
@@ -764,4 +885,6 @@ anaCiz(); goster('ana');
 if (!/[?&]ogretici=0\b/.test(location.search)) ogrBaslat();
 // arka planda 3D sahneyi ısıt (ilk savaşta bekleme olmasın)
 setTimeout(() => { sahneyiHazirla().catch(e => { console.error(e); sahneHazir = null; }); }, 600);
-window.KUT_TEST = { oyun, S3, goster, macCiz, sonCiz, ogr, ogrBaslat, ogrKapat, OGR_ADIMLAR };
+// bitiş ekranı önizlemesi (test): oyun durumuna dokunmadan sonuç bandını k (0 zafer, 1 yenilgi, 2 berabere) ile kurar ve animasyonu başlatır
+function _sonucOnizle(k) { bitisTemizle(); $('sonucYer').innerHTML = `<div class="sonucBant ${['zafer', 'yenilgi', 'berabere'][k]}">${sonucBaslikHTML(k)}<div class="bil"><em>Önizleme</em></div><div class="sDugmeler"><button class="btn mor">${ik('kilic')} Hasar özeti</button><button class="btn altin">Devam ${ik('oyna')}</button></div></div><div class="pn hasarOzet" id="hasarOzet" hidden></div>`; sonucAnimBaslat(k); }
+window.KUT_TEST = { oyun, S3, goster, macCiz, sonCiz, ogr, ogrBaslat, ogrKapat, OGR_ADIMLAR, bitis: { _sonucOnizle, mvpAc, mvpSec, mvpKapat, savasGirisGoster, torenGoster } };
