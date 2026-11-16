@@ -717,11 +717,11 @@ body.introing .screen *{animation-play-state:paused!important}
 .fest.on .f-sky{transform:scale(1)}
 .fest .skyl{height:100%}
 .fest .skyl .bk:not(.hl){opacity:.9}
-.fest .skyl .hl .bb{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(0);animation:rise .9s cubic-bezier(.3,1.3,.5,1) .35s forwards}
+.fest .skyl .hl .bb{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(0);animation:brise .9s cubic-bezier(.3,1.3,.5,1) .35s forwards}
 .fest .skyl .hl .wn rect{opacity:0;animation:won .25s ease-out forwards;animation-delay:calc(1.1s + var(--i) * .045s)}
 .fest .skyl .hl .bc{opacity:0;animation:won .3s 1.3s forwards}
 .fest .skyl .hl{filter:drop-shadow(0 0 6px var(--lc))}
-@keyframes rise{to{transform:scaleY(1)}}
+@keyframes brise{to{transform:scaleY(1)}}
 @keyframes won{to{opacity:1}}
 .fest .f-txt{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;opacity:0;transform:translateY(18px);transition:opacity .5s 3.4s,transform .6s cubic-bezier(.2,.8,.2,1) 3.4s}
 .fest.on .f-txt{opacity:1;transform:none}
@@ -737,3 +737,17 @@ body.introing .screen *{animation-play-state:paused!important}
 .fest.end .f-sky{transition:none;transform:scale(1)}
 .fest.end .f-txt{transition:none;opacity:1;transform:none}
 .fest.end .skyl .hl .bb,.fest.end .skyl .hl .wn rect,.fest.end .skyl .hl .bc{animation:none;transform:none;opacity:1}
+
+/* açılış: şehir sırayla aydınlanır (oyuncunun şehri; hiç hat bitmemişse bütün şehrin önizlemesi) */
+.isky{position:absolute;left:0;right:0;bottom:calc(var(--sab) + 26px);display:flex;flex-direction:column;align-items:center;pointer-events:none}
+.isky .skyl{width:100%;height:clamp(70px,14vh,120px)}
+.isky small{margin-top:8px;color:var(--mut);font-size:13px;opacity:0;animation:rise .5s 1.5s ease forwards}
+.isky .skyl .wn rect,.isky .skyl .bc{opacity:0;animation:won .25s ease-out forwards;animation-delay:calc(.45s + var(--o) * .045s)}
+.isky .skyl .bk.lit,.isky .skyl .bk.gold{animation:bfade .4s calc(.45s + var(--o) * .045s) both}
+@keyframes bfade{from{opacity:.35}}
+.isky .skyl .tr{animation:trn 3s linear .6s both}
+/* şehir tamamlandı: havai fişek */
+.fest .fw{position:absolute;width:6px;height:6px;border-radius:50%;left:var(--x);top:var(--y);box-shadow:0 0 0 0 transparent;opacity:0;animation:fw 1.4s var(--d) ease-out infinite}
+@keyframes fw{0%{opacity:1;box-shadow:0 0 0 0 var(--c),0 0 0 0 var(--c)}60%{opacity:1}100%{opacity:0;box-shadow:0 -46px 0 -2px var(--c),0 46px 0 -2px var(--c),-46px 0 0 -2px var(--c),46px 0 0 -2px var(--c),33px 33px 0 -2px var(--c),-33px -33px 0 -2px var(--c),33px -33px 0 -2px var(--c),-33px 33px 0 -2px var(--c)}}
+.fest.all .skyl .bk{filter:drop-shadow(0 0 4px #f2c14e55)}
+@media (prefers-reduced-motion:reduce){.fest .fw{display:none}}

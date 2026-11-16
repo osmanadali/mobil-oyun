@@ -2914,13 +2914,13 @@ document.querySelector('#home .logo').onclick = () => openCity();
 // Bir şehir 24 semt (hat). Semtler silüette merkezden dışa, sağ-sol sırayla dizilir (ilk hatlar ortada, şehir dışa büyür).
 // Biten semtin pencereleri yanar, altın semt altın ışır, sıradaki semt iskelede: pencereleri hattaki ilerlemeyle tek tek yanar.
 const SKY_W = 360, skyPos = k => 11.5 + (k % 2 ? (k + 1) / 2 : -k / 2) + .5;
-function skyline(page, { h = 96, hl = -1, tl = hl } = {}) {
+function skyline(page, { h = 96, hl = -1, tl = hl, all = false } = {}) {
   const base = page * CITY_N, slot = SKY_W / (CITY_N + 1), ground = h - 9;
   let back = '', bld = '', lit = 0;
   const R0 = rng(page * 101 + 7);
   for (let x = -6; x < SKY_W + 6;) { const w = 9 + R0() * 16, bh = h * (.18 + R0() * .26); back += `<rect x="${x.toFixed(1)}" y="${(ground - bh).toFixed(1)}" width="${w.toFixed(1)}" height="${(bh + 9).toFixed(1)}"/>`; x += w + 1.5; }
   for (let k = 0; k < CITY_N; k++) {
-    const c = base + k, s = cityState(c), R = rng(c * 7919 + 13), x0 = (skyPos(k) - .5) * slot;
+    const c = base + k, s = all ? { ...cityState(c), done: true, cur: false, gold: false } : cityState(c), R = rng(c * 7919 + 13), x0 = (skyPos(k) - .5) * slot;   // all: önizleme (bütün semtler yanık)
     const cls = s.gold ? 'gold' : s.done ? 'lit' : s.cur ? 'cur' : 'off', mid = 1 - Math.abs(skyPos(k) - 12.5) / 12.5;
     const prog = s.cur ? Math.max(0, Math.min(1, (save.level - lineStart(c)) / s.len)) : s.done ? 1 : 0;
     if (s.done) lit++;
@@ -2938,7 +2938,7 @@ function skyline(page, { h = 96, hl = -1, tl = hl } = {}) {
     }
     const bx = (x0 + slot / 2).toFixed(1);
     const beacon = s.done || s.cur ? `<circle class="bc" cx="${bx}" cy="${(top - 2.4).toFixed(1)}" r="1.5"/>` : '';
-    bld += `<g class="bk ${cls}${c === hl ? ' hl' : ''}" style="--lc:${lineCol(c)}" data-c="${c}">${parts}<g class="wn">${wins}</g>${beacon}</g>`;
+    bld += `<g class="bk ${cls}${c === hl ? ' hl' : ''}" style="--lc:${lineCol(c)};--o:${k}" data-c="${c}">${parts}<g class="wn">${wins}</g>${beacon}</g>`;
   }
   // ray boyunca oyuncunun treni: takılı kaplama (sefer şeridindekiyle aynı çizim); 'hat rengi' kaplamada trenin rengi hattın rengi
   const tc = tl >= 0 ? tl : Math.min(linesDone(), base + CITY_N - 1), liv = LIVERIES.find(x => x.id === save.train);
@@ -2950,7 +2950,7 @@ function homeSky() {
   const box = $('skyBox'); if (!box) return;
   const page = linesDone() / CITY_N | 0, { lit, svg } = skyline(page);
   box.innerHTML = svg;
-  $('skyTxt').textContent = L(`${cityName(page)} · ${lit}/${CITY_N} semt aydınlık`, `${cityName(page)} · ${lit}/${CITY_N} districts lit`);
+  $('skyTxt').textContent = (page ? `${cityName(page - 1)} ✓ · ` : '') + L(`${cityName(page)} · ${lit}/${CITY_N} semt aydınlık`, `${cityName(page)} · ${lit}/${CITY_N} districts lit`);
 }
 // Hat açılış töreni: hattın son bölümü ilk kez bitince sonuç panelinin üstünde (≈5 sn, dokununca sona atlar).
 // Kamera yeni semte yakın başlar: binalar yükselir, pencereler tek tek yanar, sonra şehrin tamamı görünür.
@@ -3006,19 +3006,23 @@ function festSound({ wins = 16, gold = false, all = false } = {}) {
     done() {},
   };
 }
+// şehir tamamlandı: şehrin toplamı (★, altın semt)
+const cityTot = page => { let st = 0, mx = 0, g = 0; for (let k = 0; k < CITY_N; k++) { const x = cityState(page * CITY_N + k); st += x.st; mx += x.len * 3; g += x.gold ? 1 : 0; }
+  return `<span>★ ${st} / ${mx}</span><span class="${g ? 'g' : ''}">✨ ${g} / ${CITY_N} ${L('altın semt', 'golden')}</span>`; };
 let festOn = false;
 function lineFest(c) {
   const page = c / CITY_N | 0, k = c % CITY_N, s = cityState(c), { lit, svg } = skyline(page, { h: 150, hl: c });
   const all = lit === CITY_N, nx = RULES[c + 1], rm = calmMotion.matches;
   const el = document.createElement('div');
-  el.id = 'fest'; el.className = 'fest' + (rm ? ' end' : ''); el.setAttribute('role', 'dialog');
+  el.id = 'fest'; el.className = 'fest' + (rm ? ' end' : '') + (all ? ' all' : ''); el.setAttribute('role', 'dialog');
   el.style.setProperty('--lc', lineCol(c)); el.style.setProperty('--fx', `${(skyPos(k) / (CITY_N + 1) * 100).toFixed(1)}%`);
-  el.innerHTML = `<i class="f-stars"></i><div class="f-sky">${svg}</div>
+  const fw = all ? Array.from({ length: 7 }, (_, j) => `<i class="fw" style="--x:${12 + j * 13}%;--y:${10 + (j * 37 % 30)}%;--d:${(3.6 + j * .23).toFixed(2)}s;--c:${['#ffd36b', '#ff7a8a', '#7ea6ff', '#5fd6b0', '#b394ff', '#ffb35c', '#fff'][j]}"></i>`).join('') : '';
+  el.innerHTML = `<i class="f-stars"></i>${fw}<div class="f-sky">${svg}</div>
     <div class="f-txt">
       <span class="k">${all ? L('ŞEHİR TAMAMLANDI', 'CITY COMPLETE') : L('YENİ SEMT AYDINLANDI', 'A NEW DISTRICT LIGHTS UP')}</span>
       <h2>${all ? `🎉 ${cityName(page)}` : lineName(c)}</h2>
       <p>${all ? L(`Bütün semtler aydınlık · sıradaki şehir: ${cityName(page + 1)}`, `Every district is lit · next city: ${cityName(page + 1)}`) : L(`${cityName(page)} · ${lit}/${CITY_N} semt aydınlık`, `${cityName(page)} · ${lit}/${CITY_N} districts lit`)}</p>
-      <div class="f-st"><span>★ ${s.st} / ${s.len * 3}</span><span>🎫 ${s.cr} / ${s.len}</span>${s.gold ? `<span class="g">✨ ${L('Altın semt', 'Golden district')}</span>` : ''}</div>
+      <div class="f-st">${all ? cityTot(page) : `<span>★ ${s.st} / ${s.len * 3}</span><span>🎫 ${s.cr} / ${s.len}</span>${s.gold ? `<span class="g">✨ ${L('Altın semt', 'Golden district')}</span>` : ''}`}</div>
       <p class="f-rw">🎁 ${L('Hat tamam · +2 ipucu', 'Line complete · +2 hints')}</p>
       ${nx ? `<p class="f-nx">${L('Sıradaki', 'Next')}: M${c + 2} · <b>${nx.tag}</b></p>` : ''}
       <button class="btn primary" id="fGo"><span>${L('Devam', 'Continue')}</span></button>
@@ -3096,7 +3100,12 @@ function endIntro() {
   intro.classList.add('out'); document.body.classList.remove('introing');
   setTimeout(() => intro.classList.add('gone'), 600);
 }
-if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro; setTimeout(endIntro, 2300); } else intro.classList.add('gone');
+if (introOn) {
+  document.body.classList.add('introing'); intro.onclick = endIntro; setTimeout(endIntro, 2300);
+  // açılışta şehir sırayla aydınlanır: oyuncunun şehri; hiç hat bitmemişse bütün şehrin önizlemesi (hedef: şehrin tamamı)
+  try { const page = linesDone() / CITY_N | 0, pre = !linesDone(), { svg } = skyline(page, { all: pre }), d = document.createElement('div');
+    d.className = 'isky'; d.innerHTML = svg + (pre ? `<small>${L('Her hat bir semt yakar · şehrin tamamını aydınlat', 'Every line lights a district · light up the whole city')}</small>` : ''); intro.appendChild(d); } catch {}
+} else intro.classList.add('gone');
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
