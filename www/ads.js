@@ -15,7 +15,7 @@ window.Ads = (() => {
   const IDS = TESTING ? TEST_IDS[OS] : own;
   const plug = () => window.Capacitor?.Plugins?.AdMob;
   const online = () => navigator.onLine !== false;
-  let ready = false, allowed = false, privacy = false, starting = null;
+  let ready = false, allowed = false, privacy = false, starting = null, npa = false;
   // tanı (Ayarlar başlığına 5 dokunuş): reklam neden çıkmıyor, telefondan okunur. Kişisel veri yok.
   const D = { os: OS, plug: !!plug(), testing: TESTING, step: 'bekliyor', tries: 0 };
   const em = e => String(e?.message || e?.errorMessage || e?.code || e || '?').slice(0, 160);
@@ -35,12 +35,14 @@ window.Ads = (() => {
         c = await A.requestConsentInfo(); D.consent = { status: c?.status, can: c?.canRequestAds, form: c?.isConsentFormAvailable, priv: c?.privacyOptionsRequirementStatus };
         if (c?.isConsentFormAvailable && c.status === 'REQUIRED' && A.showConsentForm) try { c = await A.showConsentForm(); } catch {}   // form açılamazsa önceki rıza geçerli
       } catch (e) { failed = true; D.consentErr = em(e); }
-      consent(c);
+      consent(c); if (!failed) npa = D.npa = false;
     } else allowed = true;   // rıza API'si olmayan eski eklenti
     // iOS izleme izni: rıza sonucundan bağımsız, sayfa görünürken ve durum 'notDetermined' iken bir kez.
     // UMP'nin IDFA mesajı zaten sorduysa durum 'notDetermined' değildir → ikinci kez sorulmaz. İzin yoksa reklamlar kişiselleştirilmez.
     D.step = 'izin'; await att();
-    if (failed) { D.step = 'rıza hatası'; throw new Error('consent'); }   // init() yutar; bağlantı / ön plan dönüşünde yeniden denenir
+    // Rıza sorgusu hata verdi (ör. AdMob uygulama ayarı henüz yayılmadı): reklamsız kalma, kişiselleştirilmemiş reklamla başla.
+    // AB/EEA'da rıza dizesi olmadığı için Google kendisi sınırlı reklam sunar. Sorgu her ön plana dönüşte yeniden denenir.
+    if (failed) { npa = true; allowed = true; D.npa = true; }   // init() yutar; bağlantı / ön plan dönüşünde yeniden denenir
     if (!allowed) { D.step = 'reklam izni yok'; return; }
     D.step = 'başlatılıyor';
     try { await A.initialize({ initializeForTesting: TESTING, maxAdContentRating: 'ParentalGuidance', tagForChildDirectedTreatment: false, tagForUnderAgeOfConsent: false }); } catch (e) { D.step = 'başlatma hatası'; D.initErr = em(e); throw e; }
@@ -53,6 +55,12 @@ window.Ads = (() => {
       try { const t = await A.trackingAuthorizationStatus?.(); D.att = t?.status; if (!t || t.status === 'notDetermined') { await A.requestTrackingAuthorization(); D.att = (await A.trackingAuthorizationStatus?.())?.status; } } catch (e) { D.attErr = em(e); }
     })().finally(() => { asking = null; });
   }
+  // kişiselleştirilmemiş kipteyken rıza sorgusu yeniden: başarılı olursa normal kipe dön (gerekirse rıza formu)
+  async function recheck() {
+    const A = plug(); if (!A?.requestConsentInfo) return;
+    try { let c = await A.requestConsentInfo(); if (c?.isConsentFormAvailable && c.status === 'REQUIRED' && A.showConsentForm) try { c = await A.showConsentForm(); } catch {}
+      D.consent = { status: c?.status, can: c?.canRequestAds }; D.consentErr = undefined; consent(c); npa = D.npa = false; if (!allowed) interReady = rewardReady = false; } catch (e) { D.consentErr = em(e); }
+  }
   // tek seferde bir başlatma; hata (çoğu kez internetsiz rıza sorgusu) → bağlantı gelince yeniden
   function init() { return starting ||= start().catch(() => {}).finally(() => { starting = null; }); }
   // Yüklü reklam 55 dakikadan eskiyse yenilenir (AdMob ~1 saatte geçersiz sayar).
@@ -60,7 +68,7 @@ window.Ads = (() => {
   async function preload() {
     const A = plug(); if (!A || !ok() || loadingI || (interReady && fresh(interAt))) return;
     interReady = false; loadingI = true;
-    try { await A.prepareInterstitial({ adId: IDS.interstitial, isTesting: TESTING }); interReady = true; interAt = Date.now(); tries = 0; D.inter = 'yüklendi ' + new Date().toLocaleTimeString(); } catch (e) { D.inter = 'hata: ' + em(e); }
+    try { await A.prepareInterstitial({ adId: IDS.interstitial, isTesting: TESTING, npa }); interReady = true; interAt = Date.now(); tries = 0; D.inter = 'yüklendi ' + new Date().toLocaleTimeString(); } catch (e) { D.inter = 'hata: ' + em(e); }
     loadingI = false;
     if (!interReady) retry();
   }
@@ -68,7 +76,7 @@ window.Ads = (() => {
   async function preloadReward() {
     const A = plug(); if (!A || !ok() || busy || loadingR || (rewardReady && fresh(rewardAt))) return;
     rewardReady = false; loadingR = true;
-    try { await A.prepareRewardVideoAd({ adId: IDS.rewarded, isTesting: TESTING }); rewardReady = true; rewardAt = Date.now(); D.reward = 'yüklendi ' + new Date().toLocaleTimeString(); } catch (e) { D.reward = 'hata: ' + em(e); }
+    try { await A.prepareRewardVideoAd({ adId: IDS.rewarded, isTesting: TESTING, npa }); rewardReady = true; rewardAt = Date.now(); D.reward = 'yüklendi ' + new Date().toLocaleTimeString(); } catch (e) { D.reward = 'hata: ' + em(e); }
     loadingR = false;
   }
   // Geçiş reklamı yüklenemedi → 30, 60, sonra 120 sn arayla yeniden dene (ön plana dönüş de dener)
@@ -118,7 +126,7 @@ window.Ads = (() => {
     let earned = false, shown = false;
     const h = A.addListener('onRewardedVideoAdReward', () => { earned = true; });
     try {
-      if (!rewardReady || !fresh(rewardAt)) await within(A.prepareRewardVideoAd({ adId: IDS.rewarded, isTesting: TESTING }), 10e3);
+      if (!rewardReady || !fresh(rewardAt)) await within(A.prepareRewardVideoAd({ adId: IDS.rewarded, isTesting: TESTING, npa }), 10e3);
       rewardReady = false;
       const wait = closed(A, ['onRewardedVideoAdDismissed'], ['onRewardedVideoAdFailedToShow', 'onRewardedVideoAdFailedToLoad'], 180e3);
       A.showRewardVideoAd().then(r => { if (r) earned = true; }).catch(() => {});
@@ -141,7 +149,7 @@ window.Ads = (() => {
   }
   addEventListener('online', () => ready ? soft() : init());
   // ön plana dönüş: açılışta arka plandaysak ATT şimdi sorulur; eksik / bayat reklam yeniden yüklenir
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) { if (ready) att(); ready ? soft() : init(); } });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { if (ready) att(); if (ready && npa) recheck(); ready ? soft() : init(); } });
   const diag = () => ({ ...D, ready, allowed, online: online(), interReady, rewardReady, unit: (IDS.interstitial || '').slice(-10) });
   return { diag, init, warm, interstitial, rewarded, privacyForm, busy: () => busy, online: () => !!plug() && ok(), privacy: () => !!plug() && privacy };
 })();

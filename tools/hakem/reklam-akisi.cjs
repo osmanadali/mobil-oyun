@@ -63,10 +63,10 @@ module.exports = async T => {
     };
     const thr = await run('ios', 'throw'), deny = await run('ios', 'deny'), okk = await run('ios', 'ok'), andT = await run('android', 'throw'), andD = await run('android', 'deny');
     const at = (r, k) => r.c.indexOf(k);
-    check('reklam.att.throw', 'iOS: rıza sorgusu hata verse de ATT sorulur; initialize ve reklam isteği yok', thr.c.includes('att') && !thr.c.includes('init') && !thr.c.some(k => /^prep/.test(k)) && !thr.on && !thr.errors.length, thr.c.join(' → '));
+    check('reklam.att.throw', 'iOS: rıza sorgusu hata verse de ATT sorulur, sonra kişiselleştirilmemiş reklamla başlar (reklamsız kalmaz)', at(thr, 'att') >= 0 && at(thr, 'init') > at(thr, 'att') && thr.c.some(k => /^prep/.test(k)) && thr.on && !thr.errors.length, thr.c.join(' → '));
     check('reklam.att.deny', 'iOS: canRequestAds false iken de ATT sorulur; initialize yok', at(deny, 'att') > at(deny, 'info') && !deny.c.includes('init') && !deny.on && !deny.errors.length, deny.c.join(' → '));
     check('reklam.att.ok', 'iOS: rıza → ATT → initialize sırası korunur, reklam yüklenir', at(okk, 'info') === 0 && at(okk, 'att') > 0 && at(okk, 'init') > at(okk, 'att') && at(okk, 'prepI') > at(okk, 'init') && okk.on, okk.c.join(' → '));
-    check('reklam.att.android', 'Android: ATT hiç sorulmaz; rıza hatası / izin yokken initialize yok', ![...andT.c, ...andD.c].some(k => /^att/.test(k)) && !andT.c.includes('init') && !andD.c.includes('init') && !andT.errors.length && !andD.errors.length, `${andT.c.join(' → ')} | ${andD.c.join(' → ')}`);
+    check('reklam.att.android', 'Android: ATT hiç sorulmaz; rıza hatasında kişiselleştirilmemiş reklamla başlar, izin yokken initialize yok', ![...andT.c, ...andD.c].some(k => /^att/.test(k)) && andT.c.includes('init') && !andD.c.includes('init') && !andT.errors.length && !andD.errors.length, `${andT.c.join(' → ')} | ${andD.c.join(' → ')}`);
   }
 
   // ---- 2) ödüllü video sonuçları: nofill → "video yok" (oyuncu suçlanmaz), closed → "sonuna kadar izlenmeli" (TR + EN) ----
