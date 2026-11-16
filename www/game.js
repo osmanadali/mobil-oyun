@@ -2914,7 +2914,7 @@ document.querySelector('#home .logo').onclick = () => openCity();
 // Bir şehir 24 semt (hat). Semtler silüette merkezden dışa, sağ-sol sırayla dizilir (ilk hatlar ortada, şehir dışa büyür).
 // Biten semtin pencereleri yanar, altın semt altın ışır, sıradaki semt iskelede: pencereleri hattaki ilerlemeyle tek tek yanar.
 const SKY_W = 360, skyPos = k => 11.5 + (k % 2 ? (k + 1) / 2 : -k / 2) + .5;
-function skyline(page, { h = 96, hl = -1 } = {}) {
+function skyline(page, { h = 96, hl = -1, tl = hl } = {}) {
   const base = page * CITY_N, slot = SKY_W / (CITY_N + 1), ground = h - 9;
   let back = '', bld = '', lit = 0;
   const R0 = rng(page * 101 + 7);
@@ -2940,7 +2940,9 @@ function skyline(page, { h = 96, hl = -1 } = {}) {
     const beacon = s.done || s.cur ? `<circle class="bc" cx="${bx}" cy="${(top - 2.4).toFixed(1)}" r="1.5"/>` : '';
     bld += `<g class="bk ${cls}${c === hl ? ' hl' : ''}" style="--lc:${lineCol(c)}" data-c="${c}">${parts}<g class="wn">${wins}</g>${beacon}</g>`;
   }
-  const train = lit ? `<g class="tr"><rect x="-18" y="${ground + 2.2}" width="16" height="4" rx="2"/><rect x="-1" y="${ground + 2.2}" width="10" height="4" rx="2"/></g>` : '';
+  // ray boyunca oyuncunun treni: takılı kaplama (sefer şeridindekiyle aynı çizim); 'hat rengi' kaplamada trenin rengi hattın rengi
+  const tc = tl >= 0 ? tl : Math.min(linesDone(), base + CITY_N - 1), liv = LIVERIES.find(x => x.id === save.train);
+  const train = lit ? `<g class="tr trn" style="--line:${lineCol(tc)};${livVars(liv)}"><g transform="translate(-30 ${(ground - .6).toFixed(1)}) scale(.7)">${TRAIN.replace(/^<svg[^>]*>|<\/svg>$/g, '')}</g></g>` : '';
   return { lit, svg: `<svg class="skyl" viewBox="0 0 ${SKY_W} ${h}" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
     <g class="far">${back}</g>${bld}<path class="rl" d="M0 ${ground + 4.2}H${SKY_W}"/>${train}</svg>` };
 }

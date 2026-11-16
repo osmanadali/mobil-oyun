@@ -703,9 +703,9 @@ body.introing .screen *{animation-play-state:paused!important}
 @keyframes bcb{50%{opacity:.2}}
 .skyl .gold{filter:drop-shadow(0 0 3px #f2c14e66)}
 .skyl .rl{stroke:var(--rail);stroke-width:1.4}
-.skyl .tr rect{fill:var(--acc)}
 .skyl .tr{animation:trn 14s linear infinite}
-@keyframes trn{from{transform:translateX(-10px)}to{transform:translateX(390px)}}
+@keyframes trn{from{transform:translateX(0)}to{transform:translateX(400px)}}
+.fest .skyl .tr{animation:trn 6s linear 1.7s infinite both}
 @media (max-height:700px){#skyBox{height:54px}.skyw{margin-top:6px}#home .logo.mark{width:min(18vw,70px)}}
 @media (prefers-reduced-motion:reduce){.skyl .tr,.skyl .wn .tw,.skyl .cur .bc{animation:none}}
 
