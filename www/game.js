@@ -3023,7 +3023,7 @@ function lineFest(c) {
       <h2>${all ? `🎉 ${cityName(page)}` : lineName(c)}</h2>
       <p>${all ? L(`Bütün semtler aydınlık · sıradaki şehir: ${cityName(page + 1)}`, `Every district is lit · next city: ${cityName(page + 1)}`) : L(`${cityName(page)} · ${lit}/${CITY_N} semt aydınlık`, `${cityName(page)} · ${lit}/${CITY_N} districts lit`)}</p>
       <div class="f-st">${all ? cityTot(page) : `<span>★ ${s.st} / ${s.len * 3}</span><span>🎫 ${s.cr} / ${s.len}</span>${s.gold ? `<span class="g">✨ ${L('Altın semt', 'Golden district')}</span>` : ''}`}</div>
-      <p class="f-rw">🎁 ${L('Hat tamam · +2 ipucu', 'Line complete · +2 hints')}</p>
+      <p class="f-rw">${L('🎁 Hat tamam · +2 ipucu', '🎁 Line complete · +2 hints')}</p>
       ${nx ? `<p class="f-nx">${L('Sıradaki', 'Next')}: M${c + 2} · <b>${nx.tag}</b></p>` : ''}
       <button class="btn primary" id="fGo"><span>${L('Devam', 'Continue')}</span></button>
     </div>`;
