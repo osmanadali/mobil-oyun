@@ -16,6 +16,9 @@ window.Ads = (() => {
   const plug = () => window.Capacitor?.Plugins?.AdMob;
   const online = () => navigator.onLine !== false;
   let ready = false, allowed = false, privacy = false, starting = null;
+  // tanı (Ayarlar başlığına 5 dokunuş): reklam neden çıkmıyor, telefondan okunur. Kişisel veri yok.
+  const D = { os: OS, plug: !!plug(), testing: TESTING, step: 'bekliyor', tries: 0 };
+  const em = e => String(e?.message || e?.errorMessage || e?.code || e || '?').slice(0, 160);
   let interReady = false, rewardReady = false, busy = false, lastShown = 0;
   let interAt = 0, rewardAt = 0, loadingI = false, loadingR = false, tries = 0, retryT = 0, asking = null;
   const ok = () => ready && allowed && online();   // rıza alınmadan, başlatılmadan reklam isteği yok
@@ -24,29 +27,30 @@ window.Ads = (() => {
   const consent = c => { privacy = c?.privacyOptionsRequirementStatus === 'REQUIRED'; window.Olcum?.consent(c); return allowed = !!c?.canRequestAds; };   // ölçüm de aynı karara uyar (olcum.js)
 
   async function start() {
-    const A = plug(); if (!A || ready) return;
-    let c = null, failed = false;
+    const A = plug(); D.plug = !!A; D.tries++; if (!A || ready) return;
+    let c = null, failed = false; D.step = 'rıza';
     if (A.requestConsentInfo) {
       // Rıza sorgusu hata verebilir (internet yok, AdMob uygulaması henüz mağazaya bağlı değil) → ATT yine sorulur.
       try {
-        c = await A.requestConsentInfo();
+        c = await A.requestConsentInfo(); D.consent = { status: c?.status, can: c?.canRequestAds, form: c?.isConsentFormAvailable, priv: c?.privacyOptionsRequirementStatus };
         if (c?.isConsentFormAvailable && c.status === 'REQUIRED' && A.showConsentForm) try { c = await A.showConsentForm(); } catch {}   // form açılamazsa önceki rıza geçerli
-      } catch { failed = true; }
+      } catch (e) { failed = true; D.consentErr = em(e); }
       consent(c);
     } else allowed = true;   // rıza API'si olmayan eski eklenti
     // iOS izleme izni: rıza sonucundan bağımsız, sayfa görünürken ve durum 'notDetermined' iken bir kez.
     // UMP'nin IDFA mesajı zaten sorduysa durum 'notDetermined' değildir → ikinci kez sorulmaz. İzin yoksa reklamlar kişiselleştirilmez.
-    await att();
-    if (failed) throw new Error('consent');   // init() yutar; bağlantı / ön plan dönüşünde yeniden denenir
-    if (!allowed) return;
-    await A.initialize({ initializeForTesting: TESTING, maxAdContentRating: 'ParentalGuidance', tagForChildDirectedTreatment: false, tagForUnderAgeOfConsent: false });
-    ready = true; soft();
+    D.step = 'izin'; await att();
+    if (failed) { D.step = 'rıza hatası'; throw new Error('consent'); }   // init() yutar; bağlantı / ön plan dönüşünde yeniden denenir
+    if (!allowed) { D.step = 'reklam izni yok'; return; }
+    D.step = 'başlatılıyor';
+    try { await A.initialize({ initializeForTesting: TESTING, maxAdContentRating: 'ParentalGuidance', tagForChildDirectedTreatment: false, tagForUnderAgeOfConsent: false }); } catch (e) { D.step = 'başlatma hatası'; D.initErr = em(e); throw e; }
+    ready = true; D.step = 'hazır'; soft();
   }
   // iOS izleme izni (ATT): yalnız sayfa görünürken (arka planda sorulan pencere görünmeden reddedilir); aynı anda tek sorgu
   function att() {
     const A = plug(); if (OS !== 'ios' || !A?.requestTrackingAuthorization || document.hidden) return;
     return asking ||= (async () => {
-      try { const t = await A.trackingAuthorizationStatus?.(); if (!t || t.status === 'notDetermined') await A.requestTrackingAuthorization(); } catch {}
+      try { const t = await A.trackingAuthorizationStatus?.(); D.att = t?.status; if (!t || t.status === 'notDetermined') { await A.requestTrackingAuthorization(); D.att = (await A.trackingAuthorizationStatus?.())?.status; } } catch (e) { D.attErr = em(e); }
     })().finally(() => { asking = null; });
   }
   // tek seferde bir başlatma; hata (çoğu kez internetsiz rıza sorgusu) → bağlantı gelince yeniden
@@ -56,7 +60,7 @@ window.Ads = (() => {
   async function preload() {
     const A = plug(); if (!A || !ok() || loadingI || (interReady && fresh(interAt))) return;
     interReady = false; loadingI = true;
-    try { await A.prepareInterstitial({ adId: IDS.interstitial, isTesting: TESTING }); interReady = true; interAt = Date.now(); tries = 0; } catch {}
+    try { await A.prepareInterstitial({ adId: IDS.interstitial, isTesting: TESTING }); interReady = true; interAt = Date.now(); tries = 0; D.inter = 'yüklendi ' + new Date().toLocaleTimeString(); } catch (e) { D.inter = 'hata: ' + em(e); }
     loadingI = false;
     if (!interReady) retry();
   }
@@ -64,7 +68,7 @@ window.Ads = (() => {
   async function preloadReward() {
     const A = plug(); if (!A || !ok() || busy || loadingR || (rewardReady && fresh(rewardAt))) return;
     rewardReady = false; loadingR = true;
-    try { await A.prepareRewardVideoAd({ adId: IDS.rewarded, isTesting: TESTING }); rewardReady = true; rewardAt = Date.now(); } catch {}
+    try { await A.prepareRewardVideoAd({ adId: IDS.rewarded, isTesting: TESTING }); rewardReady = true; rewardAt = Date.now(); D.reward = 'yüklendi ' + new Date().toLocaleTimeString(); } catch (e) { D.reward = 'hata: ' + em(e); }
     loadingR = false;
   }
   // Geçiş reklamı yüklenemedi → 30, 60, sonra 120 sn arayla yeniden dene (ön plana dönüş de dener)
@@ -138,5 +142,6 @@ window.Ads = (() => {
   addEventListener('online', () => ready ? soft() : init());
   // ön plana dönüş: açılışta arka plandaysak ATT şimdi sorulur; eksik / bayat reklam yeniden yüklenir
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { if (ready) att(); ready ? soft() : init(); } });
-  return { init, warm, interstitial, rewarded, privacyForm, busy: () => busy, online: () => !!plug() && ok(), privacy: () => !!plug() && privacy };
+  const diag = () => ({ ...D, ready, allowed, online: online(), interReady, rewardReady, unit: (IDS.interstitial || '').slice(-10) });
+  return { diag, init, warm, interstitial, rewarded, privacyForm, busy: () => busy, online: () => !!plug() && ok(), privacy: () => !!plug() && privacy };
 })();

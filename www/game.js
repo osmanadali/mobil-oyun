@@ -2229,12 +2229,19 @@ function pauseSheet() {
     pHome: () => { mOnClose = () => $('game').classList.remove('paused'); closeModal(); show('home'); } }, false, true);   // yarım oyun kayıtta, Oyna'yla sürer
   mOnClose = () => { $('game').classList.remove('paused'); if (active('game')) resume(); };
 }
+// Reklam tanısı (Ayarlar başlığına art arda 5 dokunuş): reklam sistemi başladı mı, rıza / izin durumu, yükleme hatası. Kopyalanıp gönderilir.
+function adDiag() {
+  const d = window.Ads?.diag?.() || { yok: 'Ads' }, txt = `Ray · ${navigator.userAgent.match(/OS [\d_]+/)?.[0] || ''}\n` + Object.entries(d).map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}`).join('\n');
+  modal(`<h2>Reklam tanısı</h2><pre class="diag">${txt.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</pre>
+    <button id="dCopy" class="btn primary"><span>Kopyala</span></button><button id="dRe" class="btn glassbtn">Yeniden başlat</button><button id="mClose" class="btn glassbtn">Kapat</button>`,
+    { dCopy: async () => { try { await navigator.clipboard.writeText(txt); toast('Kopyalandı'); } catch { toast('Kopyalanamadı'); } }, dRe: async () => { await window.Ads?.init?.(); adDiag(); }, mClose: closeModal });
+}
 function settings() {
   const seg = ['auto', 'dark', 'light'].map(t => `<button data-t="${t}" class="${save.theme === t ? 'on' : ''}">${{ auto: L('Oto', 'Auto'), dark: L('Koyu', 'Dark'), light: L('Açık', 'Light') }[t]}</button>`).join('');
   const cur = RAY_LANGS.find(([k]) => k === RAY_LANG) || RAY_LANGS[0];
   const lang = RAY_LANGS.map(([k, n]) => `<button data-g="${k}" lang="${k}" class="${RAY_LANG === k ? 'on' : ''}"><span>${n}</span>${RAY_LANG === k ? '<b>✓</b>' : ''}</button>`).join('');
   const opt = optTog;
-  modal(`<h2>${L('Ayarlar', 'Settings')}</h2>
+  modal(`<h2 id="oH">${L('Ayarlar', 'Settings')}</h2>
     ${SND_TOGS()}
     ${Remind.avail() ? opt('oR', save.remind, 'Günlük hatırlatma', 'Daily reminder') : ''}
     ${opt('oZ', save.zen, '🍃 Zen modu', '🍃 Zen mode')}
@@ -2255,6 +2262,7 @@ function settings() {
     ...SND_BINDS,
     oZ: () => { save.zen = !save.zen; persist(); $('oZ').classList.toggle('on', save.zen); toast(save.zen ? L('🍃 Zen: süre ve hamle hedefi yok · her bitiş 3 ★ · 🎫 verilmez', '🍃 Zen: no timer or move target · every finish 3 ★ · no 🎫') : L('Zen kapalı · hedefler geri geldi', 'Zen off · targets are back')); },
     mClose: closeModal });
+  { let n = 0, t = 0; $('oH').onclick = () => { n = Date.now() - t < 800 ? n + 1 : 1; t = Date.now(); if (n >= 5) adDiag(); }; }   // gizli: reklam tanısı
   $('oT').onclick = e => { const t = e.target.dataset.t; if (!t) return; save.theme = t; persist(); applyTheme(); refreshHome(); $('oT').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.t === t)); };
   // dil: metinler yüklemede seçilir → kaydet ve yenile (yarım oyun kayıtta, kaldığı yerden sürer)
   // Dil: yalnız seçili dil görünür; dokununca liste aşağı açılır (açılınca görünür kaydırılır)

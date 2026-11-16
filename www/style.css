@@ -678,3 +678,4 @@ body.introing .screen *{animation-play-state:paused!important}
 /* 🎨 ilk temaya ilerleme (kazanma panelinde) */
 .tip.goal{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 8px;color:var(--fg)}.tip.goal b{font-weight:700}
 .gbar{display:inline-block;width:90px;height:7px;border-radius:9px;background:var(--glass2);overflow:hidden;vertical-align:middle}.gbar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#ffcf5c,#ff8a6b);transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.diag{font:12px/1.45 ui-monospace,Menlo,monospace;text-align:left;white-space:pre-wrap;word-break:break-all;background:rgba(127,127,127,.12);border-radius:12px;padding:10px 12px;margin:6px 0 12px;max-height:46vh;overflow:auto;user-select:text;-webkit-user-select:text}
