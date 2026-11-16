@@ -1711,15 +1711,17 @@ let mvpIsin = null;
 const _mvP = new THREE.Vector3(), _mvH = new THREE.Vector3(), _mvS = new THREE.Vector3(), _mvC = new THREE.Color();
 const yumusakAdim = (e) => e * e * (3 - 2 * e);
 function mvpIsinKur() {
-  const c = document.createElement('canvas'); c.width = 4; c.height = 128; const x = c.getContext('2d');
-  const g = x.createLinearGradient(0, 0, 0, 128); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.55, 'rgba(255,255,255,.55)'); g.addColorStop(0.92, 'rgba(255,255,255,1)'); g.addColorStop(1, 'rgba(255,255,255,.2)');
-  x.fillStyle = g; x.fillRect(0, 0, 4, 128);
-  const doku = new THREE.CanvasTexture(c); doku.colorSpace = THREE.SRGBColorSpace;
-  const m = new THREE.MeshBasicMaterial({ map: doku, color: 0xffd45c, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false });
-  const ag = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.62, 5, 28, 1, true), m); ag.position.y = 2.5;
-  const disk = new THREE.Mesh(new THREE.CircleGeometry(0.75, 32), new THREE.MeshBasicMaterial({ color: 0xffd45c, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
-  disk.rotation.x = -Math.PI / 2; disk.position.y = 0.02;
-  const grup = new THREE.Group(); grup.add(ag, disk); grup.visible = false; grup.renderOrder = 5; sahne.add(grup);
+  // ışın: kahramanın biraz arkasında kameraya dönük dikey düzlem; yatayda yumuşak (Gauss) düşüş, beyaz çekirdek, yukarı doğru söner.
+  // Kahramanın önünde olmadığı için gövdeyi yıkamaz; derinlik sınaması gövdenin arkasında kalan kısmı gizler.
+  const m = new THREE.ShaderMaterial({
+    uniforms: { uRenk: { value: new THREE.Color(0xffd45c) }, uGuc: { value: 0 } },
+    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+    fragmentShader: 'uniform vec3 uRenk; uniform float uGuc; varying vec2 vUv; void main(){ float x = vUv.x - 0.5; float yan = exp(-x * x * 22.0), cek = exp(-x * x * 160.0); float boy = smoothstep(0.0, 0.06, vUv.y) * (1.0 - smoothstep(0.3, 1.0, vUv.y)); float a = (yan + cek * 0.8) * boy * uGuc; gl_FragColor = vec4(mix(uRenk, vec3(1.0), cek * 0.55), min(1.0, a)); }',
+    transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false });
+  const ag = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 6), m); ag.position.y = 3;
+  const disk = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.62, 48), new THREE.MeshBasicMaterial({ color: 0xffd45c, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
+  disk.rotation.x = -Math.PI / 2; disk.position.y = 0.03;
+  const grup = new THREE.Group(); grup.add(ag, disk); grup.visible = false; ag.renderOrder = 5; disk.renderOrder = 5; sahne.add(grup);
   return { grup, ag, disk };
 }
 function mvpSifirla() { kam.mvp = null; if (mvpIsin) mvpIsin.grup.visible = false; }
@@ -1732,30 +1734,51 @@ export function mvpGoster(uid, renk = '#ffd45c', { anlik = false } = {}) {
   }
   if (!mvpIsin) mvpIsin = mvpIsinKur();
   _mvC.set(renk); const hsl = {}; _mvC.getHSL(hsl); _mvC.setHSL(hsl.h, Math.max(0.6, hsl.s), Math.min(0.62, Math.max(0.5, hsl.l)));
-  mvpIsin.ag.material.color.copy(_mvC); mvpIsin.disk.material.color.copy(_mvC);
+  mvpIsin.ag.material.uniforms.uRenk.value.copy(_mvC); mvpIsin.disk.material.color.copy(_mvC);
   mvpIsin.grup.position.set(b.kok.position.x, ARENA_Y, b.kok.position.z); mvpIsin.grup.visible = true;
   const boy = b.kok.userData.vfxBoy || 1; mvpIsin.grup.scale.set(0.8 + 0.4 * boy, 1, 0.8 + 0.4 * boy);
-  kam.mvp = { b, e: anlik ? 1 : 0, yon: 1, sure: 0.9, boy };
+  kam.mvp = { b, e: anlik ? 1 : 0, yon: 1, sure: 0.9, boy, aci: mvpAciSec(b, boy) };
   if (!anlik) vfx.yapi.patlama(_mvP.set(b.kok.position.x, ARENA_Y + boy * 0.9, b.kok.position.z), { renk: '#' + _mvC.getHexString(), n: hafif ? 6 : 12, hiz: 1.8, g: 1.2, yildiz: true });
   return true;
 }
 /** Yakın plandan kadraja dönüş (anlik: hemen) */
 export function mvpBitir(anlik = false) { if (!kam.mvp) return; if (anlik) mvpSifirla(); else { kam.mvp.yon = -1; kam.mvp.sure = 0.6; } }
+const mvpUzak = (boy) => (kamera.aspect < 1.45 ? 4.0 : 3.5) * (0.55 + 0.45 * boy);
+// kamera açısı: önden (merkeze doğru hafif yan) başlayıp ±0,4 / ±0,8 / ±1,1 rad denenir; kamera ile kahraman arasına (ya da kadrajın
+// önüne) giren başka sağ birim ceza alır, en az cezalı ve öne en yakın açı seçilir (kurulumda bir kez; konumlar savaş bitince sabit)
+function mvpAciSec(b, boy) {
+  const p = b.kok.position, taban = Math.max(-0.45, Math.min(0.45, -p.x * 0.12)), uzak = mvpUzak(boy);
+  let en = taban, enC = Infinity;
+  for (const d of [0, 0.4, -0.4, 0.8, -0.8, 1.1, -1.1]) {
+    const a = Math.max(-1.1, Math.min(1.1, taban + d)), dx = Math.sin(a), dz = Math.cos(a); let c = Math.abs(d) * 0.05;
+    for (const o of birimDizi) {
+      if (o === b || o.olumT >= 0 || !o.kok.visible) continue;
+      const ox = o.kok.position.x - p.x, oz = o.kok.position.z - p.z, t = ox * dx + oz * dz;   // görüş çizgisi boyunca uzaklık
+      if (t < 0.2 || t > uzak + 0.3) continue;
+      const yan = Math.abs(ox * dz - oz * dx), r = (o.yaricap || 0.45) + 0.35 + 0.18 * t;     // kameraya yaklaştıkça kadrajı daha çok kaplar
+      if (yan < r) c += 1 + (r - yan);
+    }
+    if (c < enC - 1e-6) { enC = c; en = a; }
+  }
+  return en;
+}
 // kadraj(): bakış noktası (h) ve kamera konumu yakın plana karıştırılır
 function mvpKarisim(dtR, h) {
   const m = kam.mvp; m.e = Math.max(0, Math.min(1, m.e + m.yon * dtR / m.sure));
   if (m.e <= 0 && m.yon < 0) { mvpSifirla(); return h; }
   const b = m.b, p = b.kok.position, boy = m.boy, dar = kamera.aspect < 1.45;
-  const aci = Math.max(-0.45, Math.min(0.45, -p.x * 0.12)), uzak = (dar ? 3.3 : 2.9) * (0.75 + 0.3 * boy);
-  _mvP.set(p.x + Math.sin(aci) * uzak, ARENA_Y + 0.45 + 0.75 * boy, p.z + Math.cos(aci) * uzak);
-  // kahraman sağda dursun: bakış noktası kameranın sol yönüne kayar (sağ vektör = (cos a, 0, −sin a))
-  const kay = uzak * (dar ? 0.16 : 0.24);
-  _mvH.set(p.x - Math.cos(aci) * kay, ARENA_Y + 0.62 * boy, p.z + Math.sin(aci) * kay);
+  // kamera kahramanın önünde, hafif yukarıdan; tüm gövde kadrajda (boy: model yüksekliği)
+  const aci = m.aci, uzak = mvpUzak(boy);
+  _mvP.set(p.x + Math.sin(aci) * uzak, ARENA_Y + 0.5 + 0.85 * boy, p.z + Math.cos(aci) * uzak);
+  // kahraman sağda dursun (sol yarıda arayüz kartı): bakış noktası kameranın sol yönüne kayar (sağ vektör = (cos a, 0, −sin a))
+  const kay = uzak * (dar ? 0.13 : 0.17);
+  _mvH.set(p.x - Math.cos(aci) * kay, ARENA_Y + 0.5 * boy, p.z + Math.sin(aci) * kay);
   const k = yumusakAdim(m.e);
   kamera.position.lerp(_mvP, k);
   _mvS.copy(h).lerp(_mvH, k);
   // ışın: geçişle birlikte belirir, hafif nabız
-  if (mvpIsin) { const n = 0.85 + 0.15 * Math.sin(performance.now() / 260); mvpIsin.ag.material.opacity = 0.55 * k * n; mvpIsin.disk.material.opacity = 0.45 * k; mvpIsin.grup.position.set(p.x, ARENA_Y, p.z); }
+  if (mvpIsin) { const n = 0.85 + 0.15 * Math.sin(performance.now() / 260); mvpIsin.ag.material.uniforms.uGuc.value = 1.0 * k * n; mvpIsin.disk.material.opacity = 0.3 * k; mvpIsin.grup.position.set(p.x, ARENA_Y, p.z);
+    const yon = Math.atan2(kamera.position.x - p.x, kamera.position.z - p.z); mvpIsin.ag.rotation.y = yon; mvpIsin.ag.position.x = -Math.sin(yon) * 0.55; mvpIsin.ag.position.z = -Math.cos(yon) * 0.55; }
   return _mvS;
 }
 export function temizle() { mvpSifirla(); sim = null; for (const b of birimler.values()) vfx.durumTemizle(b.kok); }

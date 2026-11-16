@@ -659,7 +659,7 @@ function torenAmblem(sira) {
   return sira === 1 ? { svg: '<use href="#s-tac"/>', cls: 'tac', ad: 'BİRİNCİ' }
     : sira === 2 ? { svg: '<use href="#s-kupa"/>', cls: 'kupa gumus', ad: 'İKİNCİ' }
     : sira === 3 ? { svg: '<use href="#s-kupa"/>', cls: 'kupa bronz', ad: 'ÜÇÜNCÜ' }
-    : { svg: '<use href="#s-kalkan"/>', cls: 'kalkan', ad: sira ? `${sira}. SIRA` : 'MAÇ BİTTİ' };
+    : { svg: '<use href="#s-kalkan"/>', cls: 'kalkan', ad: sira ? 'SIRA' : 'MAÇ BİTTİ' };
 }
 function torenGoster(sira) {
   const son = $('son'), eski = $('sonToren'); if (eski) eski.remove();

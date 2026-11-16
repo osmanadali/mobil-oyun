@@ -201,3 +201,43 @@ Unity için: Baykuşun normal saldırısı ile yeteneği artık farklı (Spell_S
   `onKurulmaOnayla` kurulmayı kaldığı yerden darbeye bağlar; gelmezse (hedef öldü, sersemledi, yetenek geldi) `onKurulmaIptal` bekleme pozuna döner.
   Dört ayaklıda `hareket.js` `d.sal` için `{darbe, on, onay, iptal, sonra}` seçenekleri. Motor değişmez, belirlenimcilik korunur.
 - Unity: aynı tablo; saldırı zamanını önceden bilmek için motorun `Cd` değeri ve hız çarpanı okunabilir (motor kodu değişmeden).
+
+## Bitiş ekranları (2026-11-15)
+Web: `web/arayuz.js` (bölüm "BİTİŞ ANİMASYONLARI"), `web/index.html` (CSS "BİTİŞ EKRANLARI", SVG `s-kilic`/`s-kalkan`/`s-tac`/`s-kupa`),
+`web/sahne3d.js` (`mvpGoster`, `mvpBitir`, `sarsinti`). Hepsi yalnız transform/opaklık; öğeler an başına bir kez kurulur.
+Zamanlar savaş bittiği (sonuç bandının açıldığı) andan saniye. Unity: DOTween dizisi (Sequence) + Animator; eğriler parantezde.
+
+| An | Olay | Zaman | Not |
+|---|---|---|---|
+| ZAFER | bant açılır | 0–0,28 | scaleY 0,05→1 (geri taşma 1,15) |
+| | iki altın kılıç yanlardan dönerek gelir | 0–0,45 | ±46 vw → 0, dönüş ∓560°→∓42°, hızlanarak (0.5,0,0.85,0.45) |
+| | **çarpışma**: kıvılcım (14 çizgi), ışık halkası, flaş, sarsıntı | 0,45 | halka 0,55 sn ölçek 0,12→1,7; ekran sarsıntısı 0,3 sn (DOM) + kamera 0,26/0,3 sn; **zafer sesi** |
+| | kılıçlar geri teper, çapraz durur | 0,45–0,85 | ±12 px, ±33° → ±44° |
+| | "ZAFER" ölçek yayıyla iner | 0,5–1,05 | 2,6 → 0,88 → 1,07 → 0,98 → 1 |
+| | altın parıltı süpürür | 1,0–1,65 | renk soldurma (color-dodge) şerit, soldan sağa |
+| | bilgi satırı + düğmeler | 1,05–1,4 | Devam 1,1 sn'de etkin |
+| YENİLGİ | kılıç tepeden düşer, saplanır | 0–0,35 | −70 vh → 0, hızlanarak; **yenilgi sesi 0,35** (dosyanın tepesi +0,2 sn = kırılma) |
+| | kılıç ortadan kırılır, iki parça döne döne düşer | 0,45–1,2 | üst: (−70, +110) px, −60°; alt: (+60, +130) px, +55°; sönerek |
+| | kırmızı-gri duman (6 küme) | 0,38–1,6 | 0,3 → 1,4–2,1 ölçek, 46 px yükselir |
+| | "YENİLGİ" iner, sarsılır, çatlağı boyunca iki parça ayrılır | 0,5 / 0,78 / 0,8 | 1,7→1 ölçek 0,3 sn; sarsıntı 0,38 sn; parçalar ±2–3 px, ±0,7° |
+| BERABERE | iki kalkan yanlardan çarpışır | 0–0,4 | **ses 0,4** (zafer sesi, hız 0,9); mavi şok halkası |
+| | kalkanlar geri seker, yan yana durur | 0,4–0,85 | ±40 px, ±10° |
+| SAVAŞ! | bant + iki küçük kılıç ortada çarpışır | 0–0,3 | **savaş başla sesi 0,3**; halka 0,4 sn |
+| | kılıçlar bandın iki ucuna seker, "SAVAŞ!" yayla belirir | 0,3–0,5 | 2,2→0,9→1 ölçek |
+| | tümü söner | 0,6–0,8 | toplam 0,8 sn, dokunmayı engellemez |
+| MAÇIN YILDIZI | açılış | 2,2 | yalnız öğretici/pencere/hasar özeti kapalıyken; sonuç bandı gizlenir |
+| | kamera yakın planı | 2,2–3,1 | kadraj kamerasından yumuşak adımla (smoothstep) 0,9 sn; kahraman sağda, kameraya döner, zafer klibi + zıplama; arkasında element renginde ışın (açık silindir, kenarı ve tepesi sönük) ve zemin halkası |
+| | kart soldan girer, şerit, portre | +0–0,5 | kart 0,5 sn yay; şerit 0,15'te; portre 0,2'de 0,4→1 |
+| | hasar sayacı | +0,5–1,4 | 0 → hasar, kübik yavaşlayan |
+| | yıldızlar (★ sayısı kadar) | +0,9, +1,05, +1,2 | 0 → 1 ölçek, −90° → 0 |
+| | kapanış | dokununca ya da +4,2 sn | kart 0,3 sn söner, kamera 0,6 sn'de geri döner, sonuç bandı yeniden açılır |
+| | yenilgide | | sade gri kart, ortada; kamera ve ışın yok |
+| MAÇ SONU | amblem tepeden iner (1.: taç, 2.: gümüş kupa, 3.: bronz kupa, 4.+: kalkan) | 0–0,6 | −55 vh → 0, ezilip (1,08×0,9) zıplar |
+| | halka + kıvılcım, arka ışınlar | 0,45–1,1 | ışınlar 14 sn'de bir tur döner |
+| | sıra yazısı | 0,7–1,15 | 0,4 → 1 yay |
+| | tören söner, maç sonu kartı açılır | 1,9–2,3 | dokununca hemen; şeridin sol madalyonunda aynı amblem |
+
+- MVP seçimi: oyuncunun takımında en çok verilen hasar; eşitse en çok iyileştirme + kalkan. Kimse katkı yapmadıysa gösterilmez.
+- Animasyonları azalt (Ayarlar; ayarlanmadıysa işletim sisteminin "hareketi azalt" tercihi): uçuş, sarsıntı, dönme, kamera geçişi yok;
+  amblemler son duruşunda belirir, sesler hemen çalar, MVP 0,9 sn'de açılır ve kamera geçişsiz.
+- Düğmeler: basınca ölçek 0,95 (0,09 sn), üzerine gelince parlama (opaklık 0,15 sn). Yazı tipi: başlık/düğme "Kut Baslik" (Lilita One + Türkçe harfler), gövde Nunito.
