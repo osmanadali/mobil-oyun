@@ -65,7 +65,7 @@ workflows:
           CV=$(plutil -extract CFBundleVersion raw -o - "$A/Info.plist"); [ "$CV" = "$VERSION_CODE" ] || { echo "CFBundleVersion $CV, beklenen $VERSION_CODE"; exit 1; }
           plutil -extract UIDeviceFamily json -o - "$A/Info.plist" | tr -d ' \n' | grep -qx '\[1,2\]' || { echo "iPhone + iPad değil"; exit 1; }
           for l in en tr de es pt-BR fr ko ja zh-Hant; do plutil -extract CFBundleLocalizations json -o - "$A/Info.plist" | grep -q "\"$l\"" || { echo "$l dili yok"; exit 1; }; done
-          [ -f "$A/GoogleService-Info.plist" ] && echo "Ölçüm: GoogleService-Info.plist pakette" || echo "Ölçüm: kapalı (FIREBASE_IOS_PLIST yok)"
+          [ -f "$A/GoogleService-Info.plist" ] && echo "Ölçüm: GoogleService-Info.plist pakette" || { echo "Ölçüm yok: ray_ios grubuna FIREBASE_IOS_PLIST ekle (yayın yapısı ölçümsüz çıkmaz)"; exit 1; }
           echo "Ray $VERSION_NAME ($CV) arşivlendi"
       - name: Dışa aktar ve App Store Connect'e yükle
         script: |

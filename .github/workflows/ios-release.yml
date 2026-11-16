@@ -28,12 +28,14 @@ jobs:
       - name: Gizli değerleri ve değişkenleri denetle
         env:
           P8: ${{ secrets.APPSTORE_API_KEY_P8_BASE64 }}
+          FB: ${{ secrets.FIREBASE_IOS_PLIST }}
         run: |
           eksik=""
           [ -n "$APPSTORE_API_KEY_ID" ]    || eksik="$eksik\n  • APPSTORE_API_KEY_ID (gizli değer: API anahtarı kimliği, 10 karakter)"
           [ -n "$APPSTORE_API_ISSUER_ID" ] || eksik="$eksik\n  • APPSTORE_API_ISSUER_ID (gizli değer: Issuer ID, UUID)"
           [ -n "$P8" ]                     || eksik="$eksik\n  • APPSTORE_API_KEY_P8_BASE64 (gizli değer: AuthKey_….p8 dosyasının base64 hâli)"
           [ -n "$APPLE_TEAM_ID" ]          || eksik="$eksik\n  • APPLE_TEAM_ID (gizli değer: Team ID, 10 karakter)"
+          [ -n "$FB" ]                     || eksik="$eksik\n  • FIREBASE_IOS_PLIST (gizli değer: GoogleService-Info.plist dosyasının içeriği; yayın yapısı ölçümsüz derlenmez)"
           [ -n "$ADMOB_APP_ID_IOS" ]       || eksik="$eksik\n  • ADMOB_APP_ID_IOS (değişken, ör. ca-app-pub-1234567890123456~1234567890)"
           [ -n "$ADMOB_INTERSTITIAL_IOS" ] || eksik="$eksik\n  • ADMOB_INTERSTITIAL_IOS (değişken, ör. ca-app-pub-1234567890123456/1234567890)"
           [ -n "$ADMOB_REWARDED_IOS" ]     || eksik="$eksik\n  • ADMOB_REWARDED_IOS (değişken)"
@@ -66,7 +68,7 @@ jobs:
       - name: İkon ve açılış ekranı (assets/)
         run: npx @capacitor/assets generate --ios --iconBackgroundColor '#0d1020' --splashBackgroundColor '#0d1020' --splashBackgroundColorDark '#0d1020'
       - name: Yerel projeyi hazırla (gerçek AdMob kimlikleri, diller, iPhone + iPad, dikey, sürüm, simge)
-        env: { FIREBASE_IOS_PLIST: '${{ secrets.FIREBASE_IOS_PLIST }}' }   # isteğe bağlı: yoksa ölçüm kapalı derlenir (docs/YAYIN.md §5)
+        env: { FIREBASE_IOS_PLIST: '${{ secrets.FIREBASE_IOS_PLIST }}' }   # zorunlu (ilk adımda denetlenir): ölçümsüz yayın yapısı çıkmaz (docs/YAYIN.md §5)
         run: |
           VERSION_NAME=$(node -p "require('./package.json').version"); export VERSION_NAME
           echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
