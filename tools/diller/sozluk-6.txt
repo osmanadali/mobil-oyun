@@ -1,0 +1,62 @@
+@ {0} · {1}/{2} districts lit
+de: {0} · {1}/{2} Viertel erleuchtet
+es: {0} · {1}/{2} barrios iluminados
+pt: {0} · {1}/{2} bairros iluminados
+fr: {0} · {1}/{2} quartiers éclairés
+ko: {0} · 구역 {1}/{2} 밝음
+ja: {0} · {1}/{2} 地区が点灯
+zh: {0} · {1}/{2} 個街區已點亮
+
+@ golden
+de: golden
+es: dorados
+pt: dourados
+fr: dorés
+ko: 황금
+ja: 黄金
+zh: 黃金
+
+@ CITY COMPLETE
+de: STADT VOLLENDET
+es: CIUDAD COMPLETA
+pt: CIDADE COMPLETA
+fr: VILLE ACHEVÉE
+ko: 도시 완성
+ja: 街が完成
+zh: 城市完成
+
+@ A NEW DISTRICT LIGHTS UP
+de: EIN NEUES VIERTEL LEUCHTET
+es: SE ILUMINA UN BARRIO NUEVO
+pt: UM NOVO BAIRRO SE ACENDE
+fr: UN NOUVEAU QUARTIER S’ALLUME
+ko: 새 구역이 밝아졌어요
+ja: 新しい地区に明かりが灯った
+zh: 新街區亮起來了
+
+@ Every district is lit · next city: {0}
+de: Alle Viertel leuchten · nächste Stadt: {0}
+es: Todos los barrios iluminados · próxima ciudad: {0}
+pt: Todos os bairros iluminados · próxima cidade: {0}
+fr: Tous les quartiers sont éclairés · prochaine ville : {0}
+ko: 모든 구역이 밝아졌어요 · 다음 도시: {0}
+ja: すべての地区が点灯 · 次の街：{0}
+zh: 所有街區都亮了 · 下一座城市：{0}
+
+@ Continue
+de: Weiter
+es: Continuar
+pt: Continuar
+fr: Continuer
+ko: 계속
+ja: 続ける
+zh: 繼續
+
+@ Every line lights a district · light up the whole city
+de: Jede Linie erhellt ein Viertel · erleuchte die ganze Stadt
+es: Cada línea ilumina un barrio · ilumina toda la ciudad
+pt: Cada linha acende um bairro · ilumine a cidade inteira
+fr: Chaque ligne éclaire un quartier · illumine toute la ville
+ko: 노선마다 구역 하나가 밝아져요 · 도시 전체를 밝혀요
+ja: 路線ごとに地区がひとつ灯る · 街全体を明るくしよう
+zh: 每條路線點亮一個街區 · 點亮整座城市

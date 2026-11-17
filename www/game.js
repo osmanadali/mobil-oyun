@@ -842,7 +842,7 @@ function dailyClock() {
   if ($('mClock')) $('mClock').textContent = L(`Yeni Günün Hattı: ${countdown()}`, `Next Daily Line: ${countdown()}`);
 }
 function refreshHome() {
-  dayTick();
+  dayTick(); try { homeSky(); } catch {}   // şehir bölümü henüz yüklenmediyse sonra çizilir
   const tot = totalStars();
   $('sStars').textContent = tot;
   $('sStreak').textContent = save.streak; $('streakChip').classList.toggle('new', rescueOk());
@@ -1377,7 +1377,7 @@ function win() {
   if (zen) save.zenWins = (save.zenWins || 0) + 1;
   save.played++;
   const cr0 = crownBal();
-  let extra = '', unlockedNow = null, shard = false, dbl = 0, tkMsg = '';   // dbl: videoyla ikiye katlanabilecek ipucu
+  let extra = '', unlockedNow = null, shard = false, dbl = 0, tkMsg = '', fest = -1;   // fest: hat bitti → açılış töreni (hat no)   // dbl: videoyla ikiye katlanabilecek ipucu
   let cmsg = '', combo = 0, broke = 0, near = false;               // kusursuz seri · kıl payı (tekrar öne çıkar)
   const late = Math.floor(G.time / 1000) - G.lim.t;
   setNext(tOk ? L('Tam vaktinde', 'On time') : `<span class="miss">+${fmtT(late * 1000)} ${L('rötar', 'late')}</span>`); trip(G.time / 1000, tOk, 0);
@@ -1423,7 +1423,7 @@ function win() {
     if (perfect) delete save.miss[G.lvl]; else if (st >= old && !zen) save.miss[G.lvl] = [tOk ? 0 : Math.ceil(G.time / 1000 - G.lim.t), mOk ? 0 : G.moves > G.lim.m ? G.moves - G.lim.m : -1];   // −1: hamle hedefinde ama son sefer kaçtı
     if (st > old && old) extra = L(`Yeni rekor: ${starTxt(st)}`, `New best: ${starTxt(st)}`);
     save.level = Math.max(save.level, G.lvl + 1);
-    if (G.lvl === lineEnd(lineOf(G.lvl)) && firstClear) { save.hints += 2; dbl = 2; extra = L('🎁 Hat tamam · +2 ipucu', '🎁 Line complete · +2 hints'); }
+    if (G.lvl === lineEnd(lineOf(G.lvl)) && firstClear) { save.hints += 2; dbl = 2; fest = lineOf(G.lvl); extra = L('🎁 Hat tamam · +2 ipucu', '🎁 Line complete · +2 hints'); }
     if (perfect && G.final && !save.crowns[G.lvl]) { save.fc = (save.fc || 0) + 1; extra = [extra, L('🏁 Son durak kusursuz · +1 bonus 🎫', '🏁 Perfect last stop · +1 bonus 🎫')].filter(Boolean).join(' · '); }
     if (perfect && !save.crowns[G.lvl]) { save.crowns[G.lvl] = 1; shard = true; tkMsg = L('🎫 +1 bilet', '🎫 +1 ticket'); }   // bilet bölüm başına bir kez; rozette değil burada yazar (🎫 bazı telefonlarda geniş çizilir, rozet kesilirdi)
     for (let c = 1; c <= lineOf(save.level) + 1; c++) if (need(c) > before && unlocked(c)) unlockedNow = c;
@@ -1441,7 +1441,7 @@ function win() {
   Object.assign(sum, Jank.take());   // bu bölümde takılan kare sayısı ve toplam süresi
   if (G.daily) Olcum.event('daily_end', { ...sum, mode: G.arch ? 'archive' : 'daily', practice: !!G.practice, streak: save.streak }); else Olcum.event('level_end', { ...lvlP(), ...sum });
   const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { zen, st, tOk, mOk, perfect, extra: [tkMsg, cmsg, shardMsg, extra].filter(Boolean).join(' · '), unlockedNow, ns, dbl, combo, broke, near };
-  winTimer = setTimeout(() => { if (G === g && active('game')) { winSheet(g, info); let rv = false; if (!g.daily && !g.practice) setTimeout(() => { if (G === g && active('game')) rv = maybeReview(st); }, 1100);
+  winTimer = setTimeout(() => { if (G === g && active('game')) { winSheet(g, info); if (fest >= 0) { lineFest(fest); return; } let rv = false; if (!g.daily && !g.practice) setTimeout(() => { if (G === g && active('game')) rv = maybeReview(st); }, 1100);
     setTimeout(() => { if (G === g && active('game') && !rv && !modalOpen()) maybeOffer(g); }, 1500); } }, wait);   // puan istendiyse teklif bu tur yok
   if (!g.daily) idle(() => puzzleFor(g.lvl + 1), wait + 600);   // sonraki bölüm hazır olsun: panel kayarak oturunca, ilk boş anda (geçişte takılma olmasın)
 }
@@ -2915,8 +2915,138 @@ $('cityBody').onclick = e => {
   cSel = +d.dataset.c; document.querySelectorAll('#cityBody .sd.sel').forEach(x => x.classList.remove('sel')); d.classList.add('sel'); cityInfo(); haptic(); tone(note(5 + (cSel % 5)), .12, .02);
 };
 const openCity = (tab = 'city') => { cTab = tab; cSel = -1; cPage = -1; show('city'); };
-bind({ cBack: () => show('home'), pCity: () => openCity() });
+bind({ cBack: () => show('home'), pCity: () => openCity(), bSky: () => openCity() });
 document.querySelector('#home .logo').onclick = () => openCity();
+
+// ---------- şehir silüeti: ana sayfada oyuncunun kendi şehri, hat bitince açılış töreni ----------
+// Bir şehir 24 semt (hat). Semtler silüette merkezden dışa, sağ-sol sırayla dizilir (ilk hatlar ortada, şehir dışa büyür).
+// Biten semtin pencereleri yanar, altın semt altın ışır, sıradaki semt iskelede: pencereleri hattaki ilerlemeyle tek tek yanar.
+const SKY_W = 360, skyPos = k => 11.5 + (k % 2 ? (k + 1) / 2 : -k / 2) + .5;
+function skyline(page, { h = 96, hl = -1, tl = hl, all = false } = {}) {
+  const base = page * CITY_N, slot = SKY_W / (CITY_N + 1), ground = h - 9;
+  let back = '', bld = '', lit = 0;
+  const R0 = rng(page * 101 + 7);
+  for (let x = -6; x < SKY_W + 6;) { const w = 9 + R0() * 16, bh = h * (.18 + R0() * .26); back += `<rect x="${x.toFixed(1)}" y="${(ground - bh).toFixed(1)}" width="${w.toFixed(1)}" height="${(bh + 9).toFixed(1)}"/>`; x += w + 1.5; }
+  for (let k = 0; k < CITY_N; k++) {
+    const c = base + k, s = all ? { ...cityState(c), done: true, cur: false, gold: false } : cityState(c), R = rng(c * 7919 + 13), x0 = (skyPos(k) - .5) * slot;   // all: önizleme (bütün semtler yanık)
+    const cls = s.gold ? 'gold' : s.done ? 'lit' : s.cur ? 'cur' : 'off', mid = 1 - Math.abs(skyPos(k) - 12.5) / 12.5;
+    const prog = s.cur ? Math.max(0, Math.min(1, (save.level - lineStart(c)) / s.len)) : s.done ? 1 : 0;
+    if (s.done) lit++;
+    const n = R() < .55 ? 2 : 1;
+    let parts = '', wins = '', wi = 0, top = ground;
+    for (let q = 0; q < n; q++) {
+      const w = n === 1 ? slot - 1.4 : (slot - 1.8) / 2, x = x0 + .7 + q * (w + .4);
+      const bh = h * (.3 + mid * .42 + R() * .2) * (q ? .74 : 1), y = ground - bh; top = Math.min(top, y);
+      parts += `<rect class="bb" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${bh.toFixed(1)}" rx=".7"/>`;
+      const cols = w > 9 ? 2 : 1, ww = 2.1, gap = (w - cols * ww) / (cols + 1);
+      for (let yy = y + 4; yy < ground - 4; yy += 5.2) for (let cc = 0; cc < cols; cc++) {
+        const on = R() < .78 && (s.done || (s.cur && R() < prog));
+        if (on) wins += `<rect x="${(x + gap + cc * (ww + gap)).toFixed(1)}" y="${yy.toFixed(1)}" width="${ww}" height="2.4" style="--i:${wi++}" class="${R() < .12 ? 'tw' : ''}"/>`;
+      }
+    }
+    const bx = (x0 + slot / 2).toFixed(1);
+    const beacon = s.done || s.cur ? `<circle class="bc" cx="${bx}" cy="${(top - 2.4).toFixed(1)}" r="1.5"/>` : '';
+    bld += `<g class="bk ${cls}${c === hl ? ' hl' : ''}" style="--lc:${lineCol(c)};--o:${k}" data-c="${c}">${parts}<g class="wn">${wins}</g>${beacon}</g>`;
+  }
+  // ray boyunca oyuncunun treni: takılı kaplama (sefer şeridindekiyle aynı çizim); 'hat rengi' kaplamada trenin rengi hattın rengi
+  const tc = tl >= 0 ? tl : Math.min(linesDone(), base + CITY_N - 1), liv = LIVERIES.find(x => x.id === save.train);
+  const train = lit ? `<g class="tr trn" style="--line:${lineCol(tc)};${livVars(liv)}"><g transform="translate(-30 ${(ground - .6).toFixed(1)}) scale(.7)">${TRAIN.replace(/^<svg[^>]*>|<\/svg>$/g, '')}</g></g>` : '';
+  return { lit, svg: `<svg class="skyl" viewBox="0 0 ${SKY_W} ${h}" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+    <g class="far">${back}</g>${bld}<path class="rl" d="M0 ${ground + 4.2}H${SKY_W}"/>${train}</svg>` };
+}
+function homeSky() {
+  const box = $('skyBox'); if (!box) return;
+  const page = linesDone() / CITY_N | 0, { lit, svg } = skyline(page);
+  box.innerHTML = svg;
+  $('skyTxt').textContent = (page ? `${cityName(page - 1)} ✓ · ` : '') + L(`${cityName(page)} · ${lit}/${CITY_N} semt aydınlık`, `${cityName(page)} · ${lit}/${CITY_N} districts lit`);
+}
+// Hat açılış töreni: hattın son bölümü ilk kez bitince sonuç panelinin üstünde (≈5 sn, dokununca sona atlar).
+// Kamera yeni semte yakın başlar: binalar yükselir, pencereler tek tek yanar, sonra şehrin tamamı görünür.
+// Tören sesi (dosya yok, cihazda üretilir; Ses kapalıysa susar). Müzik kısılır, zaman çizgisi animasyonla aynı:
+// 0,35 sn bina yükselir (alçak kayan ton) · 1,1 sn pencereler yanar (yukarı çıkan çan serpintisi) · 1,3 sn tepe ışığı (çan)
+// 1,6 sn kamera geri çekilir (rüzgâr) + sıcak akor · 3,4 sn yazı gelir: "hat açıldı" ezgisi (Re majör, menü müziğiyle aynı ton).
+// Altın semt: ezginin üstüne parıltı · şehir tamamlandı: uzun ezgi. Dokunup atlayınca kalan sesler kısılır, ezgi hemen çalar.
+const mhz = m => 440 * Math.pow(2, (m - 69) / 12);
+function festSound({ wins = 16, gold = false, all = false } = {}) {
+  if (!save.sound || hushed || document.hidden) return { skip() {}, done() {} };
+  let bus, t0, jingled = false;
+  try { ensureAC(); if (ac.state === 'interrupted') return { skip() {}, done() {} }; bus = ac.createGain(); bus.gain.value = 1; bus.connect(ac.destination); t0 = ac.currentTime + .05; } catch { return { skip() {}, done() {} }; }
+  const voice = (f, at, dur, vol, type = 'sine', f1 = 0, atk = .012, dest = bus) => {
+    try {
+      const t = t0 + at, o = ac.createOscillator(), g = ac.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, t); if (f1) o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + atk); g.gain.exponentialRampToValueAtTime(.0001, t + dur + .25);
+      o.connect(g).connect(dest); o.start(t); o.stop(t + dur + .3);
+    } catch {}
+  };
+  const wind = (at, dur, vol) => {
+    try {
+      const n = ac.sampleRate * dur | 0, b = ac.createBuffer(1, n, ac.sampleRate), d = b.getChannelData(0);
+      for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+      const src = ac.createBufferSource(), bp = ac.createBiquadFilter(), g = ac.createGain(), t = t0 + at;
+      bp.type = 'bandpass'; bp.Q.value = .9; bp.frequency.setValueAtTime(350, t); bp.frequency.exponentialRampToValueAtTime(2200, t + dur * .55); bp.frequency.exponentialRampToValueAtTime(600, t + dur);
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + dur * .45); g.gain.linearRampToValueAtTime(0, t + dur);
+      src.buffer = b; src.connect(bp).connect(g).connect(bus); src.start(t); src.stop(t + dur);
+    } catch {}
+  };
+  const jingle = at => {
+    jingled = true;
+    const M = all ? [62, 66, 69, 74, 69, 74, 78, 81] : [62, 66, 69, 71, 74];
+    M.forEach((m, j) => voice(mhz(m), at + j * .12, j === M.length - 1 ? .9 : .22, .05, 'sine'));
+    M.forEach((m, j) => voice(mhz(m - 12), at + j * .12, .18, .018, 'triangle'));
+    if (gold || all) [86, 88, 90, 93, 95, 98].forEach((m, j) => voice(mhz(m), at + M.length * .12 + j * .07, .3, .012, 'sine'));
+  };
+  // 1) bina yükselir
+  voice(mhz(38), .35, .9, .05, 'triangle', mhz(50), .25);
+  // 2) pencereler: yukarı çıkan çan serpintisi (en çok 18 nota)
+  const P = [74, 76, 78, 81, 83, 86, 88, 90, 93];
+  for (let j = 0, n = Math.min(18, wins); j < n; j++) voice(mhz(P[j % P.length] + (j >= P.length ? 12 : 0)), 1.1 + j * .045, .14, .014);
+  // 3) tepe ışığı
+  voice(mhz(86), 1.3, .6, .03); voice(mhz(93), 1.32, .5, .012);
+  // 4) kamera geri: rüzgâr + sıcak akor (D – F# – A)
+  wind(1.55, 2.2, .035);
+  [50, 54, 57, 62].forEach(m => voice(mhz(m), 1.7, 2.2, .022, 'sine', 0, .8));
+  // 5) yazı: ezgi
+  jingle(3.4);
+  return {
+    // dokunup atlandı: kalan serpinti / akor kısılır, ezgi henüz çalmadıysa hemen çalar
+    skip() { try { const now = ac.currentTime; if (now - t0 >= 3.4) return; bus.gain.cancelScheduledValues(now); bus.gain.setTargetAtTime(0, now, .08); const b2 = ac.createGain(); b2.connect(ac.destination); bus = b2; t0 = ac.currentTime + .12; jingle(0); } catch {} },
+    done() {},
+  };
+}
+// şehir tamamlandı: şehrin toplamı (★, altın semt)
+const cityTot = page => { let st = 0, mx = 0, g = 0; for (let k = 0; k < CITY_N; k++) { const x = cityState(page * CITY_N + k); st += x.st; mx += x.len * 3; g += x.gold ? 1 : 0; }
+  return `<span>★ ${st} / ${mx}</span><span class="${g ? 'g' : ''}">✨ ${g} / ${CITY_N} ${L('altın semt', 'golden')}</span>`; };
+let festOn = false;
+function lineFest(c) {
+  const page = c / CITY_N | 0, k = c % CITY_N, s = cityState(c), { lit, svg } = skyline(page, { h: 150, hl: c });
+  const all = lit === CITY_N, nx = RULES[c + 1], rm = calmMotion.matches;
+  const el = document.createElement('div');
+  el.id = 'fest'; el.className = 'fest' + (rm ? ' end' : '') + (all ? ' all' : ''); el.setAttribute('role', 'dialog');
+  el.style.setProperty('--lc', lineCol(c)); el.style.setProperty('--fx', `${(skyPos(k) / (CITY_N + 1) * 100).toFixed(1)}%`);
+  const fw = all ? Array.from({ length: 7 }, (_, j) => `<i class="fw" style="--x:${12 + j * 13}%;--y:${10 + (j * 37 % 30)}%;--d:${(3.6 + j * .23).toFixed(2)}s;--c:${['#ffd36b', '#ff7a8a', '#7ea6ff', '#5fd6b0', '#b394ff', '#ffb35c', '#fff'][j]}"></i>`).join('') : '';
+  el.innerHTML = `<i class="f-stars"></i>${fw}<div class="f-sky">${svg}</div>
+    <div class="f-txt">
+      <span class="k">${all ? L('ŞEHİR TAMAMLANDI', 'CITY COMPLETE') : L('YENİ SEMT AYDINLANDI', 'A NEW DISTRICT LIGHTS UP')}</span>
+      <h2>${all ? `🎉 ${cityName(page)}` : lineName(c)}</h2>
+      <p>${all ? L(`Bütün semtler aydınlık · sıradaki şehir: ${cityName(page + 1)}`, `Every district is lit · next city: ${cityName(page + 1)}`) : L(`${cityName(page)} · ${lit}/${CITY_N} semt aydınlık`, `${cityName(page)} · ${lit}/${CITY_N} districts lit`)}</p>
+      <div class="f-st">${all ? cityTot(page) : `<span>★ ${s.st} / ${s.len * 3}</span><span>🎫 ${s.cr} / ${s.len}</span>${s.gold ? `<span class="g">✨ ${L('Altın semt', 'Golden district')}</span>` : ''}`}</div>
+      <p class="f-rw">${L('🎁 Hat tamam · +2 ipucu', '🎁 Line complete · +2 hints')}</p>
+      ${nx ? `<p class="f-nx">${L('Sıradaki', 'Next')}: M${c + 2} · <b>${nx.tag}</b></p>` : ''}
+      <button class="btn primary" id="fGo"><span>${L('Devam', 'Continue')}</span></button>
+    </div>`;
+  document.body.appendChild(el); festOn = true;
+  requestAnimationFrame(() => el.classList.add('on'));
+  const wasMusic = save.music; Music.stop();   // tören boyunca müzik kısılır, Devam'la geri gelir
+  const snd = rm ? (jingleOnly(s.gold, all), null) : festSound({ wins: el.querySelectorAll('.hl .wn rect').length, gold: s.gold, all });
+  if (!rm) { setTimeout(() => haptic('light'), 700); setTimeout(() => haptic('heavy'), 1650); setTimeout(() => haptic('win'), 3450); }
+  let ended = rm;
+  const end = () => { if (!ended) { ended = true; snd?.skip(); } el.classList.add('end'); };
+  el.onclick = e => { if (e.target.closest('#fGo')) { el.classList.remove('on'); festOn = false; setTimeout(() => el.remove(), 350); if (wasMusic && save.music) Music.start(); return; } end(); };
+  setTimeout(() => { ended = true; el.classList.add('end'); }, 5200);
+}
+function jingleOnly(gold, all) { const f = festSound({ wins: 0, gold, all }); f.skip(); }   // hareket azaltılmış: yalnız ezgi
+if (active('home')) homeSky();   // ilk çizim: refreshHome bu bölüm yüklenmeden çalışmış olabilir
 
 // ---------- kural eklentileri: www/rules/*.js (M9+ yeni kurallar). Ayrıntı: docs/kurallar/README.md ----------
 const API = {
@@ -2978,9 +3108,19 @@ function endIntro() {
   intro.classList.add('out'); document.body.classList.remove('introing');
   setTimeout(() => intro.classList.add('gone'), 600);
 }
-if (introOn) { document.body.classList.add('introing'); intro.onclick = endIntro; setTimeout(endIntro, 2300); } else intro.classList.add('gone');
+if (introOn) {
+  document.body.classList.add('introing'); intro.onclick = endIntro; setTimeout(endIntro, 2300);
+  // açılışta şehir sırayla aydınlanır: oyuncunun şehri; hiç hat bitmemişse bütün şehrin önizlemesi (hedef: şehrin tamamı)
+  try { const page = linesDone() / CITY_N | 0, pre = !linesDone(), { svg } = skyline(page, { all: pre }), d = document.createElement('div');
+    d.className = 'isky'; d.innerHTML = svg + (pre ? `<small>${L('Her hat bir semt yakar · şehrin tamamını aydınlat', 'Every line lights a district · light up the whole city')}</small>` : ''); intro.appendChild(d); } catch {}
+} else intro.classList.add('gone');
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { jank: Jank, seaWin, popLog, popUp: (...a) => popUp(...a), ACH, achCheck, linesDone, goldLine, plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), dayQ: () => dayQ(), RULE_LINE, RULES, prio, review: maybeReview, BST, offer: { MIN: OFFER_MIN, GAP: OFFER_GAP, AGE: OFFER_AGE, list: offerList, due: () => offerDue(G), inter: v => { interDue = v; } }, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, HX, lineStart, lineOf, lineEnd, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
+window.__ray = { jank: Jank, fest: c => lineFest(c), sky: skyline,
+  // test / önizleme: tören sesini çevrimdışı işleyip WAV (base64) verir
+  festWav: async (o = {}) => { const keep = ac; ac = new OfflineAudioContext(2, 44100 * 6.5, 44100); try { festSound(o); const b = await ac.startRendering(), n = b.length, L = b.getChannelData(0), R = b.getChannelData(1), buf = new DataView(new ArrayBuffer(44 + n * 4));
+    const w = (o2, str) => [...str].forEach((ch, i) => buf.setUint8(o2 + i, ch.charCodeAt(0))); w(0, 'RIFF'); buf.setUint32(4, 36 + n * 4, true); w(8, 'WAVEfmt '); buf.setUint32(16, 16, true); buf.setUint16(20, 1, true); buf.setUint16(22, 2, true); buf.setUint32(24, 44100, true); buf.setUint32(28, 44100 * 4, true); buf.setUint16(32, 4, true); buf.setUint16(34, 16, true); w(36, 'data'); buf.setUint32(40, n * 4, true);
+    for (let i = 0; i < n; i++) { buf.setInt16(44 + i * 4, Math.max(-1, Math.min(1, L[i])) * 32767, true); buf.setInt16(46 + i * 4, Math.max(-1, Math.min(1, R[i])) * 32767, true); }
+    let bin = ''; const u = new Uint8Array(buf.buffer); for (let i = 0; i < u.length; i += 8192) bin += String.fromCharCode(...u.subarray(i, i + 8192)); return btoa(bin); } finally { ac = keep; } }, seaWin, popLog, popUp: (...a) => popUp(...a), ACH, achCheck, linesDone, goldLine, plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), dayQ: () => dayQ(), RULE_LINE, RULES, prio, review: maybeReview, BST, offer: { MIN: OFFER_MIN, GAP: OFFER_GAP, AGE: OFFER_AGE, list: offerList, due: () => offerDue(G), inter: v => { interDue = v; } }, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, HX, lineStart, lineOf, lineEnd, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();
