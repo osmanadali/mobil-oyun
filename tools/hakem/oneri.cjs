@@ -5,7 +5,7 @@ module.exports = async T => {
   const { browser, URL, open, check } = T;
   const base = { played: 30, level: 30, stars: {}, remindAsked: true, g11: 1, seen: Object.fromEntries(Array.from({ length: 30 }, (_, c) => [c, 1])) };
   // 1) 2. hat bitmiş: pencere çıkar, paylaşım metni bağlantıyı içerir, ödül verilmez
-  let o = await open(browser, URL, { save: base });
+  let o = await open(browser, URL, { save: base, init: 'window.__noRec = false' });
   await o.page.evaluate(() => { window.__shared = []; window.Capacitor = { getPlatform: () => 'ios', Plugins: { Share: { share: async x => { window.__shared.push(x.text); } } } }; });
   await o.page.evaluate(() => window.__ray.rec.show());
   await o.page.waitForTimeout(400);
@@ -16,7 +16,7 @@ module.exports = async T => {
   const again = await o.page.evaluate(() => window.__ray.rec.due());
   await o.ctx.close();
   // 2) yeni hat yok, seri kısa → çıkmaz; 3) 7 günlük seri → çıkar; 4) 3 kez gösterildiyse ya da 30 gün geçmediyse çıkmaz; 5) aynı gün puan penceresi çıktıysa çıkmaz
-  const due = async save => { const x = await open(browser, URL, { save: { ...base, ...save } }); const d = await x.page.evaluate(() => window.__ray.rec.due()); await x.ctx.close(); return d; };
+  const due = async save => { const x = await open(browser, URL, { save: { ...base, ...save }, init: 'window.__noRec = false' }); const d = await x.page.evaluate(() => window.__ray.rec.due()); await x.ctx.close(); return d; };
   const cases = {
     ilkHat: await due({ level: 5, played: 6 }),
     seri7: await due({ level: 5, played: 6, streak: 7, lastDaily: (d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'))(new Date()) }),
@@ -25,7 +25,7 @@ module.exports = async T => {
     puanAyniGun: await due({ rv: { at: Date.now() - 3600e3, lvl: 30 } }),
   };
   // Ayarlar satırları (iOS'ta değerlendir satırı, web'de yalnız öner)
-  o = await open(browser, URL, { save: base });
+  o = await open(browser, URL, { save: base, init: 'window.__noRec = false' });
   await o.page.evaluate(() => document.getElementById('mClose')?.click()); await o.page.waitForTimeout(300);
   await o.page.click('#bSettings'); await o.page.waitForTimeout(500);
   const rows = await o.page.evaluate(() => ({ rec: !!document.getElementById('oRec'), rate: !!document.getElementById('oRate') }));

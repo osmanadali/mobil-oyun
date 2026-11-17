@@ -1441,7 +1441,7 @@ function win() {
   Object.assign(sum, Jank.take());   // bu bölümde takılan kare sayısı ve toplam süresi
   if (G.daily) Olcum.event('daily_end', { ...sum, mode: G.arch ? 'archive' : 'daily', practice: !!G.practice, streak: save.streak }); else Olcum.event('level_end', { ...lvlP(), ...sum });
   const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { zen, st, tOk, mOk, perfect, extra: [tkMsg, cmsg, shardMsg, extra].filter(Boolean).join(' · '), unlockedNow, ns, dbl, combo, broke, near };
-  winTimer = setTimeout(() => { if (G === g && active('game')) { winSheet(g, info); if (fest >= 0 && !window.__noFest) { lineFest(fest); return; }   // __noFest: yalnız robot testleri let rv = false; if (!g.daily && !g.practice) setTimeout(() => { if (G === g && active('game')) rv = maybeReview(st); }, 1100);
+  winTimer = setTimeout(() => { if (G === g && active('game')) { winSheet(g, info); if (fest >= 0 && !window.__noFest) { lineFest(fest); return; } /* __noFest: yalnız robot testleri */ let rv = false; if (!g.daily && !g.practice) setTimeout(() => { if (G === g && active('game')) rv = maybeReview(st); }, 1100);
     setTimeout(() => { if (G === g && active('game') && !rv && !modalOpen()) maybeOffer(g); }, 1500); } }, wait);   // puan istendiyse teklif bu tur yok
   if (!g.daily) idle(() => puzzleFor(g.lvl + 1), wait + 600);   // sonraki bölüm hazır olsun: panel kayarak oturunca, ilk boş anda (geçişte takılma olmasın)
 }
@@ -1641,7 +1641,7 @@ function recDue() {
   return line > Math.max(1, r.line) || (save.streak >= 7 && !r.s7);
 }
 function maybeRecommend() {
-  if (!active('home') || modalOpen() || introOn || !recDue()) return false;
+  if (window.__noRec || !active('home') || modalOpen() || introOn || !recDue()) return false;   // __noRec: yalnız robot testleri
   const r = save.rec || { n: 0, at: 0, line: 1 };
   save.rec = { n: r.n + 1, at: Date.now(), line: lineOf(save.level), s7: r.s7 || save.streak >= 7 }; persist();
   modal(`<div class="bell">🚇</div><h2>${L('Ray’i sevdin mi?', 'Enjoying Ray?')}</h2>
