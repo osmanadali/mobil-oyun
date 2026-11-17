@@ -767,7 +767,7 @@ function show(id) {
   document.body.classList.toggle('playing', id === 'game');
   if (id === 'game') resume(); else { pause(); cityDown(); }
   Music.setMode(id === 'game' ? 'game' : 'menu');
-  if (id === 'home') { refreshHome(); setTimeout(maybeGift, 450); setTimeout(maybeRescue, 600); idle(() => { if (active('home')) { puzzleFor(save.level); if (save.dailyDone !== today()) dailyFor(today()); if (window.__rayCalm()) Ads.warm(); } }, document.body.classList.contains('introing') ? 3200 : 900); /* Oyna / Günün Hattı anında açılsın (intro'yu kesmeden) */ if (G && Remind.avail() && !save.remindAsked && (save.dailyDone || save.level > lineEnd(0))) setTimeout(() => { if (active('home') && !modalOpen()) remindAsk(); }, 700); }
+  if (id === 'home') { refreshHome(); setTimeout(maybeGift, 450); setTimeout(maybeRescue, 600); setTimeout(maybeRecommend, 1500); idle(() => { if (active('home')) { puzzleFor(save.level); if (save.dailyDone !== today()) dailyFor(today()); if (window.__rayCalm()) Ads.warm(); } }, document.body.classList.contains('introing') ? 3200 : 900); /* Oyna / Günün Hattı anında açılsın (intro'yu kesmeden) */ if (G && Remind.avail() && !save.remindAsked && (save.dailyDone || save.level > lineEnd(0))) setTimeout(() => { if (active('home') && !modalOpen()) remindAsk(); }, 700); }
   if (id === 'map') renderMap();
   if (id === 'city') renderMeta();
   clearInterval(clockT); if (id === 'home') clockT = setInterval(() => { dailyClock(); lifeRow(); }, 1000);
@@ -1613,6 +1613,45 @@ function remindAsk() {
     mClose: closeModal });
 }
 
+// ---------- arkadaşına öner · mağazada değerlendir (ödülsüz; mağaza kuralları: puan için yalnız sistem penceresi, teşvik yok) ----------
+const IOS_ID = '6831928554', ANDROID_ID = 'com.osmanadali.ray';
+const plat = () => window.Capacitor?.getPlatform?.() || 'web';
+// oyuncunun kendi dokunuşuyla mağazanın yorum sayfası açılır (uygulama puan istemez; sistem penceresi maybeReview'da)
+function rateApp() {
+  const p = plat();
+  const url = p === 'ios' ? `itms-apps://itunes.apple.com/app/id${IOS_ID}?action=write-review` : p === 'android' ? `market://details?id=${ANDROID_ID}` : `https://apps.apple.com/app/id${IOS_ID}?action=write-review`;
+  if (p === 'web') window.open(url, '_blank', 'noopener'); else location.href = url;
+}
+async function recommend() {
+  const text = `${L('Ray: Metro Bulmaca oynuyorum: rayları döndürüp şehri aydınlatıyorsun 🚇 Ücretsiz, internetsiz:', 'I’m playing Ray: Metro Line Puzzle — rotate the rails and light up the city 🚇 Free and offline:')}\n${SHARE_URL}`;
+  try {
+    const P = window.Capacitor?.Plugins?.Share;
+    if (P) return await P.share({ text });
+    if (navigator.share) return await navigator.share({ text });
+    await navigator.clipboard.writeText(text); toast(L('Panoya kopyalandı', 'Copied to clipboard'));
+  } catch {}
+}
+// Mutlu anda, ana sayfada bir kez: yeni bir hat bitince (2. hattan itibaren) ya da 7 günlük seride. En fazla 3 kez, aralarında en az 30 gün;
+// aynı gün mağaza puan penceresi çıktıysa ya da başka bir pencere açıksa sorulmaz. Ödül yok.
+const REC_MAX = 3, REC_GAP = 30 * 864e5;
+function recDue() {
+  const r = save.rec || { n: 0, at: 0, line: 1 }, line = lineOf(save.level);
+  if (r.n >= REC_MAX || Date.now() - r.at < REC_GAP || save.played < 5) return false;
+  if (save.rv && Date.now() - save.rv.at < 864e5) return false;
+  return line > Math.max(1, r.line) || (save.streak >= 7 && !r.s7);
+}
+function maybeRecommend() {
+  if (!active('home') || modalOpen() || introOn || !recDue()) return false;
+  const r = save.rec || { n: 0, at: 0, line: 1 };
+  save.rec = { n: r.n + 1, at: Date.now(), line: lineOf(save.level), s7: r.s7 || save.streak >= 7 }; persist();
+  modal(`<div class="bell">🚇</div><h2>${L('Ray’i sevdin mi?', 'Enjoying Ray?')}</h2>
+    <p>${L('Arkadaşlarına öner, şehri birlikte aydınlatın.', 'Recommend it to your friends and light up the city together.')}</p>
+    <button id="mRec" class="btn primary"><span>🤝 ${L('Arkadaşına öner', 'Recommend to a friend')}</span></button>
+    <button id="mClose" class="btn glassbtn">${L('Şimdi değil', 'Not now')}</button>`, {
+    mRec: () => { closeModal(); recommend(); }, mClose: closeModal });
+  return true;
+}
+
 // ---------- reklamsız paket ----------
 function shopSheet() {
   const owned = save.noAds, price = Shop.price();
@@ -2251,6 +2290,8 @@ function settings() {
     <button class="opt row" id="oHow"><span>${L('Nasıl oynanır?', 'How to play?')}</span><small>›</small></button>
     <button class="opt row" id="oMove"><span>${L('İlerlemeyi taşı', 'Move progress')}</span><small>${L('Yeni telefona', 'To a new phone')} ›</small></button>
     ${SUPPORT_MAIL ? `<button class="opt row" id="oMail"><span>${L('Bize yaz', 'Contact us')}</span><small>${L('Öneri · hata', 'Ideas · bugs')} ›</small></button>` : ''}
+    <button class="opt row" id="oRec"><span>${L('Arkadaşına öner', 'Recommend to a friend')}</span><small>🤝 ›</small></button>
+    ${plat() === 'web' ? '' : `<button class="opt row" id="oRate"><span>${L('Ray’i değerlendir', 'Rate Ray')}</span><small>${plat() === 'ios' ? 'App Store' : 'Google Play'} ›</small></button>`}
     <button class="opt row" id="oPriv"><span>${L('Gizlilik', 'Privacy')}</span><small>${L('Politika · veriler', 'Policy · data')} ›</small></button>
     <button id="mClose" class="btn glassbtn">${L('Tamam', 'Done')}</button>`, {
     oR: async () => {
@@ -2258,6 +2299,7 @@ function settings() {
       else if (!await Remind.enable()) toast(NO_PERM);
       $('oR').classList.toggle('on', save.remind);
     },
+    oRec: recommend, oRate: rateApp,
     oPriv: privacySheet, oHow: () => { closeModal(); how(); }, oMove: moveSheet, oMail: () => { location.href = `mailto:${SUPPORT_MAIL}?subject=${encodeURIComponent('Ray · ' + (window.Capacitor?.getPlatform?.() || 'web') + ' · ' + RAY_LANG)}`; },
     ...SND_BINDS,
     oZ: () => { save.zen = !save.zen; persist(); $('oZ').classList.toggle('on', save.zen); toast(save.zen ? L('🍃 Zen: süre ve hamle hedefi yok · her bitiş 3 ★ · 🎫 verilmez', '🍃 Zen: no timer or move target · every finish 3 ★ · no 🎫') : L('Zen kapalı · hedefler geri geldi', 'Zen off · targets are back')); },
@@ -3122,5 +3164,5 @@ window.__ray = { jank: Jank, fest: c => lineFest(c), sky: skyline,
   festWav: async (o = {}) => { const keep = ac; ac = new OfflineAudioContext(2, 44100 * 6.5, 44100); try { festSound(o); const b = await ac.startRendering(), n = b.length, L = b.getChannelData(0), R = b.getChannelData(1), buf = new DataView(new ArrayBuffer(44 + n * 4));
     const w = (o2, str) => [...str].forEach((ch, i) => buf.setUint8(o2 + i, ch.charCodeAt(0))); w(0, 'RIFF'); buf.setUint32(4, 36 + n * 4, true); w(8, 'WAVEfmt '); buf.setUint32(16, 16, true); buf.setUint16(20, 1, true); buf.setUint16(22, 2, true); buf.setUint32(24, 44100, true); buf.setUint32(28, 44100 * 4, true); buf.setUint16(32, 4, true); buf.setUint16(34, 16, true); w(36, 'data'); buf.setUint32(40, n * 4, true);
     for (let i = 0; i < n; i++) { buf.setInt16(44 + i * 4, Math.max(-1, Math.min(1, L[i])) * 32767, true); buf.setInt16(46 + i * 4, Math.max(-1, Math.min(1, R[i])) * 32767, true); }
-    let bin = ''; const u = new Uint8Array(buf.buffer); for (let i = 0; i < u.length; i += 8192) bin += String.fromCharCode(...u.subarray(i, i + 8192)); return btoa(bin); } finally { ac = keep; } }, seaWin, popLog, popUp: (...a) => popUp(...a), ACH, achCheck, linesDone, goldLine, plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), dayQ: () => dayQ(), RULE_LINE, RULES, prio, review: maybeReview, BST, offer: { MIN: OFFER_MIN, GAP: OFFER_GAP, AGE: OFFER_AGE, list: offerList, due: () => offerDue(G), inter: v => { interDue = v; } }, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, HX, lineStart, lineOf, lineEnd, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
+    let bin = ''; const u = new Uint8Array(buf.buffer); for (let i = 0; i < u.length; i += 8192) bin += String.fromCharCode(...u.subarray(i, i + 8192)); return btoa(bin); } finally { ac = keep; } }, seaWin, popLog, popUp: (...a) => popUp(...a), ACH, achCheck, linesDone, goldLine, plan, breath, dailyRule, dailyBase: d => dailyFor(d, true), weekOf, weekQ: () => weekQ(), dayQ: () => dayQ(), RULE_LINE, RULES, prio, review: maybeReview, rec: { due: recDue, show: maybeRecommend, MAX: REC_MAX, GAP: REC_GAP }, BST, offer: { MIN: OFFER_MIN, GAP: OFFER_GAP, AGE: OFFER_AGE, list: offerList, due: () => offerDue(G), inter: v => { interDue = v; } }, roll: (seed, chests, level) => { const o = { seed: save.seed, chests: save.chests, level: save.level }; Object.assign(save, { seed, chests, level }); const r = chestRoll(); Object.assign(save, o); return r; }, MODS, rulesFor, nb, tree, unitTaps, generate, lit, rot, limits, sizeFor, puzzleFor, dailyFor, difficulty, HX, lineStart, lineOf, lineEnd, zPct, dPct, lineCol, lineName, warnFor, okl, SKINS, music: () => Music.state(), get G() { return G; }, get geo() { return geo; } };
 })();
