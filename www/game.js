@@ -1501,7 +1501,7 @@ async function next() {
   const g = G; if (g.going) return; g.going = 1;   // çift dokunuş tek geçiş: reklam sürerken ikinci basış bölüm atlatmasın
   // sıra gelmiş, bu turda ödüllü video izlenmemiş → geçiş reklamı; gösterilemezse (hazır değil, 90 sn dolmadı) sıra korunur
   if (interDue && !g.daily && !save.noAds && !g.vid) {
-    Music.stop(); if (await Ads.interstitial()) { interDue = false; save.adW = 0; persist(); } Music.start();
+    Music.stop(); if (await Ads.interstitial(`B${G?.lvl} sayaç ${save.adW}`)) { interDue = false; save.adW = 0; persist(); } Music.start();
   }
   if (G === g) start('level', g.lvl + 1);
 }

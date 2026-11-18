@@ -104,10 +104,13 @@ window.Ads = (() => {
     });
   }
   // true: reklam gösterildi ve kapandı
-  async function interstitial() {
+  // tanı: son 8 geçiş reklamı denemesi (saat, oyunun verdiği etiket: bölüm + sayaç, sonuç)
+  const hist = []; const note = (tag, r) => { hist.push(`${new Date().toLocaleTimeString()} ${tag} → ${r}`); if (hist.length > 8) hist.shift(); D.hist = hist.slice(); };
+  async function interstitial(tag = '') {
     const A = plug();
-    if (!A || !ok() || Date.now() - lastShown < 90e3) return false;   // en az 90 sn arayla (ödüllü video da sayılır)
-    if (!interReady || !fresh(interAt)) return false;   // şimdi yükleme: "Sonraki"ye basıldı, bölüm açılıyor (sonuç panelinde yüklenir)
+    if (!A || !ok()) { note(tag, 'kapalı'); return false; }
+    if (Date.now() - lastShown < 90e3) { note(tag, `90 sn ara (${(Date.now() - lastShown) / 1e3 | 0} sn)`); return false; }   // en az 90 sn arayla (ödüllü video da sayılır)
+    if (!interReady || !fresh(interAt)) { note(tag, 'yüklü değil'); return false; }   // şimdi yükleme: "Sonraki"ye basıldı, bölüm açılıyor (sonuç panelinde yüklenir)
     // Gösterildi sayılır: showInterstitial hatasız döndüyse (reklam ekrana verildi) ve "gösterilemedi" olayı gelmediyse.
     // Kapanış olayı gelmese bile (ör. WebView reklam süresince askıda) sayaç sıfırlanır, 90 sn ara başlar → reklam art arda çıkmaz.
     let shown = false, failed = false, seen = false;
@@ -123,6 +126,7 @@ window.Ads = (() => {
       if (shown) window.Olcum?.event('ad_impression', { ad_platform: 'admob', ad_format: 'interstitial' }); else lastShown = 0;
     } catch (e) { D.interShow = 'hata: ' + em(e); }
     hs.forEach(h => Promise.resolve(h).then(x => x?.remove?.()).catch(() => {}));
+    note(tag, D.interShow || '?');
     hush = Date.now() + 5e3;   // yenisi sonraki sonuç panelinde yüklenir
     return shown;
   }
@@ -145,6 +149,7 @@ window.Ads = (() => {
     busy = false;
     if (earned || shown) lastShown = Date.now();   // videonun hemen ardından geçiş reklamı gelmesin
     if (earned || shown) window.Olcum?.event('ad_impression', { ad_platform: 'admob', ad_format: 'rewarded', earned });
+    note('video', earned ? 'ödül' : shown ? 'erken kapandı' : 'yok');
     hush = Date.now() + 5e3;   // oyuna dönülüyor: yenisi sakin anda yüklenir
     return earned ? 'earned' : shown ? 'closed' : 'nofill';
   }
