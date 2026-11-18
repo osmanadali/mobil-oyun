@@ -215,16 +215,16 @@ Zamanlar savaş bittiği (sonuç bandının açıldığı) andan saniye. Unity: 
 | | kılıçlar geri teper, çapraz durur | 0,45–0,85 | ±12 px, ±33° → ±44° |
 | | "ZAFER" ölçek yayıyla iner | 0,5–1,05 | 2,6 → 0,88 → 1,07 → 0,98 → 1 |
 | | altın parıltı süpürür | 1,0–1,65 | renk soldurma (color-dodge) şerit, soldan sağa |
-| | bilgi satırı + düğmeler | 1,05–1,4 | Devam 1,1 sn'de etkin |
+| | bilgi satırı + düğmeler | 1,05–1,4 | Devam 1,1 sn'ye kadar opaklık 0 ve basılamaz, sonra 0,2 sn belirir |
 | YENİLGİ | kılıç tepeden düşer, saplanır | 0–0,35 | −70 vh → 0, hızlanarak; **yenilgi sesi 0,35** (dosyanın tepesi +0,2 sn = kırılma) |
 | | kılıç ortadan kırılır, iki parça döne döne düşer | 0,45–1,2 | üst: (−70, +110) px, −60°; alt: (+60, +130) px, +55°; sönerek |
 | | kırmızı-gri duman (6 küme) | 0,38–1,6 | 0,3 → 1,4–2,1 ölçek, 46 px yükselir |
-| | "YENİLGİ" iner, sarsılır, çatlağı boyunca iki parça ayrılır | 0,5 / 0,78 / 0,8 | 1,7→1 ölçek 0,3 sn; sarsıntı 0,38 sn; parçalar ±2–3 px, ±0,7° |
+| | "YENİLGİ" iner, sarsılır, çatlağı boyunca iki parça ayrılır | 0,5 / 0,8 / 0,8 | 1,7→1 ölçek 0,3 sn; ardından sarsıntı 0,38 sn (tek eğri, 0,5–1,18); parçalar ±2–3 px, ±0,7° |
 | BERABERE | iki kalkan yanlardan çarpışır | 0–0,4 | **ses 0,4** (zafer sesi, hız 0,9); mavi şok halkası |
 | | kalkanlar geri seker, yan yana durur | 0,4–0,85 | ±40 px, ±10° |
 | SAVAŞ! | bant + iki küçük kılıç ortada çarpışır | 0–0,3 | **savaş başla sesi 0,3**; halka 0,4 sn |
 | | kılıçlar bandın iki ucuna seker, "SAVAŞ!" yayla belirir | 0,3–0,5 | 2,2→0,9→1 ölçek |
-| | tümü söner | 0,6–0,8 | toplam 0,8 sn, dokunmayı engellemez |
+| | tümü söner | 0,6–0,8 | toplam 0,8 sn, dokunmayı engellemez; yazı bandın tam ortasında |
 | MAÇIN YILDIZI | açılış | 2,2 | yalnız öğretici/pencere/hasar özeti kapalıyken; sonuç bandı gizlenir |
 | | kamera yakın planı | 2,2–3,1 | kadraj kamerasından yumuşak adımla (smoothstep) 0,9 sn; kahraman sağda, kameraya döner, zafer klibi + zıplama; arkasında element renginde ışın (açık silindir, kenarı ve tepesi sönük) ve zemin halkası |
 | | kart soldan girer, şerit, portre | +0–0,5 | kart 0,5 sn yay; şerit 0,15'te; portre 0,2'de 0,4→1 |
@@ -237,6 +237,18 @@ Zamanlar savaş bittiği (sonuç bandının açıldığı) andan saniye. Unity: 
 | | sıra yazısı | 0,7–1,15 | 0,4 → 1 yay |
 | | tören söner, maç sonu kartı açılır | 1,9–2,3 | dokununca hemen; şeridin sol madalyonunda aynı amblem |
 
+- Telefon yatay (yükseklik ≤ 520 px): bant %59'da, kılıçlar 108 px ve başlığın 38 px üstünde çaprazlanır; YENİLGİ kılıcı 124 px,
+  başlığın 34 px üstünde saplanır (uçlar skor şeridinin altında kalır). SAVAŞ! bandı telefonda %44'te (KUT HAZIR kutusunun üstünde).
+- Katman: skor şeridi bitiş efektlerinin üstündedir; düşen kılıç ve genişleyen halka şeridin arkasından geçer. Unity: üst şerit Canvas
+  sıralaması efekt Canvas'ının üstünde.
+- Tek eğri kuralı: bir öğenin hem gelişi hem tepmesi/sekmesi tek animasyon (ara anahtar karelerde ayrı eğri). ZAFER kılıcı 0,85 sn
+  (geliş %0–52,9, tepme %52,9–100), BERABERE kalkanı 0,85 sn (%0–47,1 / %47,1–100). Web'de iki ayrı transform animasyonu üst üste
+  binince ikincisinin bekleme karesi birincisini eziyordu. Unity: tek DOTween Sequence, Append(geliş).Append(tepme).
+- Gecikmeli başlayan halka ve kıvılcımlar başlangıçta görünmez (ilk anahtar karede opaklık 0, %2'de 1); çarpışma anına kadar ekranda yoklar.
+- Başlık büyükten (2,6×) inerken kırpılmaz; parıltı şeridi yalnız kendi kabında (başlık kutusu) kırpılır.
+  MVP kamerası en/boy > 1,9'da %11 daha uzak ve bakış 0,68×boy yükseklikte (başı üst şeridin altında kalmasın).
+- Yükleme ekranında `renderer.compile` ile tüm görünür malzemeler + MVP ışını derlenir (yakın plan ilk kez görülen arka planı kadraja
+  soktuğunda takılma olmasın). Unity: ShaderVariantCollection.WarmUp ile aynı iş.
 - MVP seçimi: oyuncunun takımında en çok verilen hasar; eşitse en çok iyileştirme + kalkan. Kimse katkı yapmadıysa gösterilmez.
 - Animasyonları azalt (Ayarlar; ayarlanmadıysa işletim sisteminin "hareketi azalt" tercihi): uçuş, sarsıntı, dönme, kamera geçişi yok;
   amblemler son duruşunda belirir, sesler hemen çalar, MVP 0,9 sn'de açılır ve kamera geçişsiz.

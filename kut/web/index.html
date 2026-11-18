@@ -5,6 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <title>Kut Arena</title>
+<link rel="preload" href="yazi/nunito-latin-ext-400-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="yazi/nunito-latin-ext-900-normal.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 /* ==================================================================
    KUT ARENA — SON ARAYÜZ TASARIMI
@@ -133,7 +134,9 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 #ana .uclu{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
 #ana .uclu .btn{flex-direction:column;gap:5px;min-height:76px;font-size:16px;padding:6px}
 #ana .uclu .btn .ik{width:26px;height:26px;color:var(--altin)}
-#ana .yeniMac{margin-top:10px;min-height:48px;font-size:15px;font-weight:800;color:var(--yazi2);text-decoration:underline;text-underline-offset:4px;text-shadow:0 1px 2px #000;padding:0 18px}
+#ana .macSec{display:flex;flex-wrap:wrap;justify-content:center;gap:0 6px;margin-top:8px;width:min(760px,92vw)}   /* maç türleri yan yana (telefonda alt alta sığmıyordu) */
+#ana .yeniMac small{font-size:inherit;font-weight:inherit}
+#ana .yeniMac{min-height:48px;font-size:15px;font-weight:800;color:var(--yazi2);text-decoration:underline;text-underline-offset:4px;text-shadow:0 1px 2px #000;padding:0 18px}
 #ana .altSerit{align-self:stretch;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;color:var(--yazi2);text-shadow:0 1px 2px #000;position:relative;z-index:2}
 .nokta{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--zumrut);box-shadow:0 0 8px var(--zumrut);margin-right:6px}
 
@@ -455,7 +458,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
   text-shadow:0 3px 0 #a8691a,0 6px 0 #3d2106,0 0 30px rgba(255,212,92,.9)}
 .sonucBant.yenilgi{border-color:#ff6a86}
 .sonucBant.yenilgi b{color:#ffb3c0;text-shadow:0 3px 0 #8a1030,0 6px 0 #2d0510,0 0 30px rgba(255,61,99,.8)}
-.sonucBant .bil{font-size:17px;font-weight:800;color:var(--yazi2);display:flex;gap:16px}
+.sonucBant .bil{font-size:17px;font-weight:800;color:var(--yazi2);text-align:center;max-width:94vw;padding:0 8px}
 .sonucBant .bil em{font-style:normal;color:#8dffb0}
 .sonucBant .btn{min-width:220px;min-height:58px;font-size:21px}
 .sonucBant .sDugmeler{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
@@ -708,6 +711,15 @@ img.ik{object-fit:contain;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
   .ogrDug{margin-top:2px;gap:8px}.ogrDug .btn{min-height:40px;min-width:96px;font-size:15px;padding:0 12px}.ogrDug .atla{font-size:13px;min-height:40px}
 }
 @media (prefers-reduced-motion:reduce){.ogrCerceve::after,.ogrEl.oyna,.ogrBalon{animation:none}.ogrEl.oyna{opacity:1}}
+/* ---------- TELEFON (yatay, ≤520 px yükseklik): ana ekran — OYNA, üçlü ve maç türü bağlantıları 390 px'e sığar ---------- */
+@media (max-height:520px){
+  #ana .icerik{padding:10px 20px 8px}
+  #ana .slogan{margin:0 0 8px;font-size:14px}
+  #ana .oyna{min-height:86px;font-size:30px;gap:3px}
+  #ana .uclu{margin-top:8px;gap:10px}#ana .uclu .btn{min-height:58px;font-size:15px;gap:3px}#ana .uclu .btn .ik{width:22px;height:22px}
+  #ana .macSec{margin-top:2px}#ana .yeniMac{min-height:44px;font-size:14px;padding:0 10px}#ana .yeniMac small{display:none}
+  #ana .altSerit{font-size:12px}
+}
 /* ---------- TELEFON (yatay, ≤520 px yükseklik): maç ekranı sıkı düzen ----------
    Tablet düzeni dokunulmaz. Telefonda 3 sıralı tahta, yedek ve eşya rafı birlikte sığsın diye: üst şerit ve dükkân alçalır,
    yan sütunlar daralır, ikincil yazılar gizlenir (bilgiler uzun basışta ve Seçili kahraman panelinde durur). */
@@ -823,6 +835,7 @@ h3,h4,.pn-bas{letter-spacing:.03em}
 
 /* ===================== BİTİŞ EKRANLARI (ANIMASYON_PLANI.md "Bitiş ekranları"; sayılar oradaki tabloyla aynı) ===================== */
 .sonucBant{animation:bantGel .28s cubic-bezier(.2,.9,.3,1.15) both;transition:opacity .25s}
+#sDevam{transition:transform .09s ease-out,opacity .2s}#sDevam.bekle{opacity:0;pointer-events:none}   /* başlık inene kadar (1,1 sn) görünmez ve basılamaz */
 .sonucBant.gizli{animation:none;opacity:0;pointer-events:none}   /* MVP kartı açıkken; kapanınca bant yeniden açılır */
 @keyframes bantGel{from{opacity:0;transform:translateY(-50%) scaleY(.05)}to{opacity:1;transform:translateY(-50%) scaleY(1)}}
 .sonucBant .bil,.sonucBant .sDugmeler{animation:asagidanGel .35s ease-out both;animation-delay:1.05s}
@@ -832,7 +845,8 @@ h3,h4,.pn-bas{letter-spacing:.03em}
 .sBas{position:relative;display:grid;place-items:center;animation:sarsil .3s linear both;animation-delay:.45s}
 .sonucBant.yenilgi .sBas{animation-delay:.35s}.sonucBant.berabere .sBas{animation-delay:.4s}
 @keyframes sarsil{0%,100%{transform:none}15%{transform:translate(-5px,2px)}30%{transform:translate(5px,-3px)}45%{transform:translate(-4px,-1px)}60%{transform:translate(3px,2px)}80%{transform:translate(-2px,0)}}
-.sYazi{position:relative;z-index:1;overflow:hidden;padding:14px 34px;margin:-14px -34px}
+.sYazi{position:relative;z-index:1;padding:14px 34px;margin:-14px -34px}
+.sParKap{position:absolute;inset:0;overflow:hidden;pointer-events:none}   /* parıltı yalnız bu kapta kırpılır; büyükten inen başlık kesilmez */
 .sonucBant .sYazi b{display:inline-block;letter-spacing:.1em;padding-left:.1em;animation:baslikIn .55s cubic-bezier(.3,.7,.4,1) both;animation-delay:.5s}
 @keyframes baslikIn{0%{opacity:0;transform:scale(2.6)}45%{opacity:1;transform:scale(.88)}70%{transform:scale(1.07)}86%{transform:scale(.98)}100%{opacity:1;transform:scale(1)}}
 .sParilti{position:absolute;top:0;bottom:0;left:0;width:34%;pointer-events:none;mix-blend-mode:color-dodge;transform:translateX(-120%) skewX(-18deg);
@@ -844,15 +858,16 @@ h3,h4,.pn-bas{letter-spacing:.03em}
 .sAmblem{position:absolute;left:50%;top:calc(50% - var(--cy));width:0;height:0;z-index:0;pointer-events:none;--kh:200px;--kw:calc(var(--kh)*.25);--cy:82px}
 .sAmblem .kilic{position:absolute;width:var(--kw);height:var(--kh);left:calc(var(--kw)*-.5);top:calc(var(--kh)*-.62);transform-origin:50% 62%;filter:drop-shadow(0 4px 4px rgba(0,0,0,.55)) drop-shadow(0 0 8px rgba(255,212,92,.35))}
 /* ZAFER: iki kılıç dönerek gelir (0–0,45 sn, hızlanarak), 0,45'te çarpışır, geri teper, çapraz durur */
-.zafer .kilic.sol{animation:kilicSolGel .45s cubic-bezier(.5,0,.85,.45) both,kilicSolTep .4s ease-out .45s both}
-.zafer .kilic.sag{animation:kilicSagGel .45s cubic-bezier(.5,0,.85,.45) both,kilicSagTep .4s ease-out .45s both}
-@keyframes kilicSolGel{0%{opacity:0;transform:translateX(-46vw) rotate(-560deg)}12%{opacity:1}100%{opacity:1;transform:translateX(0) rotate(-42deg)}}
-@keyframes kilicSagGel{0%{opacity:0;transform:translateX(46vw) rotate(560deg)}12%{opacity:1}100%{opacity:1;transform:translateX(0) rotate(42deg)}}
-@keyframes kilicSolTep{0%{transform:rotate(-42deg)}30%{transform:translateX(-12px) rotate(-33deg)}100%{transform:rotate(-44deg)}}
-@keyframes kilicSagTep{0%{transform:rotate(42deg)}30%{transform:translateX(12px) rotate(33deg)}100%{transform:rotate(44deg)}}
+/* tek animasyon (0,85 sn): aynı öğede iki transform animasyonu 'both' dolgusuyla birbirini ezer; geliş 0–52,9 %, tepme 52,9–100 % */
+.zafer .kilic.sol{animation:kilicSol .85s both}
+.zafer .kilic.sag{animation:kilicSag .85s both}
+@keyframes kilicSol{0%{opacity:0;transform:translateX(-46vw) rotate(-560deg);animation-timing-function:cubic-bezier(.5,0,.85,.45)}6.3%{opacity:1}
+  52.9%{opacity:1;transform:translateX(0) rotate(-42deg);animation-timing-function:ease-out}67.1%{transform:translateX(-12px) rotate(-33deg);animation-timing-function:ease-out}100%{opacity:1;transform:translateX(0) rotate(-44deg)}}
+@keyframes kilicSag{0%{opacity:0;transform:translateX(46vw) rotate(560deg);animation-timing-function:cubic-bezier(.5,0,.85,.45)}6.3%{opacity:1}
+  52.9%{opacity:1;transform:translateX(0) rotate(42deg);animation-timing-function:ease-out}67.1%{transform:translateX(12px) rotate(33deg);animation-timing-function:ease-out}100%{opacity:1;transform:translateX(0) rotate(44deg)}}
 .sAmblem .halka{position:absolute;left:-110px;top:-110px;width:220px;height:220px;border-radius:50%;border:5px solid #ffe48a;box-shadow:0 0 18px #ffd45c,inset 0 0 18px #ffd45c;opacity:0;
   animation:halka .55s cubic-bezier(.2,.7,.3,1) both;animation-delay:.45s}
-@keyframes halka{0%{opacity:1;transform:scale(.12)}60%{opacity:.75}100%{opacity:0;transform:scale(1.7)}}
+@keyframes halka{0%{opacity:0;transform:scale(.12)}2%{opacity:1}60%{opacity:.75}100%{opacity:0;transform:scale(1.7)}}   /* 0 % = 0: 'both' dolgusu gecikmede göstermesin */
 .sAmblem .flas{position:absolute;left:-90px;top:-90px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,#fff 0,rgba(255,240,190,.9) 18%,rgba(255,212,92,0) 65%);opacity:0;
   animation:flas .4s ease-out both;animation-delay:.45s}
 @keyframes flas{0%{opacity:0;transform:scale(.4)}15%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.3)}}
@@ -861,7 +876,7 @@ h3,h4,.pn-bas{letter-spacing:.03em}
 .kivilcim{position:absolute;left:0;top:0;width:0;height:0}
 .kivilcim i{position:absolute;left:0;top:-2px;width:26px;height:4px;border-radius:3px;background:linear-gradient(90deg,#fff,var(--kc));box-shadow:0 0 6px var(--kc);opacity:0;transform-origin:0 50%;
   animation:kivilcim .5s cubic-bezier(.15,.8,.35,1) both;animation-delay:calc(.45s + var(--g))}
-@keyframes kivilcim{0%{opacity:1;transform:rotate(var(--a)) translateX(8px) scaleX(1.4)}70%{opacity:1}100%{opacity:0;transform:rotate(var(--a)) translateX(var(--d)) scaleX(.25)}}
+@keyframes kivilcim{0%{opacity:0;transform:rotate(var(--a)) translateX(8px) scaleX(1.4)}2%{opacity:1}70%{opacity:1}100%{opacity:0;transform:rotate(var(--a)) translateX(var(--d)) scaleX(.25)}}
 .yenilgi .kivilcim i{animation-delay:calc(.35s + var(--g))}.berabere .kivilcim i{animation-delay:calc(.4s + var(--g))}
 .yenilgi .flas{animation-delay:.35s;background:radial-gradient(circle,#fff 0,rgba(255,190,190,.8) 18%,rgba(255,80,100,0) 65%)}
 .berabere .halka{border-color:#9ad8ff;box-shadow:0 0 18px #43a6ff,inset 0 0 18px #43a6ff;animation-delay:.4s}
@@ -880,11 +895,13 @@ h3,h4,.pn-bas{letter-spacing:.03em}
   animation:duman 1.1s ease-out both;animation-delay:var(--g)}
 @keyframes duman{0%{opacity:0;transform:translate(var(--x),var(--y)) scale(.3)}25%{opacity:.85}100%{opacity:0;transform:translate(calc(var(--x)*1.6),calc(var(--y) - 46px)) scale(var(--s))}}
 /* YENİLGİ yazısı: 0,5'te büyükten iner, 0,75'te sarsılır ve çatlağı boyunca iki parça hafifçe ayrılır */
-.yenilgi .sYazi b{position:relative;animation:baslikDus .3s cubic-bezier(.3,.7,.4,1) both,yaziSars .38s linear both;animation-delay:.5s,.78s}
-@keyframes baslikDus{0%{opacity:0;transform:scale(1.7)}100%{opacity:1;transform:scale(1)}}
-@keyframes yaziSars{0%,100%{transform:none}20%{transform:translateX(-7px) rotate(-1deg)}40%{transform:translateX(6px) rotate(.8deg)}60%{transform:translateX(-4px)}80%{transform:translateX(2px)}}
-.yenilgi .sYazi b>span{display:inline-block;clip-path:polygon(0 0,100% 0,100% 40%,86% 52%,72% 36%,58% 55%,46% 38%,30% 60%,18% 48%,0 62%);animation:catlakUst .2s ease-out both;animation-delay:.8s}
-.yenilgi .sYazi b::after{content:attr(data-y);position:absolute;left:.1em;top:0;clip-path:polygon(0 62%,18% 48%,30% 60%,46% 38%,58% 55%,72% 36%,86% 52%,100% 40%,100% 100%,0 100%);animation:catlakAlt .2s ease-out both;animation-delay:.8s}
+/* tek animasyon (0,5 sn başlar, 0,68 sn): iniş 0–44,1 % (0,5–0,8 sn), sarsıntı 44,1–100 % (0,8–1,18 sn) */
+.yenilgi .sYazi b{position:relative;animation:yenilgiYazi .68s both;animation-delay:.5s}
+@keyframes yenilgiYazi{0%{opacity:0;transform:translateX(0) rotate(0) scale(1.7);animation-timing-function:cubic-bezier(.3,.7,.4,1)}
+  44.1%{opacity:1;transform:translateX(0) rotate(0) scale(1);animation-timing-function:linear}55.3%{transform:translateX(-7px) rotate(-1deg) scale(1)}66.5%{transform:translateX(6px) rotate(.8deg) scale(1)}
+  77.6%{transform:translateX(-4px) rotate(0) scale(1)}88.8%{transform:translateX(2px) rotate(0) scale(1)}100%{opacity:1;transform:translateX(0) rotate(0) scale(1)}}
+.yenilgi .sYazi b>span{display:inline-block;clip-path:polygon(-25% -60%,125% -60%,125% 40%,100% 40%,86% 52%,72% 36%,58% 55%,46% 38%,30% 60%,18% 48%,0 62%,-25% 62%);animation:catlakUst .2s ease-out both;animation-delay:.8s}
+.yenilgi .sYazi b::after{content:attr(data-y);position:absolute;left:.1em;top:0;clip-path:polygon(-25% 62%,0 62%,18% 48%,30% 60%,46% 38%,58% 55%,72% 36%,86% 52%,100% 40%,125% 40%,125% 160%,-25% 160%);animation:catlakAlt .2s ease-out both;animation-delay:.8s}
 @keyframes catlakUst{to{transform:translate(-2px,-2px) rotate(-.7deg)}}
 @keyframes catlakAlt{to{transform:translate(2px,3px) rotate(.7deg)}}
 .catlakCizgi{position:absolute;left:.1em;right:0;top:0;bottom:0;width:calc(100% - .1em);height:100%;overflow:visible;opacity:0;animation:belir .15s both;animation-delay:.8s}
@@ -892,19 +909,23 @@ h3,h4,.pn-bas{letter-spacing:.03em}
 @keyframes belir{to{opacity:1}}
 /* BERABERE: iki kalkan yanlardan gelir, 0,4'te çarpışır, geri sekip yan yana durur */
 .sAmblem .kalkan{position:absolute;width:96px;height:115px;top:-58px;filter:drop-shadow(0 4px 5px rgba(0,0,0,.55))}
-.kalkan.sol{left:-96px;animation:kalkanSol .4s cubic-bezier(.5,0,.9,.5) both,kalkanSolSek .45s cubic-bezier(.2,.8,.3,1.2) .4s both}
-.kalkan.sag{left:0;animation:kalkanSag .4s cubic-bezier(.5,0,.9,.5) both,kalkanSagSek .45s cubic-bezier(.2,.8,.3,1.2) .4s both}
-@keyframes kalkanSol{0%{opacity:0;transform:translateX(-46vw) rotate(-25deg)}15%{opacity:1}100%{opacity:1;transform:translateX(8px) rotate(6deg)}}
-@keyframes kalkanSag{0%{opacity:0;transform:translateX(46vw) rotate(25deg)}15%{opacity:1}100%{opacity:1;transform:translateX(-8px) rotate(-6deg)}}
-@keyframes kalkanSolSek{0%{transform:translateX(8px) rotate(6deg)}100%{transform:translateX(-40px) rotate(-10deg)}}
-@keyframes kalkanSagSek{0%{transform:translateX(-8px) rotate(-6deg)}100%{transform:translateX(40px) rotate(10deg)}}
+/* tek animasyon (0,85 sn): geliş 0–47,1 %, sekme 47,1–100 % */
+.kalkan.sol{left:-96px;animation:kalkanSol .85s both}
+.kalkan.sag{left:0;animation:kalkanSag .85s both}
+@keyframes kalkanSol{0%{opacity:0;transform:translateX(-46vw) rotate(-25deg);animation-timing-function:cubic-bezier(.5,0,.9,.5)}7.1%{opacity:1}
+  47.1%{opacity:1;transform:translateX(8px) rotate(6deg);animation-timing-function:cubic-bezier(.2,.8,.3,1.2)}100%{opacity:1;transform:translateX(-40px) rotate(-10deg)}}
+@keyframes kalkanSag{0%{opacity:0;transform:translateX(46vw) rotate(25deg);animation-timing-function:cubic-bezier(.5,0,.9,.5)}7.1%{opacity:1}
+  47.1%{opacity:1;transform:translateX(-8px) rotate(-6deg);animation-timing-function:cubic-bezier(.2,.8,.3,1.2)}100%{opacity:1;transform:translateX(40px) rotate(10deg)}}
 @media (max-height:520px){
-  .sonucBant{top:56%;padding:10px 0 12px;gap:6px}   /* arma üstteki skor şeridine binmesin */
+  .sonucBant{top:59%;padding:10px 0 12px;gap:6px}   /* arma üstteki skor şeridine binmesin */
   .sonucBant .sYazi b{font-size:54px}
-  .sAmblem{--kh:136px;--cy:56px}.yenilgi .sAmblem{--cy:44px;--kh:160px}.sAmblem .halka{left:-80px;top:-80px;width:160px;height:160px}
+  .sAmblem{--kh:108px;--cy:38px}.yenilgi .sAmblem{--cy:34px;--kh:124px}   /* kılıç uçları skor şeridinin (saat alt kenarı ~84 px) altında kalsın */.sAmblem .halka{left:-80px;top:-80px;width:160px;height:160px}
   .sAmblem .kalkan{width:72px;height:86px;top:-43px}.kalkan.sol{left:-72px}
   .sonucBant .btn{min-height:50px;font-size:19px}
 }
+
+/* skor şeridi bitiş efektlerinin üstünde: düşen kılıç ve genişleyen halka şeridin arkasından geçer */
+#savas .savasUst{z-index:3;pointer-events:none}#savas .savasUst>*{pointer-events:auto}
 
 /* SAVAŞ! geçişi (0,8 sn): bant açılır, küçük kılıçlar 0,3'te çarpışır, yazı yayla belirir, 0,6–0,8 söner */
 .savasGiris{position:absolute;left:0;right:0;top:40%;height:0;z-index:8;pointer-events:none;display:grid;place-items:center;animation:sgSon .2s ease-in .6s both}
@@ -921,9 +942,9 @@ h3,h4,.pn-bas{letter-spacing:.03em}
 @keyframes sgSag{0%{opacity:0;transform:translateX(30vw) rotate(400deg);animation-timing-function:cubic-bezier(.5,0,.85,.45)}12%{opacity:1}60%{opacity:1;transform:translateX(8px) rotate(40deg);animation-timing-function:cubic-bezier(.2,.8,.3,1)}100%{opacity:1;transform:translateX(calc(var(--sgx)*-1)) rotate(58deg)}}
 .sgAmblem .halka{position:absolute;left:-70px;top:-70px;width:140px;height:140px;border-radius:50%;border:4px solid #ffe48a;box-shadow:0 0 14px #ffd45c;opacity:0;animation:halka .4s ease-out .3s both}
 .sgAmblem .kivilcim{top:0}.sgAmblem .kivilcim i{animation-delay:calc(.3s + var(--g))}
-.savasGiris b{position:relative;font-size:64px;letter-spacing:.08em;color:#ffe48a;line-height:1;text-shadow:0 3px 0 #a8691a,0 6px 0 #3d2106,0 0 26px rgba(255,212,92,.9);animation:sgYazi .3s cubic-bezier(.3,.7,.4,1) .3s both}
+.savasGiris b{position:relative;margin-top:-.5em;font-size:64px;letter-spacing:.08em;color:#ffe48a;line-height:1;text-shadow:0 3px 0 #a8691a,0 6px 0 #3d2106,0 0 26px rgba(255,212,92,.9);animation:sgYazi .3s cubic-bezier(.3,.7,.4,1) .3s both}
 @keyframes sgYazi{0%{opacity:0;transform:scale(2.2)}55%{opacity:1;transform:scale(.9)}100%{opacity:1;transform:scale(1)}}
-@media (max-height:520px){.savasGiris{top:50%}.savasGiris b{font-size:46px}.sgBant{top:-36px;height:72px}.sgAmblem{--kh:90px;--kw:22px;--sgx:-150px}}
+@media (max-height:520px){.savasGiris{top:44%}.savasGiris b{font-size:46px}.sgBant{top:-36px;height:72px}.sgAmblem{--kh:90px;--kw:22px;--sgx:-150px}}
 
 /* MAÇIN YILDIZI kartı: soldan yayla girer; portrenin arkasında element renginde dönen ışınlar; sayaç 0,5–1,4 sn; yıldızlar 0,9 sn'den sırayla */
 .yildizEkran{position:absolute;inset:0;z-index:7;cursor:pointer;display:flex;align-items:center;padding:0 max(24px,env(safe-area-inset-left));animation:belir .3s both;
@@ -1012,6 +1033,22 @@ h3,h4,.pn-bas{letter-spacing:.03em}
 
 /* maç sonu: telefonda gövde karta sığmıyordu (düğmeler içeriğin üstüne biniyordu) → gövde kendi içinde kayar */
 .sonGovde{overflow-y:auto;overscroll-behavior:contain}
+/* telefon (≤520 px yükseklik): kart sıkılaşır; kalan taşma gövdede kayar, düğmeler hep kartın altında ayrı satırda */
+@media (max-height:520px){
+  #son .icerik{padding:22px 12px 8px}
+  .sonKart{max-height:calc(100vh - 28px);padding-bottom:8px}
+  .sonSerit{height:58px;margin-top:-24px}.sonSerit b{font-size:30px}.sonSerit span{font-size:12px}
+  .sonSerit .mad{width:44px;height:44px}.sonSerit .mad .ik{width:24px;height:24px}.sonSerit::before,.sonSerit::after{top:14px;height:40px}
+  .sonGovde{gap:8px;padding:8px 14px 0}.sonSutun{gap:8px}
+  .kutu{padding:7px 10px}.kutu h4{margin-bottom:5px;font-size:13px}
+  .ozet{gap:6px}.ozet div{padding:3px 4px}.ozet b{font-size:22px}.ozet span{font-size:11px}
+  .tr{width:32px;height:34px;font-size:14px}.turNot{display:none}
+  .kupaD .ik{width:36px;height:36px}.kupaD .sayi{font-size:24px}.kupaD .art{font-size:18px}.ustaD{margin-top:6px}.ustaD img{width:30px;height:30px}
+  .sonTakim .m{width:52px}.yildizMac{margin-top:6px;padding:4px 8px}
+  .kodSatir{margin-top:6px;gap:6px}.kodKutu{height:36px}.kodSatir .btn{min-height:40px;font-size:15px}
+  .sonGovde{padding-bottom:14px;-webkit-mask:linear-gradient(#000 calc(100% - 16px),transparent);mask:linear-gradient(#000 calc(100% - 16px),transparent)}   /* kayan gövdenin alt kenarı yumuşak söner: kesik değil, kaydırılabilir görünür */
+  .sonEylem{padding:8px 14px 0;gap:12px}.sonEylem .btn.mor{min-height:46px;min-width:150px;font-size:16px}.sonEylem .btn.altin{min-height:50px;min-width:210px;font-size:20px}
+}
 
 /* Animasyonları azalt (Ayarlar ya da prefers-reduced-motion): uçuş, sarsıntı, dönme yok; yalnız kısa belirme */
 html.azHareket .sonucBant,html.azHareket .sBas,html.azHareket .sAmblem *,html.azHareket .sonucBant .sYazi b,html.azHareket .sonucBant .sYazi b>span,html.azHareket .sonucBant .sYazi b::after,
@@ -1142,9 +1179,11 @@ html.azHareket .btn{transition:none}
         <button class="btn mor"><svg class="ik"><use href="#i-kitap"/></svg>Kahramanlar</button>
         <button class="btn mor"><svg class="ik"><use href="#i-soru"/></svg>Nasıl Oynanır</button>
       </div>
-      <button class="yeniMac">Yeni maç başlat</button>
-      <button class="yeniMac lobiMac">Lobi Maçı (8 kişi · hayaletler)</button>
-      <button class="yeniMac hizliMac">Hızlı Maç (~7 dk · seviye yok)</button>
+      <div class="macSec">
+        <button class="yeniMac">Yeni maç başlat</button>
+        <button class="yeniMac lobiMac">Lobi Maçı <small>(8 kişi · hayaletler)</small></button>
+        <button class="yeniMac hizliMac">Hızlı Maç <small>(~7 dk · seviye yok)</small></button>
+      </div>
     </div>
     <div class="altSerit"><span><i class="nokta"></i>Çevrimiçi hayalet havuzu bağlı</span><span>Güç satılmaz · bütün kahramanlar herkese açık</span></div>
   </div>

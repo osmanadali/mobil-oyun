@@ -554,6 +554,10 @@ export async function savasKur(yeniSim, kok = '') {
   const liste = await Promise.all(sim.birimler.map(u => birimKur(u, kok)));
   for (const b of liste) birimler.set(b.uid, b);
   birimDizi = liste; liste.forEach((b, i) => { b.si = i; });
+  // gölgelendiricileri yükleme ekranındayken derle: MVP yakın planı kameranın daha önce görmediği arka planı (kemerler vb.) ve ışını
+  // kadraja sokar; ilk çizimde derlenmeleri bitişte takılma yapıyordu. compile() görünür her nesneyi görüş alanından bağımsız işler.
+  if (!mvpIsin) mvpIsin = mvpIsinKur();
+  mvpIsin.grup.visible = true; try { renderer.compile(sahne, kamera); } catch (e) { /* derleme ön ısıtması isteğe bağlı */ } mvpIsin.grup.visible = false;
   kotuKare = 0; G.golgeYenile(); uyarlaSifirla(1000);   // kurulumdan sonraki ilk saniye (gölgelendirici derleme) ölçülmez
   // gökten giriş: taraf içinde sırayla, rakip biraz sonra (giriş sürerken görüntü zamanı bekler → motor da bekler)
   const sira = [0, 0];
@@ -1743,36 +1747,56 @@ export function mvpGoster(uid, renk = '#ffd45c', { anlik = false } = {}) {
 }
 /** Yakın plandan kadraja dönüş (anlik: hemen) */
 export function mvpBitir(anlik = false) { if (!kam.mvp) return; if (anlik) mvpSifirla(); else { kam.mvp.yon = -1; kam.mvp.sure = 0.6; } }
-const mvpUzak = (boy) => (kamera.aspect < 1.45 ? 4.0 : 3.5) * (0.55 + 0.45 * boy);
-// kamera açısı: önden (merkeze doğru hafif yan) başlayıp ±0,4 / ±0,8 / ±1,1 rad denenir; kamera ile kahraman arasına (ya da kadrajın
-// önüne) giren başka sağ birim ceza alır, en az cezalı ve öne en yakın açı seçilir (kurulumda bir kez; konumlar savaş bitince sabit)
-function mvpAciSec(b, boy) {
-  const p = b.kok.position, taban = Math.max(-0.45, Math.min(0.45, -p.x * 0.12)), uzak = mvpUzak(boy);
+// telefon yatay (en/boy > 1,9): üstteki skor şeridi kadrajın ~%25'ini kaplar; biraz geri çekilir, bakış yükselir (kahraman aşağı iner, başı kesilmez)
+const mvpUzak = (boy) => (kamera.aspect < 1.45 ? 4.0 : kamera.aspect > 1.9 ? 3.9 : 3.5) * (0.55 + 0.45 * boy);
+// kamera açısı: önden (merkeze doğru hafif yan) başlayıp ±0,4 / ±0,8 / ±1,1 rad denenir. Her aday açı için yakın plan kadrajı
+// (mvpKarisim'deki kamera konumu + sola kaydırılmış bakış noktası) kurulur ve diğer sağ birimler ekran düzleminde değerlendirilir:
+// kahramanın ekrandaki bölgesine binen ya da kahramandan kameraya yakın durup kadrajın sağ (görünen, kartsız) kısmını dolduran
+// birim, ekranda kapladığı genişlikle orantılı ceza alır; kahramanın arkasındakiler yalnız kahramanın üstüne binerse az ceza alır.
+// En az cezalı ve öne en yakın açı seçilir (kurulumda bir kez; konumlar savaş bitince sabit)
+const mvpKay = (uzak) => uzak * (kamera.aspect < 1.45 ? 0.13 : 0.17);
+function mvpAciSec(b, boy, kayit = null) {
+  const p = b.kok.position, taban = Math.max(-0.45, Math.min(0.45, -p.x * 0.12)), uzak = mvpUzak(boy), kay = mvpKay(uzak);
+  const tanH = Math.tan(THREE.MathUtils.degToRad(kamera.fov) / 2) * kamera.aspect, kR = (b.yaricap || 0.45) * 1.25;
   let en = taban, enC = Infinity;
   for (const d of [0, 0.4, -0.4, 0.8, -0.8, 1.1, -1.1]) {
-    const a = Math.max(-1.1, Math.min(1.1, taban + d)), dx = Math.sin(a), dz = Math.cos(a); let c = Math.abs(d) * 0.05;
+    const a = Math.max(-1.1, Math.min(1.1, taban + d)), sa = Math.sin(a), ca = Math.cos(a);
+    const cx = p.x + sa * uzak, cz = p.z + ca * uzak;                       // kamera
+    let fx = (p.x - ca * kay) - cx, fz = (p.z + sa * kay) - cz; const fl = Math.hypot(fx, fz) || 1; fx /= fl; fz /= fl;   // bakış yönü
+    const rx = -fz, rz = fx;                                                  // ekranın sağı
+    const hd = (p.x - cx) * fx + (p.z - cz) * fz, hs = ((p.x - cx) * rx + (p.z - cz) * rz) / hd, hr = kR / hd;   // kahraman: derinlik, ekran x (tan), yarı genişlik
+    let c = Math.abs(d) * 0.05;
     for (const o of birimDizi) {
       if (o === b || o.olumT >= 0 || !o.kok.visible) continue;
-      const ox = o.kok.position.x - p.x, oz = o.kok.position.z - p.z, t = ox * dx + oz * dz;   // görüş çizgisi boyunca uzaklık
-      if (t < 0.2 || t > uzak + 0.3) continue;
-      const yan = Math.abs(ox * dz - oz * dx), r = (o.yaricap || 0.45) + 0.35 + 0.18 * t;     // kameraya yaklaştıkça kadrajı daha çok kaplar
-      if (yan < r) c += 1 + (r - yan);
+      const ox = o.kok.position.x - cx, oz = o.kok.position.z - cz, od = ox * fx + oz * fz, ol = ox * rx + oz * rz, or = (o.yaricap || 0.45) * 1.15;
+      if (od < 0.15) { if (od > -or && Math.abs(ol) < or + 0.25) c += 4; continue; }   // kameranın içinde / hemen yanında
+      const os = ol / od, w = or / od;                                        // ekran x ve yarı genişlik (tan birimi)
+      if (os - w > tanH || os + w < -tanH) continue;                          // kadraj dışında
+      const ust = Math.max(0, Math.min(os + w, hs + hr) - Math.max(os - w, hs - hr)) / (2 * hr);   // kahramanın üstüne binme oranı
+      if (od < hd + 0.3) {
+        // önde: kahramana binerse ağır ceza; kadrajın sağ yarısında (kart solda) büyük görünüyorsa da ceza
+        const sag = Math.max(0, Math.min(os + w, tanH) - Math.max(os - w, -tanH * 0.1)) / tanH;
+        c += ust * 3 + sag * (w / hr) * 1.8;
+      } else c += ust * 0.5;
     }
+    if (kayit) kayit.push([+a.toFixed(2), +c.toFixed(3)]);
     if (c < enC - 1e-6) { enC = c; en = a; }
   }
   return en;
 }
+// hata ayıklama: MVP açı adaylarının cezaları
+export function _mvpAci(uid) { const b = birimler.get(uid); if (!b) return null; const k = []; const a = mvpAciSec(b, b.kok.userData.vfxBoy || 1, k); return { secilen: +a.toFixed(2), adaylar: k, birimler: birimDizi.filter(o => o.olumT < 0 && o.kok.visible).map(o => [o.uid, o.u.taraf, +o.kok.position.x.toFixed(2), +o.kok.position.z.toFixed(2), +(o.yaricap || 0).toFixed(2)]) }; }
 // kadraj(): bakış noktası (h) ve kamera konumu yakın plana karıştırılır
 function mvpKarisim(dtR, h) {
   const m = kam.mvp; m.e = Math.max(0, Math.min(1, m.e + m.yon * dtR / m.sure));
   if (m.e <= 0 && m.yon < 0) { mvpSifirla(); return h; }
-  const b = m.b, p = b.kok.position, boy = m.boy, dar = kamera.aspect < 1.45;
+  const b = m.b, p = b.kok.position, boy = m.boy;
   // kamera kahramanın önünde, hafif yukarıdan; tüm gövde kadrajda (boy: model yüksekliği)
   const aci = m.aci, uzak = mvpUzak(boy);
   _mvP.set(p.x + Math.sin(aci) * uzak, ARENA_Y + 0.5 + 0.85 * boy, p.z + Math.cos(aci) * uzak);
   // kahraman sağda dursun (sol yarıda arayüz kartı): bakış noktası kameranın sol yönüne kayar (sağ vektör = (cos a, 0, −sin a))
-  const kay = uzak * (dar ? 0.13 : 0.17);
-  _mvH.set(p.x - Math.cos(aci) * kay, ARENA_Y + 0.5 * boy, p.z + Math.sin(aci) * kay);
+  const kay = mvpKay(uzak);
+  _mvH.set(p.x - Math.cos(aci) * kay, ARENA_Y + (kamera.aspect > 1.9 ? 0.68 : 0.5) * boy, p.z + Math.sin(aci) * kay);
   const k = yumusakAdim(m.e);
   kamera.position.lerp(_mvP, k);
   _mvS.copy(h).lerp(_mvH, k);

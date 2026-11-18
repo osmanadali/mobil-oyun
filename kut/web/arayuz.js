@@ -7,6 +7,8 @@ const D = window.KUT_DATA, SIM = window.KUT_SIM, L = window.KUT_LOBI, K = D.KURA
 const oyun = new Oyun();
 const $ = (id) => document.getElementById(id);
 const q = (sel, kok = document) => kok.querySelector(sel);
+// Türkçe harfler (ğ ş İ …) Nunito latin-ext dosyalarında: açılışta yükle ki ilk görünüşte yedek yazı tipi titremesi olmasın
+if (document.fonts && document.fonts.load) for (const w of [400, 700, 800, 900]) document.fonts.load(`${w} 16px Nunito`, "ğşİı").catch(() => {});
 // canavarların portresi yok: 3D'deki gibi yerine gorunum kahramanının portresi (SAHNE_GEREKSINIM.md, Adım 4)
 const P = (id) => `../arayuz/portre/${(D.canavar(id) || {}).gorunum || id}.png`, SY = (id) => `../arayuz/soy_${id}.png`;
 const IK_RESIM = { coin: 'ik_altin', kalp: 'ik_kalp', kupa: 'ik_kupa', tac: 'ik_tac', yildiz: 'ik_yildiz_altin' };
@@ -525,8 +527,8 @@ function sonucGoster(sonuc) {
     : k === 0 ? `<em>+1 zafer · ${r.bitti ? r.zafer : M.zafer}/${zh}</em>` : k === 1 ? `<span>−1 can · ${r.bitti ? 0 : M.can} can kaldı</span>` : `<span>Berabere: can gitmedi</span>`;
   $('ayakta').style.display = 'none'; $('savas').classList.add('bitti');   // sonuçta Kut, hız ve duraklat gizlenir
   const kt = k === 0 ? 0 : k === 1 ? 1 : 2;
-  $('sonucYer').innerHTML = `<div class="sonucBant ${['zafer', 'yenilgi', 'berabere'][kt]}">${sonucBaslikHTML(kt)}<div class="bil">${bil}</div><div class="sDugmeler"><button class="btn mor" id="sOzet" aria-expanded="false">${ik('kilic')} Hasar özeti</button><button class="btn altin" id="sDevam" style="visibility:hidden">Devam ${ik('oyna')}</button></div></div><div class="pn hasarOzet" id="hasarOzet" hidden></div>`;
-  bitisSonra(azHareket() ? 300 : 1100, () => { if ($('sDevam')) $('sDevam').style.visibility = ''; });   // başlık indikten sonra
+  $('sonucYer').innerHTML = `<div class="sonucBant ${['zafer', 'yenilgi', 'berabere'][kt]}">${sonucBaslikHTML(kt)}<div class="bil">${bil}</div><div class="sDugmeler"><button class="btn mor" id="sOzet" aria-expanded="false">${ik('kilic')} Hasar özeti</button><button class="btn altin bekle" id="sDevam">Devam ${ik('oyna')}</button></div></div><div class="pn hasarOzet" id="hasarOzet" hidden></div>`;
+  bitisSonra(azHareket() ? 300 : 1100, () => { if ($('sDevam')) $('sDevam').classList.remove('bekle'); });   // başlık indikten sonra
   const ist = S3.istatistik ? S3.istatistik() : [];
   hasarOzetKur(ist);
   // Maçın yıldızı: bant animasyonu bitince (1,6 sn) + 0,6 sn; yenilgide sade kart (kamera yok)
@@ -582,11 +584,11 @@ function dumanHTML(n) { let h = ''; for (let i = 0; i < n; i++) h += `<i style="
 // sonuç bandı başlığı + amblem. k: 0 zafer, 1 yenilgi, 2 berabere
 function sonucBaslikHTML(k) {
   if (k === 0) return `<div class="sBas"><div class="sAmblem"><div class="isik"></div><div class="halka"></div>${kilicSvg('sol')}${kilicSvg('sag')}${kivilcimHTML(14, '#ffe48a')}<div class="flas"></div></div>
-    <div class="sYazi"><b>ZAFER</b><i class="sParilti"></i></div></div>`;
+    <div class="sYazi"><b>ZAFER</b><span class="sParKap"><i class="sParilti"></i></span></div></div>`;
   if (k === 1) return `<div class="sBas"><div class="sAmblem"><div class="dusen">${kilicSvg('ust')}${kilicSvg('alt')}</div>${dumanHTML(6)}${kivilcimHTML(9, '#ffc0a8')}<div class="flas"></div></div>
     <div class="sYazi"><b data-y="YENİLGİ"><span>YENİLGİ</span><svg class="catlakCizgi" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,62 18,48 30,60 46,38 58,55 72,36 86,52 100,40"/></svg></b></div></div>`;
   return `<div class="sBas"><div class="sAmblem"><div class="halka"></div><svg class="kalkan sol" aria-hidden="true"><use href="#s-kalkan"/></svg><svg class="kalkan sag" aria-hidden="true"><use href="#s-kalkan"/></svg>${kivilcimHTML(12, '#a8e0ff')}<div class="flas"></div></div>
-    <div class="sYazi"><b>BERABERE</b><i class="sParilti"></i></div></div>`;
+    <div class="sYazi"><b>BERABERE</b><span class="sParKap"><i class="sParilti"></i></span></div></div>`;
 }
 // çarpışma anı (sn): ses ve sarsıntı buraya hizalı; CSS gecikmeleri aynı sayılarla yazılı
 const CARPISMA = { 0: 0.45, 1: 0.35, 2: 0.4 };
@@ -768,7 +770,7 @@ const OGR_ADIMLAR = [
       : `Savaş durdu. Bu senin <b>Kut</b> gücün: savaşta bir kez bir kahramanının yeteneğini hemen açar.<small>KUT'a, sonra kendi kahramanına dokun.</small>` },
   { id: 'sonuc', ekran: 'savas', hedef: ['#sOzet', '#sDevam'], altta: true,
     gecerli: () => aktifEkran === 'savas',
-    hazir: () => aktifEkran === 'savas' && !!savasBilgi && savasBilgi.bitti && !!$('sDevam') && $('sDevam').style.visibility !== 'hidden' && $('hasarOzet').hidden,
+    hazir: () => aktifEkran === 'savas' && !!savasBilgi && savasBilgi.bitti && !!$('sDevam') && !$('sDevam').classList.contains('bekle') && $('hasarOzet').hidden,
     bitti: () => aktifEkran !== 'savas',
     metin: () => `Savaş bitti. <b>Hasar özeti</b> kimin ne yaptığını gösterir.<small>Hazır olunca Devam'a dokun.</small>` },
   { id: 'seviye', ekran: 'mac', hedef: ['#mac .dukkanSol .xpBtn', '#mac .tahtaPanel .pn-bas'], parmak: true,
