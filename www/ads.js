@@ -108,13 +108,21 @@ window.Ads = (() => {
     const A = plug();
     if (!A || !ok() || Date.now() - lastShown < 90e3) return false;   // en az 90 sn arayla (ödüllü video da sayılır)
     if (!interReady || !fresh(interAt)) return false;   // şimdi yükleme: "Sonraki"ye basıldı, bölüm açılıyor (sonuç panelinde yüklenir)
-    let shown = false;
+    // Gösterildi sayılır: showInterstitial hatasız döndüyse (reklam ekrana verildi) ve "gösterilemedi" olayı gelmediyse.
+    // Kapanış olayı gelmese bile (ör. WebView reklam süresince askıda) sayaç sıfırlanır, 90 sn ara başlar → reklam art arda çıkmaz.
+    let shown = false, failed = false, seen = false;
+    const hs = [A.addListener('interstitialAdFailedToShow', () => { failed = true; }), A.addListener('interstitialAdShowed', () => { seen = true; })];
     try {
       const wait = closed(A, ['interstitialAdDismissed'], ['interstitialAdFailedToShow'], 60e3);
       interReady = false;
       await A.showInterstitial();
-      if (shown = await wait) { lastShown = Date.now(); window.Olcum?.event('ad_impression', { ad_platform: 'admob', ad_format: 'interstitial' }); }
-    } catch {}
+      lastShown = Date.now();   // çağrı döndü: reklam ekranda (kapanmasını beklerken de ara sayılır)
+      const done = await wait;
+      shown = !failed;
+      D.interShow = `${new Date().toLocaleTimeString()} · ${failed ? 'gösterilemedi' : done ? 'kapandı' : seen ? 'açıldı (kapanış olayı yok)' : 'açıldı (olay yok)'}`;
+      if (shown) window.Olcum?.event('ad_impression', { ad_platform: 'admob', ad_format: 'interstitial' }); else lastShown = 0;
+    } catch (e) { D.interShow = 'hata: ' + em(e); }
+    hs.forEach(h => Promise.resolve(h).then(x => x?.remove?.()).catch(() => {}));
     hush = Date.now() + 5e3;   // yenisi sonraki sonuç panelinde yüklenir
     return shown;
   }
