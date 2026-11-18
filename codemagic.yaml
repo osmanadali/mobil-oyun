@@ -1,6 +1,9 @@
 # Codemagic (codemagic.io): iOS yayını GitHub'ın Mac makinesi olmadan. Adımlar .github/workflows/ios-release.yml ile aynı.
 # Gizli değerler Codemagic › uygulama › Environment variables › "ray_ios" grubunda (Secure işaretli):
-#   APPSTORE_API_KEY_ID, APPSTORE_API_ISSUER_ID, APPSTORE_API_KEY_P8_BASE64, APPLE_TEAM_ID, (isteğe bağlı) FIREBASE_IOS_PLIST
+#   APPSTORE_API_KEY_ID, APPSTORE_API_ISSUER_ID, APPSTORE_API_KEY_P8_BASE64, APPLE_TEAM_ID, FIREBASE_IOS_PLIST
+#   CERTIFICATE_PRIVATE_KEY (önerilir): sabit imza anahtarı (RSA, PEM). Varsa her derleme aynı "Apple Distribution" sertifikasıyla
+#   elle imzalar (Codemagic CLI: fetch-signing-files / use-profiles) → "Revoke certificate" hatası bir daha çıkmaz.
+#   Üretmek: ssh-keygen -t rsa -b 2048 -m PEM -f ray_imza -q -N ""  (dosyanın içeriği değişkene, Secure)
 # Başlatma: Start new build › workflow "Ray iOS". Yapı numarası BUILD_NO (aşağıda); her yüklemede bir artır ya da başlatırken değiştir.
 workflows:
   ray-ios:
@@ -43,11 +46,26 @@ workflows:
           tools/ios/hazirla.sh
           grep -c 'window.RAY_ADS' www/index.html
           npx cap sync ios
-      - name: Arşivle (otomatik imza)
+      - name: Arşivle (sabit anahtar varsa elle imza, yoksa otomatik)
         script: |
-          # Not: Codemagic sanal makinelerinin donanım kimliği hep aynı. Önceki derlemenin "Apple Development" sertifikası
-          # hesapta kalırsa Xcode "Revoke certificate" der: developer.apple.com › Certificates'ten o sertifika elle iptal edilir.
           K="$CM_BUILD_DIR/../AuthKey.p8"
+          if [ -n "$CERTIFICATE_PRIVATE_KEY" ]; then
+            # Sabit anahtar: App Store dağıtım sertifikası ve profili bu anahtarla bir kez oluşur, sonra her derlemede yeniden kullanılır.
+            set -e
+            export APP_STORE_CONNECT_ISSUER_ID="$APPSTORE_API_ISSUER_ID" APP_STORE_CONNECT_KEY_IDENTIFIER="$APPSTORE_API_KEY_ID"
+            export APP_STORE_CONNECT_PRIVATE_KEY="$(cat "$K")"
+            keychain initialize
+            app-store-connect fetch-signing-files "com.osmanadali.ray" --type IOS_APP_STORE --create --certificate-key @env:CERTIFICATE_PRIVATE_KEY
+            keychain add-certificates
+            xcode-project use-profiles --project ios/App/App.xcodeproj
+            xcodebuild archive -project ios/App/App.xcodeproj -scheme App -configuration Release \
+              -destination 'generic/platform=iOS' -archivePath build/Ray.xcarchive CURRENT_PROJECT_VERSION="$VERSION_CODE" > archive.log 2>&1 \
+              || { grep -E "error:" archive.log | sort -u | head -40; tail -60 archive.log; exit 1; }
+            grep -E "\*\* ARCHIVE" archive.log || true
+            exit 0
+          fi
+          # Otomatik imza (sabit anahtar yok): Codemagic makinelerinin donanım kimliği hep aynı. Önceki derlemenin "Apple Development"
+          # sertifikası hesapta kalırsa Xcode "Revoke certificate" der: developer.apple.com › Certificates'ten o sertifika elle iptal edilir.
           xcodebuild archive -project ios/App/App.xcodeproj -scheme App -configuration Release \
             -destination 'generic/platform=iOS' -archivePath build/Ray.xcarchive \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CURRENT_PROJECT_VERSION="$VERSION_CODE" CODE_SIGN_STYLE=Automatic \
@@ -70,6 +88,18 @@ workflows:
       - name: Dışa aktar ve App Store Connect'e yükle
         script: |
           K="$CM_BUILD_DIR/../AuthKey.p8"
+          if [ -n "$CERTIFICATE_PRIVATE_KEY" ]; then
+            # elle imza: use-profiles'ın yazdığı dışa aktarma ayarı → .ipa → App Store Connect'e yükleme (Codemagic CLI)
+            set -e
+            export APP_STORE_CONNECT_ISSUER_ID="$APPSTORE_API_ISSUER_ID" APP_STORE_CONNECT_KEY_IDENTIFIER="$APPSTORE_API_KEY_ID"
+            export APP_STORE_CONNECT_PRIVATE_KEY="$(cat "$K")"
+            xcodebuild -exportArchive -archivePath build/Ray.xcarchive -exportPath build/out -exportOptionsPlist "$HOME/export_options.plist" > export.log 2>&1 \
+              || { grep -iE "error" export.log | sort -u | head -40; tail -60 export.log; rm -f "$K"; exit 1; }
+            app-store-connect publish --path "$(ls build/out/*.ipa | head -1)"
+            rm -f "$K"
+            echo "Ray $VERSION_NAME ($VERSION_CODE) App Store Connect'e yüklendi; 10-30 dk içinde TestFlight'ta görünür."
+            exit 0
+          fi
           cat > ExportOptions.plist <<PL
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
