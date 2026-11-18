@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0f1320">
+<title>Fiske Arena</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="hud" hidden>
+  <div class="bar top" id="bar1"><span class="name" id="n1"></span><span class="pips" id="p1"></span></div>
+  <div class="mid"><button class="ic" id="bMenu" aria-label="Menü">☰</button><span id="info"></span><button class="ic" id="bSnd" aria-label="Ses">🔊</button></div>
+  <div class="bar bot" id="bar0"><span class="name" id="n0"></span><span class="pips" id="p0"></span></div>
+  <div id="toast"></div>
+</div>
+
+<div class="screen" id="menu">
+  <div class="card">
+    <div class="logo"><i class="d a"></i><i class="d b"></i><h1>Fiske Arena</h1></div>
+    <p class="sub">Pulunu çek, bırak, rakibini arenadan düşür.</p>
+
+    <div class="grp">
+      <div class="lbl">Rakip</div>
+      <div class="seg" id="sMode">
+        <button data-v="bot" class="on">Bot</button>
+        <button data-v="yerel">2 kişi · tek telefon</button>
+      </div>
+    </div>
+    <div class="grp" id="gLvl">
+      <div class="lbl">Bot zorluğu</div>
+      <div class="seg" id="sLvl">
+        <button data-v="kolay">Kolay</button><button data-v="orta" class="on">Orta</button><button data-v="zor">Zor</button>
+      </div>
+    </div>
+    <div class="grp">
+      <div class="lbl">Arena</div>
+      <div class="seg wrap" id="sArena"></div>
+    </div>
+
+    <button class="big" id="bPlay">Oyna</button>
+    <button class="big ghost" disabled>Çevrimiçi · yakında</button>
+
+    <details class="rules">
+      <summary>Kurallar</summary>
+      <ul>
+        <li>Sıra sendeyken kendi pulunu çekip bırak: ne kadar geri çekersen o kadar sert gider.</li>
+        <li>Rakibin 3 pulunu da arenadan düşüren kazanır.</li>
+        <li>Kendi son pulunu da düşürürsen kaybedersin.</li>
+        <li>Maçın ilk atışı yarım güçtedir.</li>
+        <li>40 atışta biterse pulu çok kalan kazanır.</li>
+        <li><b>Buz</b> kaydırır, <b>çamur</b> durdurur, <b>tampon</b> geri fırlatır, <b>delik</b> yutar.</li>
+      </ul>
+    </details>
+  </div>
+</div>
+
+<div class="screen" id="over" hidden>
+  <div class="card center">
+    <div class="big-t" id="oT"></div>
+    <div class="sub" id="oS"></div>
+    <div class="score" id="oScore"></div>
+    <button class="big" id="bAgain">Rövanş</button>
+    <button class="big ghost" id="bHome">Menü</button>
+  </div>
+</div>
+
+<script type="module" src="main.js"></script>
+</body>
+</html>

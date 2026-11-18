@@ -10,7 +10,9 @@
     "android": "npx cap sync android && npx cap open android",
     "ios": "npx cap sync ios && npx cap open ios",
     "hakem": "node tools/hakem.cjs",
-    "assets": "node tools/make-assets.cjs"
+    "assets": "node tools/make-assets.cjs",
+    "fiske": "npx --yes http-server fiske -p 8081 -c-1",
+    "fiske:test": "node tools/fiske-test.mjs"
   },
   "dependencies": {
     "@capacitor-community/admob": "^8.2.1",

@@ -7,6 +7,9 @@ Tek elle, internetsiz oynanan sade bir bulmaca. Karoya dokun → ray 90° döner
 - **Tutundurma:** 3 yıldız (hedef hamle), Günün Hattı + gün serisi, her gün 3 ücretsiz ipucu, her hat sonunda +2 ipucu; hatlar uzar (12, 16, 20… bölüm), zorluk sonsuza dek artar — bkz. docs/BOLUM_TASARIMI.md.
 - **Göz dostu:** Koyu/açık/otomatik tema, düşük kontrastlı yumuşak palet, animasyon sadece hareket varken çalışır (pil dostu).
 
+## Fiske Arena (yeni · 2 kişilik prototip)
+Sıra tabanlı rekabetçi fiske oyunu: pulunu çek-bırak, rakibin 3 pulunu arenadan düşür. Bot (3 seviye) ve tek telefonda 2 kişi; 5 arena. `npm run fiske` → http://localhost:8081, testler `npm run fiske:test`. Ayrıntı ve çevrimiçi yol haritası: `docs/FISKE.md`.
+
 ## Çalıştır (tarayıcı)
 ```bash
 npm run serve   # http://localhost:8080
