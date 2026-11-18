@@ -23,6 +23,14 @@ npm run fiske:test   # fizik + bot + sunucu yeniden oynatma testleri
 | Tamponlu | Dikdörtgen arena, iki tampon pulu sert geri fırlatır |
 | Çamurlu | İki yandaki çamurda sürtünme ×3.2, pullar durur |
 
+## Görsel tasarım
+- **Ana menü:** Arkada iki bot canlı bir demo maç oynar ve maç bittikçe sıradaki arenaya geçilir. Önde logo, üç mod kartı (Bota karşı, Arkadaşınla, Çevrimiçi · yakında), bot rekorları (kazanma–kaybetme), "Nasıl oynanır?" ve ses düğmesi var.
+- **Kurulum:** Zorluk kartları (bot yüzleri) ve canlı önizlemeli arena kartları. Seçimler hatırlanır.
+- **Arena temaları:** Yuvarlak taş mavisi, Halka mor ve dönen girdaplı, Buz Pisti parıltılı buz, Tamponlu yeşil keçe ve ahşap kenar, Çamurlu kum ve çamur. Her arenanın kendi arka planı ve uçuşan toz zerreleri var.
+- **Pullar:** Parlak ve kalın. Turkuaz pulda halka, Mercan pulda elmas amblemi var, böylece renk körü oyuncular da ayırt edebilir.
+- **Oyun içi:** Sıradaki oyuncunun levhası parlar. "Sıra sende", "ÇİFTE!", "Kendi pulun!" gibi bantlar çıkar. Bir de duraklat menüsü var.
+- **Sonuç:** Kupa, kazananın renginde konfeti, seri skoru, Rövanş, Arena değiştir ve Menü düğmeleri.
+
 ## Mimari
 | Dosya | İş |
 |---|---|
