@@ -762,12 +762,13 @@ let toastT, mLocked = false, howBack = null, mOnClose = null;   // mOnClose: pen
 function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2200); }
 const active = id => $(id).classList.contains('active');
 function show(id) {
+  if (id !== 'game' && G?.duel && !G.duelOver && !G.won) vsEnd(null);   // kapışmadan çıkış = terk
   if (id !== 'game' && active('game')) quitEv();
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
   document.body.classList.toggle('playing', id === 'game');
   if (id === 'game') resume(); else { pause(); cityDown(); }
   Music.setMode(id === 'game' ? 'game' : 'menu');
-  if (id === 'home') { refreshHome(); setTimeout(maybeGift, 450); setTimeout(maybeRescue, 600); setTimeout(maybeRecommend, 1500); idle(() => { if (active('home')) { puzzleFor(save.level); if (save.dailyDone !== today()) dailyFor(today()); if (window.__rayCalm()) Ads.warm(); } }, document.body.classList.contains('introing') ? 3200 : 900); /* Oyna / Günün Hattı anında açılsın (intro'yu kesmeden) */ if (G && Remind.avail() && !save.remindAsked && (save.dailyDone || save.level > lineEnd(0))) setTimeout(() => { if (active('home') && !modalOpen()) remindAsk(); }, 700); }
+  if (id === 'home') { refreshHome(); setTimeout(maybeGift, 450); setTimeout(maybeRescue, 600); setTimeout(maybeRecommend, 1500); setTimeout(() => { if (active('home') && !introOn) ligWeek(); }, 900); idle(() => { if (active('home')) { puzzleFor(save.level); if (save.dailyDone !== today()) dailyFor(today()); if (window.__rayCalm()) Ads.warm(); } }, document.body.classList.contains('introing') ? 3200 : 900); /* Oyna / Günün Hattı anında açılsın (intro'yu kesmeden) */ if (G && Remind.avail() && !save.remindAsked && (save.dailyDone || save.level > lineEnd(0))) setTimeout(() => { if (active('home') && !modalOpen()) remindAsk(); }, 700); }
   if (id === 'map') renderMap();
   if (id === 'city') renderMeta();
   clearInterval(clockT); if (id === 'home') clockT = setInterval(() => { dailyClock(); lifeRow(); }, 1000);
@@ -842,7 +843,7 @@ function dailyClock() {
   if ($('mClock')) $('mClock').textContent = L(`Yeni Günün Hattı: ${countdown()}`, `Next Daily Line: ${countdown()}`);
 }
 function refreshHome() {
-  dayTick(); try { homeSky(); } catch {}   // şehir bölümü henüz yüklenmediyse sonra çizilir
+  dayTick(); try { homeSky(); } catch {} try { ligHome(); } catch {}   // şehir bölümü henüz yüklenmediyse sonra çizilir
   const tot = totalStars();
   $('sStars').textContent = tot;
   $('sStreak').textContent = save.streak; $('streakChip').classList.toggle('new', rescueOk());
@@ -927,27 +928,29 @@ function setLineColor() {
 }
 const runKey = () => G.arch ? 'arch' : G.daily ? 'daily' : 'level';
 function saveRun() {
+  if (G?.duel) return vsSend();   // kapışma: yarım oyun kaydı yok; ilerleme rakibe gider
   if (!G || G.won || G.over) return;
   save.runs[runKey()] = { lvl: G.lvl, day: G.day, cur: G.cur, fixed: G.fixed, moves: G.moves, last: G.lastTile, ms: elapsed(), pv: 4, sig: G.sig, ...(G.hinted ? { hn: 1 } : {}), ...(G.xt ? { xt: G.xt } : {}), ...(G.cnt.some(v => v >= 0) ? { cnt: G.cnt } : {}) };
   persist();
 }
 // mode 'arch': arşivden geçmiş bir günün Günün Hattı'nı oynar (lvl = gün)
 // ölçüm (olcum.js): yalnız oyun olayları, kişisel veri yok
-const lvlP = () => G ? (G.daily ? { mode: G.arch ? 'archive' : 'daily' } : { mode: 'level', level: G.lvl, line: lineOf(G.lvl) + 1 }) : {};
+const lvlP = () => G ? (G.duel ? { mode: 'duel', level: G.lvl } : G.daily ? { mode: G.arch ? 'archive' : 'daily' } : { mode: 'level', level: G.lvl, line: lineOf(G.lvl) + 1 }) : {};
 const quitEv = () => { if (G && !G.won && (G.moves || G.hu)) Olcum.event('level_quit', { ...lvlP(), time_s: elapsed() / 1000 | 0, moves: G.moves, hints: G.hu || 0 }); };
 function start(mode, lvl = save.level) {
+  const duel = mode === 'duel' ? lvl : null; if (duel) { mode = 'level'; lvl = duel.level; }   // kapışma: maç bilgisi → bölüm numarası (iki tarafta aynı bulmaca)
   if (G && active('game')) quitEv();
   clearTimeout(howT); clearTimeout(winTimer); closeModal(); closePanel(); cityDown();
   const arch = mode === 'arch', daily = mode === 'daily' || arch, day = arch ? lvl : today();
-  if (!daily && !unlocked(lineOf(lvl))) { lockedSheet(lineOf(lvl)); return; }
+  if (!daily && !duel && !unlocked(lineOf(lvl))) { lockedSheet(lineOf(lvl)); return; }
   // ❤️ 0 canda yeni bölüm başlamaz (yarım kalan aynı bölüm sürer; Günün Hattı, arşiv ve 🍃 zen can harcamaz)
-  if (!daily && !save.zen && !infOn() && lives() <= 0 && save.runs.level?.lvl !== lvl) { if (active('game')) show('home'); lifePop(lvl); return; }
-  G = { ...(daily ? dailyFor(day) : puzzleFor(lvl)), daily, arch, lvl: daily ? 0 : lvl, day: daily ? day : null, practice: arch ? archPlayed(day) : daily && save.dailyDone === day, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0, bub: 0 };
-  G.lim = limits(G); G.zen = !!save.zen && !daily;
+  if (!daily && !duel && !save.zen && !infOn() && lives() <= 0 && save.runs.level?.lvl !== lvl) { if (active('game')) show('home'); lifePop(lvl); return; }
+  G = { ...(daily ? dailyFor(day) : puzzleFor(lvl)), daily, arch, lvl: daily ? 0 : lvl, day: daily ? day : null, practice: arch ? archPlayed(day) : daily && save.dailyDone === day, duel, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0, bub: 0 };
+  G.lim = limits(G); G.zen = (!!save.zen && !daily) || !!duel;   // kapışma: hedef yok (ilk bitiren kazanır)
   G.lim.dl = G.zen || daily || lineOf(lvl) < CALM_LINES ? 0 : lastCall(G.lim.t);   // son süre (0: yok) · ilk iki hatta yok: süre geçince yalnız ⏱ yıldızı kaçar, can gitmez   // 🍃 zen: hedefler gizli (Günün Hattı herkes için aynı koşulda)
-  $('game').classList.toggle('zen', G.zen); $('game').querySelector('.status').dataset.zen = L('🍃 Zen', '🍃 Zen');
+  $('game').classList.toggle('zen', G.zen); $('game').classList.toggle('duel', !!duel); $('game').querySelector('.status').dataset.zen = L('🍃 Zen', '🍃 Zen');
   // yarım kalan oyunu sürdür
-  const run = save.runs[arch ? 'arch' : daily ? 'daily' : 'level'];
+  const run = duel ? null : save.runs[arch ? 'arch' : daily ? 'daily' : 'level'];
   // yarım oyun yalnız aynı bulmacaya: imza = çözüm + başlangıç dizilimi (makas/tabla çözümü değil başlangıcı değiştirir);
   // imzasız eski kayıt yalnız eklentilerden etkilenmeyen bölümlerde (M5 kayan sıradan önce, Günün Hattı)
   G.sig = hashStr(G.sol.join() + '|' + G.cur.join());
@@ -969,6 +972,7 @@ function start(mode, lvl = save.level) {
   $('gHints').textContent = save.hints;
   clearTimeout(bubT); $('gBub').classList.remove('show');
   const stake = comboStake(); $('gCombo').hidden = stake < 2; $('gCombo').textContent = `✨${stake}`;
+  if (duel) { $('gTitle').textContent = L('⚔️ Kapış', '⚔️ Duel'); $('gMoves').textContent = L('İlk bitiren kazanır', 'First to finish wins'); vsBar(duel); }
   show('game'); resize(); hud(); tick();
   Olcum.event('level_start', { ...lvlP(), resumed: !!G.moves }); Jank.take();   // takılma sayacı bu bölüm için sıfırlanır
   // Günün Hattı yalnız pazar günü kural taşır (haftanın kuralı): oyuncu o kuralı henüz görmediyse kartı açılır
@@ -1366,6 +1370,7 @@ function cityDown() { document.querySelector('.bg')?.classList.remove('city', 'r
 function win() {
   pause(); cityUp();
   G.won = true; G.time = elapsed();
+  if (G.duel) { winT = performance.now() + 120; G.L.d.forEach((v, i) => { litAt[i] = winT + v * 45; }); kick(); [0, 2, 4, 5, 7].forEach((k, j) => tone(note(k + 3), .4, .05, 'sine', .12 + j * .09)); haptic('win'); vsSend(true); setTimeout(() => vsEnd(true), 700); return; }
   delete save.runs[runKey()];
   winT = performance.now() + 120;
   G.L.d.forEach((v, i) => { litAt[i] = winT + v * 45; if (popc(G.cur[i]) === 1) burst(i, 12, 120 + v * 45, ownCol(i)); });
@@ -1377,7 +1382,7 @@ function win() {
   if (zen) save.zenWins = (save.zenWins || 0) + 1;
   save.played++;
   const cr0 = crownBal();
-  let extra = '', unlockedNow = null, shard = false, dbl = 0, tkMsg = '', fest = -1;   // fest: hat bitti → açılış töreni (hat no)   // dbl: videoyla ikiye katlanabilecek ipucu
+  let extra = '', unlockedNow = null, shard = false, dbl = 0, tkMsg = '', fest = -1, ligPts = 0;   // ligPts: haftalık lig puanı (yeni kazanılan ★; Günün Hattı +5)   // fest: hat bitti → açılış töreni (hat no)   // dbl: videoyla ikiye katlanabilecek ipucu
   let cmsg = '', combo = 0, broke = 0, near = false;               // kusursuz seri · kıl payı (tekrar öne çıkar)
   const late = Math.floor(G.time / 1000) - G.lim.t;
   setNext(tOk ? L('Tam vaktinde', 'On time') : `<span class="miss">+${fmtT(late * 1000)} ${L('rötar', 'late')}</span>`); trip(G.time / 1000, tOk, 0);
@@ -1391,7 +1396,7 @@ function win() {
     }
   } else if (G.daily) {
     if (save.dailyDone !== G.day) {
-      save.streak = save.lastDaily === dayBefore(G.day) ? save.streak + 1 : 1; save.lastDaily = save.dailyDone = G.day;
+      save.streak = save.lastDaily === dayBefore(G.day) ? save.streak + 1 : 1; save.lastDaily = save.dailyDone = G.day; ligPts = PTS.daily;
       save.dailyLog = [...save.dailyLog.filter(d => d !== G.day), G.day].slice(-90); save.best = Math.max(save.best || 0, save.streak);
       save.hints++; save.dt = (save.dt || 0) + 1; dbl = 1; extra = L(`🔥 ${save.streak} gün seri · +1 ipucu · +1 🎫`, `🔥 ${save.streak}-day streak · +1 hint · +1 🎫`); Remind.habit(); Remind.plan();
       save.dailyStats = { day: G.day, moves: G.moves, time: G.time, st, perfect };
@@ -1403,6 +1408,7 @@ function win() {
     save.adW = (save.adW || 0) + 1; sessionWins++;
     if (save.adW >= INTER_EVERY && !save.noAds && save.played >= 5) interDue = true;
     const before = totalStars(), old = save.stars[G.lvl] || 0, firstClear = G.lvl >= save.level;
+    ligPts = zen ? 0 : Math.max(0, st - old);   // yalnız yeni kazanılan yıldız: aynı bölümü tekrar oynayarak puan toplanmaz
     // haftalık görev: taçlı bölümü yeniden oynamak sayılmaz (kolay bölümde biriktirilmesin)
     if (firstClear || !save.crowns[G.lvl]) { questStep('win'); if (!G.hinted) questStep('nohint'); if (perfect) questStep('perfect'); }
     save.stars[G.lvl] = Math.max(old, st);
@@ -1441,7 +1447,7 @@ function win() {
   Object.assign(sum, Jank.take());   // bu bölümde takılan kare sayısı ve toplam süresi
   if (G.daily) Olcum.event('daily_end', { ...sum, mode: G.arch ? 'archive' : 'daily', practice: !!G.practice, streak: save.streak }); else Olcum.event('level_end', { ...lvlP(), ...sum });
   const g = G, wait = 120 + Math.max(...G.L.d) * 45 + 650, info = { zen, st, tOk, mOk, perfect, extra: [tkMsg, cmsg, shardMsg, extra].filter(Boolean).join(' · '), unlockedNow, ns, dbl, combo, broke, near };
-  winTimer = setTimeout(() => { if (G === g && active('game')) { winSheet(g, info); if (fest >= 0 && !window.__noFest) { lineFest(fest); return; } /* __noFest: yalnız robot testleri */ let rv = false; if (!g.daily && !g.practice) setTimeout(() => { if (G === g && active('game')) rv = maybeReview(st); }, 1100);
+  winTimer = setTimeout(() => { if (G === g && active('game')) { winSheet(g, info); ligScore(ligPts, $('winPanel').querySelector('.wp-more') || $('winPanel')); if (fest >= 0 && !window.__noFest) { lineFest(fest); return; } /* __noFest: yalnız robot testleri */ let rv = false; if (!g.daily && !g.practice) setTimeout(() => { if (G === g && active('game')) rv = maybeReview(st); }, 1100);
     setTimeout(() => { if (G === g && active('game') && !rv && !modalOpen()) maybeOffer(g); }, 1500); } }, wait);   // puan istendiyse teklif bu tur yok
   if (!g.daily) idle(() => puzzleFor(g.lvl + 1), wait + 600);   // sonraki bölüm hazır olsun: panel kayarak oturunca, ilk boş anda (geçişte takılma olmasın)
 }
@@ -1887,6 +1893,7 @@ function grantItem(it, tx) {
 
 async function hint() {
   if (!G || G.won || G.over) return;
+  if (G.duel) { toast(L('Kapışmada ipucu yok', 'No hints in a duel')); return; }
   dayTick();
   if (save.hints <= 0) {
     if (!Ads.online()) { toast(L('İpucu kalmadı · yarın +3 hediye', 'Out of hints · +3 free tomorrow')); return; }
@@ -1950,6 +1957,7 @@ function ruleCard(c, week) {
 function nearLit(i) { if (G.hex) return HX.nearLit(G, i); const x = i % G.cols, y = i / G.cols | 0; let n = 0; for (const [, dx, dy] of DIRS) { const nx = x + dx, ny = y + dy; if (nx >= 0 && ny >= 0 && nx < G.cols && ny < G.rows && G.L.d[ny * G.cols + nx] >= 0) n++; } return n; }
 // baştan: süre ve hamle sıfırlanır, ipucuyla açılan karolar korunur
 function reset() {
+  if (G?.duel) return;   // kapışma: baştan alma yok (düğme gizli)
   if (G?.won && $('game').classList.contains('won')) return start(G.arch ? 'arch' : G.daily ? 'daily' : 'level', G.arch ? G.day : G.lvl);   // sonuç ekranında ↺ = tekrar
   if (!G || G.won || G.over) return;
   const keep = G.fixed.map((f, i) => f ? i : -1).filter(i => i >= 0), mode = G.arch ? 'arch' : G.daily ? 'daily' : 'level', lvl = G.arch ? G.day : G.lvl, hn = G.hinted;
@@ -2292,6 +2300,7 @@ function settings() {
     ${SUPPORT_MAIL ? `<button class="opt row" id="oMail"><span>${L('Bize yaz', 'Contact us')}</span><small>${L('Öneri · hata', 'Ideas · bugs')} ›</small></button>` : ''}
     <button class="opt row" id="oRec"><span>${L('Arkadaşına öner', 'Recommend to a friend')}</span><small>🤝 ›</small></button>
     ${plat() === 'web' ? '' : `<button class="opt row" id="oRate"><span>${L('Ray’i değerlendir', 'Rate Ray')}</span><small>${plat() === 'ios' ? 'App Store' : 'Google Play'} ›</small></button>`}
+    ${ligOn() && LIG.me().joined ? `<button class="opt row" id="oNick"><span>${L('Lig takma adı', 'League nickname')}</span><small>${esc(LIG.me().nick)} ›</small></button><button class="opt row" id="oLeave"><span>${L('Ligden çık · verilerimi sil', 'Leave league · delete my data')}</span><small>›</small></button>` : ''}
     <button class="opt row" id="oPriv"><span>${L('Gizlilik', 'Privacy')}</span><small>${L('Politika · veriler', 'Policy · data')} ›</small></button>
     <button id="mClose" class="btn glassbtn">${L('Tamam', 'Done')}</button>`, {
     oR: async () => {
@@ -2300,6 +2309,7 @@ function settings() {
       $('oR').classList.toggle('on', save.remind);
     },
     oRec: recommend, oRate: rateApp,
+    oNick: nickSheet, oLeave: ligLeave,
     oPriv: privacySheet, oHow: () => { closeModal(); how(); }, oMove: moveSheet, oMail: () => { location.href = `mailto:${SUPPORT_MAIL}?subject=${encodeURIComponent('Ray · ' + (window.Capacitor?.getPlatform?.() || 'web') + ' · ' + RAY_LANG)}`; },
     ...SND_BINDS,
     oZ: () => { save.zen = !save.zen; persist(); $('oZ').classList.toggle('on', save.zen); toast(save.zen ? L('🍃 Zen: süre ve hamle hedefi yok · her bitiş 3 ★ · 🎫 verilmez', '🍃 Zen: no timer or move target · every finish 3 ★ · no 🎫') : L('Zen kapalı · hedefler geri geldi', 'Zen off · targets are back')); },
@@ -3090,6 +3100,200 @@ function lineFest(c) {
 function jingleOnly(gold, all) { const f = festSound({ wins: 0, gold, all }); f.skip(); }   // hareket azaltılmış: yalnız ezgi
 if (active('home')) homeSky();   // ilk çizim: refreshHome bu bölüm yüklenmeden çalışmış olabilir
 
+// ---------- haftalık lig ve canlı kapışma (ağ katmanı: www/lig.js) ----------
+// Lig puanı: bölüm ★ (1–3), Günün Hattı +5, kapışma galibiyeti +10, yenilgi +2 (terk: 0). 30 kişilik grup, ilk 7 üst lige çıkar, son 5 düşer.
+// Yalnız Lig.on() iken görünür (arka uç hazır); katılım isteğe bağlı, takma ad serbest yazı (Lig.nickOk: filtre), bildir / engelle var.
+const LIG = window.Lig, ligOn = () => !!LIG?.on();
+const TIER_N = () => [L('Bronz', 'Bronze'), L('Gümüş', 'Silver'), L('Altın', 'Gold'), L('Zümrüt', 'Emerald'), L('Elmas', 'Diamond'), L('Efsane', 'Legend')];
+const TIER_C = ['#c98a4b', '#b9c3d0', '#f2c14e', '#3fcf8e', '#6fd3ff', '#c084fc'], TIER_I = ['🥉', '🥈', '🥇', '💚', '💎', '👑'];
+const tierName = t => L(`${TIER_N()[t]} Lig`, `${TIER_N()[t]} League`);
+const PTS = { win: 10, lose: 2, daily: 5 };
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const left = t => { const s = Math.max(0, t - Date.now()) / 1e3 | 0, d = s / 86400 | 0, h = s % 86400 / 3600 | 0, m = s % 3600 / 60 | 0;
+  return d ? L(`${d}g ${h}s`, `${d}d ${h}h`) : h ? L(`${h}s ${m}dk`, `${h}h ${m}m`) : L(`${m} dk`, `${m} min`); };
+const NICK_ERR = () => ({ short: L('En az 3 karakter', 'At least 3 characters'), long: L('En çok 16 karakter', 'At most 16 characters'), chars: L('Yalnız harf, rakam, boşluk, . _ -', 'Letters, numbers, spaces, . _ - only'),
+  link: L('Bağlantı, e-posta ya da numara olmasın', 'No links, emails or numbers'), bad: L('Bu takma ad kullanılamaz', 'This nickname isn’t allowed') });
+
+let ligCache = null;
+async function ligHome() {
+  const row = $('ligRow'); if (!row) return;
+  row.hidden = !ligOn(); if (row.hidden) return;
+  const me = LIG.me();
+  if (!me.joined) { $('bLig').querySelector('i').textContent = '🏆'; $('ligT').textContent = L('Haftalık Lig', 'Weekly League'); $('ligS').textContent = L('Katıl ›', 'Join ›'); $('bLig').style.setProperty('--tc', TIER_C[0]); return; }
+  $('bLig').style.setProperty('--tc', TIER_C[me.tier]); $('bLig').querySelector('i').textContent = TIER_I[me.tier];
+  $('ligT').textContent = tierName(me.tier);
+  try { ligCache = await LIG.board(); const r = ligCache.rows.findIndex(x => x.me) + 1; $('ligS').textContent = `#${r} · ⏳ ${left(ligCache.endsAt)}`; } catch { $('ligS').textContent = ''; }
+}
+// katılım: ne paylaşıldığı açıkça yazar; takma ad serbest yazı, gönderilmeden önce filtrelenir
+function ligJoin(then) {
+  const sug = L('Metrocu', 'Rider') + ' ' + (100 + (Math.random() * 900 | 0));
+  modal(`<div class="bell">🏆</div><h2>${L('Haftalık Lig', 'Weekly League')}</h2>
+    <ul class="ligwhy"><li>${L('Her hafta 30 kişilik bir grupta yarış', 'Compete in a group of 30 every week')}</li>
+    <li>${L('Bölüm yıldızları, Günün Hattı +5, kapışma galibiyeti +10 puan', 'Level stars, Daily Line +5, duel win +10 points')}</li>
+    <li>${L('İlk 7 üst lige çıkar, son 5 düşer', 'Top 7 move up, bottom 5 move down')}</li></ul>
+    <label class="nick"><span>${L('Takma adın', 'Your nickname')}</span><input id="mNick" maxlength="16" autocomplete="off" autocapitalize="words" spellcheck="false" value="${esc(sug)}"><small id="mNickE"></small></label>
+    <p class="tip">${L('Takma adın ve haftalık puanın diğer oyunculara görünür. Ayarlar’dan istediğin zaman ligden çıkıp verilerini silebilirsin.', 'Your nickname and weekly points are visible to other players. You can leave and delete your data any time in Settings.')}</p>
+    <button id="mJoin" class="btn primary"><span>${L('Lige katıl', 'Join the league')}</span></button>
+    <button id="mClose" class="btn glassbtn">${L('Şimdi değil', 'Not now')}</button>`, {
+    mJoin: async () => { const v = LIG.nickOk($('mNick').value); if (!v.ok) { $('mNickE').textContent = NICK_ERR()[v.why]; bump($('mNick')); return; }
+      await LIG.join(v.nick); Olcum.event('league_join', {}); closeModal(); haptic('win'); ligHome(); then?.(); },
+    mClose: closeModal });
+  $('mNick').oninput = () => { $('mNickE').textContent = ''; };
+}
+function nickSheet() {
+  modal(`<h2>${L('Takma ad', 'Nickname')}</h2>
+    <label class="nick"><input id="mNick" maxlength="16" autocomplete="off" spellcheck="false" value="${esc(LIG.me().nick)}"><small id="mNickE"></small></label>
+    <button id="mSave" class="btn primary"><span>${L('Kaydet', 'Save')}</span></button><button id="mClose" class="btn glassbtn">${L('Vazgeç', 'Cancel')}</button>`, {
+    mSave: async () => { const v = LIG.nickOk($('mNick').value); if (!v.ok) { $('mNickE').textContent = NICK_ERR()[v.why]; return; } await LIG.rename(v.nick); closeModal(); toast(L('Takma ad kaydedildi', 'Nickname saved')); ligHome(); if (active('league')) ligRender(); },
+    mClose: closeModal });
+}
+function ligLeave() {
+  modal(`<h2>${L('Ligden çık', 'Leave the league')}</h2><p>${L('Takma adın, puanların ve kapışma kayıtların sunucudan silinir. Oyundaki ilerlemen olduğu gibi kalır.', 'Your nickname, points and duel records are deleted from the server. Your game progress stays as it is.')}</p>
+    <button id="mDel" class="btn primary danger"><span>${L('Ligden çık ve verilerimi sil', 'Leave and delete my data')}</span></button><button id="mClose" class="btn glassbtn">${L('Vazgeç', 'Cancel')}</button>`,
+    { mDel: async () => { await LIG.leave(); closeModal(); toast(L('Lig verilerin silindi', 'Your league data was deleted')); ligHome(); if (active('league')) show('home'); }, mClose: closeModal });
+}
+// lig ekranı: 30 kişi, terfi (ilk 7) ve düşme (son 5) bölgeleri, geri sayım. Başkasının satırına dokun → bildir / engelle
+async function ligRender() {
+  const b = ligCache = await LIG.board(), me = LIG.me(), n = b.rows.length;
+  $('lgTitle').textContent = `${TIER_I[b.tier]} ${tierName(b.tier)}`;
+  $('lgSub').textContent = L(`Bitime ${left(b.endsAt)}`, `Ends in ${left(b.endsAt)}`);
+  $('league').style.setProperty('--tc', TIER_C[b.tier]);
+  const tiers = TIER_C.map((c, i) => `<i class="${i === b.tier ? 'on' : i < b.tier ? 'past' : ''}" style="--c:${c}" title="${TIER_N()[i]}">${TIER_I[i]}</i>`).join('');
+  $('lgList').innerHTML = `<div class="lgtiers">${tiers}</div>` + b.rows.map((r, i) => {
+    const k = i + 1, z = k <= b.up && b.tier < LIG.TIERS - 1 ? 'up' : k > n - b.down && b.tier > 0 ? 'down' : '';
+    const sep = k === b.up + 1 && b.tier < LIG.TIERS - 1 ? `<p class="lgsep up">▲ ${L('Üst lige çıkış', 'Promotion zone')}</p>` : k === n - b.down + 1 && b.tier > 0 ? `<p class="lgsep down">▼ ${L('Düşme bölgesi', 'Relegation zone')}</p>` : '';
+    return `${sep}<button class="lgr ${z}${r.me ? ' me' : ''}" data-u="${esc(r.uid)}" data-n="${esc(r.nick)}"><b>${k}</b><span>${esc(r.nick)}${r.me ? ` <em>${L('sen', 'you')}</em>` : ''}</span><small>${r.pts}</small></button>`;
+  }).join('') + `<p class="tip">${L('Bölüm yıldızları, Günün Hattı +5, kapışma galibiyeti +10 · hafta pazartesi 00:00’da biter', 'Level stars, Daily Line +5, duel win +10 · the week ends Monday 00:00')}</p>`;
+  requestAnimationFrame(() => $('lgList').querySelector('.lgr.me')?.scrollIntoView({ block: 'center' }));
+}
+$('lgList').onclick = e => {
+  const r = e.target.closest('.lgr'); if (!r || r.classList.contains('me')) return;
+  const uid = r.dataset.u, nick = r.dataset.n;
+  modal(`<h2>${esc(nick)}</h2><button id="mRep" class="btn glassbtn">${L('🚩 Uygunsuz takma adı bildir', '🚩 Report inappropriate nickname')}</button>
+    <button id="mBlk" class="btn glassbtn">${L('🚫 Bu oyuncuyu gizle', '🚫 Hide this player')}</button><button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, {
+    mRep: async () => { await LIG.report(uid, 'nick'); closeModal(); toast(L('Bildirildi · teşekkürler', 'Reported · thank you')); },
+    mBlk: () => { LIG.block(uid); closeModal(); toast(L('Oyuncu gizlendi', 'Player hidden')); ligRender(); }, mClose: closeModal });
+};
+const openLig = () => { if (!LIG.me().joined) return ligJoin(openLig); show('league'); ligRender(); };
+bind({ bLig: openLig, bVs: () => vsSheet(), lgBack: () => show('home'), lgVs: () => vsSheet(), lgNick: nickSheet });
+
+// hafta bitti: geçen haftanın sonucu bir kez gösterilir
+function ligWeek() {
+  if (!ligOn() || modalOpen()) return false;
+  const p = LIG.me().prev; if (!p) return false;
+  const t = LIG.me().tier, up = p.moved > 0, down = p.moved < 0;
+  modal(`<div class="bell">${up ? '🎉' : down ? '📉' : '🏆'}</div><h2>${up ? L(`${tierName(t)}’ne yükseldin!`, `Promoted to ${tierName(t)}!`) : down ? L(`${tierName(t)}’ne düştün`, `Moved down to ${tierName(t)}`) : L('Hafta bitti', 'The week is over')}</h2>
+    <p>${L(`Geçen hafta ${p.rank || '–'}. oldun.`, `You finished #${p.rank || '–'} last week.`)} ${up || down ? '' : L(`${tierName(t)}’nde kaldın.`, `You stay in ${tierName(t)}.`)}</p>
+    <button id="mGo" class="btn primary"><span>${L('Yeni haftaya başla', 'Start the new week')}</span></button>`, { mGo: () => { closeModal(); openLig(); } });
+  LIG.seen(); return true;
+}
+
+// bölüm sonu tırmanış: sonuç panelinin üstünde "#14 → #9 ▲5", geçilen oyuncular kayarak
+async function ligScore(pts, host) {
+  if (!ligOn() || !LIG.me().joined || !(pts > 0)) return null;
+  let r; try { r = await LIG.add(pts); } catch { return null; }
+  if (!r || !host?.isConnected) return r;
+  const a = r.after, b = r.before, up = b - a, rows = r.rows, lo = Math.max(0, a - 2), hi = Math.min(rows.length, Math.max(a + 2, Math.min(b, a + 4)));
+  const win = rows.slice(lo, hi), mi = win.findIndex(x => x.me), from = Math.min(win.length - 1, mi + up);
+  const el = document.createElement('div'); el.className = 'climb' + (up > 0 ? ' up' : ''); el.style.setProperty('--tc', TIER_C[r.tier]);
+  el.innerHTML = `<div class="cl-h"><span>${TIER_I[r.tier]} ${tierName(r.tier)}</span><b>${up > 0 ? `#${b} → #${a}` : `#${a}`}</b><em>${up > 0 ? `▲${up}` : ''} +${r.add}</em></div>
+    <div class="cl-rows" style="--n:${win.length}">${win.map((x, i) => `<div class="cl-r${x.me ? ' me' : ''}" style="--y:${i}${x.me ? `;--from:${from}` : ''}"><b>${lo + i + 1}</b><span>${esc(x.nick)}</span><small>${x.pts}</small></div>`).join('')}</div>`;
+  el.onclick = () => openLig();
+  host.prepend(el);
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('go')));
+  if (up > 0) setTimeout(() => { tone(note(7), .2, .04); tone(note(9), .25, .035, 'sine', .08); haptic('light'); }, 650);
+  return r;
+}
+
+// ---------- canlı kapışma: rastgele rakip ya da arkadaş (oda kodu / bağlantı) ----------
+// İki oyuncu aynı bulmacayı aynı anda çözer; rakibin ilerlemesi üstte. İlk bitiren kazanır. İpucu yok, can harcamaz.
+// Bulmaca: iki oyuncunun da geçtiği hatlardan (kurallar bilinir). Terk = yenilgi, puan yok.
+const duelLevels = () => { const hi = Math.max(1, save.level - 1), lo = Math.max(1, hi - 9); return Array.from({ length: hi - lo + 1 }, (_, i) => lo + i).filter(l => !breath(l)); };   // son 10 bölüm (kurallar biliniyor, zorluk oyuncunun seviyesinde; mola bölümü yok)
+function vsSheet() {
+  if (!ligOn()) return;
+  if (!LIG.me().joined) return ligJoin(vsSheet);
+  modal(`<div class="bell">⚔️</div><h2>${L('Kapış', 'Duel')}</h2><p>${L('Aynı bulmaca, aynı anda. İlk bitiren kazanır.', 'Same puzzle, same time. First to finish wins.')}</p>
+    <button id="vR" class="btn primary"><span>${L('Rastgele rakip', 'Random opponent')}</span><small>${L('Galibiyet +10 puan', 'Win +10 points')}</small></button>
+    <div class="row2"><button id="vH" class="btn glassbtn">${L('Arkadaşı davet et', 'Invite a friend')}</button><button id="vJ" class="btn glassbtn">${L('Koda katıl', 'Join with code')}</button></div>
+    <button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, { vR: () => vsFind(), vH: vsHost, vJ: vsJoinSheet, mClose: closeModal });
+}
+function vsWait(title, sub, onCancel) {
+  const t0 = Date.now();
+  modal(`<div class="vsw"><div class="vsr"><i></i><i></i><i></i></div><h2>${title}</h2><p id="vwS">${sub}</p><b id="vwT">0:00</b></div>
+    <button id="vwX" class="btn glassbtn">${L('Vazgeç', 'Cancel')}</button>`, { vwX: () => { onCancel?.(); LIG.duel.leave(); closeModal(); } }, true, true);
+  const tk = setInterval(() => { if (!$('vwT')) return clearInterval(tk); $('vwT').textContent = fmtT(Date.now() - t0); }, 500);
+}
+async function vsFind(o = {}) {
+  vsWait(L('Rakip aranıyor…', 'Finding an opponent…'), L('Benzer seviyede bir oyuncu', 'A player at a similar level'));
+  const m = await LIG.duel.find({ levels: duelLevels(), ...o });
+  if (m) vsIntro(m);
+}
+async function vsHost() {
+  const h = await LIG.duel.host({ levels: duelLevels() }), url = `${SHARE_URL}?vs=${h.code}`;
+  modal(`<div class="bell">⚔️</div><h2>${L('Arkadaşını davet et', 'Invite your friend')}</h2><p>${L('Arkadaşın Ray’de “Koda katıl”a bu kodu yazsın ya da bağlantıyı açsın.', 'Your friend enters this code under “Join with code” in Ray, or opens the link.')}</p>
+    <div class="vscode" id="vCode">${h.code}</div>
+    <button id="vShare" class="btn primary"><span>${L('Daveti gönder', 'Send the invite')}</span></button>
+    <p class="tip" id="vSt">${L('Arkadaşın bekleniyor…', 'Waiting for your friend…')}</p><button id="vX" class="btn glassbtn">${L('Vazgeç', 'Cancel')}</button>`, {
+    vShare: async () => { const text = `${L('Ray’de kapışalım mı? ⚔️ Kod:', 'Duel me in Ray? ⚔️ Code:')} ${h.code}\n${url}`;
+      try { const P = window.Capacitor?.Plugins?.Share; if (P) await P.share({ text }); else if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); toast(L('Panoya kopyalandı', 'Copied to clipboard')); } } catch {} },
+    vX: () => { LIG.duel.leave(); closeModal(); } }, true);
+  const m = await h.wait(); if (m && $('vCode')) vsIntro(m);
+}
+function vsJoinSheet(code = '') {
+  modal(`<div class="bell">⚔️</div><h2>${L('Koda katıl', 'Join with code')}</h2>
+    <label class="nick"><input id="vIn" class="code" maxlength="5" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABC23" value="${esc(code)}"><small id="vInE"></small></label>
+    <button id="vGo" class="btn primary"><span>${L('Katıl', 'Join')}</span></button><button id="mClose" class="btn glassbtn">${L('Vazgeç', 'Cancel')}</button>`, {
+    vGo: async () => { const c = $('vIn').value.trim().toUpperCase(); vsWait(L('Bağlanıyor…', 'Connecting…'), c);
+      const m = await LIG.duel.join(c, { levels: duelLevels() });
+      if (!m || m.error) { vsJoinSheet(c); $('vInE').textContent = L('Kod bulunamadı ya da süresi doldu', 'Code not found or expired'); return; }
+      vsIntro(m); },
+    mClose: closeModal });
+}
+// eşleşme bulundu: iki oyuncu, 3-2-1, sonra bulmaca (iki tarafta aynı anda başlar: m.t0)
+function vsIntro(m) {
+  const me = LIG.me(), o = m.opp;
+  modal(`<div class="vsi"><div class="vsp"><b>${esc(me.nick)}</b><small style="color:${TIER_C[me.tier]}">${TIER_I[me.tier]} ${TIER_N()[me.tier]}</small></div><i>VS</i>
+    <div class="vsp"><b>${esc(o.nick)}</b><small style="color:${TIER_C[o.tier]}">${TIER_I[o.tier]} ${TIER_N()[o.tier]}</small></div></div>
+    ${o.ghost ? `<p class="tip">${L('Şu an çevrimiçi rakip yok: gerçek bir oyuncunun kayıtlı oyunuyla kapışıyorsun', 'No one is online right now: you’re racing a real player’s recorded run')}</p>` : ''}
+    <div class="vsc" id="vsC">3</div>`, {}, true, true);
+  haptic('heavy'); tone(note(5), .2, .04);
+  const go = () => { closeModal(); start('duel', m); };
+  const t = () => { const s = Math.ceil((m.t0 - Date.now()) / 1000); if (!$('vsC')) return; if (s <= 0) return go(); $('vsC').textContent = s; tone(note(3 + (3 - s)), .12, .03); setTimeout(t, 1000 - (Date.now() - m.t0) % 1000 || 1000); };
+  setTimeout(t, 300);
+}
+// oyunda: rakibin ilerlemesi üstte; benim ilerlemem her hamlede gönderilir (en çok 2/sn)
+let vsSentAt = 0;
+function vsSend(force) {
+  if (!G?.duel) return; const p = { lit: G.L.n / G.cur.length, moves: G.moves, done: !!G.won, ms: elapsed() };
+  $('vsMe').style.setProperty('--p', p.lit); $('vsMeM').textContent = G.moves;
+  if (force || Date.now() - vsSentAt > 500) { vsSentAt = Date.now(); LIG.duel.send(p); }
+}
+function vsBar(m) {
+  $('vsOppN').textContent = m.opp.nick + (m.opp.ghost ? ' 👻' : ''); $('vsOpp').style.setProperty('--p', 0); $('vsOppM').textContent = 0;
+  $('vsMe').style.setProperty('--p', 0); $('vsMeM').textContent = 0; $('vsMeN').textContent = LIG.me().nick;
+  LIG.duel.onOpp(p => {
+    if (!G?.duel || G.duel !== m || G.duelOver) return;
+    $('vsOpp').style.setProperty('--p', p.lit); $('vsOppM').textContent = p.moves ?? 0;
+    if (p.done && !G.won) vsEnd(false, p);
+  });
+}
+function vsEnd(won, opp) {
+  const g = G; if (!g?.duel || g.duelOver) return; g.duelOver = true;
+  const forfeit = won === null;
+  pause(); LIG.duel.send({ lit: g.L.n / g.cur.length, moves: g.moves, done: won === true, ms: g.time || elapsed(), left: forfeit }); LIG.duel.leave();
+  Olcum.event('duel_end', { result: forfeit ? 'forfeit' : won ? 'win' : 'lose', ghost: !!g.duel.opp.ghost, friend: !!g.duel.opp.friend });
+  if (forfeit) return;
+  if (!won) { tone(330, .3, .04); haptic('heavy'); }
+  const pts = won ? PTS.win : PTS.lose;
+  save.vs = { w: (save.vs?.w || 0) + (won ? 1 : 0), l: (save.vs?.l || 0) + (won ? 0 : 1) }; persist();
+  modal(`<div class="bell">${won ? '🏆' : '🚇'}</div><h2>${won ? L('Kazandın!', 'You won!') : L('Rakip önce bitirdi', 'Your opponent finished first')}</h2>
+    <p>${won ? L(`${fmtT(g.time)} · ${g.moves} hamle`, `${fmtT(g.time)} · ${g.moves} moves`) : L(`Sen %${Math.round(g.L.n / g.cur.length * 100)} bağlamıştın`, `You had ${Math.round(g.L.n / g.cur.length * 100)}% connected`)}</p>
+    <div id="vsClimb"></div>
+    <button id="vAgain" class="btn primary"><span>${L('Tekrar kapış', 'Duel again')}</span></button><button id="vHome" class="btn glassbtn">${L('Ana sayfa', 'Home')}</button>`,
+    { vAgain: () => { closeModal(); vsSheet(); }, vHome: () => { closeModal(); show('home'); } }, true);
+  ligScore(pts, $('vsClimb'));
+}
+
 // ---------- kural eklentileri: www/rules/*.js (M9+ yeni kurallar). Ayrıntı: docs/kurallar/README.md ----------
 const API = {
   N, E, S, W, DIRS, FOG_R, PAIR_COLS, rot, unrot, popc, nb, ob, tree, hashStr, rgba, shade, lum, hueRot, okl, oklch,
@@ -3135,7 +3339,8 @@ if (window.Capacitor?.isNativePlatform?.()) {
   try { window.caches?.keys?.().then(ks => Promise.all(ks.filter(k => k.startsWith('ray-')).map(k => caches.delete(k)))).catch(() => {}); } catch {}
 } else if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
 // paylaşılan Günün Hattı bağlantısı: ?d=YYYY-MM-DD&m=hamle
-const q = new URLSearchParams(location.search), qd = q.get('d'), qm = +q.get('m');
+const q = new URLSearchParams(location.search), qd = q.get('d'), qm = +q.get('m'), qv = (q.get('vs') || '').toUpperCase();
+if (qv && ligOn()) { history.replaceState(null, '', location.pathname); setTimeout(() => { if (!LIG.me().joined) ligJoin(() => vsJoinSheet(qv)); else vsJoinSheet(qv); }, 2600); }   // arkadaş daveti: ?vs=KOD
 if (qd) {
   history.replaceState(null, '', location.pathname);
   if (qd === today()) {
@@ -3159,7 +3364,7 @@ if (introOn) {
 if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { jank: Jank, fest: c => lineFest(c), sky: skyline,
+window.__ray = { jank: Jank, fest: c => lineFest(c), sky: skyline, lig: { score: (p, h) => ligScore(p, h), join: ligJoin, open: openLig, vs: vsSheet, find: vsFind, host: vsHost, code: vsJoinSheet, week: ligWeek, home: ligHome },
   // test / önizleme: tören sesini çevrimdışı işleyip WAV (base64) verir
   festWav: async (o = {}) => { const keep = ac; ac = new OfflineAudioContext(2, 44100 * 6.5, 44100); try { festSound(o); const b = await ac.startRendering(), n = b.length, L = b.getChannelData(0), R = b.getChannelData(1), buf = new DataView(new ArrayBuffer(44 + n * 4));
     const w = (o2, str) => [...str].forEach((ch, i) => buf.setUint8(o2 + i, ch.charCodeAt(0))); w(0, 'RIFF'); buf.setUint32(4, 36 + n * 4, true); w(8, 'WAVEfmt '); buf.setUint32(16, 16, true); buf.setUint16(20, 1, true); buf.setUint16(22, 2, true); buf.setUint32(24, 44100, true); buf.setUint32(28, 44100 * 4, true); buf.setUint16(32, 4, true); buf.setUint16(34, 16, true); w(36, 'data'); buf.setUint32(40, n * 4, true);

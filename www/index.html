@@ -68,6 +68,11 @@
         <button class="qrow" id="bQuest" hidden><i>🎯</i><span data-en="Quests">Görevler</span><b id="qState">0/3</b></button>
         <button class="shopbtn" id="bShop"><i>🛍️</i><span data-en="Shop">Mağaza</span></button>
       </div>
+      <!-- haftalık lig ve canlı kapışma (yalnız arka uç hazırken görünür: Lig.on()) -->
+      <div class="ligrow" id="ligRow" hidden>
+        <button class="ligc" id="bLig"><i>🏆</i><span><b id="ligT">Haftalık Lig</b><small id="ligS"></small></span></button>
+        <button class="ligc vs" id="bVs"><i>⚔️</i><span><b data-en="Duel">Kapış</b><small data-en="Live 1-on-1">Canlı 1'e 1</small></span></button>
+      </div>
       <button class="card prog btn" id="bMap">
         <div class="ph"><span class="k" data-en="LINES">HATLAR</span><small><b id="sHints">3</b> <span id="sHintsL">ipucu</span></small></div>
         <b id="lineName">M1 · Turuncu Hat</b>
@@ -92,6 +97,8 @@
       <div class="pill" id="gPill"><span id="gStars"><i>★</i><i>★</i><i>★</i></span><em id="gCombo" class="cmb" hidden></em></div>
       <div class="trip" id="gTrip"><div class="trk" aria-hidden="true"><i class="done"></i><i class="peron"></i><i class="sig"></i><div class="mv" id="gTrain"></div></div><small id="gNext">⏱ 0:30</small><span class="bub" id="gBub" role="status"></span></div>
     </div>
+    <!-- kapışma: iki oyuncunun ilerlemesi (bağlanan karo oranı, hamle) -->
+    <div class="vsbar" id="vsBar"><div class="vsl me" id="vsMe"><span id="vsMeN"></span><i></i><b id="vsMeM">0</b></div><div class="vsl opp" id="vsOpp"><span id="vsOppN"></span><i></i><b id="vsOppM">0</b></div></div>
     <div id="board"><canvas id="cv" role="img" aria-label="Oyun tahtası: karolara dokunarak döndür, bütün durakları merkeze bağla" data-en-label="Game board: tap tiles to turn them and connect every station to the hub"></canvas></div>
     <div id="winPanel" class="winp"></div>
     <footer class="bottom">
@@ -110,6 +117,17 @@
       <div class="chip"><svg viewBox="0 0 24 24"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z"/></svg><b id="pStars">0</b></div>
     </header>
     <div class="mapList" id="mapList"></div>
+  </section>
+
+  <!-- haftalık lig: 30 kişilik grup -->
+  <section id="league" class="screen">
+    <header class="top">
+      <button id="lgBack" class="ic" aria-label="Geri" data-en-label="Back"><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg></button>
+      <div class="title"><b id="lgTitle">Lig</b><small id="lgSub"></small></div>
+      <button id="lgNick" class="ic" aria-label="Takma ad" data-en-label="Nickname"><svg viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16zM13.5 6.5l4 4"/></svg></button>
+    </header>
+    <div class="lgList" id="lgList"></div>
+    <button id="lgVs" class="btn primary lgvs"><span data-en="⚔️ Duel">⚔️ Kapış</span><small data-en="Win +10 points">Galibiyet +10 puan</small></button>
   </section>
 
   <!-- şehir haritası ve rozetler (ana sayfa logosundan · Hatlar başlığından) -->
@@ -151,6 +169,7 @@
 <script src="rules/son-sefer.js"></script>
 <script src="rules/kayan-sutun.js"></script>
 <script src="altigen.js"></script>
+<script src="lig.js"></script>
 <script src="game.js"></script>
 </body>
 </html>
