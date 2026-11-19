@@ -72,6 +72,16 @@ async function open(browser, url, { vp = [390, 844], scheme = 'dark', save = nul
   if (init) await ctx.addInitScript(init);
   await ctx.addInitScript(MOCK);
   const page = await ctx.newPage();
+  // Mağaza ve Kapış ayrı sayfa olunca (20 Kasım) eski senaryolar Mağaza sayfasında kalıp ana sayfa düğmesine basmaya çalışıyordu:
+  // ana sayfa düğmesi görünmüyorsa ve bir sekme sayfasındaysak (pencere kapalıyken) önce sekme çubuğuyla ana sayfaya dönülür.
+  const HOME = new Set(['#crownChip', '#bPlay', '#bDaily', '#bSettings', '#bQuest', '#bMap', '#starsChip', '#lifeChip', '#streakChip']), click0 = page.click.bind(page);
+  page.click = async (sel, o) => {
+    if (HOME.has(sel) && !(await page.isVisible(sel).catch(() => true))) {
+      await page.evaluate(() => { if (!document.querySelector('.modal.open') && ['shop', 'vs', 'league', 'city'].includes(document.body.dataset.scr)) document.querySelector('[data-tab=home]')?.click(); });
+      await page.waitForTimeout(400);
+    }
+    return click0(sel, o);
+  };
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
@@ -497,7 +507,7 @@ async function inViewport(page, sel) {
     await shot(page, 'skin-buy');
     await page.click('#mBuy'); await page.waitForTimeout(450);
     await shot(page, 'skins');
-    const sk = await page.evaluate(() => { const v = JSON.parse(localStorage.getItem('ray')); return { acc: getComputedStyle(document.documentElement).getPropertyValue('--acc').trim(), sel: v.skin, spent: v.spent, chip: document.getElementById('sCrowns').textContent, own: document.querySelectorAll('.skin:not(.lockd)').length }; });
+    const sk = await page.evaluate(() => { const v = JSON.parse(localStorage.getItem('ray')); return { acc: getComputedStyle(document.documentElement).getPropertyValue('--acc').trim(), sel: v.skin, spent: v.spent, chip: document.getElementById('sCrowns').textContent, own: new Set([...document.querySelectorAll('.skin:not(.lockd)')].map(e => e.dataset.k)).size }; });
     await page.click('.skin[data-k=sunset]'); await page.waitForTimeout(400);   // kalan 2 🎫 → 5'lik temaya yetmez → Bilet topla
     const poor = await page.evaluate(() => /Bilet topla/.test(document.querySelector('.sheet h2')?.textContent || '') && /3 🎫/.test(document.querySelector('.sheet p')?.textContent || '') && JSON.parse(localStorage.getItem('ray')).skin === 'ocean');
     await page.click('#mBack'); await page.waitForTimeout(350);
@@ -519,8 +529,10 @@ async function inViewport(page, sel) {
     // reklamsız paket: ayarlar → satın al → +20 ipucu, Altın tema, geçiş reklamı yok
     const dragClose = async () => { const b = await page.locator('.sheet h2').boundingBox(); await page.mouse.move(b.x + b.width / 2, b.y + 10); await page.mouse.down(); await page.mouse.move(b.x + b.width / 2, b.y + 250, { steps: 8 }); await page.mouse.up(); await page.waitForTimeout(600); return !(await page.evaluate(() => document.getElementById('modal').classList.contains('open'))); };
     await page.click('#bSettings'); await page.waitForTimeout(500); const c1 = await dragClose();
-    await page.click('#crownChip'); await page.waitForTimeout(500); const c2 = await dragClose();
-    check('sheet.swipe', 'Ayarlar ve Renk temaları aşağı kaydırınca kapanıyor', c1 && c2, `ayarlar ${c1} · temalar ${c2}`, 'medium');
+    // 🎫 çipi artık Mağaza sayfasının Temalar sekmesini açar (pencere değil); sekme çubuğuyla ana sayfaya dönülür
+    await page.click('#crownChip'); await page.waitForTimeout(500); const c2 = await page.evaluate(() => document.body.dataset.scr === 'shop' && !!document.querySelector('#shop .skin'));
+    await page.evaluate(() => document.querySelector('[data-tab=home]').click()); await page.waitForTimeout(450);
+    check('sheet.swipe', 'Ayarlar aşağı kaydırınca kapanıyor; 🎫 çipi Mağaza › Temalar sayfasını açar', c1 && c2, `ayarlar ${c1} · temalar sayfası ${c2}`, 'medium');
     const h0 = (await getSave(page)).hints;
     // 💛 özel tema taçla alınmaz: Altın'a dokununca Reklamsız paket açılır
     await page.click('#crownChip'); await page.waitForTimeout(450); await page.click('.skin[data-k=gold]'); await page.waitForTimeout(400);
@@ -529,7 +541,8 @@ async function inViewport(page, sel) {
     await shot(page, 'shop');
     await page.click('#mBuy'); await page.waitForTimeout(600);
     const sv = await getSave(page);
-    await page.click('#mClose').catch(() => {}); await page.waitForTimeout(300);
+    await page.click('#mClose', { timeout: 3000 }).catch(() => {}); await page.waitForTimeout(300);
+    await page.evaluate(() => document.querySelector('[data-tab=home]').click()); await page.waitForTimeout(450);
     await page.click('#bPlay'); await page.waitForTimeout(500);
     for (let k = 0; k < 4; k++) { await solve(page, 10); await waitModal(page); await page.click('#mNext'); await page.waitForTimeout(500); }   // 4. galibiyet normalde geçiş reklamı
     const ads = await page.evaluate(() => window.__log.ads.filter(a => a === 'interstitial').length);
