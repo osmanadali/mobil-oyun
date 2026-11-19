@@ -1,0 +1,38 @@
+# Ray — çeviri sözlüğü (11): M28 🌋 sarsıntı durağı (kural kartı ve oyun içi bildirim)
+# Biçim ve terimler: sozluk-1.txt başı ve docs/CEVIRI.md (hub: Zentrum · centro · centre · 허브 · ハブ · 樞紐; tile: Kachel · pieza · peça · tuile · 타일 · タイル · 方塊)
+
+@ Quake station
+de: Bebenstation
+es: Estación sísmica
+pt: Estação sísmica
+fr: Station sismique
+ko: 지진역
+ja: 地震駅
+zh: 地震站
+
+@ New: quake station
+de: Neu: Bebenstation
+es: Nuevo: estación sísmica
+pt: Novo: estação sísmica
+fr: Nouveau : station sismique
+ko: 새 규칙: 지진역
+ja: 新ルール：地震駅
+zh: 新規則：地震站
+
+@ The moment a 🌋 station <b>joins the line</b>, the tiles around it shake <b>90° clockwise</b>, again on every reconnect. <b>Leave it for last</b>, or connect it first and <b>fix its neighbors after</b>.
+de: Sobald eine 🌋 Station <b>ans Netz geht</b>, rütteln die Kacheln um sie herum <b>90° im Uhrzeigersinn</b>, bei jedem Wiederverbinden erneut. <b>Heb sie dir bis zuletzt auf</b> oder verbinde sie zuerst und <b>richte die Nachbarn danach</b>.
+es: En cuanto una estación 🌋 <b>se une a la línea</b>, las piezas de alrededor se sacuden <b>90° en sentido horario</b>, y otra vez en cada reconexión. <b>Déjala para el final</b>, o conéctala primero y <b>arregla sus vecinas después</b>.
+pt: No momento em que uma estação 🌋 <b>entra na linha</b>, as peças ao redor tremem <b>90° no sentido horário</b>, e de novo a cada reconexão. <b>Deixe-a para o fim</b>, ou conecte-a primeiro e <b>ajeite as vizinhas depois</b>.
+fr: Dès qu’une station 🌋 <b>rejoint la ligne</b>, les tuiles autour tremblent de <b>90° dans le sens horaire</b>, et encore à chaque reconnexion. <b>Garde-la pour la fin</b>, ou relie-la d’abord et <b>règle ses voisines ensuite</b>.
+ko: 🌋 역이 <b>노선에 이어지는 순간</b> 주변 타일이 <b>시계 방향으로 90°</b> 흔들려 돌아가요. 다시 이어질 때마다 또 흔들려요. <b>마지막에 잇거나</b>, 먼저 잇고 <b>주변 타일을 나중에</b> 맞추세요.
+ja: 🌋駅が<b>路線につながった瞬間</b>、周りのタイルが<b>時計回りに90°</b>揺れて回ります。つなぎ直すたびにまた揺れます。<b>最後につなぐ</b>か、先につないで<b>周りを後から</b>直そう。
+zh: 🌋 車站<b>連上路線的瞬間</b>，周圍的方塊會<b>順時針震轉 90°</b>，每次重新連上都會再震一次。<b>把它留到最後</b>，或先連上再<b>調整周圍方塊</b>。
+
+@ 🌋 Quake · the station connected and its neighbors turned 90°
+de: 🌋 Beben · die Station ist verbunden, ihre Nachbarn haben sich um 90° gedreht
+es: 🌋 Sismo · la estación se conectó y sus vecinas giraron 90°
+pt: 🌋 Tremor · a estação se conectou e as vizinhas giraram 90°
+fr: 🌋 Séisme · la station est reliée et ses voisines ont tourné de 90°
+ko: 🌋 지진 · 역이 이어지자 주변 타일이 90° 돌았어요
+ja: 🌋 地震 · 駅がつながり、周りのタイルが90°回りました
+zh: 🌋 地震 · 車站連上了，周圍方塊轉了 90°
