@@ -122,7 +122,7 @@ async function denetle(takimA, takimB) {
       for (const ad in r.kemik) { k[ad] = {}; for (const du in r.kemik[ad]) { const o = r.kemik[ad][du]; k[ad][du] = [+ortanca(o.seg).toFixed(1), +o.mg.toFixed(1), o.n, o.seg.length]; } }
       const gom = {}; for (const el in r.gom) { gom[el] = {}; for (const du in r.gom[el]) gom[el][du] = +ortanca(r.gom[el][du]).toFixed(2); }
       // deri genliği: % boy (göğse göre ağırlık merkezi yer değiştirmesinin köşegeni)
-      const deri = {}; const olc = b ? (b.kok.userData.vfxBoy || 1) / (b.model.scale.y * b.kok.scale.y) : 1;
+      const deri = {}; let olc = 1; if (b && r.ref) { r.ref.matrixWorld.decompose(v, qa, s); olc = (b.kok.userData.vfxBoy || 1) / Math.max(1e-6, s.y); }   // boy, göğüs kemiğinin yerel biriminde
       for (const du in r.deriK) { deri[du] = {}; for (const g in r.deriK[du]) { const q = r.deriK[du][g]; if (q.n < 3) continue; deri[du][g] = +(Math.hypot(q.mx[0] - q.mn[0], q.mx[1] - q.mn[1], q.mx[2] - q.mn[2]) / olc * 100).toFixed(1); } }
       cik.push({ uid, h: r.h, tur: r.tur, taraf: r.taraf, kemik: k, gom, deri, bekle: b && b.isk ? b.isk.beklemeAd : null });
     }
@@ -189,7 +189,7 @@ function incele(birim) {
     const gen = (ad) => { const k = b.kemik[ad]; if (!k || !k[baskin]) return '-'; return k[baskin][0].toFixed(0); };
     const kol = b.tur === 'iki' ? `${gen('LeftArm')}·${gen('RightArm')} / ${gen('LeftForeArm')}·${gen('RightForeArm')} / ${gen('LeftHand')}·${gen('RightHand')}`
       + (b.gom && b.gom.LeftHand ? ` · el açıklığı ${b.gom.LeftHand.bekle}·${b.gom.RightHand.bekle}` : '')
-      + (b.deri && b.deri[baskin] && b.deri[baskin].LeftKol != null ? ` · deri kol/el %boy ${b.deri[baskin].LeftKol}·${b.deri[baskin].RightKol} / ${b.deri[baskin].LeftEl}·${b.deri[baskin].RightEl}` : '')
+      + (b.deri && b.deri[baskin] && b.deri[baskin].LeftKol != null ? ` · deri kol/el %boy ${b.deri[baskin].LeftKol}·${b.deri[baskin].RightKol} / ${b.deri[baskin].LeftEl ?? '-'}·${b.deri[baskin].RightEl ?? '-'}` : '')
       : Object.keys(b.kemik).filter(a => /_1$/.test(a)).map(a => a.replace('Bacak_1', '').replace('_1', '') + ' ' + gen(a)).join(', ');
     satir.push(`| ${b.h} | ${b.tur} | ${Object.entries(du).map(([d, n]) => d + ':' + n).join(' ')} | ${baskin} | ${kol} | ${bl.length ? bl.map(x => `${x.tip} ${x.kemik}@${x.durum} ${x.derece}${x.tip === 'GOMULU' ? '' : '°'}${x.es ? ' (eş ' + x.esDerece + '°)' : ''}`).join('; ') : 'yok'} |`);
   }
