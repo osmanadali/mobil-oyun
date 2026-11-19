@@ -1,0 +1,110 @@
+# Ray — çeviri sözlüğü (12): 🎓 öğretici bölüm (adım yazıları, bitiş kutlaması, Ayarlar satırı)
+# Biçim ve terimler: sozluk-1.txt başı ve docs/CEVIRI.md (hub: Zentrum · centro · centre · 허브 · ハブ · 樞紐; tile: Kachel · pieza · peça · tuile · 타일 · タイル · 方塊)
+
+@ Tutorial
+de: Tutorial
+es: Tutorial
+pt: Tutorial
+fr: Tutoriel
+ko: 튜토리얼
+ja: チュートリアル
+zh: 教學
+
+@ Replay the tutorial
+de: Tutorial erneut spielen
+es: Repetir el tutorial
+pt: Jogar o tutorial de novo
+fr: Rejouer le tutoriel
+ko: 튜토리얼 다시 하기
+ja: チュートリアルをもう一度
+zh: 重玩教學
+
+@ Tap this tile: it <b>turns 90°</b> clockwise ↻
+de: Tippe diese Kachel an: Sie <b>dreht sich um 90°</b> im Uhrzeigersinn ↻
+es: Toca esta pieza: <b>gira 90°</b> en el sentido del reloj ↻
+pt: Toque nesta peça: ela <b>gira 90°</b> no sentido horário ↻
+fr: Touche cette tuile : elle <b>tourne de 90°</b> dans le sens horaire ↻
+ko: 이 타일을 탭하세요. 시계 방향으로 <b>90° 회전</b>해요 ↻
+ja: このタイルをタップ：時計回りに<b>90°回転</b>します ↻
+zh: 點這個方塊：它會順時針<b>旋轉 90°</b> ↻
+
+@ Tap it once more: when the rail <b>reaches the hub</b>, it lights up
+de: Tippe noch einmal: Sobald die Schiene <b>das Zentrum erreicht</b>, leuchtet sie
+es: Tócala otra vez: cuando la vía <b>llega al centro</b>, se ilumina
+pt: Toque mais uma vez: quando o trilho <b>chega ao centro</b>, ele acende
+fr: Touche-la encore : quand le rail <b>atteint le centre</b>, il s’allume
+ko: 한 번 더 탭하세요. 레일이 <b>허브에 닿으면</b> 불이 켜져요
+ja: もう一度タップ：レールが<b>ハブにつながる</b>と光ります
+zh: 再點一次：軌道<b>接上樞紐</b>時就會亮起
+
+@ This is a <b>station</b> 🚉 Tap it to join the line: it lights up
+de: Das ist eine <b>Station</b> 🚉 Tippe sie an, um sie anzuschließen: Sie leuchtet
+es: Esto es una <b>estación</b> 🚉 Tócala para unirla a la línea: se ilumina
+pt: Esta é uma <b>estação</b> 🚉 Toque para ligá-la à linha: ela acende
+fr: Voici une <b>station</b> 🚉 Touche-la pour la relier à la ligne : elle s’allume
+ko: 이건 <b>역</b>이에요 🚉 탭해서 노선에 이으면 불이 켜져요
+ja: これは<b>駅</b>です 🚉 タップして路線につなぐと光ります
+zh: 這是<b>車站</b> 🚉 點它接上路線：車站就會亮起
+
+@ Light <b>spreads</b> along connected rails. Turn this tile to extend the line
+de: Das Licht <b>breitet sich</b> über verbundene Schienen <b>aus</b>. Drehe diese Kachel, um die Linie zu verlängern
+es: La luz <b>se extiende</b> por las vías conectadas. Gira esta pieza para alargar la línea
+pt: A luz <b>se espalha</b> pelos trilhos ligados. Gire esta peça para estender a linha
+fr: La lumière <b>se propage</b> le long des rails reliés. Tourne cette tuile pour prolonger la ligne
+ko: 불빛은 이어진 레일을 따라 <b>퍼져요</b>. 이 타일을 돌려 노선을 뻗으세요
+ja: 光はつながったレールを<b>伝わります</b>。このタイルを回して路線をのばそう
+zh: 光會沿著相連的軌道<b>擴散</b>。轉動這個方塊來延伸路線
+
+@ Once more: let the line run both ways
+de: Noch einmal: Die Linie soll in beide Richtungen weiterlaufen
+es: Otra vez: que la línea siga hacia ambos lados
+pt: Mais uma vez: a linha deve seguir para os dois lados
+fr: Encore une fois : la ligne doit partir des deux côtés
+ko: 한 번 더: 노선이 양쪽으로 뻗어 나가게 하세요
+ja: もう一度：路線を左右両方にのばそう
+zh: 再一次：讓路線往兩邊延伸
+
+@ <b>Now you try:</b> light the last two stations. When every station reaches the hub, the level is done
+de: <b>Jetzt du:</b> Erleuchte die letzten zwei Stationen. Wenn jede Station mit dem Zentrum verbunden ist, ist das Level geschafft
+es: <b>Ahora tú:</b> ilumina las dos últimas estaciones. Cuando todas las estaciones lleguen al centro, el nivel termina
+pt: <b>Agora é sua vez:</b> acenda as duas últimas estações. Quando todas as estações chegam ao centro, a fase termina
+fr: <b>À toi :</b> allume les deux dernières stations. Quand chaque station est reliée au centre, le niveau est terminé
+ko: <b>이제 직접 해 보세요:</b> 남은 두 역에 불을 켜세요. 모든 역이 허브에 이어지면 레벨이 끝나요
+ja: <b>自分でやってみよう：</b>残り2つの駅を点灯させよう。すべての駅がハブにつながるとステージクリア
+zh: <b>換你試試：</b>點亮最後兩個車站。每個車站都接上樞紐時，關卡就完成了
+
+@ Stuck? Tap the <b>glowing tile</b>
+de: Hängst du fest? Tippe die <b>leuchtende Kachel</b> an
+es: ¿Atascado? Toca la <b>pieza que brilla</b>
+pt: Travou? Toque na <b>peça que brilha</b>
+fr: Bloqué ? Touche la <b>tuile qui brille</b>
+ko: 막혔나요? <b>빛나는 타일</b>을 탭하세요
+ja: 迷ったら<b>光っているタイル</b>をタップ
+zh: 卡住了嗎？點<b>發光的方塊</b>
+
+@ Every station is lit! 🎉
+de: Alle Stationen leuchten! 🎉
+es: ¡Todas las estaciones iluminadas! 🎉
+pt: Todas as estações acesas! 🎉
+fr: Toutes les stations sont allumées ! 🎉
+ko: 모든 역에 불이 켜졌어요! 🎉
+ja: すべての駅が点灯！🎉
+zh: 所有車站都亮了！🎉
+
+@ You’re ready!
+de: Du bist bereit!
+es: ¡Ya estás listo!
+pt: Você está pronto!
+fr: Tu es prêt !
+ko: 준비 완료!
+ja: 準備OK！
+zh: 準備好了！
+
+@ Turn tiles and connect every station to the hub. The real lines are waiting.
+de: Drehe Kacheln und verbinde jede Station mit dem Zentrum. Die echten Linien warten.
+es: Gira piezas y conecta cada estación al centro. Las líneas de verdad te esperan.
+pt: Gire peças e ligue cada estação ao centro. As linhas de verdade esperam por você.
+fr: Tourne les tuiles et relie chaque station au centre. Les vraies lignes t’attendent.
+ko: 타일을 돌려 모든 역을 허브에 이으세요. 진짜 노선들이 기다리고 있어요.
+ja: タイルを回して、すべての駅をハブにつなごう。本物の路線が待っています。
+zh: 轉動方塊，把每個車站接上樞紐。真正的路線在等你。

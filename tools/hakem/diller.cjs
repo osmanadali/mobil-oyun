@@ -94,10 +94,10 @@ module.exports = async T => {
   const res = {};
   for (const [lang, locale] of LANGS) {
     const R = res[lang] = { scr: {} }, gap = () => page.waitForTimeout(600), sheet = '#mCard';
-    // açılış: ilk kez açan oyuncu (nasıl oynanır öğreticisi kendiliğinden açılır)
+    // açılış: ilk kez açan oyuncu (🎓 öğretici bölüm kendiliğinden açılır)
     let o = await open(browser, URL, { vp: [320, 568] }, locale);
     await o.page.waitForTimeout(1600);
-    R.scr.intro = await probe(o.page, '#home,#mCard'); R.lang = await o.page.evaluate(() => [window.RAY_LANG, document.documentElement.lang, document.title].join('|'));
+    R.scr.intro = await probe(o.page, '#game,#mCard'); R.lang = await o.page.evaluate(() => [window.RAY_LANG, document.documentElement.lang, document.title].join('|'));
     R.miss = await o.page.evaluate(() => [...(window.__L_MISS || [])]); errs.push(...o.errors.map(e => `${lang}: ${e}`)); await o.ctx.close();
     o = await open(browser, URL, { vp: [320, 568], save: SAVE }, locale);
     const page = o.page;

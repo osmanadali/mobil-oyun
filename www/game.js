@@ -766,7 +766,7 @@ function show(id) {
   if (id !== 'game' && G?.duel && !G.duelOver && !G.won) vsEnd(null);   // kapışmadan çıkış = terk
   if (id !== 'game' && active('game')) quitEv();
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
-  document.body.classList.toggle('playing', id === 'game');
+  document.body.classList.toggle('playing', id === 'game'); document.body.classList.toggle('tut', id === 'game' && !!G?.tut);
   if (id === 'game') resume(); else { pause(); cityDown(); }
   Music.setMode(id === 'game' ? 'game' : 'menu');
   if (id === 'home') { refreshHome(); setTimeout(maybeGift, 450); setTimeout(maybeRescue, 600); setTimeout(maybeRecommend, 1500); setTimeout(() => { if (active('home') && !introOn) ligWeek(); }, 900); idle(() => { if (active('home')) { puzzleFor(save.level); if (save.dailyDone !== today()) dailyFor(today()); if (window.__rayCalm()) Ads.warm(); } }, document.body.classList.contains('introing') ? 3200 : 900); /* Oyna / Günün Hattı anında açılsın (intro'yu kesmeden) */ if (G && Remind.avail() && !save.remindAsked && (save.dailyDone || save.level > lineEnd(0))) setTimeout(() => { if (active('home') && !modalOpen()) remindAsk(); }, 700); }
@@ -930,28 +930,31 @@ function setLineColor() {
 const runKey = () => G.arch ? 'arch' : G.daily ? 'daily' : 'level';
 function saveRun() {
   if (G?.duel) return vsSend();   // kapışma: yarım oyun kaydı yok; ilerleme rakibe gider
-  if (!G || G.won || G.over) return;
+  if (!G || G.won || G.over || G.tut) return;   // öğretici: yarım oyun kaydı yok (yeniden açılınca baştan)
   save.runs[runKey()] = { lvl: G.lvl, day: G.day, cur: G.cur, fixed: G.fixed, moves: G.moves, last: G.lastTile, ms: elapsed(), pv: 4, sig: G.sig, ...(G.hinted ? { hn: 1 } : {}), ...(G.xt ? { xt: G.xt } : {}), ...(G.cnt.some(v => v >= 0) ? { cnt: G.cnt } : {}) };
   persist();
 }
 // mode 'arch': arşivden geçmiş bir günün Günün Hattı'nı oynar (lvl = gün)
 // ölçüm (olcum.js): yalnız oyun olayları, kişisel veri yok
-const lvlP = () => G ? (G.duel ? { mode: 'duel', level: G.lvl } : G.daily ? { mode: G.arch ? 'archive' : 'daily' } : { mode: 'level', level: G.lvl, line: lineOf(G.lvl) + 1 }) : {};
-const quitEv = () => { if (G && !G.won && (G.moves || G.hu)) Olcum.event('level_quit', { ...lvlP(), time_s: elapsed() / 1000 | 0, moves: G.moves, hints: G.hu || 0 }); };
+const lvlP = () => G ? (G.tut ? { mode: 'tutorial' } : G.duel ? { mode: 'duel', level: G.lvl } : G.daily ? { mode: G.arch ? 'archive' : 'daily' } : { mode: 'level', level: G.lvl, line: lineOf(G.lvl) + 1 }) : {};
+const quitEv = () => { if (G && !G.tut && !G.won && (G.moves || G.hu)) Olcum.event('level_quit', { ...lvlP(), time_s: elapsed() / 1000 | 0, moves: G.moves, hints: G.hu || 0 }); };
 function start(mode, lvl = save.level) {
   const duel = mode === 'duel' ? lvl : null; if (duel) { mode = 'level'; lvl = duel.level; }   // kapışma: maç bilgisi → bölüm numarası (iki tarafta aynı bulmaca)
+  if (mode !== 'tut' && !duel && tutDue()) mode = 'tut';   // 🎓 yeni oyuncu önce öğreticiyi bitirir (zorunlu)
+  const tut = mode === 'tut', tutRe = tut && !!save.tut;   // tutRe: Ayarlar'dan yeniden oynanıyor (çıkılabilir)
   if (G && active('game')) quitEv();
-  clearTimeout(howT); clearTimeout(winTimer); closeModal(); closePanel(); cityDown();
+  clearTimeout(howT); clearTimeout(winTimer); clearTimeout(tutT); closeModal(); closePanel(); cityDown();
   const arch = mode === 'arch', daily = mode === 'daily' || arch, day = arch ? lvl : today();
-  if (!daily && !duel && !unlocked(lineOf(lvl))) { lockedSheet(lineOf(lvl)); return; }
+  if (!tut && !daily && !duel && !unlocked(lineOf(lvl))) { lockedSheet(lineOf(lvl)); return; }
   // ❤️ 0 canda yeni bölüm başlamaz (yarım kalan aynı bölüm sürer; Günün Hattı, arşiv ve 🍃 zen can harcamaz)
-  if (!daily && !duel && !save.zen && !infOn() && lives() <= 0 && save.runs.level?.lvl !== lvl) { if (active('game')) show('home'); lifePop(lvl); return; }
-  G = { ...(daily ? dailyFor(day) : puzzleFor(lvl)), daily, arch, lvl: daily ? 0 : lvl, day: daily ? day : null, practice: arch ? archPlayed(day) : daily && save.dailyDone === day, duel, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0, bub: 0 };
-  G.lim = limits(G); G.zen = (!!save.zen && !daily) || !!duel;   // kapışma: hedef yok (ilk bitiren kazanır)
+  if (!tut && !daily && !duel && !save.zen && !infOn() && lives() <= 0 && save.runs.level?.lvl !== lvl) { if (active('game')) show('home'); lifePop(lvl); return; }
+  G = { ...(tut ? tutPuzzle() : daily ? dailyFor(day) : puzzleFor(lvl)), tut, tutRe, daily, arch, lvl: daily || tut ? 0 : lvl, day: daily ? day : null, practice: arch ? archPlayed(day) : daily && save.dailyDone === day, duel, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0, bub: 0 };
+  G.lim = limits(G); G.zen = (!!save.zen && !daily) || !!duel || tut;   // kapışma: hedef yok (ilk bitiren kazanır) · öğretici: süre ve hamle hedefi yok
+  $('game').classList.toggle('tut', tut); $('game').classList.toggle('tutre', tutRe); document.body.classList.toggle('tut', tut);
   G.lim.dl = G.zen || daily || lineOf(lvl) < CALM_LINES ? 0 : lastCall(G.lim.t);   // son süre (0: yok) · ilk iki hatta yok: süre geçince yalnız ⏱ yıldızı kaçar, can gitmez   // 🍃 zen: hedefler gizli (Günün Hattı herkes için aynı koşulda)
   $('game').classList.toggle('zen', G.zen); $('game').classList.toggle('duel', !!duel); $('game').querySelector('.status').dataset.zen = L('🍃 Zen', '🍃 Zen');
   // yarım kalan oyunu sürdür
-  const run = duel ? null : save.runs[arch ? 'arch' : daily ? 'daily' : 'level'];
+  const run = duel || tut ? null : save.runs[arch ? 'arch' : daily ? 'daily' : 'level'];
   // yarım oyun yalnız aynı bulmacaya: imza = çözüm + başlangıç dizilimi (makas/tabla çözümü değil başlangıcı değiştirir);
   // imzasız eski kayıt yalnız eklentilerden etkilenmeyen bölümlerde (M5 kayan sıradan önce, Günün Hattı)
   G.sig = hashStr(G.sol.join() + '|' + G.cur.join());
@@ -967,14 +970,15 @@ function start(mode, lvl = save.level) {
   G.seen = G.cur.map(() => !G.fog);
   seenAt = G.seen.map(() => -1e9); hidAt = seenAt.slice(); reveal(true);
   G.tOk = timeOk(G.ms / 1000); G.mOk = movesOk();
-  $('gTitle').textContent = daily ? (arch ? L('Günün Hattı · geçmiş gün', 'Daily Line · past day') : G.practice ? L('Günün Hattı · pratik', 'Daily Line · practice') : L('Günün Hattı', 'Daily Line')) : `${L('Bölüm', 'Level')} ${lvl}${G.final ? L(' · 🏁 Son durak', ' · 🏁 Last stop') : ''}`;
+  $('gTitle').textContent = tut ? L('Öğretici', 'Tutorial') : daily ? (arch ? L('Günün Hattı · geçmiş gün', 'Daily Line · past day') : G.practice ? L('Günün Hattı · pratik', 'Daily Line · practice') : L('Günün Hattı', 'Daily Line')) : `${L('Bölüm', 'Level')} ${lvl}${G.final ? L(' · 🏁 Son durak', ' · 🏁 Last stop') : ''}`;
   $('game').classList.toggle('final', !!G.final);
-  $('gMoves').textContent = `${daily ? dayDate(day).toLocaleDateString(LOC, { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl))}${!daily && breath(lvl) ? ' · ' + L('☕ mola', '☕ breather') : ''}${G.week ? ' · ' + RULES[RULE_LINE[G.week]].name : ''}${G.hex ? ' · ' + L('⬡ Altıgen', '⬡ Hex') : ''}`;
+  $('gMoves').textContent = tut ? L('Nasıl oynanır?', 'How to play?') : `${daily ? dayDate(day).toLocaleDateString(LOC, { day: 'numeric', month: 'long' }) : lineName(lineOf(lvl))}${!daily && breath(lvl) ? ' · ' + L('☕ mola', '☕ breather') : ''}${G.week ? ' · ' + RULES[RULE_LINE[G.week]].name : ''}${G.hex ? ' · ' + L('⬡ Altıgen', '⬡ Hex') : ''}`;
   $('gHints').textContent = save.hints;
   clearTimeout(bubT); $('gBub').classList.remove('show');
   const stake = comboStake(); $('gCombo').hidden = stake < 2; $('gCombo').textContent = `✨${stake}`;
   if (duel) { $('gTitle').textContent = L('⚔️ Kapış', '⚔️ Duel'); $('gMoves').textContent = L('İlk bitiren kazanır', 'First to finish wins'); vsBar(duel); }
   show('game'); resize(); hud(); tick();
+  if (tut) { tutSet(0); if (!tutRe) Olcum.event('tutorial_begin', {}); Jank.take(); return; }
   Olcum.event('level_start', { ...lvlP(), resumed: !!G.moves }); Jank.take();   // takılma sayacı bu bölüm için sıfırlanır
   // Günün Hattı yalnız pazar günü kural taşır (haftanın kuralı): oyuncu o kuralı henüz görmediyse kartı açılır
   const rc = (G.rules || []).map(k => RULE_LINE[k]).filter(c => RULES[c] && !save.seen[c]).sort((a, b) => a - b)[0];
@@ -1115,6 +1119,7 @@ function resize() {
   if (!G) return;
   const p = { l: 0, r: 0, t: 0, b: 0 };   // eklenti kenar payı (karo cinsinden), ör. tünel ağızları
   for (const m of MODS) if (m.pad && G[m.key]) m.pad(G, p);
+  if (G.tut) p.l = p.r = p.t = p.b = .3;   // 🎓 öğretici: vurgu halkası tahta kenarında kesilmesin
   const s = Math.floor(Math.min((Wd - 8) / (G.cols + p.l + p.r), (Hd - 8) / (G.rows + p.t + p.b), 96));
   const ng = G.hex ? HX.fit(G, Wd, Hd, dpr) : { s, ox: (Wd - s * (G.cols + p.l + p.r)) / 2 + p.l * s, oy: (Hd - s * (G.rows + p.t + p.b)) / 2 + p.t * s, dpr };   // ⬡ altıgen: ox/oy tahta merkezi
   if (G.won && vg.s && (ng.s !== vg.s || ng.oy !== vg.oy)) { geoFrom = vg; geoT0 = performance.now(); }
@@ -1271,6 +1276,7 @@ function draw(ts) {
     if (any) { cx.beginPath(); for (let i = 0; i < n; i++) if (!G.seen[i]) { const [x, y] = X[i], w = s - 8; rrp(x - w / 2, y - w / 2, w, w, s * .22); } cx.lineWidth = 1; cx.strokeStyle = 'rgba(255,255,255,.06)'; cx.stroke(); }
   }
   hook('top');
+  if (G.tut && tutDraw(X, s, now, col)) busy = true;   // 🎓 öğretici: vurgulanan karo
   // 7) dokunma dalgaları
   cx.lineWidth = 2.5;
   ripples = ripples.filter(r => {
@@ -1305,6 +1311,7 @@ cv.addEventListener('pointerdown', e => {
   const c = Math.floor((px - ox) / s), w = Math.floor((py - oy) / s), hx = G.hex ? HX.hit(G, geo, px, py) : 0;   // ⬡ altıgen: en yakın karo merkezi
   if (G.hex ? hx < 0 : c < 0 || w < 0 || c >= G.cols || w >= G.rows) return;
   const i = G.hex ? hx : w * G.cols + c, now = performance.now();
+  if (G.tut && !tutGate(i, now)) return;   // 🎓 bu adımda vurgulanmayan karo dönmez
   if (G.fixed[i]) { haptic('light'); tone(440, .06, .02); toast(L('Bu karo ipucuyla sabitlendi', 'This tile was set by a hint')); press.set(i, now); kick(); return; }
   if (G.fog && !G.seen[i]) { haptic('light'); tone(196, .05, .012); press.set(i, now); kick(); if (!G.fogTold) { toast(L('Karanlık tünel · hat yaklaşınca aydınlanır', 'Dark tunnel · lights up as the line nears')); G.fogTold = true; } return; }
   if (G.cnt[i] === 0 && G.cur[i] !== G.sol[i] && bst('tur') > 0) { haptic('light'); press.set(i, now); kick(); turSheet(i); return; }
@@ -1347,6 +1354,7 @@ cv.addEventListener('pointerdown', e => {
   if (gained) { tone(note(k), .22, .05); if (stations) tone(note(k + 2), .3, .035, 'sine', .06); haptic(stations ? 'heavy' : 'light'); }
   else { tone(G.L.n < prev.filter(v => v >= 0).length ? 294 : 523, .05, .022); haptic('light'); }
   hud(); tick(); kick();
+  if (G.tut && !G.L.solved) tutAfter(i);
   if (G.L.solved) win(); else saveRun();
 });
 
@@ -1371,6 +1379,7 @@ function cityDown() { document.querySelector('.bg')?.classList.remove('city', 'r
 function win() {
   pause(); cityUp();
   G.won = true; G.time = elapsed();
+  if (G.tut) return tutWin();   // öğretici: kayıtta yalnız save.tut
   if (G.duel) { winT = performance.now() + 120; G.L.d.forEach((v, i) => { litAt[i] = winT + v * 45; }); kick(); [0, 2, 4, 5, 7].forEach((k, j) => tone(note(k + 3), .4, .05, 'sine', .12 + j * .09)); haptic('win'); vsSend(true); setTimeout(() => vsEnd(true), 700); return; }
   delete save.runs[runKey()];
   winT = performance.now() + 120;
@@ -1893,7 +1902,7 @@ function grantItem(it, tx) {
 }
 
 async function hint() {
-  if (!G || G.won || G.over) return;
+  if (!G || G.won || G.over || G.tut) return;
   if (G.duel) { toast(L('Kapışmada ipucu yok', 'No hints in a duel')); return; }
   dayTick();
   if (save.hints <= 0) {
@@ -1958,7 +1967,7 @@ function ruleCard(c, week) {
 function nearLit(i) { if (G.hex) return HX.nearLit(G, i); const x = i % G.cols, y = i / G.cols | 0; let n = 0; for (const [, dx, dy] of DIRS) { const nx = x + dx, ny = y + dy; if (nx >= 0 && ny >= 0 && nx < G.cols && ny < G.rows && G.L.d[ny * G.cols + nx] >= 0) n++; } return n; }
 // baştan: süre ve hamle sıfırlanır, ipucuyla açılan karolar korunur
 function reset() {
-  if (G?.duel) return;   // kapışma: baştan alma yok (düğme gizli)
+  if (G?.duel || G?.tut) return;   // kapışma, öğretici: baştan alma yok (düğme gizli)
   if (G?.won && $('game').classList.contains('won')) return start(G.arch ? 'arch' : G.daily ? 'daily' : 'level', G.arch ? G.day : G.lvl);   // sonuç ekranında ↺ = tekrar
   if (!G || G.won || G.over) return;
   const keep = G.fixed.map((f, i) => f ? i : -1).filter(i => i >= 0), mode = G.arch ? 'arch' : G.daily ? 'daily' : 'level', lvl = G.arch ? G.day : G.lvl, hn = G.hinted;
@@ -2267,7 +2276,7 @@ const SND_BINDS = {
 };
 // Duraklat (oyunda sol üst ‖, Android geri tuşu): süre durur, tahta bulanır; pencere nasıl kapanırsa kapansın oyun sürer
 function pauseSheet() {
-  if (!G || G.won || G.over || !active('game') || modalOpen()) return;
+  if (!G || G.tut || G.won || G.over || !active('game') || modalOpen()) return;
   pause(); $('game').classList.add('paused'); haptic();
   modal(`<h2>${L('Duraklatıldı', 'Paused')}</h2>
     ${SND_TOGS()}
@@ -2297,6 +2306,7 @@ function settings() {
     <div class="opt lang">${L('Dil', 'Language')} <button id="oLb" class="dd" aria-expanded="false" aria-controls="oLw"><span lang="${cur[0]}">${cur[1]}</span><i>▾</i></button></div>
     <div class="langs" id="oLw"><div><div id="oL">${lang}</div></div></div>
     <button class="opt row" id="oHow"><span>${L('Nasıl oynanır?', 'How to play?')}</span><small>›</small></button>
+    <button class="opt row" id="oTut"><span>${L('Öğreticiyi yeniden oyna', 'Replay the tutorial')}</span><small>🎓 ›</small></button>
     <button class="opt row" id="oMove"><span>${L('İlerlemeyi taşı', 'Move progress')}</span><small>${L('Yeni telefona', 'To a new phone')} ›</small></button>
     ${SUPPORT_MAIL ? `<button class="opt row" id="oMail"><span>${L('Bize yaz', 'Contact us')}</span><small>${L('Öneri · hata', 'Ideas · bugs')} ›</small></button>` : ''}
     <button class="opt row" id="oRec"><span>${L('Arkadaşına öner', 'Recommend to a friend')}</span><small>🤝 ›</small></button>
@@ -2311,7 +2321,7 @@ function settings() {
     },
     oRec: recommend, oRate: rateApp,
     oNick: nickSheet, oLeave: ligLeave,
-    oPriv: privacySheet, oHow: () => { closeModal(); how(); }, oMove: moveSheet, oMail: () => { location.href = `mailto:${SUPPORT_MAIL}?subject=${encodeURIComponent('Ray · ' + (window.Capacitor?.getPlatform?.() || 'web') + ' · ' + RAY_LANG)}`; },
+    oPriv: privacySheet, oHow: () => { closeModal(); how(); }, oTut: () => { closeModal(); start('tut'); }, oMove: moveSheet, oMail: () => { location.href = `mailto:${SUPPORT_MAIL}?subject=${encodeURIComponent('Ray · ' + (window.Capacitor?.getPlatform?.() || 'web') + ' · ' + RAY_LANG)}`; },
     ...SND_BINDS,
     oZ: () => { save.zen = !save.zen; persist(); $('oZ').classList.toggle('on', save.zen); toast(save.zen ? L('🍃 Zen: süre ve hamle hedefi yok · her bitiş 3 ★ · 🎫 verilmez', '🍃 Zen: no timer or move target · every finish 3 ★ · no 🎫') : L('Zen kapalı · hedefler geri geldi', 'Zen off · targets are back')); },
     mClose: closeModal });
@@ -2727,7 +2737,7 @@ function demo(cv2, onPage) {
 }
 // Anlatıcı: son sayfaya gelmeden kapanmaz (dışarı dokunma ve geri tuşu da kapatmaz).
 function how() {
-  const last = DEMO_STEPS.length - 1, endTxt = save.played ? L('Tamam', 'Done') : L('Hadi oynayalım!', 'Let’s play!');
+  const last = DEMO_STEPS.length - 1, endTxt = L('Tamam', 'Done');
   let done = false;
   modal(`<h2>${L('Nasıl oynanır?', 'How to play?')}</h2>
     <div class="pgs" id="demoDots">${'<i><b></b></i>'.repeat(DEMO_STEPS.length)}</div>
@@ -2737,7 +2747,7 @@ function how() {
     <button id="mClose" class="btn primary"><span>${L('İleri ›', 'Next ›')}</span><small>1 / ${DEMO_STEPS.length}</small></button>`, {}, true);
   const btn = $('mClose'), close = closeModal, first = !save.played;
   Olcum.event('tutorial', { step: 'begin', first });
-  mOnClose = () => { Olcum.event('tutorial', { step: done ? 'complete' : 'skip', first }); if (save.played === 0 && !G) start('level'); };
+  mOnClose = () => Olcum.event('tutorial', { step: done ? 'complete' : 'skip', first });
   const D = demo($('demoCv'), k => {
     if (k === last && !done) { done = true; mLocked = false; $('demoSwipe').style.visibility = 'hidden'; }
     btn.classList.toggle('fin', done && k === last);
@@ -2746,6 +2756,96 @@ function how() {
   btn.onclick = () => D.page === last ? close() : D.next();
   howBack = () => { if (done) close(); else if (D.page > 0) D.prev(); };
 }
+// ---------- öğretici bölüm: numarasız, Bölüm 1'den önce, zorunlu (yeni oyuncu bitirmeden bölümlere geçmez) ----------
+// Elle çizilmiş 3×3 tahta, oyunun kendi çizimiyle. Her adımda tek karo vurgulanır (nabız halkası + parmak); vurgusuz karo dönmez.
+// Son adımda yönlendirme kalkar ("Şimdi sen dene"); TUT_IDLE ms dokunulmazsa sıradaki yanlış karo yine vurgulanır.
+// Kayıtta yalnız save.tut = 1: bölüm sayacı, yıldız, lig, görev, can, reklam sayacı, save.played değişmez; süre ve hamle hedefi yok.
+// Tahta (merkez 4): 0 ┌ · 1 ┬ · 2 durak · 3 │ · 4 merkez · 5 ┐ · 6 └ · 7 durak · 8 durak. Başta yalnız merkez yanar.
+const TUT_SOL = [6, 14, 8, 5, 3, 12, 3, 8, 1], TUT_CUR = [6, 11, 4, 5, 3, 3, 9, 8, 8], TUT_IDLE = 4000;
+const TUT_STEPS = [
+  { i: 5, ok: g => g.cur[5] === 6, t: L('Bu karoya dokun: saat yönünde <b>90° döner</b> ↻', 'Tap this tile: it <b>turns 90°</b> clockwise ↻') },
+  { i: 5, t: L('Bir kez daha dokun: ray <b>merkeze bağlanınca</b> ışık yanar', 'Tap it once more: when the rail <b>reaches the hub</b>, it lights up') },
+  { i: 8, t: L('Bu bir <b>durak</b> 🚉 Dokun, hatta bağla: durak yanar', 'This is a <b>station</b> 🚉 Tap it to join the line: it lights up') },
+  { i: 1, t: L('Işık bağlı raylarda <b>yayılır</b>. Bu karoyu çevir, hattı uzat', 'Light <b>spreads</b> along connected rails. Turn this tile to extend the line'),
+    more: L('Bir kez daha: hat iki yana da uzasın', 'Once more: let the line run both ways') },
+  { i: -1, t: L('<b>Şimdi sen dene:</b> son iki durağı da yak. Bütün duraklar merkeze bağlanınca bölüm biter', '<b>Now you try:</b> light the last two stations. When every station reaches the hub, the level is done') },
+];
+// yeni oyuncu: hiç bölüm oynamamış, kaydı boş. Kaydında ilerleme olan (güncelleme sonrası) öğreticiye sokulmaz.
+const tutDue = () => !save.tut && !save.played && save.level <= 1 && !Object.keys(save.stars).length && !save.dailyDone && !save.lastDaily;
+function tutPuzzle() {
+  const n = TUT_SOL.length, no = v => new Array(n).fill(v);
+  return { cols: 3, rows: 3, hub: 4, hub2: -1, sol: TUT_SOL.slice(), cur: TUT_CUR.slice(), par: 4, taps: 6, pinned: no(false), link: no(-1), rev: no(false), cnt: no(-1), fixed: no(false), rules: [], tutS: 0, tutHi: -1 };
+}
+let tutT = 0;
+function tutSet(k) {
+  G.tutS = k; const s = TUT_STEPS[k]; clearTimeout(tutT);
+  G.tutHi = s.i; G.tutAt = performance.now();
+  const el = $('tutTxt');
+  el.classList.add('fade'); setTimeout(() => { if (G?.tut && G.tutS === k) { el.innerHTML = s.t; el.classList.remove('fade'); } }, k ? 180 : 0);
+  $('tutDots').innerHTML = TUT_STEPS.map((_, j) => `<i class="${j < k ? 'ok' : j === k ? 'on' : ''}"></i>`).join('');
+  if (s.i < 0) tutIdle();
+  kick();
+}
+// serbest adım: dokunulmadan TUT_IDLE ms geçerse merkeze en yakın yanlış karo vurgulanır (merkez hariç)
+function tutIdle() {
+  clearTimeout(tutT); const g = G;
+  tutT = setTimeout(() => {
+    if (G !== g || g.won || !active('game')) return;
+    const dep = tree(g).dep, i = g.cur.map((v, j) => j).filter(j => j !== g.hub && g.cur[j] !== g.sol[j]).sort((a, b) => dep[a] - dep[b] || a - b)[0];
+    if (i == null) return;
+    g.tutHi = i; g.tutAt = performance.now();
+    $('tutTxt').innerHTML = L('Takıldın mı? <b>Parlayan karoya</b> dokun', 'Stuck? Tap the <b>glowing tile</b>'); kick();
+  }, TUT_IDLE);
+}
+// dokunuştan önce: false → bu adımda bu karo dönmez (nazik yönlendirme, hata sesi yok)
+function tutGate(i, now) {
+  const s = TUT_STEPS[G.tutS];
+  if (i !== G.hub && (s.i < 0 || i === s.i)) return true;
+  press.set(i, now); G.tutNudge = now; haptic('light'); kick();
+  const t = $('tutTip'); t.classList.remove('shake'); void t.offsetWidth; t.classList.add('shake');
+  return false;
+}
+// dokunuştan sonra: adım tamam mı
+function tutAfter(i) {
+  const k = G.tutS, s = TUT_STEPS[k];
+  if (s.i < 0) { if (G.tutHi >= 0 && G.cur[G.tutHi] === G.sol[G.tutHi]) G.tutHi = -1; if (G.tutHi < 0) $('tutTxt').innerHTML = s.t; tutIdle(); return; }
+  if (s.ok ? s.ok(G) : G.cur[s.i] === G.sol[s.i]) { tone(note(9), .25, .03, 'sine', .12); tutSet(k + 1); }
+  else if (s.more && i === s.i) $('tutTxt').innerHTML = s.more;
+}
+// vurgu: karonun çevresinde nabız atan halka + dokunan parmak (anlatıcı demosundaki gibi)
+function tutDraw(X, s, now, col) {
+  const i = G.tutHi ?? -1; if (i < 0 || G.won) return false;
+  const [x, y] = X[i], w = s - 6, p = ((now - G.tutAt) % 1500) / 1500, nd = Math.max(0, 1 - (now - (G.tutNudge || -1e9)) / 450);
+  const ring = (g, a, lw) => { cx.strokeStyle = rgba(col, a); cx.lineWidth = lw; rr(x - g / 2, y - g / 2, g, g, s * .24 + (g - w) * .3); cx.stroke(); };
+  ring(w + 6 + nd * s * .12 * Math.sin(nd * Math.PI * 3), .95, 3);
+  ring(w + 6 + ease(p) * s * .26, .6 * (1 - p), 2 + 4 * (1 - p));
+  // parmak: sağ alttan gelir, karonun ortasına yakın dokunur (dalga), geri çekilir
+  const down = p > .38 && p < .5, lift = p < .38 ? 1 - ease(p / .38) : p < .5 ? 0 : ease(Math.min(1, (p - .5) / .4)) * .6;
+  const fx = x + s * (.24 + .14 * lift), fy = y + s * (.28 + .14 * lift), r = s * (down ? .11 : .13);   // durak ve rayı örtmesin: sağ alt köşede
+  if (p > .38 && p < .9) { const q = (p - .38) / .52; cx.strokeStyle = `rgba(255,255,255,${.75 * (1 - q)})`; cx.lineWidth = 2.5; cx.beginPath(); cx.arc(fx - s * .04, fy - s * .05, r + q * s * .38, 0, 7); cx.stroke(); }
+  cx.save(); cx.shadowColor = 'rgba(0,0,0,.35)'; cx.shadowBlur = 10; cx.fillStyle = 'rgba(255,255,255,.9)'; cx.beginPath(); cx.arc(fx, fy, r, 0, 7); cx.fill(); cx.restore();
+  return true;
+}
+// bitiş: kısa kutlama, sonra doğrudan Bölüm 1 (yeniden oynayan: ana sayfa)
+function tutWin() {
+  const g = G; g.won = true; g.tutHi = -1; clearTimeout(tutT);
+  winT = performance.now() + 120;
+  g.L.d.forEach((v, i) => { litAt[i] = winT + v * 45; if (popc(g.cur[i]) === 1) burst(i, 12, 120 + v * 45); });
+  kick(); [0, 2, 4, 5, 7].forEach((k, j) => tone(note(k + 3), .4, .05, 'sine', .12 + j * .09)); haptic('win');
+  Music.setMode('rest');
+  $('tutTxt').innerHTML = L('Bütün duraklar yandı! 🎉', 'Every station is lit! 🎉'); $('tutDots').innerHTML = TUT_STEPS.map(() => '<i class="ok"></i>').join('');
+  const first = !save.tut; save.tut = 1; persist();
+  if (first) Olcum.event('tutorial_complete', { time_s: elapsed() / 1000 | 0, moves: g.moves });
+  winTimer = setTimeout(() => { if (G === g && active('game')) tutDone(g); }, 120 + Math.max(...g.L.d) * 45 + 1500);   // önce yanan tahta görünsün
+}
+function tutDone(g) {
+  const go = () => { closeModal(); if (g.tutRe) show('home'); else start('level', save.level); };
+  modal(`<div class="bell">🎓</div><h2>${L('Hazırsın!', 'You’re ready!')}</h2>
+    <p>${L('Karoları çevir, bütün durakları merkeze bağla. Gerçek hatlar seni bekliyor.', 'Turn tiles and connect every station to the hub. The real lines are waiting.')}</p>
+    <p class="tip">${L('<b>Hızlı</b> bitir + <b>az</b> dokun = ★★★', 'Finish <b>fast</b> + tap <b>less</b> = ★★★')}</p>
+    <button id="tGo" class="btn primary"><span>${g.tutRe ? L('Tamam', 'Done') : `${L('Bölüm', 'Level')} 1`}</span>${g.tutRe ? '' : `<small>${L('Hadi oynayalım!', 'Let’s play!')}</small>`}</button>`, { tGo: go }, true, true);
+  howBack = go;   // Android geri tuşu: düğmeyle aynı
+}
 
 $('bPlay').onclick = () => start('level');
 $('bDaily').onclick = () => (save.dailyDone === today() && save.dailyStats?.day === today()) ? dailyResult() : start('daily');
@@ -2753,7 +2853,7 @@ $('bMap').onclick = () => show('map');
 $('bQuest').onclick = questSheet;
 $('bShop').onclick = () => storeSheet();
 $('pBack').onclick = () => show('home');
-$('bBack').onclick = () => G && !G.won && !G.over && active('game') && !modalOpen() ? pauseSheet() : show('home');
+$('bBack').onclick = () => G?.tut ? G.tutRe && show('home') : G && !G.won && !G.over && active('game') && !modalOpen() ? pauseSheet() : show('home');
 $('bReset').onclick = reset;
 $('bHint').onclick = hint; $('gUndo').onclick = undo; $('gLamp').onclick = lamp; $('gPlus').onclick = plus15;
 $('bSettings').onclick = settings;
@@ -2775,6 +2875,7 @@ App?.addListener?.('appStateChange', s => front(!!s?.isActive));
 App?.addListener?.('backButton', () => {
   if (modalOpen() && howBack) howBack();
   else if (modalOpen()) { if (mLocked) show('home'); closeModal(); }
+  else if (G?.tut && active('game')) { if (G.tutRe) show('home'); else App.minimizeApp?.(); }   // zorunlu öğreticiden çıkış yok
   else if (G?.won && active('game')) show('home');
   else if (active('game') && G && !G.over) pauseSheet();
   else if (!active('home')) show('home');
@@ -3371,10 +3472,10 @@ if (introOn) {
   try { const page = linesDone() / CITY_N | 0, pre = !linesDone(), { svg } = skyline(page, { all: pre }), d = document.createElement('div');
     d.className = 'isky'; d.innerHTML = svg + (pre ? `<small>${L('Her hat bir semt yakar · şehrin tamamını aydınlat', 'Every line lights a district · light up the whole city')}</small>` : ''); intro.appendChild(d); } catch {}
 } else intro.classList.add('gone');
-if (save.played === 0 && !G) howT = setTimeout(() => { if (!G) how(); }, introOn ? 2900 : 1700);
+if (tutDue() && !G) start('tut');   // 🎓 yeni oyuncu: anlatıcı penceresi yerine doğrudan öğretici bölüm (intro arkasında hazır)
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { jank: Jank, fest: c => lineFest(c), sky: skyline, lig: { score: (p, h) => ligScore(p, h), join: ligJoin, open: openLig, vs: vsSheet, find: vsFind, host: vsHost, code: vsJoinSheet, week: ligWeek, home: ligHome },
+window.__ray = { jank: Jank, tut: { STEPS: TUT_STEPS, IDLE: TUT_IDLE, due: tutDue, start: () => start('tut') }, fest: c => lineFest(c), sky: skyline, lig: { score: (p, h) => ligScore(p, h), join: ligJoin, open: openLig, vs: vsSheet, find: vsFind, host: vsHost, code: vsJoinSheet, week: ligWeek, home: ligHome },
   // test / önizleme: tören sesini çevrimdışı işleyip WAV (base64) verir
   festWav: async (o = {}) => { const keep = ac; ac = new OfflineAudioContext(2, 44100 * 6.5, 44100); try { festSound(o); const b = await ac.startRendering(), n = b.length, L = b.getChannelData(0), R = b.getChannelData(1), buf = new DataView(new ArrayBuffer(44 + n * 4));
     const w = (o2, str) => [...str].forEach((ch, i) => buf.setUint8(o2 + i, ch.charCodeAt(0))); w(0, 'RIFF'); buf.setUint32(4, 36 + n * 4, true); w(8, 'WAVEfmt '); buf.setUint32(16, 16, true); buf.setUint16(20, 1, true); buf.setUint16(22, 2, true); buf.setUint32(24, 44100, true); buf.setUint32(28, 44100 * 4, true); buf.setUint16(32, 4, true); buf.setUint16(34, 16, true); w(36, 'data'); buf.setUint32(40, n * 4, true);

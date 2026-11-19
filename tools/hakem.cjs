@@ -204,15 +204,17 @@ async function inViewport(page, sel) {
     await ctx.close();
   }
 
-  // ---------- C. İlk açılış + 12 bölüm oynanış + geçiş reklamı ----------
+  // ---------- C. Nasıl oynanır (Ayarlar'dan) · ilk açılış = 🎓 öğretici bölüm → Bölüm 1 · 12 bölüm oynanış + geçiş reklamı ----------
   {
-    const { ctx, page, errors } = await open(browser, URL);
-    await page.waitForTimeout(2200);
+    // anlatıcı artık ilk açılışta kendiliğinden açılmaz (öğretici bölüm onun yerini aldı): Ayarlar › Nasıl oynanır? ile sınanır
+    const { ctx, page, errors } = await open(browser, URL, { save: { tut: 1, remindAsked: true } });
+    await page.waitForTimeout(500);
+    await page.click('#bSettings'); await page.waitForTimeout(500); await page.click('#oHow'); await page.waitForTimeout(700);
     const howOpen = await modalOpen(page);
     await shot(page, 'onboarding');
     const cap1 = await page.textContent('#demoTxt').catch(() => ''); await page.waitForTimeout(3700); const cap2 = await page.textContent('#demoTxt').catch(() => '');
     await shot(page, 'onboarding-demo');
-    check('onboard.auto', 'İlk açılışta "Nasıl oynanır" kendiliğinden açılıyor', howOpen, '', 'medium');
+    check('onboard.how', 'Ayarlar › "Nasıl oynanır?" anlatıcıyı açıyor', howOpen, '', 'medium');
     check('onboard.demo', 'Nasıl oynanır: sayfa kendi sahnesini oynayıp ~3 sn sonra kendiliğinden geçiyor', !!cap1 && !!cap2 && cap1 !== cap2, `"${cap1}" → "${cap2}"`, 'medium');
     // kilit: dışarı dokunmak kapatmaz · kaydırma: sola → sonraki sayfa
     await page.mouse.click(195, 30); await page.waitForTimeout(400);
@@ -230,8 +232,21 @@ async function inViewport(page, sel) {
     check('onboard.lock', 'Anlatıcı son sayfaya gelmeden kapanmıyor (dışarı dokunma, aşağı çekme); "İleri" sayfa sayfa ilerler', lockOpen && await modalOpen(page) && fwd >= 3 && fwd <= 6, `${fwd} kez İleri`, 'medium');
     if (howOpen) await page.click('#mClose');
     await page.waitForTimeout(600);
-    const inGame = await page.evaluate(() => document.getElementById('game').classList.contains('active'));
-    check('onboard.start', '"Başla" doğrudan Bölüm 1\'i açıyor', inGame, '', 'medium');
+    const after = await page.evaluate(() => ({ home: document.getElementById('home').classList.contains('active'), modal: document.getElementById('modal').classList.contains('open') }));
+    check('onboard.close', 'Anlatıcı kapanınca ana sayfada kalınıyor (bölüm başlamıyor), konsol hatası yok', after.home && !after.modal && !errors.length, JSON.stringify({ ...after, errors }), 'medium');
+    await ctx.close();
+  }
+  {
+    const { ctx, page, errors } = await open(browser, URL);
+    await page.waitForTimeout(2200);
+    const tut = await page.evaluate(() => ({ tut: !!window.__ray.G?.tut, modal: document.getElementById('modal').classList.contains('open'), game: document.getElementById('game').classList.contains('active') }));
+    check('onboard.auto', 'İlk açılışta (boş kayıt) doğrudan 🎓 öğretici bölüm açılıyor; anlatıcı penceresi kendiliğinden açılmıyor', tut.tut && tut.game && !tut.modal, JSON.stringify(tut), 'medium');
+    for (const i of [5, 5, 8, 1, 1, 2, 6]) { await tapTile(page, i); await page.waitForTimeout(260); }   // öğretici adımları (tools/hakem/ogretici.cjs ayrıntılı sınar)
+    for (let k = 0; k < 40 && !await page.$('#tGo'); k++) await page.waitForTimeout(100);
+    if (await page.$('#tGo')) { await page.waitForTimeout(400); await page.click('#tGo'); }
+    await page.waitForTimeout(600);
+    const inGame = await page.evaluate(() => document.getElementById('game').classList.contains('active') && !window.__ray.G.tut && window.__ray.G.lvl === 1);
+    check('onboard.start', 'Öğretici bitince "Bölüm 1" doğrudan açılıyor', inGame, '', 'medium');
     if (!inGame) { await page.click('#bPlay'); await page.waitForTimeout(500); }
     const lv = [];
     for (let L = 1; L <= 12; L++) {

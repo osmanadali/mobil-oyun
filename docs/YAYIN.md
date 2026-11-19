@@ -411,6 +411,7 @@ Belge: https://developers.google.com/tag-platform/security/guides/app-consent ·
 | `level_quit` | En az bir hamle ya da ipucuyla başlanmış bölümden çıkınca | `level`, `line`, `time_s`, `moves`, `hints` |
 | `daily_end` | Günün Hattı (ya da arşivden geçmiş gün) bitince | `mode` (daily/archive), `stars`, `time_s`, `moves`, `hints`, `perfect`, `practice`, `streak` |
 | `tutorial` | Nasıl oynanır? açılınca / kapanınca | `step` (begin/complete/skip), `first` |
+| `tutorial_begin`, `tutorial_complete` | 🎓 Öğretici bölüm (Firebase standart olayları): yeni oyuncu ilk açılışta başlayınca / bitirince (Ayarlar'dan yeniden oynayınca yazılmaz) | `tutorial_complete`: `time_s`, `moves` |
 | `ad_impression` | Geçiş reklamı kapanınca, ödüllü video gösterilince | `ad_platform` (admob), `ad_format` (interstitial/rewarded), `earned` |
 | `purchase` | Mağaza ödemesi başarıyla bitince | `item_id`, `kind` (consumable/non_consumable), `currency` — **tutar (`value`) yok**: gelir Firebase'in kendiliğinden yazdığı `in_app_purchase` olayında, çift sayılmasın |
 | `booster_use` | Güçlendirici kullanılınca | `booster` (tur/fener/sure/geri), `level`, `line` |
