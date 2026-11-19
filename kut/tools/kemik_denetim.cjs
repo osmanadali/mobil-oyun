@@ -13,7 +13,7 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
 const arg = (ad, vars) => { const i = process.argv.indexOf('--' + ad); return i > 0 ? process.argv[i + 1] : vars; };
-const PORT = +arg('port', 8092), SURE = +arg('sn', 24), JSON_CIKTI = arg('json', null);
+const PORT = +arg('port', 8092), KOK = arg('kok', 'web'), SURE = +arg('sn', 24), JSON_CIKTI = arg('json', null);
 const HEPSI = ['golem', 'kurbaga', 'yarasa', 'ruzgar', 'kugu', 'ayi', 'anka', 'baykus', 'tilki', 'ejder', 'kurt', 'koc', 'kaplumbaga', 'semender', 'bulutat', 'yilan'];
 const SECIM = (arg('a', '') || '').split(',').filter(Boolean);
 const LISTE = SECIM.length ? SECIM : HEPSI;
@@ -25,12 +25,12 @@ async function denetle(takimA, takimB) {
   const tarayici = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'] });
   const sayfa = await tarayici.newPage({ viewport: { width: 1180, height: 760 } });
   sayfa.on('pageerror', e => console.error('sayfa hatası:', e.message));
-  await sayfa.goto(`http://localhost:${PORT}/web/test3d.html?elle=1&hafif=1&a=${takimA.join(',')}&b=${takimB.join(',')}&tohum=5`, { timeout: 120000, waitUntil: 'domcontentloaded' });
+  await sayfa.goto(`http://localhost:${PORT}/${KOK}/test3d.html?elle=1&hafif=1&a=${takimA.join(',')}&b=${takimB.join(',')}&tohum=5`, { timeout: 120000, waitUntil: 'domcontentloaded' });
   await sayfa.waitForFunction(() => window.HAZIR, null, { timeout: 240000 });
   const r = await sayfa.evaluate(async (SURE) => {
     const THREE = await import('three');
     const S3 = window.SAHNE;
-    const liste = S3._birimler().map(x => S3._bTMP(x.uid));
+    const liste = S3._birimler().map(x => S3._bTMP(x.uid)); const birimler = new Map(liste.map(b => [b.uid, b]));
     const BUYUK = /Arm|ForeArm|Hand$|Head$|Neck|Spine|UpLeg|Leg$|Foot$|Limb|Tail|Head_|Shoulder/;
     const q0 = new THREE.Quaternion(), q1 = new THREE.Quaternion(), qm = new THREE.Quaternion(), qa = new THREE.Quaternion(), v = new THREE.Vector3(), s = new THREE.Vector3();
     const kayit = new Map();   // uid → {h, kemik: ad → {durum → {ilkY, ilkG, maxY, maxG, n}}}
@@ -53,7 +53,7 @@ async function denetle(takimA, takimB) {
         if (d.kuyruk && d.kuyruk.length) ekle('Kuyruk', d.kuyruk);
         if (d.boyun && d.boyun.length) ekle('Boyun', d.boyun.map(o => o.k || o));
       }
-      kayit.set(b.uid, { h: b.u.b.h, tur: b.gor.tur, taraf: b.u.taraf, kemik: k, ata, kem });
+      kayit.set(b.uid, { h: b.u.b.h, tur: b.gor.tur, taraf: b.u.taraf, kemik: k, ata, kem, gom: {} });
     }
     const durumAl = (b) => {
       if (b.olumT >= 0) return 'olum';
@@ -64,31 +64,42 @@ async function denetle(takimA, takimB) {
       return b.hizS > 0.08 ? 'yuru' : 'bekle';
     };
     const aci = (a, c) => 2 * Math.acos(Math.min(1, Math.abs(a.dot(c)))) * 180 / Math.PI;
+    // Örnekleme: her durum bölütü (durum kesintisiz sürdüğü aralık) için kemiğin bölüt başındaki dönüşünden en büyük sapması;
+    // ilk 0,3 sn (klip geçişi) sayılmaz. Bir durumun genliği = bölüt genliklerinin ORTANCASI (geçişlerin büyük sıçramaları
+    // değil, o durumun tipik hareketi; ör. sürekli saldıran birimin her saldırıda tuttuğu kol), ayrıca en büyüğü.
+    const kapat = (r, du) => { for (const ad in r.kemik) { const o = r.kemik[ad][du]; if (o && o.cn >= 8) o.seg.push(o.cm); if (o) { o.cn = 0; o.cm = 0; o.bas = 6; } } };
     const ornek = () => {
       for (const b of liste) {
         if (!b.kok.visible || !b.govde.visible) continue;
         const r = kayit.get(b.uid), du = durumAl(b);
+        if (b._kdDurum !== du) { if (b._kdDurum) kapat(r, b._kdDurum); b._kdDurum = du; }
         b.model.updateWorldMatrix(true, true);
         for (const ad in r.kemik) {
           const t = r.kem[ad]; t.matrixWorld.decompose(v, qa, s); r.ata[ad].matrixWorld.decompose(v, qm, s); qm.invert();
-          q0.copy(t.quaternion); q1.copy(qm).multiply(qa);   // yerel; uzvun bağlandığı gövde kemiğine göre
-          // bölüt: durum değişince taban yeniden alınır ve ilk 0,3 sn (klip geçişi) sayılmaz; genlik = bölüt içindeki en büyük sapma
-          const o = r.kemik[ad][du] || (r.kemik[ad][du] = { y: q0.clone(), g: q1.clone(), my: 0, mg: 0, n: 0 });
-          if (b._kdDurum !== du) { o.bas = 6; }
-          if (o.bas > 0) { o.bas--; o.y.copy(q0); o.g.copy(q1); continue; }
-          o.my = Math.max(o.my, aci(o.y, q0)); o.mg = Math.max(o.mg, aci(o.g, q1)); o.n++;
+          q1.copy(qm).multiply(qa);   // uzvun bağlandığı gövde kemiğine göre
+          const o = r.kemik[ad][du] || (r.kemik[ad][du] = { g: q1.clone(), seg: [], cm: 0, cn: 0, bas: 6, mg: 0, n: 0 });
+          if (o.bas > 0) { o.bas--; o.g.copy(q1); continue; }
+          const x = aci(o.g, q1); o.cm = Math.max(o.cm, x); o.cn++; o.mg = Math.max(o.mg, x); o.n++;
         }
-        b._kdDurum = du;
+        // kol gövdeye gömülü mü (iki ayaklı): elin gövde eksenine yatay uzaklığı / bağlama duruşundaki uzaklık
+        if (b.isk && b.isk.tRelP && b.isk.tRelP.LeftHand) for (const el of ['LeftHand', 'RightHand']) {
+          const T = b.isk.tRelP; const rest = Math.abs(T[el].x - T.Hips.x); if (rest < 1e-4) continue;
+          v.setFromMatrixPosition(b.kemik[el].matrixWorld); b.model.worldToLocal(v); s.setFromMatrixPosition(b.kemik.Hips.matrixWorld); b.model.worldToLocal(s);
+          const o = r.gom[el] || (r.gom[el] = {}); (o[du] || (o[du] = [])).push(Math.abs(v.x - s.x) / rest);
+        }
       }
     };
     // savaş: 0,05 sn adımlarla; bittikten sonra kazananlar sevinir, kalanlar 3 sn daha örneklenir
     let t = 0, bitti = false;
     while (t < SURE) { const r = S3.kare(0.05); t += 0.05; ornek(); if (r.bitti && !bitti) { bitti = true; const kaz = r.sonuc && r.sonuc.kazanan; S3.zafer(kaz === 1 ? 1 : 0); SURE = Math.min(SURE, t + 3.5); } }
     const cik = [];
+    const ortanca = (l) => { if (!l.length) return 0; const x = l.slice().sort((a, b) => a - b); return x[x.length >> 1]; };
     for (const [uid, r] of kayit) {
+      const b = birimler.get(uid); if (b && b._kdDurum) kapat(r, b._kdDurum);
       const k = {};
-      for (const ad in r.kemik) { k[ad] = {}; for (const du in r.kemik[ad]) { const o = r.kemik[ad][du]; k[ad][du] = [+o.my.toFixed(1), +o.mg.toFixed(1), o.n]; } }
-      cik.push({ uid, h: r.h, tur: r.tur, taraf: r.taraf, kemik: k });
+      for (const ad in r.kemik) { k[ad] = {}; for (const du in r.kemik[ad]) { const o = r.kemik[ad][du]; k[ad][du] = [+ortanca(o.seg).toFixed(1), +o.mg.toFixed(1), o.n, o.seg.length]; } }
+      const gom = {}; for (const el in r.gom) { gom[el] = {}; for (const du in r.gom[el]) gom[el][du] = +ortanca(r.gom[el][du]).toFixed(2); }
+      cik.push({ uid, h: r.h, tur: r.tur, taraf: r.taraf, kemik: k, gom });
     }
     return cik;
   }, SURE);
