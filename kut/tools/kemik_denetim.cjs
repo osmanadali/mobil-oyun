@@ -2,7 +2,7 @@
 /* Kut Arena — donuk kemik denetimi (yalnız görüntü; motora dokunmaz).
    Her kahraman (canavarlar bu modelleri kullanır) gerçek sahne3d.js boru hattında savaştırılır; her karede her kemiğin
    YEREL dönüşü (ebeveynine göre) ve gövdeye (Hips/kök) göre dönüşü örneklenir. Duruma (bekle, yuru, saldir, yetenek, zafer,
-   olum) göre her kemiğin hareket genliği (derece) çıkarılır ve şu durumlar işaretlenir:
+   olum) göre her kemiğin, uzvun gövdeye bağlandığı kemiğe (kol → göğüs, bacak → kalça, kuyruk → omurga) göre hareket genliği (derece) çıkarılır ve şu durumlar işaretlenir:
      DONUK   — büyük uzuv (kol, ön kol, el, baş, kanat, kuyruk, bacak) bir durumda < ESIK_DONUK derece oynuyor,
                ama aynalı eşi (sol↔sağ) ya da durumun geneli belirgin oynuyor
      ASIMETRI — sol/sağ eşlerinden biri diğerinin %25'inden az oynuyor (iki ayaklıda tek elle büyü klipleri hariç tutulmaz:
@@ -20,10 +20,14 @@ const LISTE = SECIM.length ? SECIM : HEPSI;
 const ESIK_DONUK = 1.5, ESIK_ES = 6;
 
 // sayfa içinde koşan ölçüm (S3 = sahne3d modülü)
-async function denetle(sayfa, takimA, takimB) {
-  await sayfa.goto(`http://localhost:${PORT}/web/test3d.html?elle=1&hafif=1&a=${takimA.join(',')}&b=${takimB.join(',')}&tohum=5`);
+async function denetle(takimA, takimB) {
+  // her grup kendi tarayıcısında (yazılım GPU'sunda önceki sahnenin artıkları yeni sayfanın yüklenmesini bekletmesin)
+  const tarayici = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'] });
+  const sayfa = await tarayici.newPage({ viewport: { width: 1180, height: 760 } });
+  sayfa.on('pageerror', e => console.error('sayfa hatası:', e.message));
+  await sayfa.goto(`http://localhost:${PORT}/web/test3d.html?elle=1&hafif=1&a=${takimA.join(',')}&b=${takimB.join(',')}&tohum=5`, { timeout: 120000, waitUntil: 'domcontentloaded' });
   await sayfa.waitForFunction(() => window.HAZIR, null, { timeout: 240000 });
-  return sayfa.evaluate(async (SURE) => {
+  const r = await sayfa.evaluate(async (SURE) => {
     const THREE = await import('three');
     const S3 = window.SAHNE;
     const liste = S3._birimler().map(x => S3._bTMP(x.uid));
@@ -31,8 +35,25 @@ async function denetle(sayfa, takimA, takimB) {
     const q0 = new THREE.Quaternion(), q1 = new THREE.Quaternion(), qm = new THREE.Quaternion(), qa = new THREE.Quaternion(), v = new THREE.Vector3(), s = new THREE.Vector3();
     const kayit = new Map();   // uid → {h, kemik: ad → {durum → {ilkY, ilkG, maxY, maxG, n}}}
     for (const b of liste) {
-      const k = {}; for (const ad in b.kemik) if (BUYUK.test(ad)) k[ad] = {};
-      kayit.set(b.uid, { h: b.u.b.h, tur: b.gor.tur, taraf: b.u.taraf, kemik: k });
+      const k = {}, ata = {}, kem = {};
+      if (b.isk) {
+        for (const ad in b.kemik) if (BUYUK.test(ad)) {
+          k[ad] = {}; kem[ad] = b.kemik[ad];
+          // uzvun gövdeye bağlandığı ata: birden çok kemik çocuğu olan ilk ata (kol → göğüs, bacak → kalça)
+          let a = b.kemik[ad].parent; while (a && a.isBone && a.children.filter(c => c.isBone).length < 2) a = a.parent;
+          ata[ad] = a && a.isBone ? a : b.model;
+        }
+      } else {
+        // dört ayaklı / yılan: Tripo kemik adları güvenilmez (ör. Semender'de 'Limb' adlı gövde kemikleri, Kaplumbağa'da yanlış taraf);
+        // hareket.js'in bulduğu bacak zincirleri, kuyruk ve boyun rol adıyla izlenir (önSol_0 … ; aynası önSag_0), ata = zincirin bağlandığı kemik
+        const d = b.dort || b.yilan, say = {};
+        const ekle = (rol, zincir) => { say[rol] = (say[rol] || 0) + 1; const r = say[rol] > 1 ? rol + say[rol] : rol;
+          zincir.forEach((t, j) => { const ad = r + '_' + j; k[ad] = {}; kem[ad] = t; ata[ad] = zincir[0].parent && zincir[0].parent.isBone ? zincir[0].parent : b.model; }); };
+        if (b.dort) for (const L of d.bacaklar) ekle((L.on ? 'on' : 'arka') + (L.sol ? 'Sol' : 'Sag') + 'Bacak', L.zincir);
+        if (d.kuyruk && d.kuyruk.length) ekle('Kuyruk', d.kuyruk);
+        if (d.boyun && d.boyun.length) ekle('Boyun', d.boyun.map(o => o.k || o));
+      }
+      kayit.set(b.uid, { h: b.u.b.h, tur: b.gor.tur, taraf: b.u.taraf, kemik: k, ata, kem });
     }
     const durumAl = (b) => {
       if (b.olumT >= 0) return 'olum';
@@ -48,13 +69,16 @@ async function denetle(sayfa, takimA, takimB) {
         if (!b.kok.visible || !b.govde.visible) continue;
         const r = kayit.get(b.uid), du = durumAl(b);
         b.model.updateWorldMatrix(true, true);
-        b.model.matrixWorld.decompose(v, qm, s); qm.invert();
         for (const ad in r.kemik) {
-          const t = b.kemik[ad]; t.matrixWorld.decompose(v, qa, s);
-          q0.copy(t.quaternion); q1.copy(qm).multiply(qa);   // yerel; gövdeye göre
+          const t = r.kem[ad]; t.matrixWorld.decompose(v, qa, s); r.ata[ad].matrixWorld.decompose(v, qm, s); qm.invert();
+          q0.copy(t.quaternion); q1.copy(qm).multiply(qa);   // yerel; uzvun bağlandığı gövde kemiğine göre
+          // bölüt: durum değişince taban yeniden alınır ve ilk 0,3 sn (klip geçişi) sayılmaz; genlik = bölüt içindeki en büyük sapma
           const o = r.kemik[ad][du] || (r.kemik[ad][du] = { y: q0.clone(), g: q1.clone(), my: 0, mg: 0, n: 0 });
+          if (b._kdDurum !== du) { o.bas = 6; }
+          if (o.bas > 0) { o.bas--; o.y.copy(q0); o.g.copy(q1); continue; }
           o.my = Math.max(o.my, aci(o.y, q0)); o.mg = Math.max(o.mg, aci(o.g, q1)); o.n++;
         }
+        b._kdDurum = du;
       }
     };
     // savaş: 0,05 sn adımlarla; bittikten sonra kazananlar sevinir, kalanlar 3 sn daha örneklenir
@@ -68,13 +92,16 @@ async function denetle(sayfa, takimA, takimB) {
     }
     return cik;
   }, SURE);
+  await tarayici.close();
+  return r;
 }
 
 function esAd(ad) {
   if (ad.includes('Left')) return ad.replace('Left', 'Right'); if (ad.includes('Right')) return ad.replace('Right', 'Left');
+  if (ad.includes('Sol')) return ad.replace('Sol', 'Sag'); if (ad.includes('Sag')) return ad.replace('Sag', 'Sol');
   return null;
 }
-const ONEMLI = /Arm|ForeArm|Hand$|Head$|Limb|Tail|UpLeg|Shoulder/;
+const ONEMLI = /Arm|ForeArm|Hand$|Head$|UpLeg|Shoulder|Bacak|Kuyruk|Boyun/;
 function incele(birim) {
   const bulgu = [];
   const durumlar = new Set(); for (const ad in birim.kemik) for (const du in birim.kemik[ad]) durumlar.add(du);
@@ -83,43 +110,40 @@ function incele(birim) {
     for (const ad in birim.kemik) {
       if (!ONEMLI.test(ad)) continue; const o = birim.kemik[ad][du]; if (!o || o[2] < 6) continue;
       const es = esAd(ad), oe = es && birim.kemik[es] && birim.kemik[es][du];
-      const yerel = o[0], esY = oe ? oe[0] : null;
-      if (yerel < ESIK_DONUK && esY != null && esY > ESIK_ES) bulgu.push({ tip: 'DONUK', durum: du, kemik: ad, derece: yerel, es: es, esDerece: esY });
-      else if (esY != null && yerel > 0.5 && esY > ESIK_ES && yerel < esY * 0.25) bulgu.push({ tip: 'ASIMETRI', durum: du, kemik: ad, derece: yerel, es, esDerece: esY });
+      const yerel = o[1], esY = oe ? oe[1] : null, el = /Hand$/.test(ad);   // gövdeye göre genlik; el küçük kemik: yalnız uyarı
+      if (!el && yerel < ESIK_DONUK && esY != null && esY > ESIK_ES) bulgu.push({ tip: 'DONUK', durum: du, kemik: ad, derece: yerel, es: es, esDerece: esY });
+      else if (esY != null && esY > ESIK_ES && yerel < esY * 0.25) bulgu.push({ tip: 'ASIMETRI', durum: du, kemik: ad, derece: yerel, es, esDerece: esY });
     }
     // bütün durumlarda donuk büyük uzuv (eşi yoksa da)
   }
   for (const ad in birim.kemik) {
     if (!ONEMLI.test(ad)) continue; let mx = 0, n = 0;
-    for (const du in birim.kemik[ad]) { if (du === 'olum') continue; mx = Math.max(mx, birim.kemik[ad][du][0]); n += birim.kemik[ad][du][2]; }
+    for (const du in birim.kemik[ad]) { if (du === 'olum') continue; mx = Math.max(mx, birim.kemik[ad][du][1]); n += birim.kemik[ad][du][2]; }
     if (n > 20 && mx < ESIK_DONUK) bulgu.push({ tip: 'DONUK', durum: 'hepsi', kemik: ad, derece: mx });
   }
   return bulgu;
 }
 
 (async () => {
-  const tarayici = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'] });
-  const sayfa = await tarayici.newPage({ viewport: { width: 1180, height: 760 } });
-  sayfa.on('pageerror', e => console.error('sayfa hatası:', e.message));
   // 4'erli gruplar: taraf A ve B'ye ikişer kahraman (birbirleriyle savaşsınlar; her biri saldırsın, yetenek kullansın)
   const sonuc = [];
   for (let i = 0; i < LISTE.length; i += 4) {
     const g = LISTE.slice(i, i + 4), A = g.filter((_, j) => j % 2 === 0), B = g.filter((_, j) => j % 2 === 1);
     if (!B.length) B.push('golem');
     process.stderr.write(`denetim: ${A.join(',')} × ${B.join(',')}\n`);
-    const r = await denetle(sayfa, A, B);
+    const r = await denetle(A, B);
     for (const x of r) if (g.includes(x.h) && !sonuc.find(y => y.h === x.h)) sonuc.push(x);
   }
-  await tarayici.close();
   let donuk = 0;
   const satir = [];
-  satir.push('| Kahraman | Tür | Durumlar (örnek) | Kol/ön kol/el genliği sol·sağ (°, en büyük) | Bulgular |');
+  satir.push('| Kahraman | Tür | Durumlar (örnek) | Genlik (°, gövdeye göre, en büyük): kol/ön kol/el sol·sağ; dört ayaklıda zincirin 2. kemiği | Bulgular |');
   satir.push('|---|---|---|---|---|');
   for (const b of sonuc) {
     const bl = incele(b); donuk += bl.filter(x => x.tip === 'DONUK').length;
     const du = {}; for (const ad in b.kemik) for (const d in b.kemik[ad]) du[d] = Math.max(du[d] || 0, b.kemik[ad][d][2]);
-    const gen = (ad) => { const k = b.kemik[ad]; if (!k) return '-'; let m = 0; for (const d in k) if (d !== 'olum') m = Math.max(m, k[d][0]); return m.toFixed(0); };
-    const kol = b.tur === 'iki' ? `${gen('LeftArm')}·${gen('RightArm')} / ${gen('LeftForeArm')}·${gen('RightForeArm')} / ${gen('LeftHand')}·${gen('RightHand')}` : '(dört ayaklı/yılan: uzuv zinciri)';
+    const gen = (ad) => { const k = b.kemik[ad]; if (!k) return '-'; let m = 0; for (const d in k) if (d !== 'olum') m = Math.max(m, k[d][1]); return m.toFixed(0); };
+    const kol = b.tur === 'iki' ? `${gen('LeftArm')}·${gen('RightArm')} / ${gen('LeftForeArm')}·${gen('RightForeArm')} / ${gen('LeftHand')}·${gen('RightHand')}`
+      : Object.keys(b.kemik).filter(a => /_1$/.test(a)).map(a => a.replace('_1', '') + ' ' + gen(a)).join(', ');
     satir.push(`| ${b.h} | ${b.tur} | ${Object.entries(du).map(([d, n]) => d + ':' + n).join(' ')} | ${kol} | ${bl.length ? bl.map(x => `${x.tip} ${x.kemik}@${x.durum} ${x.derece}°${x.es ? ' (eş ' + x.esDerece + '°)' : ''}`).join('; ') : 'yok'} |`);
   }
   console.log(satir.join('\n'));

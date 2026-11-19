@@ -23,15 +23,17 @@ const dunya = (x, y) => new THREE.Vector3(x - 3, ARENA_Y, y - 4);
 const IKI = { tur: 'iki' }, DORT = { tur: 'dort' }, YILAN = { tur: 'yilan' };
 const ATIS = { hazir: 'Spell_Simple_Enter', saldir: ['Spell_Simple_Shoot'] };
 export const GORSEL = {
-  golem:   { ...IKI, bekle: 'Idle_FoldArms_Loop', saldir: ['Punch_Cross', 'Melee_Hook'], yetenek: ['OverhandThrow'], yetOn: 0.4, zafer: 'Yes', ara: ['Idle_No_Loop'], iri: true, kolAci: 0.26, egim: 0.06, boy: 1.1, yuruHiz: 0.8 },
-  kurbaga: { ...IKI, ...ATIS, yetenek: ['Idle_Loop'], yetOn: 0.36, yetSure: 1.0, zafer: 'Dance_Loop', ara: ['Idle_Talking_Loop'], kolAci: 0.36, egim: 0.05, bas: -0.08 },
-  yarasa:  { ...IKI, saldir: ['Zombie_Scratch', 'Sword_Regular_A'], yetenek: ['Zombie_Scratch'], yetOn: 0.45, yetTut: [0.06, 0.62], zafer: 'Yes', kanat: true, kolAci: 0.1, egim: 0.12 },
+  golem:   { ...IKI, bekle: 'Idle_FoldArms_Loop', saldir: ['Punch_Cross', 'Melee_Hook'], yetenek: ['OverhandThrow'], yetOn: 0.4, zafer: 'Yes', ara: ['Idle_No_Loop'], iri: true, kolAci: 0.26, egim: 0.06, boy: 1.1, yuruHiz: 0.8, fidget: ['omuz', 'bak'] },
+  // Kurbağa: menzilli vuruş büyü klibi değil, iki tokmakla göbek davulu (Davul_Vur taban klibi + hareket.js 'davul' saldırı stili).
+  // Spell_Simple klipleri sağ kolu tek pozda tutuyordu: sürekli saldıran kurbağanın sağ kolu donuk görünüyordu.
+  kurbaga: { ...IKI, saldir: ['Davul_Vur'], salStil: 'davul', yetenek: ['Idle_Loop'], yetOn: 0.36, yetSure: 1.0, zafer: 'Dance_Loop', ara: ['Idle_Talking_Loop'], kolAci: 0.45, onKolAci: 1.4, egim: 0.05, bas: -0.08, fidget: ['davul', 'bak'] },
+  yarasa:  { ...IKI, saldir: ['Zombie_Scratch', 'Sword_Regular_A'], yetenek: ['Zombie_Scratch'], yetOn: 0.45, yetTut: [0.06, 0.62], zafer: 'Yes', kanat: true, kolAci: 0.1, egim: 0.12, fidget: ['kanat', 'bak'] },
   ruzgar:  { ...IKI, ...ATIS, yetenek: ['Spell_Simple_Enter', 'Spell_Simple_Shoot'], yetOn: 0.4, zafer: 'Dance_Loop', ara: ['Idle_Talking_Loop'], idleHiz: 1.25, kolAci: 0.12 },
-  kugu:    { ...IKI, ...ATIS, yetenek: ['Idle_Loop'], yetOn: 0.4, yetSure: 0.9, zafer: 'Yes', kanat: true, kolAci: 0.16, bas: 0.06 },
-  ayi:     { ...IKI, bekle: 'Idle_Loop', saldir: ['Melee_Hook', 'Sword_Regular_A', 'Sword_Regular_B'], yetenek: ['Agir_Ezme'], yetOn: 0.5, zafer: 'Yes', ara: ['Idle_FoldArms_Loop'], iri: true, kolAci: 0.24, egim: 0.1, boy: 1.12, yuruHiz: 0.85 },
-  anka:    { ...IKI, ...ATIS, yetenek: ['Idle_Loop'], yetOn: 0.4, yetSure: 0.85, dogus: 'NinjaJump_Land', zafer: 'Dance_Loop', kanat: true, kolAci: 0.14 },
+  kugu:    { ...IKI, ...ATIS, yetenek: ['Idle_Loop'], yetOn: 0.4, yetSure: 0.9, zafer: 'Yes', kanat: true, kolAci: 0.16, bas: 0.06, fidget: ['kanat', 'bak'] },
+  ayi:     { ...IKI, bekle: 'Idle_Loop', saldir: ['Melee_Hook', 'Sword_Regular_A', 'Sword_Regular_B'], yetenek: ['Agir_Ezme'], yetOn: 0.5, zafer: 'Yes', ara: ['Idle_FoldArms_Loop'], iri: true, kolAci: 0.24, egim: 0.1, boy: 1.12, yuruHiz: 0.85, fidget: ['omuz', 'bak'] },
+  anka:    { ...IKI, ...ATIS, yetenek: ['Idle_Loop'], yetOn: 0.4, yetSure: 0.85, dogus: 'NinjaJump_Land', zafer: 'Dance_Loop', kanat: true, kolAci: 0.14, fidget: ['kanat', 'bak'] },
   baykus:  { ...IKI, ...ATIS, yetenek: ['Idle_Loop'], yetOn: 0.5, yetSure: 0.6, zafer: 'Yes', ara: ['Idle_Talking_Loop'], kolAci: 0.32, bas: -0.06, idleHiz: 0.85 },
-  tilki:   { ...IKI, hazir: 'Pistol_Aim_Neutral', saldir: ['Pistol_Shoot'], yetenek: ['Pistol_Aim_Neutral', 'Pistol_Shoot'], yetHazir: true, yetOn: 0.45, zafer: 'Yes', ara: ['Idle_Talking_Loop'], kolAci: 0.14, egim: 0.04 },
+  tilki:   { ...IKI, hazir: 'Pistol_Aim_Neutral', saldir: ['Pistol_Shoot'], yetenek: ['Pistol_Aim_Neutral', 'Pistol_Shoot'], yetHazir: true, yetOn: 0.45, zafer: 'Yes', ara: ['Idle_Talking_Loop'], kolAci: 0.14, egim: 0.04, fidget: ['silah', 'bak'] },
   ejder:   { ...IKI, ...ATIS, yetenek: ['Idle_Loop'], yetOn: 0.45, yetSure: 0.65, zafer: 'Dance_Loop', ara: ['Idle_FoldArms_Loop'], kolAci: 0.26 },
   kurt: { ...DORT, yetOn: 0.32 }, koc: { ...DORT, yetOn: 0.36 }, kaplumbaga: { ...DORT, boy: 1.1 }, semender: { ...DORT }, bulutat: { ...DORT, kanat: true },
   yilan: { ...YILAN },
@@ -52,7 +54,7 @@ const KLIP_HIZ_TAVAN = 1.3;   // saldırı klibi aralığa sığsın diye en ço
 //   Melee_Hook 0,28 · Sword_Regular_A 0,24 · Sword_Regular_B 0,25 · Sword_Regular_C 0,64 (geniş savuruş) · Zombie_Scratch 0,58 (çift pençe)
 //   OverhandThrow 0,36 (el başın üstünden öne geçer) · Agir_Ezme 0,62 (Sword_Heavy_Combo 2,0 sn'den kesit; iki elle tepeden ezme) ·
 //   Sword_Dash 0,30 · NinjaJump_Land 0,18 (çömelme dibi). NinjaJump_Start anahtar karesi klip sonu (sıçrama anı), tabloda yok.
-const DARBE = { Punch_Jab: 0.22, Punch_Cross: 0.30, Sword_Attack: 0.43, Spell_Simple_Shoot: 0.04, Spell_Simple_Enter: 0.5,
+const DARBE = { Davul_Vur: 0.35, Punch_Jab: 0.22, Punch_Cross: 0.30, Sword_Attack: 0.43, Spell_Simple_Shoot: 0.04, Spell_Simple_Enter: 0.5,
   Melee_Hook: 0.28, Sword_Regular_A: 0.24, Sword_Regular_B: 0.25, Sword_Regular_C: 0.64, Zombie_Scratch: 0.58, Agir_Ezme: 0.62, Sword_Dash: 0.30,
   Pistol_Shoot: 0.03, OverhandThrow: 0.36, NinjaJump_Land: 0.18 };
 // yakın vuruşun türü (vfx.vurus): pençe, boynuz, yumruk, ısırık
@@ -298,6 +300,8 @@ async function ualYukle(kok) {
   ual = { sahne: g.scene, klip: Object.fromEntries(g.animations.map(c => [c.name, c])) };
   if (g2) { try { ual2Aktar(g2); } catch (e) { console.warn('ual2 aktarılamadı', e); } }
   // üste eklenen vurulma tepkileri (additive): saldırı klibi kesilmeden üst gövde sarsılır
+  // Davul_Vur: Kurbağa'nın menzilli vuruşunun taban klibi (Idle_Loop'un ilk 0,8 sn'si; tokmak vuruşlarını hareket.js 'davul' stili ekler)
+  if (ual.klip.Idle_Loop) ual.klip.Davul_Vur = THREE.AnimationUtils.subclip(ual.klip.Idle_Loop, 'Davul_Vur', 0, 24, 30);
   for (const ad of ['Hit_Chest', 'Hit_Head']) if (ual.klip[ad]) { const c = THREE.AnimationUtils.makeClipAdditive(ual.klip[ad].clone()); c.name = ad + '_Ek'; ual.klip[c.name] = c; }
   ual.adim = adimOlc();
 }
@@ -378,6 +382,7 @@ export function boyutla() {
 // Bakış yönü taban ayardan kalır; uzaklık ve bakış noktası birkaç adımda çözülür: tahtanın sınır kutusu (iki takımın bütün sıraları, birim boyu ve
 // can çubuğu payı) ekrana izdüşürülür, kutu güvenli alana sığacak kadar uzaklaşılır/yaklaşılır ve kutunun merkezi alanın merkezine kaydırılır.
 let guvenliF = null;
+const KADRAJ_PAY = 1.12;   // taban kadrajın genişliği (1: tahta güvenli alanı tam doldurur; 1,12: tahta ekranda ~%14 küçük, görüş ~%16 geniş)
 export function guvenliAlan(f) { guvenliF = f; if (renderer) boyutla(); }
 const _tkN = [], _tkV = new THREE.Vector3(), _tkY = new THREE.Vector3();
 for (const x of [-2.95, 2.95]) for (const z of [-3.6, 3.55]) for (const y of [0, z < 0 ? 2.3 : 1.6]) _tkN.push(new THREE.Vector3(x, ARENA_Y + y, z));
@@ -417,6 +422,9 @@ function tahtaKadrajla(w, h) {
     T.x += dx * birim; T.z += dy * birim / sinE;
     R *= 0.35 + 0.65 * k;   // izdüşüm boyu ~ 1/uzaklık; yumuşak adım (yakın kenar perspektifi doğrusal değil)
   }
+  // geniş kadraj: tahta güvenli alana tam sığdırıldıktan sonra kamera KADRAJ_PAY kadar geri çekilir (bakış noktası aynı: tahta alanın
+  // ortasında kalır, yalnız küçülür); çevredeki avlu, kemerler ve kristaller de görünür. Tahta küçüldüğü için HUD'a binmez.
+  R *= KADRAJ_PAY;
   kam.tabanH.copy(T); kam.tabanP.copy(T).addScaledVector(yon, R);
 }
 // test: taban kadrajda tahta sınır kutusunun ekran noktaları (tuval px)
@@ -1367,7 +1375,7 @@ function kadraj(dtR) {
   let olcek = 1, mx = kam.tabanH.x, mz = kam.tabanH.z;
   if (n >= 2) {
     const gen = x1 - x0 + 2.2, der = z1 - z0 + 3.2;
-    olcek = Math.min(1, Math.max(0.8, Math.max(gen / 7.2, der / 8.6)));   // tempo: yığılmada kamera dalıp kaosu büyütmesin (0,66 → 0,8)
+    olcek = Math.min(1, Math.max(0.86, Math.max(gen / 7.2, der / 8.6)));   // tempo: yığılmada kamera dalıp kaosu büyütmesin (0,66 → 0,8 → geniş kadrajla orantılı 0,86)
     mx = kam.tabanH.x + ((x0 + x1) / 2 - kam.tabanH.x) * 0.5; mz = (z0 + z1) / 2 + 0.25;
   }
   if (kam.serbest) return;
@@ -1880,6 +1888,8 @@ export function _poz(uid, ad, t, yalniz = false) {
   i.aktif = e; i.aktifAd = ad; i.mix.update(0); aktar(b); return true;
 }
 export function _ciz() { G.ciz(); }
+// test: iki ayaklı birimin tek karesi savaş akışı dışında (karışıcı + aktarım + hareket.js katmanı); ops ikiAyakliGuncelle seçenekleri
+export function _ikiKare(uid, dt, ops = {}) { const b = birimler.get(uid); if (!b || !b.isk) return false; b.isk.mix.update(dt); aktar(b); ikiAyakliGuncelle(b.ik, dt, { ...OPS_IKI, ...ops }); return true; }
 export function _yazilar() { return yazilar.map(y => ({ m: y.metin, onc: y.onc, tur: y.tur, yas: +y.yas.toFixed(2), bir: y.bir })); }
 export function _yet(uid) { const b = birimler.get(uid); const y = b && b.ik && b.ik.yet; return { g: +gorselT.toFixed(3), yt: y ? +y.t.toFixed(3) : null, an: y ? +y.an.toFixed(3) : null, olc: y ? +y.olc.toFixed(2) : null, durum: b && b.durum, klip: b && b.isk && b.isk.aktifAd }; }
 // hata ayıklama: vuruş kurulması (durum, klip, önden kurulma, dört ayaklı anahtar kare saati)

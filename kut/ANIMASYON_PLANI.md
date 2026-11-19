@@ -253,3 +253,34 @@ Zamanlar savaş bittiği (sonuç bandının açıldığı) andan saniye. Unity: 
 - Animasyonları azalt (Ayarlar; ayarlanmadıysa işletim sisteminin "hareketi azalt" tercihi): uçuş, sarsıntı, dönme, kamera geçişi yok;
   amblemler son duruşunda belirir, sesler hemen çalar, MVP 0,9 sn'de açılır ve kamera geçişsiz.
 - Düğmeler: basınca ölçek 0,95 (0,09 sn), üzerine gelince parlama (opaklık 0,15 sn). Yazı tipi: başlık/düğme "Kut Baslik" (Lilita One + Türkçe harfler), gövde Nunito.
+
+## Canlılık katmanları ve donuk kemik denetimi (2026-11-19)
+Web: `web/hareket.js` (`canlilik`, `FID`, `DAVUL_P`; dört ayaklı ve yılanda "canlılık (boşta)" blokları), `web/sahne3d.js` (`GORSEL` `salStil`,
+`fidget`, `onKolAci`; `Davul_Vur` klibi; `KADRAJ_PAY`), denetim `tools/kemik_denetim.cjs`. Hepsi klibin ÜSTÜNE eklenen küçük dünya-eksenli
+dönüşler (additive); klip ezilmez. Unity: Animator'da ayrı "Additive" katman + `LateUpdate` içinde aynı açılarla kemik döndürme.
+
+- **Donuk kol hatası (Kurbağa):** (1) `kolAci` (tombul gövdede kolları dışa açma) yanlış işaretle uygulanıyordu: kollar gövdeye gömülüyordu.
+  En tombul Kurbağa'da iki kol ve tokmaklar göbeğin içinde, sağ kol sırtta kıpırtısız kalıyordu. İşaret düzeltildi (`_F` etrafında +açı
+  sol kolu, −açı sağ kolu dışa açar); Kurbağa `kolAci` 0,45, ön kol oranı `onKolAci` 1,4 (portredeki gibi tokmaklar yanlarda aşağı).
+  (2) Menzilli vuruşu Spell_Simple_Enter/Shoot idi: bu klipler sağ kolu tek pozda tutar (sağ kol genliği 8–10°, sol kol 77°); sürekli
+  saldıran kurbağada sağ kol hep donuk görünüyordu. Yeni saldırı: `Davul_Vur` (Idle_Loop'un ilk 0,8 sn'si) + yordamsal iki tokmak:
+  sol tokmak T−0,2 sn, sağ tokmak T'de (mermi çıkışı) davula iner; her vuruşta tokmak kalkar (0,15 sn) ve hızla iner (0,05 sn).
+- **Tek kollu klipler** (ölçüldü, aktarılmış UAL): Spell_Simple_Enter/Shoot ve Yes sağ kolu tutar (≤10°), Idle_FoldArms_Loop iki kolu
+  tümüyle tutar (0°), Idle_Loop kolları 4–6° oynatır. Çözüm: büyü atan kanatsızlarda (Rüzgâr, Baykuş, Ejder) tutan kol bırakmada ileri
+  itilir (0,42 rad, e^(−8t) sönüm) ve tutarken hafif titrer; zaferde Yes klibinin sağ kolu zıplama temposunda (0,78 sn) havaya kalkar.
+- **Boşta (ağırlık 1 − yürüme, saldırı/yetenek/zaferde söner):** göğüs iki yana yavaş salınır (0,13–0,2 Hz, ±0,035 rad; kalça dönmez,
+  ayak kaymaz), baş gürültüyle etrafa bakar (±0,3 rad), kollar nefes fazında ileri-geri ve dışa (±0,06 rad; sol/sağ farklı faz).
+  Her birimin fazı `ozet(faz)` ile farklı: birimler senkron durmaz.
+- **Fidget** (yalnız sakin beklemede, 6–12 sn'de bir, kişiliğe göre sırayla): `bak` (baş ve göğüs önce bir yana, sonra öbürüne), `gerin`
+  (kollar yukarı-yana, geriye yaslanma), `omuz` (Golem, Ayı: kolları pompalama), `kanat` (Kuğu, Anka, Yarasa: kanatları açıp silkme),
+  `davul` (Kurbağa: havada dört vuruş), `silah` (Tilki: sağ eli kaldırıp bilek çevirme). Dört ayaklıda `kokla`, `silkin`, `kuyruk`;
+  yılanda baş yükselip etrafa bakar.
+- **Saldırı:** yakın dövüşte göğüs hazırlıkta −0,2 rad (sağ omuz geri) döner, darbede +0,16'ya savrulur, 0,35 sn'de toparlanır (mevcut
+  eğilme + atılma ile birlikte). Menzilli tek kollu büyüde bırakma itişi (yukarıda). Vurulma yön bağımlıdır (his.darbe: vurulan yönden
+  geri savrulma ve tepe eğilmesi), ölüm Death01 / devrilme + kor kenarlı çözülme + kül parçacıkları, zaferde zıplama + sevinç klibi.
+- **Kamera:** taban kadraj tahta güvenli alana sığdırıldıktan sonra `KADRAJ_PAY` 1,12 kat geri çekilir (tahta ekranda ≈ %14 küçük, görüş ≈ %16 geniş; çevre arena,
+  kemerler, kristaller görünür; tahta HUD dışında ve ortada kalır). Savaş içi kadraj yakınlaşması en çok 0,8 → 0,86, his.yakinlastir
+  oranları ×0,85.
+- **Denetim:** `node tools/kemik_denetim.cjs` (sunucu 8092'de): 16 kahraman gerçek sahne boru hattında savaşır; her kemiğin yerel dönüş
+  genliği duruma göre (bekle, yuru, saldir, yetenek, ara, zafer) ölçülür. Büyük uzuv eşi oynarken < 1,5° kalırsa DONUK, eşinin %25'inden
+  azsa ASİMETRİ yazar; DONUK varsa çıkış kodu 1. `--a kurbaga,golem` ile seçim, `--json` ile ham veri.

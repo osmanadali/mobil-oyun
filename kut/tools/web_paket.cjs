@@ -5,7 +5,7 @@ const KUT = path.join(__dirname, '..'), WEB = path.join(KUT, 'web'), OUT = path.
 fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive: true });
 const kopya = (kaynak, hedef) => { fs.mkdirSync(path.dirname(path.join(OUT, hedef)), { recursive: true }); fs.copyFileSync(path.join(KUT, kaynak), path.join(OUT, hedef)); };
 const yolDuzelt = (s) => s.replace(/\.\.\/(vendor|arayuz|gorsel|data\.js|sim\.js|online\.js|lobi\.js)/g, './$1');
-for (const f of ['index.html', 'arayuz.js', 'oyun.js', 'sahne3d.js', 'ses.js', 'gorunum.js', 'vfx.js', 'hareket.js']) fs.writeFileSync(path.join(OUT, f), yolDuzelt(fs.readFileSync(path.join(WEB, f), 'utf8')).replace("kok + 'modeller/' + ad + '.glb'", "kok + 'modeller/' + ad + '.json'"));
+for (const f of ['index.html', 'arayuz.js', 'karsilama.js', 'oyun.js', 'sahne3d.js', 'ses.js', 'gorunum.js', 'vfx.js', 'hareket.js']) fs.writeFileSync(path.join(OUT, f), yolDuzelt(fs.readFileSync(path.join(WEB, f), 'utf8')).replace("kok + 'modeller/' + ad + '.glb'", "kok + 'modeller/' + ad + '.json'"));
 for (const f of ['data.js', 'sim.js', 'online.js', 'lobi.js']) kopya(f, f);
 for (const f of ['three.module.min.js', 'LICENSE', 'addons/loaders/GLTFLoader.js', 'addons/utils/SkeletonUtils.js', 'addons/utils/BufferGeometryUtils.js',
   // görüntü kalitesi (gorunum.js): çevre ışığı + son işlem (bloom); hepsi kodla çalışır, WASM/worker/data: yok
@@ -31,7 +31,7 @@ for (const f of fs.readdirSync(path.join(WEB, 'muzik'))) if (f.endsWith('.mp3'))
 for (const f of fs.readdirSync(path.join(WEB, 'yazi'))) if (/\.(woff2|txt)$/.test(f)) { fs.mkdirSync(path.join(OUT, 'yazi'), { recursive: true }); fs.copyFileSync(path.join(WEB, 'yazi', f), path.join(OUT, 'yazi', f)); }
 for (const f of ['gokyuzu.webp', 'doku_tas.webp', 'doku_cimen.webp']) kopya('gorsel/' + f, 'gorsel/' + f);
 // kalan ../ yolu var mı?
-const kalan = ['index.html', 'arayuz.js', 'sahne3d.js', 'gorunum.js', 'vfx.js', 'hareket.js'].flatMap(f => fs.readFileSync(path.join(OUT, f), 'utf8').split('\n').filter(l => !/^\s*(\/\*|\/\/|\*)/.test(l) && /['"`]\.\.\//.test(l)).map(l => f + ': ' + l.trim().slice(0, 80)));
+const kalan = ['index.html', 'arayuz.js', 'karsilama.js', 'sahne3d.js', 'gorunum.js', 'vfx.js', 'hareket.js'].flatMap(f => fs.readFileSync(path.join(OUT, f), 'utf8').split('\n').filter(l => !/^\s*(\/\*|\/\/|\*)/.test(l) && /['"`]\.\.\//.test(l)).map(l => f + ': ' + l.trim().slice(0, 80)));
 let toplam = 0, sayi = 0; (function gez(d) { for (const f of fs.readdirSync(d)) { const p = path.join(d, f); if (fs.statSync(p).isDirectory()) gez(p); else { toplam += fs.statSync(p).size; sayi++; } } })(OUT);
 console.log(`paket: ${sayi} dosya, ${(toplam / 1e6).toFixed(1)} MB → ${OUT}`);
 if (kalan.length) { console.log('UYARI, düzeltilmemiş yollar:', kalan); process.exit(1); }
