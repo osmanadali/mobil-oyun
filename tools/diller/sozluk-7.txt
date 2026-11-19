@@ -1,0 +1,674 @@
+@ ⚔️ Duel
+de: ⚔️ Duell
+es: ⚔️ Duelo
+pt: ⚔️ Duelo
+fr: ⚔️ Duel
+ko: ⚔️ 대결
+ja: ⚔️ 対戦
+zh: ⚔️ 對決
+
+@ First to finish wins
+de: Wer zuerst fertig ist, gewinnt
+es: Gana quien termine primero
+pt: Vence quem terminar primeiro
+fr: Le premier à finir gagne
+ko: 먼저 끝내면 승리
+ja: 先にクリアした方の勝ち
+zh: 先完成的人獲勝
+
+@ No hints in a duel
+de: Im Duell gibt es keine Tipps
+es: En un duelo no hay pistas
+pt: Sem dicas no duelo
+fr: Pas d’indice en duel
+ko: 대결에서는 힌트를 쓸 수 없어요
+ja: 対戦ではヒントは使えません
+zh: 對決中不能使用提示
+
+@ League nickname
+de: Liga-Spitzname
+es: Apodo de liga
+pt: Apelido na liga
+fr: Pseudo de ligue
+ko: 리그 닉네임
+ja: リーグのニックネーム
+zh: 聯賽暱稱
+
+@ Leave league · delete my data
+de: Liga verlassen · meine Daten löschen
+es: Salir de la liga · borrar mis datos
+pt: Sair da liga · apagar meus dados
+fr: Quitter la ligue · supprimer mes données
+ko: 리그 나가기 · 내 데이터 삭제
+ja: リーグを抜ける · データを削除
+zh: 退出聯賽 · 刪除我的資料
+
+@ Bronze
+de: Bronze
+es: Bronce
+pt: Bronze
+fr: Bronze
+ko: 브론즈
+ja: ブロンズ
+zh: 青銅
+
+@ Silver
+de: Silber
+es: Plata
+pt: Prata
+fr: Argent
+ko: 실버
+ja: シルバー
+zh: 白銀
+
+@ Emerald
+de: Smaragd
+es: Esmeralda
+pt: Esmeralda
+fr: Émeraude
+ko: 에메랄드
+ja: エメラルド
+zh: 翡翠
+
+@ Legend
+de: Legende
+es: Leyenda
+pt: Lenda
+fr: Légende
+ko: 레전드
+ja: レジェンド
+zh: 傳奇
+
+@ {0} League
+de: {0}-Liga
+es: Liga {0}
+pt: Liga {0}
+fr: Ligue {0}
+ko: {0} 리그
+ja: {0}リーグ
+zh: {0}聯賽
+
+@ {0}d {1}h
+de: {0} T {1} Std
+es: {0} d {1} h
+pt: {0} d {1} h
+fr: {0} j {1} h
+ko: {0}일 {1}시간
+ja: {0}日{1}時間
+zh: {0}天{1}小時
+
+@ {0}h {1}m
+de: {0} Std {1} Min
+es: {0} h {1} min
+pt: {0} h {1} min
+fr: {0} h {1} min
+ko: {0}시간 {1}분
+ja: {0}時間{1}分
+zh: {0}小時{1}分
+
+@ {0} min
+de: {0} Min
+es: {0} min
+pt: {0} min
+fr: {0} min
+ko: {0}분
+ja: {0}分
+zh: {0}分鐘
+
+@ At least 3 characters
+de: Mindestens 3 Zeichen
+es: Al menos 3 caracteres
+pt: Pelo menos 3 caracteres
+fr: Au moins 3 caractères
+ko: 3자 이상
+ja: 3文字以上
+zh: 至少 3 個字元
+
+@ At most 16 characters
+de: Höchstens 16 Zeichen
+es: Como máximo 16 caracteres
+pt: No máximo 16 caracteres
+fr: 16 caractères maximum
+ko: 16자 이하
+ja: 16文字まで
+zh: 最多 16 個字元
+
+@ Letters, numbers, spaces, . _ - only
+de: Nur Buchstaben, Zahlen, Leerzeichen, . _ -
+es: Solo letras, números, espacios, . _ -
+pt: Só letras, números, espaços, . _ -
+fr: Lettres, chiffres, espaces, . _ - uniquement
+ko: 문자, 숫자, 공백, . _ - 만 가능
+ja: 文字・数字・スペース・. _ - のみ
+zh: 只能使用字母、數字、空格、. _ -
+
+@ No links, emails or numbers
+de: Keine Links, E-Mails oder Nummern
+es: Sin enlaces, correos ni números
+pt: Sem links, e-mails ou números
+fr: Pas de liens, d’e-mails ni de numéros
+ko: 링크, 이메일, 번호는 안 돼요
+ja: リンク・メール・番号は使えません
+zh: 不能包含連結、電子郵件或號碼
+
+@ This nickname isn’t allowed
+de: Dieser Spitzname ist nicht erlaubt
+es: Este apodo no está permitido
+pt: Este apelido não é permitido
+fr: Ce pseudo n’est pas autorisé
+ko: 사용할 수 없는 닉네임이에요
+ja: このニックネームは使えません
+zh: 這個暱稱不能使用
+
+@ Weekly League
+de: Wochenliga
+es: Liga semanal
+pt: Liga semanal
+fr: Ligue de la semaine
+ko: 주간 리그
+ja: 週間リーグ
+zh: 每週聯賽
+
+@ Join ›
+de: Mitmachen ›
+es: Unirse ›
+pt: Entrar ›
+fr: Rejoindre ›
+ko: 참가 ›
+ja: 参加 ›
+zh: 加入 ›
+
+@ Rider
+de: Pendler
+es: Viajero
+pt: Passageiro
+fr: Voyageur
+ko: 승객
+ja: 乗客
+zh: 乘客
+
+@ Compete in a group of 30 every week
+de: Tritt jede Woche in einer 30er-Gruppe an
+es: Compite cada semana en un grupo de 30
+pt: Dispute toda semana em um grupo de 30
+fr: Affronte un groupe de 30 chaque semaine
+ko: 매주 30명 그룹에서 겨뤄요
+ja: 毎週30人のグループで競おう
+zh: 每週在 30 人小組中競賽
+
+@ Level stars, Daily Line +5, duel win +10 points
+de: Level-Sterne, Tageslinie +5, Duellsieg +10 Punkte
+es: Estrellas de nivel, Línea del día +5, victoria en duelo +10 puntos
+pt: Estrelas das fases, Linha do Dia +5, vitória no duelo +10 pontos
+fr: Étoiles des niveaux, Ligne du jour +5, duel gagné +10 points
+ko: 레벨 별, 오늘의 노선 +5, 대결 승리 +10점
+ja: レベルの星、今日の路線 +5、対戦勝利 +10ポイント
+zh: 關卡星星、每日路線 +5、對決獲勝 +10 分
+
+@ Top 7 move up, bottom 5 move down
+de: Die besten 7 steigen auf, die letzten 5 ab
+es: Los 7 primeros suben, los 5 últimos bajan
+pt: Os 7 primeiros sobem, os 5 últimos caem
+fr: Les 7 premiers montent, les 5 derniers descendent
+ko: 상위 7명은 승급, 하위 5명은 강등
+ja: 上位7人は昇格、下位5人は降格
+zh: 前 7 名升級，後 5 名降級
+
+@ Your nickname
+de: Dein Spitzname
+es: Tu apodo
+pt: Seu apelido
+fr: Ton pseudo
+ko: 내 닉네임
+ja: あなたのニックネーム
+zh: 你的暱稱
+
+@ Your nickname and weekly points are visible to other players. You can leave and delete your data any time in Settings.
+de: Dein Spitzname und deine Wochenpunkte sind für andere sichtbar. In den Einstellungen kannst du jederzeit austreten und deine Daten löschen.
+es: Tu apodo y tus puntos semanales son visibles para otros jugadores. Puedes salir y borrar tus datos cuando quieras en Ajustes.
+pt: Seu apelido e seus pontos semanais ficam visíveis para outros jogadores. Você pode sair e apagar seus dados quando quiser em Ajustes.
+fr: Ton pseudo et tes points de la semaine sont visibles par les autres joueurs. Tu peux quitter et supprimer tes données à tout moment dans les Réglages.
+ko: 닉네임과 주간 점수는 다른 플레이어에게 보여요. 언제든 설정에서 리그를 나가고 데이터를 삭제할 수 있어요.
+ja: ニックネームと週間ポイントは他のプレイヤーに表示されます。設定からいつでもリーグを抜けてデータを削除できます。
+zh: 你的暱稱和每週分數會顯示給其他玩家。你可以隨時在設定中退出並刪除資料。
+
+@ Join the league
+de: Der Liga beitreten
+es: Unirse a la liga
+pt: Entrar na liga
+fr: Rejoindre la ligue
+ko: 리그 참가
+ja: リーグに参加
+zh: 加入聯賽
+
+@ Nickname
+de: Spitzname
+es: Apodo
+pt: Apelido
+fr: Pseudo
+ko: 닉네임
+ja: ニックネーム
+zh: 暱稱
+
+@ Save
+de: Speichern
+es: Guardar
+pt: Salvar
+fr: Enregistrer
+ko: 저장
+ja: 保存
+zh: 儲存
+
+@ Nickname saved
+de: Spitzname gespeichert
+es: Apodo guardado
+pt: Apelido salvo
+fr: Pseudo enregistré
+ko: 닉네임을 저장했어요
+ja: ニックネームを保存しました
+zh: 暱稱已儲存
+
+@ Leave the league
+de: Liga verlassen
+es: Salir de la liga
+pt: Sair da liga
+fr: Quitter la ligue
+ko: 리그 나가기
+ja: リーグを抜ける
+zh: 退出聯賽
+
+@ Your nickname, points and duel records are deleted from the server. Your game progress stays as it is.
+de: Dein Spitzname, deine Punkte und Duelldaten werden vom Server gelöscht. Dein Spielfortschritt bleibt erhalten.
+es: Tu apodo, tus puntos y tus registros de duelos se borran del servidor. Tu progreso en el juego se mantiene.
+pt: Seu apelido, pontos e registros de duelos são apagados do servidor. Seu progresso no jogo continua como está.
+fr: Ton pseudo, tes points et tes duels sont supprimés du serveur. Ta progression dans le jeu reste intacte.
+ko: 닉네임, 점수, 대결 기록이 서버에서 삭제돼요. 게임 진행 상황은 그대로예요.
+ja: ニックネーム、ポイント、対戦の記録がサーバーから削除されます。ゲームの進行はそのままです。
+zh: 你的暱稱、分數和對決紀錄會從伺服器刪除。遊戲進度保持不變。
+
+@ Leave and delete my data
+de: Austreten und Daten löschen
+es: Salir y borrar mis datos
+pt: Sair e apagar meus dados
+fr: Quitter et supprimer mes données
+ko: 나가고 데이터 삭제
+ja: 抜けてデータを削除
+zh: 退出並刪除資料
+
+@ Your league data was deleted
+de: Deine Ligadaten wurden gelöscht
+es: Tus datos de liga se borraron
+pt: Seus dados da liga foram apagados
+fr: Tes données de ligue ont été supprimées
+ko: 리그 데이터를 삭제했어요
+ja: リーグのデータを削除しました
+zh: 你的聯賽資料已刪除
+
+@ Ends in {0}
+de: Endet in {0}
+es: Termina en {0}
+pt: Termina em {0}
+fr: Fin dans {0}
+ko: {0} 후 종료
+ja: 残り{0}
+zh: {0}後結束
+
+@ Promotion zone
+de: Aufstiegszone
+es: Zona de ascenso
+pt: Zona de promoção
+fr: Zone de promotion
+ko: 승급권
+ja: 昇格圏
+zh: 升級區
+
+@ Relegation zone
+de: Abstiegszone
+es: Zona de descenso
+pt: Zona de rebaixamento
+fr: Zone de relégation
+ko: 강등권
+ja: 降格圏
+zh: 降級區
+
+@ you
+de: du
+es: tú
+pt: você
+fr: toi
+ko: 나
+ja: あなた
+zh: 你
+
+@ Level stars, Daily Line +5, duel win +10 · the week ends Monday 00:00
+de: Level-Sterne, Tageslinie +5, Duellsieg +10 · die Woche endet Montag 00:00
+es: Estrellas de nivel, Línea del día +5, victoria en duelo +10 · la semana termina el lunes a las 00:00
+pt: Estrelas das fases, Linha do Dia +5, vitória no duelo +10 · a semana termina segunda às 00:00
+fr: Étoiles des niveaux, Ligne du jour +5, duel gagné +10 · la semaine finit lundi à 00:00
+ko: 레벨 별, 오늘의 노선 +5, 대결 승리 +10 · 매주 월요일 00:00에 종료
+ja: レベルの星、今日の路線 +5、対戦勝利 +10 · 週は月曜 0:00 に終了
+zh: 關卡星星、每日路線 +5、對決獲勝 +10 · 每週一 00:00 結束
+
+@ 🚩 Report inappropriate nickname
+de: 🚩 Unangemessenen Spitznamen melden
+es: 🚩 Denunciar apodo inapropiado
+pt: 🚩 Denunciar apelido impróprio
+fr: 🚩 Signaler un pseudo inapproprié
+ko: 🚩 부적절한 닉네임 신고
+ja: 🚩 不適切なニックネームを報告
+zh: 🚩 檢舉不當暱稱
+
+@ 🚫 Hide this player
+de: 🚫 Diesen Spieler ausblenden
+es: 🚫 Ocultar a este jugador
+pt: 🚫 Ocultar este jogador
+fr: 🚫 Masquer ce joueur
+ko: 🚫 이 플레이어 숨기기
+ja: 🚫 このプレイヤーを非表示
+zh: 🚫 隱藏這位玩家
+
+@ Reported · thank you
+de: Gemeldet · danke
+es: Denunciado · gracias
+pt: Denunciado · obrigado
+fr: Signalé · merci
+ko: 신고했어요 · 고마워요
+ja: 報告しました · ありがとう
+zh: 已檢舉 · 謝謝
+
+@ Player hidden
+de: Spieler ausgeblendet
+es: Jugador oculto
+pt: Jogador oculto
+fr: Joueur masqué
+ko: 플레이어를 숨겼어요
+ja: プレイヤーを非表示にしました
+zh: 已隱藏玩家
+
+@ Promoted to {0}!
+de: Aufgestiegen in die {0}!
+es: ¡Subiste a la {0}!
+pt: Você subiu para a {0}!
+fr: Promu en {0} !
+ko: {0}로 승급했어요!
+ja: {0}に昇格！
+zh: 升到{0}了！
+
+@ Moved down to {0}
+de: Abgestiegen in die {0}
+es: Bajaste a la {0}
+pt: Você caiu para a {0}
+fr: Descendu en {0}
+ko: {0}로 강등됐어요
+ja: {0}に降格
+zh: 降到{0}
+
+@ The week is over
+de: Die Woche ist vorbei
+es: La semana terminó
+pt: A semana acabou
+fr: La semaine est terminée
+ko: 한 주가 끝났어요
+ja: 今週は終了しました
+zh: 這週結束了
+
+@ You finished #{0} last week.
+de: Letzte Woche warst du Platz {0}.
+es: La semana pasada quedaste #{0}.
+pt: Na semana passada você ficou em #{0}.
+fr: La semaine dernière, tu as fini #{0}.
+ko: 지난주 {0}위였어요.
+ja: 先週は{0}位でした。
+zh: 上週你是第 {0} 名。
+
+@ You stay in {0}.
+de: Du bleibst in der {0}.
+es: Sigues en la {0}.
+pt: Você continua na {0}.
+fr: Tu restes en {0}.
+ko: {0}에 머물러요.
+ja: {0}に残留です。
+zh: 你留在{0}。
+
+@ Start the new week
+de: Neue Woche starten
+es: Empezar la nueva semana
+pt: Começar a nova semana
+fr: Commencer la nouvelle semaine
+ko: 새 주 시작
+ja: 新しい週を始める
+zh: 開始新的一週
+
+@ Duel
+de: Duell
+es: Duelo
+pt: Duelo
+fr: Duel
+ko: 대결
+ja: 対戦
+zh: 對決
+
+@ Same puzzle, same time. First to finish wins.
+de: Gleiches Rätsel, gleiche Zeit. Wer zuerst fertig ist, gewinnt.
+es: El mismo puzle, al mismo tiempo. Gana quien termine primero.
+pt: Mesmo quebra-cabeça, ao mesmo tempo. Vence quem terminar primeiro.
+fr: Même puzzle, en même temps. Le premier à finir gagne.
+ko: 같은 퍼즐을 동시에. 먼저 끝내면 승리.
+ja: 同じパズルを同時に。先にクリアした方の勝ち。
+zh: 同一道謎題，同時開始。先完成的人獲勝。
+
+@ Random opponent
+de: Zufälliger Gegner
+es: Rival aleatorio
+pt: Oponente aleatório
+fr: Adversaire au hasard
+ko: 랜덤 상대
+ja: ランダムな相手
+zh: 隨機對手
+
+@ Win +10 points
+de: Sieg +10 Punkte
+es: Victoria +10 puntos
+pt: Vitória +10 pontos
+fr: Victoire +10 points
+ko: 승리 +10점
+ja: 勝利 +10ポイント
+zh: 獲勝 +10 分
+
+@ Invite a friend
+de: Freund einladen
+es: Invitar a un amigo
+pt: Convidar um amigo
+fr: Inviter un ami
+ko: 친구 초대
+ja: 友だちを招待
+zh: 邀請朋友
+
+@ Join with code
+de: Mit Code beitreten
+es: Unirse con código
+pt: Entrar com código
+fr: Rejoindre avec un code
+ko: 코드로 참가
+ja: コードで参加
+zh: 輸入代碼加入
+
+@ Finding an opponent…
+de: Gegner wird gesucht…
+es: Buscando rival…
+pt: Procurando oponente…
+fr: Recherche d’un adversaire…
+ko: 상대를 찾는 중…
+ja: 相手を探しています…
+zh: 正在尋找對手…
+
+@ A player at a similar level
+de: Ein Spieler auf ähnlichem Niveau
+es: Un jugador de nivel parecido
+pt: Um jogador de nível parecido
+fr: Un joueur de niveau proche
+ko: 비슷한 수준의 플레이어
+ja: 同じくらいのレベルのプレイヤー
+zh: 程度相近的玩家
+
+@ No opponent right now
+de: Gerade kein Gegner
+es: Ahora no hay rival
+pt: Nenhum oponente agora
+fr: Aucun adversaire pour le moment
+ko: 지금은 상대가 없어요
+ja: 今は相手がいません
+zh: 現在沒有對手
+
+@ Try again in a moment, or invite a friend.
+de: Versuche es gleich noch einmal oder lade einen Freund ein.
+es: Vuelve a intentarlo en un momento o invita a un amigo.
+pt: Tente de novo em instantes ou convide um amigo.
+fr: Réessaie dans un instant ou invite un ami.
+ko: 잠시 후 다시 시도하거나 친구를 초대해요.
+ja: 少ししてからもう一度試すか、友だちを招待しよう。
+zh: 稍後再試一次，或邀請朋友。
+
+@ Invite your friend
+de: Lade deinen Freund ein
+es: Invita a tu amigo
+pt: Convide seu amigo
+fr: Invite ton ami
+ko: 친구를 초대하세요
+ja: 友だちを招待しよう
+zh: 邀請你的朋友
+
+@ Your friend enters this code under “Join with code” in Ray, or opens the link.
+de: Dein Freund gibt diesen Code in Ray unter „Mit Code beitreten“ ein oder öffnet den Link.
+es: Tu amigo escribe este código en «Unirse con código» en Ray o abre el enlace.
+pt: Seu amigo digita este código em “Entrar com código” no Ray ou abre o link.
+fr: Ton ami saisit ce code dans « Rejoindre avec un code » dans Ray, ou ouvre le lien.
+ko: 친구가 Ray의 '코드로 참가'에 이 코드를 입력하거나 링크를 열면 돼요.
+ja: 友だちがRayの「コードで参加」にこのコードを入力するか、リンクを開きます。
+zh: 請朋友在 Ray 的「輸入代碼加入」輸入這個代碼，或打開連結。
+
+@ Send the invite
+de: Einladung senden
+es: Enviar invitación
+pt: Enviar convite
+fr: Envoyer l’invitation
+ko: 초대 보내기
+ja: 招待を送る
+zh: 傳送邀請
+
+@ Waiting for your friend…
+de: Warte auf deinen Freund…
+es: Esperando a tu amigo…
+pt: Esperando seu amigo…
+fr: En attente de ton ami…
+ko: 친구를 기다리는 중…
+ja: 友だちを待っています…
+zh: 正在等待朋友…
+
+@ Duel me in Ray? ⚔️ Code:
+de: Duell in Ray? ⚔️ Code:
+es: ¿Un duelo en Ray? ⚔️ Código:
+pt: Duelo no Ray? ⚔️ Código:
+fr: Un duel sur Ray ? ⚔️ Code :
+ko: Ray에서 대결할래? ⚔️ 코드:
+ja: Rayで対戦しない？⚔️ コード：
+zh: 來 Ray 對決嗎？⚔️ 代碼：
+
+@ Join
+de: Beitreten
+es: Unirse
+pt: Entrar
+fr: Rejoindre
+ko: 참가
+ja: 参加
+zh: 加入
+
+@ Connecting…
+de: Verbinde…
+es: Conectando…
+pt: Conectando…
+fr: Connexion…
+ko: 연결 중…
+ja: 接続中…
+zh: 連線中…
+
+@ Code not found or expired
+de: Code nicht gefunden oder abgelaufen
+es: Código no encontrado o caducado
+pt: Código não encontrado ou expirado
+fr: Code introuvable ou expiré
+ko: 코드가 없거나 만료됐어요
+ja: コードが見つからないか期限切れです
+zh: 找不到代碼或已過期
+
+@ No one is online right now: you’re racing a real player’s recorded run
+de: Gerade ist niemand online: Du trittst gegen die Aufzeichnung eines echten Spielers an
+es: Ahora no hay nadie conectado: compites contra la partida grabada de un jugador real
+pt: Ninguém online agora: você está disputando contra a partida gravada de um jogador real
+fr: Personne n’est en ligne : tu affrontes la partie enregistrée d’un vrai joueur
+ko: 지금은 접속한 사람이 없어요: 실제 플레이어의 녹화된 플레이와 대결해요
+ja: 今はオンラインの人がいません：実在のプレイヤーの記録と対戦します
+zh: 現在沒有人在線：你正在挑戰真實玩家的紀錄
+
+@ You won!
+de: Gewonnen!
+es: ¡Ganaste!
+pt: Você venceu!
+fr: Tu as gagné !
+ko: 이겼어요!
+ja: 勝利！
+zh: 你贏了！
+
+@ Your opponent finished first
+de: Dein Gegner war schneller
+es: Tu rival terminó primero
+pt: Seu oponente terminou primeiro
+fr: Ton adversaire a fini en premier
+ko: 상대가 먼저 끝냈어요
+ja: 相手が先にクリアしました
+zh: 對手先完成了
+
+@ {0} · {1} moves
+de: {0} · {1} Züge
+es: {0} · {1} movimientos
+pt: {0} · {1} jogadas
+fr: {0} · {1} coups
+ko: {0} · {1}수
+ja: {0} · {1}手
+zh: {0} · {1} 步
+
+@ You had {0}% connected
+de: Du hattest {0} % verbunden
+es: Tenías un {0} % conectado
+pt: Você tinha {0}% conectado
+fr: Tu avais connecté {0} %
+ko: {0}%를 연결했었어요
+ja: {0}%つないでいました
+zh: 你已連接 {0}%
+
+@ Duel again
+de: Nochmal duellieren
+es: Otro duelo
+pt: Duelar de novo
+fr: Rejouer un duel
+ko: 다시 대결
+ja: もう一度対戦
+zh: 再對決一次
+
+@ Live 1-on-1
+de: Live 1 gegen 1
+es: En vivo 1 contra 1
+pt: Ao vivo 1 contra 1
+fr: En direct 1 contre 1
+ko: 실시간 1대1
+ja: リアルタイム1対1
+zh: 即時 1 對 1
+
+@ League
+de: Liga
+es: Liga
+pt: Liga
+fr: Ligue
+ko: 리그
+ja: リーグ
+zh: 聯賽

@@ -3230,11 +3230,16 @@ function vsWait(title, sub, onCancel) {
 }
 async function vsFind(o = {}) {
   vsWait(L('Rakip aranıyor…', 'Finding an opponent…'), L('Benzer seviyede bir oyuncu', 'A player at a similar level'));
-  const m = await LIG.duel.find({ levels: duelLevels(), ...o });
-  if (m) vsIntro(m);
+  let m = null; try { m = await LIG.duel.find({ levels: duelLevels(), ...o }); } catch {}
+  if (!$('vwT')) return;   // vazgeçildi
+  if (m) return vsIntro(m);
+  modal(`<div class="bell">🚇</div><h2>${L('Şu an rakip yok', 'No opponent right now')}</h2><p>${L('Birazdan yeniden dene ya da bir arkadaşını davet et.', 'Try again in a moment, or invite a friend.')}</p>
+    <button id="vR" class="btn primary"><span>${L('Yeniden dene', 'Try again')}</span></button><button id="vH" class="btn glassbtn">${L('Arkadaşı davet et', 'Invite a friend')}</button><button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`,
+    { vR: () => vsFind(o), vH: vsHost, mClose: closeModal });
 }
 async function vsHost() {
-  const h = await LIG.duel.host({ levels: duelLevels() }), url = `${SHARE_URL}?vs=${h.code}`;
+  let h; try { h = await LIG.duel.host({ levels: duelLevels() }); } catch { toast(L('Bağlantı yok · sonra dene', 'No connection · try later')); return; }
+  const url = `${SHARE_URL}?vs=${h.code}`;
   modal(`<div class="bell">⚔️</div><h2>${L('Arkadaşını davet et', 'Invite your friend')}</h2><p>${L('Arkadaşın Ray’de “Koda katıl”a bu kodu yazsın ya da bağlantıyı açsın.', 'Your friend enters this code under “Join with code” in Ray, or opens the link.')}</p>
     <div class="vscode" id="vCode">${h.code}</div>
     <button id="vShare" class="btn primary"><span>${L('Daveti gönder', 'Send the invite')}</span></button>
