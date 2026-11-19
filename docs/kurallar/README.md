@@ -40,14 +40,12 @@ Hat sırası (3 Kasım; göze çarpan/kolay kurallar önce, gizli bilgili ve inc
 | M26 | 661 | Kayan sütun | `column` | `kayan-sutun` |
 | M27 | 689 | Ekspres durak | `express` | `ekspres-durak` |
 | M28 | 717 | Sinyal karosu | `signal` | `sinyal` |
+| M29 | 745 | Sarsıntı durağı | `quake` | `sarsinti` |
+| M30 | 773 | Dönüşen karo | `morph` | `donusen-karo` |
 
 Bağımlılıklar yeni sırada da korunur: köprü (M13) tünel ağzından (M16) önce; tabela (M17) halkadan (M18) önce (halka ikisiyle `clash`, `CLASH` simetrik ve sırasız). Mühürlü karo bakım karosuyla, sarmal tahta tünel ağzı, gizli depo, nehir ve tarife bölgesiyle aynı bölümde gelmez (`clash`). Eklentilerin üretim/kanca sırası `ord` alanıyla sabittir (sarmal tahta `ord: 7` ile `pre` aşamalarının önünde, mühürlü karo `ord: 23` ile işaretlerin en sonunda). Güçlendiriciler kuralın hattını `RULE_LINE`'dan okur (🔦 fener → `fog`, 🔄 ek tur → `cnt`).
 
-M28 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`, `KARMA = 28`). Son sefer ve kayan sütun 3 Kasım'da (`kurallar-3`) sona eklendi: 1–632. bölümler bit bit aynı kaldı, yalnız karma (eskiden 633'ten, sonra 689'dan) yeniden üretildi. Tek yön ve ekspres durak 19 Kasım'da (`kurallar-4`) aynı yolla sona eklendi: 1–688. bölümler bit bit aynı, karma artık 745'ten. Kayan sütun kayan sırayla aynı bölümde gelmez (`clash`); son sefer bakım karosuyla, tek yön tabela ve halkayla, ekspres durak son seferle gelmez. Sinyal karosu (19 Kasım) aynı yolla M28 olarak sona eklendi: 1–716. bölümler bit bit aynı, karma artık 745'ten; sinyal mühürlü karo, bakım karosu ve son seferle gelmez.
-| M28 | 717 | Dönüşen karo | `morph` | `donusen-karo` |
-M28 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`, `KARMA = 28`). Son sefer ve kayan sütun 3 Kasım'da (`kurallar-3`) sona eklendi: 1–632. bölümler bit bit aynı kaldı, yalnız karma (eskiden 633'ten, sonra 689'dan) yeniden üretildi. Tek yön ve ekspres durak 19 Kasım'da (`kurallar-4`) aynı yolla sona eklendi: 1–688. bölümler bit bit aynı, karma artık 745'ten. Kayan sütun kayan sırayla aynı bölümde gelmez (`clash`); son sefer bakım karosuyla, tek yön tabela ve halkayla, ekspres durak son seferle gelmez. Dönüşen karo 19 Kasım'da (`kural-donusen`) aynı yolla M28 olarak eklendi: 1–716. bölümler bit bit aynı, karma artık M29'dan; makas ve silik kolla gelmez.
-| M28 | 717 | Sarsıntı durağı | `quake` | `sarsinti` |
-M28 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`, `KARMA = 28`). Son sefer ve kayan sütun 3 Kasım'da (`kurallar-3`) sona eklendi: 1–632. bölümler bit bit aynı kaldı, yalnız karma (eskiden 633'ten, sonra 689'dan) yeniden üretildi. Tek yön ve ekspres durak 19 Kasım'da (`kurallar-4`) aynı yolla sona eklendi: 1–688. bölümler bit bit aynı, karma artık 745'ten. Kayan sütun kayan sırayla aynı bölümde gelmez (`clash`); son sefer bakım karosuyla, tek yön tabela ve halkayla, ekspres durak son seferle gelmez. Sarsıntı durağı 19 Kasım'da aynı yolla sona eklendi (M28, 717): 1–716. bölümler bit bit aynı, karma artık 745'ten; bakım karosu, kayan sıra, kayan sütun ve son seferle gelmez (`clash`).
+M31 ve sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`, `KARMA = 30`). Son sefer ve kayan sütun 3 Kasım'da (`kurallar-3`) sona eklendi: 1–632. bölümler bit bit aynı kaldı, yalnız karma (eskiden 633'ten, sonra 689'dan) yeniden üretildi. Tek yön ve ekspres durak 19 Kasım'da (`kurallar-4`) aynı yolla sona eklendi: 1–688. bölümler bit bit aynı, karma artık 745'ten. Kayan sütun kayan sırayla aynı bölümde gelmez (`clash`); son sefer bakım karosuyla, tek yön tabela ve halkayla, ekspres durak son seferle gelmez. Sinyal karosu (19 Kasım) aynı yolla M28 olarak sona eklendi: 1–716. bölümler bit bit aynı, karma artık 745'ten; sinyal mühürlü karo, bakım karosu ve son seferle gelmez.
 
 ## Temel ilkeler
 
@@ -237,3 +235,5 @@ module.exports = async T => {
 
 - Kendi dalında commit ve push (dal adı oturum isteminde yazılı).
 - Bitince `docs/kurallar/<ad>.md` güncel olmalı: kural, kanıt, ölçümler ve bilinen sınırlar.
+
+> **19 Kasım birleştirme notu:** sinyal, dönüşen karo ve sarsıntı durağı ayrı dallarda M28 olarak yapıldı, birleşince sıraya kondu. Merdiven (güncel ölçüm): M27 ekspres 23,6 < M28 sinyal 24,0 < M29 sarsıntı 24,8 (`boost: 16`) < M30 dönüşen 26,6; karma M31+ ~21,4. Sarsıntı M30'da boost ne olursa olsun ~23,6'da kaldığı için dönüşenden önceye alındı.

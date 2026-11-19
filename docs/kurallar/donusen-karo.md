@@ -1,6 +1,6 @@
-# M28 · Dönüşen karo (`morph`)
+# M30 · Dönüşen karo (`morph`)
 
-Hat M28, ilk bölüm 717 (`line: 27`, `ord: 28`). Dosyalar: `www/rules/donusen-karo.js`, `tools/hakem/donusen-karo.cjs`, çeviri `tools/diller/sozluk-10.txt`.
+Hat M30, ilk bölüm 773 (`line: 29`, `ord: 28`). Dosyalar: `www/rules/donusen-karo.js`, `tools/hakem/donusen-karo.cjs`, çeviri `tools/diller/sozluk-10.txt`.
 
 **Kural.** Kesik çerçeveli karo her dokunuşta **döner ve biçim değiştirir: köşe ↔ düz**. Dört hâl sırayla gelir, 4 dokunuşta başa döner. Sağ alttaki küçük kutu, dokununca gelecek hâli gösterir (çözüm yönünü değil, yalnız bir sonraki hâli). Oyuncuya: "Kesik çerçeveli karo her dokunuşta döner ve biçim değiştirir: köşe ↔ düz. Köşedeki küçük resim bir sonraki hâlini gösterir; 4 dokunuşta başa döner."
 

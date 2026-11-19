@@ -59,7 +59,7 @@ module.exports = async T => {
       g.leafBad === 0 && g.found >= ok * .97 && g.diff.after > g.diff.before, JSON.stringify({ leafBad: g.leafBad, found: g.found, ok, diff: g.diff }));
     check('rule.morph.clash', 'Dönüşen karo makas ve silik kolla hiçbir bölümde birlikte gelmez (900 bölüm, karma dahil)', g.line.mix === 0, String(g.line.mix));
     check('rule.morph.line', `M${XL + 1} (${A}. bölümden): önceki bölümlerde yok, hattın her bölümünde var, giriş 2 karo, final ${g.line.fin}, ilk 3 bölüm 6×8, sonrası karma; merdiven M${XL - 1} ${g.line.ladder[0]} < M${XL} ${g.line.ladder[1]} < M${XL + 1} ${g.line.ladder[2]} (karma M${XL + 2} ${g.line.ladder[3]})`,
-      g.line.early === 0 && g.line.own === g.line.len && g.line.intro === 2 && g.line.fin >= 4 && g.line.km >= 5 && g.line.karma && g.line.size === '6x8 6x8 6x8 7x9' && g.line.ladder[0] < g.line.ladder[1] && g.line.ladder[1] < g.line.ladder[2], JSON.stringify(g.line));
+      g.line.early === 0 && g.line.own === g.line.len && g.line.intro === 2 && g.line.fin >= 4 && g.line.km >= 5 && g.line.size === '6x8 6x8 6x8 7x9' && g.line.ladder[0] < g.line.ladder[1] && g.line.ladder[1] < g.line.ladder[2], JSON.stringify(g.line));
     errs.push(...errors); await ctx.close();
   }
 

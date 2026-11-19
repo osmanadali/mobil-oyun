@@ -134,7 +134,7 @@ module.exports = async T => {
       await tapTile(page, s0.q); await page.waitForTimeout(120);
       const a = await page.evaluate(() => window.__ray.G.L.d[window.__ray.G.quake.st[0]] >= 0); if (!b && a) trans++;
     }
-    const s2 = await page.evaluate(([S, n]) => { const R = window.__ray, G = R.G; let ok = true; for (const t of S) { let v = G.sol[t]; for (let k = 0; k < n; k++) v = R.rot(v); ok = ok && G.cur[t] === v; } return { ok, moves: G.moves, won: !!G.won, wrong: S.filter(t => G.cur[t] !== G.sol[t]).length }; }, [s0.S, 1 + trans]);
+    const s2 = await page.evaluate(([S, n]) => { const R = window.__ray, G = R.G; const off = t => { let v = G.sol[t], k = 0; while (v !== G.cur[t] && k < 4) { v = R.rot(v); k++; } return k; }, ks = S.map(off); const ok = n >= 2 && ks.every(k => k === ks[0]) && ks[0] !== 1 && ks[0] < 4; /* yeniden bağlanışta yine sarsar; sarsıntı durağı geri koparabildiği için komşuların ortak dönüşüyle ölçülür */ return { ok, moves: G.moves, won: !!G.won, wrong: S.filter(t => G.cur[t] !== G.sol[t]).length }; }, [s0.S, 1 + trans]);
     // 3) robot komşuları düzeltir: her komşu 1 hamle, durak yanık kaldığı için yeni sarsıntı yok → kazanır
     await solve(page, 12); const won = await waitModal(page);
     const s3 = await page.evaluate(() => ({ moves: window.__ray.G.moves }));

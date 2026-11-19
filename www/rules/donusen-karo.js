@@ -22,7 +22,7 @@
     CYC[1].map((m, k) => `<u class="rd-mk rd-m${k}">${arms(m, ARM)}<u class="rd-mb">${arms(CYC[1][(k + 1) % 4], MIN)}</u></u>`).join('') +
     '<u class="rd-mx"></u></i><i class="rtap2"></i></div>';
   return {
-    key: 'morph', line: 27, ord: 28, boost: 14,
+    key: 'morph', line: 29, ord: 28, boost: 14,
     // makas: o da dokununca biçim değiştirir (düz ↔ sapak, kesik kol) · silik kol: kolun var mı yok mu belirsizliği · ikisi dönüşen karoyla aynı tahtada karışır
     clash: ['sw', 'faint'],
     card: { name: L('Dönüşen karo', 'Shifting tile'), tag: L('Yeni: dönüşen karo', 'New: shifting tile'), demo,

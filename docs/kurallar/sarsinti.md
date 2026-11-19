@@ -1,6 +1,6 @@
-# M28 · Sarsıntı durağı (`quake`)
+# M29 · Sarsıntı durağı (`quake`)
 
-Hat M28 (`line: 27`), ilk bölüm 717 (19 Kasım). Dosyalar: `www/rules/sarsinti.js`, `tools/hakem/sarsinti.cjs`. Esin kaynağı: zincirleme tepkili bulmacalar; bir hamlenin çevreye yan etkisi.
+Hat M29 (`line: 28`, `ord: 29`, `boost: 16`), ilk bölüm 745 (19 Kasım). Dosyalar: `www/rules/sarsinti.js`, `tools/hakem/sarsinti.cjs`. Esin kaynağı: zincirleme tepkili bulmacalar; bir hamlenin çevreye yan etkisi.
 
 **Kural.** Bazı durakların sağ üstünde küçük bir 🌋 yanardağ işareti vardır. Böyle bir durak hatta **bağlandığı an** (yanmıyorken yandığında) çevresindeki karolar **90° saat yönünde** sarsılıp döner. Durak kopup yeniden bağlanırsa yine sarsar. Oyuncuya: "Durağı en sona bırak ya da önce bağla, komşularını sonra düzelt." Kural bilgi vermez, yalnız sırayı önemli kılar.
 

@@ -299,7 +299,7 @@ const RULES = {
 const RULE_LINE = { pairs: 2, rev: 3, fog: 5, cnt: 6, two: 8 };
 const MODS = [], CLASH = {};   // eklentiler · birlikte gelemeyen kurallar (simetrik)
 const clash = (a, b) => !!(CLASH[a]?.includes(b) || CLASH[b]?.includes(a));
-const KARMA = 28;   // 0 tabanlı: M29 ve sonrası sınırsız karma (son kural M28 · sinyal karosu, 717. bölüm)
+const KARMA = 30;   // 0 tabanlı: M31 ve sonrası sınırsız karma (son kural M30 · dönüşen karo, 773. bölüm)
 function rulesFor(l) {
   const c = lineOf(l), own = Object.keys(RULE_LINE).find(k => RULE_LINE[k] === c), set = new Set(own ? [own] : []);
   const learned = Object.keys(RULE_LINE).filter(k => RULE_LINE[k] < c).sort((a, b) => RULE_LINE[a] - RULE_LINE[b]);   // hat sırasıyla: slice(-3) = en yeni 3 kural
@@ -524,7 +524,7 @@ function puzzleFor(l) {
     // Kuralın kendi hattındaki ilk 3 öğrenme bölümünde pay yok (testere dişi).
     let boost = 0, scan = 0;   // scan: kendi hattında taranacak en az aday (çözücü puanını kendisi artırmayan kural, ör. son sefer)
     for (const m of MODS) if (U.has(m.key)) { x[m.key] = m.amount(n, intro && ln === m.line, z, fin, c, r); if (ln !== m.line || l - lineStart(ln) >= 3) { boost += m.boost || 0; if (ln === m.line) scan = m.scan || 0; } }
-    if (ln >= KARMA) boost += 3.5;   // M29+ sınırsız karma: eski kuralların payı küçük, hedef M24 düzeyinde kalsın
+    if (ln >= KARMA) boost += 3.5;   // M31+ sınırsız karma: eski kuralların payı küçük, hedef M24 düzeyinde kalsın
     if (breath(l)) boost = 0;   // mola: kural payı yok, hedef aşağıda yarıya yakın
     // hat finali (SON DURAK): hedef +2 puan, en çok aday taranır · zorluk paylı bölümde de geniş tarama
     const P = pick(c, r, l * 7919 + 13, 0, pairs, z, (intro ? 3 : 5) + 11 * z * (breath(l) ? .55 : 1) + (fin ? 2 : 0) + boost, x, fin ? Math.max(32, scan) : boost ? Math.max(24, 6 + Math.round(26 * z), scan) : undefined);

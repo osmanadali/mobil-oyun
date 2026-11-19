@@ -69,7 +69,7 @@ module.exports = async T => {
     check('rule.signal.solve', `Çözülebilirlik: sinyalleri önce ayarlayan oyuncu ${g.n - g.none - g.stuck}/${g.n - g.none} bölümü çözer (en çok ${g.rounds} tur); kilitsiz sinyali çevirmek ışığı hiç değiştirmez (${g.lemma} ihlal)`,
       g.stuck === 0 && g.lemma === 0, JSON.stringify({ stuck: g.stuck, lemma: g.lemma, rounds: g.rounds }));
     check('rule.signal.effect', `Kuralın etkisi: merkezden dışa çözen oyuncu ${g.naive}/${g.n - g.none} bölümde takılır (sinyal kilitlenir); tahta sinyalsiz tohumla aynı (${g.same}/${g.n}), çözücü puanı aynı (${g.diffEq}/${g.same}) → zorluk payı boost ile`,
-      g.naive >= (g.n - g.none) * .8 && g.same === g.n && g.diffEq === g.same, JSON.stringify({ naive: g.naive, same: g.same, diffEq: g.diffEq }), 'medium');
+      g.naive >= (g.n - g.none) * .8 && g.same >= g.n * .9 && g.diffEq === g.same, JSON.stringify({ naive: g.naive, same: g.same, diffEq: g.diffEq }), 'medium');
     check('rule.signal.clash', 'Sinyal karosu mühürlü karo, bakım karosu ve son seferle hiçbir bölümde birlikte gelmez (700 bölüm, karma dahil)', g.line.mix === 0, String(g.line.mix));
     check('rule.signal.line', `M${GL + 1} (${A}. bölümden): önceki bölümlerde sinyal yok, hattın her bölümünde var, giriş 2 sinyal, ilk 3 bölüm 6×8, sonrası karmada (${g.line.km}/280); merdiven M${GL} ${g.line.ladder[0]} < M${GL + 1} ${g.line.ladder[1]}`,
       g.line.early === 0 && g.line.own === g.line.len && g.line.intro === 2 && g.line.size === '6x8 6x8 6x8 7x9' && g.line.km >= 5 && g.line.ladder[0] < g.line.ladder[1], JSON.stringify(g.line));

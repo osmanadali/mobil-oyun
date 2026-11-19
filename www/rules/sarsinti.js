@@ -11,7 +11,7 @@
   const around = (cols, rows, i) => { const x = i % cols, y = i / cols | 0, o = []; for (const [, dx, dy] of api.DIRS) { const a = x + dx, b = y + dy; if (a >= 0 && b >= 0 && a < cols && b < rows) o.push(b * cols + a); } return o; };
   const on = (L, q) => L.d[q] >= 0;
   return {
-    key: 'quake', line: 27, ord: 28, boost: 12,
+    key: 'quake', line: 28, ord: 29, boost: 16,
     // kendiliğinden dönen/kayan karolar (bakım karosu, kayan sıra/sütun) durağın yolunu sarsıntıdan bağımsız bozar; son sefer hamle payını sarsıntı bilmez
     clash: ['gear', 'slide', 'column', 'last'],
     card: { name: L('Sarsıntı durağı', 'Quake station'), tag: L('Yeni: sarsıntı durağı', 'New: quake station'),
