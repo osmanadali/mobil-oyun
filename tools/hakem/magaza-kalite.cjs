@@ -187,7 +187,7 @@ module.exports = async T => {
     const c2 = await open(browser, URL, { vp: [360, 740], save: { played: 30, level: 101, stars: starsUpTo(101, 2) } });
     await c2.page.click('#crownChip'); await c2.page.waitForTimeout(400); await c2.page.click('#mHunt'); await c2.page.waitForTimeout(400);
     const poor = await c2.page.textContent('#mCard p');
-    await c2.page.click('#mBack'); await c2.page.waitForTimeout(300); await c2.page.click('#mClose'); await c2.page.waitForTimeout(300);
+    await c2.page.click('#mBack'); await c2.page.waitForTimeout(300); await c2.page.click('#shBack'); await c2.page.waitForTimeout(400);   // Temalar ayrı sayfa: ‹ ana sayfaya
     await c2.page.click('#bPlay'); await c2.page.waitForTimeout(450);   // M6 kilitli (★ 200 / 220)
     const lock = await c2.page.textContent('#mCard p');
     nw.lock = await nwOf(c2.page);

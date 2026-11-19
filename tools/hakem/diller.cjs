@@ -104,12 +104,12 @@ module.exports = async T => {
     await page.waitForTimeout(900);
     R.scr.home = await probe(page, '#home');
     await page.click('#bSettings'); await gap(); R.scr.settings = await probe(page, sheet); await shot(page, `${lang}-settings-320`);
-    await page.click('#mClose'); await gap(); await page.click('#bShop'); await gap(); R.scr.shop = await probe(page, sheet); await shot(page, `${lang}-shop-320`);
-    await page.click('#mClose'); await gap();
+    await page.click('#mClose'); await gap(); await page.click('#bShop'); await gap(); R.scr.shop = await probe(page, '#shop'); await shot(page, `${lang}-shop-320`);   // Mağaza ayrı sayfa
+    await page.click('#shBack'); await gap();
     await page.click('#bQuest'); await gap(); R.scr.quests = await probe(page, sheet); await shot(page, `${lang}-quests-320`);
     await page.click('#mClose').catch(() => {}); await gap();
-    await page.click('#crownChip'); await gap(); R.scr.themes = await probe(page, sheet);
-    await page.click('#mClose').catch(() => {}); await gap();
+    await page.click('#crownChip'); await gap(); R.scr.themes = await probe(page, '#shop');   // Mağaza › Temalar sayfası
+    await page.click('#shBack').catch(() => {}); await gap();
     await page.click('#bMap'); await gap(); R.scr.lines = await probe(page, '#map'); await page.click('#pBack').catch(() => {}); await gap();
     await page.click('#bPlay'); await page.waitForTimeout(800); R.scr.game = await probe(page, '#game,#toast'); await shot(page, `${lang}-game-320`);
     await page.click('#bBack'); await page.waitForTimeout(500); R.scr.pause = await probe(page, sheet); await shot(page, `${lang}-pause-320`); await page.click('#pGo'); await page.waitForTimeout(700);

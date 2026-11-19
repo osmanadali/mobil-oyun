@@ -772,6 +772,7 @@ function show(id) {
   document.body.dataset.scr = id; document.querySelectorAll('#tabbar button').forEach(b => b.classList.toggle('on', b.dataset.tab === id));
   if (id !== 'game' && G?.duel && !G.duelOver && !G.won) vsEnd(null);   // kapışmadan çıkış = terk
   if (id !== 'game' && active('game')) quitEv();
+  if (id !== 'shop') { $('shopBody').innerHTML = $('shopTabs').innerHTML = ''; shopOn = ''; }   // mağaza sayfası bırakıldı: içi boşalır (#store/#skins kimlikleri oyundaki pencereyle çakışmasın)
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
   document.body.classList.toggle('playing', id === 'game'); document.body.classList.toggle('tut', id === 'game' && !!G?.tut);
   if (id === 'game') resume(); else { pause(); cityDown(); }
@@ -781,7 +782,7 @@ function show(id) {
   if (id === 'city') renderMeta();
   clearInterval(clockT); if (id === 'home') clockT = setInterval(() => { dailyClock(); lifeRow(); }, 1000);
 }
-const bind = binds => { for (const [id, fn] of Object.entries(binds)) { const el = $(id); if (el) el.onclick = fn; } };
+const bind = (binds, root) => { for (const [id, fn] of Object.entries(binds)) { const el = root?.querySelector('#' + id) || $(id); if (el) el.onclick = fn; } };   // root: önce o kutunun içinde ara (sayfa ile üstündeki pencerede aynı kimlik olabilir: mRestore)
 // center: ekranın ortasında küçük pencere (duraklat); öteki pencereler alttan açılır
 function modal(html, binds = {}, locked = false, center = false) {
   mLocked = locked; howBack = null; mOnClose = null; $('modal').classList.toggle('center', center);
@@ -790,7 +791,7 @@ function modal(html, binds = {}, locked = false, center = false) {
   sh.classList.toggle('fit', !full && sh.scrollHeight <= sh.clientHeight + 1);   // sığan pencere: her yerinden aşağı çekilebilir
   // uzun (kaydırılan) pencere: köşede ✕ — aşağı çekmek kaydırmayla karışabiliyor (temalar, sandık, mağaza)
   if (!locked && !sh.classList.contains('fit')) sh.insertAdjacentHTML('afterbegin', `<button class="mx" id="mX" aria-label="${L('Kapat', 'Close')}">✕</button>`);
-  bind({ mX: closeModal, ...binds });
+  bind({ mX: closeModal, ...binds }, sh);
 }
 const closeModal = () => { howBack = null; const f = mOnClose; mOnClose = null; $('modal').classList.remove('open'); f?.();
   if (active('game') && G && !G.won && !G.over && !document.hidden) { $('game').classList.remove('paused'); resume(); }   /* oyunda pencere nasıl kapanırsa kapansın süre akar (resume tekrarı zararsız) */ setTimeout(() => { if (!modalOpen()) $('modal').classList.remove('center'); }, 350); };   // kapanış animasyonu bitince alt pencere düzenine dön
@@ -1703,6 +1704,7 @@ function grantNoAds() {
   $('mAdFree')?.parentNode.remove();
   haptic('win'); toast(L('Reklamsız paket aktif 💛 +20 ipucu · 3 özel tema açıldı', 'Ad-free pack active 💛 +20 hints · 3 special themes'));
   if (modalOpen() && $('mBuy')) shopSheet();
+  if (active('shop')) shopRefresh();   // altta Mağaza sayfası: "Sende ✓" hemen görünsün (pencere açık kalır)
 }
 // ---------- mağaza: tek pencere (Ayarlar › Mağaza, ipucu bitince "İpucu paketleri"). Satış sade: rozet ve geri sayım yok; kendiliğinden açılan tek pencere seyrek "özel teklif" (offer) ----------
 const STORE = [
@@ -1797,7 +1799,25 @@ const ART = (() => {
 })();
 // Mağaza iki sekme: 🛍️ Paketler (parayla) · 🎨 Temalar (🎫 ile; bilet çipi doğrudan buraya açar)
 const shopTabs = on => `<div class="tabs" role="tablist"><button id="tPk" role="tab" aria-selected="${on === 'pk'}" class="${on === 'pk' ? 'on' : ''}"><i>🛍️</i>${L('Paketler', 'Packs')}</button><button id="tTh" role="tab" aria-selected="${on === 'th'}" class="${on === 'th' ? 'on' : ''}"><i>🎨</i>${L('Temalar', 'Themes')}${seaNew() || save.newSkin ? '<em class="dot"></em>' : ''}</button></div>`;
-function storeSheet(focus) {
+// Mağaza sayfası (#shop): menülerden (ana sayfa, lig, şehir, harita…) tam ekran. Bölüm sürerken (oyun ekranı) aynı içerik eskisi gibi
+// pencerede açılır: oyun ekranı bırakılmaz (süre durur, kapanınca bölüm kaldığı yerden sürer; kapışma terk sayılmaz).
+let shopOn = '';   // sayfada açık sekme: 'pk' | 'th'
+const shopPg = () => !active('game');
+function shopPage(tab, html, binds, stay) {
+  const body = $('shopBody'), y = active('shop') && shopOn === tab ? body.scrollTop : 0;   // aynı sekme yeniden çizilince kaydırma yerinde kalır
+  if (modalOpen() && !stay) closeModal();   // sayfayı açan pencere (can, sandık, tema onayı…) kapanır
+  if (!active('shop')) show('shop');
+  shopOn = tab; $('shSub').textContent = L(`Sende 💡 ${save.hints} · 🎫 ${crownBal()}`, `You have 💡 ${save.hints} · 🎫 ${crownBal()}`);
+  $('shopTabs').innerHTML = shopTabs(tab); body.innerHTML = html; body.scrollTop = y;
+  bind({ tPk: () => storeSheet(), tTh: () => skinSheet(), ...binds }, $('shop'));
+}
+// satın alma / geri yükleme sonrası açık mağazayı tazele (sayfa ya da oyundaki pencere)
+function shopRefresh() {
+  if (active('shop') && shopOn) return shopOn === 'th' ? skinSheet(true) : storeSheet(undefined, true);
+  if (modalOpen() && $('mCard').querySelector('#store')) storeSheet();
+}
+function storeSheet(focus, stay) {
+  if (typeof focus !== 'string') focus = undefined;
   const live = Shop.avail(), owns = k => k === 'noads' ? save.noAds : k === 'themes' && save.allThemes;
   const has = STORE.filter(([k]) => live || k === 'noads').filter(([k]) => !(k === 'themes' && SKINS.every(x => x.vip || skinOpen(x)) && !save.allThemes)).map(r => r[0]);
   const price = k => owns(k) ? L('Sende ✓', 'Owned ✓') : Shop.price(k) || '›';
@@ -1823,11 +1843,12 @@ function storeSheet(focus) {
     return `<button class="pk prod ${cls} pk-${k} ${focus === k.slice(0, 4) ? 'on' : ''}" data-p="${k}"><i class="art">${ART[k]}</i><span class="tx"><b>${name()}</b>${sub() && cls !== 'tri' && !sl && k !== 'noads' ? `<small>${sub()}</small>` : ''}</span><em class="pr">${price(k)}</em>${sl ? `<span class="slots">${sl}</span>` : ''}${k === 'noads' ? feats() : ''}</button>`; };
   const grp = (ks, cls) => { const g = ks.filter(k => has.includes(k)); return g.length ? `<div class="pkg ${cls}">${g.map(k => card(k, cls)).join('')}</div>` : ''; };
   const rows = ART.defs + grp(['noads'], 'big') + grp(['starter', 'bst'], 'sq') + grp(['hint10', 'hint30', 'hint80'], 'tri') + grp(['crown', 'themes'], 'sq');
-  modal(`<h2>${L('Mağaza', 'Shop')}</h2>${shopTabs('pk')}
-    <p>${L(`Sende 💡 ${save.hints} · 🎫 ${crownBal()}`, `You have 💡 ${save.hints} · 🎫 ${crownBal()}`)}</p>
-    <div class="store" id="store">${rows}</div>
+  const body = `<div class="store" id="store">${rows}</div>
     <p class="tip">${live ? L('Oyunun tamamı ücretsiz oynanır; paketler isteğe bağlı.', 'The whole game is free to play; packs are optional.') : L('Paketler mağazadan indirilen sürümde açılır.', 'Packs are available in the store version.')}</p>
-    ${live ? `<button id="mRestore" class="link">${L('Satın alımı geri yükle', 'Restore purchase')}</button>` : ''}
+    ${live ? `<button id="mRestore" class="link">${L('Satın alımı geri yükle', 'Restore purchase')}</button>` : ''}`;
+  if (shopPg()) shopPage('pk', body, { mRestore: restoreBuys }, stay === true);
+  else modal(`<h2>${L('Mağaza', 'Shop')}</h2>${shopTabs('pk')}
+    <p>${L(`Sende 💡 ${save.hints} · 🎫 ${crownBal()}`, `You have 💡 ${save.hints} · 🎫 ${crownBal()}`)}</p>${body}
     <button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, { mRestore: restoreBuys, mClose: closeModal, tTh: () => skinSheet() });
   if (focus) setTimeout(() => $('store')?.querySelector('.pk.on')?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 350);
   $('store').onclick = async e => {
@@ -1889,7 +1910,7 @@ function grantThemes() {
   if (save.allThemes) return;
   save.allThemes = true; persist(); refreshHome();
   haptic('win'); toast(L('🎨 Tema paketi açıldı · bütün renk temaları senin', '🎨 Theme pack unlocked · every color theme is yours'));
-  if (modalOpen() && $('store')) storeSheet();
+  shopRefresh();
 }
 // Tüketilebilir ödül: kayda yazılır, sonra (Shop) işlem bitirilir. Aynı işlem kimliği ikinci kez ödül vermez.
 function grantItem(it, tx) {
@@ -1906,7 +1927,7 @@ function grantItem(it, tx) {
   if (tx) try { if (!JSON.parse(localStorage.getItem('ray')).iapTx?.includes(key)) return false; } catch { return false; }   // kayıt gerçekten yazıldı mı (yazılmadıysa işlem açık kalır)
   $('gHints').textContent = save.hints; refreshHome(); haptic('win');
   toast(g.inf ? L('🎁 Başlangıç paketi çantanda · ❤️∞ 1 saat', '🎁 Starter pack added · ❤️∞ 1 hour') : g.hints ? L(`+${g.hints} ipucu 💡`, `+${g.hints} hints 💡`) : g.bst ? L('🧰 Güçlendiriciler çantanda', '🧰 Boosters added') : L(`+${g.crowns} 🎫 bilet · temalarda kullan`, `+${g.crowns} 🎫 tickets · spend them on themes`));
-  if (modalOpen() && $('store')) storeSheet();
+  shopRefresh();
   return true;
 }
 
@@ -2423,25 +2444,26 @@ function wipeSheet() {
 // ---------- renk temaları ----------
 const skinSvg = '<svg viewBox="0 0 120 60"><path d="M10 46H40L60 28H110"/><path d="M60 6V28L80 46H110"/><path d="M10 14H36L60 28"/><rect x="52" y="20" width="16" height="16" rx="5"/></svg>';
 const skinVars = k => { const c = skinCols(k); return `--s1:${c[0]};--s2:${c[1]};--s3:${c[2]}`; };
-function skinSheet() {
+function skinSheet(stay) {
   const bal = crownBal(); let cur = skin().id;
   if (save.newSkin || seaNew()) { save.newSkin = 0; seaNow().forEach(k => { save.seaSeen = { ...save.seaSeen, [k.id]: 1 }; }); persist(); refreshHome(); }
   const nx = SKINS.filter(k => !k.vip && !k.sea && !skinOpen(k)).sort((a, b) => a.need - b.need)[0], hn = huntList().length;   // en ucuz alınmamış tema · taç bekleyen bölüm
   const card = k => {
     const own = skinOpen(k), can = !own && !k.sea && bal >= k.need, fr = !own && !!k.sea;   // fr: mevsim teması, ücretsiz alınır
     return `<button class="skin ${own ? '' : 'lockd'} ${can ? 'can' : ''} ${fr ? 'fr' : ''} ${k === nx && !can ? 'nx' : ''} ${k.id === cur ? 'on' : ''}" data-k="${k.id}" style="${skinVars(k)}">${skinSvg}
-      <b>${k.name}</b><small>${k.id === cur ? L('Seçili ✓', 'Selected ✓') : own ? L('Seç', 'Select') : k.vip ? L('💛 Reklamsız', '💛 Ad-free') : k.sea ? L('🎁 Ücretsiz', '🎁 Free') : `🎫 ${k.need}`}</small></button>`;
+      <b${k.name.length > 11 ? ' class="lg"' : ''}>${k.name}</b><small>${k.id === cur ? L('Seçili ✓', 'Selected ✓') : own ? L('Seç', 'Select') : k.vip ? L('💛 Reklamsız', '💛 Ad-free') : k.sea ? L('🎁 Ücretsiz', '🎁 Free') : `🎫 ${k.need}`}</small></button>`;
   };
   // mevsim temaları: tarihi gelmiş olanlar (ücretsiz alınır) ve sahip olunanlar; ötekiler görünmez (menü sade kalır)
   const sea = SKINS.filter(k => k.sea && (seaWin(k.id) || skinOpen(k))), seaOn = sea.filter(k => seaWin(k.id) && !skinOpen(k));
-  modal(`<h2>${L('Mağaza', 'Shop')}</h2>${shopTabs('th')}<p>${L('Her <b>kusursuz</b> bölüm (⏱ ve ↻ hedefi) 1 🎫 verir. 🎫 ile tema ve sandık açılır.', 'Every <b>perfect</b> level (⏱ and ↻ targets) gives 1 🎫. Spend 🎫 on themes and chests.')}</p>
+  const page = shopPg(), html = `${page ? '' : `<h2>${L('Mağaza', 'Shop')}</h2>${shopTabs('th')}`}<p>${L('Her <b>kusursuz</b> bölüm (⏱ ve ↻ hedefi) 1 🎫 verir. 🎫 ile tema ve sandık açılır.', 'Every <b>perfect</b> level (⏱ and ↻ targets) gives 1 🎫. Spend 🎫 on themes and chests.')}</p>
     <div class="nexts"><small>${L('Bakiye', 'Balance')}</small><b class="bal">🎫 ${bal}</b></div>
     <button id="mChest" class="chestrow ${chestBal() >= CHEST ? 'can' : ''}"><i>${CHEST_SVG}</i><span><b>${L('Sürpriz sandık', 'Surprise chest')}</b><small>${L('İpucu · 🛡 seri kalkanı · 🚆 tren kaplaması', 'Hints · 🛡 shield · 🚆 train livery')}</small></span><em>🎫 ${CHEST}</em></button>
     ${nx ? `<div class="nexts"><small>${L('Sıradaki', 'Next up')}: <b>${nx.name}</b></small><small>🎫 ${Math.min(bal, nx.need)} / ${nx.need}</small></div><div class="pb"><i style="width:${Math.max(4, Math.min(100, bal / nx.need * 100))}%"></i></div>` : ''}
     <div class="skins" id="skins">${sea.length ? `<small class="vipk sea">${seaOn.length ? L(`${seaOn[0].sea} Mevsim teması · ${seaTill(seaOn[0])} tarihine dek ücretsiz`, `${seaOn[0].sea} Seasonal theme · free until ${seaTill(seaOn[0])}`) : L('🍂 Mevsim temaları', '🍂 Seasonal themes')}</small>${sea.map(card).join('')}<small class="vipk">${L('🎫 Bilet temaları', '🎫 Ticket themes')}</small>` : ''}${SKINS.filter(k => !k.vip && !k.sea).map(card).join('')}
       <small class="vipk">${L('💛 Reklamsız pakete özel', '💛 Ad-free pack only')}</small>${SKINS.filter(k => k.vip).map(card).join('')}</div>
     ${nx ? `<button id="mHunt" class="btn primary"><span>${L('Bilet topla', 'Earn tickets')} 🎫</span><small>${hn ? L(`${hn} bölüm kusursuz bitmeyi bekliyor`, `${hn} ${pl(hn, 'level awaits', 'levels await')} a perfect finish`) : L('Yeni bölümleri ⏱ ve ↻ hedefiyle bitir', 'Beat new levels within ⏱ and ↻ targets')}</small></button>` : ''}
-    <button id="mClose" class="btn glassbtn">${L('Tamam', 'Done')}</button>`, { mClose: closeModal, mHunt: () => crownHunt(nx), mChest: chestSheet, tPk: () => storeSheet() });
+    ${page ? '' : `<button id="mClose" class="btn glassbtn">${L('Tamam', 'Done')}</button>`}`, binds = { mHunt: () => crownHunt(nx), mChest: chestSheet };
+  if (page) shopPage('th', html, binds, stay === true); else modal(html, { mClose: closeModal, tPk: () => storeSheet(), ...binds });
   $('skins').onclick = e => {
     const b = e.target.closest('.skin'); if (!b) return;
     const k = SKINS.find(x => x.id === b.dataset.k);
@@ -2870,7 +2892,7 @@ $('bSettings').onclick = settings;
 $('streakChip').onclick = e => { e.stopPropagation(); rescueOk() ? rescueSheet() : streakSheet(); };   // Günün Hattı kartının içinde: kart açılmasın
 $('lifeChip').onclick = () => lifePop();
 $('starsChip').onclick = () => show('map');
-$('crownChip').onclick = skinSheet;
+$('crownChip').onclick = () => skinSheet();
 // arka plan ↔ ön plan: süre ve ses durur. İki kaynak (ikisi birden gelebilir, iş tekrarı zararsız): visibilitychange ve Capacitor appStateChange
 function front(on) {
   if (!on) { pause(); Kasa.flush(); hushed = true; Music.hush(); ac?.suspend?.(); Remind.plan(); Jank.report(); return; }
@@ -3297,11 +3319,11 @@ $('lgList').onclick = e => {
     mBlk: () => { LIG.block(uid); closeModal(); toast(L('Oyuncu gizlendi', 'Player hidden')); ligRender(); }, mClose: closeModal });
 };
 const openLig = () => { if (!LIG.me().joined) return ligJoin(openLig); show('league'); ligRender(); };
-// alt sekme çubuğu: Kapış ve Mağaza pencere açar, öbürleri ekran
+// alt sekme çubuğu: her sekme kendi sayfası (Ana sayfa · Lig · Kapış · Şehir · Mağaza)
 $('tabbar').onclick = e => { const t = e.target.closest('button')?.dataset.tab; if (!t) return; haptic();
-  ({ home: () => show('home'), league: openLig, vs: () => vsSheet(), city: () => openCity(), shop: () => {} })[t](); };   // Mağaza: #bShop kendi onclick'iyle
+  ({ home: () => show('home'), league: openLig, vs: () => vsSheet(), city: () => openCity(), shop: () => {} })[t](); };   // Mağaza: #bShop kendi onclick'iyle (Mağaza sayfası)
 document.body.classList.toggle('lig', ligOn());
-bind({ bLig: openLig, bVs: () => vsSheet(), lgBack: () => show('home'), lgVs: () => vsSheet(), lgNick: nickSheet });
+bind({ bLig: openLig, bVs: () => vsSheet(), lgBack: () => show('home'), lgVs: () => vsSheet(), lgNick: nickSheet, vsBack: () => show('home'), shBack: () => show('home') });
 
 // hafta bitti: geçen haftanın sonucu bir kez gösterilir
 function ligWeek() {
@@ -3335,13 +3357,26 @@ async function ligScore(pts, host) {
 // İki oyuncu aynı bulmacayı aynı anda çözer; rakibin ilerlemesi üstte. İlk bitiren kazanır. İpucu yok, can harcamaz.
 // Bulmaca: iki oyuncunun da geçtiği hatlardan (kurallar bilinir). Terk = yenilgi, puan yok.
 const duelLevels = () => { const hi = Math.max(1, save.level - 1), lo = Math.max(1, hi - 9); return Array.from({ length: hi - lo + 1 }, (_, i) => lo + i).filter(l => !breath(l)); };   // son 10 bölüm (kurallar biliniyor, zorluk oyuncunun seviyesinde; mola bölümü yok)
+// Kapış sayfası (#vs): sekme çubuğu ⚔️, ana sayfa kartı, Lig'deki düğme, ?vs=KOD daveti. Arama / oda / kod ara adımları üstünde küçük pencere.
 function vsSheet() {
   if (!ligOn()) return;
-  if (!LIG.me().joined) return ligJoin(vsSheet);
-  modal(`<div class="bell">⚔️</div><h2>${L('Kapış', 'Duel')}</h2><p>${L('Aynı bulmaca, aynı anda. İlk bitiren kazanır.', 'Same puzzle, same time. First to finish wins.')}</p>
-    <button id="vR" class="btn primary"><span>${L('Rastgele rakip', 'Random opponent')}</span><small>${L('Galibiyet +10 puan', 'Win +10 points')}</small></button>
-    <div class="row2"><button id="vH" class="btn glassbtn">${L('Arkadaşı davet et', 'Invite a friend')}</button><button id="vJ" class="btn glassbtn">${L('Koda katıl', 'Join with code')}</button></div>
-    <button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, { vR: () => vsFind(), vH: vsHost, vJ: vsJoinSheet, mClose: closeModal });
+  if (modalOpen()) closeModal();
+  if (!active('vs')) show('vs');
+  const me = LIG.me(), on = me.joined, rec = save.vs || { w: 0, l: 0 };
+  const av = (c, t) => `<i class="vsav" style="--c:${c}">${t}</i>`;
+  const rule = (ic, t) => `<div><i>${ic}</i><span>${t}</span></div>`;
+  $('vsBody').innerHTML = `<div class="vshero"><div class="vsi">
+      <div class="vsp">${on ? av(TIER_C[me.tier], TIER_I[me.tier]) : av('#ff6b81', '🚇')}<b>${on ? esc(me.nick) : L('Sen', 'You')}</b>${on ? `<small style="color:${TIER_C[me.tier]}">${TIER_N()[me.tier]}</small>` : ''}</div>
+      <i>VS</i>
+      <div class="vsp opp">${av('#ff6b81', '?')}<b>${L('Rakip', 'Opponent')}</b><small>${L('Canlı 1\'e 1', 'Live 1-on-1')}</small></div></div>
+    <p>${L('Aynı bulmaca, aynı anda. İlk bitiren kazanır.', 'Same puzzle, same time. First to finish wins.')}</p>
+    ${rec.w + rec.l ? `<div class="vsrec"><span><b>${rec.w}</b><small>🏆</small></span><span><b>${rec.l}</b><small>🚇</small></span></div>` : ''}</div>
+    ${on ? `<button id="vpR" class="btn primary"><span>${L('Rastgele rakip', 'Random opponent')}</span><small>${L('Galibiyet +10 puan', 'Win +10 points')}</small></button>
+    <div class="row2"><button id="vpH" class="btn glassbtn">${L('Arkadaşı davet et', 'Invite a friend')}</button><button id="vpJ" class="btn glassbtn">${L('Koda katıl', 'Join with code')}</button></div>`
+    : `<button id="vpL" class="btn primary"><span>${L('Lige katıl', 'Join the league')}</span><small>${L('Kapışmak için bir takma ad seç', 'Pick a nickname to duel')}</small></button>`}
+    <div class="perks">${rule('💡', L('Kapışmada ipucu yok', 'No hints in a duel'))}${rule('❤️', L('Can harcamaz', 'Doesn’t cost lives'))}${rule('🏳️', L('Kapışmadan çıkmak yenilgi sayılır', 'Leaving a duel counts as a loss'))}</div>`;
+  bind({ vpR: () => vsFind(), vpH: vsHost, vpJ: () => vsJoinSheet(), vpL: () => ligJoin(vsSheet) }, $('vsBody'));
+  if (!on) ligJoin(vsSheet);   // takma ad yoksa katılım penceresi sayfanın üstünde (Şimdi değil → sayfada "Lige katıl")
 }
 function vsWait(title, sub, onCancel) {
   const t0 = Date.now();
@@ -3471,7 +3506,7 @@ if (window.Capacitor?.isNativePlatform?.()) {
 } else if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
 // paylaşılan Günün Hattı bağlantısı: ?d=YYYY-MM-DD&m=hamle
 const q = new URLSearchParams(location.search), qd = q.get('d'), qm = +q.get('m'), qv = (q.get('vs') || '').toUpperCase();
-if (qv && ligOn()) { history.replaceState(null, '', location.pathname); setTimeout(() => { if (!LIG.me().joined) ligJoin(() => vsJoinSheet(qv)); else vsJoinSheet(qv); }, 2600); }   // arkadaş daveti: ?vs=KOD
+if (qv && ligOn()) { history.replaceState(null, '', location.pathname); setTimeout(() => { const go = () => { vsSheet(); vsJoinSheet(qv); }; if (!LIG.me().joined) { vsSheet(); ligJoin(go); } else go(); }, 2600); }   // arkadaş daveti: ?vs=KOD → Kapış sayfası, üstünde kod penceresi
 if (qd) {
   history.replaceState(null, '', location.pathname);
   if (qd === today()) {
@@ -3495,7 +3530,7 @@ if (introOn) {
 if (tutDue() && !G) start('tut');   // 🎓 yeni oyuncu: anlatıcı penceresi yerine doğrudan öğretici bölüm (intro arkasında hazır)
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { jank: Jank, tut: { STEPS: TUT_STEPS, IDLE: TUT_IDLE, due: tutDue, start: () => start('tut') }, fest: c => lineFest(c), sky: skyline, lig: { score: (p, h) => ligScore(p, h), join: ligJoin, open: openLig, vs: vsSheet, find: vsFind, host: vsHost, code: vsJoinSheet, week: ligWeek, home: ligHome },
+window.__ray = { jank: Jank, store: f => storeSheet(f), skins: () => skinSheet(), tut: { STEPS: TUT_STEPS, IDLE: TUT_IDLE, due: tutDue, start: () => start('tut') }, fest: c => lineFest(c), sky: skyline, lig: { score: (p, h) => ligScore(p, h), join: ligJoin, open: openLig, vs: vsSheet, find: vsFind, host: vsHost, code: vsJoinSheet, week: ligWeek, home: ligHome },
   // test / önizleme: tören sesini çevrimdışı işleyip WAV (base64) verir
   festWav: async (o = {}) => { const keep = ac; ac = new OfflineAudioContext(2, 44100 * 6.5, 44100); try { festSound(o); const b = await ac.startRendering(), n = b.length, L = b.getChannelData(0), R = b.getChannelData(1), buf = new DataView(new ArrayBuffer(44 + n * 4));
     const w = (o2, str) => [...str].forEach((ch, i) => buf.setUint8(o2 + i, ch.charCodeAt(0))); w(0, 'RIFF'); buf.setUint32(4, 36 + n * 4, true); w(8, 'WAVEfmt '); buf.setUint32(16, 16, true); buf.setUint16(20, 1, true); buf.setUint16(22, 2, true); buf.setUint32(24, 44100, true); buf.setUint32(28, 44100 * 4, true); buf.setUint16(32, 4, true); buf.setUint16(34, 16, true); w(36, 'data'); buf.setUint32(40, n * 4, true);

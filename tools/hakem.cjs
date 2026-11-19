@@ -916,13 +916,13 @@ async function inViewport(page, sel) {
       await page.waitForTimeout(900);
       R.home = await probe(page, '#home'); R.home.play = await page.textContent('#bPlay');
       await page.click('#bSettings'); await gap(); R.settings = await probe(page, sheet); if (w === 320) await shot(page, 'en-settings-320');
-      await page.click('#mClose'); await gap(); await page.click('#bShop'); await gap(); R.shop = await probe(page, sheet);
-      await page.click('#mClose'); await gap(); await page.click('#bSettings'); await gap();
+      await page.click('#mClose'); await gap(); await page.click('#bShop'); await gap(); R.shop = await probe(page, '#shop');   // Mağaza ayrı sayfa
+      await page.click('#shBack'); await gap(); await page.click('#bSettings'); await gap();
       await page.click('#oPriv'); await gap(); R.privacy = await probe(page, sheet);
       await page.click('#mWipe'); await gap(); R.wipe = await probe(page, sheet);
       await page.click('#mNo'); await gap(); await page.click('#mClose'); await gap();
-      await page.click('#crownChip'); await gap(); R.themes = await probe(page, sheet); if (w === 320) await shot(page, 'en-themes-320');
-      await page.click('#mClose'); await gap();
+      await page.click('#crownChip'); await gap(); R.themes = await probe(page, '#shop'); if (w === 320) await shot(page, 'en-themes-320');   // Mağaza › Temalar sayfası
+      await page.click('#shBack'); await gap();
       await page.click('#bSettings'); await gap(); await page.click('#oHow'); await gap();   // Nasıl oynanır? artık Ayarlar'da
       R.how = { tr: [], ov: false, cut: [] };
       for (let k = 0; k < 7; k++) {

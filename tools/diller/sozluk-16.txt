@@ -1,0 +1,47 @@
+# Ray — çeviri sözlüğü (16): Mağaza ve Kapış ayrı sayfa (sekme çubuğu) — Kapış sayfası
+# Biçim ve terimler: sozluk-1.txt başı ve docs/CEVIRI.md (duel: Duell · duelo · duelo · duel · 대결 · 対戦 · 對決)
+
+@ You
+de: Du
+es: Tú
+pt: Você
+fr: Toi
+ko: 나
+ja: あなた
+zh: 你
+
+@ Opponent
+de: Gegner
+es: Rival
+pt: Rival
+fr: Adversaire
+ko: 상대
+ja: 相手
+zh: 對手
+
+@ Pick a nickname to duel
+de: Wähle einen Spitznamen fürs Duell
+es: Elige un apodo para batirte en duelo
+pt: Escolha um apelido para duelar
+fr: Choisis un pseudo pour jouer en duel
+ko: 대결하려면 닉네임을 정하세요
+ja: 対戦するにはニックネームを決めよう
+zh: 選個暱稱就能對決
+
+@ Doesn’t cost lives
+de: Kostet keine Leben
+es: No gasta vidas
+pt: Não gasta vidas
+fr: Ne coûte aucune vie
+ko: 하트가 줄지 않아요
+ja: ライフは減りません
+zh: 不消耗生命
+
+@ Leaving a duel counts as a loss
+de: Wer das Duell verlässt, verliert
+es: Abandonar un duelo cuenta como derrota
+pt: Sair de um duelo conta como derrota
+fr: Quitter un duel compte comme une défaite
+ko: 대결을 나가면 패배로 처리돼요
+ja: 対戦を抜けると負けになります
+zh: 中途離開對決算輸

@@ -142,7 +142,28 @@
     <div class="cityBody" id="cityBody"></div>
   </section>
 
-  <!-- alt sekme çubuğu: ana sayfa, lig, şehir ekranlarında (oyunda yok). Lig ve Kapış yalnız arka uç hazırken -->
+  <!-- mağaza: 🛍️ Paketler | 🎨 Temalar (menülerden; bölüm sürerken aynı içerik pencerede açılır) -->
+  <section id="shop" class="screen">
+    <header class="top">
+      <button id="shBack" class="ic" aria-label="Geri" data-en-label="Back"><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg></button>
+      <div class="title"><b data-en="Shop">Mağaza</b><small id="shSub"></small></div>
+      <i class="tsp"></i>
+    </header>
+    <div class="shTabs" id="shopTabs"></div>
+    <div class="pgBody" id="shopBody"></div>
+  </section>
+
+  <!-- canlı kapışma: rastgele rakip · arkadaşı davet et · koda katıl -->
+  <section id="vs" class="screen">
+    <header class="top">
+      <button id="vsBack" class="ic" aria-label="Geri" data-en-label="Back"><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg></button>
+      <div class="title"><b data-en="Duel">Kapış</b><small data-en="Live 1-on-1">Canlı 1'e 1</small></div>
+      <i class="tsp"></i>
+    </header>
+    <div class="pgBody" id="vsBody"></div>
+  </section>
+
+  <!-- alt sekme çubuğu: ana sayfa, lig, kapış, şehir, mağaza ekranlarında (oyunda yok). Lig ve Kapış yalnız arka uç hazırken -->
   <nav class="tabbar" id="tabbar">
     <button data-tab="home" class="on"><i class="te" aria-hidden="true">🏠</i><span data-en="Home">Ana sayfa</span></button>
     <button data-tab="league" class="lg"><i class="te" aria-hidden="true">🏆</i><span data-en="League">Lig</span></button>

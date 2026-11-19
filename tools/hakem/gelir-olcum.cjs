@@ -37,6 +37,9 @@ module.exports = async T => {
   const iap = page => G(page, () => window.__iap);
   const storeRows = page => G(page, () => [...document.querySelectorAll('#store [data-p]')].map(b => ({ k: b.dataset.p, t: b.textContent.replace(/\s+/g, ' ').trim(), r: b.getBoundingClientRect().right })));
   async function openStore(page) { if (await G(page, () => document.getElementById('modal').classList.contains('open'))) { await page.click('#mClose'); await wait(page); } await page.click('#bShop'); await wait(page, 600); }
+  // Mağaza ayrı sayfa (#shop): pencere açıksa kapat, mağaza sayfasındaysan ‹ ile ana sayfaya dön
+  async function home(page) { if (await G(page, () => document.getElementById('modal').classList.contains('open'))) { await page.click('#mClose', { timeout: 3000 }).catch(() => {}); await wait(page); }
+    if (await G(page, () => document.getElementById('shop').classList.contains('active'))) { await page.click('#shBack'); await wait(page); } }
   async function buy(page, k, ms = 500) { await page.click(`#store [data-p=${k}]`); await wait(page, ms); }
 
   // ---- 1) Ayarlar › Mağaza: 7 ürün, fiyatlar, 320 px taşmaz; tüketilebilir: ödül kayda yazıldıktan sonra finish ----
@@ -50,7 +53,8 @@ module.exports = async T => {
       reg === 'ray_baslangic:c,ray_bilet_50:c,ray_guclendirici:c,ray_ipucu_10:c,ray_ipucu_30:c,ray_ipucu_80:c,ray_reklamsiz:nc,ray_temalar:nc', reg, 'medium');
     const row = await G(page, () => document.querySelector('#bSettings') && 1);
     await openStore(page);
-    const rows = await storeRows(page), sh = await G(page, () => { const s = document.getElementById('mCard'); return { h: s.querySelector('h2')?.textContent, ov: s.scrollWidth > s.clientWidth + 1, rs: !!document.getElementById('mRestore') }; });
+    const rows = await storeRows(page), sh = await G(page, () => { const pg = document.getElementById('shop').classList.contains('active'), s = document.getElementById(pg ? 'shop' : 'mCard'), hh = (pg ? s.querySelector('.title b') : s.querySelector('h2'))?.textContent;   // menüden: Mağaza sayfası; oyunda: pencere
+      return { h: hh, ov: s.scrollWidth > s.clientWidth + 1 || document.documentElement.scrollWidth > innerWidth + 1, rs: !!document.getElementById('mRestore') }; });
     await shot(page, 'magaza-320');
     check('gelir.pencere', 'Ayarlar › Mağaza: tek pencerede 8 satır, her birinde fiyat; 320 px\'te taşma yok; geri yükleme düğmesi var',
       row && sh.h === 'Mağaza' && rows.length === 8 && rows.every(r => /\$\d/.test(r.t) && r.r <= 320) && !sh.ov && sh.rs, JSON.stringify({ sh, rows }), 'medium');
@@ -68,7 +72,7 @@ module.exports = async T => {
     // bilet paketi: bakiye +50, ayrı sayılır; sandık yalnız kazanılanla; temada önce satın alınan harcanır
     await openStore(page); await buy(page, 'crown', 700);
     v = await getSave(page);
-    await page.click('#mClose').catch(() => {}); await wait(page);
+    await home(page);
     await page.click('#crownChip'); await wait(page);
     const chip = await G(page, () => ({ bal: document.querySelector('.bal')?.textContent, chest: document.getElementById('mChest').classList.contains('can') }));
     await page.click('#mChest'); await wait(page);
@@ -81,7 +85,7 @@ module.exports = async T => {
       JSON.stringify({ b: v.bCrowns, chip, chestTxt, bSpent: v2.bSpent, spent: v2.spent }), 'high');
     // iptal: ödül yok
     await G(page, () => { window.__iap.cancel = true; });
-    await page.click('#mClose').catch(() => {}); await wait(page);
+    await home(page);
     await openStore(page); await buy(page, 'hint10', 600);
     const v3 = await getSave(page);
     check('gelir.iptal', 'Ödeme iptal edilirse ödül verilmez, işlem açılmaz', v3.hints === 32 && !(await iap(page)).orders.includes('ray_ipucu_10'), JSON.stringify({ hints: v3.hints }), 'medium');
@@ -95,7 +99,7 @@ module.exports = async T => {
     await openStore(page); await buy(page, 'themes', 700);
     const sk = await G(page, () => window.__ray.SKINS.map(k => k.id));
     const v = await getSave(page);
-    await page.click('#mClose').catch(() => {}); await wait(page);
+    await home(page);
     await page.click('#crownChip'); await wait(page);
     const open1 = await G(page, () => ({ lock: [...document.querySelectorAll('.skin.lockd')].map(b => b.dataset.k) }));
     check('gelir.tema', 'Tema paketi: reklamsız pakete özel 3 tema dışındaki bütün renk temaları açılır', v.allThemes && open1.lock.sort().join() === 'diamond,gold,ruby' && sk.length > 20, JSON.stringify({ all: v.allThemes, ...open1 }), 'medium');
@@ -114,7 +118,7 @@ module.exports = async T => {
   {
     const { ctx, page, errors } = await open(browser, URL, { cap: false, save: base });
     await openStore(page);
-    const r = await G(page, () => ({ rows: [...document.querySelectorAll('#store [data-p]')].map(b => b.dataset.p), tip: document.querySelector('#mCard .tip')?.textContent, rs: !!document.getElementById('mRestore') }));
+    const r = await G(page, () => ({ rows: [...document.querySelectorAll('#store [data-p]')].map(b => b.dataset.p), tip: document.querySelector('#shopBody .tip, #mCard .tip')?.textContent, rs: !!document.getElementById('mRestore') }));
     check('gelir.web', 'Web\'de mağaza yok: yalnız Reklamsız paket satırı, "mağazadan indirilen sürümde" notu, geri yükleme yok',
       r.rows.join() === 'noads' && /mağazadan indirilen/.test(r.tip) && !r.rs && !errors.length, JSON.stringify({ ...r, errors }), 'medium');
     await ctx.close();
@@ -124,7 +128,8 @@ module.exports = async T => {
   {
     const { ctx, page, errors } = await open(browser, URL, { vp: [320, 640], locale: 'en-US', init: CAP() + STORE(), save: base });
     await openStore(page);
-    const rows = await storeRows(page), sh = await G(page, () => { const s = document.getElementById('mCard'); return { h: s.querySelector('h2')?.textContent, ov: s.scrollWidth > s.clientWidth + 1, txt: s.textContent }; });
+    const rows = await storeRows(page), sh = await G(page, () => { const pg = document.getElementById('shop').classList.contains('active'), s = document.getElementById(pg ? 'shop' : 'mCard'), hh = (pg ? s.querySelector('.title b') : s.querySelector('h2'))?.textContent;   // menüden: Mağaza sayfası; oyunda: pencere
+      return { h: hh, ov: s.scrollWidth > s.clientWidth + 1 || document.documentElement.scrollWidth > innerWidth + 1, txt: s.textContent }; });
     await shot(page, 'magaza-en-320');
     check('gelir.en', 'EN: "Shop" penceresi İngilizce (ipucu, güçlendirici, tema, bilet paketi · 50 🎫), 320 px\'te taşmaz', sh.h === 'Shop' && rows.length === 8 && !sh.ov && /Booster pack/.test(sh.txt) && /Theme pack/.test(sh.txt) && /Ticket pack/.test(sh.txt) && /50 🎫/.test(sh.txt) && /For themes only/.test(sh.txt) && !/ipucu|Tema paketi|bilet/.test(sh.txt) && rows.every(r => r.r <= 320) && !errors.length, JSON.stringify({ sh: { ...sh, txt: sh.txt.slice(0, 200) }, rows, errors }), 'medium');
     await ctx.close();
