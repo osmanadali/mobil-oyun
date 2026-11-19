@@ -1,0 +1,20 @@
+# Ray — çeviri sözlüğü (17): Şehir sekmesi metro haritasının açıklama satırı (Bitti · Altın · Şimdi · Henüz değil)
+# Biçim ve terimler: sozluk-1.txt başı ve docs/CEVIRI.md
+
+@ Now
+de: Jetzt
+es: Ahora
+pt: Agora
+fr: En cours
+ko: 진행 중
+ja: 進行中
+zh: 進行中
+
+@ Not yet
+de: Noch nicht
+es: Aún no
+pt: Ainda não
+fr: Pas encore
+ko: 아직
+ja: まだ
+zh: 尚未
