@@ -76,6 +76,10 @@ async function open(browser, url, { vp = [390, 844], scheme = 'dark', save = nul
   // ana sayfa düğmesi görünmüyorsa ve bir sekme sayfasındaysak (pencere kapalıyken) önce sekme çubuğuyla ana sayfaya dönülür.
   const HOME = new Set(['#crownChip', '#bPlay', '#bDaily', '#bSettings', '#bQuest', '#bMap', '#starsChip', '#lifeChip', '#streakChip']), click0 = page.click.bind(page);
   page.click = async (sel, o) => {
+    // pencere kapatma: Mağaza sayfasından açılan pencere yoksa (sayfanın kendisi açıksa) ✕ yerine ana sayfaya dönülür
+    if (sel === '#mClose' && !(await page.isVisible(sel).catch(() => true)) && await page.evaluate(() => !document.querySelector('.modal.open') && ['shop', 'vs'].includes(document.body.dataset.scr))) {
+      await page.evaluate(() => document.querySelector('[data-tab=home]').click()); await page.waitForTimeout(400); return;
+    }
     if (HOME.has(sel) && !(await page.isVisible(sel).catch(() => true))) {
       await page.evaluate(() => { if (!document.querySelector('.modal.open') && ['shop', 'vs', 'league', 'city'].includes(document.body.dataset.scr)) document.querySelector('[data-tab=home]')?.click(); });
       await page.waitForTimeout(400);
@@ -507,7 +511,7 @@ async function inViewport(page, sel) {
     await shot(page, 'skin-buy');
     await page.click('#mBuy'); await page.waitForTimeout(450);
     await shot(page, 'skins');
-    const sk = await page.evaluate(() => { const v = JSON.parse(localStorage.getItem('ray')); return { acc: getComputedStyle(document.documentElement).getPropertyValue('--acc').trim(), sel: v.skin, spent: v.spent, chip: document.getElementById('sCrowns').textContent, own: new Set([...document.querySelectorAll('.skin:not(.lockd)')].map(e => e.dataset.k)).size }; });
+    const sk = await page.evaluate(() => { const v = JSON.parse(localStorage.getItem('ray')); return { acc: getComputedStyle(document.documentElement).getPropertyValue('--acc').trim(), sel: v.skin, spent: v.spent, chip: document.getElementById('sCrowns').textContent, own: new Set([...document.querySelectorAll('.skin:not(.lockd):not(.big)')].map(e => e.dataset.k)).size }; });
     await page.click('.skin[data-k=sunset]'); await page.waitForTimeout(400);   // kalan 2 🎫 → 5'lik temaya yetmez → Bilet topla
     const poor = await page.evaluate(() => /Bilet topla/.test(document.querySelector('.sheet h2')?.textContent || '') && /3 🎫/.test(document.querySelector('.sheet p')?.textContent || '') && JSON.parse(localStorage.getItem('ray')).skin === 'ocean');
     await page.click('#mBack'); await page.waitForTimeout(350);
