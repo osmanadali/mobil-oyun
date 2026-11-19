@@ -500,7 +500,10 @@ async function inViewport(page, sel) {
     const sk = await page.evaluate(() => { const v = JSON.parse(localStorage.getItem('ray')); return { acc: getComputedStyle(document.documentElement).getPropertyValue('--acc').trim(), sel: v.skin, spent: v.spent, chip: document.getElementById('sCrowns').textContent, own: document.querySelectorAll('.skin:not(.lockd)').length }; });
     await page.click('.skin[data-k=sunset]'); await page.waitForTimeout(400);   // kalan 2 🎫 → 5'lik temaya yetmez → Bilet topla
     const poor = await page.evaluate(() => /Bilet topla/.test(document.querySelector('.sheet h2')?.textContent || '') && /3 🎫/.test(document.querySelector('.sheet p')?.textContent || '') && JSON.parse(localStorage.getItem('ray')).skin === 'ocean');
-    await page.click('#mBack'); await page.waitForTimeout(350); await page.click('#mClose'); await page.waitForTimeout(400);
+    await page.click('#mBack'); await page.waitForTimeout(350);
+    // Temalar artık Mağaza sayfasında (pencere değil): pencere açıksa kapat, sonra ana sayfaya dön
+    if (await page.isVisible('#mClose')) { await page.click('#mClose'); await page.waitForTimeout(300); }
+    await page.evaluate(() => document.querySelector('[data-tab=home]').click()); await page.waitForTimeout(500);
     await page.click('#bPlay'); await page.waitForTimeout(600);
     const lineCol = await page.evaluate(() => ({ c: window.__ray.G.color, acc: getComputedStyle(document.getElementById('game')).getPropertyValue('--acc').trim() }));
     await shot(page, 'skin-game');
