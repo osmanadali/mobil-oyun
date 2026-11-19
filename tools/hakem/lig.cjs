@@ -5,15 +5,15 @@
 module.exports = async T => {
   const { browser, URL, open, check, solve, waitModal, starsUpTo, seenTo, shot } = T;
   const base = { played: 30, level: 30, stars: starsUpTo(29), remindAsked: true, g11: 1, lastGift: Date.now(), seen: seenTo(5) };
-  // 1) arka uç yoksa menüde yok
+  // 1) sekme çubuğunda Lig ve Kapış görünür
   let o = await open(browser, URL, { save: base });
-  const hidden = await o.page.evaluate(() => document.getElementById('ligRow').hidden);
+  const hidden = await o.page.evaluate(() => getComputedStyle(document.querySelector('#tabbar [data-tab=league]')).display === 'none');
   await o.ctx.close();
   // 2) katılım: kötü takma ad reddedilir, iyisi kabul
   o = await open(browser, URL, { save: base, init: 'window.__ligFake = true' });
   const { page } = o;
-  const vis = await page.evaluate(() => !document.getElementById('ligRow').hidden);
-  await page.click('#bLig'); await page.waitForTimeout(400);
+  const vis = await page.evaluate(() => getComputedStyle(document.querySelector('#tabbar [data-tab=league]')).display !== 'none');
+  await page.click('#tabbar [data-tab=league]'); await page.waitForTimeout(400);
   await page.fill('#mNick', 's1kt1r'); await page.click('#mJoin'); await page.waitForTimeout(200);
   const bad = await page.evaluate(() => ({ err: document.getElementById('mNickE')?.textContent || '', joined: JSON.parse(localStorage.getItem('ray.lig') || '{}').joined }));
   await page.fill('#mNick', 'Hızlı Martı'); await page.click('#mJoin'); await page.waitForTimeout(900);
@@ -55,7 +55,7 @@ module.exports = async T => {
   await page.click('#oLeave'); await page.waitForTimeout(300); await page.click('#mDel'); await page.waitForTimeout(500);
   const gone = await page.evaluate(() => JSON.parse(localStorage.getItem('ray.lig') || '{}').joined);
   const errors = o.errors; await o.ctx.close();
-  check('lig.menu', 'Lig yalnız arka uç hazırken görünür (yoksa menüde yok)', hidden && vis, JSON.stringify({ hidden, vis }), 'high');
+  check('lig.menu', 'Sekme çubuğunda Lig ve Kapış görünür', !hidden && vis, JSON.stringify({ hidden, vis }), 'high');
   check('lig.katil', 'Lige katılım: uygunsuz takma ad reddedilir, uygunu kabul; lig ekranı 30 kişi, sen işaretli', !!bad.err && !bad.joined && board.screen && board.rows === 30 && /Hızlı Martı/.test(board.me), JSON.stringify({ bad, board }), 'high');
   check('lig.tirmanis', 'Bölüm sonu tırmanış: yeni yıldız kadar puan, panelde #eski → #yeni; aynı bölümü tekrar oynamak puan vermez', climb.el && climb.pts > pts0 && again === climb.pts, JSON.stringify({ pts0, climb, again }), 'high');
   check('lig.kapis', 'Kapışma: rakip çubuğu, ipucu yok, can harcamaz; ilk bitiren kazanır (+10), rakip önce biterse yenilgi (+2); terk puansız; ligden çık verileri siler',

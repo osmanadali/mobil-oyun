@@ -212,7 +212,7 @@ window.Lig = (() => {
       // yeni grup: o haftanın o kademesindeki sayaç → her 30 kişiye bir grup
       const t = st.tier || 0; let g = 0;
       const r = await commit([w(`weeks/${wk}/tiers/${t}`, {}, { inc: { n: 1 } })]), n = +(r?.writeResults?.[0]?.transformResults?.[0]?.integerValue || 1); g = (n - 1) / GROUP | 0;   // atomik sayaç
-      st.wk = wk; st.grp = grpKey(t, g); st.pts = 0; keep();
+      st.wk = wk; st.grp = grpKey(t, g); st.pts = 0; st.weeks = [...new Set([...(st.weeks || []), wk])].slice(-60); keep();   // weeks: silme için katıldığım haftalar
       await commit([w(`weeks/${wk}/members/${st.uid}`, { grp: st.grp, nick: st.nick, tier: t, pts: 0, at: now() }), w(`users/${st.uid}`, { nick: st.nick, tier: t, wk, grp: st.grp })]);
       rowsCache = null;
     }
@@ -237,7 +237,8 @@ window.Lig = (() => {
         try {
           await auth();
           const gs = await query('', Q('ghosts', ['by', 'EQUAL', st.uid]), 200).catch(() => []);   // kayıtlı oyunlarım (takma adımı taşır)
-          await Promise.all([st.wk && del(`weeks/${st.wk}/members/${st.uid}`), del(`users/${st.uid}`), del(`q/${st.uid}`), ...gs.map(g => del(`ghosts/${g.id}`))]);
+          const wks = [...new Set([...(st.weeks || []), st.wk].filter(Boolean))];   // katıldığım bütün haftaların tablo kayıtları (takma adımı taşır)
+          await Promise.all([...wks.map(k => del(`weeks/${k}/members/${st.uid}`)), del(`users/${st.uid}`), del(`q/${st.uid}`), ...gs.map(g => del(`ghosts/${g.id}`))]);
           await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:delete?key=${CFG.key}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken: tok }) });
         } catch {}
         st = {}; tok = null; rowsCache = null; keep();
