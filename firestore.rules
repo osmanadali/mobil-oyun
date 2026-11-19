@@ -1,0 +1,60 @@
+// Ray: haftalık lig ve canlı kapışma — Firestore güvenlik kuralları.
+// Firebase konsolu › Firestore Database › Rules sekmesine yapıştırılıp Publish edilir. İstemci: www/lig.js (REST, anonim giriş).
+// İlke: herkes yalnız kendi belgesini yazar; puan yalnız artar ve tek yazışta en çok 10 (kapışma galibiyeti); maçta herkes yalnız kendi ilerlemesini yazar.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function authed() { return request.auth != null; }
+    function me(uid) { return authed() && request.auth.uid == uid; }
+    function nickOk(n) { return n is string && n.size() >= 3 && n.size() <= 16; }
+    function only(keys) { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys); }
+
+    match /users/{uid} {
+      allow read, write: if me(uid) && (!('nick' in request.resource.data) || nickOk(request.resource.data.nick));
+      allow delete: if me(uid);
+    }
+    // haftalık grup üyeliği: grp "t{kademe}g{grup}", pts yalnız artar (≤ 10 / yazış), grup değişmez
+    match /weeks/{wk}/members/{uid} {
+      allow read: if authed();
+      allow create: if me(uid) && request.resource.data.pts == 0 && nickOk(request.resource.data.nick) && request.resource.data.grp is string;
+      allow update: if me(uid) && nickOk(request.resource.data.nick) && request.resource.data.grp == resource.data.grp
+        && request.resource.data.pts >= resource.data.pts && request.resource.data.pts <= resource.data.pts + 10;
+      allow delete: if me(uid);
+    }
+    // grup sayacı: yalnız birer birer artar
+    match /weeks/{wk}/tiers/{t} {
+      allow read: if authed();
+      allow create: if authed() && request.resource.data.n == 1;
+      allow update: if authed() && request.resource.data.n == resource.data.n + 1;
+    }
+    // rastgele rakip kuyruğu: sahibi yazar; bir başkası yalnız "wait" → "taken" yapıp maç no yazabilir
+    match /q/{uid} {
+      allow read: if authed();
+      allow create, delete: if me(uid);
+      allow update: if me(uid) || (authed() && resource.data.state == 'wait' && request.resource.data.state == 'taken' && only(['state', 'mid']));
+    }
+    // arkadaş odası (5 harfli kod): kuran yazar; katılan yalnız "taken" yapar
+    match /rooms/{code} {
+      allow read: if authed();
+      allow create: if authed() && request.resource.data.host == request.auth.uid && request.resource.data.state == 'wait';
+      allow update: if authed() && resource.data.state == 'wait' && request.resource.data.state == 'taken' && only(['state', 'mid']);
+      allow delete: if authed() && resource.data.host == request.auth.uid;
+    }
+    // maç: iki oyuncu okur; a yalnız pa'yı, b yalnız pb'yi yazar
+    match /matches/{id} {
+      allow read: if authed() && request.auth.uid in [resource.data.a, resource.data.b];
+      allow create: if authed() && request.resource.data.b == request.auth.uid;
+      allow update: if authed() && ((request.auth.uid == resource.data.a && only(['pa'])) || (request.auth.uid == resource.data.b && only(['pb'])));
+    }
+    // kayıtlı oyunlar (rakip yokken oynatılır): yazan siler
+    match /ghosts/{id} {
+      allow read: if authed();
+      allow create: if authed() && request.resource.data.by == request.auth.uid && request.resource.data.tl.size() <= 80;
+      allow delete: if authed() && resource.data.by == request.auth.uid;
+    }
+    // bildirimler: yalnız oluşturulur, konsoldan incelenir
+    match /reports/{id} {
+      allow create: if authed() && request.resource.data.by == request.auth.uid;
+    }
+  }
+}
