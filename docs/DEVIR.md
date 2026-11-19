@@ -161,6 +161,8 @@ Durum 3 Kasım 2026 itibarıyla (en yeni madde başta):
 4. ✅ **↕ Kayan sütun** → M26 (`column`, 661. bölüm); kayan sırayla aynı bölümde gelmez.
 5. **⬡ Altıgen bölümler** (Flow Free Hexes, Infinity Loop): 6 yönlü karo; büyük iş, ayrı sezon.
 
+**🍎 Apple SDK uyarısı (19 Kasım):** App Store Connect: yapılar iOS 26.5 SDK ile; **Nisan 2027'den itibaren iOS 27 SDK (Xcode 27) zorunlu.** codemagic.yaml `xcode: latest` olduğu için Xcode 27 gelince kendiliğinden geçer. Salı bakımı: Xcode 27 çıkınca bir deneme derlemesi yap (günlükte `xcodebuild -version`), Capacitor güncellemesi gerekiyorsa Mart 2027'den önce yap.
+
 **Kullanıcıyla konuşulan aday kurallar (19 Kasım; seçilmedi, akılda kalsın).** Ölçüt: oyuncuya bilgi (yön, uzaklık) vermez, yalnız zorlaştırır. M27 ↗ tek yön bu yüzden eleştirildi (yönü söylüyor, çözücü puanı 16,1 → 16,0).
 - 🚦 **Sinyal karosu:** yalnız hiçbir komşusu yanmıyorken döner; hat yanına gelince kilitlenir. Dıştan içe çözdürür (mühürlünün tersi; mühürlüyle `clash`).
 - ⇄ **Manevra karosu:** dönmez; iki manevra karosuna sırayla dokununca yer değiştirir. Biçim doğru yönde, yer yanlış.
