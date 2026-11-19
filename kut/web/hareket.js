@@ -925,6 +925,18 @@ function dunyaDon(k, eksenW, aci) {
   k.getWorldQuaternion(_q1).invert(); _v1.copy(eksenW).applyQuaternion(_q1).normalize();
   k.quaternion.multiply(_q2.setFromAxisAngle(_v1, aci)); k.updateMatrixWorld(true);
 }
+/** dünya eksenlerinde (_R, _F, _U) üç küçük dönüşü TEK seferde uygular: alt ağaç bir kez güncellenir (canlılık katmanı, kare başına ucuz) */
+const _qD = new THREE.Quaternion(), _qW = new THREE.Quaternion();
+function dunyaDon3(k, aR, aF, aU) {
+  if (!k || (!aR && !aF && !aU)) return;
+  _qD.identity();
+  if (aR) _qD.multiply(_q2.setFromAxisAngle(_R, aR));
+  if (aF) _qD.multiply(_q2.setFromAxisAngle(_F, aF));
+  if (aU) _qD.multiply(_q2.setFromAxisAngle(_U, aU));
+  k.getWorldQuaternion(_qW);                                   // yerel fark = W⁻¹ · D · W
+  _q1.copy(_qW).invert().multiply(_qD).multiply(_qW);
+  k.quaternion.multiply(_q1); k.updateMatrixWorld(true);
+}
 // [t, eğilme (+ileri)] — süreler darbe anına göre ölçeklenir
 /** Her kare, aktar(b)'den HEMEN SONRA. dt: görsel dt.
     ops: hareket (bool) | hiz, saldiri ({darbe: klip darbe anı sn (hız ölçekli), menzilli}) — yalnız başladığı karede,
@@ -1067,7 +1079,9 @@ function canlilik(d, dt, W, zafer) {
   if (d.fid) {
     const f = d.fid; f.t += dt; anahtar(f.k, f.t, FID_K); const fw = W * Math.min(1, d.bosW * 1.2);
     egil += FID_K[0] * fw; solYan += FID_K[1] * fw; sagYan += FID_K[1] * fw; solOn += (FID_K[2] + FID_K[4]) * fw; sagOn += (FID_K[2] + FID_K[3]) * fw;
-    basPit += FID_K[5] * fw; basYaw += FID_K[6] * fw; gYaw += FID_K[7] * fw; solDirsek += FID_K[8] * (FID_K[4] > 0.01 || FID_K[2] > 0.01 ? 1 : 0.5) * fw; sagDirsek += FID_K[8] * fw;
+    basPit += FID_K[5] * fw; basYaw += FID_K[6] * fw; gYaw += FID_K[7] * fw;
+    // ön kol bükme yalnız o kol kalkıyorsa (Tilki'nin silah çevirmesinde sol kol sakin kalır)
+    if (FID_K[2] + FID_K[4] > 0.05 || FID_K[1] > 0.05) solDirsek += FID_K[8] * fw; if (FID_K[2] + FID_K[3] > 0.05 || FID_K[1] > 0.05) sagDirsek += FID_K[8] * fw;
     if (f.t > f.k[f.k.length - 1][0] || d.bosW < 0.3) { d.fid = null; d.fidT = 6 + ozet(d.faz * 7 + d.fidSira * 1.37) * 6; }
   }
   // saldırı: gövde dönüşü (yakın dövüş) — hazırlıkta sağ omuz geri, vuruşta öne; menzilli tek kollu büyüde tutan kol bırakmada ileri itilir
@@ -1097,14 +1111,14 @@ function canlilik(d, dt, W, zafer) {
   if (zafer && ad === 'Yes') { const P = 0.78, f = (d.t % P) / P; const p = 0.5 + 0.5 * Math.sin(PI2 * f - 1.2); sagOn += (1.5 + 0.45 * p) * W; sagYan += 0.25 * W; sagDirsek += (0.6 + 0.4 * p) * W; }
   // uygula: omurga (eğilme, yan salınım, dönüş), baş, kollar
   const om = d.om;
-  if (egil || gYan || gYaw) for (let j = 0; j < om.length; j++) { const p = OM_PAY[j]; if (egil) dunyaDon(om[j], _R, egil * p * W); if (gYan) dunyaDon(om[j], _F, gYan * p * (j === 0 ? 1 : 0.5)); if (gYaw) dunyaDon(om[j], _U, gYaw * p); }
+  if (egil || gYan || gYaw) for (let j = 0; j < om.length; j++) { const p = OM_PAY[j]; dunyaDon3(om[j], egil * p * W, gYan * p * (j === 0 ? 1 : 0.5), gYaw * p); }
   if (K.Neck && basYaw) dunyaDon(K.Neck, _U, basYaw * 0.4);
-  if (K.Head && (basYaw || basPit || gYan)) { if (basYaw) dunyaDon(K.Head, _U, basYaw * 0.6); if (basPit) dunyaDon(K.Head, _R, -basPit); if (gYan) dunyaDon(K.Head, _F, -gYan * 0.8); }
+  if (K.Head) dunyaDon3(K.Head, -basPit, -gYan * 0.8, basYaw * 0.6);
   // kollar: _R etrafında −açı öne kaldırır (yetPozUygula ile aynı işaret); _F etrafında sol için + dışa, sağ için − dışa
-  if (K.LeftArm) { if (solOn) dunyaDon(K.LeftArm, _R, -solOn); if (solYan - solIc) dunyaDon(K.LeftArm, _F, solYan - solIc); }
-  if (K.RightArm) { if (sagOn) dunyaDon(K.RightArm, _R, -sagOn); if (sagYan - sagIc) dunyaDon(K.RightArm, _F, -(sagYan - sagIc)); }
-  if (K.LeftForeArm) { if (solDirsek) dunyaDon(K.LeftForeArm, _R, -solDirsek); if (solOnIc) dunyaDon(K.LeftForeArm, _F, -solOnIc * d.kolAci * d.onKolAci); }
-  if (K.RightForeArm) { if (sagDirsek) dunyaDon(K.RightForeArm, _R, -sagDirsek); if (sagOnIc) dunyaDon(K.RightForeArm, _F, sagOnIc * d.kolAci * d.onKolAci); }
+  if (K.LeftArm) dunyaDon3(K.LeftArm, -solOn, solYan - solIc, 0);
+  if (K.RightArm) dunyaDon3(K.RightArm, -sagOn, -(sagYan - sagIc), 0);
+  if (K.LeftForeArm) dunyaDon3(K.LeftForeArm, -solDirsek, -solOnIc * d.kolAci * d.onKolAci, 0);
+  if (K.RightForeArm) dunyaDon3(K.RightForeArm, -sagDirsek, sagOnIc * d.kolAci * d.onKolAci, 0);
 }
 // yetenek pozunun omurga dışı kanalları: dönüş, çömelme (diz bükülür, ayak yerde kalır), ölçek nabzı, kollar, baş
 function yetPozUygula(d, YK, W) {
