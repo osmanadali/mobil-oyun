@@ -5,6 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <title>Kut Arena</title>
+<link rel="preload" href="arayuz/menu/yukleme_arka.webp" as="image" type="image/webp">
 <link rel="preload" href="yazi/nunito-latin-ext-400-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="yazi/nunito-latin-ext-900-normal.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 /* ==================================================================
@@ -106,20 +107,12 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .madalyon img{position:absolute;left:-8%;top:2%;width:116%;height:116%;object-fit:contain}
 
 /* ===================== ANA EKRAN (karşılama) =====================
-   Arkada canlı 3D arena (body.menu3d: karsilama.js birkaç kahramanı tahtaya indirir, kamera yavaşça salınır); 3D yoksa gök + köşe portreleri.
+   Arkada canlı 3D arena (body.menu3d: karsilama.js birkaç kahramanı tahtaya indirir, kamera yavaşça salınır); 3D yoksa çizim arka plan (.anaArka, arayuz/menu/karsilama_arka).
    Üstte profil, ortada logo, kahramanlar ortadaki boşlukta görünür; altta OYNA ve iki yanda ikincil düğmeler. */
-#ana .kose{position:absolute;bottom:0;width:calc(50cqw - 270px);height:min(50cqh,400px);pointer-events:none}
-#ana .kose img{position:absolute;bottom:0;height:100%;width:auto;aspect-ratio:1/1;object-fit:contain;filter:drop-shadow(0 14px 14px rgba(0,0,0,.55))}
-#ana .kose.sol{left:0}#ana .kose.sag{right:0}
-#ana .kose.sol .buyuk{left:-30px}#ana .kose.sag .buyuk{right:-30px}
-#ana .kose .kucuk{height:62%;z-index:1}
-#ana .kose.sol .kucuk{right:-20px}#ana .kose.sag .kucuk{left:-20px}
-body.menu3d #ana .gok,body.menu3d #ana .kose{display:none}
 body.menu3d #kaplama{visibility:hidden}   /* menüde can çubukları / sayılar yok */
 #ana .anaPerde{position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(180deg,rgba(18,7,31,.62) 0%,rgba(18,7,31,.18) 24%,rgba(18,7,31,0) 40%,rgba(18,7,31,0) 60%,rgba(18,7,31,.5) 80%,rgba(18,7,31,.86) 100%),
     radial-gradient(130% 90% at 50% 52%,rgba(18,7,31,0) 55%,rgba(18,7,31,.55) 100%)}
-body:not(.menu3d) #ana .anaPerde{display:none}
 #ana .anaKivilcim{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 #ana .anaKivilcim i{position:absolute;bottom:-12px;left:var(--x);width:7px;height:7px;border-radius:50%;opacity:0;will-change:transform,opacity;
   background:radial-gradient(circle,#fff7d0 0,#ffc04a 45%,rgba(255,150,40,0) 72%);animation:anaKor var(--g) linear var(--d) infinite}
@@ -752,8 +745,6 @@ html:not(.alcak) #mac .yedek .yuva .plaka{height:auto;min-height:16px;border-top
   .kutBant b{font-size:19px}
   .sonEylem .btn.altin{min-width:240px}
   .kodUst .acik{display:none}
-  #ana .kose .kucuk{display:none}
-  #ana .kose{height:40cqh}
   #ana .yanDug .btn{width:180px}
   .dukkanSerit{height:176px}
   .kk .alt b{font-size:12px}
@@ -1220,6 +1211,62 @@ body.menu3d #sahne3dKatman{display:block}
 .tabletNot[hidden],#ana:not(.aktif)~.tabletNot,body:has(#ogr:not([hidden])) .tabletNot{display:none}   /* yalnız ana ekranda; öğretici açıkken beklesin (balonla çakışmasın) */
 .tabletNot .ik{width:22px;height:22px;color:var(--altin)}
 .tabletNot .btn{min-height:44px;padding:0 16px;font-size:15px}
+
+/* ===================== ROBOT GÖRSELLERİ (arayuz/menu/*.webp; kaynak PNG'ler kut/gelen_gorsel) =====================
+   yukleme_arka: açılış + savaş öncesi yükleme · karsilama_arka: karşılama (3D yoksa sürekli, vitrin değişiminde ara) ·
+   dugme_oyna(_basili): OYNA · profil_cerceve: karşılamadaki oyuncu kutusu · menu_panel: karşılamadaki pencereler (9-slice, dilim 290) */
+@keyframes kenBurns{0%{transform:scale(1.02) translate(0,0)}100%{transform:scale(1.1) translate(-1.6%,-1.2%)}}
+.yukEkran{background:#1c0a35}
+.yukEkran .yukArka{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.yukEkran .yukArka::before{content:"";position:absolute;inset:0;background:url(arayuz/menu/yukleme_arka.webp) center 72%/cover no-repeat;transform-origin:50% 70%;
+  animation:kenBurns 36s ease-in-out infinite alternate;will-change:transform}
+.yukEkran .yukArka::after{content:"";position:absolute;inset:0;
+  background:radial-gradient(60% 52% at 50% 40%,rgba(30,10,56,.05),rgba(24,8,44,.45) 70%,rgba(12,4,24,.78) 100%),
+    linear-gradient(180deg,rgba(12,4,24,.5) 0%,rgba(12,4,24,0) 26%,rgba(12,4,24,0) 52%,rgba(12,4,24,.55) 78%,rgba(12,4,24,.82) 100%)}
+.yukEkran .huzme{opacity:.75}
+.yukEkran .ipucu{background:rgba(14,5,28,.74);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+html.azHareket .yukEkran .yukArka::before{animation:none}
+/* karşılama arka planı */
+#ana .anaArka{position:absolute;inset:0;overflow:hidden;pointer-events:none;transition:opacity .9s ease}
+#ana .anaArka .pr{position:absolute;inset:-3%;transform:translate3d(calc(var(--px,0) * -16px),calc(var(--py,0) * -10px),0);transition:transform .8s cubic-bezier(.2,.7,.3,1)}
+#ana .anaArka i{position:absolute;inset:0;background:url(arayuz/menu/karsilama_arka.webp) center 40%/cover no-repeat;transform-origin:50% 42%;
+  animation:kenBurns 42s ease-in-out infinite alternate;will-change:transform}
+body.menu3d #ana .anaArka{opacity:0}
+body.menu3d.vitrinArka #ana .anaArka{opacity:1}
+body.menu3d:not(.vitrinArka) #ana .anaArka i{animation-play-state:paused}   /* görünmezken çizim maliyeti yok */
+html.azHareket #ana .anaArka i{animation:none}
+/* OYNA: dugme_oyna.webp (oranı 2118:618 korunur), basınca dugme_oyna_basili.webp; yazı Lilita One (Kut Baslik) */
+#ana .oyna{width:min(440px,100%);aspect-ratio:2118/618;height:auto;min-height:0;padding:0 15% 3px;border:0;border-image:none;border-radius:0;box-shadow:none;
+  background:url(arayuz/menu/dugme_oyna.webp) center/100% 100% no-repeat;overflow:visible;gap:2px;font-size:42px;
+  filter:drop-shadow(0 8px 10px rgba(0,0,0,.5)) drop-shadow(0 0 18px rgba(255,190,80,.28))}
+#ana .oyna:active{background-image:url(arayuz/menu/dugme_oyna_basili.webp);transform:translateY(2px) scale(.97)}
+#ana .oyna::before{display:none}
+#ana .oyna::after{inset:6% 3%;border-radius:40%;box-shadow:0 0 26px 6px rgba(255,226,140,.55)}
+#ana .oyna .ana{gap:10px;line-height:1}
+#ana .oyna .ana .ik{width:30px;height:30px;filter:drop-shadow(0 2px 0 #6a3206)}
+#ana .oyna small{font-size:13px!important;color:#fff3cf;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  text-shadow:-1px -1px 0 #6a3206,1px -1px 0 #6a3206,-1px 1px 0 #6a3206,1px 1px 0 #6a3206,0 2px 0 #6a3206}
+#ana .oyna .ilerleme{margin-top:0}
+#ana .oyna .parilti{inset:0;top:0;bottom:0;width:auto;transform:none;animation:none;background:none;overflow:hidden;
+  -webkit-mask:url(arayuz/menu/dugme_oyna.webp) center/100% 100% no-repeat;mask:url(arayuz/menu/dugme_oyna.webp) center/100% 100% no-repeat}
+#ana .oyna .parilti::before{content:"";position:absolute;top:-20%;bottom:-20%;left:0;width:30%;
+  background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,250,220,.6) 50%,rgba(255,255,255,0));transform:translateX(-160%) skewX(-18deg);animation:anaParla 3.6s ease-in-out 2.2s infinite}
+html.alcak #ana .oyna{width:min(300px,100%);min-height:0;font-size:30px;padding-bottom:2px}
+html.alcak #ana .oyna .ana .ik{width:22px;height:22px}
+html.alcak #ana .oyna small{font-size:11px!important}
+/* profil: avatar profil_cerceve.webp içinde (çerçeve deliği: genişliğin %72,7'si, merkez %49,6 / %52,7) */
+#ana .profil{padding-left:10px}
+#ana .avKap{position:relative;width:60px;height:60px;flex:none;margin-right:4px}
+#ana .profil .avatar{width:100%;height:100%;border:0;box-shadow:none;background:radial-gradient(circle at 50% 35%,#7a4cc0,#2a1046 75%)}
+#ana .avKap .cerceve{position:absolute;left:-10px;top:-16px;width:80px;height:86px;pointer-events:none;
+  background:url(arayuz/menu/profil_cerceve.webp) center/100% 100% no-repeat;filter:drop-shadow(0 3px 4px rgba(0,0,0,.5))}
+html.alcak #ana .avKap{width:42px;height:42px}
+html.alcak #ana .avKap .cerceve{left:-7px;top:-11px;width:56px;height:60px}
+/* karşılamadaki pencereler (Nasıl Oynanır, Ayarlar, Düello): menu_panel 9-slice */
+#perde.menuPanel .pencere{border:0;border-image:url(arayuz/menu/menu_panel.webp) 290 fill / 76px / 12px stretch;background:none;box-shadow:none;
+  padding:40px 46px 32px;filter:drop-shadow(0 18px 30px rgba(0,0,0,.6))}
+#perde.menuPanel .pencere::before,#perde.menuPanel .pencere::after{display:none}
+html.alcak #perde.menuPanel .pencere{border-image-width:56px;border-image-outset:8px;padding:28px 34px 22px}
 </style>
 <script>
 /* tek ölçek: --o, --lw, --lh ve html.alcak; ilk boyamadan önce ve her boyut değişiminde */
@@ -1341,6 +1388,7 @@ body.menu3d #sahne3dKatman{display:block}
 <div id="kok">
 <!-- ======================= YÜKLEME (açılış) ======================= -->
 <div id="acilis" class="yukEkran" role="status" aria-live="polite">
+  <div class="yukArka" aria-hidden="true"></div>
   <div class="huzme"></div><div class="huzme iki"></div>
   <div class="parca" aria-hidden="true"><i style="--x:33%;--g:8.1s;--d:-7.8s"></i><i style="--x:9%;--g:10.8s;--d:-4.4s"></i><i style="--x:8%;--g:10.6s;--d:-0.4s"></i><i style="--x:44%;--g:7.5s;--d:-1.1s"></i><i style="--x:43%;--g:12.8s;--d:-1.5s"></i><i style="--x:23%;--g:11.4s;--d:-11.4s"></i><i style="--x:57%;--g:9.8s;--d:-11.7s"></i><i style="--x:6%;--g:13.0s;--d:-3.5s"></i><i style="--x:16%;--g:7.8s;--d:-3.7s"></i><i style="--x:80%;--g:8.3s;--d:-7.0s"></i><i style="--x:63%;--g:9.6s;--d:-6.6s"></i><i style="--x:8%;--g:7.4s;--d:-2.5s"></i><i style="--x:67%;--g:10.0s;--d:-3.8s"></i><i style="--x:58%;--g:10.2s;--d:-3.6s"></i><i style="--x:78%;--g:11.9s;--d:-2.9s"></i><i style="--x:57%;--g:10.7s;--d:-10.5s"></i><i style="--x:72%;--g:9.0s;--d:-11.8s"></i><i style="--x:13%;--g:9.9s;--d:-9.1s"></i></div>
   <div class="orta">
@@ -1353,16 +1401,14 @@ body.menu3d #sahne3dKatman{display:block}
 </div>
 <!-- ======================= 1) ANA EKRAN ======================= -->
 <section id="ana" class="ekran">
-  <div class="gok"></div>
-  <!-- 3D sahne yoksa (WebGL kapalı / yüklenemedi) yedek: portre kompozisyonu -->
-  <div class="kose sol"><img class="buyuk" src="../arayuz/portre/golem.png" alt=""><img class="kucuk" src="../arayuz/portre/kurt.png" alt=""></div>
-  <div class="kose sag"><img class="buyuk" src="../arayuz/portre/ayi.png" alt=""><img class="kucuk" src="../arayuz/portre/anka.png" alt=""></div>
+  <!-- çizim arka plan (karsilama_arka): 3D yoksa sürekli; 3D vitrinde kahramanlar değişirken araya girer (Ken Burns + parallax) -->
+  <div class="anaArka" aria-hidden="true"><div class="pr"><i></i></div></div>
   <div class="anaPerde"></div>
   <div class="anaKivilcim" aria-hidden="true"><i style="--x:8%;--g:9s;--d:-2s"></i><i style="--x:17%;--g:12s;--d:-7s"></i><i style="--x:26%;--g:10s;--d:-4s"></i><i style="--x:34%;--g:14s;--d:-9s"></i><i style="--x:61%;--g:11s;--d:-1s"></i><i style="--x:70%;--g:13s;--d:-6s"></i><i style="--x:79%;--g:9.5s;--d:-3s"></i><i style="--x:88%;--g:12.5s;--d:-8s"></i><i style="--x:95%;--g:10.5s;--d:-5s"></i><i style="--x:4%;--g:15s;--d:-11s"></i></div>
   <div class="icerik">
     <div class="ustSerit">
       <div class="profil">
-        <div class="avatar"><img src="../arayuz/portre/anka.png" alt=""></div>
+        <div class="avKap"><div class="avatar"><img src="../arayuz/portre/anka.png" alt=""></div><i class="cerceve" aria-hidden="true"></i></div>
         <div class="pyz"><b class="pAd">Oyuncu</b><span class="pAlt">0 maç · 0 birincilik</span>
           <div class="pRoz"><span class="pKupa"><svg class="ik"><use href="#i-kupa"/></svg><em>0</em></span><span class="pUsta"><svg class="ik"><use href="#i-tac"/></svg><em>Sv. 0</em></span></div></div>
       </div>

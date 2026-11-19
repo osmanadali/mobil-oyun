@@ -278,6 +278,12 @@ dönüşler (additive); klip ezilmez. Unity: Animator'da ayrı "Additive" katman
 - **Saldırı:** yakın dövüşte göğüs hazırlıkta −0,2 rad (sağ omuz geri) döner, darbede +0,16'ya savrulur, 0,35 sn'de toparlanır (mevcut
   eğilme + atılma ile birlikte). Menzilli tek kollu büyüde bırakma itişi (yukarıda). Vurulma yön bağımlıdır (his.darbe: vurulan yönden
   geri savrulma ve tepe eğilmesi), ölüm Death01 / devrilme + kor kenarlı çözülme + kül parçacıkları, zaferde zıplama + sevinç klibi.
+- **İkincil zincir (yay-sönümleyici, f/ζ):** `hareket.js` `yayFZ(s, hedef, f, ζ, dt)` (örtük Euler; REFERANS_ANIMASYON 2.2). Dört ayaklı
+  kuyruğu fazı gecikmeli zincir: her kemik bir öncekini yayla izler (ince kuyruk 3,0→1,8 Hz, ζ 0,45→0,30; kalın/sürüngen 2,0→1,2 Hz,
+  ζ 0,55→0,40; ölümde ζ 0,8 ve kuyruk yere iner). Girdi: kökün yaw hızı (−ω·0,12, dönüşte kuyruk terse savrulur), boşta 0,36–0,44 Hz
+  temel salınım (birime özgü faz), kuyruk fidget'ı ≈1,05 Hz, zafer ≈0,95 Hz (eski 2,4–2,5 Hz titreme kaldırıldı), adım fazı; uçta ±0,6 rad
+  kırpılır. Kanatlılarda (Yarasa, Kuğu, Anka) boşta sürekli çırpma yok: katlı kanat nefesle 0,35 Hz ±3° açılıp kapanır, yürümede 1,8 Hz,
+  çırpışta 2,8 Hz; kanat ucu (ön kol) kökü 2,2–3,5 Hz, ζ 0,6 yayla izler. Unity: `LateUpdate`'te aynı yay (kemik başına {x,v}).
 - **Kamera:** taban kadraj tahta güvenli alana sığdırıldıktan sonra `KADRAJ_PAY` 1,12 kat geri çekilir (tahta ekranda ≈ %14 küçük, görüş ≈ %16 geniş; çevre arena,
   kemerler, kristaller görünür; tahta HUD dışında ve ortada kalır). Savaş içi kadraj yakınlaşması en çok 0,8 → 0,86, his.yakinlastir
   oranları ×0,85.

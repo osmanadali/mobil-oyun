@@ -27,7 +27,7 @@ export const GORSEL = {
   // Kurbağa: menzilli vuruş büyü klibi değil, iki tokmakla göbek davulu (Davul_Vur taban klibi + hareket.js 'davul' saldırı stili).
   // Spell_Simple klipleri sağ kolu tek pozda tutuyordu: sürekli saldıran kurbağanın sağ kolu donuk görünüyordu.
   kurbaga: { ...IKI, saldir: ['Davul_Vur'], salStil: 'davul', yetenek: ['Idle_Loop'], yetOn: 0.36, yetSure: 1.0, zafer: 'Dance_Loop', ara: ['Idle_Talking_Loop'], kolAci: 0.45, onKolAci: 1.4, egim: 0.05, bas: -0.08, fidget: ['davul', 'bak'] },
-  yarasa:  { ...IKI, saldir: ['Zombie_Scratch', 'Sword_Regular_A'], yetenek: ['Zombie_Scratch'], yetOn: 0.45, yetTut: [0.06, 0.62], zafer: 'Yes', kanat: true, kolAci: 0.2, egim: 0.12, fidget: ['kanat', 'bak'] },
+  yarasa:  { ...IKI, saldir: ['Zombie_Scratch', 'Sword_Regular_A'], yetenek: ['Zombie_Scratch'], yetOn: 0.45, yetTut: [0.06, 0.62], zafer: 'Yes', kanat: true, kolAci: 0.27, egim: 0.12, fidget: ['kanat', 'bak'] },
   ruzgar:  { ...IKI, ...ATIS, yetenek: ['Spell_Simple_Enter', 'Spell_Simple_Shoot'], yetOn: 0.4, zafer: 'Dance_Loop', ara: ['Idle_Talking_Loop'], idleHiz: 1.25, kolAci: 0.12 },
   kugu:    { ...IKI, ...ATIS, yetenek: ['Idle_Loop'], yetOn: 0.4, yetSure: 0.9, zafer: 'Yes', kanat: true, kolAci: 0.24, bas: 0.06, fidget: ['kanat', 'bak'] },
   ayi:     { ...IKI, bekle: 'Idle_Loop', saldir: ['Melee_Hook', 'Sword_Regular_A', 'Sword_Regular_B'], yetenek: ['Agir_Ezme'], yetOn: 0.5, zafer: 'Yes', ara: ['Idle_FoldArms_Loop'], iri: true, kolAci: 0.24, egim: 0.1, boy: 1.12, yuruHiz: 0.85, fidget: ['omuz', 'bak'] },

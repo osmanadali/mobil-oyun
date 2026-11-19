@@ -100,7 +100,7 @@ oyun.on('birlesti', () => Ses.cal('birlesme', { aralik: 0.3 }));
 oyun.on('kaynasti', () => Ses.cal('kaynasma'));
 oyun.on('ses', (ad) => { if (ad === 'yenile') Ses.cal('yenile'); else if (ad === 'sat') Ses.cal('satin_al', { hiz: 0.8 }); });
 document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('button, .btn'); if (b && !b.disabled) Ses.cal('dugme', { aralik: 0.05 }); }, true);
-function pencere(html) { $('pencere').innerHTML = html; $('perde').classList.add('acik'); }
+function pencere(html) { $('pencere').innerHTML = html; $('perde').classList.toggle('menuPanel', aktifEkran === 'ana'); $('perde').classList.add('acik'); }   // karşılamada süslü menü paneli
 function kapat() { $('perde').classList.remove('acik'); }
 $('perde').addEventListener('click', (e) => { if (e.target.id === 'perde' || e.target.closest('[data-kapat]')) kapat(); });
 
@@ -133,6 +133,10 @@ q('#ana .hizliMac').onclick = async () => { await oyun.yeniMac('hizli'); goster(
 q('#ana .lobiMac').onclick = async () => { await oyun.yeniMac('lobi'); goster('mac'); macCiz(); };
 q('#ana .duelloBtn').onclick = duelloPencere; q('#ana .kahBtn').onclick = () => { kodeksCiz(); goster('kodeks'); }; q('#ana .nasilBtn').onclick = nasilPencere;
 q('#ana .anaAyar').onclick = ayarPencere;
+// karşılama arka planında hafif parallax (fare / sürükleme; kare başına tek stil yazımı)
+{ const ark = q('#ana .anaArka'); let px = 0, py = 0, bekle = false;
+  q('#ana').addEventListener('pointermove', (e) => { px = e.clientX / innerWidth * 2 - 1; py = e.clientY / innerHeight * 2 - 1;
+    if (!bekle) { bekle = true; requestAnimationFrame(() => { bekle = false; ark.style.setProperty('--px', px.toFixed(3)); ark.style.setProperty('--py', py.toFixed(3)); }); } }, { passive: true }); }
 // öğreticiyi baştan başlat (kut.ogretici sıfırlanır); Ayarlar'daki düğmeyle aynı
 function ogretici() { kapat(); if (ogr.adim >= 0) ogrKapat(false); anaCiz(); goster('ana'); ogrBaslat(true); }
 
@@ -969,7 +973,8 @@ let acilisBitti = false;
 anaCiz(); goster('ana');
 // açılış: yükleme ekranı → (görseller, sesler, 3D sahne + karşılama vitrini, gölgelendirici derlemesi) → karşılama
 (async () => {
-  const gorseller = ['../arayuz/logo.png', ...D.KAHRAMANLAR.map(h => P(h.id)), ...Object.keys(D.SOYLAR).map(SY), ...Object.values(IK_RESIM).map(n => `../arayuz/ui/${n}.png`), '../gorsel/gokyuzu.webp'];
+  const gorseller = ['../arayuz/logo.png', ...D.KAHRAMANLAR.map(h => P(h.id)), ...Object.keys(D.SOYLAR).map(SY), ...Object.values(IK_RESIM).map(n => `../arayuz/ui/${n}.png`), '../gorsel/gokyuzu.webp',
+    ...['karsilama_arka', 'dugme_oyna', 'dugme_oyna_basili', 'profil_cerceve', 'menu_panel'].map(n => `arayuz/menu/${n}.webp`)];
   let v = null;
   const r = await acilisYukle(S3, {
     gorseller,
