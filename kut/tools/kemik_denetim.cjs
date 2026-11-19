@@ -4,7 +4,7 @@
    YEREL dönüşü (ebeveynine göre) ve gövdeye (Hips/kök) göre dönüşü örneklenir. Duruma (bekle, yuru, saldir, yetenek, zafer,
    olum) göre her kemiğin, uzvun gövdeye bağlandığı kemiğe (kol → göğüs, bacak → kalça, kuyruk → omurga) göre hareket genliği (derece) çıkarılır ve şu durumlar işaretlenir:
      DONUK    — büyük uzuv (kol, ön kol, baş, kuyruk, bacak) bir durumda < ESIK_DONUK derece oynuyor, aynalı eşi (sol↔sağ) oynarken
-     TEK_KOL  — birimin en çok göründüğü (baskın) durumda bir kol eşinin %25'inden az oynuyor (tek kollu klip: kol tek pozda tutuluyor)
+     TEK_KOL  — birimin en çok göründüğü (baskın) durumda bir kol eşinin %35'inden az oynuyor (tek kollu klip: kol tek pozda tutuluyor)
      GOMULU   — beklemede el gövde eksenine bağlama duruşundaki uzaklığının %60'ından yakın (kol gövdenin içinde)
      ASIMETRI — öteki durumlarda sol/sağ eşlerinden biri diğerinin %25'inden az oynuyor (uyarı; çıkış kodunu etkilemez)
    Kullanım:  (sunucu)  cd kut && python3 -m http.server 8092
@@ -99,7 +99,7 @@ async function denetle(takimA, takimB) {
       const k = {};
       for (const ad in r.kemik) { k[ad] = {}; for (const du in r.kemik[ad]) { const o = r.kemik[ad][du]; k[ad][du] = [+ortanca(o.seg).toFixed(1), +o.mg.toFixed(1), o.n, o.seg.length]; } }
       const gom = {}; for (const el in r.gom) { gom[el] = {}; for (const du in r.gom[el]) gom[el][du] = +ortanca(r.gom[el][du]).toFixed(2); }
-      cik.push({ uid, h: r.h, tur: r.tur, taraf: r.taraf, kemik: k, gom });
+      cik.push({ uid, h: r.h, tur: r.tur, taraf: r.taraf, kemik: k, gom, bekle: b && b.isk ? b.isk.beklemeAd : null });
     }
     return cik;
   }, SURE);
@@ -123,9 +123,9 @@ function incele(birim) {
     for (const ad in birim.kemik) {
       if (!ONEMLI.test(ad)) continue; const o = birim.kemik[ad][du]; if (!o || o[3] < 1) continue;
       const es = esAd(ad), oe = es && birim.kemik[es] && birim.kemik[es][du];
-      const g = o[0], esG = oe && oe[3] ? oe[0] : null, el = /Hand$/.test(ad);   // bölüt genliklerinin ortancası; el küçük kemik: yalnız uyarı
+      const g = o[0], esG = oe && oe[3] ? oe[0] : null, el = /Hand$|Shoulder/.test(ad);   // bölüt genliklerinin ortancası; el ve köprücük küçük kemik: yalnız uyarı
       if (!el && g < ESIK_DONUK && esG != null && esG > ESIK_ES) bulgu.push({ tip: 'DONUK', durum: du, kemik: ad, derece: g, es, esDerece: esG });
-      else if (!el && du === baskin && /Arm/.test(ad) && esG != null && esG > 10 && g < esG * 0.25) bulgu.push({ tip: 'TEK_KOL', durum: du, kemik: ad, derece: g, es, esDerece: esG });
+      else if (!el && du === baskin && /Arm/.test(ad) && esG != null && esG > 10 && g < esG * 0.35) bulgu.push({ tip: 'TEK_KOL', durum: du, kemik: ad, derece: g, es, esDerece: esG });
       else if (esG != null && esG > ESIK_ES && g < esG * 0.25) bulgu.push({ tip: 'ASIMETRI', durum: du, kemik: ad, derece: g, es, esDerece: esG });
     }
   }
@@ -136,7 +136,8 @@ function incele(birim) {
     if (n > 20 && mx < ESIK_DONUK) bulgu.push({ tip: 'DONUK', durum: 'hepsi', kemik: ad, derece: mx });
   }
   // gömülü kol: beklemede el gövde eksenine bağlama duruşundaki uzaklığının %60'ından yakın (kol gövdenin içinde)
-  for (const el in birim.gom || {}) { const o = birim.gom[el]; const x = o.bekle != null ? o.bekle : o[baskin]; if (x != null && x < 0.6) bulgu.push({ tip: 'GOMULU', durum: o.bekle != null ? 'bekle' : baskin, kemik: el, derece: x }); }
+  // (kollarını kavuşturarak bekleyen Golem'de eller gövdenin önünde buluşur: gömülme sayılmaz)
+  if (birim.bekle !== 'Idle_FoldArms_Loop') for (const el in birim.gom || {}) { const o = birim.gom[el]; const x = o.bekle != null ? o.bekle : o[baskin]; if (x != null && x < 0.6) bulgu.push({ tip: 'GOMULU', durum: o.bekle != null ? 'bekle' : baskin, kemik: el, derece: x }); }
   return { bulgu, baskin };
 }
 

@@ -1056,6 +1056,8 @@ const FID_VARSAYILAN = ['bak', 'gerin'];
 // davul saldırısı: [hazır kol öne, vuruşta kol öne, hazır dirsek, vuruşta dirsek, sol kol içe, sağ kol içe (davul solda: sağ el gövdeyi çaprazlar), ön kol içe]
 const DAVUL_P = [0.36, 0.5, 0.85, 0.6, 0.35, 0.6, 0.5];
 const FID_K = new Array(9).fill(0);
+// tokmak eğrisi (x: vuruş anına göre sn): 0,15 sn kalkış (1) → 0,05 sn hızla iniş, davula çarpıp geçer (−0,35) → 0,22 sn'de hazır duruşa
+function davulVur(x) { return x < -0.2 ? 0 : x < -0.05 ? yumusak((x + 0.2) / 0.15) : x < 0 ? karis(1, -0.35, cikis3(x / 0.05 + 1)) : -0.35 * (1 - yumusak(x / 0.22)); }
 function canlilik(d, dt, W, zafer) {
   const b = d.b, K = d.K, i = b.isk, ad = (i && i.aktifAd) || '';
   // boşta ağırlığı: yürüme, saldırı, yetenek ve zaferde söner
@@ -1091,8 +1093,7 @@ function canlilik(d, dt, W, zafer) {
       // Davulcu Kurbağa: iki tokmakla göbek davulu — sol tokmak ön vuruş (T − 0,2), sağ tokmak asıl vuruş (T, mermi çıkışı);
       // kollar 'hazır' duruşuna gelir (tokmaklar davul hizasında), her vuruşta tokmak kalkar ve hızla iner
       const hz = yumusak(s.t / Math.max(0.08, Math.min(0.3, T))) * (1 - yumusak((s.t - T - 0.3) / 0.25));
-      const vur = (x) => x < -0.2 ? 0 : x < -0.05 ? yumusak((x + 0.2) / 0.15) : x < 0 ? karis(1, -0.35, cikis3(x / 0.05 + 1)) : -0.35 * (1 - yumusak(x / 0.22));
-      const vL = vur(s.t - (T - 0.2)), vR = vur(s.t - T);
+      const vL = davulVur(s.t - (T - 0.2)), vR = davulVur(s.t - T);
       const P = DAVUL_P;
       solOn += (P[0] + P[1] * vL) * hz; sagOn += (P[0] + P[1] * vR) * hz; solDirsek += (P[2] + P[3] * vL) * hz; sagDirsek += (P[2] + P[3] * vR) * hz;
       solIc += P[4] * hz; sagIc += P[5] * hz; solOnIc += P[6] * hz; sagOnIc += P[6] * hz; basPit += (-0.04 * vR - 0.03 * vL) * hz; egil += 0.04 * hz;

@@ -112,7 +112,7 @@ function vitrinMotoru(SIM, takim) {
 }
 
 export function vitrinKur({ S3, SIM, D, tuval }) {
-  let acik = false, dongu = false, kurulum = null, kuruldu = 0, merkez = -1, kimler = [], gecis = false, sonSecim = [];
+  let acik = false, dongu = false, kurulum = null, kuruldu = 0, merkez = -1, kimler = [], gecis = false, sonSecim = [], sure = VITRIN_SURE;
   const ad = (id) => (D.kahraman(id) || { ad: id }).ad;
   function sec() {
     const tum = D.KAHRAMANLAR.map(h => h.id).filter(id => !sonSecim.includes(id));
@@ -147,7 +147,7 @@ export function vitrinKur({ S3, SIM, D, tuval }) {
   function kare() {
     if (!acik) { dongu = false; return; }
     const simdi = performance.now();
-    if (!kurulum && !gecis && kuruldu && simdi - kuruldu > VITRIN_SURE && !document.hidden) {
+    if (!kurulum && !gecis && kuruldu && simdi - kuruldu > sure && !document.hidden) {
       // yeni kahramanlar: tuval kısa bir an kararır, yenileri iner
       gecis = true; tuval.parentElement.classList.add('vitrinGecis');
       setTimeout(() => { if (!acik) { gecis = false; tuval.parentElement.classList.remove('vitrinGecis'); return; }
@@ -170,5 +170,7 @@ export function vitrinKur({ S3, SIM, D, tuval }) {
     /** Savaş kurulmadan önce: süren vitrin kurulumu bitsin (iki savasKur üst üste binmesin), sonra vitrin temizlenir. */
     async bekle() { if (kurulum) await kurulum; kuruldu = 0; merkez = -1; },
     get acik() { return acik; },
+    get kimler() { return kimler.slice(); },
+    set sure(ms) { sure = ms; },   // test: değişimi ertele
   };
 }
