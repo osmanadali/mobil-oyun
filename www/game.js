@@ -2990,22 +2990,31 @@ function achHide() { $('achPop').classList.remove('show'); achT = setTimeout(ach
 }
 
 // Şehir haritası: her biten hat bir semti yakar; bütün bölümleri kusursuz (🎫) olan semt altın parlar.
-// Bir şehir 24 semt, halka halka büyür (merkez halka 6, orta 8, dış 10). 25. hattan sonra yeni şehir (sayfa).
-const CITY_N = 24, RINGS = [[6, 31, 76, 0], [8, 80, 126, .5], [10, 130, 176, 0]];   // [semt, iç r, dış r, açı kayması]
+// Bir şehir 24 hat (25. hattan sonra yeni şehir, sayfa). Çizim metro şeması: ortada merkez istasyon, 8 yöne birer gövde,
+// her gövdede 3 paralel hat (saat yönünde M1 M2 M3, M4 …); gövde ucunda yan hatlar 45° ayrılır. Yalnız yatay/dikey/45°.
+// MG: hat aralığı g, başlangıç r0, ayrılma R (düz/çapraz yön), yan kol fan, orta kol mid, ilk durak s0
+const CITY_N = 24, MG = { g: 8, r0: 20, R: [94, 118], fan: 22, mid: 30, s0: 44 };
 const CITY_NAMES = L(['Işık Kent', 'Liman Kent', 'Yıldız Kent', 'Gece Kent', 'Pınar Kent', 'Kuzey Kent', 'Ufuk Kent', 'Gökkent'], ['Light City', 'Harbor City', 'Star City', 'Night City', 'Spring City', 'North City', 'Horizon City', 'Sky City']);
 const cityName = p => CITY_NAMES[p % CITY_NAMES.length] + (p >= CITY_NAMES.length ? ' ' + (p / CITY_NAMES.length + 1 | 0) : '');
 document.body.insertAdjacentHTML('beforeend', `<svg class="cdefs" aria-hidden="true"><defs>
   <radialGradient id="cSky"><stop offset="0" stop-color="var(--acc)" stop-opacity=".22"/><stop offset=".55" stop-color="var(--acc2)" stop-opacity=".08"/><stop offset="1" stop-color="var(--acc2)" stop-opacity="0"/></radialGradient>
-  <linearGradient id="cGold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe7a3" stop-opacity=".62"/><stop offset=".5" stop-color="#f5b942" stop-opacity=".42"/><stop offset="1" stop-color="#d9a520" stop-opacity=".55"/></linearGradient></defs></svg>`);
+  <linearGradient id="cHubG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--acc)"/><stop offset="1" stop-color="var(--acc2)"/></linearGradient>
+  <pattern id="cGrid" width="24" height="24" x="-12" y="-12" patternUnits="userSpaceOnUse"><path d="M24 0H0V24" fill="none" stroke="var(--rail)" stroke-width=".7"/></pattern>
+  <clipPath id="cClip"><rect x="-168" y="-168" width="336" height="336" rx="30"/></clipPath></defs></svg>`);
 let cPage = -1, cTab = 'city', cSel = -1;
 const cityPages = () => Math.ceil((linesDone() + 1) / CITY_N);
-const pt = (r, a) => `${(r * Math.cos(a)).toFixed(1)} ${(r * Math.sin(a)).toFixed(1)}`;
-// semt geometrisi: k (0–23) → halka, açı aralığı
-function dGeo(k) {
-  let i = 0, j = k; while (j >= RINGS[i][0]) j -= RINGS[i++][0];
-  const [n, r0, r1, off] = RINGS[i], w = 2 * Math.PI / n, a0 = -Math.PI / 2 + (j + off) * w, a1 = a0 + w, p0 = 2.2 / r0, p1 = 2.2 / r1;
-  const d = `M${pt(r1, a0 + p1)}A${r1} ${r1} 0 0 1 ${pt(r1, a1 - p1)}L${pt(r0, a1 - p0)}A${r0} ${r0} 0 0 0 ${pt(r0, a0 + p0)}Z`;
-  return { d, r0, r1, a: (a0 + a1) / 2, w };
+const f1 = p => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`;
+// hat geometrisi: k (0–23) → gövde yönü, şerit; yol, 4 durak (3'ü gövdede, 1'i uçta), yol boyunca nokta, etiket yeri
+function mGeo(k, pw) {
+  const dir = k / 3 | 0, j = k % 3, a = (-90 + dir * 45) * Math.PI / 180, R = MG.R[dir % 2], o = (j - 1) * MG.g;
+  const u = [Math.cos(a), Math.sin(a)], n = [-u[1], u[0]], P = r => [u[0] * r + n[0] * o, u[1] * r + n[1] * o];
+  const b = (j - 1) * Math.PI / 4, w = [Math.cos(a + b), Math.sin(a + b)], arm = j === 1 ? MG.mid : MG.fan, B = P(R);
+  const at = t => t <= R - MG.r0 ? P(MG.r0 + t) : [B[0] + w[0] * (t - R + MG.r0), B[1] + w[1] * (t - R + MG.r0)];
+  const len = R - MG.r0 + arm, E = at(len), q = 8;
+  const d = j === 1 ? `M${f1(P(MG.r0))}L${f1(E)}` : `M${f1(P(MG.r0))}L${f1(P(R - q))}Q${f1(B)} ${f1([B[0] + w[0] * q, B[1] + w[1] * q])}L${f1(E)}`;
+  const D = [MG.s0, (MG.s0 + R) / 2, R].map(r => r - MG.r0).concat(len);
+  const t = Math.min(Math.abs(w[0]) > .01 ? pw / 2 / Math.abs(w[0]) : 1e9, Math.abs(w[1]) > .01 ? 9 / Math.abs(w[1]) : 1e9) + 3;
+  return { d, D, at, len, B, R, pill: [E[0] + w[0] * t, E[1] + w[1] * t] };
 }
 function cityState(c) {
   const first = lineStart(c), len = lineEnd(c) - first + 1;
@@ -3014,40 +3023,41 @@ function cityState(c) {
 }
 function renderCity() {
   const pages = cityPages(); if (cPage < 0 || cPage >= pages) cPage = Math.min(pages - 1, linesDone() / CITY_N | 0);
-  const base = cPage * CITY_N, seen = save.cityLit || 0, rm = calmMotion.matches;
-  let lit = 0, gold = 0, nNew = 0, g = '', spokes = '', tops = '';
+  const base = cPage * CITY_N, seen = save.cityLit || 0, rm = calmMotion.matches, lay = { off: '', cur: '', lit: '' };
+  let lit = 0, gold = 0, nNew = 0;
   for (let k = 0; k < CITY_N; k++) {
-    const c = base + k, s = cityState(c), { d, r0, r1, a, w } = dGeo(k), col = lineCol(c);
+    const c = base + k, s = cityState(c), col = lineCol(c), lab = `M${c + 1}`, pw = 9 + lab.length * 7.4, G = mGeo(k, pw);
     const cls = s.gold ? 'gold' : s.done ? 'lit' : s.cur ? 'cur' : 'off', isNew = (s.done && c >= seen) && !rm;
-    if (s.done) lit++; if (s.gold) gold++;
-    // ışıklar: semtin içine serpilmiş pencereler (tohumlu, her semt kendine özgü); iki grup sırayla göz kırpar
-    let wa = '', wb = '';
-    if (s.done) {
-      const R = rng(c * 7919 + 13), n = 4 + (r1 > 120 ? 4 : r1 > 80 ? 3 : 1);
-      for (let q = 0; q < n; q++) {
-        const rr = r0 + 7 + R() * (r1 - r0 - 14), aa = a + (R() - .5) * w * .72, sz = 2.2 + R() * 2.2, x = rr * Math.cos(aa), y = rr * Math.sin(aa);
-        const rect = `<rect x="${(x - sz / 2).toFixed(1)}" y="${(y - sz / 2).toFixed(1)}" width="${sz.toFixed(1)}" height="${sz.toFixed(1)}" rx=".6"/>`;
-        q % 2 ? wb += rect : wa += rect;
-      }
-    }
-    const sr = r0 + Math.min(16, (r1 - r0) * .34), lr = r1 - Math.min(15, (r1 - r0) * .3), dl = (nNew * .14).toFixed(2);
-    g += `<g class="sd ${cls}${isNew ? ' new' : ''}${c === cSel ? ' sel' : ''}" data-c="${c}" style="--lc:${col};--dl:${dl}s;--tw:${(-(c * 1.37) % 3).toFixed(2)}s">
-      <title>${lineName(c)}</title><path class="sg" d="${d}"/><path class="sf" d="${d}"/>${s.done ? `<g class="lw a">${wa}</g><g class="lw b">${wb}</g>` : ''}</g>`;
-    if (s.done || s.cur) spokes += `<path class="sk ${s.cur ? 'cur' : ''}" d="M${pt(sr, a)}L0 0" style="--lc:${col}"/>`;
-    tops += `<g class="sl ${cls}" style="--lc:${col}">${s.done || s.cur ? `<circle cx="${(sr * Math.cos(a)).toFixed(1)}" cy="${(sr * Math.sin(a)).toFixed(1)}" r="4.2"/>` : ''}<text x="${(lr * Math.cos(a)).toFixed(1)}" y="${(lr * Math.sin(a) + 3.6).toFixed(1)}">M${c + 1}</text></g>`;
+    if (s.done) lit++;
+    if (s.gold) gold++;
+    // ilerleme: hattın 4 durağı bölümlerin dörtte birlerine denk; sıradaki hatta bitenler kadar durak yanar, tren o noktada
+    const p = s.done ? 1 : s.cur ? Math.min(1, Math.max(0, (save.level - lineStart(c)) / s.len)) : 0, on = Math.floor(p * 4 + 1e-9);
+    const K = [8, ...G.D], seg = Math.min(3, Math.floor(p * 4)), tt = K[seg] + (K[seg + 1] - K[seg]) * (p * 4 - seg), T = G.at(tt);
+    const stn = s.done || s.cur ? G.D.map((t, i) => { const q = G.at(t); return `<circle class="stn${i < on ? ' on' : ''}${i === 3 ? ' end' : ''}" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${i === 3 ? 4.4 : 2.6}"/>`; }).join('')
+      : (q => `<circle class="stn end" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="2.4"/>`)(G.at(G.len));
+    const run = s.cur && tt > 9 ? `<path class="run" d="M${f1(G.at(0))}${tt > G.R - MG.r0 ? `L${f1(G.B)}` : ''}L${f1(T)}"/>` : '';
+    const train = s.cur ? `<g class="now" transform="translate(${f1(T)})"><circle class="pz" r="6"/><circle class="tn" r="4.6"/></g>` : '';
+    const txt = s.done ? (okl(col)[0] > .68 ? '#151a33' : '#fff') : '';
+    const [px, py] = G.pill;
+    lay[s.done ? 'lit' : cls] += `<g class="sd ${cls}${isNew ? ' new' : ''}${c === cSel ? ' sel' : ''}" data-c="${c}" style="--lc:${col};--len:${G.len.toFixed(0)};--dl:${(nNew * .14).toFixed(2)}s${txt ? `;--lt:${txt}` : ''}">
+      <title>${lineName(c)}</title><path class="hit" d="${G.d}"/><path class="hal" d="${G.d}"/>${s.done ? `<path class="cas" d="${G.d}"/>` : ''}<path class="ln" d="${G.d}"/>${run}${stn}${train}
+      <g class="bl" transform="translate(${px.toFixed(1)} ${py.toFixed(1)})"><rect x="${(-pw / 2).toFixed(1)}" y="-9" width="${pw.toFixed(1)}" height="18" rx="9"/><text y="4.4">${lab}</text></g></g>`;
     if (isNew) nNew++;
   }
   const done = linesDone();
   if (done > seen) { save.cityLit = done; persist(); }
-  const f = lit / CITY_N, ring = RINGS.map(([, , r1]) => `<circle r="${r1 + 2}"/>`).join('');
+  const f = lit / CITY_N, sw = (cl, t) => `<span class="${cl}"><svg viewBox="0 0 26 10"><path d="M2 5H24"/>${cl === 'off' ? '' : '<circle cx="13" cy="5" r="2.2"/>'}</svg>${t}</span>`;
   $('cSub').textContent = L(`${lit}/${CITY_N} semt · ✨ ${gold} altın`, `${lit}/${CITY_N} districts · ✨ ${gold} golden`);
   const sel = cSel >= base && cSel < base + CITY_N ? cSel : Math.min(base + CITY_N - 1, Math.max(base, done));
   cSel = sel;
   $('cityBody').innerHTML = `${pages > 1 ? `<div class="cpager"><button class="ic" id="cPrev" ${cPage ? '' : 'disabled'} aria-label="${L('Önceki şehir', 'Previous city')}"><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg></button><b>${cityName(cPage)}<small>M${base + 1}–M${base + CITY_N}</small></b><button class="ic" id="cNext" ${cPage < pages - 1 ? '' : 'disabled'} aria-label="${L('Sonraki şehir', 'Next city')}"><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button></div>` : ''}
-    <div class="cmap"><svg viewBox="-184 -184 368 368" role="img" aria-label="${L('Şehir haritası', 'City map')}">
-      <circle class="sky" r="180" style="opacity:${(.25 + f * .75).toFixed(2)}"/><g class="rr">${ring}</g>
-      <g class="ds">${g}</g><g class="sks">${spokes}</g>
-      <g class="hub"><circle r="24"/><path d="M-8 6V-6H6"/><circle class="hd" cx="6" cy="-6" r="3.4"/></g><g class="sls">${tops}</g></svg></div>
+    <div class="cmap"><svg viewBox="-172 -172 344 344" role="img" aria-label="${L('Şehir haritası', 'City map')}">
+      <g class="bgm" clip-path="url(#cClip)"><rect class="gnd" x="-168" y="-168" width="336" height="336"/><rect class="grd" x="-168" y="-168" width="336" height="336"/>
+        <circle class="sky" r="170" style="opacity:${(.3 + f * .7).toFixed(2)}"/><path class="riv" d="M-180 92C-120 70-96 128-40 112S40 40 78 30 140 -6 180 -52"/></g>
+      <rect class="frm" x="-168" y="-168" width="336" height="336" rx="30"/>
+      <g class="mls">${lay.off}${lay.cur}${lay.lit}</g>
+      <g class="chub"><rect x="-27" y="-27" width="54" height="54" rx="16"/><text y="5">${lit}/${CITY_N}</text></g></svg></div>
+    <div class="clegend">${sw('lit', L('Bitti', 'Done'))}${sw('gold', L('Altın', 'Gold'))}${sw('cur', L('Şimdi', 'Now'))}${sw('off', L('Henüz değil', 'Not yet'))}</div>
     <div class="cinfo" id="cInfo"></div>
     <p class="tip">${L('Her biten hat bir semti yakar · bütün bölümleri kusursuz olan semt altın parlar', 'Every finished line lights a district · all-perfect lines glow gold')}</p>`;
   cityInfo();
