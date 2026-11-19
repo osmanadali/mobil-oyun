@@ -248,10 +248,11 @@ export const his = {
     if (s.olum) return;
     if (yon) yerelYon(b, yon, s.yon);
     const o = 1 / kokOlcek(b);
-    s.geri.v += (2.2 + 3.0 * guc) * o;        // yerel birim/sn itme (her vuruş görünür savrulma)
-    s.ezil.v -= 1.8 + 2.6 * guc;              // sıkış
-    s.egil.v += 3.0 + 4.0 * guc;              // tepesi vuruş yönüne savrulur
-    s.flasRenk.set(1, 1, 1); s.flas = 0.8 + 0.5 * guc;
+    // küçük ve sakin (REFERANS_ANIMASYON 2.5): vurulan yönden 3–6° yatma, ≤ %4 sıkış, %60–80 parlama
+    s.geri.v += (1.7 + 2.4 * guc) * o;        // yerel birim/sn itme (vuruş yönünde geri savrulma)
+    s.ezil.v -= 1.2 + 1.8 * guc;              // sıkış
+    s.egil.v += 2.6 + 3.4 * guc;              // tepesi vuruş yönüne savrulur
+    s.flasRenk.set(1, 1, 1); s.flas = 0.62 + 0.3 * guc;
     // yerel hit-stop: yalnız vuran ve vurulan donar (sahnenin geri kalanı akar); küresel durdurma yalnız öldüren/kritik vuruşta
     const fr = 0.05 + 0.04 * kirp((guc - 0.3) / 0.7);
     his.donma(b, fr); if (k && k !== b) his.donma(k, fr * 0.9);
@@ -298,7 +299,7 @@ export const his = {
   },
   /** Diriliş (Anka): çözülmeyi geri al, görünür yap */
   dirilis(b) { if (!b) return; const s = bh(b); s.olum = null; if (s.uni) s.uni.uKutCoz.value = 0; b.govde.visible = true; s.ezil.v -= 3; s.flasRenk.set('#ffb070'); s.flas = 1.2; },
-  /** Zafer: yaşayan birim sevinçle zıplar (iki ayaklıda Dance_Loop ile birlikte) */
+  /** Zafer: yaşayan birim kısa sevinç (iki zıplama; iki ayaklıda tek seferlik sevinç klibiyle), sonra duruş */
   zafer(b) { if (!b) return; const s = bh(b); if (s.olum) return; s.zafer = { t: -((b.uid || 0) * 0.137 % 0.5) }; },
   /** hata ayıklama */
   _durum: H,
@@ -355,12 +356,13 @@ function birimGuncelle(b, dt, dtR) {
   }
   // zafer zıplaması
   if (s.zafer) {
-    const z = s.zafer; z.t += dt; const P = 0.78, f = ((z.t % P) + P) % P / P;
-    if (z.t > 0) {
-      if (f < 0.18) ezil += -0.16 * Math.sin(Math.PI * f / 0.18);                       // çömel
-      else if (f < 0.72) { const u = (f - 0.18) / 0.54; oy += 4 * 0.32 * o * u * (1 - u); ezil += 0.1 * Math.sin(Math.PI * u); }  // havada uzar
-      else ezil += -0.14 * Math.sin(Math.PI * (f - 0.72) / 0.28);                      // iniş
-    }
+    // kısa sevinç: iki zıplama (ikincisi alçak), sonra duruş tutulur (REFERANS_ANIMASYON: zıplama döngüsü yok; tek hareket + tutma)
+    const z = s.zafer; z.t += dt; const P = 0.78, f = ((z.t % P) + P) % P / P, n = Math.floor(z.t / P), yuk = n === 0 ? 0.24 : 0.14;
+    if (z.t > 0 && n < 2) {
+      if (f < 0.18) ezil += -0.07 * Math.sin(Math.PI * f / 0.18);                       // çömel
+      else if (f < 0.72) { const u = (f - 0.18) / 0.54; oy += 4 * yuk * o * u * (1 - u); ezil += 0.05 * Math.sin(Math.PI * u); }  // havada uzar
+      else ezil += -0.06 * Math.sin(Math.PI * (f - 0.72) / 0.28);                      // iniş
+    } else if (n >= 2) s.zafer = null;
   }
   // parlama (gerçek zaman)
   if (s.flas > 0) { s.flas = Math.max(0, s.flas - dtR / 0.13); }
@@ -877,9 +879,10 @@ export function ikiAyakliKur(b, { kanat, iri } = {}) {
     // canlılık katmanı: saldırı stili (davul: iki tokmakla göbek davulu), tek kollu büyü klibinde tutan kol, boşta ağırlık aktarma hızı,
     // kişilik fidget'ı (6–12 sn'de bir; birimler arası faz farkı ozet(faz) ile), boşta ağırlığı (yumuşak)
     salStil: g.salStil || null, tekKol: !g.salStil && !(kanat != null ? kanat : g.kanat) && /^Spell_Simple/.test(g.hazir || ''),
-    agirlikHz: 0.13 + ozet(faz * 5.3) * 0.07, fidTur: g.fidget || FID_VARSAYILAN, fidT: 3 + ozet(faz * 17.9) * 7, fid: null, fidSira: Math.floor(ozet(faz * 3.1) * 7), bosW: 0, bakSap: 0 };
+    agirlikHz: 0.13 + ozet(faz * 5.3) * 0.07, fidTur: g.fidget || FID_VARSAYILAN, fidT: 2 + ozet(faz * 17.9) * 5, fid: null, bosStil: g.bosStil || null, dirsekYay: [{ x: 0, v: 0 }, { x: 0, v: 0 }], fidSira: Math.floor(ozet(faz * 3.1) * 7), bosW: 0, bakSap: 0 };
   // omurga kemikleri bir kez süzülür (kare başına dizi üretilmesin)
   d.om = [b.kemik.Spine, b.kemik.Spine1, b.kemik.Spine2].filter(Boolean);
+  d.uyluk = [b.kemik.LeftUpLeg, b.kemik.RightUpLeg].filter(Boolean);
   return d;
 }
 const _F = new THREE.Vector3(), _R = new THREE.Vector3(), _U = new THREE.Vector3();
@@ -1022,7 +1025,10 @@ export function ikiAyakliGuncelle(d, dt, { hareket = false, hiz = 0, saldiri = n
   // uygula: omurga (eğilme dağıtılır), kalça yalpası, baş dengesi
   const om = d.om, pay = OM_PAY;
   for (let j = 0; j < om.length; j++) dunyaDon(om[j], _R, (egil * pay[j] - nefes * 0.012 + d.egimOfs * pay[j]) * W);
-  if (K.Hips && d.w > 0.01) { dunyaDon(K.Hips, _F, sal * 0.05 * W); dunyaDon(K.Hips, _U, sal * 0.06 * W); }
+  // kalça yalpası (yuvarlanma + sapma) yalnız gövdeye: uyluklar aynı dünya dönüşüyle geri çevrilir, bacak klipteki gibi kalır ve basan
+  // ayak kaymaz (eskiden kalça yuvarlanması 0,6 boyluk bacağın ucunu adım başına ~3 cm yana süründürüyordu)
+  if (K.Hips && d.w > 0.01) { const yr = sal * 0.05 * W, ys = sal * 0.06 * W; dunyaDon(K.Hips, _F, yr); dunyaDon(K.Hips, _U, ys);
+    for (const k of d.uyluk) { dunyaDon(k, _U, -ys); dunyaDon(k, _F, -yr); } }
   if (K.Spine1 && d.w > 0.01) dunyaDon(K.Spine1, _U, -sal * 0.08 * W);
   if (K.Head) dunyaDon(K.Head, _R, (-egil * 0.35 + nefes * 0.01 + d.basOfs) * W);
   if (yetVar) yetPozUygula(d, YK, W);
@@ -1097,8 +1103,17 @@ function canlilik(d, dt, W, zafer) {
     basPit += gurultu(d.t * 0.15 + d.faz * 11) * 0.07 * B;
     // kollar nefesle hafifçe ileri-geri ve dışa (sol/sağ farklı fazda): klip kolları kıpırtısız tutsa da uzuv donuk durmaz
     const n1 = Math.sin(d.t * PI2 * d.nefesHz + 0.7), n2 = Math.sin(d.t * PI2 * d.nefesHz * 0.93 + 2.3);
-    solOn += n1 * 0.06 * B; sagOn += n2 * 0.065 * B; solYan += (0.5 + 0.5 * n1) * 0.04 * B; sagYan += (0.5 + 0.5 * n2) * 0.045 * B;
-    solDirsek += n1 * 0.06 * B; sagDirsek += n2 * 0.07 * B;
+    solOn += n1 * 0.08 * B; sagOn += n2 * 0.085 * B; solYan += (0.5 + 0.5 * n1) * 0.05 * B; sagYan += (0.5 + 0.5 * n2) * 0.055 * B;
+    // ön kol üst kolu yay-sönümleyiciyle gecikerek izler (0,9 Hz, ζ 0,55: ağır, sarkaç gibi; eşzamanlı sinüs değil)
+    const DY = d.dirsekYay; yayFZ(DY[0], n1 * 0.1, 0.9, 0.55, dt); yayFZ(DY[1], n2 * 0.11, 0.9, 0.55, dt);
+    solDirsek += DY[0].x * B; sagDirsek += DY[1].x * B;
+    // kişiye özel boşta el hareketi: 'tempo' (Kurbağa) — sağ tokmak 1,9 sn'de bir uyluğa tempo vurur, sol tokmak yarım vuruş sonra
+    // davula hafifçe dokunur; vuruşta baş tempo tutar. Uzun beklemede (vitrin) tokmaklı kollar hiç donuk kalmaz.
+    if (d.bosStil === 'tempo') {
+      const P = 1.9, x = (d.t + d.faz * 3) % P, v1 = davulVur(x - 0.6), v2 = davulVur(x - 1.15) * 0.75;
+      sagDirsek += 0.34 * v1 * B; sagOn += 0.1 * v1 * B; solDirsek += 0.24 * v2 * B; solOn += 0.06 * v2 * B;
+      basPit += (Math.min(0, v1) * 0.06 + Math.min(0, v2) * 0.04) * B;
+    }
     // kişilik fidget'ı: yalnız sakin beklemede (sahne3d 'ara' klibi oynarken değil)
     if (!d.fid) { if (d.bosW > 0.9 && b.durum === 'bekle') { d.fidT -= dt; if (d.fidT <= 0) { const l = d.fidTur; d.fid = { t: 0, k: FID[l[d.fidSira++ % l.length]] || FID.bak }; } } }
   }

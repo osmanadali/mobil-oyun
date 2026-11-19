@@ -6,10 +6,12 @@
      DONUK    — büyük uzuv (kol, ön kol, baş, kuyruk, bacak) bir durumda < ESIK_DONUK derece oynuyor, aynalı eşi (sol↔sağ) oynarken
      TEK_KOL  — birimin en çok göründüğü (baskın) durumda bir kol eşinin %35'inden az oynuyor (tek kollu klip: kol tek pozda tutuluyor)
      GOMULU   — beklemede el gövde eksenine bağlama duruşundaki uzaklığının %60'ından yakın (kol gövdenin içinde)
+     DERI_DONUK — kol/ön kol/el köşe grubunun (deri) ağırlık merkezi bir durumda göğse göre < %1 boy oynuyor, eşi > %4 oynarken
+                (kemik dönse de görünen kol donuk: yanlış ağırlık, eşya bağlama, retarget)
      ASIMETRI — öteki durumlarda sol/sağ eşlerinden biri diğerinin %25'inden az oynuyor (uyarı; çıkış kodunu etkilemez)
    Kullanım:  (sunucu)  cd kut && python3 -m http.server 8092
               node tools/kemik_denetim.cjs [--port 8092] [--a kurbaga,golem] [--sn 22] [--json cikti.json]
-   Çıkış kodu: DONUK, TEK_KOL ya da GOMULU varsa 1. */
+   Çıkış kodu: DONUK, TEK_KOL, GOMULU ya da DERI_DONUK varsa 1. */
 const { chromium } = require('playwright');
 const fs = require('fs');
 const arg = (ad, vars) => { const i = process.argv.indexOf('--' + ad); return i > 0 ? process.argv[i + 1] : vars; };
@@ -53,7 +55,18 @@ async function denetle(takimA, takimB) {
         if (d.kuyruk && d.kuyruk.length) ekle('Kuyruk', d.kuyruk);
         if (d.boyun && d.boyun.length) ekle('Boyun', d.boyun.map(o => o.k || o));
       }
-      kayit.set(b.uid, { h: b.u.b.h, tur: b.gor.tur, taraf: b.u.taraf, kemik: k, ata, kem, gom: {} });
+      // deri (köşe) örnekleri: kolun görünen yüzü kemikten ayrı da donabilir (ağırlık başka kemikte, eşya bağlama). Baskın ağırlığı
+      // sol/sağ kol zincirinde olan köşelerden en çok 360 tanesi; grup ağırlık merkezinin göğse (Spine2) göre yer değiştirmesi ölçülür
+      const deri = [];
+      if (b.isk) {
+        const G = /^(Left|Right)(Arm|ForeArm|Hand.*)$/; const sm = []; b.model.traverse(o => { if (o.isSkinnedMesh) sm.push(o); });
+        let top = 0; for (const m of sm) top += m.geometry.attributes.skinIndex.count;
+        for (const m of sm) { const si = m.geometry.attributes.skinIndex, sw = m.geometry.attributes.skinWeight, adim = Math.max(1, Math.floor(top / 1500));
+          for (let i = 0; i < si.count; i += adim) { let bi = -1, bw = 0; for (let c = 0; c < 4; c++) { const w = sw.getComponent(i, c); if (w > bw) { bw = w; bi = si.getComponent(i, c); } }
+            const x = m.skeleton.bones[bi].name.replace('mixamorig', '').replace(':', '').match(G); if (!x) continue;
+            deri.push([m, i, x[1] + (x[2] === 'Arm' ? 'Kol' : x[2] === 'ForeArm' ? 'OnKol' : 'El')]); } }
+      }
+      kayit.set(b.uid, { h: b.u.b.h, tur: b.gor.tur, taraf: b.u.taraf, kemik: k, ata, kem, gom: {}, deri, deriK: {}, ref: b.kemik.Spine2 || b.kemik.Spine || null });
     }
     const durumAl = (b) => {
       if (b.olumT >= 0) return 'olum';
@@ -68,7 +81,9 @@ async function denetle(takimA, takimB) {
     // ilk 0,3 sn (klip geçişi) sayılmaz. Bir durumun genliği = bölüt genliklerinin ORTANCASI (geçişlerin büyük sıçramaları
     // değil, o durumun tipik hareketi; ör. sürekli saldıran birimin her saldırıda tuttuğu kol), ayrıca en büyüğü.
     const kapat = (r, du) => { for (const ad in r.kemik) { const o = r.kemik[ad][du]; if (o && o.cn >= 8) o.seg.push(o.cm); if (o) { o.cn = 0; o.cm = 0; o.bas = 6; } } };
+    let sayac = 0; const mInv = new THREE.Matrix4();
     const ornek = () => {
+      sayac++;
       for (const b of liste) {
         if (!b.kok.visible || !b.govde.visible) continue;
         const r = kayit.get(b.uid), du = durumAl(b);
@@ -80,6 +95,13 @@ async function denetle(takimA, takimB) {
           const o = r.kemik[ad][du] || (r.kemik[ad][du] = { g: q1.clone(), seg: [], cm: 0, cn: 0, bas: 6, mg: 0, n: 0 });
           if (o.bas > 0) { o.bas--; o.g.copy(q1); continue; }
           const x = aci(o.g, q1); o.cm = Math.max(o.cm, x); o.cn++; o.mg = Math.max(o.mg, x); o.n++;
+        }
+        // deri: her 3. örnekte kol grubu ağırlık merkezleri (göğüs çerçevesinde), duruma göre en küçük/en büyük
+        if (r.deri.length && r.ref && (sayac % 3 === 0)) {
+          mInv.copy(r.ref.matrixWorld).invert(); const acc = r._acc || (r._acc = {}); for (const g in acc) acc[g].fill(0);
+          for (const [m, i, g] of r.deri) { m.getVertexPosition(i, v); m.applyBoneTransform(i, v); v.applyMatrix4(m.matrixWorld).applyMatrix4(mInv); const a = acc[g] || (acc[g] = [0, 0, 0, 0]); a[0] += v.x; a[1] += v.y; a[2] += v.z; a[3]++; }
+          const K = r.deriK[du] || (r.deriK[du] = {});
+          for (const g in acc) { const a = acc[g]; if (!a[3]) continue; const o = K[g] || (K[g] = { mn: [Infinity, Infinity, Infinity], mx: [-Infinity, -Infinity, -Infinity], n: 0 }); for (let j = 0; j < 3; j++) { const c = a[j] / a[3]; o.mn[j] = Math.min(o.mn[j], c); o.mx[j] = Math.max(o.mx[j], c); } o.n++; }
         }
         // kol gövdeye gömülü mü (iki ayaklı): elin gövde eksenine yatay uzaklığı / bağlama duruşundaki uzaklık
         if (b.isk && b.isk.tRelP && b.isk.tRelP.LeftHand) for (const el of ['LeftHand', 'RightHand']) {
@@ -99,7 +121,10 @@ async function denetle(takimA, takimB) {
       const k = {};
       for (const ad in r.kemik) { k[ad] = {}; for (const du in r.kemik[ad]) { const o = r.kemik[ad][du]; k[ad][du] = [+ortanca(o.seg).toFixed(1), +o.mg.toFixed(1), o.n, o.seg.length]; } }
       const gom = {}; for (const el in r.gom) { gom[el] = {}; for (const du in r.gom[el]) gom[el][du] = +ortanca(r.gom[el][du]).toFixed(2); }
-      cik.push({ uid, h: r.h, tur: r.tur, taraf: r.taraf, kemik: k, gom, bekle: b && b.isk ? b.isk.beklemeAd : null });
+      // deri genliği: % boy (göğse göre ağırlık merkezi yer değiştirmesinin köşegeni)
+      const deri = {}; const olc = b ? (b.kok.userData.vfxBoy || 1) / (b.model.scale.y * b.kok.scale.y) : 1;
+      for (const du in r.deriK) { deri[du] = {}; for (const g in r.deriK[du]) { const q = r.deriK[du][g]; if (q.n < 3) continue; deri[du][g] = +(Math.hypot(q.mx[0] - q.mn[0], q.mx[1] - q.mn[1], q.mx[2] - q.mn[2]) / olc * 100).toFixed(1); } }
+      cik.push({ uid, h: r.h, tur: r.tur, taraf: r.taraf, kemik: k, gom, deri, bekle: b && b.isk ? b.isk.beklemeAd : null });
     }
     return cik;
   }, SURE);
@@ -129,6 +154,9 @@ function incele(birim) {
       else if (esG != null && esG > ESIK_ES && g < esG * 0.25) bulgu.push({ tip: 'ASIMETRI', durum: du, kemik: ad, derece: g, es, esDerece: esG });
     }
   }
+  // deri: kol grubunun görünen yüzü bir durumda < %1 boy oynuyor, eşi > %4 oynarken (kemik dönse de deri donuk: ağırlık/eşya hatası)
+  for (const du in birim.deri || {}) { if (du === 'olum') continue; const g = birim.deri[du];
+    for (const ad in g) { const es = esAd(ad), ge = es && g[es]; if (ge != null && g[ad] < 1 && ge > 4) bulgu.push({ tip: 'DERI_DONUK', durum: du, kemik: ad, derece: g[ad], es, esDerece: ge }); } }
   // bütün durumlarda donuk büyük uzuv (eşi yoksa da)
   for (const ad in birim.kemik) {
     if (!ONEMLI.test(ad)) continue; let mx = 0, n = 0;
@@ -161,6 +189,7 @@ function incele(birim) {
     const gen = (ad) => { const k = b.kemik[ad]; if (!k || !k[baskin]) return '-'; return k[baskin][0].toFixed(0); };
     const kol = b.tur === 'iki' ? `${gen('LeftArm')}·${gen('RightArm')} / ${gen('LeftForeArm')}·${gen('RightForeArm')} / ${gen('LeftHand')}·${gen('RightHand')}`
       + (b.gom && b.gom.LeftHand ? ` · el açıklığı ${b.gom.LeftHand.bekle}·${b.gom.RightHand.bekle}` : '')
+      + (b.deri && b.deri[baskin] && b.deri[baskin].LeftKol != null ? ` · deri kol/el %boy ${b.deri[baskin].LeftKol}·${b.deri[baskin].RightKol} / ${b.deri[baskin].LeftEl}·${b.deri[baskin].RightEl}` : '')
       : Object.keys(b.kemik).filter(a => /_1$/.test(a)).map(a => a.replace('Bacak_1', '').replace('_1', '') + ' ' + gen(a)).join(', ');
     satir.push(`| ${b.h} | ${b.tur} | ${Object.entries(du).map(([d, n]) => d + ':' + n).join(' ')} | ${baskin} | ${kol} | ${bl.length ? bl.map(x => `${x.tip} ${x.kemik}@${x.durum} ${x.derece}${x.tip === 'GOMULU' ? '' : '°'}${x.es ? ' (eş ' + x.esDerece + '°)' : ''}`).join('; ') : 'yok'} |`);
   }

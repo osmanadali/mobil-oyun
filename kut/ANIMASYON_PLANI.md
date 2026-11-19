@@ -290,3 +290,23 @@ dönüşler (additive); klip ezilmez. Unity: Animator'da ayrı "Additive" katman
 - **Denetim:** `node tools/kemik_denetim.cjs` (sunucu 8092'de): 16 kahraman gerçek sahne boru hattında savaşır; her kemiğin yerel dönüş
   genliği duruma göre (bekle, yuru, saldir, yetenek, ara, zafer) ölçülür. Büyük uzuv eşi oynarken < 1,5° kalırsa DONUK, eşinin %25'inden
   azsa ASİMETRİ yazar; DONUK varsa çıkış kodu 1. `--a kurbaga,golem` ile seçim, `--json` ile ham veri.
+
+### Ek (2026-11-19, ikinci tur): boşta tempo, yay gecikmeli ön kol, kısa zafer, kaymayan yalpa, deri denetimi
+- **Kurbağa sağ kolu (kök neden, ikinci kısım):** kemik dönüyordu ama gözle görülmüyordu. Idle_Loop kolları yalnız 4–6° oynatır; `kolAci`
+  0,45 ile dışa açılan sağ kol tokmağı aşağı sarkıtarak uzun beklemede (karşılama vitrini 42 sn, savaş arası) tek pozda kalıyordu
+  (1 sn arayla çekilen karelerde tokmak ucu aynı pikselde). Ölçüm: deri (köşe) grubunun göğse göre yer değiştirmesi ~%3–6 boy.
+  Çözüm: kişiye özel boşta el hareketi `GORSEL.bosStil: 'tempo'` (hareket.js `canlilik`): sağ tokmak 1,9 sn'de bir uyluğa tempo
+  vurur (kalkış 0,15 sn, iniş 0,05 sn, `davulVur` eğrisi), sol tokmak yarım ölçü sonra davula dokunur, baş vuruşta tempo tutar;
+  ilk fidget 2–7 sn'de (eskiden 3–10), Kurbağa fidget sırası davul → bak → gerin.
+- **Ön kol gecikmesi:** boşta kol salınımı (±0,08 rad) ön kola eşzamanlı sinüsle değil yay-sönümleyiciyle geçer (`yayFZ`, 0,9 Hz,
+  ζ 0,55): ön kol üst kolu sarkaç gibi geriden izler. Unity: kemik başına {x, v} durumu, `LateUpdate`'te aynı örtük Euler adımı.
+- **Yürüme yalpası:** kalça yuvarlanması (±0,05 rad) ve sapması (±0,06 rad) yalnız gövdeye: iki uyluk aynı dünya dönüşünün tersiyle
+  geri çevrilir, bacak klipteki gibi kalır, basan ayak kaymaz (eskiden bacak ucu adım başına ~3 cm yana sürünüyordu).
+- **Vurulma:** küçültüldü (geri itme 1,7 + 2,4·güç, sıkış 1,2 + 1,8·güç, parlama 0,62 + 0,3·güç ≈ %70); yön bağımlı (vurulan yönden).
+- **Zafer:** dans döngüsü kaldırıldı (Kurbağa, Rüzgâr, Anka, Ejder de `Yes`). Sevinç klibi BİR KEZ (en çok 2,2 sn, birimler arası
+  0–0,3 sn faz farkı), `his.zafer` iki zıplama (0,24 → 0,14 boy, iniş sıkışı ≤ %7), sonra bekleme döngüsüne dönülür ve duruş kameraya
+  dönük tutulur; dört ayaklı/yılanın kodlu sevinci (baş kalkar, kuyruk 0,95 Hz) 2,6 sn sürer. Unity: Victory state → Exit Time 1 → Idle.
+- **Kamera:** `KADRAJ_PAY` 1,15 (taban kadraj tahta güvenli alana sığdırıldıktan sonra 1,15 kat geri; tahta ≈ %13 küçük, görüş ≈ %15 geniş).
+- **Denetim (deri):** `tools/kemik_denetim.cjs` artık kemiğin yanında DERİYİ de ölçer: baskın ağırlığı sol/sağ kol, ön kol, el
+  zincirinde olan köşelerden ≤ 1500 örnek; grup ağırlık merkezinin göğse (Spine2) göre yer değiştirmesi (% boy) duruma göre.
+  Bir grup < %1 oynarken eşi > %4 oynuyorsa `DERI_DONUK` (yanlış ağırlık, eşya bağlama, retarget hataları kemik ölçümünden kaçar).

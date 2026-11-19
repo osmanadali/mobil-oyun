@@ -108,6 +108,7 @@ const KAM = { orta: [5.5, 2.6, 1.15], dar: [6.2, 2.9, 1.2], genis: [5.5, 2.4, 1.
 /** Hiç ilerlemeyen motor: sahne birimleri bekleme pozunda tutar (savaş yok, olay yok, bitmez). */
 function vitrinMotoru(SIM, takim) {
   const ger = SIM.Savas(takim, [], { tohum: 7 });
+  for (const u of ger.birimler) u.kalkan = 0;   // soy/eşya başlangıç kalkanları vitrinde baloncuk gibi görünmesin
   let t = 0; const fx = [];
   return { birimler: ger.birimler, fx, bitti: false, sonuc: null, get t() { return t; }, adim() { t += 0.05; }, kutVar: () => false, kut: () => false };
 }
