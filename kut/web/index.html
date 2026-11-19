@@ -1263,10 +1263,12 @@ html.alcak #ana .oyna small{font-size:11px!important}
 html.alcak #ana .avKap{width:42px;height:42px}
 html.alcak #ana .avKap .cerceve{left:-7px;top:-11px;width:56px;height:60px}
 /* karşılamadaki pencereler (Nasıl Oynanır, Ayarlar, Düello): menu_panel 9-slice */
-#perde.menuPanel .pencere{border:0;border-image:url(arayuz/menu/menu_panel.webp) 290 fill / 76px / 12px stretch;background:none;box-shadow:none;
-  padding:40px 46px 32px;filter:drop-shadow(0 18px 30px rgba(0,0,0,.6))}
+/* Görselde altın kenar dış kenardan dilimin %7 (üst/alt) / %4 (yan) içeride başlar: outset bu kadar → kenar kutunun kenarına oturur;
+   gerçek (saydam) kenarlık altın bandın kalınlığında → kayan içerik çerçevenin altından geçmez, iç kenarda kırpılır. */
+#perde.menuPanel .pencere{border:10px solid transparent;border-image:url(arayuz/menu/menu_panel.webp) 290 fill / 76px / 20px 11px stretch;background:none;box-shadow:none;
+  padding:26px 34px 22px;filter:drop-shadow(0 18px 30px rgba(0,0,0,.6))}
 #perde.menuPanel .pencere::before,#perde.menuPanel .pencere::after{display:none}
-html.alcak #perde.menuPanel .pencere{border-image-width:56px;border-image-outset:8px;padding:28px 34px 22px}
+html.alcak #perde.menuPanel .pencere{border-width:8px;border-image-width:56px;border-image-outset:15px 8px;padding:18px 26px 16px}
 </style>
 <script>
 /* tek ölçek: --o, --lw, --lh ve html.alcak; ilk boyamadan önce ve her boyut değişiminde */
