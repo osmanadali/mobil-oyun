@@ -3178,7 +3178,7 @@ $('lgList').onclick = e => {
 const openLig = () => { if (!LIG.me().joined) return ligJoin(openLig); show('league'); ligRender(); };
 // alt sekme çubuğu: Kapış ve Mağaza pencere açar, öbürleri ekran
 $('tabbar').onclick = e => { const t = e.target.closest('button')?.dataset.tab; if (!t) return; haptic();
-  ({ home: () => show('home'), league: openLig, vs: () => vsSheet(), city: () => openCity(), shop: () => storeSheet() })[t](); };
+  ({ home: () => show('home'), league: openLig, vs: () => vsSheet(), city: () => openCity(), shop: () => {} })[t](); };   // Mağaza: #bShop kendi onclick'iyle
 document.body.classList.toggle('lig', ligOn());
 bind({ bLig: openLig, bVs: () => vsSheet(), lgBack: () => show('home'), lgVs: () => vsSheet(), lgNick: nickSheet });
 

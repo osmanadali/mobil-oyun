@@ -66,7 +66,6 @@
       <!-- Görevler (solda) · Mağaza (sağda): Günün Hattı kartının altında tek satır. Mağaza ana sayfada da görünür (App Store incelemesi Ayarlar'ın altında bulamamıştı) -->
       <div class="homerow">
         <button class="qrow" id="bQuest" hidden><i>🎯</i><span data-en="Quests">Görevler</span><b id="qState">0/3</b></button>
-        <button class="shopbtn" id="bShop"><i>🛍️</i><span data-en="Shop">Mağaza</span></button>
       </div>
       <!-- haftalık lig ve canlı kapışma (yalnız arka uç hazırken görünür: Lig.on()) -->
       <div class="ligrow" id="ligRow" hidden>
@@ -147,7 +146,7 @@
     <button data-tab="league" class="lg"><svg viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8M10 17h4"/></svg><span data-en="League">Lig</span></button>
     <button data-tab="vs" class="lg vs"><svg viewBox="0 0 24 24"><path d="M5 4l9 9M4 9V4h5M19 4l-9 9M20 9V4h-5M7 15l-3 3 2 2 3-3M17 15l3 3-2 2-3-3"/></svg><span data-en="Duel">Kapış</span></button>
     <button data-tab="city"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V10l4-3v14M9 21V4l6 3v14M15 21v-9l4 2v7"/></svg><span data-en="City">Şehir</span></button>
-    <button data-tab="shop"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2"/></svg><span data-en="Shop">Mağaza</span></button>
+    <button data-tab="shop" id="bShop"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2"/></svg><span data-en="Shop">Mağaza</span></button>
   </nav>
   <div id="modal" class="modal"><div class="sheet" id="mCard"></div></div>
   <div id="toast"></div>

@@ -827,17 +827,27 @@ body.introing .screen *{animation-play-state:paused!important}
 .vsp small{font-size:12.5px;font-weight:700}
 .vsc{font-size:64px;font-weight:900;text-align:center;color:var(--acc);animation:pop .4s cubic-bezier(.3,1.6,.5,1)}
 
-/* ---------- alt sekme çubuğu ---------- */
-.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:15;display:none;justify-content:space-around;padding:6px 6px max(8px,var(--sab));background:color-mix(in oklab,var(--bg0) 86%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:inset 0 1px 0 var(--stroke)}
+/* ---------- alt sekme çubuğu: yüzen cam kapsül; her sekmenin kendi rengi, seçili sekme renkli ışıklı hap ---------- */
+.tabbar{position:fixed;left:12px;right:12px;bottom:max(10px,calc(var(--sab) - 6px));z-index:15;display:none;justify-content:space-between;gap:2px;padding:6px;border-radius:26px;
+  background:linear-gradient(180deg,color-mix(in oklab,var(--bg1) 70%,transparent),color-mix(in oklab,var(--bg0) 82%,transparent));-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),inset 0 0 0 1px var(--stroke),0 12px 34px rgba(0,0,0,.38)}
 body[data-scr=home] .tabbar,body[data-scr=league] .tabbar,body[data-scr=city] .tabbar{display:flex}
 body.introing .tabbar{display:none}
-.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;border:0;background:none;color:var(--mut);font:inherit;font-size:11px;font-weight:600;cursor:pointer;min-width:0}
-.tabbar svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.tabbar button.on{color:var(--acc)}
-.tabbar button.on svg{filter:drop-shadow(0 0 6px color-mix(in oklab,var(--acc) 60%,transparent))}
+.tabbar button{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 0 5px;border:0;border-radius:20px;background:none;color:var(--fg);font:inherit;font-size:11px;font-weight:700;letter-spacing:.1px;cursor:pointer;min-width:0;transition:color .25s}
+.tabbar button span{opacity:.72;transition:opacity .25s}
+.tabbar svg{position:relative;z-index:1;width:25px;height:25px;fill:none;stroke:var(--c);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 5px color-mix(in oklab,var(--c) 45%,transparent));transition:transform .3s cubic-bezier(.3,1.6,.5,1),stroke .25s}
+.tabbar span{position:relative;z-index:1}
+.tabbar button::before{content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(160deg,color-mix(in oklab,var(--c) 40%,transparent),color-mix(in oklab,var(--c) 14%,transparent));box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--c) 55%,transparent),0 0 18px color-mix(in oklab,var(--c) 40%,transparent);opacity:0;transform:scale(.7);transition:opacity .25s,transform .35s cubic-bezier(.3,1.5,.5,1)}
+.tabbar button.on::before{opacity:1;transform:none}
+.tabbar button.on svg{stroke:#fff;transform:translateY(-1px) scale(1.08);filter:drop-shadow(0 0 7px var(--c))}
+.tabbar button.on span{opacity:1}
 .tabbar button:active{transform:scale(.92)}
+.tabbar [data-tab=home]{--c:#ffb35c}.tabbar [data-tab=league]{--c:#f2c14e}.tabbar [data-tab=vs]{--c:#ff6b81}.tabbar [data-tab=city]{--c:#7ea6ff}.tabbar [data-tab=shop]{--c:#5fd6b0}
+:root[data-theme=light] .tabbar button.on svg{stroke:#2a1406}
+@media (prefers-color-scheme:light){:root:not([data-theme=dark]) .tabbar button.on svg{stroke:#2a1406}}
 body:not(.lig) .tabbar .lg{display:none}
-body[data-scr=home] #home,body[data-scr=league] #league,body[data-scr=city] #city{padding-bottom:calc(66px + var(--sab))}
-#home .ligrow,#home .shopbtn{display:none}
+body[data-scr=home] #home,body[data-scr=league] #league,body[data-scr=city] #city{padding-bottom:calc(84px + var(--sab))}
+#home .ligrow{display:none}
 .homerow{justify-content:center}
 @media (max-height:700px){body[data-scr=home] .hero p:not(.x){display:none}body[data-scr=home] #skyBox{height:50px}body[data-scr=home] .skyw{margin-top:4px}body[data-scr=home] .skyw small{margin-top:3px;font-size:12px}body[data-scr=home] .cards{gap:8px;margin-bottom:10px}}
+@media (max-height:700px){body[data-scr=home] .skyw small{display:none}}
