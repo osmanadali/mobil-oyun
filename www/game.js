@@ -762,6 +762,7 @@ let toastT, mLocked = false, howBack = null, mOnClose = null;   // mOnClose: pen
 function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2200); }
 const active = id => $(id).classList.contains('active');
 function show(id) {
+  document.body.dataset.scr = id; document.querySelectorAll('#tabbar button').forEach(b => b.classList.toggle('on', b.dataset.tab === id));
   if (id !== 'game' && G?.duel && !G.duelOver && !G.won) vsEnd(null);   // kapışmadan çıkış = terk
   if (id !== 'game' && active('game')) quitEv();
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
@@ -3175,6 +3176,10 @@ $('lgList').onclick = e => {
     mBlk: () => { LIG.block(uid); closeModal(); toast(L('Oyuncu gizlendi', 'Player hidden')); ligRender(); }, mClose: closeModal });
 };
 const openLig = () => { if (!LIG.me().joined) return ligJoin(openLig); show('league'); ligRender(); };
+// alt sekme çubuğu: Kapış ve Mağaza pencere açar, öbürleri ekran
+$('tabbar').onclick = e => { const t = e.target.closest('button')?.dataset.tab; if (!t) return; haptic();
+  ({ home: () => show('home'), league: openLig, vs: () => vsSheet(), city: () => openCity(), shop: () => storeSheet() })[t](); };
+document.body.classList.toggle('lig', ligOn());
 bind({ bLig: openLig, bVs: () => vsSheet(), lgBack: () => show('home'), lgVs: () => vsSheet(), lgNick: nickSheet });
 
 // hafta bitti: geçen haftanın sonucu bir kez gösterilir
