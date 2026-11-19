@@ -1,0 +1,38 @@
+# Ray — çeviri sözlüğü (9): M28 🚦 sinyal karosu (kural kartı ve oyun içi bildirim)
+# Biçim ve terimler: sozluk-1.txt başı ve docs/CEVIRI.md (hub: Zentrum · centro · centre · 허브 · ハブ · 樞紐; tile: Kachel · pieza · peça · tuile · 타일 · タイル · 方塊)
+
+@ Signal tile
+de: Signalkachel
+es: Pieza de señal
+pt: Peça de sinal
+fr: Tuile signal
+ko: 신호 타일
+ja: 信号タイル
+zh: 號誌方塊
+
+@ New: signal tile
+de: Neu: Signalkachel
+es: Nuevo: pieza de señal
+pt: Novo: peça de sinal
+fr: Nouveau : tuile signal
+ko: 새 규칙: 신호 타일
+ja: 新ルール：信号タイル
+zh: 新規則：號誌方塊
+
+@ A 🚦 <b>signal</b> tile turns only <b>before</b> the line reaches it. Once a neighbour lights up (or the tile joins the line) it shows <b>red</b> and locks; break the line and it opens. Set signals <b>first</b>, working inward.
+de: Eine 🚦 <b>Signalkachel</b> dreht sich nur, <b>bevor</b> die Linie sie erreicht. Leuchtet ein Nachbar auf (oder hängt sie selbst an der Linie), zeigt sie <b>Rot</b> und sperrt; unterbrich die Linie, dann öffnet sie wieder. Stell Signale <b>zuerst</b> ein, von außen nach innen.
+es: Una pieza de 🚦 <b>señal</b> solo gira <b>antes</b> de que la línea llegue a ella. Cuando se enciende una vecina (o ella misma se une a la línea) se pone en <b>rojo</b> y se bloquea; corta la línea y se abre. Ajusta las señales <b>primero</b>, de fuera hacia dentro.
+pt: Uma peça de 🚦 <b>sinal</b> só gira <b>antes</b> de a linha chegar até ela. Quando uma vizinha acende (ou ela mesma entra na linha), fica <b>vermelha</b> e trava; corte a linha e ela abre. Ajuste os sinais <b>primeiro</b>, de fora para dentro.
+fr: Une tuile 🚦 <b>signal</b> ne tourne qu’<b>avant</b> que la ligne l’atteigne. Dès qu’une voisine s’allume (ou qu’elle rejoint la ligne), elle passe au <b>rouge</b> et se bloque ; coupe la ligne et elle se rouvre. Règle les signaux <b>d’abord</b>, de l’extérieur vers l’intérieur.
+ko: 🚦 <b>신호</b> 타일은 노선이 <b>닿기 전에만</b> 돌아가요. 이웃 타일에 불이 들어오면(또는 자신이 노선에 이어지면) <b>빨간불</b>이 켜지고 잠겨요. 노선을 끊으면 다시 풀려요. 신호를 <b>먼저</b> 맞추고, 바깥에서 안쪽으로 푸세요.
+ja: 🚦<b>信号</b>タイルは、路線が<b>届く前</b>にしか回せません。隣のタイルが光ると（自分が路線につながっても）<b>赤</b>になってロックされます。路線を切ると再び開きます。信号を<b>先に</b>合わせ、外から内へ解こう。
+zh: 🚦 <b>號誌</b>方塊只能在路線<b>抵達之前</b>轉動。只要有相鄰方塊亮起（或它自己接上路線），就會亮<b>紅燈</b>並鎖住；切斷路線就會再打開。<b>先</b>設好號誌，由外往內解。
+
+@ 🚦 Signal at red · the line has reached it, the tile won’t turn
+de: 🚦 Signal auf Rot · die Linie hat es erreicht, die Kachel dreht sich nicht
+es: 🚦 Señal en rojo · la línea ya llegó, la pieza no gira
+pt: 🚦 Sinal vermelho · a linha já chegou, a peça não gira
+fr: 🚦 Signal au rouge · la ligne l’a atteint, la tuile ne tourne pas
+ko: 🚦 빨간 신호 · 노선이 닿아서 타일이 돌지 않아요
+ja: 🚦 赤信号 · 路線が届いたので、タイルは回りません
+zh: 🚦 紅燈 · 路線已抵達，方塊轉不動
