@@ -1,0 +1,38 @@
+# Ray — çeviri sözlüğü (13): M31 ⇄ manevra karosu (kural kartı ve oyun içi bildirim)
+# Biçim ve terimler: sozluk-1.txt başı ve docs/CEVIRI.md (hub: Zentrum · centro · centre · 허브 · ハブ · 樞紐; tile: Kachel · pieza · peça · tuile · 타일 · タイル · 方塊)
+
+@ Shunt tile
+de: Rangierkachel
+es: Pieza de maniobra
+pt: Peça de manobra
+fr: Tuile de manœuvre
+ko: 입환 타일
+ja: 入換タイル
+zh: 調車方塊
+
+@ New: shunt tile
+de: Neu: Rangierkachel
+es: Nuevo: pieza de maniobra
+pt: Novo: peça de manobra
+fr: Nouveau : tuile de manœuvre
+ko: 새 규칙: 입환 타일
+ja: 新ルール：入換タイル
+zh: 新規則：調車方塊
+
+@ ⇄ <b>Shunt</b> tiles <b>don’t turn</b>. Tap one, then another ⇄ tile: the two <b>swap places</b> and keep their direction. Each piece faces the right way but sits in the <b>wrong spot</b>; work out where each one belongs.
+de: ⇄ <b>Rangierkacheln</b> <b>drehen sich nicht</b>. Tippe eine an, dann eine andere ⇄-Kachel: Die beiden <b>tauschen die Plätze</b> und behalten ihre Richtung. Jedes Teil zeigt richtig, liegt aber am <b>falschen Platz</b>; finde heraus, wohin es gehört.
+es: Las piezas de ⇄ <b>maniobra</b> <b>no giran</b>. Toca una y luego otra pieza ⇄: las dos <b>cambian de lugar</b> y conservan su dirección. Cada pieza mira hacia el lado correcto pero está en el <b>sitio equivocado</b>; descubre dónde va cada una.
+pt: As peças de ⇄ <b>manobra</b> <b>não giram</b>. Toque em uma e depois em outra peça ⇄: as duas <b>trocam de lugar</b> e mantêm a direção. Cada peça está virada para o lado certo, mas no <b>lugar errado</b>; descubra onde cada uma deve ficar.
+fr: Les tuiles de ⇄ <b>manœuvre</b> <b>ne tournent pas</b>. Touche-en une, puis une autre tuile ⇄ : les deux <b>échangent leur place</b> et gardent leur direction. Chaque pièce est dans le bon sens mais au <b>mauvais endroit</b> ; trouve où va chacune.
+ko: ⇄ <b>입환</b> 타일은 <b>돌아가지 않아요</b>. 하나를 누르고 다른 ⇄ 타일을 누르면 두 타일이 <b>자리를 바꾸고</b> 방향은 그대로예요. 모든 조각은 방향은 맞지만 <b>자리가 틀렸어요</b>. 각각 어디에 가야 하는지 찾아보세요.
+ja: ⇄<b>入換</b>タイルは<b>回りません</b>。1枚をタップし、次に別の⇄タイルをタップすると、2枚が<b>入れ替わり</b>、向きはそのままです。どのピースも向きは正しいのに<b>場所が違います</b>。それぞれの正しい場所を見つけよう。
+zh: ⇄ <b>調車</b>方塊<b>不會轉動</b>。點一塊，再點另一塊 ⇄ 方塊，兩塊就會<b>交換位置</b>，方向不變。每塊的方向都對，但<b>位置錯了</b>；找出每塊該放在哪裡。
+
+@ ⇄ Shunt · tap another ⇄ tile to swap them
+de: ⇄ Rangieren · tippe eine andere ⇄-Kachel an, um beide zu tauschen
+es: ⇄ Maniobra · toca otra pieza ⇄ para intercambiarlas
+pt: ⇄ Manobra · toque em outra peça ⇄ para trocá-las
+fr: ⇄ Manœuvre · touche une autre tuile ⇄ pour les échanger
+ko: ⇄ 입환 · 다른 ⇄ 타일을 누르면 서로 바뀌어요
+ja: ⇄ 入換 · 別の⇄タイルをタップすると入れ替わります
+zh: ⇄ 調車 · 點另一塊 ⇄ 方塊即可互換

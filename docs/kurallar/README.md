@@ -42,10 +42,11 @@ Hat sırası (3 Kasım; göze çarpan/kolay kurallar önce, gizli bilgili ve inc
 | M28 | 717 | Sinyal karosu | `signal` | `sinyal` |
 | M29 | 745 | Sarsıntı durağı | `quake` | `sarsinti` |
 | M30 | 773 | Dönüşen karo | `morph` | `donusen-karo` |
+| M31 | 801 | Manevra karosu | `shunt` | `manevra` |
 
 Bağımlılıklar yeni sırada da korunur: köprü (M13) tünel ağzından (M16) önce; tabela (M17) halkadan (M18) önce (halka ikisiyle `clash`, `CLASH` simetrik ve sırasız). Mühürlü karo bakım karosuyla, sarmal tahta tünel ağzı, gizli depo, nehir ve tarife bölgesiyle aynı bölümde gelmez (`clash`). Eklentilerin üretim/kanca sırası `ord` alanıyla sabittir (sarmal tahta `ord: 7` ile `pre` aşamalarının önünde, mühürlü karo `ord: 23` ile işaretlerin en sonunda). Güçlendiriciler kuralın hattını `RULE_LINE`'dan okur (🔦 fener → `fog`, 🔄 ek tur → `cnt`).
 
-M31 ve sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`, `KARMA = 30`). Son sefer ve kayan sütun 3 Kasım'da (`kurallar-3`) sona eklendi: 1–632. bölümler bit bit aynı kaldı, yalnız karma (eskiden 633'ten, sonra 689'dan) yeniden üretildi. Tek yön ve ekspres durak 19 Kasım'da (`kurallar-4`) aynı yolla sona eklendi: 1–688. bölümler bit bit aynı, karma artık 745'ten. Kayan sütun kayan sırayla aynı bölümde gelmez (`clash`); son sefer bakım karosuyla, tek yön tabela ve halkayla, ekspres durak son seferle gelmez. Sinyal karosu (19 Kasım) aynı yolla M28 olarak sona eklendi: 1–716. bölümler bit bit aynı, karma artık 745'ten; sinyal mühürlü karo, bakım karosu ve son seferle gelmez.
+M32 ve sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`, `KARMA = 31`). Son sefer ve kayan sütun 3 Kasım'da (`kurallar-3`) sona eklendi: 1–632. bölümler bit bit aynı kaldı, yalnız karma (eskiden 633'ten, sonra 689'dan) yeniden üretildi. Tek yön ve ekspres durak 19 Kasım'da (`kurallar-4`) aynı yolla sona eklendi: 1–688. bölümler bit bit aynı, karma artık 745'ten. Kayan sütun kayan sırayla aynı bölümde gelmez (`clash`); son sefer bakım karosuyla, tek yön tabela ve halkayla, ekspres durak son seferle gelmez. Sinyal karosu (19 Kasım) aynı yolla M28 olarak sona eklendi: 1–716. bölümler bit bit aynı, karma artık 745'ten; sinyal mühürlü karo, bakım karosu ve son seferle gelmez. Manevra karosu (19 Kasım) M31 olarak sona eklendi: 1–800. bölümler bit bit aynı, karma artık 829'dan; manevra kayan sıra, kayan sütun ve döner tablayla gelmez.
 
 ## Temel ilkeler
 
@@ -136,6 +137,7 @@ Birden çok durum taşıyan, dönmeyen ya da birlikte hareket eden karolar için
 - `K`: döngü uzunluğu. `K` dokunuş sonra birim başlangıç durumuna döner.
 - `tap(cur)`: bir dokunuşu **verilen dizi üzerinde** uygular. Kapanışta `C.cur`'u tutmayın, her zaman parametreyi değiştirin; oyun, zorluk çözücüsü, robot ve par hesabı aynı işlevi kopyalar üzerinde çağırır.
 - `kind`: eklentinin anahtarı. Çekirdek dokunuşta `onTap`'i bununla bulur.
+- İsteğe bağlı, `C.unit`'in döndürdüğü birime (`C.units[u]`) eklenir: `U.moves(cur, sol)` birimin çözüme kaç **hamle** uzak olduğunu verir (par her hamleyi sayar, süre hedefi hamle başına 2 dokunuş); yoksa birim par'da 1 sayılır ve `unitTaps` kullanılır. `U.hint(cur, sol, i, fixed)` ipucunu birim kendisi yapar (`cur`'u değiştirir) ve sabitlenecek karoları döndürür; yoksa birimin bütün karoları çözüme oturur. Manevra karosu kullanır.
 
 Çekirdek birimleri kendiliğinden şöyle işler:
 
@@ -191,6 +193,7 @@ Birden çok durum taşıyan, dönmeyen ya da birlikte hareket eden karolar için
 | Ekspres durak `express` | `out.express = { st: [durak], B: [sayı] }`; sayı çözümdeki `lit` uzaklığı (mark, `ord: 27`, işaretlerin en sonu) |
 | Sinyal karosu `signal` | `out.signal`: n uzunlukta 0/1 dizi; sinyal hücreleri `C.busy` (mark, `ord: 26`; `fin` başta kilitli olanı çıkarır) |
 | Dönüşen karo `morph` | `out.morph`: n uzunlukta dizi; dönüşen karoda aile (1: K·D → D–B → G·B → K–G, 2: onun 90° çevriği), diğerlerinde 0. Birim türü `'morph'`, tek karo, K = 4 (shape, `ord: 28`) |
+| Manevra karosu `shunt` | `out.shunt`: ⇄ karoların dizisi (tek grup, 3–5). Birim türü `'shunt'`, bütün grup tek birim, K = farklı dizilim sayısı; `tap` sözlük sırasında sıradaki dizilim (oyunda `block` hazırladığı takası uygular), `U.moves` en az takas, `U.hint` bir takas (shape, `ord: 29`). Seçim `G.shSel`'de |
 | Sarsıntı durağı `quake` | `out.quake = { st: [durak], nb: [[sarsılan karolar], …] }`; durak ve sarsılan karolar `C.busy` (mark, `ord: 28`, ekspres duraktan sonra; ekspres durakları durak seçmez) |
 
 Çakışma ve dışlamalar (tasarım doğrulamasından):
@@ -237,3 +240,5 @@ module.exports = async T => {
 - Bitince `docs/kurallar/<ad>.md` güncel olmalı: kural, kanıt, ölçümler ve bilinen sınırlar.
 
 > **19 Kasım birleştirme notu:** sinyal, dönüşen karo ve sarsıntı durağı ayrı dallarda M28 olarak yapıldı, birleşince sıraya kondu. Merdiven (güncel ölçüm): M27 ekspres 23,6 < M28 sinyal 24,0 < M29 sarsıntı 24,8 (`boost: 16`) < M30 dönüşen 26,6; karma M31+ ~21,4. Sarsıntı M30'da boost ne olursa olsun ~23,6'da kaldığı için dönüşenden önceye alındı.
+
+> **Manevra notu (M31):** merdiven M30 dönüşen 26,6 < M31 manevra 27,0 (`boost: 20`, `scan: 48`); karma M32+ ~22,4. Çekirdek çözücü grubu tek birim olarak bütün dizilimlerle ortak çıkarımla çözdüğü için kural çözücü puanını artırmaz; boost 20'den sonra seçici tavanı (24 adayda ~25,8, 48 adayda ~27,0).

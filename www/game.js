@@ -299,7 +299,7 @@ const RULES = {
 const RULE_LINE = { pairs: 2, rev: 3, fog: 5, cnt: 6, two: 8 };
 const MODS = [], CLASH = {};   // eklentiler · birlikte gelemeyen kurallar (simetrik)
 const clash = (a, b) => !!(CLASH[a]?.includes(b) || CLASH[b]?.includes(a));
-const KARMA = 30;   // 0 tabanlı: M31 ve sonrası sınırsız karma (son kural M30 · dönüşen karo, 773. bölüm)
+const KARMA = 31;   // 0 tabanlı: M32 ve sonrası sınırsız karma (son kural M31 · manevra karosu, 801. bölüm)
 function rulesFor(l) {
   const c = lineOf(l), own = Object.keys(RULE_LINE).find(k => RULE_LINE[k] === c), set = new Set(own ? [own] : []);
   const learned = Object.keys(RULE_LINE).filter(k => RULE_LINE[k] < c).sort((a, b) => RULE_LINE[a] - RULE_LINE[b]);   // hat sırasıyla: slice(-3) = en yeni 3 kural
@@ -410,7 +410,8 @@ function generate(cols, rows, seed, _pins = 0, pairs = 0, x = {}) {   // _pins: 
     while ((t !== sol[i] || (j >= 0 && u !== sol[j])) && r < 4) { t = step(t); if (j >= 0) u = rot(u); r++; }
     taps += r; if (r) par++;
   });
-  for (const U of C.units) { const r = unitTaps(U, cur, sol); taps += r; if (r) par++; }
+  // U.moves (manevra): birim kendi hamle sayısını verir (takas sayısı; takas = 2 dokunuş) · yoksa birim 1 hamle
+  for (const U of C.units) { const r = U.moves ? U.moves(cur, sol) : unitTaps(U, cur, sol); taps += U.moves ? 2 * r : r; if (r) par += U.moves ? r : 1; }
   return { cols, rows, sol, cur, hub, hub2, par, taps, pinned, link, rev, cnt, fixed: new Array(n).fill(false),
     ...(C.units.length ? { units: C.units, unitOf: C.unitOf } : {}), ...(C.adj ? { adj: C.adj, ao: C.ao } : {}), ...C.out };
 }
@@ -1920,7 +1921,7 @@ async function hint() {
   wrong.sort((a, b) => (G.seen[b] - G.seen[a]) || rk(a) - rk(b) || usz(a) - usz(b) || nearLit(b) - nearLit(a));
   const i = wrong[0], now = performance.now(), prev = G.L.d, ui = G.unitOf?.[i] ?? -1;
   G.hist = [];   // ipucunun sabitlediği karo geri alınmasın
-  for (const k of ui >= 0 ? G.units[ui].cells : G.link[i] >= 0 ? [i, G.link[i]] : [i]) { G.cur[k] = G.sol[k]; G.fixed[k] = true; anim.set(k, now); press.set(k, now); }   // eşli karo / eklenti birimi: hepsi birden
+  for (const k of ui >= 0 ? G.units[ui].hint?.(G.cur, G.sol, i, G.fixed) ?? G.units[ui].cells : G.link[i] >= 0 ? [i, G.link[i]] : [i]) { G.cur[k] = G.sol[k]; G.fixed[k] = true; anim.set(k, now); press.set(k, now); }   // eşli karo / eklenti birimi: hepsi birden (U.hint: birim kendi adımını yapar, sabitlenecek karoları döndürür · manevra: bir takas)
   save.hints--; G.hinted = true; G.hu = (G.hu || 0) + 1; persist(); $('gHints').textContent = save.hints; bump($('gHints'));
   G.L = lit(G); reveal();
   G.L.d.forEach((v, j) => { if (v >= 0 && prev[j] < 0) litAt[j] = now + v * 12; });
