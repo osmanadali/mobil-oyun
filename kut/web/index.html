@@ -1234,17 +1234,19 @@ html.azHareket .yukEkran .yukArka::before{animation:none}
 body.menu3d #ana .anaArka{opacity:0}
 body.menu3d.vitrinArka #ana .anaArka{opacity:1}
 body.menu3d:not(.vitrinArka) #ana .anaArka i{animation-play-state:paused}   /* görünmezken çizim maliyeti yok */
+body.vitrinArka #ana .sahneAd span{opacity:0}   /* çizimdeki kahramanlar vitrin adlarıyla eşleşmez */
 html.azHareket #ana .anaArka i{animation:none}
 /* OYNA: dugme_oyna.webp (oranı 2118:618 korunur), basınca dugme_oyna_basili.webp; yazı Lilita One (Kut Baslik) */
-#ana .oyna{width:min(440px,100%);aspect-ratio:2118/618;height:auto;min-height:0;padding:0 15% 3px;border:0;border-image:none;border-radius:0;box-shadow:none;
+#ana .oyna{width:min(440px,100%);aspect-ratio:2118/618;height:auto;min-height:0;padding:0 17% 4px;border:0;border-image:none;border-radius:0;box-shadow:none;
   background:url(arayuz/menu/dugme_oyna.webp) center/100% 100% no-repeat;overflow:visible;gap:2px;font-size:42px;
   filter:drop-shadow(0 8px 10px rgba(0,0,0,.5)) drop-shadow(0 0 18px rgba(255,190,80,.28))}
 #ana .oyna:active{background-image:url(arayuz/menu/dugme_oyna_basili.webp);transform:translateY(2px) scale(.97)}
 #ana .oyna::before{display:none}
 #ana .oyna::after{inset:6% 3%;border-radius:40%;box-shadow:0 0 26px 6px rgba(255,226,140,.55)}
-#ana .oyna .ana{gap:10px;line-height:1}
+#ana .oyna .ana{gap:10px;line-height:1;color:#fffaf0;--k:#5a2404;
+  text-shadow:-2.4px -2.4px 0 var(--k),2.4px -2.4px 0 var(--k),-2.4px 2.4px 0 var(--k),2.4px 2.4px 0 var(--k),0 -2.8px 0 var(--k),0 2.8px 0 var(--k),-2.8px 0 0 var(--k),2.8px 0 0 var(--k),0 5px 0 var(--k),0 7px 10px rgba(60,20,0,.55)}
 #ana .oyna .ana .ik{width:30px;height:30px;filter:drop-shadow(0 2px 0 #6a3206)}
-#ana .oyna small{font-size:13px!important;color:#fff3cf;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+#ana .oyna small{font-size:12.5px!important;color:#fff3cf;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
   text-shadow:-1px -1px 0 #6a3206,1px -1px 0 #6a3206,-1px 1px 0 #6a3206,1px 1px 0 #6a3206,0 2px 0 #6a3206}
 #ana .oyna .ilerleme{margin-top:0}
 #ana .oyna .parilti{inset:0;top:0;bottom:0;width:auto;transform:none;animation:none;background:none;overflow:hidden;
@@ -1253,7 +1255,7 @@ html.azHareket #ana .anaArka i{animation:none}
   background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,250,220,.6) 50%,rgba(255,255,255,0));transform:translateX(-160%) skewX(-18deg);animation:anaParla 3.6s ease-in-out 2.2s infinite}
 html.alcak #ana .oyna{width:min(300px,100%);min-height:0;font-size:30px;padding-bottom:2px}
 html.alcak #ana .oyna .ana .ik{width:22px;height:22px}
-html.alcak #ana .oyna small{font-size:11px!important}
+html.alcak #ana .oyna small{display:none}   /* telefonda alt yazı düğmeye sığmaz: kesik görünmesin */
 /* profil: avatar profil_cerceve.webp içinde (çerçeve deliği: genişliğin %72,7'si, merkez %49,6 / %52,7) */
 #ana .profil{padding-left:10px}
 #ana .avKap{position:relative;width:60px;height:60px;flex:none;margin-right:4px}

@@ -1375,7 +1375,7 @@ function kadraj(dtR) {
   let olcek = 1, mx = kam.tabanH.x, mz = kam.tabanH.z;
   if (n >= 2) {
     const gen = x1 - x0 + 2.2, der = z1 - z0 + 3.2;
-    olcek = Math.min(1, Math.max(0.86, Math.max(gen / 7.2, der / 8.6)));   // tempo: yığılmada kamera dalıp kaosu büyütmesin (0,66 → 0,8 → geniş kadrajla orantılı 0,86)
+    olcek = Math.min(1, Math.max(0.9, Math.max(gen / 7.2, der / 8.6)));   // tempo: yığılmada kamera dalıp kaosu büyütmesin (0,66 → 0,8 → 0,9: 0,9 × KADRAJ_PAY 1,12 ≈ 1, en yakın kadrajda da tahta güvenli alanda kalır)
     mx = kam.tabanH.x + ((x0 + x1) / 2 - kam.tabanH.x) * 0.5; mz = (z0 + z1) / 2 + 0.25;
   }
   if (kam.serbest) return;
@@ -1503,7 +1503,8 @@ export function kare(dtSabit) {
           ikiAyakliGuncelle(b.ik, gec, o);
         } else i2.borc = Math.min(1, i2.borc + dtB);
       } else if ((b.dort || b.yilan) && gorunur) {
-        const o = OPS_DORT; o.hiz = olu ? 0 : (hareket ? b.hizS : 0); o.saldiri = bay.saldiri || false; o.yetenek = bay.yetenek;   // dört ayaklı: {darbe, on, onay, iptal, sonra} (kurulma süresi, önden kurulma) o.vurul = bay.vurul || false; o.olum = olu; o.zafer = b.zaferMi;
+        const o = OPS_DORT; o.hiz = olu ? 0 : (hareket ? b.hizS : 0); o.saldiri = bay.saldiri || false; o.yetenek = bay.yetenek;   // dört ayaklı: {darbe, on, onay, iptal, sonra} (kurulma süresi, önden kurulma)
+        o.vurul = bay.vurul || false; o.olum = olu; o.zafer = b.zaferMi;   // (yorumun içinde kalmıştı: dört ayaklı ve yılan hiç devrilmiyor, sevinmiyor, vurulunca sarsılmıyordu)
         if (b.dort) {
           const r = dortAyakliGuncelle(b.dort, dtB, o);
           // şahlanıp yere vurma: toz + şok + sarsıntı, yakındaki düşmanlar sarsılır (yalnız görüntü)

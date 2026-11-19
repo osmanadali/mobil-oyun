@@ -100,7 +100,7 @@ oyun.on('birlesti', () => Ses.cal('birlesme', { aralik: 0.3 }));
 oyun.on('kaynasti', () => Ses.cal('kaynasma'));
 oyun.on('ses', (ad) => { if (ad === 'yenile') Ses.cal('yenile'); else if (ad === 'sat') Ses.cal('satin_al', { hiz: 0.8 }); });
 document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('button, .btn'); if (b && !b.disabled) Ses.cal('dugme', { aralik: 0.05 }); }, true);
-function pencere(html) { $('pencere').innerHTML = html; $('perde').classList.toggle('menuPanel', aktifEkran === 'ana'); $('perde').classList.add('acik'); }   // karşılamada süslü menü paneli
+function pencere(html) { $('pencere').innerHTML = html; $('perde').classList.toggle('menuPanel', aktifEkran === 'ana'); $('perde').classList.add('acik'); $('pencere').scrollTop = 0; }   // görünür olduktan sonra: gizliyken scrollTop yazılamaz, önceki pencerenin kaydırması kalırdı   // karşılamada süslü menü paneli
 function kapat() { $('perde').classList.remove('acik'); }
 $('perde').addEventListener('click', (e) => { if (e.target.id === 'perde' || e.target.closest('[data-kapat]')) kapat(); });
 

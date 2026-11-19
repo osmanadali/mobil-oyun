@@ -285,7 +285,7 @@ dönüşler (additive); klip ezilmez. Unity: Animator'da ayrı "Additive" katman
   kırpılır. Kanatlılarda (Yarasa, Kuğu, Anka) boşta sürekli çırpma yok: katlı kanat nefesle 0,35 Hz ±3° açılıp kapanır, yürümede 1,8 Hz,
   çırpışta 2,8 Hz; kanat ucu (ön kol) kökü 2,2–3,5 Hz, ζ 0,6 yayla izler. Unity: `LateUpdate`'te aynı yay (kemik başına {x,v}).
 - **Kamera:** taban kadraj tahta güvenli alana sığdırıldıktan sonra `KADRAJ_PAY` 1,12 kat geri çekilir (tahta ekranda ≈ %14 küçük, görüş ≈ %16 geniş; çevre arena,
-  kemerler, kristaller görünür; tahta HUD dışında ve ortada kalır). Savaş içi kadraj yakınlaşması en çok 0,8 → 0,86, his.yakinlastir
+  kemerler, kristaller görünür; tahta HUD dışında ve ortada kalır). Savaş içi kadraj yakınlaşması en çok 0,8 → 0,9 (0,9 × 1,12 ≈ 1: en yakın kadrajda da tahta güvenli alanda), his.yakinlastir
   oranları ×0,85.
 - **Denetim:** `node tools/kemik_denetim.cjs` (sunucu 8092'de): 16 kahraman gerçek sahne boru hattında savaşır; her kemiğin yerel dönüş
   genliği duruma göre (bekle, yuru, saldir, yetenek, ara, zafer) ölçülür. Büyük uzuv eşi oynarken < 1,5° kalırsa DONUK, eşinin %25'inden
