@@ -1,0 +1,47 @@
+# Ray — çeviri sözlüğü (14): M31 🎛 kumanda karosu (kural kartı ve oyun içi bildirimler)
+# Biçim ve terimler: sozluk-1.txt başı ve docs/CEVIRI.md (hub: Zentrum · centro · centre · 허브 · ハブ · 樞紐; tile: Kachel · pieza · peça · tuile · 타일 · タイル · 方塊)
+
+@ Remote tile
+de: Fernbedienkachel
+es: Pieza mando
+pt: Peça controle
+fr: Tuile télécommande
+ko: 리모컨 타일
+ja: リモコンタイル
+zh: 遙控方塊
+
+@ New: remote tile
+de: Neu: Fernbedienkachel
+es: Nuevo: pieza mando
+pt: Novo: peça controle
+fr: Nouveau : tuile télécommande
+ko: 새 규칙: 리모컨 타일
+ja: 新ルール：リモコンタイル
+zh: 新規則：遙控方塊
+
+@ A 🎛 <b>remote</b> never turns itself: tap it and <b>all its linked neighbors turn 90° together</b>. Linked tiles <b>don’t turn on their own</b>; a tile linked to two remotes turns <b>with both</b>. Count your presses: don’t break one while fixing another.
+de: Eine 🎛 <b>Fernbedienung</b> dreht sich nie selbst: Tippst du sie an, drehen sich <b>alle verbundenen Nachbarn zusammen um 90°</b>. Verbundene Kacheln <b>drehen sich nicht allein</b>; eine Kachel an zwei Fernbedienungen dreht sich <b>mit beiden</b>. Zähl deine Tipps: Reparier nicht eine und zerstör dabei die andere.
+es: Un 🎛 <b>mando</b> nunca gira solo: tócalo y <b>todas sus vecinas enlazadas giran 90° a la vez</b>. Las piezas enlazadas <b>no giran por sí solas</b>; una pieza enlazada a dos mandos gira <b>con ambos</b>. Cuenta tus toques: no rompas una al arreglar otra.
+pt: Um 🎛 <b>controle</b> nunca gira sozinho: toque nele e <b>todas as vizinhas ligadas giram 90° juntas</b>. Peças ligadas <b>não giram sozinhas</b>; uma peça ligada a dois controles gira <b>com os dois</b>. Conte os toques: não estrague uma ao consertar outra.
+fr: Une 🎛 <b>télécommande</b> ne tourne jamais : touche-la et <b>toutes ses voisines reliées tournent de 90° ensemble</b>. Les tuiles reliées <b>ne tournent pas seules</b> ; une tuile reliée à deux télécommandes tourne <b>avec les deux</b>. Compte tes appuis : n’en casse pas une en réparant l’autre.
+ko: 🎛 <b>리모컨</b>은 스스로 돌지 않아요. 누르면 연결된 <b>이웃 타일이 모두 함께 90°</b> 돌아요. 연결된 타일은 <b>혼자 돌지 않고</b>, 두 리모컨에 연결된 타일은 <b>둘 다로</b> 돌아요. 누르는 횟수를 세세요. 하나를 맞추다 다른 하나를 망치지 마세요.
+ja: 🎛<b>リモコン</b>自身は回りません。タップすると、つながった<b>隣のタイルがすべて一緒に90°</b>回ります。つながったタイルは<b>単独では回りません</b>。2つのリモコンにつながったタイルは<b>どちらでも</b>回ります。押す回数を数えて、片方を直して別のものを崩さないように。
+zh: 🎛 <b>遙控</b>本身不會轉：點一下，所有連著的<b>相鄰方塊會一起轉 90°</b>。連著的方塊<b>不能單獨轉</b>；連著兩個遙控的方塊<b>兩個都能轉</b>它。數好按的次數：別修好一個卻弄壞另一個。
+
+@ 🎛 Remote · all linked tiles turned 90° together
+de: 🎛 Fernbedienung · alle verbundenen Kacheln haben sich zusammen um 90° gedreht
+es: 🎛 Mando · todas las piezas enlazadas giraron 90° a la vez
+pt: 🎛 Controle · todas as peças ligadas giraram 90° juntas
+fr: 🎛 Télécommande · toutes les tuiles reliées ont tourné de 90° ensemble
+ko: 🎛 리모컨 · 연결된 타일이 모두 함께 90° 돌았어요
+ja: 🎛 リモコン · つながったタイルがすべて一緒に90°回りました
+zh: 🎛 遙控 · 連著的方塊一起轉了 90°
+
+@ 🎛 This tile is linked to a remote · tap the remote
+de: 🎛 Diese Kachel hängt an einer Fernbedienung · tippe die Fernbedienung an
+es: 🎛 Esta pieza está enlazada a un mando · toca el mando
+pt: 🎛 Esta peça está ligada a um controle · toque no controle
+fr: 🎛 Cette tuile est reliée à une télécommande · touche la télécommande
+ko: 🎛 이 타일은 리모컨에 연결돼 있어요 · 리모컨을 누르세요
+ja: 🎛 このタイルはリモコンにつながっています · リモコンをタップしよう
+zh: 🎛 這個方塊連著遙控 · 請點遙控
