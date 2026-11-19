@@ -160,6 +160,11 @@ Durum 3 Kasım 2026 itibarıyla (en yeni madde başta):
 4. ✅ **↕ Kayan sütun** → M26 (`column`, 661. bölüm); kayan sırayla aynı bölümde gelmez.
 5. **⬡ Altıgen bölümler** (Flow Free Hexes, Infinity Loop): 6 yönlü karo; büyük iş, ayrı sezon.
 
+**Kullanıcıyla konuşulan aday kurallar (19 Kasım; seçilmedi, akılda kalsın).** Ölçüt: oyuncuya bilgi (yön, uzaklık) vermez, yalnız zorlaştırır. M27 ↗ tek yön bu yüzden eleştirildi (yönü söylüyor, çözücü puanı 16,1 → 16,0).
+- 🚦 **Sinyal karosu:** yalnız hiçbir komşusu yanmıyorken döner; hat yanına gelince kilitlenir. Dıştan içe çözdürür (mühürlünün tersi; mühürlüyle `clash`).
+- ⇄ **Manevra karosu:** dönmez; iki manevra karosuna sırayla dokununca yer değiştirir. Biçim doğru yönde, yer yanlış.
+- 🎛 **Kumanda karosu:** dokununca kendisi değil, dört komşusu döner (eşli karoya en yakın aday).
+
 **Kullanıcının yapacakları (mağaza):** ayrıntı `docs/MAGAZA.md` §12 ve `docs/YAYIN.md` içinde.
 
 1. **Hesaplar:** Play Console (25 $) ve Apple Developer (99 $/yıl).
