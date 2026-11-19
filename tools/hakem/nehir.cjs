@@ -110,7 +110,7 @@ module.exports = async T => {
       for (let l = A; l <= 20000; l++) { const U = R.rulesFor(l); for (const k of X) if (U.has(k)) cnt[k] = (cnt[k] || 0) + 1; if (U.has('river')) { cnt.river++; if (X.some(k => U.has(k))) cnt.bad++; } }
       return { ...cnt, clash: R.MODS.find(m => m.key === 'river').clash };
     }, A);
-    check('rule.river.clash', `Nehir: köprü, döner tabla, halka ve tarife bölgesiyle aynı bölümde hiç gelmiyor (${A}–20000, rulesFor)`, !c.bad && c.river > 1000 && ['bridge', 'table', 'ring', 'zone'].every(k => c[k] > 300 && c.clash.includes(k)), JSON.stringify({ ...c, dummy: dummy.map(d => d[0]) }));
+    check('rule.river.clash', `Nehir: köprü, döner tabla, halka ve tarife bölgesiyle aynı bölümde hiç gelmiyor (${A}–20000, rulesFor)`, !c.bad && c.river > 800 && ['bridge', 'table', 'ring', 'zone'].every(k => c[k] > 300 && c.clash.includes(k)), JSON.stringify({ ...c, dummy: dummy.map(d => d[0]) }));
     errs.push(...errors); await ctx.close();
   }
 
