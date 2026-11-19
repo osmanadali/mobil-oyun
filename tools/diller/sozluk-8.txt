@@ -1,0 +1,92 @@
+# Ray — çeviri sözlüğü (8): M27 ↗ tek yön ve M28 🚄 ekspres durak (kural kartları ve oyun içi bildirimler)
+# Biçim ve terimler: sozluk-1.txt başı ve docs/CEVIRI.md (hub: Zentrum · centro · centre · 허브 · ハブ · 樞紐; tile: Kachel · pieza · peça · tuile · 타일 · タイル · 方塊)
+
+@ One-way track
+de: Einbahngleis
+es: Vía de sentido único
+pt: Trilho de mão única
+fr: Voie à sens unique
+ko: 일방통행 선로
+ja: 一方通行の線路
+zh: 單向軌道
+
+@ New: one-way track
+de: Neu: Einbahngleis
+es: Nuevo: vía de sentido único
+pt: Novo: trilho de mão única
+fr: Nouveau : voie à sens unique
+ko: 새 규칙: 일방통행 선로
+ja: 新ルール：一方通行の線路
+zh: 新規則：單向軌道
+
+@ On an arrowed track trains run <b>only the arrow’s way</b>: the arm the arrow comes from must lead <b>to the hub</b>. The arrow turns with the tile.
+de: Auf einem Gleis mit Pfeilen fahren Züge <b>nur in Pfeilrichtung</b>: Der Arm, aus dem der Pfeil kommt, muss <b>zum Zentrum</b> führen. Der Pfeil dreht sich mit der Kachel.
+es: En una vía con flechas los trenes van <b>solo en el sentido de la flecha</b>: el brazo del que sale la flecha debe llevar <b>al centro</b>. La flecha gira con la pieza.
+pt: Num trilho com setas o trem segue <b>só no sentido da seta</b>: o braço de onde a seta vem deve levar <b>ao centro</b>. A seta gira com a peça.
+fr: Sur une voie fléchée, les trains roulent <b>seulement dans le sens de la flèche</b> : la branche d’où part la flèche doit mener <b>au centre</b>. La flèche tourne avec la tuile.
+ko: 화살표가 있는 선로에서 열차는 <b>화살표 방향으로만</b> 달려요. 화살표가 시작되는 가지가 <b>허브 쪽</b>으로 이어져야 해요. 화살표는 타일과 함께 돌아요.
+ja: 矢印のある線路では、列車は<b>矢印の向きにしか</b>走れません。矢印が来る側の枝が<b>ハブへ</b>つながっている必要があります。矢印はタイルと一緒に回ります。
+zh: 有箭頭的軌道上，列車<b>只能順著箭頭</b>行駛：箭頭來的那一端必須通往<b>樞紐</b>。箭頭會跟著方塊一起轉。
+
+@ One-way: the line must enter an arrowed tile from the arrow’s tail
+de: Einbahngleis: Die Linie muss eine Pfeil-Kachel vom Pfeilende her betreten
+es: Sentido único: la línea debe entrar en la pieza con flecha por la cola de la flecha
+pt: Mão única: a linha deve entrar na peça com seta pela cauda da seta
+fr: Sens unique : la ligne doit entrer dans la tuile fléchée par la queue de la flèche
+ko: 일방통행: 노선은 화살표 꼬리 쪽에서 화살표 타일로 들어가야 해요
+ja: 一方通行：路線は矢印の根元の側から矢印タイルに入る必要があります
+zh: 單向軌道：路線必須從箭頭尾端進入有箭頭的方塊
+
+@ One-way · the arrow turns with the tile
+de: Einbahngleis · der Pfeil dreht sich mit der Kachel
+es: Sentido único · la flecha gira con la pieza
+pt: Mão única · a seta gira com a peça
+fr: Sens unique · la flèche tourne avec la tuile
+ko: 일방통행 · 화살표는 타일과 함께 돌아요
+ja: 一方通行 · 矢印はタイルと一緒に回ります
+zh: 單向軌道 · 箭頭會跟著方塊一起轉
+
+@ Express station
+de: Expressstation
+es: Estación exprés
+pt: Estação expressa
+fr: Station express
+ko: 급행역
+ja: 急行駅
+zh: 快車站
+
+@ New: express station
+de: Neu: Expressstation
+es: Nuevo: estación exprés
+pt: Novo: estação expressa
+fr: Nouveau : station express
+ko: 새 규칙: 급행역
+ja: 新ルール：急行駅
+zh: 新規則：快車站
+
+@ The route from the hub to an 🚄 express station may be <b>at most as many tiles as its number</b>. A longer route won’t finish the level: <b>find the short way</b>.
+de: Der Weg vom Zentrum zu einer 🚄 Expressstation darf <b>höchstens so viele Kacheln lang sein wie ihre Zahl</b>. Mit einem längeren Weg endet das Level nicht: <b>finde den kurzen Weg</b>.
+es: El camino del centro a una 🚄 estación exprés puede tener <b>como mucho tantas piezas como su número</b>. Con un camino más largo el nivel no termina: <b>busca el atajo</b>.
+pt: O caminho do centro até uma 🚄 estação expressa pode ter <b>no máximo tantas peças quanto o seu número</b>. Com um caminho mais longo a fase não termina: <b>ache o caminho curto</b>.
+fr: Le trajet du centre à une 🚄 station express ne doit pas dépasser <b>autant de tuiles que son nombre</b>. Un trajet plus long ne termine pas le niveau : <b>trouve le chemin court</b>.
+ko: 허브에서 🚄 급행역까지 가는 길은 <b>역에 적힌 숫자만큼의 타일 이하</b>여야 해요. 더 긴 길로 이으면 레벨이 끝나지 않아요. <b>짧은 길을 찾으세요</b>.
+ja: ハブから🚄急行駅までの道は、<b>駅の数字以下のタイル数</b>でなければなりません。遠回りでつなぐとステージは終わりません。<b>近道を見つけよう</b>。
+zh: 從樞紐到 🚄 快車站的路，<b>最多只能有站上數字那麼多個方塊</b>。繞遠路連上的話關卡不會結束：<b>找出捷徑</b>。
+
+@ 🚄 Too long a route to the express station · {0} tiles at most
+de: 🚄 Weg zur Expressstation zu lang · höchstens {0} Kacheln
+es: 🚄 Camino demasiado largo a la estación exprés · {0} piezas como mucho
+pt: 🚄 Caminho longo demais até a estação expressa · no máximo {0} peças
+fr: 🚄 Trajet trop long vers la station express · {0} tuiles au plus
+ko: 🚄 급행역까지 길이 너무 길어요 · 최대 {0}타일
+ja: 🚄 急行駅までの道が長すぎます · 最大{0}タイル
+zh: 🚄 到快車站的路太長 · 最多 {0} 個方塊
+
+@ 🚄 Express station · the number is the most tiles to the hub
+de: 🚄 Expressstation · die Zahl sagt, wie viele Kacheln es höchstens bis zum Zentrum sind
+es: 🚄 Estación exprés · el número es el máximo de piezas hasta el centro
+pt: 🚄 Estação expressa · o número é o máximo de peças até o centro
+fr: 🚄 Station express · le nombre est le maximum de tuiles jusqu’au centre
+ko: 🚄 급행역 · 숫자는 허브까지 최대 타일 수예요
+ja: 🚄 急行駅 · 数字はハブまでの最大タイル数です
+zh: 🚄 快車站 · 數字是到樞紐最多幾個方塊
