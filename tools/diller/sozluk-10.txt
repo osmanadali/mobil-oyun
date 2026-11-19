@@ -1,0 +1,38 @@
+# Ray — çeviri sözlüğü (10): M28 🔄 dönüşen karo (kural kartı ve oyun içi bildirim)
+# Biçim ve terimler: sozluk-1.txt başı ve docs/CEVIRI.md (tile: Kachel · pieza · peça · tuile · 타일 · タイル · 方塊; straight 직진 · 直進 · 直行)
+
+@ Shifting tile
+de: Wandelkachel
+es: Pieza cambiante
+pt: Peça mutante
+fr: Tuile changeante
+ko: 변신 타일
+ja: 変身タイル
+zh: 變形方塊
+
+@ New: shifting tile
+de: Neu: Wandelkachel
+es: Nuevo: pieza cambiante
+pt: Novo: peça mutante
+fr: Nouveau : tuile changeante
+ko: 새 규칙: 변신 타일
+ja: 新ルール：変身タイル
+zh: 新規則：變形方塊
+
+@ A tile with a dashed frame <b>turns and changes shape</b> on every tap: <b>corner ↔ straight</b>. The small picture in its corner shows its <b>next state</b>; 4 taps bring it back.
+de: Eine Kachel mit gestricheltem Rahmen <b>dreht sich und wechselt die Form</b> bei jedem Tippen: <b>Kurve ↔ gerade</b>. Das kleine Bild in ihrer Ecke zeigt den <b>nächsten Zustand</b>; nach 4 Tipps ist sie wieder am Anfang.
+es: Una pieza con marco discontinuo <b>gira y cambia de forma</b> con cada toque: <b>curva ↔ recta</b>. El dibujito de su esquina muestra su <b>siguiente estado</b>; con 4 toques vuelve al inicio.
+pt: Uma peça com moldura tracejada <b>gira e muda de forma</b> a cada toque: <b>curva ↔ reta</b>. O desenho pequeno no canto mostra o <b>próximo estado</b>; com 4 toques ela volta ao início.
+fr: Une tuile au cadre pointillé <b>tourne et change de forme</b> à chaque toucher : <b>virage ↔ droite</b>. La petite image dans son coin montre son <b>état suivant</b> ; 4 touchers la ramènent au début.
+ko: 점선 테두리 타일은 탭할 때마다 <b>돌면서 모양이 바뀌어요</b>: <b>꺾임 ↔ 직진</b>. 모서리의 작은 그림이 <b>다음 모양</b>을 보여 줘요. 4번 탭하면 처음으로 돌아와요.
+ja: 点線の枠のタイルはタップするたびに<b>回って形が変わります</b>：<b>カーブ ↔ 直進</b>。角の小さな絵が<b>次の形</b>を示します。4回タップで元に戻ります。
+zh: 虛線框的方塊每點一下就會<b>轉動並改變形狀</b>：<b>彎道 ↔ 直行</b>。角落的小圖顯示它的<b>下一個樣子</b>；點 4 下回到原狀。
+
+@ 🔄 Shifting tile · each tap turns it and changes its shape: corner ↔ straight
+de: 🔄 Wandelkachel · jedes Tippen dreht sie und wechselt ihre Form: Kurve ↔ gerade
+es: 🔄 Pieza cambiante · cada toque la gira y cambia su forma: curva ↔ recta
+pt: 🔄 Peça mutante · cada toque a gira e muda sua forma: curva ↔ reta
+fr: 🔄 Tuile changeante · chaque toucher la tourne et change sa forme : virage ↔ droite
+ko: 🔄 변신 타일 · 탭할 때마다 돌면서 모양이 바뀌어요: 꺾임 ↔ 직진
+ja: 🔄 変身タイル · タップするたびに回って形が変わります：カーブ ↔ 直進
+zh: 🔄 變形方塊 · 每點一下就會轉動並改變形狀：彎道 ↔ 直行
