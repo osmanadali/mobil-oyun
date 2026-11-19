@@ -9,7 +9,7 @@ module.exports = async T => {
     const { ctx, page, errors } = await open(browser, URL, { save: { played: 9 } });
     const g = await page.evaluate(SL => {
       const R = window.__ray, o = { n: 0, seals: 0, bad: 0, place: 0, shut0: 0, rounds: 0, stuck: 0 };
-      const keys = R.MODS.map(m => m.key).filter(k => k !== 'seal' && !R.MODS.find(m => m.key === 'seal').clash?.includes(k));
+      const keys = R.MODS.map(m => m.key).filter(k => k !== 'seal' && !R.MODS.find(m => m.key === 'seal').clash?.includes(k) && !['shunt', 'remote', 'yard', 'morph'].includes(k));   // benzetim takas/kumanda/peron/dönüşen birimlerini oynamaz (onlar kendi testlerinde)
       // mühüre uyan oyuncu: her turda yalnız açık (komşusu yanan) ya da mühürsüz karoları çözüme getirir; birimler bir dokunuş dizisiyle
       const play = P => {
         const G = { ...P, cur: P.cur.slice() }, near = i => [0, 1, 2, 3].some(k => { const j = R.nb(G, i, k); return j >= 0 && G.L.d[j] >= 0; });

@@ -11,7 +11,7 @@ module.exports = async T => {
     const { ctx, page, errors } = await open(browser, URL, { save: { played: 9 } });
     const g = await page.evaluate(LL => {
       const R = window.__ray, o = { n: 0, none: 0, st: 0, place: 0, order: 0, bad: 0, pre: 0, late: 0, over: 0, naive: 0, ms: 0 };
-      const me = R.MODS.find(m => m.key === 'last'), keys = R.MODS.map(m => m.key).filter(k => k !== 'last' && !me.clash.includes(k));
+      const me = R.MODS.find(m => m.key === 'last'), keys = R.MODS.map(m => m.key).filter(k => k !== 'last' && !me.clash.includes(k) && !['shunt', 'remote', 'yard', 'morph'].includes(k));   // benzetim takas/kumanda/peron/dönüşen birimlerini oynamaz
       // kusursuz oyuncu: durakları sırayla (yolunu merkezden dışa), sonra kalan karoları düzeltir; her birim/karo/eş 1 hamle. Dönüş: her durağın bağlandığı hamle, toplam hamle
       const fix = (P, cur, i) => { const u = P.unitOf?.[i] ?? -1; if (u >= 0) { const U = P.units[u]; if (!R.unitTaps(U, cur, P.sol)) return 0; for (let t = R.unitTaps(U, cur, P.sol); t > 0; t--) U.tap(cur); return 1; }
         const j = P.link[i]; if (cur[i] === P.sol[i] && (j < 0 || cur[j] === P.sol[j])) return 0; cur[i] = P.sol[i]; if (j >= 0) cur[j] = P.sol[j]; return 1; };
