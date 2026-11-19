@@ -25,6 +25,8 @@ for (const f of fs.readdirSync(path.join(KUT, 'arayuz'))) if (f.endsWith('.png')
 for (const f of fs.readdirSync(path.join(KUT, 'arayuz', 'ui'))) if (/^(w|ik|al)_/.test(f)) kopya('arayuz/ui/' + f, 'arayuz/ui/' + f);
 if (fs.existsSync(path.join(KUT, 'arayuz', 'ui', 'esya'))) for (const f of fs.readdirSync(path.join(KUT, 'arayuz', 'ui', 'esya'))) if (f.endsWith('.png')) kopya('arayuz/ui/esya/' + f, 'arayuz/ui/esya/' + f);   // eşya simgeleri
 for (const f of fs.readdirSync(path.join(KUT, 'arayuz', 'portre'))) kopya('arayuz/portre/' + f, 'arayuz/portre/' + f);
+// karşılama / yükleme / menü görselleri (robot; kaynak PNG'ler kut/gelen_gorsel): geliştirme sürümünde de web/arayuz/menu, yol değişmez
+for (const f of fs.readdirSync(path.join(WEB, 'arayuz', 'menu'))) if (f.endsWith('.webp')) kopya('web/arayuz/menu/' + f, 'arayuz/menu/' + f);
 for (const f of fs.readdirSync(path.join(WEB, 'ses'))) if (f.endsWith('.mp3')) { fs.mkdirSync(path.join(OUT, 'ses'), { recursive: true }); fs.copyFileSync(path.join(WEB, 'ses', f), path.join(OUT, 'ses', f)); }
 for (const f of fs.readdirSync(path.join(WEB, 'muzik'))) if (f.endsWith('.mp3')) { fs.mkdirSync(path.join(OUT, 'muzik'), { recursive: true }); fs.copyFileSync(path.join(WEB, 'muzik', f), path.join(OUT, 'muzik', f)); }
 // yazı tipleri (paket içi woff2 + OFL lisansları; dış CDN yok)

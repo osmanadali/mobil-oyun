@@ -31,7 +31,7 @@ const $ = (id) => document.getElementById(id);
 /** Yükleme ekranı iç düzeni (savaş öncesi .yukleniyor da aynı görünümü kullanır). */
 export function yukIcerik(baslik = 'Arena hazırlanıyor…') {
   let p = ''; for (let i = 0; i < 12; i++) p += `<i style="--x:${(4 + i * 8.1 + (i % 3) * 2.3).toFixed(1)}%;--g:${(8 + (i * 7) % 6).toFixed(1)}s;--d:-${((i * 5.3) % 11).toFixed(1)}s"></i>`;
-  return `<div class="huzme"></div><div class="huzme iki"></div><div class="parca" aria-hidden="true">${p}</div>
+  return `<div class="yukArka" aria-hidden="true"></div><div class="huzme"></div><div class="huzme iki"></div><div class="parca" aria-hidden="true">${p}</div>
     <div class="orta"><div class="logoK"><img src="../arayuz/logo.png" alt="Kut Arena"></div>
     <div class="cubuk"><i></i><b>%0</b></div><div class="durum">${baslik}</div>
     <div class="ipucu"><svg class="ik"><use href="#i-isik"/></svg><div><small>İpucu</small><span>${ipucuSec()}</span></div></div></div>`;
@@ -100,9 +100,10 @@ const bekleKare = () => new Promise(ok => requestAnimationFrame(() => ok()));
 // ── Vitrin (ana menü arkasındaki 3D sahne) ──
 // Yerleşim: motor koordinatı (x sütun 0..3, kesirli olabilir; y sıra 0 ön). Merkezdeki kahraman en önde, kanatlar geride (ok ucu).
 const DIZILIS = [{ x: 1.5, y: 0 }, { x: 0.3, y: 1 }, { x: 2.7, y: 1 }, { x: -0.3, y: 2 }, { x: 3.3, y: 2 }];   // sıra (y) tamsayı olmalı (sahne sıra → z tablosu)
-const VITRIN_SURE = 42000;
+// ms: bu sürede bir yeni kahramanlar iner (bellek de sıfırlanır); arada karşılama çizimi (karsilama_arka) ARKA_SURE kadar görünür
+const VITRIN_SURE = 42000, ARKA_SURE = 6500;
 // kamera [uzaklık, yükseklik, bakış yüksekliği] ekran oranına göre; salınım (rad)
-const KAM = { orta: [5.5, 2.6, 1.15], dar: [6.2, 2.9, 1.2], genis: [5.5, 2.4, 1.0], salinim: 0.3 };   // ms: bu sürede bir yeni kahramanlar iner (bellek de sıfırlanır)
+const KAM = { orta: [5.5, 2.6, 1.15], dar: [6.2, 2.9, 1.2], genis: [5.5, 2.4, 1.0], salinim: 0.3 };
 
 /** Hiç ilerlemeyen motor: sahne birimleri bekleme pozunda tutar (savaş yok, olay yok, bitmez). */
 function vitrinMotoru(SIM, takim) {
@@ -134,6 +135,8 @@ export function vitrinKur({ S3, SIM, D, tuval }) {
     const ya = document.querySelector('#ana .sahneAd');
     if (ya) ya.innerHTML = `<span><b>${ad(ids[0])}</b> · ${ids.slice(1).map(ad).join(' · ')}</span>`;
   }
+  let ortulu = false;
+  function gecisBitir() { gecis = false; ortulu = false; tuval.parentElement.classList.remove('vitrinGecis'); document.body.classList.remove('vitrinArka'); }
   function yenidenKur() { kurulum = kur().catch(e => { console.error(e); }).finally(() => { kurulum = null; }); return kurulum; }
   // kamera: merkez kahramanın önünde (rakip tarafı, -z), yavaş salınım. kameraYerlestir yalnız geniş açıyı (50°) kurar, konumu yakinKamera verir.
   // Uzaklık/yükseklik ekran oranına göre: kahramanlar logo ile alt düğmeler arasındaki bantta kalsın.
@@ -148,12 +151,16 @@ export function vitrinKur({ S3, SIM, D, tuval }) {
     if (!acik) { dongu = false; return; }
     const simdi = performance.now();
     if (!kurulum && !gecis && kuruldu && simdi - kuruldu > sure && !document.hidden) {
-      // yeni kahramanlar: tuval kısa bir an kararır, yenileri iner
-      gecis = true; tuval.parentElement.classList.add('vitrinGecis');
-      setTimeout(() => { if (!acik) { gecis = false; tuval.parentElement.classList.remove('vitrinGecis'); return; }
-        yenidenKur().then(() => { gecis = false; tuval.parentElement.classList.remove('vitrinGecis'); }); }, 450);
+      // yeni kahramanlar: karşılama çizimi yavaşça örter ve Ken Burns ile bir süre kalır (bu arada 3D çizilmez);
+      // yeni kahramanlar kurulunca çizim çekilir, kahramanlar iner
+      gecis = true; document.body.classList.add('vitrinArka');
+      setTimeout(() => {
+        if (!acik) return gecisBitir();
+        ortulu = true; tuval.parentElement.classList.add('vitrinGecis');
+        setTimeout(() => { if (!acik) return gecisBitir(); yenidenKur().then(gecisBitir); }, ARKA_SURE);
+      }, 950);
     }
-    if (!kurulum) { kamera(simdi / 1000); S3.kare(); }
+    if (!kurulum && !ortulu) { kamera(simdi / 1000); S3.kare(); }
     requestAnimationFrame(kare);
   }
   return {
@@ -166,7 +173,7 @@ export function vitrinKur({ S3, SIM, D, tuval }) {
       if (merkez < 0 || !kuruldu) { if (!kurulum) yenidenKur(); } else { S3.boyutla(); kuruldu = performance.now(); }   // vitrin süresi menü açıldığında yeniden başlar
       if (!dongu) { dongu = true; requestAnimationFrame(kare); }
     },
-    kapat() { acik = false; document.body.classList.remove('menu3d'); },
+    kapat() { acik = false; document.body.classList.remove('menu3d', 'vitrinArka'); },
     /** Savaş kurulmadan önce: süren vitrin kurulumu bitsin (iki savasKur üst üste binmesin), sonra vitrin temizlenir. */
     async bekle() { if (kurulum) await kurulum; kuruldu = 0; merkez = -1; },
     get acik() { return acik; },
