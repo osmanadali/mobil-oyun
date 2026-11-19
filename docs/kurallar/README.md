@@ -46,6 +46,8 @@ Bağımlılıklar yeni sırada da korunur: köprü (M13) tünel ağzından (M16)
 M28 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`, `KARMA = 28`). Son sefer ve kayan sütun 3 Kasım'da (`kurallar-3`) sona eklendi: 1–632. bölümler bit bit aynı kaldı, yalnız karma (eskiden 633'ten, sonra 689'dan) yeniden üretildi. Tek yön ve ekspres durak 19 Kasım'da (`kurallar-4`) aynı yolla sona eklendi: 1–688. bölümler bit bit aynı, karma artık 745'ten. Kayan sütun kayan sırayla aynı bölümde gelmez (`clash`); son sefer bakım karosuyla, tek yön tabela ve halkayla, ekspres durak son seferle gelmez. Sinyal karosu (19 Kasım) aynı yolla M28 olarak sona eklendi: 1–716. bölümler bit bit aynı, karma artık 745'ten; sinyal mühürlü karo, bakım karosu ve son seferle gelmez.
 | M28 | 717 | Dönüşen karo | `morph` | `donusen-karo` |
 M28 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`, `KARMA = 28`). Son sefer ve kayan sütun 3 Kasım'da (`kurallar-3`) sona eklendi: 1–632. bölümler bit bit aynı kaldı, yalnız karma (eskiden 633'ten, sonra 689'dan) yeniden üretildi. Tek yön ve ekspres durak 19 Kasım'da (`kurallar-4`) aynı yolla sona eklendi: 1–688. bölümler bit bit aynı, karma artık 745'ten. Kayan sütun kayan sırayla aynı bölümde gelmez (`clash`); son sefer bakım karosuyla, tek yön tabela ve halkayla, ekspres durak son seferle gelmez. Dönüşen karo 19 Kasım'da (`kural-donusen`) aynı yolla M28 olarak eklendi: 1–716. bölümler bit bit aynı, karma artık M29'dan; makas ve silik kolla gelmez.
+| M28 | 717 | Sarsıntı durağı | `quake` | `sarsinti` |
+M28 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`, `KARMA = 28`). Son sefer ve kayan sütun 3 Kasım'da (`kurallar-3`) sona eklendi: 1–632. bölümler bit bit aynı kaldı, yalnız karma (eskiden 633'ten, sonra 689'dan) yeniden üretildi. Tek yön ve ekspres durak 19 Kasım'da (`kurallar-4`) aynı yolla sona eklendi: 1–688. bölümler bit bit aynı, karma artık 745'ten. Kayan sütun kayan sırayla aynı bölümde gelmez (`clash`); son sefer bakım karosuyla, tek yön tabela ve halkayla, ekspres durak son seferle gelmez. Sarsıntı durağı 19 Kasım'da aynı yolla sona eklendi (M28, 717): 1–716. bölümler bit bit aynı, karma artık 745'ten; bakım karosu, kayan sıra, kayan sütun ve son seferle gelmez (`clash`).
 
 ## Temel ilkeler
 
@@ -191,6 +193,7 @@ Birden çok durum taşıyan, dönmeyen ya da birlikte hareket eden karolar için
 | Ekspres durak `express` | `out.express = { st: [durak], B: [sayı] }`; sayı çözümdeki `lit` uzaklığı (mark, `ord: 27`, işaretlerin en sonu) |
 | Sinyal karosu `signal` | `out.signal`: n uzunlukta 0/1 dizi; sinyal hücreleri `C.busy` (mark, `ord: 26`; `fin` başta kilitli olanı çıkarır) |
 | Dönüşen karo `morph` | `out.morph`: n uzunlukta dizi; dönüşen karoda aile (1: K·D → D–B → G·B → K–G, 2: onun 90° çevriği), diğerlerinde 0. Birim türü `'morph'`, tek karo, K = 4 (shape, `ord: 28`) |
+| Sarsıntı durağı `quake` | `out.quake = { st: [durak], nb: [[sarsılan karolar], …] }`; durak ve sarsılan karolar `C.busy` (mark, `ord: 28`, ekspres duraktan sonra; ekspres durakları durak seçmez) |
 
 Çakışma ve dışlamalar (tasarım doğrulamasından):
 
