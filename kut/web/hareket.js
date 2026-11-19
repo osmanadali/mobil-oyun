@@ -37,6 +37,12 @@ function yay(s, hedef, k, c, dt) {
   const h = dt / n;
   for (let i = 0; i < n; i++) { s.v += (-k * (s.x - hedef) - c * s.v) * h; s.x += s.v * h; }
 }
+/** Frekans/sönüm oranıyla yay (REFERANS_ANIMASYON 2.2; örtük Euler, büyük dt'de kararlı): s = {x, v}, f Hz, z = ζ */
+function yayFZ(s, hedef, f, z, dt) {
+  const w = PI2 * f, a = 1 + 2 * dt * z * w, b = dt * dt * w * w, dd = 1 / (a + b);
+  const x = (a * s.x + dt * s.v + b * hedef) * dd;
+  s.v = (s.v + dt * w * w * (hedef - s.x)) * dd; s.x = x;
+}
 const _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3(), _v4 = new THREE.Vector3();
 const _q1 = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _q3 = new THREE.Quaternion();
 const _m1 = new THREE.Matrix4(), _m2 = new THREE.Matrix4(), _m3 = new THREE.Matrix4();
@@ -494,7 +500,10 @@ export function dortAyakliKur(model, kemikler, { tur = '', faz = Math.random() }
     model, Z, veri, f, u, n, lat: new THREE.Vector3().crossVectors(u, f), C, minY, Hy, bacaklar, boyun, kuyruk, surungen, kullan: [...kullan],
     yari: Math.max(yari * 1.15, 0.12 * Hy), comel, adimMax, onP, arkaP, stil: STIL[tur] || { saldir: 'isir', yetenek: 'tosla' },
     m0: { p: model.position.clone(), q: model.quaternion.clone(), s: model.scale.clone(), M: model.matrix.clone().compose(model.position, model.quaternion, model.scale) },
-    adim: faz, v: 0, w: 0, t: faz * 10, kuyrukYay: { x: 0, v: 0 }, bobOnce: 0, faz, bosW: 0, fidT: 4 + ozet(faz * 23.1) * 7, fid: null, fidSira: Math.floor(ozet(faz * 5.7) * 3),
+    adim: faz, v: 0, w: 0, t: faz * 10, kuyrukYay: { x: 0, v: 0 }, bobOnce: 0,
+    // kuyruk yana salınımı: fazı gecikmeli yay zinciri (her kemik bir öncekini izler; REFERANS_ANIMASYON 2.3). Kalın kuyruk (sürüngen,
+    // kaplumbağa) daha ağır: 2,0→1,2 Hz, ζ 0,55→0,40; ince (kurt, koç, bulut atı) 3,0→1,8 Hz, ζ 0,45→0,30
+    kZin: kuyruk.map(() => ({ x: 0, v: 0 })), kKalin: surungen || /semender|kaplumbaga/.test(tur), yonOnce: null, yonHiz: 0, faz, bosW: 0, fidT: 4 + ozet(faz * 23.1) * 7, fid: null, fidSira: Math.floor(ozet(faz * 5.7) * 3),
     sal: null, yet: null, vur: null, olum: null, zafer: false, olumYon: ozet(faz * 91) > 0.5 ? 1 : -1, kanal: new Array(12).fill(0),
     basKemik: boyun.length ? boyun[boyun.length - 1].k : null, basOlcek: false, basS0: boyun.length ? boyun[boyun.length - 1].k.scale.x : 1,
   };
@@ -697,11 +706,22 @@ export function dortAyakliGuncelle(d, dt, { hiz = 0, saldiri = false, yetenek = 
   const bobHiz = (bob - d.bobOnce) / Math.max(1e-4, dt); d.bobOnce = bob;
   yay(d.kuyrukYay, kirp(-bobHiz / Hy * 0.5, -0.6, 0.6) + (d.sal ? -0.25 : 0), 90, 9, dt);
   const nk = d.kuyruk.length;
-  for (let i = 0; i < nk; i++) {
-    const kk = d.kuyruk[i], v = veri.get(kk), a = (i + 1) / Math.max(1, nk);
-    const yalpaK = kuyrukK * (0.5 + a) + Math.sin(d.t * PI2 * 0.55 - i * 0.7) * 0.16 * (1 - w) + Math.sin(d.t * 15 - i * 0.8) * 0.4 * kuyrukHiz + Math.sin(PI2 * ph - i * 0.9) * 0.22 * w + (d.zafer ? Math.sin(d.t * 16 - i * 0.8) * 0.35 : 0) + (d.surungen ? Math.sin(PI2 * ph + 1.6 - i * 0.7) * 0.25 * w : 0);
-    const kalk = (d.kuyrukYay.x + 0.12 * w) * (0.6 + a * 0.4) - (d.olum ? 0.3 : 0);
-    kk.quaternion.multiply(_q1.setFromAxisAngle(v.eu, yalpaK * (d.olum ? 0.1 : 1))).multiply(_q2.setFromAxisAngle(v.en, kalk));
+  if (nk) {
+    // girdi: kökün yaw hızı (dönünce kuyruk terse savrulur, −ω·0,12), boşta yavaş temel salınım (0,4 Hz; sakin, titreme değil),
+    // kuyruk fidget'ı ve zafer (≈1 Hz, ağır), yürüme adımı ve sürüngen S'si (adım fazına kilitli), yetenek kanalı. Uçlar zincirle gecikir.
+    const fx = d.Z.matrixWorld.elements[8], fz = d.Z.matrixWorld.elements[10], yon = Math.atan2(fx, fz);
+    if (d.yonOnce != null && dt > 0) { let dy = yon - d.yonOnce; dy -= Math.round(dy / PI2) * PI2; d.yonHiz += (dy / dt - d.yonHiz) * Math.min(1, dt * 10); }
+    d.yonOnce = yon;
+    const girdi = d.olum ? 0 : kirp(kuyrukK + Math.sin(d.t * PI2 * (0.36 + 0.08 * ozet(d.faz * 4.1)) + d.faz * 5) * 0.13 * (1 - w) * (1 - kuyrukHiz)
+      + Math.sin(d.t * PI2 * 1.05) * 0.3 * kuyrukHiz + (d.zafer ? Math.sin(d.t * PI2 * 0.95) * 0.24 : 0) + Math.sin(PI2 * ph) * 0.16 * w
+      + (d.surungen ? Math.sin(PI2 * ph + 1.6) * 0.2 * w : 0) - d.yonHiz * 0.12, -0.6, 0.6);
+    const fK = d.kKalin ? 2.0 : 3.0, fU = d.kKalin ? 1.2 : 1.8, zK = d.olum ? 0.8 : d.kKalin ? 0.55 : 0.45, zU = d.olum ? 0.8 : d.kKalin ? 0.4 : 0.3;
+    for (let i = 0; i < nk; i++) {
+      const kk = d.kuyruk[i], v = veri.get(kk), a = (i + 1) / nk, a0 = nk > 1 ? i / (nk - 1) : 0;
+      yayFZ(d.kZin[i], i === 0 ? girdi : d.kZin[i - 1].x, karis(fK, fU, a0), karis(zK, zU, a0), dt);
+      const kalk = (d.kuyrukYay.x + 0.12 * w) * (0.6 + a * 0.4) - (d.olum ? 0.3 : 0);
+      kk.quaternion.multiply(_q1.setFromAxisAngle(v.eu, kirp(d.kZin[i].x * (0.5 + a), -0.6, 0.6))).multiply(_q2.setFromAxisAngle(v.en, kalk));
+    }
   }
   // 3) bacaklar: dinlenmede dünya konumlarını oku, hedefe 2 kemik IK
   d.Z.updateWorldMatrix(true, false); d.model.updateMatrixWorld(true);
@@ -1017,9 +1037,13 @@ export function ikiAyakliGuncelle(d, dt, { hareket = false, hiz = 0, saldiri = n
   // kanat çırpma: bekleme ±8° 1,6 Hz, yürüme 2,4 Hz, saldırı/yetenekte geniş ve hızlı; ön kol gecikmeli (dalga)
   if (d.kanat) {
     d.cirpma += (cirp - d.cirpma) * Math.min(1, dt * 5);
-    const hz = karis(karis(1.6, 2.4, d.w), 3.4, d.cirpma), gen = karis(karis(0.14, 0.24, d.w), 0.5, d.cirpma);
-    d.kFaz = (d.kFaz || 0) + dt * hz * PI2;
-    const kol = Math.sin(d.kFaz) * gen, on = Math.sin(d.kFaz - 0.9) * gen * 0.6;
+    // boşta katlı kanat yalnız nefesle hafifçe açılıp kapanır (0,35 Hz, ±3°); yürümede 1,8 Hz ±10°, çırpışta 2,8 Hz geniş (REFERANS_ANIMASYON
+    // 2.3). Kanat ucu (ön kol) kökü yayla izler (3,5 Hz, ζ 0,6): sinüs fazı yerine gerçek gecikme, ağır ve doğal.
+    const hz = karis(karis(0.35, 1.8, d.w), 2.8, d.cirpma), gen = karis(karis(0.05, 0.18, d.w), 0.5, d.cirpma);
+    d.kFaz = (d.kFaz || d.faz * 9) + dt * hz * PI2;
+    const kol = Math.sin(d.kFaz) * gen;
+    if (!d.kanatYay) d.kanatYay = { x: 0, v: 0 };
+    yayFZ(d.kanatYay, kol * 0.6, karis(2.2, 3.5, Math.max(d.w, d.cirpma)), 0.6, dt); const on = d.kanatYay.x;
     if (K.LeftArm) dunyaDon(K.LeftArm, _F, -kol * W); if (K.RightArm) dunyaDon(K.RightArm, _F, kol * W);
     if (K.LeftForeArm) dunyaDon(K.LeftForeArm, _F, -on * W); if (K.RightForeArm) dunyaDon(K.RightForeArm, _F, on * W);
     // çırpışta gövde hafif kalkar
