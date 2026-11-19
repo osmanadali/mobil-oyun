@@ -3,13 +3,13 @@
    Her kahraman (canavarlar bu modelleri kullanır) gerçek sahne3d.js boru hattında savaştırılır; her karede her kemiğin
    YEREL dönüşü (ebeveynine göre) ve gövdeye (Hips/kök) göre dönüşü örneklenir. Duruma (bekle, yuru, saldir, yetenek, zafer,
    olum) göre her kemiğin, uzvun gövdeye bağlandığı kemiğe (kol → göğüs, bacak → kalça, kuyruk → omurga) göre hareket genliği (derece) çıkarılır ve şu durumlar işaretlenir:
-     DONUK   — büyük uzuv (kol, ön kol, el, baş, kanat, kuyruk, bacak) bir durumda < ESIK_DONUK derece oynuyor,
-               ama aynalı eşi (sol↔sağ) ya da durumun geneli belirgin oynuyor
-     ASIMETRI — sol/sağ eşlerinden biri diğerinin %25'inden az oynuyor (iki ayaklıda tek elle büyü klipleri hariç tutulmaz:
-               uyarı olarak gösterilir)
+     DONUK    — büyük uzuv (kol, ön kol, baş, kuyruk, bacak) bir durumda < ESIK_DONUK derece oynuyor, aynalı eşi (sol↔sağ) oynarken
+     TEK_KOL  — birimin en çok göründüğü (baskın) durumda bir kol eşinin %25'inden az oynuyor (tek kollu klip: kol tek pozda tutuluyor)
+     GOMULU   — beklemede el gövde eksenine bağlama duruşundaki uzaklığının %60'ından yakın (kol gövdenin içinde)
+     ASIMETRI — öteki durumlarda sol/sağ eşlerinden biri diğerinin %25'inden az oynuyor (uyarı; çıkış kodunu etkilemez)
    Kullanım:  (sunucu)  cd kut && python3 -m http.server 8092
               node tools/kemik_denetim.cjs [--port 8092] [--a kurbaga,golem] [--sn 22] [--json cikti.json]
-   Çıkış kodu: DONUK bulgu varsa 1. */
+   Çıkış kodu: DONUK, TEK_KOL ya da GOMULU varsa 1. */
 const { chromium } = require('playwright');
 const fs = require('fs');
 const arg = (ad, vars) => { const i = process.argv.indexOf('--' + ad); return i > 0 ? process.argv[i + 1] : vars; };
@@ -116,23 +116,28 @@ const ONEMLI = /Arm|ForeArm|Hand$|Head$|UpLeg|Shoulder|Bacak|Kuyruk|Boyun/;
 function incele(birim) {
   const bulgu = [];
   const durumlar = new Set(); for (const ad in birim.kemik) for (const du in birim.kemik[ad]) durumlar.add(du);
+  // baskın durum (en çok örnek; ölüm hariç): birimin ekranda en çok göründüğü hal (menzilli birimde çoğu kez 'saldir')
+  let baskin = null, bn = 0; for (const du of durumlar) { if (du === 'olum') continue; let n = 0; for (const ad in birim.kemik) n = Math.max(n, (birim.kemik[ad][du] || [0, 0, 0])[2]); if (n > bn) { bn = n; baskin = du; } }
   for (const du of durumlar) {
     if (du === 'olum') continue;   // ölümde çözülme: kemik donması beklenir
     for (const ad in birim.kemik) {
-      if (!ONEMLI.test(ad)) continue; const o = birim.kemik[ad][du]; if (!o || o[2] < 6) continue;
+      if (!ONEMLI.test(ad)) continue; const o = birim.kemik[ad][du]; if (!o || o[3] < 1) continue;
       const es = esAd(ad), oe = es && birim.kemik[es] && birim.kemik[es][du];
-      const yerel = o[1], esY = oe ? oe[1] : null, el = /Hand$/.test(ad);   // gövdeye göre genlik; el küçük kemik: yalnız uyarı
-      if (!el && yerel < ESIK_DONUK && esY != null && esY > ESIK_ES) bulgu.push({ tip: 'DONUK', durum: du, kemik: ad, derece: yerel, es: es, esDerece: esY });
-      else if (esY != null && esY > ESIK_ES && yerel < esY * 0.25) bulgu.push({ tip: 'ASIMETRI', durum: du, kemik: ad, derece: yerel, es, esDerece: esY });
+      const g = o[0], esG = oe && oe[3] ? oe[0] : null, el = /Hand$/.test(ad);   // bölüt genliklerinin ortancası; el küçük kemik: yalnız uyarı
+      if (!el && g < ESIK_DONUK && esG != null && esG > ESIK_ES) bulgu.push({ tip: 'DONUK', durum: du, kemik: ad, derece: g, es, esDerece: esG });
+      else if (!el && du === baskin && /Arm/.test(ad) && esG != null && esG > 10 && g < esG * 0.25) bulgu.push({ tip: 'TEK_KOL', durum: du, kemik: ad, derece: g, es, esDerece: esG });
+      else if (esG != null && esG > ESIK_ES && g < esG * 0.25) bulgu.push({ tip: 'ASIMETRI', durum: du, kemik: ad, derece: g, es, esDerece: esG });
     }
-    // bütün durumlarda donuk büyük uzuv (eşi yoksa da)
   }
+  // bütün durumlarda donuk büyük uzuv (eşi yoksa da)
   for (const ad in birim.kemik) {
     if (!ONEMLI.test(ad)) continue; let mx = 0, n = 0;
     for (const du in birim.kemik[ad]) { if (du === 'olum') continue; mx = Math.max(mx, birim.kemik[ad][du][1]); n += birim.kemik[ad][du][2]; }
     if (n > 20 && mx < ESIK_DONUK) bulgu.push({ tip: 'DONUK', durum: 'hepsi', kemik: ad, derece: mx });
   }
-  return bulgu;
+  // gömülü kol: beklemede el gövde eksenine bağlama duruşundaki uzaklığının %60'ından yakın (kol gövdenin içinde)
+  for (const el in birim.gom || {}) { const o = birim.gom[el]; const x = o.bekle != null ? o.bekle : o[baskin]; if (x != null && x < 0.6) bulgu.push({ tip: 'GOMULU', durum: o.bekle != null ? 'bekle' : baskin, kemik: el, derece: x }); }
+  return { bulgu, baskin };
 }
 
 (async () => {
@@ -147,15 +152,16 @@ function incele(birim) {
   }
   let donuk = 0;
   const satir = [];
-  satir.push('| Kahraman | Tür | Durumlar (örnek) | Genlik (°, gövdeye göre, en büyük): kol/ön kol/el sol·sağ; dört ayaklıda zincirin 2. kemiği | Bulgular |');
-  satir.push('|---|---|---|---|---|');
+  satir.push('| Kahraman | Tür | Durumlar (örnek) | Baskın durum | Baskın durumda genlik (°, bölüt ortancası, gövdeye göre): kol / ön kol / el sol·sağ, el açıklığı (bekle, bağlama duruşuna oran); dört ayaklıda zincirin 2. kemiği | Bulgular |');
+  satir.push('|---|---|---|---|---|---|');
   for (const b of sonuc) {
-    const bl = incele(b); donuk += bl.filter(x => x.tip === 'DONUK').length;
+    const { bulgu: bl, baskin } = incele(b); donuk += bl.filter(x => x.tip !== 'ASIMETRI').length;
     const du = {}; for (const ad in b.kemik) for (const d in b.kemik[ad]) du[d] = Math.max(du[d] || 0, b.kemik[ad][d][2]);
-    const gen = (ad) => { const k = b.kemik[ad]; if (!k) return '-'; let m = 0; for (const d in k) if (d !== 'olum') m = Math.max(m, k[d][1]); return m.toFixed(0); };
+    const gen = (ad) => { const k = b.kemik[ad]; if (!k || !k[baskin]) return '-'; return k[baskin][0].toFixed(0); };
     const kol = b.tur === 'iki' ? `${gen('LeftArm')}·${gen('RightArm')} / ${gen('LeftForeArm')}·${gen('RightForeArm')} / ${gen('LeftHand')}·${gen('RightHand')}`
-      : Object.keys(b.kemik).filter(a => /_1$/.test(a)).map(a => a.replace('_1', '') + ' ' + gen(a)).join(', ');
-    satir.push(`| ${b.h} | ${b.tur} | ${Object.entries(du).map(([d, n]) => d + ':' + n).join(' ')} | ${kol} | ${bl.length ? bl.map(x => `${x.tip} ${x.kemik}@${x.durum} ${x.derece}°${x.es ? ' (eş ' + x.esDerece + '°)' : ''}`).join('; ') : 'yok'} |`);
+      + (b.gom && b.gom.LeftHand ? ` · el açıklığı ${b.gom.LeftHand.bekle}·${b.gom.RightHand.bekle}` : '')
+      : Object.keys(b.kemik).filter(a => /_1$/.test(a)).map(a => a.replace('Bacak_1', '').replace('_1', '') + ' ' + gen(a)).join(', ');
+    satir.push(`| ${b.h} | ${b.tur} | ${Object.entries(du).map(([d, n]) => d + ':' + n).join(' ')} | ${baskin} | ${kol} | ${bl.length ? bl.map(x => `${x.tip} ${x.kemik}@${x.durum} ${x.derece}${x.tip === 'GOMULU' ? '' : '°'}${x.es ? ' (eş ' + x.esDerece + '°)' : ''}`).join('; ') : 'yok'} |`);
   }
   console.log(satir.join('\n'));
   if (JSON_CIKTI) fs.writeFileSync(JSON_CIKTI, JSON.stringify(sonuc, null, 1));
