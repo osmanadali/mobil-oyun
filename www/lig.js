@@ -170,7 +170,7 @@ window.Lig = (() => {
     const dec = v => !v ? null : 'integerValue' in v ? +v.integerValue : 'doubleValue' in v ? v.doubleValue : 'stringValue' in v ? v.stringValue : 'booleanValue' in v ? v.booleanValue
       : 'arrayValue' in v ? (v.arrayValue.values || []).map(dec) : 'mapValue' in v ? decF(v.mapValue.fields || {}) : 'timestampValue' in v ? Date.parse(v.timestampValue) : null;
     const decF = f => Object.fromEntries(Object.entries(f || {}).map(([k, v]) => [k, dec(v)]));
-    const doc = d => d?.fields ? { id: d.name.split('/').pop(), ...decF(d.fields) } : null;
+    const doc = d => d?.fields ? { id: d.name.split('/').pop(), _ut: d.updateTime, ...decF(d.fields) } : null;
     async function call(method, url, body) {
       const r = await fetch(url, { method, headers: { Authorization: 'Bearer ' + await auth(), 'Content-Type': 'application/json' }, body: body && JSON.stringify(body) });
       if (r.status === 404) return null;
@@ -178,23 +178,15 @@ window.Lig = (() => {
       if (!r.ok) { const e = Error(j.error?.status || 'http ' + r.status); e.code = r.status; throw e; }
       return j;
     }
-    const get = async (path, tx) => doc(await call('GET', `${DOCS}/${path}${tx ? '?transaction=' + encodeURIComponent(tx) : ''}`));
+    const get = async path => doc(await call('GET', `${DOCS}/${path}`));
     const del = path => call('DELETE', `${DOCS}/${path}`).catch(() => {});
-    // yazma: update (alanlar) + isteğe bağlı artırma; tx ile işlem içinde
-    const w = (path, data, { inc, exists } = {}) => ({ update: { name: `${NAME}/${path}`, fields: encF(data) }, ...(data ? { updateMask: { fieldPaths: Object.keys(data).filter(k => data[k] !== undefined) } } : {}),
-      ...(inc ? { updateTransforms: Object.entries(inc).map(([k, n]) => ({ fieldPath: k, increment: enc(n) })) } : {}), ...(exists != null ? { currentDocument: { exists } } : {}) });
-    async function commit(writes, tx) {
-      const r = await call('POST', `${DOCS}:commit`, { writes, ...(tx ? { transaction: tx } : {}) });
+    // yazma: update (alanlar) + isteğe bağlı atomik artırma; ut: "okuduğumdan beri değişmediyse" koşulu (REST'te oyuncu hesabıyla işlem açılamıyor)
+    const w = (path, data, { inc, exists, ut } = {}) => ({ update: { name: `${NAME}/${path}`, fields: encF(data) }, ...(data ? { updateMask: { fieldPaths: Object.keys(data).filter(k => data[k] !== undefined) } } : {}),
+      ...(inc ? { updateTransforms: Object.entries(inc).map(([k, n]) => ({ fieldPath: k, increment: enc(n) })) } : {}), ...(exists != null ? { currentDocument: { exists } } : ut ? { currentDocument: { updateTime: ut } } : {}) });
+    async function commit(writes) {   // birden çok yazma tek seferde: ya hepsi ya hiçbiri
+      const r = await call('POST', `${DOCS}:commit`, { writes });
       if (r?.commitTime) skew = Date.parse(r.commitTime) - Date.now();   // sunucu saati farkı (geri sayım iki cihazda aynı ana denk gelsin)
       return r;
-    }
-    async function txn(fn) {   // işlem: çakışırsa 3 kez yeniden dene
-      for (let k = 0; k < 3; k++) {
-        const { transaction: tx } = await call('POST', `${DOCS}:beginTransaction`, {});
-        try { const writes = await fn(tx); if (!writes) { await call('POST', `${DOCS}:rollback`, { transaction: tx }).catch(() => {}); return null; } await commit(writes, tx); return true; }
-        catch (e) { if (e.code !== 409 && e.code !== 400 && k < 2 && e.message !== 'ABORTED') throw e; }
-      }
-      return null;
     }
     async function query(parent, where, limit = 50) {
       const filters = where.map(([f, op, v]) => ({ fieldFilter: { field: { fieldPath: f }, op, value: enc(v) } }));
@@ -219,7 +211,7 @@ window.Lig = (() => {
       }
       // yeni grup: o haftanın o kademesindeki sayaç → her 30 kişiye bir grup
       const t = st.tier || 0; let g = 0;
-      await txn(async tx => { const c = await get(`weeks/${wk}/tiers/${t}`, tx), n = c?.n || 0; g = n / GROUP | 0; return [w(`weeks/${wk}/tiers/${t}`, { n: n + 1 })]; });
+      const r = await commit([w(`weeks/${wk}/tiers/${t}`, {}, { inc: { n: 1 } })]), n = +(r?.writeResults?.[0]?.transformResults?.[0]?.integerValue || 1); g = (n - 1) / GROUP | 0;   // atomik sayaç
       st.wk = wk; st.grp = grpKey(t, g); st.pts = 0; keep();
       await commit([w(`weeks/${wk}/members/${st.uid}`, { grp: st.grp, nick: st.nick, tier: t, pts: 0, at: now() }), w(`users/${st.uid}`, { nick: st.nick, tier: t, wk, grp: st.grp })]);
       rowsCache = null;
@@ -274,7 +266,7 @@ window.Lig = (() => {
     const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', code5 = () => Array.from({ length: 5 }, () => A[(Math.random() * A.length) | 0]).join('');
     const pickLevel = (lv, maxL) => { const ok = lv.filter(l => l <= maxL); return ok.length ? ok[(Math.random() * ok.length) | 0] : Math.min(...lv, maxL); };
     const meCard = info => ({ nick: st.nick, tier: st.tier || 0, lv: info.levels || [1], maxL: Math.max(...(info.levels || [1])) });
-    async function makeMatch(tx, other, otherUid, info, extra) {
+    async function makeMatch(other, otherUid, info, extra) {
       const id = `${otherUid}_${st.uid}_${Date.now().toString(36)}`, level = pickLevel(other.lv || [1], Math.max(...(info.levels || [1]))), t0 = now() + 4500;
       return { id, level, t0, writes: [w(`matches/${id}`, { a: otherUid, b: st.uid, an: other.nick, bn: st.nick, at: other.tier || 0, bt: st.tier || 0, level, t0, fr: !!extra?.friend }), ...(extra?.writes || [])] };
     }
@@ -313,9 +305,8 @@ window.Lig = (() => {
         // 1) bekleyen biri var mı (son 20 sn)
         const cands = (await query('', Q('q', ['at', 'GREATER_THAN', now() - 20e3]), 10).catch(() => [])).filter(x => x.id !== st.uid && x.state === 'wait');
         for (const c of cands) {
-          let made = null;
-          const ok = await txn(async tx => { const q = await get(`q/${c.id}`, tx); if (!q || q.state !== 'wait') return null;
-            made = await makeMatch(tx, q, c.id, info); return [...made.writes, w(`q/${c.id}`, { state: 'taken', mid: made.id })]; }).catch(() => null);
+          const made = await makeMatch(c, c.id, info);
+          const ok = await commit([...made.writes, w(`q/${c.id}`, { state: 'taken', mid: made.id }, { ut: c._ut })]).then(() => true, () => false);   // başkası önce kaptıysa koşul tutmaz
           if (ok && made && !token.left) return follow({ ...made, opp: { nick: c.nick, tier: c.tier || 0 } }, 'b');
         }
         // 2) kuyruğa gir, 20 sn bekle
@@ -349,10 +340,11 @@ window.Lig = (() => {
       async join(code, info = {}) {
         code = String(code || '').toUpperCase(); if (!/^[A-Z2-9]{5}$/.test(code)) return { error: 'code' };
         fb.duel.leave(); await auth();
-        let made = null, room = null;
-        const ok = await txn(async tx => { room = await get(`rooms/${code}`, tx); if (!room || room.state !== 'wait' || room.host === st.uid || now() - room.at > 10 * 60e3) return null;
-          made = await makeMatch(tx, room, room.host, info, { friend: true }); return [...made.writes, w(`rooms/${code}`, { state: 'taken', mid: made.id })]; }).catch(() => null);
-        if (!ok || !made) return { error: 'code' };
+        const room = await get(`rooms/${code}`).catch(() => null);
+        if (!room || room.state !== 'wait' || room.host === st.uid || now() - room.at > 10 * 60e3) return { error: 'code' };
+        const made = await makeMatch(room, room.host, info, { friend: true });
+        const ok = await commit([...made.writes, w(`rooms/${code}`, { state: 'taken', mid: made.id }, { ut: room._ut })]).then(() => true, () => false);
+        if (!ok) return { error: 'code' };
         return follow({ ...made, opp: { nick: room.nick, tier: room.tier || 0, friend: true } }, 'b');
       },
       send(p) {

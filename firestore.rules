@@ -10,8 +10,8 @@ service cloud.firestore {
     function only(keys) { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys); }
 
     match /users/{uid} {
-      allow read, write: if me(uid) && (!('nick' in request.resource.data) || nickOk(request.resource.data.nick));
-      allow delete: if me(uid);
+      allow read, delete: if me(uid);
+      allow create, update: if me(uid) && nickOk(request.resource.data.nick);
     }
     // haftalık grup üyeliği: grp "t{kademe}g{grup}", pts yalnız artar (≤ 10 / yazış), grup değişmez
     match /weeks/{wk}/members/{uid} {
