@@ -3124,13 +3124,13 @@ function homeSky() {
   box.innerHTML = svg;
   $('skyTxt').textContent = (page ? `${cityName(page - 1)} ✓ · ` : '') + L(`${cityName(page)} · ${lit}/${CITY_N} semt aydınlık`, `${cityName(page)} · ${lit}/${CITY_N} districts lit`);
 }
-// Ana sayfa üst bölümü (logo · Ray · alt yazı · şehir silüeti) ekrana sığmazsa kademeli sıkışır: önce alt yazı gider, sonra silüet ve logo küçülür.
+// Ana sayfa üst bölümü (logo · Ray · alt yazı · şehir silüeti) ekrana sığmazsa kademeli sıkışır: önce alt yazı gider, sonra silüet ve başlık küçülür; logo en son ve az küçülür.
 // Ortalanmış içerik taşınca hem yukarı (logo çiplerin altına) hem aşağı (silüet Günün Hattı kartının altına) taşıyordu; alt sekme çubuğu alanı daralttı.
 function fitHero() {
   const h = document.querySelector('#home .hero'); if (!h || !active('home')) return;
   const need = () => [...h.children].reduce((a, e) => { const c = getComputedStyle(e); return a + (e.offsetHeight ?? e.clientHeight) + parseFloat(c.marginTop) + parseFloat(c.marginBottom); }, 0);
-  h.classList.remove('t1', 't2', 't3', 't4');
-  for (const t of ['t1', 't2', 't3', 't4']) { if (need() <= h.clientHeight - 12) break; h.classList.add(t); }
+  h.classList.remove('t1', 't2', 't3', 't4', 't5');
+  for (const t of ['t1', 't2', 't3', 't4', 't5']) { if (need() <= h.clientHeight - 12) break; h.classList.add(t); }
 }
 addEventListener('resize', () => requestAnimationFrame(fitHero));
 document.fonts?.ready.then(() => fitHero());   // yazı tipi gelince başlık boyu değişir
