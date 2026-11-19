@@ -367,9 +367,66 @@ export function boyutla() {
   // 4×3 tahta: rakibin arka sırası (z ≈ −3) ve can çubukları üst kenarda kesilmesin
   kamera.fov = dar ? 41 : 35;
   kam.tabanP.set(0, dar ? 9.6 : 8.5, dar ? 8.0 : 7.3); kam.tabanH.set(0, 0, dar ? 0.1 : -0.2);
+  kamera.updateProjectionMatrix();
+  tahtaKadrajla(w, h);   // arayüzün bıraktığı güvenli alana göre: iki takımın bütün sıraları görünür, tahta o alanda olabildiğince büyük ve ortada
   kamera.position.copy(kam.tabanP); kamera.lookAt(kam.tabanH); kam.ilk = true; kam.serbest = false;
-  kamera.updateProjectionMatrix(); kamera.updateMatrixWorld(true);   // görüş alanı denetimi ilk karede de doğru olsun
+  kamera.updateMatrixWorld(true);   // görüş alanı denetimi ilk karede de doğru olsun
   kaplamaBoyutla();
+}
+// ── Tahta kadrajı ──
+// Güvenli alan: arayüzün (skor paneli, yan düğmeler) kapladığı kenar payları, tuval px (arayuz.js verir: guvenliAlan(f), f(w, h) → {ust, alt, sol, sag}).
+// Bakış yönü taban ayardan kalır; uzaklık ve bakış noktası birkaç adımda çözülür: tahtanın sınır kutusu (iki takımın bütün sıraları, birim boyu ve
+// can çubuğu payı) ekrana izdüşürülür, kutu güvenli alana sığacak kadar uzaklaşılır/yaklaşılır ve kutunun merkezi alanın merkezine kaydırılır.
+let guvenliF = null;
+export function guvenliAlan(f) { guvenliF = f; if (renderer) boyutla(); }
+const _tkN = [], _tkV = new THREE.Vector3(), _tkY = new THREE.Vector3();
+for (const x of [-2.95, 2.95]) for (const z of [-3.6, 3.55]) for (const y of [0, z < 0 ? 2.3 : 1.6]) _tkN.push(new THREE.Vector3(x, ARENA_Y + y, z));
+// engel denetimi için tahta çevresi (yan kenarlar ve ön/arka kenar boyunca; zemin ve can çubuğu yüksekliği): köşedeki arayüz öğeleri (Kut, ayakta paneli) bunlara binmemeli
+const _tkC = [];
+for (let i = 0; i <= 14; i++) { const z = -3.6 + 7.15 * i / 14; for (const x of [-2.95, 2.95]) for (const y of [0, z < 0 ? 2.3 : 1.6]) _tkC.push(new THREE.Vector3(x, ARENA_Y + y, z)); }
+for (let i = 1; i < 8; i++) { const x = -2.95 + 5.9 * i / 8; for (const z of [-3.6, 3.55]) for (const y of [0, z < 0 ? 2.3 : 1.6]) _tkC.push(new THREE.Vector3(x, ARENA_Y + y, z)); }
+const _tkE = _tkC.map(() => ({ x: 0, y: 0 }));
+// engel: {x0,y0,x1,y1} dikdörtgen ya da {cx,cy,r} daire (tuval px)
+const engelde = (x, y, E) => { for (const e of E) { if (e.r != null ? (x - e.cx) ** 2 + (y - e.cy) ** 2 < e.r * e.r : x > e.x0 && x < e.x1 && y > e.y0 && y < e.y1) return true; } return false; };
+// tahtanın (izdüşüm noktaları P) merkez c etrafında 1/k oranında küçülünce hiçbir engele binmediği en küçük k (0,6…2,5; ikiye bölme)
+function engelK(P, cx, cy, E) {
+  const carp = (k) => { for (const n of P) if (engelde(cx + (n.x - cx) / k, cy + (n.y - cy) / k, E)) return true; return false; };
+  if (!carp(0.6)) return 0.6; if (carp(2.5)) return 2.5;
+  let a = 0.6, b = 2.5; for (let i = 0; i < 18; i++) { const m = (a + b) / 2; if (carp(m)) a = m; else b = m; } return b;
+}
+function tahtaKadrajla(w, h) {
+  let p = null; try { p = guvenliF && guvenliF(w, h); } catch (e) { p = null; }
+  p = p || { ust: 0, alt: 0, sol: 0, sag: 0 }; const E = p.engel || [];
+  // alan çok daralırsa (çok alçak ekran) payları kıs: tahta en az ekranın %55'i kadar yer bulsun
+  let x0 = p.sol, x1 = w - p.sag, y0 = p.ust, y1 = h - p.alt;
+  if (x1 - x0 < w * 0.55) { const k = (w * 0.55) / Math.max(1, x1 - x0); const c = (x0 + x1) / 2; x0 = Math.max(0, c - (c - x0) * k); x1 = Math.min(w, c + (x1 - c) * k); }
+  if (y1 - y0 < h * 0.55) { const k = (h * 0.55) / Math.max(1, y1 - y0); const c = (y0 + y1) / 2; y0 = Math.max(0, c - (c - y0) * k); y1 = Math.min(h, c + (y1 - c) * k); }
+  const yon = _tkY.copy(kam.tabanP).sub(kam.tabanH); let R = yon.length(); yon.divideScalar(R);
+  const sinE = Math.max(0.3, yon.y), T = kam.tabanH.clone(), th = Math.tan(THREE.MathUtils.degToRad(kamera.fov) / 2);
+  for (let it = 0; it < 14; it++) {
+    kamera.position.copy(T).addScaledVector(yon, R); kamera.lookAt(T); kamera.updateMatrixWorld(true);
+    let a0 = Infinity, a1 = -Infinity, b0 = Infinity, b1 = -Infinity;
+    for (const n of _tkN) { _tkV.copy(n).project(kamera); const sx = (_tkV.x + 1) / 2 * w, sy = (1 - _tkV.y) / 2 * h; a0 = Math.min(a0, sx); a1 = Math.max(a1, sx); b0 = Math.min(b0, sy); b1 = Math.max(b1, sy); }
+    let k = Math.max((a1 - a0) / (x1 - x0), (b1 - b0) / (y1 - y0)); const birim = 2 * R * th / h;
+    if (E.length) {   // köşe engelleri: tahta (kutu merkezi alanın merkezine kayacağı için oraya göre) gerekirse biraz daha küçülür
+      const ox = (x0 + x1) / 2 - (a0 + a1) / 2, oy = (y0 + y1) / 2 - (b0 + b1) / 2;
+      _tkC.forEach((n, i) => { _tkV.copy(n).project(kamera); _tkE[i].x = (_tkV.x + 1) / 2 * w + ox; _tkE[i].y = (1 - _tkV.y) / 2 * h + oy; });
+      k = Math.max(k, engelK(_tkE, (x0 + x1) / 2, (y0 + y1) / 2, E));
+    }
+    const dx = (a0 + a1) / 2 - (x0 + x1) / 2, dy = (b0 + b1) / 2 - (y0 + y1) / 2;
+    T.x += dx * birim; T.z += dy * birim / sinE;
+    R *= 0.35 + 0.65 * k;   // izdüşüm boyu ~ 1/uzaklık; yumuşak adım (yakın kenar perspektifi doğrusal değil)
+  }
+  kam.tabanH.copy(T); kam.tabanP.copy(T).addScaledVector(yon, R);
+}
+// test: taban kadrajda tahta sınır kutusunun ekran noktaları (tuval px)
+export function tabanKutu() {
+  if (!kamera) return [];
+  const p = kamera.position.clone(), q = kamera.quaternion.clone();
+  kamera.position.copy(kam.tabanP); kamera.lookAt(kam.tabanH); kamera.updateMatrixWorld(true);
+  const r = _tkN.map(n => { const v = n.clone().project(kamera); return { x: (v.x + 1) / 2 * kapW, y: (1 - v.y) / 2 * kapH }; });
+  kamera.position.copy(p); kamera.quaternion.copy(q); kamera.updateMatrixWorld(true);
+  return r;
 }
 // 2D kaplama (sayılar, çubuklar): Tam ve 120 Hz kademesinde bugünkü gibi en çok 2 piksel oranı; daha düşük kademede en çok 1,5
 // (tam ekran tuval her karede baştan çizilir; yetişemeyen cihazda bant genişliği kazanılır)
@@ -1273,7 +1330,8 @@ function kaplamaCiz(dt = 0, dtG = dt) {
   if (kutKart) {
     const t = performance.now() / 1000 - kutKart.t0; if (t > 1.5) kutKart = null;
     else { const gir = Math.min(1, t / 0.25), cik = t > 1.2 ? (t - 1.2) / 0.3 : 0, ox = -260 * (1 - gir) * (1 - gir) * (1 - gir) - 260 * cik * cik;
-      const X = 16 + ox, Y = h * 0.3, W2 = 230, H2 = 86; kcx.save(); kcx.globalAlpha = 1 - cik;
+      const ks = Math.max(0.62, Math.min(1.25, h / 800));   // kart boyu ekran yüksekliğiyle (arayüzün tek ölçeği gibi): telefonda küçülür
+      const X = 16 / ks + ox, Y = h * 0.3 / ks, W2 = 230, H2 = 86; kcx.save(); kcx.setTransform(kapDpr * ks, 0, 0, kapDpr * ks, 0, 0); kcx.globalAlpha = 1 - cik;
       const g = kcx.createLinearGradient(X, 0, X + W2, 0); g.addColorStop(0, 'rgba(70,28,120,.95)'); g.addColorStop(1, 'rgba(70,28,120,0)');
       kcx.fillStyle = g; yuvarlak(X, Y, W2, H2, 16); kcx.fill(); kcx.strokeStyle = '#ffd76a'; kcx.lineWidth = 2; kcx.beginPath(); kcx.moveTo(X + 8, Y + H2); kcx.lineTo(X + W2 * 0.8, Y + H2); kcx.stroke();
       if (kutKart.img.complete && kutKart.img.naturalWidth) { kcx.save(); kcx.beginPath(); kcx.arc(X + 44, Y + H2 / 2, 36, 0, Math.PI * 2); kcx.clip(); kcx.drawImage(kutKart.img, X + 8, Y + H2 / 2 - 36, 72, 72); kcx.restore();
@@ -1306,11 +1364,11 @@ const acıFark = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
 function kadraj(dtR) {
   let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity, n = 0;
   if (sim && !sim.bitti) for (let j = 0; j < birimDizi.length; j++) { const b = birimDizi[j]; if (b.olumT >= 0) continue; const p = b.kok.position; x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); z0 = Math.min(z0, p.z); z1 = Math.max(z1, p.z); n++; }
-  let olcek = 1, mx = 0, mz = kam.tabanH.z;
+  let olcek = 1, mx = kam.tabanH.x, mz = kam.tabanH.z;
   if (n >= 2) {
     const gen = x1 - x0 + 2.2, der = z1 - z0 + 3.2;
     olcek = Math.min(1, Math.max(0.8, Math.max(gen / 7.2, der / 8.6)));   // tempo: yığılmada kamera dalıp kaosu büyütmesin (0,66 → 0,8)
-    mx = (x0 + x1) / 2 * 0.5; mz = (z0 + z1) / 2 + 0.25;
+    mx = kam.tabanH.x + ((x0 + x1) / 2 - kam.tabanH.x) * 0.5; mz = (z0 + z1) / 2 + 0.25;
   }
   if (kam.serbest) return;
   const k = kam.ilk ? 1 : 1 - Math.exp(-dtR / 1.0); kam.ilk = false;   // yaklaşma hızı yarıya (0,5 → 1 sn)
@@ -1319,7 +1377,7 @@ function kadraj(dtR) {
   // kamera: taban yönünde kalır, bakış noktası yakınlaştıkça savaşın merkezine kayar
   const zf = (1 - kam.olcek) / 0.34;
   _ka.copy(kam.tabanP).sub(kam.tabanH).multiplyScalar(kam.olcek);
-  _kb.set(kam.merkez.x * zf, 0, kam.tabanH.z + (kam.merkez.z - kam.tabanH.z) * zf);
+  _kb.set(kam.tabanH.x + (kam.merkez.x - kam.tabanH.x) * zf, kam.tabanH.y, kam.tabanH.z + (kam.merkez.z - kam.tabanH.z) * zf);
   kamera.position.copy(_kb).add(_ka);
   if (kam.mvp) _kb.copy(mvpKarisim(dtR, _kb));   // Maçın yıldızı: kadraj kamerasından yakın plana yumuşak geçiş (ve geri)
   kamera.lookAt(_kb); kamera.updateMatrixWorld(true);
