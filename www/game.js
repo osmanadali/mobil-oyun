@@ -852,6 +852,7 @@ function dailyClock() {
 }
 function refreshHome() {
   dayTick(); try { homeSky(); } catch {} try { ligHome(); } catch {}   // şehir bölümü henüz yüklenmediyse sonra çizilir
+  requestAnimationFrame(() => { try { fitHero(); } catch {} }); setTimeout(() => { try { fitHero(); } catch {} }, 600);   // ilk ölçüm erken olabilir (silüet, yazı tipi, açılış animasyonu)
   const tot = totalStars();
   $('sStars').textContent = tot;
   $('sStreak').textContent = save.streak; $('streakChip').classList.toggle('new', rescueOk());
@@ -3123,6 +3124,16 @@ function homeSky() {
   box.innerHTML = svg;
   $('skyTxt').textContent = (page ? `${cityName(page - 1)} ✓ · ` : '') + L(`${cityName(page)} · ${lit}/${CITY_N} semt aydınlık`, `${cityName(page)} · ${lit}/${CITY_N} districts lit`);
 }
+// Ana sayfa üst bölümü (logo · Ray · alt yazı · şehir silüeti) ekrana sığmazsa kademeli sıkışır: önce alt yazı gider, sonra silüet ve logo küçülür.
+// Ortalanmış içerik taşınca hem yukarı (logo çiplerin altına) hem aşağı (silüet Günün Hattı kartının altına) taşıyordu; alt sekme çubuğu alanı daralttı.
+function fitHero() {
+  const h = document.querySelector('#home .hero'); if (!h || !active('home')) return;
+  const need = () => [...h.children].reduce((a, e) => { const c = getComputedStyle(e); return a + (e.offsetHeight ?? e.clientHeight) + parseFloat(c.marginTop) + parseFloat(c.marginBottom); }, 0);
+  h.classList.remove('t1', 't2', 't3', 't4');
+  for (const t of ['t1', 't2', 't3', 't4']) { if (need() <= h.clientHeight - 12) break; h.classList.add(t); }
+}
+addEventListener('resize', () => requestAnimationFrame(fitHero));
+document.fonts?.ready.then(() => fitHero());   // yazı tipi gelince başlık boyu değişir
 // Hat açılış töreni: hattın son bölümü ilk kez bitince sonuç panelinin üstünde (≈5 sn, dokununca sona atlar).
 // Kamera yeni semte yakın başlar: binalar yükselir, pencereler tek tek yanar, sonra şehrin tamamı görünür.
 // Tören sesi (dosya yok, cihazda üretilir; Ses kapalıysa susar). Müzik kısılır, zaman çizgisi animasyonla aynı:
@@ -3209,7 +3220,7 @@ function lineFest(c) {
   setTimeout(() => { ended = true; el.classList.add('end'); }, 5200);
 }
 function jingleOnly(gold, all) { const f = festSound({ wins: 0, gold, all }); f.skip(); }   // hareket azaltılmış: yalnız ezgi
-if (active('home')) homeSky();   // ilk çizim: refreshHome bu bölüm yüklenmeden çalışmış olabilir
+if (active('home')) { homeSky(); requestAnimationFrame(fitHero); setTimeout(fitHero, 600); setTimeout(fitHero, 2000); }   // ilk çizim: refreshHome bu bölüm yüklenmeden çalışmış olabilir
 
 // ---------- haftalık lig ve canlı kapışma (ağ katmanı: www/lig.js) ----------
 // Lig puanı: bölüm ★ (1–3), Günün Hattı +5, kapışma galibiyeti +10, yenilgi +2 (terk: 0). 30 kişilik grup, ilk 7 üst lige çıkar, son 5 düşer.

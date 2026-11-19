@@ -866,3 +866,9 @@ body[data-scr=home] #home,body[data-scr=league] #league,body[data-scr=city] #cit
 #game.tut #bReset,#game.tut:not(.tutre) #bBack{visibility:hidden}#game.tut .bottom{display:none}#game.tut #board{margin-bottom:max(24px,var(--sab))}
 body.tut .tabbar{display:none}
 @media (max-height:720px){#game.tut .tuttip{padding:10px 14px 12px;gap:6px}#game.tut .tuttip p{font-size:16px;min-height:42px}}
+/* ana sayfa üst bölümü sığmazsa (fitHero): t1 alt yazı gider · t2 silüet ve logo küçülür · t3 logo gider · t4 silüet en küçük. Taşma hiçbir zaman çiplere ve karta binmez. */
+#home .hero{overflow:hidden}
+#home .hero.t1 p{display:none}
+#home .hero.t2 #skyBox{height:52px}#home .hero.t2 .skyw{margin-top:6px}#home .hero.t2 .skyw small{margin-top:3px;font-size:12px}#home .hero.t2 .logo.mark{width:64px;margin-bottom:2px}
+#home .hero.t3 .logo.mark{display:none}#home .hero.t3 h1{font-size:44px}
+#home .hero.t4 #skyBox{height:38px}#home .hero.t4 .skyw small{display:none}
