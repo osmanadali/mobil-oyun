@@ -299,7 +299,7 @@ const RULES = {
 const RULE_LINE = { pairs: 2, rev: 3, fog: 5, cnt: 6, two: 8 };
 const MODS = [], CLASH = {};   // eklentiler · birlikte gelemeyen kurallar (simetrik)
 const clash = (a, b) => !!(CLASH[a]?.includes(b) || CLASH[b]?.includes(a));
-const KARMA = 31;   // 0 tabanlı: M32 ve sonrası sınırsız karma (son kural M31 · manevra karosu, 801. bölüm)
+const KARMA = 33;   // 0 tabanlı: M34 ve sonrası sınırsız karma (son kural M33 · boş peron, 857. bölüm)
 function rulesFor(l) {
   const c = lineOf(l), own = Object.keys(RULE_LINE).find(k => RULE_LINE[k] === c), set = new Set(own ? [own] : []);
   const learned = Object.keys(RULE_LINE).filter(k => RULE_LINE[k] < c).sort((a, b) => RULE_LINE[a] - RULE_LINE[b]);   // hat sırasıyla: slice(-3) = en yeni 3 kural
@@ -410,13 +410,18 @@ function generate(cols, rows, seed, _pins = 0, pairs = 0, x = {}) {   // _pins: 
     while ((t !== sol[i] || (j >= 0 && u !== sol[j])) && r < 4) { t = step(t); if (j >= 0) u = rot(u); r++; }
     taps += r; if (r) par++;
   });
-  // U.moves (manevra): birim kendi hamle sayısını verir (takas sayısı; takas = 2 dokunuş) · yoksa birim 1 hamle
-  for (const U of C.units) { const r = U.moves ? U.moves(cur, sol) : unitTaps(U, cur, sol); taps += U.moves ? 2 * r : r; if (r) par += U.moves ? r : 1; }
+  // birim hamle sayısı: U.moves (manevra: takas sayısı, takas = 2 dokunuş) · U.cost (boş peron: her kaydırma ayrı hamle) · U.need (kumanda öbeği: basılan kumanda sayısı) · yoksa birim 1 hamle
+  for (const U of C.units) {
+    if (U.moves) { const r = U.moves(cur, sol); taps += 2 * r; par += r; continue; }
+    if (U.cost) { const r = U.cost(cur); taps += r; par += r; continue; }
+    const r = unitTaps(U, cur, sol); taps += r; if (r) par += U.need ? U.need(cur, sol)[1] : 1;
+  }
   return { cols, rows, sol, cur, hub, hub2, par, taps, pinned, link, rev, cnt, fixed: new Array(n).fill(false),
     ...(C.units.length ? { units: C.units, unitOf: C.unitOf } : {}), ...(C.adj ? { adj: C.adj, ao: C.ao } : {}), ...C.out };
 }
 // eklenti birimi (makas, tabla…): kopya üzerinde dokuna dokuna çözüme kaç dokunuşta varılır (en çok K−1)
 function unitTaps(U, cur, sol) {
+  if (U.need) return U.need(cur, sol)[0];
   const c = cur.slice(); let r = 0;
   while (U.cells.some(i => c[i] !== sol[i]) && r < U.K) { U.tap(c); r++; }
   return r;
@@ -525,7 +530,7 @@ function puzzleFor(l) {
     // Kuralın kendi hattındaki ilk 3 öğrenme bölümünde pay yok (testere dişi).
     let boost = 0, scan = 0;   // scan: kendi hattında taranacak en az aday (çözücü puanını kendisi artırmayan kural, ör. son sefer)
     for (const m of MODS) if (U.has(m.key)) { x[m.key] = m.amount(n, intro && ln === m.line, z, fin, c, r); if (ln !== m.line || l - lineStart(ln) >= 3) { boost += m.boost || 0; if (ln === m.line) scan = m.scan || 0; } }
-    if (ln >= KARMA) boost += 3.5;   // M31+ sınırsız karma: eski kuralların payı küçük, hedef M24 düzeyinde kalsın
+    if (ln >= KARMA) boost += 3.5;   // M32+ sınırsız karma: eski kuralların payı küçük, hedef M24 düzeyinde kalsın
     if (breath(l)) boost = 0;   // mola: kural payı yok, hedef aşağıda yarıya yakın
     // hat finali (SON DURAK): hedef +2 puan, en çok aday taranır · zorluk paylı bölümde de geniş tarama
     const P = pick(c, r, l * 7919 + 13, 0, pairs, z, (intro ? 3 : 5) + 11 * z * (breath(l) ? .55 : 1) + (fin ? 2 : 0) + boost, x, fin ? Math.max(32, scan) : boost ? Math.max(24, 6 + Math.round(26 * z), scan) : undefined);
@@ -1327,11 +1332,12 @@ cv.addEventListener('pointerdown', e => {
   const u = G.unitOf?.[i] ?? -1;
   const m0 = G.moves;   // eklenti after(): bu dokunuş yeni hamle mi
   // ↶ geri al için: yeni hamle başlıyorsa (başka karo/birim) önceki durum saklanır (en çok 30)
-  if (G.lastTile !== (u >= 0 ? 'u' + u : G.link[i] >= 0 ? Math.min(i, G.link[i]) : i)) { (G.hist ||= []).push({ cur: G.cur.slice(), cnt: G.cnt.slice(), moves: G.moves, last: G.lastTile }); if (G.hist.length > 30) G.hist.shift(); }
+  const uk = u >= 0 ? 'u' + u + (G.units[u].at ? '.' + i : '') : null;   // U.at: birimin dokunulan karoya göre basışı (kumanda öbeği: her kumanda ayrı hamle)
+  if (G.lastTile !== (u >= 0 ? uk : G.link[i] >= 0 ? Math.min(i, G.link[i]) : i)) { (G.hist ||= []).push({ cur: G.cur.slice(), cnt: G.cnt.slice(), moves: G.moves, last: G.lastTile }); if (G.hist.length > 30) G.hist.shift(); }
   if (u >= 0) {   // eklenti birimi (makas, tabla…): birimin kendi dokunuşu; art arda aynı birim = 1 hamle
     const U = G.units[u];
-    U.tap(G.cur);
-    if (G.lastTile !== 'u' + u) { G.moves++; G.lastTile = 'u' + u; }
+    if (U.at) U.at(G.cur, i); else U.tap(G.cur);
+    if (G.lastTile !== uk) { G.moves++; G.lastTile = uk; }
     press.set(i, now); ripples.push({ x: px, y: py, t: now });
     MODS.find(m => m.key === U.kind)?.onTap?.(G, U, i, now);   // animasyon, ilk dokunuş bildirimi
   } else {
