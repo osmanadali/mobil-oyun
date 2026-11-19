@@ -879,3 +879,20 @@ body.tut .tabbar{display:none}
 #home .hero.t4 h1{font-size:44px}#home .hero.t4 .logo.mark{width:64px}#home .hero.t4 .skyw small{display:none}
 #home .hero.t5 #skyBox{height:60px}
 #home #skyBox{overflow:hidden}#home #skyBox .skyl{overflow:hidden}
+/* ana sayfa kart düzeni (20 Kasım): Günün Hattı ince; Hatlar kartında "HATLAR" etiketi yok (hat adı yeter), ipucu sayısı sağ üstte; Oyna büyük; alt sekme çubuğu daha alçak */
+#home .card.daily{padding:11px 16px;border-radius:20px}
+#home .daily b{font-size:18px}
+#home .daily .k{font-size:11px}
+#home .daily small#dailyState{font-size:12.5px}
+#home .daily .dstreak{height:34px}
+#home .prog{gap:8px;position:relative;padding:16px 18px}
+#home .prog>.ph:first-child .k{display:none}
+#home .prog>.ph:first-child{position:absolute;right:18px;top:17px}
+#home .prog>b{font-size:21px;padding-right:76px}
+#home .actions .primary{height:84px;border-radius:28px}
+#home .actions .primary span{font-size:28px}
+#home .actions .primary small{font-size:14px}
+.tabbar{padding:4px;border-radius:22px}
+.tabbar button{padding:5px 0 3px;font-size:10px;gap:1px;border-radius:18px}
+.tabbar .te{font-size:20px;line-height:22px;height:22px}
+body[data-scr=home] #home,body[data-scr=league] #league,body[data-scr=city] #city{padding-bottom:calc(70px + var(--sab))}
