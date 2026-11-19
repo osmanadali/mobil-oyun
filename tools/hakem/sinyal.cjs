@@ -13,7 +13,7 @@ module.exports = async T => {
     const { ctx, page, errors } = await open(browser, URL, { save: { played: 9 } });
     const g = await page.evaluate(([GL, SH]) => {
       const R = window.__ray, shut = eval(SH), o = { n: 0, none: 0, rej: 0, sig: 0, bad: 0, pre: 0, place: 0, shut0: 0, lemma: 0, stuck: 0, rounds: 0, self: 0, naive: 0, same: 0, diffEq: 0, ms: 0 };
-      const me = R.MODS.find(m => m.key === 'signal'), keys = R.MODS.map(m => m.key).filter(k => k !== 'signal' && !me.clash.includes(k));
+      const me = R.MODS.find(m => m.key === 'signal'), keys = R.MODS.map(m => m.key).filter(k => k !== 'signal' && !me.clash.includes(k) && !['shunt', 'remote', 'yard'].includes(k));   // benzetim takas/kumanda/peron birimlerini oynamaz (onlar kendi testlerinde)
       const fixTile = (G, i) => { const u = G.unitOf?.[i] ?? -1; if (u >= 0) { const U = G.units[u]; for (let t = R.unitTaps(U, G.cur, G.sol); t > 0; t--) U.tap(G.cur); } else { const j = G.link[i]; G.cur[i] = G.sol[i]; if (j >= 0) G.cur[j] = G.sol[j]; } };
       // sinyali önce ayarlayan oyuncu: 1) her yanlış sinyal (kilitsiz olmalı) çözüme; her adımda ışık (lit d) değişmemeli · 2) kalan karolar turlarla (sinyal kilidine uyarak)
       const first = P => {

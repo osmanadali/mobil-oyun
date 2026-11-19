@@ -39,7 +39,7 @@
     cx.moveTo(x + h, y + d); cx.lineTo(x - h, y + d); cx.moveTo(x - h + e, y + d - e); cx.lineTo(x - h, y + d); cx.lineTo(x - h + e, y + d + e);
   };
   return {
-    key: 'shunt', line: 30, ord: 29, boost: 20, scan: 48,   // scan: çözücü puanı kuralla artmaz (ortak durum çıkarımı), seçici geniş tarasın; boost 20'den sonra tavan
+    key: 'shunt', line: 31, ord: 31, boost: 20, scan: 72,   // scan: çözücü puanı kuralla artmaz (ortak durum çıkarımı), seçici geniş tarasın; boost 20'den sonra tavan
     // kayan sıra, kayan sütun, döner tabla: onlar da karoların yerini değiştirir ama sabit düzenle; serbest takasla aynı tahtada karışır
     clash: ['slide', 'column', 'table'],
     card: { name: L('Manevra karosu', 'Shunt tile'), tag: L('Yeni: manevra karosu', 'New: shunt tile'),

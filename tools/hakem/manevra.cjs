@@ -68,7 +68,7 @@ module.exports = async T => {
       g.leafBad === 0 && g.found === ok && g.diff.h4 > g.diff.before && g.diff.h5 > g.diff.h4, JSON.stringify({ leafBad: g.leafBad, found: g.found, ok, diff: g.diff }));
     check('rule.shunt.clash', 'Manevra kayan sıra, kayan sütun ve döner tablayla hiçbir bölümde birlikte gelmez (900 bölüm, karma dahil)', g.line.mix === 0, String(g.line.mix));
     check('rule.shunt.line', `M${XL + 1} (${A}. bölümden): önceki bölümlerde yok, hattın her bölümünde var, giriş 3 karo, 7×9 ${g.line.mid}, final ${g.line.fin}, ilk 3 bölüm 6×8, sonrası karma; merdiven M${XL - 1} ${g.line.ladder[0]} < M${XL} ${g.line.ladder[1]} < M${XL + 1} ${g.line.ladder[2]} (karma M${XL + 2} ${g.line.ladder[3]}); bölüm üretimi ${g.line.gen} ms`,
-      A === 801 && g.line.early === 0 && g.line.own === g.line.len && g.line.intro === 3 && g.line.mid === 5 && g.line.fin === 5 && g.line.km >= 5 && g.line.size === '6x8 6x8 6x8 7x9' && g.line.ladder[1] < g.line.ladder[2] && g.line.ladder[2] > 26.6, JSON.stringify(g.line));
+      A === 829 && g.line.early === 0 && g.line.own === g.line.len && g.line.intro === 3 && g.line.mid === 5 && g.line.fin === 5 && g.line.km >= 5 && g.line.size === '6x8 6x8 6x8 7x9' && g.line.ladder[1] < g.line.ladder[2] && g.line.ladder[2] > 26.6, JSON.stringify(g.line));
     errs.push(...errors); await ctx.close();
   }
 

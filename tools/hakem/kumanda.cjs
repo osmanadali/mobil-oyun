@@ -44,7 +44,7 @@ module.exports = async T => {
         }
         // par: kumanda dışı karolar + öbek başına basılan kumanda sayısı
         { let p = 0; P.cur.forEach((v, i) => { if ((P.unitOf?.[i] ?? -1) >= 0) return; const j = P.link[i]; if (j >= 0 && j < i) return; let t = v, u = j >= 0 ? P.cur[j] : 0, k = 0; const step = P.rev[i] ? m => ((m >> 1) | (m << 3)) & 15 : rot; while ((t !== P.sol[i] || (j >= 0 && u !== P.sol[j])) && k < 4) { t = step(t); if (j >= 0) u = rot(u); k++; } if (k) p++; });
-          for (const U of P.units) { const r = R.unitTaps(U, P.cur, P.sol); if (r) p += U.need ? U.need(P.cur, P.sol)[1] : 1; } if (p !== P.par) o.par++; }
+          for (const U of P.units) { if (U.moves) { p += U.moves(P.cur, P.sol); continue; } if (U.cost) { p += U.cost(P.cur); continue; } const r = R.unitTaps(U, P.cur, P.sol); if (r) p += U.need ? U.need(P.cur, P.sol)[1] : 1; } if (p !== P.par) o.par++; }
       }
       o.ms = Math.round(performance.now() - t0);
       // zorluk çözücüsü (aynı tohumlar, 7×9): kumandasız · tek kumanda · öbekli (çözücü son hâli sayar, basış planını saymaz → kumanda puanı düşürür)

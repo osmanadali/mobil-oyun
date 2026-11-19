@@ -615,9 +615,10 @@ function lit(P) {
     }
   }
   const merged = own.includes(3) || !!ownB?.includes(3);
-  let ok = loose === 0 && !merged && d.every((v, i) => v >= 0 || P.void?.[i]);
+  const skip = i => P.void?.[i] || (P.hole?.[i] && !cur[i]);   // kapalı durak · boş peron: peronun boş hücresi (maske 0) bağlanmaz
+  let ok = loose === 0 && !merged && d.every((v, i) => v >= 0 || skip(i));
   if (split) for (let i = 0; i < n; i++) if (split[i]) { ok = ok && dB[i] >= 0; if (dB[i] >= 0 && (d[i] < 0 || dB[i] < d[i])) d[i] = dB[i]; }   // çizim için: iki yarının yanan küçüğü
-  const L = { d, own, merged, open: opn, openBy: by, n: d.filter((v, i) => v >= 0 || P.void?.[i]).length, solved: ok, ...(split ? { dB, ownB } : {}) };
+  const L = { d, own, merged, open: opn, openBy: by, n: d.filter((v, i) => v >= 0 || skip(i)).length, solved: ok, ...(split ? { dB, ownB } : {}) };
   for (const m of MODS) if (m.check && P[m.key]) { const bad = m.check(P, L); if (bad) L.solved = false; }
   return L;
 }
@@ -1927,7 +1928,8 @@ async function hint() {
   wrong.sort((a, b) => (G.seen[b] - G.seen[a]) || rk(a) - rk(b) || usz(a) - usz(b) || nearLit(b) - nearLit(a));
   const i = wrong[0], now = performance.now(), prev = G.L.d, ui = G.unitOf?.[i] ?? -1;
   G.hist = [];   // ipucunun sabitlediği karo geri alınmasın
-  for (const k of ui >= 0 ? G.units[ui].hint?.(G.cur, G.sol, i, G.fixed) ?? G.units[ui].cells : G.link[i] >= 0 ? [i, G.link[i]] : [i]) { G.cur[k] = G.sol[k]; G.fixed[k] = true; anim.set(k, now); press.set(k, now); }   // eşli karo / eklenti birimi: hepsi birden (U.hint: birim kendi adımını yapar, sabitlenecek karoları döndürür · manevra: bir takas)
+  const hm = ui >= 0 && MODS.find(m => m.key === G.units[ui].kind)?.hint;   // eklenti kendi ipucunu verir (boş peron: doğru yöne bir kaydırma), sabitlenecek karoları döndürür
+  for (const k of hm ? hm(G, now) : ui >= 0 ? G.units[ui].hint?.(G.cur, G.sol, i, G.fixed) ?? G.units[ui].cells : G.link[i] >= 0 ? [i, G.link[i]] : [i]) { G.cur[k] = G.sol[k]; G.fixed[k] = true; anim.set(k, now); press.set(k, now); }   // eşli karo / eklenti birimi (U.hint: manevra bir takas)
   save.hints--; G.hinted = true; G.hu = (G.hu || 0) + 1; persist(); $('gHints').textContent = save.hints; bump($('gHints'));
   G.L = lit(G); reveal();
   G.L.d.forEach((v, j) => { if (v >= 0 && prev[j] < 0) litAt[j] = now + v * 12; });

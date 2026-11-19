@@ -33,7 +33,7 @@ module.exports = async T => {
     const { ctx, page, errors } = await open(browser, URL, { save: { played: 9 }, init: SIM });
     const g = await page.evaluate(([XL, CLASH]) => {
       const R = window.__ray, rot = R.rot, o = { n: 0, none: 0, bad: 0, pre: 0, place: 0, path: 0, start: 0, litQ: 0, st: 0, S: 0, smart: 0, smartPar: 0, naive: 0, naiveW: 0, extra: 0, over: 0, shk: 0, ms: 0 };
-      const me = R.MODS.find(m => m.key === 'quake'), keys = R.MODS.map(m => m.key).filter(k => k !== 'quake' && !me.clash.includes(k));
+      const me = R.MODS.find(m => m.key === 'quake'), keys = R.MODS.map(m => m.key).filter(k => k !== 'quake' && !me.clash.includes(k) && !['shunt', 'remote', 'yard'].includes(k));   // benzetim takas/kumanda/peron birimlerini oynamaz (onlar kendi testlerinde)
       const popc = m => (m & 1) + (m >> 1 & 1) + (m >> 2 & 1) + (m >> 3 & 1), per = m => rot(m) === m ? 1 : rot(rot(m)) === m ? 2 : 4;
       const t0 = performance.now();
       for (const [c, r] of [[6, 8], [7, 9]]) for (const x of [{}, { two: true }, { fog: true, rev: 3, cnt: 3 }, ...keys.map(k => ({ [k]: 2 }))]) for (let s = 1; s <= 8; s++) {

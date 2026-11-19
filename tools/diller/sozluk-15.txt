@@ -1,0 +1,47 @@
+# Ray — çeviri sözlüğü (15): M31 🅿️ boş peron (kural kartı ve oyun içi bildirimler)
+# Biçim ve terimler: sozluk-1.txt başı ve docs/CEVIRI.md (tile: Kachel · pieza · peça · tuile · 타일 · タイル · 方塊; platform: Bahnsteig · andén · plataforma · quai · 승강장 · ホーム · 月台)
+
+@ Empty platform
+de: Leerer Bahnsteig
+es: Andén vacío
+pt: Plataforma vazia
+fr: Quai vide
+ko: 빈 승강장
+ja: 空きホーム
+zh: 空月台
+
+@ New: empty platform
+de: Neu: leerer Bahnsteig
+es: Nuevo: andén vacío
+pt: Novo: plataforma vazia
+fr: Nouveau : quai vide
+ko: 새 규칙: 빈 승강장
+ja: 新ルール：空きホーム
+zh: 新規則：空月台
+
+@ One spot on the framed <b>platform</b> is <b>empty</b>. Platform tiles <b>don’t turn</b>: tap a tile next to the gap and it <b>slides into the gap</b>. Each slide is <b>1 move</b>.
+de: Auf dem umrahmten <b>Bahnsteig</b> ist ein Platz <b>leer</b>. Bahnsteigkacheln <b>drehen sich nicht</b>: Tippe eine Kachel neben der Lücke an, dann <b>rutscht sie in die Lücke</b>. Jedes Schieben ist <b>1 Zug</b>.
+es: En el <b>andén</b> enmarcado hay un hueco <b>vacío</b>. Las piezas del andén <b>no giran</b>: toca una pieza junto al hueco y <b>se desliza al hueco</b>. Cada deslizamiento es <b>1 movimiento</b>.
+pt: Na <b>plataforma</b> com moldura há um espaço <b>vazio</b>. As peças da plataforma <b>não giram</b>: toque numa peça ao lado do espaço e ela <b>desliza para o espaço</b>. Cada deslize é <b>1 jogada</b>.
+fr: Sur le <b>quai</b> encadré, une place est <b>vide</b>. Les tuiles du quai <b>ne tournent pas</b> : touche une tuile voisine du trou et elle <b>glisse dans le trou</b>. Chaque glissement compte <b>1 coup</b>.
+ko: 테두리가 있는 <b>승강장</b>에는 한 칸이 <b>비어</b> 있어요. 승강장 타일은 <b>돌아가지 않아요</b>. 빈칸 옆 타일을 누르면 타일이 <b>빈칸으로 미끄러져요</b>. 한 번 밀 때마다 <b>1수</b>예요.
+ja: 枠で囲まれた<b>ホーム</b>には<b>空き</b>マスが1つあります。ホームのタイルは<b>回りません</b>。空きマスの隣のタイルをタップすると、タイルが<b>空きマスへすべり込みます</b>。1回すべらせるごとに<b>1手</b>です。
+zh: 有框的<b>月台</b>上有一格是<b>空的</b>。月台上的方塊<b>不會旋轉</b>：點空格旁的方塊，它就會<b>滑進空格</b>。每滑一次算<b>1 步</b>。
+
+@ 🅿️ Empty platform · a tile next to the gap slides into it and doesn’t turn
+de: 🅿️ Leerer Bahnsteig · eine Kachel neben der Lücke rutscht hinein und dreht sich nicht
+es: 🅿️ Andén vacío · una pieza junto al hueco se desliza a él y no gira
+pt: 🅿️ Plataforma vazia · uma peça ao lado do espaço desliza para ele e não gira
+fr: 🅿️ Quai vide · une tuile voisine du trou y glisse et ne tourne pas
+ko: 🅿️ 빈 승강장 · 빈칸 옆 타일이 빈칸으로 미끄러지고 돌아가지 않아요
+ja: 🅿️ 空きホーム · 空きマスの隣のタイルがすべり込み、回りません
+zh: 🅿️ 空月台 · 空格旁的方塊會滑進去，不會旋轉
+
+@ Platform tiles don’t turn · only a tile next to the gap slides
+de: Bahnsteigkacheln drehen sich nicht · nur eine Kachel neben der Lücke rutscht
+es: Las piezas del andén no giran · solo se desliza una pieza junto al hueco
+pt: As peças da plataforma não giram · só desliza uma peça ao lado do espaço
+fr: Les tuiles du quai ne tournent pas · seule une tuile voisine du trou glisse
+ko: 승강장 타일은 돌아가지 않아요 · 빈칸 옆 타일만 미끄러져요
+ja: ホームのタイルは回りません · 空きマスの隣のタイルだけがすべります
+zh: 月台方塊不會旋轉 · 只有空格旁的方塊能滑動

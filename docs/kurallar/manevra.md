@@ -1,6 +1,6 @@
-# M31 · Manevra karosu (`shunt`)
+# M32 · Manevra karosu (`shunt`)
 
-Hat M31, ilk bölüm 801 (`line: 30`, `ord: 29`). Dosyalar: `www/rules/manevra.js`, `tools/hakem/manevra.cjs`, çeviri `tools/diller/sozluk-13.txt`. `KARMA` 30 → 31: karma hatlar artık M32'den (829. bölüm).
+Hat M32, ilk bölüm 829 (`line: 31`, `ord: 31`, `scan: 72`). Dosyalar: `www/rules/manevra.js`, `tools/hakem/manevra.cjs`, çeviri `tools/diller/sozluk-13.txt`. `KARMA` 30 → 31: karma hatlar artık M32'den (829. bölüm).
 
 **Kural.** ⇄ rozetli manevra karoları **dönmez**. Birine dokununca seçilir (kalın çerçeve, karo hafifçe kalkar, rozeti dolar), başka bir ⇄ karoya dokununca ikisi **yer değiştirir**; yönleri aynı kalır. Seçili karoya yeniden dokunmak seçimi bırakır; ⇄ olmayan bir karoya dokunmak da seçimi bırakır (o karo normal döner). Biçimler doğru yönde ama yanlış yerde başlar: oyuncu hangi biçimin nereye ait olduğunu bulur. Bir takas = 1 hamle; seçim ve bırakma hamle değildir. Oyuncuya: "⇄ işaretli manevra karoları dönmez. Birine dokun, sonra başka bir ⇄ karoya: ikisi yer değiştirir, yönleri aynı kalır. Her biçim doğru yönde ama yanlış yerde; hangisinin nereye ait olduğunu bul."
 
