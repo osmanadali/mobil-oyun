@@ -299,7 +299,7 @@ const RULES = {
 const RULE_LINE = { pairs: 2, rev: 3, fog: 5, cnt: 6, two: 8 };
 const MODS = [], CLASH = {};   // eklentiler · birlikte gelemeyen kurallar (simetrik)
 const clash = (a, b) => !!(CLASH[a]?.includes(b) || CLASH[b]?.includes(a));
-const KARMA = 30;   // 0 tabanlı: M31 ve sonrası sınırsız karma (son kural M30 · dönüşen karo, 773. bölüm)
+const KARMA = 31;   // 0 tabanlı: M32 ve sonrası sınırsız karma (son kural M31 · boş peron, 801. bölüm)
 function rulesFor(l) {
   const c = lineOf(l), own = Object.keys(RULE_LINE).find(k => RULE_LINE[k] === c), set = new Set(own ? [own] : []);
   const learned = Object.keys(RULE_LINE).filter(k => RULE_LINE[k] < c).sort((a, b) => RULE_LINE[a] - RULE_LINE[b]);   // hat sırasıyla: slice(-3) = en yeni 3 kural
@@ -410,7 +410,7 @@ function generate(cols, rows, seed, _pins = 0, pairs = 0, x = {}) {   // _pins: 
     while ((t !== sol[i] || (j >= 0 && u !== sol[j])) && r < 4) { t = step(t); if (j >= 0) u = rot(u); r++; }
     taps += r; if (r) par++;
   });
-  for (const U of C.units) { const r = unitTaps(U, cur, sol); taps += r; if (r) par++; }
+  for (const U of C.units) { const r = U.cost ? U.cost(cur) : unitTaps(U, cur, sol); taps += r; if (r) par += U.cost ? r : 1; }   // U.cost: birim dokunuşlarını kendi sayar, her dokunuş ayrı hamle (boş peron)
   return { cols, rows, sol, cur, hub, hub2, par, taps, pinned, link, rev, cnt, fixed: new Array(n).fill(false),
     ...(C.units.length ? { units: C.units, unitOf: C.unitOf } : {}), ...(C.adj ? { adj: C.adj, ao: C.ao } : {}), ...C.out };
 }
@@ -609,9 +609,10 @@ function lit(P) {
     }
   }
   const merged = own.includes(3) || !!ownB?.includes(3);
-  let ok = loose === 0 && !merged && d.every((v, i) => v >= 0 || P.void?.[i]);
+  const skip = i => P.void?.[i] || (P.hole?.[i] && !cur[i]);   // kapalı durak · boş peron: peronun boş hücresi (maske 0) bağlanmaz
+  let ok = loose === 0 && !merged && d.every((v, i) => v >= 0 || skip(i));
   if (split) for (let i = 0; i < n; i++) if (split[i]) { ok = ok && dB[i] >= 0; if (dB[i] >= 0 && (d[i] < 0 || dB[i] < d[i])) d[i] = dB[i]; }   // çizim için: iki yarının yanan küçüğü
-  const L = { d, own, merged, open: opn, openBy: by, n: d.filter((v, i) => v >= 0 || P.void?.[i]).length, solved: ok, ...(split ? { dB, ownB } : {}) };
+  const L = { d, own, merged, open: opn, openBy: by, n: d.filter((v, i) => v >= 0 || skip(i)).length, solved: ok, ...(split ? { dB, ownB } : {}) };
   for (const m of MODS) if (m.check && P[m.key]) { const bad = m.check(P, L); if (bad) L.solved = false; }
   return L;
 }
@@ -1920,7 +1921,8 @@ async function hint() {
   wrong.sort((a, b) => (G.seen[b] - G.seen[a]) || rk(a) - rk(b) || usz(a) - usz(b) || nearLit(b) - nearLit(a));
   const i = wrong[0], now = performance.now(), prev = G.L.d, ui = G.unitOf?.[i] ?? -1;
   G.hist = [];   // ipucunun sabitlediği karo geri alınmasın
-  for (const k of ui >= 0 ? G.units[ui].cells : G.link[i] >= 0 ? [i, G.link[i]] : [i]) { G.cur[k] = G.sol[k]; G.fixed[k] = true; anim.set(k, now); press.set(k, now); }   // eşli karo / eklenti birimi: hepsi birden
+  const hm = ui >= 0 && MODS.find(m => m.key === G.units[ui].kind)?.hint;   // eklenti kendi ipucunu verir (boş peron: doğru yöne bir kaydırma), sabitlenecek karoları döndürür
+  for (const k of hm ? hm(G, now) : ui >= 0 ? G.units[ui].cells : G.link[i] >= 0 ? [i, G.link[i]] : [i]) { G.cur[k] = G.sol[k]; G.fixed[k] = true; anim.set(k, now); press.set(k, now); }   // eşli karo / eklenti birimi: hepsi birden
   save.hints--; G.hinted = true; G.hu = (G.hu || 0) + 1; persist(); $('gHints').textContent = save.hints; bump($('gHints'));
   G.L = lit(G); reveal();
   G.L.d.forEach((v, j) => { if (v >= 0 && prev[j] < 0) litAt[j] = now + v * 12; });

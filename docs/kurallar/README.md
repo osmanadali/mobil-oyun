@@ -42,10 +42,11 @@ Hat sırası (3 Kasım; göze çarpan/kolay kurallar önce, gizli bilgili ve inc
 | M28 | 717 | Sinyal karosu | `signal` | `sinyal` |
 | M29 | 745 | Sarsıntı durağı | `quake` | `sarsinti` |
 | M30 | 773 | Dönüşen karo | `morph` | `donusen-karo` |
+| M31 | 801 | Boş peron | `yard` | `bos-peron` |
 
 Bağımlılıklar yeni sırada da korunur: köprü (M13) tünel ağzından (M16) önce; tabela (M17) halkadan (M18) önce (halka ikisiyle `clash`, `CLASH` simetrik ve sırasız). Mühürlü karo bakım karosuyla, sarmal tahta tünel ağzı, gizli depo, nehir ve tarife bölgesiyle aynı bölümde gelmez (`clash`). Eklentilerin üretim/kanca sırası `ord` alanıyla sabittir (sarmal tahta `ord: 7` ile `pre` aşamalarının önünde, mühürlü karo `ord: 23` ile işaretlerin en sonunda). Güçlendiriciler kuralın hattını `RULE_LINE`'dan okur (🔦 fener → `fog`, 🔄 ek tur → `cnt`).
 
-M31 ve sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`, `KARMA = 30`). Son sefer ve kayan sütun 3 Kasım'da (`kurallar-3`) sona eklendi: 1–632. bölümler bit bit aynı kaldı, yalnız karma (eskiden 633'ten, sonra 689'dan) yeniden üretildi. Tek yön ve ekspres durak 19 Kasım'da (`kurallar-4`) aynı yolla sona eklendi: 1–688. bölümler bit bit aynı, karma artık 745'ten. Kayan sütun kayan sırayla aynı bölümde gelmez (`clash`); son sefer bakım karosuyla, tek yön tabela ve halkayla, ekspres durak son seferle gelmez. Sinyal karosu (19 Kasım) aynı yolla M28 olarak sona eklendi: 1–716. bölümler bit bit aynı, karma artık 745'ten; sinyal mühürlü karo, bakım karosu ve son seferle gelmez.
+M32 ve sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`, `KARMA = 31`; boş peron eklenmeden önce M31'den, `KARMA = 30`). Son sefer ve kayan sütun 3 Kasım'da (`kurallar-3`) sona eklendi: 1–632. bölümler bit bit aynı kaldı, yalnız karma (eskiden 633'ten, sonra 689'dan) yeniden üretildi. Tek yön ve ekspres durak 19 Kasım'da (`kurallar-4`) aynı yolla sona eklendi: 1–688. bölümler bit bit aynı, karma artık 745'ten. Kayan sütun kayan sırayla aynı bölümde gelmez (`clash`); son sefer bakım karosuyla, tek yön tabela ve halkayla, ekspres durak son seferle gelmez. Sinyal karosu (19 Kasım) aynı yolla M28 olarak sona eklendi: 1–716. bölümler bit bit aynı, karma artık 745'ten; sinyal mühürlü karo, bakım karosu ve son seferle gelmez.
 
 ## Temel ilkeler
 
@@ -77,6 +78,7 @@ M31 ve sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 ta
   undo(G) {},                                // ↶ geri al güçlendiricisinden sonra: eklentinin oyun içi durumunu düzelt
   plan(G, out) { return []; },               // robot planı (__ray.plan): bu eklentinin birimleri çekirdek planına girmez; out = o ana dek planlanan dokunuşlar
   prio(G) { return []; },                    // öncelik (__ray.prio): ipucu ve robot önce bu karoları, bu sırayla çözer (son sefer: saatli durağın yolu)
+  hint(G, now) { return []; },              // ipucu karosu bu kuralın birimindeyse ipucunu kendisi verir; sabitlenecek karoları döndürür (boş peron: bir kaydırma)
   check(P, L) { return 0; },                 // kazanma denetimi: bozuk sayısı (0 = tamam); L'ye çizim verisi yazılabilir
   allow(P, i, mask) { return true; },        // zorluk çözücüsü için yerel süzgeç: bu maske i karosunda olabilir mi
   // gizli bilgi ve küresel koşullar (son hatların zor kuralları)
@@ -136,6 +138,7 @@ Birden çok durum taşıyan, dönmeyen ya da birlikte hareket eden karolar için
 - `K`: döngü uzunluğu. `K` dokunuş sonra birim başlangıç durumuna döner.
 - `tap(cur)`: bir dokunuşu **verilen dizi üzerinde** uygular. Kapanışta `C.cur`'u tutmayın, her zaman parametreyi değiştirin; oyun, zorluk çözücüsü, robot ve par hesabı aynı işlevi kopyalar üzerinde çağırır.
 - `kind`: eklentinin anahtarı. Çekirdek dokunuşta `onTap`'i bununla bulur.
+- `cost(cur)` (isteğe bağlı, birim nesnesine yazılır): birimin çözüme kaç dokunuş istediğini kendisi verir ve her dokunuş ayrı hamle sayılır (`par += r`). Boş peron: ilk peron birimi en kısa kaydırma sayısını, ötekiler 0 döndürür.
 
 Çekirdek birimleri kendiliğinden şöyle işler:
 
@@ -150,6 +153,7 @@ Birden çok durum taşıyan, dönmeyen ya da birlikte hareket eden karolar için
 - Komşuluk `nb/ob` ile okunur, tünel komşuluğu kendiliğinden geçerlidir.
 - **Bölünmüş düğüm (köprü):** `P.split[i] = 1` olan karo iki ayrı düğümdür. K–G yarısı (bitler 5) `d/own`, D–B yarısı (bitler 10) `dB/ownB` dizilerine yazılır. Çözülmüş sayılması için iki yarı da bağlanmalıdır. Çizim için `d[i]` iki yarının yanan küçüğü olur. Köprü eklentisi `C.out.split` alanını doldurur.
 - **Yok sayılan karo (`P.void`):** `P.void[i] = 1` olan karonun rayları yok sayılır (0 maske gibi), ışık almasa da çözüm bozulmaz; ipucu bu karoya verilmez. `L.n` bu karoları yanmış sayar. Kapalı durak eklentisi `C.out.void` alanını doldurur.
+- **Boş hücre (`P.hole`):** `P.hole[i] = 1` olan karo maskesi 0 iken bağlanması gereken karo sayılmaz (`L.n` onu yanmış sayar). Boş peron eklentisi `C.out.hole` alanını doldurur (peron hücreleri; o anki boşluk maskesi 0 olandır).
 - **Eşsiz biten kol (`open`):** `open(P, i, k)` doğru dönerse i karosunun k yönündeki kol, komşusu karşılamasa da (ya da tahta dışına baksa da) gevşek sayılmaz; `L.open` bunları sayar (`L.openBy[anahtar]` kurala göre ayrı). Kaç tane olması gerektiğini eklenti `check` ile denetler. İç kenarda simetrik olmalı: `open(P, i, k)` ile `open(P, j, ters k)` aynı değeri döndürür. Çözücüde bu kenar serbest bırakılır, sayım `prune` ile yapılır.
 - **Eklenti denetimi:** `check(P, L)` bozuk sayısını döndürür. Sıfırdan büyükse `L.solved = false` olur. L'ye çizim verisi yazılabilir (ör. `L.signBad`, `L.core`). Bu işlev zorluk çözücüsünün yaprağında da çağrılır, ucuz olmalıdır.
 
@@ -192,6 +196,7 @@ Birden çok durum taşıyan, dönmeyen ya da birlikte hareket eden karolar için
 | Sinyal karosu `signal` | `out.signal`: n uzunlukta 0/1 dizi; sinyal hücreleri `C.busy` (mark, `ord: 26`; `fin` başta kilitli olanı çıkarır) |
 | Dönüşen karo `morph` | `out.morph`: n uzunlukta dizi; dönüşen karoda aile (1: K·D → D–B → G·B → K–G, 2: onun 90° çevriği), diğerlerinde 0. Birim türü `'morph'`, tek karo, K = 4 (shape, `ord: 28`) |
 | Sarsıntı durağı `quake` | `out.quake = { st: [durak], nb: [[sarsılan karolar], …] }`; durak ve sarsılan karolar `C.busy` (mark, `ord: 28`, ekspres duraktan sonra; ekspres durakları durak seçmez) |
+| Boş peron `yard` | `out.yard = { cells: [3×3 peron, satır satır], adj: [peron içi komşu sıraları], goal: çözüm dizilimi, d: en kısa kaydırma }`, `out.hole`: n uzunlukta 0/1 (peron hücresi; maskesi 0 olan = o anki boşluk, `lit` onu saymaz). Her peron hücresi tek karoluk birim, tür `'yard'`, K = 1, `cost` ile par; peron `keep` + `busy` (tree, `tOrder: 30`: yaprak durak çıkarılır; shape, `ord: 30`: geçerli kaydırmalarla karıştırılır) |
 
 Çakışma ve dışlamalar (tasarım doğrulamasından):
 
@@ -237,3 +242,5 @@ module.exports = async T => {
 - Bitince `docs/kurallar/<ad>.md` güncel olmalı: kural, kanıt, ölçümler ve bilinen sınırlar.
 
 > **19 Kasım birleştirme notu:** sinyal, dönüşen karo ve sarsıntı durağı ayrı dallarda M28 olarak yapıldı, birleşince sıraya kondu. Merdiven (güncel ölçüm): M27 ekspres 23,6 < M28 sinyal 24,0 < M29 sarsıntı 24,8 (`boost: 16`) < M30 dönüşen 26,6; karma M31+ ~21,4. Sarsıntı M30'da boost ne olursa olsun ~23,6'da kaldığı için dönüşenden önceye alındı.
+
+> **Boş peron (M31, `kural-bos-peron`):** 1–800. bölümler bit bit aynı, karma artık 829'dan (`KARMA = 31`). Çekirdekte üç küçük kanca eklendi: birim `cost` (par/dokunuşu birim verir, her dokunuş ayrı hamle), `lit`'te `P.hole` (peronun boş hücresi bağlanmaz), ipucunda birim türünün `hint(G, now)` kancası (kendi ipucunu verir, sabitlenecek karoları döndürür). Boş peron kayan sıra/sütun, döner tabla, sarmal tahta, kapalı durak, nehir, tarife bölgesi, gizli depo, son sefer ve bakım karosuyla gelmez. Merdiven: M30 dönüşen 26,6 < M31 boş peron 30,4 (`boost: 13`).
