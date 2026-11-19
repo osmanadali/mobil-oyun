@@ -8,7 +8,7 @@
   };
   const { popc } = api, EXP = '#5ad1ff', EXP_L = '#0a7fb0', CAP = 360, ALT = 24;
   return {
-    key: 'express', line: 27, ord: 27, boost: 9,
+    key: 'express', line: 26, ord: 27, boost: 9,
     clash: ['last'],   // son sefer: iki ayrı sayılı durak rozeti aynı tahtada karışır
     card: { name: L('Ekspres durak', 'Express station'), tag: L('Yeni: ekspres durak', 'New: express station'),
       demo: '<div class="rd-express" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><s class="l"></s><s class="l"></s><s class="l"></s><s class="q"></s><b></b><u></u><em>2</em></div>',

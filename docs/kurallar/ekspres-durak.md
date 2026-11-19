@@ -1,6 +1,6 @@
-# M28 · Ekspres durak (`express`)
+# M27 · Ekspres durak (`express`)
 
-Hat M28, ilk bölüm 717 (19 Kasım, `kurallar-4`). Dosyalar: `www/rules/ekspres-durak.js`, `tools/hakem/ekspres-durak.cjs`. Esin kaynağı: metro haritalarında ekspres seferin "en çok N durak" vaadi; uzaklık ipuçlu bulmacalar.
+Hat M27, ilk bölüm 689 (19 Kasım, `kurallar-4`). Dosyalar: `www/rules/ekspres-durak.js`, `tools/hakem/ekspres-durak.cjs`. Esin kaynağı: metro haritalarında ekspres seferin "en çok N durak" vaadi; uzaklık ipuçlu bulmacalar.
 
 **Kural.** Bazı durakların sağ üstünde 🚄 sayılı bir plaka vardır: merkezden o durağa giden yol **en çok o kadar karo** olabilir (yol, merkezden sonraki karoları ve durağın kendisini sayar; merkezin komşusu 1). Uzun yoldan bağlanan ekspres durak bölümü bitirmez. Oyuncuya: "Ekspres durağa merkezden giden yol en çok üstündeki sayı kadar karo olabilir: kısa yolu bul."
 
