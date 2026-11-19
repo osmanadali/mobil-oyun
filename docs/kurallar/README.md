@@ -39,10 +39,11 @@ Hat sırası (3 Kasım; göze çarpan/kolay kurallar önce, gizli bilgili ve inc
 | M25 | 633 | Son sefer | `last` | `son-sefer` |
 | M26 | 661 | Kayan sütun | `column` | `kayan-sutun` |
 | M27 | 689 | Ekspres durak | `express` | `ekspres-durak` |
+| M28 | 717 | Sinyal karosu | `signal` | `sinyal` |
 
 Bağımlılıklar yeni sırada da korunur: köprü (M13) tünel ağzından (M16) önce; tabela (M17) halkadan (M18) önce (halka ikisiyle `clash`, `CLASH` simetrik ve sırasız). Mühürlü karo bakım karosuyla, sarmal tahta tünel ağzı, gizli depo, nehir ve tarife bölgesiyle aynı bölümde gelmez (`clash`). Eklentilerin üretim/kanca sırası `ord` alanıyla sabittir (sarmal tahta `ord: 7` ile `pre` aşamalarının önünde, mühürlü karo `ord: 23` ile işaretlerin en sonunda). Güçlendiriciler kuralın hattını `RULE_LINE`'dan okur (🔦 fener → `fog`, 🔄 ek tur → `cnt`).
 
-M27 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`, `KARMA = 27`). Son sefer ve kayan sütun 3 Kasım'da (`kurallar-3`) sona eklendi: 1–632. bölümler bit bit aynı kaldı, yalnız karma (eskiden 633'ten, sonra 689'dan) yeniden üretildi. Tek yön ve ekspres durak 19 Kasım'da (`kurallar-4`) aynı yolla sona eklendi: 1–688. bölümler bit bit aynı, karma artık 745'ten. Kayan sütun kayan sırayla aynı bölümde gelmez (`clash`); son sefer bakım karosuyla, tek yön tabela ve halkayla, ekspres durak son seferle gelmez.
+M28 sonrası hatlar karmadır: her bölüm öğrenilmiş kurallardan 1–2 tanesini taşır (`rulesFor`, `KARMA = 28`). Son sefer ve kayan sütun 3 Kasım'da (`kurallar-3`) sona eklendi: 1–632. bölümler bit bit aynı kaldı, yalnız karma (eskiden 633'ten, sonra 689'dan) yeniden üretildi. Tek yön ve ekspres durak 19 Kasım'da (`kurallar-4`) aynı yolla sona eklendi: 1–688. bölümler bit bit aynı, karma artık 745'ten. Kayan sütun kayan sırayla aynı bölümde gelmez (`clash`); son sefer bakım karosuyla, tek yön tabela ve halkayla, ekspres durak son seferle gelmez. Sinyal karosu (19 Kasım) aynı yolla M28 olarak sona eklendi: 1–716. bölümler bit bit aynı, karma artık 745'ten; sinyal mühürlü karo, bakım karosu ve son seferle gelmez.
 
 ## Temel ilkeler
 
@@ -186,6 +187,7 @@ Birden çok durum taşıyan, dönmeyen ya da birlikte hareket eden karolar için
 | Mühürlü karo `seal` | `out.seal`: n uzunlukta 0/1 dizi; mühürlü hücreler `C.busy` (mark, en son) |
 | Sarmal tahta `wrap` | `C.adj/C.ao` (pre, `ord: 7`; karşı kenar komşuluğu), `out.wrap = { cols, rows }` |
 | Ekspres durak `express` | `out.express = { st: [durak], B: [sayı] }`; sayı çözümdeki `lit` uzaklığı (mark, `ord: 27`, işaretlerin en sonu) |
+| Sinyal karosu `signal` | `out.signal`: n uzunlukta 0/1 dizi; sinyal hücreleri `C.busy` (mark, `ord: 26`; `fin` başta kilitli olanı çıkarır) |
 
 Çakışma ve dışlamalar (tasarım doğrulamasından):
 
