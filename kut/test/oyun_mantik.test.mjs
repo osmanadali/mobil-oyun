@@ -274,7 +274,7 @@ ok(ozet.seviye >= 2 + 1, `maç sonunda savaş deneyimiyle seviye arttı (Sv ${oz
   ok(!e.M.ilkSecim && e.M.tahta.some(b => b && b.h === sec) && e.M.altin === a0 && e.bekleyenSecim() === null, 'bedava seçim tahtaya kondu, altın düşmedi');
   ok(e.M.rakip.pve && e.M.rakip.kaynak === 'canavar' && e.M.rakip.takim.map(b => b.h).join() === 'cakil,cakil' && e.turTip() === 'pve' && e.turUzun() === 'Bölüm 1 · Tur 1', '1-1 rakibi canavar dalgası (2 Çakıl Kıpırı), "Bölüm 1 · Tur 1"');
   const sim = e.savasHazirla();
-  ok(sim.birimler.filter(u => u.taraf === 1).every(u => u.b.canavar === 'cakil' && u.b.h === 'golem' && u.mx === DD.canavar('cakil').can), 'savaşta canavar: motor canavar istatistiğiyle, sahneye görünüm kahramanı (u.b.h) ve gerçek kimlik (u.b.canavar)');
+  ok(sim.birimler.filter(u => u.taraf === 1).every(u => u.b.canavar === 'cakil' && u.b.h === 'cakil' && u.mx === DD.canavar('cakil').can), 'savaşta canavar: motor canavar istatistiğiyle, sahneye kendi modeli (u.b.h) ve gerçek kimlik (u.b.canavar)');
   ok(e.birimAd(sim.birimler.find(u => u.taraf === 1).b) === 'Çakıl Kıpırı', 'hasar özetinde canavarın adı');
   let r = e.savasBitti(sim.sonunaKadar());
   ok(r.pve && r.esya.length === 1 && e.M.esyaRaf.length === 1 && r.hasar === 0, '1-1 ganimeti: 1 bileşen, bölüm 1\'de can gitmez');

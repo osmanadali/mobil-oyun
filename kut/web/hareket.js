@@ -421,7 +421,8 @@ function eksenler(v, f, u, n) {   // Z ekseninin kemik dinlenme yerel uzayındak
   v.ef = f.clone().applyQuaternion(ri).normalize(); v.eu = u.clone().applyQuaternion(ri).normalize(); v.en = n.clone().applyQuaternion(ri).normalize();
 }
 const STIL = { kurt: { saldir: 'isir', yetenek: 'ulu' }, koc: { saldir: 'tosla', yetenek: 'ofke' }, bulutat: { saldir: 'tosla', yetenek: 'sahlan' },
-  kaplumbaga: { saldir: 'isir', yetenek: 'uzan' }, semender: { saldir: 'isir', yetenek: 'don' } };
+  kaplumbaga: { saldir: 'isir', yetenek: 'uzan' }, semender: { saldir: 'isir', yetenek: 'don' },
+  yarasa: { saldir: 'isir', yetenek: 'don' }, kirpi: { saldir: 'tosla', yetenek: 'don' }, tasKabuk: { saldir: 'isir', yetenek: 'uzan' }, yildizYiyen: { saldir: 'isir', yetenek: 'ulu' } };
 
 /** Dört ayaklıyı kur. model: govde içine yerleşmiş, ölçeklenmiş ve döndürülmüş model (birimKur'un SONUNDA çağır);
     kemikler: ad → Bone (sahne3d b.kemik). ops.tur: 'kurt'|'koc'|... (saldırı/yetenek stili). Döner: durum (dortAyakliGuncelle'ye ver) */

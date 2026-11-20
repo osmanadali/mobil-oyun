@@ -13,7 +13,7 @@ let hata = 0; const ok = (c, m) => { if (!c) { hata++; console.log('✗', m); } 
   const mana = { anaAkrep: 80, gokBalinasi: 100, kadimBekci: 90, yildizYiyen: 100 };
   ok(D.CANAVARLAR.every(c => c.mana === (mana[c.id] || 9999)), 'yeteneksizlerin manası 9999; Ana Akrep 80, Gök Balinası 100, Kadim Bekçi 90, Yıldız Yiyen 100');
   ok(D.CANAVARLAR.every(c => c.kademe === 0 && c.soy.length === 0 && D.kahraman(c.id) === c && D.canavar(c.id) === c), 'canavar: kademe 0, soy yok; kahraman(id) canavara da bakar');
-  ok(D.CANAVARLAR.every(c => D.KAHRAMANLAR.some(h => h.id === c.gorunum)) && D.CANAVARLAR.every(c => !D.KAHRAMANLAR.some(h => h.id === c.id)), 'canavar kahraman listesinde yok; görünüm kahramanı var');
+  ok(D.CANAVARLAR.every(c => c.gorunum === c.id) && D.CANAVARLAR.every(c => !D.KAHRAMANLAR.some(h => h.id === c.id)), 'canavar kahraman listesinde yok; kendi modeli var');
   ok(Object.keys(L.havuzKalan([L.pveDalga(9)])).length === D.KAHRAMANLAR.length && Object.values(L.havuzKalan([L.pveDalga(9)])).every((n, i) => n === K.havuzAdet[D.KAHRAMANLAR[i].kademe]), 'canavarlar kahraman havuzundan düşmez');
   ok(D.YETENEK.akrepZehir && D.YETENEK.balinaSarki && D.YETENEK.bekciDarbe && D.YETENEK.yildizYutan && D.PASIF.dikenKirpi, 'canavar yetenek ve pasif metinleri');
 }

@@ -189,16 +189,16 @@
   ];
 
   // ── Canavarlar (OYNANIS_DERINLIK.md 5.5): soyları yok, kahraman havuzuna girmez, kademe 0. Yeteneksizlerin manası 9999.
-  // gorunum: 3D modeli gelene kadar sahnede yerine gösterilen kahraman modeli (yalnız görsel; motor kullanmaz).
+  // gorunum: sahnede gösterilen 3D model ve portre adı (yalnız görsel; motor kullanmaz).
   const CANAVARLAR = [
-    { id: 'cakil',      ad: 'Çakıl Kıpırı', emoji: '🪨', renk: '#9a8f80', gorunum: 'golem',      can: 392,  atk: 18,  as: 0.70, menzil: 1, mana: 9999, yetenek: null,          pasif: null },
-    { id: 'kirpi',      ad: 'Diken Kirpi',  emoji: '🦔', renk: '#a0764e', gorunum: 'kaplumbaga', can: 588,  atk: 24,  as: 0.80, menzil: 1, mana: 9999, yetenek: null,          pasif: 'dikenKirpi' },
-    { id: 'tasKabuk',   ad: 'Taş Kabuk',    emoji: '🐚', renk: '#8c8c8c', gorunum: 'kaplumbaga', can: 1260,  atk: 22,  as: 0.50, menzil: 1, mana: 9999, yetenek: null,          pasif: null },
-    { id: 'kumAkrebi',  ad: 'Kum Akrebi',   emoji: '🦂', renk: '#d4a95a', gorunum: 'semender',   can: 980,  atk: 40,  as: 0.80, menzil: 1, mana: 9999, yetenek: null,          pasif: null },
-    { id: 'anaAkrep',   ad: 'Ana Akrep',    emoji: '🦂', renk: '#b8742c', gorunum: 'semender',   can: 2100, atk: 56,  as: 0.70, menzil: 1, mana: 80,   yetenek: 'akrepZehir',  pasif: null },
-    { id: 'gokBalinasi',ad: 'Gök Balinası', emoji: '🐋', renk: '#7fb8e6', gorunum: 'kugu',       can: 7280, atk: 68,  as: 0.50, menzil: 3, mana: 100,  yetenek: 'balinaSarki', pasif: null },
-    { id: 'kadimBekci', ad: 'Kadim Bekçi',  emoji: '🗿', renk: '#8a9a7a', gorunum: 'golem',      can: 4480, atk: 88, as: 0.60, menzil: 1, mana: 90,   yetenek: 'bekciDarbe',  pasif: null },
-    { id: 'yildizYiyen',ad: 'Yıldız Yiyen', emoji: '🌌', renk: '#5a3f9a', gorunum: 'ejder',      can: 12600, atk: 112, as: 0.60, menzil: 3, mana: 100,  yetenek: 'yildizYutan', pasif: null },
+    { id: 'cakil',      ad: 'Çakıl Kıpırı', emoji: '🪨', renk: '#9a8f80', gorunum: 'cakil',      can: 392,  atk: 18,  as: 0.70, menzil: 1, mana: 9999, yetenek: null,          pasif: null },
+    { id: 'kirpi',      ad: 'Diken Kirpi',  emoji: '🦔', renk: '#a0764e', gorunum: 'kirpi', can: 588,  atk: 24,  as: 0.80, menzil: 1, mana: 9999, yetenek: null,          pasif: 'dikenKirpi' },
+    { id: 'tasKabuk',   ad: 'Taş Kabuk',    emoji: '🐚', renk: '#8c8c8c', gorunum: 'tasKabuk', can: 1260,  atk: 22,  as: 0.50, menzil: 1, mana: 9999, yetenek: null,          pasif: null },
+    { id: 'kumAkrebi',  ad: 'Kum Akrebi',   emoji: '🦂', renk: '#d4a95a', gorunum: 'kumAkrebi',   can: 980,  atk: 40,  as: 0.80, menzil: 1, mana: 9999, yetenek: null,          pasif: null },
+    { id: 'anaAkrep',   ad: 'Ana Akrep',    emoji: '🦂', renk: '#b8742c', gorunum: 'anaAkrep',   can: 2100, atk: 56,  as: 0.70, menzil: 1, mana: 80,   yetenek: 'akrepZehir',  pasif: null },
+    { id: 'gokBalinasi',ad: 'Gök Balinası', emoji: '🐋', renk: '#7fb8e6', gorunum: 'gokBalinasi',       can: 7280, atk: 68,  as: 0.50, menzil: 3, mana: 100,  yetenek: 'balinaSarki', pasif: null },
+    { id: 'kadimBekci', ad: 'Kadim Bekçi',  emoji: '🗿', renk: '#8a9a7a', gorunum: 'kadimBekci',      can: 4480, atk: 88, as: 0.60, menzil: 1, mana: 90,   yetenek: 'bekciDarbe',  pasif: null },
+    { id: 'yildizYiyen',ad: 'Yıldız Yiyen', emoji: '🌌', renk: '#5a3f9a', gorunum: 'yildizYiyen',      can: 12600, atk: 112, as: 0.60, menzil: 3, mana: 100,  yetenek: 'yildizYutan', pasif: null },
   ].map(c => ({ ...c, kademe: 0, soy: [] }));
   // Canavar dalgaları: 'bölüm-tur' → birimler (taraf 1'de; x sütun 0..3, y sıra 0 ön | 1 orta | 2 arka). 6. bölüm ve sonrası: PVE_DALGA_GEC.
   const PVE_DALGA = {
