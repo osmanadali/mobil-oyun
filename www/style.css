@@ -27,6 +27,8 @@
 
 *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 html,body{height:100%;overflow:hidden;overflow:clip;overscroll-behavior:none}
+/* tablette (width=540 + kesirli ölçek) sayfa ekranı 1 piksel eksik kaplayabiliyor: sağda/altta beyaz çizgi görünmesin diye kök de zemin rengini taşır */
+html{background:var(--bg0)}
 body{background:linear-gradient(165deg,var(--bg1),var(--bg0) 60%);color:var(--fg);font:16px/1.35 Outfit,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;letter-spacing:.1px}
 /* Outfit'te CJK harfi yok: Korece/Japonca/Geleneksel Çince harfler dilin sistem yazı tipine düşer (Latin harf ve rakam Outfit'te kalır); Korece sözcük ortasından bölünmez */
 html:lang(ko) body{font-family:Outfit,"Apple SD Gothic Neo","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic",system-ui,sans-serif;word-break:keep-all;overflow-wrap:break-word}

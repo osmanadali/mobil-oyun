@@ -742,7 +742,8 @@ const Music = (() => {
     try { master.gain.cancelScheduledValues(ac.currentTime); master.gain.setTargetAtTime(0, ac.currentTime, .3); } catch {}
   }
   // arka plan: müzik anında susar; dönüş: kaçan notalar atlanır, ses 0'dan yumuşakça açılır
-  function hush() { if (!master) return; try { master.gain.cancelScheduledValues(0); master.gain.value = 0; master.gain.setValueAtTime(0, ac.currentTime); } catch {} }
+  // kısma: sesi bir anda 0'a çekmek dalgayı ortadan keser ve hoparlörde "bip/tık" sesi çıkarır (uygulamadan çıkarken duyuluyordu); 60 ms'de yumuşakça iner
+  function hush() { if (!master) return; try { const t = ac.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value, t); master.gain.linearRampToValueAtTime(0, t + .06); } catch {} }
   function wake() {
     if (!on || !master) return;
     try {
@@ -2895,7 +2896,8 @@ $('starsChip').onclick = () => show('map');
 $('crownChip').onclick = () => skinSheet();
 // arka plan ↔ ön plan: süre ve ses durur. İki kaynak (ikisi birden gelebilir, iş tekrarı zararsız): visibilitychange ve Capacitor appStateChange
 function front(on) {
-  if (!on) { pause(); Kasa.flush(); hushed = true; Music.hush(); ac?.suspend?.(); Remind.plan(); Jank.report(); return; }
+  // ses önce yumuşakça kısılır, sonra durdurulur (anında durdurmak çalan notayı keser: "bip")
+  if (!on) { pause(); Kasa.flush(); hushed = true; Music.hush(); setTimeout(() => { if (hushed) ac?.suspend?.(); }, 90); Remind.plan(); Jank.report(); return; }
   hushed = false; if (ac) { Music.wake(); ac.resume?.(); } dayTick();
   if (active('game') && !(modalOpen() && mLocked)) resume();   // kural kartı açıkken süre durgun kalır (Anladım'la akar)
   if (active('home')) { refreshHome(); setTimeout(maybeRescue, 600); }
