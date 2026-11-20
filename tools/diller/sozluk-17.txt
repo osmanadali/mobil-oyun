@@ -1,20 +1,20 @@
-# Ray — çeviri sözlüğü (17): Şehir sekmesi metro haritasının açıklama satırı (Bitti · Altın · Şimdi · Henüz değil)
+# Ray — çeviri sözlüğü (17): Şehir sekmesi metro haritası — altın hat bilgi kartı
 # Biçim ve terimler: sozluk-1.txt başı ve docs/CEVIRI.md
 
-@ Now
-de: Jetzt
-es: Ahora
-pt: Agora
-fr: En cours
-ko: 진행 중
-ja: 進行中
-zh: 進行中
+@ ✨ Golden
+de: ✨ Gold
+es: ✨ Dorada
+pt: ✨ Dourada
+fr: ✨ Dorée
+ko: ✨ 골드
+ja: ✨ ゴールド
+zh: ✨ 金色
 
-@ Not yet
-de: Noch nicht
-es: Aún no
-pt: Ainda não
-fr: Pas encore
-ko: 아직
-ja: まだ
-zh: 尚未
+@ ✨ Golden line: every level perfect
+de: ✨ Goldene Linie: jedes Level perfekt
+es: ✨ Línea dorada: todos los niveles perfectos
+pt: ✨ Linha dourada: todas as fases perfeitas
+fr: ✨ Ligne dorée : tous les niveaux parfaits
+ko: ✨ 골드 노선: 모든 레벨 완벽
+ja: ✨ ゴールド路線：全レベル完璧
+zh: ✨ 金色路線：每一關都完美

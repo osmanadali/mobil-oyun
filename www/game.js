@@ -3028,49 +3028,84 @@ document.body.insertAdjacentHTML('beforeend', `<svg class="cdefs" aria-hidden="t
 let cPage = -1, cTab = 'city', cSel = -1;
 const cityPages = () => Math.ceil((linesDone() + 1) / CITY_N);
 const f1 = p => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`;
-// hat geometrisi: k (0–23) → gövde yönü, şerit; yol, 4 durak (3'ü gövdede, 1'i uçta), yol boyunca nokta, etiket yeri
+// hat geometrisi: k (0–23) → gövde yönü, şerit; yol, 4 durak (3'ü gövdenin düz kısmında, 1'i uçta), yol boyunca nokta (yay dahil), etiket yeri
+// durak ve tren noktaları yolun tam üstünde: at(t) yolu (düz · yuvarlatılmış köşe · düz) uzunluğuyla izler
 function mGeo(k, pw) {
-  const dir = k / 3 | 0, j = k % 3, a = (-90 + dir * 45) * Math.PI / 180, R = MG.R[dir % 2], o = (j - 1) * MG.g;
+  const dir = k / 3 | 0, j = k % 3, a = (-90 + dir * 45) * Math.PI / 180, R = MG.R[dir % 2], o = (j - 1) * MG.g, q = 8;
   const u = [Math.cos(a), Math.sin(a)], n = [-u[1], u[0]], P = r => [u[0] * r + n[0] * o, u[1] * r + n[1] * o];
   const b = (j - 1) * Math.PI / 4, w = [Math.cos(a + b), Math.sin(a + b)], arm = j === 1 ? MG.mid : MG.fan, B = P(R);
-  const at = t => t <= R - MG.r0 ? P(MG.r0 + t) : [B[0] + w[0] * (t - R + MG.r0), B[1] + w[1] * (t - R + MG.r0)];
-  const len = R - MG.r0 + arm, E = at(len), q = 8;
-  const d = j === 1 ? `M${f1(P(MG.r0))}L${f1(E)}` : `M${f1(P(MG.r0))}L${f1(P(R - q))}Q${f1(B)} ${f1([B[0] + w[0] * q, B[1] + w[1] * q])}L${f1(E)}`;
-  const D = [MG.s0, (MG.s0 + R) / 2, R].map(r => r - MG.r0).concat(len);
+  const A = P(R - q), C = [B[0] + w[0] * q, B[1] + w[1] * q], l1 = R - q - MG.r0;
+  // köşe yayı (ikinci derece Bézier): örneklenmiş uzunluk tablosu
+  const qb = s => [(1 - s) ** 2 * A[0] + 2 * (1 - s) * s * B[0] + s * s * C[0], (1 - s) ** 2 * A[1] + 2 * (1 - s) * s * B[1] + s * s * C[1]], cum = [0];
+  for (let i = 1; i <= 16; i++) { const p0 = qb((i - 1) / 16), p1 = qb(i / 16); cum.push(cum[i - 1] + Math.hypot(p1[0] - p0[0], p1[1] - p0[1])); }
+  const Lq = j === 1 ? 0 : cum[16], len = j === 1 ? R - MG.r0 + arm : l1 + Lq + arm - q;
+  const at = t => {
+    t = Math.max(0, Math.min(len, t));
+    if (j === 1 || t <= l1) return P(MG.r0 + t);
+    if (t >= l1 + Lq) return [C[0] + w[0] * (t - l1 - Lq), C[1] + w[1] * (t - l1 - Lq)];
+    const x = t - l1; let i = 1;
+    while (i < 16 && cum[i] < x) i++;
+    return qb((i - 1 + (x - cum[i - 1]) / (cum[i] - cum[i - 1] || 1)) / 16);
+  };
+  const E = at(len), Rs = R - 14;
+  const d = j === 1 ? `M${f1(P(MG.r0))}L${f1(E)}` : `M${f1(P(MG.r0))}L${f1(A)}Q${f1(B)} ${f1(C)}L${f1(E)}`;
+  const D = [MG.s0, (MG.s0 + Rs) / 2, Rs].map(r => r - MG.r0).concat(len);
   const t = Math.min(Math.abs(w[0]) > .01 ? pw / 2 / Math.abs(w[0]) : 1e9, Math.abs(w[1]) > .01 ? 9 / Math.abs(w[1]) : 1e9) + 3;
-  return { d, D, at, len, B, R, pill: [E[0] + w[0] * t, E[1] + w[1] * t] };
+  return { d, D, at, len, pill: [E[0] + w[0] * t, E[1] + w[1] * t] };
 }
+// ilerleme oranı p (0–1) → yol üstündeki uzaklık: 4 durak bölümlerin dörtte birleri, aralarında orantılı
+const cityDist = (G, p) => { const K = [14, ...G.D], seg = Math.min(3, Math.floor(p * 4)); return K[seg] + (K[seg + 1] - K[seg]) * (p * 4 - seg); };
 function cityState(c) {
   const first = lineStart(c), len = lineEnd(c) - first + 1;
   let st = 0, cr = 0; for (let l = first; l < first + len; l++) { st += save.stars[l] || 0; cr += save.crowns[l] ? 1 : 0; }
   return { len, st, cr, done: c < linesDone(), gold: c < linesDone() && cr === len, cur: c === linesDone(), open: unlocked(c) };
 }
+const STAR5 = Array.from({ length: 10 }, (_, i) => { const r = i % 2 ? 1.7 : 4, a = -Math.PI / 2 + i * Math.PI / 5; return `${(r * Math.cos(a)).toFixed(2)} ${(r * Math.sin(a)).toFixed(2)}`; }).join('L');
+// vagonlu tren: 3 vagon (ön vagonda burun ve far), yerel eksende +x yönüne bakar; her vagon yol üstünde kendi uzaklığında, teğete göre döner
+const CAR_SP = 19, CAR_WIN = '<rect class="cw" x="-5.2" y="-2.1" width="2.6" height="2.4" rx=".5"/><rect class="cw" x="-1.6" y="-2.1" width="2.6" height="2.4" rx=".5"/>';
+const CARS = ['<path class="cb" d="M-5.3-3.3H2.6C5.2-3.3 6.5-1.7 6.5 0S5.2 3.3 2.6 3.3H-5.3Q-6.5 3.3-6.5 2.1V-2.1Q-6.5-3.3-5.3-3.3Z"/><rect class="cs" x="-6" y="1.2" width="9.5" height="1.1"/>' + CAR_WIN + '<path class="cw" d="M2.5-2.2Q4.6-1.9 5.1 0Q4.6 1.9 2.5 2.2Z"/><circle class="hl" cx="5.6" cy="0" r=".95"/>',
+  '<rect class="cb" x="-6.5" y="-3.3" width="13" height="6.6" rx="1.5"/><rect class="cs" x="-6" y="1.2" width="12" height="1.1"/>' + CAR_WIN + '<rect class="cw" x="2" y="-2.1" width="2.6" height="2.4" rx=".5"/>'];
+const trainSVG = (cls, col) => `<g class="ctrain ${cls}" style="--lc:${col}">${[0, 1, 2].map(i => `<g class="car" visibility="hidden">${CARS[i ? 1 : 0]}</g>`).join('')}</g>`;
+// tren yerleşimi: baş vagon t uzaklığında; dir 1 dışa, -1 merkeze doğru (baş vagon yine önde). Merkezin altında kalan vagon gizlenir.
+function placeTrain(tr, G, t, dir = 1) {
+  tr.cars = tr.cars || [...tr.el.children].map(e => ({ e, v: 0 }));
+  tr.cars.forEach((c, i) => {
+    const d = t - dir * i * CAR_SP, v = d >= 14 && d <= G.len + .5 ? 1 : 0;
+    if (v !== c.v) { c.v = v; c.e.setAttribute('visibility', v ? 'visible' : 'hidden'); }
+    if (!v) return;
+    const p = G.at(d), a = G.at(d - .8 * dir), b = G.at(d + .8 * dir);
+    c.e.setAttribute('transform', `translate(${f1(p)}) rotate(${(Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI).toFixed(1)}) scale(1.3)`);
+  });
+}
+let CA = null, cRaf = 0;   // şehir haritası canlandırması: sıradaki hattın vagonlu treni + biten hatlarda gidip gelen trenler
 function renderCity() {
   const pages = cityPages(); if (cPage < 0 || cPage >= pages) cPage = Math.min(pages - 1, linesDone() / CITY_N | 0);
-  const base = cPage * CITY_N, seen = save.cityLit || 0, rm = calmMotion.matches, lay = { off: '', cur: '', lit: '' };
-  let lit = 0, gold = 0, nNew = 0;
+  const base = cPage * CITY_N, seen = save.cityLit || 0, rm = calmMotion.matches, lay = { off: '', cur: '', lit: '' }, geo = {};
+  let lit = 0, gold = 0, nNew = 0, labs = '', curT = '';
   for (let k = 0; k < CITY_N; k++) {
-    const c = base + k, s = cityState(c), col = lineCol(c), lab = `M${c + 1}`, pw = 9 + lab.length * 7.4, G = mGeo(k, pw);
+    const c = base + k, s = cityState(c), col = lineCol(c), lab = `M${c + 1}`, pw = 9 + lab.length * 7.4, G = geo[c] = mGeo(k, pw);
     const cls = s.gold ? 'gold' : s.done ? 'lit' : s.cur ? 'cur' : 'off', isNew = (s.done && c >= seen) && !rm;
+    G.col = col;
     if (s.done) lit++;
     if (s.gold) gold++;
-    // ilerleme: hattın 4 durağı bölümlerin dörtte birlerine denk; sıradaki hatta bitenler kadar durak yanar, tren o noktada
-    const p = s.done ? 1 : s.cur ? Math.min(1, Math.max(0, (save.level - lineStart(c)) / s.len)) : 0, on = Math.floor(p * 4 + 1e-9);
-    const K = [8, ...G.D], seg = Math.min(3, Math.floor(p * 4)), tt = K[seg] + (K[seg + 1] - K[seg]) * (p * 4 - seg), T = G.at(tt);
-    const stn = s.done || s.cur ? G.D.map((t, i) => { const q = G.at(t); return `<circle class="stn${i < on ? ' on' : ''}${i === 3 ? ' end' : ''}" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${i === 3 ? 4.4 : 2.6}"/>`; }).join('')
+    // sıradaki hatta bitenler kadar durak yanar; tren o noktada (canlandırmada merkezden çıkıp duraklarda durarak oraya gider)
+    const p = s.done ? 1 : s.cur ? Math.min(1, Math.max(0, (save.level - lineStart(c)) / s.len)) : 0, on = Math.floor(p * 4 + 1e-9), tt = cityDist(G, p);
+    const stn = s.done || s.cur ? G.D.map((t, i) => { const q = G.at(t); return `<circle class="stn${i < on ? ' on' : ''}${i === 3 ? ' end' : ''}" data-t="${t.toFixed(1)}" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${i === 3 ? 4.4 : 2.6}"/>`; }).join('')
       : (q => `<circle class="stn end" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="2.4"/>`)(G.at(G.len));
-    const run = s.cur && tt > 9 ? `<path class="run" d="M${f1(G.at(0))}${tt > G.R - MG.r0 ? `L${f1(G.B)}` : ''}L${f1(T)}"/>` : '';
-    const train = s.cur ? `<g class="now" transform="translate(${f1(T)})"><circle class="pz" r="6"/><circle class="tn" r="4.6"/></g>` : '';
+    const run = s.cur ? `<path class="run" d="${G.d}" style="stroke-dasharray:${tt.toFixed(1)} 999"/>` : '';
+    if (s.cur) curT = trainSVG('cur', col).replace('class="ctrain cur"', `class="ctrain cur" data-c="${c}" data-p="${p.toFixed(4)}" data-t="${tt.toFixed(1)}"`);
     const txt = s.done ? (okl(col)[0] > .68 ? '#151a33' : '#fff') : '';
-    const [px, py] = G.pill;
-    lay[s.done ? 'lit' : cls] += `<g class="sd ${cls}${isNew ? ' new' : ''}${c === cSel ? ' sel' : ''}" data-c="${c}" style="--lc:${col};--len:${G.len.toFixed(0)};--dl:${(nNew * .14).toFixed(2)}s${txt ? `;--lt:${txt}` : ''}">
-      <title>${lineName(c)}</title><path class="hit" d="${G.d}"/><path class="hal" d="${G.d}"/>${s.done ? `<path class="cas" d="${G.d}"/>` : ''}<path class="ln" d="${G.d}"/>${run}${stn}${train}
-      <g class="bl" transform="translate(${px.toFixed(1)} ${py.toFixed(1)})"><rect x="${(-pw / 2).toFixed(1)}" y="-9" width="${pw.toFixed(1)}" height="18" rx="9"/><text y="4.4">${lab}</text></g></g>`;
+    const [px, py] = G.pill, st = `--lc:${col};--dl:${(nNew * .14).toFixed(2)}s${txt ? `;--lt:${txt}` : ''}`, sel = c === cSel ? ' sel' : '';
+    lay[s.done ? 'lit' : cls] += `<g class="sd ${cls}${isNew ? ' new' : ''}${sel}" data-c="${c}" style="${st};--len:${G.len.toFixed(0)}">
+      <title>${lineName(c)}</title><path class="hit" d="${G.d}"/><path class="hal" d="${G.d}"/>${s.done ? `<path class="cas" d="${G.d}"/>` : ''}<path class="mln" d="${G.d}"/>${run}${stn}</g>`;
+    // etiketler ayrı katmanda: trenler çizgilerin üstünden, etiketlerin altından geçer
+    labs += `<g class="bl ${cls}${isNew ? ' new' : ''}${sel}" data-c="${c}" style="${st}" transform="translate(${px.toFixed(1)} ${py.toFixed(1)})"><rect x="${(-pw / 2).toFixed(1)}" y="-9" width="${pw.toFixed(1)}" height="18" rx="9"/><text y="4.4">${lab}</text>${s.gold ? `<g class="gs" transform="translate(${(pw / 2 + 3).toFixed(1)} -7)"><circle r="6.2"/><path d="M${STAR5}Z"/></g>` : ''}</g>`;
     if (isNew) nNew++;
   }
   const done = linesDone();
   if (done > seen) { save.cityLit = done; persist(); }
-  const f = lit / CITY_N, sw = (cl, t) => `<span class="${cl}"><svg viewBox="0 0 26 10"><path d="M2 5H24"/>${cl === 'off' ? '' : '<circle cx="13" cy="5" r="2.2"/>'}</svg>${t}</span>`;
+  const f = lit / CITY_N;
+  $('cTitle').textContent = pages > 1 ? cityName(cPage) : L('Şehir', 'City');
   $('cSub').textContent = L(`${lit}/${CITY_N} semt · ✨ ${gold} altın`, `${lit}/${CITY_N} districts · ✨ ${gold} golden`);
   const sel = cSel >= base && cSel < base + CITY_N ? cSel : Math.min(base + CITY_N - 1, Math.max(base, done));
   cSel = sel;
@@ -3079,19 +3114,95 @@ function renderCity() {
       <g class="bgm" clip-path="url(#cClip)"><rect class="gnd" x="-168" y="-168" width="336" height="336"/><rect class="grd" x="-168" y="-168" width="336" height="336"/>
         <circle class="sky" r="170" style="opacity:${(.3 + f * .7).toFixed(2)}"/><path class="riv" d="M-180 92C-120 70-96 128-40 112S40 40 78 30 140 -6 180 -52"/></g>
       <rect class="frm" x="-168" y="-168" width="336" height="336" rx="30"/>
-      <g class="mls">${lay.off}${lay.cur}${lay.lit}</g>
+      <g class="mls">${lay.off}${lay.cur}${lay.lit}</g><g class="trs">${curT}</g><g class="bls">${labs}</g>
       <g class="chub"><rect x="-27" y="-27" width="54" height="54" rx="16"/><text y="5">${lit}/${CITY_N}</text></g></svg></div>
-    <div class="clegend">${sw('lit', L('Bitti', 'Done'))}${sw('gold', L('Altın', 'Gold'))}${sw('cur', L('Şimdi', 'Now'))}${sw('off', L('Henüz değil', 'Not yet'))}</div>
     <div class="cinfo" id="cInfo"></div>
     <p class="tip">${L('Her biten hat bir semti yakar · bütün bölümleri kusursuz olan semt altın parlar', 'Every finished line lights a district · all-perfect lines glow gold')}</p>`;
   cityInfo();
   bind({ cPrev: () => { cPage--; cSel = -1; renderCity(); }, cNext: () => { cPage++; cSel = -1; renderCity(); } });
+  cityAnimStart(geo, base, rm);
 }
+// canlandırma: tek rAF döngüsü, yalnız Şehir ekranı açık ve sayfa görünürken; azaltılmış harekette tren yerinde çizili durur, hareket yok
+function cityAnimStart(geo, base, rm) {
+  if (cRaf) cancelAnimationFrame(cRaf);
+  cRaf = 0; CA = null;
+  const svg = document.querySelector('#cityBody .cmap svg'), el = svg.querySelector('.ctrain.cur'), lines = [];
+  const tr = el ? { el, G: geo[+el.dataset.c], to: +el.dataset.t } : null;
+  if (tr) placeTrain(tr, tr.G, tr.to);
+  if (rm) return;
+  for (let k = 0; k < CITY_N; k++) if (base + k < linesDone()) lines.push(geo[base + k]);
+  const A = { svg, clock: 0, last: 0, tr, minis: [], lines };
+  if (tr) {
+    const cur = svg.querySelector('.sd.cur');
+    tr.run = cur.querySelector('.run');
+    tr.stns = [...cur.querySelectorAll('.stn')].map(e => ({ e, t: +e.dataset.t }));
+    tr.stns.forEach(x => x.e.classList.remove('on'));
+    tr.run.style.strokeDasharray = '14 999';
+    tr.reach = 14;
+    cityTrainOut(tr, 250);
+    placeTrain(tr, tr.G, 14);
+  }
+  // biten hatlarda en çok 3 tren, rastgele hatlarda, sakin hızla (20 birim/sn) merkezden uca gidip gelir; sırayla başlar
+  const box = svg.querySelector('.trs');
+  for (let i = 0; i < Math.min(3, lines.length); i++) {
+    box.insertAdjacentHTML('afterbegin', trainSVG('mini', ''));
+    A.minis.push({ el: box.firstChild, t0: 500 + i * 2600, G: null });
+  }
+  CA = A;
+  cRaf = requestAnimationFrame(cityLoop);
+}
+// sıradaki hattın seferi: geçtiği duraklarda 0,3 sn durur; yolculuk ~2–3 sn, her aralıkta hızlanıp yavaşlar
+function cityTrainOut(tr, t0) {
+  const stops = tr.stns.map(s => s.t).filter(t => t > 15 && t < tr.to - .5).concat(tr.to), span = Math.max(1, tr.to - 14), T = 1300 + 7 * span;
+  let a = 14;
+  tr.seg = stops.map(b => { const s = { a, b, dur: Math.max(220, T * (b - a) / span) }; a = b; return s; });
+  tr.ph = 'out'; tr.t0 = t0;
+}
+const cEase = x => x < .5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2;
+function cityLoop(ts) {
+  cRaf = 0;
+  const A = CA;
+  if (!A || document.hidden || cTab !== 'city' || !$('city').classList.contains('active') || !A.svg.isConnected) { if (A) A.last = 0; return; }
+  A.clock += A.last ? Math.min(50, ts - A.last) : 0; A.last = ts;
+  const c = A.clock, tr = A.tr;
+  if (tr && c >= tr.t0) {
+    let e = c - tr.t0, t = tr.to, dir = 1;
+    if (tr.ph === 'out') {
+      t = null;
+      for (const [i, s] of tr.seg.entries()) {
+        if (e < s.dur) { t = s.a + (s.b - s.a) * cEase(e / s.dur); break; }
+        e -= s.dur;
+        if (i === tr.seg.length - 1) break;
+        if (e < 300) { t = s.b; break; }
+        e -= 300;
+      }
+      if (t === null) { t = tr.to; tr.ph = 'wait'; tr.t0 = c; tr.el.classList.add('arr'); }
+    } else if (tr.ph === 'wait') {
+      if (e > 3800 && tr.to > 20) { tr.ph = 'back'; tr.t0 = c; tr.el.classList.remove('arr'); }
+    } else if (tr.ph === 'back') {
+      const dur = 900 + 14 * (tr.to - 14), x = Math.min(1, e / dur);
+      t = tr.to - (tr.to - 14) * cEase(x); dir = -1;
+      if (x >= 1) cityTrainOut(tr, c + 900);
+    }
+    placeTrain(tr, tr.G, t, dir);
+    if (t > tr.reach) { tr.reach = t; tr.run.style.strokeDasharray = `${t.toFixed(1)} 999`; }
+    for (const s of tr.stns) if (!s.lit && t >= s.t - .5) { s.lit = 1; s.e.classList.add('on'); }
+  }
+  for (const m of A.minis) {
+    if (c < m.t0) continue;
+    if (!m.G) { m.G = A.lines[(Math.random() * A.lines.length) | 0]; m.go = (m.G.len - 16) / .02; m.el.style.setProperty('--lc', m.G.col); }
+    const e = c - m.t0, G = m.G, out = Math.min(1, e / m.go), back = Math.max(0, Math.min(1, (e - m.go - 1500) / m.go));
+    placeTrain(m, G, 14 + (G.len - 16) * (cEase(out) - cEase(back)), e > m.go + 1500 ? -1 : 1);
+    if (back >= 1) { m.G = null; m.t0 = c + 1200 + Math.random() * 2400; placeTrain(m, G, 0); }
+  }
+  cRaf = requestAnimationFrame(cityLoop);
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && CA && !cRaf) cRaf = requestAnimationFrame(cityLoop); });
 function cityInfo() {
   const c = cSel, s = cityState(c), left = lineEnd(c) - Math.max(save.level, lineStart(c)) + 1;
-  const tag = s.gold ? L('✨ Altın semt', '✨ Golden district') : s.done ? L('Semt yandı ✓', 'District lit ✓') : s.cur ? L(`${left} bölüm kaldı`, `${left} ${pl(left, 'level', 'levels')} to go`) : !s.open ? L('🔒 Kilitli', '🔒 Locked') : L('Sırada', 'Up next');
+  const tag = s.gold ? L('✨ Altın', '✨ Golden') : s.done ? L('Semt yandı ✓', 'District lit ✓') : s.cur ? L(`${left} bölüm kaldı`, `${left} ${pl(left, 'level', 'levels')} to go`) : !s.open ? L('🔒 Kilitli', '🔒 Locked') : L('Sırada', 'Up next');
   $('cInfo').style.setProperty('--lc', lineCol(c));
-  $('cInfo').innerHTML = `<i class="dot"></i><span><b>${lineName(c)}</b><small>★ ${s.st} / ${s.len * 3} · 🎫 ${s.cr} / ${s.len}</small></span><em class="${s.gold ? 'g' : ''}">${tag}</em>`;
+  $('cInfo').innerHTML = `<i class="dot"></i><span><b>${lineName(c)}</b><small>★ ${s.st} / ${s.len * 3} · 🎫 ${s.cr} / ${s.len}</small></span><em class="${s.gold ? 'g' : ''}">${tag}</em>${s.gold ? `<p class="gx">${L('✨ Altın hat: bütün bölümler kusursuz', '✨ Golden line: every level perfect')}</p>` : ''}`;
 }
 function renderAch() {
   const got = save.ach || {};
@@ -3109,8 +3220,8 @@ function renderMeta() {
 }
 $('cTabs').onclick = e => { const t = e.target.closest('button')?.dataset.t; if (!t || t === cTab) return; cTab = t; haptic(); renderMeta(); };
 $('cityBody').onclick = e => {
-  const d = e.target.closest('.sd'); if (!d) return;
-  cSel = +d.dataset.c; document.querySelectorAll('#cityBody .sd.sel').forEach(x => x.classList.remove('sel')); d.classList.add('sel'); cityInfo(); haptic(); tone(note(5 + (cSel % 5)), .12, .02);
+  const d = e.target.closest('.sd,.bl'); if (!d) return;
+  cSel = +d.dataset.c; document.querySelectorAll('#cityBody .sel').forEach(x => x.classList.remove('sel')); document.querySelectorAll(`#cityBody [data-c="${cSel}"]:is(.sd,.bl)`).forEach(x => x.classList.add('sel')); cityInfo(); haptic(); tone(note(5 + (cSel % 5)), .12, .02);
 };
 const openCity = (tab = 'city') => { cTab = tab; cSel = -1; cPage = -1; show('city'); };
 bind({ cBack: () => show('home'), pCity: () => openCity(), bSky: () => openCity() });

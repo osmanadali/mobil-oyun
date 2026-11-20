@@ -591,40 +591,35 @@ body.introing .screen *{animation-play-state:paused!important}
 .sd .hit{stroke:transparent;stroke-width:8;pointer-events:stroke}
 .sd .hal{stroke:var(--fg);stroke-width:12;opacity:0;transition:opacity .25s}
 .sd.sel .hal{opacity:.2}
-.sd .ln{stroke:var(--railC);stroke-width:2;opacity:.7}
-.sd.cur .ln{stroke:var(--lc);stroke-width:3;stroke-dasharray:1.6 2;stroke-linecap:butt;opacity:.85}
+.sd .mln{stroke:var(--railC);stroke-width:2;opacity:.7}
+.sd.cur .mln{stroke:var(--lc);stroke-width:3;stroke-dasharray:1.6 2;stroke-linecap:butt;opacity:.85}
 .sd .run{stroke:var(--lc);stroke-width:5}
 .sd :is(.cas){stroke:var(--bg1);stroke-width:8.5}
-.sd:is(.lit,.gold) .ln{stroke:var(--lc);stroke-width:5;opacity:1}
-.sd.gold .cas{stroke:#f2c14e;stroke-width:10;filter:drop-shadow(0 0 3px rgba(255,200,80,.85))}
+.sd:is(.lit,.gold) .mln{stroke:var(--lc);stroke-width:5;opacity:1}
+.sd.gold .cas{stroke:#f2c14e;stroke-width:9.5;filter:drop-shadow(0 0 2px rgba(255,200,80,.5))}
 .sd .stn{fill:var(--bg1);stroke:var(--lc);stroke-width:1.6}
 .sd.off .stn{fill:var(--bg1);stroke:var(--railC);stroke-width:1.4;opacity:.8}
 .sd .stn.on{fill:#fff6d8;stroke:var(--bg1);stroke-width:1.2}
 .sd .stn.end{stroke-width:2.2}.sd .stn.end.on{stroke:var(--lc);stroke-width:2.2;fill:#fff6d8}
 .sd.gold .stn.on{fill:#fff1b8}.sd.gold .stn.end{stroke:#f2c14e}
-.sd .now .tn{fill:var(--lc);stroke:var(--fg);stroke-width:2}
-.sd .now .pz{fill:var(--lc);opacity:0;transform-box:fill-box;transform-origin:center;animation:cNow 1.8s ease-out infinite}
-@keyframes cNow{0%{opacity:.6;transform:scale(.8)}100%{opacity:0;transform:scale(2.6)}}
-.sd .bl rect{fill:var(--bg1);stroke:var(--railC);stroke-width:1.2}
-.sd .bl text{font-size:12.5px;font-weight:800;text-anchor:middle;fill:var(--mut);letter-spacing:-.2px}
-.sd:is(.lit,.gold) .bl rect{fill:var(--lc);stroke:var(--bg1);stroke-width:1.5}.sd:is(.lit,.gold) .bl text{fill:var(--lt,#fff)}
-.sd.gold .bl rect{stroke:#f2c14e;stroke-width:2.4;filter:drop-shadow(0 0 3px rgba(255,200,80,.8))}
-.sd.cur .bl rect{stroke:var(--lc);stroke-width:2.2;stroke-dasharray:3.5 2.5;animation:cPulse 1.8s ease-in-out infinite}.sd.cur .bl text{fill:var(--fg)}
+.trs{pointer-events:none}.ctrain .cb{fill:#f6f7fc;stroke:var(--lc);stroke-width:1.1}.ctrain .cs{fill:var(--lc)}.ctrain .cw{fill:#28304e}.ctrain .hl{fill:#ffe9a8}
+.ctrain.arr .hl{animation:hlb 1.6s ease-in-out infinite}
+@keyframes hlb{50%{fill:#fff;opacity:.35}}
+.bl .gs circle{fill:#ffd36b;stroke:var(--bg1);stroke-width:1.6}.bl .gs path{fill:#7a4d00}
+.cinfo{flex-wrap:wrap}.cinfo .gx{flex-basis:100%;margin:-2px 0 0 24px;font-size:12.5px;font-weight:600;color:#b07a10}:root:not([data-theme=light]) .cinfo .gx{color:#ffd36b}@media (prefers-color-scheme:light){:root:not([data-theme=dark]) .cinfo .gx{color:#9a6a00}}
+.bls .bl{cursor:pointer;-webkit-tap-highlight-color:transparent}.bl rect{fill:var(--bg1);stroke:var(--railC);stroke-width:1.2}
+.bl text{font-size:12.5px;font-weight:800;text-anchor:middle;fill:var(--mut);letter-spacing:-.2px}
+.bl:is(.lit,.gold) rect{fill:var(--lc);stroke:var(--bg1);stroke-width:1.5}.bl:is(.lit,.gold) text{fill:var(--lt,#fff)}
+.bl.gold rect{stroke:#f2c14e;stroke-width:2.4;filter:drop-shadow(0 0 3px rgba(255,200,80,.8))}
+.bl.cur rect{stroke:var(--lc);stroke-width:2.2;stroke-dasharray:3.5 2.5;animation:cPulse 1.8s ease-in-out infinite}.bl.cur text{fill:var(--fg)}
 @keyframes cPulse{50%{stroke-dasharray:none;stroke-width:3}}
-.sd.sel .bl rect{stroke:var(--fg);stroke-width:2.4;stroke-dasharray:none}
-.sd.new .ln{stroke-dasharray:var(--len);animation:lnDraw 1s cubic-bezier(.4,.1,.2,1) var(--dl) both}
-.sd.new :is(.stn,.bl){animation:cPop .35s calc(var(--dl) + .8s) both}
+.bl.sel rect{stroke:var(--fg);stroke-width:2.4;stroke-dasharray:none}
+.sd.new .mln{stroke-dasharray:var(--len);animation:lnDraw 1s cubic-bezier(.4,.1,.2,1) var(--dl) both}
+.sd.new .stn,.bl.new{animation:cPop .35s calc(var(--dl) + .8s) both}
 @keyframes cPop{from{opacity:0}}
 @keyframes lnDraw{from{stroke-dashoffset:var(--len)}to{stroke-dashoffset:0}}
 .chub{pointer-events:none}.chub rect{fill:url(#cHubG);stroke:var(--bg1);stroke-width:3.5;filter:drop-shadow(0 2px 6px var(--accGlow))}
 .chub text{font-size:15px;font-weight:800;text-anchor:middle;fill:var(--onacc);font-variant-numeric:tabular-nums}
-.clegend{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 12px;font-size:12px;color:var(--mut)}
-.clegend span{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
-.clegend svg{width:24px;height:10px;fill:none;stroke-linecap:round}
-.clegend .lit path{stroke:var(--acc);stroke-width:4}.clegend .lit circle{fill:#fff6d8}
-.clegend .gold path{stroke:var(--acc);stroke-width:4;filter:drop-shadow(0 0 0 #f2c14e) drop-shadow(0 0 1.5px #f2c14e)}.clegend .gold circle{fill:#fff1b8}
-.clegend .cur path{stroke:var(--acc);stroke-width:2.5;stroke-dasharray:1.6 2;stroke-linecap:butt}.clegend .cur circle{fill:var(--acc);stroke:var(--fg);stroke-width:1}
-.clegend .off path{stroke:var(--railC);stroke-width:1.6}
 :root[data-theme=light] .cmap{--riv:#2f7fd6}@media (prefers-color-scheme:light){:root:not([data-theme=dark]) .cmap{--riv:#2f7fd6}}
 .cinfo{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:20px;background:var(--glass);box-shadow:inset 0 0 0 1px var(--stroke)}
 .cinfo .dot{flex:none;width:14px;height:14px;border-radius:50%;background:var(--lc);box-shadow:0 0 12px var(--lc)}
@@ -652,7 +647,7 @@ body.introing .screen *{animation-play-state:paused!important}
 .hearts{font-size:22px;letter-spacing:3px;line-height:1}.hearts i{font-style:normal;opacity:.35}
 .lifeact{display:contents}
 #bPlay small #hLife{font-size:13px;font-weight:600;letter-spacing:0;font-variant-numeric:tabular-nums}
-@media (prefers-reduced-motion:reduce){.sd .now .pz,.sd.cur .bl rect,.sd.new .ln,.sd.new :is(.stn,.bl){animation:none}.sd.new .ln{stroke-dasharray:none}}
+@media (prefers-reduced-motion:reduce){.ctrain .hl,.bl.cur rect,.sd.new .mln,.sd.new .stn,.bl.new{animation:none}.sd.new .mln{stroke-dasharray:none}}
 @media (max-width:360px){.daily{column-gap:6px}.daily .dstreak{height:34px;padding:0 9px 0 7px;gap:4px}.daily .dstreak b{font-size:15px}.daily .dstreak i{font-size:13.5px}}
 .lifep .lpt{display:block;margin-top:2px;font-size:26px;font-weight:800;color:var(--fg);letter-spacing:.5px}
 /* Mağaza sekmeleri: 🛍️ Paketler · 🎨 Temalar */
