@@ -1349,7 +1349,7 @@ function cubukCiz(b, a, x, y, O, dost) {
       if (O.golgeli) { kcx.shadowColor = ou.renk; kcx.shadowBlur = (3 + 9 * g) * o; }
       kcx.fillStyle = ou.renk; kcx.fillRect(x, my, gw, mh);
       kcx.shadowBlur = 0; kcx.fillStyle = ou.renk2; kcx.fillRect(x, my, gw * g, Math.max(1, mh * 0.5));   // soldan sağa açık şerit: "doluyor"
-      kcx.globalAlpha = g; kcx.strokeStyle = ou.renk2; kcx.lineWidth = 1; kcx.strokeRect(x - 1.5, my - 1.5, gw + 3, mh + 3);
+      const d = (1.5 + 2.5 * g) * o; kcx.globalAlpha = 0.4 + 0.6 * g; kcx.strokeStyle = ou.renk2; kcx.lineWidth = 1.3; kcx.strokeRect(x - d, my - d, gw + 2 * d, mh + 2 * d);   // dışa açılan çerçeve: dolu mana nabzından ayrışır
       kcx.restore();
     }
   }
