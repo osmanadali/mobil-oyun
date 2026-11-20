@@ -12,7 +12,7 @@ Ayrıntılar: [strateji.md](strateji.md) · [aso.md](aso.md) · [sosyal-medya-ta
 
 1. **21 Kasım, Play'de yayın günü değil, başvuru günüdür.** 14 günlük kapalı test 21 Kasım'da doluyor. O gün Play Console'dan **üretime erişim başvurusu** yapılır. Google onaylayınca (genelde birkaç gün, en çok ~7 gün) üretim sürümü gönderilir ve o da incelenir. Play sayfasının canlı olduğu güne bu belgede **L günü** diyoruz (tahmini 22–28 Kasım). "Android'de yayında" duyuruları ve Play linki **L gününe kadar paylaşılmaz.**
 2. **iOS'ta 1.2 yayında mı, kontrol et.** App Store sayfası şu an 1.1 gösteriyor. 1.2 (yapı 15) onaylanmadan lig, kapışma ve yeni hatlar "App Store'da" diye duyurulmaz. Onaya kadar videolarda "yakında / güncelleme yolda" dilini kullan.
-3. **Bütçe önerisi (senin onayını bekliyor):** ayda 5.000 TL = **Apple Search Ads Türkiye ~4.100 TL** (günde ~135 TL tavan) + **kazanan organik videoyu öne çıkarma ~900 TL**. Google App Campaigns bu bütçeye sığmıyor, şimdilik açılmıyor (gerekçesi: [reklam-kampanyasi.md](reklam-kampanyasi.md) §3.3).
+3. **Güncel sıra ve bütçe: [izlenme-hedefi.md](izlenme-hedefi.md)** (ASA yalnız 21–27 Kasım, ~950 TL; izlenme sigortası ~1.500 TL; oynanabilir reklam ~2.500 TL). Eski öneri: ayda 5.000 TL = **Apple Search Ads Türkiye ~4.100 TL** (günde ~135 TL tavan) + **kazanan organik videoyu öne çıkarma ~900 TL**. Google App Campaigns bu bütçeye sığmıyor, şimdilik açılmıyor (gerekçesi: [reklam-kampanyasi.md](reklam-kampanyasi.md) §3.3).
 
 ---
 
