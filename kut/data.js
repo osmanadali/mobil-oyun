@@ -40,24 +40,24 @@
   // ── Yetenek / pasif metinleri (kart ve bilgi penceresi için). Sayılar ★1 değeri; ★2 ×1.8, ★3 ×3. ──
   const YETENEK = {
     tasFirlat: { ad: 'Kaya Fırlat',  m: 'Hedefe 200 hasar, 1,5 sn sersemletir.' },
-    uluma:     { ad: 'Uluma',        m: 'Kendisi ve 2 hücredeki dostlar 4 sn +%45 saldırı hızı.' },
-    davul:     { ad: 'Savaş Davulu', m: 'Bütün dostlar 4 sn +%30 hasar.' },
+    uluma:     { ad: 'Uluma',        m: 'Kendisi ve 2 hücredeki dostlar 4 sn +%45 saldırı hızı.', kurulum: 0.3 },
+    davul:     { ad: 'Savaş Davulu', m: 'Bütün dostlar 4 sn +%30 hasar.', kurulum: 0.3 },
     ruhEmme:   { ad: 'Can Emme',     m: 'Hedefe 170 hasar, o kadar can kazanır.' },
     kasirga:   { ad: 'Kasırga',      m: 'Hedef çevresindekilere 110 hasar, onları 1,5 hücre iter.' },
-    deliOfke:  { ad: 'Boynuz Öfkesi',    m: 'Sonraki 3 vuruşu 2 kat, canının %20’sini yeniler.' },
+    deliOfke:  { ad: 'Boynuz Öfkesi',    m: 'Sonraki 3 vuruşu 2 kat, canının %20’sini yeniler.', kurulum: 0.3 },
     zehir:     { ad: 'Zümrüt Zehri',          m: 'Hedefi 4 sn zehirler (55/sn), en yaralı dosta 160 can.' },
     buzNefes:  { ad: 'Buz Nefesi',   m: 'Hedef çevresine 120 hasar, 1,2 sn dondurur.' },
     ocak:      { ad: 'Kor Halkası',         m: '2 hücredeki düşmanları 4 sn yakar (40/sn), dostlara 110 can.' },
-    dortnal:   { ad: 'Bulut Hücumu',      m: 'En arka düşmana atılır, 190 hasar.' },
-    kanat:     { ad: 'Işık Kanadı', m: 'Bütün dostlara 140 kalkan.' },
+    dortnal:   { ad: 'Bulut Hücumu',      m: 'En arka düşmana atılır, 190 hasar.', kurulum: 0.3 },
+    kanat:     { ad: 'Işık Kanadı', m: 'Bütün dostlara 140 kalkan.', kurulum: 0.3 },
     karaGolge: { ad: 'Kara Gölge',   m: 'En güçlü düşmana 140 hasar, 5 sn -%45 hasar.' },
     kulDogus:  { ad: 'Kül Yağmuru',  m: 'Hedef çevresine 170 hasar ve 3 sn yanık.' },
-    ayaz:      { ad: 'Ayaz',         m: 'Bütün düşmanlara 70 hasar, 3 sn -%40 saldırı hızı.' },
-    golgeOk:   { ad: 'Gölge Oku',    m: 'Canı en az düşmana 320 hasar.' },
-    yildirim:  { ad: 'Yıldırım',     m: '3 rastgele düşmana 150 hasar, 0,6 sn sersemletir.' },
+    ayaz:      { ad: 'Ayaz',         m: 'Bütün düşmanlara 70 hasar, 3 sn -%40 saldırı hızı.', kurulum: 0.5 },
+    golgeOk:   { ad: 'Gölge Oku',    m: 'Canı en az düşmana 320 hasar.', kurulum: 0.5 },
+    yildirim:  { ad: 'Yıldırım',     m: '3 rastgele düşmana 150 hasar, 0,6 sn sersemletir.', kurulum: 0.5 },
     // canavar yetenekleri (bölüm 5.5)
     akrepZehir:  { ad: 'Akrep Zehri',     m: 'Hedefi 4 sn zehirler (60/sn).' },
-    balinaSarki: { ad: 'Balina Şarkısı',  m: 'Bütün düşmanlara 110 hasar.' },
+    balinaSarki: { ad: 'Balina Şarkısı',  m: 'Bütün düşmanlara 110 hasar.', kurulum: 0.5 },
     bekciDarbe:  { ad: 'Bekçi Darbesi',   m: 'Hedefe 250 hasar, 1,5 sn sersemletir.' },
     yildizYutan: { ad: 'Yıldız Yutan',    m: 'En yakın 3 düşmana 220 hasar.' },
   };
@@ -147,7 +147,7 @@
     ['yirticiPence', 'Yırtıcı Pençe', 'dis', 'dis', 'Her 3. vuruş, hedefin azami canının %8\'i kadar ek hasar.'],
     ['avCoskusu', 'Av Coşkusu', 'dis', 'tuy', 'Takımından biri düşman öldürünce 3 sn +%40 saldırı hızı.'],
     ['kizginDis', 'Kızgın Diş', 'dis', 'kor', 'Yeteneğinin vurduğu her düşman 3 sn yanar: 30/sn ×★×YG.'],
-    ['keskinGoz', 'Keskin Göz', 'dis', 'ciy', 'Vuruş başına mana 8 yerine 12.'],
+    ['keskinGoz', 'Keskin Göz', 'dis', 'ciy', 'Vuruş başına mana 10 yerine 15.'],
     ['ofkeTilsimi', 'Öfke Tılsımı', 'dis', 'kabuk', 'Canı ilk kez yarının altına inince 5 sn +%35 saldırı ve −%20 alınan hasar.'],
     ['devYumrugu', 'Dev Yumruğu', 'dis', 'yurek', 'Vuruşlar, kendi azami canının %2\'si kadar ek hasar verir.'],
     ['geceAvcisi', 'Gece Avcısı', 'dis', 'pul', 'Bir düşmanı öldürünce onun azami canının %20\'si kadar iyileşir.'],
@@ -282,7 +282,11 @@
     // ortak
     satisIade: 1, dukkan: 5,
     yildizCarpan: [0, 1, 1.8, 3],
-    savasSuresi: 45,        // sn; sonunda kalan can yüzdesi karar verir (tempo: 30 → 45; savaş ortancası 24–32 sn hedefi, DENGE_RAPORU.md)
+    savasSuresi: 45,        // sn; süre dolunca iki taraf da kaybeder (sonuc.kazanan −2, sureDoldu) (tempo: 30 → 45; savaş ortancası 24–32 sn hedefi, DENGE_RAPORU.md)
+    // savaş motoru (sakin, okunur savaş): ayrim: iki birimin merkezleri arası en az uzaklık (hücre; üst üste binme yok);
+    // hedefBirak: hedef menzilin bu kadar ötesine geçerse yeni hedef aranır (kalıcı hedef); kurulum: yeteneğin varsayılan kurulum süresi (sn;
+    // YETENEK[id].kurulum ile değişir); mana: vuruş başına (Keskin Göz ile), alınan hasarın oranı (Sabır Taşı ile) ve vuruş başına tavanı
+    savas: { ayrim: 0.8, hedefBirak: 2, kurulum: 0.4, vurusMana: 10, keskinGozMana: 15, hasarMana: 0.05, sabirMana: 0.1, hasarManaTavan: 30 },
     // tahta: 4 sütun × 3 sıra (ön, orta, arka); en çok 8 kahraman
     tahtaSutun: 4, tahtaSira: 3, takimTavan: 8,
     yedek: 7,
