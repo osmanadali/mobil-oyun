@@ -316,8 +316,22 @@ async function ualYukle(kok) {
   // üste eklenen vurulma tepkileri (additive): saldırı klibi kesilmeden üst gövde sarsılır
   // Davul_Vur: Kurbağa'nın menzilli vuruşunun taban klibi (Idle_Loop'un ilk 0,8 sn'si; tokmak vuruşlarını hareket.js 'davul' stili ekler)
   if (ual.klip.Idle_Loop) ual.klip.Davul_Vur = THREE.AnimationUtils.subclip(ual.klip.Idle_Loop, 'Davul_Vur', 0, 24, 30);
-  for (const ad of ['Hit_Chest', 'Hit_Head']) if (ual.klip[ad]) { const c = THREE.AnimationUtils.makeClipAdditive(ual.klip[ad].clone()); c.name = ad + '_Ek'; ual.klip[c.name] = c; }
+  for (const ad of ['Hit_Chest', 'Hit_Head']) if (ual.klip[ad]) ual.klip[ad + '_Ek'] = ustGovdeEk(THREE.AnimationUtils.makeClipAdditive(ual.klip[ad].clone()), ad + '_Ek', 0.8);
   ual.adim = adimOlc();
+}
+// Vurulma tepkisi için üste eklenen (additive) klibi sadeleştirir: yalnız üst gövde (omurga üstü, boyun, baş, omuz/kollar) kalır — kalça,
+// bacak ve parmak izleri atılır (ayaklar yerinde, eller kasılmaz); genlik 'kazanc' ile küçültülür ve son %55'te sıfıra iner (klip bittiğinde
+// ya da yeniden tetiklendiğinde poz atlamaz; ham UAL klipleri baş/omurgada 13–14°, kalçada 10° açık bitiyordu).
+const UST_GOVDE_RE = /DEF-(spine00[1-9]|neck|head|shoulder|upper_arm|forearm|hand[LR]?\.)/;
+function ustGovdeEk(c, ad, kazanc = 1) {
+  const D = c.duration, a = D * 0.45, _q = new THREE.Quaternion(), _i = new THREE.Quaternion();
+  const izler = c.tracks.filter(iz => iz.name.endsWith('.quaternion') && UST_GOVDE_RE.test(iz.name)).map(iz => {
+    const t = iz.times, v = Float32Array.from(iz.values);
+    for (let j = 0; j < t.length; j++) { const u = t[j] <= a ? 0 : Math.min(1, (t[j] - a) / Math.max(1e-4, D - a)), w = kazanc * (1 - u * u * (3 - 2 * u));
+      _q.fromArray(v, j * 4); _i.identity().slerp(_q, w); _i.toArray(v, j * 4); }
+    return new THREE.QuaternionKeyframeTrack(iz.name, t, v);
+  });
+  const k = new THREE.AnimationClip(ad, D, izler); k.blendMode = THREE.AdditiveAnimationBlendMode; return k;
 }
 // UAL2 kliplerini yükleme anında UAL iskeletine çevir: iki iskelet de A duruşundan, kemik yönleri hizalanarak (aktar() ile aynı yöntem)
 function ual2Aktar(g2) {
@@ -362,7 +376,8 @@ function ual2Aktar(g2) {
       const kare = ileri.concat([4, 2, 0]); kare.forEach((f, j) => { for (let c = 0; c < n; c++) d[j * n + c] = v[f * n + c]; });
       izler.push(new THREE.QuaternionKeyframeTrack(iz.name, Float32Array.from(zaman), d)); }
     const savr = new THREE.AnimationClip('Hit_Knockback_Kisa', 0.45, izler);
-    const ek = THREE.AnimationUtils.makeClipAdditive(savr); ek.name = 'Hit_Knockback_Ek'; ual.klip[ek.name] = ek;
+    // ham savrulma kalçada ~100°, ayak/baldırda ~80° döner: yalnız üst gövdesi, %40 genlikle alınır (gövde devrilmez, ayaklar yerde)
+    ual.klip.Hit_Knockback_Ek = ustGovdeEk(THREE.AnimationUtils.makeClipAdditive(savr), 'Hit_Knockback_Ek', 0.4);
   }
 }
 // Walk/Jog döngüsünde ayağın ileri-geri genliğinden (UAL biriminde) hız 1'deki yürüme hızı: ayak kaymasın diye timeScale buna göre
@@ -534,16 +549,18 @@ function sabitSalin(b, dt, d) {
   const m = b.model, s = b.sab || (b.sab = { y0: m.position.y + (b.gor.havada || 0), rx: m.rotation.x, rz: m.rotation.z, ry: m.rotation.y, t: b.faz * 7, vur: 0, yet: 0, vurul: 0 });
   s.t += dt * (d.hareket ? 2.2 : 1);
   if (d.saldiri) s.vur = 1; if (d.yetenek) s.yet = 1; if (d.vurul) s.vurul = 1;
-  s.vur = Math.max(0, s.vur - dt * 2.6); s.yet = Math.max(0, s.yet - dt * 1.4); s.vurul = Math.max(0, s.vurul - dt * 5);
+  s.vur = Math.max(0, s.vur - dt * 2.6); s.yet = Math.max(0, s.yet - dt * 1.4); s.vurul = Math.max(0, s.vurul - dt * 4);
+  // vurulma: anlık sıçrama yerine yumuşak yükseliş (yön bağımlı yatmayı his.darbe verir; bu yalnız küçük bir irkilme)
+  s.vurulH = (s.vurulH || 0) + (s.vurul - (s.vurulH || 0)) * Math.min(1, dt * 25);
   const dal = Math.sin(Math.min(1, (1 - s.vur) * 1.25) * Math.PI) * (s.vur > 0 ? 1 : 0), yet = Math.sin((1 - s.yet) * Math.PI) * (s.yet > 0 ? 1 : 0);
   if (d.olu) { m.rotation.z = s.rz + Math.min(1.2, (m.rotation.z - s.rz) + dt * 2); m.position.y = Math.max(s.y0 - (b.gor.havada || 0), m.position.y - dt * 1.5); return; }
   if (b.gor.salin === 'yuz') {
     m.position.y = s.y0 + Math.sin(s.t * 1.1) * 0.08 + yet * 0.25;
-    m.rotation.z = s.rz + Math.sin(s.t * 0.9) * 0.06; m.rotation.x = s.rx + Math.sin(s.t * 1.1 + 1) * 0.05 - dal * 0.12 + s.vurul * 0.08;
+    m.rotation.z = s.rz + Math.sin(s.t * 0.9) * 0.06; m.rotation.x = s.rx + Math.sin(s.t * 1.1 + 1) * 0.05 - dal * 0.12 + s.vurulH * 0.04;
   } else {
     m.position.y = s.y0 + Math.abs(Math.sin(s.t * (d.hareket ? 6 : 1.6))) * (d.hareket ? 0.03 : 0.012) + yet * 0.08;
     m.rotation.z = s.rz + Math.sin(s.t * (d.hareket ? 6 : 1.3)) * (d.hareket ? 0.05 : 0.025);
-    m.rotation.x = s.rx + dal * 0.22 - yet * 0.18 + s.vurul * 0.1;
+    m.rotation.x = s.rx + dal * 0.22 - yet * 0.18 + s.vurulH * 0.05;
   }
 }
 // his.hazirla malzemeleri bir kez daha klonlar ve kendi yamasını (parlama + çözülme) koyar; klonlama gorunum.js yamasını
@@ -1029,11 +1046,22 @@ function vuruldu(b, guc = 0.7, olumcul = false) {
   if (!b || b.olumT >= 0) return;
   const i = b.isk;
   if (i) {
-    // üste eklenen tepki (additive): saldırı ya da yürüme kesilmez, üst gövde sarsılır
-    // güçlü darbede (yetenek, büyük vuruş) UAL2 Hit_Knockback'in ilk savrulması; yoksa göğüs/baş sırayla
+    // üste eklenen tepki (additive): saldırı ya da yürüme kesilmez, yalnız üst gövde esner (ustGovdeEk). Güçlü darbede (yetenek, büyük
+    // vuruş) Hit_Knockback'in kısa savrulması; yoksa göğüs/baş sırayla. Sık vuruşta birikmez: süren tepki ilk %60'ındaysa yeniden
+    // başlatılmaz (yalnız ağırlığı gerekirse yükselir); daha geçse eskisi 0,1 sn'de söner, yenisi 0,05 sn'de açılır (seğirme yok).
     const agir = guc >= 0.7 && i.eylem.Hit_Knockback_Ek;
-    const ad = agir ? 'Hit_Knockback_Ek' : ((b.vurSira = (b.vurSira || 0) + 1) % 2 ? 'Hit_Chest_Ek' : 'Hit_Head_Ek'), e = i.eylem[ad];
-    if (e) { e.reset(); e.setLoop(THREE.LoopOnce, 1); e.clampWhenFinished = false; e.timeScale = agir ? 1 : 1.25; e.setEffectiveWeight(agir ? Math.min(0.85, 0.35 + 0.5 * guc) : Math.min(1, 0.55 + 0.6 * guc)); e.play(); }
+    const ag = agir ? Math.min(0.8, 0.5 + 0.3 * guc) : Math.min(0.7, 0.45 + 0.35 * guc);
+    const suren = b.vurEylem && b.vurEylem.isRunning() ? b.vurEylem : null;
+    if (suren && ((agir && suren === i.eylem.Hit_Knockback_Ek) || (!agir && suren.time < suren.getClip().duration * 0.6))) {
+      if (ag > suren.getEffectiveWeight()) suren.setEffectiveWeight(ag);
+    } else {
+      const ad = agir ? 'Hit_Knockback_Ek' : ((b.vurSira = (b.vurSira || 0) + 1) % 2 ? 'Hit_Chest_Ek' : 'Hit_Head_Ek'), e = i.eylem[ad];
+      if (e) {
+        if (suren && suren !== e) suren.fadeOut(0.1);
+        e.reset(); e.setLoop(THREE.LoopOnce, 1); e.clampWhenFinished = false; e.timeScale = agir ? 1.25 : 1.3; e.setEffectiveWeight(ag); e.fadeIn(0.05); e.play();
+        b.vurEylem = e;
+      }
+    }
   }
   b.bay.vurul = Math.max(b.bay.vurul || 0, guc);
 }

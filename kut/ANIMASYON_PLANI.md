@@ -311,3 +311,20 @@ dönüşler (additive); klip ezilmez. Unity: Animator'da ayrı "Additive" katman
 - **Denetim (deri):** `tools/kemik_denetim.cjs` artık kemiğin yanında DERİYİ de ölçer: baskın ağırlığı sol/sağ kol, ön kol, el
   zincirinde olan köşelerden ≤ 1500 örnek; grup ağırlık merkezinin göğse (Spine2) göre yer değiştirmesi (% boy) duruma göre.
   Bir grup < %1 oynarken eşi > %4 oynuyorsa `DERI_DONUK` (yanlış ağırlık, eşya bağlama, retarget hataları kemik ölçümünden kaçar).
+
+### Vurulma (üçüncü tur)
+Şikâyet: "vurulma animasyonları garip". Ölçülen kök nedenler (boşta golem, aynı tohumla vuruşlu/vuruşsuz koşu farkı):
+- **Klip sonu sıçraması:** additive Hit_Chest/Hit_Head sıfıra dönmeden bitiyordu (baş/omurga 13–14°, kalça 10° açık); `LoopOnce` +
+  `clampWhenFinished=false` ile klip bitince poz tek karede geri atlıyordu (baş 11,6 → 1,5 cm). Her vuruşta `reset()` aynı atlamayı yapıyordu.
+- **Tüm vücut klibi:** tepki kliplerinde kalça/bacak/parmak izleri vardı (ayak kayması, eller kasılması); Hit_Knockback_Ek kalçada ~100°,
+  baldırda ~80° dönüyordu (0,85 ağırlıkla gövde devriliyordu).
+- **Birikme:** seri vuruşta (0,1 sn arayla 4 vuruş) his.darbe hızları üst üste: baş 47 cm, ayak 29 cm kayma, sıkış %17.
+- **Parlama:** 0,62 + 0,3·güç beyaz, gövdenin tamamına düz 0,45 katsayıyla → model 2–3 kare "hayalet beyaz".
+- **Titreme:** dört ayaklı/yılan vurulmasında 10–12 Hz sinüs titreşimi ve anlık (0. karede tepe) sıçrama; sabit modelde anlık yatma.
+Yapılan: `ustGovdeEk` (sahne3d) tepki kliplerini yalnız üst gövdeye indirir, genliği küçültür (göğüs/baş 0,8, savrulma 0,4) ve son %55'te
+sıfıra yumuşatır; tetikleme kilidi (süren tepki ilk %60'ındaysa yeniden başlamaz, ağırlık yalnız yükselir; geçse 0,1 sn çapraz söndürme);
+ağırlık 0,45 + 0,35·güç (≤ 0,7), ağırda 0,5 + 0,3·güç (≤ 0,8), süre ≈ 0,25 sn. his.darbe: itme 0,7 + 1,0·güç, sıkış 0,6 + 0,8·güç, yatma
+1,6 + 2,4·güç; o anki sapmaya göre azalan itki (üst sınır: 6 cm, %6, 0,2 rad); iki ayaklıda itme ×0,45, yatma ×0,67. Parlama sıcak beyaz
+(1; 0,92; 0,8), 0,42 + 0,2·güç, KENAR ağırlıklı (`uKutKenar`: 0,08 + 1,1·kenar²), 0,2 sn. Dört ayaklı/yılan: `vurZarf` (0,05 sn yumuşak
+yükseliş, e^−9t sönüm, titreşim yok, birikmeyen tepe ≤ 1). Sonuç (tek vuruş): baş 12 → 4,5 cm, ayak 8,7 → 2,1 cm, sıkış %5,5 → %2,6.
+Unity: Hit additive layer'ı (üst gövde AvatarMask, weight ≤ 0,7, CrossFade 0,05/0,1, tetikleme kilidi) + gövde yayları LateUpdate'te + rim emission.

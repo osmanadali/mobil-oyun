@@ -51,7 +51,7 @@ const YUKARI = new THREE.Vector3(0, 1, 0);
 // ───────────────────────── malzeme yaması: parlama + çözülme ─────────────────────────
 // Her birimin malzemeleri BİR KEZ klonlanır (his.hazirla). Program önbellek anahtarı sabit olduğu için
 // bütün birimler aynı gölgelendirici programını paylaşır: derleme savaş kurulumunda bir kez olur.
-const YAMA_ANAHTAR = 'kutHis1';
+const YAMA_ANAHTAR = 'kutHis2';
 function malzemeYamala(m, u) {
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u);
@@ -60,7 +60,7 @@ function malzemeYamala(m, u) {
       .replace('#include <project_vertex>', '#include <project_vertex>\nvKutP = (modelMatrix * vec4(transformed, 1.0)).xyz;');
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
-varying vec3 vKutP; uniform float uKutFlas; uniform vec3 uKutFlasRenk; uniform float uKutCoz; uniform vec3 uKutCozRenk; uniform vec2 uKutBoy;
+varying vec3 vKutP; uniform float uKutFlas; uniform vec3 uKutFlasRenk; uniform float uKutKenar; uniform float uKutCoz; uniform vec3 uKutCozRenk; uniform vec2 uKutBoy;
 float kutH(vec3 p){ p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
 float kutG(vec3 x){ vec3 i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f);
   return mix(mix(mix(kutH(i), kutH(i + vec3(1,0,0)), f.x), mix(kutH(i + vec3(0,1,0)), kutH(i + vec3(1,1,0)), f.x), f.y),
@@ -73,7 +73,7 @@ if (uKutCoz > 0.0) {
   if (kutN < uKutCoz * 1.08) discard;
 }`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-if (uKutFlas > 0.0) { float kutR = 1.0 - abs(dot(normalize(normal), normalize(vViewPosition))); totalEmissiveRadiance += uKutFlasRenk * uKutFlas * (0.45 + 0.9 * kutR * kutR); }
+if (uKutFlas > 0.0) { float kutR = 1.0 - abs(dot(normalize(normal), normalize(vViewPosition))); totalEmissiveRadiance += uKutFlasRenk * uKutFlas * mix(0.45 + 0.9 * kutR * kutR, 0.08 + 1.1 * kutR * kutR, uKutKenar); }
 if (uKutCoz > 0.0) { float kutK = 1.0 - smoothstep(0.0, 0.075, kutN - uKutCoz * 1.08); totalEmissiveRadiance += uKutCozRenk * kutK * 4.0; }`);
   };
   m.customProgramCacheKey = () => YAMA_ANAHTAR;
@@ -132,7 +132,7 @@ const H = {
 function olayYay(ad, veri) { const f = H.dinleyici[ad]; if (f) f(veri); }
 function bh(b) {   // birimin his durumu
   if (!b._his) {
-    b._his = { geri: { x: 0, v: 0 }, ezil: { x: 0, v: 0 }, egil: { x: 0, v: 0 }, yon: new THREE.Vector3(0, 0, 1), flas: 0, flasRenk: new THREE.Color(1, 1, 1),
+    b._his = { geri: { x: 0, v: 0 }, ezil: { x: 0, v: 0 }, egil: { x: 0, v: 0 }, yon: new THREE.Vector3(0, 0, 1), flas: 0, flasSure: 0.13, flasRenk: new THREE.Color(1, 1, 1),
       atil: null, giris: null, olum: null, zafer: null, uni: null, bosta: false, donma: 0,
       yp: { renk: new THREE.Color(1, 1, 1), guc: 0, t: 0, sure: 0, tepe: 0 } };   // yetenek hazırlık parlaması (element rengi)
   }
@@ -162,7 +162,7 @@ export const his = {
   /** Birim malzemelerini yamalar (parlama + çözülme). birimKur sonunda bir kez çağır; çağrılmazsa ilk ihtiyaçta kendisi yapar. */
   hazirla(b) {
     const s = bh(b); if (s.uni) return s.uni;
-    const u = { uKutFlas: { value: 0 }, uKutFlasRenk: { value: s.flasRenk }, uKutCoz: { value: 0 }, uKutCozRenk: { value: new THREE.Color('#ff9a2e') }, uKutBoy: { value: new THREE.Vector2(0, 1.4) } };
+    const u = { uKutFlas: { value: 0 }, uKutFlasRenk: { value: s.flasRenk }, uKutKenar: { value: 0 }, uKutCoz: { value: 0 }, uKutCozRenk: { value: new THREE.Color('#ff9a2e') }, uKutBoy: { value: new THREE.Vector2(0, 1.4) } };
     b.model.traverse((m) => {
       if (!m.isMesh || !m.material) return;
       const yap = (mat) => { if (!mat || !(mat.isMeshStandardMaterial || mat.isMeshPhongMaterial || mat.isMeshLambertMaterial)) return mat; const c = mat.clone(); malzemeYamala(c, u); return c; };
@@ -239,7 +239,7 @@ export const his = {
   /** Yavaşlatma (Kut: 0,25 sn %30 hız) */
   yavaslat(sure = 0.25, oran = 0.3) { H.yavas.kalan = sure; H.yavas.sure = sure; H.yavas.oran = oran; },
   /** Kut kısa yolu: yavaşlatma + yakınlaştırma + hafif sarsıntı + altın parlama */
-  kut(b) { his.yavaslat(0.25, 0.3); if (b) { b.kok.getWorldPosition(_v3); _v3.y += 0.6; his.yakinlastir(_v3, 1.0, { oran: 0.1 }); const s = bh(b); his.hazirla(b); s.flasRenk.set('#ffd27a'); s.flas = 1.2; } his.sarsinti(0.22, 0.3); },
+  kut(b) { his.yavaslat(0.25, 0.3); if (b) { b.kok.getWorldPosition(_v3); _v3.y += 0.6; his.yakinlastir(_v3, 1.0, { oran: 0.1 }); const s = bh(b); his.hazirla(b); s.flasRenk.set('#ffd27a'); s.flas = 1.2; s.flasSure = 0.13; s.uni.uKutKenar.value = 0; } his.sarsinti(0.22, 0.3); },
 
   /** Darbe tepkisi. yon: dünya Vector3 (saldırgandan hedefe); guc 0..1 (his.hasarGucu ile). Geri savrulma + sıkış-uz + beyaz parlama;
       guc ≥ 0,45'te hit-stop, ≥ 0,6'da kamera sarsıntısı. */
@@ -248,11 +248,14 @@ export const his = {
     if (s.olum) return;
     if (yon) yerelYon(b, yon, s.yon);
     const o = 1 / kokOlcek(b);
-    // küçük ve sakin (REFERANS_ANIMASYON 2.5): vurulan yönden 3–6° yatma, ≤ %4 sıkış, %60–80 parlama
-    s.geri.v += (1.7 + 2.4 * guc) * o;        // yerel birim/sn itme (vuruş yönünde geri savrulma)
-    s.ezil.v -= 1.2 + 1.8 * guc;              // sıkış
-    s.egil.v += 2.6 + 3.4 * guc;              // tepesi vuruş yönüne savrulur
-    s.flasRenk.set(1, 1, 1); s.flas = 0.62 + 0.3 * guc;
+    // küçük ve sakin (REFERANS_ANIMASYON 2.5): vurandan uzağa 2–5° yatma, %2–5 sıkış (ayak tabanı pivotlu), sıcak-beyaz KENAR parlaması.
+    // Sık vuruşta birikmez: yaylara verilen hız, o anki sapmaya göre azalır (üst sınır); iki ayaklıda üst gövde tepkisi klipte (sahne3d).
+    const az = (x, sinir) => Math.max(0, 1 - Math.abs(x) / sinir);
+    const iki = b.isk ? 0.45 : 1;                                   // iki ayaklı (UAL iskeletli): üst gövde esnemesi klipte, gövde kayması/yatması az
+    s.geri.v += (0.7 + 1.0 * guc) * o * iki * az(s.geri.x, 0.06 * o);   // yerel birim/sn itme (en çok ~5 cm; ayaklar neredeyse yerinde)
+    s.ezil.v -= (0.6 + 0.8 * guc) * az(s.ezil.x, 0.06);             // sıkış (≤ %5)
+    s.egil.v += (1.6 + 2.4 * guc) * (0.4 + 0.6 * iki) * az(s.egil.x, 0.2);   // tepesi vurandan uzağa savrulur
+    s.flasRenk.set(1, 0.92, 0.8); s.flas = Math.max(s.flas, 0.42 + 0.2 * guc); s.flasSure = 0.2; s.uni.uKutKenar.value = 1;
     // yerel hit-stop: yalnız vuran ve vurulan donar (sahnenin geri kalanı akar); küresel durdurma yalnız öldüren/kritik vuruşta
     const fr = 0.05 + 0.04 * kirp((guc - 0.3) / 0.7);
     his.donma(b, fr); if (k && k !== b) his.donma(k, fr * 0.9);
@@ -298,7 +301,7 @@ export const his = {
     if (yakinlastir) { _v1.y += 0.5; his.yakinlastir(_v1, 1.4, { oran: 0.1 }); }
   },
   /** Diriliş (Anka): çözülmeyi geri al, görünür yap */
-  dirilis(b) { if (!b) return; const s = bh(b); s.olum = null; if (s.uni) s.uni.uKutCoz.value = 0; b.govde.visible = true; s.ezil.v -= 3; s.flasRenk.set('#ffb070'); s.flas = 1.2; },
+  dirilis(b) { if (!b) return; const s = bh(b); s.olum = null; if (s.uni) s.uni.uKutCoz.value = 0; b.govde.visible = true; s.ezil.v -= 3; s.flasRenk.set('#ffb070'); s.flas = 1.2; s.flasSure = 0.13; if (s.uni) s.uni.uKutKenar.value = 0; },
   /** Zafer: yaşayan birim kısa sevinç (iki zıplama; iki ayaklıda tek seferlik sevinç klibiyle), sonra duruş */
   zafer(b) { if (!b) return; const s = bh(b); if (s.olum) return; s.zafer = { t: -((b.uid || 0) * 0.137 % 0.5) }; },
   /** hata ayıklama */
@@ -365,10 +368,10 @@ function birimGuncelle(b, dt, dtR) {
     } else if (n >= 2) s.zafer = null;
   }
   // parlama (gerçek zaman)
-  if (s.flas > 0) { s.flas = Math.max(0, s.flas - dtR / 0.13); }
+  if (s.flas > 0) { s.flas = Math.max(0, s.flas - dtR / s.flasSure); }
   const yp = s.yp; let ypG = 0;
   if (yp.guc > 0) { yp.t += dt; const e = yp.t < yp.tepe ? yp.t / yp.tepe : 1 - (yp.t - yp.tepe) / Math.max(1e-3, yp.sure - yp.tepe); ypG = yp.guc * yumusak(e); if (yp.t >= yp.sure) yp.guc = 0; }
-  if (s.uni) { if (s.flas > 0) s.uni.uKutFlas.value = Math.min(1.2, s.flas); else if (ypG > 0.002) { s.flasRenk.copy(yp.renk); s.uni.uKutFlas.value = ypG; } else s.uni.uKutFlas.value = 0; }
+  if (s.uni) { if (s.flas > 0) s.uni.uKutFlas.value = Math.min(1.2, s.flas); else if (ypG > 0.002) { s.flasRenk.copy(yp.renk); s.uni.uKutFlas.value = ypG; s.uni.uKutKenar.value = 0; } else s.uni.uKutFlas.value = 0; }
   // gövdeye yaz (ayak tabanı merkezli ölçek: model tabanı govde başlangıcında)
   const gv = b.govde;
   gv.position.set(ox, oy, oz);
@@ -383,6 +386,14 @@ function birimGuncelle(b, dt, dtR) {
   const aci = _v1.length();
   if (aci > 1e-5) gv.quaternion.setFromAxisAngle(_v1.divideScalar(aci), aci); else gv.quaternion.identity();
 }
+
+// Vurulma zarfı (dört ayaklı, yılan): 0,05 sn'de yumuşak yükselir, ~0,35 sn'de söner; titreşim yok. Sık vuruşta birikmez:
+// yeni tepki o anki değerden başlar, tepe değeri = max(yeni, süren + 0,4·yeni), en çok 1.
+function vurTepki(v, vurul) {
+  const g = typeof vurul === 'number' ? kirp(vurul, 0.2, 1.2) : 0.7, c = v ? vurZarf(v) : 0;
+  return { t: 0, c0: c, g: Math.min(1, Math.max(g, c + 0.4 * g)) };
+}
+function vurZarf(v) { const Y = 0.05; return v.t < Y ? karis(v.c0 || 0, v.g, Math.sin(0.5 * Math.PI * v.t / Y)) : v.g * Math.exp(-(v.t - Y) * 9); }
 
 // ═════════════════════════ DÖRT AYAKLI ═════════════════════════
 function kemikHaritasi(model, kemikler) {
@@ -603,7 +614,7 @@ export function dortAyakliGuncelle(d, dt, { hiz = 0, saldiri = false, yetenek = 
       const an = typeof yetenek === 'object' && yetenek.an != null ? yetenek.an : null;
       d.yet = { t: 0, tp: 0, st, a: DA[st] || DA.tosla, oldu: false, P: DA_AN[st], an }; d.sal = null;
     }
-    if (vurul) d.vur = { t: 0, g: typeof vurul === 'number' ? kirp(vurul, 0.2, 1.2) : 0.7 };
+    if (vurul) d.vur = vurTepki(d.vur, vurul);
   }
   d.zafer = zafer;
   // hız ve yürüyüş ağırlığı
@@ -637,7 +648,7 @@ export function dortAyakliGuncelle(d, dt, { hiz = 0, saldiri = false, yetenek = 
   let ileri = k[0] * Hy, yuk = k[1] * Hy, egim = k[2], boyunA = k[3], basA = k[4], kopuk = k[5], esele = k[6], yalpa = 0, yanal = 0;
   const uzK = k[8], sisK = k[9], kuyrukK = k[11]; donY += k[10];
   // vurulma: geri sarsılma + baş irkilmesi
-  if (d.vur) { const v = d.vur; v.t += dt; const e = Math.exp(-v.t * 10) * v.g; ileri -= 0.1 * Hy * e * Math.min(1, v.t * 30); yanal += Math.sin(v.t * 75) * 0.02 * Hy * e; egim += 0.08 * e; boyunA += 0.3 * e; yalpa += Math.sin(v.t * 60) * 0.05 * e; if (v.t > 0.5) d.vur = null; }
+  if (d.vur) { const v = d.vur; v.t += dt; const e = vurZarf(v); ileri -= 0.05 * Hy * e; egim += 0.06 * e; boyunA += 0.16 * e; if (v.t > 0.45) d.vur = null; }
   // yürüyüş: inip kalkma (adım başına 2), yalpalama, hafif öne eğilme
   // tırısta gövde basma ortasında en yüksek (ters sarkaç), uçlarda alçak; yürürken hafif çömelir (bacaklara erişim payı)
   const bob = Math.cos(PI2 * 2 * (ph - DUTY / 2)) * (0.022 + 0.03 * dortnal) * Hy * w;
@@ -827,7 +838,7 @@ export function yilanGuncelle(d, dt, { hiz = 0, saldiri = false, yetenek = false
   if (!d) return DA_SONUC_BOS;
   let olay = null; dt = Math.min(0.1, Math.max(0, dt)); d.t += dt;
   if (olum && !d.olum) { d.olum = { t: 0 }; d.sal = d.yet = null; } if (!olum && d.olum) d.olum = null;
-  if (!d.olum) { if (saldiri) d.sal = { t: 0, oldu: false }; if (yetenek) { d.yet = { t: 0, oldu: false, an: typeof yetenek === 'object' && yetenek.an != null ? yetenek.an : null }; d.sal = null; } if (vurul) d.vur = { t: 0, g: typeof vurul === 'number' ? kirp(vurul, 0.2, 1.2) : 0.7 }; }
+  if (!d.olum) { if (saldiri) d.sal = { t: 0, oldu: false }; if (yetenek) { d.yet = { t: 0, oldu: false, an: typeof yetenek === 'object' && yetenek.an != null ? yetenek.an : null }; d.sal = null; } if (vurul) d.vur = vurTepki(d.vur, vurul); }
   d.zafer = zafer;
   const olcek = Math.max(1e-4, _v1.setFromMatrixColumn(d.Z.matrixWorld, 0).length());
   d.v += ((d.olum ? 0 : hiz) - d.v) * Math.min(1, dt * 8); const w = yumusak((d.v - 0.06) / 0.5);
@@ -836,7 +847,7 @@ export function yilanGuncelle(d, dt, { hiz = 0, saldiri = false, yetenek = false
   if (d.yet) { const y = d.yet; y.t += dt; const tp = yetZaman(y.t, y.an, DA_AN.tukur); anahtar(YA.tukur, tp, k); yanY = k[5];
     if (!y.oldu && tp >= DA_AN.tukur) { y.oldu = true; olay = 'tukur'; } if (tp > 0.9) d.yet = null; }
   let taban = k[0], ucA = k[1], bas = k[2], ileri = k[3] * d.Hy, yuk = k[4] * d.Hy, yalpa = 0, yan = 0;
-  if (d.vur) { const v = d.vur; v.t += dt; const e = Math.exp(-v.t * 9) * v.g; taban += 0.35 * e; bas += 0.2 * e; yan += Math.sin(v.t * 70) * 0.06 * e; if (v.t > 0.5) d.vur = null; }
+  if (d.vur) { const v = d.vur; v.t += dt; const e = vurZarf(v); taban += 0.22 * e; bas += 0.14 * e; if (v.t > 0.45) d.vur = null; }
   if (d.zafer) { bas += 0.15; yan += Math.sin(d.t * 5) * 0.2; }
   // canlılık (boşta): baş yavaşça etrafa bakar ve ara sıra yükselip kokluyormuş gibi tıslar (fazı birime özgü)
   { const B = (d.sal || d.yet || d.olum || d.zafer ? 0 : 1) * (1 - w); d.bosW = (d.bosW || 0) + (B - (d.bosW || 0)) * Math.min(1, dt * 3);
