@@ -297,7 +297,66 @@ async function arenaKur(kok, tl) {
     if (amblem) { const o = halkaya(amblem, 0, 5.2, 0.42); o.rotation.y = Math.PI; }
     if (rune) for (const d of [100, 260]) halkaya(rune, d, 5.6, 0.18);
   });
+  atmosferKur();
   for (const [x, y, z, s] of [[-11, 2.5, -9, 3.5], [12, 4, -12, 4.5], [-14, -1, 4, 3], [13, 0.5, 6, 2.6]]) { const o = yuzen.scene.clone(); olcekle(o, s, 'max'); o.position.set(x, y, z); sahne.add(o); efektler.push({ kalici: true, o, faz: x, guncelle: (t) => { o.position.y = y + Math.sin(t * 0.5 + x) * 0.25; } }); }
+}
+// ── ATMOSFER (yalnız görüntü; REFERANS_ANIMASYON §3, hepsi [UYGUN] bütçe) ──
+// (1) alçak yükseklik sisi: adanın kenarından dışarı ve aşağı taşan yumuşak sis halkası + ada eteğinde dikey sis perdesi (tahtanın üstüne çıkmaz)
+// (2) havada yavaş süzülen ışık zerreleri (tek Points çağrısı, kayma vertex shader'da; CPU güncellemesi yok)
+// (Kemer huzmeleri denendi: 360° kamerada yandan bakınca gökyüzüne uzanan çizgi gibi görünüyordu; çıkarıldı.)
+// Uyarlanır kalite: zerreler kademe ≥ 5'te (bloom kapalı), sis kademe ≥ 7'de (son işlem kapalı) gizlenir; 'hafif'te zerre yok.
+const ATM_GURULTU = 'float h_(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); } float g_(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(h_(i), h_(i + vec2(1, 0)), f.x), mix(h_(i + vec2(0, 1)), h_(i + vec2(1, 1)), f.x), f.y); }';
+function atmosferKur() {
+  const zaman = { value: 0 }, sisRenk = new THREE.Color('#c99ab8');
+  const vs = 'varying vec2 vUv; varying vec3 vP; void main(){ vUv = uv; vec4 w = modelMatrix * vec4(position, 1.0); vP = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }';
+  // (1a) yatay sis halkası: r 6,0 → 17, adanın üst yüzünün biraz altında; içte yumuşak başlar, dışta söner, gürültüyle yavaşça kayar
+  const halka = new THREE.Mesh(new THREE.RingGeometry(5.9, 17, 96, 1), new THREE.ShaderMaterial({
+    uniforms: { uZ: zaman, uRenk: { value: sisRenk } }, vertexShader: vs,
+    fragmentShader: `uniform float uZ; uniform vec3 uRenk; varying vec3 vP; ${ATM_GURULTU}
+      void main(){ float r = length(vP.xz); float a = smoothstep(5.9, 7.6, r) * (1.0 - smoothstep(11.0, 17.0, r));
+        float n = g_(vP.xz * 0.35 + vec2(uZ * 0.05, uZ * 0.03)) * 0.6 + g_(vP.xz * 0.9 - vec2(uZ * 0.04, 0.0)) * 0.4;
+        gl_FragColor = vec4(uRenk, a * (0.28 + 0.4 * n));
+        #include <colorspace_fragment>
+      }`, transparent: true, depthWrite: false, fog: false, toneMapped: false }));
+  halka.rotation.x = -Math.PI / 2; halka.position.y = -0.45; halka.renderOrder = 1; sahne.add(halka);
+  // (1b) ada eteği: açık silindir (r 6,5; y −3 … +0,25), altta yoğun, üstte söner
+  const etek = new THREE.Mesh(new THREE.CylinderGeometry(6.5, 7.4, 3.25, 64, 1, true), new THREE.ShaderMaterial({
+    uniforms: { uZ: zaman, uRenk: { value: sisRenk } }, vertexShader: vs,
+    fragmentShader: `uniform float uZ; uniform vec3 uRenk; varying vec2 vUv; varying vec3 vP; ${ATM_GURULTU}
+      void main(){ float a = smoothstep(0.0, 0.4, vUv.y) * (1.0 - smoothstep(0.5, 1.0, vUv.y));
+        // yüzü kameraya dönük kısım soluk, sıyırarak görülen kenar yoğun (perde değil hacim gibi okunsun)
+        vec3 N = normalize(vec3(vP.x, 0.0, vP.z)), V = normalize(cameraPosition - vP); float f = 1.0 - abs(dot(N, V));
+        float n = g_(vec2(vUv.x * 40.0 + uZ * 0.08, vP.y * 0.8 - uZ * 0.05));
+        gl_FragColor = vec4(uRenk, a * (0.15 + 0.85 * f * f) * (0.22 + 0.3 * n));
+        #include <colorspace_fragment>
+      }`, transparent: true, depthWrite: false, fog: false, toneMapped: false, side: THREE.DoubleSide }));
+  etek.position.y = -1.37; etek.renderOrder = 1; sahne.add(etek);
+  // (2) ışık zerreleri: adanın üstünde silindir hacmi (r < 8, y 0,3–4,5); her zerre kendi fazıyla yavaş süzülür, hafifçe yanıp söner
+  const N = 140, pos = new Float32Array(N * 3), tohum = new Float32Array(N);
+  let rs = 7; const rnd = () => ((rs = (rs * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < N; i++) { const a = rnd() * Math.PI * 2, r = 1.5 + Math.sqrt(rnd()) * 6.5; pos[i * 3] = Math.sin(a) * r; pos[i * 3 + 1] = 0.3 + rnd() * 4.2; pos[i * 3 + 2] = Math.cos(a) * r; tohum[i] = rnd(); }
+  const zg = new THREE.BufferGeometry(); zg.setAttribute('position', new THREE.BufferAttribute(pos, 3)); zg.setAttribute('aT', new THREE.BufferAttribute(tohum, 1));
+  zg.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 2.4, 0), 10);
+  const zerre = new THREE.Points(zg, new THREE.ShaderMaterial({
+    uniforms: { uZ: zaman, uOlcek: { value: 300 }, uRenk: { value: new THREE.Color('#ffd9a0').multiplyScalar(1.3) } },
+    vertexShader: `uniform float uZ; uniform float uOlcek; attribute float aT; varying float vA;
+      void main(){ vec3 p = position; float t = uZ * (0.05 + 0.05 * aT) + aT * 6.283;
+        p.x += sin(t * 1.3) * 0.6; p.z += cos(t * 1.1) * 0.6; p.y += mod(uZ * (0.04 + 0.05 * aT) + aT * 4.5, 4.5) - 2.25 + sin(t * 2.0) * 0.15;
+        p.y = 0.3 + mod(p.y - 0.3 + 4.5, 4.5);
+        vec4 mv = modelViewMatrix * vec4(p, 1.0); gl_Position = projectionMatrix * mv;
+        float boy = 0.035 + 0.04 * fract(aT * 7.31);
+        gl_PointSize = clamp(boy * uOlcek / -mv.z, 1.0, 9.0);
+        float y = (p.y - 0.3) / 4.5; vA = smoothstep(0.0, 0.15, y) * (1.0 - smoothstep(0.75, 1.0, y)) * (0.45 + 0.55 * sin(uZ * (0.8 + aT) + aT * 30.0) * 0.5 + 0.275); }`,
+    fragmentShader: `uniform vec3 uRenk; varying float vA; void main(){ vec2 d = gl_PointCoord - 0.5; float a = smoothstep(0.5, 0.0, length(d)); gl_FragColor = vec4(uRenk, a * a * vA * 0.7); }`,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, toneMapped: false }));
+  zerre.renderOrder = 6; sahne.add(zerre);
+  const pikselOlcek = () => renderer.getPixelRatio() * renderer.domElement.clientHeight / (2 * Math.tan(THREE.MathUtils.degToRad(kamera.fov) / 2));
+  efektler.push({ kalici: true, o: zerre, guncelle: (t) => {
+    zaman.value = t % 1000;
+    const kd = G.kademeAl(), ince = hafif || kd >= 5;
+    zerre.visible = !ince; halka.visible = etek.visible = kd < 7;
+    if (!ince) zerre.material.uniforms.uOlcek.value = pikselOlcek();
+  } });
 }
 function atesEkle(p) {
   const g = new THREE.Group(); g.position.copy(p); sahne.add(g);
@@ -673,7 +732,7 @@ export async function savasKur(yeniSim, kok = '', { yerinde = false } = {}) {
   // gölgelendiricileri yükleme ekranındayken derle: MVP yakın planı kameranın daha önce görmediği arka planı (kemerler vb.) ve ışını
   // kadraja sokar; ilk çizimde derlenmeleri bitişte takılma yapıyordu. compile() görünür her nesneyi görüş alanından bağımsız işler.
   if (!mvpIsin) mvpIsin = mvpIsinKur();
-  mvpIsin.grup.visible = true; try { renderer.compile(sahne, kamera); } catch (e) { /* derleme ön ısıtması isteğe bağlı */ } mvpIsin.grup.visible = false;
+  mvpIsin.grup.visible = mvpIsin.arka.visible = true; try { renderer.compile(sahne, kamera); } catch (e) { /* derleme ön ısıtması isteğe bağlı */ } mvpIsin.grup.visible = mvpIsin.arka.visible = false;
   kotuKare = 0; G.golgeYenile(); uyarlaSifirla(1000);   // kurulumdan sonraki ilk saniye (gölgelendirici derleme) ölçülmez
   // gökten giriş: taraf içinde sırayla, rakip biraz sonra (giriş sürerken görüntü zamanı bekler → motor da bekler)
   const sira = [0, 0];
@@ -1078,6 +1137,8 @@ function olumBaslat(b) {
   if (b.isk) { b.zk = null; b.zkSira = []; oyna(b, 'Death01', { gecis: b.durum === 'vurul' ? 0.25 : 0.1, tut: true }); }
   const sonMu = ![...birimler.values()].some(o => o !== b && o.u.taraf === b.u.taraf && o.olumT < 0);
   his.olum(b, { tur: b.gor.tur, yakinlastir: sonMu });
+  // son öldürme (bir taraf tükendi): 0,45 sn gerçek zaman ~0,25 hızla ağır çekim (yalnız görüntü; Maçın Yıldızı "Selam" girişi)
+  if (sonMu) his.yavaslat(0.45, 0.25);
   vfx.durumTemizle(b.kok);
   vfx.olum(b.kok, { renk: renkAl(b), gecikme: b.isk ? 1.33 : b.gor.tur === 'yilan' ? 0.5 : 0.6 });
   for (const hl of b.halkalar) hl.visible = false;
@@ -1466,6 +1527,7 @@ function kadraj(dtR) {
   }
   kam.bak = (kam.bak || new THREE.Vector3()).copy(_kb);
   kamera.lookAt(_kb); kamera.updateMatrixWorld(true);
+  if (kam.mvp) mvpArkaGuncelle();
 }
 const DURUM_TUR = ['sersem', 'buz', 'yanik', 'zehir', 'lanet', 'davul'], DURUM_ALAN = ['sersem', 'yavas', 'yanik', 'zehir', 'lanet', 'davul'];
 // kodlu hareket katmanlarına giden seçenekler: birim başına her karede yeniden doldurulan tek nesne
@@ -1799,7 +1861,7 @@ export function dokun(x, y) {
 // Zafer: kısa sevinç (sevinç klibi BİR KEZ, en çok ZAFER_SURE sn; his.zafer iki zıplama), ardından bekleme döngüsüne dönülür ve duruş
 // kameraya dönük tutulur (REFERANS_ANIMASYON §1: dans/zıplama döngüsü yok). Birimler arası 0–0,3 sn faz farkı.
 const ZAFER_SURE = 2.2;
-function zaferBasla(b, gecis) {
+function zaferBasla(b, gecis, zipla = true) {
   if (b.isk) {
     b.zk = null; b.zkSira = []; b.dizi = null;
     const z = (b.gor.zafer && ual.klip[b.gor.zafer]) ? b.gor.zafer : 'Yes';
@@ -1807,11 +1869,13 @@ function zaferBasla(b, gecis) {
     if (b.isk.aktif) b.isk.aktif.startAt(b.isk.mix.time + (b.uid * 0.137) % 0.3);   // faz farkı: birimler aynı anda başlamaz
     b.zaferBit = b.yerelT + Math.min(ZAFER_SURE, ual.klip[z].duration);
   } else b.zaferBit = b.yerelT + ZAFER_SURE + 0.4;   // dört ayaklı / yılan: kodlu sevinç (baş kalkar, kuyruk sallanır) kısa sürer
-  b.zaferMi = true; his.zafer(b);
+  b.zaferMi = true; if (zipla) his.zafer(b);
 }
-export function zafer(taraf) {
-  for (const b of birimler.values()) if (b.u.taraf === taraf && b.olumT < 0) {
+// sade: Maçın Yıldızı sinematiği oynayacak (yıldız saçılması yok); haric: o birim sevinmez (imza hareketini yakın planda yapar)
+export function zafer(taraf, { haric = -1, sade = false } = {}) {
+  for (const b of birimler.values()) if (b.u.taraf === taraf && b.olumT < 0 && b.uid !== haric) {
     zaferBasla(b, 0.2);
+    if (sade) continue;
     // hafif altın parıltısı (ganimet hazırlığı, SAHNE_GEREKSINIM adım 2): başın üstünden birkaç altın yıldız saçılır
     const h = b.kok.userData.vfxBoy || 1, bas = b.kok.position.clone().setY(ARENA_Y + h * 0.95);
     vfx.yapi.patlama(bas, { renk: '#ffd76a', n: hafif ? 5 : 8, hiz: 1.6, g: 1.5, yildiz: true });
@@ -1868,40 +1932,50 @@ export function sonaSar() {
 /** Hafif ekran sarsıntısı (arayüz anları: sonuç bandında kılıç çarpışması). guc 0..1, sure sn */
 export function sarsinti(guc = 0.2, sure = 0.25) { his.sarsinti(guc, sure); }
 
-// ── MAÇIN YILDIZI yakın planı (yalnız görüntü; ANIMASYON_PLANI.md "Bitiş ekranları") ──
-// Kamera kadraj konumundan kahramanın önüne 0,9 sn'de (yumuşak adım) yaklaşır; kahraman sağ üçte birde durur (sol yarıda arayüz kartı).
-// Arkasında element renginde dikey ışın (tek ağ, ilk çağrıda kurulur, sonra yeniden kullanılır). Kahraman kameraya döner, zafer klibini oynar.
+// ── MAÇIN YILDIZI yakın planı, "Selam" (yalnız görüntü; REFERANS_ANIMASYON.md Öneri A, ANIMASYON_PLANI.md "Bitiş ekranları") ──
+// 0–1,2 sn: kadraj kamerasından kahramana ease-in-out dolly, hafif alçak açı; sonra yavaş itme (+%7) ve 4° yörünge, kamera nefesi.
+// Kahramanın arkasında: sahne düzlemi (mvp_arka.webp, koyu mor boşluk + üstten altın spot; derinlik sınamalı, önündeki zemin örter)
+// ve ince, az doygun altın ışık huzmesi. Kahramana sıcak kenar ışığı (uRimRenk/uRimGuc). İmza hareketi kamera gelirken (0,8 sn) bir kez.
 let mvpIsin = null;
-const _mvP = new THREE.Vector3(), _mvH = new THREE.Vector3(), _mvS = new THREE.Vector3(), _mvC = new THREE.Color();
+const _mvP = new THREE.Vector3(), _mvH = new THREE.Vector3(), _mvS = new THREE.Vector3(), _mvC = new THREE.Color(), _mvD = new THREE.Vector3();
 const yumusakAdim = (e) => e * e * (3 - 2 * e);
+const kubikGirCik = (e) => (e < 0.5 ? 4 * e * e * e : 1 - Math.pow(-2 * e + 2, 3) / 2);
+const MVP_ALTIN = '#d9b46a', _mvRim = new THREE.Color('#ffc98a');
 function mvpIsinKur() {
-  // ışın: kahramanın biraz arkasında kameraya dönük dikey düzlem; yatayda yumuşak (Gauss) düşüş, beyaz çekirdek, yukarı doğru söner.
-  // Kahramanın önünde olmadığı için gövdeyi yıkamaz; derinlik sınaması gövdenin arkasında kalan kısmı gizler.
+  // huzme: kahramanın biraz arkasında kameraya dönük dikey düzlem; yatayda yumuşak (Gauss) düşüş, yukarıdan aşağı söner.
   const m = new THREE.ShaderMaterial({
-    uniforms: { uRenk: { value: new THREE.Color(0xffd45c) }, uGuc: { value: 0 } },
+    uniforms: { uRenk: { value: new THREE.Color(MVP_ALTIN) }, uGuc: { value: 0 } },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
-    fragmentShader: 'uniform vec3 uRenk; uniform float uGuc; varying vec2 vUv; void main(){ float x = vUv.x - 0.5; float yan = exp(-x * x * 22.0), cek = exp(-x * x * 160.0); float boy = smoothstep(0.0, 0.06, vUv.y) * (1.0 - smoothstep(0.3, 1.0, vUv.y)); float a = (yan + cek * 0.8) * boy * uGuc; gl_FragColor = vec4(mix(uRenk, vec3(1.0), cek * 0.55), min(1.0, a)); }',
-    transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false });
-  const ag = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 6), m); ag.position.y = 3;
-  const disk = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.62, 48), new THREE.MeshBasicMaterial({ color: 0xffd45c, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
-  disk.rotation.x = -Math.PI / 2; disk.position.y = 0.03;
-  const grup = new THREE.Group(); grup.add(ag, disk); grup.visible = false; ag.renderOrder = 5; disk.renderOrder = 5; sahne.add(grup);
-  return { grup, ag, disk };
+    fragmentShader: 'uniform vec3 uRenk; uniform float uGuc; varying vec2 vUv; void main(){ float x = vUv.x - 0.5 + (vUv.y - 0.5) * 0.12; float yan = exp(-x * x * 26.0); float boy = smoothstep(0.0, 0.25, vUv.y) * (1.0 - smoothstep(0.55, 1.0, vUv.y) * 0.6); gl_FragColor = vec4(uRenk, min(1.0, yan * boy * uGuc)); }',
+    transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false, fog: false });
+  const ag = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 7), m); ag.position.y = 3.5;
+  const grup = new THREE.Group(); grup.add(ag); grup.visible = false; ag.renderOrder = 5; sahne.add(grup);
+  // arka plan düzlemi: ekrana paralel, kahramanın arkasında; görselin üst %62'si (kemerler, spot) kırpılır, alt kenar sahneye karışır
+  const doku = new THREE.TextureLoader().load(kokYol + 'arayuz/menu/mvp_arka.webp'); doku.colorSpace = THREE.SRGBColorSpace;
+  const am = new THREE.ShaderMaterial({
+    uniforms: { map: { value: doku }, uOp: { value: 0 }, uSu: { value: 1 }, uKay: { value: 0 } },
+    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+    fragmentShader: 'uniform sampler2D map; uniform float uOp, uSu, uKay; varying vec2 vUv; void main(){ vec2 u = vec2(clamp(0.5 + (vUv.x - 0.5 - uKay) * uSu, 0.0, 1.0), 0.38 + vUv.y * 0.62); vec4 c = texture2D(map, u); float a = uOp * smoothstep(0.02, 0.3, vUv.y); gl_FragColor = vec4(c.rgb * 0.92, a);\n#include <colorspace_fragment>\n}',
+    transparent: true, depthWrite: false, toneMapped: false, fog: false });
+  const arka = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), am); arka.visible = false; arka.renderOrder = -1; arka.frustumCulled = false; sahne.add(arka);
+  return { grup, ag, arka };
 }
-function mvpSifirla() { kam.mvp = null; if (mvpIsin) mvpIsin.grup.visible = false; }
-/** uid: oyuncunun kahramanı; renk: element rengi (#rrggbb). anlik: geçiş yok (Animasyonları azalt). Dönen: yakın plan kurulduysa true */
-export function mvpGoster(uid, renk = '#ffd45c', { anlik = false } = {}) {
+function mvpSifirla() {
+  const m = kam.mvp; kam.mvp = null;
+  if (mvpIsin) { mvpIsin.grup.visible = false; mvpIsin.arka.visible = false; }
+  if (m) { const gr = m.b.model.userData.gorunum; if (gr) gr.kenar(G.RIM.biz, G.RIM_GUC.biz); if (m.gizli) for (const o of m.gizli) o.kok.visible = true; }
+}
+/** uid: oyuncunun kahramanı. anlik: geçiş yok (Animasyonları azalt). Dönen: yakın plan kurulduysa true.
+    renk parametresi geriye uyum için durur; ışık tek, az doygun altın (REFERANS_ANIMASYON: doygun element rengi yok). */
+export function mvpGoster(uid, renk = MVP_ALTIN, { anlik = false } = {}) {
   const b = birimler.get(uid); if (!b || !sim || b.olumT >= 0 || !b.kok.visible) return false;
-  if (!b.zaferMi) {
-    zaferBasla(b, 0.25);
-  }
   if (!mvpIsin) mvpIsin = mvpIsinKur();
-  _mvC.set(renk); const hsl = {}; _mvC.getHSL(hsl); _mvC.setHSL(hsl.h, Math.max(0.6, hsl.s), Math.min(0.62, Math.max(0.5, hsl.l)));
-  mvpIsin.ag.material.uniforms.uRenk.value.copy(_mvC); mvpIsin.disk.material.color.copy(_mvC);
+  b.zaferMi = true;   // kameraya döner; imza hareketi kamera gelirken (mvpKarisim)
+  vfx.durumTemizle(b.kok);   // savaş bitti: başın üstündeki durum simgeleri (zehir vb.) yakın planda kalmasın
   mvpIsin.grup.position.set(b.kok.position.x, ARENA_Y, b.kok.position.z); mvpIsin.grup.visible = true;
   const boy = b.kok.userData.vfxBoy || 1; mvpIsin.grup.scale.set(0.8 + 0.4 * boy, 1, 0.8 + 0.4 * boy);
-  kam.mvp = { b, e: anlik ? 1 : 0, yon: 1, sure: 0.9, boy, aci: mvpAciSec(b, boy) };
-  if (!anlik) vfx.yapi.patlama(_mvP.set(b.kok.position.x, ARENA_Y + boy * 0.9, b.kok.position.z), { renk: '#' + _mvC.getHexString(), n: hafif ? 6 : 12, hiz: 1.8, g: 1.2, yildiz: true });
+  mvpIsin.arka.visible = G.kademeAl() < 7;   // en düşük iki kademede arka plan düzlemi yok
+  kam.mvp = { b, t: anlik ? 9 : 0, e: anlik ? 1 : 0, yon: 1, sure: 1.2, boy, aci: mvpAciSec(b, boy), imza: false };
   return true;
 }
 /** Yakın plandan kadraja dönüş (anlik: hemen) */
@@ -1943,26 +2017,54 @@ function mvpAciSec(b, boy, kayit = null) {
   }
   return en;
 }
+// test: MVP yakın planını t saniyesinde dondurur (kare dizisi çekmek için; null çözer)
+export function _mvpZaman(t) { const m = kam.mvp; if (!m) return null; if (t == null) { m.don = false; return m.t; } m.don = true; m.t = t; return m.t; }
 // hata ayıklama: MVP açı adaylarının cezaları
 export function _mvpAci(uid) { const b = birimler.get(uid); if (!b) return null; const k = []; const a = mvpAciSec(b, b.kok.userData.vfxBoy || 1, k); return { secilen: +a.toFixed(2), adaylar: k, birimler: birimDizi.filter(o => o.olumT < 0 && o.kok.visible).map(o => [o.uid, o.u.taraf, +o.kok.position.x.toFixed(2), +o.kok.position.z.toFixed(2), +(o.yaricap || 0).toFixed(2)]) }; }
 // kadraj(): bakış noktası (h) ve kamera konumu yakın plana karıştırılır
 function mvpKarisim(dtR, h) {
   const m = kam.mvp; m.e = Math.max(0, Math.min(1, m.e + m.yon * dtR / m.sure));
   if (m.e <= 0 && m.yon < 0) { mvpSifirla(); return h; }
+  if (m.yon > 0 && !m.don) m.t += dtR;
+  if (m.don) m.e = Math.min(1, m.t / m.sure);
   const b = m.b, p = b.kok.position, boy = m.boy;
-  // kamera kahramanın önünde, hafif yukarıdan; tüm gövde kadrajda (boy: model yüksekliği)
-  const aci = m.aci, uzak = mvpUzak(boy);
-  _mvP.set(p.x + Math.sin(aci) * uzak, ARENA_Y + 0.5 + 0.85 * boy, p.z + Math.cos(aci) * uzak);
-  // kahraman sağda dursun (sol yarıda arayüz kartı): bakış noktası kameranın sol yönüne kayar (sağ vektör = (cos a, 0, −sin a))
+  // imza hareketi: kamera varmadan hemen önce, bir kez (iki ayaklı: zafer klibi 'Yes'; dört ayaklı / yılan: kodlu sakin baş kaldırma). Zıplama yok.
+  if (!m.imza && m.t >= 0.8) { m.imza = true; zaferBasla(b, 0.3, false); }
+  // yavaş itme + küçük yörünge (varıştan sonra 2,5 sn'de yumuşakça) ve kamera nefesi (0,2–0,3 Hz, birkaç cm)
+  const it = yumusakAdim(Math.min(1, Math.max(0, (m.t - 1.0) / 2.5))), zs = performance.now() / 1000;
+  const aci = m.aci + it * 0.07, uzak = mvpUzak(boy) * (1 - 0.07 * it);
+  const nx = Math.sin(zs * 1.4) * 0.015 + Math.sin(zs * 2.3 + 1) * 0.008, ny = Math.sin(zs * 1.1 + 2) * 0.012;
+  // alçak açı: kamera kahramanın göğüs hizasında, bakış biraz yukarıda (kahraman kadrajda heybetli durur)
+  _mvP.set(p.x + Math.sin(aci) * uzak + nx, ARENA_Y + 0.3 + 0.55 * boy + ny, p.z + Math.cos(aci) * uzak);
+  // kahraman sağ üçte birde (yazı solda): bakış noktası kameranın sol yönüne kayar
   const kay = mvpKay(uzak);
-  _mvH.set(p.x - Math.cos(aci) * kay, ARENA_Y + (kamera.aspect > 1.9 ? 0.68 : 0.5) * boy, p.z + Math.sin(aci) * kay);
-  const k = yumusakAdim(m.e);
+  _mvH.set(p.x - Math.cos(aci) * kay, ARENA_Y + (kamera.aspect > 1.9 ? 0.72 : 0.6) * boy, p.z + Math.sin(aci) * kay);
+  const k = m.yon > 0 ? kubikGirCik(m.e) : yumusakAdim(m.e);
+  // kameraya kahramandan yakın duran (önde kalan) birimler yakın planda gizlenir: kahramanı ve soldaki yazıyı örtmesinler; dönüşte geri gelir
+  if (!m.gizli && k > 0.35) {
+    m.gizli = []; _mvD.copy(_mvH).sub(_mvP).setY(0).normalize(); const hd = (p.x - _mvP.x) * _mvD.x + (p.z - _mvP.z) * _mvD.z;
+    for (const o of birimDizi) if (o !== b && o.kok.visible && ((o.kok.position.x - _mvP.x) * _mvD.x + (o.kok.position.z - _mvP.z) * _mvD.z) < hd - 0.25) { o.kok.visible = false; m.gizli.push(o); }
+  }
+  if (m.gizli && m.yon < 0 && k < 0.35) { for (const o of m.gizli) o.kok.visible = true; m.gizli = null; }
   kamera.position.lerp(_mvP, k);
   _mvS.copy(h).lerp(_mvH, k);
-  // ışın: geçişle birlikte belirir, hafif nabız
-  if (mvpIsin) { const n = 0.85 + 0.15 * Math.sin(performance.now() / 260); mvpIsin.ag.material.uniforms.uGuc.value = 1.0 * k * n; mvpIsin.disk.material.opacity = 0.3 * k; mvpIsin.grup.position.set(p.x, ARENA_Y, p.z);
-    const yon = Math.atan2(kamera.position.x - p.x, kamera.position.z - p.z); mvpIsin.ag.rotation.y = yon; mvpIsin.ag.position.x = -Math.sin(yon) * 0.55; mvpIsin.ag.position.z = -Math.cos(yon) * 0.55; }
+  // sıcak kenar ışığı (rim) ve arkadaki altın huzme kamera ile birlikte açılır
+  const gr = b.model.userData.gorunum; if (gr) { _mvC.copy(G.RIM.biz).lerp(_mvRim, k); gr.kenar(_mvC, G.RIM_GUC.biz + 0.75 * k); }
+  if (mvpIsin) { mvpIsin.ag.material.uniforms.uGuc.value = 0.55 * k * (0.92 + 0.08 * Math.sin(zs * 1.3)); mvpIsin.grup.position.set(p.x, ARENA_Y, p.z);
+    const yon = Math.atan2(kamera.position.x - p.x, kamera.position.z - p.z); mvpIsin.ag.rotation.y = yon; mvpIsin.ag.position.x = -Math.sin(yon) * 0.6; mvpIsin.ag.position.z = -Math.cos(yon) * 0.6; }
   return _mvS;
+}
+// arka plan düzlemi: kamera son hâlini aldıktan sonra (kadraj sonu) ekrana paralel, kahramanın 4 birim arkasına yerleşir; kadrajı biraz taşar
+function mvpArkaGuncelle() {
+  const m = kam.mvp; if (!m || !mvpIsin || !mvpIsin.arka.visible) return;
+  const a = mvpIsin.arka, p = m.b.kok.position, k = m.yon > 0 ? kubikGirCik(m.e) : yumusakAdim(m.e);
+  kamera.getWorldDirection(_mvD);
+  const d = Math.max(3, _mvD.x * (p.x - kamera.position.x) + _mvD.y * (ARENA_Y + 0.6 * m.boy - kamera.position.y) + _mvD.z * (p.z - kamera.position.z)) + 4.0;
+  const yuk = 2 * d * Math.tan(THREE.MathUtils.degToRad(kamera.fov) / 2) * 1.12, gen = yuk * kamera.aspect;
+  a.position.copy(kamera.position).addScaledVector(_mvD, d); a.quaternion.copy(kamera.quaternion); a.scale.set(gen, yuk, 1);
+  const u = a.material.uniforms; u.uOp.value = 0.96 * yumusakAdim(Math.max(0, (k - 0.55) / 0.45));   // kamera yaklaşınca belirir (uzaktan yarı saydam perde görünmesin)
+  u.uSu.value = Math.min(1, (gen / yuk) / (1672 / (941 * 0.62)));   // kırpılan bölgenin en/boyu ≈ 2,87: geniş ekranda tam, dar ekranda ortası
+  _mvS.copy(p).setY(ARENA_Y + 0.5 * m.boy).project(kamera); u.uKay.value = _mvS.x * 0.5 / 1.12 * 0.8;   // altın spot kahramanın arkasına kayar
 }
 export function temizle() { mvpSifirla(); sim = null; for (const b of birimler.values()) vfx.durumTemizle(b.kok); }
 // hata ayıklama / ölçüm

@@ -225,13 +225,15 @@ Zamanlar savaş bittiği (sonuç bandının açıldığı) andan saniye. Unity: 
 | SAVAŞ! | bant + iki küçük kılıç ortada çarpışır | 0–0,3 | **savaş başla sesi 0,3**; halka 0,4 sn |
 | | kılıçlar bandın iki ucuna seker, "SAVAŞ!" yayla belirir | 0,3–0,5 | 2,2→0,9→1 ölçek |
 | | tümü söner | 0,6–0,8 | toplam 0,8 sn, dokunmayı engellemez; yazı bandın tam ortasında |
-| MAÇIN YILDIZI | açılış | 2,2 | yalnız öğretici/pencere/hasar özeti kapalıyken; sonuç bandı gizlenir |
-| | kamera yakın planı | 2,2–3,1 | kadraj kamerasından yumuşak adımla (smoothstep) 0,9 sn; kahraman sağda, kameraya döner, zafer klibi + zıplama; arkasında element renginde ışın (açık silindir, kenarı ve tepesi sönük) ve zemin halkası |
-| | kart soldan girer, şerit, portre | +0–0,5 | kart 0,5 sn yay; şerit 0,15'te; portre 0,2'de 0,4→1 |
-| | hasar sayacı | +0,5–1,4 | 0 → hasar, kübik yavaşlayan |
-| | yıldızlar (★ sayısı kadar) | +0,9, +1,05, +1,2 | 0 → 1 ölçek, −90° → 0 |
-| | kapanış | dokununca ya da +4,2 sn | kart 0,3 sn söner, kamera 0,6 sn'de geri döner, sonuç bandı yeniden açılır |
-| | yenilgide | | sade gri kart, ortada; kamera ve ışın yok |
+| MAÇIN YILDIZI ("Selam", 2026-11-20) | son öldürme | savaş içinde | 0,45 sn gerçek zaman ×0,25 ağır çekim (`his.yavaslat`, `olumBaslat`) |
+| | açılış | 0 (savaş biter bitmez; sonuç bandı **sonra**) | yalnız zaferde, öğretici/pencere yokken, hareket azaltılmamışsa; diğer kazananlar yıldızsız sevinir |
+| | sinema şeritleri | 0–0,45 | üst/alt siyah bant %9,5 yükseklik, kayarak (ease-out) |
+| | kamera dolly-in | 0–1,2 | ease-in-out kübik; alçak açı (göz 0,3+0,55×boy), kahraman sağ üçte birde; sonra 2,5 sn'de +%7 itme, 4° yörünge, kamera nefesi |
+| | ışık | 0–1,2 | kahramana sıcak rim (`uRimRenk` #ffc98a, `uRimGuc` +0,75); arkada `mvp_arka.webp` düzlemi (ekrana paralel, 4 birim arkada) + ince altın huzme (#d9b46a) |
+| | imza hareketi | 0,8 | iki ayaklı: zafer klibi ('Yes') bir kez; dört ayaklı/yılan: kodlu sakin baş kaldırma; zıplama yok |
+| | yazı | 1,5 / 1,75 / 1,9 / 2,2–2,6 | ad (büyük harf, aralıklı, soldan 24 px) · ince altın çizgi · "MAÇIN YILDIZI" etiketi · 2–3 istatistik (hasar sayacı 2,3–2,9; takım hasar payı; kalkan/iyileştirme ya da alınan) |
+| | kapanış | dokununca ya da 3,9 sn | katman 0,45 sn söner, kamera 0,6 sn'de kadraja döner, sonuç bandı aynı anda açılır |
+| | yenilgide / hareket azaltılmış | | sinematik yok; yıldız sonuç bandında çip |
 | MAÇ SONU | amblem tepeden iner (1.: taç, 2.: gümüş kupa, 3.: bronz kupa, 4.+: kalkan) | 0–0,6 | −55 vh → 0, ezilip (1,08×0,9) zıplar |
 | | halka + kıvılcım, arka ışınlar | 0,45–1,1 | ışınlar 14 sn'de bir tur döner |
 | | sıra yazısı | 0,7–1,15 | 0,4 → 1 yay |
@@ -246,12 +248,13 @@ Zamanlar savaş bittiği (sonuç bandının açıldığı) andan saniye. Unity: 
   binince ikincisinin bekleme karesi birincisini eziyordu. Unity: tek DOTween Sequence, Append(geliş).Append(tepme).
 - Gecikmeli başlayan halka ve kıvılcımlar başlangıçta görünmez (ilk anahtar karede opaklık 0, %2'de 1); çarpışma anına kadar ekranda yoklar.
 - Başlık büyükten (2,6×) inerken kırpılmaz; parıltı şeridi yalnız kendi kabında (başlık kutusu) kırpılır.
-  MVP kamerası en/boy > 1,9'da %11 daha uzak ve bakış 0,68×boy yükseklikte (başı üst şeridin altında kalmasın).
+  MVP kamerası en/boy > 1,9'da %11 daha uzak ve bakış 0,72×boy yükseklikte (başı üst şeridin altında kalmasın).
+- MVP "Selam" Unity karşılığı: Timeline (Cinemachine dolly + Volume'da letterbox/rim) + `Time.timeScale` 0,25 son öldürmede; yazı UI Toolkit/Canvas DOTween Sequence.
 - Yükleme ekranında `renderer.compile` ile tüm görünür malzemeler + MVP ışını derlenir (yakın plan ilk kez görülen arka planı kadraja
   soktuğunda takılma olmasın). Unity: ShaderVariantCollection.WarmUp ile aynı iş.
 - MVP seçimi: oyuncunun takımında en çok verilen hasar; eşitse en çok iyileştirme + kalkan. Kimse katkı yapmadıysa gösterilmez.
 - Animasyonları azalt (Ayarlar; ayarlanmadıysa işletim sisteminin "hareketi azalt" tercihi): uçuş, sarsıntı, dönme, kamera geçişi yok;
-  amblemler son duruşunda belirir, sesler hemen çalar, MVP 0,9 sn'de açılır ve kamera geçişsiz.
+  amblemler son duruşunda belirir, sesler hemen çalar, MVP sinematiği oynamaz (yıldız sonuç bandında çip).
 - Düğmeler: basınca ölçek 0,95 (0,09 sn), üzerine gelince parlama (opaklık 0,15 sn). Yazı tipi: başlık/düğme "Kut Baslik" (Lilita One + Türkçe harfler), gövde Nunito.
 
 ## Canlılık katmanları ve donuk kemik denetimi (2026-11-19)

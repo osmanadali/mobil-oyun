@@ -960,7 +960,6 @@ h3,h4,.pn-bas{letter-spacing:.03em}
 /* ===================== BİTİŞ EKRANLARI (ANIMASYON_PLANI.md "Bitiş ekranları"; sayılar oradaki tabloyla aynı) ===================== */
 .sonucBant{animation:bantGel .28s cubic-bezier(.2,.9,.3,1.15) both;transition:opacity .25s}
 #sDevam{transition:transform .09s ease-out,opacity .2s}#sDevam.bekle{opacity:0;pointer-events:none}   /* başlık inene kadar (1,1 sn) görünmez ve basılamaz */
-.sonucBant.gizli{animation:none;opacity:0;pointer-events:none}   /* MVP kartı açıkken; kapanınca bant yeniden açılır */
 @keyframes bantGel{from{opacity:0;transform:translateY(-50%) scaleY(.05)}to{opacity:1;transform:translateY(-50%) scaleY(1)}}
 .sonucBant .bil,.sonucBant .sDugmeler{animation:asagidanGel .35s ease-out both;animation-delay:1.05s}
 @keyframes asagidanGel{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
@@ -1070,57 +1069,39 @@ h3,h4,.pn-bas{letter-spacing:.03em}
 @keyframes sgYazi{0%{opacity:0;transform:scale(2.2)}55%{opacity:1;transform:scale(.9)}100%{opacity:1;transform:scale(1)}}
 /*alçak*/html.alcak .savasGiris{top:44%}html.alcak .savasGiris b{font-size:46px}html.alcak .sgBant{top:-36px;height:72px}html.alcak .sgAmblem{--kh:90px;--kw:22px;--sgx:-150px}
 
-/* MAÇIN YILDIZI kartı: soldan yayla girer; portrenin arkasında element renginde dönen ışınlar; sayaç 0,5–1,4 sn; yıldızlar 0,9 sn'den sırayla */
-.yildizEkran{position:absolute;inset:0;z-index:7;cursor:pointer;display:flex;align-items:center;padding:0 max(24px,env(safe-area-inset-left));animation:belir .3s both;
-  background:linear-gradient(90deg,rgba(12,4,24,.78),rgba(12,4,24,.35) 42%,rgba(12,4,24,0) 62%)}
-.yildizEkran.orta{justify-content:center;background:rgba(12,4,24,.62)}
-.yildizEkran.kapan{animation:mvpKapan .3s ease-in both}
+/* MAÇIN YILDIZI "Selam" (REFERANS_ANIMASYON Öneri A): sinema şeritleri 0–0,45 sn; ad 1,5 sn; etiket 1,9 sn; istatistikler 2,2 sn (sayaç 2,3 sn);
+   yalnız transform/opaklık, taşma yok. Arka plan 3D'de (mvp_arka.webp düzlemi); burada yalnız sol kenarda okunurluk için hafif karartma. */
+.yildizEkran{position:absolute;inset:0;z-index:7;cursor:pointer;overflow:hidden;--serit:clamp(34px,9.5cqh,84px);
+  background:linear-gradient(90deg,rgba(10,4,20,.55),rgba(10,4,20,.18) 38%,rgba(10,4,20,0) 55%);animation:mvpBelir .6s ease-out both}
+@keyframes mvpBelir{from{opacity:0}}
+.yildizEkran.kapan{animation:mvpKapan .45s ease-in both;pointer-events:none}
+#savas.mvpAcik .savasUst,#savas.mvpAcik .duraklat,#savas.mvpAcik .hizlar{opacity:0;transition:opacity .3s;pointer-events:none}   /* sinematik boyunca HUD gizli */
 @keyframes mvpKapan{to{opacity:0}}
-.mvpKart{position:relative;width:min(340px,40cqw);display:flex;flex-direction:column;align-items:center;gap:6px;padding:28px 18px 16px;border-radius:18px;
-  background:linear-gradient(180deg,rgba(62,28,102,.96),rgba(26,10,48,.97));border:3px solid var(--altin);box-shadow:0 0 0 3px var(--altinKK),0 0 34px color-mix(in srgb,var(--ec) 55%,transparent),0 14px 30px rgba(0,0,0,.55);
-  animation:mvpGel .5s cubic-bezier(.2,.9,.3,1.15) both}
-.yildizEkran.orta .mvpKart{width:min(340px,80cqw)}
-@keyframes mvpGel{from{opacity:0;transform:translateX(-60px) scale(.85)}to{opacity:1;transform:none}}
-.yildizEkran.orta .mvpKart{animation-name:mvpGelOrta}
-@keyframes mvpGelOrta{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:none}}
-.mvpSerit{position:absolute;top:-22px;left:50%;transform:translateX(-50%);white-space:nowrap;padding:7px 26px 8px;border-radius:12px;
-  background:linear-gradient(180deg,#fff2b0,#ffd45c 35%,#e0951c 75%,#a8601a);border:3px solid var(--altinKK);box-shadow:inset 0 2px 0 rgba(255,255,255,.7),0 4px 0 #3a1d05;animation:mvpSerit .4s cubic-bezier(.2,.9,.3,1.2) .15s both}
-@keyframes mvpSerit{from{opacity:0;transform:translateX(-50%) scaleX(.2)}to{opacity:1;transform:translateX(-50%) scaleX(1)}}
-.mvpSerit b{font-size:20px;letter-spacing:.1em;color:#fffbea;text-shadow:-1.5px -1.5px 0 #6a3206,1.5px -1.5px 0 #6a3206,-1.5px 1.5px 0 #6a3206,1.5px 1.5px 0 #6a3206,0 3px 0 #6a3206}
-.mvpPor{position:relative;width:132px;height:132px;flex:none;margin-top:6px}
-.mvpPor img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border-radius:50%;background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--ec) 55%,#2a1446),#1a0a30 72%);
-  border:4px solid var(--altin);box-shadow:0 0 0 3px var(--altinKK),0 0 22px var(--ec);animation:mvpPor .45s cubic-bezier(.2,.9,.3,1.3) .2s both}
-@keyframes mvpPor{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
-.mvpIsinlar{position:absolute;left:50%;top:50%;width:260px;height:260px;margin:-130px 0 0 -130px;border-radius:50%;opacity:.85;
-  background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--ec) 70%,transparent) 0 9deg,transparent 9deg 24deg);
-  -webkit-mask:radial-gradient(circle,#000 22%,transparent 68%);mask:radial-gradient(circle,#000 22%,transparent 68%);animation:don 9s linear infinite}
-@keyframes don{to{transform:rotate(360deg)}}
-.mvpHalka{position:absolute;inset:-10px;border-radius:50%;border:3px solid var(--ec);opacity:0;animation:halka .7s ease-out .3s both}
-.mvpBilgi{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;max-width:100%}
-.mvpAd{font-size:24px;color:#fff;text-align:center;line-height:1.05;text-shadow:0 2px 0 #000;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;animation:asagidanGel .3s ease-out .35s both}
-.mvpSoy{display:flex;gap:6px;animation:asagidanGel .3s ease-out .45s both}
-.mvpSoy .soyIk{width:30px;height:30px;border-radius:50%;filter:drop-shadow(0 2px 2px rgba(0,0,0,.6))}
-.mvpSayi{display:flex;align-items:baseline;gap:7px;line-height:1}
-.mvpSayi span{font-family:var(--fBaslik);font-size:44px;color:#ffe48a;text-shadow:0 3px 0 #a8691a,0 5px 0 #3d2106,0 0 18px rgba(255,212,92,.7);font-variant-numeric:tabular-nums}
-.mvpSayi small{font-size:15px;font-weight:900;color:var(--yazi2)}
-.mvpEk{font-size:14px;font-weight:800;color:#8dffb0}
-.mvpYildiz{display:flex;gap:4px}
-.mvpYildiz span{animation:yildizPop .35s cubic-bezier(.2,.9,.3,1.5) both;animation-delay:calc(.9s + var(--i)*.15s)}
-.mvpYildiz .ik{width:30px;height:30px}
-@keyframes yildizPop{from{opacity:0;transform:scale(0) rotate(-90deg)}to{opacity:1;transform:none}}
-.mvpIpucu{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-family:var(--fGovde);font-size:14px;font-weight:800;color:var(--yazi2);text-shadow:0 1px 2px #000;animation:belir .4s 1.4s both}
-.yildizEkran.sade .mvpKart{border-color:#9a8aaa;box-shadow:0 0 0 3px #1a0d2a,0 14px 30px rgba(0,0,0,.55);background:linear-gradient(180deg,rgba(48,30,70,.96),rgba(24,14,40,.97))}
-.yildizEkran.sade .mvpSerit{background:linear-gradient(180deg,#e8e0f5,#b8a8d0 45%,#7a6a98);border-color:#1a0d2a;box-shadow:inset 0 2px 0 rgba(255,255,255,.6),0 4px 0 #120820}
-.yildizEkran.sade .mvpSerit b{text-shadow:-1.5px -1.5px 0 #2a1a40,1.5px -1.5px 0 #2a1a40,-1.5px 1.5px 0 #2a1a40,1.5px 1.5px 0 #2a1a40,0 3px 0 #2a1a40}
-.yildizEkran.sade .mvpIsinlar{display:none}
+.mvpSerit{position:absolute;left:0;right:0;height:var(--serit);background:#07030c;box-shadow:0 0 24px rgba(0,0,0,.6)}
+.mvpSerit.ust{top:0;animation:mvpSeritU .45s cubic-bezier(.2,.7,.3,1) both}
+.mvpSerit.alt{bottom:0;animation:mvpSeritA .45s cubic-bezier(.2,.7,.3,1) both}
+@keyframes mvpSeritU{from{transform:translateY(-100%)}}
+@keyframes mvpSeritA{from{transform:translateY(100%)}}
+.mvpYazi{position:absolute;left:max(7cqw,env(safe-area-inset-left));bottom:calc(var(--serit) + 7cqh);display:flex;flex-direction:column;align-items:flex-start;max-width:44cqw;
+  font-family:var(--fGovde);color:#f4ead8;text-shadow:0 1px 10px rgba(0,0,0,.55)}
+.mvpEtiket{order:-1;font-size:13px;font-weight:700;letter-spacing:.32em;color:#d9b46a;opacity:0;animation:mvpSol .5s ease-out 1.9s forwards}
+.mvpAd{margin-top:6px;font-family:var(--fGovde);font-size:clamp(26px,4.4cqw,40px);font-weight:600;letter-spacing:.12em;text-transform:uppercase;line-height:1.05;
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:0;animation:mvpSol .55s cubic-bezier(.2,.7,.3,1) 1.5s forwards}
+.mvpCizgi{display:block;width:min(260px,30cqw);height:1px;margin:12px 0 14px;background:linear-gradient(90deg,#d9b46a,rgba(217,180,106,0));transform:scaleX(0);transform-origin:0 50%;
+  animation:mvpCiz .6s ease-out 1.75s forwards}
+@keyframes mvpCiz{to{transform:none}}
+@keyframes mvpSol{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
+.mvpIst{display:flex;gap:clamp(18px,3.2cqw,34px)}
+.mvpIst div{display:flex;flex-direction:column;gap:3px;opacity:0;animation:mvpSol .45s ease-out forwards;animation-delay:2.2s}
+.mvpIst div:nth-child(2){animation-delay:2.4s}.mvpIst div:nth-child(3){animation-delay:2.6s}
+.mvpIst b{font-family:var(--fGovde);font-size:clamp(20px,2.8cqw,26px);font-weight:700;color:#fff6e4;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.mvpIst span{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:rgba(244,234,216,.62)}
+.mvpIpucu{position:absolute;bottom:calc(var(--serit) * .5);right:max(5cqw,env(safe-area-inset-right));transform:translateY(50%);font-family:var(--fGovde);font-size:12px;font-weight:700;
+  letter-spacing:.18em;text-transform:uppercase;color:rgba(244,234,216,.45);opacity:0;animation:belir .5s 2.6s forwards}
 /*alçak*/
-  html.alcak .yildizEkran{padding-left:max(18px,env(safe-area-inset-left))}
-  html.alcak .mvpKart{flex-direction:row;width:min(400px,52cqw);gap:14px;padding:24px 14px 12px;align-items:center}
-  html.alcak .yildizEkran.orta .mvpKart{width:min(400px,86cqw)}
-  html.alcak .mvpPor{width:104px;height:104px;margin:0}html.alcak .mvpIsinlar{width:200px;height:200px;margin:-100px 0 0 -100px}
-  html.alcak .mvpBilgi{align-items:flex-start;flex:1}html.alcak .mvpAd{font-size:20px;text-align:left}
-  html.alcak .mvpSayi span{font-size:36px}html.alcak .mvpSerit b{font-size:17px}html.alcak .mvpYildiz .ik{width:24px;height:24px}html.alcak .mvpSoy .soyIk{width:26px;height:26px}
-  html.alcak .mvpIpucu{bottom:8px;font-size:13px}
+  html.alcak .yildizEkran{--serit:clamp(26px,8cqh,48px)}
+  html.alcak .mvpYazi{bottom:calc(var(--serit) + 4cqh);max-width:52cqw}
+  html.alcak .mvpEtiket{font-size:11px}html.alcak .mvpCizgi{margin:8px 0 9px}
 
 
 /* MAÇ SONU töreni: amblem tepeden yayla iner (0–0,6), 0,5'te halka + kıvılcım, sıra yazısı 0,7'de; 1,9 sn'de söner, kart açılır */
@@ -1439,7 +1420,6 @@ html.alcak #perde.menuPanel .pencere{border-width:18px 8px 20px;border-image-wid
   background:radial-gradient(ellipse,rgba(255,255,255,.55) 0,var(--t2) 30%,transparent 70%);animation:spPatla 1.4s cubic-bezier(.2,.7,.2,1) .45s both}
 .yenilgi .spPatla{animation-delay:.35s}.berabere .spPatla{animation-delay:.4s}
 @keyframes spPatla{0%{opacity:0;transform:scale(.3)}18%{opacity:1;transform:scale(1)}100%{opacity:.55;transform:scale(1.15)}}
-#sonucYer:has(.sonucBant.gizli) .sonucPerde{opacity:0}
 .sonucBant{z-index:2;top:var(--sy);gap:10px;padding:26px 0 24px;border:0;
   background:linear-gradient(90deg,transparent,rgba(12,8,24,.72) 16%,rgba(12,8,24,.82) 50%,rgba(12,8,24,.72) 84%,transparent);
   animation:bantGel .45s cubic-bezier(.2,.8,.2,1) both;--t1:#f2bf4a}

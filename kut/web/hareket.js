@@ -676,7 +676,7 @@ export function dortAyakliGuncelle(d, dt, { hiz = 0, saldiri = false, yetenek = 
   bakis += bakIdle;
   // baş dengeleme: gövde eğimine ve inip kalkmaya karşı
   boyunA += -egim * 0.55 - (bob / Hy) * 1.6;
-  if (d.zafer) { boyunA += 0.25; basA += 0.1 + Math.sin(d.t * 9) * 0.06; }
+  if (d.zafer) { boyunA += 0.25; basA += 0.1 + Math.sin(d.t * 2.4) * 0.04; }
   // ölüm: yana devrilme
   let devril = 0;
   if (d.olum) {
@@ -848,7 +848,7 @@ export function yilanGuncelle(d, dt, { hiz = 0, saldiri = false, yetenek = false
     if (!y.oldu && tp >= DA_AN.tukur) { y.oldu = true; olay = 'tukur'; } if (tp > 0.9) d.yet = null; }
   let taban = k[0], ucA = k[1], bas = k[2], ileri = k[3] * d.Hy, yuk = k[4] * d.Hy, yalpa = 0, yan = 0;
   if (d.vur) { const v = d.vur; v.t += dt; const e = vurZarf(v); taban += 0.22 * e; bas += 0.14 * e; if (v.t > 0.45) d.vur = null; }
-  if (d.zafer) { bas += 0.15; yan += Math.sin(d.t * 5) * 0.2; }
+  if (d.zafer) { bas += 0.15; yan += Math.sin(d.t * 2.2) * 0.1; }
   // canlılık (boşta): baş yavaşça etrafa bakar ve ara sıra yükselip kokluyormuş gibi tıslar (fazı birime özgü)
   { const B = (d.sal || d.yet || d.olum || d.zafer ? 0 : 1) * (1 - w); d.bosW = (d.bosW || 0) + (B - (d.bosW || 0)) * Math.min(1, dt * 3);
     if (d.bosW > 0.01) { bakis += gurultu(d.t * 0.22 + d.ozf * 29) * 0.45 * d.bosW; const y = Math.max(0, gurultu(d.t * 0.11 + d.ozf * 7)); ucA -= y * y * 0.35 * d.bosW; bas += y * y * 0.2 * d.bosW + Math.sin(d.t * 19) * 0.02 * y * d.bosW; } }

@@ -32,6 +32,7 @@ export const AYAR = {
   doygunluk: 1.18,        // doku doygunluk çarpanı (1 = değişmez)
   kontrast: 1.18,
   rimGuc: 0.5, rimUs: 2.8,
+  renkDuzen: 1,            // yalnız 'yuksek': split-tone gücü (0 kapalı); son işlem kapalı kademelerde zaten yok
   vinyet: 0.22,           // yalnız 'yuksek': kenarlar bu oranda kararır (yaratıklar ortada öne çıksın)
   parlama: 1.4,           // dokudaki yerel olarak parlak-doygun ayrıntıların (kristal, göz, desen) kendinden ışıması
   parlamaEsik: 0.1,       // piksel ile çevresinin (bulanık mip) parlaklık farkı eşiği (doğrusal)
@@ -144,11 +145,13 @@ function sonIslemKur() {
     bloom.enabled = kd.bloom > 0;
     composer.addPass(bloom);
     // ucuz vinyet + hafif doygunluk (6 satır): kenarlar kararır, yaratıklar ortada öne çıkar
-    composer.addPass(new ShaderPass({ uniforms: { tDiffuse: { value: null }, uVin: { value: AYAR.vinyet } },
+    // + hafif renk düzenleme (split-tone): koyu tonlar mora, açık tonlar az doygun altına çok az kayar (paletle uyumlu; AYAR.renkDuzen 0 kapatır)
+    composer.addPass(new ShaderPass({ uniforms: { tDiffuse: { value: null }, uVin: { value: AYAR.vinyet }, uRd: { value: AYAR.renkDuzen } },
       vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-      fragmentShader: `uniform sampler2D tDiffuse; uniform float uVin; varying vec2 vUv;
+      fragmentShader: `uniform sampler2D tDiffuse; uniform float uVin; uniform float uRd; varying vec2 vUv;
         void main(){ vec4 c = texture2D(tDiffuse, vUv); vec2 d = vUv - 0.5; float v = 1.0 - uVin * smoothstep(0.18, 0.62, dot(d, d) * 1.6);
-          float l = dot(c.rgb, vec3(0.2126, 0.7152, 0.0722)); c.rgb = max(mix(vec3(l), c.rgb, 1.06), 0.0) * v; gl_FragColor = c; }` }));
+          float l = dot(c.rgb, vec3(0.2126, 0.7152, 0.0722)); c.rgb = max(mix(vec3(l), c.rgb, 1.06), 0.0) * v;
+          c.rgb *= mix(vec3(1.0), mix(vec3(0.97, 0.94, 1.05), vec3(1.035, 1.0, 0.94), smoothstep(0.03, 0.6, l)), uRd); gl_FragColor = c; }` }));
     composer.addPass(new OutputPass());   // ton eşleme + sRGB burada
   }
 }
@@ -331,18 +334,18 @@ export function parlakRenk(css, kat = 2) { return new THREE.Color(css).multiplyS
 
 // ── Yumuşak temas gölgesi (paylaşımlı geometri + malzeme; ayak altına) ──
 let lekeGeo = null, lekeMat = null;
-export function golgeLekesi(yaricap = 0.5, koyuluk = 0.45) {
+export function golgeLekesi(yaricap = 0.5, koyuluk = 0.52) {
   if (!lekeGeo) {
     const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d');
     const g = x.createRadialGradient(32, 32, 0, 32, 32, 32);
-    g.addColorStop(0, 'rgba(30,10,40,1)'); g.addColorStop(0.5, 'rgba(30,10,40,0.55)'); g.addColorStop(1, 'rgba(30,10,40,0)');
+    g.addColorStop(0, 'rgba(24,8,34,1)'); g.addColorStop(0.32, 'rgba(24,8,34,0.8)'); g.addColorStop(0.62, 'rgba(24,8,34,0.32)'); g.addColorStop(1, 'rgba(24,8,34,0)');
     x.fillStyle = g; x.fillRect(0, 0, 64, 64);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
     lekeGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
-    lekeMat = new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, opacity: 0.45, toneMapped: false, fog: false });
+    lekeMat = new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, opacity: 0.52, toneMapped: false, fog: false });
   }
   // koyuluk varsayılan değilse malzeme bir kez klonlanır (çağıran tarafta önbelleklenmeli; varsayılan paylaşımlıdır)
-  const m = new THREE.Mesh(lekeGeo, koyuluk === 0.45 ? lekeMat : Object.assign(lekeMat.clone(), { opacity: koyuluk }));
+  const m = new THREE.Mesh(lekeGeo, koyuluk === 0.52 ? lekeMat : Object.assign(lekeMat.clone(), { opacity: koyuluk }));
   m.scale.set(yaricap * 2, 1, yaricap * 2); m.position.y = 0.015; m.renderOrder = -1;
   return m;
 }
