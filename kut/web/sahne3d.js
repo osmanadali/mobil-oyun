@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from '../vendor/three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from '../vendor/three/addons/utils/SkeletonUtils.js';
 import * as G from './gorunum.js';
-import { vfx } from './vfx.js';
+import { vfx, ELEMENT } from './vfx.js';
 import { his, dortAyakliKur, dortAyakliGuncelle, yilanKur, yilanGuncelle, ikiAyakliKur, ikiAyakliGuncelle, onYonAci, DA_DARBE, YILAN_DARBE, yetPozVar, yetPozSondur } from './hareket.js';
 
 const D = window.KUT_DATA;
@@ -734,7 +734,7 @@ export async function savasKur(yeniSim, kok = '', { yerinde = false } = {}) {
   birimDizi = liste; liste.forEach((b, i) => { b.si = i; });
   // gölgelendiricileri yükleme ekranındayken derle: MVP yakın planı kameranın daha önce görmediği arka planı (kemerler vb.) ve ışını
   // kadraja sokar; ilk çizimde derlenmeleri bitişte takılma yapıyordu. compile() görünür her nesneyi görüş alanından bağımsız işler.
-  if (!mvpIsin) mvpIsin = mvpIsinKur();
+  if (!mvpIsin) mvpIsin = mvpIsinKur(); else mvpArkaDoku(false);   // sıradaki MVP arka planı (a/b) şimdiden yüklensin
   mvpIsin.grup.visible = mvpIsin.arka.visible = true; try { renderer.compile(sahne, kamera); } catch (e) { /* derleme ön ısıtması isteğe bağlı */ } mvpIsin.grup.visible = mvpIsin.arka.visible = false;
   kotuKare = 0; G.golgeYenile(); uyarlaSifirla(1000);   // kurulumdan sonraki ilk saniye (gölgelendirici derleme) ölçülmez
   // gökten giriş: taraf içinde sırayla, rakip biraz sonra (giriş sürerken görüntü zamanı bekler → motor da bekler)
@@ -1022,10 +1022,18 @@ function kaymaBaslat(b, tEtki) {
   b.kay = { ax, az, bx, bz, t0: gorselT, t1: Math.max(gorselT + 0.05, tEtki), son: Math.max(gorselT + 0.05, tEtki) + DT, aci: Math.atan2(bx - ax, bz - az) };
 }
 const YET_YURU_PAY = 0.12;   // patlamadan sonra yürümeye geçmeden önce yetenek pozunun en az tutulduğu süre (sn)
+// yetenek ön uyarısı: patlamadan ~0,35–0,5 sn önce ayak altında element renginde halka/ışıma yükselir (vfx.onUyari) ve mana çubuğu
+// aynı renkte parlar (cubukCiz, b.onUyari). Sakin: sarsıntı/flaş yok (ağır vuruşların hit-stop'u ayrı). Kademe ≥6: tek halka, zerresiz; ≥8: yalnız çubuk.
+function onUyari(b, an) {
+  const el = ELEMENT[ELEMENT_H[b.u.b.h]] || ['#ffd76a', '#fff3c8'], s = Math.min(0.6, Math.max(0.25, an)), kd = G.kademeAl();
+  b.onUyari = { t0: gorselT, t1: gorselT + s, renk: el[0], renk2: el[1] };
+  if (kd < 8) vfx.onUyari(b.kok, { sure: s, renk: el[0], renk2: el[1], ince: kd >= 6 });
+}
 function yetenekBaslat(b, ad, olayT, hedef = null) {
   if (!b || b.olumT >= 0) return;
   b.onk.var = false;   // önden kurulma (tahmin edilen vuruş) yeteneğe yol verir
   const an = Math.max(0.05, (olayT != null ? olayT : gorselT + 0.35) - gorselT), imza = YET_IMZA[ad];
+  onUyari(b, an);
   // hazırlık: element renginde gövde parlaması (tepesi patlama anında) + yeteneğe özgü hazırlık efekti (kemiğe bağlı)
   if (imza && imza.parla) his.parla(b, imza.parla[0], imza.parla[1], an + 0.35, an);
   vfx.hazirlik(ad, b.kok, { sure: an, kemik: soketKemik(b, ad), kemik2: imza && imza.soket === 'eller' ? b.kemik.LeftHand || null : null, ileri: ileriAl(b).clone(),
@@ -1330,6 +1338,21 @@ function cubukCiz(b, a, x, y, O, dost) {
       kcx.strokeStyle = MANA_KENAR[ni]; kcx.lineWidth = 1; kcx.strokeRect(x - 0.5, my - 0.5, gw + 1, mh + 1);
     } else { kcx.fillStyle = '#4aa6ff'; kcx.fillRect(x, my, mw, mh); kcx.fillStyle = 'rgba(200,235,255,.5)'; kcx.fillRect(x, my, mw, 1); }
   }
+  // yetenek ön uyarısı: mana oluğu element renginde dolar ve parlar (0→1 patlamaya doğru, sonra 0,15 sn söner); çerçeve aynı renkte
+  const ou = b.onUyari;
+  if (ou) {
+    const t = gorselT, e = t <= ou.t1 ? Math.max(0, (t - ou.t0) / Math.max(0.05, ou.t1 - ou.t0)) : 1 - (t - ou.t1) / 0.15;
+    if (e <= 0 && t > ou.t1) b.onUyari = null;
+    else if (e > 0) {
+      const g = e * e * (3 - 2 * e);
+      kcx.save(); kcx.globalAlpha = 0.35 + 0.65 * g;
+      if (O.golgeli) { kcx.shadowColor = ou.renk; kcx.shadowBlur = (3 + 9 * g) * o; }
+      kcx.fillStyle = ou.renk; kcx.fillRect(x, my, gw, mh);
+      kcx.shadowBlur = 0; kcx.fillStyle = ou.renk2; kcx.fillRect(x, my, gw * g, Math.max(1, mh * 0.5));   // soldan sağa açık şerit: "doluyor"
+      kcx.globalAlpha = g; kcx.strokeStyle = ou.renk2; kcx.lineWidth = 1; kcx.strokeRect(x - 1.5, my - 1.5, gw + 3, mh + 3);
+      kcx.restore();
+    }
+  }
   // yıldız rozeti: çubuğun üst ortasında koyu hap, seviye renginde yıldızlar
   const yl = Math.max(1, Math.min(3, b.u.b.s || 1)), r = 4.3 * o, ara = r * 2.15, rw = yl * ara + 5 * o, rh = r * 2 + 3 * o;
   const rx = x + gw / 2 - rw / 2, ry = y - 2 - rh + 2.5 * o;
@@ -1414,6 +1437,7 @@ const SAYI_FONT = { 17: `900 17px ${YAZI_FONT}`, 20: `900 20px ${YAZI_FONT}`, 26
 function kaplamaCiz(dt = 0, dtG = dt) {
   const w = kapW, h = kapH;
   const s = anlikGorsel(), O = cubukOlcu(w, h), BH = O.hh + O.mh + 5, liste = cubukListe;
+  O.golgeli = G.kademeAl() < 7;   // ön uyarı parıltısının canvas gölgesi (en düşük kademelerde yok)
   liste.length = 0;
   // üst HUD (skor paneli) altında kalan çubuk okunmaz: panelin yatay aralığındaysa çubuk panelin hemen altına iner (sonra kalabalık ayrımı)
   hudOlc(O);
@@ -1940,6 +1964,15 @@ export function sarsinti(guc = 0.2, sure = 0.25) { his.sarsinti(guc, sure); }
 // Kahramanın arkasında: sahne düzlemi (mvp_arka.webp, koyu mor boşluk + üstten altın spot; derinlik sınamalı, önündeki zemin örter)
 // ve ince, az doygun altın ışık huzmesi. Kahramana sıcak kenar ışığı (uRimRenk/uRimGuc). İmza hareketi kamera gelirken (0,8 sn) bir kez.
 let mvpIsin = null;
+// arka plan görseli a/b (robot: mvp_arka / mvp_arka_b): her yakın planda dönüşümlü; ilk seçim açılıştaki karşılama a/b'sinin tersi (html.arkaB).
+// ilerle=false: sıradakini yalnız yükler (kurulumdaki derleme ön ısıtması), sayaç ilerlemez
+const _mvDoku = {}; let _mvSay = 0;
+function mvpArkaDoku(ilerle = true) {
+  const b = (_mvSay + (typeof document !== 'undefined' && document.documentElement.classList.contains('arkaB') ? 0 : 1)) % 2 === 1 ? '_b' : '';
+  if (ilerle) _mvSay++;
+  if (!_mvDoku[b]) { const d = new THREE.TextureLoader().load(kokYol + 'arayuz/menu/mvp_arka' + b + '.webp'); d.colorSpace = THREE.SRGBColorSpace; _mvDoku[b] = d; }
+  return _mvDoku[b];
+}
 const _mvP = new THREE.Vector3(), _mvH = new THREE.Vector3(), _mvS = new THREE.Vector3(), _mvC = new THREE.Color(), _mvD = new THREE.Vector3();
 const yumusakAdim = (e) => e * e * (3 - 2 * e);
 const kubikGirCik = (e) => (e < 0.5 ? 4 * e * e * e : 1 - Math.pow(-2 * e + 2, 3) / 2);
@@ -1954,9 +1987,8 @@ function mvpIsinKur() {
   const ag = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 7), m); ag.position.y = 3.5;
   const grup = new THREE.Group(); grup.add(ag); grup.visible = false; ag.renderOrder = 5; sahne.add(grup);
   // arka plan düzlemi: ekrana paralel, kahramanın arkasında; görselin üst %62'si (kemerler, spot) kırpılır, alt kenar sahneye karışır
-  const doku = new THREE.TextureLoader().load(kokYol + 'arayuz/menu/mvp_arka.webp'); doku.colorSpace = THREE.SRGBColorSpace;
   const am = new THREE.ShaderMaterial({
-    uniforms: { map: { value: doku }, uOp: { value: 0 }, uSu: { value: 1 }, uKay: { value: 0 } },
+    uniforms: { map: { value: mvpArkaDoku(false) }, uOp: { value: 0 }, uSu: { value: 1 }, uKay: { value: 0 } },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
     fragmentShader: 'uniform sampler2D map; uniform float uOp, uSu, uKay; varying vec2 vUv; void main(){ vec2 u = vec2(clamp(0.5 + (vUv.x - 0.5 - uKay) * uSu, 0.0, 1.0), 0.38 + vUv.y * 0.62); vec4 c = texture2D(map, u); float a = uOp * smoothstep(0.02, 0.3, vUv.y); gl_FragColor = vec4(c.rgb * 0.92, a);\n#include <colorspace_fragment>\n}',
     transparent: true, depthWrite: false, toneMapped: false, fog: false });
@@ -1973,6 +2005,7 @@ function mvpSifirla() {
 export function mvpGoster(uid, renk = MVP_ALTIN, { anlik = false } = {}) {
   const b = birimler.get(uid); if (!b || !sim || b.olumT >= 0 || !b.kok.visible) return false;
   if (!mvpIsin) mvpIsin = mvpIsinKur();
+  mvpIsin.arka.material.uniforms.map.value = mvpArkaDoku();
   b.zaferMi = true;   // kameraya döner; imza hareketi kamera gelirken (mvpKarisim)
   vfx.durumTemizle(b.kok);   // savaş bitti: başın üstündeki durum simgeleri (zehir vb.) yakın planda kalmasın
   mvpIsin.grup.position.set(b.kok.position.x, ARENA_Y, b.kok.position.z); mvpIsin.grup.visible = true;

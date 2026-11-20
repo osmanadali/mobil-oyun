@@ -1472,6 +1472,20 @@ export const vfx = {
     return { sure: ON_SURE[ad] || 0 };
   },
   onSure(ad) { return ON_SURE[ad] || 0; },
+  // yetenek ön uyarısı (yetenekBaslat anında, patlamadan ~0,35–0,5 sn önce): ayak altında element renginde ışıma + toplanan ince halka,
+  // ayaktan bele yükselen yatay halka(lar). Sakin: sarsıntı / ekran flaşı / ışık yok. o.sure: patlamaya kalan sn · o.renk/o.renk2 · o.ince: düşük kademe (tek halka, zerre yok)
+  onUyari(kaynak, o = {}) {
+    if (!sahne) return; const k = birim(kaynak); if (!k) return;
+    const s = Math.max(0.2, Math.min(0.6, o.sure || 0.4)), renk = o.renk || '#ffe08a', renk2 = o.renk2 || '#ffffff', h = k.h || 1, r = 0.55 * Math.sqrt(h), p = k.p;
+    _v3.set(p.x, Z() + 0.035, p.z);
+    P({ p: _v3, mod: 1, omur: s + 0.15, boy: r * 1.5, boy2: r * 1.9, renk, kare: 'parilti', hot: 0.15, a: 0.3, fi: 0.45, fo: 0.3, on: 1 });   // zemin ışıması
+    P({ p: _v3, mod: 1, omur: s + 0.1, boy: r * 2.1, boy2: r * 1.05, renk, renk2, kare: 'halka', hot: 0.55, a: 0.8, fi: 0.35, fo: 0.25, on: 1 });          // toplanan halka
+    const vy = (0.75 * h) / s, nh = o.ince ? 1 : 2;
+    for (let j = 0; j < nh; j++) zamanla(j * s * 0.4, () => { if (k.o && !k.o.visible) return; _v3.set(k.p.x, Z() + 0.06, k.p.z);
+      P({ p: _v3, mod: 1, v: _v2.set(0, vy, 0), drag: 0.6, omur: s * 0.85, boy: r * 1.25, boy2: r * 0.8, renk: renk2, renk2: renk, kare: 'halka', hot: 0.7, a: 0.7 - j * 0.2, fi: 0.15, fo: 0.45, on: 1 }); });
+    if (!o.ince) for (let i = 0, n = N(6); i < n; i++) { const a = i / n * TAU + RND() * 0.6, rr0 = r * rr(0.7, 1.0); _v3.set(p.x + Math.cos(a) * rr0, Z() + rr(0.03, 0.15), p.z + Math.sin(a) * rr0);
+      P({ p: _v3, v: _v2.set(0, rr(1.2, 2.0) * Math.sqrt(h), 0), drag: 1.4, omur: rr(0.45, 0.65), boy: rr(0.06, 0.1), boy2: 0.02, renk: renk2, renk2: renk, kare: 'parilti', hot: 0.9, fi: 0.2, fo: 0.5, on: 1 }); }
+  },
   // yetenek hazırlığı (yetenekBaslat anında): o.sure patlamaya kalan sn, o.kemik soket kemiği (Object3D), o.ileri birimin ön yönü
   hazirlik(ad, kaynak, o = {}) { if (!sahne || !HAZIR[ad]) return; const k = birim(kaynak); if (k) HAZIR[ad](k, o); },
   kut(pos, o = {}) {

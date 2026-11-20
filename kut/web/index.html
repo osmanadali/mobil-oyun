@@ -5,7 +5,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <title>Kut Arena</title>
-<link rel="preload" href="arayuz/menu/yukleme_arka.webp" as="image" type="image/webp">
+<script>/* robot görselleri a/b: karşılama + yükleme arka planı her açılışta dönüşümlü (html.arkaB → *_b.webp); yalnız seçilen yükleme görseli önden yüklenir */
+(function(){var n=0;try{n=+(localStorage.getItem('kut.acilisSay')||0)||0;localStorage.setItem('kut.acilisSay',String((n+1)%1000));}catch(e){}
+var b=n%2===1;if(b)document.documentElement.classList.add('arkaB');
+var l=document.createElement('link');l.rel='preload';l.as='image';l.type='image/webp';l.href='arayuz/menu/yukleme_arka'+(b?'_b':'')+'.webp';document.head.appendChild(l);})();</script>
 <link rel="preload" href="yazi/nunito-latin-ext-400-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="yazi/nunito-latin-ext-900-normal.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 /* ==================================================================
@@ -1197,7 +1200,9 @@ body.menu3d #sahne3dKatman{display:block}
 
 /* ===================== ROBOT GÖRSELLERİ (arayuz/menu/*.webp; kaynak PNG'ler kut/gelen_gorsel) =====================
    yukleme_arka: açılış + savaş öncesi yükleme · karsilama_arka: karşılama (3D yoksa sürekli, vitrin değişiminde ara) ·
-   dugme_oyna(_basili): OYNA · profil_cerceve: karşılamadaki oyuncu kutusu · menu_panel: karşılamadaki pencereler (9-slice, dilim 290) */
+   dugme_oyna(_basili): OYNA · profil_cerceve: karşılamadaki oyuncu kutusu · menu_panel: karşılamadaki pencereler (9-slice, dilim 290)
+   b çeşitleri (*_b.webp): karşılama/yükleme arka planı açılışta dönüşümlü (html.arkaB) · profil_cerceve_b: rakip etiketleri ·
+   menu_panel_b: Ayarlar penceresi (#perde.panelB) · dugme_oyna_b: sonuç bandı "Devam" · mvp_arka_b: yenilgide MVP sahnesi */
 @keyframes kenBurns{0%{transform:scale(1.02) translate(0,0)}100%{transform:scale(1.1) translate(-1.6%,-1.2%)}}
 .yukEkran{background:#1c0a35}
 .yukEkran .yukArka{position:absolute;inset:0;pointer-events:none;overflow:hidden}
@@ -1209,6 +1214,7 @@ body.menu3d #sahne3dKatman{display:block}
 .yukEkran .huzme{opacity:.75}
 .yukEkran .ipucu{background:rgba(14,5,28,.74);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 html.azHareket .yukEkran .yukArka::before{animation:none}
+html.arkaB .yukEkran .yukArka::before{background-image:url(arayuz/menu/yukleme_arka_b.webp)}
 /* karşılama arka planı */
 #ana .anaArka{position:absolute;inset:0;overflow:hidden;pointer-events:none;transition:opacity .9s ease}
 #ana .anaArka .pr{position:absolute;inset:-3%;transform:translate3d(calc(var(--px,0) * -16px),calc(var(--py,0) * -10px),0);transition:transform .8s cubic-bezier(.2,.7,.3,1)}
@@ -1219,6 +1225,7 @@ body.menu3d.vitrinArka #ana .anaArka{opacity:1}
 body.menu3d:not(.vitrinArka) #ana .anaArka i{animation-play-state:paused}   /* görünmezken çizim maliyeti yok */
 body.vitrinArka #ana .sahneAd span{opacity:0}   /* çizimdeki kahramanlar vitrin adlarıyla eşleşmez */
 html.azHareket #ana .anaArka i{animation:none}
+html.arkaB #ana .anaArka i{background-image:url(arayuz/menu/karsilama_arka_b.webp)}
 /* OYNA: dugme_oyna.webp (oranı 2118:618 korunur), basınca dugme_oyna_basili.webp; yazı Lilita One (Kut Baslik) */
 #ana .oyna{width:min(440px,100%);aspect-ratio:2118/618;height:auto;min-height:0;padding:0 17% 4px;border:0;border-image:none;border-radius:0;box-shadow:none;
   background:url(arayuz/menu/dugme_oyna.webp) center/100% 100% no-repeat;overflow:visible;gap:2px;font-size:42px;
@@ -1254,6 +1261,16 @@ html.alcak #ana .avKap .cerceve{left:-7px;top:-11px;width:56px;height:60px}
   padding:12px 34px 6px;filter:drop-shadow(0 18px 30px rgba(0,0,0,.6))}
 #perde.menuPanel .pencere::before,#perde.menuPanel .pencere::after{display:none}
 html.alcak #perde.menuPanel .pencere{border-width:18px 8px 20px;border-image-width:56px;border-image-outset:15px 8px;padding:8px 26px 4px}
+/* Ayarlar: menu_panel_b (aynı dilim; görselde altın kenar dışa daha yakın → outset küçük; köşe süsleri daha küçük) */
+#perde.menuPanel.panelB .pencere{border-image-source:url(arayuz/menu/menu_panel_b.webp);border-image-outset:4px 12px 6px}
+html.alcak #perde.menuPanel.panelB .pencere{border-image-outset:3px 9px 5px}
+/* rakip etiketleri (hazırlıkta "Sıradaki rakip", savaşta sol üst): profil_cerceve_b; oyuncunun kutusu a.
+   Çerçeve deliği genişliğin ~%68'i: halka avatarın dış kenarını örter (oyuncu kutusundaki oranla aynı). Portre clip-path ile daire kırpılır
+   (img .amb'nin %130'u, -%15 kaydırılmış → merkez img'nin %50 / %38,5'i). */
+.rakipKim .amb,.rakipK .amb,#mac .rakipKim .amb,#savas .rakipK .amb{position:relative;overflow:visible;border:0}
+.rakipKim .amb img,.rakipK .amb img{display:block;clip-path:circle(38.5% at 50% 38.5%)}
+.rakipKim .amb::after,.rakipK .amb::after{content:"";position:absolute;left:-16.7%;top:-26.7%;width:133.4%;height:143.4%;pointer-events:none;
+  background:url(arayuz/menu/profil_cerceve_b.webp) center/100% 100% no-repeat;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
 
 /* ===================== SADE HAZIRLIK (Aşama A) =====================
    TFT / Hearthstone BG ilkesi: oyun alanı (takım ızgarası) ön planda; paneller koyu, hafif saydam, tek ince çerçeve.
@@ -1453,10 +1470,10 @@ html.alcak #perde.menuPanel .pencere{border-width:18px 8px 20px;border-image-wid
 .sonucBant #sOzet:active{transform:scale(.96)}
 .sonucBant #sOzet.secik{outline:2px solid rgba(210,195,255,.6);outline-offset:2px}
 .sonucBant #sDevam{width:270px;min-width:0;height:auto;min-height:0;aspect-ratio:2118/618;padding:0 18% 4px;border:0;border-image:none;border-radius:0;box-shadow:none;
-  background:url(arayuz/menu/dugme_oyna.webp) center/100% 100% no-repeat;font-size:30px;gap:8px;color:#fffaf0;--k:#5a2404;
+  background:url(arayuz/menu/dugme_oyna_b.webp) center/100% 100% no-repeat;font-size:30px;gap:8px;color:#fffaf0;--k:#5a2404;
   text-shadow:-2px -2px 0 var(--k),2px -2px 0 var(--k),-2px 2px 0 var(--k),2px 2px 0 var(--k),0 4px 0 var(--k);filter:drop-shadow(0 8px 10px rgba(0,0,0,.5)) drop-shadow(0 0 16px rgba(255,190,80,.3))}
 .sonucBant #sDevam::before,.sonucBant #sDevam::after{display:none}
-.sonucBant #sDevam:active{background-image:url(arayuz/menu/dugme_oyna_basili.webp);transform:translateY(2px) scale(.97)}
+.sonucBant #sDevam:active{background-image:url(arayuz/menu/dugme_oyna_basili_b.webp);transform:translateY(2px) scale(.97)}
 .sonucBant #sDevam .ik{width:24px;height:24px;filter:drop-shadow(0 2px 0 #6a3206)}
 #savas .hasarOzet{border-radius:12px}
 html.azHareket .sonucPerde,html.azHareket .sonucPerde *,html.azHareket .sAyrac,html.azHareket #savas .saat.son10{animation:none!important}

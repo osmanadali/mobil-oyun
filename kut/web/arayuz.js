@@ -102,7 +102,7 @@ oyun.on('birlesti', () => Ses.cal('birlesme', { aralik: 0.3 }));
 oyun.on('kaynasti', () => Ses.cal('kaynasma'));
 oyun.on('ses', (ad) => { if (ad === 'yenile') Ses.cal('yenile'); else if (ad === 'sat') Ses.cal('satin_al', { hiz: 0.8 }); });
 document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('button, .btn'); if (b && !b.disabled) Ses.cal('dugme', { aralik: 0.05 }); }, true);
-function pencere(html) { $('pencere').innerHTML = html; $('perde').classList.toggle('menuPanel', aktifEkran === 'ana'); $('perde').classList.add('acik'); $('pencere').scrollTop = 0; }   // görünür olduktan sonra: gizliyken scrollTop yazılamaz, önceki pencerenin kaydırması kalırdı   // karşılamada süslü menü paneli
+function pencere(html, b = false) { $('pencere').innerHTML = html; $('perde').classList.toggle('menuPanel', aktifEkran === 'ana'); $('perde').classList.toggle('panelB', !!b); $('perde').classList.add('acik'); $('pencere').scrollTop = 0; }   // görünür olduktan sonra: gizliyken scrollTop yazılamaz, önceki pencerenin kaydırması kalırdı   // karşılamada süslü menü paneli
 function kapat() { $('perde').classList.remove('acik'); }
 $('perde').addEventListener('click', (e) => { if (e.target.id === 'perde' || e.target.closest('[data-kapat]')) kapat(); });
 
@@ -193,7 +193,7 @@ function ayarPencere() {
     <div class="eylemler" style="justify-content:flex-start"><button class="btn mor" id="aAz" aria-pressed="${azHareket()}">${azHareket() ? 'Animasyonları aç' : 'Animasyonları azalt'}</button></div>
     <p><b>Öğretici:</b> ${ogr.adim >= 0 ? `açık (adım ${ogr.adim + 1}/${OGR_ADIMLAR.length})` : 'kapalı'}. Temelleri adım adım yeniden gösterir.</p>
     <div class="eylemler" style="justify-content:flex-start"><button class="btn mor" id="aOgr">Öğreticiyi yeniden başlat</button></div>
-    <div class="eylemler"><button class="btn altin" data-kapat>Tamam</button></div>`);
+    <div class="eylemler"><button class="btn altin" data-kapat>Tamam</button></div>`, true);   // Ayarlar: menu_panel_b
   $('aAz').onclick = () => { ayarYaz('kut.azHareket', azHareket() ? '0' : '1'); azUygula(); kapat(); ayarPencere(); };
   $('aOgr').onclick = ogretici;
   document.querySelectorAll('#aHedef .btn').forEach(b => b.onclick = () => { S3.fpsHedef(b.dataset.v); kapat(); ayarPencere(); });
@@ -1196,7 +1196,7 @@ anaCiz(); goster('ana');
 // açılış: yükleme ekranı → (görseller, sesler, 3D sahne + karşılama vitrini, gölgelendirici derlemesi) → karşılama
 (async () => {
   const gorseller = ['../arayuz/logo.png', ...D.KAHRAMANLAR.map(h => P(h.id)), ...Object.keys(D.SOYLAR).map(SY), ...Object.values(IK_RESIM).map(n => `../arayuz/ui/${n}.png`), '../gorsel/gokyuzu.webp',
-    ...['karsilama_arka', 'dugme_oyna', 'dugme_oyna_basili', 'profil_cerceve', 'menu_panel'].map(n => `arayuz/menu/${n}.webp`)];
+    ...[document.documentElement.classList.contains('arkaB') ? 'karsilama_arka_b' : 'karsilama_arka', 'dugme_oyna', 'dugme_oyna_basili', 'profil_cerceve', 'profil_cerceve_b', 'menu_panel'].map(n => `arayuz/menu/${n}.webp`)];
   let v = null;
   const r = await acilisYukle(S3, {
     gorseller,
