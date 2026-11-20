@@ -297,8 +297,9 @@ dönüşler (additive); klip ezilmez. Unity: Animator'da ayrı "Additive" katman
   (1 sn arayla çekilen karelerde tokmak ucu aynı pikselde). Ölçüm: deri (köşe) grubunun göğse göre yer değiştirmesi ~%3–6 boy.
   Çözüm: kişiye özel boşta el hareketi `GORSEL.bosStil: 'tempo'` (hareket.js `canlilik`): sağ tokmak 1,9 sn'de bir uyluğa tempo
   vurur (kalkış 0,15 sn, iniş 0,05 sn, `davulVur` eğrisi), sol tokmak yarım ölçü sonra davula dokunur, baş vuruşta tempo tutar;
-  ilk fidget 2–7 sn'de (eskiden 3–10), Kurbağa fidget sırası davul → bak → gerin.
-- **Ön kol gecikmesi:** boşta kol salınımı (±0,08 rad) ön kola eşzamanlı sinüsle değil yay-sönümleyiciyle geçer (`yayFZ`, 0,9 Hz,
+  ilk fidget 2–7 sn'de (eskiden 3–10), Kurbağa fidget sırası davul → bak → gerin. Aynı sorun Baykuş'ta da vardı (sağ eldeki asa
+  vitrin karelerinde hiç kıpırdamıyordu): `bosStil: 'asa'` — asa 3,4 sn'de bir 0,7 sn'de kalkar, kısa tutulur, yere hafifçe vurulur, baş eğilir.
+- **Ön kol gecikmesi:** boşta kol salınımı (±0,10 rad, eskiden ±0,06) ön kola eşzamanlı sinüsle değil yay-sönümleyiciyle geçer (`yayFZ`, 0,9 Hz,
   ζ 0,55): ön kol üst kolu sarkaç gibi geriden izler. Unity: kemik başına {x, v} durumu, `LateUpdate`'te aynı örtük Euler adımı.
 - **Yürüme yalpası:** kalça yuvarlanması (±0,05 rad) ve sapması (±0,06 rad) yalnız gövdeye: iki uyluk aynı dünya dönüşünün tersiyle
   geri çevrilir, bacak klipteki gibi kalır, basan ayak kaymaz (eskiden bacak ucu adım başına ~3 cm yana sürünüyordu).

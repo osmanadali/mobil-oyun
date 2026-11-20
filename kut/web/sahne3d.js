@@ -32,7 +32,7 @@ export const GORSEL = {
   kugu:    { ...IKI, ...ATIS, yetenek: ['Idle_Loop'], yetOn: 0.4, yetSure: 0.9, zafer: 'Yes', kanat: true, kolAci: 0.24, bas: 0.06, fidget: ['kanat', 'bak'] },
   ayi:     { ...IKI, bekle: 'Idle_Loop', saldir: ['Melee_Hook', 'Sword_Regular_A', 'Sword_Regular_B'], yetenek: ['Agir_Ezme'], yetOn: 0.5, zafer: 'Yes', ara: ['Idle_FoldArms_Loop'], iri: true, kolAci: 0.24, egim: 0.1, boy: 1.12, yuruHiz: 0.85, fidget: ['omuz', 'bak'] },
   anka:    { ...IKI, ...ATIS, yetenek: ['Idle_Loop'], yetOn: 0.4, yetSure: 0.85, dogus: 'NinjaJump_Land', zafer: 'Yes', kanat: true, kolAci: 0.14, fidget: ['kanat', 'bak'] },
-  baykus:  { ...IKI, ...ATIS, yetenek: ['Idle_Loop'], yetOn: 0.5, yetSure: 0.6, zafer: 'Yes', ara: ['Idle_Talking_Loop'], kolAci: 0.32, bas: -0.06, idleHiz: 0.85 },
+  baykus:  { ...IKI, ...ATIS, yetenek: ['Idle_Loop'], yetOn: 0.5, yetSure: 0.6, zafer: 'Yes', ara: ['Idle_Talking_Loop'], kolAci: 0.32, bas: -0.06, idleHiz: 0.85, bosStil: 'asa' },
   tilki:   { ...IKI, hazir: 'Pistol_Aim_Neutral', saldir: ['Pistol_Shoot'], yetenek: ['Pistol_Aim_Neutral', 'Pistol_Shoot'], yetHazir: true, yetOn: 0.45, zafer: 'Yes', ara: ['Idle_Talking_Loop'], kolAci: 0.14, egim: 0.04, fidget: ['silah', 'bak'] },
   ejder:   { ...IKI, ...ATIS, yetenek: ['Idle_Loop'], yetOn: 0.45, yetSure: 0.65, zafer: 'Yes', ara: ['Idle_FoldArms_Loop'], kolAci: 0.26 },
   kurt: { ...DORT, yetOn: 0.32 }, koc: { ...DORT, yetOn: 0.36 }, kaplumbaga: { ...DORT, boy: 1.1 }, semender: { ...DORT }, bulutat: { ...DORT, kanat: true },

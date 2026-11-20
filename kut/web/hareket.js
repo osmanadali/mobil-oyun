@@ -1103,9 +1103,9 @@ function canlilik(d, dt, W, zafer) {
     basPit += gurultu(d.t * 0.15 + d.faz * 11) * 0.07 * B;
     // kollar nefesle hafifçe ileri-geri ve dışa (sol/sağ farklı fazda): klip kolları kıpırtısız tutsa da uzuv donuk durmaz
     const n1 = Math.sin(d.t * PI2 * d.nefesHz + 0.7), n2 = Math.sin(d.t * PI2 * d.nefesHz * 0.93 + 2.3);
-    solOn += n1 * 0.08 * B; sagOn += n2 * 0.085 * B; solYan += (0.5 + 0.5 * n1) * 0.05 * B; sagYan += (0.5 + 0.5 * n2) * 0.055 * B;
+    solOn += n1 * 0.1 * B; sagOn += n2 * 0.105 * B; solYan += (0.5 + 0.5 * n1) * 0.06 * B; sagYan += (0.5 + 0.5 * n2) * 0.065 * B;
     // ön kol üst kolu yay-sönümleyiciyle gecikerek izler (0,9 Hz, ζ 0,55: ağır, sarkaç gibi; eşzamanlı sinüs değil)
-    const DY = d.dirsekYay; yayFZ(DY[0], n1 * 0.1, 0.9, 0.55, dt); yayFZ(DY[1], n2 * 0.11, 0.9, 0.55, dt);
+    const DY = d.dirsekYay; yayFZ(DY[0], n1 * 0.13, 0.9, 0.55, dt); yayFZ(DY[1], n2 * 0.14, 0.9, 0.55, dt);
     solDirsek += DY[0].x * B; sagDirsek += DY[1].x * B;
     // kişiye özel boşta el hareketi: 'tempo' (Kurbağa) — sağ tokmak 1,9 sn'de bir uyluğa tempo vurur, sol tokmak yarım vuruş sonra
     // davula hafifçe dokunur; vuruşta baş tempo tutar. Uzun beklemede (vitrin) tokmaklı kollar hiç donuk kalmaz.
@@ -1113,6 +1113,11 @@ function canlilik(d, dt, W, zafer) {
       const P = 1.9, x = (d.t + d.faz * 3) % P, v1 = davulVur(x - 0.6), v2 = davulVur(x - 1.15) * 0.75;
       sagDirsek += 0.34 * v1 * B; sagOn += 0.1 * v1 * B; solDirsek += 0.24 * v2 * B; solOn += 0.06 * v2 * B;
       basPit += (Math.min(0, v1) * 0.06 + Math.min(0, v2) * 0.04) * B;
+    } else if (d.bosStil === 'asa') {
+      // 'asa' (Baykuş): sağ elde tutulan asa 3,4 sn'de bir yavaşça kalkar (0,7 sn), kısa tutulur ve yere hafifçe vurulur; baş vuruşa eğilir
+      const P = 3.4, x = (d.t + d.faz * 5) % P;
+      const v = x < 0.7 ? yumusak(x / 0.7) : x < 1.0 ? 1 : x < 1.12 ? karis(1, -0.25, cikis3((x - 1.0) / 0.12)) : x < 1.6 ? -0.25 * (1 - yumusak((x - 1.12) / 0.48)) : 0;
+      sagOn += 0.12 * v * B; sagDirsek += 0.2 * v * B; sagYan += 0.04 * v * B; basPit += Math.min(0, v) * 0.12 * B;
     }
     // kişilik fidget'ı: yalnız sakin beklemede (sahne3d 'ara' klibi oynarken değil)
     if (!d.fid) { if (d.bosW > 0.9 && b.durum === 'bekle') { d.fidT -= dt; if (d.fidT <= 0) { const l = d.fidTur; d.fid = { t: 0, k: FID[l[d.fidSira++ % l.length]] || FID.bak }; } } }
