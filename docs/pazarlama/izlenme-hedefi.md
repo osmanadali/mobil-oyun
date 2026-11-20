@@ -77,7 +77,32 @@ Ray'in çekirdeği bir **graf problemi**: her bölüm, durakları merkeze bağla
 - Açıklamadaki link parametreli olsun ki hangi indirmenin kanaldan geldiğini görebilelim: iOS `https://apps.apple.com/app/id6831928554?ct=anlatim`; Android, L gününden sonra `https://play.google.com/store/apps/details?id=com.osmanadali.ray&referrer=utm_source%3Danlatim`.
 - Yüzünüz ve sesiniz kanalda zaten varsa yerleştirmede de kullanabilirsiniz. Oyun hesaplarında yüz ve ses yok kuralı ayrıca geçerlidir.
 
-**Bilmemiz gerekenler:** kanal hangi platformda (YouTube, Instagram, TikTok), konusu ne, izleyici yaşı ve video başına ortalama izlenme. Buna göre ilk 3 yerleştirmenin senaryosunu yazarız.
+### 3.1 Kanal: YouTube'da çöp adam animasyonlu anlatım (yeni)
+
+Kanal, "Antik çağda yaşasaydık nasıl olurdu?" türünde çöp adam animasyonlu tarih ve "ya şöyle olsaydı" anlatımları yapacak. Kanal henüz yok; ilk video üretilmedi. Oyunun kendi hesaplarındaki "YouTube yok" kararı bu ayrı kanalı kapsamaz.
+
+**Gerçekçi beklenti:** yeni bir YouTube kanalının ilk videoları genelde birkaç yüz ile birkaç bin izlenme alır (tahmin). Bu yüzden kanal **ilk ay indirme getirmez**; uzun vadeli bir varlıktır. Bir video tutarsa yıllarca izlenir ve açıklamadaki link indirme getirmeye devam eder. Kısa vadeli katkı, her videodan kesilen **Shorts ve Reels/TikTok kesitleridir.**
+
+**Metro temalı bölüm fikirleri** (konu kendiliğinden Ray'e bağlanır):
+
+| # | Bölüm fikri | Ray nasıl girer |
+|---|---|---|
+| 1 | **İstanbul'un Tünel'i (1875): dünyanın ikinci metrosu nasıl yapıldı?** | Türk kitlesi için en güçlü konu. Sonda: "150 yıl sonra kendi metro hattını bağla." |
+| 2 | **Antik Roma'da metro olsaydı?** | Çöp adam mühendis Roma'ya hat çizer; ekranda Ray'in bir bölümü, "durakları merkeze bağla" mantığıyla çözülür. |
+| 3 | **Dünyanın ilk metrosu: Londra, 1863** | Buharlı trenler, kazı işçileri. Kapanışta Ray. |
+| 4 | **Metro haritaları neden gerçek değildir? (Harry Beck, 1931)** | Ray'in şehir metro haritası ekranı. |
+| 5 | **Königsberg'in 7 köprüsü: bir bulmaca matematiği nasıl doğurdu** | Graf teorisi; Ray'in her bölümü bir graf bulmacası. Ders içi örnek biçimine en uygun konu. |
+| 6 | **Osmanlı'da metro olsaydı?** | "Ya şöyle olsaydı" biçimi; Ray'in hat açılış töreni sahnesi. |
+
+**Yerleştirme biçimi (her videoda bir tane, kısa):**
+
+- **"Bugünün bulmacası" kapanışı (20–30 sn):** çöp adam telefonu çıkarır, ekran Ray'in **gerçek oyun kaydına** geçer, bir bölüm çözülür. Tek cümle: "Bu oyunu ben yaptım: Ray. Link açıklamada."
+- Animasyonda Ray yalnız **gerçek ekran kaydıyla** gösterilir. Oyunda olmayan bir sahne çizilmez (yanıltıcı tanıtım riski).
+- Açıklama: ilk satırda link ve "Kendi geliştirdiğim oyun." YouTube Studio'da **"Ücretli tanıtım içerir"** kutucuğunu işaretleyin.
+
+**Önemli: "Çocuklara yönelik" işareti.** Çöp adam animasyonu YouTube'da çocuk içeriği gibi algılanabilir. Kanalı ve videoları **"Hayır, çocuklara yönelik değil"** olarak işaretleyin; anlatım dili yetişkin ve genel izleyiciye yönelik olsun. Çocuklara yönelik işaretli videoda yorumlar, bildirimler ve kişiselleştirilmiş reklam kapanır. Oyun da 13+ olduğu için ürün yerleştirmesi orada uygun düşmez.
+
+**Önerilen başlangıç:** ilk video **1. fikir (İstanbul Tünel'i)**. Hem kanalın açılışı olur hem de metro konusu Ray'i doğal hâle getirir. Ondan 3 tane 30–45 sn'lik Shorts kesilir ve aynı kesitler Reels ve TikTok'ta paylaşılır; bunlar §2 izlenme hedefine sayılır. İstenirse ilk videonun senaryosunu (sahne sahne, çöp adam çizim notlarıyla) pazarlama oturumu yazar.
 
 ## 4. Oynanabilir reklam ve Play çıkışı
 
