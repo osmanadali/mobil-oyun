@@ -109,6 +109,11 @@ window.Lig = (() => {
   // Sonuç: Lig.duel.end(p) → { win: 'me' | 'opp', me, opp } (gerçek arka uçta maç belgesinden: iki cihaz aynı sonucu görür)
   let duel = null;
   const fakeApi = api;
+  // 🧩 maç türü (1.3): seçilen bölüm 150+ ise maçların ~%25'i ⬡ altıgen ('hex'), kalanı fazladan kurallı kare ('mix'); altında '' (kuralsız kare).
+  // İki taraf da DV ≥ 2 (1.3+) değilse hep '': eski sürüm 'k' alanını bilmez, aynı maçta başka tahta görmesin.
+  const DV = 2, KARMA_LV = 150, HEX_P = .25;
+  const kindFor = (level, otherDv, r = Math.random()) => level >= KARMA_LV && (otherDv || 0) >= DV ? (r < HEX_P ? 'hex' : 'mix') : '';
+  window.__ligKind = kindFor;   // robot: tür seçimi (sürüm uyumu) doğrudan denetlenir
   const seed31 = () => (Math.random() * 2147483647 | 0) || 1;
   api.duel = {
     async find(info = {}) {
@@ -130,7 +135,7 @@ window.Lig = (() => {
         if (!p.done) me.timers.push(setTimeout(tick, 700 + R() * 600));
       };
       me.timers.push(setTimeout(tick, 3000));
-      return { id: me.id, level, seed: seed31(), t0, opp: me.opp };
+      return { id: me.id, level, seed: seed31(), k: info.k ?? kindFor(level, DV, R()), t0, opp: me.opp };
     },
     // arkadaşla: oda kodu (karışmasın diye O/0/I/1 yok). Sahte: arkadaş 4 sn sonra katılır.
     async host(info = {}) {
@@ -303,14 +308,14 @@ window.Lig = (() => {
     const LEAD = 5500;   // maç belgesi yazılınca geri sayım: öbür taraf belgeyi 1–2 sn içinde görür, ikisinde de ~3 sn kalır
     const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', code5 = () => Array.from({ length: 5 }, () => A[(Math.random() * A.length) | 0]).join('');
     const pickLevel = (lv, maxL) => { const ok = lv.filter(l => l <= maxL); return ok.length ? ok[(Math.random() * ok.length) | 0] : Math.min(...lv, maxL); };
-    const meCard = info => ({ nick: st.nick, tier: st.tier || 0, lv: info.levels || [1], maxL: Math.max(...(info.levels || [1])) });
+    const meCard = info => ({ nick: st.nick, tier: st.tier || 0, lv: info.levels || [1], maxL: Math.max(...(info.levels || [1])), dv: DV });
     const sleep = ms => new Promise(r => setTimeout(r, ms));
     const winner = d => { const fa = d?.pa?.fin, fb2 = d?.pb?.fin; return !fa && !fb2 ? null : fa && (!fb2 || fa <= fb2) ? 'a' : 'b'; };
     const prog = p => ({ lit: p?.lit || 0, moves: p?.moves || 0, done: !!p?.done, ms: p?.ms || 0, left: !!p?.left });
     // maç belgesi (ilk yazma) + tohum: bulmaca bu maça özel üretilir (iki tarafta aynı, bölüm ezberi işe yaramaz)
     function makeMatch(other, otherUid, info, extra) {
-      const id = `${otherUid}_${st.uid}_${Date.now().toString(36)}`, level = pickLevel(other.lv || [1], Math.max(...(info.levels || [1]))), seed = (Math.random() * 2147483647 | 0) || 1;
-      return { id, level, seed, writes: [w(`matches/${id}`, { a: otherUid, b: st.uid, an: other.nick, bn: st.nick, at: other.tier || 0, bt: st.tier || 0, level, seed, fr: !!extra?.friend }, { srv: ['ts'] }), ...(extra?.writes || [])] };
+      const id = `${otherUid}_${st.uid}_${Date.now().toString(36)}`, level = pickLevel(other.lv || [1], Math.max(...(info.levels || [1]))), seed = (Math.random() * 2147483647 | 0) || 1, k = kindFor(level, other.dv);
+      return { id, level, seed, k, writes: [w(`matches/${id}`, { a: otherUid, b: st.uid, an: other.nick, bn: st.nick, at: other.tier || 0, bt: st.tier || 0, level, seed, ...(k ? { k } : {}), fr: !!extra?.friend }, { srv: ['ts'] }), ...(extra?.writes || [])] };
     }
     function follow(m, side) {
       // maç bulundu: rakibin ilerlemesini saniyede bir oku; 25 sn haber gelmezse rakip ayrılmış sayılır
@@ -325,12 +330,13 @@ window.Lig = (() => {
         if (!me.left) me.timer = setTimeout(poll, 1000);
       };
       M.t0Local = m.t0 - skew; M.timer = setTimeout(poll, Math.max(500, M.t0Local - Date.now()));
-      return { id: m.id, level: m.level, seed: m.seed, t0: M.t0Local, opp: m.opp };
+      return { id: m.id, level: m.level, seed: m.seed, k: m.k || '', t0: M.t0Local, opp: m.opp };
     }
     // rakip yoksa: aynı bölümlerden birinin kayıtlı oyunu (gerçek bir oyuncu; kendi kaydım ve son oynadığım bulmacalar değil)
     async function ghost(info) {
       const lv = (info.levels || [1]).slice(-10), seen = new Set(info.seen || []);
-      const gs = (await query('', Q('ghosts', ['level', 'IN', lv]), 30).catch(() => [])).filter(x => x.by !== st.uid && x.seed && x.tl?.length > 1 && !seen.has(x.seed));
+      // türlü (⬡ / 🧩) kayıtlar eksi bölüm numarasıyla saklanır: 1.2 istemcisi 'level IN [pozitif]' sorgusunda onları görmez (yanlış tahtayla oynatmaz)
+      const gs = (await query('', Q('ghosts', ['level', 'IN', [...lv, ...lv.filter(l => l >= KARMA_LV).map(l => -l)]]), 30).catch(() => [])).filter(x => x.by !== st.uid && x.seed && x.tl?.length > 1 && !seen.has(x.seed) && (x.level > 0 ? !x.k : x.k));
       const g = gs[(Math.random() * gs.length) | 0];
       if (!g) return null;
       const t0 = Date.now() + 3000, me = M = { id: 'ghost_' + g.id, cbs: [], tl: [], left: false, ghost: true, oppFin: 0, fin: 0, last: null };
@@ -341,7 +347,7 @@ window.Lig = (() => {
         me.last = { lit, moves: mv || 0, done, ms: done ? ms : e };
         me.cbs.forEach(cb => cb({ ...me.last, over: me.oppFin && !me.fin ? 'opp' : null })); if (!done) me.timer = setTimeout(tick, 700); };
       me.timer = setTimeout(tick, 3000);
-      return { id: me.id, level: g.level, seed: g.seed, t0, opp: { nick: g.nick || '?', tier: g.tier || 0, ghost: true } };
+      return { id: me.id, level: Math.abs(g.level), seed: g.seed, k: g.k || '', t0, opp: { nick: g.nick || '?', tier: g.tier || 0, ghost: true } };
     }
     // bekleyen birini kap: maç belgesi + onun kuyruk kaydı "taken" (+ bekliyorsam kendi kaydım da) tek commit'te; biri önce kaptıysa koşul tutmaz
     async function take(c, info, token, mineUt) {
@@ -357,7 +363,7 @@ window.Lig = (() => {
     async function joinedAs(mid, side, friend) {
       const m = await get(`matches/${mid}`);
       if (!m) return null;
-      return follow({ id: mid, level: m.level, seed: m.seed, t0: (m.ts || now()) + LEAD, opp: { nick: side === 'a' ? m.bn : m.an, tier: (side === 'a' ? m.bt : m.at) || 0, friend } }, side);
+      return follow({ id: mid, level: m.level, seed: m.seed, k: m.k || '', t0: (m.ts || now()) + LEAD, opp: { nick: side === 'a' ? m.bn : m.an, tier: (side === 'a' ? m.bt : m.at) || 0, friend } }, side);
     }
     fb.duel = {
       async find(info = {}) {
@@ -437,7 +443,7 @@ window.Lig = (() => {
         }
         // bitirdim: oyunum kayıtlı rakip olarak saklanır (en çok 60 örnek; bulmaca tohumuyla)
         if (p.done && m.tl.length > 2) { m.tl.push([v.ms, 1, v.moves]); const tl = m.tl.filter((_, i, a) => a.length <= 60 || i % Math.ceil(a.length / 60) === 0 || i === a.length - 1);
-          commit([w(`ghosts/${m.id}_${m.side}`, { by: st.uid, nick: st.nick, tier: st.tier || 0, level: m.level, seed: m.seed || 0, tl, at: now() })]).catch(() => {}); }
+          commit([w(`ghosts/${m.id}_${m.side}`, { by: st.uid, nick: st.nick, tier: st.tier || 0, level: m.k ? -m.level : m.level, ...(m.k ? { k: m.k } : {}), seed: m.seed || 0, tl, at: now() })]).catch(() => {}); }
         let d = null;
         for (let i = 0; i < 3 && !d; i++) { d = await get(`matches/${m.id}`).catch(() => null); if (!d) await sleep(500); }
         if (!d) return p.left ? null : { id: m.id, win: null, me: v, opp: {}, local: true };

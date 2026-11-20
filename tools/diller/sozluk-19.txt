@@ -1,0 +1,29 @@
+# Ray — çeviri sözlüğü (19): ⚔️ kapışma maç türü (1.3): ⬡ altıgen tahta, 🧩 kurallı tahta (giriş ekranı satırı)
+# Biçim ve terimler: sozluk-1.txt başı ve docs/CEVIRI.md
+
+@ Hex board
+de: Sechseckbrett
+es: Tablero hexagonal
+pt: Tabuleiro hexagonal
+fr: Plateau hexagonal
+ko: 육각형 보드
+ja: 六角形の盤面
+zh: 六角形棋盤
+
+@ each tap turns 60°
+de: jedes Tippen dreht um 60°
+es: cada toque gira 60°
+pt: cada toque gira 60°
+fr: chaque toucher tourne de 60°
+ko: 탭할 때마다 60° 회전
+ja: タップごとに60°回転
+zh: 每點一下轉 60°
+
+@ Rule board
+de: Brett mit Regeln
+es: Tablero con reglas
+pt: Tabuleiro com regras
+fr: Plateau à règles
+ko: 규칙 보드
+ja: ルール付きの盤面
+zh: 規則棋盤

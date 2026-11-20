@@ -541,10 +541,24 @@ function puzzleFor(l) {
 }
 // ⚔️ kapışma bulmacası: maça özel tohumla (iki tarafta aynı; bölüm ezberi avantaj olmaz). Kuralsız kare tahta, orta zorluk:
 // boyut ve zorluk seçilen bölüm seviyesine göre (iki oyuncunun da geçtiği bölümlerden), 5×6 ile 6×8 arası, z ≈ .3–.6
+// 🧩 maç türü d.k (lig.js kindFor; 1.3): 'hex' ⬡ altıgen tahta (kuralsız, 60°) · 'mix' kurallı kare: bölümün kuralları + öğrenilmişlerden bir kural daha.
+// Tür yoksa ('' ya da eski maç) aşağıdaki kuralsız kare, bit bit eskisi gibi.
 function duelFor(d) {
   const s = (d.seed >>> 0) || hashStr('duel' + d.id), lv = Math.max(1, d.level || 1), R = rng(s);
+  if (d.k === 'hex' && HX) return cached('vh' + s, () => { const z = Math.min(.85, .6 + .25 * zOf(lv)), P = HX.pick(HX.ringsFor(z), s, z, 5 + 11 * z, 6 + Math.round(6 * z)); P.rules = []; return P; });
+  if (d.k === 'mix') return cached('vm' + s, () => duelMix(lv, s));
   const [c, r] = TIERS[Math.max(3, Math.min(5, CAPS.findIndex(m => lv <= m)))], z = Math.min(.6, .3 + .3 * zOf(lv) + R() * .1);
   return cached('v' + s, () => { const P = pick(c, r, s, 0, 0, z, 5 + 11 * z); P.rules = []; return P; });
+}
+function duelMix(lv, s) {
+  const [c, r] = TIERS[5], n = c * r, z = Math.min(.7, .4 + .3 * zOf(lv)), U = rulesFor(lv), R = rng(s ^ 0x5bd1e995);
+  const pool = Object.keys(RULE_LINE).filter(k => RULE_LINE[k] <= lineOf(lv) && !U.has(k) && ![...U].some(q => clash(q, k)));
+  if (pool.length) U.add(pool[R() * pool.length | 0]);   // daha karışık: öğrenilmiş kurallardan biri daha (çakışmayan)
+  const pairs = U.has('pairs') ? Math.round(n * .07) : 0, x = { rev: U.has('rev') ? Math.round(n * .15) : 0, cnt: U.has('cnt') ? Math.round(n * .12) : 0, two: U.has('two'), fog: U.has('fog') };
+  let boost = 0;
+  for (const m of MODS) if (U.has(m.key)) { x[m.key] = m.amount(n, false, z, false, c, r); boost += m.boost || 0; }
+  const P = pick(c, r, s, 0, pairs, z, 5 + 11 * z + boost, x, Math.max(24, 6 + Math.round(26 * z)));
+  P.fog = U.has('fog'); P.rules = [...U]; return P;
 }
 // zorluk etiketi (12 Kasım): yüzde yerine kelime — "%1" yeni oyuncuya "çok kolay" diye okunuyor, takılınca moral bozuyordu
 const lvTag = c => c <= 1 ? L('🌱 Isınma', '🌱 Warm-up') : c <= 5 ? L('⚡ Kolay', '⚡ Easy') : c <= 11 ? L('⚡ Orta', '⚡ Medium') : c <= 19 ? L('🔥 Zor', '🔥 Hard') : L('💎 Uzman', '💎 Expert');
@@ -1001,7 +1015,7 @@ function start(mode, lvl = save.level) {
   // Günün Hattı yalnız pazar günü kural taşır (haftanın kuralı): oyuncu o kuralı henüz görmediyse kartı açılır
   const rc = (G.rules || []).map(k => RULE_LINE[k]).filter(c => RULES[c] && !save.seen[c]).sort((a, b) => a - b)[0];
   if (rc != null) ruleCard(rc, !!G.week);
-  else if (G.hex && !save.seen.hex) HX.card();   // ⬡ altıgen gün: ilk karşılaşmada kısa kart
+  else if (G.hex && !save.seen.hex && !G.duel) HX.card();   // ⬡ altıgen gün: ilk karşılaşmada kısa kart
   if (save.played === 0) setTimeout(() => toast(L('Karoya dokun → döner', 'Tap a tile → it turns')), 500);
   else if (G.zen) {}
   else if (save.comboLost?.lvl === lvl && !daily && !G.moves) setTimeout(() => toast(L(`✨ Kusursuz bitir → ${save.comboLost.n} seri geri gelir`, `✨ Finish perfect → get your ${save.comboLost.n} streak back`)), 600);
@@ -3553,11 +3567,18 @@ let vsGoAt = 0;
 const vsTag = o => o.ghost
   ? `<p class="vstag ghost"><b>👻 ${L('Kayıtlı rakip', 'Recorded rival')}: ${esc(o.nick)}</b><small>${L('Şu an çevrimiçi rakip yok: bu oyuncunun daha önce oynanmış bir kaydıyla yarışıyorsun', 'No one is online right now: you’re racing a run this player recorded earlier')}</small></p>`
   : `<p class="vstag live"><b>🟢 ${o.friend ? L('Canlı · arkadaşın', 'Live · your friend') : L('Canlı rakip', 'Live opponent')}</b></p>`;
+// maç türü satırı: ⬡ altıgen ya da 🧩 kurallı (hangi kurallar: hat simgeleri)
+function vsKind(m) {
+  if (m.k === 'hex') return `<p class="vskind">⬡ <b>${L('Altıgen tahta', 'Hex board')}</b> · ${L('her dokunuş 60°', 'each tap turns 60°')}</p>`;
+  if (m.k !== 'mix') return '';
+  const P = duelFor(m), nm = (P.rules || []).map(k => RULES[RULE_LINE[k]]?.name).filter(Boolean).join(' · ');
+  return `<p class="vskind">🧩 <b>${L('Kurallı tahta', 'Rule board')}</b>${nm ? `<small>${esc(nm)}</small>` : ''}</p>`;
+}
 function vsIntro(m) {
   const me = LIG.me(), o = m.opp;
   modal(`<div class="vsi"><div class="vsp"><b>${esc(me.nick)}</b><small style="color:${TIER_C[me.tier]}">${TIER_I[me.tier]} ${TIER_N()[me.tier]}</small></div><i>VS</i>
     <div class="vsp"><b>${o.ghost ? '👻 ' : ''}${esc(o.nick)}</b><small style="color:${TIER_C[o.tier]}">${TIER_I[o.tier]} ${TIER_N()[o.tier]}</small></div></div>
-    ${vsTag(o)}<div class="vsc" id="vsC"></div>`, {}, true, true);
+    ${vsTag(o)}${vsKind(m)}<div class="vsc" id="vsC"></div>`, {}, true, true);
   haptic('heavy'); tone(note(5), .2, .04);
   const go = () => { if (!$('vsC')) return; vsGoAt = performance.timeOrigin + performance.now(); closeModal(); start('duel', m); };
   // sayı: kalan saniye (yukarı yuvarlanmış); bir sonraki tam saniyede değişir. Başlangıç ayrı zamanlayıcıyla tam t0'da
@@ -3728,7 +3749,7 @@ if (introOn) {
 if (tutDue() && !G) start('tut');   // 🎓 yeni oyuncu: anlatıcı penceresi yerine doğrudan öğretici bölüm (intro arkasında hazır)
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { jank: Jank, store: f => storeSheet(f), skins: () => skinSheet(), tut: { STEPS: TUT_STEPS, IDLE: TUT_IDLE, due: tutDue, start: () => start('tut') }, fest: c => lineFest(c), sky: skyline, vsGo: () => vsGoAt, lig: { score: (p, h) => ligScore(p, h), join: ligJoin, open: openLig, vs: vsSheet, find: vsFind, host: vsHost, code: vsJoinSheet, week: ligWeek, home: ligHome },
+window.__ray = { jank: Jank, store: f => storeSheet(f), skins: () => skinSheet(), tut: { STEPS: TUT_STEPS, IDLE: TUT_IDLE, due: tutDue, start: () => start('tut') }, fest: c => lineFest(c), sky: skyline, vsGo: () => vsGoAt, lig: { score: (p, h) => ligScore(p, h), join: ligJoin, open: openLig, vs: vsSheet, find: vsFind, host: vsHost, code: vsJoinSheet, intro: m => vsIntro(m), duelFor, week: ligWeek, home: ligHome },
   // test / önizleme: tören sesini çevrimdışı işleyip WAV (base64) verir
   festWav: async (o = {}) => { const keep = ac; ac = new OfflineAudioContext(2, 44100 * 6.5, 44100); try { festSound(o); const b = await ac.startRendering(), n = b.length, L = b.getChannelData(0), R = b.getChannelData(1), buf = new DataView(new ArrayBuffer(44 + n * 4));
     const w = (o2, str) => [...str].forEach((ch, i) => buf.setUint8(o2 + i, ch.charCodeAt(0))); w(0, 'RIFF'); buf.setUint32(4, 36 + n * 4, true); w(8, 'WAVEfmt '); buf.setUint32(16, 16, true); buf.setUint16(20, 1, true); buf.setUint16(22, 2, true); buf.setUint32(24, 44100, true); buf.setUint32(28, 44100 * 4, true); buf.setUint16(32, 4, true); buf.setUint16(34, 16, true); w(36, 'data'); buf.setUint32(40, n * 4, true);
