@@ -1496,6 +1496,144 @@ html.alcak .sonucBant .cip{height:26px;font-size:13px;padding:0 10px}
 html.alcak .sonucBant #sDevam{width:200px;font-size:23px}
 html.alcak .sonucBant #sOzet{min-height:46px;min-width:150px;font-size:15px}
 html.alcak .sAyrac{display:none}
+/* ===================== 3D HAZIRLIK (Aşama C) =====================
+   body.hz3: takım savaşın yapıldığı 3D arenada (sahne3d hazirlik*). Ortada boşluk tuvale geçer (dokun/sürükle); kenarlarda ince koyu cam şeritler:
+   üstte tek şerit, solda soy simgeleri + eşya rafı, altta dükkân. Tahta ızgarası ve seçili kahraman paneli yok (bilgi kartı kahramanın yanında). */
+body.hz3 #sahne3dKatman{display:block}
+body.hz3 #kaplama{visibility:visible}
+body.hz3 #mac .gok{display:none}
+body.hz3 #mac,body.hz3 #mac .icerik,body.hz3 #mac .macOrta,body.hz3 #mac .solKolon,body.hz3 #mac .dukkanSerit,body.hz3 #mac .macUst{pointer-events:none}
+body.hz3 #mac .macUst>*,body.hz3 #mac .solKolon>*,body.hz3 #mac .dukkanSerit>*,body.hz3 #mac .bilgiKart{pointer-events:auto}
+body.hz3 #mac .icerik{grid-template-rows:42px minmax(0,1fr) auto;gap:6px;padding:8px 10px 8px}
+body.hz3 #mac .macOrta{grid-template-columns:auto minmax(0,1fr);gap:0}
+body.hz3 #mac .tahtaPanel,body.hz3 #mac .secPanel{display:none}
+#tahta3d{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none}
+body:not(.hz3) #tahta3d,body:not(.hz3) .bilgiKart,body:not(.hz3) .tahtaSayac,body:not(.hz3) .sansBtn,body:not(.hz3) .sansKutu{display:none!important}
+/* üst şerit */
+body.hz3 #mac .macUst{gap:6px}
+body.hz3 #mac .macUst .rozet{height:38px;font-size:15px;padding:0 10px 0 4px;gap:5px;border-radius:19px}
+body.hz3 #mac .macUst .rozet .yz small{font-size:10px}
+body.hz3 #mac .macUst .rozet .yz span{font-size:13px!important}
+body.hz3 #mac .kalpler .ik{width:18px;height:18px}
+body.hz3 #mac .zaferler{display:none}
+body.hz3 #mac .altinRozet{font-size:20px!important;padding-right:12px!important}
+body.hz3 #mac .altinRozet .top .ik{width:28px!important;height:28px!important}
+body.hz3 #mac .tahtaSayac .ik{width:18px;height:18px;color:#d9d3e6}
+body.hz3 #mac .tahtaSayac span{font-variant-numeric:tabular-nums}
+body.hz3 #mac .alamet{flex:none;position:relative;height:38px;padding:0 3px;gap:6px;border-radius:19px;cursor:pointer}
+body.hz3 #mac .alamet .ay{width:32px;height:32px}
+body.hz3 #mac .alamet .t{display:none}
+body.hz3 #mac .alamet.acik .t{display:block;position:absolute;left:0;top:calc(100% + 6px);z-index:20;width:max-content;max-width:300px;white-space:normal;padding:8px 10px;border-radius:10px;
+  background:rgba(16,12,28,.95);border:1px solid var(--pnCizgi);box-shadow:0 8px 18px rgba(0,0,0,.5)}
+body.hz3 #mac .alamet.acik .t b,body.hz3 #mac .alamet.acik .t span{font-size:13px;white-space:normal}
+body.hz3 #mac .macUst .ayarBtn{width:40px!important;height:40px!important}
+/* rakip: sağ üstte küçük portre; dokununca mini ızgara */
+body.hz3 #mac .macUst .rakip{margin-left:auto;align-self:flex-start;position:relative;z-index:12;min-width:0;max-width:220px;cursor:pointer;border-radius:19px}
+body.hz3 #mac .rakip .pn-bas,body.hz3 #mac .rakip .miniTahta,body.hz3 #mac .rakip .rakipSoy,body.hz3 #mac .rakip .ipucuSatir{display:none}
+body.hz3 #mac .rakip .rakipKim{height:36px;padding:0 10px 0 3px;gap:6px}
+body.hz3 #mac .rakip .rakipKim .amb{width:30px;height:30px}
+body.hz3 #mac .rakip .rakipKim b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+body.hz3 #mac .rakip .rakipKim b .etiket,body.hz3 #mac .rakip .rakipKim span{display:none}
+body.hz3 #mac .rakip.acik{max-width:280px;width:280px;border-radius:12px;background:rgba(16,12,28,.95)}
+body.hz3 #mac .rakip.acik .miniTahta{display:grid}
+body.hz3 #mac .rakip.acik .rakipSoy{display:flex}
+body.hz3 #mac .rakip.acik .rakipKim span{display:block}
+body.hz3 #mac .rakip.acik .rakipKim{height:auto;padding:6px 10px 2px 4px}body.hz3 #mac .rakip.acik .rakipKim b,body.hz3 #mac .rakip.acik .rakipKim span{white-space:normal;font-size:11px}body.hz3 #mac .rakip.acik .rakipKim b{font-size:13px}
+/* sol: soylar (simge + sayı/eşik) */
+body.hz3 #mac .solKolon{gap:8px;width:auto;min-width:0;overflow:visible}
+body.hz3 #mac .soyPanel{background:none;border:0;box-shadow:none;overflow:visible}
+body.hz3 #mac .soyPanel .pn-bas{display:none}
+body.hz3 #mac .soyListe{display:flex;flex-direction:column;gap:4px;padding:0;overflow:visible}
+.soy3{position:relative;display:flex;align-items:center;gap:5px;height:34px;padding:0 9px 0 3px;border-radius:17px;cursor:pointer;width:max-content;
+  background:rgba(18,14,30,.78);border:1px solid var(--pnCizgi);opacity:.62;filter:saturate(.4)}
+.soy3.on{opacity:1;filter:none;border-color:rgba(255,228,138,.6);box-shadow:0 0 10px rgba(255,210,90,.25)}
+.soy3 img{width:28px;height:28px}
+.soy3 .sy{font-size:12px;font-weight:800;color:#a99fc2;font-variant-numeric:tabular-nums}
+.soy3 .sy b{font-size:16px;color:#fff}
+.soy3.on .sy{color:#ffe48a}
+.soy3 .soyAc{display:none;position:absolute;left:calc(100% + 8px);top:-2px;z-index:20;width:250px;padding:8px 10px;border-radius:10px;font-size:12px;line-height:1.3;cursor:default;
+  background:rgba(16,12,28,.96);border:1px solid var(--pnCizgi);box-shadow:0 8px 18px rgba(0,0,0,.5);color:#c9c0da}
+.soy3.acik .soyAc{display:block}.soy3.acik{opacity:1;filter:none}
+.soy3 .soyAc b{display:block;font-size:14px;color:#fff;margin-bottom:3px}
+.soy3 .soyAc span{display:block;margin-top:2px}.soy3 .soyAc span.on{color:#fff}
+.soy3 .soyAc em{font-style:normal;font-weight:900;display:inline-block;min-width:18px;margin-right:5px;text-align:center;border-radius:4px;background:rgba(255,255,255,.1)}
+.soy3 .soyAc span.on em{background:#e6e1f2;color:#161022}
+body.hz3 #mac .soyBos{padding:4px;opacity:.4}body.hz3 #mac .soyBos .ik{width:20px;height:20px}
+/* sol: eşya rafı (küçük simgeler) ve armağan */
+body.hz3 #esyaRaf{display:grid;grid-template-columns:repeat(2,40px);gap:4px;padding:5px;min-height:0;border-radius:10px;width:max-content;background:rgba(18,14,30,.78);border:1px solid var(--pnCizgi)}
+body.hz3 #esyaRaf .rafAd,body.hz3 #esyaRaf em,body.hz3 #esyaRaf .re.bos{display:none}
+body.hz3 #esyaRaf .re{width:40px;height:40px;touch-action:none}
+body.hz3 #esyaRaf .tasan{grid-column:1/-1;font-size:11px;margin:0}
+body.hz3 #esyaRaf:not(:has(.re[data-r])){display:none}
+body.hz3 #armaganSerit{flex-direction:column;align-items:flex-start;gap:4px;padding:5px 7px;min-height:0;font-size:11px;border-radius:10px;max-width:160px;background:rgba(18,14,30,.78);border:1px solid var(--pnCizgi)}
+body.hz3 #armaganSerit>b{cursor:pointer;font-size:11px;letter-spacing:.05em;text-transform:uppercase}
+body.hz3 #armaganSerit>b::after{content:" ▾";opacity:.6}
+body.hz3 #armaganSerit>span{display:none}
+body.hz3 #armaganSerit.acik>span{display:block;white-space:normal}
+body.hz3 #armaganSerit button{min-height:34px;font-size:12px;padding:0 10px}
+/* seçili kahramanın yanındaki bilgi kartı */
+.bilgiKart{position:absolute;left:0;top:0;z-index:15;width:264px;padding:8px 10px 9px;border-radius:12px;font-size:12px;will-change:transform;
+  background:rgba(16,12,28,.93);border:1px solid color-mix(in srgb,var(--kc,#8a82a0) 70%,transparent);box-shadow:0 0 0 1px rgba(0,0,0,.5),0 10px 22px rgba(0,0,0,.5),0 0 14px -4px var(--kc,transparent)}
+.bilgiKart[hidden]{display:none}
+.bilgiKart .bkUst{display:flex;align-items:center;gap:6px;justify-content:space-between}
+.bilgiKart .bkUst b{font-size:15px;line-height:1.15;color:#fff;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bilgiKart .yildizlar .ik{width:15px;height:15px}
+.bilgiKart .bkSoy{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;align-items:center}
+.bilgiKart .bkSoy .bs{display:inline-flex;align-items:center;gap:3px;height:22px;padding:0 7px 0 1px;border-radius:11px;background:rgba(255,255,255,.07);border:1px solid rgba(210,195,255,.18);color:#e4ddf0;font-weight:700}
+.bilgiKart .bkSoy img{width:20px;height:20px}
+.bilgiKart .kTag{background:var(--kc);color:#0e0a18;height:18px;font-size:11px;padding:0 5px;border-radius:5px;display:inline-flex;align-items:center;font-weight:900}
+.bilgiKart .bkEsya{display:flex;gap:3px;margin-top:5px}.bilgiKart .bkEsya img{width:24px;height:24px}
+.bilgiKart .bkEylem{display:flex;gap:6px;margin-top:7px}
+.bilgiKart .bkEylem .btn{min-height:36px;height:36px;padding:0 7px;font-size:12.5px;gap:3px;flex:1 1 auto;white-space:nowrap;min-width:0}
+.bilgiKart .bkEylem .btn small{font-size:11px;display:inline-flex;align-items:center;opacity:.9}
+.bilgiKart .bkEylem .btn .ik{width:16px;height:16px}
+.bilgiKart .bkEylem .bkBil{flex:none;width:36px;padding:0;font-weight:900;font-family:Georgia,serif;font-style:italic}
+/* alt: ince dükkân şeridi */
+body.hz3 #mac .dukkanSerit{grid-template-columns:clamp(96px,9cqw,116px) minmax(0,1fr) clamp(132px,13cqw,172px);gap:8px;height:clamp(128px,18cqh,156px)}
+body.hz3 #mac .dukkanSol{gap:5px}
+body.hz3 #mac .dukkanSol .btn{flex:1;min-height:0;font-size:13px;gap:4px;padding:0 6px;flex-direction:row;flex-wrap:wrap;justify-content:center;line-height:1.1}
+body.hz3 #mac .dukkanSol .btn .ik{width:16px;height:16px}
+body.hz3 #mac .dukkanSol .btn small{font-size:11px;display:inline-flex;align-items:center}
+body.hz3 #mac .dukkanSol .xpBtn{flex:1.4}
+body.hz3 #mac .dukkanSol .xpBtn .xpCubuk{flex-basis:100%;margin:2px 0}
+body.hz3 #mac .dukkan{position:relative;padding:0 8px 8px}
+body.hz3 #mac .dukkan .pn-bas{display:none}
+body.hz3 #mac .kartlar{padding-top:8px;gap:8px;grid-template-columns:repeat(5,minmax(0,170px));justify-content:center}
+body.hz3 #mac .kart .resim{min-height:64px}
+body.hz3 #mac .kart .resim>img{height:112%;bottom:-2%;max-width:118%}
+body.hz3 #mac .kart .solUst .kTag{display:none}
+body.hz3 #mac .kart .solUst .soyIk{width:20px;height:20px}
+body.hz3 #mac .kart .fiyat{height:24px;font-size:15px;padding:0 7px 0 2px}
+body.hz3 #mac .kart .fiyat .ik{width:17px;height:17px}
+body.hz3 #mac .kart .ad{height:22px;line-height:21px;font-size:12px}
+body.hz3 #mac .kart .yukselEt,body.hz3 #mac .kart .sahipEt{font-size:11px;bottom:2px}
+.sansBtn{position:absolute;right:4px;top:-12px;z-index:3;width:24px;height:24px;border-radius:50%;border:1px solid var(--pnCizgi);background:rgba(16,12,28,.95);color:#d9d3e6;
+  font:italic 900 14px/1 Georgia,serif;cursor:pointer;display:grid;place-items:center;padding:0}
+.sansBtn::before{content:"";position:absolute;inset:-10px}
+.sansKutu{position:absolute;right:0;bottom:calc(100% + 16px);z-index:20;white-space:nowrap;padding:6px 10px;border-radius:9px;font-size:12px;font-weight:700;color:#e4ddf0;background:rgba(16,12,28,.95);border:1px solid var(--pnCizgi)}
+.sansKutu[hidden]{display:none}
+body.hz3 #mac .savasBtn{font-size:24px!important;gap:3px}
+body.hz3 #mac .savasBtn small{font-size:11px!important;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.hz3 #mac.surSat .dukkan{outline:2px solid #ff6a86;outline-offset:2px}
+body.hz3 #mac.surSat .dukkan::after{content:"Sat";position:absolute;inset:0;display:grid;place-items:center;font-size:22px;font-weight:900;color:#ffd0d8;background:rgba(120,10,40,.45);border-radius:10px;pointer-events:none}
+.esyaHayalet{width:48px;height:48px}
+/* alçak (yatay telefon) */
+html.alcak body.hz3 #mac .icerik{grid-template-rows:34px minmax(0,1fr) auto;gap:4px;padding:5px max(8px,env(safe-area-inset-right)) 5px max(8px,env(safe-area-inset-left))}
+html.alcak body.hz3 #mac .macUst .rozet,html.alcak body.hz3 #mac .alamet{height:32px;font-size:13px}
+html.alcak body.hz3 #mac .alamet .ay{width:26px;height:26px}
+html.alcak body.hz3 #mac .altinRozet{font-size:16px!important}html.alcak body.hz3 #mac .altinRozet .top .ik{width:22px!important;height:22px!important}
+html.alcak body.hz3 #mac .macUst .ayarBtn{width:34px!important;height:34px!important}
+html.alcak body.hz3 #mac .rakip .rakipKim{height:30px}html.alcak body.hz3 #mac .rakip .rakipKim .amb{width:24px;height:24px}
+html.alcak .soy3{height:27px;padding:0 7px 0 2px;gap:3px}html.alcak .soy3 img{width:22px;height:22px}html.alcak .soy3 .sy b{font-size:13px}
+html.alcak body.hz3 #mac .soyListe{gap:2px}
+html.alcak body.hz3 #esyaRaf{grid-template-columns:repeat(2,32px);gap:3px;padding:3px}html.alcak body.hz3 #esyaRaf .re{width:32px;height:32px}
+html.alcak body.hz3 #mac .dukkanSerit{grid-template-columns:86px minmax(0,1fr) 112px;height:92px;gap:5px}
+html.alcak body.hz3 #mac .dukkanSol .btn{font-size:11px}html.alcak body.hz3 #mac .dukkanSol .btn small{display:none}
+html.alcak body.hz3 #mac .kartlar{padding-top:4px;gap:5px}
+html.alcak body.hz3 #mac .kart .resim{min-height:40px}
+html.alcak body.hz3 #mac .kart .ad{height:18px;line-height:17px;font-size:11px}
+html.alcak body.hz3 #mac .savasBtn{font-size:18px!important}html.alcak body.hz3 #mac .savasBtn small{display:none}
+html.alcak .bilgiKart{width:244px;padding:6px 8px}html.alcak .bilgiKart .bkEylem .btn{min-height:32px;height:32px;font-size:12px}
 </style>
 <script>
 /* tek ölçek: --o, --lw, --lh ve html.alcak; ilk boyamadan önce ve her boyut değişiminde */

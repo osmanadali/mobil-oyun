@@ -420,6 +420,9 @@ const _tkC = [];
 for (let i = 0; i <= 14; i++) { const z = -3.6 + 7.15 * i / 14; for (const x of [-2.95, 2.95]) for (const y of [0, z < 0 ? 2.3 : 1.6]) _tkC.push(new THREE.Vector3(x, ARENA_Y + y, z)); }
 for (let i = 1; i < 8; i++) { const x = -2.95 + 5.9 * i / 8; for (const z of [-3.6, 3.55]) for (const y of [0, z < 0 ? 2.3 : 1.6]) _tkC.push(new THREE.Vector3(x, ARENA_Y + y, z)); }
 const _tkE = _tkC.map(() => ({ x: 0, y: 0 }));
+// hazırlık kadrajı: rakibin ön iki sırası, oyuncunun bütün tahtası ve önündeki yedek sırası (oyuncu tarafına biraz daha yakın)
+const _tkNH = [];
+for (const x of [-2.95, 2.95]) for (const z of [-2.3, 5.0]) for (const y of [0, z < 0 ? 1.4 : 0.9]) _tkNH.push(new THREE.Vector3(x, ARENA_Y + y, z));
 // engel: {x0,y0,x1,y1} dikdörtgen ya da {cx,cy,r} daire (tuval px)
 const engelde = (x, y, E) => { for (const e of E) { if (e.r != null ? (x - e.cx) ** 2 + (y - e.cy) ** 2 < e.r * e.r : x > e.x0 && x < e.x1 && y > e.y0 && y < e.y1) return true; } return false; };
 // tahtanın (izdüşüm noktaları P) merkez c etrafında 1/k oranında küçülünce hiçbir engele binmediği en küçük k (0,6…2,5; ikiye bölme)
@@ -430,7 +433,7 @@ function engelK(P, cx, cy, E) {
 }
 function tahtaKadrajla(w, h) {
   let p = null; try { p = guvenliF && guvenliF(w, h); } catch (e) { p = null; }
-  p = p || { ust: 0, alt: 0, sol: 0, sag: 0 }; const E = p.engel || [];
+  p = p || { ust: 0, alt: 0, sol: 0, sag: 0 }; const E = hzr.acik ? [] : (p.engel || []); const NK = hzr.acik ? _tkNH : _tkN;
   // alan çok daralırsa (çok alçak ekran) payları kıs: tahta en az ekranın %55'i kadar yer bulsun
   let x0 = p.sol, x1 = w - p.sag, y0 = p.ust, y1 = h - p.alt;
   if (x1 - x0 < w * 0.55) { const k = (w * 0.55) / Math.max(1, x1 - x0); const c = (x0 + x1) / 2; x0 = Math.max(0, c - (c - x0) * k); x1 = Math.min(w, c + (x1 - c) * k); }
@@ -440,7 +443,7 @@ function tahtaKadrajla(w, h) {
   for (let it = 0; it < 14; it++) {
     kamera.position.copy(T).addScaledVector(yon, R); kamera.lookAt(T); kamera.updateMatrixWorld(true);
     let a0 = Infinity, a1 = -Infinity, b0 = Infinity, b1 = -Infinity;
-    for (const n of _tkN) { _tkV.copy(n).project(kamera); const sx = (_tkV.x + 1) / 2 * w, sy = (1 - _tkV.y) / 2 * h; a0 = Math.min(a0, sx); a1 = Math.max(a1, sx); b0 = Math.min(b0, sy); b1 = Math.max(b1, sy); }
+    for (const n of NK) { _tkV.copy(n).project(kamera); const sx = (_tkV.x + 1) / 2 * w, sy = (1 - _tkV.y) / 2 * h; a0 = Math.min(a0, sx); a1 = Math.max(a1, sx); b0 = Math.min(b0, sy); b1 = Math.max(b1, sy); }
     let k = Math.max((a1 - a0) / (x1 - x0), (b1 - b0) / (y1 - y0)); const birim = 2 * R * th / h;
     if (E.length) {   // köşe engelleri: tahta (kutu merkezi alanın merkezine kayacağı için oraya göre) gerekirse biraz daha küçülür
       const ox = (x0 + x1) / 2 - (a0 + a1) / 2, oy = (y0 + y1) / 2 - (b0 + b1) / 2;
@@ -453,7 +456,7 @@ function tahtaKadrajla(w, h) {
   }
   // geniş kadraj: tahta güvenli alana tam sığdırıldıktan sonra kamera KADRAJ_PAY kadar geri çekilir (bakış noktası aynı: tahta alanın
   // ortasında kalır, yalnız küçülür); çevredeki avlu, kemerler ve kristaller de görünür. Tahta küçüldüğü için HUD'a binmez.
-  R *= KADRAJ_PAY;
+  R *= hzr.acik ? 1.04 : KADRAJ_PAY;
   kam.tabanH.copy(T); kam.tabanP.copy(T).addScaledVector(yon, R);
 }
 // test: taban kadrajda tahta sınır kutusunun ekran noktaları (tuval px)
@@ -652,7 +655,7 @@ function duzZincirMi(kemik) {
 }
 
 // ── Savaşı kur ──
-export async function savasKur(yeniSim, kok = '') {
+export async function savasKur(yeniSim, kok = '', { yerinde = false } = {}) {
   for (const b of birimler.values()) { vfx.durumTemizle(b.kok); sahne.remove(b.kok); if (b.isk) sahne.remove(b.isk.kaynak); }
   for (const e of efektler) if (!e.kalici) sahne.remove(e.o);
   efektler = efektler.filter(e => e.kalici); kuyruk = []; kuyrukKirli = false; yazilar = []; bantlar.length = 0; balonSira.length = 0; kutKart = null; birimler = new Map(); birimDizi = []; kutlu = new Set(); ofkeSay.clear(); kam.ilk = true;
@@ -674,7 +677,12 @@ export async function savasKur(yeniSim, kok = '') {
   kotuKare = 0; G.golgeYenile(); uyarlaSifirla(1000);   // kurulumdan sonraki ilk saniye (gölgelendirici derleme) ölçülmez
   // gökten giriş: taraf içinde sırayla, rakip biraz sonra (giriş sürerken görüntü zamanı bekler → motor da bekler)
   const sira = [0, 0];
-  for (const b of liste) { const tr = b.u.taraf ? 1 : 0; his.giris(b, sira[tr]++ * 0.08 + (tr ? 0.15 : 0)); if ((b.u.b.s || 1) >= 3) vfx.durum(b.kok, 'yildiz3', true); }
+  if (hzr.birimG) {
+    hzr.birimG.visible = false;
+    // hazırlıktaki duruşla aynı yönden başla (yüz kameraya dönükken savaşa döner)
+    if (yerinde) for (const b of liste) { if (b.u.taraf) continue; for (const h of hzr.birim.values()) if (h.kok.position.distanceTo(b.kok.position) < 0.2) { b.kok.rotation.y = h.kok.rotation.y; break; } }
+  }
+  for (const b of liste) { const tr = b.u.taraf ? 1 : 0; if (!(yerinde && tr === 0)) his.giris(b, sira[tr]++ * 0.08 + (tr ? 0.15 : 0)); if ((b.u.b.s || 1) >= 3) vfx.durum(b.kok, 'yildiz3', true); }
   anlikAl(); // t=0
   saat.getDelta();
 }
@@ -1452,6 +1460,10 @@ function kadraj(dtR) {
   _kb.set(kam.tabanH.x + (kam.merkez.x - kam.tabanH.x) * zf + kam.kayX, kam.tabanH.y, kam.tabanH.z + (kam.merkez.z - kam.tabanH.z) * zf + kam.kayZ);
   kamera.position.copy(_kb).add(_ka);
   if (kam.mvp) _kb.copy(mvpKarisim(dtR, _kb));   // Maçın yıldızı: kadraj kamerasından yakın plana yumuşak geçiş (ve geri)
+  if (kam.gecis) {   // hazırlık kadrajından savaş kadrajına yumuşak geçiş
+    const g = kam.gecis; g.t += dtR; const e = Math.min(1, g.t / g.sure), c = e * e * (3 - 2 * e);
+    kamera.position.lerpVectors(g.p, kamera.position, c); _kb.lerpVectors(g.h, _kb, c); if (e >= 1) kam.gecis = null;
+  }
   kam.bak = (kam.bak || new THREE.Vector3()).copy(_kb);
   kamera.lookAt(_kb); kamera.updateMatrixWorld(true);
 }
@@ -1602,7 +1614,8 @@ export function kare(dtSabit) {
       if (!e.kalici) { e.yas += dt; const k = Math.min(1, e.yas / e.sure); e.guncelle(t, k, dt); if (k >= 1) { sahne.remove(e.o); if (e.bitis) e.bitis(); kal = false; } }
       if (kal) efektler[ky++] = e; }
     efektler.length = ky;
-  }
+  } else if (hzr.acik) hzrGuncelle(dtGercek);
+  hzrSondur(dtGercek);
   kadraj(dtGercek);
   vfx.guncelle(dtEfekt);
   // kamera: his (sarsıntı + yakınlaştırma) ve vfx sarsıntısı yalnız bu kare için uygulanır, sonra taban duruşa döner
@@ -1613,7 +1626,8 @@ export function kare(dtSabit) {
   G.ciz(undefined, undefined, dtGercek);   // gölge haritası kademenin sınırıyla (Tam kademede her karede)
   const cizSon = performance.now();
   kcx.clearRect(0, 0, kapW, kapH);
-  if (sim && !(kam.mvp && kam.mvp.e > 0.05)) kaplamaCiz(dt, dtGercek);   // yakın planda can çubukları ve yazılar gizli
+  if (sim && !(kam.mvp && kam.mvp.e > 0.05)) kaplamaCiz(dt, dtGercek);
+  else if (!sim && hzr.acik) hzrKaplama();   // yakın planda can çubukları ve yazılar gizli
   vfx.ekranCiz(kcx, kapW, kapH);
   his.kameraGeriAl();
   const kareSon = performance.now();
@@ -1987,7 +2001,7 @@ function zoomKur() {
   let yor = null;
   window.addEventListener('pointerdown', (e) => {
     if (e.pointerType === 'mouse' && (e.button === 1 || e.button === 2)) { fare = { x: e.clientX, y: e.clientY }; return; }
-    if (renderer && e.target === renderer.domElement && e.isPrimary && !iki) yor = { x: e.clientX, y: e.clientY };
+    if (renderer && e.target === renderer.domElement && e.isPrimary && !iki && !hzr.acik) yor = { x: e.clientX, y: e.clientY };
   });
   window.addEventListener('pointermove', (e) => {
     if (fare) { kaydir(e.clientX - fare.x, e.clientY - fare.y, olcekPx()); fare.x = e.clientX; fare.y = e.clientY; return; }
@@ -2027,3 +2041,210 @@ export function _sal(uid) { const b = birimler.get(uid); if (!b) return null; co
   return { g: +gorselT.toFixed(2), durum: b.durum, klip: z ? z.ad : null, on: !!(z && z.on) || !!(s && s.on), onk: b.onk.var, kt: b.isk && b.isk.aktif ? +b.isk.aktif.time.toFixed(2) : s ? +s.t.toFixed(3) : null }; }
 export function _balonlar() { return { acik: bantlar.map(b => b.metin), sira: balonSira.map(b => b.metin) }; }
 export function _bTMP(uid) { return birimler.get(uid); }
+
+// ══ HAZIRLIK (planlama) SAHNESİ ══
+// Savaşla aynı arena ve kamera: oyuncunun kahramanları kendi hücrelerinde boşta durur, yedek tahtanın oyuncuya yakın kenarındaki sırada
+// küçük ölçekte bekler. Motor yok (sim = null): konum, sürükleme ve boşta animasyonu burada sürülür. Oyun kuralı yok: arayuz.js oyun.js
+// işlemlerini çağırır, burası yalnız görüntü ve ekran → hücre/kahraman eşlemesi.
+const YEDEK_Z = 4.22, YEDEK_ARA = 0.68, YEDEK_OLCEK = 0.62, SUR_YUK = 0.55;
+const hzr = { acik: false, grup: null, zemin: null, birimG: null, karo: [], yKaro: [], sira: null, karart: null, secHalka: null, birim: new Map(), bekleyen: new Map(),
+  istek: new Map(), uid: 5000, sur: null, surP: new THREE.Vector3(), yedekN: 7, vurgu: { hedef: null, gecerli: true, acik: false, secili: null, kaynas: null }, sol: 0, gecis: null, kok: '' };
+// motor hücresi → dünya: tahta i (sıra*4 + sütun; sıra 0 ön), yedek i
+function hzrHucreP(yer, i, out = new THREE.Vector3()) {
+  if (yer === 'tahta') return out.set(0.75 + (i % 4) * 1.5 - 3, ARENA_Y, 5 + Math.floor(i / 4) - 4);
+  return out.set((i - (hzr.yedekN - 1) / 2) * YEDEK_ARA, ARENA_Y, YEDEK_Z);
+}
+function karoDoku() {
+  const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
+  const yol = (p, r) => { x.beginPath(); x.moveTo(p + r, p); x.arcTo(128 - p, p, 128 - p, 128 - p, r); x.arcTo(128 - p, 128 - p, p, 128 - p, r); x.arcTo(p, 128 - p, p, p, r); x.arcTo(p, p, 128 - p, p, r); x.closePath(); };
+  const g = x.createRadialGradient(64, 64, 10, 64, 64, 90); g.addColorStop(0, 'rgba(255,255,255,0.05)'); g.addColorStop(1, 'rgba(255,255,255,0.22)');
+  yol(6, 18); x.fillStyle = g; x.fill(); x.lineWidth = 5; x.strokeStyle = 'rgba(255,255,255,0.95)'; x.stroke();
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+function hzrSahneKur() {
+  if (hzr.grup) return;
+  hzr.grup = new THREE.Group(); hzr.zemin = new THREE.Group(); hzr.birimG = new THREE.Group(); hzr.grup.add(hzr.zemin, hzr.birimG); sahne.add(hzr.grup);
+  const doku = karoDoku();
+  const karoMat = () => new THREE.MeshBasicMaterial({ map: doku, color: '#d9ccff', transparent: true, opacity: 0.3, depthWrite: false, toneMapped: false });
+  const gT = new THREE.PlaneGeometry(1.38, 0.9).rotateX(-Math.PI / 2), gY = new THREE.PlaneGeometry(0.7, 0.7).rotateX(-Math.PI / 2);
+  for (let i = 0; i < 12; i++) { const m = new THREE.Mesh(gT, karoMat()); hzrHucreP('tahta', i, m.position); m.position.y = 0.026; m.renderOrder = -2; hzr.zemin.add(m); hzr.karo.push(m); }
+  for (let i = 0; i < 10; i++) { const m = new THREE.Mesh(gY, karoMat()); m.position.y = 0.046; m.renderOrder = -2; hzr.zemin.add(m); hzr.yKaro.push(m); }
+  // yedek sırası: koyu taş şerit (tahta çerçevesinin önünde)
+  hzr.sira = new THREE.Mesh(new THREE.BoxGeometry(1, 0.04, 0.86), new THREE.MeshStandardMaterial({ color: '#2b2140', roughness: 0.9, transparent: true, opacity: 0.88 }));
+  hzr.sira.position.set(0, 0.02, YEDEK_Z); hzr.sira.receiveShadow = true; hzr.zemin.add(hzr.sira);
+  // rakip yarısı boş ve hafif karartılmış
+  hzr.karart = new THREE.Mesh(new THREE.PlaneGeometry(6.1, 4.05).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: '#0a0614', transparent: true, opacity: 0.5, depthWrite: false }));
+  hzr.karart.position.set(0, 0.024, -2.02); hzr.karart.renderOrder = -1; hzr.zemin.add(hzr.karart);
+  // seçili kahramanın altında parlayan halka
+  hzr.secHalka = new THREE.Mesh(new THREE.RingGeometry(0.46, 0.56, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: '#ffe48a', transparent: true, opacity: 0.95, depthWrite: false, toneMapped: false }));
+  hzr.secHalka.position.y = 0.05; hzr.secHalka.visible = false; hzr.zemin.add(hzr.secHalka);
+}
+function hzrYedekDiz() {
+  const n = hzr.yedekN; hzr.yKaro.forEach((m, i) => { m.visible = i < n; if (i < n) { hzrHucreP('yedek', i, m.position); m.position.y = 0.046; } });
+  hzr.sira.scale.x = n * YEDEK_ARA + 0.16;
+}
+function birimSok(b) {
+  if (!b) return; vfx.durumTemizle(b.kok); if (b.kok.parent) b.kok.parent.remove(b.kok); if (b.isk) sahne.remove(b.isk.kaynak);
+}
+// savaş birimlerini (savaş sonu ya da karşılama vitrini) sahneden kaldır
+function savasBirimKaldir() {
+  for (const b of birimler.values()) birimSok(b);
+  for (const e of efektler) if (!e.kalici) sahne.remove(e.o);
+  efektler = efektler.filter(e => e.kalici); kuyruk = []; yazilar = []; bantlar.length = 0; balonSira.length = 0; kutKart = null;
+  birimler = new Map(); birimDizi = []; sim = null; mvpSifirla();
+}
+/** Hazırlığı aç: savaş/vitrin birimleri kalkar, hücreler ve yedek sırası görünür, kamera hazırlık kadrajına geçer. */
+export function hazirlikAc({ yedekN = 7, kok = '' } = {}) {
+  if (!renderer) return false;
+  hzrSahneKur(); savasBirimKaldir(); his.sifirla();
+  hzr.kok = kok; hzr.yedekN = yedekN; hzrYedekDiz();
+  hzr.acik = true; hzr.sol = 1; hzr.grup.visible = true; hzr.birimG.visible = true; hzr.zemin.visible = true; hzr.sur = null;
+  for (const b of hzr.birim.values()) { b.kok.position.copy(b.hedefP); b.dogT = 1; hzrHisKaydet(b); }
+  kam.gecis = null; zoomSifirla(); boyutla(); uyarlaSifirla(600); saat.getDelta();
+  return true;
+}
+// savaşa geçerken his.sifirla birim listesini boşaltır; hazırlığa dönünce yeniden kaydet (malzeme yaması korunur)
+function hzrHisKaydet(b) { try { his.hazirla(b); } catch (e) { /* isteğe bağlı */ } }
+/** Hazırlıktan çık. gecis: savaşa geçiş (kamera mevcut duruştan yumuşakça savaş kadrajına kayar, hücreler söner). */
+export function hazirlikKapat({ gecis = false } = {}) {
+  if (!hzr.grup) return;
+  hzr.acik = false; hzr.sur = null; hzr.secHalka.visible = false;
+  hzr.solZ = 0;
+  if (gecis && kamera) { kam.gecis = { p: kamera.position.clone(), h: (kam.bak || new THREE.Vector3()).clone(), t: 0, sure: 0.9 }; }
+  else { hzr.grup.visible = false; hzr.sol = 0; }
+}
+const imza = (b) => `${b.h}|${b.s || 1}|${b.f || ''}|${b.f2 || ''}`;
+/** Kahraman listesini sahneyle eşle. liste: [{ ref (oyun nesnesi), b: {h,s,f,f2}, yer: 'tahta'|'yedek', i }]. Aynı ref yerinde kayar; yeni ref kurulur. */
+export function hazirlikEsitle(liste) {
+  if (!hzr.grup) return Promise.resolve();
+  const isimler = new Set(); hzr.istek = new Map();
+  const isler = [];
+  for (const o of liste) {
+    if (!o || !o.ref || !o.b) continue; const im = imza(o.b); hzr.istek.set(o.ref, { ...o, im }); isimler.add(o.ref);
+    const b = hzr.birim.get(o.ref);
+    if (b && b.imza === im) { b.yer = o.yer; b.i = o.i; hzrHucreP(o.yer, o.i, b.hedefP); continue; }
+    if (hzr.bekleyen.has(o.ref) && hzr.bekleyen.get(o.ref).im === im) { isler.push(hzr.bekleyen.get(o.ref).p); continue; }
+    const p = hzrBirimKur(o, im); hzr.bekleyen.set(o.ref, { im, p }); isler.push(p);
+  }
+  for (const [ref, b] of hzr.birim) if (!isimler.has(ref) || b.imza !== hzr.istek.get(ref).im) { birimSok(b); hzr.birim.delete(ref); }
+  return Promise.all(isler);
+}
+async function hzrBirimKur(o, im) {
+  const u = { uid: hzr.uid++, taraf: 0, b: { h: o.b.h, s: o.b.s || 1, ...(o.b.f ? { f: o.b.f } : {}), ...(o.b.f2 ? { f2: o.b.f2 } : {}) }, x: 0, y: 0, soy: [] };
+  let b = null;
+  try { b = await birimKur(u, hzr.kok); } catch (e) { console.warn('hazırlık birimi kurulamadı', o.b.h, e); }
+  const bek = hzr.bekleyen.get(o.ref); if (bek && bek.im === im) hzr.bekleyen.delete(o.ref);
+  if (!b) return;
+  const ist = hzr.istek.get(o.ref);
+  if (!ist || ist.im !== im || hzr.birim.has(o.ref)) { birimSok(b); return; }   // bu arada satıldı/birleşti
+  b.imza = im; b.ref = o.ref; b.yer = ist.yer; b.i = ist.i; b.hedefP = hzrHucreP(ist.yer, ist.i); b.tabanOlcek = b.kok.scale.x; b.dogT = 0;
+  b.olcekS = (ist.yer === 'yedek' ? YEDEK_OLCEK : 1); b.kok.position.copy(b.hedefP);
+  b.kok.rotation.y = 0; b.hedefAci = 0; b.hzrYildiz = u.b.s;
+  hzr.birimG.add(b.kok); hzr.birim.set(o.ref, b);
+}
+/** Vurgu: hedef hücre (sürüklerken), geçerli mi, bütün hücreler belirgin mi (seçim/sürükleme), seçili ve kaynaşma adayları (ref). */
+export function hazirlikVurgu(v) { Object.assign(hzr.vurgu, v); }
+/** Sürükleme: ref (null bırakır) ve imlecin ekran noktası (istemci px). */
+export function hazirlikSurukle(ref, cx, cy) {
+  hzr.sur = ref || null;
+  if (ref && cx != null) { const p = zeminNoktasi(cx, cy); if (p) hzr.surP.copy(p); }
+}
+/** Ekran noktasının (istemci px) altındaki hücre: {yer, i} ya da null. */
+export function hazirlikHucre(cx, cy) {
+  const p = zeminNoktasi(cx, cy); if (!p) return null;
+  if (p.z > 0.5 && p.z < 3.5 && Math.abs(p.x) < 3.02) return { yer: 'tahta', i: Math.floor(p.z - 0.5) * 4 + Math.max(0, Math.min(3, Math.floor((p.x + 3) / 1.5))) };
+  const n = hzr.yedekN, yi = Math.round(p.x / YEDEK_ARA + (n - 1) / 2);
+  if (p.z > YEDEK_Z - 0.62 && p.z < YEDEK_Z + 0.75 && yi >= 0 && yi < n && Math.abs(p.x - (yi - (n - 1) / 2) * YEDEK_ARA) < 0.5) return { yer: 'yedek', i: yi };
+  return null;
+}
+const _hzE = { x: 0, y: 0, z: 0 }, _hzV = new THREE.Vector3();
+/** Ekran noktasına (istemci px) en yakın kahraman: ref ya da null. Gövde boyunca (ayak–baş) isabet sayılır. */
+export function hazirlikSec(cx, cy) {
+  if (!renderer) return null; const r = renderer.domElement.getBoundingClientRect(), x = cx - r.left, y = cy - r.top;
+  let en = null, m = Infinity;
+  for (const [ref, b] of hzr.birim) {
+    if (!b.kok.visible) continue; const s = b.kok.scale.x, boy = (b.kok.userData.vfxBoy || 1) / (b.tabanOlcek || 1) * s;
+    const a = ekran(_hzV.copy(b.kok.position), _hzE), ax = a.x, ay = a.y;
+    const u = ekran(_hzV.set(b.kok.position.x, b.kok.position.y + boy, b.kok.position.z), _hzE), ux = u.x, uy = u.y;
+    const yan = ekran(_hzV.set(b.kok.position.x + 0.42 * s, b.kok.position.y, b.kok.position.z), _hzE), rr = Math.max(16, Math.abs(yan.x - ax));
+    // ayak–baş doğru parçasına uzaklık
+    const dx = ux - ax, dy = uy - ay, L2 = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / L2));
+    const d = Math.hypot(x - (ax + dx * t), y - (ay + dy * t));
+    if (d < rr && d < m) { m = d; en = ref; }
+  }
+  return en;
+}
+/** Kahramanın ekran kutusu (istemci px): baş üstü ve ayak. */
+export function hazirlikEkran(ref) {
+  const b = hzr.birim.get(ref); if (!b || !renderer) return null; const r = renderer.domElement.getBoundingClientRect();
+  const s = b.kok.scale.x, boy = (b.kok.userData.vfxBoy || 1) / (b.tabanOlcek || 1) * s;
+  const a = ekran(_hzV.copy(b.kok.position), _hzE), ax = a.x + r.left, ay = a.y + r.top;
+  const u = ekran(_hzV.set(b.kok.position.x, b.kok.position.y + boy, b.kok.position.z), _hzE);
+  const yan = ekran(_hzV.set(b.kok.position.x + 0.5 * s, b.kok.position.y, b.kok.position.z), _hzE);
+  return { x: ax, y: ay, ustY: u.y + r.top, yari: Math.abs(yan.x - a.x) };
+}
+/** Tahta + yedek sırasının ekran kutusu (istemci px; öğretici çerçevesi için). */
+export function hazirlikAlan() {
+  if (!renderer) return null; const r = renderer.domElement.getBoundingClientRect(); let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  for (const [x, z] of [[-3, 0.5], [3, 0.5], [-3, YEDEK_Z + 0.45], [3, YEDEK_Z + 0.45]]) { const e = ekran(_hzV.set(x, ARENA_Y, z), _hzE); x0 = Math.min(x0, e.x); x1 = Math.max(x1, e.x); y0 = Math.min(y0, e.y); y1 = Math.max(y1, e.y); }
+  return { left: x0 + r.left, top: y0 + r.top, right: x1 + r.left, bottom: y1 + r.top };
+}
+const OPS_HZR_IKI = { hareket: false, hiz: 0, saldiri: null, yetenek: false, vurul: false, olum: false, zafer: false };
+const OPS_HZR_DORT = { hiz: 0, saldiri: false, yetenek: false, vurul: false, olum: false, zafer: false };
+const HZR_SABIT = { olu: false, hareket: false, saldiri: false, yetenek: false, vurul: false };
+const _hzH = new THREE.Vector3();
+function hzrGuncelle(dt) {
+  const v = hzr.vurgu, t = performance.now() / 1000;
+  _gorM.multiplyMatrices(kamera.projectionMatrix, kamera.matrixWorldInverse); _gorF.setFromProjectionMatrix(_gorM);
+  let secB = null;
+  for (const [ref, b] of hzr.birim) {
+    const surulen = hzr.sur === ref;
+    if (surulen) _hzH.set(hzr.surP.x, ARENA_Y + SUR_YUK, hzr.surP.z + 0.15); else _hzH.copy(b.hedefP);
+    const k = 1 - Math.exp(-dt * (surulen ? 28 : 14)); b.kok.position.lerp(_hzH, k);
+    const hedefS = surulen ? 0.9 : (b.yer === 'yedek' ? YEDEK_OLCEK : 1); b.olcekS += (hedefS - b.olcekS) * Math.min(1, dt * 12);
+    b.dogT = Math.min(1, (b.dogT || 0) + dt / 0.28); const dog = 1 - Math.pow(1 - b.dogT, 3) * (1 - 0.3 * Math.sin(b.dogT * Math.PI));
+    b.kok.scale.setScalar(b.tabanOlcek * b.olcekS * dog);
+    // yüzü kameraya (oyuncuya) dönük; sürüklenirken hafif sallanır
+    const aci = Math.atan2(kamera.position.x - b.kok.position.x, kamera.position.z - b.kok.position.z) * 0.85 + (surulen ? Math.sin(t * 9) * 0.12 : 0);
+    b.kok.rotation.y += acıFark(aci, b.kok.rotation.y) * Math.min(1, dt * 8);
+    const sec = v.secili === ref, aday = v.kaynas && v.kaynas.includes(ref);
+    if (sec) secB = b;
+    if (b.halkalar[0]) { b.halkalar[0].material.opacity = aday ? 0.55 + 0.4 * Math.sin(t * 6) : 0.5; }
+    if (!ekranda(b)) continue;
+    if (b.isk) {
+      const i2 = b.isk; if (i2.aktifAd !== i2.beklemeAd) oyna(b, i2.beklemeAd, { dongu: true, gecis: 0.25 });
+      i2.mix.update(dt); aktar(b); ikiAyakliGuncelle(b.ik, dt, OPS_HZR_IKI);
+    } else if (b.dort) dortAyakliGuncelle(b.dort, dt, OPS_HZR_DORT);
+    else if (b.yilan) yilanGuncelle(b.yilan, dt, OPS_HZR_DORT);
+    if (b.gor.tur === 'sabit') sabitSalin(b, dt, HZR_SABIT);
+  }
+  // seçim halkası
+  if (secB) { hzr.secHalka.visible = true; hzr.secHalka.position.x = secB.kok.position.x; hzr.secHalka.position.z = secB.kok.position.z; hzr.secHalka.scale.setScalar(secB.olcekS * (1 + 0.05 * Math.sin(t * 5))); }
+  else hzr.secHalka.visible = false;
+  // hücreler: soluk; seçim/sürüklemede belirgin; imlecin altındaki hedef parlak (geçersizse kırmızı)
+  const taban = v.acik ? 0.42 : 0.24;
+  const boya = (m, yer, i) => { const h = v.hedef && v.hedef.yer === yer && v.hedef.i === i;
+    m.material.opacity = h ? 0.95 : taban; m.material.color.set(h ? (v.gecerli ? '#8dffc0' : '#ff7a8a') : '#d9ccff'); };
+  hzr.karo.forEach((m, i) => boya(m, 'tahta', i)); for (let i = 0; i < hzr.yedekN; i++) boya(hzr.yKaro[i], 'yedek', i);
+}
+// savaşa geçişte hücreler, sıra ve karartma söner
+function hzrSondur(dt) {
+  if (hzr.acik || !hzr.grup || !hzr.grup.visible || hzr.sol <= 0) return;
+  const simdi = performance.now(); if (!hzr.solZ) hzr.solZ = simdi;   // duvar saatiyle (yavaş karede de 0,45 sn)
+  hzr.sol = Math.max(0, 1 - (simdi - hzr.solZ) / 450);
+  for (const m of [...hzr.karo, ...hzr.yKaro]) m.material.opacity = Math.min(m.material.opacity, 0.24 * hzr.sol);
+  hzr.karart.material.opacity = 0.5 * hzr.sol; hzr.sira.material.opacity = 0.88 * hzr.sol;
+  if (hzr.sol <= 0) hzr.grup.visible = false;
+}
+// kaplama: kahramanların üstünde yıldızlar (savaştaki rozetle aynı renkler)
+function hzrKaplama() {
+  for (const b of hzr.birim.values()) {
+    const s = b.hzrYildiz || 1; if (!b.kok.visible) continue;
+    const boy = (b.kok.userData.vfxBoy || 1) / (b.tabanOlcek || 1) * b.kok.scale.x;
+    const e = ekran(_hzV.set(b.kok.position.x, b.kok.position.y + boy + 0.12, b.kok.position.z), _hzE); if (e.z > 1) continue;
+    const r = b.yer === 'yedek' && hzr.sur !== b.ref ? 5.5 : 7.5, ara = r * 2.1;
+    for (let k = 0; k < s; k++) yildizCiz(e.x + (k - (s - 1) / 2) * ara, e.y - r, r, YILDIZ_RENK[s] || '#ffd24a');
+  }
+}
+export function _hucreEkran(yer, i) { const r = renderer.domElement.getBoundingClientRect(), e = ekran(hzrHucreP(yer, i, _hzV), _hzE); return { x: e.x + r.left, y: e.y + r.top }; }
+export function _hazirlik() { return { acik: hzr.acik, n: hzr.birim.size, bekleyen: hzr.bekleyen.size, birim: [...hzr.birim.values()].map(b => ({ h: b.u.b.h, yer: b.yer, i: b.i, x: +b.kok.position.x.toFixed(2), z: +b.kok.position.z.toFixed(2) })) }; }
