@@ -1631,6 +1631,79 @@ html.alcak body.hz3 #mac .kart .resim{min-height:40px}
 html.alcak body.hz3 #mac .kart .ad{height:18px;line-height:17px;font-size:11px}
 html.alcak body.hz3 #mac .savasBtn{font-size:18px!important}html.alcak body.hz3 #mac .savasBtn small{display:none}
 html.alcak .bilgiKart{width:244px;padding:6px 8px}html.alcak .bilgiKart .bkEylem .btn{min-height:32px;height:32px;font-size:12px}
+/* ===================== ROBOT DÜĞMELERİ (arayuz/menu/dugme_*, ikon_*, cubuk_deneyim; kaynak PNG'ler kut/gelen_gorsel, a seti) =====================
+   İkincil (mor hap) düğme: eski w_dugme_mor/w_dugme_sat yerine dokuz dilim; yuvarlak düğmeler (ayarlar, duraklat, hız) dugme_yuvarlak;
+   SAVAŞA! dugme_savas. Basılı hâl :active, devre dışı gri+soluk. Yazı oyunda (görselde yazı yok). OYNA ve sonuç "Devam" ayrı (dugme_oyna). */
+.mik{width:22px;height:22px;object-fit:contain;flex:none;pointer-events:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.6))}
+.btn.mor,.btn.sat{border:3px solid transparent;border-image:url(arayuz/menu/dugme_ikincil.webp) 44 66 fill / 16px 25px / 2px 2px stretch;
+  --kontur:#1c0834;color:#fff;padding-left:24px;padding-right:24px}
+.btn.sat{--kontur:#4a0618;color:#ffd3dc}
+.btn.mor:active,.btn.sat:active{border-image-source:url(arayuz/menu/dugme_ikincil_basili.webp)}
+.btn.mor::before,.btn.sat::before{display:none}
+.btn.mor::after,.btn.sat::after{border-radius:999px;inset:0 6px}
+.btn.mor:disabled,.btn.sat:disabled{filter:grayscale(1) brightness(.72);opacity:.72}
+/* yuvarlak düğmeler */
+.btn.ayarBtn,#savas .duraklat .btn:not(.sonaGec),#savas .hizlar .btn{border:0!important;border-image:none!important;box-shadow:none;border-radius:50%!important;padding:0!important;
+  background:url(arayuz/menu/dugme_yuvarlak.webp) center/100% 100% no-repeat;filter:drop-shadow(0 4px 5px rgba(0,0,0,.5))}
+.btn.ayarBtn:active,#savas .duraklat .btn:not(.sonaGec):active,#savas .hizlar .btn:not(.secik):active{background-image:url(arayuz/menu/dugme_yuvarlak_basili.webp)}
+.ayarBtn::before,#savas .duraklat .btn::before,#savas .hizlar .btn::before{display:none}
+.ayarBtn .mik{width:56%;height:56%}
+#savas .duraklat .btn:not(.sonaGec) .mik{width:44%;height:44%}
+#savas .hizlar .btn{width:56px;height:56px;flex-direction:column;gap:0;--kontur:#1c0834;color:#fff}
+#savas .hizlar .btn .mik{width:46%;height:30%;margin-top:4px}
+#savas .hizlar .btn b{font-size:15px;line-height:1;font-weight:900}
+#savas .hizlar .btn.secik{outline:0;background-image:url(arayuz/menu/dugme_yuvarlak_altin.webp);--kontur:#6a3206;color:#fffbea;filter:drop-shadow(0 0 7px rgba(255,214,100,.7)) drop-shadow(0 4px 5px rgba(0,0,0,.5))}
+#savas .duraklat .btn.sonaGec{width:62px;height:40px;font-size:11px;padding:0 12px!important;border-image-width:11px 17px;margin-left:-2px}
+html.alcak #savas .hizlar .btn{width:46px;height:46px}html.alcak #savas .hizlar .btn b{font-size:13px}
+html.alcak #savas .duraklat .btn:not(.sonaGec){width:50px;height:50px}
+/* (i) bilgi düğmeleri: ikon_bilgi kendi yuvarlak çerçevesiyle düğme */
+.sansBtn,.bilgiKart .bkEylem .bkBil{border:0!important;border-image:none!important;background:none!important;box-shadow:none;padding:0!important;border-radius:50%}
+.sansBtn{width:28px;height:28px;top:-14px}
+.sansBtn .mik,.bilgiKart .bkEylem .btn.bkBil .mik{width:100%;height:100%}
+.bilgiKart .bkEylem .bkBil::before{display:none}
+.sansBtn:active,.bilgiKart .bkEylem .bkBil:active{transform:scale(.9)}
+/* bilgi kartı: Sat / Kaynaştır ikincil zemin + ikon (Sat kırmızımsı yazı) */
+.bilgiKart .bkEylem .btn.mor,.bilgiKart .bkEylem .btn.sat,.bilgiKart .bkEylem .btn.altin{border-image:url(arayuz/menu/dugme_ikincil.webp) 44 66 fill / 12px 18px / 1px 1px stretch;padding:0 12px;--kontur:#1c0834;color:#fff}
+.bilgiKart .bkEylem .btn.sat{--kontur:#4a0618;color:#ffd3dc}
+.bilgiKart .bkEylem .btn.altin{filter:drop-shadow(0 0 6px rgba(255,214,100,.85));color:#fffbea}
+.bilgiKart .bkEylem .btn:active{border-image-source:url(arayuz/menu/dugme_ikincil_basili.webp)}
+.bilgiKart .bkEylem .btn .mik{width:19px;height:19px}
+.bilgiKart .bkEylem .btn::before{display:none}
+.bilgiKart .bkEylem .bkBil{width:34px;height:34px;min-height:34px;flex:none}
+/* dükkân solu: Yenile / Kilitle / Deneyim Al (kilitliyken altın parıltı) */
+#mac .dukkanSol .btn.altin,#aHedef .btn.altin{border:3px solid transparent;border-image:url(arayuz/menu/dugme_ikincil.webp) 44 66 fill / 16px 25px / 2px 2px stretch;--kontur:#1c0834;color:#fffbea;
+  filter:drop-shadow(0 0 7px rgba(255,214,100,.85)) drop-shadow(0 4px 5px rgba(0,0,0,.45))}
+#mac .dukkanSol .btn.altin:active,#aHedef .btn.altin:active{border-image-source:url(arayuz/menu/dugme_ikincil_basili.webp)}
+#mac .dukkanSol .btn::before,#aHedef .btn::before{display:none}
+#aHedef .btn.altin{padding-left:24px;padding-right:24px}
+#mac .dukkanSol .btn{padding:0 14px}
+#mac .dukkanSol .btn .mik{width:24px;height:24px}
+body.hz3 #mac .dukkanSol .btn{border-image-width:13px 20px;padding:0 10px}
+body.hz3 #mac .dukkanSol .btn .mik{width:19px;height:19px}
+html.alcak #mac .dukkanSol .btn{border-image-width:9px 14px;padding:0 6px}html.alcak #mac .dukkanSol .btn .mik{width:15px;height:15px}
+/* deneyim çubuğu: cubuk_deneyim çerçevesi, dolgu içte */
+.xpCubuk{position:relative;overflow:visible;height:13px;padding:4px 9% 4px;background:none;border-radius:0;box-sizing:border-box}
+.xpCubuk::before{content:"";position:absolute;inset:4px 9%;background:rgba(10,4,20,.75);border-radius:2px}
+.xpCubuk i{position:relative;border-radius:2px;box-shadow:0 0 5px rgba(160,120,255,.8)}
+.xpCubuk::after{content:"";position:absolute;inset:0;background:url(arayuz/menu/cubuk_deneyim.webp) center/100% 100% no-repeat;pointer-events:none}
+html.alcak #mac .dukkanSol .xpCubuk{height:10px;padding:3px 9%}html.alcak #mac .dukkanSol .xpCubuk::before{inset:3px 9%}
+/* SAVAŞA!: dugme_savas (çapraz kılıçlar görselde; yazı altta) */
+.btn.savasBtn{border:0!important;border-image:none!important;box-shadow:none;border-radius:0!important;background:url(arayuz/menu/dugme_savas.webp) center/100% 100% no-repeat;
+  justify-content:flex-end;padding:0 12% 15%!important;--kontur:#4a1d02;color:#fffbea;filter:drop-shadow(0 6px 8px rgba(0,0,0,.5))}
+.btn.savasBtn:active{background-image:url(arayuz/menu/dugme_savas_basili.webp)}
+.btn.savasBtn::before{display:none}.btn.savasBtn::after{border-radius:18%}
+.btn.savasBtn .ik{display:none}
+.btn.savasBtn small{background:rgba(40,14,2,.6);padding:1px 7px;border-radius:8px;text-shadow:0 1px 2px #000}
+.btn.savasBtn:disabled{filter:grayscale(1) brightness(.72);opacity:.72}
+html.alcak .btn.savasBtn{padding:0 10% 13%!important}
+body.hz3 #mac .dukkanSerit{grid-template-rows:minmax(0,1fr)}body.hz3 #mac .dukkanSol{min-height:0}
+body.hz3 #mac .dukkanSol .btn{overflow:hidden}
+body.hz3 #mac .dukkanSol .btn:not(.xpBtn){flex-wrap:nowrap;white-space:nowrap;gap:3px;padding:0 8px;font-size:12.5px}
+body.hz3 #mac .dukkanSol .btn:not(.xpBtn) .mik{width:17px;height:17px}
+body.hz3 #mac .dukkanSol .btn:not(.xpBtn) small{font-size:11px}body.hz3 #mac .dukkanSol .btn small .ik{width:13px;height:13px}
+body.hz3 #mac .dukkanSol .xpBtn{flex:1.7;font-size:12px;padding:0 8px}body.hz3 #mac .dukkanSol .xpBtn small{font-size:10.5px}
+body.hz3 #mac .dukkanSol .xpBtn{gap:1px 4px;line-height:1.05}body.hz3 #mac .dukkanSol .xpBtn .mik{width:16px;height:16px}
+body.hz3 #mac .dukkanSol .xpBtn .xpCubuk{height:11px;padding:3px 9%;margin:0}body.hz3 #mac .dukkanSol .xpBtn .xpCubuk::before{inset:3px 9%}
 </style>
 <script>
 /* tek ölçek: --o, --lw, --lh ve html.alcak; ilk boyamadan önce ve her boyut değişiminde */
@@ -1819,7 +1892,7 @@ html.alcak .bilgiKart{width:244px;padding:6px 8px}html.alcak .bilgiKart .bkEylem
       <div class="rozet" style="padding-left:14px"><div class="yz"><small>Tur</small>6</div></div>
       <div class="alamet"><div class="ay"></div><div class="t"><small>Bu turun alameti</small><b>Kan Ayı</b> <span>— herkes +%20 hasar</span></div></div>
       <div class="rozet altinRozet"><div class="top"><svg class="ik"><use href="#i-coin"/></svg></div>7</div>
-      <button class="btn mor ayarBtn" style="width:52px;height:52px" aria-label="Ayarlar"><svg class="ik"><use href="#i-ayar"/></svg></button>
+      <button class="btn mor ayarBtn" style="width:52px;height:52px" aria-label="Ayarlar"><img class="mik" alt="" draggable="false" src="arayuz/menu/ikon_ayarlar.webp"></button>
     </header>
 
     <div class="macOrta">
@@ -1858,8 +1931,8 @@ html.alcak .bilgiKart{width:244px;padding:6px 8px}html.alcak .bilgiKart .bkEylem
 
     <div class="dukkanSerit">
       <div class="dukkanSol">
-        <button class="btn mor"><svg class="ik"><use href="#i-yenile"/></svg>Yenile<small><svg class="ik"><use href="#i-coin"/></svg>1</small></button>
-        <button class="btn mor"><svg class="ik"><use href="#i-kilitAcik"/></svg>Kilitle</button>
+        <button class="btn mor"><img class="mik" alt="" draggable="false" src="arayuz/menu/ikon_yenile.webp">Yenile<small><svg class="ik"><use href="#i-coin"/></svg>1</small></button>
+        <button class="btn mor"><img class="mik" alt="" draggable="false" src="arayuz/menu/ikon_kilit_acik.webp">Kilitle</button>
         <button class="btn mor xpBtn" style="display:none">Deneyim</button>
       </div>
       <div class="pn kalin gem dukkan">
@@ -1885,11 +1958,11 @@ html.alcak .bilgiKart{width:244px;padding:6px 8px}html.alcak .bilgiKart .bkEylem
     </div>
     <div class="alametK"><span class="ay"></span><div><b>Kan Ayı</b><span>herkes +%20 hasar</span></div></div>
   </div>
-  <div class="duraklat"><button class="btn mor" aria-label="Duraklat"><svg class="ik"><use href="#i-durdur"/></svg></button><button class="btn mor sonaGec" aria-label="Sonuca geç">Sonuca<br>geç</button></div>
+  <div class="duraklat"><button class="btn mor" aria-label="Duraklat"><img class="mik" alt="" draggable="false" src="arayuz/menu/ikon_duraklat.webp"></button><button class="btn mor sonaGec" aria-label="Sonuca geç">Sonuca<br>geç</button></div>
   <div class="pn hizlar">
-    <button class="btn mor">1×</button>
-    <button class="btn altin secik">2×</button>
-    <button class="btn mor">3×</button>
+    <button class="btn mor"><img class="mik" alt="" draggable="false" src="arayuz/menu/ikon_hiz.webp"><b>1×</b></button>
+    <button class="btn altin secik"><img class="mik" alt="" draggable="false" src="arayuz/menu/ikon_hiz.webp"><b>2×</b></button>
+    <button class="btn mor"><img class="mik" alt="" draggable="false" src="arayuz/menu/ikon_hiz.webp"><b>3×</b></button>
     <small>Hız</small>
   </div>
   <div class="pn ayakta" id="ayakta"></div>

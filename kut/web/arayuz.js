@@ -14,6 +14,8 @@ if (document.fonts && document.fonts.load) for (const w of [400, 700, 800, 900])
 const P = (id) => `../arayuz/portre/${(D.canavar(id) || {}).gorunum || id}.png`, SY = (id) => `../arayuz/soy_${id}.png`;
 const IK_RESIM = { coin: 'ik_altin', kalp: 'ik_kalp', kupa: 'ik_kupa', tac: 'ik_tac', yildiz: 'ik_yildiz_altin' };
 const ik = (n, c = '') => IK_RESIM[n] ? `<img class="ik ${c}" alt="" src="../arayuz/ui/${IK_RESIM[n]}${n === 'kalp' && /\bbos\b/.test(c) ? '_bos' : ''}.png">` : `<svg class="ik ${c}"><use href="#i-${n}"/></svg>`;
+// robot düğme ikonları (arayuz/menu/ikon_*.webp; kaynak kut/gelen_gorsel)
+const mik = (n, c = '') => `<img class="mik ${c}" alt="" draggable="false" src="arayuz/menu/ikon_${n}.webp">`;
 // yeni lobi alametlerinin (bölüm 8) resmi henüz yok: yerine emojisi
 const AL_RESIM = new Set(['yok', 'kanAyi', 'sis', 'tipi', 'kutYagmur', 'pazar', 'tutulma', 'yaz']);
 const alametArka = (id) => AL_RESIM.has(id) ? `background:url(../arayuz/ui/al_${id}.png) center/cover` : 'background:rgba(10,6,24,.6);display:grid;place-items:center;font-size:22px';
@@ -311,17 +313,17 @@ function macCiz() {
   const sb = m.querySelectorAll('.dukkanSol .btn');
   const yb = oyun.yenileBedel();
   sb[0].disabled = M.altin < yb;
-  sb[0].innerHTML = `${ik('yenile')}Yenile<small>${yb ? `${ik('coin')}${yb}` : `bedava${M.bedavaYenile > 1 ? ' ×' + M.bedavaYenile : ''}`}</small>`;
+  sb[0].innerHTML = `${mik('yenile')}Yenile<small>${yb ? `${ik('coin')}${yb}` : `bedava${M.bedavaYenile > 1 ? ' ×' + M.bedavaYenile : ''}`}</small>`;
   // deneyim satın alma (yalnız seviyeli maç)
   const xb = sb[2];
   xb.style.display = sev ? '' : 'none';
   if (sev) {
     const tavan = M.seviye >= K.seviyeTavan, gerek = oyun.xpGerek();
     xb.disabled = tavan || M.altin < oyun.xpBedel();
-    xb.innerHTML = tavan ? `Sv ${M.seviye}<small>en yüksek</small>`
-      : `Sv ${M.seviye} · ${M.xp}/${gerek}<span class="xpCubuk"><i style="width:${Math.round(100 * M.xp / gerek)}%"></i></span><small>Deneyim Al · ${ik('coin')}${oyun.xpBedel()}</small>`;
+    xb.innerHTML = tavan ? `${mik('deneyim')}Sv ${M.seviye}<small>en yüksek</small>`
+      : `${mik('deneyim')}Sv ${M.seviye} · ${M.xp}/${gerek}<span class="xpCubuk"><i style="width:${Math.round(100 * M.xp / gerek)}%"></i></span><small>Deneyim Al · ${ik('coin')}${oyun.xpBedel()}</small>`;
   }
-  sb[1].innerHTML = `${ik(M.kilit ? 'kilit' : 'kilitAcik')}${M.kilit ? 'Kilitli' : 'Kilitle'}`; sb[1].classList.toggle('altin', M.kilit); sb[1].classList.toggle('mor', !M.kilit);
+  sb[1].innerHTML = `${mik(M.kilit ? 'kilit' : 'kilit_acik')}${M.kilit ? 'Kilitli' : 'Kilitle'}`; sb[1].classList.toggle('altin', M.kilit); sb[1].classList.toggle('mor', !M.kilit);
   q('.savasBtn', m).innerHTML = M.kervan ? `${ik('oyna')}KERVAN<small>Bir kahraman + eşya seç</small>` : `${ik('kilic')}SAVAŞA!<small>${r ? r.ad + (r.pve ? ' ile' : "'a karşı") : 'Rakip aranıyor…'}</small>`;
   secimDenetle();
   if (uc3) hz3Ciz();
@@ -507,7 +509,7 @@ function hz3Duzen() {
   if (!q('.tahtaSayac', ust)) q('.altinRozet', ust).insertAdjacentHTML('afterend', `<div class="rozet tahtaSayac" title="Tahtadaki kahraman / sınır">${ik('kilic')}<span></span></div>`);
   const rk = q('.rakip', m); if (rk && rk.parentElement !== ust) { ust.insertBefore(rk, q('.ayarBtn', ust)); rk.addEventListener('click', () => rk.classList.toggle('acik')); }
   const al = q('.alamet', ust); al.addEventListener('click', () => al.classList.toggle('acik'));
-  const dk = q('.dukkan', m); if (!q('.sansBtn', dk)) { dk.insertAdjacentHTML('beforeend', '<button class="sansBtn" aria-label="Dükkân şansları">i</button><div class="sansKutu" hidden></div>'); q('.sansBtn', dk).onclick = (e) => { e.stopPropagation(); const k = q('.sansKutu', dk); k.hidden = !k.hidden; }; }
+  const dk = q('.dukkan', m); if (!q('.sansBtn', dk)) { dk.insertAdjacentHTML('beforeend', '<button class="sansBtn" aria-label="Dükkân şansları"><img class="mik" alt="" draggable="false" src="arayuz/menu/ikon_bilgi.webp"></button><div class="sansKutu" hidden></div>'); q('.sansBtn', dk).onclick = (e) => { e.stopPropagation(); const k = q('.sansKutu', dk); k.hidden = !k.hidden; }; }
   const raf = $('esyaRaf'); if (raf) q('.solKolon', m).append(raf);
   const ar = $('armaganSerit'); if (ar) q('.solKolon', m).append(ar);
   q('.solKolon', m).addEventListener('click', (e) => { const b = e.target.closest('#armaganSerit>b'); if (b) b.parentElement.classList.toggle('acik'); });
@@ -584,9 +586,9 @@ function bilgiKartCiz() {
   el.innerHTML = `<div class="bkUst"><b>${oyun.birimAd(b)}</b>${yildiz(b.s)}</div>
     <div class="bkSoy"><span class="kTag">K${h.kademe}</span>${st.soy.map(s => `<span class="bs"><img src="${SY(s)}" alt="">${D.SOYLAR[s].ad}</span>`).join('')}</div>
     ${b.e && b.e.length ? `<div class="bkEsya">${b.e.map(id => esyaIk(id)).join('')}</div>` : ''}
-    <div class="bkEylem"><button class="btn sat" id="bkSat">Sat<small>+${oyun.satisDegeri(b)}${ik('coin')}</small></button>
-      ${!b.f || uclu ? `<button class="btn ${oyun.kaynasMod ? 'altin' : 'mor'}" id="bkKay" ${kaynasabilir || oyun.kaynasMod ? '' : 'disabled'}>${ik('kaynas')}${oyun.kaynasMod ? 'İkinciye dokun' : `Kaynaştır${kB ? `<small>${kBY}${ik('coin')}</small>` : ''}`}</button>` : ''}
-      <button class="btn mor bkBil" id="bkBil" aria-label="Ayrıntı">i</button></div>`;
+    <div class="bkEylem"><button class="btn sat" id="bkSat">${mik('sat')}Sat<small>+${oyun.satisDegeri(b)}${ik('coin')}</small></button>
+      ${!b.f || uclu ? `<button class="btn ${oyun.kaynasMod ? 'altin' : 'mor'}" id="bkKay" ${kaynasabilir || oyun.kaynasMod ? '' : 'disabled'}>${mik('kaynastir')}${oyun.kaynasMod ? 'İkinciye dokun' : `Kaynaştır${kB ? `<small>${kBY}${ik('coin')}</small>` : ''}`}</button>` : ''}
+      <button class="btn bkBil" id="bkBil" aria-label="Ayrıntı">${mik('bilgi')}</button></div>`;
   $('bkSat').onclick = (e) => { e.stopPropagation(); oyun.kaynasMod = false; oyun.sat(); };
   if ($('bkKay')) $('bkKay').onclick = (e) => { e.stopPropagation(); oyun.kaynasModDegistir(); };
   $('bkBil').onclick = (e) => { e.stopPropagation(); birimDetay(b); };
@@ -722,7 +724,7 @@ async function savasBaslat(sim, rakip) {
   const alK = q('.alametK', s); alK.classList.remove('acik'); alK.title = a.ad + ': ' + a.m; alK.onclick = () => alK.classList.toggle('acik');   // açıklama dokununca
   if (!savasDongu) { savasDongu = true; requestAnimationFrame(savasKare); }
 }
-function hizUygula() { S3.hiz(duraklat ? 0 : hizSecim); document.querySelectorAll('#savas .hizlar .btn').forEach((b, i) => { b.classList.toggle('secik', i + 1 === hizSecim); b.classList.toggle('altin', i + 1 === hizSecim); b.classList.toggle('mor', i + 1 !== hizSecim); }); q('#savas .duraklat .btn').innerHTML = ik(duraklat ? 'oyna' : 'durdur'); }
+function hizUygula() { S3.hiz(duraklat ? 0 : hizSecim); document.querySelectorAll('#savas .hizlar .btn').forEach((b, i) => { b.classList.toggle('secik', i + 1 === hizSecim); b.classList.toggle('altin', i + 1 === hizSecim); b.classList.toggle('mor', i + 1 !== hizSecim); }); q('#savas .duraklat .btn').innerHTML = mik(duraklat ? 'oynat' : 'duraklat'); }
 document.querySelectorAll('#savas .hizlar .btn').forEach((b, i) => b.onclick = () => { hizSecim = i + 1; duraklat = false; hizUygula(); });
 q('#savas .duraklat .btn').onclick = () => { duraklat = !duraklat; hizUygula(); };
 // Sonuca geç: motor savaşı bitirir, görüntü sona sarılır; sonuç bandı bir sonraki karede her zamanki yoldan açılır
@@ -1196,7 +1198,7 @@ anaCiz(); goster('ana');
 // açılış: yükleme ekranı → (görseller, sesler, 3D sahne + karşılama vitrini, gölgelendirici derlemesi) → karşılama
 (async () => {
   const gorseller = ['../arayuz/logo.png', ...D.KAHRAMANLAR.map(h => P(h.id)), ...Object.keys(D.SOYLAR).map(SY), ...Object.values(IK_RESIM).map(n => `../arayuz/ui/${n}.png`), '../gorsel/gokyuzu.webp',
-    ...[document.documentElement.classList.contains('arkaB') ? 'karsilama_arka_b' : 'karsilama_arka', 'dugme_oyna', 'dugme_oyna_basili', 'profil_cerceve', 'profil_cerceve_b', 'menu_panel'].map(n => `arayuz/menu/${n}.webp`)];
+    ...[document.documentElement.classList.contains('arkaB') ? 'karsilama_arka_b' : 'karsilama_arka', 'dugme_oyna', 'dugme_oyna_basili', 'profil_cerceve', 'profil_cerceve_b', 'menu_panel', 'dugme_ikincil', 'dugme_ikincil_basili', 'dugme_savas', 'dugme_yuvarlak', 'ikon_ayarlar', 'ikon_yenile', 'ikon_kilit_acik'].map(n => `arayuz/menu/${n}.webp`)];
   let v = null;
   const r = await acilisYukle(S3, {
     gorseller,
