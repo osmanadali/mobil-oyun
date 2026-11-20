@@ -155,7 +155,7 @@ const kuyrukSira = (a, b) => a.t - b.t;
 let kaplama, kcx;           // 2D kaplama (çubuklar, sayılar)
 let dinleyici = {};
 let hafif = false, kutlu = new Set(), kokYol = '';
-const kam = { tabanP: new THREE.Vector3(), tabanH: new THREE.Vector3(), olcek: 1, merkez: new THREE.Vector3(), ilk: true, zoom: 1, zoomH: 1, kayX: 0, kayZ: 0, kayHX: 0, kayHZ: 0 };   // kutlu: Kut ile dolan (bir sonraki yeteneği büyük oynanacak) birim uid'leri
+const kam = { tabanP: new THREE.Vector3(), tabanH: new THREE.Vector3(), olcek: 1, merkez: new THREE.Vector3(), ilk: true, zoom: 1, zoomH: 1, kayX: 0, kayZ: 0, kayHX: 0, kayHZ: 0, yaw: 0, yawH: 0, egim: 0, egimH: 0 };   // kutlu: Kut ile dolan (bir sonraki yeteneği büyük oynanacak) birim uid'leri
 
 function hafifOku() { try { return localStorage.getItem('kut.hafif') === '1'; } catch (e) { return false; } }
 
@@ -1418,6 +1418,9 @@ function kadraj(dtR) {
   // oyuncu yakınlaştırması (iki parmak / tekerlek): yumuşak izler; yakınken iki parmakla kaydırılır
   const kz = 1 - Math.exp(-dtR / 0.12); kam.zoom += (kam.zoomH - kam.zoom) * kz; kam.kayX += (kam.kayHX - kam.kayX) * kz; kam.kayZ += (kam.kayHZ - kam.kayZ) * kz;
   _ka.copy(kam.tabanP).sub(kam.tabanH).multiplyScalar(kam.olcek * kam.zoom);
+  // 360° yörünge: bakış noktası etrafında yatay dönüş (yaw) ve eğim (egim); eğim yere girmeyecek ve tepeden bakışı aşmayacak şekilde sınırlı
+  kam.yaw += (kam.yawH - kam.yaw) * kz; kam.egim += (kam.egimH - kam.egim) * kz;
+  if (kam.yaw || kam.egim) { _kSph.setFromVector3(_ka); _kSph.theta += kam.yaw; _kSph.phi = Math.min(1.38, Math.max(0.08, _kSph.phi + kam.egim)); _ka.setFromSpherical(_kSph); }
   _kb.set(kam.tabanH.x + (kam.merkez.x - kam.tabanH.x) * zf + kam.kayX, kam.tabanH.y, kam.tabanH.z + (kam.merkez.z - kam.tabanH.z) * zf + kam.kayZ);
   kamera.position.copy(_kb).add(_ka);
   if (kam.mvp) _kb.copy(mvpKarisim(dtR, _kb));   // Maçın yıldızı: kadraj kamerasından yakın plana yumuşak geçiş (ve geri)
@@ -1926,6 +1929,9 @@ export function _ual() { return ual; }
 // ── Serbest kamera: tekerlek / iki parmak sıkıştırma ile imlecin-parmakların olduğu noktaya yakınlaşma, iki parmakla (masaüstünde sağ ya da
 // orta tuşla) kaydırma, çift tık/dokunuşla eski kadraja dönüş. Tek parmak birim sürüklemeye kalır. ──
 const ZOOM_MIN = 0.32, ZOOM_MAX = 1.6, KAY_MAX = 7.5;
+const _kSph = new THREE.Spherical();
+// ekran sürüklemesini (px) dünyada kaydırmaya çevir: kamera döndükçe kaydırma yönü de döner
+function kaydir(dx, dy, o) { const c = Math.cos(kam.yaw), sn = Math.sin(kam.yaw), x = -dx * o, z = -dy * o * 1.4; kam.kayHX += x * c + z * sn; kam.kayHZ += -x * sn + z * c; zoomSinirla(); }
 const _zRay = new THREE.Raycaster(), _zV2 = new THREE.Vector2(), _zDuz = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), _zP = new THREE.Vector3();
 function zoomSinirla() {
   kam.zoomH = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, kam.zoomH));
@@ -1938,28 +1944,36 @@ function zeminNoktasi(cx, cy) {   // ekran noktasının altındaki zemin noktas�
 }
 // yakınlaşma oranı z0 → z1 iken P noktası ekranda yerinde kalsın: bakış noktası P'ye (1 − z1/z0) oranında yaklaşır
 function noktayaZoom(P, z0, z1) { if (!P || !kam.bak) return; const f = 1 - z1 / z0; kam.kayHX += (P.x - kam.bak.x) * f; kam.kayHZ += (P.z - kam.bak.z) * f; }
-export function zoomSifirla() { kam.zoomH = 1; kam.kayHX = kam.kayHZ = 0; }
+export function zoomSifirla() { kam.zoomH = 1; kam.kayHX = kam.kayHZ = 0; kam.yawH = 0; kam.egimH = 0; }
 function olcekPx() { const h = (renderer && renderer.domElement.clientHeight) || 800; return 2 * kamera.position.distanceTo(kam.bak || _zP) * Math.tan(THREE.MathUtils.degToRad(kamera.fov) / 2) / h; }
 let _zoomKuruldu = false;
 function zoomKur() {
   if (_zoomKuruldu || typeof window === 'undefined') return; _zoomKuruldu = true;
   const arayuzde = (e) => e.target && e.target.closest && e.target.closest('.panel,.pencere,dialog,[data-kaydir],.kaydir');
   window.addEventListener('wheel', (e) => { if (arayuzde(e)) return; const z0 = kam.zoomH;
-    kam.zoomH *= Math.exp(e.deltaY * 0.0012); zoomSinirla(); noktayaZoom(zeminNoktasi(e.clientX, e.clientY), z0, kam.zoomH); zoomSinirla(); }, { passive: true });
+    kam.zoomH *= Math.exp(e.deltaY * 0.0007); zoomSinirla(); noktayaZoom(zeminNoktasi(e.clientX, e.clientY), z0, kam.zoomH); zoomSinirla(); }, { passive: true });
   // masaüstü: sağ/orta tuşla sürükleyerek kaydır
   let fare = null;
   window.addEventListener('contextmenu', (e) => { if (e.target === renderer?.domElement) e.preventDefault(); });
-  window.addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && (e.button === 1 || e.button === 2)) fare = { x: e.clientX, y: e.clientY, x0: kam.kayHX, z0: kam.kayHZ, o: olcekPx() }; });
-  window.addEventListener('pointermove', (e) => { if (!fare) return; kam.kayHX = fare.x0 - (e.clientX - fare.x) * fare.o; kam.kayHZ = fare.z0 - (e.clientY - fare.y) * fare.o * 1.4; zoomSinirla(); });
-  window.addEventListener('pointerup', () => { fare = null; });
+  // tuvalde tek parmak / sol tuş: yörünge (360° dönüş + eğim); sağ/orta tuş: kaydırma
+  let yor = null;
+  window.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' && (e.button === 1 || e.button === 2)) { fare = { x: e.clientX, y: e.clientY }; return; }
+    if (renderer && e.target === renderer.domElement && e.isPrimary && !iki) yor = { x: e.clientX, y: e.clientY };
+  });
+  window.addEventListener('pointermove', (e) => {
+    if (fare) { kaydir(e.clientX - fare.x, e.clientY - fare.y, olcekPx()); fare.x = e.clientX; fare.y = e.clientY; return; }
+    if (yor && e.isPrimary && !iki) { kam.yawH -= (e.clientX - yor.x) * 0.006; kam.egimH = Math.min(0.9, Math.max(-0.75, kam.egimH - (e.clientY - yor.y) * 0.004)); yor.x = e.clientX; yor.y = e.clientY; }
+  });
+  window.addEventListener('pointerup', () => { fare = null; yor = null; }); window.addEventListener('pointercancel', () => { fare = null; yor = null; });
   // dokunmatik: iki parmak sıkıştır (parmakların ortasına doğru) + kaydır
   let iki = null;
   const ort = (t) => ({ x: (t[0].clientX + t[1].clientX) / 2, y: (t[0].clientY + t[1].clientY) / 2, d: Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY) });
-  window.addEventListener('touchstart', (e) => { if (e.touches.length === 2) { const o = ort(e.touches); iki = { ...o, z: kam.zoomH, sx: o.x, sy: o.y }; } }, { passive: true });
+  window.addEventListener('touchstart', (e) => { if (e.touches.length === 2) { yor = null; const o = ort(e.touches); iki = { ...o, z: kam.zoomH, sx: o.x, sy: o.y }; } }, { passive: true });
   window.addEventListener('touchmove', (e) => { if (!iki || e.touches.length !== 2) return; const o = ort(e.touches);
     const zYeni = iki.z * iki.d / Math.max(20, o.d), z0 = kam.zoomH; kam.zoomH = zYeni; zoomSinirla();
     noktayaZoom(zeminNoktasi(o.x, o.y), z0, kam.zoomH);
-    const op = olcekPx(); kam.kayHX -= (o.x - iki.sx) * op; kam.kayHZ -= (o.y - iki.sy) * op * 1.4; iki.sx = o.x; iki.sy = o.y; zoomSinirla(); }, { passive: true });
+    kaydir(o.x - iki.sx, o.y - iki.sy, olcekPx()); iki.sx = o.x; iki.sy = o.y; zoomSinirla(); }, { passive: true });
   window.addEventListener('touchend', (e) => { if (e.touches.length < 2) iki = null; }, { passive: true });
   window.addEventListener('dblclick', (e) => { if (!arayuzde(e)) zoomSifirla(); });
 }
