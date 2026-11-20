@@ -61,7 +61,7 @@ button{font-family:inherit}
 .play{height:72px;border-radius:22px;flex-direction:column;gap:2px}
 .play b{font-family:var(--f-display);font-weight:700;font-size:19px;letter-spacing:.01em}
 .play small{font-size:12px;opacity:.85;font-weight:600}
-.modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.modes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .mode{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:18px;padding:12px 6px 11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);position:relative;transition:transform .12s}
 .mode svg{width:24px;height:24px}
 .mode b{font-size:13px;font-weight:800}
@@ -88,9 +88,9 @@ button{font-family:inherit}
 /* --- bölüm haritası --- */
 #map{background:var(--solid)}
 #map.scr{pointer-events:auto}
-#map .head{display:flex;align-items:center;justify-content:space-between;padding-top:calc(env(safe-area-inset-top,0px) + 14px);padding-bottom:10px}
-#map .head h2{margin:0;font-family:var(--f-display);font-weight:700;font-size:18px}
-#map .scroll{position:absolute;inset:calc(env(safe-area-inset-top,0px) + 66px) 0 0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 28px)}
+#map .head,#learn .head{display:flex;align-items:center;justify-content:space-between;padding-top:calc(env(safe-area-inset-top,0px) + 14px);padding-bottom:10px}
+#map .head h2,#learn .head h2{margin:0;font-family:var(--f-display);font-weight:700;font-size:18px}
+#map .scroll,#learn .scroll{position:absolute;inset:calc(env(safe-area-inset-top,0px) + 66px) 0 0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 28px)}
 .grp{max-width:520px;margin:0 auto 22px}
 .grp h3{display:flex;justify-content:space-between;align-items:baseline;margin:6px 2px 10px;font-size:14px;font-weight:800}
 .grp h3 small{font-size:12px;color:var(--ink-soft);font-weight:700;font-variant-numeric:tabular-nums}
@@ -154,6 +154,35 @@ button{font-family:inherit}
 .win .row{display:flex;gap:8px;margin-top:18px}
 .win .row .btn{flex:1;height:52px;min-width:0;padding:0 10px}
 .win .row .btn.sq{flex:none;width:52px}
+/* --- öğren --- */
+.coach{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 90px);width:min(440px,calc(100% - 32px));background:var(--panel);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:20px;padding:12px 14px 13px}
+.coach .cs{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);font-weight:800;display:flex;justify-content:space-between;gap:8px}
+.coach .ct{font-size:14px;font-weight:600;line-height:1.4;margin-top:5px;text-wrap:pretty}
+.coach .now-t{font-size:13px;color:var(--ink-soft);margin-top:6px;line-height:1.4}
+.coach .now-t b{color:var(--ink)}
+.algs{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.mv{font:500 15px var(--f-mono);min-width:34px;height:32px;padding:0 7px;border-radius:9px;border:1px solid var(--line);display:inline-grid;place-items:center;color:var(--ink)}
+.mv.done{opacity:.35}
+.mv.now{background:var(--accent);color:var(--on-accent);border-color:transparent;transform:scale(1.08)}
+.hud .big.ttl{font-family:var(--f-display);font-size:clamp(19px,5.4vw,24px);font-weight:700;letter-spacing:0;line-height:1.2;margin-top:4px}
+#learn{background:var(--solid)}
+#learn.scr{pointer-events:auto}
+.les{appearance:none;width:100%;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:18px;padding:13px 14px;display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;text-align:left;cursor:pointer;transition:transform .12s}
+.les:active{transform:scale(.98)}
+.les .num{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font:700 16px var(--f-display);background:var(--line)}
+.les.next{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.les.next .num{background:var(--accent);color:var(--on-accent)}
+.les.done .num{background:color-mix(in srgb,var(--accent) 22%,transparent)}
+.les b{display:block;font-size:15px;font-weight:800}
+.les small{display:block;font-size:12px;color:var(--ink-soft);margin-top:2px;line-height:1.35}
+.les .ck{font:500 13px var(--f-mono);color:var(--ink-soft);white-space:nowrap}
+.les .ck svg{width:20px;height:20px;color:var(--accent)}
+.lesl{max-width:520px;margin:0 auto;display:grid;gap:9px}
+.lesl .intro{font-size:13px;color:var(--ink-soft);line-height:1.5;margin:0 2px 6px}
+.win .h{font-family:var(--f-display);font-weight:700;font-size:22px;margin:8px 0 8px}
+.win .p{font-size:14px;line-height:1.5;color:var(--ink);text-align:left;margin:0}
+.win .algs{justify-content:center;margin-top:12px}
+.win .nt{font-size:12px;color:var(--ink-soft);line-height:1.5;text-align:left;margin:12px 0 0;border-top:1px solid var(--line);padding-top:10px}
 .toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 120px);transform:translate(-50%,-10px);z-index:11;background:var(--ink);color:var(--solid);font:700 13px var(--f-body);padding:10px 16px;border-radius:999px;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
@@ -172,6 +201,8 @@ button{font-family:inherit}
   <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></symbol>
   <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></symbol>
   <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M10 2h4"/></symbol>
+  <symbol id="i-cap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5 12 5l10 4.5-10 4.5z"/><path d="M6 11.5V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-4.5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="m8 12.5 2.7 2.7L16 9.8"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
   <symbol id="i-fire" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4 0 7-2.7 7-6.8 0-3.6-2.4-5.6-3.6-8.7-.5 2-1.6 3-2.6 3.4C12.9 6.6 11.2 4 8.6 2c.4 3.4-3.6 6.6-3.6 11.2C5 19.3 8 22 12 22z"/></symbol>
 </svg>
@@ -190,9 +221,10 @@ button{font-family:inherit}
   <div class="menu gut">
     <button class="btn main play pe" id="hPlay"><b id="hPlayT">Bölüm 1</b><small id="hPlayS">2×2 · 1 hamlede çöz</small></button>
     <div class="modes">
+      <button class="mode pe" id="hLearn"><svg><use href="#i-cap"/></svg><b>Öğren</b><small id="hLearnS">0/8</small></button>
       <button class="mode pe" id="hMap"><svg><use href="#i-grid"/></svg><b>Bölümler</b><small id="hMapS">0/60</small></button>
       <button class="mode pe" id="hDaily"><svg><use href="#i-cal"/></svg><b>Günlük</b><small id="hDailyS">Hazır</small><i class="dot" id="hDailyDot"></i></button>
-      <button class="mode pe" id="hSpeed"><svg><use href="#i-clock"/></svg><b>Rekor</b><small id="hSpeedS">Süreye karşı</small></button>
+      <button class="mode pe" id="hSpeed"><svg><use href="#i-clock"/></svg><b>Rekor</b><small id="hSpeedS">Süreli</small></button>
     </div>
   </div>
 </section>
@@ -209,6 +241,12 @@ button{font-family:inherit}
     <button class="chip pe" id="pHint" aria-label="İpucu"><svg><use href="#i-bulb"/></svg><span class="badge" id="pHintN">5</span></button>
   </div>
   <div class="hint" id="hint"></div>
+  <div class="coach" id="coach" hidden>
+    <div class="cs"><span id="cStage">Beyaz artı</span><span id="cLeft"></span></div>
+    <div class="ct" id="cText"></div>
+    <div class="algs" id="cAlg"></div>
+    <div class="now-t" id="cNow"></div>
+  </div>
   <nav class="bar gut">
     <button class="btn sq pe" id="pUndo" aria-label="Geri al"><svg><use href="#i-undo"/></svg></button>
     <button class="btn wide pe" id="pMain"><svg><use href="#i-redo"/></svg><span id="pMainL">Baştan</span></button>
@@ -224,6 +262,24 @@ button{font-family:inherit}
     <span class="chip ghost"><svg class="star-i"><use href="#i-star" fill="currentColor"/></svg><span id="mStars">0</span></span>
   </div>
   <div class="scroll gut" id="mList"></div>
+</section>
+
+<section class="scr off" id="learn">
+  <div class="head gut">
+    <button class="chip" id="lBack" aria-label="Menüye dön"><svg><use href="#i-back"/></svg></button>
+    <h2>Küpü öğren</h2>
+    <span class="chip ghost" id="lCount">0/8</span>
+  </div>
+  <div class="scroll gut"><div class="lesl" id="lList"></div></div>
+</section>
+
+<section class="win" id="intro" aria-live="polite">
+  <div class="k" id="iK">Adım 1 / 8</div>
+  <div class="h" id="iH"></div>
+  <p class="p" id="iP"></p>
+  <div class="algs" id="iA"></div>
+  <p class="nt">Harfler yüzleri gösterir: <b>R</b> sağ, <b>L</b> sol, <b>U</b> üst, <b>D</b> alt, <b>F</b> ön, <b>B</b> arka. Tek tırnak (') ters yön, <b>2</b> iki kez demek. Ezberlemen gerekmez: çevireceğin katman hep sallanarak gösterilir.</p>
+  <div class="row"><button class="btn sq" id="iBack" aria-label="Geri"><svg><use href="#i-back"/></svg></button><button class="btn main" id="iGo">Başla</button></div>
 </section>
 
 <div class="scrim" id="scrim"></div>
@@ -264,6 +320,229 @@ const root = document.documentElement;
 const starSvg = (on, cls = '') => `<svg class="${on ? 'st-on' : 'st-off'} ${cls}"><use href="#i-star"/></svg>`;
 const starsHtml = n => `<span class="stars">${[0, 1, 2].map(i => starSvg(i < n)).join('')}</span>`;
 
+/*SOLVER-START*/
+// Yeni başlayan yöntemi (katman katman) çözücü. Beyaz/ilk renk altta (D), son renk üstte (U).
+// Hamle biçimi oyunla aynı: [eksen 0..2, katman 0..2, çeyrek ±1/2] (+eksen etrafında, sağ el kuralı).
+const Solver = (() => {
+  const NORM = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
+  const R_ = 0, L_ = 1, U_ = 2, D_ = 3, F_ = 4, B_ = 5;
+  const RING = [F_, R_, B_, L_];
+  const faceOfN = n => n[0] > .5 ? 0 : n[0] < -.5 ? 1 : n[1] > .5 ? 2 : n[1] < -.5 ? 3 : n[2] > .5 ? 4 : 5;
+  const key = (p, f) => p.join(',') + '|' + f;
+  const FL = [], IDX = {};
+  NORM.forEach((n, f) => {
+    const ax = f >> 1, o = [0, 1, 2].filter(i => i !== ax);
+    for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) {
+      const p = [0, 0, 0]; p[ax] = n[ax]; p[o[0]] = a; p[o[1]] = b;
+      IDX[key(p, f)] = FL.length; FL.push({ p, f });
+    }
+  });
+  function rot1(v, ax) { const [x, y, z] = v; return ax === 0 ? [x, -z, y] : ax === 1 ? [z, y, -x] : [-y, x, z]; }
+  function rot(v, ax, q) { let r = v, k = ((q % 4) + 4) % 4; while (k--) r = rot1(r, ax); return r; }
+  const PERM = {};
+  const pk = mv => mv[0] * 100 + mv[1] * 10 + (mv[2] + 2);
+  for (let ax = 0; ax < 3; ax++) for (let ly = 0; ly < 3; ly++) for (const q of [1, -1, 2, -2]) {
+    const perm = new Int8Array(54);
+    for (let i = 0; i < 54; i++) perm[i] = i;
+    FL.forEach((fl, i) => {
+      if (fl.p[ax] !== ly - 1) return;
+      const p2 = rot(fl.p, ax, q), n2 = rot(NORM[fl.f], ax, q);
+      perm[IDX[key(p2, faceOfN(n2))]] = i;
+    });
+    PERM[pk([ax, ly, q])] = perm;
+  }
+  const apply = (s, mv) => { const p = PERM[pk(mv)], o = new Int8Array(54); for (let i = 0; i < 54; i++) o[i] = s[p[i]]; return o; };
+  const applyAll = (s, mvs) => { for (const m of mvs) s = apply(s, m); return s; };
+
+  // parçalar
+  const POS = [];
+  for (let x = -1; x <= 1; x++) for (let y = -1; y <= 1; y++) for (let z = -1; z <= 1; z++) POS.push([x, y, z]);
+  const nz = p => p.filter(v => v !== 0).length;
+  const facesOf = p => { const r = []; p.forEach((v, i) => { if (v) r.push(i * 2 + (v > 0 ? 0 : 1)); }); return r; };
+  const EDGES = POS.filter(p => nz(p) === 2), CORNERS = POS.filter(p => nz(p) === 3);
+  const fIdx = (p, f) => IDX[key(p, f)];
+  const colorsAt = (s, p) => facesOf(p).map(f => ({ f, c: s[fIdx(p, f)] }));
+  const solvedAt = (s, p) => colorsAt(s, p).every(o => o.c === o.f);
+  const sameSet = (a, b) => a.length === b.length && a.every(x => b.includes(x));
+  function find(s, cols) {
+    const list = cols.length === 2 ? EDGES : CORNERS;
+    return list.find(p => sameSet(colorsAt(s, p).map(o => o.c), cols));
+  }
+  const posWith = (faces, y) => POS.find(p => p[1] === y && nz(p) === faces.length + (y ? 1 : 0) && sameSet(facesOf(p).filter(f => f !== U_ && f !== D_), faces));
+  const eqP = (a, b) => a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
+
+  // yüz hamlesi → oyun hamlesi; t: 1 saat yönü, -1 ters, 2 çift
+  function fm(face, t) { const ax = face >> 1, pos = face % 2 === 0; return [ax, pos ? 2 : 0, t === 2 ? 2 : (pos ? -t : t)]; }
+  const LETTER = k => ({ F: RING[k], R: RING[(k + 1) % 4], B: RING[(k + 2) % 4], L: RING[(k + 3) % 4], U: U_, D: D_ });
+  function alg(str, k) {
+    const m = LETTER(k);
+    return str.trim().split(/\s+/).map(tok => {
+      const t = tok.includes("'") ? -1 : tok.includes('2') ? 2 : 1;
+      return { mv: fm(m[tok[0]], t), lb: tok };
+    });
+  }
+  function label(mv, k) {
+    const face = mv[0] * 2 + (mv[1] === 2 ? 0 : 1), pos = face % 2 === 0;
+    const t = Math.abs(mv[2]) === 2 ? 2 : (pos ? -mv[2] : mv[2]);
+    const m = LETTER(k); const ch = Object.keys(m).find(c => m[c] === face);
+    return ch + (t === 2 ? '2' : t === -1 ? "'" : '');
+  }
+  const ALL = []; for (let f = 0; f < 6; f++) for (const t of [1, -1, 2]) ALL.push(fm(f, t));
+
+  // ara hedefler
+  const crossDone = s => RING.every(f => solvedAt(s, posWith([f], -1)));
+  const F2L_C = s => [0, 1, 2, 3].every(k => solvedAt(s, posWith([RING[k], RING[(k + 1) % 4]], -1)));
+  const MID = s => [0, 1, 2, 3].every(k => solvedAt(s, posWith([RING[k], RING[(k + 1) % 4]], 0)));
+  const topEdges = () => RING.map(f => posWith([f], 1));
+  const topCorners = () => [0, 1, 2, 3].map(k => posWith([RING[k], RING[(k + 1) % 4]], 1));
+  const yCross = s => topEdges().every(p => s[fIdx(p, U_)] === U_);
+  const yEdges = s => topEdges().every(p => solvedAt(s, p));
+  const yCornPos = s => topCorners().every(p => sameSet(colorsAt(s, p).map(o => o.c), facesOf(p)));
+  const solved = s => { for (let i = 0; i < 54; i++) if (s[i] !== FL[i].f) return false; return true; };
+  const GOALS = [crossDone, s => crossDone(s) && F2L_C(s), s => crossDone(s) && F2L_C(s) && MID(s),
+    s => crossDone(s) && F2L_C(s) && MID(s) && yCross(s), s => crossDone(s) && F2L_C(s) && MID(s) && yEdges(s),
+    s => crossDone(s) && F2L_C(s) && MID(s) && yEdges(s) && yCornPos(s), solved];
+
+  function search(s, goal, maxD, moves = ALL) {
+    for (let d = 0; d <= maxD; d++) {
+      const path = [];
+      const rec = (st, depth, lastF) => {
+        if (depth === 0) return goal(st);
+        for (const m of moves) {
+          const f = m[0] * 2 + (m[1] === 2 ? 0 : 1);
+          if (f === lastF) continue;
+          if (lastF >= 0 && (f >> 1) === (lastF >> 1) && f < lastF) continue;
+          path.push(m);
+          if (rec(apply(st, m), depth - 1, f)) return true;
+          path.pop();
+        }
+        return false;
+      };
+      if (rec(s, d, -1)) return path;
+    }
+    return null;
+  }
+  // makro arama (BFS): ops = [{moves:[...], ...}]
+  function macroSearch(s, goal, ops, maxD) {
+    let layer = [{ s, path: [] }];
+    if (goal(s)) return [];
+    for (let d = 0; d < maxD; d++) {
+      const next = [];
+      for (const n of layer) for (let i = 0; i < ops.length; i++) {
+        const last = n.path[n.path.length - 1];
+        if (last != null && ops[last].u && ops[i].u) continue;
+        const s2 = applyAll(n.s, ops[i].moves.map(x => x.mv));
+        const path = n.path.concat(i);
+        if (goal(s2)) return path;
+        next.push({ s2, s: s2, path });
+      }
+      layer = next;
+    }
+    return null;
+  }
+
+  function relabel(raw) {
+    const lab = {};
+    for (let f = 0; f < 6; f++) lab[raw[fIdx(NORM[f], f)]] = f;
+    return Int8Array.from(raw, c => lab[c]);
+  }
+
+  // adım listesi: {stage, k, text, moves:[{mv, lb}]}
+  function plan(raw) {
+    let s = relabel(raw);
+    const steps = [];
+    const push = (stage, k, text, moves) => { if (!moves.length) return; steps.push({ stage, k, text, moves }); s = applyAll(s, moves.map(x => x.mv)); };
+    const mk = (mvs, k) => mvs.map(mv => ({ mv, lb: label(mv, k) }));
+    const kOf = f => RING.indexOf(f);
+    const uTurnsTo = (pred) => { for (const t of [0, 1, -1, 2]) { const m = t ? [fm(U_, t)] : []; if (pred(applyAll(s, m))) return m; } return []; };
+
+    // 1) alt artı
+    for (const side of RING) {
+      const k = kOf(side), target = posWith([side], -1);
+      if (solvedAt(s, target)) continue;
+      let p = find(s, [D_, side]);
+      if (p[1] === -1) {
+        const f = facesOf(p).find(x => x !== D_);
+        push(0, kOf(f), 'Kenar yanlış yerde: önce yukarı çıkar.', mk([fm(f, 2)], kOf(f)));
+      } else if (p[1] === 0) {
+        const f = facesOf(p)[0];
+        const t = [1, -1].find(t => find(apply(s, fm(f, t)), [D_, side])[1] === 1);
+        push(0, kOf(f), 'Kenar orta katmanda: yukarı çıkar, kenara çek, yüzü geri çevir.', mk([fm(f, t), fm(U_, 1), fm(f, -t)], kOf(f)));
+      }
+      const keep = RING.filter(x => x !== side && solvedAt(s, posWith([x], -1)));
+      const goal = st => solvedAt(st, target) && keep.every(x => solvedAt(st, posWith([x], -1)));
+      const path = search(s, goal, 6);
+      push(0, k, 'Kenarı rengini taşıyan merkezin üstüne getir, sonra alta indir.', mk(path, k));
+    }
+    // 2) alt köşeler
+    for (let k = 0; k < 4; k++) {
+      const a = RING[k], b = RING[(k + 1) % 4], target = posWith([a, b], -1);
+      if (solvedAt(s, target)) continue;
+      let p = find(s, [D_, a, b]);
+      if (p[1] === -1) {
+        const fs = facesOf(p).filter(f => f !== D_);
+        const k2 = [0, 1, 2, 3].find(i => sameSet([RING[i], RING[(i + 1) % 4]], fs));
+        push(1, k2, 'Köşe yanlış yerde. Bir kez R U R\' U\' yap, köşe yukarı çıksın.', alg("R U R' U'", k2));
+      }
+      const top = posWith([a, b], 1);
+      push(1, k, 'Köşeyi gideceği yerin tam üstüne getir.', mk(uTurnsTo(st => eqP(find(st, [D_, a, b]), top)), k));
+      let n = 0;
+      while (!solvedAt(s, target) && n < 6) { n++; push(1, k, `R U R' U' tekrar et, köşe yerine oturana dek (${n}. tur).`, alg("R U R' U'", k)); }
+    }
+    // 3) orta katman
+    for (let k = 0; k < 4; k++) {
+      const a = RING[k], b = RING[(k + 1) % 4], target = posWith([a, b], 0);
+      if (solvedAt(s, target)) continue;
+      let p = find(s, [a, b]);
+      if (p[1] === 0) {
+        const fs = facesOf(p);
+        const k2 = [0, 1, 2, 3].find(i => sameSet([RING[i], RING[(i + 1) % 4]], fs));
+        push(2, k2, 'Kenar orta katmanda ama ters. Sağa yerleştirme hamlesiyle dışarı çıkar.', alg("U R U' R' U' F' U F", k2));
+      }
+      // üstte: yan rengin merkezine getir
+      const sideCol = st => { const q = find(st, [a, b]); const o = colorsAt(st, q).find(o => o.f !== U_); return { q, o, top: colorsAt(st, q).find(o => o.f === U_).c }; };
+      push(2, k, 'Kenarın yan rengini aynı renkteki merkezin üstüne getir.', mk(uTurnsTo(st => { const r = sideCol(st); return r.o.c === r.o.f; }), k));
+      const r = sideCol(s), kf = kOf(r.o.f);
+      if (r.top === RING[(kf + 1) % 4]) push(2, kf, 'Üst renk sağdaki merkezle aynı: sağa yerleştir.', alg("U R U' R' U' F' U F", kf));
+      else push(2, kf, 'Üst renk soldaki merkezle aynı: sola yerleştir.', alg("U' L' U L U F U' F'", kf));
+    }
+    // 4) sarı artı
+    {
+      const ops = [0, 1, 2, 3].map(k => ({ k, moves: alg("F R U R' U' F'", k) }));
+      const path = macroSearch(s, yCross, ops, 3) || [];
+      path.forEach(i => push(3, ops[i].k, 'Üstte artı oluşana dek: F R U R\' U\' F\'.', ops[i].moves));
+    }
+    // 5) sarı kenarlar
+    {
+      const ops = [{ u: 1, k: 0, moves: alg('U', 0) }, { u: 1, k: 0, moves: alg("U'", 0) }, { u: 1, k: 0, moves: alg('U2', 0) }]
+        .concat([0, 1, 2, 3].map(k => ({ k, moves: alg("R U R' U R U2 R'", k) })));
+      const path = macroSearch(s, yEdges, ops, 5) || [];
+      path.forEach(i => push(4, ops[i].k, ops[i].u ? 'Üst katmanı çevir, kenarlar yan merkezlerle eşleşsin.' : 'Kenarların yerini değiştir: R U R\' U R U2 R\'.', ops[i].moves));
+    }
+    // 6) sarı köşelerin yeri
+    {
+      const ops = [0, 1, 2, 3].map(k => ({ k, moves: alg("U R U' L' U R' U' L", k) }));
+      const path = macroSearch(s, st => yEdges(st) && yCornPos(st), ops, 3) || [];
+      path.forEach(i => push(5, ops[i].k, 'Köşeleri doğru yerlerine taşı: U R U\' L\' U R\' U\' L.', ops[i].moves));
+    }
+    // 7) sarı köşeleri çevir
+    {
+      const ufr = [1, 1, 1];
+      for (let i = 0; i < 4; i++) {
+        let n = 0;
+        while (s[fIdx(ufr, U_)] !== U_ && n < 6) { n++; push(6, 0, 'Sağ ön köşeyi çevir: R\' D\' R D. Alt katman bozulur, sorun değil; devam et.', alg("R' D' R D", 0)); }
+        if (topCorners().every(p => s[fIdx(p, U_)] === U_)) break;
+        push(6, 0, 'Sıradaki köşeyi sağ öne getirmek için sadece üstü çevir.', alg('U', 0));
+      }
+      push(6, 0, 'Son dokunuş: üst katmanı yerine çevir.', mk(uTurnsTo(solved), 0));
+    }
+    return { steps, ok: solved(s) };
+  }
+  function stageOf(raw) { const s = relabel(raw); for (let i = 0; i < GOALS.length; i++) if (!GOALS[i](s)) return i; return 7; }
+  return { FL, IDX, key, faceOfN, apply, applyAll, plan, stageOf, label, relabel, solvedState: () => Int8Array.from(FL, x => x.f), GOALS };
+})();
+/*SOLVER-END*/
+
 /* ---------- bölümler ---------- */
 const GROUPS = [
   { name: 'İlk adım', n: 2, lens: [1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5], desc: 'Küçük küp. Karışımı izle, geri çevir.' },
@@ -273,6 +552,16 @@ const GROUPS = [
 ];
 const LEVELS = [];
 GROUPS.forEach((g, gi) => g.lens.forEach(len => LEVELS.push({ n: g.n, len, g: gi })));
+const LESSONS = [
+  { t: 'Beyaz artı', s: 'Dört beyaz kenarı alta yerleştir.', d: 'Alttaki beyaz merkezin çevresine dört beyaz kenarı diz. Her kenarın yan rengi, yanındaki merkezle aynı olmalı. Önce kenarı rengini taşıyan merkezin üstüne getirirsin, sonra o yüzü iki kez çevirip indirirsin.', a: 'F2' },
+  { t: 'Beyaz köşeler', s: 'İlk katmanı bitir.', d: 'Beyaz köşeyi gideceği yerin tam üstüne getir. Sonra R U R\' U\' hamlesini köşe yerine oturana dek tekrarla. Bu dörtlü, küpün en çok kullanılan hamlesidir.', a: "R U R' U'" },
+  { t: 'Orta katman', s: 'İki katmanı tamamla.', d: 'Üstte sarı içermeyen bir kenar bul ve yan rengini aynı renkli merkezin üstüne getir. Üst rengi sağdaki merkezle aynıysa sağa, soldakiyle aynıysa sola yerleştir.', a: "U R U' R' U' F' U F" },
+  { t: 'Sarı artı', s: 'Üstte sarı artı yap.', d: 'Küpü ters çevirmeden üst yüze sarı bir artı kur. Önce nokta, sonra L şekli, sonra çizgi, en son artı belirir. Hamleyi gerektiği kadar tekrarla.', a: "F R U R' U' F'" },
+  { t: 'Sarı kenarlar', s: 'Artının kenarlarını eşle.', d: 'Sarı artının dört kenarının yan renkleri, altlarındaki merkezlerle eşleşmeli. Bu hamle iki kenarın yerini değiştirir, ilk iki katmana dokunmaz.', a: "R U R' U R U2 R'" },
+  { t: 'Sarı köşelerin yeri', s: 'Köşeleri doğru köşeye taşı.', d: 'Sarı köşeleri renkleri uyan köşelere taşı. Bu adımda köşelerin dönük olması sorun değil, sadece doğru yerde olmaları yeter.', a: "U R U' L' U R' U' L" },
+  { t: 'Sarı köşeleri çevir', s: 'Küpü bitir.', d: 'Çevrilecek köşeyi sağ öne al ve R\' D\' R D hamlesini sarısı üste gelene dek tekrarla. Alt katmanlar geçici olarak bozulur; panik yok, son köşede kendiliğinden düzelir. Köşeler arasında sadece üst katmanı çevir.', a: "R' D' R D" },
+  { t: 'Tam çözüm', s: 'Yedi adımı baştan sona uygula.', d: 'Karışık bir küpü öğrendiğin yedi adımla baştan sona çöz. Rehber her hamlede yanında. Bunu bitirdiğinde küp çözmeyi biliyorsun demektir.', a: '' },
+];
 const SKIN_COST = { klasik: 0, pastel: 12, neon: 45, ahsap: 90 };
 function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 function puzzle(n, len, seed) {
@@ -300,10 +589,13 @@ const dailyLen = k => 6 + (k % 3);
 
 /* ---------- kayıt ---------- */
 const KEY = 'kup.v2';
-let S = { skin: 'klasik', sound: 1, hints: 5, lv: {}, best: {}, solves: {}, daily: {}, streak: 0, lastDaily: 0, total: 0, seenTut: 0, cur: null };
+let S = { skin: 'klasik', sound: 1, hints: 5, lv: {}, best: {}, solves: {}, daily: {}, streak: 0, lastDaily: 0, total: 0, seenTut: 0, learn: {}, cur: null };
 try { Object.assign(S, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+S.learn = S.learn || {};
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
-const totalStars = () => Object.values(S.lv).reduce((a, b) => a + b, 0);
+const totalStars = () => Object.values(S.lv).reduce((a, b) => a + b, 0) + Object.keys(S.learn || {}).length * 3;
+const MAXSTARS = LEVELS.length * 3 + LESSONS.length * 3;
+const nextLesson = () => { for (let i = 0; i < LESSONS.length; i++) if (!S.learn[i]) return i; return -1; };
 const nextLevel = () => { for (let i = 0; i < LEVELS.length; i++) if (!S.lv[i]) return i; return LEVELS.length - 1; };
 const unlocked = i => i === 0 || !!S.lv[i - 1];
 const skinOpen = id => totalStars() >= SKIN_COST[id];
@@ -434,7 +726,7 @@ function build(n) {
 }
 
 /* ---------- kamera ---------- */
-let az = .62, el = .52, dist = 12, vAz = 0, vEl = 0, zoomK = 1, lookY = 0, lookYT = 0;
+let az = .62, el = .52, dist = 12, vAz = 0, vEl = 0, zoomK = 1, lookY = 0;
 function fitCamera() {
   const w = innerWidth, h = innerHeight; camera.aspect = w / h;
   const R = N * .9 + .25, vf = camera.fov * Math.PI / 180, hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
@@ -508,10 +800,10 @@ function reduceStack(moves) {
 
 /* ---------- ipucu: katmanı hafifçe sallar ---------- */
 let hintA = null;
-function startHint(mv, free) {
+function startHint(mv, free, loop) {
   if (anim || drag.mode || !G()) return;
   stopHint();
-  hintA = { list: grab(mv[0], mv[1]), axis: mv[0], dir: Math.sign(mv[2]) || 1, t0: performance.now(), free };
+  hintA = { list: grab(mv[0], mv[1]), axis: mv[0], dir: Math.sign(mv[2]) || 1, t0: performance.now(), free, loop };
   dirty = true;
 }
 function stopHint() { if (!hintA) return; pivot.rotation.set(0, 0, 0); release(hintA.list); hintA = null; dirty = true; }
@@ -520,7 +812,7 @@ function stepHint(now) {
   const t = (now - hintA.t0) / 1000, cyc = t % 1.15, k = cyc < .55 ? Math.sin(cyc / .55 * Math.PI) : 0;
   pivot.setRotationFromAxisAngle(axisVec(hintA.axis), hintA.dir * .42 * k);
   dirty = true;
-  if (t > 1.15 * 4) stopHint();
+  if (!hintA.loop && t > 1.15 * 4) stopHint();
 }
 
 /* ---------- oyun akışı ---------- */
@@ -537,6 +829,10 @@ function newGame(g) {
   closeWin();
   S.cur = { ...g, hist: [], elapsed: 0, phase: 'scrambling', hintsUsed: 0 };
   tStart = 0; build(g.n); zoomK = 1; fitCamera();
+  if (g.mode === 'learn') {
+    g.scramble.forEach(applyInstant); S.cur.phase = 'ready';
+    show('play'); save(); guideReplan(true); return;
+  }
   const fast = g.mode === 'speed', len = g.scramble.length;
   const dur = fast ? Math.max(55, 1300 / len) : Math.max(160, Math.min(420, 2600 / len));
   g.scramble.forEach((mv, i) => enqueue(mv, { kind: 'scramble', dur: Math.abs(mv[2]) === 2 ? dur * 1.3 : dur, delay: i === 0 ? 450 : (fast ? 0 : 70) }));
@@ -548,6 +844,7 @@ function resumeGame() {
   if (g.phase === 'scrambling') g.phase = 'ready';
   if (g.phase === 'solving') tStart = performance.now();
   show('play');
+  if (g.mode === 'learn') guideReplan(true);
 }
 function startLevel(i) {
   const g = G();
@@ -578,6 +875,7 @@ function onMoveDone(mv, kind) {
     if (g.phase === 'ready') { g.phase = 'solving'; g.elapsed = 0; tStart = performance.now(); }
   }
   tick(); haptic(8);
+  if (g.mode === 'learn') { guideAfterMove(mv, kind); hud(); save(); return; }
   if (g.phase === 'solving' && isSolved()) win();
   else tutorial();
   hud(); save();
@@ -590,7 +888,7 @@ function undo() {
 }
 function useHint() {
   const g = G(); if (!g || g.mode === 'speed' || anim || (g.phase !== 'ready' && g.phase !== 'solving')) return;
-  const free = g.mode === 'level' && g.level < 3;
+  const free = g.mode === 'level' && g.level < 12;
   if (!free && S.hints <= 0) { toast('İpucu kalmadı · 3 yıldızla kazan'); return; }
   const st = reduceStack(g.scramble.concat(g.hist)); if (!st.length) return;
   const top = st[st.length - 1];
@@ -607,9 +905,114 @@ function tutorial() {
 function restart() {
   const g = G(); if (!g || anim && g.phase === 'scrambling') return;
   if (g.mode === 'speed') return newGame({ mode: 'speed', n: g.n, scramble: fullScramble(g.n) });
+  if (g.mode === 'learn') return newGame({ mode: 'learn', lesson: g.lesson, n: 3, scramble: lessonScramble(g.lesson) });
   closeWin(); build(g.n); g.scramble.forEach(applyInstant);
   g.hist = []; g.phase = 'ready'; g.elapsed = 0; tStart = 0; save(); hud(); setHint(defaultHint());
 }
+/* ---------- öğren: rehberli çözüm ---------- */
+const WHITE_DOWN = [[0, 0, 2], [0, 1, 2], [0, 2, 2]];
+function readRaw() {
+  stopHint();
+  const raw = new Int8Array(54), n = new T.Vector3();
+  for (const c of cubies) for (const st of c.children) {
+    n.copy(st.userData.n).applyQuaternion(c.quaternion);
+    const p = [Math.round(c.position.x), Math.round(c.position.y), Math.round(c.position.z)];
+    raw[Solver.IDX[Solver.key(p, Solver.faceOfN([n.x, n.y, n.z]))]] = st.userData.ci;
+  }
+  return raw;
+}
+function lessonScramble(L) {
+  for (let tries = 0; tries < 40; tries++) {
+    const sc = []; let last = -1;
+    while (sc.length < 22) { const ax = Math.floor(Math.random() * 3); if (ax === last) continue; last = ax; sc.push([ax, Math.random() < .5 ? 0 : 2, [1, -1, 2][Math.floor(Math.random() * 3)]]); }
+    const moves = WHITE_DOWN.concat(sc);
+    if (L > 0 && L < 7) {
+      const raw = Solver.applyAll(Solver.solvedState(), moves);
+      Solver.plan(raw).steps.filter(st => st.stage < L).forEach(st => st.moves.forEach(m => moves.push(m.mv)));
+    }
+    const st = Solver.stageOf(Solver.applyAll(Solver.solvedState(), moves));
+    if (L === 7 ? st === 0 : st === L) return moves;
+  }
+  return WHITE_DOWN.concat(fullScramble(3));
+}
+let guide = null, wigT = 0, camT = null, lastCamKey = '';
+const sameMove = (a, b) => a[0] === b[0] && a[1] === b[1] && (a[2] === b[2] || (Math.abs(a[2]) === 2 && Math.abs(b[2]) === 2));
+const guideCur = () => { const st = guide && guide.steps[guide.si]; return st ? { st, m: st.moves[guide.mi] } : null; };
+function lessonDone() { const g = G(); return g.lesson === 7 ? isSolved() : Solver.stageOf(readRaw()) > g.lesson; }
+function guideReplan(first) {
+  const r = Solver.plan(readRaw());
+  guide = { steps: r.steps, si: 0, mi: 0 };
+  if (first) lastCamKey = '';
+  coachUi(); scheduleWiggle();
+}
+function guideAfterMove(mv, kind) {
+  if (lessonDone()) { guide = null; coachUi(); win(); return; }
+  const c = guideCur();
+  if (c && sameMove(c.m.mv, mv)) {
+    guide.mi++; if (guide.mi >= c.st.moves.length) { guide.si++; guide.mi = 0; }
+  } else if (c && c.m.mv[0] === mv[0] && c.m.mv[1] === mv[1] && Math.abs(c.m.mv[2]) === 2) {
+    c.m.mv = mv.slice(); c.m.lb = Solver.label(mv, c.st.k);   // çift dönüşün yarısı yapıldı: kalan yarı
+  } else if (c && kind !== 'undo' && !c.st.fix) {
+    // plan dışı hamle: önce geri aldır, sonra plana devam
+    const inv = [mv[0], mv[1], -mv[2]], rest = { ...c.st, moves: c.st.moves.slice(guide.mi) };
+    guide.steps.splice(guide.si, 1, { stage: c.st.stage, k: c.st.k, fix: 1, text: 'Bu hamle plana uymadı. Sallanan katmanı çevirip geri al, sonra kaldığın yerden devam et.', moves: [{ mv: inv, lb: Solver.label(inv, c.st.k) }] }, rest);
+    guide.mi = 0;
+  } else return guideReplan();
+  coachUi(); scheduleWiggle();
+}
+function scheduleWiggle(delay = 380) {
+  clearTimeout(wigT);
+  wigT = setTimeout(() => {
+    const c = guideCur(), g = G();
+    if (!c || !g || g.mode !== 'learn' || screen !== 'play' || g.phase === 'done') return;
+    if (anim || drag.mode || queue.length) return scheduleWiggle(300);
+    startHint(c.m.mv, true, true);
+  }, delay);
+}
+const FACE_TR = { R: 'sağ', L: 'sol', U: 'üst', D: 'alt', F: 'ön', B: 'arka' };
+function moveWords(lb) {
+  const f = FACE_TR[lb[0]], d = lb.includes("'") ? 'saatin tersine' : lb.includes('2') ? 'iki kez' : 'saat yönünde';
+  return `Sallanan katmanı çevir: <b>${f}</b> yüz, <b>${d}</b> <span style="font-family:var(--f-mono)">(${lb})</span>.`;
+}
+function coachUi() {
+  const g = G(), on = !!(g && g.mode === 'learn' && screen === 'play' && g.phase !== 'done' && guideCur());
+  $('coach').hidden = !on; if (!on) return;
+  const c = guideCur();
+  $('cStage').textContent = (c.st.stage + 1) + '. ' + LESSONS[c.st.stage].t;
+  const lim = g.lesson === 7 ? 99 : g.lesson;
+  let left = 0; guide.steps.forEach((st, i) => { if (st.stage <= lim && i >= guide.si) left += st.moves.length - (i === guide.si ? guide.mi : 0); });
+  $('cLeft').textContent = '≈' + left + ' hamle';
+  $('cText').textContent = c.st.text;
+  $('cAlg').innerHTML = c.st.moves.map((m, i) => `<span class="mv ${i < guide.mi ? 'done' : i === guide.mi ? 'now' : ''}">${m.lb}</span>`).join('');
+  $('cNow').innerHTML = moveWords(c.m.lb);
+  const ck = c.st.stage + ':' + c.st.k;
+  if (ck !== lastCamKey) {
+    lastCamKey = ck;
+    const ta = c.st.k * PI2 + .55, d = ((ta - az) % (2 * Math.PI) + 3 * Math.PI) % (2 * Math.PI) - Math.PI;
+    camT = { az: az + d, el: c.st.stage <= 1 ? -.32 : .45 };
+  }
+}
+function learnUi() {
+  const nx = nextLesson(), done = Object.keys(S.learn).length;
+  $('lCount').textContent = done + '/' + LESSONS.length;
+  $('lList').innerHTML = `<p class="intro">Yeni başlayan yöntemi: küpü katman katman, yedi adımda çözersin. Her adım tek bir fikir ve en fazla bir hamle dizisi öğretir. Her adım +3 yıldız.</p>` +
+    LESSONS.map((L, i) => `<button class="les${S.learn[i] ? ' done' : ''}${i === nx ? ' next' : ''}" data-i="${i}"><span class="num">${i + 1}</span><span><b>${L.t}</b><small>${L.s}${L.a ? ' · <span style="font-family:var(--f-mono)">' + L.a + '</span>' : ''}</small></span><span class="ck">${S.learn[i] ? '<svg><use href="#i-check"/></svg>' : ''}</span></button>`).join('');
+}
+$('lList').addEventListener('click', e => { const b = e.target.closest('.les'); if (b) openIntro(+b.dataset.i); });
+let introI = 0;
+function openIntro(i) {
+  const g = G();
+  if (g && g.mode === 'learn' && g.lesson === i && g.phase !== 'done' && g.hist.length) return resumeGame();
+  introI = i; const L = LESSONS[i];
+  $('iK').textContent = 'Adım ' + (i + 1) + ' / ' + LESSONS.length;
+  $('iH').textContent = L.t; $('iP').textContent = L.d;
+  $('iA').innerHTML = L.a ? L.a.split(' ').map(t => `<span class="mv">${t}</span>`).join('') : '';
+  $('intro').classList.add('on'); $('scrim').classList.add('on');
+}
+function closeIntro() { $('intro').classList.remove('on'); $('scrim').classList.remove('on'); }
+$('iBack').onclick = closeIntro;
+$('iGo').onclick = () => { closeIntro(); audioInit(); newGame({ mode: 'learn', lesson: introI, n: 3, scramble: lessonScramble(introI) }); };
+
 function win() {
   const g = G();
   g.elapsed = curElapsed(); tStart = 0; g.phase = 'done'; stopHint();
@@ -631,6 +1034,10 @@ function win() {
       S.hints += 2; gifts.push(['bulb', '+2 ipucu']);
     }
     if (stars > prev) S.daily[g.day] = stars;
+  } else if (g.mode === 'learn') {
+    stars = 3;
+    if (!S.learn[g.lesson]) { S.learn[g.lesson] = 1; gifts.push(['star', '+3 yıldız']); }
+    if (g.lesson === 7) gifts.push(['check', 'Artık küp çözebiliyorsun']);
   } else {
     const k = String(g.n); rec = S.best[k] == null || g.elapsed < S.best[k];
     if (rec) { S.best[k] = g.elapsed; gifts.push(['star', 'Yeni rekor']); }
@@ -640,18 +1047,23 @@ function win() {
   SKIN_IDS.forEach(id => { const c = SKIN_COST[id]; if (c > before && c <= after) gifts.push(['skin', 'Skin açıldı: ' + SKINS[id].name]); });
   save();
   // kart
-  $('wK').textContent = g.mode === 'level' ? 'Bölüm ' + (g.level + 1) : g.mode === 'daily' ? 'Günlük küp' : 'Rekor · ' + g.n + '×' + g.n;
+  $('wK').textContent = g.mode === 'level' ? 'Bölüm ' + (g.level + 1) : g.mode === 'daily' ? 'Günlük küp' : g.mode === 'learn' ? (g.lesson + 1) + '. adım tamam' : 'Rekor · ' + g.n + '×' + g.n;
   $('wStars').hidden = g.mode === 'speed';
   $('wT').hidden = g.mode !== 'speed'; $('wT').textContent = fmt(g.elapsed);
   [...$('wStars').children].forEach((s, i) => { s.setAttribute('class', i < stars ? 'st-on' : 'st-off'); });
   const par = parOf(g);
-  $('wM').innerHTML = g.mode === 'speed' ? `<b>${g.hist.length}</b> hamle · En iyi <b>${fmt(S.best[String(g.n)])}</b>`
+  $('wM').innerHTML = g.mode === 'learn' ? (g.lesson < 7 ? `<b>${LESSONS[g.lesson].t}</b> bitti. Sıradaki: <b>${LESSONS[g.lesson + 1].t}</b>` : 'Karışık bir küpü baştan sona çözdün.')
+    : g.mode === 'speed' ? `<b>${g.hist.length}</b> hamle · En iyi <b>${fmt(S.best[String(g.n)])}</b>`
     : `<b>${g.hist.length}</b> hamle · hedef <b>${par}</b>` + (g.mode === 'daily' ? ` · <b>${S.streak}</b> gün seri` : '') + (stars < 3 ? `<br>3 yıldız için ${par} hamlede çöz` : '');
   $('wGifts').innerHTML = gifts.map(([ic, t]) => `<span class="gift"><svg><use href="#i-${ic}" ${ic === 'star' ? 'fill="currentColor"' : ''}/></svg>${t}</span>`).join('');
   const row = $('wRow'); row.innerHTML = '';
   const mk = (html, cls, fn, label) => { const b = document.createElement('button'); b.className = 'btn ' + cls; b.innerHTML = html; if (label) b.setAttribute('aria-label', label); b.onclick = fn; row.appendChild(b); };
   mk('<svg><use href="#i-back"/></svg>', 'sq', () => { closeWin(); goHome(); }, 'Menü');
-  if (g.mode === 'level') {
+  if (g.mode === 'learn') {
+    mk('<svg><use href="#i-redo"/></svg>Tekrar', '', () => { closeWin(); restart(); });
+    if (g.lesson < 7) mk('Sıradaki', 'main', () => { closeWin(); openIntro(g.lesson + 1); });
+    else mk('Rekor', 'main', () => { closeWin(); goHome(); openSheet('speedSheet'); });
+  } else if (g.mode === 'level') {
     mk('<svg><use href="#i-redo"/></svg>Tekrar', '', () => restart());
     if (g.level + 1 < LEVELS.length) mk('Sonraki', 'main', () => { closeWin(); startLevel(g.level + 1); });
   } else if (g.mode === 'daily') {
@@ -671,14 +1083,15 @@ function closeWin() { $('win').classList.remove('on'); }
 /* ---------- ekranlar ---------- */
 function show(id) {
   screen = id;
-  ['home', 'play', 'map'].forEach(k => $(k).classList.toggle('off', k !== id));
-  lookYT = id === 'home' ? -.0 : 0;
-  zoomK = id === 'home' ? 1.18 : 1; fitCamera();
-  if (id === 'home') homeUi(); if (id === 'play') { hud(); setHint(defaultHint()); } if (id === 'map') mapUi();
+  ['home', 'play', 'map', 'learn'].forEach(k => $(k).classList.toggle('off', k !== id));
+  const lm = id === 'play' && G() && G().mode === 'learn';
+  lookY = lm ? -.95 : 0;
+  zoomK = id === 'home' ? 1.18 : lm ? 1.12 : 1; fitCamera();
+  if (id === 'home') homeUi(); if (id === 'play') { hud(); setHint(lm ? '' : defaultHint()); coachUi(); } if (id === 'map') mapUi(); if (id === 'learn') learnUi();
 }
 function goHome() {
   const g = G();
-  stopHint();
+  stopHint(); clearTimeout(wigT); camT = null; guide = null; $('coach').hidden = true;
   if (g && g.phase === 'solving' && tStart) { g.elapsed = curElapsed(); tStart = 0; }
   if (g && g.phase === 'scrambling') g.phase = 'ready';
   save(); closeWin(); build(3); show('home');
@@ -688,20 +1101,30 @@ function homeUi() {
   $('hStars').querySelector('span').textContent = ts;
   $('hHints').querySelector('span').textContent = S.hints;
   const g = G(), resume = g && g.mode === 'level' && g.level === nl && g.phase !== 'done' && (g.hist.length || g.phase === 'solving');
-  $('hPlayT').textContent = (resume ? 'Devam · ' : '') + 'Bölüm ' + (nl + 1);
-  $('hPlayS').textContent = L.n + '×' + L.n + ' · ' + GROUPS[L.g].name + ' · ' + L.len + ' hamlede çöz';
+  const nxl = nextLesson();
+  if (nxl >= 0) { $('hPlayT').textContent = 'Küpü öğren'; $('hPlayS').textContent = 'Adım ' + (nxl + 1) + '/' + LESSONS.length + ' · ' + LESSONS[nxl].t; }
+  else {
+    $('hPlayT').textContent = (resume ? 'Devam · ' : '') + 'Bölüm ' + (nl + 1);
+    $('hPlayS').textContent = L.n + '×' + L.n + ' · ' + GROUPS[L.g].name + ' · ' + L.len + ' hamlede çöz';
+  }
+  $('hLearnS').textContent = Object.keys(S.learn).length + '/' + LESSONS.length;
   $('hMapS').textContent = Object.keys(S.lv).length + '/' + LEVELS.length;
   const dk = today(), dd = S.daily[dk];
   $('hDailyS').innerHTML = dd ? starsHtml(dd) : (S.streak && S.lastDaily === dayBefore(dk) ? S.streak + ' gün seri' : 'Bugünün küpü');
   $('hDailyDot').hidden = !!dd;
   const b3 = S.best['3'];
-  $('hSpeedS').textContent = b3 != null ? '3×3 · ' + fmt(b3) : 'Süreye karşı';
+  $('hSpeedS').textContent = b3 != null ? fmt(b3) : 'Süreli';
   $('hTag').textContent = S.total ? ts + ' yıldız · ' + S.total + ' çözüm' : 'Çevir · Eşle · Çöz';
 }
 function hud() {
   const g = G(); if (!g) return;
   const par = parOf(g), mv = g.hist.length;
-  if (g.mode === 'speed') {
+  $('pBig').classList.toggle('ttl', g.mode === 'learn');
+  if (g.mode === 'learn') {
+    $('pLbl').textContent = 'Öğren · ' + (g.lesson + 1) + '/' + LESSONS.length;
+    $('pBig').textContent = LESSONS[g.lesson].t;
+    $('pSub').innerHTML = `<span><b>${mv}</b> hamle yaptın</span>`;
+  } else if (g.mode === 'speed') {
     $('pLbl').textContent = 'Rekor · ' + g.n + '×' + g.n;
     $('pBig').textContent = fmt(curElapsed());
     $('pSub').innerHTML = `<span><b>${mv}</b> hamle</span><span>En iyi <b>${fmt(S.best[String(g.n)])}</b></span>`;
@@ -713,13 +1136,13 @@ function hud() {
   }
   const playing = g.phase === 'solving' || g.phase === 'ready';
   $('pUndo').disabled = !g.hist.length || g.phase !== 'solving';
-  $('pHint').hidden = g.mode === 'speed';
-  const free = g.mode === 'level' && g.level < 3;
+  $('pHint').hidden = g.mode === 'speed' || g.mode === 'learn';
+  const free = g.mode === 'level' && g.level < 12;
   $('pHintN').textContent = free ? '∞' : S.hints;
   $('pHint').disabled = !playing;
-  $('pMainL').textContent = g.mode === 'speed' ? 'Yeniden karıştır' : 'Baştan';
-  $('pMain').querySelector('use').setAttribute('href', g.mode === 'speed' ? '#i-mix' : '#i-redo');
-  $('pMain').disabled = g.phase === 'scrambling' || (g.mode !== 'speed' && !g.hist.length);
+  $('pMainL').textContent = g.mode === 'speed' ? 'Yeniden karıştır' : g.mode === 'learn' ? 'Yeni karışım' : 'Baştan';
+  $('pMain').querySelector('use').setAttribute('href', g.mode === 'speed' || g.mode === 'learn' ? '#i-mix' : '#i-redo');
+  $('pMain').disabled = g.phase === 'scrambling' || (g.mode !== 'speed' && g.mode !== 'learn' && !g.hist.length);
 }
 function defaultHint() {
   const g = G(); if (!g) return '';
@@ -790,7 +1213,7 @@ function cardsUi() {
     wrap.appendChild(b);
   });
   const k3 = S.best['3'];
-  $('stats').innerHTML = `<div><small>Yıldız</small><b>${totalStars()}/${LEVELS.length * 3}</b></div><div><small>Günlük seri</small><b>${S.streak || 0}</b></div><div><small>3×3 en iyi</small><b>${fmt(k3)}</b></div>`;
+  $('stats').innerHTML = `<div><small>Yıldız</small><b>${totalStars()}/${MAXSTARS}</b></div><div><small>Günlük seri</small><b>${S.streak || 0}</b></div><div><small>3×3 en iyi</small><b>${fmt(k3)}</b></div>`;
   document.querySelectorAll('#sound button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.s === S.sound));
 }
 function sizesUi() {
@@ -800,11 +1223,13 @@ $('sizes').addEventListener('click', e => { const b = e.target.closest('.size');
 function openSheet(id) { closeSheets(); if (id === 'sheet') { $('skinNote').textContent = 'Bölümlerden yıldız topla, yeni skinler açılsın.'; cardsUi(); } else sizesUi(); $(id).classList.add('on'); $('scrim').classList.add('on'); }
 function closeSheets() { ['sheet', 'speedSheet'].forEach(k => $(k).classList.remove('on')); $('scrim').classList.remove('on'); }
 
-$('scrim').onclick = closeSheets; $('closeSheet').onclick = closeSheets; $('closeSpeed').onclick = closeSheets;
+$('scrim').onclick = () => { closeSheets(); closeIntro(); }; $('closeSheet').onclick = closeSheets; $('closeSpeed').onclick = closeSheets;
 $('hSkin').onclick = $('pSkin').onclick = () => openSheet('sheet');
 $('hStars').onclick = () => show('map');
 $('hHints').onclick = () => toast('Her yeni 3 yıldız +1, her günlük küp +2 ipucu');
-$('hPlay').onclick = () => { audioInit(); startLevel(nextLevel()); };
+$('hPlay').onclick = () => { audioInit(); const l = nextLesson(); if (l >= 0) openIntro(l); else startLevel(nextLevel()); };
+$('hLearn').onclick = () => show('learn');
+$('lBack').onclick = () => show('home');
 $('hMap').onclick = () => show('map');
 $('hDaily').onclick = () => { audioInit(); startDaily(); };
 $('hSpeed').onclick = () => { audioInit(); openSheet('speedSheet'); };
@@ -826,7 +1251,7 @@ cv.addEventListener('pointerdown', e => {
   if (drag.mode || e.button > 0) return;
   audioInit(); cv.setPointerCapture(e.pointerId);
   drag.id = e.pointerId; drag.x0 = drag.x = e.clientX; drag.y0 = drag.y = e.clientY;
-  vAz = vEl = 0; spin = null;
+  vAz = vEl = 0; spin = null; camT = null; clearTimeout(wigT);
   let hit = null;
   if (canTurn()) { ray.setFromCamera(toNDC(e.clientX, e.clientY), camera); hit = ray.intersectObjects(cubies.concat(pivot.children), true)[0]; }
   if (hit) {
@@ -881,6 +1306,7 @@ function endDrag(e) {
     anim = { list: drag.list, axis: drag.rAx, from: drag.angle, to: q * PI2, t0: performance.now(), dur: 90 + Math.abs(q * PI2 - drag.angle) * 90, mv: mq ? [drag.rAx, drag.layer, mq] : null, kind: 'user' };
   }
   drag.mode = null; drag.id = null; pump();
+  if (G() && G().mode === 'learn' && !(anim && anim.mv)) scheduleWiggle(500);
 }
 cv.addEventListener('pointerup', endDrag);
 cv.addEventListener('pointercancel', endDrag);
@@ -958,6 +1384,9 @@ function loop(now) {
     const t = Math.min(1, (now - spin.t0) / 1600);
     az = spin.az0 + Math.PI * 2 * (1 - Math.pow(1 - t, 3)); placeCamera(); dirty = true;
     if (t >= 1) spin = null;
+  } else if (camT && !drag.mode) {
+    az += (camT.az - az) * .08; el += (camT.el - el) * .08; placeCamera(); dirty = true;
+    if (Math.abs(camT.az - az) < .002 && Math.abs(camT.el - el) < .002) camT = null;
   } else if (screen === 'home' && !drag.mode) { az += dt * .00022; placeCamera(); dirty = true; }
   const g = G();
   if (screen === 'play' && g && g.mode === 'speed' && g.phase === 'solving') $('pBig').textContent = fmt(curElapsed());
@@ -974,6 +1403,6 @@ root.dataset.skin = S.skin;
 makeMaterials();
 build(3);
 resize(); show('home'); requestAnimationFrame(loop);
-window.__kup = { S, isSolved, enqueue, startLevel, startDaily, startSpeed, goHome, LEVELS, reduceStack, get screen() { return screen; } };
+window.__kup = { S, readRaw, Solver, get guide() { return guide; }, openIntro, lessonScramble, isSolved, enqueue, startLevel, startDaily, startSpeed, goHome, LEVELS, reduceStack, get screen() { return screen; } };
 })();
 </script>
