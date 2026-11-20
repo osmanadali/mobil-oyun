@@ -256,7 +256,7 @@ window.RAY_DICT={
 "Invite your friend again":"친구를 다시 초대하기",
 "Island":"섬",
 "I’ll clap when the train arrives 👏":"열차 오면 박수 쳐야지 👏",
-"I’m playing Ray: Metro Line Puzzle — rotate the rails and light up the city 🚇 Free and offline:":"Ray: 지하철 노선 퍼즐을 하고 있어요. 선로를 돌려 도시에 불을 밝혀요 🚇 무료, 오프라인 가능:",
+"I’m playing Ray: Metro Line Puzzle — rotate the rails and light up the city 🚇 Free, levels play offline:":"Ray: 지하철 노선 퍼즐을 하고 있어요. 선로를 돌려 도시에 불을 밝혀요 🚇 무료, 레벨은 오프라인 가능:",
 "Join":"참가",
 "Join the league":"리그 참가",
 "Join with code":"코드로 참가",

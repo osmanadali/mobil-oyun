@@ -224,14 +224,14 @@ fr: ❤️∞ pack de vies illimitées
 ko: ❤️∞ 무제한 하트 팩
 ja: ❤️∞ ライフ無限パック
 zh: ❤️∞ 無限生命包
-@ I’m playing Ray: Metro Line Puzzle — rotate the rails and light up the city 🚇 Free and offline:
-de: Ich spiele Ray: Metro-Linienrätsel – Gleise drehen und die Stadt zum Leuchten bringen 🚇 Kostenlos und offline:
-es: Estoy jugando a Ray: Puzle de Líneas Metro: gira las vías e ilumina la ciudad 🚇 Gratis y sin conexión:
-pt: Estou jogando Ray: Quebra-Cabeça do Metrô: gire os trilhos e ilumine a cidade 🚇 Grátis e offline:
-fr: Je joue à Ray : Puzzle de Métro : tourne les rails et rallume la ville 🚇 Gratuit et hors ligne :
-ko: Ray: 지하철 노선 퍼즐을 하고 있어요. 선로를 돌려 도시에 불을 밝혀요 🚇 무료, 오프라인 가능:
-ja: Ray: メトロ路線パズルで遊んでいます。線路を回して街に明かりを灯そう 🚇 無料・オフライン対応:
-zh: 我在玩 Ray: 地鐵路線解謎，轉動軌道點亮城市 🚇 免費、可離線遊玩：
+@ I’m playing Ray: Metro Line Puzzle — rotate the rails and light up the city 🚇 Free, levels play offline:
+de: Ich spiele Ray: Metro-Linienrätsel – Gleise drehen und die Stadt zum Leuchten bringen 🚇 Kostenlos, Level offline spielbar:
+es: Estoy jugando a Ray: Puzle de Líneas Metro: gira las vías e ilumina la ciudad 🚇 Gratis, niveles sin conexión:
+pt: Estou jogando Ray: Quebra-Cabeça do Metrô: gire os trilhos e ilumine a cidade 🚇 Grátis, fases offline:
+fr: Je joue à Ray : Puzzle de Métro : tourne les rails et rallume la ville 🚇 Gratuit, niveaux hors ligne :
+ko: Ray: 지하철 노선 퍼즐을 하고 있어요. 선로를 돌려 도시에 불을 밝혀요 🚇 무료, 레벨은 오프라인 가능:
+ja: Ray: メトロ路線パズルで遊んでいます。線路を回して街に明かりを灯そう 🚇 無料・ステージはオフライン対応:
+zh: 我在玩 Ray: 地鐵路線解謎，轉動軌道點亮城市 🚇 免費、關卡可離線遊玩：
 @ Enjoying Ray?
 de: Gefällt dir Ray?
 es: ¿Te gusta Ray?

@@ -256,7 +256,7 @@ window.RAY_DICT={
 "Invite your friend again":"Lade deinen Freund erneut ein",
 "Island":"Insel",
 "I’ll clap when the train arrives 👏":"Ich klatsche, wenn der Zug kommt 👏",
-"I’m playing Ray: Metro Line Puzzle — rotate the rails and light up the city 🚇 Free and offline:":"Ich spiele Ray: Metro-Linienrätsel – Gleise drehen und die Stadt zum Leuchten bringen 🚇 Kostenlos und offline:",
+"I’m playing Ray: Metro Line Puzzle — rotate the rails and light up the city 🚇 Free, levels play offline:":"Ich spiele Ray: Metro-Linienrätsel – Gleise drehen und die Stadt zum Leuchten bringen 🚇 Kostenlos, Level offline spielbar:",
 "Join":"Beitreten",
 "Join the league":"Der Liga beitreten",
 "Join with code":"Mit Code beitreten",

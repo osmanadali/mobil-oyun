@@ -1658,7 +1658,7 @@ function rateApp() {
   if (p === 'web') window.open(url, '_blank', 'noopener'); else location.href = url;
 }
 async function recommend() {
-  const text = `${L('Ray: Metro Bulmaca oynuyorum: rayları döndürüp şehri aydınlatıyorsun 🚇 Ücretsiz, internetsiz:', 'I’m playing Ray: Metro Line Puzzle — rotate the rails and light up the city 🚇 Free and offline:')}\n${SHARE_URL}`;
+  const text = `${L('Ray: Metro Bulmaca oynuyorum: rayları döndürüp şehri aydınlatıyorsun 🚇 Ücretsiz, bölümler internetsiz:', 'I’m playing Ray: Metro Line Puzzle — rotate the rails and light up the city 🚇 Free, levels play offline:')}\n${SHARE_URL}`;
   try {
     const P = window.Capacitor?.Plugins?.Share;
     if (P) return await P.share({ text });

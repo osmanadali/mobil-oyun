@@ -256,7 +256,7 @@ window.RAY_DICT={
 "Invite your friend again":"再次邀請朋友",
 "Island":"島嶼",
 "I’ll clap when the train arrives 👏":"列車來了我要鼓掌 👏",
-"I’m playing Ray: Metro Line Puzzle — rotate the rails and light up the city 🚇 Free and offline:":"我在玩 Ray: 地鐵路線解謎，轉動軌道點亮城市 🚇 免費、可離線遊玩：",
+"I’m playing Ray: Metro Line Puzzle — rotate the rails and light up the city 🚇 Free, levels play offline:":"我在玩 Ray: 地鐵路線解謎，轉動軌道點亮城市 🚇 免費、關卡可離線遊玩：",
 "Join":"加入",
 "Join the league":"加入聯賽",
 "Join with code":"輸入代碼加入",
