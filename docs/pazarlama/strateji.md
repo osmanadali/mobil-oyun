@@ -1,6 +1,6 @@
 # Ray: Metro Bulmaca · Pazarlama stratejisi (1.2 ve Google Play lansmanı)
 
-Tarih: 20 Kasım 2026 · Kapsam: 21 Kasım 2026 Google Play lansmanı + ilk 4 hafta · Durum: yöneticinin (kullanıcının) 20 Kasım cevaplarına göre güncellendi; kararlar onaya açık.
+Tarih: 20 Kasım 2026 · Kapsam: 21 Kasım 2026'dan itibaren iOS + organik hazırlık, Google Play lansmanı (L günü, Google onayına bağlı; tahmini 22-28 Kasım) + ilk 4 hafta · Durum: yöneticinin (kullanıcının) 20 Kasım cevaplarına göre güncellendi; kararlar onaya açık.
 
 **Yöneticinin verdiği çerçeve (20 Kasım):**
 
@@ -9,6 +9,7 @@ Tarih: 20 Kasım 2026 · Kapsam: 21 Kasım 2026 Google Play lansmanı + ilk 4 ha
 - Sosyal: **Instagram** (var), **TikTok** ve **Reddit** (oyuna özel açılacak). YouTube ve X kullanılmayacak.
 - İçerik **yalnız oyun görüntüsü**: yüz yok, ses (seslendirme) yok.
 - **Oynanabilir reklam** (playable ad) ileride değerlendirilecek.
+- 21 Kasım Play'de yalnız üretime erişim başvurusu; Play sayfası Google onayıyla canlı olur (**L günü**, tahmini 22-28 Kasım). Hazır tanıtım videoları: `store/tanitim/` (dal `origin/tanitim`), 34 sn dikey ve 25 sn kare.
 
 Bu belge çatı belgedir. Ayrıntılar ekip dosyalarındadır:
 
@@ -18,7 +19,7 @@ Bu belge çatı belgedir. Ayrıntılar ekip dosyalarındadır:
 | [sosyal-medya-takvimi.md](sosyal-medya-takvimi.md) | Instagram, TikTok, Reddit gönderi takvimi; oyun görüntüsüyle kısa video fikirleri | Sosyal medya |
 | [reklam-kampanyasi.md](reklam-kampanyasi.md) | Google App Campaigns ve Apple Search Ads (TR) kurulumu, bütçe bölüşümü | Performans |
 | [topluluk-pr.md](topluluk-pr.md) | Basın bülteni, Reddit topluluğu, içerik üreticileri | Topluluk/PR |
-| [ilk-48-saat.md](ilk-48-saat.md) | Lansman anının adım adım kontrol listesi | Herkes, yönetici onaylar |
+| [ilk-48-saat.md](ilk-48-saat.md) | L günü (Play sayfası canlı) ve sonraki 48 saatin kontrol listesi | Herkes, yönetici onaylar |
 
 Not: "(tahmin)" yazan sayılar kamuya açık kaynaklardan ya da sektör deneyiminden çıkarılmış yaklaşık değerlerdir; Ray'in kendi verisi geldikçe değiştirilir.
 
@@ -27,8 +28,8 @@ Not: "(tahmin)" yazan sayılar kamuya açık kaynaklardan ya da sektör deneyimi
 ## 1. Yönetici özeti
 
 1. **Fırsat:** Ray iki kanıtlanmış nişin kesişiminde: "karo döndür, devreyi tamamla" bulmacaları (Infinity Loop, Energy, Flow Free; yüz milyonlarca indirme) ve metro/harita tutkunları (Mini Metro). Bu kesişimde ücretsiz, çok dilli ve kural çeşitliliği yüksek bir rakip yok.
-2. **Büyümenin motoru organik:** ~5.000 TL/ay ile ayda yalnız birkaç yüz ücretli yükleme alınabilir (tahmin). Bu yüzden ağırlık ASO (9 dil), Instagram/TikTok kısa oyun videoları, Reddit ve Türk basını üzerindedir. Ücretli kanal, organiği hızlandıran ve ölçüm sağlayan küçük bir destektir.
-3. **Ücretli kanal: yalnız ikisi, yalnız Türkiye.** Google App Campaigns (Android, Play lansmanı; bütçenin ~%60'ı ≈ 3.000 TL) ve Apple Search Ads (iOS, arama niyeti; ~%40 ≈ 2.000 TL). Meta ve TikTok reklamı şimdilik yok; TikTok ve Instagram organik çalışır.
+2. **Büyümenin motoru organik:** ~5.000 TL/ay ile ayda yalnız birkaç yüz ücretli yükleme alınabilir (tahmin). Bu yüzden ağırlık ASO (9 dil), Instagram/TikTok kısa oyun videoları, Reddit ve Türk basını üzerindedir. Ücretli kanal, organiği hızlandıran ve ölçüm sağlayan küçük bir destektir. iOS ve organik işler 21 Kasım'da başlar; Android'e özgü işler L gününe (Play sayfası canlı) bağlıdır (§8).
+3. **Ücretli kanal: yalnız ikisi, yalnız Türkiye.** Apple Search Ads (iOS, 21 Kasım'dan; ~%40 ≈ 2.000 TL) ve Google App Campaigns (Android, L gününden; ~%60 ≈ 3.000 TL). Meta ve TikTok reklamı şimdilik yok; TikTok ve Instagram organik çalışır.
 4. **Ülke önceliği:** Türkiye tek ücretli pazar. İngilizce pazarlar, Almanca/İspanyolca/Portekizce/Fransızca ve Japonca/Korece/Çince pazarlar ASO yerelleştirmesi ve organik içerikle (İngilizce Reddit/TikTok) beslenir; para harcanmaz.
 5. **Gerçekçi hedef:** 4 haftada iki mağazada toplam ~1.500-2.000 yükleme (tahmin), D1 tutma ≥ %32, `tutorial_complete` ≥ %70, puan ≥ 4,5. Bu ilk ayın asıl işi **öğrenmek**: hangi video tutuyor, hangi kelime getiriyor, oyuncu nerede bırakıyor.
 6. **Ölçüm sınırı bilinmeli:** Firebase'e AB/AEA, BK ve İsviçre'den olay gelmiyor (rıza mimarisi, YAYIN §5.4) ve reklam kimliği ölçüme girmiyor. Türkiye bundan etkilenmediği için ücretli kanalın TR'de olması ölçümü de kolaylaştırıyor.
@@ -110,9 +111,9 @@ Hedefler ~5.000 TL/ay bütçeye göre kuruldu. Kaba hesap (tahmin): Google ~3.00
 
 ### 6.1 KPI tablosu
 
-| KPI | Tür ortalaması (tahmin, kaynaklı) | Ray hedefi: lansman haftası | Ray hedefi: 4. hafta | Nasıl ölçülür |
+| KPI | Tür ortalaması (tahmin, kaynaklı) | Ray hedefi: lansman haftası (L → L+6) | Ray hedefi: 4. hafta (L+21 → L+27) | Nasıl ölçülür |
 |---|---|---|---|---|
-| Günlük indirme (iki mağaza toplam) | Takipçisi olmayan yeni indie bulmaca: günde onlarca (tahmin) | Ort. 40/gün (Play lansman tepesi + ücretli) | Ort. 60/gün (4 haftada toplam ~1.500-2.000) | Play Console › İstatistikler (Kullanıcı edinme); App Store Connect › Analytics › İndirmeler; Firebase `first_open` |
+| Günlük indirme (iki mağaza toplam) | Takipçisi olmayan yeni indie bulmaca: günde onlarca (tahmin) | Hazırlık evresi (yalnız iOS): ort. 15/gün; L haftası: ort. 40/gün | Ort. 60/gün (L'den 4 haftada toplam ~1.500-2.000) | Play Console › İstatistikler (Kullanıcı edinme); App Store Connect › Analytics › İndirmeler; Firebase `first_open` |
 | Mağaza sayfası dönüşümü | Play: ziyaretçi→yükleme ~%25-35; App Store: sayfa görüntüleme→indirme ~%25-40 (tahmin) | Play ≥ %25, App Store ≥ %25 (TR) | Play ≥ %30 (A/B sonrası) | Play Console › Mağaza girişi performansı / Mağaza girişi denemeleri; App Store Connect › Analytics › Dönüşüm oranı |
 | CPI (TR) | Casual: iOS ~1,4 $, Android ~0,14 $ ([Liftoff özeti](https://liftoff.ai/?p=35032)); bulmaca ABD çok daha yüksek ([AppsFlyer](https://www.appsflyer.com/?p=549948)) | Google ≤ 25 TL; ASA ≤ 60 TL | Google ≤ 18 TL; ASA ≤ 45 TL | Google Ads ve ASA panoları: harcama ÷ yükleme |
 | D1 tutma | Genel medyan ~%22, üst %25 ~%30, üst %10 ~%40 ([GameAnalytics 2025 özeti](https://gamedevreports.substack.com/p/gameanalytics-mobile-gaming-benchmarks)) | ≥ %32 | ≥ %35 | Firebase › Tutma kohortları; Play Console › Kullanıcı tutma; App Store Connect › Analytics › Tutma |
@@ -147,9 +148,9 @@ Yardımcı metrikler: puan ortalaması (≥ 4,5), çökmesiz kullanıcı oranı 
 
 ### 7.1 Organik (ağırlık burada)
 
-1. **ASO (en yüksek öncelik, 9 dil):** Play lansmanına hazır başlık, kısa açıklama, ekran görüntüleri ve tanıtım videosu (oyun görüntüsü). Mağaza metninde "24 hat" geçen yerler 1.2 ile "33 kural hattı" diye güncellenmeli (MAGAZA §4). Play "Mağaza girişi denemeleri" ve App Store "Ürün sayfası optimizasyonu" ile A/B. Türkiye dışı pazarların ana kaldıracı budur. Ayrıntı: [aso.md](aso.md).
+1. **ASO (en yüksek öncelik, 9 dil):** Play lansmanına hazır başlık, kısa açıklama, ekran görüntüleri ve tanıtım videosu (`store/tanitim/` 34 sn dikeyden kesilmiş, yalnız oyun görüntüsü). Mağaza metninde "24 hat" geçen yerler 1.2 ile "33 kural hattı" diye güncellenmeli (MAGAZA §4). Play "Mağaza girişi denemeleri" ve App Store "Ürün sayfası optimizasyonu" ile A/B. Türkiye dışı pazarların ana kaldıracı budur. Ayrıntı: [aso.md](aso.md).
 2. **Mağaza etkinlikleri (ücretsiz görünürlük):** Play Console "Promosyon içeriği/Etkinlikler" ve App Store "Uygulama İçi Etkinlikler" ile "Haftalık lig" ve "7 yeni hat" etkinlikleri; iki mağazanın editör ekiplerine indie öne çıkarma başvurusu.
-3. **Instagram (var olan hesap) ve TikTok (yeni, oyuna özel):** Yüzsüz, sessiz (seslendirmesiz) kısa videolar: "son karo döner, şehir yanar" tatmin anı, kural tanıtımları, Günün Hattı meydan okuması, "çözebilir misin?" (gerçek bölüm), hız çözümü. Haftada 3-4 video, aynı kurgu iki platformda; TR metinli ana seri + EN metinli kopya. Ayrıntı: [sosyal-medya-takvimi.md](sosyal-medya-takvimi.md).
+3. **Instagram (var olan hesap) ve TikTok (yeni, oyuna özel):** Yüzsüz, sessiz (seslendirmesiz) kısa videolar: "son karo döner, şehir yanar" tatmin anı, kural tanıtımları, Günün Hattı meydan okuması, "çözebilir misin?" (gerçek bölüm), hız çözümü. Haftada 3-4 video, aynı kurgu iki platformda; TR metinli ana seri + EN metinli kopya. Başlangıç malzemesi hazır: `store/tanitim/` 34 sn dikey (Reels/TikTok) ve 25 sn kare (Instagram akışı, Reddit). Ayrıntı: [sosyal-medya-takvimi.md](sosyal-medya-takvimi.md).
 4. **Reddit (yeni, oyuna özel hesap):** İngilizce erişimin ücretsiz yolu. r/IndieGaming, r/AndroidGaming, r/iosgaming, r/puzzles, r/transit, r/MiniMetro (kurallarına uygun, kendini tanıtım sınırlarına dikkat), r/Turkey ve r/KGBTR gibi TR alt forumları yalnız kurallar izin veriyorsa. Geliştirici günlüğü dili, satış dili değil.
 5. **PR:** Türk teknoloji/oyun basını ve bloglar (tek kişilik yerli indie hikâyesi, Play lansmanı), yabancı mobil oyun siteleri (TouchArcade, Pocket Gamer), oyun görüntüsü kullanan küçük içerik üreticileri. Ayrıntı: [topluluk-pr.md](topluluk-pr.md).
 6. **Oyun içi:** 1.2'deki "Arkadaşına öner" ve canlı kapışma davetleri; Günün Hattı sonucunu paylaşma (oyunda varsa).
@@ -160,8 +161,8 @@ Kullanılmayanlar: YouTube kanalı ve X hesabı (yönetici kararı). Not: Google
 
 | Öncelik | Kanal | Pay | Aylık (yaklaşık) | Neden | Kurulum özeti |
 |---|---|---|---|---|---|
-| 1 | **Google App Campaigns (Android)** | ~%60 | ~3.000 TL (~100 TL/gün) | Play lansmanı; Android TR CPI en düşük; Play arama + YouTube + AdMob ağı tek kampanyada; Firebase bağlantısı | Hedef "yükleme" (ilk ay hedef CPI vermeden, ya da gevşek tCPI); varlıklar: oyun görüntüsü videoları, ekran görüntüleri, TR metinler |
-| 2 | **Apple Search Ads (iOS)** | ~%40 | ~2.000 TL (~65 TL/gün) | iOS zaten yayında; arama niyeti yüksek, harcama kontrolü kolay; marka koruması | TR mağazası; marka ("ray", "ray metro") + tür kelimeleri ("metro oyunu", "bulmaca", "zeka oyunu"); Arama sonuçları yerleşimi |
+| 1 | **Google App Campaigns (Android)** | ~%60 | ~3.000 TL (~100 TL/gün) | Play lansmanı; Android TR CPI en düşük; Play arama + YouTube + AdMob ağı tek kampanyada; Firebase bağlantısı | Hedef "yükleme" (ilk ay hedef CPI vermeden, ya da gevşek tCPI); varlıklar: `store/tanitim/` dikey ve kare videolar, ekran görüntüleri, TR metinler; **L gününde** yayına alınır |
+| 2 | **Apple Search Ads (iOS)** | ~%40 | ~2.000 TL (~65 TL/gün; 21 Kasım'dan) | iOS zaten yayında; arama niyeti yüksek, harcama kontrolü kolay; marka koruması | TR mağazası; marka ("ray", "ray metro") + tür kelimeleri ("metro oyunu", "bulmaca", "zeka oyunu"); Arama sonuçları yerleşimi |
 
 Notlar:
 - Günlük ~100 TL Google için düşük bir bütçedir; öğrenme dönemi yavaş geçer. İlk 2 hafta kampanya sık değiştirilmez.
@@ -177,40 +178,62 @@ Ayrıntılı kampanya yapısı: [reklam-kampanyasi.md](reklam-kampanyasi.md).
 
 Roller: **ASO**, **Sosyal** (Instagram/TikTok/Reddit), **Perf** (performans/ücretli), **T/PR** (topluluk/PR), **Yön** (yönetici = kullanıcı; onay ve geliştirici işleri). Tek kişilik ekipte rollerin çoğu aynı kişide toplanır; tablo işin türünü ayırmak içindir.
 
-### 8.1 Lansman haftası (21-27 Kasım 2026)
+**Esnek takvim mantığı:** 21 Kasım Google Play'de yalnız **üretime erişim başvurusu** günüdür. Play sayfası Google onayından sonra canlı olur (tahmini 22-28 Kasım). Bu yüzden takvim iki parçadır:
+
+- **Hazırlık evresi (21 Kasım → L-1):** iOS zaten yayında; iOS ücretli (ASA), organik içerik, ASO ve basın hazırlığı **hemen başlar**. "Android'e geldi" duyurusu, Google kampanyası ve Play'e özgü işler bekletilir.
+- **L günü = Play sayfasının canlı olduğu gün.** Android'e özgü bütün adımlar L'ye göre kayar (L, L+1, ... L+6). Onay gecikirse hazırlık evresi uzar, başka hiçbir şey değişmez. Onay erken gelirse (ör. 22 Kasım) hazırlık evresinin bitmemiş satırları L haftasıyla birlikte yürür; öncelik L günü satırlarındadır.
+
+Hazır varlıklar: tanıtım videoları `store/tanitim/` (dal `origin/tanitim`): **34 sn dikey** (Reels, TikTok, Google App Campaigns dikey varlık, Play/App Store önizlemesi için kesilebilir) ve **25 sn kare** (Instagram akışı, Reddit, Google kare varlık). İkisi de yalnız oyun görüntüsü olduğundan "yüz/ses yok" kuralına uyar. Kısa kesitler (6-15 sn) bu iki videodan çıkarılır.
+
+### 8.1 Hazırlık evresi (21 Kasım → L-1)
 
 | Gün | Adım | Sorumlu |
 |---|---|---|
-| **Cum 21 Kas** (Play yayını) | Play sürümünün canlı olduğunu, mağaza sayfasının 9 dilde doğru göründüğünü, IAP fiyatlarını (ABD 2,99 $, TR ₺59,99) doğrula | Yön, ASO |
-| | Lansman videosu (TR metin) Instagram + TikTok; aynı videonun EN metinli kopyası | Sosyal |
-| | Reddit'te ilk gönderi (r/AndroidGaming ya da r/IndieGaming, "Android'e geldi", geliştirici notu) | T/PR |
-| | Basın bültenini TR basına gönder | T/PR |
-| | Google App Campaign (TR) ve ASA (TR, marka + tür kelimeleri) aç; Firebase–Google Ads bağlantısını doğrula | Perf, Yön onayı |
-| | [ilk-48-saat.md](ilk-48-saat.md) kontrol listesini başlat | Herkes |
-| **Cmt 22 Kas** | Firebase gerçek zamanlı olaylar: `first_open`, `tutorial_begin/complete`, `level_end`, `ad_impression` akıyor mu | Perf |
-| | Mağaza yorumlarına 24 saat içinde yanıt (TR/EN) | T/PR |
-| | Kural tanıtım videosu #1 (Ekspres durak) | Sosyal |
-| **Paz 23 Kas** | İlk 48 saat değerlendirmesi: çökme, puan, ilk D1, mağaza dönüşümü; "devam / düzelt" kararı | Yön, Perf |
-| | Reddit yorumlarına yanıt; geri bildirim listesi | T/PR |
-| **Pzt 24 Kas** | Haftalık KPI tablosunun ilk doldurulması (CPI, D1, tutorial) | Perf |
-| | Play Mağaza girişi denemesi #1 (ilk ekran görüntüsü ya da simge) ve App Store ürün sayfası A/B #1 | ASO |
-| **Sal 25 Kas** | Yabancı mobil oyun sitelerine (EN) kısa tanıtım e-postası | T/PR |
-| | Video #2 (Manevra kuralı) + Günün Hattı "çözebilir misin?" | Sosyal |
-| **Çar 26 Kas** | Google varlık raporu: zayıf videoları/görselleri değiştir; ASA'da düşük performanslı kelimeyi durdur, arama terimi raporundan yeni kelime ekle | Perf |
-| | Play "Etkinlik" ve App Store "Uygulama İçi Etkinlik": Haftalık lig | ASO, Yön onayı |
-| **Per 27 Kas** | Hafta değerlendirmesi: KPI'lar §6.3 eşiklerine göre; 2. hafta planı | Yön, herkes |
-| | Anahtar kelime sıralama ilk okuması (TR/EN) | ASO |
+| **Cum 21 Kas** | Play üretime erişim başvurusu; Play mağaza girişinin 9 dilde ve IAP fiyatlarının (ABD 2,99 $, TR ₺59,99) hazır olduğunu doğrula | Yön, ASO |
+| | ASA (TR, iOS) aç: marka + tür kelimeleri, ~65 TL/gün | Perf, Yön onayı |
+| | TikTok ve Reddit hesaplarını oyuna özel aç; Instagram profil bağlantısını App Store'a ver (Play bağlantısı L'de eklenir) | Sosyal |
+| | 1.2 duyurusu (iOS): 34 sn dikey video, TR metin, Instagram + TikTok | Sosyal |
+| **Cmt 22 Kas** | Reddit'te katkı/tanışma (yorumlar, kurallar okunur; tanıtım gönderisi henüz yok) | T/PR |
+| | 25 sn kare video Instagram akışına; EN metinli kopya TikTok'a | Sosyal |
+| | App Store "Uygulama İçi Etkinlik": Haftalık lig | ASO |
+| **Paz 23 Kas → L-1** | Her gün: App Store yorumlarına yanıt, Firebase'de iOS olay akışı (`first_open`, `tutorial_begin/complete`, `level_end`, `ad_impression`) | T/PR, Perf |
+| | Gün aşırı bir kısa video (kural tanıtımı #1 Ekspres durak, #2 Manevra, Günün Hattı "çözebilir misin?") | Sosyal |
+| | Basın bülteni (TR + EN) son hali, basın listesi; "Android'de" cümlesi tarih olmadan, L günü gönderilmeye hazır | T/PR |
+| | Google App Campaign taslağı (TR, Android, ~100 TL/gün): dikey ve kare videolar, ekran görüntüleri, TR metinler yüklenir, **yayına alınmaz** | Perf |
+| | App Store ürün sayfası A/B #1 (ilk ekran görüntüsü) başlat | ASO |
+| **Pzt 24 Kas** (L henüz gelmediyse) | Haftalık KPI tablosunun ilk doldurulması (yalnız iOS: ASA CPI, D1, tutorial) | Perf |
 
-### 8.2 Sonraki 4 hafta
+### 8.2 Lansman haftası (L → L+6)
+
+| Gün | Adım | Sorumlu |
+|---|---|---|
+| **L** (Play canlı) | Play sayfasını 9 dilde kontrol et, test cihazda indir, IAP ve reklam çalışıyor mu | Yön, ASO |
+| | Google App Campaign'i yayına al; Firebase–Google Ads bağlantısını doğrula | Perf, Yön onayı |
+| | "Android'e geldi" duyurusu: 34 sn dikey (Instagram + TikTok), Play + App Store bağlantıları; profil bağlantıları güncellenir | Sosyal |
+| | Reddit ilk tanıtım gönderisi (r/AndroidGaming ya da r/IndieGaming, geliştirici notu + 25 sn kare video) | T/PR |
+| | Basın bültenini TR basına gönder | T/PR |
+| | [ilk-48-saat.md](ilk-48-saat.md) kontrol listesini başlat | Herkes |
+| **L+1** | Android olay akışı ve çökme raporu (Play Console › Android vitals); Play yorumlarına 24 saat içinde yanıt | Perf, T/PR |
+| | Kısa kesit video (6-15 sn, "son karo, şehir yanar") | Sosyal |
+| **L+2** | İlk 48 saat değerlendirmesi: çökme, puan, ilk D1, mağaza dönüşümü; "devam / düzelt" kararı | Yön, Perf |
+| | Play "Promosyon içeriği/Etkinlik": Haftalık lig | ASO, Yön onayı |
+| **L+3** | Play Mağaza girişi denemesi #1 (ilk ekran görüntüsü ya da simge) | ASO |
+| | Yabancı mobil oyun sitelerine (EN) kısa tanıtım e-postası | T/PR |
+| **L+4** | Video: yeni kural tanıtımı + Günün Hattı meydan okuması | Sosyal |
+| | Reddit yorumlarına yanıt; geri bildirim listesi | T/PR |
+| **L+5** | Google varlık raporu (zayıf video/görseli değiştir); ASA arama terimi raporundan kelime ekle/çıkar | Perf |
+| **L+6** | Hafta değerlendirmesi: KPI'lar §6.3 eşiklerine göre; sonraki hafta planı; anahtar kelime sıralama ilk okuması (TR/EN) | Yön, herkes, ASO |
+
+### 8.3 Sonraki 4 hafta (L'ye göre)
 
 | Hafta | Odak | Adımlar | Sorumlu |
 |---|---|---|---|
-| **1. hafta (21-27 Kas)** | Lansman | §8.1 | Herkes |
-| **2. hafta (28 Kas-4 Ara)** | Öğren ve düzelt | D7 ilk okuma; öğretici hunisinde düşüş adımını bul, yöneticiye bildir; en iyi organik video türünü 2 kat üret; Reddit'te ikinci alt forum (r/puzzles ya da r/transit, şehir haritası görseli); ASO kelime turu #2 (TR + EN) | Perf, Sosyal, T/PR, ASO, Yön |
-| **3. hafta (5-11 Ara)** | Yerelleştirme ve PR | 9 dilde ASO kelime/ekran metni gözden geçirmesi (DE/ES/pt-BR/FR/JA/KO/zh-Hant); içerik üreticisi işbirliği (reklamsız kod karşılığı, küçük TR hesaplar); Play Mağaza girişi denemesi #2 (kısa açıklama); bütçe kaydırma kararı (Google ↔ ASA) | ASO, T/PR, Perf, Yön |
-| **4. hafta (12-18 Ara)** | Yıl sonu ve 2. ay planı | Kış teması/yıl sonu ligi etkinliği (oyunda varsa; yoksa öneri); D30 için lansman kohortunu izle; ay sonu raporu; 2. ay kararları: bütçe, tek ucuz test ülkesi, oynanabilir reklam, TikTok Spark Ads | ASO, Sosyal, Perf, Yön |
+| **1. hafta (L → L+6)** | Lansman | §8.2 | Herkes |
+| **2. hafta (L+7 → L+13)** | Öğren ve düzelt | D7 ilk okuma; öğretici hunisinde düşüş adımını bul, yöneticiye bildir; en iyi giden video türünü 2 kat üret; Reddit'te ikinci alt forum (r/puzzles ya da r/transit, şehir haritası görseli); ASO kelime turu #2 (TR + EN) | Perf, Sosyal, T/PR, ASO, Yön |
+| **3. hafta (L+14 → L+20)** | Yerelleştirme ve PR | 9 dilde ASO kelime/ekran metni gözden geçirmesi (DE/ES/pt-BR/FR/JA/KO/zh-Hant); tanıtım videolarının metin bindirmesini dillere uyarlama; içerik üreticisi işbirliği (reklamsız kod karşılığı, küçük TR hesaplar); Play Mağaza girişi denemesi #2 (kısa açıklama); bütçe kaydırma kararı (Google ↔ ASA) | ASO, Sosyal, T/PR, Perf, Yön |
+| **4. hafta (L+21 → L+27)** | Yıl sonu ve 2. ay planı | Kış teması/yıl sonu ligi etkinliği (oyunda varsa; yoksa öneri); D30 için ilk kohortu izle; ay sonu raporu; 2. ay kararları: bütçe, tek ucuz test ülkesi, oynanabilir reklam, TikTok Spark Ads | ASO, Sosyal, Perf, Yön |
 
-Not: Aralık ortası-sonu reklam fiyatları tatil sezonu nedeniyle yükselir (tahmin); küçük bütçede CPI hedefi bu haftalarda gevşek okunur.
+Not: L 22-28 Kasım arasına düşerse 4. hafta Aralık ortası-sonuna gelir. Bu haftalarda reklam fiyatları tatil sezonu nedeniyle yükselir (tahmin); küçük bütçede CPI hedefi gevşek okunur. Aylık bütçe (5.000 TL) hazırlık evresinde yalnız ASA'ya harcandığından Google payı L'den itibaren 30 güne yayılır.
 
 ---
 
@@ -245,7 +268,7 @@ Not: Aralık ortası-sonu reklam fiyatları tatil sezonu nedeniyle yükselir (ta
 | # | Karar | Durum / ne zaman | Seçenekler |
 |---|---|---|---|
 | K1 | Aylık bütçe | **Verildi:** ~5.000 TL/ay, TR | 2. ayda yeniden bakılır |
-| K2 | Bütçe bölüşümü Google %60 / ASA %40 | 21 Kas onayı | Önerildiği gibi / yalnız Google / yalnız ASA |
+| K2 | Bütçe bölüşümü Google %60 / ASA %40 | 21 Kas onayı (ASA hemen, Google L'de) | Önerildiği gibi / yalnız Google / yalnız ASA |
 | K3 | Google Ads dönüşüm ölçümü için rıza ayarı (`ad_user_data`) gözden geçirilsin mi | 2. hafta | Mevcut haliyle (gizlilik öncelikli) / rıza veren kullanıcıda açmak (oyun kodu değişikliği, ayrı oturum) |
 | K4 | Ürün düzeltmesi önceliği (tutma eşiği tutmazsa) | 2. hafta sonu | Öğretici / ilk 20 bölüm / ikisi |
 | K5 | ASA'da rakip marka kelimelerine teklif | 2. hafta | Evet (yalnız kelime, metinde ad yok) / hayır |

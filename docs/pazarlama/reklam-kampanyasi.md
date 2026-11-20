@@ -1,12 +1,14 @@
 # Ray: Metro Bulmaca — Reklam Kampanyası Planı
 
-> **BÜTÇENİZİ BELİRLEYİN.** Bu belgedeki bütün rakamlar (bütçe, CPI, indirme, gelir, LTV) **TAHMİN / SENARYO**dur; kesin öneri değildir. Kullanıcı henüz bütçe söylemedi. Önce §8 hazırlık listesini bitirin, sonra §3'teki üç senaryodan birini (ya da kendi rakamınızı) seçin. Hiçbir hesap açılmadı, hiçbir kampanya başlatılmadı, hiç para harcanmadı; her şey öneridir.
+> **ANA SENARYO: 5.000 TL/ay (kullanıcı onayladı).** Kur **TAHMİN**: ~40 TL/$ varsayımıyla 5.000 TL ≈ **125 $/ay ≈ 4 $/gün (günlük ~165 TL)**; kur 33-50 TL/$ arasında oynarsa 100-150 $. Düşük/Orta/Yüksek ek senaryolar: **5.000 / 15.000 / 40.000 TL**. Bütün CPI/indirme/gelir rakamları **TAHMİN** (kaynaklar §1/§3/§7); gerçek veri ilk 2 hafta sonra bu belgedeki tahminlerin yerini alır. Hiçbir hesaba girilmedi, hiçbir reklam başlatılmadı, para harcanmadı; her şey öneridir.
 >
-> **Dürüst ön sonuç (§7):** mevcut gelir modeliyle (AdMob geçiş + ödüllü + 2,99 $ Reklamsız ve küçük IAP) piyasa CPI'ları çoğu ülkede tahmini LTV'nin 3-10 katı. Ücretli edinme bu haliyle kendini finanse etmez; "büyüme / sıralama yatırımı" olarak düşünün ve **Düşük senaryoyla 2-3 haftalık bir öğrenme testi** yapıp gerçek D1/D7/ARPDAU ölçerek karar verin.
+> **Kararlar (kullanıcı):** (1) Bütçe küçük → **1-2 kanalda yoğunlaş**, çok kanala bölme. (2) **Türkiye kesin öncelik**; öteki ülkeler ucuz yollardan (Tier 3 test pazarları, oyunun 9 dili, organik/ASO). (3) Kreatifler **yalnız ekran kaydı + yazı + müzik** (yüz ve ses yok). (4) **Playable reklam** ilgi çekiyor → ayrı bölüm §4.5. (5) Sosyal: Instagram var; TikTok ve Reddit açılacak; **YouTube ve X kullanılmayacak** (bu belgede de yok).
 >
-> Tarih bağlamı: bugün 20 Kasım 2026. App Store'da yayında (id6831928554), Google Play 21 Kasım 2026'da açılıyor (`com.osmanadali.ray`). Kasım-Aralık reklam maliyetlerinin en pahalı dönemi (aşağıda kaynakla); ölçek kararını Ocak'a bırakmak da meşru bir seçenek.
+> **Dürüst ön sonuç (§7):** mevcut gelir modeliyle (AdMob geçiş + ödüllü + 2,99 $ Reklamsız ve küçük IAP) Türkiye'de bile CPI tahmini LTV'nin birkaç katı (TR ARPDAU çok düşük). 5.000 TL, **kâr aracı değil, 4-6 haftalık öğrenme + marka koruma + ilk değerlendirme/sıralama yatırımı**dır. **Platform asgari eşikleri:** Apple Ads bu bütçeye uyar; **Google App Campaigns uymaz** (günlük bütçe ≈ 50 × hedef CPI kuralı; TR Android tCPI 0,10-0,15 $ → 5-7,5 $/gün ≈ 200-300 TL > toplam günlük bütçeniz). Ayrıntı §3.3.
+>
+> Tarih bağlamı: bugün 20 Kasım 2026. App Store'da yayında (id6831928554), Google Play 21 Kasım 2026'da açılıyor (`com.osmanadali.ray`). Kasım-Aralık reklam maliyetlerinin en pahalı dönemi; ölçek kararını Ocak'a bırakmak meşru.
 
-İçindekiler: 1 Kanal sırası · 2 Kampanya yapıları · 3 Bütçe senaryoları · 4 Kreatif · 5 Test ve ölçekleme · 6 Dönüşüm takibi (ve ölçüm sınırları) · 7 Gelir/LTV · 8 Hazırlık listesi
+İçindekiler: 0 Ölçüm gerçeği · 1 Kanal sırası · 2 Kampanya yapıları · 3 Bütçe senaryoları · 4 Kreatif ve playable · 5 Test/ölçekleme · 6 Dönüşüm takibi · 7 Gelir/LTV · 8 Hazırlık listesi
 
 ---
 
@@ -27,23 +29,26 @@ Sonuç: bugün **ölçülebilir ve gerçekçi** olanlar: (1) Apple Ads (kendi pa
 
 ## 1. Kanal öncelik sırası ve gerekçe
 
-| Sıra | Kanal | Durum | Gerekçe |
+5.000 TL/ay için **tek kanal + küçük pilot** önerilir; kanalları bölmek her birini öğrenme eşiğinin altında bırakır.
+
+| Sıra | Kanal | Ne zaman | Gerekçe |
 |---|---|---|---|
-| 1 | **Apple Search Ads (Apple Ads)** | Hemen (iOS yayında) | Niyet yüksek (kullanıcı "bulmaca" arıyor); SDK gerektirmeden yükleme/CPT/CPA raporu verir; küçük bütçeyle başlanabilir; marka aramasını korur; Custom Product Page ile mesaj testi mümkün. Oyun kategorisinde dönüşüm oranı yüksek (kaynak: aşağıda). Dezavantaj: hacim, aranan terimlerle sınırlı; oyun CPI'ı ABD'de pahalı. |
-| 2 | **Google App Campaigns (UAC)** | Play açılışından sonra (21 Kasım+; öneri: ilk 7 gün organik veriyle bekle) | Android hacmi ve en ucuz yükleme (Tier 2/3); Google Play yükleme dönüşümü SDK'sız ölçülür. Derin olay optimizasyonu şimdilik yok (§0), bu yüzden hedef = yükleme. Öğrenme dönemi bütçe eşiği var (§3.2). |
-| 3 | **Meta Advantage+ App Campaigns** | **Koşullu**: MMP/Meta SDK kurulduktan sonra | Kreatif keşfi ve Tier 1 erişimi güçlü; ama SDK/MMP olmadan yükleme atfı ve optimizasyon yok. Bütçe Orta/Yüksek'e çıkıp MMP kararı verilince. |
-| 4 | **TikTok App Campaigns** | **Koşullu**: MMP/TikTok SDK + kısa video kreatif kapasitesi | Sakin/tatmin edici bulmaca görselleri kısa videoda iyi gider ama kalite/ARPDAU düşük olma eğilimli; MMP gerekir; yalnız Yüksek senaryoda küçük test. |
+| **1 (tek ana kanal)** | **Apple Search Ads (Apple Ads) — Türkiye** | Hemen (iOS yayında) | Niyet yüksek; asgari bütçe eşiği yok; SDK'sız yükleme/CPT/CPA raporu; marka aramasını korur; Custom Product Page ile mesaj testi; TR'de CPT tahminen düşük. Dezavantaj: Türkiye'de iOS payı Android'den küçük, aranma hacmi sınırlı (bütçeyi tüketemeyebilirsiniz). |
+| 2 (koşullu) | **Google App Campaigns — Türkiye/Android** | Bütçe **≥ ~15.000 TL/ay** olunca ya da ASA'dan sonra tek seferlik 2 haftalık patlama; Play açılışından ≥ 7 gün sonra | Android Türkiye'nin ana hacmi ve en ucuz yükleme; ama eşik kuralı (~50 × tCPI) 5.000 TL'de sağlanmaz. Yükleme dönüşümü Play Console bağlantısıyla SDK'sız ölçülür. |
+| 3 (organikte kazanan çıkınca) | **Meta (Instagram) Advantage+** | Organik Instagram/TikTok'ta kazanan video çıkınca, küçük test (~1.500-3.000 TL) | MMP/SDK olmadığı için yükleme optimizasyonu yok; yalnız **trafik/etkileşim** hedefli test yapılabilir (§2.3). |
+| 4 | **TikTok App Campaigns** | 3 ile aynı koşul + MMP | Yalnız organik TikTok hesabı kazanan videoyu kanıtladıktan sonra; MMP şart. |
 
-Aynı anda üç kanala dağılmayın: önce 1. kanal, 2 hafta sonra 2. kanal; 3-4 yalnız MMP kararı + bütçe varsa.
+**Öteki ülkeler (ucuz yollar):** ücretli bütçe yerine (a) 9 dilde mağaza ASO/yerelleştirme, (b) organik video (Instagram, TikTok, Reddit; §4.6), (c) ASA'da yalnız **1.000 TL'lik** BR/MX pilotu (isteğe bağlı), (d) Orta/Yüksek senaryoda Google T3/T2.
 
-Kaynaklar (TAHMİN rakamların dayanağı, hepsi bu belgede "tahmin" olarak kullanılır):
-- Apple Ads kıyas verileri: https://www.apptweak.com/en/aso-blog/apple-ads-benchmarks (oyun medyan CPI ABD ~4,63 $; Discovery ~1,34 $ – Competitor ~8,69 $; Kasım'da CPT tepe noktası, jenerik kampanyalarda ~%+8,8)
-- Admiral Media ASA kıyasları (casual oyun CPI 0,60-1,60 $, TTR %8-14, kurulum dönüşümü %55-70; kendi müşteri örneği): https://admiral.media/apple-search-ads-benchmarks/
+Kaynaklar (rakamların dayanağı; hepsi "tahmin" olarak kullanılır):
+- Apple Ads kıyasları: https://www.apptweak.com/en/aso-blog/apple-ads-benchmarks (ABD oyun medyan CPI ~4,63 $; Discovery ~1,34 $ – Competitor ~8,69 $; Kasım CPT tepe noktası)
+- Admiral Media ASA kıyasları (casual oyun CPI 0,60-1,60 $, TTR %8-14, kurulum dönüşümü %55-70): https://admiral.media/apple-search-ads-benchmarks/
 - Oyun UA maliyetleri: https://foxdata.com/en/blogs/2026-mobile-game-user-acquisition-cost-benchmarks-how-much-should-you-spend/ · https://gamegrowthadvisor.com/blog/2026-03-17-user-acquisition-cpi-benchmarks-2026/
 - AppsFlyer oyun kıyas tablosu (bulmaca ABD iOS ~9,48 $, Android ~4,81 $; tarih/yöntem doğrulanmalı): https://www.appsflyer.com/?p=549948
+- Google App Campaigns bütçe kuralları (üçüncü taraf özetleri; Google yardım sayfasında doğrulayın): https://adapty.io/blog/google-app-campaigns-playbook-2025/ · https://www.rocketshiphq.com/google-app-campaigns-uac-complete-guide/
 - ARPDAU/tutundurma: https://blog.playio.co/arpdau-benchmarks-mobile-games · https://gamegrowthadvisor.com/blog/2026-03-17-mobile-game-kpis-benchmarks-2026/
 
-Kaynaklar birbiriyle çelişiyor (örn. ASA'da 1-2 $ ile 4-9 $ arası); bu yüzden aralıklar bilinçli geniş tutuldu. Kendi hesabınızdan çıkan ilk 2 haftalık veri bu belgedeki bütün tahminlerin yerine geçer.
+Kaynaklar birbiriyle çelişiyor; aralıklar bilinçli geniş. **Türkiye'ye özgü güvenilir CPI/CPT kıyası bulunamadı**: TR rakamları gelişen pazar çıkarımıdır (TAHMİN).
 
 ---
 
@@ -51,14 +56,15 @@ Kaynaklar birbiriyle çelişiyor (örn. ASA'da 1-2 $ ile 4-9 $ arası); bu yüzd
 
 ### 2.0 Ortak hedefleme kuralları
 
-**Ülke grupları** (CPI ve ARPDAU'ya göre; ölçüm durumu ayrıca işaretli):
+**Ülke grupları** (kullanıcı kararı: **Türkiye kesin öncelik**; öteki ülkeler ucuz test):
 
 | Grup | Ülkeler | Dil/kreatif | Firebase ölçümü |
 |---|---|---|---|
-| **T1-A** | ABD, Kanada, Avustralya, Yeni Zelanda | en | Çoğunlukla açık (ABD'de eyalet UMP mesajı gören kullanıcılar kapalı) |
-| **T1-B (rıza bölgeleri)** | Birleşik Krallık, Almanya, Fransa, İspanya, İsviçre, Hollanda | en / de / fr / es | **Kapalı** (yalnız mağaza + reklam panosu sayıları) |
-| **T2** | Japonya, G. Kore, Tayvan, Brezilya, Meksika | ja / ko / zh-Hant / pt-BR / es | Açık (JP, KR, TW, BR, MX'te UMP gerekmez; yine de AdMob yanıtına bakın) |
-| **T3** | Türkiye (+ ileride diğer düşük CPI ülkeler) | tr / en | Açık |
+| **TR (öncelik)** | Türkiye | tr | Açık (UMP gerekmez) |
+| **T3 test pazarları** (sonra, ucuz) | Brezilya (pt-BR), Meksika (es), yalnız ASA/Google'da ≥ 15.000 TL bütçeyle; ilgili Tier 3 ülkeler | pt-BR / es / en | Açık |
+| T2 (yalnız Yüksek) | Japonya, G. Kore, Tayvan | ja / ko / zh-Hant | Açık (AdMob yanıtını doğrulayın) |
+| T1 (bu bütçede yok) | ABD/Kanada/Avustralya + AB/BK (de, fr, es) | en/de/fr/es | T1-B (BK, AB, İsviçre) **kapalı** (UMP) |
+
 
 Her kampanya **tek dil + tek ülke grubu** olsun; kreatif dili mağaza sayfası diliyle aynı olsun (9 dil: tr, en, de, es, pt-BR, fr, ko, ja, zh-Hant).
 
