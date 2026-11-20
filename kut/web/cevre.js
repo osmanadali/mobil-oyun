@@ -7,7 +7,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from '../vendor/three/addons/utils/BufferGeometryUtils.js';
 
-let S = null, K = null, KOK = '', TL = null, HAFIF = false, kademeAl = () => 0;
+let S = null, K = null, R = null, KOK = '', TL = null, HAFIF = false, kademeAl = () => 0;
 let ada = null, rim = null;            // ada üst yüzünün açıya göre dış yarıçapı (köşe tepe noktalarından)
 const zaman = { value: 0 };
 const kok = new THREE.Group(); kok.name = 'cevre';
@@ -27,7 +27,7 @@ const jg = (x, y) => { const ix = Math.floor(x), iy = Math.floor(y); let fx = x 
 const jf = (x, y) => jg(x, y) * 0.6 + jg(x * 2.3 + 5.1, y * 2.3 + 1.3) * 0.4;
 
 export function kur(o) {
-  S = o.sahne; K = o.kamera; KOK = o.kok || ''; TL = o.tl; HAFIF = !!o.hafif; ada = o.ada || null; if (o.kademeAl) kademeAl = o.kademeAl;
+  S = o.sahne; K = o.kamera; R = o.renderer || null; KOK = o.kok || ''; TL = o.tl; HAFIF = !!o.hafif; ada = o.ada || null; if (o.kademeAl) kademeAl = o.kademeAl;
   if (!kok.parent) S.add(kok);
   rimOlc();
 }
@@ -41,12 +41,12 @@ function rimOlc() {
   if (!ada) { rim.fill(6.2); return; }
   ada.updateMatrixWorld(true); const v = new THREE.Vector3();
   ada.traverse(m => { if (!m.isMesh) return; const p = m.geometry.attributes.position;
-    for (let i = 0; i < p.count; i++) { v.fromBufferAttribute(p, i).applyMatrix4(m.matrixWorld); if (v.y < -0.12) continue;
+    for (let i = 0; i < p.count; i++) { v.fromBufferAttribute(p, i).applyMatrix4(m.matrixWorld); if (v.y < -0.2) continue;
       const r = Math.hypot(v.x, v.z), a = Math.atan2(v.x, v.z), k = ((Math.round(a / (Math.PI * 2) * N) % N) + N) % N; if (r > rim[k]) rim[k] = r; } });
   // boş dilimleri komşulardan doldur, sonra yumuşat; sınırla
   for (let g = 0; g < 3; g++) for (let i = 0; i < N; i++) if (rim[i] < 5) rim[i] = Math.max(rim[(i + 1) % N], rim[(i + N - 1) % N]);
   const y = rim.map((_, i) => (rim[(i + N - 1) % N] + 2 * rim[i] + rim[(i + 1) % N]) / 4);
-  for (let i = 0; i < N; i++) rim[i] = Math.min(6.6, Math.max(5.8, y[i] || 6.2));
+  for (let i = 0; i < N; i++) rim[i] = Math.min(6.3, Math.max(5.7, y[i] || 6.0));
 }
 export function _rim() { return rim && [...rim].map(x => +x.toFixed(2)); }
 
@@ -65,11 +65,18 @@ export function zeminKur(cimDoku) {
       c = mix(c, toprak, smoothstep(0.6, 0.74, n) * 0.85);
       c *= mix(vec3(0.86, 1.0, 0.80), vec3(1.12, 1.03, 0.74), cv_g(wp * 0.45 + 7.0));
       // bordür dibinde ve adanın dış kenarında hafif koyulaşma (temas gölgesi)
-      c *= mix(0.55, 1.0, smoothstep(5.32, 5.6, rr));
+      c *= mix(0.55, 1.0, smoothstep(5.32, 5.6, rr)) * mix(1.0, 0.78, smoothstep(-0.03, -0.12, cvW.y));
       diffuseColor.rgb *= c;`);
   };
-  const m = new THREE.Mesh(new THREE.RingGeometry(5.3, 6.35, 120, 2), mat);
-  m.rotation.x = -Math.PI / 2; m.position.y = 0.006; m.receiveShadow = true; kok.add(m);
+  // dış kenar adanın gerçek üst kenarını izler (gürültüyle girintili) ve kenara doğru hafifçe aşağı kıvrılır: düz disk kenarı görünmesin
+  const g = new THREE.RingGeometry(5.3, 6, 160, 4); g.rotateX(-Math.PI / 2); const P = g.attributes.position;
+  for (let i = 0; i < P.count; i++) {
+    const x = P.getX(i), z = P.getZ(i), r0 = Math.hypot(x, z), a = Math.atan2(x, z), t = (r0 - 5.3) / 0.7;
+    const dis = disR(a) + 0.05 + (jf(Math.cos(a) * 4 + 9, Math.sin(a) * 4) - 0.5) * 0.16, r = 5.3 + (dis - 5.3) * t;
+    P.setXYZ(i, Math.sin(a) * r, -Math.pow(Math.max(0, t - 0.55) / 0.45, 2) * 0.13, Math.cos(a) * r);
+  }
+  g.computeVertexNormals();
+  const m = new THREE.Mesh(g, mat); m.position.y = 0.006; m.receiveShadow = true; kok.add(m);
   return m;
 }
 
@@ -108,15 +115,15 @@ function tutamGeo(yaprak = 11) {
     const a = rnd() * Math.PI * 2, d = rnd() * 0.32, bx = Math.sin(a) * d, bz = Math.cos(a) * d;
     const yon = rnd() * Math.PI, w = ara(0.07, 0.11), h = ara(0.5, 1.0), egik = ara(0.15, 0.45) * h, ex = Math.sin(a) * egik, ez = Math.cos(a) * egik;
     const nx = Math.cos(yon), nz = Math.sin(yon), s = P.length / 3;
-    const KAT = [0, 0.35, 0.68, 1];
+    const KAT = [0, 0.42, 1];   // 3 üçgen/yaprak (kök dörtgeni + sivri uç): ~110 bin üçgen tam yoğunlukta
     for (let k = 0; k < KAT.length; k++) {
       const t = KAT[k], x = bx + ex * t * t, z = bz + ez * t * t, y = h * t, ww = w * (1 - t) * (1 - t * 0.2);
       c.copy(t < 0.5 ? KOK_R : ORTA_R).lerp(t < 0.5 ? ORTA_R : UC_R, t < 0.5 ? t * 2 : (t - 0.5) * 2);
       if (k < KAT.length - 1) { P.push(x - nx * ww, y, z - nz * ww, x + nx * ww, y, z + nz * ww); C.push(c.r, c.g, c.b, c.r, c.g, c.b); N.push(0, 1, 0, 0, 1, 0); }
       else { P.push(x, y, z); C.push(c.r, c.g, c.b); N.push(0, 1, 0); }
     }
-    for (let k = 0; k < 2; k++) { const o = s + k * 2; I.push(o, o + 1, o + 2, o + 1, o + 3, o + 2); }
-    I.push(s + 4, s + 5, s + 6);
+    for (let k = 0; k < KAT.length - 2; k++) { const o = s + k * 2; I.push(o, o + 1, o + 2, o + 1, o + 3, o + 2); }
+    const u = s + (KAT.length - 2) * 2; I.push(u, u + 1, u + 2);
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(C, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(N, 3)); g.setIndex(I);
@@ -170,18 +177,18 @@ function cicekGeo() {
 function boya(g, alt, ust) { const a = new THREE.Color(alt), b = new THREE.Color(ust), p = g.attributes.position, C = new Float32Array(p.count * 3), c = new THREE.Color();
   for (let i = 0; i < p.count; i++) { c.copy(a).lerp(b, Math.min(1, Math.max(0, p.getY(i)))); C.set([c.r, c.g, c.b], i * 3); } g.setAttribute('color', new THREE.BufferAttribute(C, 3)); return g; }
 const CICEK_R = ['#ffd85a', '#ff9cc4', '#c7a6ff', '#fff2dc', '#ffae5c', '#ff7aa8'];
-export function cicekKur(oz = 34) {
+export function cicekKur(oz = 52) {
   if (HAFIF) oz = Math.round(oz * 0.6);
   const n = oz * 7, m = new THREE.InstancedMesh(cicekGeo(), ruzgarli(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.75, side: THREE.DoubleSide }), 0.09, { yukari: 0.55 }), n);
   m.receiveShadow = true; m.frustumCulled = false;
   const o = new THREE.Object3D(), c = new THREE.Color(); let k = 0;
   for (let i = 0; i < oz && k < n; i++) {
-    const p = halkaNokta(0.5, IC_R + 0.08, 0.12); if (!p || engelde(p.x, p.z)) continue;
+    const p = halkaNokta(0.45, IC_R + 0.08, 0.14); if (!p || engelde(p.x, p.z)) continue;
     const renk = CICEK_R[(rnd() * CICEK_R.length) | 0], adet = 3 + ((rnd() * 5) | 0);
     for (let j = 0; j < adet && k < n; j++) {
       const a = rnd() * Math.PI * 2, d = Math.sqrt(rnd()) * 0.28, x = p.x + Math.sin(a) * d, z = p.z + Math.cos(a) * d;
       if (Math.hypot(x, z) < IC_R + 0.04 || Math.hypot(x, z) > disR(Math.atan2(x, z)) - 0.06) continue;
-      const s = ara(0.13, 0.24); o.position.set(x, 0, z); o.rotation.set(ara(-0.12, 0.12), rnd() * Math.PI * 2, 0); o.scale.setScalar(s); o.updateMatrix(); m.setMatrixAt(k, o.matrix);
+      const s = ara(0.15, 0.27); o.position.set(x, 0, z); o.rotation.set(ara(-0.12, 0.12), rnd() * Math.PI * 2, 0); o.scale.setScalar(s); o.updateMatrix(); m.setMatrixAt(k, o.matrix);
       c.set(renk).multiplyScalar(ara(0.88, 1.1)); m.setColorAt(k, c); k++;
     }
   }
@@ -252,12 +259,12 @@ export function sarmalYol(x, z, r, h, tur = 1.3, bas = 0) {
   const y = [], n = 14; for (let i = 0; i <= n; i++) { const t = i / n, a = bas + t * tur * Math.PI * 2, rr = r * (1 + 0.08 * Math.sin(t * 9)); y.push(new THREE.Vector3(x + Math.sin(a) * rr, 0.02 + t * h, z + Math.cos(a) * rr)); } return y;
 }
 
-// ── uzak yüzen adalar: üç derinlik katmanı; uzaklar büyük ve sisli (gökyüzü derinliği), yakınlar küçük ──
+// ── yüzen adalar: üç derinlik katmanı (10 ada); uzaklar büyük, yavaş ve sisli (gökyüzü derinliği), yakınlar küçük ──
 export function adalarKur(yuzen, olcekle, efektler) {
   const L = [   // [x, y, z, boy, faz]
     [-11, 2.5, -9, 3.5], [12, 4, -12, 4.5], [-14, -1, 4, 3], [13, 0.5, 6, 2.6],
-    [-9.5, -3.2, 12, 2.0], [8.5, 6.5, -6.5, 1.4], [-6, 5.5, -13, 1.8], [16, -3.5, -2, 2.2],
-    [-30, 3, -26, 9], [34, 7, -30, 11], [-40, -6, 6, 10], [38, -2, 14, 8], [4, 12, -44, 13], [-18, 9, -40, 7],
+    [-9.5, -3.2, 12, 2.0], [8.5, 6.5, -6.5, 1.4],
+    [-30, 3, -26, 9], [34, 7, -30, 11], [-40, -6, 6, 10], [4, 12, -44, 13],
   ];
   for (const [x, y, z, s] of L) {
     const o = yuzen.scene.clone(); olcekle(o, s, 'max'); o.position.set(x, y, z); o.rotation.y = jh(x, z) * 6.28; kok.add(o);
@@ -275,4 +282,4 @@ export function guncelle(t) {
 }
 // hata ayıklama: serbest kamera (önce sahne3d.kameraYerlestir ile kam.serbest açılır)
 export function _bak(p, l) { if (!K) return; K.position.set(...p); K.lookAt(...l); K.fov = 38; K.updateProjectionMatrix(); }
-export function _bilgi() { return { cocuk: kok.children.length, sayili: sayili.map(s => [s.m.count, s.n]) }; }
+export function _bilgi() { const r = R && R.info.render; return { cocuk: kok.children.length, sayili: sayili.map(s => [s.m.count, s.n]), cagri: r && r.calls, ucgen: r && r.triangles }; }

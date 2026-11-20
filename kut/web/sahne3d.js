@@ -253,7 +253,7 @@ async function arenaKur(kok, tl) {
   a.scale.multiplyScalar(12.5 / Math.max(s0.x, s0.z));
   let k = new THREE.Box3().setFromObject(a); a.position.y -= k.max.y - 0.02; a.position.x -= (k.min.x + k.max.x) / 2; a.position.z -= (k.min.z + k.max.z) / 2;
   sahne.add(a);
-  CV.kur({ sahne, kamera, kok, tl, hafif, ada: a, kademeAl: G.kademeAl });   // arena çevresi (cevre.js): çimen, çiçek, taş, sarmaşık, uzak adalar
+  CV.kur({ sahne, kamera, renderer, kok, tl, hafif, ada: a, kademeAl: G.kademeAl });   // arena çevresi (cevre.js): çimen, çiçek, taş, sarmaşık, uzak adalar
   efektler.push({ kalici: true, o: CV.kokNesne(), guncelle: CV.guncelle });
   // tahta: taş karolar (doku 6×6 karo içerir → 1 doku = 6 hücre)
   const tas = tl.load(kok + '../gorsel/doku_tas.webp'); tas.colorSpace = THREE.SRGBColorSpace; tas.wrapS = tas.wrapT = THREE.RepeatWrapping; tas.repeat.set(1, 8 / 6); tas.anisotropy = 8;
