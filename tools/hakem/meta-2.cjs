@@ -30,7 +30,7 @@ module.exports = async T => {
       await shot(page, `meta2-city-${scheme}-${vp[0]}`);
       // semt seçilince bilgi kartı o hattı gösterir
       if (vp[0] === 390) {
-        await page.click('#cityBody .sd.gold .bl'); await page.waitForTimeout(250);   // hattın ucundaki etiket (M1)
+        await page.click('#cityBody .bl.gold'); await page.waitForTimeout(250);   // hattın ucundaki etiket (M1)
         const info = await page.evaluate(() => document.getElementById('cInfo').textContent);
         check('meta2.city.info', 'Hattın etiketine dokununca bilgi kartı hattın adını, ★ ve 🎫 sayısını ve "✨ Altın hat: bütün bölümler kusursuz" açıklamasını gösterir', /M1 ·/.test(info) && /Altın hat: bütün bölümler kusursuz/.test(info), info);
         // rozet sekmesi
