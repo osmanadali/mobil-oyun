@@ -8,7 +8,7 @@
 const { chromium } = require('playwright');
 const http = require('http'), fs = require('fs'), path = require('path'), os = require('os'), cp = require('child_process');
 const { rIcon } = require('./ikon.cjs');
-const { saveAt, solveTo, play, clock } = require('./store-shots.cjs');
+const { saveAt, solveTo, clock } = require('./store-shots.cjs');
 const { synth } = require('./tanitim-muzik.cjs');
 
 const R = path.join(__dirname, '..'), WWW = path.join(R, 'www'), OUT = path.join(R, 'store', 'tanitim'), WORK = process.env.TANITIM_WORK || path.join(os.tmpdir(), 'ray-tanitim');
@@ -50,76 +50,74 @@ async function openGame(browser, url, save, o = {}) {
 const tab = async (page, t) => { await page.evaluate(t => document.querySelector(`[data-tab=${t}]`).click(), t); await page.waitForTimeout(900); };
 const seenTo = c => Object.fromEntries(Array.from({ length: c }, (_, k) => [k, 1]));
 
-// ---------- ekran kaydı (CDP screencast; kare kare zaman damgalı → 30 fps MP4) ----------
+// ---------- deterministik kayıt: CDP sanal saati 1/30 sn'lik adımlarla ilerletilir, her adımda 1170×2532 ekran görüntüsü ----------
+// Gerçek zamanlı kayıttaki kare düşmeleri olmaz; oyunun rAF, zamanlayıcı ve CSS animasyonları sanal saate bağlıdır.
+const DT = 1000 / 30, DSF = 3, PW = 390 * DSF, PH = 844 * DSF;
 async function recordClip(browser, url, name, save, scn, o = {}) {
-  const { ctx, page, errors } = await openGame(browser, url, save, o), dsf = o.dsf || 2, cdp = await ctx.newCDPSession(page), frames = [];
-  cdp.on('Page.screencastFrame', ({ data, metadata, sessionId }) => { frames.push({ t: metadata.timestamp, b: Buffer.from(data, 'base64') }); cdp.send('Page.screencastFrameAck', { sessionId }).catch(() => {}); });
-  await cdp.send('Page.startScreencast', { format: 'jpeg', quality: 92, maxWidth: 390 * dsf, maxHeight: 844 * dsf, everyNthFrame: 1 });
-  let t0 = 0, t1 = 0;
-  await scn({ page, start: () => { t0 = Date.now() / 1000; }, stop: () => { t1 = Date.now() / 1000; }, snap: async n => { mk(path.join(WORK, 'shots')); await page.screenshot({ path: path.join(WORK, 'shots', n + '.png') }); } });
-  await sleep(150); await cdp.send('Page.stopScreencast'); await ctx.close();
-  if (errors.length) throw new Error(`${name}: ${errors.join(' | ')}`);
-  if (!t0 || !t1) throw new Error(`${name}: start/stop çağrılmadı`);
-  frames.sort((a, b) => a.t - b.t);
+  const { ctx, page, errors } = await openGame(browser, url, save, { test: o.test, dsf: DSF }), cdp = await ctx.newCDPSession(page);
   const dir = path.join(WORK, 'klip-' + name); fs.rmSync(dir, { recursive: true, force: true }); mk(dir);
-  let i0 = 0; frames.forEach((f, i) => { if (f.t <= t0) i0 = i; });
-  const use = frames.slice(i0).filter((f, i) => i === 0 || f.t < t1), lines = [];
-  use.forEach((f, i) => {
-    const a = i === 0 ? t0 : f.t, b = i + 1 < use.length ? use[i + 1].t : t1, file = path.join(dir, `f${String(i).padStart(5, '0')}.jpg`);
-    fs.writeFileSync(file, f.b); lines.push(`file '${file}'`, `duration ${Math.max(.001, b - a).toFixed(4)}`);
-  });
-  lines.push(lines[lines.length - 2]);
-  fs.writeFileSync(path.join(dir, 'list.txt'), lines.join('\n'));
-  const out = path.join(WORK, `klip-${name}.mp4`);
-  ff(['-f', 'concat', '-safe', '0', '-i', path.join(dir, 'list.txt'), '-vf', `fps=30,scale=${390 * dsf}:${844 * dsf}:flags=lanczos,format=yuv420p`, '-c:v', 'libx264', '-crf', '12', '-preset', 'fast', out]);
-  console.log(`klip ${name}: ${use.length} kare / ${(t1 - t0).toFixed(2)} sn`);
-  return out;
+  await cdp.send('Emulation.setVirtualTimePolicy', { policy: 'pause' });
+  let rec = false, n = 0, left = Infinity, acc = 0;
+  const shot = async fmt => Buffer.from((await cdp.send('Page.captureScreenshot', { format: fmt, quality: 95, clip: { x: 0, y: 0, width: 390, height: 844, scale: DSF } })).data, 'base64');
+  const tick = async () => {
+    const p = new Promise(r => cdp.once('Emulation.virtualTimeBudgetExpired', r));
+    await cdp.send('Emulation.setVirtualTimePolicy', { policy: 'pauseIfNetworkFetchesPending', budget: DT }); await p;
+    if (rec) { fs.writeFileSync(path.join(dir, `f${String(n++).padStart(5, '0')}.jpg`), await shot('jpeg')); if (--left <= 0) throw new Error('KLIP_BITTI'); }
+  };
+  page.waitForTimeout = async ms => { acc += ms; const k = Math.floor(acc / DT); acc -= k * DT; for (let i = 0; i < k; i++) await tick(); };
+  const api = { page, start: len => { rec = true; left = Math.round(len * 30); }, stop: () => { rec = false; }, snap: async nm => { mk(path.join(WORK, 'shots')); fs.writeFileSync(path.join(WORK, 'shots', nm + '.png'), await shot('png')); } };
+  try { await scn(api); } catch (e) { if (e.message !== 'KLIP_BITTI') throw e; }
+  await ctx.close();
+  if (errors.length) throw new Error(`${name}: ${errors.join(' | ')}`);
+  if (!n) throw new Error(`${name}: kare yok`);
+  console.log(`klip ${name}: ${n} kare`);
 }
+// oyundaki "Oyna": sayfa.click yerine evaluate (sanal saatte actionability beklemesi takılır)
+const playLv = async (page, l) => { await page.evaluate(() => document.getElementById('bMap').click()); await page.waitForTimeout(500); await page.evaluate(l => document.querySelector(`.lv[data-l="${l}"]`).click(), l); };
 
 // ---------- senaryolar (hepsi gerçek oyun üstünde) ----------
 const RULE_START = [689, 717, 745, 773, 801, 829, 857], RULE_C = RULE_START.map((_, i) => 26 + i);   // express, signal, quake, morph, remote, shunt, yard
 const CLIPS = {
   // 🎓 yeni oyuncu öğreticisi: boş kayıt → oyun kendiliğinden öğretici bölümü açar
-  ogretici: { save: null, scn: async ({ page, start, stop, snap }) => { await page.waitForTimeout(1800); start();
-    const run = solveTo(page, 1, 520).catch(() => {}); await page.waitForTimeout(4600); await snap('ogretici'); stop(); await run; } },
-  lig: { save: saveAt(633), scn: async ({ page, start, stop, snap }) => {
+  ogretici: { save: null, scn: async ({ page, start, snap }) => { await page.waitForTimeout(1800); start(3.8); await page.waitForTimeout(500); await solveTo(page, 1, 480); } },
+  lig: { save: saveAt(633), scn: async ({ page, start, snap }) => {
     await tab(page, 'league'); await page.evaluate(() => document.getElementById('mJoin')?.click()); await page.waitForTimeout(1500);
     await page.evaluate(() => { const d = document.createElement('div'); d.style.display = 'none'; document.body.append(d); return window.__ray.lig.score(235, d); }); await page.waitForTimeout(300);
     await page.evaluate(() => { window.__ray.lig.open(); }); await page.waitForTimeout(1300);
     await page.evaluate(() => { [...document.querySelectorAll('.screen.active *')].filter(e => e.scrollHeight > e.clientHeight + 20 && /auto|scroll/.test(getComputedStyle(e).overflowY)).forEach(e => { e.scrollTop = 0; }); });
-    await page.waitForTimeout(300); await snap('lig'); start(); await page.waitForTimeout(2300); stop(); } },
-  kapisma: { save: saveAt(633), scn: async ({ page, start, stop, snap }) => {
+    await page.waitForTimeout(300); await snap('lig'); start(2.9); await page.waitForTimeout(3000); } },
+  kapisma: { save: saveAt(633), scn: async ({ page, start, snap }) => {
     await tab(page, 'league'); await page.evaluate(() => document.getElementById('mJoin')?.click()); await page.waitForTimeout(1200);
     await tab(page, 'vs'); await page.waitForTimeout(400); await snap('kapisma'); await page.waitForTimeout(300);
     await page.evaluate(() => document.getElementById('vpR')?.click());
-    await page.waitForTimeout(3300); start(); await page.waitForTimeout(3800); stop(); } },
-  oyun: { save: saveAt((+process.env.LV || 6) + 1, { combo: 4 }), scn: async ({ page, start, stop, snap }) => {
-    const LV = +process.env.LV || 6; await play(page, LV); await page.waitForTimeout(900); await clock(page, 6); start(); await page.waitForTimeout(250);
-    await solveTo(page, 1, +process.env.GAP || 90); await page.waitForTimeout(1500); await snap('oyun'); await page.waitForTimeout(300); stop(); } },
-  tören: { save: saveAt(395), scn: async ({ page, start, stop }) => {
-    await page.waitForTimeout(500); await page.evaluate(() => window.__ray.fest(14)); await page.waitForTimeout(250); start(); await page.waitForTimeout(4600); stop(); } },
-  harita: { save: saveAt(633), scn: async ({ page, snap, start, stop }) => { start(); await tab(page, 'city'); await page.evaluate(() => document.getElementById('cPrev')?.click()); await page.waitForTimeout(1500); await snap('harita'); stop(); } },
+    await page.waitForTimeout(3300); start(2.9); await page.waitForTimeout(3000); } },
+  oyun: { save: saveAt(7, { combo: 4 }), scn: async ({ page, start, snap }) => {
+    await playLv(page, 6); await page.waitForTimeout(900); await clock(page, 6); start(2.8); await page.waitForTimeout(150);
+    await solveTo(page, 1, 55); await page.waitForTimeout(900); await snap('oyun'); await page.waitForTimeout(900); } },
+  'tören': { save: saveAt(395), scn: async ({ page, start }) => {
+    await page.waitForTimeout(500); await page.evaluate(() => window.__ray.fest(14)); await page.waitForTimeout(250); start(3.8); await page.waitForTimeout(4000); } },
+  harita: { save: saveAt(633), scn: async ({ page, snap, start }) => { await tab(page, 'city'); await page.evaluate(() => document.getElementById('cPrev')?.click()); await page.waitForTimeout(1500); await snap('harita'); } },
 };
 RULE_START.forEach((L, i) => {
-  CLIPS['hat' + (i + 1)] = { test: 1, save: saveAt(L, { seen: seenTo(RULE_C[i]) }), scn: async ({ page, start, stop }) => {
-    await play(page, L); await page.waitForTimeout(400); start(); await page.waitForTimeout(650);
+  CLIPS['hat' + (i + 1)] = { test: 1, save: saveAt(L, { seen: seenTo(RULE_C[i]) }), scn: async ({ page, start }) => {
+    await playLv(page, L); await page.waitForTimeout(400); start(1.8); await page.waitForTimeout(650);
     await page.evaluate(() => document.getElementById('mGo')?.click()); await page.waitForTimeout(150);
-    await solveTo(page, .4, 20); await page.waitForTimeout(250); stop(); } };
+    await solveTo(page, .4, 30); await page.waitForTimeout(1500); } };
 });
 
 // ---------- tasarım katmanları (başlık, çip, telefon çerçevesi) ----------
 const FMT = {
-  V: { W: 1080, H: 1920, sw: 640, bz: 14, x: 206, y: 350, h1: 80, sub: 38, chip: 40 },
-  S: { W: 1080, H: 1080, sw: 444, bz: 12, x: 548, y: 45, h1: 60, sub: 30, chip: 32 },
+  V: { W: 1080, H: 1920, sw: 690, bz: 10, x: 185, y: 318, h1: 74, sub: 38, chip: 40 },
+  S: { W: 1080, H: 1080, sw: 471, bz: 10, x: 559, y: 20, h1: 60, sub: 30, chip: 32 },
 };
 for (const f of Object.values(FMT)) { f.sh = Math.round(f.sw * 844 / 390); f.pw = f.sw + 2 * f.bz; f.ph = f.sh + 2 * f.bz; f.rad = Math.round(f.sw * .12); }
 const hdRules = f => `.zhd{position:absolute;inset:0;pointer-events:none;font-family:Outfit,system-ui,sans-serif;color:#eef0f7}
 .zhd::before{content:'';position:absolute;${f === FMT.V ? 'left:0;right:0;top:0;height:380px;background:linear-gradient(180deg,#0d1020 55%,transparent)' : 'left:0;top:0;bottom:0;width:600px;background:linear-gradient(90deg,#0d1020 55%,transparent)'}}
-.zht{position:absolute;${f === FMT.V ? 'left:0;right:0;top:64px;text-align:center;padding:0 50px' : 'left:64px;top:0;bottom:0;width:470px;display:flex;flex-direction:column;justify-content:center;text-align:left'}}
+.zht{position:absolute;${f === FMT.V ? 'left:0;right:0;top:48px;text-align:center;padding:0 50px' : 'left:64px;top:0;bottom:0;width:470px;display:flex;flex-direction:column;justify-content:center;text-align:left'}}
 .zht h1{font-size:${f.h1}px;line-height:1.06;font-weight:800;letter-spacing:-.025em;margin:0;color:#eef0f7}
 .zht h1 em{display:block;font-style:normal;background:linear-gradient(100deg,#ffb35c 10%,#ff7a8a 90%);-webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:.06em}
-.zht p{margin:${Math.round(f.sub * .4)}px 0 0;font-size:${f.sub}px;font-weight:500;color:#aab1cc}
-.zchip{${f === FMT.V ? 'position:absolute;left:0;right:0;top:1790px;text-align:center' : 'position:absolute;left:64px;bottom:90px;width:470px'}}
+.zht p{display:${f === FMT.V ? 'none' : 'block'};margin:${Math.round(f.sub * .4)}px 0 0;font-size:${f.sub}px;font-weight:500;color:#aab1cc}
+.zchip{${f === FMT.V ? 'position:absolute;left:0;right:0;top:226px;text-align:center' : 'position:absolute;left:64px;bottom:90px;width:470px'}}
 .zchip b{display:inline-block;font-size:${f.chip}px;font-weight:600;color:#eef0f7;padding:${Math.round(f.chip * .3)}px ${Math.round(f.chip * .8)}px;border-radius:99px;background:rgba(40,46,82,.72);box-shadow:inset 0 0 0 2px rgba(255,255,255,.1)}`;
 const hdCss = f => `${FACE}
 *{margin:0;box-sizing:border-box}html,body{width:${f.W}px;height:${f.H}px;overflow:hidden}
@@ -204,21 +202,20 @@ async function droneFrames(browser, url, fk, dir, nameTxt) {
     return window.__lines.map(l => l.name);
   }, { css: hdRules(f), ov: hdHtml(f, ['Hatları bağla,', 'şehrini ışıklandır'], V ? 'Her hat, şehre yeni bir ışık' : '', ''), V, vw, vh });
   // kamera: ekranda (cx, cy) noktası dünya (x, y) birimine oturur; z: yakınlık
-  const cam = V ? { cx: vw / 2, cy: (165 + vh) / 2, S0: 1.4 } : { cx: 395, cy: vh / 2, S0: .87 }, N = Math.round(3.9 * 30);
+  const cam = V ? { cx: vw / 2, cy: (150 + vh) / 2, S0: 1.4 } : { cx: 395, cy: vh / 2, S0: .87 }, N = Math.round(3.9 * 30);
   mk(dir); for (const x of fs.readdirSync(dir)) fs.rmSync(path.join(dir, x));
   for (let i = 0; i < N; i++) {
     const t = i / 30;
     await page.evaluate(({ t, cam, V }) => {
-      const E = x => x < 0 ? 0 : x > 1 ? 1 : x * x * (3 - 2 * x), G = (a, b) => E((t - a) / (b - a)), L = window.__lines;
-      // tren: iki hat boyunca (M2 kuzey, M5 kuzeydoğu); ikisinde de merkezden uca, ara duraklarda yavaşlayarak
-      const leg = t < 2.0 ? 0 : 1, a = leg ? 2.0 : .35, b = leg ? 3.3 : 1.95, q = G(a, b), l = L[leg], pt = l.p.getPointAtLength(l.n * (q * .88 + .12 * Math.sin(q * 6 * Math.PI) / 6 + .0)), pt0 = l.p.getPointAtLength(0);
-      const P = t < a ? l.p.getPointAtLength(0) : pt; const trn = document.getElementById('trn'); trn.setAttribute('transform', `translate(${P.x} ${P.y})`); trn.style.opacity = G(.1, .4) * (1 - G(3.4, 3.7));
-      const wx = P.x, wy = P.y, z = 1 + .95 * Math.sin(Math.PI * Math.min(1, t / 3.9)) ** 1.5, ox = (1 - Math.min(1, z - 1)) , fx = z > 1.05 ? wx : 0, fy = z > 1.05 ? wy : 0, w = Math.min(1, (z - 1) / .35);
-      const X = wx * w, Y = wy * w, S = cam.S0 * z;
-      const cm = document.querySelector('.cmap'); cm.style.transform = `translate(${cam.cx - (X + 172) * S}px,${cam.cy - (Y + 172) * S}px) scale(${S})`;
-      const ch = document.querySelector('#ov .zchip'); const show = t > .5 && t < 3.0 ? 0 : t >= 3.0 ? 1 : -1;
-      ch.innerHTML = show === 0 ? `<b>${(leg ? L[1] : L[0]).name}</b>` : show === 1 ? '<b>Işık Kent · 24 semt aydınlık</b>' : '';
-      ch.style.opacity = show < 0 ? 0 : 1;
+      const E = x => x < 0 ? 0 : x > 1 ? 1 : x * x * x * (x * (x * 6 - 15) + 10), G = (a, b) => E((t - a) / (b - a)), l = window.__lines[1];
+      // tren M5 hattı boyunca (merkezden uca) tek akıcı hareketle; kamera trene kilitlenir, sonra bütün şehre açılır
+      const q = G(.4, 3.0), P = l.p.getPointAtLength(l.n * q), trn = document.getElementById('trn');
+      trn.setAttribute('transform', `translate(${P.x.toFixed(2)} ${P.y.toFixed(2)})`); trn.style.opacity = G(.1, .5) * (1 - G(3.0, 3.4));
+      const z = 1 + 1.15 * G(0, 1.3) - 1.05 * G(2.5, 3.9), w = G(0, 1.0) * (1 - G(2.5, 3.9)), S = cam.S0 * z;
+      const tx = Math.round((cam.cx - (P.x * w + 172) * S) * 2) / 2, ty = Math.round((cam.cy - (P.y * w + 172) * S) * 2) / 2;
+      document.querySelector('.cmap').style.transform = `translate(${tx}px,${ty}px) scale(${S.toFixed(4)})`;
+      const ch = document.querySelector('#ov .zchip'), show = t > .5 && t < 2.9 ? 0 : t >= 3.0 ? 1 : -1;
+      ch.innerHTML = show === 0 ? `<b>${l.name}</b>` : show === 1 ? '<b>Işık Kent · 24 semt aydınlık</b>' : ''; ch.style.opacity = show < 0 ? 0 : 1;
     }, { t, cam, V });
     await page.screenshot({ path: path.join(dir, `f${String(i).padStart(4, '0')}.jpg`), type: 'jpeg', quality: 93 });
   }
@@ -231,7 +228,7 @@ async function renderFrames(browser, html, fk, dur, dir) {
   for (let i = 0; i < N; i++) { await p.evaluate(t => window.T(t), i / 30); await p.screenshot({ path: path.join(dir, `f${String(i).padStart(4, '0')}.jpg`), type: 'jpeg', quality: 93 }); }
   await p.close();
 }
-const framesToMp4 = (dir, out, len) => ff(['-framerate', '30', '-i', path.join(dir, 'f%04d.jpg'), '-vf', `tpad=stop_mode=clone:stop_duration=3,trim=duration=${len},format=yuv420p`, '-c:v', 'libx264', '-crf', '15', '-preset', 'fast', '-r', '30', out]);
+const framesToMp4 = (dir, out, len) => ff(['-framerate', '30', '-i', path.join(dir, 'f%04d.jpg'), '-vf', `tpad=stop_mode=clone:stop_duration=3,trim=duration=${len},format=yuv420p`, '-c:v', 'libx264', '-crf', '11', '-preset', 'fast', '-r', '30', out]);
 
 // ---------- kurgu ----------
 // birim: { name, kind: 'frames'|'phone', dur (ekranda "kendi" süresi), tr (öncekinden geçiş), clip, ss (klipte başlangıç), speed, t, sub, chip }
@@ -267,9 +264,9 @@ async function buildUnits(browser, url, fk) {
     if (u.kind === 'phone') {
       const { back, front } = await phoneLayers(browser, fk, u.name, u.t, u.sub, u.chip);
       const x = f.x + f.bz, y = f.y + f.bz;
-      ff(['-loop', '1', '-framerate', '30', '-t', String(len), '-i', back, '-ss', String(u.ss), '-i', path.join(WORK, `klip-${u.clip}.mp4`), '-loop', '1', '-framerate', '30', '-t', String(len), '-i', front,
-        '-filter_complex', `[1:v]setpts=(PTS-STARTPTS)/${u.speed},tpad=stop_mode=clone:stop_duration=3,scale=${f.sw}:${f.sh}:flags=lanczos,fps=30[c];[0:v][c]overlay=${x}:${y}:shortest=1[a];[a][2:v]overlay=0:0,format=yuv420p`,
-        '-t', String(len), '-c:v', 'libx264', '-crf', '15', '-preset', 'fast', out]);
+      ff(['-loop', '1', '-framerate', '30', '-t', String(len), '-i', back, '-framerate', '30', '-i', path.join(WORK, `klip-${u.clip}`, 'f%05d.jpg'), '-loop', '1', '-framerate', '30', '-t', String(len), '-i', front,
+        '-filter_complex', `[1:v]tpad=stop_mode=clone:stop_duration=3,scale=${f.sw}:${f.sh}:flags=lanczos+accurate_rnd+full_chroma_int[c];[0:v][c]overlay=${x}:${y}:shortest=1[a];[a][2:v]overlay=0:0,format=yuv420p`,
+        '-t', String(len), '-c:v', 'libx264', '-crf', '11', '-preset', 'fast', out]);
     } else if (u.name === 'drone') {
       const d = path.join(WORK, `kare-drone-${fk}`); await droneFrames(browser, url, fk, d); framesToMp4(d, out, len);
     } else {
@@ -284,19 +281,10 @@ const SES_IN = () => ['-i', SES];
 function assemble(U, fk, out, bellAt, endAt) {
   const total = U.reduce((a, u) => a + u.dur, 0), wav = path.join(WORK, `muzik-${fk}.wav`);
   const beat = 60 / 104, snap = t => Math.max(0, Math.round(t / (beat / 2)) * (beat / 2)), fx = [], pent = [1174.66, 1318.5, 1480, 1760, 1975.5, 2349.3, 2637];
-  let S0 = 0, hi = 0;
-  U.forEach((u, k) => {
-    const t0 = S0 - (k ? u.tr : 0) + (k ? u.tr : 0), start = S0;   // birimin ekranda "kendi" başlangıcı
-    if (k && u.tr > .1) fx.push({ type: 'whoosh', t: snap(start - u.tr - .05), d: u.tr > .1 ? .75 : .3, up: k % 2 === 0, g: u.tr > .1 ? 1 : .35, pan: k % 2 ? .3 : -.3 });
-    if (u.name === 'acilis') { fx.push({ type: 'whoosh', t: 0, d: .6 }, { type: 'ding', t: snap(.5), f: 1174.66 }, { type: 'ding', t: snap(.9), f: 1760, g: 1.1 }); }
-    else if (u.name === 'drone') for (let q = 0; q < 9; q++) { fx.push({ type: 'clack', t: snap(start + .5) + q * beat / 2, g: q % 2 ? .6 : 1, pan: q % 2 ? .25 : -.25 }); }
-    else if (u.name === 'oyun') { for (let q = 0; q < 6; q++) fx.push({ type: 'tick', t: snap(start + .3) + q * beat / 2, f: 900 + (q % 3) * 180 }); fx.push({ type: 'ding', t: snap(start + 1.7), f: 1318.5 }); }
-    else if (u.name === 'ogretici') { [.4, 1.2, 2.1].forEach(x => fx.push({ type: 'tick', t: snap(start + x), f: 1000 })); fx.push({ type: 'ding', t: snap(start + .1), f: 1480 }); }
-    else if (u.name === 'lig') { fx.push({ type: 'ding', t: snap(start + .1), f: 1318.5 }); }
-    else if (u.name === 'kapisma') { fx.push({ type: 'ding', t: snap(start + .1), f: 1760 }, { type: 'tick', t: snap(start + 1.2), f: 700, g: 1.3 }); }
-    else if (/^hat\d$/.test(u.name)) { fx.push({ type: 'ding', t: start + .02, f: pent[hi % pent.length], g: .9 }); [.55, .75, .95].forEach((x, q) => fx.push({ type: 'tick', t: start + x, f: 950 + q * 150 })); hi++; }
-    else if (u.name === 'toren') fx.push({ type: 'boom', t: start + .15, g: .35 });
-    else if (u.name === 'kapanis') { fx.push({ type: 'boom', t: start + .1 }, { type: 'ding', t: start + .15, f: 1174.66 }, { type: 'ding', t: start + .15, f: 1760, g: .8 }, { type: 'ding', t: start + .15, f: 2349.3, g: .7 }); }
+  let S0 = 0;   // yalnız birkaç anlamlı an: oyunda seyrek hafif tık, hat açıldı çanı (synth), kapanış akoru (synth)
+  U.forEach(u => {
+    if (u.name === 'oyun') [.9, 1.5, 2.1].forEach(x => fx.push({ type: 'tick', t: snap(S0 + x), f: 1000, g: .22 }));
+    else if (u.name === 'ogretici') [.9, 2.2].forEach(x => fx.push({ type: 'tick', t: snap(S0 + x), f: 1000, g: .22 }));
     S0 += u.dur;
   });
   const startOf = n => { let a = 0; for (const u of U) { if (u.name === n) return a; a += u.dur; } return -1; };
@@ -315,7 +303,7 @@ function assemble(U, fk, out, bellAt, endAt) {
     aIn = ['-i', wav, '-i', vo];
     audio = `[${ai}:a]volume=1[m];[${ai + 1}:a]aresample=44100,asplit=2[vo][sc];[m][sc]sidechaincompress=threshold=0.015:ratio=6:attack=40:release=500:makeup=1[md];[md]volume=.9[md2];[md2][vo]amix=inputs=2:normalize=0:duration=longest,${fade}[a]`;
   } else audio = `[${ai}:a]${fade},loudnorm=I=-14:TP=-1.2:LRA=7[a]`;
-  ff([...inputs, ...aIn, '-filter_complex', chain.slice(0, -1) + ';' + audio, '-map', '[v]', '-map', '[a]', '-t', total.toFixed(2), '-c:v', 'libx264', '-crf', '20', '-preset', 'slow', '-pix_fmt', 'yuv420p', '-profile:v', 'high', '-movflags', '+faststart', '-c:a', 'aac', '-b:a', '160k', '-ar', '44100', out]);
+  ff([...inputs, ...aIn, '-filter_complex', chain.slice(0, -1) + ';' + audio, '-map', '[v]', '-map', '[a]', '-t', total.toFixed(2), '-c:v', 'libx264', '-crf', '17', '-preset', 'slow', '-pix_fmt', 'yuv420p', '-profile:v', 'high', '-movflags', '+faststart', '-c:a', 'aac', '-b:a', '160k', '-ar', '44100', out]);
   return total;
 }
 
