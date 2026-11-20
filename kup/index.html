@@ -1,0 +1,677 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}[hidden]{display:none!important}</style></head><body>
+<title>Küp</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Küp">
+<meta name="theme-color" content="#14161c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@500;600;700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: tam ekran 3B sahne; üstte süre şeridi, altta üç düğmeli kontrol çubuğu, ayarlar alttan açılan sayfa. */
+:root{
+  --bg1:#eef0f4; --bg2:#d6dbe5; --ink:#1b1e26; --ink-soft:#5d6474;
+  --panel:rgba(255,255,255,.78); --line:rgba(27,30,38,.10); --accent:#1652c4; --on-accent:#fff;
+  --f-display:"Unbounded","Manrope",system-ui,sans-serif;
+  --f-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"DM Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--bg1:#20242d;--bg2:#0d0f14;--ink:#eef0f5;--ink-soft:#9aa2b3;--panel:rgba(30,34,43,.78);--line:rgba(255,255,255,.09);--accent:#4d8bff;--on-accent:#fff;color-scheme:dark}
+}
+:root[data-theme="dark"]{--bg1:#20242d;--bg2:#0d0f14;--ink:#eef0f5;--ink-soft:#9aa2b3;--panel:rgba(30,34,43,.78);--line:rgba(255,255,255,.09);--accent:#4d8bff;--on-accent:#fff;color-scheme:dark}
+/* Skin'ler kendi dünyasını taşır, sistem temasından bağımsız */
+:root[data-skin="pastel"]{--bg1:#f7eef6;--bg2:#e3eaf8;--ink:#3b3552;--ink-soft:#7c7598;--panel:rgba(255,255,255,.72);--line:rgba(59,53,82,.10);--accent:#8b6fd3;--on-accent:#fff;color-scheme:light}
+:root[data-skin="neon"]{--bg1:#1d1650;--bg2:#05040d;--ink:#ecebff;--ink-soft:#9d98c9;--panel:rgba(18,15,40,.72);--line:rgba(160,150,255,.16);--accent:#2ec4ff;--on-accent:#04121c;color-scheme:dark}
+:root[data-skin="ahsap"]{--bg1:#2f4639;--bg2:#121b16;--ink:#f1e8d8;--ink-soft:#b3ab98;--panel:rgba(22,32,26,.74);--line:rgba(241,232,216,.12);--accent:#e0b04a;--on-accent:#2a1c0c;color-scheme:dark}
+
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+body{background:radial-gradient(120% 90% at 50% 38%,var(--bg1),var(--bg2));color:var(--ink);font-family:var(--f-body);-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;transition:background .4s}
+#stage{position:fixed;inset:0;touch-action:none}
+#stage canvas{display:block;width:100%;height:100%;outline:none}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:5}
+
+.top{position:fixed;inset:0 0 auto;z-index:3;display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:8px;
+  padding-top:calc(env(safe-area-inset-top,0px) + 14px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));pointer-events:none}
+.top>*{pointer-events:auto}
+.brand{font-family:var(--f-display);font-weight:700;font-size:15px;letter-spacing:.02em;display:flex;align-items:center;gap:8px;padding-top:8px}
+.brand i{display:grid;grid-template-columns:repeat(2,6px);gap:2px}
+.brand i b{width:6px;height:6px;border-radius:1.5px;background:var(--accent)}
+.brand i b:nth-child(2){opacity:.55}.brand i b:nth-child(3){opacity:.3}
+.clock{text-align:center}
+#time{font-family:var(--f-mono);font-weight:500;font-size:clamp(34px,9vw,46px);letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
+.sub{margin-top:6px;font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums;display:flex;gap:10px;justify-content:center;letter-spacing:.02em}
+.sub b{color:var(--ink);font-weight:700}
+.tr{display:flex;justify-content:flex-end;gap:8px;padding-top:2px}
+.chip{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:600 13px var(--f-body);height:38px;min-width:38px;padding:0 12px;border-radius:19px;display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.chip svg{width:18px;height:18px}
+.chip:focus-visible,.btn:focus-visible,.card:focus-visible,.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 104px);z-index:3;
+  font-size:13px;color:var(--ink-soft);text-align:center;width:min(340px,calc(100% - 32px));line-height:1.45;transition:opacity .4s;pointer-events:none;text-wrap:balance}
+.hint.off{opacity:0}
+
+.bar{position:fixed;inset:auto 0 0;z-index:3;display:flex;justify-content:center;gap:10px;
+  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 18px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));pointer-events:none}
+.bar>*{pointer-events:auto}
+.btn{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:700 14px var(--f-body);height:56px;border-radius:18px;padding:0 18px;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);transition:transform .12s,opacity .2s}
+.btn:active{transform:scale(.96)}
+.btn svg{width:20px;height:20px}
+.btn.sq{width:56px;padding:0}
+.btn.main{background:var(--accent);color:var(--on-accent);border-color:transparent;min-width:170px;font-size:15px;letter-spacing:.01em}
+.btn[disabled]{opacity:.35;pointer-events:none}
+.btn.pulse{animation:pulse 2.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 45%,transparent)}50%{box-shadow:0 0 0 10px transparent}}
+
+/* alt sayfa */
+.scrim{position:fixed;inset:0;z-index:8;background:rgba(5,6,10,.35);opacity:0;pointer-events:none;transition:opacity .25s}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:9;margin:0 auto;max-width:520px;background:var(--panel);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+  border:1px solid var(--line);border-bottom:0;border-radius:26px 26px 0 0;transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.8,.2,1);
+  padding-top:10px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 20px);padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+.sheet.on{transform:none}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 14px}
+.sh-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sheet h2{font-family:var(--f-display);font-weight:500;font-size:16px;margin:0;letter-spacing:.01em}
+.sheet h3{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-soft);margin:18px 0 10px;font-weight:700}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.card{appearance:none;border:1.5px solid var(--line);background:transparent;color:var(--ink);border-radius:18px;padding:10px 6px 9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;font:600 12px var(--f-body)}
+.card[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.card canvas{width:100%;max-width:76px;aspect-ratio:1;height:auto}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--line);padding:4px;border-radius:14px}
+.seg button{appearance:none;border:0;background:transparent;color:var(--ink);font:600 14px var(--f-body);height:40px;border-radius:10px;cursor:pointer;font-variant-numeric:tabular-nums}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-variant-numeric:tabular-nums}
+.stats div{border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.stats small{display:block;font-size:11px;color:var(--ink-soft);letter-spacing:.04em;margin-bottom:3px}
+.stats b{font-family:var(--f-mono);font-weight:500;font-size:16px}
+.note{font-size:12px;color:var(--ink-soft);margin:10px 2px 0;line-height:1.5}
+
+/* çözüldü kartı */
+.win{position:fixed;left:50%;top:50%;z-index:7;width:min(320px,calc(100% - 40px));transform:translate(-50%,-40%) scale(.96);opacity:0;pointer-events:none;
+  background:var(--panel);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border:1px solid var(--line);border-radius:26px;padding:24px 22px 18px;text-align:center;transition:all .45s cubic-bezier(.2,.8,.2,1)}
+.win.on{opacity:1;transform:translate(-50%,-50%);pointer-events:auto}
+.win .k{font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:var(--ink-soft);font-weight:700}
+.win .t{font-family:var(--f-mono);font-size:48px;font-weight:500;margin:8px 0 4px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.win .m{font-size:14px;color:var(--ink-soft)}
+.win .rec{display:inline-block;margin-top:12px;font:700 12px var(--f-body);letter-spacing:.06em;color:var(--on-accent);background:var(--accent);padding:5px 10px;border-radius:999px}
+.win .row{display:flex;gap:8px;margin-top:18px}
+.win .row .btn{flex:1;height:50px;min-width:0}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+@media (min-width:720px){.btn.main{min-width:200px}}
+</style>
+
+<div id="stage" aria-label="Rubik küpü"></div>
+<canvas id="fx"></canvas>
+
+<header class="top">
+  <div class="brand"><i><b></b><b></b><b></b><b></b></i>Küp</div>
+  <div class="clock">
+    <div id="time">0:00.00</div>
+    <div class="sub"><span><b id="moves">0</b> hamle</span><span id="bestWrap">En iyi <b id="best">—</b></span></div>
+  </div>
+  <div class="tr">
+    <button class="chip" id="sizeChip" aria-label="Küp boyutu">3×3</button>
+  </div>
+</header>
+
+<div class="hint" id="hint">Katman çevirmek için küpün üstünde kaydır.<br>Küpü döndürmek için boşlukta sürükle.</div>
+
+<nav class="bar">
+  <button class="btn sq" id="undo" aria-label="Geri al" disabled>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+  </button>
+  <button class="btn main pulse" id="scramble">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="m15 15 6 6"/><path d="M4 4l5 5"/></svg>
+    <span id="scrambleLabel">Karıştır</span>
+  </button>
+  <button class="btn sq" id="openSkins" aria-label="Skin ve ayarlar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><circle cx="17.25" cy="17.25" r="3.75"/></svg>
+  </button>
+</nav>
+
+<div class="scrim" id="scrim"></div>
+<section class="sheet" id="sheet" aria-label="Skin ve ayarlar">
+  <div class="grab"></div>
+  <div class="sh-head"><h2>Skin seç</h2><button class="chip" id="closeSheet" aria-label="Kapat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="cards" id="cards"></div>
+  <h3>Boyut</h3>
+  <div class="seg" id="sizes">
+    <button data-n="2">2×2</button><button data-n="3">3×3</button><button data-n="4">4×4</button>
+  </div>
+  <p class="note" id="sizeNote" hidden>Boyut değişince süren çözüm sıfırlanır.</p>
+  <h3>Rekorlar</h3>
+  <div class="stats" id="stats"></div>
+  <h3>Ses</h3>
+  <div class="seg" id="sound" style="grid-template-columns:repeat(2,1fr)">
+    <button data-s="1">Açık</button><button data-s="0">Kapalı</button>
+  </div>
+</section>
+
+<section class="win" id="win" aria-live="polite">
+  <div class="k">Çözüldü</div>
+  <div class="t" id="winTime">0:00.00</div>
+  <div class="m" id="winMoves"></div>
+  <div id="winRec" hidden><span class="rec">YENİ REKOR</span></div>
+  <div class="row">
+    <button class="btn" id="winClose">Kapat</button>
+    <button class="btn main" id="winAgain">Yeniden</button>
+  </div>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+'use strict';
+const T = THREE, PI2 = Math.PI / 2;
+const $ = id => document.getElementById(id);
+const root = document.documentElement;
+
+/* ---------- kayıt ---------- */
+const KEY = 'kup.v1';
+let S = { size: 3, skin: 'klasik', sound: 1, scramble: [], hist: [], elapsed: 0, phase: 'idle', best: {}, solves: {} };
+try { Object.assign(S, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+/* ---------- dokular ---------- */
+function woodCanvas(base, dark, light, seed, size = 512) {
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const g = c.getContext('2d');
+  let s = seed; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  g.fillStyle = base; g.fillRect(0, 0, size, size);
+  for (let i = 0; i < 170; i++) {
+    const y0 = rnd() * size, amp = 3 + rnd() * 10, f = .004 + rnd() * .01, ph = rnd() * 6;
+    g.strokeStyle = rnd() < .6 ? dark : light; g.globalAlpha = .05 + rnd() * .16; g.lineWidth = .6 + rnd() * 2.6;
+    g.beginPath();
+    for (let x = -4; x <= size + 4; x += 6) { const y = y0 + Math.sin(x * f + ph) * amp + Math.sin(x * f * 3.1 + ph) * amp * .25; x < 0 ? g.moveTo(x, y) : g.lineTo(x, y); }
+    g.stroke();
+  }
+  g.globalAlpha = 1; return c;
+}
+function texFrom(canvas) { const t = new T.CanvasTexture(canvas); t.encoding = T.sRGBEncoding; t.anisotropy = 4; return t; }
+let woodBody, woodGrain;
+const getWood = () => {
+  if (!woodBody) {
+    woodBody = texFrom(woodCanvas('#6b4529', '#3a2312', '#8a5d38', 7));
+    woodGrain = texFrom(woodCanvas('#f2f2f2', '#b8b8b8', '#ffffff', 31, 256));
+  }
+  return [woodBody, woodGrain];
+};
+
+/* ---------- skin'ler ---------- */
+// renk sırası: +x sağ, -x sol, +y üst, -y alt, +z ön, -z arka
+const SKINS = {
+  klasik: { name: 'Klasik', body: '#121317', rough: .42, metal: .05, stickers: ['#d42a33', '#f2731f', '#f4f4ee', '#ffd31a', '#00a04b', '#1652c4'], sRough: .28, glow: 0 },
+  pastel: { name: 'Pastel', body: '#cfc8dc', rough: .65, metal: 0, stickers: ['#ec7f93', '#f3a465', '#fbfaff', '#efcb55', '#6fc79c', '#7fa6e6'], sRough: .55, glow: 0 },
+  neon:   { name: 'Neon', body: '#0a0a14', rough: .3, metal: .35, stickers: ['#ff2e6a', '#ff9a1f', '#e6f6ff', '#f6f26a', '#28ff8c', '#2ec4ff'], sRough: .3, glow: .95 },
+  ahsap:  { name: 'Ahşap', body: '#ffffff', rough: .7, metal: 0, stickers: ['#a3362e', '#c97a32', '#eadcc0', '#d7a836', '#5d7c48', '#3e5c7c'], sRough: .6, glow: 0, wood: true },
+};
+const SKIN_IDS = Object.keys(SKINS);
+if (!SKINS[S.skin]) S.skin = 'klasik';
+const lin = h => new T.Color(h).convertSRGBToLinear();
+
+/* ---------- sahne ---------- */
+const stage = $('stage');
+const renderer = new T.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2.5));
+renderer.outputEncoding = T.sRGBEncoding;
+renderer.setClearColor(0x000000, 0);
+stage.appendChild(renderer.domElement);
+const scene = new T.Scene();
+const camera = new T.PerspectiveCamera(32, 1, .1, 100);
+scene.add(camera);
+const hemi = new T.HemisphereLight(0xffffff, 0x8890a0, .55); scene.add(hemi);
+const key = new T.DirectionalLight(0xffffff, .85); key.position.set(3, 5, 4); camera.add(key);
+const fill = new T.DirectionalLight(0xffffff, .28); fill.position.set(-5, -1, 2); camera.add(fill);
+const rim = new T.DirectionalLight(0xffffff, .22); rim.position.set(0, 2, -6); camera.add(rim);
+const amb = new T.AmbientLight(0xffffff, .12); scene.add(amb);
+
+const cubeG = new T.Group(); scene.add(cubeG);
+const pivot = new T.Object3D(); scene.add(pivot);
+
+// yumuşak zemin gölgesi
+const shCan = document.createElement('canvas'); shCan.width = shCan.height = 128;
+{ const g = shCan.getContext('2d'), gr = g.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(0,0,0,.42)'); gr.addColorStop(.55, 'rgba(0,0,0,.14)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); }
+const shadow = new T.Mesh(new T.PlaneGeometry(1, 1), new T.MeshBasicMaterial({ map: new T.CanvasTexture(shCan), transparent: true, depthWrite: false }));
+shadow.rotation.x = -Math.PI / 2; shadow.renderOrder = -1; scene.add(shadow);
+
+/* ---------- geometri ---------- */
+function roundedBox(size, r, seg) {
+  const g = new T.BoxGeometry(size, size, size, seg, seg, seg);
+  const p = g.attributes.position, n = g.attributes.normal, h = size / 2 - r, v = new T.Vector3(), c = new T.Vector3();
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i);
+    c.set(Math.max(-h, Math.min(h, v.x)), Math.max(-h, Math.min(h, v.y)), Math.max(-h, Math.min(h, v.z)));
+    const d = v.sub(c); if (d.lengthSq() < 1e-9) continue;
+    d.normalize(); n.setXYZ(i, d.x, d.y, d.z); d.multiplyScalar(r).add(c); p.setXYZ(i, d.x, d.y, d.z);
+  }
+  return g;
+}
+function roundedSquare(s, r) {
+  const sh = new T.Shape(), h = s / 2;
+  sh.moveTo(-h + r, -h); sh.lineTo(h - r, -h); sh.quadraticCurveTo(h, -h, h, -h + r); sh.lineTo(h, h - r); sh.quadraticCurveTo(h, h, h - r, h);
+  sh.lineTo(-h + r, h); sh.quadraticCurveTo(-h, h, -h, h - r); sh.lineTo(-h, -h + r); sh.quadraticCurveTo(-h, -h, -h + r, -h);
+  const g = new T.ShapeGeometry(sh, 6);
+  // UV'leri 0..1'e çek (ahşap doku için)
+  const p = g.attributes.position, uv = g.attributes.uv;
+  for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) / s + .5, p.getY(i) / s + .5);
+  return g;
+}
+const CUBIE = .985;
+const bodyGeo = roundedBox(CUBIE, .11, 9);
+const stickGeo = roundedSquare(.8, .13);
+const FACES = [ [1,0,0], [-1,0,0], [0,1,0], [0,-1,0], [0,0,1], [0,0,-1] ].map(a => new T.Vector3(...a));
+
+let N = 0, cubies = [], bodyMat, stickMats = [];
+function makeMaterials() {
+  const sk = SKINS[S.skin];
+  bodyMat && bodyMat.dispose(); stickMats.forEach(m => m.dispose());
+  const [wb, wg] = sk.wood ? getWood() : [null, null];
+  bodyMat = new T.MeshStandardMaterial({ color: lin(sk.body), roughness: sk.rough, metalness: sk.metal, map: wb });
+  stickMats = sk.stickers.map((h, i) => new T.MeshStandardMaterial({
+    color: lin(h), roughness: sk.sRough, metalness: 0, map: wg,
+    emissive: sk.glow ? lin(h) : new T.Color(0), emissiveIntensity: sk.glow ? sk.glow * (i === 2 ? .7 : 1) : 0,
+    polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1,
+  }));
+  hemi.intensity = sk.glow ? .35 : .55;
+}
+function applyMaterials() {
+  makeMaterials();
+  for (const c of cubies) { c.material = bodyMat; for (const st of c.children) st.material = stickMats[st.userData.ci]; }
+  dirty = true;
+}
+function build(n) {
+  for (const c of cubies) cubeG.remove(c);
+  while (pivot.children.length) pivot.remove(pivot.children[0]);
+  pivot.rotation.set(0, 0, 0); drag.mode = null; drag.id = null; anim = null;
+  cubies = []; N = n;
+  const o = (n - 1) / 2;
+  for (let x = 0; x < n; x++) for (let y = 0; y < n; y++) for (let z = 0; z < n; z++) {
+    const ext = x === 0 || y === 0 || z === 0 || x === n - 1 || y === n - 1 || z === n - 1;
+    if (!ext) continue;
+    const m = new T.Mesh(bodyGeo, bodyMat);
+    m.position.set(x - o, y - o, z - o);
+    const idx = [x, y, z];
+    FACES.forEach((f, ci) => {
+      const ax = ci >> 1, pos = ci % 2 === 0;
+      if ((pos && idx[ax] !== n - 1) || (!pos && idx[ax] !== 0)) return;
+      const st = new T.Mesh(stickGeo, stickMats[ci]);
+      st.position.copy(f).multiplyScalar(CUBIE / 2 + .002);
+      st.lookAt(f.clone().multiplyScalar(2));
+      st.userData = { ci, n: f.clone() };
+      m.add(st);
+    });
+    cubeG.add(m); cubies.push(m);
+  }
+  shadow.scale.setScalar(n * 2.1); shadow.position.y = -n / 2 - .55;
+  fitCamera(); dirty = true;
+}
+
+/* ---------- kamera ---------- */
+let az = .62, el = .52, dist = 12, vAz = 0, vEl = 0;
+function fitCamera() {
+  const w = innerWidth, h = innerHeight; camera.aspect = w / h;
+  const R = N * .9 + .25, vf = camera.fov * Math.PI / 180, hf = 2 * Math.atan(Math.tan(vf / 2) * camera.aspect);
+  const usableV = vf * (h < 560 ? .66 : .72);
+  dist = Math.max(R / Math.sin(usableV / 2), R / Math.sin(hf * .94 / 2));
+  camera.updateProjectionMatrix(); placeCamera();
+}
+function placeCamera() {
+  camera.position.set(dist * Math.cos(el) * Math.sin(az), dist * Math.sin(el), dist * Math.cos(el) * Math.cos(az));
+  camera.lookAt(0, -N * .02, 0);
+}
+function resize() { renderer.setSize(innerWidth, innerHeight, false); fitCamera(); dirty = true; }
+addEventListener('resize', resize);
+
+/* ---------- hamleler ---------- */
+// hamle = [eksen 0..2, katman 0..N-1, çeyrek ±1/2]
+const queue = []; let anim = null, dirty = true;
+const axisVec = a => FACES[a * 2];
+function layerCubies(axis, layer) {
+  const o = (N - 1) / 2;
+  return cubies.filter(c => Math.round(c.position.getComponent(axis) + o) === layer);
+}
+function snap(c) {
+  c.position.set(Math.round(c.position.x * 2) / 2, Math.round(c.position.y * 2) / 2, Math.round(c.position.z * 2) / 2);
+  const m = new T.Matrix4().makeRotationFromQuaternion(c.quaternion), e = m.elements;
+  for (let i = 0; i < 16; i++) e[i] = Math.round(e[i]);
+  c.quaternion.setFromRotationMatrix(m);
+}
+function grab(axis, layer) {
+  pivot.rotation.set(0, 0, 0); pivot.updateMatrixWorld();
+  const list = layerCubies(axis, layer); list.forEach(c => pivot.attach(c)); return list;
+}
+function release(list) { pivot.updateMatrixWorld(); list.forEach(c => { cubeG.attach(c); snap(c); }); pivot.rotation.set(0, 0, 0); }
+function applyInstant(mv) {
+  const list = grab(mv[0], mv[1]);
+  pivot.setRotationFromAxisAngle(axisVec(mv[0]), mv[2] * PI2); release(list);
+}
+// kullanıcı + karıştırma kuyruğu
+function enqueue(mv, opt = {}) { queue.push({ mv, ...opt }); pump(); }
+function pump() {
+  if (anim || drag.mode === 'turn' || !queue.length) return;
+  const q = queue.shift();
+  const list = grab(q.mv[0], q.mv[1]);
+  anim = { list, axis: q.mv[0], from: 0, to: q.mv[2] * PI2, t0: performance.now(), dur: q.dur || 170, mv: q.mv, kind: q.kind };
+  dirty = true;
+}
+function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+function stepAnim(now) {
+  if (!anim) return;
+  const t = Math.min(1, (now - anim.t0) / anim.dur);
+  pivot.setRotationFromAxisAngle(axisVec(anim.axis), anim.from + (anim.to - anim.from) * easeOut(t));
+  dirty = true;
+  if (t >= 1) {
+    const a = anim; release(a.list); anim = null;
+    if (a.mv && a.mv[2] !== 0) onMoveDone(a.mv, a.kind);
+    pump();
+  }
+}
+
+function isSolved() {
+  const seen = {};
+  const n = new T.Vector3();
+  for (const c of cubies) for (const st of c.children) {
+    n.copy(st.userData.n).applyQuaternion(c.quaternion);
+    const k = n.x > .5 ? 0 : n.x < -.5 ? 1 : n.y > .5 ? 2 : n.y < -.5 ? 3 : n.z > .5 ? 4 : 5;
+    if (seen[k] === undefined) seen[k] = st.userData.ci; else if (seen[k] !== st.userData.ci) return false;
+  }
+  return true;
+}
+
+/* ---------- oyun akışı ---------- */
+let tStart = 0;
+function onMoveDone(mv, kind) {
+  if (kind === 'scramble') { if (!queue.some(q => q.kind === 'scramble')) { S.phase = 'ready'; ui(); save(); } return; }
+  if (kind === 'undo') { S.hist.pop(); }
+  else {
+    S.hist.push(mv);
+    if (S.phase === 'ready') { S.phase = 'solving'; S.elapsed = 0; tStart = performance.now(); hideHint(); }
+  }
+  tick(); haptic(8);
+  if (S.phase === 'solving' && isSolved()) win();
+  ui(); save();
+}
+function curElapsed() { return S.phase === 'solving' && tStart ? S.elapsed + (performance.now() - tStart) : S.elapsed; }
+function fmt(ms) {
+  if (ms == null) return '—';
+  const cs = Math.floor(ms / 10), m = Math.floor(cs / 6000), s = Math.floor(cs / 100) % 60, c = cs % 100;
+  return m + ':' + String(s).padStart(2, '0') + '.' + String(c).padStart(2, '0');
+}
+function scramble() {
+  if (scrambling()) return;
+  closeWin();
+  // önce çözülmüş hale dön
+  queue.length = 0; if (anim) { stepAnim(anim.t0 + anim.dur + 1); }
+  build(N);
+  S.hist = []; S.elapsed = 0; tStart = 0; S.phase = 'scrambling';
+  const len = { 2: 12, 3: 22, 4: 38 }[N] || 25, moves = [];
+  let lastAx = -1;
+  while (moves.length < len) {
+    const ax = Math.floor(Math.random() * 3); if (ax === lastAx) continue; lastAx = ax;
+    let ly = Math.floor(Math.random() * N); if (N % 2 && ly === (N - 1) / 2 && N === 3) ly = Math.random() < .5 ? 0 : 2;
+    moves.push([ax, ly, [1, -1, 2][Math.floor(Math.random() * 3)]]);
+  }
+  S.scramble = moves;
+  const dur = Math.max(55, 900 / len * 1.4);
+  moves.forEach(mv => enqueue(mv, { kind: 'scramble', dur: Math.abs(mv[2]) === 2 ? dur * 1.3 : dur }));
+  ui(); showHint(); tick(true);
+}
+const scrambling = () => S.phase === 'scrambling';
+function undo() {
+  if (!S.hist.length || anim || scrambling() || S.phase === 'done') return;
+  const mv = S.hist[S.hist.length - 1];
+  enqueue([mv[0], mv[1], -mv[2]], { kind: 'undo', dur: 150 });
+}
+function win() {
+  S.elapsed = curElapsed(); tStart = 0; S.phase = 'done';
+  const n = String(N), rec = S.best[n] == null || S.elapsed < S.best[n];
+  if (rec) S.best[n] = S.elapsed;
+  S.solves[n] = (S.solves[n] || 0) + 1;
+  $('winTime').textContent = fmt(S.elapsed);
+  $('winMoves').textContent = S.hist.length + ' hamle · ' + N + '×' + N;
+  $('winRec').hidden = !rec;
+  spin = { t0: performance.now(), az0: az };
+  setTimeout(() => $('win').classList.add('on'), 650);
+  confetti(); chime(); haptic([20, 40, 30]);
+}
+function closeWin() { $('win').classList.remove('on'); }
+
+/* ---------- arayüz ---------- */
+function ui() {
+  $('moves').textContent = S.hist.length;
+  $('best').textContent = fmt(S.best[String(N)]);
+  $('time').textContent = fmt(curElapsed());
+  $('undo').disabled = !S.hist.length || scrambling() || S.phase === 'done';
+  $('scramble').disabled = scrambling();
+  $('scramble').classList.toggle('pulse', S.phase === 'idle' || S.phase === 'done');
+  $('scrambleLabel').textContent = S.phase === 'idle' || S.phase === 'done' ? 'Karıştır' : 'Yeniden karıştır';
+  $('sizeChip').textContent = N + '×' + N;
+  root.dataset.skin = S.skin;
+  document.querySelectorAll('#sizes button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.n === N));
+  document.querySelectorAll('#sound button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.s === S.sound));
+  document.querySelectorAll('#cards .card').forEach(b => b.setAttribute('aria-pressed', b.dataset.k === S.skin));
+  $('sizeNote').hidden = S.phase !== 'solving' && S.phase !== 'ready';
+  $('stats').innerHTML = [2, 3, 4].map(k => `<div><small>${k}×${k}${S.solves[k] ? ' · ' + S.solves[k] + ' çözüm' : ''}</small><b>${fmt(S.best[k])}</b></div>`).join('');
+}
+let hintTimer;
+function showHint() { $('hint').classList.remove('off'); clearTimeout(hintTimer); }
+function hideHint() { hintTimer = setTimeout(() => $('hint').classList.add('off'), 600); }
+
+function skinPreview(id) {
+  const c = document.createElement('canvas'), s = 152; c.width = c.height = s;
+  const g = c.getContext('2d'), sk = SKINS[id];
+  const pad = 10, cell = (s - pad * 2) / 3;
+  if (sk.wood) g.drawImage(woodCanvas('#6b4529', '#3a2312', '#8a5d38', 7, 152), 0, 0);
+  else { g.fillStyle = sk.body; g.fillRect(0, 0, s, s); }
+  const order = [4, 0, 2, 4, 5, 3, 1, 4, 0];
+  order.forEach((ci, i) => {
+    const x = pad + (i % 3) * cell + 4, y = pad + Math.floor(i / 3) * cell + 4, w = cell - 8;
+    g.save();
+    if (sk.glow) { g.shadowColor = sk.stickers[ci]; g.shadowBlur = 14; }
+    g.fillStyle = sk.stickers[ci]; g.beginPath();
+    g.roundRect ? g.roundRect(x, y, w, w, 7) : g.rect(x, y, w, w); g.fill(); g.restore();
+  });
+  // köşeleri yuvarla
+  const o = document.createElement('canvas'); o.width = o.height = s; const og = o.getContext('2d');
+  og.beginPath(); og.roundRect ? og.roundRect(0, 0, s, s, 26) : og.rect(0, 0, s, s); og.clip(); og.drawImage(c, 0, 0);
+  return o;
+}
+function buildCards() {
+  const wrap = $('cards');
+  SKIN_IDS.forEach(id => {
+    const b = document.createElement('button'); b.className = 'card'; b.dataset.k = id;
+    b.appendChild(skinPreview(id)); const sp = document.createElement('span'); sp.textContent = SKINS[id].name; b.appendChild(sp);
+    b.onclick = () => { S.skin = id; applyMaterials(); ui(); save(); tick(true); };
+    wrap.appendChild(b);
+  });
+}
+function openSheet() { $('sheet').classList.add('on'); $('scrim').classList.add('on'); ui(); }
+function closeSheet() { $('sheet').classList.remove('on'); $('scrim').classList.remove('on'); }
+$('openSkins').onclick = openSheet; $('sizeChip').onclick = openSheet; $('scrim').onclick = closeSheet; $('closeSheet').onclick = closeSheet;
+$('scramble').onclick = () => { audioInit(); scramble(); };
+$('undo').onclick = undo;
+$('winClose').onclick = closeWin;
+$('winAgain').onclick = () => { closeWin(); setTimeout(scramble, 200); };
+document.querySelectorAll('#sizes button').forEach(b => b.onclick = () => {
+  const n = +b.dataset.n; if (n === N) return;
+  queue.length = 0; anim = null; closeWin();
+  S.size = n; S.hist = []; S.scramble = []; S.elapsed = 0; S.phase = 'idle'; tStart = 0;
+  build(n); ui(); save(); showHint();
+});
+document.querySelectorAll('#sound button').forEach(b => b.onclick = () => { S.sound = +b.dataset.s; audioInit(); ui(); save(); tick(true); });
+
+/* ---------- dokunma ---------- */
+const ray = new T.Raycaster(), ndc = new T.Vector2();
+const drag = { mode: null };
+function toNDC(x, y) { ndc.set(x / innerWidth * 2 - 1, -(y / innerHeight) * 2 + 1); return ndc; }
+function project(v) { const p = v.clone().project(camera); return new T.Vector2((p.x + 1) / 2 * innerWidth, (1 - p.y) / 2 * innerHeight); }
+const el$ = renderer.domElement;
+el$.addEventListener('pointerdown', e => {
+  if (drag.mode || e.button > 0) return;
+  audioInit();
+  el$.setPointerCapture(e.pointerId);
+  drag.id = e.pointerId; drag.x0 = drag.x = e.clientX; drag.y0 = drag.y = e.clientY; drag.t = performance.now();
+  vAz = vEl = 0; spin = null;
+  ray.setFromCamera(toNDC(e.clientX, e.clientY), camera);
+  const hit = (!scrambling() && S.phase !== 'done' && !anim) ? ray.intersectObjects(cubies, true)[0] : null;
+  if (hit) {
+    let c = hit.object; while (c.parent !== cubeG) c = c.parent;
+    const p = hit.point, a = [Math.abs(p.x), Math.abs(p.y), Math.abs(p.z)];
+    const nAx = a[0] > a[1] && a[0] > a[2] ? 0 : a[1] > a[2] ? 1 : 2;
+    const nrm = axisVec(nAx).clone().multiplyScalar(Math.sign(p.getComponent(nAx)));
+    Object.assign(drag, { mode: 'pending', cubie: c, point: p.clone(), nrm, nAx });
+  } else drag.mode = 'orbit';
+});
+el$.addEventListener('pointermove', e => {
+  if (e.pointerId !== drag.id || !drag.mode) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY;
+  if (drag.mode === 'orbit') {
+    const k = 5.2 / Math.min(innerWidth, innerHeight) * 1.0;
+    az -= dx * k; el = Math.max(-1.35, Math.min(1.35, el + dy * k));
+    vAz = -dx * k; vEl = dy * k; placeCamera(); dirty = true; return;
+  }
+  const D = new T.Vector2(e.clientX - drag.x0, e.clientY - drag.y0);
+  if (drag.mode === 'pending') {
+    if (D.length() < 9) return;
+    const p0 = project(drag.point);
+    let best = null;
+    for (let ax = 0; ax < 3; ax++) {
+      if (ax === drag.nAx) continue;
+      const t = axisVec(ax), s = project(drag.point.clone().add(t)).sub(p0), L = s.length();
+      if (L < 1) continue;
+      const score = Math.abs(D.dot(s) / L);
+      if (!best || score > best.score) best = { score, t, s, L };
+    }
+    if (!best) { drag.mode = 'orbit'; return; }
+    const r = new T.Vector3().crossVectors(drag.nrm, best.t);
+    const rAx = Math.abs(r.x) > .5 ? 0 : Math.abs(r.y) > .5 ? 1 : 2, rSign = Math.sign(r.getComponent(rAx));
+    const layer = Math.round(drag.cubie.position.getComponent(rAx) + (N - 1) / 2);
+    Object.assign(drag, { mode: 'turn', sU: best.s.clone().divideScalar(best.L), L: best.L, rAx, rSign, layer, list: grab(rAx, layer), angle: 0, lastA: 0, lastT: performance.now(), vel: 0 });
+  }
+  if (drag.mode === 'turn') {
+    const world = D.dot(drag.sU) / drag.L;
+    const a = world * 1.05 * drag.rSign;
+    const now = performance.now(), dt = Math.max(1, now - drag.lastT);
+    drag.vel = drag.vel * .6 + ((a - drag.lastA) / dt) * .4; drag.lastA = a; drag.lastT = now;
+    drag.angle = a; pivot.setRotationFromAxisAngle(axisVec(drag.rAx), a); dirty = true;
+  }
+});
+function endDrag(e) {
+  if (e.pointerId !== drag.id || !drag.mode) return;
+  if (drag.mode === 'turn') {
+    let q = Math.round(drag.angle / PI2);
+    const flick = drag.vel * 160;
+    if (q === 0 && Math.abs(drag.angle + flick) > .5) q = Math.sign(drag.angle + flick);
+    q = Math.max(-2, Math.min(2, q));
+    const qn = ((q % 4) + 4) % 4, mq = qn === 3 ? -1 : qn;
+    anim = { list: drag.list, axis: drag.rAx, from: drag.angle, to: q * PI2, t0: performance.now(), dur: 90 + Math.abs(q * PI2 - drag.angle) * 90, mv: mq ? [drag.rAx, drag.layer, mq] : null, kind: 'user' };
+  }
+  drag.mode = null; drag.id = null; pump();
+}
+el$.addEventListener('pointerup', endDrag);
+el$.addEventListener('pointercancel', endDrag);
+el$.addEventListener('wheel', e => { e.preventDefault(); dist = Math.max(N * 2.4, Math.min(N * 8, dist * (1 + e.deltaY * .001))); placeCamera(); dirty = true; }, { passive: false });
+
+// klavye: U D L R F B (+Shift ters), M orta katman
+addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || scrambling() || S.phase === 'done') return;
+  const k = e.key.toLowerCase(), L = N - 1;
+  const map = { r: [0, L, -1], l: [0, 0, 1], u: [1, L, -1], d: [1, 0, 1], f: [2, L, -1], b: [2, 0, 1] };
+  if (k === 'z' || k === 'backspace') { undo(); return; }
+  if (k === ' ') { e.preventDefault(); scramble(); return; }
+  const m = map[k]; if (!m) return;
+  audioInit(); enqueue([m[0], m[1], e.shiftKey ? -m[2] : m[2]], { kind: 'user', dur: 140 });
+});
+
+/* ---------- ses ve titreşim ---------- */
+let ac = null, noiseBuf = null;
+function audioInit() {
+  if (ac || !S.sound) return;
+  try {
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    noiseBuf = ac.createBuffer(1, ac.sampleRate * .06, ac.sampleRate);
+    const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
+  } catch (e) { ac = null; }
+}
+function tick(soft) {
+  if (!ac || !S.sound) return;
+  try {
+    const t = ac.currentTime, s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+    s.buffer = noiseBuf; f.type = 'bandpass'; f.frequency.value = soft ? 2400 : 1500 + Math.random() * 500; f.Q.value = 1.4;
+    g.gain.value = soft ? .18 : .38; s.connect(f).connect(g).connect(ac.destination); s.start(t);
+  } catch (e) {}
+}
+function chime() {
+  if (!ac || !S.sound) return;
+  [523.25, 659.25, 783.99, 1046.5].forEach((fr, i) => {
+    const t = ac.currentTime + i * .09, o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'sine'; o.frequency.value = fr; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.16, t + .02); g.gain.exponentialRampToValueAtTime(.001, t + .9);
+    o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 1);
+  });
+}
+function haptic(p) { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} }
+
+/* ---------- konfeti ---------- */
+const fx = $('fx'), fg = fx.getContext('2d'); let parts = [];
+function confetti() {
+  const dpr = Math.min(devicePixelRatio || 1, 2); fx.width = innerWidth * dpr; fx.height = innerHeight * dpr; fg.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const cols = SKINS[S.skin].stickers;
+  for (let i = 0; i < 140; i++) {
+    const a = Math.random() * Math.PI * 2, v = 4 + Math.random() * 9;
+    parts.push({ x: innerWidth / 2, y: innerHeight * .45, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 5, r: Math.random() * 6, vr: (Math.random() - .5) * .4, s: 5 + Math.random() * 6, c: cols[i % 6], life: 1 });
+  }
+}
+function stepFx() {
+  if (!parts.length) return;
+  fg.clearRect(0, 0, innerWidth, innerHeight);
+  parts = parts.filter(p => p.life > 0);
+  for (const p of parts) {
+    p.vy += .28; p.vx *= .985; p.vy *= .985; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.life -= .0065;
+    fg.save(); fg.globalAlpha = Math.min(1, p.life * 2); fg.translate(p.x, p.y); fg.rotate(p.r); fg.fillStyle = p.c;
+    fg.fillRect(-p.s / 2, -p.s / 2, p.s, p.s * .7); fg.restore();
+  }
+  if (!parts.length) fg.clearRect(0, 0, innerWidth, innerHeight);
+}
+
+/* ---------- döngü ---------- */
+let spin = null, lastFrame = performance.now();
+function loop(now) {
+  requestAnimationFrame(loop);
+  const dt = Math.min(50, now - lastFrame); lastFrame = now;
+  stepAnim(now);
+  if (!drag.mode && (Math.abs(vAz) > 1e-4 || Math.abs(vEl) > 1e-4)) {
+    az += vAz; el = Math.max(-1.35, Math.min(1.35, el + vEl)); vAz *= .92; vEl *= .92; placeCamera(); dirty = true;
+  }
+  if (spin) {
+    const t = Math.min(1, (now - spin.t0) / 1600);
+    az = spin.az0 + Math.PI * 2 * (1 - Math.pow(1 - t, 3)); placeCamera(); dirty = true;
+    if (t >= 1) spin = null;
+  } else if (S.phase === 'idle' && !drag.mode && !anim) { az += dt * .00012; placeCamera(); dirty = true; }
+  if (S.phase === 'solving') $('time').textContent = fmt(curElapsed());
+  stepFx();
+  if (dirty) { renderer.render(scene, camera); dirty = false; }
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && S.phase === 'solving' && tStart) { S.elapsed = curElapsed(); tStart = performance.now(); save(); }
+});
+addEventListener('pagehide', () => { if (S.phase === 'solving') { S.elapsed = curElapsed(); tStart = performance.now(); } save(); });
+
+/* ---------- başlat ---------- */
+makeMaterials(); buildCards();
+build([2, 3, 4].includes(S.size) ? S.size : 3);
+if (S.phase === 'scrambling') S.phase = 'ready';
+if (S.phase !== 'idle') {
+  S.scramble.forEach(applyInstant); S.hist.forEach(applyInstant);
+  if (S.phase === 'solving') tStart = performance.now();
+  if (S.phase === 'done' || isSolved()) { S.phase = 'idle'; S.hist = []; S.elapsed = 0; build(N); }
+}
+if (S.phase === 'solving' || S.hist.length) $('hint').classList.add('off');
+resize(); ui(); requestAnimationFrame(loop);
+window.__kup = { S, isSolved, enqueue, scramble, get N() { return N; } };
+})();
+</script>
+</body></html>
