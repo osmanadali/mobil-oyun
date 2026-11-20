@@ -527,6 +527,7 @@ async function savasBaslat(sim, rakip) {
   const s = $('savas');
   q('.rakipK', s).innerHTML = `<div class="amb"><img src="${P((rakip.takim || [])[0] ? rakip.takim[0].h : 'tilki')}" alt=""></div><div style="min-width:0"><small>${rakip.duello ? 'Düello' : 'Rakip · Tur ' + oyun.turAd()}</small><b>${rakip.ad}</b><span>${rakip.kaynak === 'bot' ? 'Bot' : 'Kupa ' + sayi(rakip.kupa || 0)}</span></div>`;
   const a = savasBilgi.alamet; q('.alametK', s).innerHTML = `<span class="ay resim" style="${alametArka(a.id)}">${alametIc(a.id)}</span><div><b>${a.ad}</b><span>${a.m}</span></div>`;
+  const alK = q('.alametK', s); alK.classList.remove('acik'); alK.title = a.ad + ': ' + a.m; alK.onclick = () => alK.classList.toggle('acik');   // açıklama dokununca
   if (!savasDongu) { savasDongu = true; requestAnimationFrame(savasKare); }
 }
 function hizUygula() { S3.hiz(duraklat ? 0 : hizSecim); document.querySelectorAll('#savas .hizlar .btn').forEach((b, i) => { b.classList.toggle('secik', i + 1 === hizSecim); b.classList.toggle('altin', i + 1 === hizSecim); b.classList.toggle('mor', i + 1 !== hizSecim); }); q('#savas .duraklat .btn').innerHTML = ik(duraklat ? 'oyna' : 'durdur'); }
@@ -572,6 +573,8 @@ $('tuval3d').addEventListener('pointerdown', (e) => {
   const r = $('tuval3d').getBoundingClientRect(); const u = S3.dokun(e.clientX - r.left, e.clientY - r.top);
   if (u) { kutSecim = false; kutCiz(u); }
 });
+// birimin kademesi (çerçeve rengi .k1–.k5); canavar ya da bilinmeyen birimde 0 (nötr)
+function kademeAl(o) { try { return o && (kh(o.b.h) || {}).kademe || 0; } catch (e) { return 0; } }
 function hudCiz() {
   const sim = savasBilgi.sim, t = Math.max(0, K.savasSuresi - sonDurum.t);
   // Kut motorda kullanıldıysa (dokunuş ya da başka yol) düğmeyi kullanıldı durumuna getir
@@ -581,10 +584,23 @@ function hudCiz() {
   const a = oran(0), b = oran(1), s = $('savas');
   // Gün Batımı (yalnız Arena): görünen saniyeye göre çarpan
   const gbT = sonDurum.t - (sim.gunBatimiBasla != null ? sim.gunBatimiBasla : K.gunBatimi.basla) + 1e-9, gbH = oyun.seviyeli() && !savasBilgi.rakip.duello && gbT >= 0 ? `<span class="gunBatimi">Gün Batımı ×${(1 + K.gunBatimi.artis * Math.floor(gbT)).toFixed(1).replace('.', ',')}</span>` : '';
-  hudYaz(q('.skor', s), `<div class="taraf"><div class="ust"><span>Sen</span><b>%${a}</b></div><div class="takimCan"><i style="width:${a}%"></i></div></div>
-    <div class="saat${Math.ceil(t) <= 10 && !savasBilgi.bitti ? ' son10' : ''}"><b>0:${String(Math.ceil(t)).padStart(2, '0')}</b><small>kalan</small>${gbH}</div>
-    <div class="taraf sag"><div class="ust"><span>Rakip</span><b>%${b}</b></div><div class="takimCan"><i style="width:${b}%"></i></div></div>`);
-  const ayk = (ad, cls, tr) => { const l = sim.birimler.filter(o => o.taraf === tr); return `<div class="s ${cls}"><span>${ad}</span>${l.map(o => `<div class="bas ${o.olu ? 'olu' : ''}"><img src="${P(o.b.h)}" alt=""></div>`).join('')}<em>${l.filter(o => !o.olu).length}/${l.length}</em></div>`; };
+  // skor şeridi bir kez kurulur, sonra yalnız genişlik/metin güncellenir (gecikmeli hasar izi CSS geçişiyle akar)
+  const sk = q('.skor', s), son10 = Math.ceil(t) <= 10 && !savasBilgi.bitti;
+  if (sk._sim !== sim) {
+    sk._sim = sim; sk._html = null;
+    const lider = (tr) => sim.birimler.filter(o => o.taraf === tr).sort((x, y) => (y.b.s || 1) - (x.b.s || 1))[0];
+    const tar = (tr, ad) => { const o = lider(tr); return `<div class="taraf ${tr ? 'sag dus' : 'biz'}"><div class="tpor k${kademeAl(o)}">${o ? `<img src="${P(o.b.h)}" alt="">` : ''}</div>
+      <div class="tic"><div class="ust"><span>${ad}</span><em class="say"></em><b></b></div><div class="takimCan"><s class="iz"></s><i></i><u></u></div></div></div>`; };
+    sk.innerHTML = tar(0, 'Sen') + `<div class="saat"><b></b><small>kalan</small><span class="gunBatimi" hidden></span></div>` + tar(1, 'Rakip');
+  }
+  const tY = (tr, y) => { const e = sk.querySelectorAll('.taraf')[tr], l = sim.birimler.filter(o => o.taraf === tr);
+    q('.ust b', e).textContent = '%' + y; q('.say', e).textContent = `${l.filter(o => !o.olu).length}/${l.length}`;
+    const w = y + '%'; if (q('.takimCan i', e).style.width !== w) { q('.takimCan i', e).style.width = w; q('.takimCan .iz', e).style.width = w; e.classList.remove('vur'); void e.offsetWidth; e.classList.add('vur'); } };
+  tY(0, a); tY(1, b);
+  const sa = q('.saat', sk); sa.classList.toggle('son10', son10); q('b', sa).textContent = '0:' + String(Math.ceil(t)).padStart(2, '0');
+  const gb = q('.gunBatimi', sa), gbY = gbH ? gbH.replace(/<[^>]+>/g, '').replace('Gün Batımı ', '') : '';
+  gb.hidden = !gbY; if (gb.textContent !== gbY) { gb.textContent = gbY; gb.title = gbY ? 'Gün Batımı: hasar çarpanı ' + gbY : ''; }
+  const ayk = (ad, cls, tr) => { const l = sim.birimler.filter(o => o.taraf === tr); return `<div class="s ${cls}"><span>${ad}</span>${l.map(o => `<div class="bas k${kademeAl(o)} ${o.olu ? 'olu' : ''}"><img src="${P(o.b.h)}" alt=""></div>`).join('')}<em>${l.filter(o => !o.olu).length}/${l.length}</em></div>`; };
   hudYaz($('ayakta'), ayk('Sen', 'biz', 0) + ayk('Rakip', 'dus', 1));
 }
 // HUD yalnız içerik değişince yeniden kurulur (aynı innerHTML her 120 ms'de portreleri ve yerleşimi baştan kurduruyordu)
@@ -603,19 +619,29 @@ function sonucGoster(sonuc) {
   const r = oyun.savasBitti(sonuc); savasBilgi.sonucIslem = r;
   if (r && r.hasar > 0 && k === 1 && S3.hasarKivilcim) S3.hasarKivilcim(1);   // rakibin sağ birimlerinden oyuncuya can hasarı ışıkları
   const M = oyun.M, zh = K.hizli.zaferHedef, arena = r && !r.duello && (r.bitti ? r.mod !== 'hizli' : oyun.seviyeli());
-  const lbB = r && r.lobi ? `<em> · lobi: ${r.lobi.yasayan}/8 ayakta, sıran ${r.bitti ? r.sira : r.lobi.sira}${r.lobi.elenen.length ? ' · elenen: ' + r.lobi.elenen.join(', ') : ''}</em>` : '';
-  const bil = r && r.duello ? `<span>Düello</span>`
-    : arena ? (r.hasar ? `<span>−${r.hasar} can · ${r.can} can kaldı</span>` : k === 0 ? `<em>Kazandın · ${r.can} can</em>` : `<span>Can gitmedi · ${r.can} can</span>`) + (r.ganimet ? `<em> · ganimet +${r.ganimet} altın</em>` : '') + (r.esya && r.esya.length ? `<em> · ${r.esya.map(id => D.esya(id).ad).join(', ')}</em>` : '')
-      + (r.kahraman && r.kahraman.length ? `<em> · ${r.kahraman.map(b => oyun.birimAd(b)).join(', ')}</em>` : '') + (r.secim ? `<em> · ganimet seçimi bekliyor</em>` : '') + lbB
-    : k === 0 ? `<em>+1 zafer · ${r.bitti ? r.zafer : M.zafer}/${zh}</em>` : k === 1 ? `<span>−1 can · ${r.bitti ? 0 : M.can} can kaldı</span>` : `<span>Berabere: can gitmedi</span>`;
+  // sonuç özeti: yalnız motorun döndürdüğü veriden chip'ler (tür: iyi / kotu / altin / notr)
+  const ist = S3.istatistik ? S3.istatistik() : [], mvpO = mvpSec(ist), cl = [], cip = (tur, m, ikon) => cl.push(`<span class="cip ${tur}">${ikon ? ik(ikon) : ''}${m}</span>`);
+  if (r && r.duello) cip('notr', 'Düello', 'zincir');
+  else if (arena) {
+    if (r.hasar) { cip('kotu', `−${r.hasar} can`); cip('notr', `${r.can} can kaldı`); }
+    else cip(k === 0 ? 'iyi' : 'notr', k === 0 ? `Kazandın · ${r.can} can` : `Can gitmedi · ${r.can} can`);
+    if (r.ganimet) cip('altin', `+${r.ganimet} altın`);
+    if (r.esya && r.esya.length) cip('iyi', r.esya.map(id => D.esya(id).ad).join(', '));
+    if (r.kahraman && r.kahraman.length) cip('iyi', r.kahraman.map(b => oyun.birimAd(b)).join(', '));
+    if (r.secim) cip('altin', 'Ganimet seçimi bekliyor');
+    if (r.lobi) { cip('notr', `Lobi ${r.lobi.yasayan}/8 ayakta · sıran ${r.bitti ? r.sira : r.lobi.sira}`); if (r.lobi.elenen.length) cip('kotu', 'Elenen: ' + r.lobi.elenen.join(', ')); }
+  } else if (k === 0) cip('iyi', `+1 zafer · ${r.bitti ? r.zafer : M.zafer}/${zh}`);
+  else if (k === 1) { cip('kotu', '−1 can'); cip('notr', `${r.bitti ? 0 : M.can} can kaldı`); }
+  else cip('notr', 'Berabere: can gitmedi');
+  if (mvpO) cip('mvp', `Yıldız: ${oyun.birimAd(mvpO.b)}`, 'tac');
+  const bil = cl.join('');
   $('ayakta').style.display = 'none'; $('savas').classList.add('bitti');   // sonuçta Kut, hız ve duraklat gizlenir
   const kt = k === 0 ? 0 : k === 1 ? 1 : 2;
-  $('sonucYer').innerHTML = `<div class="sonucBant ${['zafer', 'yenilgi', 'berabere'][kt]}">${sonucBaslikHTML(kt)}<div class="bil">${bil}</div><div class="sDugmeler"><button class="btn mor" id="sOzet" aria-expanded="false">${ik('kilic')} Hasar özeti</button><button class="btn altin bekle" id="sDevam">Devam ${ik('oyna')}</button></div></div><div class="pn hasarOzet" id="hasarOzet" hidden></div>`;
+  $('sonucYer').innerHTML = `<div class="sonucPerde ${['zafer', 'yenilgi', 'berabere'][kt]}" aria-hidden="true"><div class="spIsin"></div><div class="spPatla"></div></div><div class="sonucBant ${['zafer', 'yenilgi', 'berabere'][kt]}">${sonucBaslikHTML(kt)}<div class="sAyrac" aria-hidden="true"><i></i><span></span><i></i></div><div class="bil">${bil}</div><div class="sDugmeler"><button class="btn mor" id="sOzet" aria-expanded="false">${ik('kilic')} Hasar özeti</button><button class="btn altin bekle" id="sDevam"><span>Devam</span>${ik('oyna')}</button></div></div><div class="pn hasarOzet" id="hasarOzet" hidden></div>`;
   bitisSonra(azHareket() ? 300 : 1100, () => { if ($('sDevam')) $('sDevam').classList.remove('bekle'); });   // başlık indikten sonra
-  const ist = S3.istatistik ? S3.istatistik() : [];
   hasarOzetKur(ist);
   // Maçın yıldızı: bant animasyonu bitince (1,6 sn) + 0,6 sn; yenilgide sade kart (kamera yok)
-  const mvpO = mvpSec(ist); if (mvpO) bitisSonra(azHareket() ? 900 : 2200, () => mvpAc(mvpO, k));
+  if (mvpO) bitisSonra(azHareket() ? 900 : 2200, () => mvpAc(mvpO, k));
   $('sDevam').onclick = async () => {
     bitisTemizle(); S3.temizle(); savasBilgi = null;
     if (r && r.duello) { anaCiz(); goster('ana'); return; }
@@ -985,5 +1011,5 @@ anaCiz(); goster('ana');
   window.KUT_TEST.acilis = true;
 })();
 // bitiş ekranı önizlemesi (test): oyun durumuna dokunmadan sonuç bandını k (0 zafer, 1 yenilgi, 2 berabere) ile kurar ve animasyonu başlatır
-function _sonucOnizle(k) { bitisTemizle(); $('sonucYer').innerHTML = `<div class="sonucBant ${['zafer', 'yenilgi', 'berabere'][k]}">${sonucBaslikHTML(k)}<div class="bil"><em>Önizleme</em></div><div class="sDugmeler"><button class="btn mor">${ik('kilic')} Hasar özeti</button><button class="btn altin">Devam ${ik('oyna')}</button></div></div><div class="pn hasarOzet" id="hasarOzet" hidden></div>`; sonucAnimBaslat(k); }
+function _sonucOnizle(k) { bitisTemizle(); $('sonucYer').innerHTML = `<div class="sonucPerde ${['zafer', 'yenilgi', 'berabere'][kt]}" aria-hidden="true"><div class="spIsin"></div><div class="spPatla"></div></div><div class="sonucBant ${['zafer', 'yenilgi', 'berabere'][k]}">${sonucBaslikHTML(k)}<div class="bil"><em>Önizleme</em></div><div class="sDugmeler"><button class="btn mor">${ik('kilic')} Hasar özeti</button><button class="btn altin">Devam ${ik('oyna')}</button></div></div><div class="pn hasarOzet" id="hasarOzet" hidden></div>`; sonucAnimBaslat(k); }
 window.KUT_TEST = { acilis: false, get vitrin() { return vitrin; }, oyun, S3, goster, macCiz, sonCiz, ogr, ogrBaslat, ogrKapat, OGR_ADIMLAR, bitis: { _sonucOnizle, mvpAc, mvpSec, mvpKapat, savasGirisGoster, torenGoster } };

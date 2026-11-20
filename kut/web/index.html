@@ -1351,6 +1351,150 @@ html.alcak #perde.menuPanel .pencere{border-width:18px 8px 20px;border-image-wid
 #mac .kart.yuksel{border-color:#7dffb6;box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 16px 2px rgba(63,214,143,.75)}
 #mac .kTag{background:var(--kc);color:#0e0a18;border:0;height:18px;font-size:11px;padding:0 5px;border-radius:5px}
 #mac .dukkan{padding:0 10px 10px}
+/* ===================== SİNEMATİK SAVAŞ (Aşama B) =====================
+   Hazırlıktaki sade dil (koyu cam panel, 1px açık mor çerçeve, kademe renkleri) savaşta da; altın yalnız saat madalyonunda ve Devam'da.
+   Seçiciler/ID'ler aynı; yalnız görünüm. */
+#savas{--cam:rgba(16,12,28,.78);--camC:rgba(210,195,255,.16)}
+#savas .pn,#savas .pn.gem{border:1px solid var(--camC);border-image:none;border-radius:12px;background:var(--cam);box-shadow:0 8px 20px rgba(0,0,0,.4);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#savas .pn.gem::before,#savas .pn.gem::after{display:none}
+#savas .savasUst{padding:10px 12px;gap:10px}
+/* --- skor şeridi: takım portresi + gradyanlı can + gecikmeli hasar izi; saat ortada madalyon --- */
+#savas .skor{gap:0;padding:5px 6px;border-radius:14px;align-items:center;
+  background:linear-gradient(180deg,rgba(26,20,44,.86),rgba(12,9,22,.88))}
+#savas .skor .taraf{width:clamp(190px,22cqw,262px);display:flex;align-items:center;gap:8px;padding:0 10px 0 2px}
+#savas .skor .taraf.sag{flex-direction:row-reverse;padding:0 2px 0 10px}
+#savas .skor .tic{flex:1;min-width:0}
+#savas .skor .tpor{position:relative;width:40px;height:40px;flex:none;border-radius:10px;overflow:hidden;border:1.5px solid var(--kc,#8a82a0);
+  background:radial-gradient(circle at 50% 30%,#4a3f6a,#17112a);box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 10px -2px var(--kc,transparent)}
+#savas .skor .tpor img{position:absolute;left:-12%;top:-4%;width:124%;height:124%;object-fit:contain}
+#savas .skor .tpor::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:#3fd68f}
+#savas .skor .dus .tpor::after{background:#ff4d6d}
+#savas .skor .taraf .ust{display:flex;align-items:baseline;gap:6px;margin-bottom:4px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#a99fc2}
+#savas .skor .taraf.sag .ust{flex-direction:row-reverse}
+#savas .skor .taraf .ust .say{font-style:normal;font-size:11px;font-weight:700;letter-spacing:0;color:#7f7796;font-variant-numeric:tabular-nums}
+#savas .skor .taraf .ust b{margin-left:auto;font-size:19px;font-weight:900;letter-spacing:0;line-height:1;font-variant-numeric:tabular-nums;color:#eafff0;text-shadow:0 1px 0 #000,0 0 10px rgba(63,214,143,.45)}
+#savas .skor .taraf.sag .ust b{margin-left:0;margin-right:auto;color:#ffe8ec;text-shadow:0 1px 0 #000,0 0 10px rgba(255,77,109,.45)}
+#savas .takimCan{height:14px;border-radius:4px;background:linear-gradient(180deg,#07050c,#15101f);border:1px solid rgba(255,255,255,.14);box-shadow:inset 0 1px 3px rgba(0,0,0,.8)}
+#savas .takimCan i,#savas .takimCan .iz{position:absolute;top:0;bottom:0;left:0;border-radius:3px}
+#savas .takimCan i{background:linear-gradient(180deg,#b9ffd4 0,#4fe08e 38%,#1c9c55 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 0 8px rgba(63,214,143,.5);transition:width .18s ease-out}
+#savas .takimCan .iz{text-decoration:none;background:linear-gradient(180deg,#fff,#ffd0d6);opacity:.85;transition:width .7s cubic-bezier(.4,0,.2,1) .45s}
+#savas .takimCan u{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),rgba(0,0,0,.45) calc(10% - 1px) 10%)}
+#savas .skor .taraf.sag .takimCan i,#savas .skor .taraf.sag .takimCan .iz{left:auto;right:0}
+#savas .skor .taraf.sag .takimCan i{background:linear-gradient(180deg,#ffc2cc 0,#ff5a78 38%,#b3173a 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 0 8px rgba(255,77,109,.5)}
+#savas .skor .taraf.vur .takimCan{animation:canVur .35s ease-out}
+@keyframes canVur{0%{border-color:rgba(255,255,255,.7);box-shadow:inset 0 1px 3px rgba(0,0,0,.8),0 0 10px rgba(255,255,255,.35)}100%{border-color:rgba(255,255,255,.14)}}
+/* saat madalyonu: altın çift halka, koyu merkez; son 10 sn kırmızı nabız */
+#savas .saat{position:relative;width:70px;height:70px;margin:-4px 4px;border-radius:50%;border:2px solid #f2bf4a;
+  background:radial-gradient(circle at 50% 35%,#34265a,#120b22 70%);box-shadow:0 0 0 3px #1a1006,0 0 0 4px rgba(242,191,74,.55),0 6px 14px rgba(0,0,0,.6),inset 0 0 12px rgba(0,0,0,.8)}
+#savas .saat b{font-size:24px;color:#fff3cf;text-shadow:0 2px 0 #000;margin-top:2px}
+#savas .saat small{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#bfa774}
+#savas .saat.son10{border-color:#ff5a5a;background:radial-gradient(circle at 50% 35%,#6a1426,#22060e 70%);box-shadow:0 0 0 3px #1a0408,0 0 0 4px rgba(255,90,90,.6),0 6px 14px rgba(0,0,0,.6);animation:saatNabiz2 1s ease-out infinite}
+#savas .saat.son10 b{color:#ffd0d0;animation:none}
+#savas .saat.son10 small{color:#ff9a9a}
+@keyframes saatNabiz2{0%{box-shadow:0 0 0 3px #1a0408,0 0 0 4px rgba(255,90,90,.9),0 0 0 4px rgba(255,60,60,.6)}100%{box-shadow:0 0 0 3px #1a0408,0 0 0 4px rgba(255,90,90,.6),0 0 0 16px rgba(255,60,60,0)}}
+#savas .saat .gunBatimi{position:absolute;left:50%;bottom:-11px;transform:translateX(-50%);height:18px;padding:0 7px;border-radius:9px;display:flex;align-items:center;white-space:nowrap;
+  font:800 11px/1 var(--fGovde);color:#fff0d8;background:linear-gradient(180deg,#d8641c,#8a2a0a);border:1px solid #ffb36a;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+#savas .saat .gunBatimi[hidden]{display:none}
+/* --- rakip ve alamet etiketleri: kompakt koyu cam --- */
+#savas .rakipK{gap:8px;padding:4px 12px 4px 4px;border-radius:12px;background:var(--cam);border:1px solid var(--camC)}
+#savas .rakipK .amb{width:36px;height:36px;border:1.5px solid rgba(255,110,140,.75)}
+#savas .rakipK small{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#ff9fb2}
+#savas .rakipK b{font-size:15px;line-height:1.15}
+#savas .rakipK span{font-size:11px;color:#9a91b0}
+#savas .alametK{height:44px;gap:8px;padding:0 12px 0 4px;border-radius:12px;font-size:13px;cursor:pointer;
+  background:linear-gradient(90deg,rgba(110,18,46,.55),var(--cam) 55%);border:1px solid var(--camC);box-shadow:0 8px 20px rgba(0,0,0,.4);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#savas .alametK .ay{width:34px;height:34px;border-radius:9px}
+#savas .alametK b{font-size:14px}
+#savas .alametK span{display:none;font-size:11px;color:#d8cfe6}
+#savas .alametK.acik{height:auto;min-height:44px;white-space:normal;max-width:min(300px,30cqw)}
+#savas .alametK.acik span{display:block}
+/* --- hız ve duraklat --- */
+#savas .hizlar{padding:6px;gap:6px}
+#savas .hizlar small{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#8e86a3}
+/* --- ayakta paneli: kademe renkli çerçeve; ölüler gri + çarpı --- */
+#savas .ayakta{padding:7px 9px;gap:5px}
+#savas .ayakta .s>span{width:42px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#7fe3ac}
+#savas .ayakta .dus>span{color:#ff9fb2}
+#savas .ayakta .bas{width:30px;height:30px;border-radius:8px;border:1.5px solid var(--kc,#8a82a0);background:radial-gradient(circle at 50% 30%,#3c3258,#140e24);box-shadow:0 0 6px -1px var(--kc,transparent)}
+#savas .ayakta .dus .bas{border-color:var(--kc,#8a82a0);background:radial-gradient(circle at 50% 30%,#4a2436,#1a0a14)}
+#savas .ayakta .bas.olu{filter:none;border-color:#4a4558;box-shadow:none}
+#savas .ayakta .bas.olu img{filter:grayscale(1) brightness(.45)}
+#savas .ayakta .bas.olu::after{content:"";position:absolute;inset:3px;background:linear-gradient(45deg,transparent calc(50% - 1.5px),#ff5a6e calc(50% - 1.5px) calc(50% + 1.5px),transparent calc(50% + 1.5px)),linear-gradient(-45deg,transparent calc(50% - 1.5px),#ff5a6e calc(50% - 1.5px) calc(50% + 1.5px),transparent calc(50% + 1.5px));opacity:.85}
+#savas .ayakta .s em{font-weight:800;color:#a99fc2;font-variant-numeric:tabular-nums}
+
+/* --- SONUÇ: karartma + vinyet, ışın, ışık patlaması; ince çizgili bant, iner başlık, ayraç, chip'ler, net düğmeler --- */
+#sonucYer{--sy:44%}
+.sonucPerde{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden;--t1:#ffd56a;--t2:rgba(255,196,90,.5);
+  background:radial-gradient(ellipse 70% 60% at 50% var(--sy),rgba(10,6,20,.12),rgba(8,5,14,.5) 60%,rgba(3,2,7,.86) 100%);animation:perdeAc .6s ease-out both;transition:opacity .3s}
+.sonucPerde.yenilgi{--t1:#c04a7a;--t2:rgba(120,50,160,.5);background:radial-gradient(ellipse 70% 60% at 50% var(--sy),rgba(20,6,22,.2),rgba(14,5,18,.58) 60%,rgba(4,1,8,.9) 100%)}
+.sonucPerde.berabere{--t1:#9cc0e0;--t2:rgba(110,150,200,.45);background:radial-gradient(ellipse 70% 60% at 50% var(--sy),rgba(8,12,22,.15),rgba(6,9,18,.55) 60%,rgba(2,3,8,.88) 100%)}
+@keyframes perdeAc{from{opacity:0}to{opacity:1}}
+.spIsin{position:absolute;left:50%;top:var(--sy);width:150cqmax;height:150cqmax;margin:-75cqmax 0 0 -75cqmax;opacity:0;
+  background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--t1) 22%,transparent) 0 3deg,transparent 3deg 15deg);
+  -webkit-mask:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 14%,transparent 42%);mask:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 14%,transparent 42%);
+  animation:spIsinAc 1.2s ease-out .45s both,don 80s linear infinite}
+@keyframes spIsinAc{from{opacity:0}to{opacity:1}}
+.yenilgi .spIsin{animation:spIsinAc 1.2s ease-out .35s both,don 120s linear infinite reverse}
+.spPatla{position:absolute;left:50%;top:var(--sy);width:70cqw;height:34cqh;margin:-17cqh 0 0 -35cqw;border-radius:50%;opacity:0;
+  background:radial-gradient(ellipse,rgba(255,255,255,.55) 0,var(--t2) 30%,transparent 70%);animation:spPatla 1.4s cubic-bezier(.2,.7,.2,1) .45s both}
+.yenilgi .spPatla{animation-delay:.35s}.berabere .spPatla{animation-delay:.4s}
+@keyframes spPatla{0%{opacity:0;transform:scale(.3)}18%{opacity:1;transform:scale(1)}100%{opacity:.55;transform:scale(1.15)}}
+#sonucYer:has(.sonucBant.gizli) .sonucPerde{opacity:0}
+.sonucBant{z-index:2;top:var(--sy);gap:10px;padding:26px 0 24px;border:0;
+  background:linear-gradient(90deg,transparent,rgba(12,8,24,.72) 16%,rgba(12,8,24,.82) 50%,rgba(12,8,24,.72) 84%,transparent);
+  animation:bantGel .45s cubic-bezier(.2,.8,.2,1) both;--t1:#f2bf4a}
+.sonucBant.yenilgi{--t1:#d0507e}.sonucBant.berabere{--t1:#8fb8dc}
+.sonucBant::before,.sonucBant::after{content:"";position:absolute;left:8%;right:8%;height:1px;background:linear-gradient(90deg,transparent,var(--t1) 30%,color-mix(in srgb,var(--t1) 40%,#fff) 50%,var(--t1) 70%,transparent)}
+.sonucBant::before{top:0}.sonucBant::after{bottom:0;opacity:.6}
+.sonucBant b{font-size:78px;color:#ffe9a8;text-shadow:0 2px 0 #7a4a10,0 0 26px rgba(255,200,90,.55),0 0 70px rgba(255,170,60,.3)}
+.sonucBant.yenilgi b{color:#f3c4d6;text-shadow:0 2px 0 #4a0c28,0 0 26px rgba(200,60,120,.5),0 0 70px rgba(110,40,160,.35)}
+.sonucBant.berabere b{color:#e2eefa;text-shadow:0 2px 0 #1e3654,0 0 26px rgba(140,180,230,.5),0 0 70px rgba(90,130,190,.3)}
+.sonucBant .sYazi b{letter-spacing:.16em;padding-left:.16em;animation:baslikIn2 .6s cubic-bezier(.2,.7,.2,1) .5s both}
+@keyframes baslikIn2{0%{opacity:0;transform:translateY(-34px);letter-spacing:.42em}55%{opacity:1}100%{opacity:1;transform:none;letter-spacing:.16em}}
+.yenilgi .sYazi b{animation:yenilgiYazi2 .68s .5s both}
+@keyframes yenilgiYazi2{0%{opacity:0;transform:translateY(-30px);animation-timing-function:cubic-bezier(.2,.7,.2,1)}
+  44.1%{opacity:1;transform:none;animation-timing-function:linear}55.3%{transform:translateX(-5px) rotate(-.6deg)}66.5%{transform:translateX(4px) rotate(.5deg)}77.6%{transform:translateX(-2px)}100%{opacity:1;transform:none}}
+.sAyrac{display:flex;align-items:center;gap:10px;margin-top:-2px;animation:asagidanGel .4s ease-out .95s both}
+.sAyrac i{width:min(150px,16cqw);height:1px;background:linear-gradient(90deg,transparent,var(--t1))}
+.sAyrac i:last-child{background:linear-gradient(90deg,var(--t1),transparent)}
+.sAyrac span{width:7px;height:7px;transform:rotate(45deg);background:var(--t1);box-shadow:0 0 8px var(--t1)}
+.sonucBant .bil{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:min(820px,92cqw);font-size:15px}
+.sonucBant .cip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 13px;border-radius:16px;font-weight:800;white-space:nowrap;
+  color:#e8e2f4;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14)}
+.sonucBant .cip .ik{width:16px;height:16px}
+.sonucBant .cip.iyi{color:#a6ffc8;border-color:rgba(80,220,140,.35);background:rgba(40,160,90,.12)}
+.sonucBant .cip.kotu{color:#ffb0c0;border-color:rgba(255,90,120,.38);background:rgba(180,30,60,.14)}
+.sonucBant .cip.altin,.sonucBant .cip.mvp{color:#ffe08a;border-color:rgba(242,191,74,.45);background:rgba(242,191,74,.1)}
+.sonucBant .sDugmeler{gap:16px;align-items:center;margin-top:4px}
+.sonucBant #sOzet{min-width:190px;min-height:56px;padding:0 20px;font-size:18px;color:#e8e2f4;border:1px solid rgba(210,195,255,.28);border-image:none;border-radius:14px;
+  background:linear-gradient(180deg,rgba(44,34,70,.92),rgba(20,14,34,.94));box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 6px 14px rgba(0,0,0,.45);filter:none}
+.sonucBant #sOzet::before,.sonucBant #sOzet::after{display:none}
+.sonucBant #sOzet:active{transform:scale(.96)}
+.sonucBant #sOzet.secik{outline:2px solid rgba(210,195,255,.6);outline-offset:2px}
+.sonucBant #sDevam{width:270px;min-width:0;height:auto;min-height:0;aspect-ratio:2118/618;padding:0 18% 4px;border:0;border-image:none;border-radius:0;box-shadow:none;
+  background:url(arayuz/menu/dugme_oyna.webp) center/100% 100% no-repeat;font-size:30px;gap:8px;color:#fffaf0;--k:#5a2404;
+  text-shadow:-2px -2px 0 var(--k),2px -2px 0 var(--k),-2px 2px 0 var(--k),2px 2px 0 var(--k),0 4px 0 var(--k);filter:drop-shadow(0 8px 10px rgba(0,0,0,.5)) drop-shadow(0 0 16px rgba(255,190,80,.3))}
+.sonucBant #sDevam::before,.sonucBant #sDevam::after{display:none}
+.sonucBant #sDevam:active{background-image:url(arayuz/menu/dugme_oyna_basili.webp);transform:translateY(2px) scale(.97)}
+.sonucBant #sDevam .ik{width:24px;height:24px;filter:drop-shadow(0 2px 0 #6a3206)}
+#savas .hasarOzet{border-radius:12px}
+html.azHareket .sonucPerde,html.azHareket .sonucPerde *,html.azHareket .sAyrac,html.azHareket #savas .saat.son10{animation:none!important}
+html.azHareket .spIsin,html.azHareket .spPatla{opacity:.5}
+/*alçak*/
+html.alcak #savas .savasUst{padding:6px 8px;gap:6px}
+html.alcak #savas .skor .taraf{width:clamp(130px,18cqw,190px);gap:6px}
+html.alcak #savas .skor .tpor{width:30px;height:30px;border-radius:8px}
+html.alcak #savas .skor .taraf .ust b{font-size:16px}
+html.alcak #savas .skor .taraf .ust .say{display:none}
+html.alcak #savas .saat{width:58px;height:58px}html.alcak #savas .saat b{font-size:20px}
+html.alcak #savas .rakipK .amb{width:30px;height:30px}html.alcak #savas .rakipK b{font-size:13px}
+html.alcak #savas .alametK{height:38px}html.alcak #savas .alametK .ay{width:28px;height:28px}
+html.alcak #sonucYer{--sy:59%}
+html.alcak .sonucBant{gap:6px;padding:12px 0 12px}
+html.alcak .sonucBant .cip{height:26px;font-size:13px;padding:0 10px}
+html.alcak .sonucBant #sDevam{width:200px;font-size:23px}
+html.alcak .sonucBant #sOzet{min-height:46px;min-width:150px;font-size:15px}
+html.alcak .sAyrac{display:none}
 </style>
 <script>
 /* tek ölçek: --o, --lw, --lh ve html.alcak; ilk boyamadan önce ve her boyut değişiminde */
