@@ -4,7 +4,7 @@ Bu belge Google Play ve App Store'a gönderim için gereken her şeyi tek yerde 
 
 - Metinler kopyalanıp yapıştırılmak üzere kod bloklarındadır. Karakter sayıları tablolarda, sınırla birlikte verilmiştir (Unicode karakter; Türkçe harfler tek karakter sayılır).
 - Geliştirici adı: Osman Adalı. Destek e-postası: osmanadali.apps@gmail.com (bütün uygulamalar için ortak).
-- Bütün özellikler `README.md` ve `docs/BOLUM_TASARIMI.md` ile doğrulanmıştır. Oyun değişirse (ör. çift hatlara yeni kurallar gelince) "Bilinen sınırlar" bölümündeki maddeler güncellenmeli.
+- Bütün özellikler `README.md`, `docs/BOLUM_TASARIMI.md` ve `docs/kurallar/README.md` ile doğrulanmıştır (1.2: 33 hat, canlı kapışma, haftalık lig, şehir haritası). Oyun değişirse (ör. çift hatlara yeni kurallar gelince) "Bilinen sınırlar" bölümündeki maddeler güncellenmeli.
 
 ## 1. Kimlik bilgileri
 
@@ -21,7 +21,7 @@ Bu belge Google Play ve App Store'a gönderim için gereken her şeyi tek yerde 
 | Dil | Türkçe, İngilizce, Almanca, İspanyolca, Portekizce (Brezilya), Fransızca; 1.1 ile Korece, Japonca, Geleneksel Çince (oyun cihaz diline göre açılır, desteklenmeyen dilde İngilizce; Ayarlar › Dil ile değişir; mağaza metinleri §4, §5, §5b, §5c) |
 | Cihaz | Android telefon, iPhone (yalnız dikey; iPad yok) |
 
-Gizlilik ve destek adresleri GitHub Pages açılınca yayına girer. Pages kullanıcının onayıyla açılacak (bkz. §11).
+GitHub Pages açıktır (20 Kasım 2026): oyunun web sürümü ve gizlilik sayfası (`gizlilik.html`, 9 dil) çalışıyor; gizlilik ve destek adresleri mağaza formlarına girilebilir. Sayfada §13 "Haftalık lig ve kapışma" bölümü vardır (§6 ve §7 ile aynı beyan).
 
 ## 2. Görseller
 
@@ -32,57 +32,100 @@ node tools/store-shots.cjs                 # hepsi (Play, iPhone 6,9", iPhone 6,
 node tools/store-shots.cjs play 02 03      # yalnız Play'in 2. ve 3. sahnesi
 node tools/store-shots.cjs feature         # yalnız öne çıkan görsel
 node tools/store-shots.cjs en              # İngilizce: oyun en-US'de, başlıklar İngilizce → store/screens-en/, store/feature-graphic-en.png
-node tools/store-shots.cjs all             # 6 dil (tr, en, de, es, pt-BR, fr) → store/screens[-<dil>]/, store/feature-graphic[-<dil>].png
+node tools/store-shots.cjs all             # 9 dil (tr, en, de, es, pt-BR, fr, ko, ja, zh-Hant) → store/screens[-<dil>]/, store/feature-graphic[-<dil>].png
+node tools/store-shots.cjs ja play 02 04   # tek dil, tek boy, seçili sahneler (kapışma, lig)
 ```
 
 | Dosya | Boyut | Nereye |
 |---|---|---|
 | `store/play-icon-512.png` | 512×512 | Play › Mağaza girişi › Uygulama simgesi |
 | `store/feature-graphic.png` | 1024×500 | Play › Öne çıkan grafik |
-| `store/screens/play/*.png` | 1080×1920 (9:16) | Play › Telefon ekran görüntüleri (7 adet; Play 2–8 kabul eder) |
-| `store/screens/ios-69/*.png` | 1320×2868 | App Store Connect › iPhone 6,9" ekran (zorunlu boy) |
+| `store/screens/play/*.png` | 1080×1920 (9:16) | Play › Telefon ekran görüntüleri (ilk 8: 01–08; Play 2–8 kabul eder, 09 ve 10 yalnız App Store için) |
+| `store/screens/ios-69/*.png` | 1320×2868 | App Store Connect › iPhone 6,9" ekran (zorunlu boy; 10 adede kadar: 01–10) |
 | `store/screens/ios-65/*.png` | 1284×2778 | App Store Connect › iPhone 6,5" (6,9" yüklenince gerekmez; yedek) |
 | `store/screens-en/…`, `store/feature-graphic-en.png` | aynı boylar | İngilizce mağaza girişi (Play › İngilizce çeviri, App Store Connect › English (U.S.)) |
 | `store/screens-{de,es,pt-BR,fr}/…`, `store/feature-graphic-{de,es,pt-BR,fr}.png` | aynı boylar | Almanca, İspanyolca, Portekizce (Brezilya), Fransızca mağaza girişleri (§5b) |
+| `store/screens*/ios-ipad13/*.png` | 2048×2732 | Üretilir ama **yüklenmez**: uygulama yalnız iPhone (§1) |
 | `store/screens-{ko,ja,zh-Hant}/…`, `store/feature-graphic-{ko,ja,zh-Hant}.png` | aynı boylar | Korece, Japonca, Geleneksel Çince mağaza girişleri (§5c, 1.1) |
 | `store/appstore-icon-1024.png` | 1024×1024 | iOS projesinin simgesi (App Store simgesi derlemeden gelir) |
 
 Hepsi 24 bit PNG'dir, saydamlık (alfa) içermez; iki mağazanın kuralına uyar.
 
-**Sahneler** (aynı sıra üç boyda da):
+**Sahneler** (1.2; aynı sıra dört boyda da). Şehir, lig, kapışma ve ana sayfa aynı oyuncudur (M20'de, ilk 12 hat kusursuz, 12 günlük seri). Lig ve kapışma `window.__ligFake = true` sahte arka uçla çekilir: ekrandaki rakip adları ve puanlar oyundaki benzetimdir, gerçek kullanıcı ya da yorum değildir. Kapışmada rastgelelik ve saat çekim anında sabitlenir (rakip "Mert", aynı tahta). "Bitime 2g 19s" gibi süreler çekim gününe göredir.
 
 | # | Dosya | Başlık | Alt satır | Ekranda |
 |---|---|---|---|---|
 | 1 | `01-oyun` | Dokun, döndür, hattı yak | Bütün durakları merkeze bağla, açık uç kalmasın | Bölüm 198 (M9, iki merkez), hat yarıya kadar yanmış. Mağazada ilk bakılan görsel oynanıştır. |
-| 2 | `02-ana` | Hatları bağla, şehri canlandır | Tek elle · internetsiz · her gün yeni bir Günün Hattı | Ana ekran: 12 günlük seri, Günün Hattı, M11 |
-| 3 | `03-kazan` | Kusursuz bitir, bilet kazan | Süre ve hamle hedefini tuttur, üç yıldızı topla | Bölüm 45 kusursuz: 3 yıldız, bilet, 5'li seri bonusu |
-| 4 | `04-harita` | 24 kural, sonu gelmeyen bölüm | Zorluk dalga dalga artar, arada mola var | Hat haritası: biten M11, süren M12 |
-| 5 | `05-kural` | Hat ilerledikçe yeni kurallar | Makas, köprü, tabela, döner tabla, halka, tünel ağzı… | Tünel ağzı kural kartı (M16) |
-| 6 | `06-tema` | Bilet topla, 25 renk teması aç | Kusursuz bitirdiğin her bölüm bir bilet kazandırır | Renk temaları penceresi |
-| 7 | `07-sandik` | Sürpriz sandık, yeni trenler | İpucu, seri kalkanı ya da yeni bir tren kaplaması | Sandık açılışı: destansı Lavanta kaplaması |
+| 2 | `02-kapisma` | Canlı kapışmada yarış | İlk bitiren kazanır, galibiyet +10 lig puanı | Kapış sayfasından rakip aranır; geri sayımdan sonra iki ilerleme çubuğu, ben önde |
+| 3 | `03-sehir` | Hatlarınla şehri büyüt | Biten her hat bir semti yakar, kusursuzlar altın parlar | Şehir sekmesi: 19/24 semt, 13 altın, M20 sürüyor |
+| 4 | `04-lig` | Haftalık ligde yüksel | 30 kişilik grupta yarış, üst lige çık | Altın Lig, ben 4. sıradayım (üst lige çıkış bölgesi) |
+| 5 | `05-harita` | 33 hat, sonu gelmeyen bölüm | Zorluk dalga dalga artar, arada mola var | Hat haritası: M33 (boş peron) sürüyor |
+| 6 | `06-kural` | Hat ilerledikçe yeni kurallar | Ekspres durak, sinyal, sarsıntı, kumanda, boş peron… | M27 Ekspres durak kural kartı (bölüm 689) |
+| 7 | `07-kazan` | Kusursuz bitir, bilet kazan | Süre ve hamle hedefini tuttur, üç yıldızı topla | Bölüm 45 kusursuz: 3 yıldız, bilet, 5'li seri bonusu |
+| 8 | `08-ana` | Her gün yeni Günün Hattı | Herkes aynı bulmacayı çözer, serini koru | Ana ekran: 12 günlük seri, Günün Hattı, 1.2 sekme çubuğu (Lig, Kapış, Şehir) |
+| 9 | `09-tema` | Bilet topla, 25 renk teması aç | Kusursuz bitirdiğin her bölüm bir bilet kazandırır | Mağaza sayfası › Temalar (yalnız App Store) |
+| 10 | `10-sandik` | Sürpriz sandık, yeni trenler | İpucu, seri kalkanı ya da yeni bir tren kaplaması | Sandık açılışı: destansı Lavanta kaplaması (yalnız App Store) |
+
+1.1'in `02-ana`, `03-kazan`, `04-harita`, `05-kural`, `06-tema`, `07-sandik` dosyaları kalktı (numaralar değişti); mağazaya yeni setin tamamı yüklenmeli.
 
 Öne çıkan görsel: koyu lacivert zemin, uygulama ikonu (Gece Işığı: turuncu L ray, yanan kare merkez), "Ray", "Hatları bağla · Şehri canlandır" ve üç rozet (Tek elle, İnternetsiz, Metro bulmacası).
 
-İngilizce sahne başlıkları (`en`): 1 Connect the lines, light up the city · 2 Tap, turn, light the line · 3 Finish perfect, earn tickets · 4 24 rules, endless levels · 5 New rules as the line grows · 6 Collect tickets, unlock 25 themes · 7 Surprise chest, new trains. Öne çıkan görselde "Connect the lines · Light up the city" ve One hand, Offline, Metro puzzle rozetleri.
+İngilizce sahne başlıkları (`en`): 1 Tap, turn, light the line · 2 Race in live duels · 3 Grow your city metro map · 4 Climb the weekly league · 5 33 lines, endless levels · 6 New rules as the line grows · 7 Finish perfect, earn tickets · 8 A new Daily Line every day · 9 Collect tickets, unlock 25 themes · 10 Surprise chest, new trains. Öteki dillerin başlıkları `tools/store-shots.cjs` `TX` tablosunda (`docs/pazarlama/aso.md` §4.2'den). Öne çıkan görselde "Connect the lines · Light up the city" ve One hand, Offline, Metro puzzle rozetleri (grafik yalnız Play'de; rozet bölümlerin çevrimdışı oynandığını anlatır).
 
 ## 3. Karakter sayıları
 
 | Metin | Sınır | TR | EN |
 |---|---|---|---|
 | Play: uygulama adı | 30 | 18 | 22 |
-| Play: kısa açıklama | 80 | 78 | 73 |
-| Play: tam açıklama | 4000 | 2772 | 3085 |
+| Play: kısa açıklama | 80 | 78 | 79 |
+| Play: tam açıklama | 4000 | 3812 | 3967 |
 | App Store: ad | 30 | 18 | 22 |
 | App Store: alt başlık | 30 | 28 | 28 |
-| App Store: tanıtım metni | 170 | 152 | 152 |
-| App Store: açıklama | 4000 | 2772 | 3085 |
-| App Store: anahtar kelimeler | 100 | 87 (94 bayt) | 99 |
+| App Store: tanıtım metni | 170 | 147 | 152 |
+| App Store: açıklama | 4000 | 3812 | 3967 |
+| App Store: anahtar kelimeler | 100 | 91 (96 bayt) | 98 (98 bayt) |
 | Ürün adı (App Store) | 30 | 15 | 15 |
 | Ürün açıklaması (App Store) | 45 | 41 | 41 |
 | Ürün açıklaması (Play) | 200 | 130 | 138 |
-| Play sürüm notu | 500 | 103 | 109 |
+| Play sürüm notu (1.2) | 500 | 160 | 147 |
 
-Türkçe anahtar kelimeler bayt olarak da 100'ün altında kalır (bazı araçlar ğ, ı, ş gibi harfleri iki bayt sayar).
+Anahtar kelimeler bayt olarak da 100'ün altında kalır (bazı araçlar ğ, ı, ş gibi harfleri iki bayt sayar).
+
+**1.2 notu (20 Kasım 2026).** Sayılar `docs/pazarlama/aso.md` §3 metinleriyle ve açıklama gövdesinin 1.2 güncellemesiyle yeniden sayıldı. Denetim: aşağıdaki betik bu belgedeki bütün kod bloklarını okur, her dilde karakter ve (anahtar kelimede) UTF-8 bayt sayar, sınırı aşanı, alt başlıkta "internetsiz/offline" iddiasını ve eski "24" sayısını bildirir; hepsi geçerse `Hepsi sınır içinde` yazar.
+
+**Denetim betiği.** Çalıştırma: `sed -n '/^const fs = require/,/^process.exit/p' docs/MAGAZA.md > /tmp/say.cjs && node /tmp/say.cjs docs/MAGAZA.md --tablo` (`--tablo` her dilin sayılarını yazar; sorun varsa çıkış kodu 1).
+
+```js
+// docs/MAGAZA.md metin sayacı: kod bloklarını okur, karakter ve bayt sayar, sınırı aşanı bildirir.
+const fs = require('fs'), path = process.argv[2] || 'docs/MAGAZA.md', md = fs.readFileSync(path, 'utf8');
+const n = s => [...s].length, b = s => Buffer.byteLength(s);
+const sec = (from, to) => md.slice(md.indexOf(from), md.indexOf(to));
+const blocks = t => [...t.matchAll(/```text\n([\s\S]*?)\n```/g)].map(m => m[1]);
+const notes = t => [...t.matchAll(/\| Sürüm notu[^|]*\|\s*`([^`]+)`/g)].map(m => m[1]);
+const L = { tr: {}, en: {}, de: {}, es: {}, 'pt-BR': {}, fr: {}, ko: {}, ja: {}, 'zh-Hant': {} }, KEYS = ['name', 'short', 'sub', 'promo', 'kw', 'desc', 'notes'];
+// §4 (Play) ve §5 (App Store): her alan için tr, en ardışık
+const p4 = blocks(sec('\n## 4.', '\n## 5.')), p5 = blocks(sec('\n## 5.', '\n## 5b.')), nt = notes(sec('\n## 4.', '\n## 5.'));
+[['name', p4[0], p4[1]], ['short', p4[2], p4[3]], ['desc', p4[4], p4[5]], ['notes', nt[0], nt[1]]].forEach(([k, a, c]) => { L.tr[k] = a; L.en[k] = c; });
+[['sub', 2], ['promo', 4], ['kw', 6]].forEach(([k, i]) => { L.tr[k] = p5[i]; L.en[k] = p5[i + 1]; });
+// §5b ve §5c: her dilde 7 blok (ad, kısa, alt başlık, tanıtım, anahtar, açıklama, sürüm notu)
+const rest = sec('\n## 5b.', '\n## 6.'), parts = rest.split(/\n### /).slice(1), order = ['de', 'es', 'pt-BR', 'fr', 'ko', 'ja', 'zh-Hant'];
+parts.forEach((t, i) => { const bl = blocks(t); KEYS.forEach((k, j) => { L[order[i]][k] = bl[j]; }); });
+const LIM = { name: 30, short: 80, sub: 30, promo: 170, kw: 100, desc: 4000, notes: 500 };
+let bad = 0; const rows = {};
+for (const [lg, o] of Object.entries(L)) for (const k of KEYS) {
+  const s = o[k]; if (s == null) { console.log('EKSİK', lg, k); bad++; continue; }
+  const c = n(s), by = b(s), over = c > LIM[k] || (k === 'kw' && by > 100);
+  if (over) { bad++; console.log('SINIR AŞILDI', lg, k, c, by); }
+  (rows[k] = rows[k] || {})[lg] = k === 'kw' ? `${c} (${by} bayt)` : String(c);
+}
+if (process.argv[3] === '--tablo') for (const k of KEYS) console.log(k.padEnd(6), Object.entries(rows[k]).map(([lg, v]) => `${lg}=${v}`).join('  '));
+// sözcük denetimi: kapalı yer: App Store alt başlığında "internetsiz" karşılığı olmamalı
+const NO = /internetsiz|offline|without (an )?internet|ohne Internet|sin (conexión|red)|sem internet|sans connexion|hors ligne|인터넷 없이|オフライン|離線|ネットなし|不用網路/i;
+for (const [lg, o] of Object.entries(L)) if (NO.test(o.sub || '')) { bad++; console.log('ALT BAŞLIKTA İNTERNETSİZ İDDİASI', lg, o.sub); }
+for (const [lg, o] of Object.entries(L)) if (/\b24\b|24[개の條种種]|24가지|24路線/.test(o.desc + o.promo + o.short)) { bad++; console.log('ESKİ 24 SAYISI', lg); }
+console.log(bad ? `${bad} sorun` : 'Hepsi sınır içinde (ad/alt başlık ≤30, tanıtım ≤170, Play kısa ≤80, anahtar ≤100 karakter ve bayt, açıklama ≤4000, sürüm notu ≤500)');
+process.exit(bad ? 1 : 0);
+```
 
 ## 4. Google Play mağaza girişi
 
@@ -101,13 +144,17 @@ Ray: Metro Line Puzzle
 Rayları döndür, durakları bağla. Tek elle, internetsiz, sakin metro bulmacası.
 ```
 ```text
-Rotate the rails, link every station. A calm, one-handed, offline puzzle.
+Rotate the rails, link every station. A calm, one-handed metro puzzle, offline.
 ```
 
 **Tam açıklama** (4000). Aynı metin App Store açıklaması olarak da kullanılır (başka platform adı geçmez).
 
 ```text
-Ray, tek elle ve internetsiz oynanan sakin bir metro bulmacasıdır. Karoya dokun, ray 90° döner. Merkez istasyondan çıkan hattı bütün duraklara bağla, açıkta ray ucu kalmasın. Hat bağlandıkça şehir ışıl ışıl yanar.
+Ray, tek elle oynanan sakin bir metro bulmacasıdır. Karoya dokun, ray 90° döner; hattı merkezden bütün duraklara bağla.
+YENİ 1.2: canlı kapışma, haftalık lig, şehir metro haritası ve 7 yeni hat (toplam 33 kural hattı + sonsuz karma).
+Bölümler internetsiz oynanır; kapışma ve lig için bağlantı gerekir.
+
+Açıkta ray ucu kalmasın. Hat bağlandıkça şehir ışıl ışıl yanar.
 
 NASIL OYNANIR
 • Karoya dokun, ray döner.
@@ -115,11 +162,19 @@ NASIL OYNANIR
 • Üç yıldız: bölümü bitir, süre hedefini tuttur, hamle hedefini tuttur.
 • Süreyi ve hamleyi birlikte tutturursan bölüm kusursuz olur, bilet kazanırsın.
 
-24 HAT, SONU GELMEYEN BÖLÜMLER
-Her metro hattı yeni bir kural getirir, her bölüm bir öncekinden biraz daha zordur. 24 kurallı hattan sonra oyun karma hatlarla sonsuza dek sürer. Bölümler cihazında üretilir, hepsi çözülebilir ve herkes aynı numaralı bölümde aynı bulmacayı görür.
+CANLI KAPIŞMA VE HAFTALIK LİG
+• Kapış: rastgele bir rakiple ya da kodla davet ettiğin bir arkadaşınla aynı bulmacayı yarışarak çöz. İlk bitiren kazanır, galibiyet +10 lig puanı.
+• Haftalık lig: 30 kişilik bir grupta yarış. Bölüm yıldızları, Günün Hattı ve kapışma galibiyetleri puan kazandırır. Hafta bitince ilk 7 üst lige çıkar, son 5 bir alt lige düşer; 6 lig var.
+• Katılmak isteğe bağlıdır. Kapışma ve lig bağlantı ister; bölümler internetsiz oynanır.
+
+ŞEHİR HARİTASI
+Biten her hat şehirde bir semti yakar. Bir hattın bütün bölümlerini kusursuz bitirirsen semt altın parlar. Şehrin büyüyüşünü Şehir sekmesinden izle.
+
+33 HAT, SONU GELMEYEN BÖLÜMLER
+Her metro hattı yeni bir kural getirir, her bölüm bir öncekinden biraz daha zordur. 33 hattan sonra oyun karma hatlarla sonsuza dek sürer. Bölümler cihazında üretilir, hepsi çözülebilir ve herkes aynı numaralı bölümde aynı bulmacayı görür.
 
 HAT İLERLEDİKÇE YENİ KURALLAR
-Eşli karo, ters karo, kayan sıra, karanlık tünel, sayaçlı karo, soğuyan karo, iki merkez, makas, mühürlü karo, döner tabla, köprü, bakım karosu, kapak, tünel ağzı, yön tabelası, halka hat, silik kol, gizli depo, sarmal tahta, nehir, kapalı durak, tarife bölgesi, son sefer ve kayan sütun: 24 kural. Her yeni kural kısa, canlandırmalı bir kartla anlatılır. Tahta hiçbir zaman kalabalıklaşmaz.
+Eşli karo, ters karo, kayan sıra, karanlık tünel, sayaçlı karo, soğuyan karo, iki merkez, makas, mühürlü karo, döner tabla, köprü, bakım karosu, kapak, tünel ağzı, yön tabelası, halka hat, silik kol, gizli depo, sarmal tahta, nehir, kapalı durak, tarife bölgesi, son sefer, kayan sütun, ekspres durak, sinyal karosu, sarsıntı durağı, dönüşen karo, kumanda karosu, manevra karosu ve boş peron. Her yeni kural kısa, canlandırmalı bir kartla anlatılır. Tahta hiçbir zaman kalabalıklaşmaz.
 
 GÜNÜN HATTI
 Her gün herkes aynı bulmacayı çözer. Cumartesi altıgen tahtada oynanır, pazar haftanın kuralı günüdür. Gün serini koru, günlük ve haftalık görevleri tamamla.
@@ -139,11 +194,13 @@ Ray ücretsizdir. İpucun her gün en az 3'e tamamlanır, hat sonlarında ek ipu
 REKLAMSIZ PAKET
 Tek seferlik satın alma. Bölüm aralarındaki reklamlar kalkar, 20 ipucu hediye edilir, 3 özel tema (Altın, Elmas, Yakut) açılır. İpucu videoları isteğe bağlı kalır.
 
-Hesap gerekmez, kişisel bilgi istenmez. İlerlemen cihazında kalır.
+Hesap gerekmez, kişisel bilgi istenmez. İlerlemen cihazında kalır. Lige ya da kapışmaya katılırsan yalnız takma adın, lig puanın ve kapışma ilerlemen anonim bir kimlikle sunucuda tutulur; Ayarlar › Ligden çık · verilerimi sil ile hepsi silinir.
 ```
 
 ```text
-Ray is a calm metro puzzle you can play with one hand and without an internet connection. Tap a tile and the rail turns 90°. Extend the line from the central station to every stop and leave no loose rail ends. As the line connects, the city lights up.
+Ray is a calm, one-handed metro puzzle. Tap a tile, the rail turns 90°; link the line from the hub to every station.
+NEW in 1.2: live duels, a weekly league, a city metro map and 7 new lines (33 rule lines plus endless mixed levels).
+Levels play offline; duels and the league need a connection.
 
 HOW TO PLAY
 • Tap a tile to rotate the rail.
@@ -151,11 +208,19 @@ HOW TO PLAY
 • Three stars: finish the level, beat the time target, beat the move target.
 • Hit both targets in one go and the level is flawless: you earn a ticket.
 
-24 LINES, ENDLESS LEVELS
-Each metro line brings a new rule and every level is a little harder than the one before. After 24 rule lines the game continues forever with mixed lines. Levels are generated on your device, every one is solvable, and everyone gets the same puzzle on the same level number.
+LIVE DUELS AND THE WEEKLY LEAGUE
+• Duel: solve the same puzzle head to head with a random opponent or a friend you invite with a code. First to finish wins, and a win is +10 league points.
+• Weekly league: compete in a group of 30. Level stars, the Daily Line and duel wins earn points; each week the top 7 move up and the bottom 5 drop down one of 6 leagues.
+• Joining is optional. Duels and the league need a connection.
+
+CITY MAP
+Every finished line lights up a district of your city. Finish every level of a line perfectly and the district glows gold.
+
+33 LINES, ENDLESS LEVELS
+Each metro line brings a new rule and every level is a little harder than the one before. After 33 lines the game continues forever with mixed lines. Levels are generated on your device, every one is solvable, and everyone gets the same puzzle on the same level number.
 
 NEW RULES AS YOU TRAVEL
-Paired tiles, reverse tiles, sliding rows, dark tunnels, counter tiles, cooling tiles, two hubs, switches, sealed tiles, turntables, bridges, gear tiles, covers, tunnel portals, signposts, loop lines, faint arms, hidden depots, wrap-around boards, rivers, closed stations, fare zones, timed stations and sliding columns: 24 rules. Each new rule is introduced with a short animated card, and the board never gets cluttered.
+Paired tiles, reverse tiles, sliding rows, dark tunnels, counter tiles, cooling tiles, two hubs, switches, sealed tiles, turntables, bridges, gear tiles, covers, tunnel portals, signposts, loop lines, faint arms, hidden depots, wrap-around boards, rivers, closed stations, fare zones, timed stations, sliding columns, express stations, signal tiles, quake stations, shifting tiles, remote tiles, shunt tiles and an empty platform. Each new rule is introduced with a short animated card, and the board never gets cluttered.
 
 DAILY LINE
 Every day everyone solves the same puzzle. Saturday is played on a hexagon board, Sunday is rule-of-the-week day. Keep your daily streak and complete daily and weekly quests.
@@ -175,7 +240,7 @@ Ray is free to play. Your hints are topped up to at least 3 every day, and you e
 AD-FREE PACK
 A one-time purchase. Removes the ads between levels, gives you 20 hints and unlocks 3 exclusive themes (Gold, Diamond, Ruby). Hint videos stay optional.
 
-No account needed and no personal details asked. Your progress stays on your device.
+No account needed and no personal details asked. Your progress stays on your device. If you join the league or a duel, only your nickname, league points and duel progress are stored on a server under an anonymous ID; Settings > Leave league · delete my data removes them.
 
 Available in English, German, Spanish, Portuguese, French, Korean, Japanese, Traditional Chinese and Turkish.
 ```
@@ -186,12 +251,12 @@ Available in English, German, Spanish, Portuguese, French, Korean, Japanese, Tra
 |---|---|
 | Uygulama mı, oyun mu | Oyun |
 | Kategori | Bulmaca (Puzzle) |
-| Etiketler (en çok 5, önerilen) | Bulmaca, Mantık, Çevrimdışı, Tek oyunculu, Gündelik |
+| Etiketler (en çok 5, önerilen) | Bulmaca, Mantık, Gündelik, Tek oyunculu, Çok oyunculu (1.2 kapışma; "Çevrimdışı" yalnız bölümler için doğru) |
 | Ücretli / ücretsiz | Ücretsiz (yayından sonra ücretliye çevrilemez) |
 | İletişim e-postası | osmanadali.apps@gmail.com |
-| Web sitesi | https://osmanadali.github.io (app-ads.txt için, bkz. §11) |
-| Sürüm notu (ilk sürüm) | `İlk sürüm. Tek elle, internetsiz metro bulmacası: 24 kural, Günün Hattı, renk temaları ve sürpriz sandık.` |
-| Sürüm notu (EN) | `First release. A one-handed, offline metro puzzle: 24 rules, a Daily Line, color themes and a surprise chest.` |
+| Web sitesi | https://osmanadali.github.io (app-ads.txt için, bkz. §12) |
+| Sürüm notu (1.2) | `1.2: canlı kapışma, haftalık lig ve şehir metro haritası geldi. 7 yeni kurallı hat (toplam 33 hat). Bölümler internetsiz oynanır; kapışma ve lig bağlantı ister.` |
+| Sürüm notu (1.2, EN) | `1.2: live duels, a weekly league and a city metro map. 7 new rule lines (33 in total). Levels play offline; duels and the league need a connection.` |
 
 ## 5. App Store girişi
 
@@ -209,30 +274,30 @@ Ray: Metro Line Puzzle
 **Alt başlık** (30)
 
 ```text
-Tek elle, internetsiz, sakin
+Hattı bağla, tek elle, sakin
 ```
 ```text
-Calm, one-handed and offline
+Connect the line, one-handed
 ```
 
 **Tanıtım metni** (170). Sürüm göndermeden değiştirilebilir; kampanya ve yeni kural duyurusu için kullanılır.
 
 ```text
-Her gün yeni bir Günün Hattı! Rayları döndür, durakları bağla, kusursuz bitir, bilet topla. 24 kural ve sonu gelmeyen bölümler seni bekliyor.
+Yeni: canlı kapışma ve haftalık lig! Rayları döndür, durakları bağla, kusursuz bitir. 33 hat, şehir metro haritası ve her gün yeni bir Günün Hattı.
 ```
 ```text
-A new Daily Line every day! Rotate the rails, connect every station, finish flawlessly and collect tickets. 24 rules and endless levels await.
+New: live duels and a weekly league! Rotate the rails, link every station, finish flawlessly. 33 lines, a city metro map and a new Daily Line every day.
 ```
 
 **Açıklama** (4000): §4'teki tam açıklamanın aynısı.
 
-**Anahtar kelimeler** (100, virgülle, boşluksuz). Ad ve alt başlıktaki sözcükler (ray, metro, bulmaca, tek elle, internetsiz, sakin) zaten aranır; burada tekrarlanmaz.
+**Anahtar kelimeler** (100, virgülle, boşluksuz). Ad ve alt başlıktaki sözcükler (ray, metro, bulmaca, hat, bağla, tek elle, sakin) zaten aranır; burada tekrarlanmaz. "offline" (çevrimdışı arama) anahtar alanında kalır, alt başlıkta "internetsiz" yoktur: 1.2'de lig ve kapışma bağlantı ister.
 
 ```text
-boru,tren,hat,durak,istasyon,zeka,mantık,beyin,günlük,çevrimdışı,karo,net,pipes,offline
+boru,tren,durak,istasyon,zeka,mantık,beyin,günlük,karo,net,pipes,lig,kapışma,harita,offline
 ```
 ```text
-pipes,net,subway,train,station,logic,brain,daily,relaxing,rotate,connect,tiles,rail,map,minimal,zen
+pipes,net,subway,train,station,logic,brain,daily,relaxing,rotate,tiles,map,zen,duel,league,offline
 ```
 
 | Alan | Değer |
@@ -253,12 +318,12 @@ Oyun bu dillerde de açılır (cihaz dili ya da Ayarlar › Dil). Play Console �
 | Metin | Sınır | DE | ES | PT-BR | FR |
 |---|---|---|---|---|---|
 | Uygulama adı / ad | 30 | 23 | 26 | 27 | 21 |
-| Play kısa açıklama | 80 | 78 | 80 | 80 | 80 |
-| App Store alt başlık | 30 | 28 | 30 | 28 | 29 |
-| App Store tanıtım metni | 170 | 150 | 146 | 141 | 163 |
-| Anahtar kelimeler | 100 | 98 | 93 | 91 | 90 |
-| Tam açıklama | 4000 | 2816 | 2754 | 2696 | 2939 |
-| Sürüm notu | 500 | 119 | 127 | 127 | 138 |
+| Play kısa açıklama | 80 | 78 | 79 | 79 | 77 |
+| App Store alt başlık | 30 | 27 | 26 | 27 | 28 |
+| App Store tanıtım metni | 170 | 156 | 158 | 160 | 164 |
+| Anahtar kelimeler | 100 | 96 (97 bayt) | 93 (96 bayt) | 85 (91 bayt) | 94 (95 bayt) |
+| Tam açıklama | 4000 | 3953 | 3906 | 3784 | 3963 |
+| Sürüm notu (1.2) | 500 | 150 | 174 | 160 | 182 |
 
 ### Deutsch (de-DE)
 
@@ -272,19 +337,23 @@ Dreh die Gleise, verbinde jede Station. Ruhiges Rätsel für eine Hand, offline.
 ```
 **Untertitel** (App Store)
 ```text
-Ruhig, einhändig und offline
+Linien verbinden, einhändig
 ```
 **Werbetext** (App Store)
 ```text
-Jeden Tag eine neue Tageslinie! Dreh die Gleise, verbinde jede Station, spiel perfekt und sammle Tickets. 24 Regeln und endlose Level warten auf dich.
+Neu: Live-Duelle und Wochenliga! Dreh die Gleise, verbinde jede Station, spiel perfekt. 33 Linien, eine Metro-Stadtkarte und jeden Tag eine neue Tageslinie.
 ```
 **Schlüsselwörter** (App Store)
 ```text
-rohre,netz,ubahn,zug,bahnhof,logik,denkspiel,täglich,entspannen,drehen,verbinden,kacheln,karte,zen
+rohre,netz,ubahn,zug,bahnhof,logik,denkspiel,täglich,drehen,kacheln,karte,zen,liga,duell,offline
 ```
 **Beschreibung**
 ```text
-Ray ist ein ruhiges Metro-Rätsel, das du mit einer Hand und ohne Internet spielst. Tippe eine Kachel an und das Gleis dreht sich um 90°. Führe die Linie von der Zentrale zu jeder Station und lass keine offenen Gleisenden übrig. Mit jeder Verbindung leuchtet die Stadt auf.
+Ray ist ein ruhiges Metro-Rätsel für eine Hand. Tippe eine Kachel an, das Gleis dreht sich um 90°; verbinde die Linie von der Zentrale mit jeder Station.
+NEU in 1.2: Live-Duelle, Wochenliga, Metro-Stadtkarte und 7 neue Linien (33 Regel-Linien plus endlose Mischlevel).
+Level laufen offline; Duelle und Liga brauchen eine Verbindung.
+
+Lass keine offenen Gleisenden übrig. Mit jeder Verbindung leuchtet die Stadt auf.
 
 SO WIRD GESPIELT
 • Tippe eine Kachel an, um das Gleis zu drehen.
@@ -292,11 +361,19 @@ SO WIRD GESPIELT
 • Drei Sterne: Level schaffen, Zeitziel schaffen, Zugziel schaffen.
 • Schaffst du beide Ziele auf einmal, ist das Level perfekt: Du bekommst ein Ticket.
 
-24 LINIEN, ENDLOSE LEVEL
-Jede Metrolinie bringt eine neue Regel, jedes Level ist etwas schwerer als das vorige. Nach 24 Regellinien geht es mit gemischten Linien endlos weiter. Die Level entstehen auf deinem Gerät, jedes ist lösbar, und alle bekommen bei derselben Levelnummer dasselbe Rätsel.
+LIVE-DUELLE UND WOCHENLIGA
+• Duell: Löse dasselbe Rätsel gegen einen zufälligen Gegner oder einen Freund, den du per Code einlädst. Wer zuerst fertig ist, gewinnt: +10 Ligapunkte.
+• Wochenliga: Tritt in einer Gruppe von 30 an. Level-Sterne, die Tageslinie und Duellsiege bringen Punkte. Am Ende der Woche steigen die ersten 7 eine Liga auf, die letzten 5 steigen ab; es gibt 6 Ligen.
+• Mitmachen ist freiwillig. Duelle und Liga brauchen eine Verbindung; die Level spielst du offline.
+
+STADTKARTE
+Jede fertige Linie erhellt ein Viertel deiner Stadt. Schaffst du alle Level einer Linie perfekt, leuchtet das Viertel golden. Sieh zu, wie deine Stadt wächst.
+
+33 LINIEN, ENDLOSE LEVEL
+Jede Metrolinie bringt eine neue Regel, jedes Level ist etwas schwerer als das vorige. Nach 33 Linien geht es mit gemischten Linien endlos weiter. Die Level entstehen auf deinem Gerät, jedes ist lösbar, und alle bekommen bei derselben Levelnummer dasselbe Rätsel.
 
 NEUE REGELN UNTERWEGS
-Paarkacheln, Umkehrkacheln, Schiebereihen, dunkle Tunnel, Zählkacheln, Frostkacheln, zwei Zentren, Weichen, Siegelkacheln, Drehscheiben, Brücken, Zahnradkacheln, Abdeckungen, Tunnelportale, Wegweiser, Ringlinien, blasse Arme, versteckte Depots, Endlosbretter, Flüsse, geschlossene Stationen, Tarifzonen, Zeitstationen und Schiebespalten: 24 Regeln. Jede neue Regel stellt eine kurze animierte Karte vor, und das Brett wird nie unübersichtlich.
+Paarkacheln, Umkehrkacheln, Schiebereihen, dunkle Tunnel, Zählkacheln, Frostkacheln, zwei Zentren, Weichen, Siegelkacheln, Drehscheiben, Brücken, Zahnradkacheln, Abdeckungen, Tunnelportale, Wegweiser, Ringlinien, blasse Arme, versteckte Depots, Endlosbretter, Flüsse, geschlossene Stationen, Tarifzonen, Zeitstationen, Schiebespalten, Expressstationen, Signalkacheln, Bebenstationen, Wandelkacheln, Fernbedienkacheln, Rangierkacheln und ein leerer Bahnsteig. Jede neue Regel stellt eine kurze animierte Karte vor, und das Brett wird nie unübersichtlich.
 
 TAGESLINIE
 Jeden Tag lösen alle dasselbe Rätsel. Samstags spielst du auf einem Sechseckbrett, sonntags gibt es die Regel der Woche. Halte deine Serie und erfülle tägliche und wöchentliche Aufgaben.
@@ -313,13 +390,13 @@ Ray ist kostenlos. Deine Tipps werden jeden Tag auf mindestens 3 aufgefüllt, am
 WERBEFREI-PAKET
 Einmaliger Kauf. Entfernt die Werbung zwischen Leveln, schenkt dir 20 Tipps und schaltet 3 exklusive Themen frei (Gold, Diamant, Rubin). Tipp-Videos bleiben freiwillig.
 
-Kein Konto nötig, keine persönlichen Daten. Dein Fortschritt bleibt auf deinem Gerät.
+Kein Konto nötig, keine persönlichen Daten. Dein Fortschritt bleibt auf deinem Gerät. Wenn du an Liga oder Duell teilnimmst, werden nur dein Spitzname, deine Ligapunkte und dein Duellfortschritt mit einer anonymen Kennung auf einem Server gespeichert; Einstellungen › Liga verlassen · meine Daten löschen entfernt sie.
 
 Auf Deutsch, Englisch, Spanisch, Portugiesisch, Französisch, Koreanisch, Japanisch, traditionellem Chinesisch und Türkisch.
 ```
 **Versionshinweis**
 ```text
-Erste Version. Ein einhändiges Offline-Metrorätsel: 24 Regeln, eine Tageslinie, Farbthemen und eine Überraschungskiste.
+1.2: Live-Duelle, Wochenliga und Metro-Stadtkarte. 7 neue Regel-Linien (insgesamt 33). Level laufen offline; Duelle und Liga brauchen eine Verbindung.
 ```
 
 ### Español (es-ES · es-419)
@@ -330,23 +407,27 @@ Ray: Puzle de Líneas Metro
 ```
 **Descripción breve** (Play)
 ```text
-Gira las vías y conecta cada estación. Un puzle tranquilo, a una mano y sin red.
+Gira las vías y conecta cada estación. Un puzle tranquilo de metro, a una mano.
 ```
 **Subtítulo** (App Store)
 ```text
-Tranquilo, a una mano, sin red
+Conecta líneas, a una mano
 ```
 **Texto promocional** (App Store)
 ```text
-¡Una nueva Línea del día cada día! Gira las vías, conecta cada estación, termina perfecto y gana billetes. Te esperan 24 reglas y niveles sin fin.
+Novedad: duelos en vivo y liga semanal. Gira las vías, conecta cada estación y termina perfecto. 33 líneas, mapa metro de la ciudad y una Línea del día nueva.
 ```
 **Palabras clave** (App Store)
 ```text
-tuberías,red,subte,tren,estación,lógica,mente,diario,relajante,girar,conectar,piezas,mapa,zen
+tuberías,red,subte,tren,estación,lógica,mente,diario,girar,piezas,mapa,zen,liga,duelo,offline
 ```
 **Descripción**
 ```text
-Ray es un puzle de metro tranquilo que se juega con una mano y sin conexión. Toca una pieza y la vía gira 90°. Lleva la línea desde la estación central hasta cada parada sin dejar extremos sueltos. Con cada conexión, la ciudad se ilumina.
+Ray es un puzle de metro tranquilo para jugar con una mano. Toca una pieza y la vía gira 90°; lleva la línea del centro a cada estación.
+NOVEDAD 1.2: duelos en vivo, liga semanal, mapa metro de la ciudad y 7 líneas nuevas (33 líneas con reglas y niveles mixtos sin fin).
+Los niveles se juegan sin red; los duelos y la liga necesitan conexión.
+
+No dejes extremos sueltos. Con cada conexión, la ciudad se ilumina.
 
 CÓMO SE JUEGA
 • Toca una pieza para girar la vía.
@@ -354,11 +435,19 @@ CÓMO SE JUEGA
 • Tres estrellas: termina el nivel, cumple el objetivo de tiempo y el de jugadas.
 • Cumple los dos a la vez y el nivel es perfecto: ganas un billete.
 
-24 LÍNEAS, NIVELES SIN FIN
-Cada línea de metro trae una regla nueva y cada nivel es un poco más difícil que el anterior. Tras 24 líneas con reglas, el juego sigue para siempre con líneas mixtas. Los niveles se crean en tu dispositivo, todos tienen solución y todo el mundo juega el mismo puzle en el mismo número de nivel.
+DUELOS EN VIVO Y LIGA SEMANAL
+• Duelo: resuelve el mismo puzle contra un rival al azar o un amigo al que invitas con un código. Gana quien termine primero: +10 puntos de liga.
+• Liga semanal: compite en un grupo de 30. Las estrellas de los niveles, la Línea del día y las victorias en duelo dan puntos. Al acabar la semana, los 7 primeros suben de liga y los 5 últimos bajan; hay 6 ligas.
+• Participar es opcional. Los duelos y la liga necesitan conexión; los niveles se juegan sin red.
+
+MAPA DE LA CIUDAD
+Cada línea terminada ilumina un barrio de tu ciudad. Si terminas perfectos todos los niveles de una línea, el barrio brilla en oro. Mira cómo crece tu ciudad.
+
+33 LÍNEAS, NIVELES SIN FIN
+Cada línea de metro trae una regla nueva y cada nivel es un poco más difícil que el anterior. Tras 33 líneas, el juego sigue para siempre con líneas mixtas. Los niveles se crean en tu dispositivo, todos tienen solución y todo el mundo juega el mismo puzle en el mismo número de nivel.
 
 REGLAS NUEVAS POR EL CAMINO
-Piezas gemelas, piezas inversas, filas deslizantes, túneles oscuros, piezas contador, piezas heladas, dos centros, desvíos, piezas selladas, plataformas giratorias, puentes, piezas engranaje, tapas, bocas de túnel, señales, líneas circulares, brazos tenues, depósitos ocultos, tableros sin bordes, ríos, estaciones cerradas, zonas tarifarias, estaciones con reloj y columnas deslizantes: 24 reglas. Cada regla nueva se presenta con una tarjeta animada corta y el tablero nunca se satura.
+Piezas gemelas, piezas inversas, filas deslizantes, túneles oscuros, piezas contador, piezas heladas, dos centros, desvíos, piezas selladas, plataformas giratorias, puentes, piezas engranaje, tapas, bocas de túnel, señales, líneas circulares, brazos tenues, depósitos ocultos, tableros sin bordes, ríos, estaciones cerradas, zonas tarifarias, estaciones con reloj, columnas deslizantes, estaciones exprés, piezas de señal, estaciones sísmicas, piezas cambiantes, piezas mando, piezas de maniobra y un andén vacío. Cada regla nueva se presenta con una tarjeta animada corta y el tablero nunca se satura.
 
 LÍNEA DEL DÍA
 Cada día todos resuelven el mismo puzle. El sábado se juega en un tablero hexagonal y el domingo toca la regla de la semana. Mantén tu racha y completa misiones diarias y semanales.
@@ -375,13 +464,13 @@ Ray es gratis. Tus pistas se recargan cada día hasta al menos 3 y ganas pistas 
 PAQUETE SIN ANUNCIOS
 Compra única. Quita los anuncios entre niveles, te regala 20 pistas y desbloquea 3 temas exclusivos (Oro, Diamante, Rubí). Los vídeos de pistas siguen siendo opcionales.
 
-Sin cuenta y sin datos personales. Tu progreso se queda en tu dispositivo.
+Sin cuenta y sin datos personales. Tu progreso se queda en tu dispositivo. Si juegas en la liga o en un duelo, solo tu apodo, tus puntos de liga y tu avance en el duelo se guardan en un servidor con un identificador anónimo; Ajustes › Salir de la liga · borrar mis datos los elimina.
 
 En español, inglés, alemán, portugués, francés, coreano, japonés, chino tradicional y turco.
 ```
 **Notas de la versión**
 ```text
-Primera versión. Un puzle de metro a una mano y sin conexión: 24 reglas, una Línea del día, temas de color y un cofre sorpresa.
+1.2: duelos en vivo, liga semanal y mapa metro de la ciudad. 7 líneas nuevas con reglas (33 en total). Los niveles se juegan sin red; los duelos y la liga necesitan conexión.
 ```
 
 ### Português (pt-BR)
@@ -392,23 +481,27 @@ Ray: Quebra-Cabeça do Metrô
 ```
 **Descrição curta** (Play)
 ```text
-Gire os trilhos, ligue as estações. Quebra-cabeça calmo, para uma mão e offline.
+Gire os trilhos, ligue as estações. Quebra-cabeça calmo de metrô, para uma mão.
 ```
 **Subtítulo** (App Store)
 ```text
-Calmo, com uma mão e offline
+Conecte linhas, com uma mão
 ```
 **Texto promocional** (App Store)
 ```text
-Uma nova Linha do Dia todo dia! Gire os trilhos, ligue cada estação, termine perfeito e ganhe bilhetes. 24 regras e fases sem fim te esperam.
+Novo: duelos ao vivo e liga semanal! Gire os trilhos, ligue cada estação, termine perfeito. 33 linhas, mapa do metrô da cidade e uma Linha do Dia nova todo dia.
 ```
 **Palavras-chave** (App Store)
 ```text
-canos,rede,trem,estação,lógica,cérebro,diário,relaxar,girar,conectar,peças,mapa,offline,zen
+canos,rede,trem,estação,lógica,cérebro,diário,girar,peças,mapa,zen,liga,duelo,offline
 ```
 **Descrição**
 ```text
-Ray é um quebra-cabeça de metrô calmo, para jogar com uma mão e sem internet. Toque numa peça e o trilho gira 90°. Leve a linha da estação central até cada parada sem deixar pontas soltas. A cada ligação, a cidade se acende.
+Ray é um quebra-cabeça de metrô calmo, para uma mão. Toque numa peça e o trilho gira 90°; ligue a linha do centro a cada estação.
+NOVO na 1.2: duelos ao vivo, liga semanal, mapa do metrô da cidade e 7 linhas novas (33 linhas com regras e fases mistas sem fim).
+As fases rodam offline; duelos e liga precisam de conexão.
+
+Sem pontas soltas. A cada ligação, a cidade se acende.
 
 COMO JOGAR
 • Toque numa peça para girar o trilho.
@@ -416,11 +509,19 @@ COMO JOGAR
 • Três estrelas: termine a fase, bata a meta de tempo e a meta de jogadas.
 • Bata as duas de uma vez e a fase fica perfeita: você ganha um bilhete.
 
-24 LINHAS, FASES SEM FIM
-Cada linha de metrô traz uma regra nova e cada fase é um pouco mais difícil que a anterior. Depois de 24 linhas com regras, o jogo continua para sempre com linhas mistas. As fases são criadas no seu aparelho, todas têm solução e todo mundo recebe o mesmo quebra-cabeça no mesmo número de fase.
+DUELOS AO VIVO E LIGA SEMANAL
+• Duelo: resolva o mesmo quebra-cabeça contra um rival aleatório ou um amigo convidado por código. Quem terminar primeiro vence: +10 pontos de liga.
+• Liga semanal: dispute num grupo de 30. Estrelas das fases, a Linha do Dia e vitórias em duelos dão pontos. Ao fim da semana, os 7 primeiros sobem de liga e os 5 últimos descem; são 6 ligas.
+• Participar é opcional. Duelos e liga precisam de conexão; as fases rodam offline.
+
+MAPA DA CIDADE
+Cada linha concluída acende um bairro da sua cidade. Termine todas as fases de uma linha com perfeição e o bairro brilha em dourado. Veja sua cidade crescer.
+
+33 LINHAS, FASES SEM FIM
+Cada linha de metrô traz uma regra nova e cada fase é um pouco mais difícil que a anterior. Depois de 33 linhas, o jogo continua para sempre com linhas mistas. As fases são criadas no seu aparelho, todas têm solução e todo mundo recebe o mesmo quebra-cabeça no mesmo número de fase.
 
 REGRAS NOVAS PELO CAMINHO
-Peças gêmeas, peças inversas, fileiras deslizantes, túneis escuros, peças contador, peças geladas, dois centros, desvios, peças lacradas, plataformas giratórias, pontes, peças engrenagem, tampas, bocas de túnel, placas, linhas circulares, braços apagados, depósitos ocultos, tabuleiros sem bordas, rios, estações fechadas, zonas tarifárias, estações com relógio e colunas deslizantes: 24 regras. Cada regra nova chega com um cartão animado curto, e o tabuleiro nunca fica poluído.
+Peças gêmeas, peças inversas, fileiras deslizantes, túneis escuros, peças contador, peças geladas, dois centros, desvios, peças lacradas, plataformas giratórias, pontes, peças engrenagem, tampas, bocas de túnel, placas, linhas circulares, braços apagados, depósitos ocultos, tabuleiros sem bordas, rios, estações fechadas, zonas tarifárias, estações com relógio, colunas deslizantes, estações expressas, peças de sinal, estações sísmicas, peças mutantes, peças controle, peças de manobra e uma plataforma vazia. Cada regra nova chega com um cartão animado curto, e o tabuleiro nunca fica poluído.
 
 LINHA DO DIA
 Todo dia todo mundo resolve o mesmo quebra-cabeça. No sábado se joga num tabuleiro hexagonal e domingo é dia da regra da semana. Mantenha sua sequência e complete missões diárias e semanais.
@@ -437,13 +538,13 @@ Ray é grátis. Suas dicas voltam a pelo menos 3 todo dia, e você ganha dicas e
 PACOTE SEM ANÚNCIOS
 Compra única. Tira os anúncios entre as fases, dá 20 dicas de presente e libera 3 temas exclusivos (Ouro, Diamante, Rubi). Os vídeos de dicas continuam opcionais.
 
-Sem conta e sem dados pessoais. Seu progresso fica no seu aparelho.
+Sem conta e sem dados pessoais. Seu progresso fica no seu aparelho. Se você entrar na liga ou num duelo, só seu apelido, seus pontos de liga e o andamento do duelo ficam num servidor, com um identificador anônimo; Ajustes › Sair da liga · apagar meus dados remove tudo.
 
 Em português, inglês, espanhol, alemão, francês, coreano, japonês, chinês tradicional e turco.
 ```
 **Notas da versão**
 ```text
-Primeira versão. Um quebra-cabeça de metrô para uma mão e offline: 24 regras, a Linha do Dia, temas de cores e um baú surpresa.
+1.2: duelos ao vivo, liga semanal e mapa do metrô da cidade. 7 linhas novas com regras (33 no total). As fases rodam offline; duelos e liga precisam de conexão.
 ```
 
 ### Français (fr-FR)
@@ -454,23 +555,25 @@ Ray : Puzzle de Métro
 ```
 **Description courte** (Play)
 ```text
-Tourne les rails, relie chaque station. Un puzzle calme, à une main, hors ligne.
+Tourne les rails, relie chaque station. Un puzzle de métro calme, à une main.
 ```
 **Sous-titre** (App Store)
 ```text
-Calme, à une main, hors ligne
+Relie les lignes, à une main
 ```
 **Texte promotionnel** (App Store)
 ```text
-Une nouvelle Ligne du jour chaque jour ! Tourne les rails, relie chaque station, finis parfait et gagne des tickets. 24 règles et des niveaux sans fin t’attendent.
+Nouveau : duels en direct et ligue hebdo ! Tourne les rails, relie chaque station, finis parfait. 33 lignes, plan de métro de la ville et une Ligne du jour inédite.
 ```
 **Mots-clés** (App Store)
 ```text
-tuyaux,réseau,train,gare,logique,cerveau,quotidien,détente,tourner,relier,tuiles,carte,zen
+tuyaux,réseau,train,gare,logique,cerveau,quotidien,tourner,tuiles,carte,zen,ligue,duel,offline
 ```
 **Description**
 ```text
-Ray est un puzzle de métro calme, à jouer d’une main et sans connexion. Touche une tuile et le rail tourne de 90°. Prolonge la ligne depuis la station centrale jusqu’à chaque arrêt, sans laisser de bout de rail libre. À chaque connexion, la ville s’illumine.
+Ray est un puzzle de métro calme, à jouer d’une main. Touche une tuile et le rail tourne de 90° ; relie la ligne du centre à chaque station.
+NOUVEAU en 1.2 : duels en direct, ligue hebdo, plan de métro de la ville et 7 nouvelles lignes (33 lignes à règles et niveaux mixtes sans fin).
+Les niveaux se jouent hors ligne ; duels et ligue demandent une connexion.
 
 COMMENT JOUER
 • Touche une tuile pour tourner le rail.
@@ -478,11 +581,19 @@ COMMENT JOUER
 • Trois étoiles : finis le niveau, tiens l’objectif de temps et l’objectif de coups.
 • Tiens les deux à la fois et le niveau est parfait : tu gagnes un ticket.
 
-24 LIGNES, DES NIVEAUX SANS FIN
-Chaque ligne de métro apporte une nouvelle règle et chaque niveau est un peu plus dur que le précédent. Après 24 lignes à règles, le jeu continue à l’infini avec des lignes mixtes. Les niveaux sont créés sur ton appareil, tous ont une solution et tout le monde a le même puzzle au même numéro de niveau.
+DUELS EN DIRECT ET LIGUE HEBDO
+• Duel : résous le même puzzle face à un adversaire au hasard ou à un ami invité par code. Le premier à finir gagne : +10 points de ligue.
+• Ligue hebdo : joue dans un groupe de 30. Les étoiles des niveaux, la Ligne du jour et les victoires en duel rapportent des points. Chaque semaine, 7 joueurs montent et 5 descendent parmi 6 ligues.
+• Participer est facultatif. Les duels et la ligue demandent une connexion.
+
+PLAN DE LA VILLE
+Chaque ligne finie éclaire un quartier de ta ville. Termine parfaitement tous les niveaux d’une ligne et le quartier brille en or.
+
+33 LIGNES, DES NIVEAUX SANS FIN
+Chaque ligne de métro apporte une nouvelle règle et chaque niveau est un peu plus dur que le précédent. Après 33 lignes, le jeu continue à l’infini avec des lignes mixtes. Les niveaux sont créés sur ton appareil, tous ont une solution et tout le monde a le même puzzle au même numéro de niveau.
 
 DE NOUVELLES RÈGLES EN ROUTE
-Tuiles jumelles, tuiles inverses, rangées glissantes, tunnels sombres, tuiles compteur, tuiles givrées, deux centres, aiguillages, tuiles scellées, plaques tournantes, ponts, tuiles engrenage, caches, portails de tunnel, panneaux, lignes circulaires, bras pâles, dépôts cachés, plateaux sans bords, rivières, stations fermées, zones tarifaires, stations minutées et colonnes glissantes : 24 règles. Chaque nouvelle règle est présentée par une courte carte animée, et le plateau ne devient jamais surchargé.
+Tuiles jumelles, tuiles inverses, rangées glissantes, tunnels sombres, tuiles compteur, tuiles givrées, deux centres, aiguillages, tuiles scellées, plaques tournantes, ponts, tuiles engrenage, caches, portails de tunnel, panneaux, lignes circulaires, bras pâles, dépôts cachés, plateaux sans bords, rivières, stations fermées, zones tarifaires, stations minutées, colonnes glissantes, stations express, tuiles signal, stations sismiques, tuiles changeantes, tuiles télécommande, tuiles de manœuvre et un quai vide. Chaque nouvelle règle est présentée par une courte carte animée, et le plateau ne devient jamais surchargé.
 
 LIGNE DU JOUR
 Chaque jour, tout le monde résout le même puzzle. Le samedi se joue sur un plateau hexagonal, le dimanche c’est la règle de la semaine. Garde ta série et accomplis les quêtes du jour et de la semaine.
@@ -499,13 +610,13 @@ Ray est gratuit. Tes indices remontent à au moins 3 chaque jour, et tu gagnes d
 PACK SANS PUB
 Achat unique. Supprime les pubs entre les niveaux, offre 20 indices et débloque 3 thèmes exclusifs (Or, Diamant, Rubis). Les vidéos d’indices restent facultatives.
 
-Pas de compte, aucune donnée personnelle. Ta progression reste sur ton appareil.
+Pas de compte, aucune donnée personnelle. Ta progression reste sur ton appareil. Si tu rejoins la ligue ou un duel, seuls ton pseudo, tes points de ligue et ta progression en duel sont stockés sur un serveur avec un identifiant anonyme ; Réglages › Quitter la ligue · supprimer mes données les efface.
 
 En français, anglais, allemand, espagnol, portugais, coréen, japonais, chinois traditionnel et turc.
 ```
 **Notes de version**
 ```text
-Première version. Un puzzle de métro à une main et hors ligne : 24 règles, une Ligne du jour, des thèmes de couleur et un coffre surprise.
+1.2 : duels en direct, ligue hebdo et plan de métro de la ville. 7 nouvelles lignes à règles (33 au total). Les niveaux se jouent hors ligne ; duels et ligue demandent une connexion.
 ```
 
 ## 5c. Korece, Japonca, Geleneksel Çince (1.1)
@@ -514,17 +625,17 @@ Première version. Un puzzle de métro à une main et hors ligne : 24 règles, u
 
 Korece metne yayından önce anadili Korece olan biri (kullanıcının Koreli arkadaşı) göz atmalı; Japonca ve Çince için de mümkünse birer okuma iyi olur.
 
-App Store anahtar kelime sınırı 100'dür; bazı araçlar bayt saydığı için (CJK harfi UTF-8'de 3 bayt) üç dilde de 100 baytın altında tutuldu. Sayılar karakterdir, anahtar kelimelerde parantez içi bayttır.
+App Store anahtar kelime sınırı 100'dür; bazı araçlar bayt saydığı için (CJK harfi UTF-8'de 3 bayt) üç dilde de 100 baytı aşmaz (ko 99, ja 100, zh 100 bayt; 1.2'de "offline/オフライン/離線", "liga/대결" gibi sözcükler eklendi). Sayılar karakterdir, anahtar kelimelerde parantez içi bayttır.
 
 | Metin | Sınır | KO | JA | ZH-HANT |
 |---|---|---|---|---|
 | Uygulama adı / ad | 30 | 14 | 13 | 11 |
-| Play kısa açıklama | 80 | 43 | 41 | 28 |
-| App Store alt başlık | 30 | 17 | 15 | 10 |
-| App Store tanıtım metni | 170 | 72 | 71 | 47 |
-| Anahtar kelimeler | 100 | 34 (82 bayt) | 35 (87 bayt) | 33 (79 bayt) |
-| Tam açıklama | 4000 | 1569 | 1438 | 1047 |
-| Sürüm notu (1.1) | 500 | 53 | 44 | 35 |
+| Play kısa açıklama | 80 | 48 | 44 | 33 |
+| App Store alt başlık | 30 | 15 | 16 | 9 |
+| App Store tanıtım metni | 170 | 83 | 69 | 58 |
+| Anahtar kelimeler | 100 | 41 (99 bayt) | 40 (100 bayt) | 42 (100 bayt) |
+| Tam açıklama | 4000 | 2101 | 1930 | 1428 |
+| Sürüm notu (1.2) | 500 | 90 | 75 | 63 |
 
 ### 한국어 (ko-KR)
 
@@ -534,23 +645,27 @@ Ray: 지하철 노선 퍼즐
 ```
 **간단한 설명** (Play)
 ```text
-선로를 돌려 모든 역을 이어요. 한 손으로, 오프라인으로 즐기는 차분한 퍼즐.
+선로를 돌려 모든 역을 이어요. 한 손으로 즐기는 차분한 지하철 퍼즐, 오프라인 가능.
 ```
 **부제** (App Store)
 ```text
-한 손으로, 오프라인, 차분하게
+한 손으로 노선을 잇는 퍼즐
 ```
 **프로모션 텍스트** (App Store)
 ```text
-매일 새로운 오늘의 노선! 선로를 돌리고 모든 역을 이어 퍼펙트로 깨고 티켓을 모으세요. 24가지 규칙과 끝없는 레벨이 기다려요.
+신규: 실시간 대결과 주간 리그! 선로를 돌려 모든 역을 잇고 퍼펙트로 깨 보세요. 33개 노선, 도시 노선도, 매일 새로운 오늘의 노선이 기다려요.
 ```
 **키워드** (App Store)
 ```text
-파이프,연결,기차,역,두뇌,논리,힐링,타일,회전,노선도,메트로
+파이프,연결,기차,역,두뇌,논리,힐링,타일,회전,노선도,오프라인,리그,대결
 ```
 **설명**
 ```text
-Ray는 한 손으로, 인터넷 없이도 즐기는 차분한 지하철 퍼즐이에요. 타일을 탭하면 선로가 90° 돌아가요. 가운데 허브역에서 시작한 노선을 모든 역까지 이어 주세요. 끊긴 선로 끝이 남으면 안 돼요. 노선이 이어질수록 도시에 불이 켜져요.
+Ray는 한 손으로 즐기는 차분한 지하철 퍼즐이에요. 타일을 탭하면 선로가 90° 돌아가요. 허브역의 노선을 모든 역까지 이어 주세요.
+1.2 신규: 실시간 대결, 주간 리그, 도시 노선도, 새 노선 7개(규칙 노선 33개 + 끝없는 혼합 레벨).
+레벨은 오프라인으로 즐기고, 대결과 리그는 인터넷 연결이 필요해요.
+
+끊긴 선로 끝이 남으면 안 돼요. 노선이 이어질수록 도시에 불이 켜져요.
 
 게임 방법
 • 타일을 탭해서 선로를 돌려요.
@@ -558,11 +673,19 @@ Ray는 한 손으로, 인터넷 없이도 즐기는 차분한 지하철 퍼즐�
 • 별 3개: 레벨 클리어, 시간 목표 달성, 이동 목표 달성.
 • 두 목표를 한 번에 달성하면 퍼펙트! 티켓을 받아요.
 
-24개 노선, 끝없는 레벨
-지하철 노선마다 새로운 규칙이 등장하고, 레벨은 조금씩 어려워져요. 규칙이 있는 24개 노선이 끝나면 여러 규칙이 섞인 노선이 끝없이 이어져요. 레벨은 기기에서 만들어지고, 모두 풀 수 있으며, 같은 레벨 번호에서는 누구나 같은 퍼즐을 만나요.
+실시간 대결과 주간 리그
+• 대결: 무작위 상대나 코드로 초대한 친구와 같은 퍼즐을 겨뤄요. 먼저 끝내면 승리, 리그 점수 +10점이에요.
+• 주간 리그: 30명 그룹에서 겨뤄요. 레벨 별, 오늘의 노선, 대결 승리로 점수를 얻어요. 한 주가 끝나면 상위 7명은 위 리그로 올라가고 하위 5명은 내려가요. 리그는 모두 6개예요.
+• 참여는 선택이에요. 대결과 리그는 인터넷 연결이 필요하고, 레벨은 오프라인으로 즐길 수 있어요.
+
+도시 노선도
+끝낸 노선마다 도시의 구역이 하나씩 밝아져요. 한 노선의 모든 레벨을 퍼펙트로 깨면 그 구역이 황금빛으로 빛나요. 도시가 자라는 모습을 지켜보세요.
+
+33개 노선, 끝없는 레벨
+지하철 노선마다 새로운 규칙이 등장하고, 레벨은 조금씩 어려워져요. 33개 노선이 끝나면 여러 규칙이 섞인 노선이 끝없이 이어져요. 레벨은 기기에서 만들어지고, 모두 풀 수 있으며, 같은 레벨 번호에서는 누구나 같은 퍼즐을 만나요.
 
 여행할수록 새로운 규칙
-짝 타일, 역회전 타일, 가로 슬라이드, 어두운 터널, 카운터 타일, 얼음 타일, 두 허브, 전환기, 봉인 타일, 회전대, 다리, 톱니 타일, 덮개, 터널 입구, 표지판, 순환선, 흐릿한 가지, 숨은 차고, 끝없는 보드, 강, 폐쇄역, 요금 구역, 시간제한 역, 세로 슬라이드: 모두 24가지 규칙이에요. 새 규칙은 짧은 애니메이션 카드로 소개되고, 보드는 결코 복잡해지지 않아요.
+짝 타일, 역회전 타일, 가로 슬라이드, 어두운 터널, 카운터 타일, 얼음 타일, 두 허브, 전환기, 봉인 타일, 회전대, 다리, 톱니 타일, 덮개, 터널 입구, 표지판, 순환선, 흐릿한 가지, 숨은 차고, 끝없는 보드, 강, 폐쇄역, 요금 구역, 시간제한 역, 세로 슬라이드, 급행역, 신호 타일, 지진역, 변신 타일, 리모컨 타일, 입환 타일, 빈 승강장까지 만나요. 새 규칙은 짧은 애니메이션 카드로 소개되고, 보드는 결코 복잡해지지 않아요.
 
 오늘의 노선
 매일 모두가 같은 퍼즐을 풀어요. 토요일은 육각형 보드, 일요일은 이번 주 규칙의 날이에요. 연속 기록을 이어 가고 일일·주간 미션을 완료하세요.
@@ -582,13 +705,13 @@ Ray는 무료예요. 힌트는 매일 최소 3개까지 채워지고, 노선이 
 광고 제거 팩
 한 번만 구매하면 돼요. 레벨 사이 광고가 사라지고, 힌트 20개를 선물로 받으며, 특별 테마 3종(골드, 다이아몬드, 루비)이 열려요. 힌트 영상은 계속 선택 사항이에요.
 
-계정이 필요 없고 개인정보도 묻지 않아요. 진행 상황은 기기에만 저장돼요.
+계정이 필요 없고 개인정보도 묻지 않아요. 진행 상황은 기기에만 저장돼요. 리그나 대결에 참여하면 닉네임, 리그 점수, 대결 진행 상황만 익명 ID로 서버에 저장되며, 설정 › 리그 나가기 · 내 데이터 삭제로 지울 수 있어요.
 
 한국어, 영어, 일본어, 중국어(번체), 독일어, 스페인어, 포르투갈어, 프랑스어, 튀르키예어를 지원해요.
 ```
 **업데이트 내용**
 ```text
-한국어를 지원해요! 한 손으로, 오프라인으로 즐기는 지하철 퍼즐: 24가지 규칙, 오늘의 노선.
+1.2: 실시간 대결, 주간 리그, 도시 노선도가 추가됐어요. 규칙 노선 7개(총 33개)도 늘었어요. 레벨은 오프라인으로, 대결과 리그는 인터넷 연결로 즐겨요.
 ```
 
 ### 日本語 (ja-JP)
@@ -599,23 +722,27 @@ Ray: メトロ路線パズル
 ```
 **簡単な説明**（Play）
 ```text
-線路を回して、すべての駅をつなごう。片手でオフラインでも遊べる、落ち着いたパズル。
+線路を回して、すべての駅をつなごう。片手でオフラインでも遊べる、落ち着いたメトロパズル。
 ```
 **サブタイトル**（App Store）
 ```text
-片手で・オフラインで・のんびり
+片手でつなぐ、のんびり路線パズル
 ```
 **プロモーションテキスト**（App Store）
 ```text
-毎日あたらしい「今日の路線」！線路を回して駅をつなぎ、パーフェクトでクリアして切符を集めよう。24のルールと終わらないステージが待っています。
+新登場：ライブ対戦と週間リーグ！線路を回して駅をつなぎ、パーフェクトを目指そう。33路線、街のメトロ路線図、毎日あたらしい「今日の路線」。
 ```
 **キーワード**（App Store）
 ```text
-パイプ,電車,駅,脳トレ,ロジック,回転,タイル,癒し,路線図,つなぐ
+パイプ,電車,駅,脳トレ,ロジック,回転,タイル,癒し,オフライン,対戦,リーグ
 ```
 **説明**
 ```text
-Rayは、片手で、インターネットなしでも遊べる落ち着いたメトロパズルです。タイルをタップすると線路が90°回ります。中央のハブ駅から路線をのばして、すべての駅につなげましょう。線路の行き止まりを残してはいけません。路線がつながるほど、街に明かりが灯ります。
+Rayは、片手で遊べる落ち着いたメトロパズルです。タイルをタップすると線路が90°回ります。中央のハブ駅から、すべての駅へ路線をつなぎましょう。
+1.2の新機能：ライブ対戦、週間リーグ、街のメトロ路線図、新路線7本（ルール路線33本＋終わらない混合ステージ）。
+ステージはオフラインで遊べます。対戦とリーグはネット接続が必要です。
+
+線路の行き止まりを残してはいけません。路線がつながるほど、街に明かりが灯ります。
 
 遊び方
 • タイルをタップして線路を回す。
@@ -623,11 +750,19 @@ Rayは、片手で、インターネットなしでも遊べる落ち着いた�
 • 星3つ：ステージをクリア、タイム目標を達成、手数目標を達成。
 • ふたつの目標を同時に達成するとパーフェクト。切符がもらえます。
 
-24の路線、終わらないステージ
-路線ごとに新しいルールが登場し、ステージは少しずつ難しくなります。ルールのある24路線のあとは、ルールが混ざった路線がどこまでも続きます。ステージは端末の中で作られ、どれも必ず解けて、同じステージ番号ならだれでも同じパズルです。
+ライブ対戦と週間リーグ
+• 対戦：ランダムな相手や、コードで招待した友だちと同じパズルを競います。先にクリアした人の勝ちで、リーグポイント+10。
+• 週間リーグ：30人のグループで競います。ステージの星、今日の路線、対戦の勝利でポイントがたまります。週の終わりに上位7人は上のリーグへ、下位5人は下のリーグへ。リーグは全部で6つです。
+• 参加は任意です。対戦とリーグはネット接続が必要で、ステージはオフラインで遊べます。
+
+街の路線図
+クリアした路線ごとに、街の地区がひとつ灯ります。ひとつの路線のステージをすべてパーフェクトでクリアすると、その地区が金色に輝きます。街が育つようすを見守りましょう。
+
+33の路線、終わらないステージ
+路線ごとに新しいルールが登場し、ステージは少しずつ難しくなります。33路線のあとは、ルールが混ざった路線がどこまでも続きます。ステージは端末の中で作られ、どれも必ず解けて、同じステージ番号ならだれでも同じパズルです。
 
 旅するほど新しいルール
-ペアタイル、逆回転タイル、横スライド、暗いトンネル、カウンタータイル、凍るタイル、ふたつのハブ、分岐器、封印タイル、転車台、橋、歯車タイル、カバー、トンネル口、標識、環状線、淡い枝、隠れ車庫、端のない盤面、川、閉鎖駅、運賃ゾーン、時限駅、縦スライド：全24ルール。新しいルールは短いアニメーションのカードで紹介され、盤面がごちゃごちゃすることはありません。
+ペアタイル、逆回転タイル、横スライド、暗いトンネル、カウンタータイル、凍るタイル、ふたつのハブ、分岐器、封印タイル、転車台、橋、歯車タイル、カバー、トンネル口、標識、環状線、淡い枝、隠れ車庫、端のない盤面、川、閉鎖駅、運賃ゾーン、時限駅、縦スライド、急行駅、信号タイル、地震駅、変身タイル、リモコンタイル、入換タイル、空きホーム。新しいルールは短いアニメーションのカードで紹介され、盤面がごちゃごちゃすることはありません。
 
 今日の路線
 毎日、みんなが同じパズルに挑みます。土曜日は六角形の盤面、日曜日は今週のルールの日。連続記録をのばして、デイリーとウィークリーのミッションを達成しよう。
@@ -647,13 +782,13 @@ Rayは無料で遊べます。ヒントは毎日最低3個まで補充され、�
 広告なしパック
 買い切りです。ステージ間の広告がなくなり、ヒント20個のプレゼントと、特別テーマ3種（ゴールド、ダイヤモンド、ルビー）が解放されます。ヒント動画は引き続き任意です。
 
-アカウント不要、個人情報も入力不要。進行状況はお使いの端末にだけ保存されます。
+アカウント不要、個人情報も入力不要。進行状況はお使いの端末にだけ保存されます。リーグや対戦に参加した場合のみ、ニックネーム、リーグポイント、対戦の進行状況が匿名IDでサーバーに保存され、設定 › リーグを抜ける · データを削除 で消せます。
 
 日本語、英語、韓国語、中国語（繁体字）、ドイツ語、スペイン語、ポルトガル語、フランス語、トルコ語に対応。
 ```
 **このバージョンの新機能**
 ```text
-日本語に対応しました！片手でオフラインでも遊べるメトロパズル：24のルール、今日の路線。
+1.2：ライブ対戦、週間リーグ、街のメトロ路線図が登場。ルール路線が7本増えて全33本に。ステージはオフラインで、対戦とリーグはネット接続で遊べます。
 ```
 
 ### 繁體中文 (zh-TW · Chinese Traditional)
@@ -664,23 +799,27 @@ Ray: 地鐵路線解謎
 ```
 **簡短說明**（Play）
 ```text
-轉動軌道，連起每個車站。單手、離線也能玩的療癒解謎遊戲。
+轉動軌道，連起每個車站。單手也能玩的療癒地鐵解謎，關卡可離線遊玩。
 ```
 **副標題**（App Store）
 ```text
-單手、離線、輕鬆療癒
+單手連線，輕鬆療癒
 ```
 **宣傳文字**（App Store）
 ```text
-每天都有新的每日路線！轉動軌道、連起每個車站，完美過關收集車票。24 種規則與無限關卡等著你。
+全新：即時對戰與每週聯賽！轉動軌道、連起每個車站，挑戰完美過關。33 條路線、城市捷運路線圖，每天都有新的每日路線。
 ```
 **關鍵字**（App Store）
 ```text
-水管,火車,車站,燒腦,邏輯,旋轉,方塊,療癒,捷運,路線圖,連線
+水管,火車,車站,燒腦,邏輯,旋轉,方塊,療癒,捷運,路線圖,離線,益智,聯賽,對戰
 ```
 **描述**
 ```text
-Ray 是一款可以單手、不用網路就能玩的輕鬆地鐵解謎遊戲。點一下方塊，軌道就轉 90°。從中央的樞紐站延伸路線，連到每一個車站，不能留下沒接上的軌道斷頭。路線越連越多，城市就一盞盞亮起來。
+Ray 是一款單手就能玩的輕鬆地鐵解謎遊戲。點一下方塊，軌道就轉 90°；把路線從中央樞紐連到每一個車站。
+1.2 新功能：即時對戰、每週聯賽、城市捷運路線圖與 7 條新路線（共 33 條規則路線＋無限混合關卡）。
+關卡可離線遊玩；對戰與聯賽需要網路連線。
+
+不能留下沒接上的軌道斷頭。路線越連越多，城市就一盞盞亮起來。
 
 怎麼玩
 • 點方塊轉動軌道。
@@ -688,11 +827,19 @@ Ray 是一款可以單手、不用網路就能玩的輕鬆地鐵解謎遊戲。�
 • 三顆星：過關、達成時間目標、達成步數目標。
 • 同時達成兩個目標就是完美過關，還能得到一張車票。
 
-24 條路線，無限關卡
-每條地鐵路線都會帶來新規則，每一關都比上一關難一點。24 條規則路線之後，混合規則的路線會無限延續。關卡在你的裝置上產生，每一關都有解，而且同一個關卡編號，大家拿到的都是同一道謎題。
+即時對戰與每週聯賽
+• 對戰：和隨機對手，或用代碼邀請的朋友，一起挑戰同一道謎題。先完成的人獲勝，聯賽積分 +10。
+• 每週聯賽：在 30 人小組中競爭。關卡星星、每日路線與對戰勝利都能得分。每週結束時，前 7 名晉級上一級聯賽，後 5 名降級；聯賽共有 6 級。
+• 是否參加由你決定。對戰與聯賽需要網路連線，關卡可離線遊玩。
+
+城市路線圖
+每完成一條路線，城市就會點亮一個街區。把一條路線的所有關卡都完美過關，街區就會閃耀金光。看著你的城市慢慢長大。
+
+33 條路線，無限關卡
+每條地鐵路線都會帶來新規則，每一關都比上一關難一點。33 條路線之後，混合規則的路線會無限延續。關卡在你的裝置上產生，每一關都有解，而且同一個關卡編號，大家拿到的都是同一道謎題。
 
 一路解鎖新規則
-成對方塊、反轉方塊、橫向滑動、黑暗隧道、計數方塊、結冰方塊、雙樞紐、轉轍器、封印方塊、轉車台、橋樑、齒輪方塊、蓋板、隧道口、路標、環狀線、淡色分支、隱藏車庫、無邊盤面、河流、封閉車站、票價區、限時車站、縱向滑動：共 24 種規則。每個新規則都用一張簡短的動畫卡片介紹，盤面永遠不會雜亂。
+成對方塊、反轉方塊、橫向滑動、黑暗隧道、計數方塊、結冰方塊、雙樞紐、轉轍器、封印方塊、轉車台、橋樑、齒輪方塊、蓋板、隧道口、路標、環狀線、淡色分支、隱藏車庫、無邊盤面、河流、封閉車站、票價區、限時車站、縱向滑動、快車站、號誌方塊、地震站、變形方塊、遙控方塊、調車方塊、空月台。每個新規則都用一張簡短的動畫卡片介紹，盤面永遠不會雜亂。
 
 每日路線
 每天大家都解同一道謎題。星期六在六角形盤面上玩，星期日是本週規則日。保持連續紀錄，完成每日和每週任務。
@@ -712,27 +859,27 @@ Ray 可以免費遊玩。提示每天至少補到 3 個，每完成一條路線�
 免廣告包
 一次購買。移除關卡之間的廣告，贈送 20 個提示，並解鎖 3 款專屬主題（黃金、鑽石、紅寶石）。提示影片仍可自由選擇觀看。
 
-不需要帳號，也不會要求個人資料。你的進度只會保存在你的裝置上。
+不需要帳號，也不會要求個人資料。你的進度只會保存在你的裝置上。若參加聯賽或對戰，只有暱稱、聯賽積分與對戰進度會以匿名 ID 儲存在伺服器上，可在設定 › 退出聯賽 · 刪除我的資料 中刪除。
 
 支援繁體中文、英文、日文、韓文、德文、西班牙文、葡萄牙文、法文和土耳其文。
 ```
 **版本更新說明**
 ```text
-現在支援繁體中文！單手、離線也能玩的地鐵解謎：24 種規則、每日路線。
+1.2：新增即時對戰、每週聯賽與城市捷運路線圖。新增 7 條規則路線（共 33 條）。關卡可離線遊玩，對戰與聯賽需要網路連線。
 ```
 
 ## 6. Google Play "Veri güvenliği" formu
 
-Hesap yok, ayrı çökme raporu aracı yok (hata ve akıcılık bilgisi Firebase olayı olarak gider, aşağıda), ilerleme yalnız cihazda (tarayıcı deposu + kalıcı yedek, Capacitor Preferences). Formda beyan edilecek veriyi iki SDK toplar: **Google Mobile Ads SDK (AdMob)** ve **Google Analytics for Firebase** (oyun olayları, reklam kimliği olmadan, rıza gereken bölgelerde kapalı; ayrıntı `docs/YAYIN.md` §5). Satın almayı Google Play yürütür; uygulama ödeme bilgisi görmez.
+Görünür hesap yok, ayrı çökme raporu aracı yok (hata ve akıcılık bilgisi Firebase olayı olarak gider, aşağıda); ilerleme cihazda (tarayıcı deposu + kalıcı yedek, Capacitor Preferences), **yalnız 1.2'deki isteğe bağlı lig ve kapışma sunucuya yazar**. Formda beyan edilecek veriyi üç kaynak toplar: **Google Mobile Ads SDK (AdMob)**, **Google Analytics for Firebase** (oyun olayları, reklam kimliği olmadan, rıza gereken bölgelerde kapalı; ayrıntı `docs/YAYIN.md` §5) ve **lig/kapışma arka ucu** (`www/lig.js`: Firebase Authentication anonim giriş + Cloud Firestore, REST ile; Avrupa sunucuları; yalnız oyuncu lige katılırsa çalışır; `gizlilik.html` §13). Satın almayı Google Play yürütür; uygulama ödeme bilgisi görmez.
 
-Firebase, geliştirici adına çalışan bir hizmet sağlayıcıdır; Play tanımına göre bu "paylaşma" sayılmaz, "toplama" sayılır. Ölçüm derlemeye yalnız `FIREBASE_ANDROID_JSON` gizli değeri verilince girer; vermeden yayımlarsan Firebase satırlarını forma ekleme.
+Firebase, geliştirici adına çalışan bir hizmet sağlayıcıdır; Play tanımına göre bu "paylaşma" sayılmaz, "toplama" sayılır. Ölçüm derlemeye yalnız `FIREBASE_ANDROID_JSON` gizli değeri verilince girer; vermeden yayımlarsan **Analytics** satırlarını forma ekleme. Lig/kapışma satırları (aşağıda) bundan bağımsızdır: lig kodu kendi anahtarıyla REST çağırır, bu yüzden lig açık yayımlanan her 1.2 derlemesinde beyan edilir.
 
 | Soru | Yanıt |
 |---|---|
 | Uygulama gerekli kullanıcı verisi türlerinden birini topluyor ya da paylaşıyor mu? | Evet |
 | Toplanan bütün veriler aktarım sırasında şifreleniyor mu? | Evet (SDK HTTPS kullanır) |
-| Hesap oluşturma | Uygulamada hesap oluşturma yok |
-| Kullanıcı verilerinin silinmesini isteyebilir mi? | Hayır. Geliştirici kullanıcı adına veri tutmaz; reklam verisini Google işler. Cihazdaki oyun verisi uygulamadan silinebilir (aşağıda). |
+| Hesap oluşturma | Uygulamada hesap oluşturma yok (kullanıcıya görünen hesap, e-posta ya da parola yok; lig için arka planda rastgele bir Firebase **anonim kimliği** üretilir) |
+| Kullanıcı verilerinin silinmesini isteyebilir mi? | Evet. Lig/kapışma verisi uygulamadan silinir: Ayarlar › Ligden çık · verilerimi sil (ya da Ayarlar › Gizlilik › Verilerimi sil); sunucudaki kayıtlar ve anonim kimlik silinir. Reklam verisini Google işler. Cihazdaki oyun verisi de uygulamadan silinebilir (aşağıda). Silme bağlantısı sorulursa gizlilik sayfasını (§9, §13) ver. |
 
 Beyan edilecek veri türleri (Google'ın AdMob için yayımladığı eşleşmeye göre):
 
@@ -747,15 +894,19 @@ Beyan edilecek veri türleri (Google'ın AdMob için yayımladığı eşleşmeye
 | Uygulama bilgileri ve performans › Teşhis | **Firebase:** JavaScript hata iletisi ve yeri (`js_error`, oturumda en çok 5), takılan kare sayısı/süresi (`level_end` `jank`, `perf_session`: çekirdek sayısı, bellek, ekran ölçeği). Kişisel veri, metin girişi yok | Evet | Hayır | Hayır | Zorunlu | Analiz |
 | Finansal bilgiler › Satın alma geçmişi | **Firebase:** satın alınan ürünün kimliği (`purchase`, `offer_buy` olayları; tutar yok, Firebase'in kendi `in_app_purchase` olayı tutarı içerir) | Evet | Hayır | Hayır | Zorunlu | Analiz |
 | Konum › Yaklaşık konum | **Firebase:** IP'den ülke/şehir tahmini | Evet | Hayır | Hayır | Zorunlu | Analiz |
+| Kişisel bilgiler › Kullanıcı kimlikleri | **Lig/kapışma (Firebase Authentication):** rastgele anonim kullanıcı kimliği (UID) ve oyuncunun seçtiği takma ad | Evet | Hayır | Hayır | **İsteğe bağlı** (yalnız lige katılırsa) | Uygulama işlevi |
+| Uygulama etkinliği › Diğer kullanıcı içeriği | **Lig/kapışma (Firestore):** takma ad (3–16 karakter, filtreli; bildirme ve engelleme var) | Evet | Hayır | Hayır | **İsteğe bağlı** | Uygulama işlevi |
+| Uygulama etkinliği › Uygulama etkileşimleri | **Lig/kapışma (Firestore):** haftalık lig puanı, lig ve grup; kapışmada bölüm ve ilerleme (bağlanan karo oranı, hamle, süre) | Evet | Hayır | Hayır | **İsteğe bağlı** | Uygulama işlevi |
 
-Aynı veri türü iki satırda geçiyorsa formda tek kez işaretlenir; amaçlar ve "paylaşılıyor" yanıtı birleştirilir (AdMob paylaşır → Evet). "Zorunlu": oyuncu ölçümü uygulama içinden ayrıca kapatamaz (rıza bölgelerinde zaten kapalı; Verilerimi sil kapatır).
+Lig/kapışma satırları: veri reklam, pazarlama ya da izleme için **kullanılmaz**, kişiye (ad, e-posta, konum) bağlanmaz, satılmaz; Google/Firebase hizmet sağlayıcıdır ("paylaşılıyor" Hayır). Aynı gruptaki ve kapıştığın oyuncuların takma adı ve puanı görmesi uygulamanın işlevidir, üçüncü tarafa aktarım değildir. Çevrimiçi rakip yokken kapışmayı bitirenin kaydı başka oyunculara takma adla "kayıtlı rakip" olarak oynatılabilir (`gizlilik.html` §13; oyunda öyle yazar). Kullanıcı Ayarlar'dan hepsini siler. Aynı veri türü iki satırda geçiyorsa formda tek kez işaretlenir; amaçlar ve "paylaşılıyor" yanıtı birleştirilir (AdMob paylaşır → Evet). "Zorunlu": oyuncu ölçümü uygulama içinden ayrıca kapatamaz (rıza bölgelerinde zaten kapalı; Verilerimi sil kapatır).
 
-Toplanmayanlar: kişisel bilgiler (ad, e-posta, adres, telefon), ödeme bilgileri (Google Play yürütür), sağlık, mesajlar, fotoğraf ve video, ses, dosyalar, takvim, kişiler, web tarama, kesin konum.
+Toplanmayanlar: kişisel bilgiler (gerçek ad, e-posta, adres, telefon; takma ad serbest yazıdır ama ad, bağlantı, e-posta ve numara filtrelenir), ödeme bilgileri (Google Play yürütür), sağlık, mesajlar, fotoğraf ve video, ses, dosyalar, takvim, kişiler, web tarama, kesin konum.
 
 Gönderimden önce Google'ın güncel tablolarıyla son kez karşılaştır: https://developers.google.com/admob/android/privacy/play-data-disclosure · https://firebase.google.com/docs/android/play-data-disclosure
 
 **Silme yolu** (gizlilik politikasıyla aynı):
 
+- Lig ve kapışma verisi (sunucuda): Ayarlar › Ligden çık · verilerimi sil (ya da Ayarlar › Gizlilik › Verilerimi sil): lig kayıtların, kayıtlı oyunların ve anonim kimliğin sunucudan silinir. Bildirdiğin takma adlar incelenmek üzere saklanır (gizlilik politikası §13).
 - Oyun verisi: Ayarlar › Gizlilik › Verilerimi sil (bu düğme `magaza-reklam` dalıyla gelir) ya da uygulamayı kaldırmak. Aynı düğme ölçümü kapatır ve Firebase'in cihazdaki kimliğini sıfırlar (`resetAnalyticsData`).
 - Reklam verisi: Android ayarlarından reklam kimliğini sıfırlamak ya da silmek; AB/BK/İsviçre ve ilgili ABD eyaletlerinde rıza seçimini Ayarlar › Gizlilik › Reklam gizlilik seçenekleri ile değiştirmek.
 
@@ -763,7 +914,7 @@ Gönderimden önce Google'ın güncel tablolarıyla son kez karşılaştır: htt
 
 ## 7. Apple "App Privacy" etiketleri
 
-Etiketler AdMob SDK ve Firebase Analytics içindir (Firebase yalnız `FIREBASE_IOS_PLIST` verilen derlemede; IDFA'sız `AnalyticsWithoutAdIdSupport` sürümü, IDFV de kapalı). iOS'ta izleme (IDFA) yalnız kullanıcı ATT penceresinde izin verirse olur, bu yüzden izleme beyan edilir ve ATT penceresi gösterilir (`magaza-reklam` dalı).
+Etiketler AdMob SDK, Firebase Analytics ve 1.2'deki lig/kapışma arka ucu (Firebase Authentication anonim giriş + Firestore) içindir (Firebase yalnız `FIREBASE_IOS_PLIST` verilen derlemede; IDFA'sız `AnalyticsWithoutAdIdSupport` sürümü, IDFV de kapalı). iOS'ta izleme (IDFA) yalnız kullanıcı ATT penceresinde izin verirse olur, bu yüzden izleme beyan edilir ve ATT penceresi gösterilir (`magaza-reklam` dalı).
 
 | Apple veri türü | Amaç | Kimliğe bağlı mı | İzleme için mi |
 |---|---|---|---|
@@ -776,10 +927,13 @@ Etiketler AdMob SDK ve Firebase Analytics içindir (Firebase yalnız `FIREBASE_I
 | Kullanım verileri › Ürün etkileşimi (Firebase oyun olayları) | Analiz | Hayır | Hayır |
 | Satın alımlar › Satın alma geçmişi (Firebase `purchase`/`offer_buy`: ürün kimliği) | Analiz | Hayır | Hayır |
 | Konum › Yaklaşık konum (Firebase, IP'den) | Analiz | Hayır | Hayır |
+| Tanımlayıcılar › Kullanıcı kimliği (lig: Firebase Authentication anonim UID) | Uygulama işlevleri | Hayır | Hayır |
+| Kullanıcı içeriği › Diğer kullanıcı içeriği (lig takma adı) | Uygulama işlevleri | Hayır | Hayır |
+| Kullanıcı içeriği › Oyun içeriği (lig puanı, kapışma ilerlemesi: bölüm, bağlanan karo oranı, hamle, süre) | Uygulama işlevleri | Hayır | Hayır |
 
-Aynı tür iki satırda geçerse App Store Connect'te bir kez seçilir, amaçlar birleştirilir. Firebase verisi izleme için kullanılmaz (reklam kimliği yok, başka şirketlerin verisiyle birleştirilmez); "izleme" yanıtı yalnız AdMob satırlarından gelir. Bu yüzden ATT reddi ölçümü değiştirmez.
+Lig/kapışma satırları isteğe bağlıdır (yalnız lige katılırsa), reklam ya da izleme için kullanılmaz, başka şirketlerin verisiyle birleştirilmez, kullanıcı Ayarlar › Ligden çık · verilerimi sil ile siler; rastgele anonim kimlik gerçek kimliğe bağlanmaz (`gizlilik.html` §13 ile aynı). Apple takma adı ve kimliği "Sizinle ilişkilendirilen veri" saymak isterse formun sorusuna göre bu üç satırda "Evet" seç; bu izleme beyanını değiştirmez. Aynı tür iki satırda geçerse App Store Connect'te bir kez seçilir, amaçlar birleştirilir. Firebase verisi izleme için kullanılmaz (reklam kimliği yok, başka şirketlerin verisiyle birleştirilmez); "izleme" yanıtı yalnız AdMob satırlarından gelir. Bu yüzden ATT reddi ölçümü değiştirmez.
 
-Ürün sayfasında beklenen görünüm: "Sizi izlemek için kullanılan veriler: Tanımlayıcılar, Kullanım verileri" ve "Sizinle ilişkilendirilmeyen veriler: Konum, Tanılama, Kullanım verileri, Tanımlayıcılar, Satın Alımlar". "Sizinle ilişkilendirilen veri" bölümü çıkmaz.
+Ürün sayfasında beklenen görünüm: "Sizi izlemek için kullanılan veriler: Tanımlayıcılar, Kullanım verileri" ve "Sizinle ilişkilendirilmeyen veriler: Konum, Tanılama, Kullanım verileri, Tanımlayıcılar, Satın Alımlar, Kullanıcı içeriği". "Sizinle ilişkilendirilen veri" bölümü çıkmaz.
 
 Google'ın iOS tabloları: https://developers.google.com/admob/ios/privacy/data-disclosure · https://firebase.google.com/docs/ios/app-store-data-collection. Google Mobile Ads SDK kendi gizlilik bildirimini (`PrivacyInfo.xcprivacy`) taşır; Capacitor da öyle.
 
@@ -797,7 +951,7 @@ Google'ın iOS tabloları: https://developers.google.com/admob/ios/privacy/data-
 | Uyuşturucu, alkol, tütün | Hayır |
 | Kumar: gerçek para ya da kumar benzetimi (kumarhane oyunu) | Hayır |
 | Ayrımcılık, nefret | Hayır |
-| Kullanıcılar birbiriyle iletişim kuruyor mu (sohbet, içerik paylaşma) | Hayır. "Paylaş" yalnız sonuç metnini sistemin paylaşma penceresine verir. |
+| Kullanıcılar birbiriyle iletişim kuruyor mu (sohbet, içerik paylaşma) | Sohbet, mesaj, fotoğraf yok. Ama 1.2'de lig ve kapışmada oyuncular birbirinin **takma adını ve puanını** görür (takma ad filtreli; her takma ad için Bildir ve Engelle var). Anketin "kullanıcı etkileşimi / kullanıcı tarafından oluşturulan içerik" sorusu varsa **Evet (yalnız takma ad)**; sohbet sorusuna Hayır. "Paylaş" yalnız sonuç metnini sistemin paylaşma penceresine verir. |
 | Kullanıcının konumu paylaşılıyor mu | Hayır |
 | Dijital ürün satın alma | Evet (Mağaza: 2 tüketilemez, 5 tüketilebilir ürün; §10) |
 | Parayla satın alınan rastgele ödül (ganimet kutusu) | Hayır. Sürpriz sandık yalnız oyunda **kazanılan** biletle açılır. Mağazadaki bilet paketi (`ray_bilet_50`, 🎫; taç para birimi bilet olarak yeniden adlandırıldı) ayrı sayılır ve yalnız renk temasına harcanır, sandıkta kullanılamaz (`chestBal`, robot: `gelir.tac`); sandıktan taç çıkmaz. Bütün paketlerin içeriği sabittir. |
@@ -808,7 +962,7 @@ Beklenen sonuç: PEGI 3, ESRB Everyone, USK 0, IARC 3+ (satın alma nedeniyle "O
 ### App Store (yaş derecelendirmesi formu)
 
 - Bütün içerik soruları (şiddet, korku, cinsellik, küfür, uyuşturucu, kumar, yarışma, tıbbi konular): **Yok**.
-- Sınırsız web erişimi: Hayır. Kullanıcı içeriği: Hayır. Mesajlaşma: Hayır. Ebeveyn denetimi, yaş doğrulama: Hayır.
+- Sınırsız web erişimi: Hayır. Kullanıcı içeriği: yalnız lig takma adı (filtre, Bildir, Engelle var; 1.2). Mesajlaşma: Hayır. Ebeveyn denetimi, yaş doğrulama: Hayır.
 - Formda reklam sorusu varsa: **Evet**.
 - Hesaplanan derece büyük olasılıkla 4+ çıkar. Reklam içeriği AdMob'da en çok PG'ye ayarlı (`magaza-reklam` dalı, `maxAdContentRating: 'ParentalGuidance'`). Apple reklamların derecelendirmeye uygun olmasını ister. Form izin veriyorsa dereceyi 9+ seç; vermiyorsa AdMob'da iOS uygulaması için en yüksek reklam içeriği derecesini G yap.
 - Çocuk kategorisi (Kids): Hayır.
@@ -928,7 +1082,7 @@ Kayıt adımları:
 - Not (İngilizce yaz):
 
 ```text
-No account or sign-in. The game works fully offline; ads (Google AdMob) only load when online. Levels unlock with stars, so the first levels are enough to review the core loop. All in-app purchases are in Settings (top right on the home screen) > "Shop": Ad-free Pack (ray_reklamsiz) and Theme Pack (ray_temalar) are non-consumable and can be restored with the button in the same sheet; hint packs (ray_ipucu_10/30/80), Booster Pack (ray_guclendirici) and Ticket Pack (ray_bilet_50) and Starter Pack (ray_baslangic) are consumable. After some wins (at most once every 48 hours, never in the first 2 days or first 15 levels) a closable "Special offer" sheet may show one of these same products at its normal store price. Purchased tickets can only be spent on color themes, never on the surprise chest. Gameplay analytics (Firebase, no advertising ID) is off in regions where consent is required. The UI follows the device language (English or Turkish) and can be changed in Settings > Language. The ATT prompt appears on first launch after the consent step.
+No account or sign-in. All levels work offline; ads (Google AdMob) only load when online. New in 1.2: an optional weekly league and live 1-on-1 duels (tabs League and Duel) need a connection. Joining is optional and asks only for a nickname; the app signs in anonymously with Firebase Authentication and stores the nickname, league points and duel progress in Cloud Firestore (not used for ads or tracking). Nicknames are filtered, can be reported and blocked, and Settings > "Leave league · delete my data" deletes everything. There is no chat. To see it, tap the League tab and join with any nickname. Levels unlock with stars, so the first levels are enough to review the core loop. All in-app purchases are in Settings (top right on the home screen) > "Shop": Ad-free Pack (ray_reklamsiz) and Theme Pack (ray_temalar) are non-consumable and can be restored with the button in the same sheet; hint packs (ray_ipucu_10/30/80), Booster Pack (ray_guclendirici) and Ticket Pack (ray_bilet_50) and Starter Pack (ray_baslangic) are consumable. After some wins (at most once every 48 hours, never in the first 2 days or first 15 levels) a closable "Special offer" sheet may show one of these same products at its normal store price. Purchased tickets can only be spent on color themes, never on the surprise chest. Gameplay analytics (Firebase, no advertising ID) is off in regions where consent is required. The UI follows the device language (Turkish, English, German, Spanish, Portuguese, French, Korean, Japanese, Traditional Chinese) and can be changed in Settings > Language. Settings also has a "Rate Ray" row that opens the store review page (no reward). The ATT prompt appears on first launch after the consent step.
 ```
 
 **Google Play › Uygulama erişimi**: "Tüm işlevler herhangi bir özel erişim olmadan kullanılabilir."
@@ -953,7 +1107,7 @@ AdMob
 Gizlilik ve yayın sayfası
 
 - [x] `www/gizlilik.html` içindeki geliştirici adı ve iletişim e-postası dolduruldu (Osman Adalı, osmanadali.apps@gmail.com; 6 Kasım).
-- [ ] GitHub Pages'i aç (onayınla) ve `web.yml` push tetikleyicisini geri getir; gizlilik adresinin açıldığını tarayıcıda doğrula.
+- [x] GitHub Pages açık (20 Kasım): web sürümü ve gizlilik sayfası çalışıyor. Yapılacak: `web.yml` push tetikleyicisinin geri gelip gelmediğini kontrol et; formlara yapıştırmadan önce `https://osmanadali.github.io/mobil-oyun/gizlilik.html` adresinde §13 (lig) bölümünün göründüğünü doğrula.
 
 İmza
 
@@ -965,7 +1119,7 @@ Gizlilik ve yayın sayfası
 - [ ] Firebase projesi; Android uygulaması `com.osmanadali.ray` (test APK'ları için ayrıca `com.osmanadali.ray.dev`, `com.osmanadali.ray.test`) ve iOS uygulaması `com.osmanadali.ray`.
 - [ ] GitHub gizli değerleri: `FIREBASE_ANDROID_JSON` (google-services.json, base64), `FIREBASE_IOS_PLIST` (GoogleService-Info.plist, base64). Yoksa ölçüm kapalı derlenir, derleme bozulmaz.
 - [ ] Veri saklama süresi 14 ay; Google sinyalleri ve reklam bağlantıları kapalı; AdMob–Firebase bağlantısı yapılırsa `ad_impression` olaylarının ikiye katlanmadığını DebugView'da kontrol et.
-- [ ] Ölçümle yayımlarsan Veri güvenliği (§6) ve App Privacy (§7) Firebase satırları eklenmeli; ölçümsüz yayımlarsan eklenmez.
+- [ ] Ölçümle yayımlarsan Veri güvenliği (§6) ve App Privacy (§7) Analytics satırları eklenmeli; ölçümsüz yayımlarsan eklenmez. **Lig/kapışma satırları (Authentication + Firestore) her durumda eklenir** (1.2). `firestore.rules` yayımlanmış olmalı.
 
 Mağaza
 
@@ -974,7 +1128,7 @@ Mağaza
 - [ ] Öteki ürünlerin fiyatları (§10.2): ABD taban 0,99 / 1,99 / 3,99 $, Türkiye elle ₺19,99 / 39,99 / 79,99; Başlangıç paketi 2,99 $ / ₺59,99.
 - [ ] Uygulama fiyatı: iki mağazada **Ücretsiz** (Play'de "Ücretsiz", App Store'da 0,00 $).
 - [ ] Reklamsız paket fiyatı (§10.1): App Store'da taban ülke ABD 2,99 $, Türkiye elle ₺59,99. Play'de ABD 2,99 $ · AB 2,99 € · BK 2,49 £ elle (ya da USD tabanlı şablon). Taban Türkiye bırakılmaz.
-- [ ] Metinleri (§4, §5) ve görselleri (§2) yükle.
+- [ ] Metinleri (§4, §5, §5b, §5c) ve görselleri (§2) yükle. 1.2: 9 dilin hepsinde açıklama, alt başlık, tanıtım metni, anahtar kelime, kısa açıklama ve sürüm notu değişti; ekran görüntüleri yeniden üretildi (10 sahne). Uygulama içi puanlama düğmesi Ayarlar'da "Ray’i değerlendir" (yalnız iOS ve Android; mağaza yorum sayfasını açar, ödül yok).
 - [ ] 1.1: Korece (`ko-KR` / Korean), Japonca (`ja-JP` / Japanese), Geleneksel Çince (`zh-TW` / Chinese (Traditional)) çevirilerini iki mağazaya ekle (§5c metinleri, `store/screens-{ko,ja,zh-Hant}/` ve `store/feature-graphic-{ko,ja,zh-Hant}.png`). Basitleştirilmiş Çince ekleme. Oyun içi ürün adları ve açıklamaları (§10) bu dillerde de girilebilir; girilmezse mağaza varsayılan dili gösterir.
 - [ ] Formlar: Veri güvenliği (§6), App Privacy (§7), yaş derecelendirmesi (§8), hedef kitle ve öteki beyanlar (§9), inceleme notları (§11).
 - [ ] Gerçek cihazda son deneme: rıza penceresi, iOS ATT penceresi, reklam, satın alma ve geri yükleme (Play lisans test hesabı, Apple Sandbox). Tüketilebilir bir paketi iki kez al (ikisi de verilmeli), uygulamayı satın alma sırasında kapatıp aç (ödül bir kez gelmeli); Firebase DebugView'da `level_start`/`level_end` görünmeli; özel teklif (16. bölümden sonra, kayıt 2 günden eski) bir kez çıkmalı.
@@ -982,8 +1136,10 @@ Mağaza
 
 ## 13. Bilinen sınırlar
 
-- **İki dil.** Oyun Türkçe ve İngilizcedir (28 Ekim 2026). İngilizce mağaza girişi İngilizce ekran görüntüleriyle (`store/screens-en/`) yüklenir. Altyapı ve sözlük: `docs/CEVIRI.md`.
-- **Kural sayısı.** Açıklama 24 kuralın hepsini hat sırasıyla sayar (4 Kasım: son sefer ve kayan sütun eklendi; tam açıklama 4000 sınırının altında).
+- **Diller.** Oyun 9 dilde açılır (§1); her dilin mağaza girişi kendi ekran görüntüleriyle (`store/screens[-<dil>]/`) yüklenir. Altyapı ve sözlük: `docs/CEVIRI.md`.
+- **Hat sayısı.** Açıklama "33 hat + sonsuz karma" der (`KARMA = 33`, M34 ve sonrası karma; hat listesi `docs/kurallar/README.md`) ve kuralları hat sırasıyla sayar; en uzun açıklamalar (EN 3967, FR 3963, DE 3953) 4000 sınırına yakın, yeni kural eklenirse önce §3 betiğiyle say.
+- **"İnternetsiz" ayrımı.** Bölümler internetsiz oynanır; lig ve kapışma bağlantı ister. App Store alt başlıklarında "internetsiz" yoktur; Play kısa açıklaması ve açıklamada "bölümler" için geçer ve açıklamada ayrım yazılıdır. Oyunun kendi arkadaşa-öner metni hâlâ "Ücretsiz, internetsiz" der (`game.js`, `recommend`); mağaza metni değildir ama aynı iddiayı taşıdığı için bir sonraki sürümde "bölümler internetsiz" yapılmalı.
+- **Sahte arka uç görselleri.** Lig ve kapışma görselleri `window.__ligFake` benzetimiyle çekilir; rakip adları ve puanlar gerçek kullanıcı değildir (§2).
 - **Görseller çalışan koda bağlı.** Arayüz değişince `node tools/store-shots.cjs` yeniden çalıştırılmalı. Sahneler bölüm numarasıyla kurulur (180, 45, 829…); üretim değişirse aynı numara farklı bir tahta verebilir, çıktı gözle kontrol edilmeli.
 - **Veri ve gizlilik yanıtları** AdMob'un ve Firebase Analytics'in Kasım 2026 itibarıyla bilinen davranışına göredir. Gönderimden önce §6 ve §7'deki Google bağlantılarıyla karşılaştırılmalı.
 - **Silme düğmesi ve rıza penceresi** `magaza-reklam` dalında, iOS projesi ve imzalı derleme `magaza-yerel` dalındadır; bu belge o dallar `main`e birleşmiş gibi yazıldı.
