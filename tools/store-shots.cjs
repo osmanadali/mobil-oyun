@@ -1,4 +1,4 @@
-// Mağaza görselleri: gerçek oyunu yerel sunucuda açar, 7 sahneyi çeker, pazarlama çerçevesine (başlık + telefon) koyar.
+// Mağaza görselleri: gerçek oyunu yerel sunucuda açar, 10 sahneyi çeker (1.2: kapışma, şehir haritası, lig dahil; lig ve kapışma sahte arka uçla, window.__ligFake), pazarlama çerçevesine (başlık + telefon) koyar.
 // Ayrıca Play öne çıkan görseli (1024×500) üretir. Oyun koduna dokunmaz; durum yalnız kayıt (localStorage) ve dokunuşla kurulur.
 // Kullanım: node tools/store-shots.cjs [all|en|de|es|pt-BR|fr|ko|ja|zh-Hant] [play|ios-69|ios-65|ios-ipad13|feature] [01 02 …]   (boş = Türkçe, hepsi) · metinler ve yükleme yerleri: docs/MAGAZA.md
 // Çıktı: store/screens/{play,ios-69,ios-65,ios-ipad13}/NN-ad.png · store/feature-graphic.png (24 bit PNG, saydamlık yok)
@@ -54,6 +54,12 @@ function saveAt(level, x = {}) {
     seen: Object.fromEntries(Array.from({ length: 30 }, (_, c) => [c, 1])), testOpen: 1, remindAsked: true, combo: 0, ...x };
 }
 
+// ---------- lig kaydı: sahte arka uç (window.__ligFake) · hep bu haftaya katılmış bir oyuncu (1.2 arayüzü: Lig ve Kapış sekmeleri açık) ----------
+// Rakipler ve sıralama oyundaki benzetim (lig.js › fake): gerçek kullanıcı, yorum ya da puan gibi sunulmaz; yalnız ekranın nasıl göründüğünü gösterir.
+const NICK = { tr: 'Hızlı Martı', en: 'Swift Gull', de: 'Flinke Möwe', es: 'Gaviota Veloz', 'pt-BR': 'Gaivota Veloz', fr: 'Mouette Vive', ko: '날쌘 갈매기', ja: 'はやいカモメ', 'zh-Hant': '迅捷海鷗' };
+const weekId = () => { const d = new Date(Date.now() + 3 * 3600e3), wd = (d.getUTCDay() + 6) % 7; return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - wd)).toISOString().slice(0, 10); };
+const ligSave = (lg, x = {}) => ({ joined: true, uid: 'u4242', nick: NICK[lg] || NICK.en, tier: 2, wk: weekId(), pts: 180, lastRank: 0, ...x });
+
 // ---------- oyunu sürme ----------
 async function tapTile(page, i) {
   const p = await page.evaluate(i => {
@@ -94,19 +100,36 @@ const play = (page, l) => page.evaluate(() => document.getElementById('bMap').cl
 // harcanabilir bilet (eski taç) bakiyesini n'ye ayarla (görünmeyen seri bonusuyla)
 const bal = (s, n) => Object.assign(s, { cc: n + s.spent - Object.keys(s.crowns).length - s.dCrowns });
 const seenTo = c => Object.fromEntries(Array.from({ length: c }, (_, k) => [k, 1]));   // c'den önceki hatların kural kartları görülmüş
+// 1.2 sırası: oynanış, kapışma, şehir haritası, lig, 33 hat, kural, kusursuz, Günün Hattı (+ App Store için tema, sandık). Play ilk 8'i alır.
+// Şehir, lig, kapışma ve ana sayfa aynı oyuncudur: M20'deydi, ilk 12 hattın hepsi kusursuz (altın semt), 12 günlük seri.
+const mid = (goldTo = 330) => { const s = saveAt(520); for (let l = 1; l < 520; l++) { s.stars[l] = 3; if (l < goldTo || l % 5) s.crowns[l] = 1; } return s; };
 const SCENES = [
   // ilk görsel oynanış (mağazada ilk bakılan): M9 iki merkez (bölüm 198, yalın), iki renkli hat, yarısı yanmış
   { id: '01-oyun', t: ['Dokun, döndür,', 'hattı yak'], s: 'Bütün durakları merkeze bağla, açık uç kalmasın', te: ['Tap, turn,', 'light the line'], se: 'Link every station to the hub, leave no open ends',
     save: saveAt(200), go: async page => { await play(page, 198); await page.waitForTimeout(900); await clock(page, 47); await solveTo(page, .42); await page.waitForTimeout(1400); } },
-  { id: '02-ana', t: ['Hatları bağla,', 'şehri canlandır'], s: 'Tek elle · internetsiz · her gün yeni bir Günün Hattı', te: ['Connect the lines,', 'light up the city'], se: 'One hand · offline · a new Daily Line every day',
-    save: saveAt(241), go: async page => { await page.waitForTimeout(900); } },
-  // kusursuz bitiş: 3 yıldız + bilet + 5'li seri bonusu
-  { id: '03-kazan', t: ['Kusursuz bitir,', 'bilet kazan'], s: 'Süre ve hamle hedefini tuttur, üç yıldızı topla', te: ['Finish perfect,', 'earn tickets'], se: 'Beat the time and move targets, collect three stars',
-    save: saveAt(46, { combo: 4 }), go: async page => { await play(page, 45); await page.waitForTimeout(900); await clock(page, 38); await solveTo(page, 1); await page.waitForTimeout(3200); } },
-  // harita gerçek ilerlemeyle (test açık değil): şimdiki hattın (M12, döner tabla) başlığı üstte, bitmiş M11 sonu üstünde;
-  // ekranın altı satır arasına denk gelir (yarım kesik sayı kalmasın, ev çizgisi yazının üstüne binmesin)
-  { id: '04-harita', t: ['24 kural,', 'sonu gelmeyen bölüm'], s: 'Zorluk dalga dalga artar, arada mola var', te: ['24 rules,', 'endless levels'], se: 'Harder and harder, with breather levels', test: false,
-    save: saveAt(270), go: async page => {
+  // canlı kapışma: Kapış sayfasından rakip aranır (sahte arka uç), geri sayımdan sonra iki ilerleme çubuğu; ben önde, rakip arkada.
+  // Rakip adı oyundaki benzetimden gelir; rastgelelik ve saat kısa süre sabitlenir ki her dilde aynı rakip ve aynı tahta çıksın.
+  { id: '02-kapisma', t: ['Canlı kapışmada', 'yarış'], s: 'İlk bitiren kazanır, galibiyet +10 lig puanı', te: ['Race in', 'live duels'], se: 'First to finish wins, a win is +10 league points',
+    test: false, save: mid(), go: async page => {
+      await page.click('#tabbar [data-tab=vs]'); await page.waitForTimeout(700);
+      await page.evaluate(() => { const r = Math.random, n = Date.now; Math.random = () => .31; Date.now = () => 1.78e12; window.__ray.lig.find({ wait: 300, oppT: 24 }); Math.random = r; Date.now = n; });
+      await page.waitForFunction(() => window.__ray.G?.duel && !document.getElementById('modal').classList.contains('open'), null, { timeout: 8000 });
+      await page.waitForTimeout(3600); await solveTo(page, .5); await page.waitForTimeout(3000);
+    } },
+  // şehir haritası (Şehir sekmesi): çoğu semt yanık, ilk 12 hat altın
+  { id: '03-sehir', t: ['Hatlarınla', 'şehri büyüt'], s: 'Biten her hat bir semti yakar, kusursuzlar altın parlar', te: ['Grow your city', 'metro map'], se: 'Every finished line lights a district, perfect ones glow gold',
+    test: false, save: mid(), go: async page => { await page.click('#tabbar [data-tab=city]'); await page.waitForTimeout(2800); } },
+  // haftalık lig: ben 4. sıradayım (üst lige çıkış bölgesi içinde), liste en üstte
+  { id: '04-lig', t: ['Haftalık ligde', 'yüksel'], s: '30 kişilik grupta yarış, üst lige çık', te: ['Climb the', 'weekly league'], se: 'Compete in a group of 30 and move up a league',
+    test: false, save: mid(), go: async page => {
+      await page.waitForTimeout(600);
+      await page.evaluate(async () => { const b = await window.Lig.board(), rows = b.rows.filter(r => !r.me).sort((a, c) => c.pts - a.pts), me = b.rows.find(r => r.me); await window.Lig.add(rows[3].pts + 7 - me.pts); });
+      await page.click('#tabbar [data-tab=league]'); await page.waitForTimeout(1500);
+      await page.evaluate(() => { document.getElementById('lgList').scrollTop = 0; }); await page.waitForTimeout(400);
+    } },
+  // hat haritası gerçek ilerlemeyle (test açık değil): M33 (son kural hattı) sürüyor; ekranın altı satır arasına denk gelir
+  { id: '05-harita', t: ['33 hat,', 'sonu gelmeyen bölüm'], s: 'Zorluk dalga dalga artar, arada mola var', te: ['33 lines,', 'endless levels'], se: 'Harder and harder, with breather levels', test: false,
+    save: saveAt(862), go: async page => {
       await page.evaluate(() => document.getElementById('bMap').click()); await page.waitForTimeout(700);
       await page.evaluate(() => {
         const ml = document.getElementById('mapList'), r = ml.getBoundingClientRect(), lim = r.bottom - 6;
@@ -116,25 +139,29 @@ const SCENES = [
       });
       await page.waitForTimeout(400);
     } },
-  { id: '05-kural', t: ['Hat ilerledikçe', 'yeni kurallar'], s: 'Makas, köprü, tabela, döner tabla, halka, tünel ağzı…', te: ['New rules', 'as the line grows'], se: 'Switches, bridges, signposts, turntables, loops, tunnel portals…',
-    save: saveAt(381, { seen: seenTo(15) }), go: async page => { await play(page, 381); await page.waitForTimeout(2200); } },   // M16 tünel ağzı tanıtımı
-  // tema penceresi: alt kenar bir yazıyı kesmesin. Pencere başta (başlıkla) ya da tema ızgarası en üstte durur; temiz olan ilk kaydırma seçilir.
-  { id: '06-tema', t: ['Bilet topla,', '25 renk teması aç'], s: 'Kusursuz bitirdiğin her bölüm bir bilet kazandırır', te: ['Collect tickets,', 'unlock 25 themes'], se: 'Every level you finish perfectly earns a ticket',
+  // kural kartı: 1.2'deki hatlardan M27 · Ekspres durak (bölüm 689; kuralı gösteren kart)
+  { id: '06-kural', t: ['Hat ilerledikçe', 'yeni kurallar'], s: 'Ekspres durak, sinyal, sarsıntı, kumanda, boş peron…', te: ['New rules', 'as the line grows'], se: 'Express stations, signals, quakes, remotes, empty platforms…',
+    save: saveAt(689, { seen: seenTo(26) }), go: async page => { await play(page, 689); await page.waitForTimeout(2200); } },
+  // kusursuz bitiş: 3 yıldız + bilet + 5'li seri bonusu
+  { id: '07-kazan', t: ['Kusursuz bitir,', 'bilet kazan'], s: 'Süre ve hamle hedefini tuttur, üç yıldızı topla', te: ['Finish perfect,', 'earn tickets'], se: 'Beat the time and move targets, collect three stars',
+    save: saveAt(46, { combo: 4 }), go: async page => { await play(page, 45); await page.waitForTimeout(900); await clock(page, 38); await solveTo(page, 1); await page.waitForTimeout(3200); } },
+  // ana ekran: Günün Hattı, 12 günlük seri, 1.2 sekme çubuğu (Lig, Kapış, Şehir)
+  { id: '08-ana', t: ['Her gün yeni', 'Günün Hattı'], s: 'Herkes aynı bulmacayı çözer, serini koru', te: ['A new Daily Line', 'every day'], se: 'Everyone solves the same puzzle, keep your streak',
+    save: mid(), go: async page => { await page.waitForTimeout(900); } },
+  // temalar (1.2: Mağaza sayfası › Temalar): bakiye ve sandık satırı üstte, "Bilet temaları" ızgarası altta; süreli mevsim teması satırı görünmesin (tarihi geçince eskir)
+  { id: '09-tema', t: ['Bilet topla,', '25 renk teması aç'], s: 'Kusursuz bitirdiğin her bölüm bir bilet kazandırır', te: ['Collect tickets,', 'unlock 25 themes'], se: 'Every level you finish perfectly earns a ticket',
     save: bal(saveAt(241, { skin: 'ocean', owned: { metro: 1, sunset: 1, ocean: 1, forest: 1, desert: 1, sakura: 1, neon: 1, aurora: 1 }, spent: 395 }), 38),
     go: async page => {
-      await page.evaluate(() => document.getElementById('crownChip').click()); await page.waitForTimeout(1200);
+      await page.evaluate(() => document.getElementById('crownChip').click()); await page.waitForTimeout(800);
+      await page.click('#tTh'); await page.waitForTimeout(900);
       await page.evaluate(() => {
-        const el = document.getElementById('mCard'), er = el.getBoundingClientRect(), H = el.clientHeight, pad = parseFloat(getComputedStyle(el).paddingTop);
-        const y = (q, k) => (q = el.querySelector(q).getBoundingClientRect())[k] - er.top + el.scrollTop, gTop = y('#skins', 'top'), cBot = y('.chestrow', 'bottom');
-        const box = [...el.querySelectorAll('h2,p,.nexts,.chestrow,.skin b,.skin small,.vipk,.btn,.pb')].map(b => { const r = b.getBoundingClientRect(); return [r.top - er.top + el.scrollTop, r.bottom - er.top + el.scrollTop]; });
-        const ok = s => !box.some(([t, b]) => (s > pad && t < s + 2 && b > s - 2) || (t < s + H + 1 && b > s + H - 14));   // üstte kesik yazı yok · altta ev çizgisi payında yazı yok
-        const cand = [...Array(Math.floor(pad) + 1).keys(), ...Array.from({ length: Math.max(0, Math.floor(gTop - cBot - 2)) }, (_, k) => Math.ceil(cBot + 2) + k)];
-        el.scrollTop = cand.find(ok) ?? 0;
+        const b = document.getElementById('shopBody'), lab = b.querySelector('.vipk:not(.sea)');
+        if (lab) b.scrollTop += lab.getBoundingClientRect().top - b.getBoundingClientRect().top - 10;
       });
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(400);
     } },
   // sandık açılışı: 7 sandıktır destansı çıkmadı → 8. destansı (şanssızlık koruması); sabit tohumla hep aynı kaplama (Lavanta)
-  { id: '07-sandik', t: ['Sürpriz sandık,', 'yeni trenler'], s: 'İpucu, seri kalkanı ya da yeni bir tren kaplaması', te: ['Surprise chest,', 'new trains'], se: 'Hints, a streak shield or a new train livery',
+  { id: '10-sandik', t: ['Sürpriz sandık,', 'yeni trenler'], s: 'İpucu, seri kalkanı ya da yeni bir tren kaplaması', te: ['Surprise chest,', 'new trains'], se: 'Hints, a streak shield or a new train livery',
     save: bal(saveAt(241, { skin: 'ocean', seed: 9, chests: 7, dry: 7, trains: { ekspres: 1, gece: 1 } }), 24),
     go: async page => {
       await page.evaluate(() => document.getElementById('crownChip').click()); await page.waitForTimeout(800);
@@ -145,62 +172,84 @@ const SCENES = [
 ];
 
 // öteki diller: sahne başlığı [satır 1, satır 2 (vurgu)] ve alt satır · öne çıkan görsel: [alt yazı, rozetler]
+// Başlıklar docs/pazarlama/aso.md §4.2'den (1.2); alt satırlar oyundaki terimlerle (www/lang/*.js)
 const TX = {
   de: { '01-oyun': [['Tippen, drehen,', 'Linie erleuchten'], 'Verbinde jede Station mit dem Zentrum, ohne offene Enden'],
-    '02-ana': [['Linien verbinden,', 'die Stadt beleben'], 'Einhändig · offline · jeden Tag eine neue Tageslinie'],
-    '03-kazan': [['Perfekt spielen,', 'Tickets sammeln'], 'Schaffe Zeit- und Zugziel, hol alle drei Sterne'],
-    '04-harita': [['24 Regeln,', 'endlose Level'], 'Immer schwerer, mit Verschnaufpausen'],
-    '05-kural': [['Neue Regeln', 'mit jeder Linie'], 'Weichen, Brücken, Wegweiser, Drehscheiben, Tunnelportale…'],
-    '06-tema': [['Tickets sammeln,', '25 Farbthemen'], 'Jedes perfekte Level bringt ein Ticket'],
-    '07-sandik': [['Überraschungskiste,', 'neue Züge'], 'Tipps, ein Serienschild oder ein neuer Zuglack'],
+    '02-kapisma': [['Live-Duelle', 'spielen'], 'Wer zuerst fertig ist, gewinnt: +10 Ligapunkte'],
+    '03-sehir': [['Bau deine', 'Metro-Stadt aus'], 'Jede fertige Linie erhellt ein Viertel, perfekte glänzen golden'],
+    '04-lig': [['Steig in der', 'Wochenliga auf'], 'Tritt in einer 30er-Gruppe an und steig eine Liga auf'],
+    '05-harita': [['33 Linien,', 'endlose Level'], 'Immer schwerer, mit Verschnaufpausen'],
+    '06-kural': [['Neue Regeln', 'mit jeder Linie'], 'Expressstation, Signal, Bebenstation, Fernbedienkachel…'],
+    '07-kazan': [['Perfekt spielen,', 'Tickets sammeln'], 'Schaffe Zeit- und Zugziel, hol alle drei Sterne'],
+    '08-ana': [['Jeden Tag eine', 'Tageslinie'], 'Alle lösen dasselbe Rätsel, halte deine Serie'],
+    '09-tema': [['Tickets sammeln,', '25 Farbthemen'], 'Jedes perfekte Level bringt ein Ticket'],
+    '10-sandik': [['Überraschungskiste,', 'neue Züge'], 'Tipps, ein Serienschild oder ein neuer Zuglack'],
     feature: ['Linien verbinden · Stadt beleben', ['Einhändig', 'Offline', 'Metrorätsel']] },
   es: { '01-oyun': [['Toca, gira,', 'enciende la línea'], 'Une cada estación al centro, sin extremos sueltos'],
-    '02-ana': [['Conecta las líneas,', 'da vida a la ciudad'], 'A una mano · sin conexión · una Línea del día cada día'],
-    '03-kazan': [['Termina perfecto,', 'gana billetes'], 'Cumple el tiempo y los movimientos, logra tres estrellas'],
-    '04-harita': [['24 reglas,', 'niveles sin fin'], 'Cada vez más difícil, con niveles de respiro'],
-    '05-kural': [['Nuevas reglas', 'en cada línea'], 'Desvíos, puentes, señales, plataformas giratorias, túneles…'],
-    '06-tema': [['Gana billetes,', 'desbloquea 25 temas'], 'Cada nivel perfecto te da un billete'],
-    '07-sandik': [['Cofre sorpresa,', 'trenes nuevos'], 'Pistas, un escudo de racha o un nuevo diseño de tren'],
+    '02-kapisma': [['Duelos', 'en vivo'], 'Gana quien termine primero: +10 puntos de liga'],
+    '03-sehir': [['Haz crecer', 'tu ciudad'], 'Cada línea terminada ilumina un barrio, las perfectas brillan en oro'],
+    '04-lig': [['Sube en la', 'liga semanal'], 'Compite en un grupo de 30 y sube de liga'],
+    '05-harita': [['33 líneas,', 'niveles sin fin'], 'Cada vez más difícil, con niveles de respiro'],
+    '06-kural': [['Nuevas reglas', 'en cada línea'], 'Estación exprés, señal, estación sísmica, andén vacío…'],
+    '07-kazan': [['Termina perfecto,', 'gana billetes'], 'Cumple el tiempo y los movimientos, logra tres estrellas'],
+    '08-ana': [['Una Línea del día', 'nueva cada día'], 'Todos resuelven el mismo puzle, mantén tu racha'],
+    '09-tema': [['Gana billetes,', 'desbloquea 25 temas'], 'Cada nivel perfecto te da un billete'],
+    '10-sandik': [['Cofre sorpresa,', 'trenes nuevos'], 'Pistas, un escudo de racha o un nuevo diseño de tren'],
     feature: ['Conecta las líneas · Da vida a la ciudad', ['A una mano', 'Sin conexión', 'Puzle de metro']] },
   'pt-BR': { '01-oyun': [['Toque, gire,', 'acenda a linha'], 'Ligue cada estação ao centro, sem pontas soltas'],
-    '02-ana': [['Ligue as linhas,', 'dê vida à cidade'], 'Uma mão · offline · uma nova Linha do Dia todo dia'],
-    '03-kazan': [['Termine perfeito,', 'ganhe bilhetes'], 'Bata o tempo e os movimentos, pegue as três estrelas'],
-    '04-harita': [['24 regras,', 'fases sem fim'], 'Cada vez mais difícil, com fases de descanso'],
-    '05-kural': [['Novas regras', 'a cada linha'], 'Desvios, pontes, placas, plataformas giratórias, túneis…'],
-    '06-tema': [['Junte bilhetes,', 'libere 25 temas'], 'Cada fase perfeita rende um bilhete'],
-    '07-sandik': [['Baú surpresa,', 'trens novos'], 'Dicas, um escudo de sequência ou uma nova pintura de trem'],
+    '02-kapisma': [['Duelos', 'ao vivo'], 'Quem terminar primeiro vence: +10 pontos de liga'],
+    '03-sehir': [['Faça sua cidade', 'crescer'], 'Cada linha concluída acende um bairro, as perfeitas brilham douradas'],
+    '04-lig': [['Suba na', 'liga semanal'], 'Dispute num grupo de 30 e suba de liga'],
+    '05-harita': [['33 linhas,', 'fases sem fim'], 'Cada vez mais difícil, com fases de descanso'],
+    '06-kural': [['Novas regras', 'a cada linha'], 'Estação expressa, sinal, estação sísmica, plataforma vazia…'],
+    '07-kazan': [['Termine perfeito,', 'ganhe bilhetes'], 'Bata o tempo e os movimentos, pegue as três estrelas'],
+    '08-ana': [['Uma Linha do Dia', 'nova todo dia'], 'Todos resolvem o mesmo desafio, mantenha a sequência'],
+    '09-tema': [['Junte bilhetes,', 'libere 25 temas'], 'Cada fase perfeita rende um bilhete'],
+    '10-sandik': [['Baú surpresa,', 'trens novos'], 'Dicas, um escudo de sequência ou uma nova pintura de trem'],
     feature: ['Ligue as linhas · Dê vida à cidade', ['Uma mão', 'Offline', 'Metrô']] },
   fr: { '01-oyun': [['Touche, tourne,', 'allume la ligne'], 'Relie chaque station au centre, sans bout libre'],
-    '02-ana': [['Relie les lignes,', 'anime la ville'], 'À une main · hors ligne · une Ligne du jour chaque jour'],
-    '03-kazan': [['Finis parfait,', 'gagne des tickets'], 'Tiens le temps et les coups, décroche trois étoiles'],
-    '04-harita': [['24 règles,', 'des niveaux sans fin'], 'De plus en plus dur, avec des pauses'],
-    '05-kural': [['De nouvelles règles', 'à chaque ligne'], 'Aiguillages, ponts, panneaux, plaques tournantes, tunnels…'],
-    '06-tema': [['Gagne des tickets,', 'débloque 25 thèmes'], 'Chaque niveau parfait rapporte un ticket'],
-    '07-sandik': [['Coffre surprise,', 'nouveaux trains'], 'Des indices, un bouclier de série ou une nouvelle livrée'],
+    '02-kapisma': [['Duels', 'en direct'], 'Le premier à finir gagne : +10 points de ligue'],
+    '03-sehir': [['Fais grandir', 'ta ville'], 'Chaque ligne finie allume un quartier, les parfaites brillent en or'],
+    '04-lig': [['Grimpe dans', 'la ligue'], 'Joue dans un groupe de 30 et monte de ligue'],
+    '05-harita': [['33 lignes,', 'niveaux sans fin'], 'De plus en plus dur, avec des pauses'],
+    '06-kural': [['De nouvelles règles', 'à chaque ligne'], 'Station express, signal, station sismique, quai vide…'],
+    '07-kazan': [['Finis parfait,', 'gagne des tickets'], 'Tiens le temps et les coups, décroche trois étoiles'],
+    '08-ana': [['Une Ligne du jour', 'inédite chaque jour'], 'Tout le monde résout le même puzzle, garde ta série'],
+    '09-tema': [['Gagne des tickets,', 'débloque 25 thèmes'], 'Chaque niveau parfait rapporte un ticket'],
+    '10-sandik': [['Coffre surprise,', 'nouveaux trains'], 'Des indices, un bouclier de série ou une nouvelle livrée'],
     feature: ['Relie les lignes · Anime la ville', ['À une main', 'Hors ligne', 'Puzzle de métro']] },
   ko: { '01-oyun': [['탭하고 돌려서', '노선을 밝혀요'], '모든 역을 허브에 연결하고, 끊긴 끝은 남기지 마세요'],
-    '02-ana': [['노선을 잇고,', '도시를 깨워요'], '한 손으로 · 오프라인 · 매일 새로운 오늘의 노선'],
-    '03-kazan': [['퍼펙트로 깨고,', '티켓을 모아요'], '시간과 이동 목표를 지키고 별 3개를 모으세요'],
-    '04-harita': [['24가지 규칙,', '끝없는 레벨'], '점점 어려워지고, 중간중간 쉬어 가요'],
-    '05-kural': [['노선마다', '새로운 규칙'], '전환기, 다리, 표지판, 회전대, 순환선, 터널 입구…'],
-    '06-tema': [['티켓을 모아', '테마 25종 해제'], '퍼펙트로 깬 레벨마다 티켓 1장'],
-    '07-sandik': [['깜짝 상자,', '새로운 열차'], '힌트, 연속 기록 보호막 또는 새 열차 도색'],
+    '02-kapisma': [['실시간', '대결'], '먼저 끝내면 승리! 리그 점수 +10'],
+    '03-sehir': [['노선으로', '도시를 키우세요'], '노선을 끝낼 때마다 구역이 밝아지고, 퍼펙트는 황금빛으로 빛나요'],
+    '04-lig': [['주간 리그에서', '올라가요'], '30명 그룹에서 겨루고 상위 리그로 올라가요'],
+    '05-harita': [['33개 노선,', '끝없는 레벨'], '점점 어려워지고, 중간중간 쉬어 가요'],
+    '06-kural': [['노선마다', '새로운 규칙'], '급행역, 신호 타일, 지진역, 리모컨 타일, 빈 승강장…'],
+    '07-kazan': [['퍼펙트로 깨고,', '티켓을 모아요'], '시간과 이동 목표를 지키고 별 3개를 모으세요'],
+    '08-ana': [['매일 새로운', '오늘의 노선'], '모두가 같은 퍼즐을 풀어요, 연속 기록을 지키세요'],
+    '09-tema': [['티켓을 모아', '테마 25종 해제'], '퍼펙트로 깬 레벨마다 티켓 1장'],
+    '10-sandik': [['깜짝 상자,', '새로운 열차'], '힌트, 연속 기록 보호막 또는 새 열차 도색'],
     feature: ['노선을 잇고 · 도시를 밝혀요', ['한 손으로', '오프라인', '지하철 퍼즐']] },
   ja: { '01-oyun': [['タップで回して', '路線を灯そう'], 'すべての駅をハブにつなぎ、行き止まりをなくそう'],
-    '02-ana': [['路線をつなぎ、', '街に灯りを'], '片手で · オフライン · 毎日あたらしい今日の路線'],
-    '03-kazan': [['パーフェクトで', '切符をゲット'], 'タイムと手数の目標を守って、星を3つ集めよう'],
-    '04-harita': [['24のルール、', '終わらないステージ'], 'だんだん難しく、ひと休みステージも'],
-    '05-kural': [['路線ごとに', '新しいルール'], '分岐器、橋、標識、転車台、環状線、トンネル口…'],
-    '06-tema': [['切符を集めて', '25のテーマを解放'], 'パーフェクトでクリアするたびに切符1枚'],
-    '07-sandik': [['びっくり宝箱、', '新しい列車'], 'ヒント、連続記録シールド、新しい車両カラー'],
+    '02-kapisma': [['ライブ', '対戦'], '先にクリアした人の勝ち。リーグポイント+10'],
+    '03-sehir': [['路線で', '街を育てよう'], '路線をクリアするたびに地区が灯り、パーフェクトは金色に輝く'],
+    '04-lig': [['週間リーグで', '上を目指そう'], '30人のグループで競って、上のリーグへ'],
+    '05-harita': [['33路線、', '終わらないステージ'], 'だんだん難しく、ひと休みステージも'],
+    '06-kural': [['路線ごとに', '新しいルール'], '急行駅、信号タイル、地震駅、リモコンタイル、空きホーム…'],
+    '07-kazan': [['パーフェクトで', '切符をゲット'], 'タイムと手数の目標を守って、星を3つ集めよう'],
+    '08-ana': [['毎日あたらしい', '今日の路線'], 'みんなが同じパズルに挑戦。連続記録をのばそう'],
+    '09-tema': [['切符を集めて', '25のテーマを解放'], 'パーフェクトでクリアするたびに切符1枚'],
+    '10-sandik': [['びっくり宝箱、', '新しい列車'], 'ヒント、連続記録シールド、新しい車両カラー'],
     feature: ['路線をつなぎ · 街を照らそう', ['片手で', 'オフライン', 'メトロパズル']] },
   'zh-Hant': { '01-oyun': [['點一下、轉一轉，', '點亮路線'], '把每個車站連到樞紐，不留斷頭'],
-    '02-ana': [['連起路線，', '點亮城市'], '單手 · 離線 · 每天都有新的每日路線'],
-    '03-kazan': [['完美過關，', '賺取車票'], '達成時間和步數目標，收集三顆星'],
-    '04-harita': [['24 種規則，', '關卡無限'], '越來越難，也有休息關卡'],
-    '05-kural': [['每條路線', '都有新規則'], '轉轍器、橋樑、路標、轉車台、環狀線、隧道口…'],
-    '06-tema': [['收集車票，', '解鎖 25 款主題'], '每個完美過關的關卡都能得到一張車票'],
-    '07-sandik': [['驚喜寶箱，', '全新列車'], '提示、連續紀錄護盾或新列車塗裝'],
+    '02-kapisma': [['即時', '對戰'], '先完成的人獲勝，聯賽積分 +10'],
+    '03-sehir': [['用路線讓', '城市成長'], '每完成一條路線就點亮一個街區，完美過關的會閃耀金光'],
+    '04-lig': [['在每週聯賽', '往上爬'], '在 30 人小組中競爭，晉級上一級聯賽'],
+    '05-harita': [['33 條路線，', '無限關卡'], '越來越難，也有休息關卡'],
+    '06-kural': [['每條路線', '都有新規則'], '快車站、號誌方塊、地震站、遙控方塊、空月台…'],
+    '07-kazan': [['完美過關，', '賺取車票'], '達成時間和步數目標，收集三顆星'],
+    '08-ana': [['每天一條新的', '每日路線'], '大家解同一道謎題，保持連續紀錄'],
+    '09-tema': [['收集車票，', '解鎖 25 款主題'], '每個完美過關的關卡都能得到一張車票'],
+    '10-sandik': [['驚喜寶箱，', '全新列車'], '提示、連續紀錄護盾或新列車塗裝'],
     feature: ['連起路線 · 點亮城市', ['單手', '離線', '地鐵解謎']] },
 };
 const LOCALE = { tr: 'tr-TR', en: 'en-US', de: 'de-DE', es: 'es-ES', 'pt-BR': 'pt-BR', fr: 'fr-FR', ko: 'ko-KR', ja: 'ja-JP', 'zh-Hant': 'zh-TW' }, LANGS = Object.keys(LOCALE);
@@ -210,7 +259,7 @@ const FONT_OF = lg => `Outfit,${CJK[lg] || ''}system-ui,sans-serif`;
 const words = (sc, lg) => lg === 'tr' ? [sc.t, sc.s] : lg === 'en' ? [sc.te, sc.se] : TX[lg][sc.id];
 
 // güvenli alan: env(safe-area-inset-*) tarayıcıda 0 → aynı kuralları sabit değerle ez (telefonda olduğu gibi durum çubuğu payı)
-const safeCss = ([t, b]) => `.screen{padding-top:${t}px!important}#home{padding-bottom:${Math.max(18, b)}px!important}
+const safeCss = ([t, b]) => `:root{--safe-area-inset-bottom:${b}px}.screen{padding-top:${t}px!important}
   .bottom{padding-bottom:${Math.max(18, b)}px!important}.mapList{padding-bottom:${Math.max(24, b)}px!important}
   #game.won .winp{padding-bottom:${Math.max(16, b)}px!important}.sheet{padding-bottom:${Math.max(22, b)}px!important}
   .cscene{padding-top:${Math.max(16, t)}px!important;padding-bottom:${Math.max(16, b)}px!important}
@@ -218,7 +267,7 @@ const safeCss = ([t, b]) => `.screen{padding-top:${t}px!important}#home{padding-
 
 async function capture(browser, url, sc, d, k, lg = 'tr') {
   const ctx = await browser.newContext({ viewport: { width: d.vp[0], height: d.vp[1] }, deviceScaleFactor: k, colorScheme: 'dark', hasTouch: true, isMobile: true, locale: LOCALE[lg] });
-  await ctx.addInitScript(`window.__noIntro = true; window.__rayTest = ${sc.test === false ? 0 : 1}; try { localStorage.setItem('ray', ${JSON.stringify(JSON.stringify(sc.save))}); } catch {}
+  await ctx.addInitScript(`window.__noIntro = true; window.__rayTest = ${sc.test === false ? 0 : 1}; window.__ligFake = true; window.__noRec = true; try { localStorage.setItem('ray', ${JSON.stringify(JSON.stringify(sc.save))}); localStorage.setItem('ray.lig', ${JSON.stringify(JSON.stringify(ligSave(lg, sc.lig)))}); } catch {}
     addEventListener('DOMContentLoaded', () => { const s = document.createElement('style'); s.textContent = ${JSON.stringify(safeCss(d.safe))}; document.head.append(s); });`);
   const page = await ctx.newPage(), errors = [];
   page.on('pageerror', e => errors.push(e.message));
