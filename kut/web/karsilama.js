@@ -12,7 +12,7 @@ const IPUCLARI = [
   'Gün Batımı: savaşın 30. saniyesinden sonra her saniye bütün hasar +%10 artar. Uzun savaş riskli.',
   'Her 8 altına 1 faiz gelir (en çok 5). Biriktirmek kazandırır.',
   'Aynı soydan 2 ve 4 kahraman, soyun gücünü açar.',
-  'Savaşta bir kahramanına dokunup Kut ver: sıradaki yeteneği büyük oynanır.',
+  'Savaşta bir kahramanına dokunup Kut ver: manası dolar, yeteneği hemen açılır.',
   'Her turun alameti savaşı değiştirir: Sis\'te menzilliler 1 kare kısa vurur.',
   '4 altınla 4 deneyim al. Seviye arttıkça tahtaya daha çok kahraman koyarsın.',
   'Art arda kazanmak da kaybetmek de seri altını getirir.',

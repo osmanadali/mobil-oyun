@@ -13,12 +13,12 @@ const x2 = S.Savas(a, b, { tohum: 9, kut: kayit }).sonunaKadar();
 ok(JSON.stringify(x1) === JSON.stringify(x2), 'Kut kaydıyla tekrar oynatma aynı');
 
 // 2) süre dağılımı
-let sure = [], beraber = 0;
-for (let i = 0; i < 300; i++) { const tur = 1 + i % 11; const r = S.Savas(O.botTakim(tur, i), O.botTakim(tur, i + 999), { tohum: i, yz: [0, 1], alamet: D.ALAMETLER[i % 8].id }).sonunaKadar(); sure.push(r.sure); if (r.kazanan === -1) beraber++; }
+let sure = [], beraber = 0, doldu = 0;
+for (let i = 0; i < 300; i++) { const tur = 1 + i % 11; const r = S.Savas(O.botTakim(tur, i), O.botTakim(tur, i + 999), { tohum: i, yz: [0, 1], alamet: D.ALAMETLER[i % 8].id }).sonunaKadar(); sure.push(r.sure); if (r.kazanan === -1) beraber++; if (r.kazanan === -2) doldu++; }
 sure.sort((x, y) => x - y);
-console.log('  savaş süresi medyan', sure[150], 'sn, %90', sure[270], 'sn, beraberlik', beraber);
+console.log('  savaş süresi medyan', sure[150], 'sn, %90', sure[270], 'sn, beraberlik', beraber, 'süre doldu', doldu);
 ok(sure[150] > 12 && sure[150] < 34, 'medyan savaş 12–34 sn (tempo: savaş ortancası 24–32 sn hedefi, Gün Batımı yok)');
-ok(beraber < 30, 'beraberlik %10 altı');
+ok(beraber + doldu < 30, `beraberlik + süre doldu %10 altı (${beraber} + ${doldu})`);
 
 // 3) kahraman denge: her kahraman ★2 tek başına 2 rastgele ★1'e karşı... yerine: aynı soy dağılımlı takımda kahramanı değiştir
 const oran = {};
@@ -97,7 +97,13 @@ ok(O.coz('çöp') === null, 'bozuk kod reddedilir');
     sv3.kut(0, 0); sv3.adim(); const t3 = sv3.t; g3.durum.sersem = { sure: 1 }; let y3 = null;
     for (let i = 0; i < 80 && !y3; i++) { sv3.adim(); y3 = sv3.fx.find(f => f.tip === 'yetenek' && f.u === g3.uid); }
     ok(y3 && y3.t - t3 > 1 + KS.kurulum - 2 * DT, `sersem kurulumu iptal etmez, geciktirir (${y3 ? (y3.t - t3).toFixed(2) : '?'} sn)`);
-    ok(S.Savas([{ h: 'bulutat', s: 1 }], [{ h: 'golem', s: 1 }]).birimler[0].kurulumSure === D.YETENEK.dortnal.kurulum && D.YETENEK.dortnal.kurulum !== KS.kurulum, 'yeteneğe özgü kurulum süresi (YETENEK.dortnal.kurulum)'); }
+    ok(S.Savas([{ h: 'bulutat', s: 1 }], [{ h: 'golem', s: 1 }]).birimler[0].kurulumSure === D.YETENEK.dortnal.kurulum && D.YETENEK.dortnal.kurulum !== KS.kurulum, 'yeteneğe özgü kurulum süresi (YETENEK.dortnal.kurulum)');
+    // kurulumdaki birime Kut: mana dolmaz, kurulum o adımda biter (yetenek hemen), kurulum bitince ikinci yetenek başlamaz
+    const sv4 = S.Savas([{ h: 'golem', s: 1, x: 1, y: 0 }], [{ h: 'kurbaga', s: 1, x: 1, y: 0 }], { tohum: 4 }); const g4 = sv4.birimler[0];
+    g4.mp = g4.mana; sv4.adim(); const kb4 = g4.kurulum > 0; sv4.kut(0, 0); sv4.adim();
+    const y4 = sv4.fx.some(f => f.tip === 'yetenek' && f.u === g4.uid); let ikinci = false;
+    for (let i = 0; i < 20; i++) { sv4.adim(); if (sv4.fx.some(f => (f.tip === 'kurulum' || f.tip === 'yetenek') && f.u === g4.uid)) ikinci = true; }
+    ok(kb4 && y4 && !ikinci && g4.mp < g4.mana, `kurulumda Kut: yetenek hemen (${y4}), ikinci yetenek yok (${!ikinci}), mana ${g4.mp.toFixed(1)}/${g4.mana}`); }
   // 5d) hasar alınca mana: alınan hasarın %7'si, vuruş başına en çok hasarManaTavan (Kut'lu Gölge Oku ★3 Golem'e)
   { const sv = S.Savas([{ h: 'golem', s: 3, x: 1, y: 0 }], [{ h: 'tilki', s: 3, x: 1, y: 2, e: ['kutOcagi'] }], { tohum: 6 }); const g = sv.birimler[0];
     sv.kut(1, 0); let yf = null, n = 0; while (!yf && n++ < 40) { sv.adim(); yf = sv.fx.find(f => f.tip === 'yetenek' && f.ad === 'golgeOk'); }

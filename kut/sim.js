@@ -357,7 +357,9 @@
       if (t - sonKutT[taraf] + 1e-9 < KU.ara) return false;
       const u = birimler.find(o => o.taraf === taraf && o.i === i && !o.olu); if (!u) return false;
       kutKalan[taraf]--; kutSayac[taraf]++; sonKutT[taraf] = t;
-      u.mp = u.mana; fx.push({ t, tip: 'kut', u: u.uid });
+      // yetenek kurulumundaki birime Kut: mana dolmaz, kurulum bu adımda tamamlanır (yetenek hemen, yankılarla; ikinci yetenek olmaz)
+      if (u.kurulum > 0) u.kurulum = Math.min(u.kurulum, DT / 2); else u.mp = u.mana;
+      fx.push({ t, tip: 'kut', u: u.uid });
       kutYanki(u);
       if (AR[taraf].uyanis) durumVer(u, 'uyanis', 999, AS.uyanis);
       if (AR[taraf].kutMirasi) u.kutMiras = true;

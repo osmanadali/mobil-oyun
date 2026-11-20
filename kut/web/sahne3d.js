@@ -42,7 +42,7 @@ export const GORSEL = {
   cakil: { ...IKI, ozgun: true, saldir: ['Punch_Cross', 'Melee_Hook'], yetenek: ['Punch_Cross'], zafer: 'Yes', iri: true, kolAci: 0.3, boy: 0.85, yuruHiz: 1.1 },
   kadimBekci: { ...IKI, ozgun: true, bekle: 'Idle_FoldArms_Loop', saldir: ['Punch_Cross', 'Melee_Hook'], yetenek: ['Agir_Ezme'], yetOn: 0.5, zafer: 'Yes', iri: true, kolAci: 0.28, egim: 0.06, boy: 1.3, yuruHiz: 0.75 },
   kirpi: { ...DORT, ozgun: true, boy: 0.95 }, tasKabuk: { ...DORT, ozgun: true, boy: 1.15 }, yildizYiyen: { ...DORT, ozgun: true, boy: 1.35, yetOn: 0.4 },
-  kumAkrebi: { tur: 'sabit', ozgun: true, boy: 0.95, salin: 'yengec' }, anaAkrep: { tur: 'sabit', ozgun: true, boy: 1.3, salin: 'yengec' },
+  kumAkrebi: { tur: 'sabit', ozgun: true, boy: 0.95, salin: 'yengec' }, anaAkrep: { tur: 'sabit', ozgun: true, boy: 1.3, salin: 'yengec', ton: '#9a6a40', isima: '#ff2a10', isimaGuc: 0.28, rimGuc: 1.1 },
   gokBalinasi: { tur: 'sabit', ozgun: true, boy: 0.8, salin: 'yuz', havada: 0.3 },
 };
 // Vuruş ağırlığı (tempo): ağır yaratık uzun ve görünür kurulur, ağır toparlanır, darbede kısa durur; çevik kısa kurulup seri vurur.
@@ -573,12 +573,30 @@ function tarafMalzeme(taraf) {
 }
 
 // ── Birimler ──
+// kaynaşma simgesi: iç içe iki halka (ana kahraman + kaynaşan rengi), koyu konturlu; renk çifti başına bir doku
+const _kaynasDoku = new Map();
+function kaynasCiz(c, x, y, r, r1, r2, lw) {
+  for (const [dx, renk] of [[-r * 0.55, r1], [r * 0.55, r2]]) {
+    c.beginPath(); c.arc(x + dx, y, r, 0, Math.PI * 2); c.lineWidth = lw + 3; c.strokeStyle = 'rgba(12,6,24,.9)'; c.stroke();
+    c.lineWidth = lw; c.strokeStyle = renk; c.stroke();
+  }
+}
+function kaynasDoku(r1, r2) {
+  const k = r1 + r2; if (_kaynasDoku.has(k)) return _kaynasDoku.get(k);
+  const cv = document.createElement('canvas'); cv.width = 96; cv.height = 64; const c = cv.getContext('2d');
+  c.fillStyle = 'rgba(12,6,24,.55)'; c.beginPath(); c.ellipse(48, 32, 44, 29, 0, 0, Math.PI * 2); c.fill();
+  kaynasCiz(c, 48, 32, 17, r1, r2, 6);
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; _kaynasDoku.set(k, t); return t;
+}
 async function birimKur(u, kok) {
   const h = D.kahraman(u.b.h), gor = GORSEL[u.b.h];
   const g = await glb(u.b.h, kok);
   const model = SkeletonUtils.clone(g.scene); golgeAc(model);
   // malzeme: fresnel kenar ışığı, doygunluk, dokudan parlama (göz, kristal), çevre yansıması (gorunum.js)
-  G.malzemeIyilestir(model, { renk: u.taraf === 0 ? 'biz' : 'rakip', kahraman: u.b.h, pbrKoru: !!gor.ozgun });
+  G.malzemeIyilestir(model, { renk: u.taraf === 0 ? 'biz' : 'rakip', kahraman: u.b.h, pbrKoru: !!gor.ozgun, ...(gor.rimGuc ? { rimGuc: gor.rimGuc } : {}) });
+  // ton: malzeme renk çarpanı; isima: hafif öz ışıma (Ana Akrep: koyu bronz + kızıl, Kum Akrebi'nden ayrışsın)
+  if (gor.ton || gor.isima) { const tc = gor.ton && new THREE.Color(gor.ton);
+    model.traverse(m => { if (m.isMesh) for (const mm of [].concat(m.material)) if (mm) { if (tc && mm.color) mm.color.multiply(tc); if (gor.isima && mm.emissive) { mm.emissive.set(gor.isima); mm.emissiveIntensity = gor.isimaGuc || 0.2; } } }); }
   const kok3 = new THREE.Group(); const govde = new THREE.Group(); kok3.add(govde); govde.add(model);
   // yön: iki ayaklılar +Z'ye bakar; dört ayaklı ve yılanın ön yönü kemik geometrisinden bulunur (hareket.js)
   let kemik = {}; model.traverse(o => { if (o.isBone) kemik[o.name.replace('mixamorig', '').replace(':', '')] = o; });
@@ -603,8 +621,15 @@ async function birimKur(u, kok) {
   const halkalar = [halka];
   if (u.b.f) {
     const f = D.kahraman(u.b.f);
-    const h2 = new THREE.Mesh(new THREE.RingGeometry(0.49 * Math.min(1, 1.12 / yildiz), 0.56 * Math.min(1, 1.12 / yildiz), 40), new THREE.MeshBasicMaterial({ color: f.renk, transparent: true, opacity: 0.95, depthWrite: false }));
+    // kaynaşma halkası: kalın, ikinci kahramanın renginde; dışında ince koyu kontur (taş zeminde de seçilsin)
+    const hk = Math.min(1, 1.12 / yildiz);
+    const h2 = new THREE.Mesh(new THREE.RingGeometry(0.45 * hk, 0.6 * hk, 40), new THREE.MeshBasicMaterial({ color: f.renk, transparent: true, opacity: 1, depthWrite: false }));
     h2.rotation.x = -Math.PI / 2; h2.position.y = 0.035; kok3.add(h2); halkalar.push(h2);
+    const h2k = new THREE.Mesh(new THREE.RingGeometry(0.6 * hk, 0.635 * hk, 40), new THREE.MeshBasicMaterial({ color: 0x14081f, transparent: true, opacity: 0.7, depthWrite: false }));
+    h2k.rotation.x = -Math.PI / 2; h2k.position.y = 0.034; kok3.add(h2k);
+    // baş üstü kaynaşma simgesi (hazırlıkta görünür; savaşta can çubuğunun solunda çizilir: cubukCiz)
+    const sg = new THREE.Sprite(new THREE.SpriteMaterial({ map: kaynasDoku(h.renk, f.renk), transparent: true, depthWrite: false }));
+    sg.scale.set(0.54 / yildiz, 0.36 / yildiz, 1); sg.position.y = modelBoy + 0.62 / yildiz; sg.renderOrder = 5; sg.visible = false; kok3.add(sg); kok3.userData.kaynasSimge = sg;
     // malzemeler malzemeIyilestir'de birime özel klonlandı: yeniden klonlamadan ışıma ver (yama korunur)
     model.traverse(m => { if (m.isMesh) for (const mm of [].concat(m.material)) if (mm && mm.emissive) { mm.emissive.set(f.renk); mm.emissiveIntensity = 0.18; } });
   }
@@ -1041,8 +1066,10 @@ function kaymaBaslat(b, tEtki) {
 const YET_YURU_PAY = 0.12;   // patlamadan sonra yürümeye geçmeden önce yetenek pozunun en az tutulduğu süre (sn)
 // yetenek ön uyarısı: patlamadan ~0,35–0,5 sn önce ayak altında element renginde halka/ışıma yükselir (vfx.onUyari) ve mana çubuğu
 // aynı renkte parlar (cubukCiz, b.onUyari). Sakin: sarsıntı/flaş yok (ağır vuruşların hit-stop'u ayrı). Kademe ≥6: tek halka, zerresiz; ≥8: yalnız çubuk.
+// buz/kristal: ELEMENT'in beyaza yakın tonları taş zeminde kayboluyor → ön uyarıda doygun buz mavisi / camgöbeği
+const ON_UYARI_RENK = { buz: ['#1aa8ff', '#45e0ff'], kristal: ['#12c4ff', '#5ff2ff'] };
 function onUyari(b, an) {
-  const el = ELEMENT[ELEMENT_H[b.u.b.h]] || ['#ffd76a', '#fff3c8'], s = Math.min(0.6, Math.max(0.25, an)), kd = G.kademeAl();
+  const eh = ELEMENT_H[b.u.b.h], el = ON_UYARI_RENK[eh] || ELEMENT[eh] || ['#ffd76a', '#fff3c8'], s = Math.min(0.6, Math.max(0.25, an)), kd = G.kademeAl();
   b.onUyari = { t0: gorselT, t1: gorselT + s, renk: el[0], renk2: el[1] };
   if (kd < 8) vfx.onUyari(b.kok, { sure: s, renk: el[0], renk2: el[1], ince: kd >= 6 });
 }
@@ -1370,6 +1397,10 @@ function cubukCiz(b, a, x, y, O, dost) {
       kcx.restore();
     }
   }
+  // kaynaşık birim: çubuğun solunda iç içe iki halka (ana + kaynaşan rengi)
+  if (b.u.b.f) { const kr = 4.2 * o, kf = b.kfR || (b.kfR = [D.kahraman(b.u.b.h).renk, D.kahraman(b.u.b.f).renk]);
+    kcx.fillStyle = 'rgba(8,5,20,.86)'; yuvarlak(x - 2 - 6.4 * kr, y + H / 2 - 1.5 * kr, 5.4 * kr, 3 * kr, 1.5 * kr); kcx.fill();
+    kcx.save(); kaynasCiz(kcx, x - 2 - 3.7 * kr, y + H / 2, kr * 0.95, kf[0], kf[1], Math.max(1.4, 1.2 * o)); kcx.restore(); }
   // yıldız rozeti: çubuğun üst ortasında koyu hap, seviye renginde yıldızlar
   const yl = Math.max(1, Math.min(3, b.u.b.s || 1)), r = 4.3 * o, ara = r * 2.15, rw = yl * ara + 5 * o, rh = r * 2 + 3 * o;
   const rx = x + gw / 2 - rw / 2, ry = y - 2 - rh + 2.5 * o;
@@ -1561,7 +1592,7 @@ function kadraj(dtR) {
   _ka.copy(kam.tabanP).sub(kam.tabanH).multiplyScalar(kam.olcek * kam.zoom);
   // 360° yörünge: bakış noktası etrafında yatay dönüş (yaw) ve eğim (egim); eğim yere girmeyecek ve tepeden bakışı aşmayacak şekilde sınırlı
   kam.yaw += (kam.yawH - kam.yaw) * kz; kam.egim += (kam.egimH - kam.egim) * kz;
-  if (kam.yaw || kam.egim) { _kSph.setFromVector3(_ka); _kSph.theta += kam.yaw; _kSph.phi = Math.min(1.38, Math.max(0.08, _kSph.phi + kam.egim)); _ka.setFromSpherical(_kSph); }
+  if (kam.yaw || kam.egim) { _kSph.setFromVector3(_ka); _kSph.theta += kam.yaw; _kSph.phi = Math.min(1.22, Math.max(0.08, _kSph.phi + kam.egim)); _ka.setFromSpherical(_kSph); }
   _kb.set(kam.tabanH.x + (kam.merkez.x - kam.tabanH.x) * zf + kam.kayX, kam.tabanH.y, kam.tabanH.z + (kam.merkez.z - kam.tabanH.z) * zf + kam.kayZ);
   kamera.position.copy(_kb).add(_ka);
   if (kam.mvp) _kb.copy(mvpKarisim(dtR, _kb));   // Maçın yıldızı: kadraj kamerasından yakın plana yumuşak geçiş (ve geri)
@@ -2290,6 +2321,7 @@ async function hzrBirimKur(o, im) {
   try { b = await birimKur(u, hzr.kok); } catch (e) { console.warn('hazırlık birimi kurulamadı', o.b.h, e); }
   const bek = hzr.bekleyen.get(o.ref); if (bek && bek.im === im) hzr.bekleyen.delete(o.ref);
   if (!b) return;
+  if (b.kok.userData.kaynasSimge) b.kok.userData.kaynasSimge.visible = true;
   const ist = hzr.istek.get(o.ref);
   if (!ist || ist.im !== im || hzr.birim.has(o.ref)) { birimSok(b); return; }   // bu arada satıldı/birleşti
   b.imza = im; b.ref = o.ref; b.yer = ist.yer; b.i = ist.i; b.hedefP = hzrHucreP(ist.yer, ist.i); b.tabanOlcek = b.kok.scale.x; b.dogT = 0;

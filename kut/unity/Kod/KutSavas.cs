@@ -536,7 +536,9 @@ namespace Kut
             if (T - sonKutT[taraf] + 1e-9 < KutVeri.KutAra) return false;
             var u = Birimler.FirstOrDefault(o => o.Taraf == taraf && o.I == i && !o.Olu); if (u == null) return false;
             kutKalan[taraf]--; kutSayac[taraf]++; sonKutT[taraf] = T;
-            u.Mp = u.Mana; Ekle("kut", u);
+            // yetenek kurulumundaki birime Kut: mana dolmaz, kurulum bu adımda tamamlanır (yetenek hemen, yankılarla; ikinci yetenek olmaz)
+            if (u.Kurulum > 0) u.Kurulum = Math.Min(u.Kurulum, DT / 2); else u.Mp = u.Mana;
+            Ekle("kut", u);
             KutYankiUygula(u);
             if (Ar(taraf, "uyanis")) DurumVer(u, "uyanis", 999, KutVeri.ArmUyanis);
             if (Ar(taraf, "kutMirasi")) u.KutMiras = true;

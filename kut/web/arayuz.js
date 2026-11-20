@@ -160,7 +160,7 @@ function nasilPencere() {
     <li><b>Kaynaştır (2 + en yüksek kademe altın; Hızlı Maç'ta 3):</b> bir kahramanı seç, Kaynaştır'a bas, ikinci kahramana dokun. Yetenek birinciden, pasif ikinciden gelir; soyların hepsi sayılır.</li>
     <li><b>Rakibini önceden gör:</b> sol üstte sıradaki rakibin kadrosu ve soyları var. Ona göre kur.</li>
     <li><b>Alamet:</b> her turun kendi kuralı vardır (Kan Ayı, Sis, Tipi…).</li>
-    <li><b>Kut:</b> savaş kendi kendine oynar, ama bir kez kendi kahramanına dokunup yeteneğini anında patlatabilirsin. Lobide son iki kişi kalınca 2 Kut hakkın olur (arada en az 6 sn).</li>
+    <li><b>Kut:</b> savaş kendi kendine oynar, ama bir kez kendi kahramanına dokunup manasını doldurabilir, yeteneğini hemen açtırabilirsin (yetenek hazırlanıyorsa hazırlık anında biter). Lobide son iki kişi kalınca 2 Kut hakkın olur (arada en az 6 sn).</li>
     <li><b>Kut Yankısı:</b> eşyalı kahramana verilen Kut, taşıdığı her bileşen için ek etki yapar (tam eşya iki bileşen sayılır, Kut Taşı ikiye katlar): Diş sonraki 3 vuruşa +%50 hasar, Tüy 3 sn +%50 hız, Kor yeteneği ×1,25, Çiy yetenekten sonra 30 mana, Kabuk 3 sn −%40 hasar, Yürek canının %15'i, Pul 3 sn %40 can çalma, Buz 150 kalkan.</li>
     <li><b>Kut Armağanı:</b> 2-1, 3-2 ve 4-3'te üç karttan birini seçersin (Kıvılcım, Alev ya da Güneş). Armağan maç boyunca seninle kalır; her aşamada kartları bir kez yenileyebilirsin.</li>
     <li><b>Sıradaki alamet</b> önceden görünür. Yeni alametler: Demirci Ateşi (kazanana bileşen), Göç Mevsimi (2 bedava yenileme), Kut Sessizliği (Kut yok, herkes %25 mana ile başlar), Uzun Gölge (Gün Batımı 20. sn'de).</li>
@@ -601,6 +601,8 @@ function bilgiKartYer() {
   const W = innerWidth / o, ust = (q('#mac .macUst').getBoundingClientRect().bottom) / o + 4, alt = (q('#mac .dukkanSerit').getBoundingClientRect().top) / o - 4;
   let x = (e.x + e.yari) / o + 10, y = e.ustY / o - 8;
   if (x + el._w > W - 8) x = (e.x - e.yari) / o - 10 - el._w;
+  // telefonda (html.alcak) tahta küçük: kart birimin yanında ama üst kenarda dursun (yedek sırasını örtmesin)
+  if (document.documentElement.classList.contains('alcak')) y = ust;
   x = Math.max(8, Math.min(W - 8 - el._w, x)); y = Math.max(ust, Math.min(alt - el._h, y));
   const t = `translate(${Math.round(x)}px,${Math.round(y)}px)`; if (el._t !== t) { el._t = t; el.style.transform = t; }
 }
@@ -740,7 +742,7 @@ function kutCiz(kullanan) {
     ? `<div class="kutBant bitti"><b>Kut Sessizliği</b><span class="satir">Bu tur Kut yok</span><span class="satir">Herkes savaşa %25 mana ile başladı</span></div>
        <div class="kut bitti"><span class="sayac">0/0</span></div>`
     : hazir
-    ? `<div class="kutBant"><b>KUT HAZIR</b><span>Bir kahramanına dokun, yeteneği <em>hemen patlasın</em>. ${hak > 1 ? `Savaşta ${hak} kez (arada 4 sn).` : 'Savaşta 1 kez.'} Eşyalı kahramana verilen Kut <em>yankı</em> yapar.</span></div>
+    ? `<div class="kutBant"><b>KUT HAZIR</b><span>Bir kahramanına dokun: manası dolsun, yeteneği <em>hemen açılsın</em>. ${hak > 1 ? `Savaşta ${hak} kez (arada 6 sn).` : 'Savaşta 1 kez.'} Eşyalı kahramana verilen Kut <em>yankı</em> yapar.</span></div>
        <button class="kut ${kutSecim ? 'secim' : ''}" aria-label="Kut" id="kutDugme"><div class="isin"></div><div class="yz"><big>KUT</big><small>${kalan}/${hak}</small></div><div class="el">${ik('el')}</div></button>`
     : `<div class="kutBant bitti"><b>Kut kullanıldı</b><span class="satir"><em>${son ? oyun.birimAd(son.b) : ''}</em></span><span class="satir">Sonraki savaşta yenilenir</span></div>
        <div class="kut bitti"><div class="kullanan">${son ? `<img src="${P(son.b.h)}" alt="">` : ''}</div><span class="sayac">0/${hak}</span><div class="onay">${ik('onay')}</div></div>`;
@@ -1077,8 +1079,8 @@ const OGR_ADIMLAR = [
     // savaş bu adımda durur: Kut dokunuşu motorun o anki zamanına yazılır (S3.dokun), sonra savaş sürer
     goster: () => { if (!duraklat) { duraklat = true; ogr.durdurdu = true; hizUygula(); } },
     son: () => { if (ogr.durdurdu) { ogr.durdurdu = false; duraklat = false; hizUygula(); } if (savasBilgi && savasBilgi.kutKullanan) bildir('Kut, mana dolmasını beklemeden yeteneği açtı', 'iyi'); },
-    metin: () => kutSecim ? `Şimdi savaştaki <b>kendi kahramanlarından</b> birine dokun: yeteneği hemen patlar.`
-      : `Savaş durdu. Bu senin <b>Kut</b> gücün: savaşta bir kez bir kahramanının yeteneğini hemen açar.<small>KUT'a, sonra kendi kahramanına dokun.</small>` },
+    metin: () => kutSecim ? `Şimdi savaştaki <b>kendi kahramanlarından</b> birine dokun: manası dolar, yeteneği hemen açılır.`
+      : `Savaş durdu. Bu senin <b>Kut</b> gücün: savaşta bir kez bir kahramanının manasını doldurur, yeteneğini hemen açar.<small>KUT'a, sonra kendi kahramanına dokun.</small>` },
   { id: 'sonuc', ekran: 'savas', hedef: ['#sOzet', '#sDevam'], altta: true,
     gecerli: () => aktifEkran === 'savas',
     hazir: () => aktifEkran === 'savas' && !!savasBilgi && savasBilgi.bitti && !!$('sDevam') && !$('sDevam').classList.contains('bekle') && $('hasarOzet').hidden,

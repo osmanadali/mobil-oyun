@@ -1586,7 +1586,7 @@ body.hz3 #armaganSerit button{min-height:34px;font-size:12px;padding:0 10px}
 .bilgiKart .bkEylem .btn .ik{width:16px;height:16px}
 .bilgiKart .bkEylem .bkBil{flex:none;width:36px;padding:0;font-weight:900;font-family:Georgia,serif;font-style:italic}
 /* alt: ince dükkân şeridi */
-body.hz3 #mac .dukkanSerit{grid-template-columns:clamp(96px,9cqw,116px) minmax(0,1fr) clamp(132px,13cqw,172px);gap:8px;height:clamp(128px,18cqh,156px)}
+body.hz3 #mac .dukkanSerit{grid-template-columns:clamp(112px,10.5cqw,124px) minmax(0,1fr) clamp(132px,13cqw,172px);gap:8px;height:clamp(128px,18cqh,156px)}
 body.hz3 #mac .dukkanSol{gap:5px}
 body.hz3 #mac .dukkanSol .btn{flex:1;min-height:0;font-size:13px;gap:4px;padding:0 6px;flex-direction:row;flex-wrap:wrap;justify-content:center;line-height:1.1}
 body.hz3 #mac .dukkanSol .btn .ik{width:16px;height:16px}
@@ -1662,6 +1662,17 @@ html.alcak .bilgiKart{width:244px;padding:6px 8px}html.alcak .bilgiKart .bkEylem
 #savas .hizlar .btn.secik{outline:0;background-image:url(arayuz/menu/dugme_yuvarlak_altin.webp);--kontur:#6a3206;color:#fffbea;filter:drop-shadow(0 0 7px rgba(255,214,100,.7)) drop-shadow(0 4px 5px rgba(0,0,0,.5))}
 #savas .duraklat .btn.sonaGec{width:62px;height:40px;font-size:11px;padding:0 12px!important;border-image-width:11px 17px;margin-left:-2px}
 html.alcak #savas .hizlar .btn{width:46px;height:46px}html.alcak #savas .hizlar .btn b{font-size:13px}
+/* hız: simge+yazı halkanın içinde kalsın (yazı alt kenara binmesin) */
+#savas .hizlar .btn{padding:0 0 9px!important;justify-content:center}
+#savas .hizlar .btn .mik{height:26%;margin-top:0}
+#savas .hizlar .btn b{font-size:13px;margin-top:1px}
+html.alcak #savas .hizlar .btn{padding-bottom:7px!important}html.alcak #savas .hizlar .btn b{font-size:11px}
+/* birincil altın düğme (Tamam, Anladım, Yeniden oyna, öğretici…): dugme_oyna dokuz dilim (eski w_dugme_altin yerine) */
+.btn.altin{border:3px solid transparent;border-image:url(arayuz/menu/dugme_oyna.webp) 170 470 180 470 fill / 12px 32px 13px 32px / 3px 4px stretch;
+  padding-left:36px;padding-right:36px;--kontur:#5a2404;color:#fffaf0}
+.btn.altin:active{border-image-source:url(arayuz/menu/dugme_oyna_basili.webp)}
+.btn.altin::before{display:none}
+.btn.altin::after{border-radius:999px;inset:0 8px}
 html.alcak #savas .duraklat .btn:not(.sonaGec){width:50px;height:50px}
 /* (i) bilgi düğmeleri: ikon_bilgi kendi yuvarlak çerçevesiyle düğme */
 .sansBtn,.bilgiKart .bkEylem .bkBil{border:0!important;border-image:none!important;background:none!important;box-shadow:none;padding:0!important;border-radius:50%}
@@ -1705,10 +1716,10 @@ html.alcak #mac .dukkanSol .xpCubuk{height:10px;padding:3px 9%}html.alcak #mac .
 html.alcak .btn.savasBtn{padding:0 10% 13%!important}
 body.hz3 #mac .dukkanSerit{grid-template-rows:minmax(0,1fr)}body.hz3 #mac .dukkanSol{min-height:0}
 body.hz3 #mac .dukkanSol .btn{overflow:hidden}
-body.hz3 #mac .dukkanSol .btn:not(.xpBtn){flex-wrap:nowrap;white-space:nowrap;gap:3px;padding:0 8px;font-size:12.5px}
-body.hz3 #mac .dukkanSol .btn:not(.xpBtn) .mik{width:17px;height:17px}
+body.hz3 #mac .dukkanSol .btn:not(.xpBtn){flex-wrap:nowrap;white-space:nowrap;gap:2px;padding:0 12px;font-size:12.5px}
+body.hz3 #mac .dukkanSol .btn:not(.xpBtn) .mik{width:16px;height:16px}
 body.hz3 #mac .dukkanSol .btn:not(.xpBtn) small{font-size:11px}body.hz3 #mac .dukkanSol .btn small .ik{width:13px;height:13px}
-body.hz3 #mac .dukkanSol .xpBtn{flex:1.7;font-size:12px;padding:0 8px}body.hz3 #mac .dukkanSol .xpBtn small{font-size:10.5px}
+body.hz3 #mac .dukkanSol .xpBtn{flex:1.7;font-size:12px;padding:0 12px}body.hz3 #mac .dukkanSol .xpBtn small{font-size:10.5px}
 body.hz3 #mac .dukkanSol .xpBtn{gap:1px 4px;line-height:1.05}body.hz3 #mac .dukkanSol .xpBtn .mik{width:16px;height:16px}
 body.hz3 #mac .dukkanSol .xpBtn .xpCubuk{height:11px;padding:3px 9%;margin:0}body.hz3 #mac .dukkanSol .xpBtn .xpCubuk::before{inset:3px 9%}
 </style>
