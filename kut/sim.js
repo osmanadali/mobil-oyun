@@ -4,7 +4,7 @@
    - tekrar izleme / paylaşım: (takımlar, tohum, dokunuşlar) üçlüsü bir savaşı baştan oynatır. */
 (function (g) {
   const D = g.KUT_DATA || (typeof require !== 'undefined' ? require('./data.js') : null);
-  const { SOYLAR, KURAL } = D;
+  const { SOYLAR, KURAL, YETENEK } = D;
 
   const Y0 = [5, 6, 7], Y1 = [3, 2, 1]; // sıra (ön, orta, arka) → arena y
   function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -60,7 +60,7 @@
     const alamet = opt.alamet || 'yok';
     // Kut Armağanı (bölüm 6): opt.armagan = [[id…], [id…]]; yalnız savas: true olanlar burada çalışır (Son Direniş'in can koşulu çağıranda: lobi.savasArmagan)
     const AR = [0, 1].map(tr => { const o = {}; for (const id of ((opt.armagan || [])[tr] || [])) o[id] = true; return o; });
-    const KU = KURAL.kut, KY = KURAL.kutYanki, AS = KURAL.armaganSayi;
+    const KU = KURAL.kut, KY = KURAL.kutYanki, AS = KURAL.armaganSayi, KS = KURAL.savas;
     // Kut Sessizliği: Kut yok (opt.kutYok da kapatır)
     const kutYok = alamet === 'kutSessiz' || !!opt.kutYok;
     const birimler = [];
@@ -97,8 +97,10 @@
         const mana = ef.dolunayTestisi ? Math.floor(st.mana * 0.8 + 0.5) : st.mana;
         birimler.push({ uid: taraf * 10 + i, taraf, i, b, ...st, mana, ef, mx: can, hp: can, x, y, x0: x, y0: y,
           mp: 0, cd: 0.3 + R() * 0.3, durum: {}, kalkan: 0, olu: false, dirildi: false, vurus: 0, payYigin: 0, ofke: 0, hedef: null,
-          vurusMana: ef.keskinGoz ? 12 : 8, ilkVurusYapildi: false, sonHedefUid: -1, esikTetik: {}, kutCarpan: 1,
-          bilesenSay: st.yankiSira.length, yankiDis: 0, yankiDisOran: 0, yankiCiy: 0, kutMiras: false });
+          vurusMana: ef.keskinGoz ? KS.keskinGozMana : KS.vurusMana, ilkVurusYapildi: false, sonHedefUid: -1, esikTetik: {}, kutCarpan: 1,
+          bilesenSay: st.yankiSira.length, yankiDis: 0, yankiDisOran: 0, yankiCiy: 0, kutMiras: false,
+          // yetenek kurulumu: kurulumSure (YETENEK[id].kurulum, yoksa KURAL.savas.kurulum); kurulum: kalan süre (0: kurulumda değil)
+          kurulumSure: st.yetenek && YETENEK[st.yetenek] && YETENEK[st.yetenek].kurulum != null ? YETENEK[st.yetenek].kurulum : KS.kurulum, kurulum: 0 });
       });
     });
 
@@ -123,6 +125,37 @@
     function dostlar(u) { return birimler.filter(o => o.taraf === u.taraf && !o.olu); }
     function dusmanlar(u) { return birimler.filter(o => o.taraf !== u.taraf && !o.olu); }
     function mesafe(a, b) { const dx = a.x - b.x, dy = a.y - b.y; return Math.sqrt(dx * dx + dy * dy); } // hypot değil: C# ile bit bit aynı sonuç
+    // yetenek kurulumundaki birim mana kazanmaz (Kut hariç: Kut manayı doğrudan doldurur)
+    function manaEkle(u, n) { if (!(u.kurulum > 0)) u.mp = Math.min(u.mana, u.mp + n); }
+    // Üst üste binme yok: u (yalnız u yer değiştirir) yaşayan öbür birimlerden en az KS.ayrim uzağa, birim sırasıyla tek geçişte itilir.
+    // Tam çakışmada tarafının gerisine ve i'ye göre yana (0,6² + 0,8² = 1: uzaklık tam ayrim). Arena sınırı: x 0,4–5,6, y 0,4–7,6.
+    function ayris(u) {
+      for (const o of birimler) {
+        if (o === u || o.olu) continue;
+        const dx = u.x - o.x, dy = u.y - o.y, d = Math.sqrt(dx * dx + dy * dy);
+        if (d >= KS.ayrim) continue;
+        if (d < 1e-6) { u.x = o.x + (u.i % 2 ? -0.6 : 0.6) * KS.ayrim; u.y = o.y + (u.taraf === 0 ? 0.8 : -0.8) * KS.ayrim; }
+        else { const k = KS.ayrim / d; u.x = o.x + dx * k; u.y = o.y + dy * k; }
+        u.x = Math.max(0.4, Math.min(5.6, u.x)); u.y = Math.max(0.4, Math.min(7.6, u.y));
+      }
+    }
+    // Yürüme yönü: doğrudan hedefe; o yol bir birimin ayrim çemberine giriyorsa (ve ona yaklaştırıyorsa) ±30°, ±60°, ±90° döndürülmüş
+    // yönler sırayla denenir (önce i'ye göre bir yan; döndürme sabit sayılarla: trigonometri yok, C# ile bit bit aynı). Hepsi kapalıysa null.
+    const DON = [[1, 0], [0.8660254037844386, 0.5], [0.8660254037844386, -0.5], [0.5, 0.8660254037844386], [0.5, -0.8660254037844386], [0, 1], [0, -1]];
+    function yurumeYonu(u, ex, ey, adimU) {
+      const yan = u.i % 2 ? -1 : 1;
+      for (const [c, s0] of DON) {
+        const s = s0 * yan, rx = ex * c - ey * s, ry = ex * s + ey * c, nx = u.x + rx * adimU, ny = u.y + ry * adimU;
+        let acik = true;
+        for (const o of birimler) {
+          if (o === u || o.olu) continue;
+          const ax = nx - o.x, ay = ny - o.y, yd = Math.sqrt(ax * ax + ay * ay);
+          if (yd < KS.ayrim - 1e-9 && yd < mesafe(u, o)) { acik = false; break; }
+        }
+        if (acik) return [rx, ry];
+      }
+      return null;
+    }
     // Hedef seçimi: Dev Kükremesi'nin zorladığı hedef (yaşıyorsa); sonra hedef alınabilenler arasından en yakın; hepsi hedef alınamazsa en yakın.
     function enYakin(u) {
       if (u.durum.zorla) { const z = birimler.find(o => o.uid === u.durum.zorla.deger && !o.olu); if (z) return z; }
@@ -185,7 +218,8 @@
       if (hedef.kalkan > 0) { const e = Math.min(hedef.kalkan, m); hedef.kalkan -= e; m -= e; }
       m = Math.max(0, m);
       hedef.hp -= m;
-      if (tur !== 'dot' && tur !== 'yansima') hedef.mp = Math.min(hedef.mana, hedef.mp + m * (hedef.ef.sabirTasi ? 0.1 : 0.05));
+      // hasar alınca mana: alınan hasarın %5'i (Sabır Taşı %10), vuruş başına en çok hasarManaTavan; yetenek kurulumunda mana gelmez
+      if (tur !== 'dot' && tur !== 'yansima' && !(hedef.kurulum > 0)) hedef.mp = Math.min(hedef.mana, hedef.mp + Math.min(KS.hasarManaTavan, m * (hedef.ef.sabirTasi ? KS.sabirMana : KS.hasarMana)));
       if (m >= 1) fx.push({ t, tip: tur === 'dot' ? 'dot' : 'hasar', u: hedef.uid, n: Math.round(m), k: kaynak ? kaynak.uid : -1 });
       if (kaynak && kaynak.pasif === 'canEmici' && tur !== 'dot' && tur !== 'yansima') iyiles(kaynak, m * 0.2);
       if (kaynak && tur !== 'dot' && tur !== 'yansima') { // can çalma: Pul (vuruşta), Gece Kanadı (vuruşta +%30), Gölge Mürekkebi (yetenekte %25), Pul yankısı (ikisinde)
@@ -223,9 +257,9 @@
       if (u.ef.geceYuregi) for (const d of dostlar(u)) if (mesafe(u, d) <= 2.1) kalkanVer(d, u.mx * 0.25);
       for (const d of birimler) {
         if (d.olu) continue;
-        if (d.taraf === u.taraf && d.pasif === 'ruhBagi') d.mp = Math.min(d.mana, d.mp + 25); // tempo: 35 → 25 (savaş uzadı, yetenek sıklığı)
+        if (d.taraf === u.taraf && d.pasif === 'ruhBagi') manaEkle(d, 25); // tempo: 35 → 25 (savaş uzadı, yetenek sıklığı)
         if (d.taraf !== u.taraf && d.pasif === 'karanlikPay') d.payYigin++;
-        if (d.taraf === u.taraf && d.ef.ruhTestisi) { d.mp = Math.min(d.mana, d.mp + 20); iyiles(d, d.mx * 0.1); } // denge: 30 → 20 mana (DENGE_RAPORU.md)
+        if (d.taraf === u.taraf && d.ef.ruhTestisi) { manaEkle(d, 20); iyiles(d, d.mx * 0.1); } // denge: 30 → 20 mana (DENGE_RAPORU.md)
         if (d.taraf !== u.taraf && d.ef.avCoskusu) durumVer(d, 'cosku', 3);
       }
       if (katil && !katil.olu && katil.taraf !== u.taraf) {
@@ -281,12 +315,12 @@
         case 'uluma': for (const d of dostlar(u)) if (mesafe(d, u) <= 2.1) durumVer(d, 'uluma', 4); break;
         case 'davul': for (const d of dostlar(u)) durumVer(d, 'davul', 4); break;
         case 'ruhEmme': if (h) { const v = hasar(u, h, 170 * c, 'yetenek'); iyiles(u, v); } break;
-        case 'kasirga': if (h) for (const o of cevre(h, 1.6)) { hasar(u, o, 110 * c, 'yetenek'); o.y += (o.taraf === 0 ? 1.5 : -1.5); o.y = Math.max(0.4, Math.min(7.6, o.y)); } break;
+        case 'kasirga': if (h) for (const o of cevre(h, 1.6)) { hasar(u, o, 110 * c, 'yetenek'); o.y += (o.taraf === 0 ? 1.5 : -1.5); o.y = Math.max(0.4, Math.min(7.6, o.y)); if (!o.olu) { ayris(o); o.hedef = null; } } break;
         case 'deliOfke': u.ofke = 3; iyiles(u, u.mx * 0.2); break;
         case 'zehir': if (h) durumVer(h, 'zehir', 4, 55 * c); { const y = dostlar(u).sort((a, b) => a.hp / a.mx - b.hp / b.mx)[0]; if (y) iyiles(y, 160 * c); } break;
         case 'buzNefes': if (h) for (const o of cevre(h, 1.6)) { hasar(u, o, 120 * c, 'yetenek'); durumVer(o, 'sersem', 1.2); } break;
         case 'ocak': for (const o of cevre(u, 2.2)) durumVer(o, 'yanik', 4, 40 * c); for (const d of dostlar(u)) if (mesafe(d, u) <= 2.2) iyiles(d, 110 * c); break;
-        case 'dortnal': { const arka = dusmanlar(u).sort((a, b) => mesafe(u, b) - mesafe(u, a))[0]; if (arka) { u.x = arka.x; u.y = arka.y + (u.taraf === 0 ? 0.8 : -0.8); u.hedef = arka; hasar(u, arka, 190 * c, 'yetenek'); } } break;
+        case 'dortnal': { const arka = dusmanlar(u).sort((a, b) => mesafe(u, b) - mesafe(u, a))[0]; if (arka) { u.x = arka.x; u.y = arka.y + (u.taraf === 0 ? 0.8 : -0.8); ayris(u); u.hedef = arka; hasar(u, arka, 190 * c, 'yetenek'); } } break;
         case 'kanat': for (const d of dostlar(u)) kalkanVer(d, 140 * c); break;
         case 'karaGolge': { const g2 = dusmanlar(u).sort((a, b) => b.atk - a.atk)[0]; if (g2) { hasar(u, g2, 140 * c, 'yetenek'); durumVer(g2, 'lanet', 5); } } break;
         case 'kulDogus': if (h) for (const o of cevre(h, 1.6)) { hasar(u, o, 170 * c, 'yetenek'); durumVer(o, 'yanik', 3, 25 * c); } break;
@@ -315,7 +349,7 @@
       kutYanki(u);
       if (AR[taraf].uyanis) durumVer(u, 'uyanis', 999, AS.uyanis);
       if (AR[taraf].kutMirasi) u.kutMiras = true;
-      if (AR[taraf].isikSutunu) for (const d of dostlar(u)) if (d !== u && mesafe(u, d) <= AS.isikMenzil) d.mp = Math.min(d.mana, d.mp + d.mana * AS.isikSutunu);
+      if (AR[taraf].isikSutunu) for (const d of dostlar(u)) if (d !== u && mesafe(u, d) <= AS.isikMenzil) manaEkle(d, d.mana * AS.isikSutunu);
       if (opt.kayit) opt.kayit.push({ t: +t.toFixed(2), taraf, i });
       return true;
     }
@@ -366,17 +400,28 @@
         const su = sv(u.taraf, 'su'); if (su && u.soy.includes('su')) iyilesSessiz(u, u.mx * [0, 0.02, 0.05][su] * DT);
         if (u.pasif === 'sicakKalp') iyilesSessiz(u, u.mx * 0.03 * DT);
         if (u.ef.sifaPinari) iyilesSessiz(u, u.mx * 0.02 * DT);
-        if (u.durum.sersem) continue;
+        // sersem: bekler (yetenek kurulumu iptal olmaz, süresi işlemez: sersemlik bitince kaldığı yerden sürer); hedef bırakılır
+        if (u.durum.sersem) { u.hedef = null; continue; }
 
-        if (u.mp >= u.mana) { u.mp = 0; yetenek(u); if (bittiMi()) return; continue; }
-        if (!u.hedef || u.hedef.olu || t % 0.5 < DT) u.hedef = enYakin(u);
+        // yetenek kurulumu: mana dolunca kurulumSure sn bekler (saldırmaz, yürümez, mana kazanmaz), sonra etki eder.
+        // Kurulum başında 'kurulum' olayı (sure: sn): sunum yetenek pozunu ona hizalar.
+        if (u.kurulum > 0) { u.kurulum -= DT; if (u.kurulum > 1e-9) continue; u.kurulum = 0; yetenek(u); if (bittiMi()) return; continue; }
+        if (u.mp >= u.mana) {
+          u.mp = 0;
+          if (u.kurulumSure > 0) { u.kurulum = u.kurulumSure; fx.push({ t, tip: 'kurulum', u: u.uid, ad: u.yetenek, sure: u.kurulumSure }); continue; }
+          yetenek(u); if (bittiMi()) return; continue;
+        }
+        // kalıcı hedef: hedef ölene, hedef alınamaz olana, menzilin hedefBirak ötesine geçene ya da Dev Kükremesi başka birimi zorlayana dek korunur
+        { const hd = u.hedef, z = u.durum.zorla;
+          if (!hd || hd.olu || hd.durum.hedefAlinmaz || (z && z.deger !== hd.uid) || mesafe(u, hd) > menzil(u) + KS.hedefBirak) u.hedef = enYakin(u); }
         const h = u.hedef; if (!h) continue;
         const d = mesafe(u, h);
         if (d > menzil(u) + 0.05) {
-          // yürüme (hücre/sn): tempo için 1,7 → 1,2, Çevik 2,4 → 1,6 (kim kime yürüdü okunsun)
-          const hiz = (u.soy.includes('atli') ? 1.6 : 1.2) * (u.ef.bulutNali ? 1.5 : 1) * DT;
-          u.x += (h.x - u.x) / d * Math.min(hiz, d - menzil(u));
-          u.y += (h.y - u.y) / d * Math.min(hiz, d - menzil(u));
+          // yürüme (hücre/sn): tempo için 1,7 → 1,2, Çevik 2,4 → 1,6 (kim kime yürüdü okunsun). Yol tıkalıysa yana döner;
+          // tamamen tıkalıysa bekler ve en yakın düşmanı yeniden seçer (üst üste binme yok)
+          const hiz = (u.soy.includes('atli') ? 1.6 : 1.2) * (u.ef.bulutNali ? 1.5 : 1) * DT, adimU = Math.min(hiz, d - menzil(u));
+          const yon = yurumeYonu(u, (h.x - u.x) / d, (h.y - u.y) / d, adimU);
+          if (yon) { u.x += yon[0] * adimU; u.y += yon[1] * adimU; } else u.hedef = enYakin(u);
         } else {
           u.cd -= DT * hizCarpan(u);
           if (u.cd <= 0) {
@@ -390,7 +435,7 @@
             hasar(u, h, vm, 'vurus');
             if (!h.olu && !u.olu) vurusEtki(u, h);
             const bl = sv(u.taraf, 'bilge') && u.soy.includes('bilge') ? [0, 0.3, 0.7][sv(u.taraf, 'bilge')] : 0;
-            if (!u.olu) u.mp = Math.min(u.mana, u.mp + u.vurusMana * (1 + bl));
+            if (!u.olu) manaEkle(u, u.vurusMana * (1 + bl));
           }
         }
         if (bittiMi()) return;
@@ -398,23 +443,24 @@
       // son düşman zaman içi hasarla öldüyse ve kalanlar hedefsiz kaldıysa (kimse vurmadı) savaş bu adımda biter
       if (bittiMi()) return;
       t += DT;
-      if (t + 1e-9 >= KURAL.savasSuresi) { // t 0,05 adımlarla birikir: 45 sn 44,999… olarak gelir (1e-9 payı; C# ile aynı)
-        const oran = [0, 1].map(tr => birimler.filter(o => o.taraf === tr).reduce((s, o) => s + Math.max(0, o.hp) / o.mx, 0));
-        const fark = oran[0] - oran[1];
-        bitir(Math.abs(fark) < 0.05 ? -1 : fark > 0 ? 0 : 1);
-      }
+      // süre doldu: iki taraf da kaybeder (kazanan −2). t 0,05 adımlarla birikir: 45 sn 44,999… olarak gelir (1e-9 payı; C# ile aynı)
+      if (t + 1e-9 >= KURAL.savasSuresi) bitir(-2);
     }
     function iyilesSessiz(u, n) { u.hp = Math.min(u.mx, u.hp + n); }
     function bittiMi() {
       const a = birimler.some(o => o.taraf === 0 && !o.olu), b = birimler.some(o => o.taraf === 1 && !o.olu);
       if (a && b) return false; bitir(a ? 0 : b ? 1 : -1); return true;
     }
+    // kazanan: 0 | 1 | −1 (ikisi de öldü) | −2 (süre doldu: iki taraf da kaybetti; sureDoldu: true).
+    // −2'de kalan/kalanPuan/kalanSayi taraf 1'in sağ kalanları (taraf 0'ın yenilgi hasarına eklenir), kalanPuanB/kalanSayiB taraf 0'ınki.
     function bitir(k) {
       bitti = true;
-      const sag = birimler.filter(o => !o.olu && o.taraf === k);
+      const sagT = (tr) => birimler.filter(o => !o.olu && o.taraf === tr), puan = (l) => l.reduce((s, o) => s + (o.b.s || 1), 0);
+      const sag = sagT(k === -2 ? 1 : k);
       const kalan = sag.reduce((s, o) => s + o.kc * o.kademe, 0); // eski ölçü (uyumluluk); canavar kademe 0
-      const kalanPuan = sag.reduce((s, o) => s + (o.b.s || 1), 0);               // lobi hasarı: ★1 = 1, ★2 = 2, ★3 = 3
+      const kalanPuan = puan(sag);                                  // lobi hasarı: ★1 = 1, ★2 = 2, ★3 = 3
       sonuc = { kazanan: k, sure: +t.toFixed(2), kalan, kalanPuan, kalanSayi: sag.length, kut: kutSayac.slice() }; // kut: tarafların kullandığı Kut sayısı (Saklı Kut)
+      if (k === -2) { const s0 = sagT(0); sonuc.sureDoldu = true; sonuc.kalanPuanB = puan(s0); sonuc.kalanSayiB = s0.length; }
     }
     function sonunaKadar() { let n = 0; while (!bitti && n++ < 100000) adim(); return sonuc; }
 
