@@ -2,7 +2,7 @@
 
 Bu belge taslaktır. Hiçbir şey gönderilmedi, yayınlanmadı ya da bir mağazaya girilmedi. Metinlerin tamamı şablondur: köşeli parantezli alanları doldurmadan ve geliştiricinin onayı olmadan kullanma.
 
-Hazırlık tarihi: 20 Kasım 2026 (Cuma). Lansman: 21 Kasım 2026 (Cumartesi).
+Hazırlık tarihi: 20 Kasım 2026 (Cuma). Lansman: 21 Kasım 2026 (Cumartesi). **Yönetici notu:** 21 Kasım Play için yalnız üretime erişim başvurusu günüdür; bülten, e-postalar ve "Play'de" duyuruları Play sayfası canlı olduğu güne (L günü) kalır, bkz. ilk-48-saat.md.
 
 ---
 

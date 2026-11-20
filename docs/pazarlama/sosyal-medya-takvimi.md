@@ -1,6 +1,8 @@
 # Ray: Metro Bulmaca — Sosyal medya takvimi (21 Kasım – 18 Aralık 2026)
 
-> Kapsam: Google Play yayını (Cuma 21 Kasım 2026) + 1.2 yenilikleri. App Store'da oyun zaten yayında. Yaş: 13+.
+> **Yönetici notu (20 Kasım):** 21 Kasım 2026 Cumartesi'dir; gün adları düzeltildi. 21 Kasım Play'de yalnız üretime erişim başvurusu günüdür. "Google Play'de" diyen videolar (V01 vb.) Play sayfası canlı olduğu güne (L günü, tahmini 22-28 Kasım) kaydırılır; 21 Kasım'da yerine takvimdeki ilk oynanış videosu (V02) paylaşılır. Bkz. ilk-48-saat.md.
+>
+> Kapsam: Google Play yayını (Cumartesi 21 Kasım 2026) + 1.2 yenilikleri. App Store'da oyun zaten yayında. Yaş: 13+.
 > **Kullanıcı kararları (20 Kasım):** Instagram (oyuna özel) hesabı VAR; TikTok ve Reddit oyuna özel AÇILACAK. YouTube Shorts ve X KULLANILMAYACAK (yalnız "ileride" notu, §1). Yüz/ses YOK: tüm videolar ekran kaydı + yazı + müzik. Öncelik Türkiye: ana dil Türkçe, İngilizce ikinci (ucuz uluslararası erişim). Reklam bütçesi ayda ~5.000 TL: organik ağırlıklı, kazananlara küçük destek (§7).
 > Kural 1: yalnız gerçek oyun görüntüsü. Oyunda olmayan ekran, özellik, rakip, puan ya da "fake gameplay" kurgusu yok. Hızlandırma varsa ekranda "2x" yazar.
 > Kural 2: bu belgedeki sayılar (izlenme, indirme) tahmindir; gerçek sayı uydurulmaz.
@@ -89,36 +91,36 @@ Bunlara ek olarak Günün Hattı ve seri (V10) sütun A'ya sayılır.
 
 ---
 
-## 3. 4 haftalık takvim (21 Kasım Cuma – 18 Aralık Perşembe)
+## 3. 4 haftalık takvim (21 Kasım Cumartesi – 18 Aralık Cuma)
 
 Her video: TikTok + Instagram Reels (aynı kurgu, platforma göre açıklama/etiket farkı); seçilmiş videolar Reddit için GIF/kısa klip (§5). Saatler TSİ ve tahmindir.
 
 | Hafta | Gün | Tarih | Video | Sütun | Başlık (TR) | Saat |
 |---|---|---|---|---|---|---|
-| 1 | Cuma | 21 Kas | V01 | B + yayın | Ray artık Google Play'de | 12:00 |
-| 1 | Cumartesi | 22 Kas | V02 | A | Bu bölüm çözülür mü? (iki merkez) | 13:00 |
-| 1 | Pazartesi | 24 Kas | V03 | C | Ekspres durak: sayı ne anlatıyor? | 20:30 |
-| 1 | Çarşamba | 26 Kas | V04 | F | Tek kişilik bir metro şehri | 20:30 |
-| 1 | Perşembe | 27 Kas | V05 | E | İlk hat bitti: açılış töreni | 20:30 |
-| 2 | Cuma | 28 Kas | V06 | B | Aynı bölüm, üç renk teması | 20:00 |
-| 2 | Pazar | 30 Kas | V07 | A | Sinyal karosu seni çıldırtır mı? | 13:00 |
-| 2 | Salı | 1 Ara | V08 | D | Canlı kapışma: rastgele rakip | 20:30 |
-| 2 | Çarşamba | 2 Ara | V09 | C | Sarsıntı: durak bağlanınca çevre döner | 20:30 |
-| 2 | Perşembe | 3 Ara | V10 | A | Günün Hattı: 1 dakikada | 20:30 |
-| 3 | Cuma | 5 Ara | V11 | B | Tek elle oyna (başparmak bölgesi) | 20:00 |
-| 3 | Cumartesi | 6 Ara | V12 | C | Dönüşen karo: köşe mi düz mü? | 13:00 |
-| 3 | Pazartesi | 8 Ara | V13 | D | Haftalık lig: sıralama yarışı | 20:30 |
-| 3 | Çarşamba | 10 Ara | V14 | F | Bir bölüm nasıl üretilir? | 20:30 |
-| 3 | Perşembe | 11 Ara | V15 | C | Kumanda karosu: dokunduğun dönmez | 20:30 |
-| 4 | Cuma | 12 Ara | V16 | A | Arkadaşına meydan oku | 20:00 |
-| 4 | Cumartesi | 13 Ara | V17 | B | Kış teması: sessiz bir hat | 13:00 |
-| 4 | Pazartesi | 15 Ara | V18 | C | Manevra: iki karo yer değiştirir | 20:30 |
-| 4 | Çarşamba | 17 Ara | V19 | E | Bir şehir tamam: altın semtler | 20:30 |
-| 4 | Perşembe | 18 Ara | V20 | C | Boş peron: 15 bulmacası gibi | 20:30 |
+| 1 | Cumartesi | 21 Kas | V01 | B + yayın | Ray artık Google Play'de | 12:00 |
+| 1 | Pazar | 22 Kas | V02 | A | Bu bölüm çözülür mü? (iki merkez) | 13:00 |
+| 1 | Salı | 24 Kas | V03 | C | Ekspres durak: sayı ne anlatıyor? | 20:30 |
+| 1 | Perşembe | 26 Kas | V04 | F | Tek kişilik bir metro şehri | 20:30 |
+| 1 | Cuma | 27 Kas | V05 | E | İlk hat bitti: açılış töreni | 20:30 |
+| 2 | Cumartesi | 28 Kas | V06 | B | Aynı bölüm, üç renk teması | 20:00 |
+| 2 | Pazartesi | 30 Kas | V07 | A | Sinyal karosu seni çıldırtır mı? | 13:00 |
+| 2 | Çarşamba | 1 Ara | V08 | D | Canlı kapışma: rastgele rakip | 20:30 |
+| 2 | Perşembe | 2 Ara | V09 | C | Sarsıntı: durak bağlanınca çevre döner | 20:30 |
+| 2 | Cuma | 3 Ara | V10 | A | Günün Hattı: 1 dakikada | 20:30 |
+| 3 | Cumartesi | 5 Ara | V11 | B | Tek elle oyna (başparmak bölgesi) | 20:00 |
+| 3 | Pazar | 6 Ara | V12 | C | Dönüşen karo: köşe mi düz mü? | 13:00 |
+| 3 | Salı | 8 Ara | V13 | D | Haftalık lig: sıralama yarışı | 20:30 |
+| 3 | Perşembe | 10 Ara | V14 | F | Bir bölüm nasıl üretilir? | 20:30 |
+| 3 | Cuma | 11 Ara | V15 | C | Kumanda karosu: dokunduğun dönmez | 20:30 |
+| 4 | Cumartesi | 12 Ara | V16 | A | Arkadaşına meydan oku | 20:00 |
+| 4 | Pazar | 13 Ara | V17 | B | Kış teması: sessiz bir hat | 13:00 |
+| 4 | Salı | 15 Ara | V18 | C | Manevra: iki karo yer değiştirir | 20:30 |
+| 4 | Perşembe | 17 Ara | V19 | E | Bir şehir tamam: altın semtler | 20:30 |
+| 4 | Cuma | 18 Ara | V20 | C | Boş peron: 15 bulmacası gibi | 20:30 |
 
 Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. Haftada yaklaşık 5 video, 20 benzersiz video.
 
-**Çekim günleri önerisi (tek oturum):** Hafta başına bir "çekim günü" (Pazar): o haftanın 5 videosunun hepsini kaydet. 4 hafta × 1 oturum; ilk oturum 20 Kasım (bugün) 21 Kasım'a kadar: V01, V02, V03 mutlaka çekilsin.
+**Çekim günleri önerisi (tek oturum):** Hafta başına bir "çekim günü" (Pazartesi): o haftanın 5 videosunun hepsini kaydet. 4 hafta × 1 oturum; ilk oturum 20 Kasım (bugün) 21 Kasım'a kadar: V01, V02, V03 mutlaka çekilsin.
 
 ---
 
@@ -138,7 +140,7 @@ Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. 
 
 ---
 
-### V01 · Cuma 21 Kasım · B + Yayın · TikTok + Reels
+### V01 · Cumartesi 21 Kasım · B + Yayın · TikTok + Reels
 - **Kanca (0-2 sn):** "Yeni bir metro bulmacası. Bugün Google Play'de." / "A new metro puzzle. On Google Play today."
 - **Senaryo (≈15 sn):**
   - 0-2: karanlık hat, bir karo dokunuşla dönüyor; yazı kancası.
@@ -151,7 +153,7 @@ Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. 
 - **Açıklama EN:** Ray is on Google Play today! Tap a tile to turn it 90°, connect every station to the center and light the line. One hand, offline. Already on the App Store. 🚇 `[PLAY_LINK]`
 - **Etiketler:** #ray #metrobulmaca #bulmacaoyunu #mobiloyun #puzzlegame #metro #androidgames #indiegame
 
-### V02 · Cumartesi 22 Kasım · A · TikTok + Reels
+### V02 · Pazar 22 Kasım · A · TikTok + Reels
 - **Kanca:** "Bu bölüm çözülür mü? 🤔" / "Can you solve this?"
 - **Senaryo (≈18 sn):**
   - 0-2: bölüm 198 (iki merkez) karışık hâlde, kanca yazısı.
@@ -164,7 +166,7 @@ Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. 
 - **Açıklama EN:** A two-center level: connect every station to one of the two. How many moves did you need? Pick the next level in the comments.
 - **Etiketler:** #cozulurmu #bulmaca #beyinegzersizi #puzzlechallenge #mobilgame #brainteaser #ray
 
-### V03 · Pazartesi 24 Kasım · C · TikTok + Reels
+### V03 · Salı 24 Kasım · C · TikTok + Reels
 - **Kanca:** "🚄 Ekspres durak: sayı = uzaklık" / "Express station: the number is a distance"
 - **Senaryo (≈18 sn):**
   - 0-2: ekspres durağın sayısı yakın plan.
@@ -177,7 +179,7 @@ Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. 
 - **Açıklama EN:** New in Ray 1.2: Express station. The number shows the longest allowed path to the center. 🚄 `[LINK]`
 - **Etiketler:** #ray #yenikural #bulmacaoyunu #metro #puzzle #mobilgame #gamedev
 
-### V04 · Çarşamba 26 Kasım · F · TikTok + Reels
+### V04 · Perşembe 26 Kasım · F · TikTok + Reels
 - **Kanca:** "Bu oyunu tek kişi yaptım." / "I made this game alone."
 - **Senaryo (≈20 sn), yazı kartlarıyla:**
   - 0-3: kanca yazısı + oyun ana ekranı.
@@ -190,7 +192,7 @@ Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. 
 - **Açıklama EN:** Solo indie dev log #1. Ray: a one-hand offline metro puzzle. Ask me anything in the comments.
 - **Etiketler:** #indiedev #gamedev #solodev #devlog #ray #mobilgame #madewithunity (kullanılan motoru bilmiyorum; yalnız doğruysa) → doğru olanı koy: #indiegame #gamedevelopment
 
-### V05 · Perşembe 27 Kasım · E · TikTok + Reels
+### V05 · Cuma 27 Kasım · E · TikTok + Reels
 - **Kanca:** "Bir hat bitti, şehir yandı. 🌃" / "One line done, a district lights up."
 - **Senaryo (≈16 sn):**
   - 0-2: kanca; hat haritası.
@@ -203,7 +205,7 @@ Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. 
 - **Açıklama EN:** In Ray every finished line gets an opening ceremony: a district lights up and the city grows. 🌃 `[LINK]`
 - **Etiketler:** #ray #sehirharitasi #metro #sakinoyun #cozygames #puzzlegame #mobilgame
 
-### V06 · Cuma 28 Kasım · B · TikTok + Reels
+### V06 · Cumartesi 28 Kasım · B · TikTok + Reels
 - **Kanca:** "Aynı bölüm, üç tema." / "Same level, three themes."
 - **Senaryo (≈18 sn):**
   - 0-2: kanca.
@@ -216,7 +218,7 @@ Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. 
 - **Açıklama EN:** Same level, three color themes. Which one is yours? 🎨 `[LINK]`
 - **Etiketler:** #ray #asmr #oddlysatisfying #satisfying #puzzlegame #mobilgame #renk
 
-### V07 · Pazar 30 Kasım · A (kural: Sinyal) · TikTok + Reels
+### V07 · Pazartesi 30 Kasım · A (kural: Sinyal) · TikTok + Reels
 - **Kanca:** "🚦 Sinyal karosu seni çıldırtır mı?" / "Will the Signal tile drive you mad?"
 - **Senaryo (≈18 sn):**
   - 0-2: kanca + sinyal karosu yakın plan.
@@ -229,7 +231,7 @@ Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. 
 - **Açıklama EN:** A Signal tile only turns while none of its neighbors is lit. Get the order right. 🚦
 - **Etiketler:** #ray #sinyal #bulmaca #puzzlechallenge #brainteaser #mobilgame #cozulurmu
 
-### V08 · Salı 1 Aralık · D · TikTok + Reels
+### V08 · Çarşamba 1 Aralık · D · TikTok + Reels
 - **Kanca:** "Rastgele rakiple canlı kapışma ⚔️" / "Live duel vs a random rival"
 - **Senaryo (≈18 sn):**
   - 0-2: kanca; kapışma ekranı.
@@ -242,7 +244,7 @@ Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. 
 - **Açıklama EN:** Ray 1.2: live duels. Race a random rival or a friend. ⚔️ `[LINK]`
 - **Etiketler:** #ray #canlikapisma #multiplayer #puzzlegame #mobilgame #versus #oyun
 
-### V09 · Çarşamba 2 Aralık · C (Sarsıntı) · TikTok + Reels
+### V09 · Perşembe 2 Aralık · C (Sarsıntı) · TikTok + Reels
 - **Kanca:** "🌋 Durak bağlanınca çevresi döner" / "Connect it and the neighbors shake"
 - **Senaryo (≈18 sn):**
   - 0-2: kanca.
@@ -255,7 +257,7 @@ Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. 
 - **Açıklama EN:** Quake rule: when the station connects, its neighbors turn 90°. 🌋
 - **Etiketler:** #ray #sarsinti #bulmaca #puzzle #mobilgame #brainteaser #yenikural
 
-### V10 · Perşembe 3 Aralık · A (Günün Hattı + seri) · TikTok + Reels
+### V10 · Cuma 3 Aralık · A (Günün Hattı + seri) · TikTok + Reels
 - **Kanca:** "Günün Hattı: 1 dakikada çöz" / "Daily Line: solve it in a minute"
 - **Senaryo (≈18 sn):**
   - 0-2: kanca; ana ekranda Günün Hattı kartı ve seri.
@@ -267,7 +269,7 @@ Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. 
 - **Açıklama EN:** A new Daily Line every day. Keep your streak. 🔥
 - **Etiketler:** #ray #gununhatti #daily #streak #bulmaca #puzzlegame #mobilgame
 
-### V11 · Cuma 5 Aralık · B · TikTok + Reels
+### V11 · Cumartesi 5 Aralık · B · TikTok + Reels
 - **Kanca:** "Tek elle, metroda, ayakta." / "One hand. On the train. Standing."
 - **Senaryo (≈16 sn):**
   - 0-2: kanca.
@@ -279,7 +281,7 @@ Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. 
 - **Açıklama EN:** Ray is one-hand and works offline. 🚇
 - **Etiketler:** #ray #tekelle #offlinegames #metro #cozygames #mobilgame #sakinoyun
 
-### V12 · Cumartesi 6 Aralık · C (Dönüşen karo) · TikTok + Reels
+### V12 · Pazar 6 Aralık · C (Dönüşen karo) · TikTok + Reels
 - **Kanca:** "🔄 Dokun: köşe mi düz mü?" / "Tap: corner or straight?"
 - **Senaryo (≈16 sn):**
   - 0-2: kanca.
@@ -292,7 +294,7 @@ Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. 
 - **Açıklama EN:** The morphing tile changes shape on every tap. 🔄
 - **Etiketler:** #ray #donusenkaro #bulmaca #puzzle #mobilgame #brainteaser #yenikural
 
-### V13 · Pazartesi 8 Aralık · D (lig) · TikTok + Reels
+### V13 · Salı 8 Aralık · D (lig) · TikTok + Reels
 - **Kanca:** "Haftalık lig başladı 🏆" / "Weekly league is on"
 - **Senaryo (≈16 sn):**
   - 0-2: kanca; lig ekranı.
@@ -304,7 +306,7 @@ Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. 
 - **Açıklama EN:** Weekly league in Ray: earn points, climb the ranks. 🏆
 - **Etiketler:** #ray #lig #leaderboard #puzzlegame #mobilgame #rekabet #oyun
 
-### V14 · Çarşamba 10 Aralık · F · TikTok + Reels
+### V14 · Perşembe 10 Aralık · F · TikTok + Reels
 - **Kanca:** "Bir bölüm nasıl üretiliyor?" / "How is a level made?"
 - **Senaryo (≈20 sn), yazı kartlarıyla (doğrulanmış bilgi):**
   - 0-3: kanca.
@@ -318,7 +320,7 @@ Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. 
 - **Açıklama EN:** Dev log #2: levels are procedurally generated from a seed; solvability is guaranteed by construction.
 - **Etiketler:** #devlog #indiedev #gamedev #proceduralgeneration #ray #puzzlegame #solodev
 
-### V15 · Perşembe 11 Aralık · C (Kumanda) · TikTok + Reels
+### V15 · Cuma 11 Aralık · C (Kumanda) · TikTok + Reels
 - **Kanca:** "🎛 Dokunduğun dönmez, komşuları döner" / "You tap it, its neighbors turn"
 - **Senaryo (≈16 sn):**
   - 0-2: kanca.
@@ -331,7 +333,7 @@ Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. 
 - **Açıklama EN:** Remote tile: tapping it turns its four neighbors, not itself. 🎛
 - **Etiketler:** #ray #kumanda #bulmaca #puzzle #mobilgame #brainteaser #yenikural
 
-### V16 · Cuma 12 Aralık · A + D (arkadaşa meydan oku) · TikTok + Reels
+### V16 · Cumartesi 12 Aralık · A + D (arkadaşa meydan oku) · TikTok + Reels
 - **Kanca:** "Arkadaşına meydan oku ⚔️" / "Challenge a friend"
 - **Senaryo (≈18 sn):**
   - 0-2: kanca.
@@ -344,7 +346,7 @@ Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. 
 - **Açıklama EN:** Live duels with a friend in Ray. Who are you tagging? ⚔️
 - **Etiketler:** #ray #arkadas #challenge #puzzlegame #mobilgame #multiplayer #oyun
 
-### V17 · Cumartesi 13 Aralık · B (kış teması) · TikTok + Reels
+### V17 · Pazar 13 Aralık · B (kış teması) · TikTok + Reels
 - **Kanca:** "Kış geldi, hat sessizce yanıyor ❄️" / "Winter is here, the line glows quietly"
 - **Senaryo (≈18 sn):**
   - 0-2: kanca.
@@ -356,7 +358,7 @@ Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. 
 - **Açıklama EN:** Ray's winter theme: a calm evening line. ❄️
 - **Etiketler:** #ray #kis #asmr #cozygames #oddlysatisfying #puzzlegame #mobilgame
 
-### V18 · Pazartesi 15 Aralık · C (Manevra) · TikTok + Reels
+### V18 · Salı 15 Aralık · C (Manevra) · TikTok + Reels
 - **Kanca:** "⇄ İki karo yer değiştirir" / "Two tiles swap places"
 - **Senaryo (≈16 sn):**
   - 0-2: kanca.
@@ -369,7 +371,7 @@ Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. 
 - **Açıklama EN:** Shunting tiles don't turn; tap two in turn and they swap places. ⇄
 - **Etiketler:** #ray #manevra #bulmaca #puzzle #mobilgame #brainteaser #yenikural
 
-### V19 · Çarşamba 17 Aralık · E · TikTok + Reels
+### V19 · Perşembe 17 Aralık · E · TikTok + Reels
 - **Kanca:** "Bir şehir tamam: altın semtler ✨" / "A city complete: golden districts"
 - **Senaryo (≈18 sn):**
   - 0-2: kanca.
@@ -382,7 +384,7 @@ Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. 
 - **Açıklama EN:** A line finished perfect lights a golden district. ✨
 - **Etiketler:** #ray #sehir #altin #cozygames #puzzlegame #mobilgame #metro
 
-### V20 · Perşembe 18 Aralık · C (Boş peron) + dört hafta özeti · TikTok + Reels
+### V20 · Cuma 18 Aralık · C (Boş peron) + dört hafta özeti · TikTok + Reels
 - **Kanca:** "🅿️ Boş peron: 15 bulmacası gibi" / "Empty platform: like a sliding puzzle"
 - **Senaryo (≈20 sn):**
   - 0-2: kanca.
@@ -458,8 +460,8 @@ Reddit gönderi metinleri ve hangi toplulukta ne zaman paylaşılacağı toplulu
 **Bütçe: ayda ~5.000 TL, organik ağırlıklı.** Reklam yalnız organikte kanıtlanmış videoya; yeni kreatif için bütçe yakma.
 - **Kural:** 14. günden sonra, 7 günde sütun ortancasının ≥ 2 katı izlenen + yüksek tamamlanma/paylaşım alan en iyi 2-3 video aday (gerçek oyun görüntüsü, değişmeden).
 - **Bölüşüm (öneri):** ~2.500 TL TikTok (Promote ya da Spark Ads) + ~2.500 TL Instagram (Boost / ortaklık reklamı), ya da hangisi ucuz tıklama veriyorsa ona kaydır.
-- **TikTok:** Promote (uygulama içi, kolay) veya Spark Ads (organik videonun yetkilendirme kodu ile; yorum/beğeni korunur). Günde ~100-150 TL, 5-7 gün; hedef: Türkiye, yaş 18+ (hesap 13+ olsa da reklamı 18+ ile sınırla; mağaza yaş derecelendirmesi ve reklam politikasıyla uyumlu kal).
-- **Instagram:** Reels'i "Öne çıkar / Boost" ile; amaç "Profil ziyareti" ya da "Bağlantı tıklaması"; Türkiye, 18+; günde ~100-150 TL. Meta Business Suite'te Partnership/ortaklık reklamı ileride (başka hesap ya da ortak ile çalışılırsa).
+- **TikTok:** Promote (uygulama içi, kolay) veya Spark Ads (organik videonun yetkilendirme kodu ile; yorum/beğeni korunur). Ayda toplam ~450 TL (ör. kazanan 1-2 video × 3 gün × ~75-150 TL; toplam reklam bütçesi 5.000 TL'nin öne çıkarma payı 900 TL, bkz. reklam-kampanyasi.md §3.2); hedef: Türkiye, yaş 18+ (hesap 13+ olsa da reklamı 18+ ile sınırla; mağaza yaş derecelendirmesi ve reklam politikasıyla uyumlu kal).
+- **Instagram:** Reels'i "Öne çıkar / Boost" ile; amaç "Profil ziyareti" ya da "Bağlantı tıklaması"; Türkiye, 18+; ayda toplam ~450 TL (kazanan 1-2 Reels × 3 gün). Meta Business Suite'te Partnership/ortaklık reklamı ileride (başka hesap ya da ortak ile çalışılırsa).
 - **Ölçüt:** tıklama başına maliyet ve mağaza kaynağı raporundaki yükleme; 7 günde yüklemeye dönüşmeyen reklamı durdur, diğer videoya geç.
 - Reklam kreatifi organik videonun aynısı; CTA ve mağaza simgesi eklenebilir, yanıltıcı değişiklik yok. 6 ve 15 sn'lik kısa kesimler üretilebilir.
 - Bütçe ve hedefleme kararı kullanıcıdadır; bu belge öneridir.

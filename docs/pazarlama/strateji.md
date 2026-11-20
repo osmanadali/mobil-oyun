@@ -29,7 +29,9 @@ Not: "(tahmin)" yazan sayılar kamuya açık kaynaklardan ya da sektör deneyimi
 
 1. **Fırsat:** Ray iki kanıtlanmış nişin kesişiminde: "karo döndür, devreyi tamamla" bulmacaları (Infinity Loop, Energy, Flow Free; yüz milyonlarca indirme) ve metro/harita tutkunları (Mini Metro). Bu kesişimde ücretsiz, çok dilli ve kural çeşitliliği yüksek bir rakip yok.
 2. **Büyümenin motoru organik:** ~5.000 TL/ay ile ayda yalnız birkaç yüz ücretli yükleme alınabilir (tahmin). Bu yüzden ağırlık ASO (9 dil), Instagram/TikTok kısa oyun videoları, Reddit ve Türk basını üzerindedir. Ücretli kanal, organiği hızlandıran ve ölçüm sağlayan küçük bir destektir. iOS ve organik işler 21 Kasım'da başlar; Android'e özgü işler L gününe (Play sayfası canlı) bağlıdır (§8).
-3. **Ücretli kanal: yalnız ikisi, yalnız Türkiye.** Apple Search Ads (iOS, 21 Kasım'dan; ~%40 ≈ 2.000 TL) ve Google App Campaigns (Android, L gününden; ~%60 ≈ 3.000 TL). Meta ve TikTok reklamı şimdilik yok; TikTok ve Instagram organik çalışır.
+3. **Ücretli kanal: yalnız Türkiye.** Yönetici kararı (20 Kasım, `reklam-kampanyasi.md` ile birleştirildi): 5.000 TL'de **Apple Search Ads TR ~4.100 TL + kazanan organik videoları öne çıkarma ~900 TL**. Google App Campaigns 5.000 TL'ye sığmıyor (öğrenme için günlük bütçe ≈ 50 × hedef CPI, yani tüm bütçe); bütçe ≥ 15.000 TL olursa ya da 2. ayda ASA verisi kötü çıkarsa L gününden sonra açılır. Meta ve TikTok reklam kampanyası yok.
+
+> **Not (yönetici):** Aşağıdaki §7 tablosunda ve K2'de geçen "Google %60 / ASA %40" bölüşümü ilk taslaktır; geçerli bölüşüm yukarıdaki maddedir. Ayrıntı: [reklam-kampanyasi.md](reklam-kampanyasi.md) §3.
 4. **Ülke önceliği:** Türkiye tek ücretli pazar. İngilizce pazarlar, Almanca/İspanyolca/Portekizce/Fransızca ve Japonca/Korece/Çince pazarlar ASO yerelleştirmesi ve organik içerikle (İngilizce Reddit/TikTok) beslenir; para harcanmaz.
 5. **Gerçekçi hedef:** 4 haftada iki mağazada toplam ~1.500-2.000 yükleme (tahmin), D1 tutma ≥ %32, `tutorial_complete` ≥ %70, puan ≥ 4,5. Bu ilk ayın asıl işi **öğrenmek**: hangi video tutuyor, hangi kelime getiriyor, oyuncu nerede bırakıyor.
 6. **Ölçüm sınırı bilinmeli:** Firebase'e AB/AEA, BK ve İsviçre'den olay gelmiyor (rıza mimarisi, YAYIN §5.4) ve reklam kimliği ölçüme girmiyor. Türkiye bundan etkilenmediği için ücretli kanalın TR'de olması ölçümü de kolaylaştırıyor.
@@ -268,7 +270,7 @@ Not: L 22-28 Kasım arasına düşerse 4. hafta Aralık ortası-sonuna gelir. Bu
 | # | Karar | Durum / ne zaman | Seçenekler |
 |---|---|---|---|
 | K1 | Aylık bütçe | **Verildi:** ~5.000 TL/ay, TR | 2. ayda yeniden bakılır |
-| K2 | Bütçe bölüşümü Google %60 / ASA %40 | 21 Kas onayı (ASA hemen, Google L'de) | Önerildiği gibi / yalnız Google / yalnız ASA |
+| K2 | Bütçe bölüşümü (geçerli: ASA ~4.100 TL + öne çıkarma ~900 TL; Google yalnız bütçe ≥ 15.000 TL'de — ilk taslak Google %60 / ASA %40 idi) | 21 Kas onayı (ASA hemen, Google L'de) | Önerildiği gibi / yalnız Google / yalnız ASA |
 | K3 | Google Ads dönüşüm ölçümü için rıza ayarı (`ad_user_data`) gözden geçirilsin mi | 2. hafta | Mevcut haliyle (gizlilik öncelikli) / rıza veren kullanıcıda açmak (oyun kodu değişikliği, ayrı oturum) |
 | K4 | Ürün düzeltmesi önceliği (tutma eşiği tutmazsa) | 2. hafta sonu | Öğretici / ilk 20 bölüm / ikisi |
 | K5 | ASA'da rakip marka kelimelerine teklif | 2. hafta | Evet (yalnız kelime, metinde ad yok) / hayır |

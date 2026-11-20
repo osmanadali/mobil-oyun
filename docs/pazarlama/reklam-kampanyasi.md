@@ -38,7 +38,7 @@ Sonuç: bugün **ölçülebilir ve gerçekçi** olanlar: (1) Apple Ads (kendi pa
 | 3 (organikte kazanan çıkınca) | **Meta (Instagram) Advantage+** | Organik Instagram/TikTok'ta kazanan video çıkınca, küçük test (~1.500-3.000 TL) | MMP/SDK olmadığı için yükleme optimizasyonu yok; yalnız **trafik/etkileşim** hedefli test yapılabilir (§2.3). |
 | 4 | **TikTok App Campaigns** | 3 ile aynı koşul + MMP | Yalnız organik TikTok hesabı kazanan videoyu kanıtladıktan sonra; MMP şart. |
 
-**Öteki ülkeler (ucuz yollar):** ücretli bütçe yerine (a) 9 dilde mağaza ASO/yerelleştirme, (b) organik video (Instagram, TikTok, Reddit; §4.6), (c) ASA'da yalnız **1.000 TL'lik** BR/MX pilotu (isteğe bağlı), (d) Orta/Yüksek senaryoda Google T3/T2.
+**Öteki ülkeler (ucuz yollar):** ücretli bütçe yerine (a) 9 dilde mağaza ASO/yerelleştirme, (b) organik video (Instagram, TikTok, Reddit; §4.6), (c) 15.000 TL ve üstünde ASA'da BR/MX pilotu (5.000 TL'de yok), (d) Orta/Yüksek senaryoda Google T3/T2.
 
 Kaynaklar (rakamların dayanağı; hepsi "tahmin" olarak kullanılır):
 - Apple Ads kıyasları: https://www.apptweak.com/en/aso-blog/apple-ads-benchmarks (ABD oyun medyan CPI ~4,63 $; Discovery ~1,34 $ – Competitor ~8,69 $; Kasım CPT tepe noktası)
@@ -109,13 +109,14 @@ Hedef: **yükleme**. Teklif: ağırlıklı **CPT max teklif** + reklam grubunda 
 
 **Custom Product Page (CPP):** her reklam grubu için ayrı CPP (örn. "Marka: genel", "Kategori: sakin", "Rakip: Net bulmaca mantığı" — rakip adı olmadan). Bkz. §6.6.
 
-### 2.2 Google App Campaigns (UAC) — Android (iOS sonra)
+### 2.2 Google App Campaigns (UAC) — Android (iOS sonra) — **Play sayfası canlı olunca**
+
+**Zamanlama (koordinatör notu):** 21 Kasım yalnız Play'de "üretime erişim başvurusu" günü; gerçek yayın Google onayından sonra (tahmini 22-28 Kasım). Android kampanyalarını **"Play sayfası canlı" olunca** kurun (sayfa yokken reklam çalışmaz); o zamana kadar bütçe **yalnız Apple Search Ads TR'ye** gider. **5.000 TL ana senaryoda Google yoktur** (eşik karşılanmaz, §3.3); aşağıdaki yapı ≥ 15.000 TL senaryolar içindir.
 
 ```
 Ray-GAC-AND-{grup}-{dil}
-├── Kampanya: Ray-GAC-AND-T3-tr    (hedef: yükleme, tCPI)
-├── Kampanya: Ray-GAC-AND-T2-mix   (BR/MX ayrı dil; JP/KR/TW ayrı kampanyalar)
-└── Kampanya: Ray-GAC-AND-T1A-en   (yalnız Orta/Yüksek'te ve eşik karşılanırsa)
+├── Kampanya: Ray-GAC-AND-TR-tr    (hedef: yükleme, tCPI; ilk ve tek kampanya)
+└── Kampanya: Ray-GAC-AND-T3-mix   (BR/MX ayrı dil; yalnız 40.000 TL senaryosu; JP/KR/TW ayrı)
 ```
 Her kampanyada birden çok **varlık grubu** (asset group): 5 görsel + 4-5 video (9:16, 1:1, 16:9) + 5 başlık + 5 açıklama; dil = kampanya dili.
 
@@ -126,115 +127,172 @@ Her kampanyada birden çok **varlık grubu** (asset group): 5 görsel + 4-5 vide
 - **Platform eşikleri (Google belgelerine göre yaklaşık, hesapta doğrulayın):** günlük bütçe ≥ ~**50 × hedef CPI** (yükleme kampanyası; örn. tCPI 0,5 $ → ≥ 25 $/gün); uygulama içi olay hedefinde ≥ ~**10 × hedef CPA** ve olay başına yeterli hacim (haftada ~50 dönüşüm). Eşiğin altında kampanya "öğrenme sınırlı" kalır.
 - Play açılışı sonrası ilk günler: mağaza dönüşümü (CVR) ve değerlendirme sayısı düşük olabilir; ilk 5-7 gün organik/yakın çevre ile en az ~20-50 yorum/puan biriktirmek CPI'yı düşürür.
 
-### 2.3 Meta Advantage+ App Campaigns — **MMP gelince**
+### 2.3 Meta (Instagram) — önce organik video "öne çıkarma", MMP gelince Advantage+ App Campaigns
 
 ```
 Ray-META-AAC-{iOS|AND}-{grup}
 └── Advantage+ App Campaign (hedef: Uygulama yüklemeleri; sonra "Uygulama olayları" – MMP ile)
     └── tek reklam seti (otomatik), 10-15 kreatif
 ```
-- Önkoşul: Meta SDK ya da MMP (SKAN dönüşüm değeri, Android atıf). SDK/MMP olmadan başlamayın; aksi halde bütçe optimize edilemez, ölçülemez.
+- **5.000 TL'de yapılacak olan:** yalnız organik Instagram'da kazanan Reel'i **"Öne çıkar" (boost)** ile TR'de 18+ kitleye 3 gün küçük bütçeyle büyütmek (§4.6). Bu, yükleme değil **izlenme/profil/bağlantı tıklaması** optimize eder; indirme atfı yok.
+- Advantage+ App Campaign için önkoşul: Meta SDK ya da MMP (SKAN dönüşüm değeri, Android atıf). SDK/MMP olmadan başlamayın; aksi halde bütçe optimize edilemez, ölçülemez.
 - Hedefleme: ülke grubu, dil, 18+, otomatik yerleşimler (Reels/Stories/Feed); iOS'ta SKAN limitleri nedeniyle günlük bütçe ≥ ~hedef CPI × 50.
 - Sakin/tatmin edici bulmaca videosu Reels'te iyi gider; kreatif testi §4/§5.
 
-### 2.4 TikTok App Campaigns — **MMP gelince, yalnız Yüksek senaryoda**
+### 2.4 TikTok — önce organik video "Promote", MMP gelince App Campaigns (yalnız Yüksek senaryoda)
 
 ```
 Ray-TT-APP-{grup}
 └── App Promotion (Smart+ / otomatik) → 8-12 video (9:16)
 ```
-- Önkoşul: MMP/TikTok SDK. Yaş 18+, çocuk kategorisi değil. Müzik yalnız TikTok Commercial Music Library veya kendi/lisanslı ses.
+- **5.000 TL'de:** TikTok hesabı açılıp organikte kazanan video çıkınca TikTok **Promote** ile küçük pay (§4.6). App Campaign için önkoşul: MMP/TikTok SDK. Yaş 18+, çocuk kategorisi değil. Müzik yalnız TikTok Commercial Music Library veya kendi/lisanslı ses.
 - Beklenti: düşük CPI, ancak ARPDAU'su düşük kullanıcı kalitesi riski; ilk test küçük ve yalnız T2/T3.
 
 ---
 
 ## 3. Bütçe senaryoları
 
-> **TAHMİN.** Bütçe, CPI ve indirme sayıları senaryodur; gerçek sonuçlar bunun çok altında/üstünde çıkabilir. Kaynaklar §1'de. Aylık = günlük × 30.
+> **TAHMİN.** Kur varsayımı ~40 TL/$ (gerçek kur için güncel değeri kullanın; rakamlar TL ve $ birlikte verilir). Aylık = 30 gün. CPI/indirme tahminleri §1 kaynaklarından çıkarılmış gelişen-pazar tahminleridir; **Türkiye'ye özgü kıyas bulunamadı**.
 
-### 3.1 Beklenen CPI aralıkları (TAHMİN, $)
+### 3.1 Beklenen CPI (TAHMİN)
 
-| Kanal / platform | T1-A | T1-B | T2 | T3 (TR) |
+| Kanal | TR | T3 test (BR/MX) | T2 (JP/KR/TW) | T1 |
 |---|---|---|---|---|
-| Apple Ads (iOS) | 1,5 – 4,5 | 1,5 – 4,0 | 0,8 – 2,5 | 0,2 – 0,8 |
-| Google (Android) | 1,5 – 4,0 | 1,2 – 3,5 | 0,4 – 1,5 | 0,1 – 0,4 |
-| Meta (koşullu) | 2,0 – 6,0 | 2,0 – 5,0 | 0,6 – 2,0 | 0,15 – 0,6 |
-| TikTok (koşullu) | 1,5 – 5,0 | 1,5 – 4,5 | 0,5 – 1,8 | 0,1 – 0,5 |
+| Apple Ads (iOS) | 0,20 – 0,80 $ (8-32 TL) | 0,30 – 1,50 $ | 0,8 – 2,5 $ | 1,5 – 4,5 $ |
+| Google (Android) | 0,08 – 0,30 $ (3-12 TL) | 0,15 – 0,50 $ | 0,4 – 1,5 $ | 1,5 – 4,0 $ |
+| Meta / TikTok App Campaign (MMP şartlı) | 0,10 – 0,60 $ | 0,15 – 0,80 $ | 0,5 – 2,0 $ | 1,5 – 6,0 $ |
+| Instagram/TikTok "öne çıkar" | **CPI yok**; izlenme/tıklama maliyeti ölçülür (kaynak bulunamadı; tahmin vermiyoruz) | | | |
 
-Notlar: Kaynaklar çelişkili: AppTweak ABD oyun medyan ASA CPI 4,63 $; Admiral casual 0,60-1,60 $; AppsFlyer tablosunda bulmaca ABD iOS 9,48 $ / Android 4,81 $; Türkiye/Hindistan benzeri pazarlar çok daha ucuz. iOS genelde Android'den pahalı. Kasım-Aralık pahalı, Ocak-Şubat ucuzlar (AppTweak CPT mevsimselliği).
+Not: Kasım-Aralık pahalı (AppTweak CPT mevsimselliği); Ocak-Şubat ucuzlar. Kaynaklar çelişkili (§1).
 
-### 3.2 Senaryolar
+### 3.2 Senaryolar (TL)
 
-| | **Düşük** (öğrenme testi) | **Orta** | **Yüksek** |
+| | **ANA: 5.000 TL** | Orta: **15.000 TL** | Yüksek: **40.000 TL** |
 |---|---|---|---|
-| Günlük | **15 $** | **60 $** | **200 $** |
-| Aylık (×30) | **450 $** | **1.800 $** | **6.000 $** |
-| Apple Ads | 15 $: T1-A 9 · T2 4 · T3 2 | 30 $: T1-A 14 · T2 10 · T3 6 | 70 $: T1-A 35 · T2 20 · T3 15 |
-| Google (Android) | — (min. bütçe eşiği nedeniyle yok; ya da yalnız T3 tCPI 0,2 $ ile ≥ 10 $/gün) | 30 $: T2/T3 karma (tCPI ~0,6 $ → ≥ 30 $) | 60 $: T2/T3 + T1-A yalnız eşik sağlanırsa |
-| Meta | — | — | 50 $ **(MMP şartıyla; yoksa Google'a)** |
-| TikTok | — | — | 20 $ **(MMP şartıyla; yoksa Google'a)** |
-| Günlük beklenen indirme (**TAHMİN**) | **6 – 21** | **45 – 150** | **130 – 470** |
-| Aylık beklenen indirme (**TAHMİN**) | **~180 – 630** | **~1.350 – 4.500** | **~4.000 – 14.000** |
-| Karma CPI (tahmin) | ~0,7 – 2,5 $ | ~0,4 – 1,3 $ | ~0,4 – 1,5 $ |
+| Aylık $ (tahmin) | ~125 $ | ~375 $ | ~1.000 $ |
+| Günlük | ~165 TL (~4 $) | ~500 TL (~12,5 $) | ~1.330 TL (~33 $) |
+| **Apple Ads TR** | **4.100 TL** (%82): marka 400 · kategori 2.000 · keşif/Search Match 1.700 | 6.000 TL | 10.000 TL |
+| Apple Ads T3 pilot (BR/MX) | — (isteğe bağlı, 5.000'de yok) | 750 TL | 3.000 TL |
+| **Google (Android, TR + T3)** | **—** (eşik karşılanmaz; Play canlı olunca da başlamaz) | 6.000 TL (~200 TL/gün; yalnız tCPI ≤ ~0,10 $ ise eşiğe yakın) | 16.000 TL |
+| **Instagram/TikTok öne çıkar (organik kazanan video)** | **900 TL** (%18): Instagram 450 + TikTok 450 | 2.250 TL (%15) | 6.000 TL (%15) |
+| Meta/TikTok App Campaign | — | — | 5.000 TL **yalnız MMP varsa**; yoksa Google'a |
+| **Beklenen indirme / ay (TAHMİN)** | **~130 – 510** (yalnız ASA TR) + öne çıkarmadan ölçülemeyen artış | **~700 – 2.700** | **~1.300 – 7.100** |
+| Hesap | 4.100 TL ≈ 102 $ ÷ 0,2-0,8 $ | ASA 150 $/0,2-0,8 + Google 150 $/0,08-0,30 + pilot | ASA TR 250 $ + T3 75 $ + Google 400 $/0,08-0,5 + MMP testi |
 
-Hesap yöntemi: kanal×ülke grubu bütçesi ÷ §3.1 CPI aralığının uç değerleri; ilk sayı pahalı uç (CPI yüksek), ikinci ucuz uç. Gerçek dağılım T3 (Türkiye) payına çok bağımlıdır: indirme sayısını şişiren ama gelir getirmeyen bölge o. Bütçeyi iOS/T1-A'dan çok kaydırırsanız indirme belirgin düşer, LTV biraz yükselir.
+ASA Türkiye'de aranma hacmi sınırlı olabilir; bütçeyi tüketemezseniz **harcamayın**, artan payı öne çıkarma ya da bir sonraki aya bırakın.
 
-**Öğrenme dönemi / platform eşikleri:** Google App Campaigns günlük bütçe ≈ 50 × hedef CPI (ve olay hedefinde ≈ 10 × hedef CPA); eşik altı = yavaş öğrenme. Apple Ads'te asgari yok ama haftada anahtar kelime başına 5-10 yükleme yoksa teklif kararı gürültüdür. Meta ve TikTok için "haftada ~50 optimizasyon olayı" kuralı; iOS'ta SKAN eşikleri nedeniyle daha da yüksek.
+### 3.3 Platform asgari eşikleri bu bütçeye uyuyor mu? (dürüst)
 
-**Önerilen yol:** Düşük senaryo, 2-3 hafta → gerçek CPI, D1/D7, ARPDAU. Gelir tahmini (§7) tutmazsa, Orta'ya geçmeyin; ürün/monetizasyon iyileştirmesi ya da yalnız marka-koruma bütçesi (günde 3-5 $ ASA marka) daha akıllıca.
+| Platform | Eşik (yaklaşık; arayüzde doğrulayın) | 5.000 TL (165 TL/gün) | 15.000 TL | 40.000 TL |
+|---|---|---|---|---|
+| Apple Ads | Resmi asgari yok; anahtar kelime başına haftada birkaç yükleme gerekir | **Uyar**, ancak veri az (haftada ~30-120 yükleme) | Uyar | Uyar |
+| Google App Campaigns | Günlük bütçe ≈ **50 × tCPI**; olay hedefinde ≈ 10 × tCPA; öğrenme ~1-3 hafta ve ~100 dönüşüm | **Uymaz**: TR tCPI 0,08-0,15 $ → 4-7,5 $/gün = 160-300 TL/gün, yani tek başına tüm bütçe; ASA'yla bölünemez | **Sınırda** (~200 TL/gün, yalnız tCPI ≤ 0,10 $) | **Uyar** |
+| Meta/TikTok App Campaign | SDK/MMP şart; ≈ haftada 50 optimizasyon olayı | **Uymaz** (MMP yok) | Uymaz | MMP varsa ve ≥ ~1.500 TL/hafta ile sınırda |
+| Instagram/TikTok öne çıkar | Küçük günlük asgariler (birkaç $/gün; arayüzde doğrula) | **Uyar** (3 gün × ~100 TL) | Uyar | Uyar |
+
+Kaynak: Google bütçe/öğrenme kuralları üçüncü taraf özetlerine dayanır (https://adapty.io/blog/google-app-campaigns-playbook-2025/); Google yardım sayfasında doğrulayın. Sonuç: **5.000 TL'de yalnız ASA TR + küçük öne çıkarma**; Google ancak ~15.000 TL ve ASA verisi/ Play canlı olunca düşünülür.
+
+**Önerilen yol:** 5.000 TL ile 4-6 hafta: ASA TR + öne çıkarma → gerçek CPI, D1/D7 (TR'de Firebase açık), ARPDAU. §7'ye göre kâr beklemeyin; amaç öğrenme + ilk yorum/puan + marka koruma.
 
 ---
 
 ## 4. Kreatif listesi
 
-**Kural (kesin):** Bütün video ve görseller **Ray'in gerçek oyun görüntüsünden** (ekran kaydı/ekran görüntüsü) üretilir. Oyunda olmayan oynanış, sahte "kazan/kaybet" ekranı, sahte bildirim, sahte kullanıcı yorumu, sahte ödül/para, "fake ad" tarzı yanıltıcı kurgu **yasak**. Görüntü içinde yalnız oyunda gerçekten var olan özellikler: karo döndürme, öğretici, günün hattı, 33 kural hattı + sonsuz karma, şehir metro haritası, haftalık lig, canlı kapışma (1.2), çevrimdışı oynanış, tek elle oynanış.
+**Kurallar (kesin):** (1) Hepsi **Ray'in gerçek oyun görüntüsünden** (ekran kaydı/ekran görüntüsü). (2) **Yüz ve ses yok:** yalnız ekran kaydı + yazı (altyazı/başlık) + müzik. (3) Müzik yalnız kendi/lisanslı (TikTok'ta Commercial Music Library; Instagram'da ticari kullanıma uygun kütüphane). (4) Oyunda olmayan oynanış, sahte kayıp/kazanç ekranı, sahte bildirim, sahte yorum/oyuncu tepkisi yok. (5) Yalnız oyunda gerçekten var olan özellikler: karo döndürme, öğretici, günün hattı, 33 kural hattı + sonsuz karma, şehir metro haritası, haftalık lig, canlı kapışma, çevrimdışı, tek elle.
 
-### 4.1 Video (en az 12)
+### 4.0 Hazır kreatifler (dal `origin/tanitim`; bu belgenin yazarı dosyaları görmedi, yayın öncesi içeriği, müzik/yazı haklarını ve gerçek-oyun-görüntüsü şartını doğrulayın)
 
-| # | Ad | Kanca (ilk 3 sn) | Süre | Format | Mesaj | CTA | Dil |
+| Dosya | Biçim | Kullanım |
+|---|---|---|
+| `store/tanitim/ray-play-tanitim-dikey.mp4` | 1080×1920, 34,5 sn | Instagram Reels / TikTok organik ve öne çıkarma (ana aday); 15 sn ve 6 sn kesitleri V1-V3'e dönüştürün |
+| `store/tanitim/ray-play-tanitim-kare.mp4` | 1080×1080, 25,5 sn | Instagram akış, Google App Campaigns 1:1 varlığı (Orta+) |
+| `store/tanitim/ray-play-duyuru-dikey.png` | dikey görsel | Duyuru/Story (Play yayını canlı olunca); Google dikey görsel varlığı |
+| `store/tanitim/ray-play-duyuru-yatay.png` | yatay görsel | Google 16:9 görsel varlığı, Reddit/blog duyurusu |
+| `store/tanitim/rozet/` | resmi mağaza rozetleri | Yalnız resmi biçimde ve boyutta, değiştirmeden (Apple/Google rozet kuralları); Play rozeti **Play sayfası canlı olunca** kullanılmalı |
+
+Not: "Play'de" ifadesi içeren duyuru görseli yalnız Play yayını onaylanıp sayfa canlı olduktan sonra paylaşılmalı; aksi halde yanıltıcı olur.
+
+### 4.1 Video (en az 12; ses yok, yazı + müzik)
+
+| # | Ad | Kanca (ilk 3 sn, yazı) | Süre | Format | Mesaj | CTA (yazı) | Dil |
 |---|---|---|---|---|---|---|---|
-| V1 | Tek dokunuş | Karışık ağ, tek dokunuşla hat bağlanır | 15 sn | 9:16 | Sakin, tatmin edici bağlantı | "Ücretsiz oyna" / Play | tr, en |
-| V2 | Tek el | Parmak tek elle metroda oynar (gerçek ekran kaydı + el çekimi) | 15 sn | 9:16 | Tek elle, yolda | "Şimdi indir" | tr, en, ja |
-| V3 | Çevrimdışı | "İnternet yok mu? Sorun değil." uçak modu açık ekranı | 15 sn | 9:16 | İnternetsiz oyun | "Ücretsiz indir" | tr, en, de, fr |
-| V4 | Metro haritası | Boş şehir haritası dolar | 20 sn | 9:16 + 1:1 | Her hat bitince şehir büyür | "Metronu kur" | en, ja, ko |
-| V5 | 3 sn bulmaca | Yanlış bağlı hat, doğru bağlanınca ışık yanar | 10 sn | 9:16 | Doğru bağlayınca tatmin | "Dene" | tr, en, zh-Hant |
-| V6 | Öğretici | Yeni oyuncu ilk bölümü adım adım | 30 sn | 9:16 | "Öğrenmesi 1 dakika" | "Hemen başla" | tr, en, es, pt-BR |
-| V7 | Kapışma | Canlı kapışma anı (gerçek ekran kaydı) | 20 sn | 9:16 | Rakibe karşı hız | "Rakibini bul" | tr, en, ko |
-| V8 | Haftalık lig | Lig sıralaması + yükseliş | 15 sn | 9:16 | Haftalık yarış | "Ligde yarış" | tr, en, de |
-| V9 | ASMR/sakin | Yalnız oyun sesi, yazı yok, dönüşler | 20 sn | 9:16 | Sakin, stres atma | "Rahatla" | tüm diller (yazısız) |
-| V10 | 7 yeni hat | Yeni hat türleri montaj (Ekspres durak, Sinyal, Sarsıntı...) | 20 sn | 9:16 + 16:9 | 1.2 yenilik | "Güncelle/Oyna" | tr, en, de, fr |
-| V11 | Zorluk eğrisi | Kolay → zor 5 bölüm hızlı geçiş | 25 sn | 1:1 | "Zihnin için" | "İndir" | en, de, es |
-| V12 | Ödüllü tanıtım yok / reklamsız | "Reklamsız paketle sessiz yolculuk" (gerçek mağaza ekranı) | 15 sn | 9:16 | Reklamsız seçenek var, zorunlu değil | "Ücretsiz dene" | tr, en |
-| V13 | Gerçek oyuncu tepkisi | **Yalnız gerçek, izinli** oyuncu yorumu/tepkisi (yoksa üretme) | 20 sn | 9:16 | Sosyal kanıt | "Dene" | en, tr (izin gelirse) |
-| V14 | Playable ekran kaydı | Playable tarzı interaktif seri | 20 sn | 1:1 + 16:9 | "Sen de dene" | "Oyna" | en |
+| R1 | Hazır dikey tanıtım | Mevcut dosya | 34,5 sn | 9:16 | Genel tanıtım | Mevcut | tr (+ en altyazı) |
+| R2 | Hazır kare tanıtım | Mevcut dosya | 25,5 sn | 1:1 | Genel tanıtım | Mevcut | tr, en |
+| V1 | Tek dokunuş | "Tek dokunuş, bağlandı." + karışık ağ düzelir | 15 sn | 9:16 | Tatmin edici bağlantı | "Ücretsiz oyna" | tr, en |
+| V2 | Tek el | "Tek elle oyna." ekran kaydı (ekranda başparmak bölgesi vurgusu, el görünmez) | 15 sn | 9:16 | Tek elle, yolda | "Şimdi indir" | tr, en, ja |
+| V3 | Çevrimdışı | "İnternet yok mu? Sorun değil." (uçak modu ekranı gerçek) | 15 sn | 9:16 | İnternetsiz oyun | "Ücretsiz indir" | tr, en, de, fr |
+| V4 | Metro haritası | "Hattı bitir, şehir büyüsün." | 20 sn | 9:16 + 1:1 | Şehir haritası ilerlemesi | "Metronu kur" | tr, en, ja, ko |
+| V5 | 3 sn bulmaca | "Doğru bağla, ışık yansın." | 10 sn | 9:16 | Anlık tatmin | "Dene" | tr, en, zh-Hant |
+| V6 | Öğretici | "Öğrenmesi 1 dakika." (gerçek öğretici bölüm) | 30 sn | 9:16 | Kolay giriş | "Hemen başla" | tr, en, es, pt-BR |
+| V7 | Kapışma | "Rakibinden önce bitir." (gerçek canlı kapışma kaydı) | 20 sn | 9:16 | Hız/rekabet | "Rakibini bul" | tr, en, ko |
+| V8 | Haftalık lig | "Bu hafta ligde kaçıncısın?" | 15 sn | 9:16 | Haftalık yarış | "Ligde yarış" | tr, en, de |
+| V9 | ASMR/sakin | Yazısız, yalnız sakin müzik, dönüşler | 20 sn | 9:16 | Sakin, stres atma | "Rahatla" | dilsiz |
+| V10 | 7 yeni hat | "7 yeni hat geldi." (Ekspres durak, Sinyal, Sarsıntı...) | 20 sn | 9:16 + 16:9 | 1.2 yenilik | "Güncelle/Oyna" | tr, en, de, fr |
+| V11 | Zorluk eğrisi | "Kolaydan zora, 33 hat." | 25 sn | 1:1 | Zihin egzersizi | "İndir" | en, de, es |
+| V12 | Reklamsız seçenek | "Reklamsız paket de var (isteğe bağlı)." gerçek mağaza ekranı | 15 sn | 9:16 | Reklamsız seçenek | "Ücretsiz dene" | tr, en |
+| V13 | Playable ekran kaydı | Playable'ın kaydı, "Sen de dene" | 20 sn | 1:1 + 16:9 | İnteraktif tanıtım | "Oyna" | en, tr |
 
-(V13 yalnız gerçek ve yazılı izinli içerikle; yoksa listeden çıkarın. Sahte yorum/oyuncu üretmeyin.)
+(Oyuncu yorumu/tepkisi/yüz içeren video yoktur. Sahte sosyal kanıt üretmeyin.)
 
 ### 4.2 Görsel (en az 6)
 
 | # | Ad | İçerik | Format | Mesaj | CTA | Dil |
 |---|---|---|---|---|---|---|
 | G1 | Hero harita | Doldurulmuş şehir metro haritası ekran görüntüsü | 1:1, 9:16 | "Metronu bağla" | "Ücretsiz indir" | tr, en |
-| G2 | Önce/sonra | Karışık karo → bağlı hat (iki gerçek ekran görüntüsü yan yana) | 1:1, 16:9 | "Doğru bağla" | "Dene" | tr, en, de |
-| G3 | Hat çeşitliliği | 7 yeni hat simgeleri (gerçek arayüzden) | 1:1 | "33 hat, sonsuz karma" | "Keşfet" | tr, en, fr, es |
+| G2 | Önce/sonra | Karışık karo → bağlı hat (iki gerçek ekran görüntüsü) | 1:1, 16:9 | "Doğru bağla" | "Dene" | tr, en, de |
+| G3 | Hat çeşitliliği | 7 yeni hat simgeleri (gerçek arayüz) | 1:1 | "33 hat, sonsuz karma" | "Keşfet" | tr, en, fr, es |
 | G4 | Lig/kapışma | Lig ve kapışma ekranları | 9:16 | "Rakibine karşı oyna" | "Başla" | tr, en, ko |
 | G5 | Çevrimdışı | Uçak modu + oyun ekranı | 1:1, 9:16 | "İnternetsiz bulmaca" | "İndir" | tr, en, ja |
-| G6 | Mağaza/ödül uyumlu afiş | Ayarlar: tek elle ekran + sakin tema (gerçek ekran) | 16:9 | "Sakin, tek elle" | "Ücretsiz oyna" | zh-Hant, pt-BR, de |
+| G6 | Sakin/tek el | Ayarlar ve tek elle oynanış ekranı | 16:9 | "Sakin, tek elle" | "Ücretsiz oyna" | zh-Hant, pt-BR, de |
+| G7 | Hazır duyuru | `ray-play-duyuru-dikey/yatay.png` (Play canlı olunca) | 9:16, 16:9 | Duyuru | Rozet | tr, en |
 
-Ayrıca görsel A/B için kareden başlık yazı varyasyonları: kanca "Sakin bulmaca" / "Metroyu kur" / "1 dakikada öğren".
+Başlık A/B: "Sakin bulmaca" / "Metroyu kur" / "1 dakikada öğren".
 
 ### 4.3 Politika ve uyum notları
 
-- **Apple:** Mağaza önizleme/ekran görüntüsü gerçek uygulamayı göstermeli (metadata doğruluğu); Apple Ads metnini sayfanızdan üretir; CPP'ler Apple incelemesinden geçer.
-- **Google Ads/Play:** "Yanıltıcı içerik" ve "yanıltıcı reklam" politikası: oyunda olmayan oynanışı göstermeyin; "kaybettin/yanlış hamle" gibi sahte bildirimle tıklama toplamayın; reklam metninde "#1/en iyi" gibi kanıtsız iddia yok. Oyun grafikleri gerçek olmalı.
-- **Meta / TikTok:** Yanıltıcı/abartılı iddia, sahte UI, sahte bildirim ve "oynanış olmayan" kurgu reddedilir. Kısa video müziği lisanslı olmalı.
-- **Açıklama:** "Ücretsiz; uygulama içi satın alma ve reklam içerir" ifadesini reklam metni/mağaza sayfasında bırakın; "ücretsiz para/ödül" izlenimi vermeyin. Ödüllü videoyu "isteğe bağlı" olarak gösterin.
+- **Apple:** Mağaza önizleme/ekran görüntüsü gerçek uygulamayı göstermeli; Apple Ads metnini sayfanızdan üretir; CPP'ler Apple incelemesinden geçer. Resmi rozetleri değiştirmeyin.
+- **Google Ads/Play:** Yanıltıcı içerik/reklam politikası: oyunda olmayan oynanışı göstermeyin; sahte bildirim, sahte "kaybettin" ekranı ya da kanıtsız "#1/en iyi" iddiası yok. Play rozeti yalnız canlı sayfa için.
+- **Meta / TikTok / Reddit:** Yanıltıcı/abartılı iddia, sahte UI ve oynanış olmayan kurgu reddedilir; öne çıkarılan organik gönderi de **reklam politikasına tabidir**. Reddit'te kendi kendini tanıtma kuralları topluluktan topluluğa değişir (§4.6).
+- **Açıklama:** "Ücretsiz; uygulama içi satın alma ve reklam içerir"; "ücretsiz para/ödül" izlenimi vermeyin; ödüllü videoyu "isteğe bağlı" gösterin.
 - **Yaş:** çocuk karakteri/çizgi film yok; 13+ konum; hedefleme 18+.
-- **Üretim:** Ekran kaydı gerçek cihazdan (iPhone/iPad, Android). Gerçek oyun içi ses ya da lisanslı müzik. Çözünürlük: 1080×1920 / 1080×1080 / 1920×1080; kayıtsız güvenli alan (platform arayüz katmanı).
+- **Üretim:** gerçek cihazdan ekran kaydı (iPhone/iPad, Android); 1080×1920 / 1080×1080 / 1920×1080; platform arayüz katmanı için güvenli alan; ilk 3 sn'de yazı kancası; ses kapalı izlemeye uygun (yazı altyazılı).
 
-### 4.4 Playable reklam fikri
+### 4.4 Üretim yolu (yüz/ses olmadan)
 
-Oyun HTML5 olduğundan (`www/`), **oyun koduna dokunmadan ayrı bir klasörde** (depo dışında ya da `tools/` dışında ayrı bir paket) kısa bir oynanabilir reklam yapılabilir: 5-6 karolu tek bölüm + "Metronu bağla" bitiş ekranı + mağaza düğmesi. Süre 15-30 sn, tek dosya HTML (≈ 2-5 MB altı; platform sınırlarını Google/Meta/TikTok belgelerinde doğrulayın), `mraid`/platform çağrısıyla mağazaya yönlendirme. Gerçek oyunun ilk bölümünün oyun mantığını kullanın (sahte oynanış yok). Playable testi Orta/Yüksek'te; ilk aşama gerekmez. Playable üretimi için geliştirici işi ayrı sprint.
+Ekran kaydı (cihaz) → kısa kesitler → Canva/CapCut gibi araçla yazı + lisanslı müzik. Bir kaynak dikey kayıttan (R1) 9:16, 1:1, 16:9 üç oran türetilir. Dil başına yalnız yazı katmanı değişir (9 dil; önce tr, en).
+
+### 4.5 Oynanabilir reklam (playable ad) — ayrı mini sürüm
+
+**Neden:** Oyun HTML5 olduğu için kısa bir interaktif demo mümkün; kullanıcı ilgisi var. **Önemli:** playable'ı kabul eden ağlar (Google App Campaigns, Meta, AppLovin, Unity/ironSource) kendi hesap + harcama + (çoğunda) MMP/SDK ister; **5.000 TL ana senaryoda playable ücretli mecraya girmez.** Pratik 5.000 TL kullanımı: (a) playable'ın **ekran kaydı** (V13) organik/öne çıkarma videosu olarak, (b) ileride Orta/Yüksek senaryoda ağlara yükleme.
+
+**Ağ kabulleri ve boyut sınırları (üçüncü taraf özetler; resmi belgelerde doğrulayın, kaynaklar çelişkili):**
+
+| Ağ | Biçim | Boyut (yaklaşık) | CTA çağrısı (öneri) | Not |
+|---|---|---|---|---|
+| Google App Campaigns | HTML5 **zip** (HTML kökte), varlık olarak yüklenir | ~5 MB zip, ≤ 512 dosya (ikincil kaynak; resmi sayfada doğrula) | `ExitApi.exit()` ile mağaza | Harici ağ çağrısı yok |
+| Meta (Advantage+/Ads Manager) | Tek HTML ya da zip | Kaynaklar 2 MB tek HTML / 5 MB zip ya da 5 MB, ≤ 100 dosya diyor | `FbPlayableAd.onCTAClick()` | mraid.js yok, XHR/ağ çağrısı yok |
+| AppLovin | **Tek, kendi içinde HTML** | ≤ 5 MB | MRAID `mraid.open(url)` | |
+| Unity Ads / ironSource | HTML, MRAID 3.0 | ≤ 5 MB (bazı kaynaklar 10 MB) | `mraid.open(url)` | |
+
+Kaynaklar: https://segwise.ai/blog/playable-ad-specs-by-network-2026 · https://support.applovin.com/en/growth/promoting-your-apps/creatives/best-practices-and-guidelines · https://doc.playturbo.com/other-tutorials/documentation-for-project-deployment/playable-upload-specifications-for-networks . Not: base64 gömme dosyayı ~%33 şişirir; paketi sınırın altında tutun.
+
+**Oyun koduna dokunmadan mini sürüm nasıl yapılır:**
+1. **Ayrı klasör/depo** aç (örn. `ray-playable/`, mevcut `www/` değiştirilmez). Oyun kodunu kopyalama; yalnız **görsel varlıkları** (karo çizimleri, renkler, yazı tipi alt kümesi) ve kural mantığını (karo döndür → bağlantı kontrolü) küçük bir bağımsız JS ile yeniden yaz (~300-500 satır).
+2. İçerik: gerçek öğretici bölümünün birebir ilk 1-2 bulmacası (5×5'e kadar), dokununca karo döner, hat bağlanınca ışık/animasyon, 15-30 sn sonra **bitiş kartı** ("Metronu bağla" + resmi rozet + CTA). Sahte/olmayan oynanış yok.
+3. Bütün bağımlılıkları tek dosyaya göm (Vite + `vite-plugin-singlefile` ya da esbuild), görselleri sıkıştır; **Capacitor, localStorage, harici yazı tipi, ağ çağrısı, kendi ses otomatik oynatma yok**.
+4. Ağa göre ince kabuk: CTA çağrısı (`ExitApi.exit()` / `FbPlayableAd.onCTAClick()` / `mraid.open`), MRAID kabul testi; her ağın test aracında (Google Ads HTML5 doğrulayıcı, Meta önizleme, AppLovin/Unity test araçları) deneyin.
+5. Boyut ≤ ~2 MB hedefleyin (en sıkı ağın altı), dikey 9:16 ve yatay 16:9 için ayrı düzen; `viewport` ve dokunma olayı (tek dokunuş yeterli).
+6. Mağaza bağlantıları: iOS `https://apps.apple.com/app/id6831928554?ct=playable`, Android `...details?id=com.osmanadali.ray&referrer=utm_source%3Dplayable` (§6.6).
+7. Ayrı sprint (geliştirici işi); dosya kaynağı oyunun HTML5'i olduğundan üretim ucuz, **test/ağ onayı** asıl iş.
+
+### 4.6 Sosyal hesaplar ve "organikte kazanan" video → öne çıkarma
+
+Hesaplar: **Instagram (var), TikTok ve Reddit (açılacak). YouTube ve X kullanılmayacak.**
+
+- **Instagram/TikTok:** R1 kesitleri ve V1-V12 organik paylaşılır (haftada 3-5 video). **Kazanan** ölçütü (TAHMİN, hesabınıza göre ayarlayın): 48 saat içinde izlenme ≥ hesap medyanının 3 katı **ve** kaydetme+paylaşma / izlenme ≥ %3 **ve** tam izleme ≥ %25.
+- **Öne çıkarma payı:** 5.000 TL'nin **%18'i = 900 TL** (Instagram 450 + TikTok 450); video başına ~150-300 TL, 3 gün; kitle TR, 18+, hedef profil ziyareti / bağlantı tıklaması. Öne çıkarma **indirme atfı vermez**; bio bağlantısı `ct`/`referrer` parametreli olsun (§6.6) ve App Store Connect / Play Console'dan okuyun. Toplam 5.000 TL aşılmaz: öne çıkarma payı ASA'dan ayrılır.
+- **Reddit:** yalnız organik (ücretli reklam planı yok). Her topluluğun kendi tanıtım kurallarını okuyun (kendi uygulamasını tanıtma oranı, "self-promo" kuralı); spam yapmayın, dürüst "geliştirici" kimliğiyle, değer katan gönderi (bulmaca mekaniği, geliştirme günlüğü) paylaşın. Hesap açma ve topluluk seçimi sizde.
+- **Yasaklı:** satın alınmış takipçi/etkileşim, sahte yorum, yüz/ses içeren sosyal kanıt.
 
 ---
 
@@ -244,7 +302,7 @@ Oyun HTML5 olduğundan (`www/`), **oyun koduna dokunmadan ayrı bir klasörde** 
 
 | Aşama | Süre | Ne test edilir | Başarı ölçütü |
 |---|---|---|---|
-| 1 | Hafta 1-2 | Kanal + ülke grubu (örn. ASA T1-A vs T3) | CPI, CR, D1 (UMP'siz ülkelerde) |
+| 1 | Hafta 1-2 | ASA TR: marka / kategori / keşif (+ CPP) | CPI, CR, D1 (TR'de Firebase açık) |
 | 2 | Hafta 2-3 | Kanca (V1, V5, V9, G1-G3) | Hold rate 3 sn, CTR, CPI |
 | 3 | Hafta 3-4 | Mesaj (sakin / hız / çevrimdışı / harita) | CPI, tutorial_complete oranı (ölçülebilirse) |
 | 4 | Hafta 4+ | Format/süre, dil, CPP | CPI, CVR |
@@ -255,7 +313,8 @@ Oyun HTML5 olduğundan (`www/`), **oyun koduna dokunmadan ayrı bir klasörde** 
 - Karar için en az: kreatif başına ≥ **5.000 gösterim** ve ≥ **30-50 yükleme**; CPI karşılaştırması için varyant başına ≥ **100 yükleme** (±%20 ayırt etmek için bile gürültülü).
 - Oran testleri için varyant başına gereken örnek: **n ≈ 16·p(1−p)/δ²** (δ = mutlak fark). Örn. dönüşüm p=%30, δ=%5 → n ≈ 1.350 dokunma/varyant; p=%5, δ=%1 → n ≈ 7.600.
 - Aynı anda en fazla 3-4 varyant; en az **7 gün** (hafta içi/hafta sonu etkisi); öğrenme dönemini (ilk 3-5 gün) hesaba katmayın.
-- Kalite ölçütleri (D1 vb.) yalnız Firebase'in açık olduğu ülkelerde (T1-A, T2, T3) okunur; rıza bölgeleri için yalnız CPI/CVR.
+- Kalite ölçütleri (D1 vb.) yalnız Firebase'in açık olduğu ülkelerde (TR, T3, T2) okunur; rıza bölgeleri için yalnız CPI/CVR.
+- **5.000 TL gerçeği:** ayda ~130-510 yükleme tek ASA hesabı için bile az; kreatif/anahtar kelime başına 100 yükleme çoğunlukla ulaşılamaz. Bu bütçede **A/B testini yapamazsınız**, yalnız yön okursunuz: aynı anda en çok 2 CPP ve 3 anahtar kelime grubu, 14 gün sabit; karar eşiği yerine "CPI hedefin %150'sini 3 gün üst üste aşıyor mu" kontrolü.
 
 ### 5.3 Öldür / ölçekle kuralları
 
@@ -379,7 +438,7 @@ ROAS_D7 ≈ 0,40 × LTV_D90 / CPI        (tahmin: D7 birikimi D90'ın ~%40'ı)
 
 **Duyarlılık (iyimser):** T1-A'da ARPDAU 0,10 $ (daha yoğun reklam / yüksek eCPM), 5 aktif gün, IAP 0,12 $ → LTV ≈ 0,62 $; başa baş CPI ≈ 0,6 $: hâlâ piyasa CPI'sının altında. **Hybrid-casual** kıyas aralığı (ARPDAU 0,15-0,50 $) tutturulabilirse tablo tersine döner; ancak bu yoğun reklam yükü ve Ray'in "sakin" konumuyla çelişir (daha çok reklam = tutundurma düşer).
 
-**Örnek senaryo (Orta, 1 ay):** harcama 1.800 $ → ~2.900 yükleme (orta nokta; karma CPI ~0,6 $) → karma LTV ~0,06 $ → D90 geliri ~170 $ → **ROAS ~%10**. Yani kampanya, geliri finanse etmez; kazanç organik büyüme/sıralama/yorum etkisinden gelmelidir ve bu da ölçülemez ya da çok yavaş ölçülür.
+**Örnek (ana senaryo, 5.000 TL):** ASA TR 4.100 TL ≈ 102 $ → CPI orta nokta 0,45 $ → ~225 yükleme × TR LTV_D90 ~0,022 $ ≈ **5 $ gelir → ROAS ~%5** (iyimser ARPDAU 3×: ~%15). Kampanya geliri finanse etmez; kazanç organik büyüme/sıralama/yorum etkisinden gelmelidir ve bu ölçülemez ya da çok yavaş ölçülür. **Türkiye ucuz ama ARPDAU de çok düşük;** TR için başa baş CPI ~0,02 $ (~0,9 TL), ASA'da bile erişilmez.
 
 ### 7.3 Sonuç ve öneri
 
@@ -397,10 +456,16 @@ ROAS_D7 ≈ 0,40 × LTV_D90 / CPI        (tahmin: D7 birikimi D90'ın ~%40'ı)
 - [ ] Hedef CPI (kâr hedefi ve kabul edilen) ve "durdur" sınırı yazılı
 - [ ] Zamanlama: Kasım sonu Black Friday/Aralık pahalı; Ocak daha ucuz olabilir
 
+**A2. 5.000 TL için önerilen kararlar (kullanıcı onayı bekliyor; bütçe 5.000 TL ve kanallar kullanıcıdan, bölüşüm önerimiz)**
+- [ ] Ana: Apple Ads TR 4.100 TL + Instagram/TikTok öne çıkarma 900 TL; Google yok
+- [ ] Play sayfası canlı olana kadar (tahmini 22-28 Kasım) bütçe yalnız ASA TR; Android kampanyası canlı sayfadan sonra ve ≥ 15.000 TL ile
+- [ ] Sosyal: Instagram var; **TikTok ve Reddit hesapları açılacak**; YouTube/X yok
+- [ ] `origin/tanitim` kreatifleri (§4.0) içerik/müzik/hak doğrulaması
+
 **B. Hesaplar ve ödeme (yalnız sizin yapabileceğiniz adımlar)**
 - [ ] **Apple Ads** hesabı (ads.apple.com) → Advanced; ödeme yöntemi; App Store Connect uygulamasına bağlama
 - [ ] **Google Ads** hesabı; fatura/ödeme profili; Play Console → Ayarlar → Bağlı hesaplar → Google Ads bağlama (Play Console'da uygulama yayında olmalı)
-- [ ] **Google Play** yayını 21 Kasım; Play mağaza girişi son kez gözden geçirilmiş; en az 3-7 gün organik veri/yorum
+- [ ] **Google Play:** 21 Kasım üretime erişim başvurusu → Google onayı → yayın (tahmini 22-28 Kasım); Play mağaza girişi gözden geçirilmiş; yayından sonra en az 3-7 gün organik veri/yorum
 - [ ] **Meta Business + reklam hesabı**, **TikTok Ads** hesabı (yalnız MMP kararı verilince)
 - [ ] Muhasebe: reklam gideri fatura/KDV/vergi (Türkiye) için mali müşavire danışma
 - [ ] İki faktörlü doğrulama, hesap sahibi e-postaları, bütçe üst sınırı/uyarı (günlük ve aylık limit)
