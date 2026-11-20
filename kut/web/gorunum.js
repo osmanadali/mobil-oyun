@@ -282,7 +282,7 @@ vec3 kutTaban = diffuseColor.rgb;`)
  *  Malzemeleri KLONLAR (aynı kahraman iki tarafta da olabilir; kenar rengi taraf başına).
  *  renk: 'biz' | 'rakip' | 'notr' | THREE.Color | css dizgesi.  kahraman: id (KAHRAMAN_AYAR için, isteğe bağlı).
  *  Dönen nesne: { malzemeler, parlat(miktar, renk?) } — vuruş parlaması için. */
-export function malzemeIyilestir(model, { renk = 'biz', kahraman = null, parlama, doygunluk, rimGuc, golge = true } = {}) {
+export function malzemeIyilestir(model, { renk = 'biz', kahraman = null, parlama, doygunluk, rimGuc, golge = true, pbrKoru = false } = {}) {
   const ozel = (kahraman && KAHRAMAN_AYAR[kahraman]) || {};
   const rim = renk instanceof THREE.Color ? renk : (RIM[renk] || new THREE.Color(renk));
   const onbellek = new Map(), malzemeler = [];
@@ -293,9 +293,10 @@ export function malzemeIyilestir(model, { renk = 'biz', kahraman = null, parlama
       if (!m || !m.isMeshStandardMaterial) return m;
       if (onbellek.has(m)) return onbellek.get(m);
       const y = m.clone();
-      y.roughness = AYAR.puruzluluk; y.metalness = AYAR.metallik;
+      // pbrKoru: modelin kendi pürüzlülük/metal haritaları ve değerleri olduğu gibi kalır (Tripo PBR)
+      if (!pbrKoru) { y.roughness = AYAR.puruzluluk; y.metalness = AYAR.metallik; }
       if (ortamDoku) { y.envMap = ortamDoku; y.envMapIntensity = AYAR.yaratikOrtam; }
-      if (y.normalMap) y.normalScale.setScalar(AYAR.normalOlcek);
+      if (y.normalMap && !pbrKoru) y.normalScale.setScalar(AYAR.normalOlcek);
       y.userData.kut = {
         uRimRenk: { value: rim.clone() }, uRimGuc: { value: rimGuc ?? ((typeof renk === 'string' && RIM_GUC[renk]) || AYAR.rimGuc) }, uRimUs: { value: AYAR.rimUs },
         uDoy: { value: doygunluk ?? AYAR.doygunluk }, uKontrast: { value: AYAR.kontrast },

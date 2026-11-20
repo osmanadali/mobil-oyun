@@ -17,7 +17,7 @@ const YAKIN_SES = { golem: 'vurus_yumruk', ayi: 'vurus_yumruk', koc: 'vurus_yumr
 const DUZEY = { vurus_yumruk: 0.45, vurus_pence: 0.4, vurus_isirma: 0.4, atis_buyu: 0.3, atis_ok: 0.35, isabet_buyu: 0.3,
   dugme: 0.35, satin_al: 0.6, yenile: 0.55, kut: 1, zafer: 0.9, yenilgi: 0.8, savas_basla: 0.8, olum: 0.6 };
 
-let ctx = null, ana = null, kok = '', acik = true, duzey = 0.8;
+let ctx = null, ana = null, kok = '', acik = true, duzey = 0.55;   // efektler kısıldı (0,8 → 0,55)
 const tampon = {}, yukleniyor = {}, sonCalma = {};
 let calan = 0;
 const ENFAZLA = 10; // aynı anda en çok bu kadar ses
@@ -76,7 +76,7 @@ export function olay(f, kaynakBirim, hedefBirim) {
 }
 
 // --- Müzik: hazırlık ve savaş döngüleri (ElevenLabs, 30 sn, kesintisiz döngü). Ayrı kazanç, geçişte yumuşak kesişme.
-const MUZIK = { hazirlik: 0.32, savas: 0.28 };
+const MUZIK = { hazirlik: 0.2, savas: 0.17 };   // müzik kısıldı
 let muzikKazanc = null, muzikAcik = true, istenen = null, calanM = null;
 const muzikTampon = {};
 try { if (localStorage.getItem('kut.muzik') === '0') muzikAcik = false; } catch (e) { /* depolama kapalı */ }

@@ -36,13 +36,13 @@ export const GORSEL = {
   ejder:   { ...IKI, ...ATIS, yetenek: ['Idle_Loop'], yetOn: 0.45, yetSure: 0.65, zafer: 'Yes', ara: ['Idle_FoldArms_Loop'], kolAci: 0.26 },
   kurt: { ...DORT, yetOn: 0.32 }, koc: { ...DORT, yetOn: 0.36 }, kaplumbaga: { ...DORT, boy: 1.1 }, semender: { ...DORT }, bulutat: { ...DORT, kanat: true },
   yilan: { ...YILAN },
-  yarasa: { ...DORT, yetOn: 0.3 },
+  yarasa: { ...DORT, ozgun: true, yetOn: 0.3 },
   // canavarlar (kendi Tripo modelleri). sabit: iskeletsiz model, gövde yordamsal salınır (sabitSalin)
-  cakil: { ...IKI, saldir: ['Punch_Cross', 'Melee_Hook'], yetenek: ['Punch_Cross'], zafer: 'Yes', iri: true, kolAci: 0.3, boy: 0.85, yuruHiz: 1.1 },
-  kadimBekci: { ...IKI, bekle: 'Idle_FoldArms_Loop', saldir: ['Punch_Cross', 'Melee_Hook'], yetenek: ['Agir_Ezme'], yetOn: 0.5, zafer: 'Yes', iri: true, kolAci: 0.28, egim: 0.06, boy: 1.3, yuruHiz: 0.75 },
-  kirpi: { ...DORT, boy: 0.95 }, tasKabuk: { ...DORT, boy: 1.15 }, yildizYiyen: { ...DORT, boy: 1.35, yetOn: 0.4 },
-  kumAkrebi: { tur: 'sabit', boy: 0.95, salin: 'yengec' }, anaAkrep: { tur: 'sabit', boy: 1.3, salin: 'yengec' },
-  gokBalinasi: { tur: 'sabit', boy: 0.8, salin: 'yuz', havada: 0.3 },
+  cakil: { ...IKI, ozgun: true, saldir: ['Punch_Cross', 'Melee_Hook'], yetenek: ['Punch_Cross'], zafer: 'Yes', iri: true, kolAci: 0.3, boy: 0.85, yuruHiz: 1.1 },
+  kadimBekci: { ...IKI, ozgun: true, bekle: 'Idle_FoldArms_Loop', saldir: ['Punch_Cross', 'Melee_Hook'], yetenek: ['Agir_Ezme'], yetOn: 0.5, zafer: 'Yes', iri: true, kolAci: 0.28, egim: 0.06, boy: 1.3, yuruHiz: 0.75 },
+  kirpi: { ...DORT, ozgun: true, boy: 0.95 }, tasKabuk: { ...DORT, ozgun: true, boy: 1.15 }, yildizYiyen: { ...DORT, ozgun: true, boy: 1.35, yetOn: 0.4 },
+  kumAkrebi: { tur: 'sabit', ozgun: true, boy: 0.95, salin: 'yengec' }, anaAkrep: { tur: 'sabit', ozgun: true, boy: 1.3, salin: 'yengec' },
+  gokBalinasi: { tur: 'sabit', ozgun: true, boy: 0.8, salin: 'yuz', havada: 0.3 },
 };
 // Vuruş ağırlığı (tempo): ağır yaratık uzun ve görünür kurulur, ağır toparlanır, darbede kısa durur; çevik kısa kurulup seri vurur.
 // hazir: darbeden önceki kurulma (sn; motorun önden gelişini aşan kısmı vuruş tahminiyle önden başlar), sonra: toparlanma klip hızı çarpanı,
@@ -155,7 +155,7 @@ const kuyrukSira = (a, b) => a.t - b.t;
 let kaplama, kcx;           // 2D kaplama (çubuklar, sayılar)
 let dinleyici = {};
 let hafif = false, kutlu = new Set(), kokYol = '';
-const kam = { tabanP: new THREE.Vector3(), tabanH: new THREE.Vector3(), olcek: 1, merkez: new THREE.Vector3(), ilk: true };   // kutlu: Kut ile dolan (bir sonraki yeteneği büyük oynanacak) birim uid'leri
+const kam = { tabanP: new THREE.Vector3(), tabanH: new THREE.Vector3(), olcek: 1, merkez: new THREE.Vector3(), ilk: true, zoom: 1, zoomH: 1, kayX: 0, kayZ: 0, kayHX: 0, kayHZ: 0 };   // kutlu: Kut ile dolan (bir sonraki yeteneği büyük oynanacak) birim uid'leri
 
 function hafifOku() { try { return localStorage.getItem('kut.hafif') === '1'; } catch (e) { return false; } }
 
@@ -183,6 +183,7 @@ export async function hazirla(tuval, kaplamaTuval, kok = '', ops = {}) {
   // ışık: gün batımı üç nokta düzeni (ana güneş kamera tarafından, arkadan kenar ışığı, gökten dolgu)
   G.isikKur(sahne, { kalite, alan: 7 });
   await Promise.all([arenaKur(kok, tl), ualYukle(kok)]);
+  zoomKur();
   vfx.kur(sahne, kamera, { kalite, zeminY: ARENA_Y, isik: true });
   boyutla();
   his.kur(kamera, { kalite, sahne });
@@ -242,7 +243,7 @@ function olcekle(o, hedefBoy, eksen = 'y') {
 }
 
 async function arenaKur(kok, tl) {
-  const [ada, kemer, kristal, mantar, mangal, kayalar, yuzen, sutun, amblem, rune] = await Promise.all(['ada', 'kemer', 'kristal', 'mantar', 'mangal', 'kayalar', 'yuzen_kaya', 'sutun', 'amblem', 'rune_tasi'].map(a => glb(a, kok).catch(() => null)));
+  const [ada, kemer, kristal, mantar, mangal, kayalar, yuzen] = await Promise.all(['ada', 'kemer', 'kristal', 'mantar', 'mangal', 'kayalar', 'yuzen_kaya'].map(a => glb(a, kok)));
   // ada platformu: üst yüzü tahtayı (6×8) rahatça taşısın
   const a = ada.scene.clone(); golgeAc(a);
   const k0 = new THREE.Box3().setFromObject(a), s0 = k0.getSize(new THREE.Vector3());
@@ -290,9 +291,12 @@ async function arenaKur(kok, tl) {
   for (const d of [28, 332]) { const m = halkaya(mangal, d, 5.5, 0.85); atesEkle(m.position.clone().add(new THREE.Vector3(0, 0.9, 0))); }
   halkaya(kayalar, 163, 5.8, 0.55); halkaya(kayalar, 197, 5.8, 0.5);
   // yeni arena parçaları: kırık sütunlar kemerlerin iki yanında, amblem oyuncu tarafı kenarında, rune taşları yan kenarlarda
-  if (sutun) for (const [d, boy] of [[128, 1.9], [232, 1.7], [70, 1.5], [290, 1.6]]) halkaya(sutun, d, 5.75, boy);
-  if (amblem) { const o = halkaya(amblem, 0, 5.2, 0.42); o.rotation.y = Math.PI; o.scale.multiplyScalar(1); }
-  if (rune) for (const d of [100, 260]) halkaya(rune, d, 5.6, 0.18);
+  // (yüksek çözünürlüklü dokular: açılışı bekletmesin diye arka planda yüklenir)
+  Promise.all(['sutun', 'amblem', 'rune_tasi'].map(a => glb(a, kok).catch(() => null))).then(([sutun, amblem, rune]) => {
+    if (sutun) for (const [d, boy] of [[128, 1.9], [232, 1.7], [70, 1.5], [290, 1.6]]) halkaya(sutun, d, 5.75, boy);
+    if (amblem) { const o = halkaya(amblem, 0, 5.2, 0.42); o.rotation.y = Math.PI; }
+    if (rune) for (const d of [100, 260]) halkaya(rune, d, 5.6, 0.18);
+  });
   for (const [x, y, z, s] of [[-11, 2.5, -9, 3.5], [12, 4, -12, 4.5], [-14, -1, 4, 3], [13, 0.5, 6, 2.6]]) { const o = yuzen.scene.clone(); olcekle(o, s, 'max'); o.position.set(x, y, z); sahne.add(o); efektler.push({ kalici: true, o, faz: x, guncelle: (t) => { o.position.y = y + Math.sin(t * 0.5 + x) * 0.25; } }); }
 }
 function atesEkle(p) {
@@ -480,7 +484,7 @@ async function birimKur(u, kok) {
   const g = await glb(u.b.h, kok);
   const model = SkeletonUtils.clone(g.scene); golgeAc(model);
   // malzeme: fresnel kenar ışığı, doygunluk, dokudan parlama (göz, kristal), çevre yansıması (gorunum.js)
-  G.malzemeIyilestir(model, { renk: u.taraf === 0 ? 'biz' : 'rakip', kahraman: u.b.h });
+  G.malzemeIyilestir(model, { renk: u.taraf === 0 ? 'biz' : 'rakip', kahraman: u.b.h, pbrKoru: !!gor.ozgun });
   const kok3 = new THREE.Group(); const govde = new THREE.Group(); kok3.add(govde); govde.add(model);
   // yön: iki ayaklılar +Z'ye bakar; dört ayaklı ve yılanın ön yönü kemik geometrisinden bulunur (hareket.js)
   let kemik = {}; model.traverse(o => { if (o.isBone) kemik[o.name.replace('mixamorig', '').replace(':', '')] = o; });
@@ -1411,10 +1415,13 @@ function kadraj(dtR) {
   kam.merkez.x += (mx - kam.merkez.x) * k; kam.merkez.z += (mz - kam.merkez.z) * k;
   // kamera: taban yönünde kalır, bakış noktası yakınlaştıkça savaşın merkezine kayar
   const zf = (1 - kam.olcek) / 0.34;
-  _ka.copy(kam.tabanP).sub(kam.tabanH).multiplyScalar(kam.olcek);
-  _kb.set(kam.tabanH.x + (kam.merkez.x - kam.tabanH.x) * zf, kam.tabanH.y, kam.tabanH.z + (kam.merkez.z - kam.tabanH.z) * zf);
+  // oyuncu yakınlaştırması (iki parmak / tekerlek): yumuşak izler; yakınken iki parmakla kaydırılır
+  const kz = 1 - Math.exp(-dtR / 0.12); kam.zoom += (kam.zoomH - kam.zoom) * kz; kam.kayX += (kam.kayHX - kam.kayX) * kz; kam.kayZ += (kam.kayHZ - kam.kayZ) * kz;
+  _ka.copy(kam.tabanP).sub(kam.tabanH).multiplyScalar(kam.olcek * kam.zoom);
+  _kb.set(kam.tabanH.x + (kam.merkez.x - kam.tabanH.x) * zf + kam.kayX, kam.tabanH.y, kam.tabanH.z + (kam.merkez.z - kam.tabanH.z) * zf + kam.kayZ);
   kamera.position.copy(_kb).add(_ka);
   if (kam.mvp) _kb.copy(mvpKarisim(dtR, _kb));   // Maçın yıldızı: kadraj kamerasından yakın plana yumuşak geçiş (ve geri)
+  kam.bak = (kam.bak || new THREE.Vector3()).copy(_kb);
   kamera.lookAt(_kb); kamera.updateMatrixWorld(true);
 }
 const DURUM_TUR = ['sersem', 'buz', 'yanik', 'zehir', 'lanet', 'davul'], DURUM_ALAN = ['sersem', 'yavas', 'yanik', 'zehir', 'lanet', 'davul'];
@@ -1916,6 +1923,46 @@ export function temizle() { mvpSifirla(); sim = null; for (const b of birimler.v
 // hata ayıklama / ölçüm
 export function _ual() { return ual; }
 // hata ayıklama: kamerayı yerleştir
+// ── Serbest kamera: tekerlek / iki parmak sıkıştırma ile imlecin-parmakların olduğu noktaya yakınlaşma, iki parmakla (masaüstünde sağ ya da
+// orta tuşla) kaydırma, çift tık/dokunuşla eski kadraja dönüş. Tek parmak birim sürüklemeye kalır. ──
+const ZOOM_MIN = 0.32, ZOOM_MAX = 1.6, KAY_MAX = 7.5;
+const _zRay = new THREE.Raycaster(), _zV2 = new THREE.Vector2(), _zDuz = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), _zP = new THREE.Vector3();
+function zoomSinirla() {
+  kam.zoomH = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, kam.zoomH));
+  kam.kayHX = Math.min(KAY_MAX, Math.max(-KAY_MAX, kam.kayHX)); kam.kayHZ = Math.min(KAY_MAX, Math.max(-KAY_MAX, kam.kayHZ));
+}
+function zeminNoktasi(cx, cy) {   // ekran noktasının altındaki zemin noktası (dünya)
+  if (!renderer) return null; const r = renderer.domElement.getBoundingClientRect();
+  _zV2.set(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1); _zRay.setFromCamera(_zV2, kamera);
+  return _zRay.ray.intersectPlane(_zDuz, _zP) ? _zP.clone() : null;
+}
+// yakınlaşma oranı z0 → z1 iken P noktası ekranda yerinde kalsın: bakış noktası P'ye (1 − z1/z0) oranında yaklaşır
+function noktayaZoom(P, z0, z1) { if (!P || !kam.bak) return; const f = 1 - z1 / z0; kam.kayHX += (P.x - kam.bak.x) * f; kam.kayHZ += (P.z - kam.bak.z) * f; }
+export function zoomSifirla() { kam.zoomH = 1; kam.kayHX = kam.kayHZ = 0; }
+function olcekPx() { const h = (renderer && renderer.domElement.clientHeight) || 800; return 2 * kamera.position.distanceTo(kam.bak || _zP) * Math.tan(THREE.MathUtils.degToRad(kamera.fov) / 2) / h; }
+let _zoomKuruldu = false;
+function zoomKur() {
+  if (_zoomKuruldu || typeof window === 'undefined') return; _zoomKuruldu = true;
+  const arayuzde = (e) => e.target && e.target.closest && e.target.closest('.panel,.pencere,dialog,[data-kaydir],.kaydir');
+  window.addEventListener('wheel', (e) => { if (arayuzde(e)) return; const z0 = kam.zoomH;
+    kam.zoomH *= Math.exp(e.deltaY * 0.0012); zoomSinirla(); noktayaZoom(zeminNoktasi(e.clientX, e.clientY), z0, kam.zoomH); zoomSinirla(); }, { passive: true });
+  // masaüstü: sağ/orta tuşla sürükleyerek kaydır
+  let fare = null;
+  window.addEventListener('contextmenu', (e) => { if (e.target === renderer?.domElement) e.preventDefault(); });
+  window.addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && (e.button === 1 || e.button === 2)) fare = { x: e.clientX, y: e.clientY, x0: kam.kayHX, z0: kam.kayHZ, o: olcekPx() }; });
+  window.addEventListener('pointermove', (e) => { if (!fare) return; kam.kayHX = fare.x0 - (e.clientX - fare.x) * fare.o; kam.kayHZ = fare.z0 - (e.clientY - fare.y) * fare.o * 1.4; zoomSinirla(); });
+  window.addEventListener('pointerup', () => { fare = null; });
+  // dokunmatik: iki parmak sıkıştır (parmakların ortasına doğru) + kaydır
+  let iki = null;
+  const ort = (t) => ({ x: (t[0].clientX + t[1].clientX) / 2, y: (t[0].clientY + t[1].clientY) / 2, d: Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY) });
+  window.addEventListener('touchstart', (e) => { if (e.touches.length === 2) { const o = ort(e.touches); iki = { ...o, z: kam.zoomH, sx: o.x, sy: o.y }; } }, { passive: true });
+  window.addEventListener('touchmove', (e) => { if (!iki || e.touches.length !== 2) return; const o = ort(e.touches);
+    const zYeni = iki.z * iki.d / Math.max(20, o.d), z0 = kam.zoomH; kam.zoomH = zYeni; zoomSinirla();
+    noktayaZoom(zeminNoktasi(o.x, o.y), z0, kam.zoomH);
+    const op = olcekPx(); kam.kayHX -= (o.x - iki.sx) * op; kam.kayHZ -= (o.y - iki.sy) * op * 1.4; iki.sx = o.x; iki.sy = o.y; zoomSinirla(); }, { passive: true });
+  window.addEventListener('touchend', (e) => { if (e.touches.length < 2) iki = null; }, { passive: true });
+  window.addEventListener('dblclick', (e) => { if (!arayuzde(e)) zoomSifirla(); });
+}
 export function kameraYerlestir(y, z) { kam.serbest = true; kamera.position.set(0, y, z); kamera.lookAt(0, 0, 0); kamera.fov = 50; kamera.updateProjectionMatrix(); }
 // hata ayıklama: yakın kamera
 export function yakinKamera(uid, uzak = 2.4, aci = 0.5, y = 1.4, bakY = 0.6) { const b = birimler.get(uid); if (!b) return; kam.serbest = true; const p = b.kok.position; kamera.position.set(p.x + Math.sin(aci) * uzak, y, p.z + Math.cos(aci) * uzak); kamera.lookAt(p.x, bakY, p.z); }
