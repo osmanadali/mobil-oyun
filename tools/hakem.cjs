@@ -66,10 +66,11 @@ const SHOP_MOCK = `window.CdvPurchase = (() => { let owned = false; const cb = {
   return { ProductType: { NON_CONSUMABLE: 'nc' }, Platform: { GOOGLE_PLAY: 'gp' }, ErrorCode: { PAYMENT_CANCELLED: 1 },
     store: { register() {}, when: () => when, initialize: async () => { (cb.p || []).forEach(f => f(product)); return []; }, get: () => product, owned: id => owned && id === 'ray_reklamsiz', restorePurchases: async () => {} } }; })();`;
 
-async function open(browser, url, { vp = [390, 844], scheme = 'dark', save = null, cap = true, init = '', rm = false, locale } = {}) {
+async function open(browser, url, { vp = [390, 844], scheme = 'dark', save = null, cap = true, init = '', rm = false, locale, route } = {}) {
   const ctx = await browser.newContext({ viewport: { width: vp[0], height: vp[1] }, deviceScaleFactor: 2, colorScheme: scheme, hasTouch: true, isMobile: true, reducedMotion: rm ? 'reduce' : 'no-preference', ...(locale ? { locale } : {}) });
   if (!cap) await ctx.addInitScript('window.__noCap = true');
   if (init) await ctx.addInitScript(init);
+  if (route) await route(ctx);   // ağ yakalama (ör. tools/firestore-sahte.cjs: gerçek Firebase kodu sahte sunucuya)
   await ctx.addInitScript(MOCK);
   const page = await ctx.newPage();
   // Mağaza ve Kapış ayrı sayfa olunca (20 Kasım) eski senaryolar Mağaza sayfasında kalıp ana sayfa düğmesine basmaya çalışıyordu:

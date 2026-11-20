@@ -36,12 +36,12 @@ module.exports = async T => {
   const g1 = await page.evaluate(() => { const G = window.__ray.G; return { duel: !!G?.duel, bar: getComputedStyle(document.getElementById('vsBar')).display, hint: getComputedStyle(document.getElementById('bHint')).display, lives: JSON.parse(localStorage.getItem('ray')).lives ?? 5 }; });
   await shot(page, 'kapis-oyun');
   await solve(page, 0); await page.waitForTimeout(1600);
-  const w = await page.evaluate(() => ({ h: document.querySelector('.sheet h2')?.textContent || '', climb: !!document.querySelector('#vsClimb .climb'), vs: JSON.parse(localStorage.getItem('ray')).vs, lives: JSON.parse(localStorage.getItem('ray')).lives ?? 5 }));
+  const w = await page.evaluate(() => ({ pts: JSON.parse(localStorage.getItem('ray.lig')).pts, h: document.querySelector('.sheet h2')?.textContent || '', climb: !!document.querySelector('#vsClimb .climb'), vs: JSON.parse(localStorage.getItem('ray')).vs, lives: JSON.parse(localStorage.getItem('ray')).lives ?? 5 }));
   await shot(page, 'kapis-kazandin');
   // 5) kapışma: rakip önce biter → yenilgi
   await page.evaluate(() => document.getElementById('vHome')?.click()); await page.waitForTimeout(400);
   await page.evaluate(() => window.__ray.lig.find({ wait: 200, oppT: 2 })); await page.waitForTimeout(6500);
-  const l = await page.evaluate(() => ({ h: document.querySelector('.sheet h2')?.textContent || '', vs: JSON.parse(localStorage.getItem('ray')).vs }));
+  const l = await page.evaluate(() => ({ pts: JSON.parse(localStorage.getItem('ray.lig')).pts, h: document.querySelector('.sheet h2')?.textContent || '', vs: JSON.parse(localStorage.getItem('ray')).vs }));
   await shot(page, 'kapis-kaybettin');
   // 6) terk: kapışmadan çıkınca puansız yenilgi; 7) ligden çık → veriler silinir
   await page.evaluate(() => document.getElementById('vHome')?.click()); await page.waitForTimeout(400);
@@ -59,6 +59,6 @@ module.exports = async T => {
   check('lig.katil', 'Lige katılım: uygunsuz takma ad reddedilir, uygunu kabul; lig ekranı 30 kişi, sen işaretli', !!bad.err && !bad.joined && board.screen && board.rows === 30 && /Hızlı Martı/.test(board.me), JSON.stringify({ bad, board }), 'high');
   check('lig.tirmanis', 'Bölüm sonu tırmanış: yeni yıldız kadar puan, panelde #eski → #yeni; aynı bölümü tekrar oynamak puan vermez', climb.el && climb.pts > pts0 && again === climb.pts, JSON.stringify({ pts0, climb, again }), 'high');
   check('lig.kapis', 'Kapışma: rakip çubuğu, ipucu yok, can harcamaz; ilk bitiren kazanır (+10), rakip önce biterse yenilgi (+2); terk puansız; ligden çık verileri siler',
-    g1.duel && g1.bar === 'flex' && g1.hint === 'none' && w.lives === g1.lives && /Kazandın/.test(w.h) && w.climb && w.vs?.w === 1 && /Rakip/.test(l.h) && l.vs?.l === 1 && quit.home && quit.pts === p1 && rows.nick && rows.leave && !gone && !errors.length,
-    JSON.stringify({ g1, w, l, p1, quit, rows, gone, errors }), 'high');
+    g1.duel && g1.bar === 'flex' && g1.hint === 'none' && w.lives === g1.lives && /Kazandın/.test(w.h) && w.climb && w.vs?.w === 1 && w.pts - again === 10 && /Kaybettin/.test(l.h) && l.vs?.l === 1 && l.pts - w.pts === 2 && quit.home && quit.pts === p1 && rows.nick && rows.leave && !gone && !errors.length,
+    JSON.stringify({ again, g1, w, l, p1, quit, rows, gone, errors }), 'high');
 };
