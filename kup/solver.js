@@ -129,92 +129,92 @@ const Solver = (() => {
   function plan(raw) {
     let s = relabel(raw);
     const steps = [];
-    const push = (stage, k, text, moves) => { if (!moves.length) return; steps.push({ stage, k, text, moves }); s = applyAll(s, moves.map(x => x.mv)); };
+    const push = (stage, k, text, moves, focus) => { if (!moves.length) return; steps.push({ stage, k, text, moves, focus }); s = applyAll(s, moves.map(x => x.mv)); };
     const mk = (mvs, k) => mvs.map(mv => ({ mv, lb: label(mv, k) }));
     const kOf = f => RING.indexOf(f);
     const uTurnsTo = (pred) => { for (const t of [0, 1, -1, 2]) { const m = t ? [fm(U_, t)] : []; if (pred(applyAll(s, m))) return m; } return []; };
 
     // 1) alt artı
     for (const side of RING) {
-      const k = kOf(side), target = posWith([side], -1);
+      const k = kOf(side), target = posWith([side], -1), FO = { cols: [D_, side], to: target };
       if (solvedAt(s, target)) continue;
       let p = find(s, [D_, side]);
       if (p[1] === -1) {
         const f = facesOf(p).find(x => x !== D_);
-        push(0, kOf(f), 'Kenar yanlış yerde: önce yukarı çıkar.', mk([fm(f, 2)], kOf(f)));
+        push(0, kOf(f), 'Bu beyaz kenar altta ama yanlış yerde ya da ters. Önce üste çıkar: üst katmanda serbestçe gezdirebilirsin, alttakiler bozulmaz.', mk([fm(f, 2)], kOf(f)), FO);
       } else if (p[1] === 0) {
         const f = facesOf(p)[0];
         const t = [1, -1].find(t => find(apply(s, fm(f, t)), [D_, side])[1] === 1);
-        push(0, kOf(f), 'Kenar orta katmanda: yukarı çıkar, kenara çek, yüzü geri çevir.', mk([fm(f, t), fm(U_, 1), fm(f, -t)], kOf(f)));
+        push(0, kOf(f), 'Kenar orta katmanda sıkışmış. Yüzü çevirip kenarı üste al, üstü çevirip onu kenara çek, sonra yüzü geri çevir. Son hamle alttaki beyazları geri koyar.', mk([fm(f, t), fm(U_, 1), fm(f, -t)], kOf(f)), FO);
       }
       const keep = RING.filter(x => x !== side && solvedAt(s, posWith([x], -1)));
       const goal = st => solvedAt(st, target) && keep.every(x => solvedAt(st, posWith([x], -1)));
       const path = search(s, goal, 6);
-      push(0, k, 'Kenarı rengini taşıyan merkezin üstüne getir, sonra alta indir.', mk(path, k));
+      push(0, k, 'Işıklı kenar, çerçeveli yere gidecek. Önce yan rengini aynı renkli merkezin üstüne getir, sonra o yüzü çevirip indir. Beyaz alta, yan rengi kendi merkezine bakmalı.', mk(path, k), FO);
     }
     // 2) alt köşeler
     for (let k = 0; k < 4; k++) {
-      const a = RING[k], b = RING[(k + 1) % 4], target = posWith([a, b], -1);
+      const a = RING[k], b = RING[(k + 1) % 4], target = posWith([a, b], -1), FO = { cols: [D_, a, b], to: target };
       if (solvedAt(s, target)) continue;
       let p = find(s, [D_, a, b]);
       if (p[1] === -1) {
         const fs = facesOf(p).filter(f => f !== D_);
         const k2 = [0, 1, 2, 3].find(i => sameSet([RING[i], RING[(i + 1) % 4]], fs));
-        push(1, k2, 'Köşe yanlış yerde. Bir kez R U R\' U\' yap, köşe yukarı çıksın.', alg("R U R' U'", k2));
+        push(1, k2, 'Işıklı köşe altta ama yanlış yerde ya da ters dönük. Bir kez R U R\' U\' yap: sağ yüz kalkar, köşe üste çıkar, alttaki diğer parçalar yerine döner.', alg("R U R' U'", k2), FO);
       }
       const top = posWith([a, b], 1);
-      push(1, k, 'Köşeyi gideceği yerin tam üstüne getir.', mk(uTurnsTo(st => eqP(find(st, [D_, a, b]), top)), k));
+      push(1, k, 'Işıklı köşeyi, çerçeveli yerin tam üstüne getir. Doğru yer, köşenin üç rengini taşıyan üç merkezin buluştuğu köşedir. Sadece üstü çevir.', mk(uTurnsTo(st => eqP(find(st, [D_, a, b]), top)), k), FO);
       let n = 0;
-      while (!solvedAt(s, target) && n < 6) { n++; push(1, k, `R U R' U' tekrar et, köşe yerine oturana dek (${n}. tur).`, alg("R U R' U'", k)); }
+      while (!solvedAt(s, target) && n < 6) { n++; push(1, k, `R U R' U' (${n}. tur). Her tur köşeyi bir kez döndürür ve alttakileri geri koyar. Beyaz alta bakana dek tekrarla.`, alg("R U R' U'", k), FO); }
     }
     // 3) orta katman
     for (let k = 0; k < 4; k++) {
-      const a = RING[k], b = RING[(k + 1) % 4], target = posWith([a, b], 0);
+      const a = RING[k], b = RING[(k + 1) % 4], target = posWith([a, b], 0), FO = { cols: [a, b], to: target };
       if (solvedAt(s, target)) continue;
       let p = find(s, [a, b]);
       if (p[1] === 0) {
         const fs = facesOf(p);
         const k2 = [0, 1, 2, 3].find(i => sameSet([RING[i], RING[(i + 1) % 4]], fs));
-        push(2, k2, 'Kenar orta katmanda ama ters. Sağa yerleştirme hamlesiyle dışarı çıkar.', alg("U R U' R' U' F' U F", k2));
+        push(2, k2, 'Işıklı kenar orta katmanda ama ters ya da yanlış yerde. Yerleştirme hamlesiyle oraya üstten başka bir kenar koyarsın; böylece bu kenar üste çıkar.', alg("U R U' R' U' F' U F", k2), FO);
       }
       // üstte: yan rengin merkezine getir
       const sideCol = st => { const q = find(st, [a, b]); const o = colorsAt(st, q).find(o => o.f !== U_); return { q, o, top: colorsAt(st, q).find(o => o.f === U_).c }; };
-      push(2, k, 'Kenarın yan rengini aynı renkteki merkezin üstüne getir.', mk(uTurnsTo(st => { const r = sideCol(st); return r.o.c === r.o.f; }), k));
+      push(2, k, 'Işıklı kenarın ön rengini aynı renkli merkezin üstüne getir. Kenar ile merkez dik bir çizgi oluşturmalı.', mk(uTurnsTo(st => { const r = sideCol(st); return r.o.c === r.o.f; }), k), FO);
       const r = sideCol(s), kf = kOf(r.o.f);
-      if (r.top === RING[(kf + 1) % 4]) push(2, kf, 'Üst renk sağdaki merkezle aynı: sağa yerleştir.', alg("U R U' R' U' F' U F", kf));
-      else push(2, kf, 'Üst renk soldaki merkezle aynı: sola yerleştir.', alg("U' L' U L U F U' F'", kf));
+      if (r.top === RING[(kf + 1) % 4]) push(2, kf, 'Kenarın üst rengi sağdaki merkezle aynı, yani sağa gidecek. İlk dört hamle köşeyi kaldırıp kenarın yanına getirir, son dört hamle ikisini birlikte yerine indirir.', alg("U R U' R' U' F' U F", kf), FO);
+      else push(2, kf, 'Kenarın üst rengi soldaki merkezle aynı, yani sola gidecek. Sağa yerleştirmenin aynadaki hali: köşeyi kaldır, kenarı yanına getir, ikisini birlikte indir.', alg("U' L' U L U F U' F'", kf), FO);
     }
     // 4) sarı artı
     {
       const ops = [0, 1, 2, 3].map(k => ({ k, moves: alg("F R U R' U' F'", k) }));
       const path = macroSearch(s, yCross, ops, 3) || [];
-      path.forEach(i => push(3, ops[i].k, 'Üstte artı oluşana dek: F R U R\' U\' F\'.', ops[i].moves));
+      path.forEach(i => push(3, ops[i].k, 'F R U R\' U\' F\' ilk iki katmanı aynen geri bırakır, sadece üstteki kenarların yönünü değiştirir. Nokta, L, çizgi ve artı sırasıyla ilerlersin.', ops[i].moves));
     }
     // 5) sarı kenarlar
     {
       const ops = [{ u: 1, k: 0, moves: alg('U', 0) }, { u: 1, k: 0, moves: alg("U'", 0) }, { u: 1, k: 0, moves: alg('U2', 0) }]
         .concat([0, 1, 2, 3].map(k => ({ k, moves: alg("R U R' U R U2 R'", k) })));
       const path = macroSearch(s, yEdges, ops, 5) || [];
-      path.forEach(i => push(4, ops[i].k, ops[i].u ? 'Üst katmanı çevir, kenarlar yan merkezlerle eşleşsin.' : 'Kenarların yerini değiştir: R U R\' U R U2 R\'.', ops[i].moves));
+      path.forEach(i => push(4, ops[i].k, ops[i].u ? 'Üstü çevirerek olabildiğince çok sarı kenarın yan rengini kendi merkeziyle eşle.' : 'R U R\' U R U2 R\' üstteki iki kenarın yerini değiştirir, alt katmanlara dokunmaz. Köşeler biraz döner, onlar sonraki adımın işi.', ops[i].moves));
     }
     // 6) sarı köşelerin yeri
     {
       const ops = [0, 1, 2, 3].map(k => ({ k, moves: alg("U R U' L' U R' U' L", k) }));
       const path = macroSearch(s, st => yEdges(st) && yCornPos(st), ops, 3) || [];
-      path.forEach(i => push(5, ops[i].k, 'Köşeleri doğru yerlerine taşı: U R U\' L\' U R\' U\' L.', ops[i].moves));
+      path.forEach(i => push(5, ops[i].k, 'Bu hamle sağ öndeki köşeyi yerinde bırakır, diğer üç köşeyi sırayla döndürür. Bir köşe, üç rengini taşıyan merkezlerin arasındaysa doğru yerdedir, ters dönük olsa bile.', ops[i].moves));
     }
     // 7) sarı köşeleri çevir
     {
       const ufr = [1, 1, 1];
       for (let i = 0; i < 4; i++) {
         let n = 0;
-        while (s[fIdx(ufr, U_)] !== U_ && n < 6) { n++; push(6, 0, 'Sağ ön köşeyi çevir: R\' D\' R D. Alt katman bozulur, sorun değil; devam et.', alg("R' D' R D", 0)); }
+        while (s[fIdx(ufr, U_)] !== U_ && n < 6) { n++; push(6, 0, 'R\' D\' R D sağ ön köşeyi döndürür. Sarı üste bakana dek tekrarla. Alt katman bozulur, bu normal: bütün köşeler bitince hamleler birbirini götürür ve alt kendiliğinden düzelir.', alg("R' D' R D", 0), { cols: colorsAt(s, ufr).map(o => o.c), to: ufr }); }
         if (topCorners().every(p => s[fIdx(p, U_)] === U_)) break;
-        push(6, 0, 'Sıradaki köşeyi sağ öne getirmek için sadece üstü çevir.', alg('U', 0));
+        push(6, 0, 'Bu köşe tamam. Sıradaki köşeyi sağ öne getirmek için sadece üstü çevir. Alt katmana dokunma; bozuk görünmesi normal.', alg('U', 0));
       }
-      push(6, 0, 'Son dokunuş: üst katmanı yerine çevir.', mk(uTurnsTo(solved), 0));
+      push(6, 0, 'Son dokunuş: üstü çevir, bütün renkler yerine oturur.', mk(uTurnsTo(solved), 0));
     }
-    return { steps, ok: solved(s) };
+    return { steps, ok: solved(s), fc: [0, 1, 2, 3, 4, 5].map(f => raw[fIdx(NORM[f], f)]) };
   }
   function stageOf(raw) { const s = relabel(raw); for (let i = 0; i < GOALS.length; i++) if (!GOALS[i](s)) return i; return 7; }
   return { FL, IDX, key, faceOfN, apply, applyAll, plan, stageOf, label, relabel, solvedState: () => Int8Array.from(FL, x => x.f), GOALS };
