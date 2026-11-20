@@ -44,7 +44,9 @@ async function openGame(browser, url, save, o = {}) {
     ${save ? `try{localStorage.setItem('ray',${JSON.stringify(JSON.stringify(save))})}catch{}` : ''}`);
   const page = await ctx.newPage(), errors = [];
   page.on('pageerror', e => errors.push(e.message));
+  if (o.fake) await page.clock.install({ time: Date.now() });
   await page.goto(url); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(900);
+  if (o.noBlur) await page.addStyleTag({ content: '*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}' + '.modal,.modal *,.winp,.winp *{transition:none!important;animation:none!important}' + (process.env.NOFILT ? '*{filter:none!important}' : '') });
   return { ctx, page, errors };
 }
 const tab = async (page, t) => { await page.evaluate(t => document.querySelector(`[data-tab=${t}]`).click(), t); await page.waitForTimeout(900); };
@@ -53,15 +55,25 @@ const seenTo = c => Object.fromEntries(Array.from({ length: c }, (_, k) => [k, 1
 // ---------- deterministik kayıt: CDP sanal saati 1/30 sn'lik adımlarla ilerletilir, her adımda 1170×2532 ekran görüntüsü ----------
 // Gerçek zamanlı kayıttaki kare düşmeleri olmaz; oyunun rAF, zamanlayıcı ve CSS animasyonları sanal saate bağlıdır.
 const DT = 1000 / 30, DSF = 3, PW = 390 * DSF, PH = 844 * DSF;
+// Sahte saat (Playwright clock): rAF, setTimeout, performance.now ve Date her karede tam 1/30 sn ilerler; CSS animasyon ve geçişleri de
+// Web Animations API ile aynı adımda elle ilerletilir. Böylece kayıt gerçek zamandan bağımsızdır, kare düşmez.
+async function clockInit(page) {
+  const now = await page.evaluate(() => Date.now());
+  await page.clock.pauseAt(now + 50);
+  await page.evaluate(() => { for (const a of document.getAnimations()) { a.__z = 1; a.pause(); a.currentTime = 0; } });
+}
+async function clockStep(page) {
+  await page.clock.runFor(DT);
+  await page.evaluate(dt => { for (const a of document.getAnimations()) { if (!a.__z) { a.__z = 1; a.pause(); a.currentTime = 0; } else if (a.playState === 'paused') a.currentTime = (a.currentTime || 0) + dt; } }, DT);
+}
 async function recordClip(browser, url, name, save, scn, o = {}) {
-  const { ctx, page, errors } = await openGame(browser, url, save, { test: o.test, dsf: DSF }), cdp = await ctx.newCDPSession(page);
+  const { ctx, page, errors } = await openGame(browser, url, save, { test: o.test, dsf: DSF, fake: true }), cdp = await ctx.newCDPSession(page);
   const dir = path.join(WORK, 'klip-' + name); fs.rmSync(dir, { recursive: true, force: true }); mk(dir);
-  await cdp.send('Emulation.setVirtualTimePolicy', { policy: 'pause' });
+  await page.waitForTimeout(0); await clockInit(page);
   let rec = false, n = 0, left = Infinity, acc = 0;
   const shot = async fmt => Buffer.from((await cdp.send('Page.captureScreenshot', { format: fmt, quality: 95, clip: { x: 0, y: 0, width: 390, height: 844, scale: DSF } })).data, 'base64');
   const tick = async () => {
-    const p = new Promise(r => cdp.once('Emulation.virtualTimeBudgetExpired', r));
-    await cdp.send('Emulation.setVirtualTimePolicy', { policy: 'pauseIfNetworkFetchesPending', budget: DT }); await p;
+    await clockStep(page);
     if (rec) { fs.writeFileSync(path.join(dir, `f${String(n++).padStart(5, '0')}.jpg`), await shot('jpeg')); if (--left <= 0) throw new Error('KLIP_BITTI'); }
   };
   page.waitForTimeout = async ms => { acc += ms; const k = Math.floor(acc / DT); acc -= k * DT; for (let i = 0; i < k; i++) await tick(); };
@@ -69,7 +81,7 @@ async function recordClip(browser, url, name, save, scn, o = {}) {
   try { await scn(api); } catch (e) { if (e.message !== 'KLIP_BITTI') throw e; }
   await ctx.close();
   if (errors.length) throw new Error(`${name}: ${errors.join(' | ')}`);
-  if (!n) throw new Error(`${name}: kare yok`);
+  if (!n && name !== 'harita') throw new Error(`${name}: kare yok`);
   console.log(`klip ${name}: ${n} kare`);
 }
 // oyundaki "Oyna": sayfa.click yerine evaluate (sanal saatte actionability beklemesi takılır)
@@ -96,7 +108,7 @@ const CLIPS = {
     await solveTo(page, 1, 55); await page.waitForTimeout(900); await snap('oyun'); await page.waitForTimeout(900); } },
   'tören': { save: saveAt(395), scn: async ({ page, start }) => {
     await page.waitForTimeout(500); await page.evaluate(() => window.__ray.fest(14)); await page.waitForTimeout(250); start(3.8); await page.waitForTimeout(4000); } },
-  harita: { save: saveAt(633), scn: async ({ page, snap, start }) => { await tab(page, 'city'); await page.evaluate(() => document.getElementById('cPrev')?.click()); await page.waitForTimeout(1500); await snap('harita'); } },
+  harita: { save: saveAt(627), scn: async ({ page, snap }) => { await tab(page, 'city'); await page.waitForTimeout(1700); await snap('harita'); } },
 };
 RULE_START.forEach((L, i) => {
   CLIPS['hat' + (i + 1)] = { test: 1, save: saveAt(L, { seen: seenTo(RULE_C[i]) }), scn: async ({ page, start }) => {
@@ -183,41 +195,41 @@ window.T=t=>{L.forEach((l,i)=>{l.style.strokeDashoffset=1-G(t,i*.1,.9+i*.1)});
  [['s',.5,.95],['s2',.8,1.25],['b1',1.1,1.55],['b2',1.3,1.75]].forEach(([i,x,y])=>{const g=G(t,x,y);$(i).style.opacity=g;$(i).style.transform='translateY('+(1-g)*36+'px)'})};</script></body></html>`;
   return '';
 }
-// "drone kamera": gerçek oyunun şehir sekmesi (haritanın SVG'si) üzerinde belirlenimli kamera ve tren; başlık katmanı ayrı
-async function droneFrames(browser, url, fk, dir, nameTxt) {
-  const f = FMT[fk], V = fk === 'V', vw = f.W / 2, vh = f.H / 2;
-  const { ctx, page } = await openGame(browser, url, saveAt(633), { vp: [vw, vh], dsf: 2 });
-  await tab(page, 'city'); await page.evaluate(() => document.getElementById('cPrev')?.click()); await page.waitForTimeout(1200);
-  const stops = await page.evaluate(({ css, ov, V, vw, vh }) => {
-    const cm = document.querySelector('.cmap'), svg = cm.querySelector('svg'); document.body.append(cm);
+// "drone kamera": gerçek oyunun şehir sekmesi (haritanın SVG'si ve oyunun kendi vagonlu treni) sanal saatle 1/30 sn adımlarla ilerler;
+// kamera (yakınlık ve konum) tren başına kilitlenir, hareket yumuşatılır; başlık katmanı ayrı
+async function droneFrames(browser, url, fk, dir) {
+  const f = FMT[fk], V = fk === 'V', vw = f.W / 2, vh = f.H / 2, N = Math.round((V ? 3.75 : 3.65) * 30), T = N / 30;
+  const { ctx, page } = await openGame(browser, url, saveAt(627), { vp: [vw, vh], dsf: 2, fake: true }), cdp = await ctx.newCDPSession(page);
+  await clockInit(page);
+  const tick = () => clockStep(page);
+  await page.evaluate(() => document.querySelector('[data-tab=city]').click()); await tick(); await tick();
+  const info = await page.evaluate(({ css, ov, tall }) => {
+    const cm = document.querySelector('.cmap'), svg = cm.querySelector('svg'), lit = document.querySelectorAll('.sd.lit,.sd.gold').length;
+    document.body.append(cm);
     [...document.body.children].forEach(e => { if (e !== cm && !e.classList.contains('cdefs')) e.style.display = 'none'; });
     document.body.style.cssText += ';background:linear-gradient(165deg,#161b33,#0d1020 62%)!important';
     cm.setAttribute('style', 'position:fixed;left:0;top:0;width:344px;height:344px;margin:0;padding:0;border:0;transform-origin:0 0;z-index:5;background:none;box-shadow:none;aspect-ratio:auto;max-width:none');
     svg.setAttribute('style', 'width:344px;height:344px;display:block;overflow:visible');
     const st = document.createElement('style'); st.textContent = css; document.head.append(st);
-    const o = document.createElement('div'); o.id = 'ov'; o.innerHTML = ov; o.setAttribute('style', `position:fixed;left:0;top:0;width:${V ? 1080 : 1080}px;height:${V ? 1920 : 1080}px;transform:scale(.5);transform-origin:0 0;z-index:50;pointer-events:none`); document.body.append(o);
-    const g = svg.querySelector('.mls'), ns = 'http://www.w3.org/2000/svg', tr = document.createElementNS(ns, 'g'); tr.id = 'trn';
-    tr.innerHTML = '<circle r="9" fill="#fff" opacity=".25"/><circle r="5.2" fill="#fff" stroke="#ffb35c" stroke-width="2"/>'; g.append(tr);
-    window.__lines = [1, 4, 7].map(k => { const p = svg.querySelector(`.sd[data-c="${k}"] .ln`); return { p, n: p.getTotalLength(), name: window.__ray.lineName(k), col: getComputedStyle(svg.querySelector(`.sd[data-c="${k}"]`)).getPropertyValue('--lc') }; });
-    return window.__lines.map(l => l.name);
-  }, { css: hdRules(f), ov: hdHtml(f, ['Hatları bağla,', 'şehrini ışıklandır'], V ? 'Her hat, şehre yeni bir ışık' : '', ''), V, vw, vh });
-  // kamera: ekranda (cx, cy) noktası dünya (x, y) birimine oturur; z: yakınlık
-  const cam = V ? { cx: vw / 2, cy: (150 + vh) / 2, S0: 1.4 } : { cx: 395, cy: vh / 2, S0: .87 }, N = Math.round(3.9 * 30);
+    const o = document.createElement('div'); o.id = 'ov'; o.innerHTML = ov; o.setAttribute('style', 'position:fixed;left:0;top:0;width:1080px;height:' + (tall ? 1920 : 1080) + 'px;transform:scale(.5);transform-origin:0 0;z-index:50;pointer-events:none'); document.body.append(o);
+    const cur = document.querySelector('.ctrain.cur');
+    return { lit, line: window.__ray.lineName(+cur.dataset.c) };
+  }, { css: hdRules(f), ov: hdHtml(f, ['Hatları bağla,', 'şehrini ışıklandır'], V ? '' : 'Her hat, şehre yeni bir ışık', ''), tall: V });
+  const cam = V ? { cx: vw / 2, cy: (150 + vh) / 2, S0: 1.4 } : { cx: 395, cy: vh / 2, S0: .87 };
+  const E = x => x < 0 ? 0 : x > 1 ? 1 : x * x * x * (x * (x * 6 - 15) + 10);
   mk(dir); for (const x of fs.readdirSync(dir)) fs.rmSync(path.join(dir, x));
+  let cx = 0, cy = 0;
   for (let i = 0; i < N; i++) {
-    const t = i / 30;
-    await page.evaluate(({ t, cam, V }) => {
-      const E = x => x < 0 ? 0 : x > 1 ? 1 : x * x * x * (x * (x * 6 - 15) + 10), G = (a, b) => E((t - a) / (b - a)), l = window.__lines[1];
-      // tren M5 hattı boyunca (merkezden uca) tek akıcı hareketle; kamera trene kilitlenir, sonra bütün şehre açılır
-      const q = G(.4, 3.0), P = l.p.getPointAtLength(l.n * q), trn = document.getElementById('trn');
-      trn.setAttribute('transform', `translate(${P.x.toFixed(2)} ${P.y.toFixed(2)})`); trn.style.opacity = G(.1, .5) * (1 - G(3.0, 3.4));
-      const z = 1 + 1.15 * G(0, 1.3) - 1.05 * G(2.5, 3.9), w = G(0, 1.0) * (1 - G(2.5, 3.9)), S = cam.S0 * z;
-      const tx = Math.round((cam.cx - (P.x * w + 172) * S) * 2) / 2, ty = Math.round((cam.cy - (P.y * w + 172) * S) * 2) / 2;
+    const t = i / 30; await tick();
+    const H = await page.evaluate(() => { const c = [...document.querySelectorAll('.ctrain.cur .car')].find(e => e.getAttribute('visibility') === 'visible'); const m = c && /translate\(([-\d.]+)[ ,]+([-\d.]+)\)/.exec(c.getAttribute('transform') || ''); return m ? [+m[1], +m[2]] : null; });
+    const w = E(t / .9) * (1 - E((t - (T - 1.1)) / 1.1)), z = 1 + 1.6 * E((t - .1) / .9) - 1.4 * E((t - (T - 1.1)) / 1.1), tg = H ? [H[0] * w, H[1] * w] : [0, 0];
+    cx += (tg[0] - cx) * .2; cy += (tg[1] - cy) * .2;
+    const S = cam.S0 * z, tx = Math.round((cam.cx - (cx + 172) * S) * 2) / 2, ty = Math.round((cam.cy - (cy + 172) * S) * 2) / 2, show = t > .5 && t < T - 1.0 ? 0 : t >= T - .9 ? 1 : -1;
+    await page.evaluate(({ tx, ty, S, show, info }) => {
       document.querySelector('.cmap').style.transform = `translate(${tx}px,${ty}px) scale(${S.toFixed(4)})`;
-      const ch = document.querySelector('#ov .zchip'), show = t > .5 && t < 2.9 ? 0 : t >= 3.0 ? 1 : -1;
-      ch.innerHTML = show === 0 ? `<b>${l.name}</b>` : show === 1 ? '<b>Işık Kent · 24 semt aydınlık</b>' : ''; ch.style.opacity = show < 0 ? 0 : 1;
-    }, { t, cam, V });
-    await page.screenshot({ path: path.join(dir, `f${String(i).padStart(4, '0')}.jpg`), type: 'jpeg', quality: 93 });
+      const ch = document.querySelector('#ov .zchip'); ch.innerHTML = show === 0 ? `<b>${info.line}</b>` : show === 1 ? `<b>Işık Kent · ${info.lit}/24 semt aydınlık</b>` : ''; ch.style.opacity = show < 0 ? 0 : 1;
+    }, { tx, ty, S, show, info });
+    fs.writeFileSync(path.join(dir, `f${String(i).padStart(4, '0')}.jpg`), Buffer.from((await cdp.send('Page.captureScreenshot', { format: 'jpeg', quality: 94, clip: { x: 0, y: 0, width: vw, height: vh, scale: 2 } })).data, 'base64'));
   }
   await ctx.close();
 }
@@ -260,7 +272,7 @@ async function buildUnits(browser, url, fk) {
   const f = FMT[fk], U = plan(fk), W = path.join(WORK, 'unit-' + fk); mk(W);
   for (let k = 0; k < U.length; k++) {
     const u = U[k], len = u.dur + u.tr, out = path.join(W, `${String(k).padStart(2, '0')}-${u.name}.mp4`); u.file = out; u.len = len;
-    if (arg('hazir') && fs.existsSync(out)) continue;   // --hazir=1: daha önce üretilen birimleri yeniden kullan
+    if (arg('hazir') && u.kind !== 'phone' && fs.existsSync(out)) continue;   // --hazir=1: daha önce üretilen birimleri yeniden kullan
     if (u.kind === 'phone') {
       const { back, front } = await phoneLayers(browser, fk, u.name, u.t, u.sub, u.chip);
       const x = f.x + f.bz, y = f.y + f.bz;
@@ -342,6 +354,7 @@ async function main() {
       const want = arg('klip') ? arg('klip').split(',') : Object.keys(CLIPS);
       for (const n of want) await recordClip(browser, url, n, CLIPS[n].save, CLIPS[n].scn, { test: CLIPS[n].test });
     }
+    if (ONLY && ONLY.includes('drone')) for (const fk of ['V', 'S']) await droneFrames(browser, url, fk, path.join(WORK, `kare-drone-${fk}`));   // yalnız deneme
     if (step('birlestir')) {
       const sfx = SES ? '-sesli' : '';
       for (const [fk, name, bell, end] of [['V', `ray-play-tanitim-dikey${sfx}.mp4`, 0, 0], ['S', `ray-play-tanitim-kare${sfx}.mp4`, 0, 0]]) {
@@ -353,7 +366,7 @@ async function main() {
     if (step('gorsel')) await posters(browser);
     if (step('onizleme') && !SES) {
       mk(path.join(OUT, 'kareler'));
-      for (const [name, pre, ts] of [['ray-play-tanitim-dikey.mp4', 'dikey', [1.6, 7.5, 21, 33]], ['ray-play-tanitim-kare.mp4', 'kare', [1.4, 4.6, 9.5, 23.5]]])
+      for (const [name, pre, ts] of [['ray-play-tanitim-dikey.mp4', 'dikey', [1.6, 5.4, 21, 33]], ['ray-play-tanitim-kare.mp4', 'kare', [1.4, 4.0, 9.5, 23.5]]])
         ts.forEach((t, i) => ff(['-ss', String(t), '-i', path.join(OUT, name), '-frames:v', '1', path.join(OUT, 'kareler', `${pre}-${i + 1}.png`)]));
     }
   } finally { await browser.close(); srv.close(); }
