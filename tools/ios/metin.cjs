@@ -85,8 +85,14 @@ const short = v => v == null ? '∅' : JSON.stringify(v.length > 50 ? v.slice(0,
     out.push(`- **${loc}**: ${diff.length ? diff.map(([k, v]) => `${k} ${short(cur.attributes[k])} → ${short(v)}`).join(' · ') : 'aynı'}`);
     if (APPLY && diff.length) await api('PATCH', `/v1/appInfoLocalizations/${cur.id}`, { data: { type: 'appInfoLocalizations', id: cur.id, attributes: Object.fromEntries(diff) } });
   }
-  // yaş derecelendirmesi: yalnız göster (değiştirilmez)
-  try { const ar = (await api('GET', `/v1/appInfos/${info.id}/ageRatingDeclaration`)).data; out.push('', '**Yaş derecelendirmesi (yalnız okuma):** ' + Object.entries(ar.attributes).filter(([, v]) => v != null && v !== 'NONE' && v !== false).map(([k, v]) => `${k}=${v}`).join(', ')); } catch (e) { out.push('', 'Yaş derecelendirmesi okunamadı: ' + e.message); }
+  // yaş derecelendirmesi: 1.2 lig takma adı = kullanıcı içeriği (MAGAZA §8); sohbet yok. Yalnız bu alan yazılır.
+  try {
+    const ar = (await api('GET', `/v1/appInfos/${info.id}/ageRatingDeclaration`)).data;
+    out.push('', '**Yaş derecelendirmesi:** ' + Object.entries(ar.attributes).filter(([, v]) => v != null && v !== 'NONE' && v !== false).map(([k, v]) => `${k}=${v}`).join(', ')
+      + (ar.attributes.userGeneratedContent !== true ? ` · userGeneratedContent ${ar.attributes.userGeneratedContent} → true ${APPLY ? '(yazıldı)' : '(yazılacak)'}` : ''));
+    if (APPLY && ar.attributes.userGeneratedContent !== true) await api('PATCH', `/v1/ageRatingDeclarations/${ar.id}`, { data: { type: 'ageRatingDeclarations', id: ar.id, attributes: { userGeneratedContent: true } } });
+    const ai = (await api('GET', `/v1/appInfos/${info.id}`)).data.attributes; out.push(`- Hesaplanan derece: ${ai.appStoreAgeRating || '?'}`);
+  } catch (e) { out.push('', 'Yaş derecelendirmesi: ' + e.message); }
   const txt = out.join('\n'); console.log(txt);
   if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, txt + '\n');
 })().catch(e => { console.log('::error::' + e.message); process.exit(1); });
