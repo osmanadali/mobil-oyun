@@ -1339,20 +1339,25 @@ function burst(i, k = 9, delay = 0, color = G.color) {
 cv.addEventListener('pointerdown', e => {
   if (G?.won) { if ($('game').classList.contains('won')) toggleMini(); return; }
   if (!G || G.over) return;
-  const { s, ox, oy } = geo, px = e.offsetX, py = e.offsetY;   // offsetX: CSS dönüşümlerinden bağımsız
+  // dokunulan nokta tuval koordinatında: ekran koordinatı − tuvalin ekrandaki yeri (dönüşüm/ölçek varsa düzeltilir).
+  // e.offsetX kullanılmaz: WebKit'te (iOS) dokunmatik olaylarda yanlış kutuya göre gelebiliyordu → dokunuş komşu karoya kayıyor,
+  // "bazı karolar ortasından dönmüyor, köşesinden dönüyor" (kullanıcı, 21 Kasım)
+  const rc = cv.getBoundingClientRect(), kx = cv.clientWidth / (rc.width || 1), ky = cv.clientHeight / (rc.height || 1);
+  const { s, ox, oy } = geo, px = (e.clientX - rc.left) * kx, py = (e.clientY - rc.top) * ky;
   const c = Math.floor((px - ox) / s), w = Math.floor((py - oy) / s), hx = G.hex ? HX.hit(G, geo, px, py) : 0;   // ⬡ altıgen: en yakın karo merkezi
   if (G.hex ? hx < 0 : c < 0 || w < 0 || c >= G.cols || w >= G.rows) return;
   const i = G.hex ? hx : w * G.cols + c, now = performance.now();
   if (G.tut && !tutGate(i, now)) return;   // 🎓 bu adımda vurgulanmayan karo dönmez
   if (G.fixed[i]) { haptic('light'); tone(440, .06, .02); toast(L('Bu karo ipucuyla sabitlendi', 'This tile was set by a hint')); press.set(i, now); kick(); return; }
-  if (G.fog && !G.seen[i]) { haptic('light'); tone(196, .05, .012); press.set(i, now); kick(); if (!G.fogTold) { toast(L('Karanlık tünel · hat yaklaşınca aydınlanır', 'Dark tunnel · lights up as the line nears')); G.fogTold = true; } return; }
+  if (G.fog && !G.seen[i]) { haptic('light'); tone(196, .05, .012); press.set(i, now); kick(); if (now - (G.fogTold || -1e9) > 3000) { toast(L('Karanlık tünel · hat yaklaşınca aydınlanır', 'Dark tunnel · lights up as the line nears')); G.fogTold = now; } return; }
   if (G.cnt[i] === 0 && G.cur[i] !== G.sol[i] && bst('tur') > 0) { haptic('light'); press.set(i, now); kick(); turSheet(i); return; }
   if (G.cnt[i] === 0) { haptic('light'); tone(196, .05, .012); press.set(i, now); kick(); toast(G.cur[i] === G.sol[i] ? L('Sayaç bitti · bu karo yerinde', 'Counter used up · tile is in place') : L('Sayaç bitti · ↺ baştan ya da 💡 ipucu', 'Counter used up · ↺ restart or 💡 hint')); return; }
   // eklenti engeli (ör. köprü dönmez): m.block(G, i) → bildirim metni ya da true
   for (const m of MODS) {
     const msg = m.block && G[m.key] && m.block(G, i); if (!msg) continue;
     haptic('light'); tone(220, .05, .015); press.set(i, now); kick();
-    if (msg !== true && !G['told' + m.key]) { toast(msg); G['told' + m.key] = 1; }
+    // neden dönmediği her seferinde söylenir (en çok 3 sn'de bir): yalnız ilk dokunuşta söylenince oyuncu "kural yok, karo bozuk" sanıyordu
+    if (msg !== true && now - (G['told' + m.key] || -1e9) > 3000) { toast(msg); G['told' + m.key] = now; }
     return;
   }
   const u = G.unitOf?.[i] ?? -1;
