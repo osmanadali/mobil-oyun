@@ -306,6 +306,8 @@ async function arenaKur(kok, tl) {
 // (Kemer huzmeleri denendi: 360° kamerada yandan bakınca gökyüzüne uzanan çizgi gibi görünüyordu; çıkarıldı.)
 // Uyarlanır kalite: zerreler kademe ≥ 5'te (bloom kapalı), sis kademe ≥ 7'de (son işlem kapalı) gizlenir; 'hafif'te zerre yok.
 const ATM_GURULTU = 'float h_(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); } float g_(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(h_(i), h_(i + vec2(1, 0)), f.x), mix(h_(i + vec2(0, 1)), h_(i + vec2(1, 1)), f.x), f.y); }';
+let atmNesne = null;
+export function _atmosfer() { return atmNesne; }   // hata ayıklama: { halka, etek, zerre }
 function atmosferKur() {
   const zaman = { value: 0 }, sisRenk = new THREE.Color('#c99ab8');
   const vs = 'varying vec2 vUv; varying vec3 vP; void main(){ vUv = uv; vec4 w = modelMatrix * vec4(position, 1.0); vP = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }';
@@ -324,10 +326,10 @@ function atmosferKur() {
     uniforms: { uZ: zaman, uRenk: { value: sisRenk } }, vertexShader: vs,
     fragmentShader: `uniform float uZ; uniform vec3 uRenk; varying vec2 vUv; varying vec3 vP; ${ATM_GURULTU}
       void main(){ float a = smoothstep(0.0, 0.4, vUv.y) * (1.0 - smoothstep(0.5, 1.0, vUv.y));
-        // yüzü kameraya dönük kısım soluk, sıyırarak görülen kenar yoğun (perde değil hacim gibi okunsun)
-        vec3 N = normalize(vec3(vP.x, 0.0, vP.z)), V = normalize(cameraPosition - vP); float f = 1.0 - abs(dot(N, V));
+        // eğik bakılan kısım yoğun; tam karşıdan (perde gibi) ve silüette (düz kenar çizgisi) söner → hacim gibi okunur
+        vec3 N = normalize(vec3(vP.x, 0.0, vP.z)), V = normalize(cameraPosition - vP); float f = 1.0 - abs(dot(N, V)), s = 4.0 * f * (1.0 - f);
         float n = g_(vec2(vUv.x * 40.0 + uZ * 0.08, vP.y * 0.8 - uZ * 0.05));
-        gl_FragColor = vec4(uRenk, a * (0.15 + 0.85 * f * f) * (0.22 + 0.3 * n));
+        gl_FragColor = vec4(uRenk, a * s * (0.24 + 0.32 * n));
         #include <colorspace_fragment>
       }`, transparent: true, depthWrite: false, fog: false, toneMapped: false, side: THREE.DoubleSide }));
   etek.position.y = -1.37; etek.renderOrder = 1; sahne.add(etek);
@@ -350,6 +352,7 @@ function atmosferKur() {
     fragmentShader: `uniform vec3 uRenk; varying float vA; void main(){ vec2 d = gl_PointCoord - 0.5; float a = smoothstep(0.5, 0.0, length(d)); gl_FragColor = vec4(uRenk, a * a * vA * 0.7); }`,
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, toneMapped: false }));
   zerre.renderOrder = 6; sahne.add(zerre);
+  atmNesne = { halka, etek, zerre };
   const pikselOlcek = () => renderer.getPixelRatio() * renderer.domElement.clientHeight / (2 * Math.tan(THREE.MathUtils.degToRad(kamera.fov) / 2));
   efektler.push({ kalici: true, o: zerre, guncelle: (t) => {
     zaman.value = t % 1000;
