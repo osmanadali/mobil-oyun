@@ -1,0 +1,209 @@
+# Ray — çeviri sözlüğü (18): canlı kapışma — rakip türü (🟢 canlı / 👻 kayıtlı), sonuç ekranı, son kapışma özeti
+# Biçim ve terimler: sozluk-1.txt başı ve docs/CEVIRI.md (Duel: Duell · duelo · duelo · duel · 대결 · 対戦 · 對決)
+
+@ 👻 Recorded rival · first to finish wins
+de: 👻 Aufgezeichneter Gegner · wer zuerst fertig ist, gewinnt
+es: 👻 Rival grabado · gana quien termine primero
+pt: 👻 Rival gravado · vence quem terminar primeiro
+fr: 👻 Adversaire enregistré · le premier qui finit gagne
+ko: 👻 기록된 상대 · 먼저 끝내면 승리
+ja: 👻 記録の相手 · 先にクリアした方が勝ち
+zh: 👻 錄製的對手 · 先完成者獲勝
+
+@ 🟢 Live · first to finish wins
+de: 🟢 Live · wer zuerst fertig ist, gewinnt
+es: 🟢 En vivo · gana quien termine primero
+pt: 🟢 Ao vivo · vence quem terminar primeiro
+fr: 🟢 En direct · le premier qui finit gagne
+ko: 🟢 실시간 · 먼저 끝내면 승리
+ja: 🟢 ライブ · 先にクリアした方が勝ち
+zh: 🟢 即時 · 先完成者獲勝
+
+@ Last duel: you won
+de: Letztes Duell: gewonnen
+es: Último duelo: ganaste
+pt: Último duelo: você venceu
+fr: Dernier duel : gagné
+ko: 지난 대결: 승리
+ja: 前回の対戦：勝ち
+zh: 上次對決：你贏了
+
+@ Last duel: you lost
+de: Letztes Duell: verloren
+es: Último duelo: perdiste
+pt: Último duelo: você perdeu
+fr: Dernier duel : perdu
+ko: 지난 대결: 패배
+ja: 前回の対戦：負け
+zh: 上次對決：你輸了
+
+@ If no one is online you race a recorded run; same points: win +10, loss +2
+de: Ist niemand online, trittst du gegen eine Aufzeichnung an; gleiche Punkte: Sieg +10, Niederlage +2
+es: Si no hay nadie en línea, compites contra una partida grabada; mismos puntos: victoria +10, derrota +2
+pt: Se ninguém estiver online, você enfrenta uma partida gravada; mesmos pontos: vitória +10, derrota +2
+fr: Si personne n’est en ligne, tu affrontes une partie enregistrée ; mêmes points : victoire +10, défaite +2
+ko: 접속한 사람이 없으면 기록된 게임과 대결해요. 점수는 같아요: 승리 +10, 패배 +2
+ja: オンラインの人がいないときは記録された対戦と競います。ポイントは同じ：勝ち +10、負け +2
+zh: 沒有人在線時，你會與一場錄製的對局比賽；積分相同：勝利 +10，落敗 +2
+
+@ Recorded rival
+de: Aufgezeichneter Gegner
+es: Rival grabado
+pt: Rival gravado
+fr: Adversaire enregistré
+ko: 기록된 상대
+ja: 記録の相手
+zh: 錄製的對手
+
+@ No one is online right now: you’re racing a run this player recorded earlier
+de: Gerade ist niemand online: Du trittst gegen eine frühere Aufzeichnung dieses Spielers an
+es: Ahora no hay nadie en línea: compites contra una partida que este jugador grabó antes
+pt: Ninguém está online agora: você enfrenta uma partida que este jogador gravou antes
+fr: Personne n’est en ligne pour l’instant : tu affrontes une partie que ce joueur a enregistrée plus tôt
+ko: 지금은 접속한 사람이 없어요: 이 플레이어가 전에 기록한 게임과 대결해요
+ja: 今はオンラインの人がいません：このプレイヤーが以前に記録した対戦と競います
+zh: 目前沒有人在線：你正與這位玩家先前錄製的對局比賽
+
+@ Live · your friend
+de: Live · dein Freund
+es: En vivo · tu amigo
+pt: Ao vivo · seu amigo
+fr: En direct · ton ami
+ko: 실시간 · 친구
+ja: ライブ · 友だち
+zh: 即時 · 你的朋友
+
+@ Live opponent
+de: Live-Gegner
+es: Rival en vivo
+pt: Rival ao vivo
+fr: Adversaire en direct
+ko: 실시간 상대
+ja: ライブの相手
+zh: 即時對手
+
+@ Your opponent left · finish to win
+de: Dein Gegner ist weg · beende das Rätsel, um zu gewinnen
+es: Tu rival se fue · termina para ganar
+pt: Seu oponente saiu · termine para vencer
+fr: Ton adversaire est parti · termine pour gagner
+ko: 상대가 나갔어요 · 끝내면 승리해요
+ja: 相手が退出しました · クリアすれば勝ち
+zh: 對手離開了 · 完成即可獲勝
+
+@ Checking the result…
+de: Ergebnis wird geprüft…
+es: Comprobando el resultado…
+pt: Verificando o resultado…
+fr: Vérification du résultat…
+ko: 결과 확인 중…
+ja: 結果を確認中…
+zh: 正在確認結果…
+
+@ {0}% connected
+de: {0} % verbunden
+es: {0} % conectado
+pt: {0}% conectado
+fr: {0} % relié
+ko: {0}% 연결
+ja: {0}% 接続
+zh: 已連接 {0}%
+
+@ {0} moves
+de: {0} Züge
+es: {0} movimientos
+pt: {0} jogadas
+fr: {0} coups
+ko: {0}수
+ja: {0}手
+zh: {0} 步
+
+@ record
+de: Aufzeichnung
+es: grabación
+pt: gravação
+fr: enregistrement
+ko: 기록
+ja: 記録
+zh: 錄製
+
+@ You finished {0} s ahead
+de: Du warst {0} s schneller
+es: Terminaste {0} s antes
+pt: Você terminou {0} s antes
+fr: Tu as fini {0} s plus tôt
+ko: {0}초 먼저 끝냈어요
+ja: {0} 秒早くクリアしました
+zh: 你提早 {0} 秒完成
+
+@ You connected the line first
+de: Du hast die Linie zuerst verbunden
+es: Conectaste la línea primero
+pt: Você conectou a linha primeiro
+fr: Tu as relié la ligne en premier
+ko: 노선을 먼저 연결했어요
+ja: 先に路線をつなげました
+zh: 你先接通了路線
+
+@ So close! The rematch could be yours
+de: So knapp! Die Revanche könnte dir gehören
+es: ¡Por poco! La revancha puede ser tuya
+pt: Por pouco! A revanche pode ser sua
+fr: Si près ! La revanche peut être pour toi
+ko: 아깝다! 재대결은 네 차례일지도
+ja: 惜しい！リベンジはきっとあなたのもの
+zh: 好可惜！再戰可能就是你的了
+
+@ Your rival finished first · rematch?
+de: Dein Gegner war schneller · Revanche?
+es: Tu rival terminó primero · ¿revancha?
+pt: Seu rival terminou primeiro · revanche?
+fr: Ton adversaire a fini en premier · revanche ?
+ko: 상대가 먼저 끝냈어요 · 재대결?
+ja: 相手が先にクリア · リベンジする？
+zh: 對手先完成了 · 再戰一場？
+
+@ You lost
+de: Verloren
+es: Perdiste
+pt: Você perdeu
+fr: Perdu
+ko: 졌어요
+ja: 負けました
+zh: 你輸了
+
+@ A run recorded earlier · same points rule
+de: Eine frühere Aufzeichnung · gleiche Punkteregel
+es: Una partida grabada antes · misma regla de puntos
+pt: Uma partida gravada antes · mesma regra de pontos
+fr: Une partie enregistrée plus tôt · même règle de points
+ko: 전에 기록된 게임 · 점수 규칙은 같아요
+ja: 以前に記録された対戦 · ポイントのルールは同じ
+zh: 先前錄製的對局 · 積分規則相同
+
+@ League points
+de: Ligapunkte
+es: Puntos de liga
+pt: Pontos da liga
+fr: Points de ligue
+ko: 리그 점수
+ja: リーグポイント
+zh: 聯賽積分
+
+@ Invite your friend again
+de: Lade deinen Freund erneut ein
+es: Invita de nuevo a tu amigo
+pt: Convide seu amigo de novo
+fr: Réinvite ton ami
+ko: 친구를 다시 초대하기
+ja: 友だちをもう一度招待
+zh: 再次邀請朋友
+
+@ Finds a new opponent
+de: Sucht einen neuen Gegner
+es: Busca un nuevo rival
+pt: Procura um novo rival
+fr: Cherche un nouvel adversaire
+ko: 새 상대를 찾아요
+ja: 新しい相手を探します
+zh: 尋找新對手

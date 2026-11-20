@@ -539,6 +539,13 @@ function puzzleFor(l) {
     return P;
   });
 }
+// ⚔️ kapışma bulmacası: maça özel tohumla (iki tarafta aynı; bölüm ezberi avantaj olmaz). Kuralsız kare tahta, orta zorluk:
+// boyut ve zorluk seçilen bölüm seviyesine göre (iki oyuncunun da geçtiği bölümlerden), 5×6 ile 6×8 arası, z ≈ .3–.6
+function duelFor(d) {
+  const s = (d.seed >>> 0) || hashStr('duel' + d.id), lv = Math.max(1, d.level || 1), R = rng(s);
+  const [c, r] = TIERS[Math.max(3, Math.min(5, CAPS.findIndex(m => lv <= m)))], z = Math.min(.6, .3 + .3 * zOf(lv) + R() * .1);
+  return cached('v' + s, () => { const P = pick(c, r, s, 0, 0, z, 5 + 11 * z); P.rules = []; return P; });
+}
 // zorluk etiketi (12 Kasım): yüzde yerine kelime — "%1" yeni oyuncuya "çok kolay" diye okunuyor, takılınca moral bozuyordu
 const lvTag = c => c <= 1 ? L('🌱 Isınma', '🌱 Warm-up') : c <= 5 ? L('⚡ Kolay', '⚡ Easy') : c <= 11 ? L('⚡ Orta', '⚡ Medium') : c <= 19 ? L('🔥 Zor', '🔥 Hard') : L('💎 Uzman', '💎 Expert');
 const dBolt = p => p < 50 ? '⚡' : p < 70 ? '⚡⚡' : '⚡⚡⚡';   // Günün Hattı kartı dar: dilden bağımsız şimşek sayısı (Pzt ⚡ … Paz ⚡⚡⚡)
@@ -958,7 +965,7 @@ function start(mode, lvl = save.level) {
   if (!tut && !daily && !duel && !unlocked(lineOf(lvl))) { lockedSheet(lineOf(lvl)); return; }
   // ❤️ 0 canda yeni bölüm başlamaz (yarım kalan aynı bölüm sürer; Günün Hattı, arşiv ve 🍃 zen can harcamaz)
   if (!tut && !daily && !duel && !save.zen && !infOn() && lives() <= 0 && save.runs.level?.lvl !== lvl) { if (active('game')) show('home'); lifePop(lvl); return; }
-  G = { ...(tut ? tutPuzzle() : daily ? dailyFor(day) : puzzleFor(lvl)), tut, tutRe, daily, arch, lvl: daily || tut ? 0 : lvl, day: daily ? day : null, practice: arch ? archPlayed(day) : daily && save.dailyDone === day, duel, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0, bub: 0 };
+  G = { ...(tut ? tutPuzzle() : daily ? dailyFor(day) : duel ? duelFor(duel) : puzzleFor(lvl)), tut, tutRe, daily, arch, lvl: daily || tut ? 0 : lvl, day: daily ? day : null, practice: arch ? archPlayed(day) : daily && save.dailyDone === day, duel, moves: 0, lastTile: -1, won: false, ms: 0, runAt: 0, bub: 0 };
   G.lim = limits(G); G.zen = (!!save.zen && !daily) || !!duel || tut;   // kapışma: hedef yok (ilk bitiren kazanır) · öğretici: süre ve hamle hedefi yok
   $('game').classList.toggle('tut', tut); $('game').classList.toggle('tutre', tutRe); document.body.classList.toggle('tut', tut);
   G.lim.dl = G.zen || daily || lineOf(lvl) < CALM_LINES ? 0 : lastCall(G.lim.t);   // son süre (0: yok) · ilk iki hatta yok: süre geçince yalnız ⏱ yıldızı kaçar, can gitmez   // 🍃 zen: hedefler gizli (Günün Hattı herkes için aynı koşulda)
@@ -986,7 +993,8 @@ function start(mode, lvl = save.level) {
   $('gHints').textContent = save.hints;
   clearTimeout(bubT); $('gBub').classList.remove('show');
   const stake = comboStake(); $('gCombo').hidden = stake < 2; $('gCombo').textContent = `✨${stake}`;
-  if (duel) { $('gTitle').textContent = L('⚔️ Kapış', '⚔️ Duel'); $('gMoves').textContent = L('İlk bitiren kazanır', 'First to finish wins'); vsBar(duel); }
+  if (duel) { $('gTitle').textContent = L('⚔️ Kapış', '⚔️ Duel'); $('gMoves').textContent = duel.opp.ghost ? L('👻 Kayıtlı rakip · ilk bitiren kazanır', '👻 Recorded rival · first to finish wins') : L('🟢 Canlı · ilk bitiren kazanır', '🟢 Live · first to finish wins'); vsBar(duel);
+    if (duel.seed) { save.vsSeen = [...(save.vsSeen || []).filter(x => x !== duel.seed), duel.seed].slice(-20); persist(); } }
   show('game'); resize(); hud(); tick();
   if (tut) { tutSet(0); if (!tutRe) Olcum.event('tutorial_begin', {}); Jank.take(); return; }
   Olcum.event('level_start', { ...lvlP(), resumed: !!G.moves }); Jank.take();   // takılma sayacı bu bölüm için sıfırlanır
@@ -1391,7 +1399,7 @@ function win() {
   pause(); cityUp();
   G.won = true; G.time = elapsed();
   if (G.tut) return tutWin();   // öğretici: kayıtta yalnız save.tut
-  if (G.duel) { winT = performance.now() + 120; G.L.d.forEach((v, i) => { litAt[i] = winT + v * 45; }); kick(); [0, 2, 4, 5, 7].forEach((k, j) => tone(note(k + 3), .4, .05, 'sine', .12 + j * .09)); haptic('win'); vsSend(true); setTimeout(() => vsEnd(true), 700); return; }
+  if (G.duel) { winT = performance.now() + 120; G.L.d.forEach((v, i) => { litAt[i] = winT + v * 45; }); kick(); haptic('light'); vsEnd(true); return; }   // sonuç (ve ezgi) maç belgesinden gelince
   delete save.runs[runKey()];
   winT = performance.now() + 120;
   G.L.d.forEach((v, i) => { litAt[i] = winT + v * 45; if (popc(G.cur[i]) === 1) burst(i, 12, 120 + v * 45, ownCol(i)); });
@@ -3460,9 +3468,9 @@ function ligWeek() {
 }
 
 // bölüm sonu tırmanış: sonuç panelinin üstünde "#14 → #9 ▲5", geçilen oyuncular kayarak
-async function ligScore(pts, host) {
+async function ligScore(pts, host, o) {
   if (!ligOn() || !LIG.me().joined || !(pts > 0)) return null;
-  let r; try { r = await LIG.add(pts); } catch { return null; }
+  let r; try { r = await LIG.add(pts, o); } catch { return null; }
   if (!r || !host?.isConnected) return r;
   const a = r.after, b = r.before, up = b - a, rows = r.rows, lo = Math.max(0, a - 2), hi = Math.min(rows.length, Math.max(a + 2, Math.min(b, a + 4)));
   const win = rows.slice(lo, hi), mi = win.findIndex(x => x.me), from = Math.min(win.length - 1, mi + up);
@@ -3485,7 +3493,7 @@ function vsSheet() {
   if (!ligOn()) return;
   if (modalOpen()) closeModal();
   if (!active('vs')) show('vs');
-  const me = LIG.me(), on = me.joined, rec = save.vs || { w: 0, l: 0 };
+  const me = LIG.me(), on = me.joined, rec = save.vs || { w: 0, l: 0 }, last = save.vsLast;
   const av = (c, t) => `<i class="vsav" style="--c:${c}">${t}</i>`;
   const rule = (ic, t) => `<div><i>${ic}</i><span>${t}</span></div>`;
   $('vsBody').innerHTML = `<div class="vshero"><div class="vsi">
@@ -3493,11 +3501,12 @@ function vsSheet() {
       <i>VS</i>
       <div class="vsp opp">${av('#ff6b81', '?')}<b>${L('Rakip', 'Opponent')}</b><small>${L('Canlı 1\'e 1', 'Live 1-on-1')}</small></div></div>
     <p>${L('Aynı bulmaca, aynı anda. İlk bitiren kazanır.', 'Same puzzle, same time. First to finish wins.')}</p>
-    ${rec.w + rec.l ? `<div class="vsrec"><span><b>${rec.w}</b><small>🏆</small></span><span><b>${rec.l}</b><small>🚇</small></span></div>` : ''}</div>
+    ${rec.w + rec.l ? `<div class="vsrec"><span><b>${rec.w}</b><small>🏆</small></span><span><b>${rec.l}</b><small>🚇</small></span></div>` : ''}
+    ${last ? `<div class="vslast${last.w ? ' w' : ''}"><b>${last.w ? '🏆 ' + L('Son kapışma: kazandın', 'Last duel: you won') : '🚇 ' + L('Son kapışma: kaybettin', 'Last duel: you lost')}</b><span>${last.g ? '👻 ' : ''}${esc(last.n)} · ${last.ms ? fmtT(last.ms) : L(`%${last.pct || 0}`, `${last.pct || 0}%`)}</span></div>` : ''}</div>
     ${on ? `<button id="vpR" class="btn primary"><span>${L('Rastgele rakip', 'Random opponent')}</span><small>${L('Galibiyet +10 puan', 'Win +10 points')}</small></button>
     <div class="row2"><button id="vpH" class="btn glassbtn">${L('Arkadaşı davet et', 'Invite a friend')}</button><button id="vpJ" class="btn glassbtn">${L('Koda katıl', 'Join with code')}</button></div>`
     : `<button id="vpL" class="btn primary"><span>${L('Lige katıl', 'Join the league')}</span><small>${L('Kapışmak için bir takma ad seç', 'Pick a nickname to duel')}</small></button>`}
-    <div class="perks">${rule('💡', L('Kapışmada ipucu yok', 'No hints in a duel'))}${rule('❤️', L('Can harcamaz', 'Doesn’t cost lives'))}${rule('🏳️', L('Kapışmadan çıkmak yenilgi sayılır', 'Leaving a duel counts as a loss'))}</div>`;
+    <div class="perks">${rule('💡', L('Kapışmada ipucu yok', 'No hints in a duel'))}${rule('❤️', L('Can harcamaz', 'Doesn’t cost lives'))}${rule('🏳️', L('Kapışmadan çıkmak yenilgi sayılır', 'Leaving a duel counts as a loss'))}${rule('👻', L('Çevrimiçi kimse yoksa kayıtlı bir oyunla kapışırsın; puan aynı: galibiyet +10, yenilgi +2', 'If no one is online you race a recorded run; same points: win +10, loss +2'))}</div>`;
   bind({ vpR: () => vsFind(), vpH: vsHost, vpJ: () => vsJoinSheet(), vpL: () => ligJoin(vsSheet) }, $('vsBody'));
   if (!on) ligJoin(vsSheet);   // takma ad yoksa katılım penceresi sayfanın üstünde (Şimdi değil → sayfada "Lige katıl")
 }
@@ -3509,7 +3518,7 @@ function vsWait(title, sub, onCancel) {
 }
 async function vsFind(o = {}) {
   vsWait(L('Rakip aranıyor…', 'Finding an opponent…'), L('Benzer seviyede bir oyuncu', 'A player at a similar level'));
-  let m = null; try { m = await LIG.duel.find({ levels: duelLevels(), ...o }); } catch {}
+  let m = null; try { m = await LIG.duel.find({ levels: duelLevels(), seen: save.vsSeen || [], ...o }); } catch {}
   if (!$('vwT')) return;   // vazgeçildi
   if (m) return vsIntro(m);
   modal(`<div class="bell">🚇</div><h2>${L('Şu an rakip yok', 'No opponent right now')}</h2><p>${L('Birazdan yeniden dene ya da bir arkadaşını davet et.', 'Try again in a moment, or invite a friend.')}</p>
@@ -3538,49 +3547,115 @@ function vsJoinSheet(code = '') {
       vsIntro(m); },
     mClose: closeModal });
 }
-// eşleşme bulundu: iki oyuncu, 3-2-1, sonra bulmaca (iki tarafta aynı anda başlar: m.t0)
+// eşleşme bulundu: iki oyuncu, 3-2-1, sonra bulmaca. m.t0 yerel saatte (lig.js sunucu saatini bu cihazın saat farkıyla çevirdi):
+// geri sayım iki cihazda aynı anda biter. Rakibin türü açıkça yazar: 🟢 canlı ya da 👻 kayıtlı oyun.
+let vsGoAt = 0;
+const vsTag = o => o.ghost
+  ? `<p class="vstag ghost"><b>👻 ${L('Kayıtlı rakip', 'Recorded rival')}: ${esc(o.nick)}</b><small>${L('Şu an çevrimiçi rakip yok: bu oyuncunun daha önce oynanmış bir kaydıyla yarışıyorsun', 'No one is online right now: you’re racing a run this player recorded earlier')}</small></p>`
+  : `<p class="vstag live"><b>🟢 ${o.friend ? L('Canlı · arkadaşın', 'Live · your friend') : L('Canlı rakip', 'Live opponent')}</b></p>`;
 function vsIntro(m) {
   const me = LIG.me(), o = m.opp;
   modal(`<div class="vsi"><div class="vsp"><b>${esc(me.nick)}</b><small style="color:${TIER_C[me.tier]}">${TIER_I[me.tier]} ${TIER_N()[me.tier]}</small></div><i>VS</i>
-    <div class="vsp"><b>${esc(o.nick)}</b><small style="color:${TIER_C[o.tier]}">${TIER_I[o.tier]} ${TIER_N()[o.tier]}</small></div></div>
-    ${o.ghost ? `<p class="tip">${L('Şu an çevrimiçi rakip yok: gerçek bir oyuncunun kayıtlı oyunuyla kapışıyorsun', 'No one is online right now: you’re racing a real player’s recorded run')}</p>` : ''}
-    <div class="vsc" id="vsC">3</div>`, {}, true, true);
+    <div class="vsp"><b>${o.ghost ? '👻 ' : ''}${esc(o.nick)}</b><small style="color:${TIER_C[o.tier]}">${TIER_I[o.tier]} ${TIER_N()[o.tier]}</small></div></div>
+    ${vsTag(o)}<div class="vsc" id="vsC"></div>`, {}, true, true);
   haptic('heavy'); tone(note(5), .2, .04);
-  const go = () => { closeModal(); start('duel', m); };
-  const t = () => { const s = Math.ceil((m.t0 - Date.now()) / 1000); if (!$('vsC')) return; if (s <= 0) return go(); $('vsC').textContent = s; tone(note(3 + (3 - s)), .12, .03); setTimeout(t, 1000 - (Date.now() - m.t0) % 1000 || 1000); };
-  setTimeout(t, 300);
+  const go = () => { if (!$('vsC')) return; vsGoAt = performance.timeOrigin + performance.now(); closeModal(); start('duel', m); };
+  // sayı: kalan saniye (yukarı yuvarlanmış); bir sonraki tam saniyede değişir. Başlangıç ayrı zamanlayıcıyla tam t0'da
+  const t = () => {
+    const el = $('vsC'), ms = m.t0 - Date.now(); if (!el || ms <= 0) return;
+    const s = Math.ceil(ms / 1000); el.textContent = s; el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
+    tone(note(3 + Math.max(0, 3 - s)), .12, .03); setTimeout(t, (ms - 1) % 1000 + 1);
+  };
+  t(); setTimeout(go, Math.max(0, m.t0 - Date.now()));
 }
 // oyunda: rakibin ilerlemesi üstte; benim ilerlemem her hamlede gönderilir (en çok 2/sn)
 let vsSentAt = 0;
 function vsSend(force) {
-  if (!G?.duel) return; const p = { lit: G.L.n / G.cur.length, moves: G.moves, done: !!G.won, ms: elapsed() };
+  if (!G?.duel) return; const p = { lit: G.L.n / G.cur.length, moves: G.moves, done: false, ms: elapsed() };
   $('vsMe').style.setProperty('--p', p.lit); $('vsMeM').textContent = G.moves;
   if (force || Date.now() - vsSentAt > 500) { vsSentAt = Date.now(); LIG.duel.send(p); }
 }
 function vsBar(m) {
-  $('vsOppN').textContent = m.opp.nick + (m.opp.ghost ? ' 👻' : ''); $('vsOpp').style.setProperty('--p', 0); $('vsOppM').textContent = 0;
+  $('vsOppN').textContent = (m.opp.ghost ? '👻 ' : '🟢 ') + m.opp.nick; $('vsOpp').style.setProperty('--p', 0); $('vsOppM').textContent = 0;
   $('vsMe').style.setProperty('--p', 0); $('vsMeM').textContent = 0; $('vsMeN').textContent = LIG.me().nick;
   LIG.duel.onOpp(p => {
     if (!G?.duel || G.duel !== m || G.duelOver) return;
     $('vsOpp').style.setProperty('--p', p.lit); $('vsOppM').textContent = p.moves ?? 0;
-    if (p.done && !G.won) vsEnd(false, p);
+    if (p.left && !p.over && !G.oppLeft) { G.oppLeft = true; toast(L('Rakip ayrıldı · bitirirsen kazanırsın', 'Your opponent left · finish to win')); }
+    if (p.over === 'opp' && !G.won) vsEnd(false);
   });
 }
-function vsEnd(won, opp) {
+// maç bitti: sonuç maç belgesinden (iki cihazda aynı kazanan); puan her maçta bir kez (galibiyet +10, yenilgi +2, terk 0)
+async function vsEnd(won) {
   const g = G; if (!g?.duel || g.duelOver) return; g.duelOver = true;
-  const forfeit = won === null;
-  pause(); LIG.duel.send({ lit: g.L.n / g.cur.length, moves: g.moves, done: won === true, ms: g.time || elapsed(), left: forfeit }); LIG.duel.leave();
-  Olcum.event('duel_end', { result: forfeit ? 'forfeit' : won ? 'win' : 'lose', ghost: !!g.duel.opp.ghost, friend: !!g.duel.opp.friend });
-  if (forfeit) return;
-  if (!won) { tone(330, .3, .04); haptic('heavy'); }
-  const pts = won ? PTS.win : PTS.lose;
-  save.vs = { w: (save.vs?.w || 0) + (won ? 1 : 0), l: (save.vs?.l || 0) + (won ? 0 : 1) }; persist();
-  modal(`<div class="bell">${won ? '🏆' : '🚇'}</div><h2>${won ? L('Kazandın!', 'You won!') : L('Rakip önce bitirdi', 'Your opponent finished first')}</h2>
-    <p>${won ? L(`${fmtT(g.time)} · ${g.moves} hamle`, `${fmtT(g.time)} · ${g.moves} moves`) : L(`Sen %${Math.round(g.L.n / g.cur.length * 100)} bağlamıştın`, `You had ${Math.round(g.L.n / g.cur.length * 100)}% connected`)}</p>
-    <div id="vsClimb"></div>
-    <button id="vAgain" class="btn primary"><span>${L('Tekrar kapış', 'Duel again')}</span></button><button id="vHome" class="btn glassbtn">${L('Ana sayfa', 'Home')}</button>`,
-    { vAgain: () => { closeModal(); vsSheet(); }, vHome: () => { closeModal(); show('home'); } }, true);
-  ligScore(pts, $('vsClimb'));
+  const forfeit = won === null, d = g.duel, at = Date.now();
+  pause();
+  const mine = { lit: g.L.n / g.cur.length, moves: g.moves, done: won === true, ms: g.time || elapsed(), left: forfeit };
+  const pr = LIG.duel.end(mine); LIG.duel.leave();   // end() maçı hemen yakalar; leave() takibi durdurur (yeni arama eskisini bozmaz)
+  if (forfeit) { pr.catch(() => {}); Olcum.event('duel_end', { result: 'forfeit', ghost: !!d.opp.ghost, friend: !!d.opp.friend }); return; }
+  const wait = setTimeout(() => { if (!modalOpen()) modal(`<div class="vsw"><div class="vsr"><i></i><i></i><i></i></div><h2>${L('Sonuç bekleniyor…', 'Checking the result…')}</h2></div>`, {}, true, true); }, 900);
+  let r = null; try { r = await pr; } catch {}
+  await new Promise(res => setTimeout(res, Math.max(0, (won ? 750 : 250) - (Date.now() - at))));   // kazanınca hat bir an parlasın
+  clearTimeout(wait);
+  if (!r?.win) r = { ...(r || {}), win: won ? 'me' : 'opp', me: r?.me || mine, opp: r?.opp || {} };
+  const ok = r.win === 'me', pts = ok ? PTS.win : PTS.lose, paid = save.vsPaid === d.id;
+  Olcum.event('duel_end', { result: ok ? 'win' : 'lose', ghost: !!d.opp.ghost, friend: !!d.opp.friend });
+  if (!paid) save.vs = { w: (save.vs?.w || 0) + (ok ? 1 : 0), l: (save.vs?.l || 0) + (ok ? 0 : 1) };
+  save.vsPaid = d.id; save.vsLast = { w: ok, n: d.opp.nick, g: !!d.opp.ghost, f: !!d.opp.friend, ms: r.me?.done ? r.me.ms : 0, pct: Math.round((r.me?.lit || 0) * 100), at: Date.now() }; persist();
+  vsResult(d, r, ok, pts);
+  duelSound(ok); haptic(ok ? 'win' : 'heavy');
+  if (!paid) ligScore(pts, $('vsClimb'), { fresh: true });
+}
+// sonuç ekranı: büyük başlık, iki oyuncu yan yana (süre / bağlanan %, hamle, lig puanı), kazananda taç ve sakin konfeti
+function vsResult(d, r, ok, pts) {
+  const me = LIG.me(), o = d.opp, rm = calmMotion.matches;
+  const pct = x => Math.round((x?.lit || 0) * 100);
+  const stat = x => x?.done ? `⏱ ${fmtT(x.ms)}` : L(`%${pct(x)} bağlı`, `${pct(x)}% connected`);
+  const card = (nick, tier, x, w, p, ghost) => `<div class="vr-p${w ? ' w' : ''}">${w ? '<i class="vr-cr">👑</i>' : ''}<i class="vsav" style="--c:${TIER_C[tier] || '#ff6b81'}">${ghost ? '👻' : TIER_I[tier] || '🚇'}</i>
+    <b>${esc(nick)}</b><span>${stat(x)}</span><small>${L(`${x?.moves || 0} hamle`, `${x?.moves || 0} moves`)}</small>${p ? `<em>+${p}</em>` : `<em class="no">${L('kayıt', 'record')}</em>`}</div>`;
+  const gap = r.me?.done && r.opp?.done ? Math.abs((r.opp.ms || 0) - (r.me.ms || 0)) / 1000 : 0;
+  const sub = ok ? (gap >= .1 ? L(`Rakibinden ${gap.toFixed(1)} sn önce bitirdin`, `You finished ${gap.toFixed(1)} s ahead`) : L('Hattı rakibinden önce açtın', 'You connected the line first'))
+    : pct(r.me) >= 75 ? L('Kıl payı! Rövanşta senin olabilir', 'So close! The rematch could be yours') : L('Rakibin önce bitirdi · rövanş?', 'Your rival finished first · rematch?');
+  const fx = ok && !rm ? `<div class="vr-fx" aria-hidden="true">${Array.from({ length: 18 }, (_, j) => `<i style="--x:${(j * 37 + 7) % 100}%;--d:${(j * .17 % 1.6).toFixed(2)}s;--r:${(j * 47) % 360}deg;--c:${['#ffd36b', '#ff7a8a', '#7ea6ff', '#5fd6b0', '#b394ff', '#ffb35c'][j % 6]}"></i>`).join('')}</div>` : '';
+  const oppPts = o.ghost ? 0 : ok ? PTS.lose : PTS.win;
+  modal(`<div class="vres ${ok ? 'win' : 'lose'}">${fx}
+    <div class="vr-ic">${ok ? '🏆' : '🚇'}</div>
+    <h2>${ok ? L('Kazandın!', 'You won!') : L('Kaybettin', 'You lost')}</h2>
+    <p class="vr-sub">${sub}</p>
+    <div class="vr-duo">${card(me.nick, me.tier, r.me, ok, pts)}<i class="vr-vs">VS</i>${card(o.nick, o.tier, r.opp, !ok, oppPts, o.ghost)}</div>
+    <div class="vr-row">${o.ghost ? `<p class="vstag ghost"><b>👻 ${L('Kayıtlı rakip', 'Recorded rival')}</b><small>${L('Daha önce oynanmış bir kayıt · puan kuralı aynı', 'A run recorded earlier · same points rule')}</small></p>` : `<p class="vstag live"><b>🟢 ${o.friend ? L('Canlı · arkadaşın', 'Live · your friend') : L('Canlı rakip', 'Live opponent')}</b></p>`}
+    <div class="vr-pts"><span>${L('Lig puanı', 'League points')}</span><b id="vrPts">+0</b></div></div>
+    <div id="vsClimb"></div></div>
+    <button id="vAgain" class="btn primary"><span>${L('Tekrar kapış', 'Duel again')}</span><small>${o.friend ? L('Arkadaşını yeniden davet et', 'Invite your friend again') : L('Yeni rakip aranır', 'Finds a new opponent')}</small></button>
+    <button id="vHome" class="btn glassbtn">${L('Ana sayfa', 'Home')}</button>`,
+    { vAgain: () => { closeModal(); if (o.friend) { vsSheet(); vsHost(); } else { vsSheet(); vsFind(); } }, vHome: () => { closeModal(); show('home'); } }, true);
+  // puan sayarak artar
+  const el = $('vrPts'), t0 = performance.now() + 350, T = 700;
+  const step = () => { if (!el.isConnected) return; const f = Math.max(0, Math.min(1, (performance.now() - t0) / T)); el.textContent = '+' + Math.round(pts * (1 - Math.pow(1 - f, 3))); if (f < 1) requestAnimationFrame(step); else el.classList.add('done'); };
+  if (rm) { el.textContent = '+' + pts; el.classList.add('done'); } else requestAnimationFrame(step);
+}
+// kapışma sesi (dosya yok; Ses kapalıysa susar). Zafer: Do majör boru çağrısı "ta-ta-ta-taaa" + akor + üstte parıltı
+// (bölüm ezgisi pentatonik arpej, hat töreni Re majör: bunlardan ayrı). Yenilgi: yumuşak, inip hafifçe yükselen üç nota.
+function duelSound(win) {
+  if (!save.sound || hushed || document.hidden) return;
+  let bus, t0;
+  try { ensureAC(); if (ac.state === 'interrupted') return; bus = ac.createGain(); bus.gain.value = 1; bus.connect(ac.destination); t0 = ac.currentTime + .05; } catch { return; }
+  const v = (m, at, dur, vol, type = 'sine') => {
+    try {
+      const t = t0 + at, o = ac.createOscillator(), g = ac.createGain();
+      o.type = type; o.frequency.value = mhz(m);
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .015); g.gain.exponentialRampToValueAtTime(.0001, t + dur + .25);
+      o.connect(g).connect(bus); o.start(t); o.stop(t + dur + .3);
+    } catch {}
+  };
+  if (win) {
+    [[67, 0, .09], [67, .12, .09], [67, .24, .09], [72, .38, .75]].forEach(([m, a, d]) => { v(m, a, d, .05, 'triangle'); v(m + 12, a, d, .012); });
+    [60, 64, 67, 72].forEach(m => v(m, .38, 1.1, .018));
+    [84, 88, 91, 96].forEach((m, j) => v(m, .8 + j * .07, .3, .01));
+  } else {
+    [[69, 0, .3], [65, .3, .4], [67, .68, .8]].forEach(([m, a, d]) => v(m, a, d, .03));
+    [53, 57, 60].forEach(m => v(m, .68, 1, .01));
+  }
 }
 
 // ---------- kural eklentileri: www/rules/*.js (M9+ yeni kurallar). Ayrıntı: docs/kurallar/README.md ----------
@@ -3653,7 +3728,7 @@ if (introOn) {
 if (tutDue() && !G) start('tut');   // 🎓 yeni oyuncu: anlatıcı penceresi yerine doğrudan öğretici bölüm (intro arkasında hazır)
 else setTimeout(maybeRescue, introOn ? 2700 : 700);
 // test kancası
-window.__ray = { jank: Jank, store: f => storeSheet(f), skins: () => skinSheet(), tut: { STEPS: TUT_STEPS, IDLE: TUT_IDLE, due: tutDue, start: () => start('tut') }, fest: c => lineFest(c), sky: skyline, lig: { score: (p, h) => ligScore(p, h), join: ligJoin, open: openLig, vs: vsSheet, find: vsFind, host: vsHost, code: vsJoinSheet, week: ligWeek, home: ligHome },
+window.__ray = { jank: Jank, store: f => storeSheet(f), skins: () => skinSheet(), tut: { STEPS: TUT_STEPS, IDLE: TUT_IDLE, due: tutDue, start: () => start('tut') }, fest: c => lineFest(c), sky: skyline, vsGo: () => vsGoAt, lig: { score: (p, h) => ligScore(p, h), join: ligJoin, open: openLig, vs: vsSheet, find: vsFind, host: vsHost, code: vsJoinSheet, week: ligWeek, home: ligHome },
   // test / önizleme: tören sesini çevrimdışı işleyip WAV (base64) verir
   festWav: async (o = {}) => { const keep = ac; ac = new OfflineAudioContext(2, 44100 * 6.5, 44100); try { festSound(o); const b = await ac.startRendering(), n = b.length, L = b.getChannelData(0), R = b.getChannelData(1), buf = new DataView(new ArrayBuffer(44 + n * 4));
     const w = (o2, str) => [...str].forEach((ch, i) => buf.setUint8(o2 + i, ch.charCodeAt(0))); w(0, 'RIFF'); buf.setUint32(4, 36 + n * 4, true); w(8, 'WAVEfmt '); buf.setUint32(16, 16, true); buf.setUint16(20, 1, true); buf.setUint16(22, 2, true); buf.setUint32(24, 44100, true); buf.setUint32(28, 44100 * 4, true); buf.setUint16(32, 4, true); buf.setUint16(34, 16, true); w(36, 'data'); buf.setUint32(40, n * 4, true);

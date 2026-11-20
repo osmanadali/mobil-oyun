@@ -946,3 +946,49 @@ body[data-scr=home] #home,body[data-scr=league] #league,body[data-scr=city] #cit
 #vs .perks{margin:2px 0}
 @media (prefers-reduced-motion:reduce){.vsp.opp .vsav::after{animation:none}}
 @media (max-width:360px){#vs .row2 .glassbtn{font-size:15px;padding:0 6px}}
+
+/* ---------- kapışma: rakip türü (🟢 canlı / 👻 kayıtlı) ve sonuç ekranı ---------- */
+.vstag{display:flex;flex-direction:column;align-items:center;gap:3px;margin:6px auto 2px;padding:7px 12px;border-radius:14px;text-align:center;font-size:13.5px;max-width:100%;
+  background:color-mix(in oklab,var(--tg) 13%,var(--glass2));box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--tg) 38%,transparent)}
+.vstag b{font-weight:800;color:color-mix(in oklab,var(--tg) 55%,var(--fg))}.vstag small{color:var(--mut);font-size:12.5px;line-height:1.35}
+.vstag.live{--tg:#3fcf8e}.vstag.ghost{--tg:#a98bff}
+.vres{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;padding:4px 0 2px;isolation:isolate}
+.vres::before{content:'';position:absolute;inset:-26px -18px auto;height:210px;z-index:-1;pointer-events:none;
+  background:radial-gradient(60% 70% at 50% 18%,color-mix(in oklab,var(--rc) 30%,transparent),transparent 72%)}
+.vres.win{--rc:#ffc94d}.vres.lose{--rc:#7ea6ff}
+.vr-ic{font-size:54px;line-height:1;filter:drop-shadow(0 0 18px color-mix(in oklab,var(--rc) 70%,transparent));animation:vrIn .6s cubic-bezier(.3,1.6,.5,1) both}
+.vres.lose .vr-ic{font-size:44px;animation-name:vrIn2}
+.vres h2{margin:0;font-size:32px;font-weight:900;letter-spacing:-.5px;text-align:center;animation:vrUp .45s .12s both}
+.vres.win h2{background:linear-gradient(180deg,#ffe08a,#ffb35c 60%,#ff8a5c);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 10px rgba(255,179,92,.35))}
+.vr-sub{margin:0;color:var(--mut);font-size:14.5px;text-align:center;animation:vrUp .45s .2s both}
+.vr-duo{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:stretch;gap:6px;width:100%;margin-top:12px;animation:vrUp .5s .28s both}
+.vr-vs{align-self:center;font-style:normal;font-weight:900;font-size:17px;color:var(--mut)}
+.vr-p{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;padding:16px 8px 10px;border-radius:18px;background:var(--glass2);box-shadow:inset 0 0 0 1px var(--stroke)}
+.vr-p.w{background:linear-gradient(180deg,color-mix(in oklab,#ffc94d 20%,var(--glass2)),var(--glass2));box-shadow:inset 0 0 0 1.5px color-mix(in oklab,#ffc94d 60%,transparent),0 6px 22px color-mix(in oklab,#ffc94d 22%,transparent)}
+.vr-p .vsav{width:48px;height:48px;font-size:22px}
+.vr-p b{font-size:15px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vr-p span{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;text-align:center}
+.vr-p small{font-size:12.5px;color:var(--mut)}
+.vr-p em{margin-top:3px;padding:2px 10px;border-radius:10px;font-style:normal;font-weight:800;font-size:13px;color:var(--fg);background:color-mix(in oklab,var(--acc) 22%,transparent)}
+.vr-p em.no{background:none;color:var(--mut);font-weight:600}
+.vr-cr{position:absolute;top:-15px;left:50%;font-style:normal;font-size:24px;transform:translateX(-50%) rotate(-8deg);filter:drop-shadow(0 2px 6px rgba(255,190,60,.55));animation:vrCrown 2.6s ease-in-out .6s infinite}
+.vr-pts{display:flex;align-items:center;gap:10px;padding:6px 14px;border-radius:14px;background:var(--glass2);box-shadow:inset 0 0 0 1px var(--stroke);animation:vrUp .45s .4s both}
+.vr-pts span{color:var(--mut);font-size:13.5px}.vr-pts b{font-size:22px;font-weight:900;color:var(--acc);font-variant-numeric:tabular-nums;min-width:2.2em;text-align:center}
+.vr-pts b.done{animation:bump .4s}
+.vres #vsClimb{width:100%}.vres #vsClimb .climb{margin:2px 0 0}
+.vr-fx{position:absolute;inset:-30px -20px 0;overflow:hidden;pointer-events:none;z-index:-1}
+.vr-fx i{position:absolute;top:-12px;left:var(--x);width:7px;height:11px;border-radius:2px;background:var(--c);opacity:0;animation:vrFall 3.6s var(--d) cubic-bezier(.3,.2,.6,1) 2 both}
+.vslast{display:flex;justify-content:center;flex-wrap:wrap;gap:4px 8px;font-size:13px;color:var(--mut)}.vslast b{color:var(--fg)}.vslast.w b{color:color-mix(in oklab,#ffc94d 60%,var(--fg))}
+@keyframes vrIn{0%{transform:scale(.2) rotate(-20deg);opacity:0}100%{transform:none;opacity:1}}
+@keyframes vrIn2{from{transform:translateY(10px);opacity:0}}
+@keyframes vrUp{from{transform:translateY(8px);opacity:0}}
+@keyframes vrCrown{0%,100%{transform:translateX(-50%) rotate(-8deg)}50%{transform:translateX(-50%) translateY(-3px) rotate(6deg)}}
+@keyframes vrFall{0%{opacity:0;transform:translateY(0) rotate(0)}10%{opacity:.9}85%{opacity:.8}100%{opacity:0;transform:translateY(300px) translateX(18px) rotate(var(--r))}}
+@media (prefers-color-scheme:light){:root:not([data-theme=dark]) .vres.win h2{background:linear-gradient(180deg,#f0a020,#e0702a);-webkit-background-clip:text;background-clip:text;filter:none}}
+:root[data-theme=light] .vres.win h2{background:linear-gradient(180deg,#f0a020,#e0702a);-webkit-background-clip:text;background-clip:text;filter:none}
+@media (prefers-reduced-motion:reduce){.vr-ic,.vres h2,.vr-sub,.vr-duo,.vr-pts,.vr-cr{animation:none}}
+@media (max-width:340px){.vres h2{font-size:27px}.vr-p{padding:14px 5px 8px}.vr-p .vsav{width:40px;height:40px;font-size:19px}.vr-p b,.vr-p span{font-size:13.5px}.vr-ic{font-size:44px}}
+.vr-row{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;width:100%}.vr-row .vstag{margin:0}
+@media (max-height:720px){.vres{gap:5px}.vres::before{height:160px}.vr-ic{font-size:38px}.vres.lose .vr-ic{font-size:34px}.vres h2{font-size:26px}.vr-sub{font-size:13.5px}
+  .vr-duo{margin-top:10px}.vr-p{padding:12px 6px 7px;gap:1px}.vr-p .vsav{width:36px;height:36px;font-size:17px;margin-bottom:2px}.vr-cr{font-size:20px;top:-13px}
+  .vr-pts{padding:3px 12px}.vr-pts b{font-size:19px}.vstag{padding:5px 10px;font-size:12.5px}.vres #vsClimb .climb{padding:7px 10px}}
