@@ -342,13 +342,13 @@ html.azHareket .yukEkran .parca{display:none}
 .siraAd.on{color:#ffd0d8;background:rgba(255,61,99,.16);border-color:rgba(255,61,99,.45)}
 .sira{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;min-height:0}
 .tahtaAlan .siraAd{min-height:0;overflow:hidden}
-.yuva{position:relative;min-height:0;border-radius:14px;overflow:hidden;
-  background:linear-gradient(180deg,rgba(40,18,70,.3),rgba(20,8,36,.75)),url(../gorsel/doku_tas.webp) center/cover;
-  border:3px solid #8e6a34;box-shadow:inset 0 0 0 2px rgba(0,0,0,.4),inset 0 -14px 24px rgba(0,0,0,.45),0 4px 0 rgba(0,0,0,.35)}
-.yuva.bos::after{content:"";position:absolute;left:50%;top:50%;width:20px;height:20px;transform:translate(-50%,-50%) rotate(45deg);border:2px solid rgba(242,191,74,.4)}
-.yuva.kilit{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-style:dashed;border-color:rgba(242,191,74,.4);
+.yuva{position:relative;min-height:0;border-radius:11px;overflow:hidden;
+  background:linear-gradient(180deg,rgba(80,66,120,.28),rgba(14,10,24,.6)),url(../gorsel/doku_tas.webp) center/cover;
+  border:2px solid rgba(200,185,255,.24);box-shadow:inset 0 0 0 1px rgba(0,0,0,.35),inset 0 -12px 20px rgba(0,0,0,.4),0 3px 0 rgba(0,0,0,.35)}
+.yuva.bos::after{content:"";position:absolute;left:50%;top:50%;width:14px;height:14px;transform:translate(-50%,-50%) rotate(45deg);border:1.5px solid rgba(220,210,255,.22)}
+.yuva.kilit{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-style:dashed;border-color:rgba(200,185,255,.22);
   background:rgba(14,6,26,.6);color:var(--soluk);font-size:13px;font-weight:800;text-align:center}
-.yuva.kilit .ik{width:26px;height:26px;color:rgba(242,191,74,.6)}
+.yuva.kilit .ik{width:26px;height:26px;color:rgba(200,185,255,.45)}
 .yuva.hedef{border-style:dashed;border-color:#fff3b0;background:rgba(255,212,92,.1);box-shadow:inset 0 0 18px rgba(255,212,92,.35)}
 .yuva.hedef::after{display:none}
 .yuva.hedef span{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;font-weight:800;color:#fff3b0;text-align:center;padding:4px;line-height:1.2}
@@ -359,7 +359,7 @@ html.azHareket .yukEkran .parca{display:none}
 .yuva .soylar .soyIk{width:22px;height:22px}
 .yuva .plaka{position:absolute;left:0;right:0;bottom:0;height:22px;display:grid;place-items:center;font-size:13px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px;
   background:linear-gradient(180deg,rgba(18,7,31,.45),rgba(18,7,31,.94));border-top:1.5px solid var(--kc);text-shadow:0 1px 0 #000}
-.yuva.k1{border-color:#a89276}.yuva.k2{border-color:#4a8fd6}.yuva.k3{border-color:#e89a2c}
+.yuva.k1,.yuva.k2,.yuva.k3,.yuva.k4,.yuva.k5{border-color:var(--kc);box-shadow:inset 0 0 0 1px rgba(0,0,0,.35),inset 0 -12px 20px rgba(0,0,0,.4),inset 0 0 14px color-mix(in srgb,var(--kc) 22%,transparent),0 3px 0 rgba(0,0,0,.35)}
 .yuva.yz2{box-shadow:inset 0 0 0 2px rgba(220,240,255,.55),inset 0 0 24px rgba(200,230,255,.35),0 4px 0 rgba(0,0,0,.35)}
 .yuva.secili{border-color:#fff3b0;box-shadow:0 0 0 3px var(--altin),0 0 22px 4px rgba(255,212,92,.75),inset 0 0 24px rgba(255,212,92,.35)}
 .yuva .seciliEt{position:absolute;left:50%;top:5px;transform:translateX(-50%);font-size:12px;font-weight:900;padding:2px 7px;border-radius:6px;background:var(--altin);color:#3a1606}
@@ -864,7 +864,9 @@ img.ik{object-fit:contain;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
   html.alcak #mac .rakipKim span:nth-of-type(n+2){display:none}
   html.alcak #mac .miniTahta{grid-template-columns:16px repeat(4,1fr);gap:2px;padding:2px 8px 1px}
   html.alcak #mac .miniTahta .m{height:22px;border-radius:6px}html.alcak #mac .miniTahta .m .yildizlar .ik{width:8px;height:8px}
-  html.alcak #mac .rakipSoy{padding:2px 8px}html.alcak #mac .rakipSoy .cip{height:22px;font-size:11px}
+  html.alcak #mac .rakipSoy{padding:2px 8px}html.alcak #mac .rakipSoy .cip{height:22px;font-size:11px;padding:0 7px 0 1px;border:1px solid var(--pnCizgi);background:rgba(255,255,255,.05);color:#d9d3e6;box-shadow:none}
+#mac .rakipSoy .cip img{width:20px;height:20px}
+#mac .secUst .soyC .cip.aktif{border-color:rgba(210,195,255,.35);color:#fff;background:rgba(255,255,255,.08);box-shadow:none}
   html.alcak #mac .ipucuSatir{display:none}
   html.alcak #mac .soyListe{padding:3px 5px 5px;gap:3px;overflow:auto}
   html.alcak #mac .soyListe>div:not(.soyS){font-size:12px!important;padding:4px!important}
@@ -1271,6 +1273,84 @@ html.alcak #ana .avKap .cerceve{left:-7px;top:-11px;width:56px;height:60px}
   padding:12px 34px 6px;filter:drop-shadow(0 18px 30px rgba(0,0,0,.6))}
 #perde.menuPanel .pencere::before,#perde.menuPanel .pencere::after{display:none}
 html.alcak #perde.menuPanel .pencere{border-width:18px 8px 20px;border-image-width:56px;border-image-outset:15px 8px;padding:8px 26px 4px}
+
+/* ===================== SADE HAZIRLIK (Aşama A) =====================
+   TFT / Hearthstone BG ilkesi: oyun alanı (takım ızgarası) ön planda; paneller koyu, hafif saydam, tek ince çerçeve.
+   Altın yalnız: altın göstergesi, SAVAŞA!, yıldızlar. Kademe rengi: K1 gümüş, K2 yeşil, K3 mavi, K4 mor, K5 altın. */
+:root{--k1:#b9c3cf;--k2:#3fd68f;--k3:#43a6ff;--k4:#c47bff;--k5:#f2bf4a;
+  --pnZemin:rgba(18,14,30,.82);--pnCizgi:rgba(210,195,255,.14);--basYazi:#d9d3e6}
+.k4{--kc:var(--k4)}.k5{--kc:var(--k5)}
+#mac .gok::after{background:linear-gradient(180deg,rgba(10,7,18,.72),rgba(10,7,18,.84) 55%,rgba(8,5,14,.94))}
+/* paneller: tek ince çerçeve, köşe taşı yok */
+#mac .pn,#mac .pn.kalin,#mac .rakip{border:1px solid var(--pnCizgi);border-image:none;border-radius:10px;background:var(--pnZemin);
+  box-shadow:0 6px 16px rgba(0,0,0,.35)}
+#mac .pn.gem::before,#mac .pn.gem::after{display:none}
+#mac .pn-bas,#mac .rakip .pn-bas{height:26px;padding:0 10px;font-size:12px;letter-spacing:.06em;color:var(--basYazi);text-shadow:none;
+  background:none;border-bottom:1px solid rgba(210,195,255,.08);border-radius:10px 10px 0 0}
+#mac .pn-bas .sag,#mac .rakip .pn-bas .sag{font-size:11px;color:#8e86a3;font-family:var(--fGovde)}
+#mac .pn-bas .ik,#mac .rakip .pn-bas .ik{width:15px;height:15px;color:#ff8aa0}
+#mac .pn-bas .elmas{display:none}
+#mac .dukkan .pn-bas{margin:0 -10px}
+/* üst şerit: rozetler sade, yalnız altın göstergesi altın */
+#mac .macUst .rozet,#mac .alamet{border:1px solid var(--pnCizgi);background:var(--pnZemin);box-shadow:0 4px 10px rgba(0,0,0,.35)}
+#mac .alamet{background:linear-gradient(90deg,rgba(110,18,46,.75),var(--pnZemin) 60%)}
+#mac .macUst .rozet .top{border:1px solid var(--pnCizgi);background:rgba(255,255,255,.05)}
+#mac .macUst .altinRozet{border:2px solid var(--altin);box-shadow:0 0 0 1px var(--altinKK),0 0 12px rgba(242,191,74,.3),0 4px 10px rgba(0,0,0,.35);color:var(--altinA)}
+/* rakip önizleme: kompakt */
+#mac .rakipKim{padding:5px 10px 0}
+#mac .rakipKim .amb{width:30px;height:30px;border:1px solid rgba(255,138,160,.6)}
+#mac .rakipKim b{font-size:14px}
+#mac .rakipKim span{font-size:11px;color:#a59cba}
+#mac .rakipKim span .ik{color:#a59cba}
+#mac .miniTahta{grid-template-columns:16px repeat(4,1fr);gap:3px;padding:4px 10px 2px}
+#mac .miniTahta .m{height:clamp(32px,4.6cqh,42px);border-radius:6px;border-width:1px;background:rgba(255,255,255,.04)}
+#mac .miniTahta .sAd,#mac .miniTahta .sAd.arka{font-size:10px;font-weight:700;color:#7d7592;background:none}
+#mac .rakipSoy{padding:4px 10px 8px}
+#mac .rakipSoy .cip{height:22px;font-size:11px;padding:0 7px 0 1px;border:1px solid var(--pnCizgi);background:rgba(255,255,255,.05);color:#d9d3e6;box-shadow:none}
+#mac .rakipSoy .cip img{width:20px;height:20px}
+#mac .secUst .soyC .cip.aktif{border-color:rgba(210,195,255,.35);color:#fff;background:rgba(255,255,255,.08);box-shadow:none}
+#mac .rakip .ipucuSatir{display:none}
+/* soylar: simge + sayı; açıklama dokununca / title */
+#mac .soyListe{gap:3px;padding:6px 8px}
+#mac .soyS{grid-template-columns:24px 1fr;gap:6px;padding:2px 6px 2px 2px;border-radius:7px;background:rgba(255,255,255,.04);border:1px solid rgba(210,195,255,.1);cursor:pointer}
+#mac .soyS img{width:24px;height:24px}
+#mac .soyS .ust{font-size:13px}
+#mac .soyS .bonus{display:none;color:#c9c0da;font-size:11px;white-space:normal}
+#mac .soyS.acik .bonus{display:block}
+@media (hover:hover){#mac .soyS:hover .bonus{display:block}}
+#mac .esik b{font-size:14px}
+#mac .esik span{min-width:18px;height:17px;font-size:11px;border-width:1px}
+#mac .esik span.on{background:#e6e1f2;color:#161022;border-color:transparent;box-shadow:none}
+#mac .soyBos{padding:6px 10px;font-size:12px;color:#8e86a3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#mac .soyPanel{flex:none}
+#mac .solKolon{gap:10px}
+#mac .soyPasif .not{font-size:11px;color:#8e86a3}
+#mac .soyPasif .ikc{width:18px;height:18px;opacity:.6}
+/* seçili kahraman: boşken tek satır */
+#mac .secIpucu{display:flex;align-items:center;gap:6px;padding:10px 12px;font-size:13px;font-weight:700;color:#8e86a3}
+#mac .secIpucu .ik{width:16px;height:16px;opacity:.8}
+#mac .secPanel.bos{align-self:start}
+#mac .stat{border-color:rgba(210,195,255,.12);background:rgba(255,255,255,.04)}
+/* takım ızgarası: hücreler zeminden ayrışsın; etiketler küçük ve soluk */
+#mac .tahtaPanel{background:rgba(22,17,36,.7)}
+#mac .tahtaAlan{grid-template-columns:18px 1fr}
+#mac .siraAd,#mac .siraAd.on{font-size:10px;font-weight:700;color:#7d7592;background:none;border:0;letter-spacing:.08em}
+#mac .siraAd i{display:none}
+#mac .dusmanOk{font-size:10px;font-weight:700;color:#b07a88;height:14px;letter-spacing:.04em}
+#mac .dusmanOk i{height:1px;background:linear-gradient(90deg,transparent,rgba(255,106,134,.45),transparent)}
+#mac .dusmanOk .ik{width:11px;height:11px}
+#mac .yedekBas{font-size:11px;font-weight:700;color:#8e86a3;padding-left:36px}
+#mac .yedekBas em{font-size:11px;color:#6f6884}
+#mac .yedekBas i{height:1px;background:linear-gradient(90deg,rgba(210,195,255,.2),transparent)}
+/* dükkân kartları: kademe rengiyle çerçeve */
+#mac .kart{border:2px solid var(--kc);border-image:none;border-radius:10px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--kc) 22%,#141022),#120e1e 72%);
+  box-shadow:0 0 0 1px rgba(0,0,0,.6),0 4px 10px rgba(0,0,0,.45)}
+#mac .kart.k3,#mac .kart.k4,#mac .kart.k5{box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 10px color-mix(in srgb,var(--kc) 45%,transparent),0 4px 10px rgba(0,0,0,.45)}
+#mac .kart .ad{border-top:1px solid var(--kc);background:rgba(10,7,18,.9)}
+#mac .kart.yuksel{border-color:#7dffb6;box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 16px 2px rgba(63,214,143,.75)}
+#mac .kTag{background:var(--kc);color:#0e0a18;border:0;height:18px;font-size:11px;padding:0 5px;border-radius:5px}
+#mac .dukkan{padding:0 10px 10px}
 </style>
 <script>
 /* tek ölçek: --o, --lw, --lh ve html.alcak; ilk boyamadan önce ve her boyut değişiminde */

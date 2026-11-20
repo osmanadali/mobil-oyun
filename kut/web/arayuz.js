@@ -270,9 +270,9 @@ function macCiz() {
   const sy = oyun.soylar(); const liste = Object.entries(sy).sort((a, b) => b[1].seviye - a[1].seviye || b[1].n - a[1].n);
   const aktifler = liste.filter(([, v]) => v.n >= 2), eksik = liste.filter(([, v]) => v.n < 2);
   $('soyListe').innerHTML = aktifler.length ? aktifler.map(([s, v]) => { const e = D.SOYLAR[s].esik;
-    return `<div class="soyS"><img src="${SY(s)}" alt=""><div style="min-width:0"><div class="ust"><span class="ad">${D.SOYLAR[s].ad}</span>
+    return `<div class="soyS" title="${D.SOYLAR[s].aciklama[Math.max(0, v.seviye - 1)]}" onclick="this.classList.toggle('acik')"><img src="${SY(s)}" alt=""><div style="min-width:0"><div class="ust"><span class="ad">${D.SOYLAR[s].ad}</span>
       <span class="esik"><b>${v.n}</b><span class="${v.n >= e[0] ? 'on' : ''}">${e[0]}</span><span class="${v.n >= e[1] ? 'on' : ''}">${e[1]}</span></span></div><span class="bonus">${D.SOYLAR[s].aciklama[Math.max(0, v.seviye - 1)]}</span></div></div>`; }).join('')
-    : `<div style="padding:10px 8px;font-size:15px;line-height:1.4;color:var(--yazi2)">Aynı soydan <b style="color:#fff">2 kahraman</b> koy, soy gücü açılsın. Simgeler kartların sol üstünde.</div>`;
+    : `<div class="soyBos">Aktif soy yok (2 aynı soy gerekir)</div>`;
   $('soyPasif').innerHTML = eksik.length ? `<span class="not">Eksik</span>` + eksik.slice(0, 5).map(([s]) => `<img class="ikc" src="${SY(s)}" alt="${D.SOYLAR[s].ad}" title="${D.SOYLAR[s].ad} 1/2">`).join('') : '';
   // tahta
   const tp = q('.tahtaPanel', m);
@@ -405,12 +405,9 @@ function armaganCiz() {
 function secCiz() {
   const sp = $('secPanel'), b = oyun.al(oyun.secili);
   if (!b) {
-    sp.className = 'pn gem secPanel';
+    sp.className = 'pn gem secPanel bos';
     sp.innerHTML = `<div class="pn-bas"><span class="elmas"></span>Seçili kahraman</div>
-      <div style="padding:18px 10px;display:flex;flex-direction:column;gap:12px;font-size:16px;line-height:1.45;color:var(--yazi2)">
-        <div>${ik('el')} Tahtadaki ya da yedekteki bir kahramana dokun: özelliklerini gör, <b style="color:#fff">sat</b> ya da <b style="color:#fff">kaynaştır</b>.</div>
-        <div>Dükkândaki karta <b style="color:#fff">basılı tut</b>: kahraman bilgisi.</div>
-        <div style="color:#ffe48a">3 aynı kahraman → ★2 · Kaynaştır: iki farklı kahraman tek kahraman olur.</div></div>`;
+      <div class="secIpucu">${ik('el')} Bir kahramana dokun</div>`;
     return;
   }
   const h = kh(b.h), st = SIM.birimStat(b), soylar = st.soy;
