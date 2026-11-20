@@ -32,7 +32,7 @@ module.exports = async T => {
       if (vp[0] === 390) {
         await page.click('#cityBody .sd.gold .bl'); await page.waitForTimeout(250);   // hattın ucundaki etiket (M1)
         const info = await page.evaluate(() => document.getElementById('cInfo').textContent);
-        check('meta2.city.info', 'Hattın etiketine dokununca bilgi kartı hattın adını, ★ ve 🎫 sayısını ve "Altın semt" durumunu gösterir', /M1 ·/.test(info) && /Altın semt/.test(info), info);
+        check('meta2.city.info', 'Hattın etiketine dokununca bilgi kartı hattın adını, ★ ve 🎫 sayısını ve "✨ Altın hat: bütün bölümler kusursuz" açıklamasını gösterir', /M1 ·/.test(info) && /Altın hat: bütün bölümler kusursuz/.test(info), info);
         // rozet sekmesi
         await page.click('#cTabs [data-t=ach]'); await page.waitForTimeout(300);
         const want = ['gold', ...(level > 100 ? ['l100'] : []), 'line', 'p1', 'p10'].join();   // 100 bölüm: hat boyuna bağlı
