@@ -809,13 +809,14 @@ function savasKare() {
   requestAnimationFrame(savasKare);
 }
 function sonucGoster(sonuc) {
-  const k = sonuc.kazanan;
+  const k = sonuc.kazanan, sd = k === -2;   // sd: süre doldu, iki taraf da kaybetti (yenilgi tonu)
   Ses.muzikCal('hazirlik');
   const r = oyun.savasBitti(sonuc); savasBilgi.sonucIslem = r;
-  if (r && r.hasar > 0 && k === 1 && S3.hasarKivilcim) S3.hasarKivilcim(1);   // rakibin sağ birimlerinden oyuncuya can hasarı ışıkları
+  if (r && r.hasar > 0 && (k === 1 || sd) && S3.hasarKivilcim) S3.hasarKivilcim(1);   // rakibin sağ birimlerinden oyuncuya can hasarı ışıkları
   const M = oyun.M, zh = K.hizli.zaferHedef, arena = r && !r.duello && (r.bitti ? r.mod !== 'hizli' : oyun.seviyeli());
   // sonuç özeti: yalnız motorun döndürdüğü veriden chip'ler (tür: iyi / kotu / altin / notr)
   const ist = S3.istatistik ? S3.istatistik() : [], mvpO = mvpSec(ist), cl = [], cip = (tur, m, ikon) => cl.push(`<span class="cip ${tur}">${ikon ? ik(ikon) : ''}${m}</span>`);
+  if (sd) cip('kotu', 'Süre doldu — iki taraf da kaybetti');
   if (r && r.duello) cip('notr', 'Düello', 'zincir');
   else if (arena) {
     if (r.hasar) { cip('kotu', `−${r.hasar} can`); cip('notr', `${r.can} can kaldı`); }
@@ -826,12 +827,12 @@ function sonucGoster(sonuc) {
     if (r.secim) cip('altin', 'Ganimet seçimi bekliyor');
     if (r.lobi) { cip('notr', `Lobi ${r.lobi.yasayan}/8 ayakta · sıran ${r.bitti ? r.sira : r.lobi.sira}`); if (r.lobi.elenen.length) cip('kotu', 'Elenen: ' + r.lobi.elenen.join(', ')); }
   } else if (k === 0) cip('iyi', `+1 zafer · ${r.bitti ? r.zafer : M.zafer}/${zh}`);
-  else if (k === 1) { cip('kotu', '−1 can'); cip('notr', `${r.bitti ? 0 : M.can} can kaldı`); }
+  else if (k === 1 || sd) { cip('kotu', '−1 can'); cip('notr', `${r.bitti ? 0 : M.can} can kaldı`); }
   else cip('notr', 'Berabere: can gitmedi');
   if (mvpO) cip('mvp', `Yıldız: ${oyun.birimAd(mvpO.b)}`, 'tac');
   const bil = cl.join('');
   $('ayakta').style.display = 'none'; $('savas').classList.add('bitti');   // sonuçta Kut, hız ve duraklat gizlenir
-  const kt = k === 0 ? 0 : k === 1 ? 1 : 2;
+  const kt = k === 0 ? 0 : k === 1 || sd ? 1 : 2;
   // sonuç bandı: Maçın Yıldızı sinematiği oynarsa o kapanınca (kamera kadraja dönerken), yoksa hemen
   const bantAc = () => {
   const yer = $('sonucYer'), mv = $('mvp');
@@ -997,10 +998,10 @@ function sonCiz(r) {
     : kayip ? `<b>MAÇ BİTTİ</b><span>${arena ? `${r.turAd} turunda elendin · ` : ''}${r.zafer} zafer · ${r.gecmis.length} tur · iyi dövüştün</span>`
     : `<span class="mad l">${ik('yildiz')}</span><b>ZAFER!</b><span>Arena senin · ${arena ? `${r.can} can kaldı` : `${r.zafer} zafer`}</span><span class="mad r">${ik('yildiz')}</span>`;
   q('#son .isinlar').style.display = kayip ? 'none' : '';
-  const g = r.gecmis.filter(x => x === 0).length, kb = r.gecmis.filter(x => x === 1).length;
+  const g = r.gecmis.filter(x => x === 0).length, kb = r.gecmis.filter(x => x === 1 || x === -2).length;
   $('ozet').innerHTML = `<div><b style="color:#8dffb0">${g}</b><span>zafer</span></div><div><b style="color:#ff8aa0">${arena ? r.can : Math.max(0, K.hizli.can - kb)}</b><span>can kaldı</span></div><div><b>${r.gecmis.length}</b><span>tur</span></div>`;
   $('turSay').textContent = `${g} kazanıldı · ${kb} kaybedildi`;
-  $('turlar').innerHTML = r.gecmis.map((t, i) => `<div class="tr ${t === 0 ? 'g' : t === 1 ? 'k' : ''}"><small>Tur</small>${i + 1}</div>`).join('');
+  $('turlar').innerHTML = r.gecmis.map((t, i) => `<div class="tr ${t === 0 ? 'g' : t === 1 || t === -2 ? 'k' : ''}"><small>Tur</small>${i + 1}</div>`).join('');
   const once = r.kupa - r.fark;
   $('kupaSayi').innerHTML = `<s>${sayi(once)} →</s>${sayi(r.kupa)}`; $('kupaArt').textContent = (r.fark >= 0 ? '+' : '') + r.fark;
   const lig = 200 - (r.kupa % 200); q('#son .lig').innerHTML = `Sonraki lige ${lig} kupa kaldı<div class="takimCan"><i style="width:${100 - lig / 2}%;background:linear-gradient(180deg,#ffe48a,#d98e14)"></i></div>`;

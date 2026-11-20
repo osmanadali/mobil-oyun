@@ -129,14 +129,26 @@
     function manaEkle(u, n) { if (!(u.kurulum > 0)) u.mp = Math.min(u.mana, u.mp + n); }
     // Üst üste binme yok: u (yalnız u yer değiştirir) yaşayan öbür birimlerden en az KS.ayrim uzağa, birim sırasıyla tek geçişte itilir.
     // Tam çakışmada tarafının gerisine ve i'ye göre yana (0,6² + 0,8² = 1: uzaklık tam ayrim). Arena sınırı: x 0,4–5,6, y 0,4–7,6.
+    // Sınır itmeyi geri alırsa (köşe) ya da ilk geçiş yetmediyse (iki birim arasına sıkıştı) yana, o'nun x'inden ayrim uzağa konur.
+    // En çok 4 geçiş (bir itme başka çakışma doğurabilir).
     function ayris(u) {
-      for (const o of birimler) {
-        if (o === u || o.olu) continue;
-        const dx = u.x - o.x, dy = u.y - o.y, d = Math.sqrt(dx * dx + dy * dy);
-        if (d >= KS.ayrim) continue;
-        if (d < 1e-6) { u.x = o.x + (u.i % 2 ? -0.6 : 0.6) * KS.ayrim; u.y = o.y + (u.taraf === 0 ? 0.8 : -0.8) * KS.ayrim; }
-        else { const k = KS.ayrim / d; u.x = o.x + dx * k; u.y = o.y + dy * k; }
-        u.x = Math.max(0.4, Math.min(5.6, u.x)); u.y = Math.max(0.4, Math.min(7.6, u.y));
+      for (let gec = 0; gec < 4; gec++) {
+        let itildi = false;
+        for (const o of birimler) {
+          if (o === u || o.olu) continue;
+          const dx = u.x - o.x, dy = u.y - o.y, d = Math.sqrt(dx * dx + dy * dy);
+          if (d >= KS.ayrim) continue;
+          itildi = true;
+          if (d < 1e-6) { u.x = o.x + (u.i % 2 ? -0.6 : 0.6) * KS.ayrim; u.y = o.y + (u.taraf === 0 ? 0.8 : -0.8) * KS.ayrim; }
+          else { const k = KS.ayrim / d; u.x = o.x + dx * k; u.y = o.y + dy * k; }
+          u.x = Math.max(0.4, Math.min(5.6, u.x)); u.y = Math.max(0.4, Math.min(7.6, u.y));
+          if (gec > 0 || mesafe(u, o) < KS.ayrim - 1e-9) { // ikinci geçişten sonra (iki birim arasına sıkıştı) ya da köşede: yana
+            const sx = dx > 0 || (dx === 0 && u.i % 2 === 0) ? 1 : -1;
+            let nx = o.x + sx * KS.ayrim; if (nx > 5.6 || nx < 0.4) nx = o.x - sx * KS.ayrim;
+            u.x = nx;
+          }
+        }
+        if (!itildi) break;
       }
     }
     // Yürüme yönü: doğrudan hedefe; o yol bir birimin ayrim çemberine giriyorsa (ve ona yaklaştırıyorsa) ±30°, ±60°, ±90° döndürülmüş

@@ -92,8 +92,9 @@ ok(K.botIz.egri.slice(1).map(l => l.slice(0, 6).join('/')).join(' ') === '2/3/0.
   const es = L.eslesmeKur(lb, r), rp = L.lobiTurOyna(lb, r, { eslesme: es });
   ok(rp.sonuclar.length === 4 && rp.sonuclar.every(s => s.tip === 'pvp'), '8 hayalet: 4 hayalet × hayalet savaşı motorda oynandı');
   const taban = K.bolumTabani[3];
-  ok(rp.sonuclar.every(s => (s.kazanan === 0 ? s.hasar[0] === 0 && s.hasar[1] === taban + s.kalanPuan : s.kazanan === 1 ? s.hasar[1] === 0 && s.hasar[0] === taban + s.kalanPuan : s.hasar[0] === taban && s.hasar[1] === taban)),
-    `kaybeden bölüm tabanı (${taban}) + kazananın sağ kalan yıldızları kadar can kaybeder; beraberlikte ikisi de taban`);
+  ok(rp.sonuclar.every(s => (s.kazanan === 0 ? s.hasar[0] === 0 && s.hasar[1] === taban + s.kalanPuan : s.kazanan === 1 ? s.hasar[1] === 0 && s.hasar[0] === taban + s.kalanPuan
+      : s.kazanan === -2 ? s.hasar[0] === taban + s.kalanPuan && s.hasar[1] === taban + s.kalanPuanB : s.hasar[0] === taban && s.hasar[1] === taban)),
+    `kaybeden bölüm tabanı (${taban}) + kazananın sağ kalan yıldızları kadar can kaybeder; beraberlikte ikisi de taban; süre dolunca ikisi de kaybeder`);
   ok(lb.oyuncular.every(o => o.can === 100 - rp.hasar[o.i]) && lb.oyuncular.every(o => o.gecmisRakip.length === 1 && o.seri.n === 1), 'canlar düştü, rakipler ve seriler kaydedildi');
   // Yansıma: kopyalanan oyuncu hasar almaz
   const ly = botLobi(22, 300); ly.oyuncular[7].olu = true; ly.oyuncular[7].sira = 8; ly.r = 11;
@@ -103,10 +104,10 @@ ok(K.botIz.egri.slice(1).map(l => l.slice(0, 6).join('/')).join(' ') === '2/3/0.
   // Son Üç ve Son İki
   const l3 = botLobi(23, 300); l3.oyuncular.forEach(o => { if (o.i > 2) { o.olu = true; o.sira = 9 - o.i; } }); l3.r = 17;
   const r3 = L.lobiTurOyna(l3, 17), s3 = r3.sonuclar.find(s => s.tip === 'pvp');
-  ok(r3.yasayan === 3 && s3 && Math.max(...s3.hasar) === (s3.kazanan === -1 ? K.bolumTabani[4] + 3 : K.bolumTabani[4] + 3 + s3.kalanPuan), 'Son Üç: taban +3');
+  ok(r3.yasayan === 3 && s3 && Math.max(...s3.hasar) === (s3.kazanan === -1 ? K.bolumTabani[4] + 3 : K.bolumTabani[4] + 3 + (s3.kazanan === -2 ? Math.max(s3.kalanPuan, s3.kalanPuanB) : s3.kalanPuan)), 'Son Üç: taban +3');
   const l2 = botLobi(24, 300); l2.oyuncular.forEach(o => { if (o.i > 1) { o.olu = true; o.sira = 9 - o.i; } }); l2.r = 17;
   const r2 = L.lobiTurOyna(l2, 17), s2 = r2.sonuclar[0];
-  ok(r2.yasayan === 2 && r2.sonuclar.length === 1 && s2.tip === 'pvp' && Math.max(...s2.hasar) === (s2.kazanan === -1 ? K.bolumTabani[4] + 5 : K.bolumTabani[4] + 5 + s2.kalanPuan), 'Son İki: taban +5');
+  ok(r2.yasayan === 2 && r2.sonuclar.length === 1 && s2.tip === 'pvp' && Math.max(...s2.hasar) === (s2.kazanan === -1 ? K.bolumTabani[4] + 5 : K.bolumTabani[4] + 5 + (s2.kazanan === -2 ? Math.max(s2.kalanPuan, s2.kalanPuanB) : s2.kalanPuan)), 'Son İki: taban +5');
   // lobiSonaKadar tek turluk eşleşmeyi ve canlı oyuncu sonucunu tekrar kullanmaz (her tur eşleşme yeniden kurulur)
   { const la = botLobi(25, 300), lb2 = botLobi(25, 300), e0 = L.eslesmeKur(la, 3);
     L.lobiSonaKadar(la, { eslesme: e0, canliSonuc: { kazanan: 1, kalanPuan: 9, kalanSayi: 9, sure: 1 } }); L.lobiSonaKadar(lb2);
@@ -145,6 +146,12 @@ ok([5, 8].map(s => L.kupaDegisim(s, 300)).join() === '-5,-20' && L.kupaDegisim(8
   const lb = L.lobiYeni({ ad: 'Sen', kupa: 300 }, O.lobiIzler(300, 3), 3), r = 4, es = L.eslesmeKur(lb, r), rk = L.lobiRakip(es, 0);
   const rp = L.lobiTurOyna(lb, r, { eslesme: es, canliTakim: [{ h: 'golem', s: 1, x: 0, y: 0 }], canliSonuc: { kazanan: 1, kalanPuan: 3, kalanSayi: 2, sure: 12 } });
   ok(rp.sonuclar.length === 4 && lb.oyuncular[0].can === 100 - (K.bolumTabani[2] + 3) && lb.oyuncular[rk.j].can === 100, 'canlı oyuncunun yenilgisi: 3 hayalet savaşı + canlının sonucu; kazanan hayalet can kaybetmez');
+  // süre doldu (−2): canlı oyuncu da rakibi de kaybeder; canlı (motorda taraf 0) rakibin 3 sağ yıldızı, rakip canlının 1 sağ yıldızı kadar ek hasar alır
+  const l2 = L.lobiYeni({ ad: 'Sen', kupa: 300 }, O.lobiIzler(300, 3), 3), e2 = L.eslesmeKur(l2, r), rk2 = L.lobiRakip(e2, 0);
+  const r2 = L.lobiTurOyna(l2, r, { eslesme: e2, canliTakim: [{ h: 'golem', s: 1, x: 0, y: 0 }], canliSonuc: { kazanan: -2, kalanPuan: 3, kalanPuanB: 1, kalanSayi: 2, sure: 45 } });
+  const t2 = K.bolumTabani[2], s2 = r2.sonuclar.find(x => x.a === 0 || x.b === 0);
+  ok(!rk2.yansima && l2.oyuncular[0].can === 100 - (t2 + 3) && l2.oyuncular[rk2.j].can === 100 - (t2 + 1) && s2.kazanan === -2 && l2.oyuncular[0].seri.tip === 'M' && l2.oyuncular[rk2.j].seri.tip === 'M',
+    `süre doldu: canlı −${t2 + 3}, rakibi −${t2 + 1}; ikisine de yenilgi serisi (canlı ${s2.a === 0 ? 'a' : 'b'} tarafında)`);
 }
 
 // ── 11) benzetim: 8 bot izinden oluşan lobiler baştan sona (bölüm 11) ──

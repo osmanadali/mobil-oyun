@@ -48,6 +48,11 @@ for (const h of D.CANAVARLAR)
   satir.push(`            new Kahraman { Id = ${s(h.id)}, Ad = ${s(h.ad)}, Emoji = ${s(h.emoji)}, Renk = ${s(h.renk)}, Kademe = ${h.kademe}, Soy = new string[0], Can = ${sayi(h.can)}, Atk = ${sayi(h.atk)}, As = ${sayi(h.as)}, Menzil = ${h.menzil}, Mana = ${sayi(h.mana)}, Yetenek = ${s(h.yetenek)}, Pasif = ${s(h.pasif)} },`);
 satir.push('        };');
 satir.push('');
+satir.push('        /// <summary>Yeteneğe özgü kurulum süresi (sn); listede olmayan yetenek YetenekKurulum kullanır.</summary>');
+satir.push('        public static readonly Dictionary<string, double> YetenekKurulumSure = new Dictionary<string, double> {');
+for (const [k, v] of Object.entries(D.YETENEK)) if (v.kurulum != null) satir.push(`            { ${s(k)}, ${sayi(v.kurulum)} },`);
+satir.push('        };');
+satir.push('');
 for (const [ad, tablo] of [['Yetenekler', D.YETENEK], ['Pasifler', D.PASIF]]) {
   satir.push(`        public static readonly Dictionary<string, Metin> ${ad} = new Dictionary<string, Metin> {`);
   for (const [k, v] of Object.entries(tablo)) satir.push(`            { ${s(k)}, new Metin { Ad = ${s(v.ad)}, M = ${s(v.m)} } },`);
@@ -84,6 +89,9 @@ satir.push('        // Ortak sabitler ve seviyeli maç (data.js KURAL)');
 satir.push(`        public const int SatisIade = ${K.satisIade}, Dukkan = ${K.dukkan}, Yedek = ${K.yedek}, TahtaSutun = ${K.tahtaSutun}, TahtaSira = ${K.tahtaSira}, TakimTavan = ${K.takimTavan};`);
 satir.push(`        public const int CanBaslangic = ${K.canBaslangic}, SeviyeBaslangic = ${K.seviyeBaslangic}, SeviyeTavan = ${K.seviyeTavan}, PasifXp = ${K.pasifXp}, XpBedel = ${K.xpBedel}, XpMiktar = ${K.xpMiktar};`);
 satir.push(`        public const double SavasSuresi = ${sayi(K.savasSuresi)};`);
+satir.push(`        /// <summary>Savaş motoru (data.js KURAL.savas): ayrışma uzaklığı, hedef bırakma payı, varsayılan yetenek kurulumu, mana kazancı.</summary>`);
+satir.push(`        public const double SavasAyrim = ${sayi(K.savas.ayrim)}, SavasHedefBirak = ${sayi(K.savas.hedefBirak)}, YetenekKurulum = ${sayi(K.savas.kurulum)};`);
+satir.push(`        public const double VurusMana = ${sayi(K.savas.vurusMana)}, KeskinGozMana = ${sayi(K.savas.keskinGozMana)}, HasarMana = ${sayi(K.savas.hasarMana)}, SabirMana = ${sayi(K.savas.sabirMana)}, HasarManaTavan = ${sayi(K.savas.hasarManaTavan)};`);
 satir.push(`        public static readonly double[] YildizCarpan = { ${dizi(K.yildizCarpan)} };`);
 satir.push(`        /// <summary>İndeks = mevcut seviye → sonraki seviyeye gereken deneyim.</summary>`);
 satir.push(`        public static readonly int[] XpTablo = { ${K.xpTablo.join(', ')} };`);

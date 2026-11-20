@@ -18,7 +18,7 @@ const IPUCLARI = [
   'Art arda kazanmak da kaybetmek de seri altını getirir.',
   'İki bileşen birleşip tam eşya olur; her kahraman 3 eşya taşır.',
   'Dayanıklıları ön sıraya, menzillileri arkaya koy: ön sıra darbeyi karşılar.',
-  'Savaş 45 saniye sürer; süre dolunca kalan can yüzdesi kazananı belirler.',
+  'Savaş 45 saniye sürer; süre dolunca iki taraf da kaybeder.',
 ];
 // ses.js'in açılışta (ilk dokunuşta) çektiği dosyalar: burada önbelleğe ön alınır, ilk dokunuşta bekleme olmaz
 const SESLER = ['vurus_yumruk', 'vurus_pence', 'vurus_isirma', 'atis_buyu', 'atis_ok', 'isabet_buyu', 'kaya_firlat', 'uluma', 'davul', 'can_emme',

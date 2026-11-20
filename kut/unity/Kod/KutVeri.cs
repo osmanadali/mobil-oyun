@@ -69,6 +69,19 @@ namespace Kut
             new Kahraman { Id = "yildizYiyen", Ad = "Yıldız Yiyen", Emoji = "🌌", Renk = "#5a3f9a", Kademe = 0, Soy = new string[0], Can = 12600.0, Atk = 112.0, As = 0.6, Menzil = 3, Mana = 100.0, Yetenek = "yildizYutan", Pasif = null },
         };
 
+        /// <summary>Yeteneğe özgü kurulum süresi (sn); listede olmayan yetenek YetenekKurulum kullanır.</summary>
+        public static readonly Dictionary<string, double> YetenekKurulumSure = new Dictionary<string, double> {
+            { "uluma", 0.3 },
+            { "davul", 0.3 },
+            { "deliOfke", 0.3 },
+            { "dortnal", 0.3 },
+            { "kanat", 0.3 },
+            { "ayaz", 0.5 },
+            { "golgeOk", 0.5 },
+            { "yildirim", 0.5 },
+            { "balinaSarki", 0.5 },
+        };
+
         public static readonly Dictionary<string, Metin> Yetenekler = new Dictionary<string, Metin> {
             { "tasFirlat", new Metin { Ad = "Kaya Fırlat", M = "Hedefe 200 hasar, 1,5 sn sersemletir." } },
             { "uluma", new Metin { Ad = "Uluma", M = "Kendisi ve 2 hücredeki dostlar 4 sn +%45 saldırı hızı." } },
@@ -128,7 +141,7 @@ namespace Kut
             new Esya { Id = "yirticiPence", Ad = "Yırtıcı Pençe", Simge = "e01", M = "Her 3. vuruş, hedefin azami canının %8'i kadar ek hasar.", Tip = "tam", Tarif = new[] { "dis", "dis" } },
             new Esya { Id = "avCoskusu", Ad = "Av Coşkusu", Simge = "e02", M = "Takımından biri düşman öldürünce 3 sn +%40 saldırı hızı.", Tip = "tam", Tarif = new[] { "dis", "tuy" } },
             new Esya { Id = "kizginDis", Ad = "Kızgın Diş", Simge = "e03", M = "Yeteneğinin vurduğu her düşman 3 sn yanar: 30/sn ×★×YG.", Tip = "tam", Tarif = new[] { "dis", "kor" } },
-            new Esya { Id = "keskinGoz", Ad = "Keskin Göz", Simge = "e04", M = "Vuruş başına mana 8 yerine 12.", Tip = "tam", Tarif = new[] { "dis", "ciy" } },
+            new Esya { Id = "keskinGoz", Ad = "Keskin Göz", Simge = "e04", M = "Vuruş başına mana 10 yerine 15.", Tip = "tam", Tarif = new[] { "dis", "ciy" } },
             new Esya { Id = "ofkeTilsimi", Ad = "Öfke Tılsımı", Simge = "e05", M = "Canı ilk kez yarının altına inince 5 sn +%35 saldırı ve −%20 alınan hasar.", Tip = "tam", Tarif = new[] { "dis", "kabuk" } },
             new Esya { Id = "devYumrugu", Ad = "Dev Yumruğu", Simge = "e06", M = "Vuruşlar, kendi azami canının %2'si kadar ek hasar verir.", Tip = "tam", Tarif = new[] { "dis", "yurek" } },
             new Esya { Id = "geceAvcisi", Ad = "Gece Avcısı", Simge = "e07", M = "Bir düşmanı öldürünce onun azami canının %20'si kadar iyileşir.", Tip = "tam", Tarif = new[] { "dis", "pul" } },
@@ -213,6 +226,9 @@ namespace Kut
         public const int SatisIade = 1, Dukkan = 5, Yedek = 7, TahtaSutun = 4, TahtaSira = 3, TakimTavan = 8;
         public const int CanBaslangic = 100, SeviyeBaslangic = 2, SeviyeTavan = 8, PasifXp = 2, XpBedel = 4, XpMiktar = 4;
         public const double SavasSuresi = 45.0;
+        /// <summary>Savaş motoru (data.js KURAL.savas): ayrışma uzaklığı, hedef bırakma payı, varsayılan yetenek kurulumu, mana kazancı.</summary>
+        public const double SavasAyrim = 0.8, SavasHedefBirak = 0.5, YetenekKurulum = 0.4;
+        public const double VurusMana = 10.0, KeskinGozMana = 15.0, HasarMana = 0.07, SabirMana = 0.14, HasarManaTavan = 30.0;
         public static readonly double[] YildizCarpan = { 0.0, 1.0, 1.8, 3.0 };
         /// <summary>İndeks = mevcut seviye → sonraki seviyeye gereken deneyim.</summary>
         public static readonly int[] XpTablo = { 0, 0, 2, 6, 10, 20, 32, 48 };

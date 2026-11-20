@@ -498,7 +498,7 @@ export class Oyun {
       ts = this._seviyeliSonu(b, sonuc);
       if (M.can <= 0 || M.tur - 1 >= GECICI_SON_R) return this._macBitti(ts);
     } else {
-      if (k === 1) M.can--;
+      if (k === 1 || k === -2) M.can--;   // süre doldu (−2): iki taraf da kaybeder
       if (M.zafer >= kr.zaferHedef || M.can <= 0) return this._macBitti(ts);
     }
     M.tur++; this.kaydet();

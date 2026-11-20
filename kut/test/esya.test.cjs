@@ -49,6 +49,8 @@ ok(D.BILESENLER.length === 8 && D.ESYALAR.length === 36 && D.OZEL_ESYA.length ==
 
 // ── 4) motor kancaları ──
 const tek = (A, B, opt = {}) => S.Savas(A, B, { tohum: 3, ...opt });
+// yetenek kurulumu (KURAL.savas.kurulum): mana dolunca yetenek kurulum süresi sonra etki eder → birimin 'yetenek' olayına dek adım at
+const yetBekle = (sv, uid) => { for (let i = 0; i < 40 && !sv.bitti; i++) { sv.adim(); if (sv.fx.some(f => f.tip === 'yetenek' && f.u === uid)) return true; } return false; };
 {
   const sv = tek([{ h: 'golem', s: 1, x: 1, y: 0, e: ['isikKalkani', 'uluKok', 'dolunayTestisi'] }, { h: 'kurt', s: 1, x: 2, y: 0 }, { h: 'kugu', s: 1, x: 1, y: 1, e: ['buzDagi', 'keskinGoz'] }],
     [{ h: 'kurt', s: 1, x: 1, y: 0 }]);
@@ -56,7 +58,7 @@ const tek = (A, B, opt = {}) => S.Savas(A, B, { tohum: 3, ...opt });
   // Işık Kuğusu'nun Koruyucu Tüy pasifi komşulara 90 kalkan verir
   ok(g.kalkan === 240 + 90 && k.kalkan === 120 + 90 && Math.abs(ku.kalkan - (120 + ku.mx * 0.2 + 120)) < 1e-9, 'savaş başı kalkan: Buz bileşenleri, Işık Kalkanı (2 hücre dostlar), Buz Dağı (%20 azami can)');
   ok(k.mx === S.birimStat({ h: 'kurt', s: 1 }).can + 150 && g.mx === D.kahraman('golem').can + 360, 'Ulu Kök: 2 hücre içindeki dostlara +150 azami can');
-  ok(g.mana === Math.floor(D.kahraman('golem').mana * 0.8 + 0.5) && ku.mp === 15 && ku.vurusMana === 12, 'Dolunay Testisi mana −%20 (80 → 64); Çiy +15 başlangıç manası; Keskin Göz vuruş başına 12 mana (8 yerine)');
+  ok(g.mana === Math.floor(D.kahraman('golem').mana * 0.8 + 0.5) && ku.mp === 15 && ku.vurusMana === D.KURAL.savas.keskinGozMana && D.KURAL.savas.keskinGozMana === 15, 'Dolunay Testisi mana −%20 (80 → 64); Çiy +15 başlangıç manası; Keskin Göz vuruş başına 15 mana (10 yerine; mana dengesi 8/12 → 10/15)');
 }
 {
   // Sis Pelerini: ilk 2,5 sn hedef alınamaz (diğer düşman varken)
@@ -77,7 +79,7 @@ const tek = (A, B, opt = {}) => S.Savas(A, B, { tohum: 3, ...opt });
 }
 {
   // Kut Ocağı: Kut ile patlayan yetenek ×1,5
-  const vur = (e) => { const sv = tek([{ h: 'golem', s: 1, x: 1, y: 0, e }], [{ h: 'golem', s: 1, x: 1, y: 0 }]); sv.kut(0, 0); sv.adim(); return sv.birimler[1].mx - sv.birimler[1].hp; };
+  const vur = (e) => { const sv = tek([{ h: 'golem', s: 1, x: 1, y: 0, e }], [{ h: 'golem', s: 1, x: 1, y: 0 }]); sv.kut(0, 0); yetBekle(sv, 0); return sv.birimler[1].mx - sv.birimler[1].hp; };
   const a = vur(['kor']), b = vur(['kutOcagi']);
   // kor: YG 0,2, Kor yankısı ×1,25 → 200×1,2×1,25 = 300 (taş deri ×0,8); Kut Ocağı (Kor+Kor): YG 0,4, iki Kor yankısı ×1,25² ve ek ×1,5 → 200×1,4×1,5625×1,5 (×0,8)
   ok(Math.abs(a - 200 * 1.2 * 1.25 * 0.8) < 1e-6 && Math.abs(b - 200 * 1.4 * 1.25 * 1.25 * 1.5 * 0.8) < 1e-6, `YG yetenek hasarını büyütür, Kut Ocağı Kut yeteneğini Kor yankılarına ek ×1,5 (${a.toFixed(1)} / ${b.toFixed(1)})`);
@@ -160,7 +162,7 @@ const tek = (A, B, opt = {}) => S.Savas(A, B, { tohum: 3, ...opt });
 {
   // Kızgın Diş ve Ayaz Asası: yeteneğin vurduğu düşmanlara yanık (30 ×★×YG) ve −%30 hız; Taş Mühür kalkanı 120 ×★×YG
   const sv = tek([{ h: 'golem', s: 2, x: 1, y: 0, e: ['kizginDis', 'ayazAsasi', 'tasMuhur'] }], [{ h: 'ayi', s: 3, x: 1, y: 0 }]);
-  sv.kut(0, 0); sv.adim();
+  sv.kut(0, 0); yetBekle(sv, 0);
   const g = sv.birimler[0], k = sv.birimler[1], ky = 1.8 * (1 + 0.6);
   ok(k.durum.yanik && Math.abs(k.durum.yanik.deger - 30 * ky) < 1e-9 && k.durum.yavas && k.durum.yavas.deger === 0.3, 'Kızgın Diş yanığı ve Ayaz Asası yavaşlatması yeteneğin vurduğuna');
   ok(Math.abs(g.kalkan - (120 + 150 * 1.8 + 120 * ky)) < 1e-9, 'Taş Mühür: yetenekte kendine 120 ×★×YG kalkan (Ayaz Asası\'nın Buz kalkanına ve Kut\'un Buz yankısına ek)');

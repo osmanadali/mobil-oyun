@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from '../vendor/three/addons/loaders/GLTFLoader.js';
 import * as SkeletonUtils from '../vendor/three/addons/utils/SkeletonUtils.js';
 import * as G from './gorunum.js';
+import * as CV from './cevre.js';
 import { vfx, ELEMENT } from './vfx.js';
 import { his, dortAyakliKur, dortAyakliGuncelle, yilanKur, yilanGuncelle, ikiAyakliKur, ikiAyakliGuncelle, onYonAci, DA_DARBE, YILAN_DARBE, yetPozVar, yetPozSondur } from './hareket.js';
 
@@ -122,6 +123,8 @@ function elAl(b, ad, v) { const k = b.kemik && b.kemik[ad]; return k ? k.getWorl
 function ileriAl(b) { const a = b.kok.rotation.y; return _ileriV.set(Math.sin(a), 0, Math.cos(a)); }
 // Boynuz Öfkesi: güçlenmiş vuruş sayacı (uid → kalan); motorun u.ofke'siyle her vuruşta eşlenir
 const ofkeSay = new Map();
+// motorun 'kurulum' olayı (yetenek kurulumu başladı: t, sure): yetenek pozu kurulum başından önce başlamasın (birim o ana dek yürüyor/vuruyor)
+const kurulumBas = new Map();
 const SAYAC_OPS = { onc: 3, tur: 'sayac', n: 0, olcek: 0.8, buyuk: false, kritik: false, kenar: '#7a1a08', alfa: 1 };
 
 // ── UAL → Mixamo kemik eşlemesi (golemde sınandı) ──
@@ -250,6 +253,8 @@ async function arenaKur(kok, tl) {
   a.scale.multiplyScalar(12.5 / Math.max(s0.x, s0.z));
   let k = new THREE.Box3().setFromObject(a); a.position.y -= k.max.y - 0.02; a.position.x -= (k.min.x + k.max.x) / 2; a.position.z -= (k.min.z + k.max.z) / 2;
   sahne.add(a);
+  CV.kur({ sahne, kamera, kok, tl, hafif, ada: a, kademeAl: G.kademeAl });   // arena çevresi (cevre.js): çimen, çiçek, taş, sarmaşık, uzak adalar
+  efektler.push({ kalici: true, o: CV.kokNesne(), guncelle: CV.guncelle });
   // tahta: taş karolar (doku 6×6 karo içerir → 1 doku = 6 hücre)
   const tas = tl.load(kok + '../gorsel/doku_tas.webp'); tas.colorSpace = THREE.SRGBColorSpace; tas.wrapS = tas.wrapT = THREE.RepeatWrapping; tas.repeat.set(1, 8 / 6); tas.anisotropy = 8;
   // zemin yaratıklardan ~1 durak koyu ve hafif soğuk: turuncu/mor yaratıklar zeminle kaynaşmasın
@@ -257,8 +262,7 @@ async function arenaKur(kok, tl) {
   tahta.rotation.x = -Math.PI / 2; tahta.position.y = 0.014; tahta.receiveShadow = true; sahne.add(tahta);
   // çimen kenar halkası
   const cim = tl.load(kok + '../gorsel/doku_cimen.webp'); cim.colorSpace = THREE.SRGBColorSpace; cim.wrapS = cim.wrapT = THREE.RepeatWrapping; cim.repeat.set(4, 4);
-  const kenar = new THREE.Mesh(new THREE.RingGeometry(5.32, 6.3, 72), new THREE.MeshStandardMaterial({ map: cim, roughness: 1 }));
-  kenar.rotation.x = -Math.PI / 2; kenar.position.y = 0.006; kenar.receiveShadow = true; sahne.add(kenar);
+  CV.zeminKur(cim);   // dünya koordinatlı, iki ölçekli + toprak lekeli zemin (tekrar etmez)
   // tahtanın çevresi: yuvarlak taş döşeme (tahta ile çimen arasındaki boşluğu kapatır; konseptteki taş avlu)
   const tas2 = tas.clone(); tas2.needsUpdate = true; tas2.repeat.set(10 / 6 * 0.75, 10 / 6 * 0.75); tas2.offset.set(0.37, 0.21);
   const avlu = new THREE.Mesh(new THREE.CircleGeometry(5.06, 72), new THREE.MeshStandardMaterial({ map: tas2, color: '#8e7c8c', roughness: 1 }));
@@ -285,20 +289,30 @@ async function arenaKur(kok, tl) {
   // çevre nesneleri adanın üst yüzünde, çimen halkasında dizilir; açı +z'den (oyuncu tarafı) ölçülür, nesne merkeze bakar
   const kutup = (derece, r) => { const a = derece * Math.PI / 180; return [Math.sin(a) * r, Math.cos(a) * r, a + Math.PI]; };
   const halkaya = (g, derece, r, boy, eksen) => { const [x, z, ry] = kutup(derece, r); return koy(g, x, z, boy, ry, eksen); };
-  halkaya(kemer, 180, 5.5, 2.6); halkaya(kemer, 146, 5.55, 2.0); halkaya(kemer, 214, 5.55, 2.0);
-  for (const d of [55, 305, 118, 242]) halkaya(kristal, d, 5.65, 1.0);
-  halkaya(mantar, 88, 5.7, 1.4); halkaya(mantar, 272, 5.7, 1.25);
-  for (const d of [28, 332]) { const m = halkaya(mangal, d, 5.5, 0.85); atesEkle(m.position.clone().add(new THREE.Vector3(0, 0.9, 0))); }
-  halkaya(kayalar, 163, 5.8, 0.55); halkaya(kayalar, 197, 5.8, 0.5);
+  // yerleşim (+z oyuncu tarafı = 0°): önde yalnız amblem ve alçak çimen (yedek sırası açık kalsın); mangallar tahtanın ön köşelerinin yanında (±44°),
+  // yanlarda sütun–mantar–rune–kristal ritmi, arkada kemer kapısı. Simetrik çiftler, boyları arkaya doğru yükselir (her açıdan katmanlı siluet).
+  const YER = [[kemer, 180, 5.5, 2.6, 0.95], [kemer, 146, 5.55, 2.0, 0.6], [kemer, 214, 5.55, 2.0, 0.6],
+    [kristal, 118, 5.65, 1.0, 0.35], [kristal, 242, 5.65, 1.0, 0.35], [kristal, 53, 5.95, 0.62, 0.25], [kristal, 307, 5.95, 0.55, 0.25],
+    [mantar, 88, 5.7, 1.4, 0.45], [mantar, 272, 5.7, 1.25, 0.45], [kayalar, 163, 5.8, 0.55, 0.35], [kayalar, 197, 5.8, 0.5, 0.35]];
+  for (const [g, d, r, boy, er] of YER) { const [x, z] = kutup(d, r); CV.engelEkle(x, z, er); halkaya(g, d, r, boy); }
+  for (const d of [44, 316]) { const [x, z] = kutup(d, 5.6); CV.engelEkle(x, z, 0.42); const m = halkaya(mangal, d, 5.6, 0.85); atesEkle(m.position.clone().add(new THREE.Vector3(0, 0.9, 0))); }
+  const SUTUN = [[128, 1.9], [232, 1.7], [66, 1.5], [294, 1.6]], RUNE = [102, 258];
+  for (const [d] of SUTUN) { const [x, z] = kutup(d, 5.75); CV.engelEkle(x, z, 0.32); }
+  for (const d of RUNE) { const [x, z] = kutup(d, 5.6); CV.engelEkle(x, z, 0.22); }
+  { const [x, z] = kutup(0, 5.2); CV.engelEkle(x, z, 0.3); }
+  CV.cimenKur(); CV.cicekKur(); CV.tasKur();
   // yeni arena parçaları: kırık sütunlar kemerlerin iki yanında, amblem oyuncu tarafı kenarında, rune taşları yan kenarlarda
-  // (yüksek çözünürlüklü dokular: açılışı bekletmesin diye arka planda yüklenir)
+  // (yüksek çözünürlüklü dokular: açılışı bekletmesin diye arka planda yüklenir); sarmaşık bordür üstünde ve sütun diplerinde
   Promise.all(['sutun', 'amblem', 'rune_tasi'].map(a => glb(a, kok).catch(() => null))).then(([sutun, amblem, rune]) => {
-    if (sutun) for (const [d, boy] of [[128, 1.9], [232, 1.7], [70, 1.5], [290, 1.6]]) halkaya(sutun, d, 5.75, boy);
+    const yol = CV.bordurSarmasik([[16, 20], [-36, 18], [74, 24], [-78, 22], [138, 12], [222, 14], [168, 10], [-12, 8]]);
+    if (sutun) for (const [d, boy] of SUTUN) { const o = halkaya(sutun, d, 5.75, boy), k = new THREE.Box3().setFromObject(o), rr = Math.min(k.max.x - k.min.x, k.max.z - k.min.z) * 0.36;
+      yol.push(CV.sarmalYol(o.position.x, o.position.z, rr, boy * 0.45, 1.2, d)); }
     if (amblem) { const o = halkaya(amblem, 0, 5.2, 0.42); o.rotation.y = Math.PI; }
-    if (rune) for (const d of [100, 260]) halkaya(rune, d, 5.6, 0.18);
+    if (rune) for (const d of RUNE) halkaya(rune, d, 5.6, 0.18);
+    CV.sarmasikKur(yol);
   });
   atmosferKur();
-  for (const [x, y, z, s] of [[-11, 2.5, -9, 3.5], [12, 4, -12, 4.5], [-14, -1, 4, 3], [13, 0.5, 6, 2.6]]) { const o = yuzen.scene.clone(); olcekle(o, s, 'max'); o.position.set(x, y, z); sahne.add(o); efektler.push({ kalici: true, o, faz: x, guncelle: (t) => { o.position.y = y + Math.sin(t * 0.5 + x) * 0.25; } }); }
+  CV.adalarKur(yuzen, olcekle, efektler);   // yüzen adalar: yakın/orta/uzak üç katman
 }
 // ── ATMOSFER (yalnız görüntü; REFERANS_ANIMASYON §3, hepsi [UYGUN] bütçe) ──
 // (1) alçak yükseklik sisi: adanın kenarından dışarı ve aşağı taşan yumuşak sis halkası + ada eteğinde dikey sis perdesi (tahtanın üstüne çıkmaz)
@@ -720,7 +734,7 @@ function duzZincirMi(kemik) {
 export async function savasKur(yeniSim, kok = '', { yerinde = false } = {}) {
   for (const b of birimler.values()) { vfx.durumTemizle(b.kok); sahne.remove(b.kok); if (b.isk) sahne.remove(b.isk.kaynak); }
   for (const e of efektler) if (!e.kalici) sahne.remove(e.o);
-  efektler = efektler.filter(e => e.kalici); kuyruk = []; kuyrukKirli = false; yazilar = []; bantlar.length = 0; balonSira.length = 0; kutKart = null; birimler = new Map(); birimDizi = []; kutlu = new Set(); ofkeSay.clear(); kam.ilk = true;
+  efektler = efektler.filter(e => e.kalici); kuyruk = []; kuyrukKirli = false; yazilar = []; bantlar.length = 0; balonSira.length = 0; kutKart = null; birimler = new Map(); birimDizi = []; kutlu = new Set(); ofkeSay.clear(); kurulumBas.clear(); kam.ilk = true;
   his.sifirla(); mvpSifirla();
   sim = yeniSim; gorselT = 0;
   anlikN = sim.birimler.length; anlikSay = 0;
@@ -853,8 +867,10 @@ function olayPlanla(f, liste = [f], i = 0) {
     const b = birimler.get(f.u); if (!b) return;
     const { hedefler, dostlar } = yetenekHedefleri(f, liste, i, b);
     const kut = kutlu.delete(f.u); f._kut = kut;   // ardıl hasar sayıları Kut önceliği alsın
-    const on = vfx.onSure(f.ad);
-    ekle(f.t - Math.max(b.gor.yetOn || 0.35, on), () => yetenekBaslat(b, f.ad, f.t - on, hedefler[0]));
+    const on = vfx.onSure(f.ad), ku = kurulumBas.get(f.u); kurulumBas.delete(f.u);
+    // poz başlangıcı: kişilik tablosunun öndeliği, ama motorun kurulum başından önce değil (efekt çıkışından da geç değil)
+    let bas = f.t - Math.max(b.gor.yetOn || 0.35, on); if (ku && ku.t > bas) bas = Math.min(ku.t, f.t - on);
+    ekle(bas, () => yetenekBaslat(b, f.ad, f.t - on, hedefler[0]));
     ekle(f.t - on, () => { if (b.olumT >= 0) return;
       if (f.ad === 'dortnal') kaymaBaslat(b, f.t);
       vfx.yetenek(f.ad, b.kok, hedefler.filter(o => o.olumT < 0 || o === b).map(o => o.kok), { dostlar: dostlar.map(o => o.kok), kut, soket: soketAl(b, f.ad), ileri: ileriAl(b),
@@ -880,6 +896,7 @@ function olayPlanla(f, liste = [f], i = 0) {
     }
   } else if (f.tip === 'olum') ekle(f.t, () => olumBaslat(birimler.get(f.u)));
   else if (f.tip === 'dirilis') ekle(f.t, () => dirilis(birimler.get(f.u)));
+  else if (f.tip === 'kurulum') kurulumBas.set(f.u, { t: f.t, sure: f.sure });
   else if (f.tip === 'kut') { kutlu.add(f.u); /* dokunuş anında zaten gösterildi; tekrar oynatmada da göster */ ekle(f.t - ONDE_SN, () => { kutSutun(birimler.get(f.u)); sesBildir(f); }); }
   else if (f.tip === 'simsek') {
     // Yıldırım yeteneğinin şimşeklerini vfx.yetenek('yildirim') zaten çizer; burada yalnız Gök Gürültüsü sıçramaları
@@ -1936,7 +1953,7 @@ export function sonaSar() {
   }
   const sonT = (anlikSay - 1) * DT + ONDE_SN;
   if (gorselT < sonT) gorselT = sonT;
-  kuyruk.length = 0; kuyrukKirli = false; yazilar.length = 0; bantlar.length = 0; balonSira.length = 0; kutKart = null; kutlu.clear();
+  kuyruk.length = 0; kuyrukKirli = false; yazilar.length = 0; bantlar.length = 0; balonSira.length = 0; kutKart = null; kutlu.clear(); kurulumBas.clear();
   for (const e of efektler) if (!e.kalici) { sahne.remove(e.o); if (e.bitis) e.bitis(); }
   efektler = efektler.filter(e => e.kalici);
   his.sifirla();   // hit-stop, Kut yavaşlaması, yakınlaşma, giriş düşüşü biter

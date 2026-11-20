@@ -39,10 +39,10 @@ let hata = 0; const ok = (c, m) => { if (!c) { hata++; console.log('✗', m); } 
 
 // ── 3) canavar yetenekleri ve Diken Sırt (motor) ──
 {
-  // birim sırası: taraf 0 önce. Canavara Kut verilir (kut(1, 0)): mana dolar, yetenek ilk adımda çalışır.
+  // birim sırası: taraf 0 önce. Canavara Kut verilir (kut(1, 0)): mana dolar, yetenek kurulumdan sonra (KURAL.savas.kurulum ya da YETENEK[id].kurulum) çalışır.
   const sav = (A, B) => S.Savas(A, B, { tohum: 3 });
   const kurtlar = (n) => Array.from({ length: n }, (_, i) => ({ h: 'kurt', s: 1, x: i, y: 2 })); // uzakta: henüz vuruş yok
-  const ilk = (sv, ad) => { sv.kut(1, 0); for (let i = 0; i < 3; i++) { sv.adim(); const f = sv.fx.filter(x => x.tip === 'yetenek' && x.ad === ad); if (f.length) return sv.fx; } return []; };
+  const ilk = (sv, ad) => { sv.kut(1, 0); for (let i = 0; i < 3 + Math.ceil(0.6 / S.Savas([], []).DT); i++) { sv.adim(); const f = sv.fx.filter(x => x.tip === 'yetenek' && x.ad === ad); if (f.length) return sv.fx; } return []; };
   let sv = sav(kurtlar(4), [{ h: 'gokBalinasi', s: 1, x: 1, y: 2 }]); let fx = ilk(sv, 'balinaSarki');
   ok(fx.length && sv.birimler.filter(u => u.taraf === 0).every(u => Math.abs(u.mx - u.hp - 110) < 1e-9), 'Balina Şarkısı: bütün düşmanlara 110 hasar');
   sv = sav(kurtlar(4), [{ h: 'yildizYiyen', s: 1, x: 0, y: 2 }]); fx = ilk(sv, 'yildizYutan');

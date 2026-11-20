@@ -106,11 +106,11 @@ namespace Kut
             g.Toplam = g.Taban + g.Faiz + g.Seri + g.Galibiyet + g.Alamet;
             return g;
         }
-        /// <summary>Yalnız PvP sonuçları sayılır; beraberlik (-1) ve canavar turu seriyi değiştirmez. Yeni nesne döner.</summary>
+        /// <summary>Yalnız PvP sonuçları sayılır; beraberlik (-1) ve canavar turu seriyi değiştirmez; süre doldu (-2) yenilgi sayılır. Yeni nesne döner.</summary>
         public static Seri SeriGuncelle(Seri seri, int kazanan, string tip)
         {
             var s = new Seri { Tip = seri?.Tip, N = seri?.N ?? 0 };
-            if (tip != "pvp" || (kazanan != 0 && kazanan != 1)) return s;
+            if (tip != "pvp" || (kazanan != 0 && kazanan != 1 && kazanan != -2)) return s;
             string t = kazanan == 0 ? "G" : "M";
             return s.Tip == t ? new Seri { Tip = t, N = s.N + 1 } : new Seri { Tip = t, N = 1 };
         }
@@ -131,13 +131,15 @@ namespace Kut
             int t = KutVeri.BolumTabani[System.Math.Min(bolum, KutVeri.BolumTabani.Length - 1)];
             return t + (yasayan == 2 ? KutVeri.SonIkiEk : yasayan == 3 ? KutVeri.SonUcEk : 0);
         }
-        /// <summary>[taraf 0'ın hasarı, taraf 1'in hasarı]. yasayan 0 = lobi eki yok.</summary>
-        public static int[] KayipHasar(int r, int kazanan, int kalanPuan, int kalanSayi, int yasayan = 0)
+        /// <summary>[taraf 0'ın hasarı, taraf 1'in hasarı]. yasayan 0 = lobi eki yok. Süre doldu (−2): iki taraf da kaybeder —
+        /// PvP: taraf 0 taban + kalanPuan, taraf 1 taban + kalanPuanB; canavar: taban + kalan canavar.</summary>
+        public static int[] KayipHasar(int r, int kazanan, int kalanPuan, int kalanSayi, int yasayan = 0, int kalanPuanB = 0)
         {
             var p = TurPlan(r);
             if (p.Tip == "kervan" || (p.Tip == "pve" && p.Bolum == 1)) return new[] { 0, 0 };
             int t = BolumTaban(p.Bolum, yasayan);
-            if (p.Tip == "pve") return new[] { kazanan == 0 ? 0 : kazanan == 1 ? t + kalanSayi : t, 0 };
+            if (p.Tip == "pve") return new[] { kazanan == 0 ? 0 : kazanan == 1 || kazanan == -2 ? t + kalanSayi : t, 0 };
+            if (kazanan == -2) return new[] { t + kalanPuan, t + kalanPuanB };
             if (kazanan == 0) return new[] { 0, t + kalanPuan };
             if (kazanan == 1) return new[] { t + kalanPuan, 0 };
             return new[] { t, t };

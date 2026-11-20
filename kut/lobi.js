@@ -89,10 +89,11 @@
     g.toplam = g.taban + g.faiz + g.seri + g.galibiyet + g.alamet;
     return g;
   }
-  // Seri yalnız PvP sonuçlarıyla sayılır; beraberlik ve canavar turu seriyi bozmaz, uzatmaz. kazanan: 0 bu taraf, 1 rakip, -1 berabere.
+  // Seri yalnız PvP sonuçlarıyla sayılır; beraberlik ve canavar turu seriyi bozmaz, uzatmaz. kazanan: 0 bu taraf, 1 rakip, -1 berabere,
+  // -2 süre doldu (iki taraf da kaybetti: yenilgi serisi).
   function seriGuncelle(seri, kazanan, tip) {
     const s = { tip: seri ? seri.tip : null, n: seri ? seri.n : 0 };
-    if (tip !== 'pvp' || (kazanan !== 0 && kazanan !== 1)) return s;
+    if (tip !== 'pvp' || (kazanan !== 0 && kazanan !== 1 && kazanan !== -2)) return s;
     const t = kazanan === 0 ? 'G' : 'M';
     return s.tip === t ? { tip: t, n: s.n + 1 } : { tip: t, n: 1 };
   }
@@ -113,12 +114,15 @@
   }
   /** [taraf 0'ın hasarı, taraf 1'in hasarı]. PvP: kaybeden taban + kalanPuan, beraberlikte ikisi de taban.
       Canavar turu: yalnız taraf 0 (oyuncu) can kaybeder: taban + kalan canavar sayısı; bölüm 1'de hasar yok. Kervan: 0.
-      yasayan: lobide kalan oyuncu (3 → Son Üç, 2 → Son İki); verilmezse ek yok. */
-  function kayipHasar(r, kazanan, kalanPuan, kalanSayi, yasayan) {
+      yasayan: lobide kalan oyuncu (3 → Son Üç, 2 → Son İki); verilmezse ek yok.
+      Süre doldu (kazanan -2): iki taraf da kaybeder. PvP: taraf 0 taban + kalanPuan (taraf 1'in sağ yıldızları), taraf 1 taban + kalanPuanB
+      (taraf 0'ın); canavar turu: taban + kalan canavar sayısı. */
+  function kayipHasar(r, kazanan, kalanPuan, kalanSayi, yasayan, kalanPuanB) {
     const p = turPlan(r);
     if (p.tip === 'kervan' || (p.tip === 'pve' && p.bolum === 1)) return [0, 0];
     const t = bolumTaban(p.bolum, yasayan || 0);
-    if (p.tip === 'pve') return [kazanan === 0 ? 0 : kazanan === 1 ? t + kalanSayi : t, 0];
+    if (p.tip === 'pve') return [kazanan === 0 ? 0 : kazanan === 1 || kazanan === -2 ? t + kalanSayi : t, 0];
+    if (kazanan === -2) return [t + kalanPuan, t + (kalanPuanB || 0)];
     if (kazanan === 0) return [0, t + kalanPuan];
     if (kazanan === 1) return [t + kalanPuan, 0];
     return [t, t];
@@ -394,7 +398,7 @@
       Dönen: [{ a, b (Yansıma'da kopya, canavarda -1), tip: 'pvp'|'yansima'|'pve', kazanan (a'ya göre), kalanPuan, kalanSayi, sure }]. */
   function golgeSavaslari(lobi, r, alamet, es, ops = {}) {
     const p = turPlan(r), out = [], canli = (i) => lobi.oyuncular[i].canli, yas = yasayanSay(lobi), can = (i) => lobi.oyuncular[i].can;
-    const bir = (a, b, tip, s) => ({ a, b, tip, kazanan: s.kazanan, kalanPuan: s.kalanPuan, kalanSayi: s.kalanSayi, sure: s.sure });
+    const bir = (a, b, tip, s) => ({ a, b, tip, kazanan: s.kazanan, kalanPuan: s.kalanPuan, kalanSayi: s.kalanSayi, sure: s.sure, ...(s.kazanan === -2 ? { kalanPuanB: s.kalanPuanB || 0 } : {}) });
     if (p.tip === 'pve') {
       const dalga = { takim: pveDalga(r), kut: null };
       for (const i of yasayanlar(lobi)) if (!canli(i)) out.push(bir(i, -1, 'pve', golgeSavas(lobiKadro(lobi, i, r), dalga, alamet, lobi.tohum + r * 104729 + i * 7907 + 50021, true, yas, can(i), 0)));
@@ -424,18 +428,21 @@
     const cs = ops.canliSonuc, ci = lobi.oyuncular.findIndex(o => o.canli && !o.olu);
     if (ci >= 0 && cs) {
       const ters = (k) => (k === 0 ? 1 : k === 1 ? 0 : k);
-      const bir = (a, b, tip, k) => ({ a, b, tip, kazanan: k, kalanPuan: cs.kalanPuan, kalanSayi: cs.kalanSayi, sure: cs.sure });
+      // süre doldu (-2) ve canlı oyuncu b tarafındaysa iki tarafın sağ kalan yıldızları yer değiştirir (kalanPuan: a'nın rakibininki)
+      const bir = (a, b, tip, k, ters) => { const t2 = ters && k === -2;
+        return { a, b, tip, kazanan: k, kalanPuan: t2 ? cs.kalanPuanB || 0 : cs.kalanPuan, kalanSayi: cs.kalanSayi, sure: cs.sure,
+          ...(k === -2 ? { kalanPuanB: t2 ? cs.kalanPuan : cs.kalanPuanB || 0 } : {}) }; };
       if (p.tip === 'pve') sonuclar.push(bir(ci, -1, 'pve', cs.kazanan));
-      else { const rk = lobiRakip(es, ci); if (rk) { if (rk.yansima) sonuclar.push(bir(ci, rk.j, 'yansima', cs.kazanan)); else { const k = es.ciftler.findIndex(c => c.includes(ci)), [a, b] = es.ciftler[k]; sonuclar.push(a === ci ? bir(a, b, 'pvp', cs.kazanan) : bir(a, b, 'pvp', ters(cs.kazanan))); } } }
+      else { const rk = lobiRakip(es, ci); if (rk) { if (rk.yansima) sonuclar.push(bir(ci, rk.j, 'yansima', cs.kazanan)); else { const k = es.ciftler.findIndex(c => c.includes(ci)), [a, b] = es.ciftler[k]; sonuclar.push(a === ci ? bir(a, b, 'pvp', cs.kazanan) : bir(a, b, 'pvp', ters(cs.kazanan), true)); } } }
     }
     // hasar ve seri (sonuç sırasıyla; hasar herkese aynı anda uygulanır)
     for (const s of sonuclar) {
-      const h = kayipHasar(r, s.kazanan, s.kalanPuan, s.kalanSayi, yas.length);
+      const h = kayipHasar(r, s.kazanan, s.kalanPuan, s.kalanSayi, yas.length, s.kalanPuanB);
       s.hasar = s.tip === 'pvp' ? h : [h[0], 0];
       rapor.hasar[s.a] += s.hasar[0]; if (s.tip === 'pvp') rapor.hasar[s.b] += s.hasar[1];
       if (s.tip !== 'pve') {
         const oa = lobi.oyuncular[s.a]; oa.seri = seriGuncelle(oa.seri, s.kazanan, 'pvp');
-        if (s.tip === 'pvp') { const ob = lobi.oyuncular[s.b]; ob.seri = seriGuncelle(ob.seri, s.kazanan === 0 ? 1 : s.kazanan === 1 ? 0 : -1, 'pvp'); }
+        if (s.tip === 'pvp') { const ob = lobi.oyuncular[s.b]; ob.seri = seriGuncelle(ob.seri, s.kazanan === 0 ? 1 : s.kazanan === 1 ? 0 : s.kazanan, 'pvp'); }
       }
     }
     for (const i of yas) { const o = lobi.oyuncular[i]; o.can = Math.max(0, o.can - rapor.hasar[i]); }

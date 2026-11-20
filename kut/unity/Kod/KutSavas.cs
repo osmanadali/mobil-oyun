@@ -62,20 +62,26 @@ namespace Kut
     public sealed class Fx
     {
         public double T; public string Tip; public int U = -1, K = -1; public double N; public string Ad; public bool Menzilli;
+        public double Sure; // "kurulum" olayında yetenek kurulum süresi (sn)
     }
 
     public sealed class KutKaydi { public double T; public int Taraf, I; }
 
     /// <summary>Kalan: eski ölçü (Σ kc × kademe). KalanPuan: kazanan taraftaki sağ birimlerin yıldız toplamı (lobi hasarı). KalanSayi: sağ birim sayısı.</summary>
     /// <summary>Kut: tarafların kullandığı Kut sayısı (Saklı Kut armağanı için).</summary>
-    public sealed class SavasSonucu { public int Kazanan; public double Sure; public double Kalan; public int KalanPuan, KalanSayi; public int[] Kut = new int[2]; }
+    /// <summary>Kazanan: 0 | 1 | −1 (ikisi de öldü) | −2 (süre doldu: iki taraf da kaybetti, SureDoldu). −2'de Kalan/KalanPuan/KalanSayi taraf 1'in
+    /// sağ kalanları (taraf 0'ın yenilgi hasarına eklenir), KalanPuanB/KalanSayiB taraf 0'ınki.</summary>
+    public sealed class SavasSonucu { public int Kazanan; public double Sure; public double Kalan; public int KalanPuan, KalanSayi; public int[] Kut = new int[2];
+        public bool SureDoldu; public int KalanPuanB, KalanSayiB; }
 
     public sealed class SavasBirimi
     {
         public int Uid, Taraf, I; public TakimBirimi B;
         public string Ad, Yetenek, Pasif; public double Atk, As, Mana, Kc; public int Menzil, Kademe; public List<string> Soy;
         public double Mx, Hp, X, Y, X0, Y0, Mp, Cd, Kalkan; public bool Olu, Dirildi; public int Vurus, PayYigin, Ofke;
-        public double AsEk, Yg, Azalt, Cal, Kalkan0, Mana0, VurusMana = 8, KutCarpan = 1; public bool IlkVurusYapildi; public int SonHedefUid = -1;
+        public double AsEk, Yg, Azalt, Cal, Kalkan0, Mana0, VurusMana = KutVeri.VurusMana, KutCarpan = 1;
+        public bool IlkVurusYapildi; public int SonHedefUid = -1;
+        public double KurulumSure, Kurulum; // yetenek kurulum süresi; kalan kurulum (0: kurulumda değil)
         public HashSet<string> Ef = new HashSet<string>(), EsikTetik = new HashSet<string>();
         // Kut Yankısı (7.1): bileşen sayıları ve sırası, Kut Taşı; Diş yankısının kalan vuruşu ve oranı, Çiy yankısının bekleyen manası; Kut Mirası işareti
         public Dictionary<string, int> KutYanki = new Dictionary<string, int>(); public List<string> YankiSira = new List<string>(); public int KutTasi, BilesenSay;
@@ -219,7 +225,8 @@ namespace Kut
                     double mana = ef.Contains("dolunayTestisi") ? Math.Floor(st.Mana * 0.8 + 0.5) : st.Mana; // Dolunay Testisi
                     Birimler.Add(new SavasBirimi { Uid = taraf * 10 + i, Taraf = taraf, I = i, B = b, Ad = st.Ad, Yetenek = st.Yetenek, Pasif = st.Pasif, Atk = st.Atk, As = st.As,
                         Mana = mana, Kc = st.Kc, Menzil = st.Menzil, Kademe = st.Kademe, Soy = st.Soy, Mx = can, Hp = can, X = x, Y = y, X0 = x, Y0 = y, Mp = 0, Cd = 0.3 + R.Sonraki() * 0.3,
-                        AsEk = st.AsEk, Yg = st.Yg, Azalt = st.Azalt, Cal = st.Cal, Kalkan0 = st.Kalkan0, Mana0 = st.Mana0, Ef = ef, VurusMana = ef.Contains("keskinGoz") ? 12 : 8,
+                        AsEk = st.AsEk, Yg = st.Yg, Azalt = st.Azalt, Cal = st.Cal, Kalkan0 = st.Kalkan0, Mana0 = st.Mana0, Ef = ef, VurusMana = ef.Contains("keskinGoz") ? KutVeri.KeskinGozMana : KutVeri.VurusMana,
+                        KurulumSure = st.Yetenek != null && KutVeri.YetenekKurulumSure.TryGetValue(st.Yetenek, out var ks) ? ks : KutVeri.YetenekKurulum,
                         KutYanki = st.KutYanki, YankiSira = st.YankiSira, KutTasi = st.KutTasi, BilesenSay = st.YankiSira.Count });
                 }
 
@@ -248,6 +255,54 @@ namespace Kut
         List<SavasBirimi> Dostlar(SavasBirimi u) => Birimler.Where(o => o.Taraf == u.Taraf && !o.Olu).ToList();
         List<SavasBirimi> Dusmanlar(SavasBirimi u) => Birimler.Where(o => o.Taraf != u.Taraf && !o.Olu).ToList();
         public static double Mesafe(SavasBirimi a, SavasBirimi b) { double dx = a.X - b.X, dy = a.Y - b.Y; return Math.Sqrt(dx * dx + dy * dy); }
+        /// <summary>Yetenek kurulumundaki birim mana kazanmaz (Kut hariç).</summary>
+        static void ManaEkle(SavasBirimi u, double n) { if (!(u.Kurulum > 0)) u.Mp = Math.Min(u.Mana, u.Mp + n); }
+        /// <summary>Üst üste binme yok: u (yalnız u) yaşayan öbür birimlerden en az SavasAyrim uzağa, birim sırasıyla itilir; köşede ya da ilk geçiş
+        /// yetmediyse yana. En çok 4 geçiş. Arena sınırı x 0,4–5,6, y 0,4–7,6.</summary>
+        void Ayris(SavasBirimi u)
+        {
+            const double A = KutVeri.SavasAyrim;
+            for (int gec = 0; gec < 4; gec++)
+            {
+                bool itildi = false;
+                foreach (var o in Birimler)
+                {
+                    if (o == u || o.Olu) continue;
+                    double dx = u.X - o.X, dy = u.Y - o.Y, d = Math.Sqrt(dx * dx + dy * dy);
+                    if (d >= A) continue;
+                    itildi = true;
+                    if (d < 1e-6) { u.X = o.X + (u.I % 2 != 0 ? -0.6 : 0.6) * A; u.Y = o.Y + (u.Taraf == 0 ? 0.8 : -0.8) * A; }
+                    else { double k = A / d; u.X = o.X + dx * k; u.Y = o.Y + dy * k; }
+                    u.X = Math.Max(0.4, Math.Min(5.6, u.X)); u.Y = Math.Max(0.4, Math.Min(7.6, u.Y));
+                    if (gec > 0 || Mesafe(u, o) < A - 1e-9)
+                    {
+                        int sx = dx > 0 || (dx == 0 && u.I % 2 == 0) ? 1 : -1;
+                        double nx = o.X + sx * A; if (nx > 5.6 || nx < 0.4) nx = o.X - sx * A;
+                        u.X = nx;
+                    }
+                }
+                if (!itildi) break;
+            }
+        }
+        /// <summary>Yürüme yönü: doğrudan hedefe; yol bir birimin ayrım çemberine sokuyorsa ±30°, ±60°, ±90° (önce i'ye göre bir yan; sabit sayılarla). Hepsi kapalıysa false.</summary>
+        static readonly double[][] DON = { new[] { 1.0, 0 }, new[] { 0.8660254037844386, 0.5 }, new[] { 0.8660254037844386, -0.5 }, new[] { 0.5, 0.8660254037844386 }, new[] { 0.5, -0.8660254037844386 }, new[] { 0.0, 1 }, new[] { 0.0, -1 } };
+        bool YurumeYonu(SavasBirimi u, double ex, double ey, double adimU, out double rx, out double ry)
+        {
+            double yan = u.I % 2 != 0 ? -1 : 1;
+            foreach (var r in DON)
+            {
+                double c = r[0], sn = r[1] * yan; rx = ex * c - ey * sn; ry = ex * sn + ey * c;
+                double nx = u.X + rx * adimU, ny = u.Y + ry * adimU; bool acik = true;
+                foreach (var o in Birimler)
+                {
+                    if (o == u || o.Olu) continue;
+                    double ax = nx - o.X, ay = ny - o.Y, yd = Math.Sqrt(ax * ax + ay * ay);
+                    if (yd < KutVeri.SavasAyrim - 1e-9 && yd < Mesafe(u, o)) { acik = false; break; }
+                }
+                if (acik) return true;
+            }
+            rx = ry = 0; return false;
+        }
         /// <summary>Dev Kükremesi'nin zorladığı hedef; sonra hedef alınabilenlerden en yakın; hepsi hedef alınamazsa en yakın.</summary>
         SavasBirimi EnYakin(SavasBirimi u)
         {
@@ -319,7 +374,8 @@ namespace Kut
             if (hedef.Kalkan > 0) { double e = Math.Min(hedef.Kalkan, m); hedef.Kalkan -= e; m -= e; }
             m = Math.Max(0, m);
             hedef.Hp -= m;
-            if (tur != "dot" && tur != "yansima") hedef.Mp = Math.Min(hedef.Mana, hedef.Mp + m * (hedef.E("sabirTasi") ? 0.1 : 0.05));
+            // hasar alınca mana: %5 (Sabır Taşı %10), vuruş başına en çok HasarManaTavan; kurulumda mana gelmez
+            if (tur != "dot" && tur != "yansima" && !(hedef.Kurulum > 0)) hedef.Mp = Math.Min(hedef.Mana, hedef.Mp + Math.Min(KutVeri.HasarManaTavan, m * (hedef.E("sabirTasi") ? KutVeri.SabirMana : KutVeri.HasarMana)));
             if (m >= 1) Ekle(tur == "dot" ? "dot" : "hasar", hedef, KutMotor.JsRound(m), kaynak != null ? kaynak.Uid : -1);
             if (kaynak != null && kaynak.Pasif == "canEmici" && tur != "dot" && tur != "yansima") Iyiles(kaynak, m * 0.2);
             if (kaynak != null && tur != "dot" && tur != "yansima")
@@ -363,9 +419,9 @@ namespace Kut
             foreach (var d in Birimler)
             {
                 if (d.Olu) continue;
-                if (d.Taraf == u.Taraf && d.Pasif == "ruhBagi") d.Mp = Math.Min(d.Mana, d.Mp + 25); // tempo: 35 → 25
+                if (d.Taraf == u.Taraf && d.Pasif == "ruhBagi") ManaEkle(d, 25); // tempo: 35 → 25
                 if (d.Taraf != u.Taraf && d.Pasif == "karanlikPay") d.PayYigin++;
-                if (d.Taraf == u.Taraf && d.E("ruhTestisi")) { d.Mp = Math.Min(d.Mana, d.Mp + 20); Iyiles(d, d.Mx * 0.1); }
+                if (d.Taraf == u.Taraf && d.E("ruhTestisi")) { ManaEkle(d, 20); Iyiles(d, d.Mx * 0.1); }
                 if (d.Taraf != u.Taraf && d.E("avCoskusu")) DurumVer(d, "cosku", 3);
             }
             if (katil != null && !katil.Olu && katil.Taraf != u.Taraf)
@@ -429,7 +485,7 @@ namespace Kut
                 case "davul": foreach (var d in Dostlar(u)) DurumVer(d, "davul", 4); break;
                 case "ruhEmme": if (h != null) { double v = Hasar(u, h, 170 * c, "yetenek"); Iyiles(u, v); } break;
                 case "kasirga":
-                    if (h != null) foreach (var o in cevre(h, 1.6)) { Hasar(u, o, 110 * c, "yetenek"); o.Y += (o.Taraf == 0 ? 1.5 : -1.5); o.Y = Math.Max(0.4, Math.Min(7.6, o.Y)); }
+                    if (h != null) foreach (var o in cevre(h, 1.6)) { Hasar(u, o, 110 * c, "yetenek"); o.Y += (o.Taraf == 0 ? 1.5 : -1.5); o.Y = Math.Max(0.4, Math.Min(7.6, o.Y)); if (!o.Olu) { Ayris(o); o.Hedef = null; } }
                     break;
                 case "deliOfke": u.Ofke = 3; Iyiles(u, u.Mx * 0.2); break;
                 case "zehir":
@@ -444,7 +500,7 @@ namespace Kut
                 case "dortnal":
                     {
                         var arka = Dusmanlar(u).OrderByDescending(b => Mesafe(u, b)).FirstOrDefault();
-                        if (arka != null) { u.X = arka.X; u.Y = arka.Y + (u.Taraf == 0 ? 0.8 : -0.8); u.Hedef = arka; Hasar(u, arka, 190 * c, "yetenek"); }
+                        if (arka != null) { u.X = arka.X; u.Y = arka.Y + (u.Taraf == 0 ? 0.8 : -0.8); Ayris(u); u.Hedef = arka; Hasar(u, arka, 190 * c, "yetenek"); }
                     }
                     break;
                 case "kanat": foreach (var d in Dostlar(u)) KalkanVer(d, 140 * c); break;
@@ -484,7 +540,7 @@ namespace Kut
             KutYankiUygula(u);
             if (Ar(taraf, "uyanis")) DurumVer(u, "uyanis", 999, KutVeri.ArmUyanis);
             if (Ar(taraf, "kutMirasi")) u.KutMiras = true;
-            if (Ar(taraf, "isikSutunu")) foreach (var d in Dostlar(u)) if (d != u && Mesafe(u, d) <= KutVeri.ArmIsikMenzil) d.Mp = Math.Min(d.Mana, d.Mp + d.Mana * KutVeri.ArmIsikSutunu);
+            if (Ar(taraf, "isikSutunu")) foreach (var d in Dostlar(u)) if (d != u && Mesafe(u, d) <= KutVeri.ArmIsikMenzil) ManaEkle(d, d.Mana * KutVeri.ArmIsikSutunu);
             if (kayit != null) kayit.Add(new KutKaydi { T = Math.Round(T, 2, MidpointRounding.AwayFromZero), Taraf = taraf, I = i });
             return true;
         }
@@ -546,17 +602,30 @@ namespace Kut
                 int su = Sv(u.Taraf, "su"); if (su != 0 && u.Soy.Contains("su")) IyilesSessiz(u, u.Mx * SU[su] * DT);
                 if (u.Pasif == "sicakKalp") IyilesSessiz(u, u.Mx * 0.03 * DT);
                 if (u.E("sifaPinari")) IyilesSessiz(u, u.Mx * 0.02 * DT);
-                if (u.Var("sersem")) continue;
+                // sersem: bekler (yetenek kurulumu iptal olmaz, süresi işlemez); hedef bırakılır
+                if (u.Var("sersem")) { u.Hedef = null; continue; }
 
-                if (u.Mp >= u.Mana) { u.Mp = 0; Yetenek(u); if (BittiMi()) return; continue; }
-                if (u.Hedef == null || u.Hedef.Olu || T % 0.5 < DT) u.Hedef = EnYakin(u);
+                // yetenek kurulumu: mana dolunca KurulumSure sn bekler (saldırmaz, yürümez, mana kazanmaz), sonra etki eder; başında "kurulum" olayı
+                if (u.Kurulum > 0) { u.Kurulum -= DT; if (u.Kurulum > 1e-9) continue; u.Kurulum = 0; Yetenek(u); if (BittiMi()) return; continue; }
+                if (u.Mp >= u.Mana)
+                {
+                    u.Mp = 0;
+                    if (u.KurulumSure > 0) { u.Kurulum = u.KurulumSure; Fx.Add(new Fx { T = T, Tip = "kurulum", U = u.Uid, Ad = u.Yetenek, Sure = u.KurulumSure }); continue; }
+                    Yetenek(u); if (BittiMi()) return; continue;
+                }
+                // kalıcı hedef: ölene, hedef alınamaz olana, menzilin SavasHedefBirak ötesine geçene ya da Dev Kükremesi başkasını zorlayana dek
+                {
+                    var hd = u.Hedef;
+                    if (hd == null || hd.Olu || hd.Var("hedefAlinmaz") || (u.Var("zorla") && u.Durum["zorla"].Deger != hd.Uid) || Mesafe(u, hd) > MenzilAl(u) + KutVeri.SavasHedefBirak) u.Hedef = EnYakin(u);
+                }
                 var h = u.Hedef; if (h == null) continue;
                 double dd = Mesafe(u, h);
                 if (dd > MenzilAl(u) + 0.05)
                 {
-                    double hiz = (u.Soy.Contains("atli") ? 1.6 : 1.2) * (u.E("bulutNali") ? 1.5 : 1) * DT; // tempo: 1,7 → 1,2, Çevik 2,4 → 1,6
-                    u.X += (h.X - u.X) / dd * Math.Min(hiz, dd - MenzilAl(u));
-                    u.Y += (h.Y - u.Y) / dd * Math.Min(hiz, dd - MenzilAl(u));
+                    // yürüme: yol tıkalıysa yana döner; tamamen tıkalıysa bekler ve en yakını yeniden seçer (üst üste binme yok)
+                    double hiz = (u.Soy.Contains("atli") ? 1.6 : 1.2) * (u.E("bulutNali") ? 1.5 : 1) * DT, adimU = Math.Min(hiz, dd - MenzilAl(u)); // tempo: 1,7 → 1,2, Çevik 2,4 → 1,6
+                    if (YurumeYonu(u, (h.X - u.X) / dd, (h.Y - u.Y) / dd, adimU, out double rx, out double ry)) { u.X += rx * adimU; u.Y += ry * adimU; }
+                    else u.Hedef = EnYakin(u);
                 }
                 else
                 {
@@ -574,7 +643,7 @@ namespace Kut
                         if (!h.Olu && !u.Olu) VurusEtki(u, h);
                         int bs = Sv(u.Taraf, "bilge");
                         double bl = bs != 0 && u.Soy.Contains("bilge") ? BILGE[bs] : 0;
-                        if (!u.Olu) u.Mp = Math.Min(u.Mana, u.Mp + u.VurusMana * (1 + bl));
+                        if (!u.Olu) ManaEkle(u, u.VurusMana * (1 + bl));
                     }
                 }
                 if (BittiMi()) return;
@@ -582,13 +651,8 @@ namespace Kut
             // son düşman zaman içi hasarla öldüyse ve kalanlar hedefsiz kaldıysa savaş bu adımda biter
             if (BittiMi()) return;
             T += DT;
-            if (T + 1e-9 >= KutVeri.SavasSuresi) // T 0,05 adımlarla birikir: 45 sn 44,999… olarak gelir
-            {
-                double o0 = 0, o1 = 0;
-                foreach (var o in Birimler) { if (o.Taraf == 0) o0 += Math.Max(0, o.Hp) / o.Mx; else o1 += Math.Max(0, o.Hp) / o.Mx; }
-                double fark = o0 - o1;
-                Bitir(Math.Abs(fark) < 0.05 ? -1 : fark > 0 ? 0 : 1);
-            }
+            // süre doldu: iki taraf da kaybeder (−2). T 0,05 adımlarla birikir: 45 sn 44,999… olarak gelir
+            if (T + 1e-9 >= KutVeri.SavasSuresi) Bitir(-2);
         }
         static void IyilesSessiz(SavasBirimi u, double n) { u.Hp = Math.Min(u.Mx, u.Hp + n); }
         bool BittiMi()
@@ -599,9 +663,11 @@ namespace Kut
         void Bitir(int k)
         {
             Bitti = true;
-            double kalan = 0; int puan = 0, sayi = 0;
-            foreach (var o in Birimler) if (!o.Olu && o.Taraf == k) { kalan += o.Kc * o.Kademe; puan += o.B.S == 0 ? 1 : o.B.S; sayi++; }
-            Sonuc = new SavasSonucu { Kazanan = k, Sure = Math.Round(T, 2, MidpointRounding.AwayFromZero), Kalan = kalan, KalanPuan = puan, KalanSayi = sayi, Kut = new[] { kutSayac[0], kutSayac[1] } };
+            double kalan = 0; int puan = 0, sayi = 0, puanB = 0, sayiB = 0; int tr = k == -2 ? 1 : k;
+            foreach (var o in Birimler) if (!o.Olu && o.Taraf == tr) { kalan += o.Kc * o.Kademe; puan += o.B.S == 0 ? 1 : o.B.S; sayi++; }
+            if (k == -2) foreach (var o in Birimler) if (!o.Olu && o.Taraf == 0) { puanB += o.B.S == 0 ? 1 : o.B.S; sayiB++; }
+            Sonuc = new SavasSonucu { Kazanan = k, Sure = Math.Round(T, 2, MidpointRounding.AwayFromZero), Kalan = kalan, KalanPuan = puan, KalanSayi = sayi, Kut = new[] { kutSayac[0], kutSayac[1] },
+                SureDoldu = k == -2, KalanPuanB = puanB, KalanSayiB = sayiB };
         }
         public SavasSonucu SonunaKadar() { int n = 0; while (!Bitti && n++ < 100000) Adim(); return Sonuc; }
     }

@@ -333,10 +333,10 @@
   }
 
   function savasBitti(s) {
-    const k = s.kazanan;
+    const k = s.kazanan === -2 ? 1 : s.kazanan; // süre doldu (−2): iki taraf da kaybeder
     const sk = $('sSonuc');
     sk.className = 'sonucKutu acik ' + (k === 0 ? 'kazandi' : k === 1 ? 'kaybetti' : 'berabere');
-    sk.textContent = k === 0 ? '🏅 Zafer!' : k === 1 ? '💔 Yenilgi' : '🤝 Berabere';
+    sk.textContent = k === 0 ? '🏅 Zafer!' : s.kazanan === -2 ? '⌛ Süre doldu — iki taraf da kaybetti' : k === 1 ? '💔 Yenilgi' : '🤝 Berabere';
     setTimeout(() => {
       const b = bilgi; sv = null;
       if (b.duello) { anaGoster(); bildir(k === 0 ? 'Düelloyu kazandın!' : k === 1 ? 'Düelloyu kaybettin' : 'Berabere'); return; }

@@ -225,13 +225,13 @@ for (let i = 0; i < 400; i++) {
 }
 const seri = [];
 for (let i = 0; i < 200; i++) {
-  const s0 = rastSeri(), k = Math.floor(R0() * 3) - 1, tip = ['pvp', 'pve', 'kervan'][i % 5 < 3 ? 0 : i % 5 === 3 ? 1 : 2];
+  const s0 = rastSeri(), k = Math.floor(R0() * 4) - 2, tip = ['pvp', 'pve', 'kervan'][i % 5 < 3 ? 0 : i % 5 === 3 ? 1 : 2];
   seri.push({ seri: s0, kazanan: k, tip, sonuc: L.seriGuncelle(s0, k, tip) });
 }
 const hasar = [];
 for (let i = 0; i < 400; i++) {
-  const r = Math.floor(R0() * 70), k = Math.floor(R0() * 3) - 1, kp = Math.floor(R0() * 25), ks = Math.floor(R0() * 9), y = [0, 0, 2, 3, 4, 8][i % 6];
-  hasar.push({ r, kazanan: k, kalanPuan: kp, kalanSayi: ks, yasayan: y, sonuc: L.kayipHasar(r, k, kp, ks, y) });
+  const r = Math.floor(R0() * 70), k = Math.floor(R0() * 4) - 2, kp = Math.floor(R0() * 25), ks = Math.floor(R0() * 9), y = [0, 0, 2, 3, 4, 8][i % 6], kpb = Math.floor(R0() * 25);
+  hasar.push({ r, kazanan: k, kalanPuan: kp, kalanSayi: ks, yasayan: y, kalanPuanB: kpb, sonuc: L.kayipHasar(r, k, kp, ks, y, kpb) }); // k −2: süre doldu
 }
 const kaynastir = [];
 for (let a = 0; a <= 3; a++) for (let b = 0; b <= 3; b++) kaynastir.push({ a, b, sonuc: L.kaynastirBedel(a, b) });
@@ -247,7 +247,7 @@ for (let z = 0; z < 120; z++) {
     d.altin -= harca;
     const xpAl = d.altin >= 4 && R0() < 0.25 && d.seviye < 8; if (xpAl) { d.altin -= 4; const x = L.xpEkle(d.seviye, d.xp, 4); d.seviye = x.seviye; d.xp = x.xp; }
     const sonuc = { kazanan: Math.floor(R0() * 3) - 1, kalanPuan: Math.floor(R0() * 16), kalanSayi: Math.floor(R0() * 8) };
-    if (sonuc.kazanan === -1 && R0() < 0.6) sonuc.kazanan = 1;
+    if (sonuc.kazanan === -1 && R0() < 0.6) sonuc.kazanan = R0() < 0.3 ? -2 : 1; // −2: süre doldu (iki taraf da kaybeder)
     const ts = L.turSonu(d, r, sonuc, yasayan);
     turlar.push({ r, alamet: al, harca, xpAl, sonuc, gelir: gl, ozet: ts, durum: JSON.parse(JSON.stringify(d)) });
   }
@@ -339,7 +339,7 @@ for (let n = 0; n < 24; n++) {
       const ct = O.botIzTur(tohum + 5, 0.6, r).takim, rk = es ? L.lobiRakip(es, 0) : null;
       const rakip = p.tip === 'pve' ? L.pveDalga(r) : rk ? L.lobiKadro(lb, rk.j, r, ct).takim : null;
       if (rakip) { const s2 = S.Savas(ct, rakip, { tohum: tohum + r, alamet: L.lobiAlamet(lb.tohum, r), yz: p.tip === 'pve' ? [0] : [0, 1], gunBatimi: K.gunBatimi.basla }).sonunaKadar();
-        ops.canliTakim = ct; ops.canliSonuc = { kazanan: s2.kazanan, kalanPuan: s2.kalanPuan, kalanSayi: s2.kalanSayi, sure: s2.sure }; kayit.canliTakim = ct; kayit.canliSonuc = ops.canliSonuc; }
+        ops.canliTakim = ct; ops.canliSonuc = { kazanan: s2.kazanan, kalanPuan: s2.kalanPuan, kalanSayi: s2.kalanSayi, kalanPuanB: s2.kalanPuanB || 0, sure: s2.sure }; kayit.canliTakim = ct; kayit.canliSonuc = ops.canliSonuc; }
     }
     const rp = L.lobiTurOyna(lb, r, ops);
     kayit.alamet = rp.alamet; kayit.sonuclar = rp.sonuclar; kayit.hasar = rp.hasar; kayit.elenen = rp.elenen; kayit.can = lb.oyuncular.map(o => o.can);

@@ -1597,7 +1597,12 @@ body.hz3 #mac .dukkan{position:relative;padding:0 8px 8px}
 body.hz3 #mac .dukkan .pn-bas{display:none}
 body.hz3 #mac .kartlar{padding-top:8px;gap:8px;grid-template-columns:repeat(5,minmax(0,170px));justify-content:center}
 body.hz3 #mac .kart .resim{min-height:64px}
-body.hz3 #mac .kart .resim>img{height:112%;bottom:-2%;max-width:118%}
+/* portre (512² saydam, karakter kareyi kenardan kenara doldurur): kart resim alanına tamamen sığar — kare, ortalı, alanın tam yüksekliği;
+   kafa/kulak/kanat kesilmez. Rozetler köşelerde küçük kalır; 'Elinde'/'★2 olur' alt köşede dar etiket (gövdeyi örtmez) */
+body.hz3 #mac .kart .resim{overflow:hidden}
+body.hz3 #mac .kart .resim>img{left:0;top:3px;bottom:auto;width:100%;max-width:none;height:calc(100% - 4px);transform:none;object-fit:contain;object-position:50% 100%}
+body.hz3 #mac .kart .yukselEt,body.hz3 #mac .kart .sahipEt{left:auto;right:3px;transform:none;height:18px;padding:0 5px;gap:2px;border-radius:9px;font-size:10px!important;bottom:2px;opacity:.95}
+body.hz3 #mac .kart .yukselEt .ik{width:10px;height:10px}
 body.hz3 #mac .kart .solUst .kTag{display:none}
 body.hz3 #mac .kart .solUst .soyIk{width:20px;height:20px}
 body.hz3 #mac .kart .fiyat{height:24px;font-size:15px;padding:0 7px 0 2px}
@@ -1629,6 +1634,8 @@ html.alcak body.hz3 #mac .dukkanSol .btn{font-size:11px}html.alcak body.hz3 #mac
 html.alcak body.hz3 #mac .kartlar{padding-top:4px;gap:5px}
 html.alcak body.hz3 #mac .kart .resim{min-height:40px}
 html.alcak body.hz3 #mac .kart .ad{height:18px;line-height:17px;font-size:11px}
+html.alcak body.hz3 #mac .kart .yukselEt,html.alcak body.hz3 #mac .kart .sahipEt{height:14px;font-size:9px!important;padding:0 3px;right:2px;bottom:1px}
+html.alcak body.hz3 #mac .kart .fiyat{height:18px;font-size:12px;padding:0 4px 0 1px}html.alcak body.hz3 #mac .kart .fiyat .ik{width:13px;height:13px}
 html.alcak body.hz3 #mac .savasBtn{font-size:18px!important}html.alcak body.hz3 #mac .savasBtn small{display:none}
 html.alcak .bilgiKart{width:244px;padding:6px 8px}html.alcak .bilgiKart .bkEylem .btn{min-height:32px;height:32px;font-size:12px}
 /* ===================== ROBOT DÜĞMELERİ (arayuz/menu/dugme_*, ikon_*, cubuk_deneyim; kaynak PNG'ler kut/gelen_gorsel, a seti) =====================

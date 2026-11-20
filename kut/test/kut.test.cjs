@@ -4,6 +4,8 @@ const D = require('../data.js'), S = require('../sim.js'), L = require('../lobi.
 const K = D.KURAL, KY = K.kutYanki, AS = K.armaganSayi;
 let hata = 0; const ok = (c, m) => { console.log((c ? '✓ ' : '✗ ') + m); if (!c) hata++; };
 const yakin = (a, b) => Math.abs(a - b) < 1e-9;
+// yetenek kurulumu (KURAL.savas.kurulum): mana dolunca yetenek kurulum süresi sonra etki eder → birimin 'yetenek' olayına dek adım at
+const yetBekle = (sv, uid) => { for (let i = 0; i < 40 && !sv.bitti; i++) { sv.adim(); if (sv.fx.some(f => f.tip === 'yetenek' && f.u === uid)) return true; } return false; };
 // tek birim × uzak, dayanıklı rakip (yetenek hemen patlamasın diye Kut sonrası adım atılmadan bakılır)
 const savas = (e, opt = {}, h = 'golem', s = 1) => S.Savas([{ h, s, x: 1, y: 0, ...(e ? { e } : {}) }, { h: 'kurt', s: 1, x: 2, y: 0 }], [{ h: 'golem', s: 3, x: 1, y: 2 }], { tohum: 7, ...opt });
 
@@ -23,7 +25,7 @@ const savas = (e, opt = {}, h = 'golem', s = 1) => S.Savas([{ h, s, x: 1, y: 0, 
   sv = savas(['yurek']); u = sv.birimler[0]; u.hp = 100; sv.kut(0, 0); ok(yakin(u.hp, 100 + u.mx * 0.15), 'Yürek yankısı: azami canın %15\'i iyileşme');
   sv = savas(['ciy', 'dolunayTestisi']); sv.kut(0, 0); u = sv.birimler[0];
   ok(u.yankiCiy === 3 * KY.ciy, 'Çiy yankısı: 3 Çiy → yetenekten sonra 90 mana bekler');
-  sv.adim(); ok(u.yankiCiy === 0 && u.mp === u.mana, `Çiy yankısı yetenekten hemen sonra mana verdi (mp ${u.mp.toFixed(1)}, azami ${u.mana} ile sınırlı)`);
+  yetBekle(sv, 0); ok(u.yankiCiy === 0 && u.mp === u.mana, `Çiy yankısı yetenekten hemen sonra mana verdi (mp ${u.mp.toFixed(1)}, azami ${u.mana} ile sınırlı)`);
   sv = savas(['kutTasi', 'tuy']); sv.kut(0, 0); ok(yakin(sv.birimler[0].durum.yankiTuy.deger, 1), 'Kut Taşı yankıyı ikiye katlar: 1 Tüy → +%100 hız');
   sv = savas(['kutTasi', 'kor']); sv.kut(0, 0); ok(yakin(sv.birimler[0].kutCarpan, 1.25 * 1.25), 'Kut Taşı + Kor → ×1,25²');
   sv = savas(['avCoskusu', 'kutTasi', 'buz']); sv.kut(0, 0);

@@ -18,10 +18,10 @@ namespace Kut
     /// <summary>Bir turun eşleşmesi. Yansima: null ya da { a, kopya }.</summary>
     public sealed class Eslesme { public int R; public List<int[]> Ciftler = new List<int[]>(); public int[] Yansima; }
     /// <summary>Lobideki bir savaşın sonucu (kazanan a'ya göre; Yansıma'da b kopyalanan, canavarda -1). Hasar: [a'nın, b'nin].</summary>
-    public sealed class LobiSonuc { public int A, B; public string Tip; public int Kazanan, KalanPuan, KalanSayi; public double Sure; public int[] Hasar; }
+    public sealed class LobiSonuc { public int A, B; public string Tip; public int Kazanan, KalanPuan, KalanSayi, KalanPuanB; public double Sure; public int[] Hasar; }
     public sealed class LobiRapor { public int R; public string Tip, Alamet; public int Yasayan; public List<LobiSonuc> Sonuclar = new List<LobiSonuc>(); public int[] Hasar; public List<int> Elenen = new List<int>(); }
     /// <summary>Canlı oyuncunun bu turki savaşı (taraf 0) — lobiTurOyna'ya dışarıdan verilir.</summary>
-    public sealed class CanliSonuc { public int Kazanan, KalanPuan, KalanSayi; public double Sure; }
+    public sealed class CanliSonuc { public int Kazanan, KalanPuan, KalanSayi, KalanPuanB; public double Sure; } // KalanPuanB: süre dolunca (−2) taraf 0'ın sağ yıldızları
 
     public static partial class KutLobi
     {
@@ -124,7 +124,7 @@ namespace Kut
             return new KutSavas(ka.Takim, kb.Takim, tohum, alamet, kut, yz.ToArray(), gunBatimi: KutVeri.GunBatimiBasla,
                 armagan: ar, kutHak: new[] { hak, pve ? 0 : hak }, yzYedek: yzYedek.ToArray()).SonunaKadar();
         }
-        static LobiSonuc Bir(int a, int b, string tip, SavasSonucu s) => new LobiSonuc { A = a, B = b, Tip = tip, Kazanan = s.Kazanan, KalanPuan = s.KalanPuan, KalanSayi = s.KalanSayi, Sure = s.Sure };
+        static LobiSonuc Bir(int a, int b, string tip, SavasSonucu s) => new LobiSonuc { A = a, B = b, Tip = tip, Kazanan = s.Kazanan, KalanPuan = s.KalanPuan, KalanSayi = s.KalanSayi, KalanPuanB = s.Kazanan == -2 ? s.KalanPuanB : 0, Sure = s.Sure };
         /// <summary>Hayalet × hayalet savaşları (bölüm 4.6): canlı oyuncunun dahil olmadığı eşleşmeler; canavar turunda her hayalet kendi dalgasıyla.</summary>
         public static List<LobiSonuc> GolgeSavaslari(Lobi lb, int r, string alamet, Eslesme es, List<TakimBirimi> canliTakim = null)
         {
@@ -161,7 +161,9 @@ namespace Kut
             if (ci >= 0 && canliSonuc != null)
             {
                 var cs = canliSonuc;
-                LobiSonuc B(int a, int b, string tip, int k) => new LobiSonuc { A = a, B = b, Tip = tip, Kazanan = k, KalanPuan = cs.KalanPuan, KalanSayi = cs.KalanSayi, Sure = cs.Sure };
+                // süre doldu (−2) ve canlı oyuncu b tarafındaysa iki tarafın sağ yıldızları yer değiştirir
+                LobiSonuc B(int a, int b, string tip, int k, bool ters = false) { bool t2 = ters && k == -2; return new LobiSonuc { A = a, B = b, Tip = tip, Kazanan = k, KalanPuan = t2 ? cs.KalanPuanB : cs.KalanPuan,
+                    KalanSayi = cs.KalanSayi, KalanPuanB = k != -2 ? 0 : t2 ? cs.KalanPuan : cs.KalanPuanB, Sure = cs.Sure }; }
                 if (p.Tip == "pve") sonuclar.Add(B(ci, -1, "pve", cs.Kazanan));
                 else
                 {
@@ -173,20 +175,20 @@ namespace Kut
                         {
                             var c = es.Ciftler.First(x => x[0] == ci || x[1] == ci);
                             int ters = cs.Kazanan == 0 ? 1 : cs.Kazanan == 1 ? 0 : cs.Kazanan;
-                            sonuclar.Add(c[0] == ci ? B(c[0], c[1], "pvp", cs.Kazanan) : B(c[0], c[1], "pvp", ters));
+                            sonuclar.Add(c[0] == ci ? B(c[0], c[1], "pvp", cs.Kazanan) : B(c[0], c[1], "pvp", ters, true));
                         }
                     }
                 }
             }
             foreach (var s in sonuclar)
             {
-                var h = KayipHasar(r, s.Kazanan, s.KalanPuan, s.KalanSayi, yas.Count);
+                var h = KayipHasar(r, s.Kazanan, s.KalanPuan, s.KalanSayi, yas.Count, s.KalanPuanB);
                 s.Hasar = s.Tip == "pvp" ? h : new[] { h[0], 0 };
                 rapor.Hasar[s.A] += s.Hasar[0]; if (s.Tip == "pvp") rapor.Hasar[s.B] += s.Hasar[1];
                 if (s.Tip != "pve")
                 {
                     var oa = lb.Oyuncular[s.A]; oa.Seri = SeriGuncelle(oa.Seri, s.Kazanan, "pvp");
-                    if (s.Tip == "pvp") { var ob = lb.Oyuncular[s.B]; ob.Seri = SeriGuncelle(ob.Seri, s.Kazanan == 0 ? 1 : s.Kazanan == 1 ? 0 : -1, "pvp"); }
+                    if (s.Tip == "pvp") { var ob = lb.Oyuncular[s.B]; ob.Seri = SeriGuncelle(ob.Seri, s.Kazanan == 0 ? 1 : s.Kazanan == 1 ? 0 : s.Kazanan, "pvp"); }
                 }
             }
             foreach (int i in yas) { var o = lb.Oyuncular[i]; o.Can = System.Math.Max(0, o.Can - rapor.Hasar[i]); }

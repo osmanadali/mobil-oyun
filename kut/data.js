@@ -284,9 +284,9 @@
     yildizCarpan: [0, 1, 1.8, 3],
     savasSuresi: 45,        // sn; süre dolunca iki taraf da kaybeder (sonuc.kazanan −2, sureDoldu) (tempo: 30 → 45; savaş ortancası 24–32 sn hedefi, DENGE_RAPORU.md)
     // savaş motoru (sakin, okunur savaş): ayrim: iki birimin merkezleri arası en az uzaklık (hücre; üst üste binme yok);
-    // hedefBirak: hedef menzilin bu kadar ötesine geçerse yeni hedef aranır (kalıcı hedef); kurulum: yeteneğin varsayılan kurulum süresi (sn;
-    // YETENEK[id].kurulum ile değişir); mana: vuruş başına (Keskin Göz ile), alınan hasarın oranı (Sabır Taşı ile) ve vuruş başına tavanı
-    savas: { ayrim: 0.8, hedefBirak: 2, kurulum: 0.4, vurusMana: 10, keskinGozMana: 15, hasarMana: 0.05, sabirMana: 0.1, hasarManaTavan: 30 },
+    // hedefBirak: hedef menzilin bu kadar ötesine geçerse yeni hedef aranır (kalıcı hedef; 2 hücrede süre sınırına kalan savaş %5,8 oldu → 0,5); kurulum: yeteneğin varsayılan kurulum süresi (sn;
+    // YETENEK[id].kurulum ile değişir); mana: vuruş başına (Keskin Göz ile), alınan hasarın oranı (Sabır Taşı ile; kurulumun yavaşlattığı tempoyu dengelemek için %5 → %7) ve vuruş başına tavanı
+    savas: { ayrim: 0.8, hedefBirak: 0.5, kurulum: 0.4, vurusMana: 10, keskinGozMana: 15, hasarMana: 0.07, sabirMana: 0.14, hasarManaTavan: 30 },
     // tahta: 4 sütun × 3 sıra (ön, orta, arka); en çok 8 kahraman
     tahtaSutun: 4, tahtaSira: 3, takimTavan: 8,
     yedek: 7,

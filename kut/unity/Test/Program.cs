@@ -54,6 +54,8 @@ foreach (var v in kok.GetProperty("savas").EnumerateArray())
         && Math.Abs(sv.Sonuc.Kalan - so.GetProperty("kalan").GetDouble()) < 1e-9
         && sv.Sonuc.KalanPuan == so.GetProperty("kalanPuan").GetInt32() && sv.Sonuc.KalanSayi == so.GetProperty("kalanSayi").GetInt32()
         && sv.Sonuc.Sure == so.GetProperty("sure").GetDouble()
+        && sv.Sonuc.SureDoldu == (so.TryGetProperty("sureDoldu", out var sdE) && sdE.GetBoolean())
+        && sv.Sonuc.KalanPuanB == (so.TryGetProperty("kalanPuanB", out var kpbE) ? kpbE.GetInt32() : 0) && sv.Sonuc.KalanSayiB == (so.TryGetProperty("kalanSayiB", out var ksbE) ? ksbE.GetInt32() : 0)
         && sv.Birimler.Select(u => u.Hp).SequenceEqual(hp)
         && sv.Birimler.Select((u, j) => u.X == xy[j][0] && u.Y == xy[j][1]).All(x => x)
         && sv.Sonuc.Kut.SequenceEqual(so.GetProperty("kut").EnumerateArray().Select(x => x.GetInt32()))
@@ -152,7 +154,7 @@ foreach (var v in ek.GetProperty("seri").EnumerateArray())
     EkKontrol(SeriAyni(KutLobi.SeriGuncelle(SeriOku(v.GetProperty("seri")), v.GetProperty("kazanan").GetInt32(), v.GetProperty("tip").GetString()), v.GetProperty("sonuc")), "seri");
 foreach (var v in ek.GetProperty("hasar").EnumerateArray())
 {
-    var h = KutLobi.KayipHasar(v.GetProperty("r").GetInt32(), v.GetProperty("kazanan").GetInt32(), v.GetProperty("kalanPuan").GetInt32(), v.GetProperty("kalanSayi").GetInt32(), v.GetProperty("yasayan").GetInt32());
+    var h = KutLobi.KayipHasar(v.GetProperty("r").GetInt32(), v.GetProperty("kazanan").GetInt32(), v.GetProperty("kalanPuan").GetInt32(), v.GetProperty("kalanSayi").GetInt32(), v.GetProperty("yasayan").GetInt32(), v.TryGetProperty("kalanPuanB", out var hkb) ? hkb.GetInt32() : 0);
     EkKontrol(h.SequenceEqual(v.GetProperty("sonuc").EnumerateArray().Select(x => x.GetInt32())), $"hasar r {v.GetProperty("r").GetInt32()}");
 }
 foreach (var v in ek.GetProperty("kaynastir").EnumerateArray())
@@ -321,7 +323,7 @@ foreach (var v in lj.GetProperty("lobi").EnumerateArray())
         Eslesme tes = null;
         if (t.GetProperty("es").ValueKind != JsonValueKind.Null) { tes = KutLobi.EslesmeKur(lb, r); if (!EsAyni(tes, t.GetProperty("es"))) { ok = false; ne = $"eşleşme r {r}"; break; } }
         List<TakimBirimi> ct = t.TryGetProperty("canliTakim", out var cte) ? Takim(cte) : null;
-        CanliSonuc cs = t.TryGetProperty("canliSonuc", out var cse) ? new CanliSonuc { Kazanan = cse.GetProperty("kazanan").GetInt32(), KalanPuan = cse.GetProperty("kalanPuan").GetInt32(), KalanSayi = cse.GetProperty("kalanSayi").GetInt32(), Sure = cse.GetProperty("sure").GetDouble() } : null;
+        CanliSonuc cs = t.TryGetProperty("canliSonuc", out var cse) ? new CanliSonuc { Kazanan = cse.GetProperty("kazanan").GetInt32(), KalanPuan = cse.GetProperty("kalanPuan").GetInt32(), KalanSayi = cse.GetProperty("kalanSayi").GetInt32(), KalanPuanB = cse.TryGetProperty("kalanPuanB", out var ckb) ? ckb.GetInt32() : 0, Sure = cse.GetProperty("sure").GetDouble() } : null;
         var rp = KutLobi.LobiTurOyna(lb, r, tes, ct, cs);
         var sj = t.GetProperty("sonuclar").EnumerateArray().ToList(); lobiSavas += sj.Count;
         bool tOk = rp.Alamet == t.GetProperty("alamet").GetString() && rp.Sonuclar.Count == sj.Count && rp.Sonuclar.Zip(sj).All(p => p.First.A == p.Second.GetProperty("a").GetInt32() && p.First.B == p.Second.GetProperty("b").GetInt32()
