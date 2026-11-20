@@ -4,7 +4,7 @@ name: iOS incelemeye gönder
 on:
   workflow_dispatch:
     inputs:
-      version: { description: 'Sürüm (ör. 1.1)', type: string, default: '1.1' }
+      version: { description: 'Sürüm (ör. 1.1)', type: string, default: '1.2' }
       build: { description: 'Yapı numarası (ör. 10)', type: string, required: true }
       apply: { description: 'Gönder (false = yalnız denetim)', type: boolean, default: false }
       replace: { description: 'İncelemedeki gönderimi geri çekip bu yapıyla yeniden gönder', type: boolean, default: false }
