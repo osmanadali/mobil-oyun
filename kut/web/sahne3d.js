@@ -1349,6 +1349,9 @@ function canDegrade(hh, dost) {
 // dolu mana nabzı: 21 basamaklı hazır renk dizgeleri (kare başına dizge üretilmesin)
 const MANA_DOLGU = [], MANA_KENAR = [];
 for (let i = 0; i <= 20; i++) { const n = i / 20; MANA_DOLGU.push(`rgb(${150 + 100 * n | 0},${215 + 35 * n | 0},255)`); MANA_KENAR.push(`rgba(190,235,255,${(0.45 + 0.5 * n).toFixed(3)})`); }
+// mana dolgusu: robot dokusu (arayuz/menu/hud_mana_cubuk.webp, önden yüklenir); yüklenmediyse eski düz mavi
+let MANA_DOKU = null;   // ilk kullanımda kokYol ile yüklenir (init sonrası)
+const manaDoku = () => { if (!MANA_DOKU && typeof Image !== 'undefined') { MANA_DOKU = new Image(); MANA_DOKU.src = kokYol + 'arayuz/menu/hud_mana_cubuk.webp'; } return MANA_DOKU; };
 function cubukCiz(b, a, x, y, O, dost) {
   const o = O.o, gw = O.gw, hh = O.hh, mh = O.mh, tr = dost ? '#59d0ff' : '#ff5a6a';
   const mx = Math.max(1, a.mx), hp = Math.max(0, a.hp), kal = Math.max(0, a.kalkan || 0), tot = Math.max(mx, hp + kal);
@@ -1380,7 +1383,11 @@ function cubukCiz(b, a, x, y, O, dost) {
       const n = 0.5 + 0.5 * Math.sin(performance.now() / 1000 * Math.PI * 2 * 2.2), ni = Math.round(n * 20);
       kcx.save(); kcx.shadowColor = '#8fdcff'; kcx.shadowBlur = (4 + 6 * n) * o; kcx.fillStyle = MANA_DOLGU[ni]; kcx.fillRect(x, my, mw, mh); kcx.restore();
       kcx.strokeStyle = MANA_KENAR[ni]; kcx.lineWidth = 1; kcx.strokeRect(x - 0.5, my - 0.5, gw + 1, mh + 1);
-    } else { kcx.fillStyle = '#4aa6ff'; kcx.fillRect(x, my, mw, mh); kcx.fillStyle = 'rgba(200,235,255,.5)'; kcx.fillRect(x, my, mw, 1); }
+    } else {
+      const md = manaDoku(); if (md && md.complete && md.naturalWidth) kcx.drawImage(md, 0, 0, Math.max(1, md.naturalWidth * mw / gw), md.naturalHeight, x, my, mw, mh);
+      else { kcx.fillStyle = '#4aa6ff'; kcx.fillRect(x, my, mw, mh); }
+      kcx.fillStyle = 'rgba(200,235,255,.5)'; kcx.fillRect(x, my, mw, 1);
+    }
   }
   // yetenek ön uyarısı: mana oluğu element renginde dolar ve parlar (0→1 patlamaya doğru, sonra 0,15 sn söner); çerçeve aynı renkte
   const ou = b.onUyari;

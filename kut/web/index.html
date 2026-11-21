@@ -1722,6 +1722,85 @@ body.hz3 #mac .dukkanSol .btn:not(.xpBtn) small{font-size:11px}body.hz3 #mac .du
 body.hz3 #mac .dukkanSol .xpBtn{flex:1.7;font-size:12px;padding:0 12px}body.hz3 #mac .dukkanSol .xpBtn small{font-size:10.5px}
 body.hz3 #mac .dukkanSol .xpBtn{gap:1px 4px;line-height:1.05}body.hz3 #mac .dukkanSol .xpBtn .mik{width:16px;height:16px}
 body.hz3 #mac .dukkanSol .xpBtn .xpCubuk{height:11px;padding:3px 9%;margin:0}body.hz3 #mac .dukkanSol .xpBtn .xpCubuk::before{inset:3px 9%}
+/* ===================== ROBOT HUD (arayuz/menu/hud_*, ikon_can|seri|tur|altin; kaynak PNG'ler kut/gelen_gorsel, a seti; mana dokusu b) =====================
+   Savaş skor şeridi: iki yarım plaka (hud_skor_serit_sol/sag, dokuz dilim; ortadaki halka saat madalyonunun altında kalır), can çubuğu çerçevesi
+   (hud_can_cubuk_cerceve) + dolgu dokuları (genişlik animasyonu ve gecikmeli iz aynı), saat hud_saat / son 10 sn hud_saat_kritik, portre hud_portre_cerceve.
+   Hazırlık üst şeridi (body.hz3): rozetler bitişik tek bant (hud_ust_serit dokuz dilim; uç kapaklar ilk/son rozette), altın hud_altin_rozet + ikon_altin. */
+#savas .skor{--sh:60px;gap:0;padding:0;border:0;border-radius:0;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45))}
+#savas .skor .taraf{box-sizing:border-box;height:var(--sh);border-style:solid;border-color:transparent;
+  border-width:calc(var(--sh)*.2) calc(var(--sh)*.4) calc(var(--sh)*.173) calc(var(--sh)*.369);
+  border-image:url(arayuz/menu/hud_skor_serit_sol.webp) 36 72 31 66 fill / calc(var(--sh)*.2) calc(var(--sh)*.4) calc(var(--sh)*.173) calc(var(--sh)*.369);
+  padding:0 4px 0 0;gap:7px}
+#savas .skor .taraf.sag{border-width:calc(var(--sh)*.2) calc(var(--sh)*.369) calc(var(--sh)*.173) calc(var(--sh)*.4);
+  border-image:url(arayuz/menu/hud_skor_serit_sag.webp) 36 66 31 72 fill / calc(var(--sh)*.2) calc(var(--sh)*.369) calc(var(--sh)*.173) calc(var(--sh)*.4);padding:0 0 0 4px}
+/* portre: yuvarlak, robot çerçeve; plakanın uç taşının üstüne biner */
+#savas .skor .tpor{width:48px;height:48px;margin-left:-18px;border:0;border-radius:50%;overflow:visible;background:none;box-shadow:none}
+#savas .skor .taraf.sag .tpor{margin:0 -18px 0 0}
+#savas .skor .tpor::before{content:"";position:absolute;inset:9%;border-radius:50%;background:radial-gradient(circle at 50% 30%,#4a3f6a,#17112a);box-shadow:0 0 8px 1px var(--kc,transparent)}
+#savas .skor .tpor img{left:4%;top:8%;width:92%;height:92%;z-index:1;-webkit-clip-path:circle(41% at 50% 46%);clip-path:circle(41% at 50% 46%)}
+#savas .skor .taraf .tpor::after{left:2px;right:2px;top:0;bottom:0;height:auto;z-index:2;background:url(arayuz/menu/hud_portre_cerceve.webp) center/100% 100% no-repeat}
+#savas .skor .taraf .ust{margin-bottom:5px}
+/* can çubuğu: kutu = çerçevenin iç oluğu; çerçeve ::after ile dışa taşar; dolgu dokusu çubuğun tam boyuna göre (100cqw), iz altta */
+#savas .skor .takimCan{height:10px;border:0;border-radius:2px;overflow:visible;background:#0b0714;box-shadow:inset 0 1px 3px rgba(0,0,0,.9);container-type:inline-size;margin:0 13px}
+#savas .skor .takimCan::after{content:"";position:absolute;inset:-7px -13px;box-sizing:border-box;border:solid transparent;border-width:7px 13px;pointer-events:none;z-index:2;
+  border-image:url(arayuz/menu/hud_can_cubuk_cerceve.webp) 23 31 22 33 / 7px 13px}
+#savas .skor .takimCan i,#savas .skor .takimCan .iz{border-radius:1px}
+#savas .skor .takimCan i{background:url(arayuz/menu/hud_can_dolgu_yesil.webp) left center/100cqw 100% no-repeat,#2fbf5a;box-shadow:0 0 6px rgba(63,214,143,.45)}
+#savas .skor .taraf.sag .takimCan i{background:url(arayuz/menu/hud_can_dolgu_kirmizi.webp) right center/100cqw 100% no-repeat,#e0243e;box-shadow:0 0 6px rgba(255,77,109,.45)}
+#savas .skor .takimCan u{display:none}
+#savas .skor .taraf.vur .takimCan{animation:none}
+#savas .skor .taraf.vur .takimCan::after{animation:cerVur .35s ease-out}
+@keyframes cerVur{0%{filter:brightness(1.7)}100%{filter:none}}
+/* saat: robot madalyon; sayılar oyundan */
+#savas .saat{width:84px;height:82px;margin:-6px -15px;z-index:3;border:0;border-radius:50%;box-shadow:none;background:url(arayuz/menu/hud_saat.webp) center/100% 100% no-repeat}
+#savas .saat b{font-size:24px;margin-top:4px}
+#savas .saat small{font-size:8px;margin-top:-1px}
+#savas .saat.son10{border:0;box-shadow:none;background:url(arayuz/menu/hud_saat_kritik.webp) center/100% 100% no-repeat;animation:saatNabiz3 1s ease-out infinite}
+@keyframes saatNabiz3{0%{filter:drop-shadow(0 0 0 rgba(255,70,60,0)) brightness(1.15)}30%{filter:drop-shadow(0 0 9px rgba(255,70,60,.85)) brightness(1.1)}100%{filter:drop-shadow(0 0 2px rgba(255,70,60,0)) brightness(1)}}
+#savas .saat .gunBatimi{bottom:-6px}
+html.alcak #savas .skor{--sh:48px}
+html.alcak #savas .skor .tpor{width:38px;height:38px;margin-left:-14px}html.alcak #savas .skor .taraf.sag .tpor{margin:0 -14px 0 0}
+html.alcak #savas .skor .taraf .ust{margin-bottom:3px}
+html.alcak #savas .skor .takimCan{height:8px;margin:0 11px}html.alcak #savas .skor .takimCan::after{inset:-6px -11px;border-width:6px 11px;border-image-width:6px 11px}
+html.alcak #savas .saat{width:66px;height:64px;margin:-4px -12px}html.alcak #savas .saat b{font-size:19px;margin-top:3px}html.alcak #savas .saat small{font-size:7px}
+@media (min-width:1600px) and (min-height:900px){#savas .skor{--sh:70px}#savas .skor .tpor{width:56px;height:56px;margin-left:-21px}#savas .skor .taraf.sag .tpor{margin:0 -21px 0 0}
+  #savas .skor .takimCan{height:12px}#savas .saat{width:98px;height:96px;margin:-7px -18px}#savas .saat b{font-size:28px}#savas .saat small{font-size:9px}}
+/* hazırlık üst şeridi: bitişik bant */
+.hik{object-fit:contain}
+body.hz3 #mac .macUst{gap:0;padding-left:16px}
+body.hz3 #mac .macUst>.rozet,body.hz3 #mac .macUst>.alamet{position:relative;z-index:1;height:44px;padding-top:1px;border:0;border-radius:0;background:none;box-shadow:none}
+body.hz3 #mac .macUst>.alamet{z-index:13}
+body.hz3 #mac .macUst>.rozet::before,body.hz3 #mac .macUst>.alamet::before{content:"";position:absolute;inset:0;z-index:-1;box-sizing:border-box;pointer-events:none;border:solid transparent;border-width:7px 0;
+  border-image:url(arayuz/menu/hud_ust_serit.webp) 20 56 20 56 fill / 7px 0 stretch}
+body.hz3 #mac .macUst>.rozet:first-child::before{left:-22px;border-width:7px 0 7px 28px;border-image-width:7px 0 7px 28px}
+body.hz3 #mac .macUst>.tahtaSayac::before{right:-22px;border-width:7px 28px 7px 0;border-image-width:7px 28px 7px 0}
+body.hz3 #mac .macUst>.tahtaSayac{margin-right:28px}
+/* bölmeler arası ince altın çizgi */
+body.hz3 #mac .macUst>.rozet:not(:first-child):not(.altinRozet):not(.tahtaSayac)::after,body.hz3 #mac .macUst>.alamet::after,body.hz3 #mac .macUst>.tahtaSayac::after{content:"";position:absolute;left:0;top:10px;bottom:10px;width:1px;background:linear-gradient(180deg,transparent,rgba(255,206,110,.55),transparent);pointer-events:none}
+body.hz3 #mac .macUst>.rozet:not(:first-child){padding-left:10px!important}
+body.hz3 #mac .macUst .rozet .hik{width:24px;height:24px;flex:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}
+body.hz3 #mac .kalpler{padding-left:0;gap:1px}
+body.hz3 #mac .kalpler .hik{width:22px;height:22px;color:inherit}
+body.hz3 #mac .kalpler .hik.bos{filter:grayscale(1) brightness(.45);opacity:.7}
+body.hz3 #mac .macUst>.rozet .yz small{line-height:1.05}
+body.hz3 #mac .macUst .rozet .yz .hik{width:15px;height:15px;vertical-align:-2px}
+/* altın: hud_altin_rozet (halkada ikon_altin), bandın üstünde biraz taşar */
+body.hz3 #mac .macUst>.altinRozet{padding:0 16px 0 9px!important;margin:0 2px;color:#ffe9a6}
+body.hz3 #mac .macUst>.altinRozet::after{content:"";position:absolute;inset:-5px -2px;z-index:-1;box-sizing:border-box;pointer-events:none;border:solid transparent;border-width:12px 12px 12px 46px;
+  border-image:url(arayuz/menu/hud_altin_rozet.webp) 26 25 25 101 fill / 12px 12px 12px 46px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5))}
+body.hz3 #mac .altinRozet .top{width:36px;height:36px;border:0;background:none;box-shadow:none}
+body.hz3 #mac .altinRozet .top .ik{width:31px!important;height:31px!important;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+html.alcak body.hz3 #mac .macUst{padding-left:12px}
+html.alcak body.hz3 #mac .macUst>.rozet,html.alcak body.hz3 #mac .macUst>.alamet{height:34px}
+html.alcak body.hz3 #mac .macUst>.rozet::before,html.alcak body.hz3 #mac .macUst>.alamet::before{border-width:5px 0;border-image-width:5px 0}
+html.alcak body.hz3 #mac .macUst>.rozet:first-child::before{left:-17px;border-width:5px 0 5px 22px;border-image-width:5px 0 5px 22px}
+html.alcak body.hz3 #mac .macUst>.tahtaSayac::before{right:-17px;border-width:5px 22px 5px 0;border-image-width:5px 22px 5px 0}
+html.alcak body.hz3 #mac .macUst>.tahtaSayac{margin-right:22px}
+html.alcak body.hz3 #mac .macUst>.rozet:not(:first-child){padding-left:7px!important}
+html.alcak body.hz3 #mac .macUst .rozet .hik{width:19px;height:19px}html.alcak body.hz3 #mac .kalpler .hik{width:18px;height:18px}
+html.alcak body.hz3 #mac .macUst>.altinRozet{padding:0 12px 0 7px!important}
+html.alcak body.hz3 #mac .macUst>.altinRozet::after{inset:-4px -2px;border-width:9px 9px 9px 37px;border-image-width:9px 9px 9px 37px}
+html.alcak body.hz3 #mac .altinRozet .top{width:28px;height:28px}html.alcak body.hz3 #mac .altinRozet .top .ik{width:25px!important;height:25px!important}
 </style>
 <script>
 /* tek ölçek: --o, --lw, --lh ve html.alcak; ilk boyamadan önce ve her boyut değişiminde */

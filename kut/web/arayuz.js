@@ -15,6 +15,8 @@ const P = (id) => `../arayuz/portre/${(D.canavar(id) || {}).gorunum || id}.png`,
 const IK_RESIM = { coin: 'ik_altin', kalp: 'ik_kalp', kupa: 'ik_kupa', tac: 'ik_tac', yildiz: 'ik_yildiz_altin' };
 const ik = (n, c = '') => IK_RESIM[n] ? `<img class="ik ${c}" alt="" src="../arayuz/ui/${IK_RESIM[n]}${n === 'kalp' && /\bbos\b/.test(c) ? '_bos' : ''}.png">` : `<svg class="ik ${c}"><use href="#i-${n}"/></svg>`;
 // robot düğme ikonları (arayuz/menu/ikon_*.webp; kaynak kut/gelen_gorsel)
+// HUD ikonları (arayuz/menu/ikon_can|seri|tur|altin.webp): hazırlık üst şeridinde eski kalp/altın simgelerinin yerine
+const hik = (n, c = '') => `<img class="ik hik ${c}" alt="" draggable="false" src="arayuz/menu/ikon_${n}.webp">`;
 const mik = (n, c = '') => `<img class="mik ${c}" alt="" draggable="false" src="arayuz/menu/ikon_${n}.webp">`;
 // yeni lobi alametlerinin (bölüm 8) resmi henüz yok: yerine emojisi
 const AL_RESIM = new Set(['yok', 'kanAyi', 'sis', 'tipi', 'kutYagmur', 'pazar', 'tutulma', 'yaz']);
@@ -235,15 +237,15 @@ function macCiz() {
   const roz = m.querySelectorAll('.macUst > .rozet');
   if (sev) {
     // 100 can: tek kalp ve sayı; ikinci rozette seri ve son hasar
-    $('kalpler').innerHTML = `${ik('kalp')}<div class="yz" style="padding:0 6px"><small>Can</small>${M.can}</div>`;
-    const sr = M.seri && M.seri.n ? `${M.seri.n} ${M.seri.tip === 'G' ? 'galibiyet' : 'yenilgi'}${L.seriBonus(M.seri.n) ? ` · +${L.seriBonus(M.seri.n)} ${ik('coin')}` : ''}` : 'yok';
-    roz[1].innerHTML = `<div class="yz"><small>Seri</small><span style="font-size:15px">${sr}</span></div>${M.sonHasar ? `<div class="yz" style="padding-left:8px"><small>Son kayıp</small><span style="color:#ff8aa0">−${M.sonHasar}</span></div>` : ''}`;
+    $('kalpler').innerHTML = `${hik('can')}<div class="yz" style="padding:0 6px"><small>Can</small>${M.can}</div>`;
+    const sr = M.seri && M.seri.n ? `${M.seri.n} ${M.seri.tip === 'G' ? 'galibiyet' : 'yenilgi'}${L.seriBonus(M.seri.n) ? ` · +${L.seriBonus(M.seri.n)} ${hik('altin')}` : ''}` : 'yok';
+    roz[1].innerHTML = `${hik('seri')}<div class="yz"><small>Seri</small><span style="font-size:15px">${sr}</span></div>${M.sonHasar ? `<div class="yz" style="padding-left:8px"><small>Son kayıp</small><span style="color:#ff8aa0">−${M.sonHasar}</span></div>` : ''}`;
   } else {
-    $('kalpler').innerHTML = Array.from({ length: kr.can }, (_, i) => ik('kalp', i < M.can ? '' : 'bos')).join('');
+    $('kalpler').innerHTML = Array.from({ length: kr.can }, (_, i) => hik('can', i < M.can ? '' : 'bos')).join('');
     roz[1].innerHTML = `<div class="yz"><small>Zafer</small>${M.zafer}<span style="color:var(--soluk);font-size:14px">/${kr.zaferHedef}</span></div><div class="zaferler">${Array.from({ length: kr.zaferHedef }, (_, i) => `<i class="${i < M.zafer ? 'v' : ''}"></i>`).join('')}</div>`;
   }
   const tipAd = { pve: 'Canavar', kervan: 'Kervan', pvp: '' }[oyun.turTip()];
-  roz[2].innerHTML = `<div class="yz"><small>${sev ? oyun.turUzun() + (tipAd ? ' · ' + tipAd : '') : 'Hızlı Maç · Tur'}</small>${oyun.turAd()}${sev ? ` <span style="color:var(--altinA)">· Sv ${M.seviye}</span>` : ''}</div>`;
+  roz[2].innerHTML = `${hik('tur')}<div class="yz"><small>${sev ? oyun.turUzun() + (tipAd ? ' · ' + tipAd : '') : 'Hızlı Maç · Tur'}</small>${oyun.turAd()}${sev ? ` <span style="color:var(--altinA)">· Sv ${M.seviye}</span>` : ''}</div>`;
   const al = D.ALAMETLER.find(a => a.id === M.alamet);
   // bu turun alameti; seviyeli maçta sıradaki (Alamet Bilgesi ile 3) tur alameti önceden görünür (bölüm 4.3, 8)
   const sonr = oyun.sonrakiAlametler(), sus = M.alametSusTur === M.tur;
@@ -251,7 +253,7 @@ function macCiz() {
     + (sonr.length ? `<span class="sirada">Sıradaki: ${sonr.map(alametAd).join(' → ')}</span>` : '') + `</div>`;
   // seviyeli maçta bu turun geliri ve sonraki turun faizi (her K.faizAdim altına 1, en çok 5)
   const gl = sev && M.gelir, fz = oyun.faizSonraki();
-  q('.altinRozet', m).innerHTML = `<div class="top">${ik('coin')}</div>${M.altin}` + (sev ? `<div class="yz" style="padding-left:6px;font-size:13px;line-height:1.2"><small>${gl ? `Gelir +${gl.toplam}` : 'Gelir'}</small><span style="color:var(--altinA)">Faiz +${fz}</span></div>` : '');
+  q('.altinRozet', m).innerHTML = `<div class="top">${hik('altin')}</div>${M.altin}` + (sev ? `<div class="yz" style="padding-left:6px;font-size:13px;line-height:1.2"><small>${gl ? `Gelir +${gl.toplam}` : 'Gelir'}</small><span style="color:var(--altinA)">Faiz +${fz}</span></div>` : '');
   q('.altinRozet', m).title = gl ? `Bu tur: taban ${gl.taban} · faiz ${gl.faiz} · seri ${gl.seri} · galibiyet ${gl.galibiyet}${gl.alamet ? ' · alamet ' + gl.alamet : ''}` : '';
   // rakip
   const r = M.rakip, rp = q('.rakip', m);
