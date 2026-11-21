@@ -166,11 +166,14 @@ window.Lig = (() => {
     async function auth() {
       if (tok && Date.now() < tokExp - 60e3) return tok;
       let r;
-      if (st.rt) r = await fetch(`https://securetoken.googleapis.com/v1/token?key=${CFG.key}`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(st.rt) }).then(x => x.json());
+      const net = (step, p) => p.catch(e => { fb.err = `${step} · ${e.name === 'AbortError' ? 'zaman aşımı' : 'ağ'}`; const x = Error('net'); x.step = step; throw x; });
+      if (st.rt) r = await net('token', fetch(`https://securetoken.googleapis.com/v1/token?key=${CFG.key}`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(st.rt) }).then(x => x.json()));
       if (!r?.id_token) {
-        const s = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${CFG.key}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"returnSecureToken":true}' }).then(x => x.json());
-        if (!s.idToken) throw Error('auth');
+        if (st.rt) fb.err = 'token · ' + (r?.error?.message || '?');   // kayıtlı oturum geçersiz → yeni anonim giriş
+        const s = await net('giriş', fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${CFG.key}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"returnSecureToken":true}' }).then(x => x.json()));
+        if (!s.idToken) { fb.err = 'giriş · ' + (s.error?.message || '?'); throw Error('auth'); }
         r = { id_token: s.idToken, refresh_token: s.refreshToken, user_id: s.localId, expires_in: s.expiresIn };
+        if (st.uid && st.uid !== s.localId) { st.olds = [...(st.olds || []), st.uid].slice(-5); st.wk = ''; st.grp = ''; st.pts = 0; rowsCache = null; }   // yeni kimlik: bu haftanın tablosuna yeniden kaydolur (eski kayıt eski kimliğin)
       }
       tok = r.id_token; tokExp = Date.now() + (+r.expires_in || 3600) * 1e3; st.rt = r.refresh_token; st.uid = r.user_id; keep();
       return tok;
@@ -183,7 +186,16 @@ window.Lig = (() => {
       : 'arrayValue' in v ? (v.arrayValue.values || []).map(dec) : 'mapValue' in v ? decF(v.mapValue.fields || {}) : 'timestampValue' in v ? Date.parse(v.timestampValue) : null;
     const decF = f => Object.fromEntries(Object.entries(f || {}).map(([k, v]) => [k, dec(v)]));
     const doc = d => d?.fields ? { id: d.name.split('/').pop(), _ut: d.updateTime, ...decF(d.fields) } : null;
-    async function call(method, url, body, tm) {
+    // 401/403: anahtar bir kez tazelenip yeniden denenir; yine reddedilirse kayıtlı oturum bırakılır, yeni anonim girişle bir kez daha
+    // (eskiden hata olduğu gibi yukarı çıkıyor, oturum uygulama kapanana dek bozuk kalıyordu: "online oynanmıyor", 21 Kasım)
+    async function call(method, url, body, tm, again = 0) {
+      try { return await call1(method, url, body, tm); } catch (e) {
+        if ((e.code === 401 || e.code === 403) && again < 2) { tok = null; tokExp = 0; if (again === 1) { st.rt = null; keep(); } return call(method, url, body, tm, again + 1); }
+        if (!fb.err || e.code) fb.err = `${url.split('/documents')[1]?.split(/[/:?]/)[1] || 'istek'} · ${e.code || (e.name === 'AbortError' ? 'zaman aşımı' : e.message)}`;
+        throw e;
+      }
+    }
+    async function call1(method, url, body, tm) {
       const h = { Authorization: 'Bearer ' + await auth(), 'Content-Type': 'application/json' };
       if (tm) tm.t1 = Date.now();
       // 10 sn'de yanıt yoksa vazgeç: takılan tek istek (zayıf mobil ağ) maç takibini durdurmasın
@@ -253,7 +265,8 @@ window.Lig = (() => {
     async function rows(force) {
       if (!force && rowsCache && Date.now() - rowsAt < 60e3) return rowsCache;   // dakikada en çok bir okuma (ücretsiz kota)
       const bl = st.blocked || {};
-      const r = (await query(`weeks/${st.wk}`, Q('members', ['grp', 'EQUAL', st.grp]), 60)).filter(x => !bl[x.id] || x.id === st.uid)
+      // eski kimliğimden kalan kayıt (oturum yenilenince kimlik değişti; o belgeyi silemem): aynı takma adlı başka satır gizlenir
+      const r = (await query(`weeks/${st.wk}`, Q('members', ['grp', 'EQUAL', st.grp]), 60)).filter(x => (!bl[x.id] && !(x.nick === st.nick && st.olds?.includes(x.id))) || x.id === st.uid)
         .map(x => ({ uid: x.id, nick: x.nick, pts: x.pts || 0, me: x.id === st.uid }));
       if (!r.some(x => x.me)) r.push({ uid: st.uid, nick: st.nick, pts: st.pts || 0, me: true });
       rowsCache = r; rowsAt = Date.now(); return r;

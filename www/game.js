@@ -3526,15 +3526,21 @@ function vsWait(title, sub, onCancel) {
 }
 async function vsFind(o = {}) {
   vsWait(L('Rakip aranıyor…', 'Finding an opponent…'), L('Benzer seviyede bir oyuncu', 'A player at a similar level'));
-  let m = null; try { m = await LIG.duel.find({ levels: duelLevels(), seen: save.vsSeen || [], ...o }); } catch {}
+  let m = null; try { m = await LIG.duel.find({ levels: duelLevels(), seen: save.vsSeen || [], ...o }); } catch { if ($('vwT')) vsNet(() => vsFind(o)); return; }   // bağlantı hatası "rakip yok" diye gizlenmez
   if (!$('vwT')) return;   // vazgeçildi
   if (m) return vsIntro(m);
   modal(`<div class="bell">🚇</div><h2>${L('Şu an rakip yok', 'No opponent right now')}</h2><p>${L('Birazdan yeniden dene ya da bir arkadaşını davet et.', 'Try again in a moment, or invite a friend.')}</p>
     <button id="vR" class="btn primary"><span>${L('Yeniden dene', 'Try again')}</span></button><button id="vH" class="btn glassbtn">${L('Arkadaşı davet et', 'Invite a friend')}</button><button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`,
     { vR: () => vsFind(o), vH: vsHost, mClose: closeModal });
 }
+// sunucuya ulaşılamadı: ne olduğu açıkça yazar (adım · kod: lig.js err) ve yeniden dene
+function vsNet(retry) {
+  const why = LIG.err || '';
+  modal(`<div class="bell">📡</div><h2>${L('Sunucuya ulaşılamadı', 'Couldn’t reach the server')}</h2><p>${L('İnternet bağlantını kontrol et. Mobil veride oynuyorsan Ayarlar › Ray › Mobil Veri açık olmalı.', 'Check your internet connection. On mobile data, make sure Settings › Ray › Mobile Data is on.')}</p>${why ? `<p class="tip">${esc(why)}</p>` : ''}
+    <button id="vR" class="btn primary"><span>${L('Yeniden dene', 'Try again')}</span></button><button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, { vR: () => { closeModal(); retry(); }, mClose: closeModal });
+}
 async function vsHost() {
-  let h; try { h = await LIG.duel.host({ levels: duelLevels() }); } catch { toast(L('Bağlantı yok · sonra dene', 'No connection · try later')); return; }
+  let h; try { h = await LIG.duel.host({ levels: duelLevels() }); } catch { return vsNet(vsHost); }
   const url = `${SHARE_URL}?vs=${h.code}`;
   modal(`<div class="bell">⚔️</div><h2>${L('Arkadaşını davet et', 'Invite your friend')}</h2><p>${L('Arkadaşın Ray’de “Koda katıl”a bu kodu yazsın ya da bağlantıyı açsın.', 'Your friend enters this code under “Join with code” in Ray, or opens the link.')}</p>
     <div class="vscode" id="vCode">${h.code}</div>

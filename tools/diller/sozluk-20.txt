@@ -1,0 +1,20 @@
+# Ray — çeviri sözlüğü (20): 1.2.1 kapışma bağlantı hatası penceresi
+# Biçim ve terimler: sozluk-1.txt başı ve docs/CEVIRI.md
+
+@ Couldn’t reach the server
+de: Server nicht erreichbar
+es: No se pudo conectar con el servidor
+pt: Não foi possível acessar o servidor
+fr: Serveur injoignable
+ko: 서버에 연결할 수 없어요
+ja: サーバーに接続できませんでした
+zh: 無法連線到伺服器
+
+@ Check your internet connection. On mobile data, make sure Settings › Ray › Mobile Data is on.
+de: Prüfe deine Internetverbindung. Bei mobilen Daten muss Einstellungen › Ray › Mobile Daten aktiviert sein.
+es: Revisa tu conexión a internet. Con datos móviles, comprueba que Ajustes › Ray › Datos móviles esté activado.
+pt: Verifique sua conexão com a internet. Nos dados móveis, confira se Ajustes › Ray › Dados Celulares está ativado.
+fr: Vérifie ta connexion Internet. En données mobiles, Réglages › Ray › Données cellulaires doit être activé.
+ko: 인터넷 연결을 확인하세요. 모바일 데이터를 쓰는 중이라면 설정 › Ray › 모바일 데이터가 켜져 있어야 해요.
+ja: インターネット接続を確認してください。モバイル通信の場合は、設定 › Ray › モバイルデータ通信がオンになっている必要があります。
+zh: 請檢查網路連線。若使用行動數據，請確認「設定 › Ray › 行動數據」已開啟。
