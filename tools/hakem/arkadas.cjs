@@ -23,16 +23,19 @@ module.exports = async T => {
 
   // b) A puan alır → lig ekranında Arkadaşlar: B'nin puanı ve 👉 Dürt; dürtünce düğme ✓, ikinci dürtme yazılmaz
   await A.page.evaluate(() => window.Lig.add(25)); await B.page.evaluate(() => window.Lig.add(10));
-  await A.page.evaluate(() => window.__ray.lig.open()); await A.page.waitForFunction(() => document.querySelector('#lgFr .lgf'), null, { timeout: 15000 }).catch(() => {});
+  await A.page.evaluate(() => window.__ray.lig.open()); await A.page.waitForTimeout(600);
+  const tabs = await A.page.evaluate(() => [...document.querySelectorAll('.lgtabs button')].map(b => b.textContent + (b.classList.contains('on') ? '*' : '')));
+  await A.page.evaluate(() => document.querySelector('.lgtabs [data-seg=fr]')?.click());
+  await A.page.waitForFunction(() => document.querySelector('#lgFr .lgf'), null, { timeout: 15000 }).catch(() => {});
   const ui = await A.page.evaluate(() => ({ rows: [...document.querySelectorAll('#lgFr .lgf')].map(r => r.querySelector('span').textContent + '=' + r.querySelector('small').textContent), poke: !!document.querySelector('#lgFr .poke[data-p]') }));
   await A.page.evaluate(() => document.querySelector('#lgFr .lgf:not(.me)')?.scrollIntoView({ block: 'center' })); await A.page.waitForTimeout(900);
   await shot(A.page, 'arkadas-lig');
   await A.page.evaluate(() => document.querySelector('#lgFr .poke[data-p]')?.click()); await A.page.waitForTimeout(1200);
   const again = await A.page.evaluate(async uid => ({ btn: !!document.querySelector('#lgFr .poke[data-p]'), done: !!document.querySelector('#lgFr .poke.done'), second: await window.Lig.poke(uid) }), uids[1]);
   const docs = FB.list('pokes/');
-  check('arkadas.dürt', 'Lig ekranında Arkadaşlar: haftalık puanlar (grup ayrımı yok), geçtiğin arkadaşta 👉 Dürt; dürtünce ✓ ve aynı hafta ikinci dürtme yazılmaz',
-    ui.rows.join() === 'Hızlı Martı sen=25,Anne 61=10' && ui.poke && !again.btn && again.done && !again.second && docs.length === 1 && docs[0] === `pokes/${uids[1]}_${uids[0]}_${FB.get(docs[0]).wk}`,
-    JSON.stringify({ ui, again, docs }), 'high');
+  check('arkadas.dürt', 'Lig ekranında 🏆 Grup | 👥 Arkadaşlar sekmeleri; Arkadaşlar: haftalık puanlar (grup ayrımı yok), geçtiğin arkadaşta 👉 Dürt; dürtünce ✓ ve aynı gün ikinci dürtme yazılmaz',
+    tabs.join() === '🏆Grup*,👥Arkadaşlar' && ui.rows.join() === 'Hızlı Martı sen=25,Anne 61=10' && ui.poke && !again.btn && again.done && !again.second && docs.length === 1 && docs[0] === `pokes/${uids[1]}_${uids[0]}_${FB.get(docs[0]).wk}`,
+    JSON.stringify({ tabs, ui, again, docs }), 'high');
 
   // c) B ana sayfayı açınca pencere: "Hızlı Martı seni dürttü!" + puanlar; belge silinir
   await B.page.evaluate(() => { document.querySelector('[data-tab=home]')?.click(); });

@@ -998,3 +998,4 @@ body[data-scr=home] #home,body[data-scr=league] #league,body[data-scr=city] #cit
 .lgr .poke{font-style:normal;font-size:12.5px;font-weight:800;padding:4px 10px;border-radius:999px;background:var(--acc);color:var(--onacc);white-space:nowrap}
 .lgr .poke.done{background:var(--glass);color:var(--mut)}
 #lgFr{display:flex;flex-direction:column;gap:6px}#lgFr .lgr{width:100%}
+.lgtabs{flex:none;margin:0 0 6px}

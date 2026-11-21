@@ -20,6 +20,7 @@ window.Lig = (() => {
   // hafta: pazartesi 00:00 (UTC+3, Türkiye; yaz saati yok) → herkes için aynı an
   const OFF = 3 * 3600e3, WEEK = 7 * 864e5;
   const weekStart = (t = Date.now()) => { const d = new Date(t + OFF), wd = (d.getUTCDay() + 6) % 7; return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - wd) - OFF; };
+  const dayId = (t = Date.now()) => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };   // 👉 dürtme: günde bir
   const weekId = (t = Date.now()) => new Date(weekStart(t) + OFF).toISOString().slice(0, 10);
   const rnd = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   const hash = s => { let h = 2166136261; for (const c of String(s)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
@@ -91,9 +92,9 @@ window.Lig = (() => {
     dropFriend(uid) { const f = { ...(st.fr || {}) }; delete f[uid]; st.fr = f; st.frOff = { ...(st.frOff || {}), [uid]: 1 }; keep(); },
     async friends() {
       roll();
-      return Object.entries(st.fr || {}).map(([uid, f]) => ({ uid, nick: f.n, pts: st.frPts?.[uid] ?? hash(uid + ':' + st.wk) % 260, poked: st.poked?.[uid] === st.wk }));
+      return Object.entries(st.fr || {}).map(([uid, f]) => ({ uid, nick: f.n, pts: st.frPts?.[uid] ?? hash(uid + ':' + st.wk) % 260, poked: st.poked?.[uid] === dayId() }));
     },
-    async poke(uid) { roll(); if (st.poked?.[uid] === st.wk) return false; st.poked = { ...(st.poked || {}), [uid]: st.wk }; keep(); return true; },
+    async poke(uid) { roll(); const d = dayId(); if (st.poked?.[uid] === d) return false; st.poked = { ...(st.poked || {}), [uid]: d }; keep(); return true; },
     async pokes() { const p = (st.inbox || []).filter(x => !st.blocked?.[x.uid] && !st.frOff?.[x.uid]); st.inbox = []; keep(); p.forEach(x => api.addFriend(x.uid, x.nick)); return p; },
     async board() {
       roll();
@@ -174,7 +175,7 @@ window.Lig = (() => {
   // Kimlik: anonim hesap (Identity Toolkit). Yenileme anahtarı bu cihazda; ligden çıkınca hesap ve belgeler silinir.
   // Belgeler: users/{uid} · weeks/{hafta}/members/{uid} (grp: "t1g3", pts) · weeks/{hafta}/tiers/{t} (eski sayaç, 1.2.1’den beri kullanılmaz)
   //           q/{uid} (rastgele rakip kuyruğu) · rooms/{kod} (arkadaş odası) · matches/{id} (pa / pb: ilerleme) · ghosts/{id} · reports/{id}
-//           pokes/{alıcı}_{gönderen}_{hafta} (👉 dürtme; alıcı okuyunca siler)
+//           pokes/{alıcı}_{gönderen}_{gün} (👉 dürtme, günde bir; alıcı okuyunca siler)
   function FB(base) {
     const CFG = { key: 'AIzaSyDGNsBIk6X0qx2wqHEGSinPWJoCcaypXec', project: 'ray-metro' };
     const DOCS = `https://firestore.googleapis.com/v1/projects/${CFG.project}/databases/(default)/documents`, NAME = `projects/${CFG.project}/databases/(default)/documents`;
@@ -319,13 +320,14 @@ window.Lig = (() => {
           const ds = await Promise.all(ids.map(u => get(`weeks/${st.wk}/members/${u}`).catch(() => null)));
           fcache = { wk: st.wk, m: Object.fromEntries(ids.map((u, i) => [u, ds[i] ? { nick: ds[i].nick, pts: ds[i].pts || 0 } : { pts: 0 }])) }; fAt = Date.now();
         }
-        return ids.map(u => ({ uid: u, nick: fcache.m[u]?.nick || fr[u].n, pts: fcache.m[u]?.pts || 0, poked: st.poked?.[u] === st.wk }));
+        return ids.map(u => ({ uid: u, nick: fcache.m[u]?.nick || fr[u].n, pts: fcache.m[u]?.pts || 0, poked: st.poked?.[u] === dayId() }));
       },
-      // 👉 dürt: pokes/{alıcı}_{ben}_{hafta}; belge varsa yazılmaz (haftada bir). Alıcı uygulamayı açınca okur ve siler.
+      // 👉 dürt: pokes/{alıcı}_{ben}_{gün}; belge varsa yazılmaz (aynı arkadaşa günde bir). Alıcı uygulamayı açınca okur ve siler.
       async poke(uid) {
         await ensureWeek();
-        const ok = await commit([w(`pokes/${uid}_${st.uid}_${st.wk}`, { to: uid, from: st.uid, nick: st.nick, pts: st.pts || 0, wk: st.wk, at: now() }, { exists: false })]).then(() => true, e => e.code === 400 || e.code === 409 ? 'dup' : false);
-        if (ok) { st.poked = { ...(st.poked || {}), [uid]: st.wk }; keep(); }
+        const d = dayId();
+        const ok = await commit([w(`pokes/${uid}_${st.uid}_${d}`, { to: uid, from: st.uid, nick: st.nick, pts: st.pts || 0, wk: d, at: now() }, { exists: false })]).then(() => true, e => e.code === 400 || e.code === 409 ? 'dup' : false);
+        if (ok) { st.poked = { ...(st.poked || {}), [uid]: d }; keep(); }
         return ok === true;
       },
       async pokes() {
@@ -516,7 +518,7 @@ window.Lig = (() => {
       const KEEP = ['nick', 'tier', 'weeks', 'blocked', 'reported', 'fr', 'frOff', 'poked', 'olds', 'prev'], old = st;
       st = { joined: true, ...Object.fromEntries(KEEP.filter(k => old[k] !== undefined).map(k => [k, old[k]])) };
       if (old.uid) st.olds = [...(old.olds || []), old.uid].slice(-5);
-      tok = null; tokExp = 0; rowsCache = null; keep();
+      tok = null; tokExp = 0; rowsCache = null; fcache = null; keep();
       await auth(); await ensureWeek();
     }
     const fixable = e => !!e && e.message !== 'net' && e.name !== 'AbortError' && e.name !== 'TypeError' && e.code !== 409 && !/FAILED_PRECONDITION|ALREADY_EXISTS/.test(e.message);

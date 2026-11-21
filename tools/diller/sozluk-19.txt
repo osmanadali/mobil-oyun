@@ -47,14 +47,23 @@ ko: 콕 찌르기
 ja: つつく
 zh: 戳一下
 
-@ Pass a friend and you can poke them once a week; they’ll see it when they open the app.
-de: Überholst du einen Freund, kannst du ihn einmal pro Woche anstupsen; er sieht es beim Öffnen der App.
-es: Si superas a un amigo, puedes darle un toque una vez por semana; lo verá al abrir la app.
-pt: Passou um amigo? Cutuque uma vez por semana; ele verá ao abrir o app.
-fr: Dépasse un ami et tu peux le taquiner une fois par semaine ; il le verra en ouvrant l’appli.
-ko: 친구를 앞지르면 일주일에 한 번 콕 찌를 수 있어요. 친구가 앱을 열면 보게 돼요.
-ja: フレンドを追い越したら週に1回つつけます。相手はアプリを開いたときに見られます。
-zh: 超過好友後，每週可以戳對方一次；對方打開 App 時就會看到。
+@ Pass a friend and you can poke them once a day; they’ll see it when they open the app.
+de: Überholst du einen Freund, kannst du ihn einmal am Tag anstupsen; er sieht es beim Öffnen der App.
+es: Si superas a un amigo, puedes darle un toque una vez al día; lo verá al abrir la app.
+pt: Passou um amigo? Cutuque uma vez por dia; ele verá ao abrir o app.
+fr: Dépasse un ami et tu peux le taquiner une fois par jour ; il le verra en ouvrant l’appli.
+ko: 친구를 앞지르면 하루에 한 번 콕 찌를 수 있어요. 친구가 앱을 열면 보게 돼요.
+ja: フレンドを追い越したら1日1回つつけます。相手はアプリを開いたときに見られます。
+zh: 超過好友後，每天可以戳對方一次；對方打開 App 時就會看到。
+
+@ Group
+de: Gruppe
+es: Grupo
+pt: Grupo
+fr: Groupe
+ko: 그룹
+ja: グループ
+zh: 分組
 
 @ Invite a friend to a duel with a code: you’ll see each other’s weekly points here.
 de: Lade einen Freund mit einem Code zum Duell ein: Hier seht ihr eure Wochenpunkte.
