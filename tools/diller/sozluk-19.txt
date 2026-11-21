@@ -1,4 +1,4 @@
-# Ray — çeviri sözlüğü (19): ⚔️ kapışma maç türü (1.3): ⬡ altıgen tahta, 🧩 kurallı tahta (giriş ekranı satırı)
+# Ray — çeviri sözlüğü (19): ⚔️ kapışma maç türü (⬡ altıgen, 🧩 kurallı) ve 👥 arkadaşlar · 👉 dürtme (1.3)
 # Biçim ve terimler: sozluk-1.txt başı ve docs/CEVIRI.md
 
 @ Hex board
@@ -27,3 +27,112 @@ fr: Plateau à règles
 ko: 규칙 보드
 ja: ルール付きの盤面
 zh: 規則棋盤
+
+# 👥 arkadaşlar ve 👉 dürtme (1.3)
+@ Friends
+de: Freunde
+es: Amigos
+pt: Amigos
+fr: Amis
+ko: 친구
+ja: フレンド
+zh: 好友
+
+@ Poke
+de: Anstupsen
+es: Toque
+pt: Cutucar
+fr: Taquiner
+ko: 콕 찌르기
+ja: つつく
+zh: 戳一下
+
+@ Pass a friend and you can poke them once a week; they’ll see it when they open the app.
+de: Überholst du einen Freund, kannst du ihn einmal pro Woche anstupsen; er sieht es beim Öffnen der App.
+es: Si superas a un amigo, puedes darle un toque una vez por semana; lo verá al abrir la app.
+pt: Passou um amigo? Cutuque uma vez por semana; ele verá ao abrir o app.
+fr: Dépasse un ami et tu peux le taquiner une fois par semaine ; il le verra en ouvrant l’appli.
+ko: 친구를 앞지르면 일주일에 한 번 콕 찌를 수 있어요. 친구가 앱을 열면 보게 돼요.
+ja: フレンドを追い越したら週に1回つつけます。相手はアプリを開いたときに見られます。
+zh: 超過好友後，每週可以戳對方一次；對方打開 App 時就會看到。
+
+@ Invite a friend to a duel with a code: you’ll see each other’s weekly points here.
+de: Lade einen Freund mit einem Code zum Duell ein: Hier seht ihr eure Wochenpunkte.
+es: Invita a un amigo a un duelo con un código: aquí veréis los puntos semanales de cada uno.
+pt: Convide um amigo para um duelo com um código: aqui vocês veem os pontos semanais um do outro.
+fr: Invite un ami en duel avec un code : vous verrez ici vos points de la semaine.
+ko: 코드로 친구를 대결에 초대하세요. 여기서 서로의 주간 점수를 볼 수 있어요.
+ja: コードでフレンドを対戦に招待しよう。ここでお互いの週間ポイントが見られます。
+zh: 用代碼邀請好友對戰：在這裡就能看到彼此的每週積分。
+
+@ {0} poked you!
+de: {0} hat dich angestupst!
+es: ¡{0} te dio un toque!
+pt: {0} cutucou você!
+fr: {0} t’a taquiné !
+ko: {0}님이 콕 찔렀어요!
+ja: {0}さんがつつきました！
+zh: {0} 戳了你一下！
+
+@ They passed you this week: <b>{0}</b> points · you <b>{1}</b>
+de: Diese Woche vor dir: <b>{0}</b> Punkte · du <b>{1}</b>
+es: Te superó esta semana: <b>{0}</b> puntos · tú <b>{1}</b>
+pt: Passou você nesta semana: <b>{0}</b> pontos · você <b>{1}</b>
+fr: Devant toi cette semaine : <b>{0}</b> points · toi <b>{1}</b>
+ko: 이번 주에 앞질렀어요: <b>{0}</b>점 · 나 <b>{1}</b>점
+ja: 今週あなたを追い越しました：<b>{0}</b>ポイント・あなた <b>{1}</b>
+zh: 本週超越了你：<b>{0}</b> 分 · 你 <b>{1}</b> 分
+
+@ +{0} more friends
+de: +{0} weitere Freunde
+es: +{0} amigos más
+pt: +{0} amigos a mais
+fr: +{0} autres amis
+ko: 친구 {0}명 더
+ja: ほか{0}人のフレンド
+zh: 還有 {0} 位好友
+
+@ 👉 Poked {0}
+de: 👉 {0} angestupst
+es: 👉 Toque enviado a {0}
+pt: 👉 Você cutucou {0}
+fr: 👉 {0} taquiné
+ko: 👉 {0}님을 콕 찔렀어요
+ja: 👉 {0}さんをつつきました
+zh: 👉 已戳 {0}
+
+@ Couldn’t send · try later
+de: Senden fehlgeschlagen · später erneut
+es: No se pudo enviar · inténtalo luego
+pt: Não foi possível enviar · tente depois
+fr: Envoi impossible · réessaie plus tard
+ko: 보내지 못했어요 · 나중에 다시
+ja: 送信できませんでした・あとでもう一度
+zh: 無法傳送 · 稍後再試
+
+@ ⚔️ Invite to a duel
+de: ⚔️ Zum Duell einladen
+es: ⚔️ Invitar a un duelo
+pt: ⚔️ Convidar para um duelo
+fr: ⚔️ Inviter en duel
+ko: ⚔️ 대결에 초대
+ja: ⚔️ 対戦に招待
+zh: ⚔️ 邀請對戰
+
+@ Remove from friends
+de: Aus Freunden entfernen
+es: Quitar de amigos
+pt: Remover dos amigos
+fr: Retirer des amis
+ko: 친구에서 삭제
+ja: フレンドから外す
+zh: 從好友中移除
+
+@ Removed from friends
+de: Aus Freunden entfernt
+es: Quitado de amigos
+pt: Removido dos amigos
+fr: Retiré des amis
+ko: 친구에서 삭제했어요
+ja: フレンドから外しました
+zh: 已從好友中移除

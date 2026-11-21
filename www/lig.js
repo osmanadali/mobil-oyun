@@ -85,6 +85,16 @@ window.Lig = (() => {
     },
     async leave() { st = {}; keep(); },   // Firebase: kullanıcının bütün belgeleri ve anonim hesabı silinir
     async rename(nick) { st.nick = nick; keep(); },
+    // 👥 arkadaşlar (1.3): kodla kapıştığın oyuncular (iki taraf da birbirini ekler). Bu haftanın puanları, grup ayrımı olmadan.
+    // 👉 dürtme: arkadaşını bu hafta geçtiysen haftada bir kez; arkadaşın uygulamayı açınca görür (telefona bildirim yok)
+    addFriend(uid, nick) { if (!uid || uid === st.uid || st.frOff?.[uid]) return; st.fr = { ...(st.fr || {}), [uid]: { n: nick, at: Date.now() } }; keep(); },
+    dropFriend(uid) { const f = { ...(st.fr || {}) }; delete f[uid]; st.fr = f; st.frOff = { ...(st.frOff || {}), [uid]: 1 }; keep(); },
+    async friends() {
+      roll();
+      return Object.entries(st.fr || {}).map(([uid, f]) => ({ uid, nick: f.n, pts: st.frPts?.[uid] ?? hash(uid + ':' + st.wk) % 260, poked: st.poked?.[uid] === st.wk }));
+    },
+    async poke(uid) { roll(); if (st.poked?.[uid] === st.wk) return false; st.poked = { ...(st.poked || {}), [uid]: st.wk }; keep(); return true; },
+    async pokes() { const p = (st.inbox || []).filter(x => !st.blocked?.[x.uid] && !st.frOff?.[x.uid]); st.inbox = []; keep(); p.forEach(x => api.addFriend(x.uid, x.nick)); return p; },
     async board() {
       roll();
       const rows = fake.rows(); st.lastRank = rankOf(rows); keep();
@@ -123,6 +133,7 @@ window.Lig = (() => {
       if (me.left) return null;
       const R = rnd(hash(me.id)), ghost = !!info.ghost, T = (info.oppT ?? (25 + R() * 35)) * 1000, t0 = Date.now() + 3000;   // 3 sn geri sayım
       me.opp = { nick: info.friend || SIM[(R() * SIM.length) | 0], friend: !!info.friend, tier: Math.max(0, (st.tier || 0) + (R() < .3 ? -1 : R() < .7 ? 0 : 1)), ghost };
+      if (info.friend) api.addFriend('f' + hash(info.friend), info.friend);
       const level = info.levels ? info.levels[(R() * info.levels.length) | 0] : 1;
       // rakibin ilerlemesi: önce yavaş, sonra hızlanan; arada duraksamalar. Bitirince sonuç: rakip önce bitirdi
       const tick = () => {
@@ -163,10 +174,11 @@ window.Lig = (() => {
   // Kimlik: anonim hesap (Identity Toolkit). Yenileme anahtarı bu cihazda; ligden çıkınca hesap ve belgeler silinir.
   // Belgeler: users/{uid} · weeks/{hafta}/members/{uid} (grp: "t1g3", pts) · weeks/{hafta}/tiers/{t} (n: sayaç)
   //           q/{uid} (rastgele rakip kuyruğu) · rooms/{kod} (arkadaş odası) · matches/{id} (pa / pb: ilerleme) · ghosts/{id} · reports/{id}
+//           pokes/{alıcı}_{gönderen}_{hafta} (👉 dürtme; alıcı okuyunca siler)
   function FB(base) {
     const CFG = { key: 'AIzaSyDGNsBIk6X0qx2wqHEGSinPWJoCcaypXec', project: 'ray-metro' };
     const DOCS = `https://firestore.googleapis.com/v1/projects/${CFG.project}/databases/(default)/documents`, NAME = `projects/${CFG.project}/databases/(default)/documents`;
-    let tok = null, tokExp = 0, skew = 0, skewRtt = Infinity, skewAt = 0, rowsAt = 0, rowsCache = null;
+    let tok = null, tokExp = 0, skew = 0, skewRtt = Infinity, skewAt = 0, rowsAt = 0, rowsCache = null, fcache = null, fAt = 0;
     // --- kimlik ---
     async function auth() {
       if (tok && Date.now() < tokExp - 60e3) return tok;
@@ -277,12 +289,38 @@ window.Lig = (() => {
           await auth();
           const gs = await query('', Q('ghosts', ['by', 'EQUAL', st.uid]), 200).catch(() => []);   // kayıtlı oyunlarım (takma adımı taşır)
           const wks = [...new Set([...(st.weeks || []), st.wk].filter(Boolean))];   // katıldığım bütün haftaların tablo kayıtları (takma adımı taşır)
-          await Promise.all([...wks.map(k => del(`weeks/${k}/members/${st.uid}`)), del(`users/${st.uid}`), del(`q/${st.uid}`), ...gs.map(g => del(`ghosts/${g.id}`))]);
+          const pk = [...await query('', Q('pokes', ['to', 'EQUAL', st.uid]), 200).catch(() => []), ...await query('', Q('pokes', ['from', 'EQUAL', st.uid]), 200).catch(() => [])];   // dürtmeler (takma adımı taşır)
+          await Promise.all([...wks.map(k => del(`weeks/${k}/members/${st.uid}`)), del(`users/${st.uid}`), del(`q/${st.uid}`), ...gs.map(g => del(`ghosts/${g.id}`)), ...pk.map(p => del(`pokes/${p.id}`))]);
           await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:delete?key=${CFG.key}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken: tok }) });
         } catch {}
         st = {}; tok = null; rowsCache = null; keep();
       },
       async rename(nick) { st.nick = nick; keep(); await commit([w(`users/${st.uid}`, { nick }), w(`weeks/${st.wk}/members/${st.uid}`, { nick })]); rowsCache = null; },
+      // 👥 arkadaşların bu haftaki puanı: weeks/{hafta}/members/{uid} (dakikada en çok bir okuma)
+      async friends() {
+        await ensureWeek();
+        const fr = st.fr || {}, ids = Object.keys(fr).slice(0, 30);
+        if (!fcache || fcache.wk !== st.wk || Date.now() - fAt > 60e3 || ids.some(u => !fcache.m[u])) {
+          const ds = await Promise.all(ids.map(u => get(`weeks/${st.wk}/members/${u}`).catch(() => null)));
+          fcache = { wk: st.wk, m: Object.fromEntries(ids.map((u, i) => [u, ds[i] ? { nick: ds[i].nick, pts: ds[i].pts || 0 } : { pts: 0 }])) }; fAt = Date.now();
+        }
+        return ids.map(u => ({ uid: u, nick: fcache.m[u]?.nick || fr[u].n, pts: fcache.m[u]?.pts || 0, poked: st.poked?.[u] === st.wk }));
+      },
+      // 👉 dürt: pokes/{alıcı}_{ben}_{hafta}; belge varsa yazılmaz (haftada bir). Alıcı uygulamayı açınca okur ve siler.
+      async poke(uid) {
+        await ensureWeek();
+        const ok = await commit([w(`pokes/${uid}_${st.uid}_${st.wk}`, { to: uid, from: st.uid, nick: st.nick, pts: st.pts || 0, wk: st.wk, at: now() }, { exists: false })]).then(() => true, e => e.code === 400 || e.code === 409 ? 'dup' : false);
+        if (ok) { st.poked = { ...(st.poked || {}), [uid]: st.wk }; keep(); }
+        return ok === true;
+      },
+      async pokes() {
+        if (!st.joined || !st.uid) return [];
+        const ps = await query('', Q('pokes', ['to', 'EQUAL', st.uid]), 10).catch(() => []);
+        ps.forEach(p => del(`pokes/${p.id}`));
+        const out = ps.filter(p => !st.blocked?.[p.from] && !st.frOff?.[p.from]).map(p => ({ uid: p.from, nick: p.nick, pts: p.pts || 0 }));
+        out.forEach(x => base.addFriend(x.uid, x.nick));
+        return out;
+      },
       async board() {
         await ensureWeek();
         const r = sorted(await rows()); st.lastRank = rankOf(r); keep();
@@ -330,6 +368,7 @@ window.Lig = (() => {
         if (!me.left) me.timer = setTimeout(poll, 1000);
       };
       M.t0Local = m.t0 - skew; M.timer = setTimeout(poll, Math.max(500, M.t0Local - Date.now()));
+      if (m.opp?.friend && m.ou) base.addFriend(m.ou, m.opp.nick);   // kodla kapışılan oyuncu arkadaş listesine (iki taraf da)
       return { id: m.id, level: m.level, seed: m.seed, k: m.k || '', t0: M.t0Local, opp: m.opp };
     }
     // rakip yoksa: aynı bölümlerden birinin kayıtlı oyunu (gerçek bir oyuncu; kendi kaydım ve son oynadığım bulmacalar değil)
@@ -363,7 +402,7 @@ window.Lig = (() => {
     async function joinedAs(mid, side, friend) {
       const m = await get(`matches/${mid}`);
       if (!m) return null;
-      return follow({ id: mid, level: m.level, seed: m.seed, k: m.k || '', t0: (m.ts || now()) + LEAD, opp: { nick: side === 'a' ? m.bn : m.an, tier: (side === 'a' ? m.bt : m.at) || 0, friend } }, side);
+      return follow({ id: mid, ou: side === 'a' ? m.b : m.a, level: m.level, seed: m.seed, k: m.k || '', t0: (m.ts || now()) + LEAD, opp: { nick: side === 'a' ? m.bn : m.an, tier: (side === 'a' ? m.bt : m.at) || 0, friend } }, side);
     }
     fb.duel = {
       async find(info = {}) {
@@ -415,7 +454,7 @@ window.Lig = (() => {
         const made = makeMatch(room, room.host, info, { friend: true });
         const r = await commit([...made.writes, w(`rooms/${code}`, { state: 'taken', mid: made.id }, { ut: room._ut })]).catch(() => null);
         if (!r) return { error: 'code' };
-        return follow({ ...made, t0: (srvT(r) || now()) + LEAD, opp: { nick: room.nick, tier: room.tier || 0, friend: true } }, 'b');
+        return follow({ ...made, ou: room.host, t0: (srvT(r) || now()) + LEAD, opp: { nick: room.nick, tier: room.tier || 0, friend: true } }, 'b');
       },
       send(p) {
         if (!M || M.left || !M.side) return;

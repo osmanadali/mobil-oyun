@@ -3417,6 +3417,7 @@ async function ligHome() {
   $('bLig').style.setProperty('--tc', TIER_C[me.tier]); $('bLig').querySelector('i').textContent = TIER_I[me.tier];
   $('ligT').textContent = tierName(me.tier);
   try { ligCache = await LIG.board(); const r = ligCache.rows.findIndex(x => x.me) + 1; $('ligS').textContent = `#${r} · ⏳ ${left(ligCache.endsAt)}`; } catch { $('ligS').textContent = ''; }
+  pokeCheck();
 }
 // katılım: ne paylaşıldığı açıkça yazar; takma ad serbest yazı, gönderilmeden önce filtrelenir
 function ligJoin(then) {
@@ -3457,10 +3458,50 @@ async function ligRender() {
     const k = i + 1, z = k <= b.up && b.tier < LIG.TIERS - 1 ? 'up' : k > n - b.down && b.tier > 0 ? 'down' : '';
     const sep = k === b.up + 1 && b.tier < LIG.TIERS - 1 ? `<p class="lgsep up">▲ ${L('Üst lige çıkış', 'Promotion zone')}</p>` : k === n - b.down + 1 && b.tier > 0 ? `<p class="lgsep down">▼ ${L('Düşme bölgesi', 'Relegation zone')}</p>` : '';
     return `${sep}<button class="lgr ${z}${r.me ? ' me' : ''}" data-u="${esc(r.uid)}" data-n="${esc(r.nick)}"><b>${k}</b><span>${esc(r.nick)}${r.me ? ` <em>${L('sen', 'you')}</em>` : ''}</span><small>${r.pts}</small></button>`;
-  }).join('') + `<p class="tip">${L('Bölüm yıldızları, Günün Hattı +5, kapışma galibiyeti +10 · hafta pazartesi 00:00’da biter', 'Level stars, Daily Line +5, duel win +10 · the week ends Monday 00:00')}</p>`;
+  }).join('') + `<p class="tip">${L('Bölüm yıldızları, Günün Hattı +5, kapışma galibiyeti +10 · hafta pazartesi 00:00’da biter', 'Level stars, Daily Line +5, duel win +10 · the week ends Monday 00:00')}</p><div id="lgFr"></div>`;
   requestAnimationFrame(() => $('lgList').querySelector('.lgr.me')?.scrollIntoView({ block: 'center' }));
+  friendsRender();
+}
+// 👥 arkadaşlar (1.3): kodla kapıştığın oyuncular, bu haftanın puanıyla (grup ayrımı yok). Geçtiğin arkadaşa haftada bir 👉 dürt:
+// arkadaşın uygulamayı açınca görür (telefona bildirim gitmez; sohbet yok, sabit metin)
+async function friendsRender() {
+  const box = $('lgFr'); if (!box) return;
+  let fr = []; try { fr = await LIG.friends(); } catch {}
+  if (!$('lgFr')) return;
+  const me = LIG.me(), all = [...fr, { uid: me.uid, nick: me.nick, pts: me.pts, me: true }].sort((a, b) => b.pts - a.pts || (a.me ? -1 : 1));
+  box.innerHTML = `<p class="lgsep fr">👥 ${L('Arkadaşlar', 'Friends')}</p>` + (fr.length ? all.map((r, i) => {
+    const pk = !r.me && me.pts > r.pts ? (r.poked ? `<i class="poke done">👉 ✓</i>` : `<i class="poke" data-p="${esc(r.uid)}" data-n="${esc(r.nick)}">👉 ${L('Dürt', 'Poke')}</i>`) : '';
+    return `<button class="lgr lgf${r.me ? ' me' : ''}" data-u="${esc(r.uid)}" data-n="${esc(r.nick)}"><b>${i + 1}</b><span>${esc(r.nick)}${r.me ? ` <em>${L('sen', 'you')}</em>` : ''}</span>${pk}<small>${r.pts}</small></button>`;
+  }).join('') + `<p class="tip">${L('Geçtiğin arkadaşını haftada bir kez dürtebilirsin; uygulamayı açınca görür.', 'Pass a friend and you can poke them once a week; they’ll see it when they open the app.')}</p>`
+    : `<p class="tip">${L('Bir arkadaşını kodla kapışmaya davet et: burada birbirinizin haftalık puanını görürsünüz.', 'Invite a friend to a duel with a code: you’ll see each other’s weekly points here.')}</p>`);
+}
+// gelen dürtmeler: ana sayfa / lig açılınca (en çok 90 sn'de bir sorulur), tek pencerede
+let pokeAt = 0;
+async function pokeCheck() {
+  if (!LIG?.me().joined || Date.now() - pokeAt < 90e3) return; pokeAt = Date.now();
+  let ps = []; try { ps = await LIG.pokes(); } catch {}
+  if (!ps.length) return;
+  const show1 = () => {
+    if (modalOpen() || active('game')) return setTimeout(show1, 4000);
+    const me = LIG.me(), p = ps[0], more = ps.length - 1;
+    modal(`<div class="bell">👉</div><h2>${L(`${esc(p.nick)} seni dürttü!`, `${esc(p.nick)} poked you!`)}</h2>
+      <p>${L(`Bu hafta seni geçti: <b>${p.pts}</b> puan · sen <b>${me.pts}</b>`, `They passed you this week: <b>${p.pts}</b> points · you <b>${me.pts}</b>`)}${more ? `<br><small>${L(`+${more} arkadaş daha`, `+${more} more friends`)}</small>` : ''}</p>
+      <button id="pkVs" class="btn primary"><span>${L('⚔️ Kapış', '⚔️ Duel')}</span></button><button id="pkLg" class="btn glassbtn">${L('Arkadaşlar', 'Friends')}</button><button id="mClose" class="btn glassbtn">${L('Tamam', 'OK')}</button>`,
+      { pkVs: () => { closeModal(); vsSheet(); }, pkLg: () => { closeModal(); openLig(); }, mClose: closeModal });
+    haptic('heavy');
+  };
+  show1();
 }
 $('lgList').onclick = e => {
+  const pk = e.target.closest('.poke[data-p]');
+  if (pk) { pk.classList.add('done'); pk.removeAttribute('data-p'); pk.textContent = '👉 ✓'; haptic('light');
+    LIG.poke(pk.dataset.p || pk.closest('.lgr').dataset.u).then(ok => toast(ok ? L(`👉 ${pk.closest('.lgr').dataset.n} dürtüldü`, `👉 Poked ${pk.closest('.lgr').dataset.n}`) : L('Gönderilemedi · sonra dene', 'Couldn’t send · try later'))); return; }
+  const f = e.target.closest('.lgf');
+  if (f) { if (f.classList.contains('me')) return; const uid = f.dataset.u, nick = f.dataset.n;
+    modal(`<h2>${esc(nick)}</h2><button id="mVs" class="btn primary"><span>${L('⚔️ Kapışmaya davet et', '⚔️ Invite to a duel')}</span></button>
+      <button id="mDrop" class="btn glassbtn">${L('Arkadaşlardan çıkar', 'Remove from friends')}</button><button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, {
+      mVs: () => { closeModal(); vsHost(); }, mDrop: () => { LIG.dropFriend(uid); closeModal(); toast(L('Arkadaşlardan çıkarıldı', 'Removed from friends')); friendsRender(); }, mClose: closeModal });
+    return; }
   const r = e.target.closest('.lgr'); if (!r || r.classList.contains('me')) return;
   const uid = r.dataset.u, nick = r.dataset.n;
   modal(`<h2>${esc(nick)}</h2><button id="mRep" class="btn glassbtn">${L('🚩 Uygunsuz takma adı bildir', '🚩 Report inappropriate nickname')}</button>
