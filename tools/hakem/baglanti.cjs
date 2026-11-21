@@ -57,6 +57,29 @@ module.exports = async T => {
     await p.evaluate(() => window.Lig.duel.leave());
     errs.push(...o.errors); await o.ctx.close();
   }
+  // c) "verilerimi sil" gerektiren bozuk oturum: cihazda kayıt var (katılmış, bu hafta, grup) ama sunucu bu kimliği tanımıyor ve tablo
+  //    kaydı yok (ör. eski test sürümünden kalan); sunucu her yazmayı reddediyor (400 INVALID_ARGUMENT, eski kimlik) → uygulama kendisi
+  //    onarır: takma ad ve arkadaşlar korunur, yeni kimlik tabloya kaydolur, puan yazılır, davet kodu ve rakip arama çalışır
+  {
+    const o = await open(browser, URL, { save: base, init: 'window.__ligFake = false;', route: async ctx => {
+      await FB.attach(ctx);
+      await ctx.route('https://firestore.googleapis.com/**', r => /tok-ESKI/.test(r.request().headers().authorization || '') ? r.fulfill({ status: 400, contentType: 'application/json', body: '{"error":{"status":"INVALID_ARGUMENT"}}' }) : r.fallback());
+      await ctx.route('https://securetoken.googleapis.com/**', r => /rt-ESKI/.test(r.request().postData() || '') ? r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ id_token: 'tok-ESKI', refresh_token: 'rt-ESKI', user_id: 'ESKI', expires_in: '3600' }) }) : r.fallback());
+    } });
+    const p = o.page;
+    await p.evaluate(() => { const wk = window.Lig.weekId(); localStorage.setItem('ray.lig', JSON.stringify({ joined: true, uid: 'ESKI', rt: 'rt-ESKI', nick: 'Yaşlı Kartal', tier: 1, wk, grp: 't1g0', pts: 30, fr: { Uarkadas: { n: 'Anne 61', at: 1 } } })); });
+    await p.reload(); await p.waitForTimeout(800);
+    const r = await p.evaluate(async () => { const o = {};
+      try { const h = await window.Lig.duel.host({ levels: [20] }); o.code = h.code; window.Lig.duel.leave(); } catch (e) { o.hostErr = String(e); }
+      try { o.add = !!(await window.Lig.add(10)); } catch (e) { o.addErr = String(e); }
+      try { o.find = (await window.Lig.duel.find({ levels: [20], wait: 500 })) ? 'eşleşti' : 'kimse yok'; } catch (e) { o.findErr = String(e); }
+      const s = JSON.parse(localStorage.getItem('ray.lig')); o.uid = s.uid; o.nick = s.nick; o.tier = s.tier; o.fr = Object.keys(s.fr || {}); o.err = window.Lig.err; return o; });
+    const mem = FB.list('weeks/').filter(k => k.endsWith('/members/' + r.uid)).map(k => FB.get(k));
+    check('baglanti.bozuk-oturum', 'Bozuk lig oturumu (sunucu eski kimliği reddediyor): “verilerimi sil” gerekmeden kendiliğinden onarılır; takma ad, kademe ve arkadaşlar korunur, davet kodu ve puan yazma çalışır',
+      /^[A-Z2-9]{5}$/.test(r.code || '') && r.add && !r.findErr && r.uid !== 'ESKI' && r.nick === 'Yaşlı Kartal' && r.tier === 1 && r.fr.includes('Uarkadas') && mem.length === 1 && mem[0].pts === 10 && mem[0].nick === 'Yaşlı Kartal',
+      JSON.stringify({ r, mem }), 'high');
+    errs.push(...o.errors); await o.ctx.close();
+  }
   const bad = errs.filter(e => !/net::|Failed to load resource/.test(e));
   check('baglanti.konsol', 'Bağlantı testlerinde konsolda hata yok', !bad.length, JSON.stringify(bad.slice(0, 5)));
 };

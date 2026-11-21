@@ -461,6 +461,28 @@ window.Lig = (() => {
       leave() { if (!M) return; M.left = true; clearTimeout(M.timer); M = null; },
       _skew: () => ({ skew, rtt: skewRtt }),
     };
+    // 🩹 kendini onarma (1.2.1): lig ya da kapışma sunucudan hata alırsa (ağ kopukluğu değil) cihazdaki lig oturumu sıfırlanır —
+    // takma ad, kademe, arkadaşlar, engellenenler korunur — yeni anonim girişle bu haftaya yeniden kaydolunur ve istek bir kez daha denenir.
+    // Eskiden oyuncu Ayarlar › "Ligden çık · verilerimi sil" demeden kapışamıyordu (21 Kasım). Oturum başına en çok 2 onarım.
+    let healed = 0;
+    async function heal() {
+      const KEEP = ['nick', 'tier', 'weeks', 'blocked', 'reported', 'fr', 'frOff', 'poked', 'olds', 'prev'], old = st;
+      st = { joined: true, ...Object.fromEntries(KEEP.filter(k => old[k] !== undefined).map(k => [k, old[k]])) };
+      if (old.uid) st.olds = [...(old.olds || []), old.uid].slice(-5);
+      tok = null; tokExp = 0; rowsCache = null; keep();
+      await auth(); await ensureWeek();
+    }
+    const fixable = e => !!e && e.message !== 'net' && e.name !== 'AbortError' && e.name !== 'TypeError' && e.code !== 409 && !/FAILED_PRECONDITION|ALREADY_EXISTS/.test(e.message);
+    for (const [o, k] of [[fb, 'board'], [fb, 'add'], [fb, 'friends'], [fb.duel, 'find'], [fb.duel, 'host'], [fb.duel, 'join']]) {
+      const f = o[k]; if (typeof f !== 'function') continue;
+      o[k] = async (...a) => {
+        try { return await f(...a); } catch (e) {
+          if (!fixable(e) || healed >= 2 || !st.joined) throw e;
+          healed++; const why = fb.err; await heal(); fb.err = (why ? why + ' → ' : '') + 'oturum yenilendi';
+          return f(...a);
+        }
+      };
+    }
     return fb;
   }
   return window.__ligFake ? fakeApi : FB(fakeApi);
