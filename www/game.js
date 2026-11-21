@@ -838,6 +838,9 @@ const STAR = '<svg viewBox="0 0 24 24"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.
 const starsHtml = st => { const on = Array.isArray(st) ? st : [0, 1, 2].map(k => k < st); return `<div class="stars">${on.map((o, k) => STAR.replace('<svg', `<svg class="${o ? 'on' : ''}" style="animation-delay:${.1 + k * .14}s"`)).join('')}</div>`; };
 const starTxt = st => '★'.repeat(st) + '☆'.repeat(3 - st);
 
+// iOS: yazı kutusu (takma ad, kapışma kodu) klavyeyi açınca sayfa yukarı kayar; klavye kapanınca bazen kaymış kalıyordu → tahtada
+// dokunuş komşu karoya düşüyordu (1.2, kullanıcı 21 Kasım). Kutudan çıkınca sayfa başa döner (uygulama kaydırılan bir sayfa değil).
+document.addEventListener('focusout', e => { if (e.target.matches?.('input,textarea')) setTimeout(() => { if (!document.activeElement?.matches?.('input,textarea')) window.scrollTo(0, 0); }, 120); });
 // her düğmede dokunma dalgası
 document.addEventListener('pointerdown', e => {
   Music.start();
