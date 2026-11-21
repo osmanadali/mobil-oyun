@@ -156,7 +156,7 @@ window.Lig = (() => {
 
   // ---------- Firebase arka ucu: REST (kütüphane yok; uygulamaya ~10 KB). Kurallar: firestore.rules ----------
   // Kimlik: anonim hesap (Identity Toolkit). Yenileme anahtarı bu cihazda; ligden çıkınca hesap ve belgeler silinir.
-  // Belgeler: users/{uid} · weeks/{hafta}/members/{uid} (grp: "t1g3", pts) · weeks/{hafta}/tiers/{t} (n: sayaç)
+  // Belgeler: users/{uid} · weeks/{hafta}/members/{uid} (grp: "t1g3", pts) · weeks/{hafta}/tiers/{t} (eski sayaç, 1.2.1’den beri kullanılmaz)
   //           q/{uid} (rastgele rakip kuyruğu) · rooms/{kod} (arkadaş odası) · matches/{id} (pa / pb: ilerleme) · ghosts/{id} · reports/{id}
   function FB(base) {
     const CFG = { key: 'AIzaSyDGNsBIk6X0qx2wqHEGSinPWJoCcaypXec', project: 'ray-metro' };
@@ -257,7 +257,9 @@ window.Lig = (() => {
       }
       // yeni grup: o haftanın o kademesindeki sayaç → her 30 kişiye bir grup
       const t = st.tier || 0; let g = 0;
-      const r = await commit([w(`weeks/${wk}/tiers/${t}`, {}, { inc: { n: 1 } })]), n = +(r?.writeResults?.[0]?.transformResults?.[0]?.integerValue || 1); g = (n - 1) / GROUP | 0;   // atomik sayaç
+      // 30'dan az üyesi olan ilk grup (gerçek üye sayısına bakılır). Eskiden yalnız artan sayaç kullanılıyordu: ligden çıkan ve yeniden
+      // katılan oyuncular sayacı şişiriyor, 10 kişi iki gruba bölünüyordu (21 Kasım: sayaç 55, üye 10 → aile birbirini göremedi)
+      for (; g < 200; g++) { const m = await query(`weeks/${wk}`, Q('members', ['grp', 'EQUAL', grpKey(t, g)]), GROUP).catch(() => null); if (!m || m.length < GROUP) break; }
       st.wk = wk; st.grp = grpKey(t, g); st.pts = 0; st.weeks = [...new Set([...(st.weeks || []), wk])].slice(-60); keep();   // weeks: silme için katıldığım haftalar
       await commit([w(`weeks/${wk}/members/${st.uid}`, { grp: st.grp, nick: st.nick, tier: t, pts: 0, at: now() }), w(`users/${st.uid}`, { nick: st.nick, tier: t, wk, grp: st.grp })]);
       rowsCache = null;
