@@ -55,7 +55,7 @@ service cloud.firestore {
     // 👉 dürtme (1.3): kimlik {alıcı}_{gönderen}_{gün} (alan adı wk, değeri gün: YYYY-AA-GG) → aynı arkadaşa günde bir (belge varken yeniden yazılamaz, güncelleme yok).
     // Alıcı okur ve siler; gönderen de siler (ligden çıkınca takma adı kalmasın). Serbest metin yok: takma ad + puan.
     match /pokes/{id} {
-      allow read, delete: if authed() && request.auth.uid in [resource.data.to, resource.data.from];
+      allow read, delete: if authed() && (resource.data.to == request.auth.uid || resource.data.from == request.auth.uid);
       allow create: if authed() && request.resource.data.from == request.auth.uid && request.resource.data.to is string
         && id == request.resource.data.to + '_' + request.auth.uid + '_' + request.resource.data.wk
         && nickOk(request.resource.data.nick) && request.resource.data.pts is int
