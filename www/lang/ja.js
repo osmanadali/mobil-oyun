@@ -617,6 +617,8 @@ window.RAY_DICT={
 "Two edge portals with the <b>same letter</b> are linked: track entering one <b>exits the other</b>. The tunnel is optional; an edge with no letter is <b>closed</b>.":"<b>同じ文字</b>の端のトンネル口2つはつながっています。片方に入った線路は<b>もう片方から出てきます</b>。トンネルは使っても使わなくてもOK。文字のない端は<b>ふさがっています</b>。",
 "Two hubs":"ふたつのハブ",
 "Two tiles with the same color and number <b>turn together</b>: tap one and the other turns too. Find a spot where both fit. One tap = <b>1 move</b>.":"色と数字が同じふたつのタイルは<b>いっしょに回ります</b>。片方をタップするともう片方も回ります。両方がはまる向きを探そう。1タップ＝<b>1手</b>。",
+"Type a nickname first":"先にニックネームを入力してください",
+"Type your nickname":"ニックネームを入力",
 "Under a <b>faint arm (?)</b> there <b>may or may not</b> be track. The ? turns with the tile. Read the <b>neighbors</b> to tell if the arm is real.":"<b>淡い枝（?）</b>の下には線路が<b>あるかもしれないし、ないかもしれません</b>。? はタイルといっしょに回ります。<b>となりのタイル</b>を見て本物の枝か見抜こう。",
 "Undo":"戻す",
 "Unlimited lives":"ライフ無限",

@@ -18,3 +18,21 @@ fr: Vérifie ta connexion Internet. En données mobiles, Réglages › Ray › D
 ko: 인터넷 연결을 확인하세요. 모바일 데이터를 쓰는 중이라면 설정 › Ray › 모바일 데이터가 켜져 있어야 해요.
 ja: インターネット接続を確認してください。モバイル通信の場合は、設定 › Ray › モバイルデータ通信がオンになっている必要があります。
 zh: 請檢查網路連線。若使用行動數據，請確認「設定 › Ray › 行動數據」已開啟。
+
+@ Type your nickname
+de: Gib deinen Spitznamen ein
+es: Escribe tu apodo
+pt: Digite seu apelido
+fr: Écris ton pseudo
+ko: 닉네임을 입력하세요
+ja: ニックネームを入力
+zh: 輸入你的暱稱
+
+@ Type a nickname first
+de: Gib zuerst einen Spitznamen ein
+es: Primero escribe un apodo
+pt: Digite um apelido primeiro
+fr: Écris d’abord un pseudo
+ko: 먼저 닉네임을 입력하세요
+ja: 先にニックネームを入力してください
+zh: 請先輸入暱稱

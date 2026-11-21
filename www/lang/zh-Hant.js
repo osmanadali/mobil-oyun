@@ -617,6 +617,8 @@ window.RAY_DICT={
 "Two edge portals with the <b>same letter</b> are linked: track entering one <b>exits the other</b>. The tunnel is optional; an edge with no letter is <b>closed</b>.":"邊緣兩個<b>字母相同</b>的隧道口互相連通：從一個進去的軌道會<b>從另一個出來</b>。隧道可用可不用；沒有字母的邊緣是<b>封閉</b>的。",
 "Two hubs":"雙樞紐",
 "Two tiles with the same color and number <b>turn together</b>: tap one and the other turns too. Find a spot where both fit. One tap = <b>1 move</b>.":"顏色和數字相同的兩個方塊會<b>一起轉</b>：點一個，另一個也跟著轉。找出兩個都對的方向。點一下 = <b>1 步</b>。",
+"Type a nickname first":"請先輸入暱稱",
+"Type your nickname":"輸入你的暱稱",
 "Under a <b>faint arm (?)</b> there <b>may or may not</b> be track. The ? turns with the tile. Read the <b>neighbors</b> to tell if the arm is real.":"<b>淡色分支（?）</b>底下<b>可能有、也可能沒有</b>軌道。? 會跟著方塊一起轉。觀察<b>相鄰方塊</b>，判斷這個分支是不是真的。",
 "Undo":"復原",
 "Unlimited lives":"無限生命",

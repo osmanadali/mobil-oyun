@@ -617,6 +617,8 @@ window.RAY_DICT={
 "Two edge portals with the <b>same letter</b> are linked: track entering one <b>exits the other</b>. The tunnel is optional; an edge with no letter is <b>closed</b>.":"Duas bocas na borda com a <b>mesma letra</b> estão ligadas: o trilho que entra numa <b>sai pela outra</b>. O túnel é opcional; borda sem letra é <b>fechada</b>.",
 "Two hubs":"Dois centros",
 "Two tiles with the same color and number <b>turn together</b>: tap one and the other turns too. Find a spot where both fit. One tap = <b>1 move</b>.":"Duas peças com a mesma cor e número <b>giram juntas</b>: toque numa e a outra gira também. Ache a posição em que as duas encaixam. Um toque = <b>1 jogada</b>.",
+"Type a nickname first":"Digite um apelido primeiro",
+"Type your nickname":"Digite seu apelido",
 "Under a <b>faint arm (?)</b> there <b>may or may not</b> be track. The ? turns with the tile. Read the <b>neighbors</b> to tell if the arm is real.":"Sob um <b>braço apagado (?)</b> <b>pode ou não</b> haver trilho. O ? gira com a peça. Olhe as <b>vizinhas</b> para saber se o braço é real.",
 "Undo":"Desfazer",
 "Unlimited lives":"Vidas ilimitadas",

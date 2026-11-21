@@ -617,6 +617,8 @@ window.RAY_DICT={
 "Two edge portals with the <b>same letter</b> are linked: track entering one <b>exits the other</b>. The tunnel is optional; an edge with no letter is <b>closed</b>.":"<b>같은 글자</b>가 적힌 가장자리 입구 두 개는 서로 이어져 있어요. 한쪽으로 들어간 선로는 <b>다른 쪽으로 나와요</b>. 터널은 써도 되고 안 써도 돼요. 글자가 없는 가장자리는 <b>막혀 있어요</b>.",
 "Two hubs":"두 허브",
 "Two tiles with the same color and number <b>turn together</b>: tap one and the other turns too. Find a spot where both fit. One tap = <b>1 move</b>.":"색과 숫자가 같은 두 타일은 <b>함께 돌아요</b>. 하나를 탭하면 다른 하나도 돌아요. 둘 다 맞는 방향을 찾으세요. 한 번 탭 = <b>1 이동</b>.",
+"Type a nickname first":"먼저 닉네임을 입력하세요",
+"Type your nickname":"닉네임을 입력하세요",
 "Under a <b>faint arm (?)</b> there <b>may or may not</b> be track. The ? turns with the tile. Read the <b>neighbors</b> to tell if the arm is real.":"<b>흐릿한 가지(?)</b> 아래에는 선로가 <b>있을 수도, 없을 수도</b> 있어요. ?는 타일과 함께 돌아요. <b>이웃 타일</b>을 보고 진짜 가지인지 알아내세요.",
 "Undo":"되돌리기",
 "Unlimited lives":"무제한 하트",
