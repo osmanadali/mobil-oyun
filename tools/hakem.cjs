@@ -99,13 +99,16 @@ const shot = (page, name) => page.screenshot({ path: path.join(SHOTS, name + '.p
 const getSave = page => page.evaluate(() => JSON.parse(localStorage.getItem('ray') || '{}'));
 const modalOpen = page => page.evaluate(() => document.getElementById('modal').classList.contains('open') || document.getElementById('game').classList.contains('won'));
 
+const lastTap = new WeakMap();   // oyun aynı karoya 40 ms içindeki ikinci dokunuşu yok sayar (iOS çift olay süzgeci): robot arayı korur
 async function tapTile(page, i) {
+  const l = lastTap.get(page); if (l && l.i === i && Date.now() - l.t < 45) await page.waitForTimeout(45 - (Date.now() - l.t));
+  lastTap.set(page, { i, t: Date.now() + 0 });
   const p = await page.evaluate(i => {
     const { G, geo, HX } = window.__ray, r = document.getElementById('cv').getBoundingClientRect();
     if (G.hex) { const [x, y] = HX.xy(G, i, geo); return { x: r.left + x, y: r.top + y }; }   // ⬡ altıgen gün: karo merkezi
     return { x: r.left + geo.ox + (i % G.cols) * geo.s + geo.s / 2, y: r.top + geo.oy + (i / G.cols | 0) * geo.s + geo.s / 2 };
   }, i);
-  await page.mouse.click(p.x, p.y);
+  await page.mouse.click(p.x, p.y); lastTap.set(page, { i, t: Date.now() });
 }
 // En kısa çözüm: her karoyu çözüm yönüne getirecek kadar dokun. Eşli karo: biri çevrilir (eşi de döner).
 // Karanlık tünel: yalnızca aydınlık karolara dokunulur; hat ilerledikçe yeni tur (ışığı takip eder).

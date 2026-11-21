@@ -1339,7 +1339,23 @@ function burst(i, k = 9, delay = 0, color = G.color) {
   }
 }
 
-cv.addEventListener('pointerdown', e => {
+let lastTapI = -1, lastTapT = -1e9;
+// 🩺 dokunma tanısı (Ayarlar başlığına 5 dokunuş › Reklam tanısı › Dokunma tanısı): her olay, düştüğü karo ve sonuç ekranın altında
+let TAPDBG = false; try { TAPDBG = localStorage.getItem('ray.tapdbg') === '1'; } catch {}
+const tapLog = [];
+function tapDiag(kind, x, y, skip) {
+  if (!TAPDBG) return;
+  tapLog.push(`${(performance.now() / 1000).toFixed(2)} ${kind} ${x | 0},${y | 0}${skip ? ' (yok sayıldı)' : ''}`); if (tapLog.length > 7) tapLog.shift(); tapShow();
+}
+// tanı açıkken sayfanın her yerindeki dokunuş da yazılır (tahtaya ulaşmadıysa hangi öğe yuttu?)
+const tgtName = el => !el ? '?' : el === cv ? 'TAHTA' : (el.id ? '#' + el.id : el.tagName.toLowerCase() + (typeof el.className === 'string' && el.className ? '.' + el.className.split(' ')[0] : ''));
+document.addEventListener('touchstart', e => { if (TAPDBG) for (const t of e.changedTouches) if (t.target !== cv) tapDiag('dokunuş ' + tgtName(t.target), t.clientX, t.clientY); }, { capture: true, passive: true });
+function tapNote(t) { if (!TAPDBG || !tapLog.length) return; tapLog[tapLog.length - 1] += ' → ' + t; tapShow(); }
+function tapShow() {
+  let el = $('tapDbg'); if (!el) { el = document.createElement('pre'); el.id = 'tapDbg'; el.style.cssText = 'position:fixed;left:6px;bottom:calc(var(--sab) + 6px);z-index:99;margin:0;padding:6px 8px;border-radius:10px;background:rgba(0,0,0,.72);color:#9f9;font:11px/1.35 ui-monospace,Menlo,monospace;pointer-events:none;white-space:pre'; document.body.append(el); }
+  el.hidden = !TAPDBG; el.textContent = tapLog.join('\n');
+}
+function boardTap(e) {   // e: { clientX, clientY } (dokunma ya da fare)
   if (G?.won) { if ($('game').classList.contains('won')) toggleMini(); return; }
   if (!G || G.over) return;
   // dokunulan nokta tuval koordinatında: ekran koordinatı − tuvalin ekrandaki yeri (dönüşüm/ölçek varsa düzeltilir).
@@ -1348,8 +1364,13 @@ cv.addEventListener('pointerdown', e => {
   const rc = cv.getBoundingClientRect(), kx = cv.clientWidth / (rc.width || 1), ky = cv.clientHeight / (rc.height || 1);
   const { s, ox, oy } = geo, px = (e.clientX - rc.left) * kx, py = (e.clientY - rc.top) * ky;
   const c = Math.floor((px - ox) / s), w = Math.floor((py - oy) / s), hx = G.hex ? HX.hit(G, geo, px, py) : 0;   // ⬡ altıgen: en yakın karo merkezi
-  if (G.hex ? hx < 0 : c < 0 || w < 0 || c >= G.cols || w >= G.rows) return;
+  if (G.hex ? hx < 0 : c < 0 || w < 0 || c >= G.cols || w >= G.rows) return tapNote('tahta dışı');
   const i = G.hex ? hx : w * G.cols + c, now = performance.now();
+  tapNote(`karo ${i} (${G.hex ? 'altıgen' : `s${w + 1} k${c + 1}`})`);
+  // aynı karoya 40 ms içinde ikinci olay: tek dokunuşun çift gelmesi (iOS WebKit'te görüldü: düz ray 180° dönüp "dönmedi" sanılıyordu,
+  // 1.2, kullanıcı 21 Kasım). İnsan parmağıyla iki dokunuş bu kadar hızlı olmaz.
+  if (i === lastTapI && now - lastTapT < 40) return tapNote('çift olay, atlandı');
+  lastTapI = i; lastTapT = now;
   if (G.tut && !tutGate(i, now)) return;   // 🎓 bu adımda vurgulanmayan karo dönmez
   if (G.fixed[i]) { haptic('light'); tone(440, .06, .02); toast(L('Bu karo ipucuyla sabitlendi', 'This tile was set by a hint')); press.set(i, now); kick(); return; }
   if (G.fog && !G.seen[i]) { haptic('light'); tone(196, .05, .012); press.set(i, now); kick(); if (now - (G.fogTold || -1e9) > 3000) { toast(L('Karanlık tünel · hat yaklaşınca aydınlanır', 'Dark tunnel · lights up as the line nears')); G.fogTold = now; } return; }
@@ -1385,6 +1406,7 @@ cv.addEventListener('pointerdown', e => {
     if (!save.pairTold) { save.pairTold = 1; persist(); toast(L('Eşli karo · ikisi birlikte döner', 'Paired tiles · both turn together')); }
   }
   }
+  tapNote('döndü');
   const prev = G.L.d, wasMerged = G.L.merged;
   G.L = lit(G); reveal();
   let gained = 0, stations = 0;
@@ -1397,7 +1419,12 @@ cv.addEventListener('pointerdown', e => {
   hud(); tick(); kick();
   if (G.tut && !G.L.solved) tutAfter(i);
   if (G.L.solved) win(); else saveRun();
-});
+}
+// ⚠️ iOS (1.2, kullanıcı videosu 21 Kasım): karonun ortasına art arda dokununca WebKit pointer olayını sistem hareketine (çift dokunma
+// vb.) kaptırıp hiç göndermiyordu → halka yok, hamle yok, karo dönmüyor. Dokunmatikte tahta touchstart ile dinlenir (sistem hareketinden
+// önce gelir; preventDefault çift dokunma / büyüteç / taklit fare olaylarını da durdurur). Fare ve kalem pointerdown ile.
+cv.addEventListener('touchstart', e => { e.preventDefault(); for (const t of e.changedTouches) { tapDiag('touch', t.clientX, t.clientY); boardTap(t); } }, { passive: false });
+cv.addEventListener('pointerdown', e => { if (e.pointerType === 'touch') { tapDiag('ptr-touch', e.clientX, e.clientY, true); return; } tapDiag(e.pointerType || 'ptr', e.clientX, e.clientY); boardTap(e); });
 
 // kusursuz seri: tacı olmayan bölümü kusursuz bitirmek seriyi +1 yapar, kusursuzsuz bitirmek sıfırlar; taçlı bölüm seriyi etkilemez.
 // Seri kırılınca aynı bölümü kusursuz bitiren oyuncu seriyi kaldığı yerden sürdürür (comboLost).
@@ -2351,9 +2378,10 @@ function pauseSheet() {
 // Reklam tanısı (Ayarlar başlığına art arda 5 dokunuş): reklam sistemi başladı mı, rıza / izin durumu, yükleme hatası. Kopyalanıp gönderilir.
 function adDiag() {
   const d = window.Ads?.diag?.() || { yok: 'Ads' }, txt = `Ray · ${navigator.userAgent.match(/OS [\d_]+/)?.[0] || ''}\n` + Object.entries(d).map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}`).join('\n');
-  modal(`<h2>Reklam tanısı</h2><pre class="diag">${txt.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</pre>
+  modal(`<h2>Reklam tanısı</h2><pre class="diag">${txt.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</pre><button id="mTap" class="btn glassbtn">${TAPDBG ? '🩺 Dokunma tanısını kapat' : '🩺 Dokunma tanısını aç'}</button>
     <button id="dCopy" class="btn primary"><span>Kopyala</span></button><button id="dRe" class="btn glassbtn">Yeniden başlat</button><button id="mClose" class="btn glassbtn">Kapat</button>`,
-    { dCopy: async () => { try { await navigator.clipboard.writeText(txt); toast('Kopyalandı'); } catch { toast('Kopyalanamadı'); } }, dRe: async () => { await window.Ads?.init?.(); adDiag(); }, mClose: closeModal });
+    { dCopy: async () => { try { await navigator.clipboard.writeText(txt); toast('Kopyalandı'); } catch { toast('Kopyalanamadı'); } }, dRe: async () => { await window.Ads?.init?.(); adDiag(); }, mClose: closeModal,
+      mTap: () => { TAPDBG = !TAPDBG; try { localStorage.setItem('ray.tapdbg', TAPDBG ? '1' : '0'); } catch {} tapLog.length = 0; tapShow(); closeModal(); toast(TAPDBG ? '🩺 Dokunma tanısı açık' : 'Dokunma tanısı kapalı'); } });
 }
 function settings() {
   const seg = ['auto', 'dark', 'light'].map(t => `<button data-t="${t}" class="${save.theme === t ? 'on' : ''}">${{ auto: L('Oto', 'Auto'), dark: L('Koyu', 'Dark'), light: L('Açık', 'Light') }[t]}</button>`).join('');
@@ -3424,16 +3452,16 @@ async function ligHome() {
 }
 // katılım: ne paylaşıldığı açıkça yazar; takma ad serbest yazı, gönderilmeden önce filtrelenir
 function ligJoin(then) {
-  const sug = L('Metrocu', 'Rider') + ' ' + (100 + (Math.random() * 900 | 0));
+  // takma ad kutusu boş gelir: herkes kendi adını yazar (rastgele "Metrocu 773" önerisi kalktı, kullanıcı 21 Kasım)
   modal(`<div class="bell">🏆</div><h2>${L('Haftalık Lig', 'Weekly League')}</h2>
     <ul class="ligwhy"><li>${L('Her hafta 30 kişilik bir grupta yarış', 'Compete in a group of 30 every week')}</li>
     <li>${L('Bölüm yıldızları, Günün Hattı +5, kapışma galibiyeti +10 puan', 'Level stars, Daily Line +5, duel win +10 points')}</li>
     <li>${L('İlk 7 üst lige çıkar, son 5 düşer', 'Top 7 move up, bottom 5 move down')}</li></ul>
-    <label class="nick"><span>${L('Takma adın', 'Your nickname')}</span><input id="mNick" maxlength="16" autocomplete="off" autocapitalize="words" spellcheck="false" value="${esc(sug)}"><small id="mNickE"></small></label>
+    <label class="nick"><span>${L('Takma adın', 'Your nickname')}</span><input id="mNick" maxlength="16" autocomplete="off" autocapitalize="words" spellcheck="false" value="" placeholder="${L('Takma adını yaz', 'Type your nickname')}"><small id="mNickE"></small></label>
     <p class="tip">${L('Takma adın ve haftalık puanın diğer oyunculara görünür. Ayarlar’dan istediğin zaman ligden çıkıp verilerini silebilirsin.', 'Your nickname and weekly points are visible to other players. You can leave and delete your data any time in Settings.')}</p>
     <button id="mJoin" class="btn primary"><span>${L('Lige katıl', 'Join the league')}</span></button>
     <button id="mClose" class="btn glassbtn">${L('Şimdi değil', 'Not now')}</button>`, {
-    mJoin: async () => { const v = LIG.nickOk($('mNick').value); if (!v.ok) { $('mNickE').textContent = NICK_ERR()[v.why]; bump($('mNick')); return; }
+    mJoin: async () => { const v = LIG.nickOk($('mNick').value); if (!$('mNick').value.trim()) { $('mNickE').textContent = L('Önce bir takma ad yaz', 'Type a nickname first'); bump($('mNick')); $('mNick').focus(); return; } if (!v.ok) { $('mNickE').textContent = NICK_ERR()[v.why]; bump($('mNick')); return; }
       await LIG.join(v.nick); Olcum.event('league_join', {}); closeModal(); haptic('win'); ligHome(); then?.(); },
     mClose: closeModal });
   $('mNick').oninput = () => { $('mNickE').textContent = ''; };
@@ -3581,15 +3609,21 @@ function vsWait(title, sub, onCancel) {
 }
 async function vsFind(o = {}) {
   vsWait(L('Rakip aranıyor…', 'Finding an opponent…'), L('Benzer seviyede bir oyuncu', 'A player at a similar level'));
-  let m = null; try { m = await LIG.duel.find({ levels: duelLevels(), seen: save.vsSeen || [], ...o }); } catch {}
+  let m = null; try { m = await LIG.duel.find({ levels: duelLevels(), seen: save.vsSeen || [], ...o }); } catch { if ($('vwT')) vsNet(() => vsFind(o)); return; }   // bağlantı hatası "rakip yok" diye gizlenmez
   if (!$('vwT')) return;   // vazgeçildi
   if (m) return vsIntro(m);
   modal(`<div class="bell">🚇</div><h2>${L('Şu an rakip yok', 'No opponent right now')}</h2><p>${L('Birazdan yeniden dene ya da bir arkadaşını davet et.', 'Try again in a moment, or invite a friend.')}</p>
     <button id="vR" class="btn primary"><span>${L('Yeniden dene', 'Try again')}</span></button><button id="vH" class="btn glassbtn">${L('Arkadaşı davet et', 'Invite a friend')}</button><button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`,
     { vR: () => vsFind(o), vH: vsHost, mClose: closeModal });
 }
+// sunucuya ulaşılamadı: ne olduğu açıkça yazar (adım · kod: lig.js err) ve yeniden dene
+function vsNet(retry) {
+  const why = LIG.err || '';
+  modal(`<div class="bell">📡</div><h2>${L('Sunucuya ulaşılamadı', 'Couldn’t reach the server')}</h2><p>${L('İnternet bağlantını kontrol et. Mobil veride oynuyorsan Ayarlar › Ray › Mobil Veri açık olmalı.', 'Check your internet connection. On mobile data, make sure Settings › Ray › Mobile Data is on.')}</p>${why ? `<p class="tip">${esc(why)}</p>` : ''}
+    <button id="vR" class="btn primary"><span>${L('Yeniden dene', 'Try again')}</span></button><button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, { vR: () => { closeModal(); retry(); }, mClose: closeModal });
+}
 async function vsHost() {
-  let h; try { h = await LIG.duel.host({ levels: duelLevels() }); } catch { toast(L('Bağlantı yok · sonra dene', 'No connection · try later')); return; }
+  let h; try { h = await LIG.duel.host({ levels: duelLevels() }); } catch { return vsNet(vsHost); }
   const url = `${SHARE_URL}?vs=${h.code}`;
   modal(`<div class="bell">⚔️</div><h2>${L('Arkadaşını davet et', 'Invite your friend')}</h2><p>${L('Arkadaşın Ray’de “Koda katıl”a bu kodu yazsın ya da bağlantıyı açsın.', 'Your friend enters this code under “Join with code” in Ray, or opens the link.')}</p>
     <div class="vscode" id="vCode">${h.code}</div>
