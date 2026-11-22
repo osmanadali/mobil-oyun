@@ -24,7 +24,8 @@ const say = s => { out.push(s); console.log(s); };
   if (!ver) throw Error(`Sürüm ${VERSION} yok`);
   say(`- Sürüm ${VERSION}: ${ver.attributes.appStoreState}`);
   if (!['PREPARE_FOR_SUBMISSION', 'DEVELOPER_REJECTED', 'REJECTED', 'METADATA_REJECTED'].includes(ver.attributes.appStoreState) && !(REPLACE && ['WAITING_FOR_REVIEW', 'IN_REVIEW'].includes(ver.attributes.appStoreState))) throw Error(`Sürüm gönderilebilir durumda değil: ${ver.attributes.appStoreState}`);
-  const b = (await api('GET', `/v1/builds?filter[app]=${app.id}&filter[version]=${BUILD}&filter[preReleaseVersion.version]=${VERSION}&limit=5`)).data[0];
+  const b = (await api('GET', `/v1/builds?filter[app]=${app.id}&filter[version]=${BUILD}&filter[preReleaseVersion.version]=${VERSION}&limit=5`)).data[0]
+    || (await api('GET', `/v1/builds?filter[app]=${app.id}&filter[version]=${BUILD}&filter[preReleaseVersion.version]=${VERSION}.0&limit=5`)).data[0];   // yapı "1.2.0" etiketiyle gelmiş olabilir
   if (!b) throw Error(`Yapı ${BUILD} (${VERSION}) bulunamadı`);
   say(`- Yapı ${BUILD}: ${b.attributes.processingState} · şifreleme beyanı: ${b.attributes.usesNonExemptEncryption ?? 'yok'}`);
   if (b.attributes.processingState !== 'VALID') throw Error('Yapı henüz işlenmedi (VALID değil)');

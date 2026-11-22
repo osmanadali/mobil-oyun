@@ -20,6 +20,7 @@ window.Lig = (() => {
   // hafta: pazartesi 00:00 (UTC+3, Türkiye; yaz saati yok) → herkes için aynı an
   const OFF = 3 * 3600e3, WEEK = 7 * 864e5;
   const weekStart = (t = Date.now()) => { const d = new Date(t + OFF), wd = (d.getUTCDay() + 6) % 7; return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - wd) - OFF; };
+  const dayId = (t = Date.now()) => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };   // 👉 dürtme: günde bir
   const weekId = (t = Date.now()) => new Date(weekStart(t) + OFF).toISOString().slice(0, 10);
   const rnd = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   const hash = s => { let h = 2166136261; for (const c of String(s)) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; };
@@ -85,6 +86,16 @@ window.Lig = (() => {
     },
     async leave() { st = {}; keep(); },   // Firebase: kullanıcının bütün belgeleri ve anonim hesabı silinir
     async rename(nick) { st.nick = nick; keep(); },
+    // 👥 arkadaşlar (1.3): kodla kapıştığın oyuncular (iki taraf da birbirini ekler). Bu haftanın puanları, grup ayrımı olmadan.
+    // 👉 dürtme: arkadaşını bu hafta geçtiysen haftada bir kez; arkadaşın uygulamayı açınca görür (telefona bildirim yok)
+    addFriend(uid, nick) { if (!uid || uid === st.uid || st.frOff?.[uid]) return; st.fr = { ...(st.fr || {}), [uid]: { n: nick, at: Date.now() } }; keep(); },
+    dropFriend(uid) { const f = { ...(st.fr || {}) }; delete f[uid]; st.fr = f; st.frOff = { ...(st.frOff || {}), [uid]: 1 }; keep(); },
+    async friends() {
+      roll();
+      return Object.entries(st.fr || {}).map(([uid, f]) => ({ uid, nick: f.n, pts: st.frPts?.[uid] ?? hash(uid + ':' + st.wk) % 260, poked: st.poked?.[uid] === dayId() }));
+    },
+    async poke(uid) { roll(); const d = dayId(); if (st.poked?.[uid] === d) return false; st.poked = { ...(st.poked || {}), [uid]: d }; keep(); return true; },
+    async pokes() { const p = (st.inbox || []).filter(x => !st.blocked?.[x.uid] && !st.frOff?.[x.uid]); st.inbox = []; keep(); p.forEach(x => api.addFriend(x.uid, x.nick)); return p; },
     async board() {
       roll();
       const rows = fake.rows(); st.lastRank = rankOf(rows); keep();
@@ -109,6 +120,11 @@ window.Lig = (() => {
   // Sonuç: Lig.duel.end(p) → { win: 'me' | 'opp', me, opp } (gerçek arka uçta maç belgesinden: iki cihaz aynı sonucu görür)
   let duel = null;
   const fakeApi = api;
+  // 🧩 maç türü (1.3): seçilen bölüm 150+ ise maçların ~%25'i ⬡ altıgen ('hex'), kalanı fazladan kurallı kare ('mix'); altında '' (kuralsız kare).
+  // İki taraf da DV ≥ 2 (1.3+) değilse hep '': eski sürüm 'k' alanını bilmez, aynı maçta başka tahta görmesin.
+  const DV = 2, KARMA_LV = 150, HEX_P = .25;
+  const kindFor = (level, otherDv, r = Math.random()) => level >= KARMA_LV && (otherDv || 0) >= DV ? (r < HEX_P ? 'hex' : 'mix') : '';
+  window.__ligKind = kindFor;   // robot: tür seçimi (sürüm uyumu) doğrudan denetlenir
   const seed31 = () => (Math.random() * 2147483647 | 0) || 1;
   api.duel = {
     async find(info = {}) {
@@ -118,6 +134,7 @@ window.Lig = (() => {
       if (me.left) return null;
       const R = rnd(hash(me.id)), ghost = !!info.ghost, T = (info.oppT ?? (25 + R() * 35)) * 1000, t0 = Date.now() + 3000;   // 3 sn geri sayım
       me.opp = { nick: info.friend || SIM[(R() * SIM.length) | 0], friend: !!info.friend, tier: Math.max(0, (st.tier || 0) + (R() < .3 ? -1 : R() < .7 ? 0 : 1)), ghost };
+      if (info.friend) api.addFriend('f' + hash(info.friend), info.friend);
       const level = info.levels ? info.levels[(R() * info.levels.length) | 0] : 1;
       // rakibin ilerlemesi: önce yavaş, sonra hızlanan; arada duraksamalar. Bitirince sonuç: rakip önce bitirdi
       const tick = () => {
@@ -130,7 +147,7 @@ window.Lig = (() => {
         if (!p.done) me.timers.push(setTimeout(tick, 700 + R() * 600));
       };
       me.timers.push(setTimeout(tick, 3000));
-      return { id: me.id, level, seed: seed31(), t0, opp: me.opp };
+      return { id: me.id, level, seed: seed31(), k: info.k ?? kindFor(level, DV, R()), t0, opp: me.opp };
     },
     // arkadaşla: oda kodu (karışmasın diye O/0/I/1 yok). Sahte: arkadaş 4 sn sonra katılır.
     async host(info = {}) {
@@ -156,21 +173,25 @@ window.Lig = (() => {
 
   // ---------- Firebase arka ucu: REST (kütüphane yok; uygulamaya ~10 KB). Kurallar: firestore.rules ----------
   // Kimlik: anonim hesap (Identity Toolkit). Yenileme anahtarı bu cihazda; ligden çıkınca hesap ve belgeler silinir.
-  // Belgeler: users/{uid} · weeks/{hafta}/members/{uid} (grp: "t1g3", pts) · weeks/{hafta}/tiers/{t} (n: sayaç)
+  // Belgeler: users/{uid} · weeks/{hafta}/members/{uid} (grp: "t1g3", pts) · weeks/{hafta}/tiers/{t} (eski sayaç, 1.2.1’den beri kullanılmaz)
   //           q/{uid} (rastgele rakip kuyruğu) · rooms/{kod} (arkadaş odası) · matches/{id} (pa / pb: ilerleme) · ghosts/{id} · reports/{id}
+//           pokes/{alıcı}_{gönderen}_{gün} (👉 dürtme, günde bir; alıcı okuyunca siler)
   function FB(base) {
     const CFG = { key: 'AIzaSyDGNsBIk6X0qx2wqHEGSinPWJoCcaypXec', project: 'ray-metro' };
     const DOCS = `https://firestore.googleapis.com/v1/projects/${CFG.project}/databases/(default)/documents`, NAME = `projects/${CFG.project}/databases/(default)/documents`;
-    let tok = null, tokExp = 0, skew = 0, skewRtt = Infinity, skewAt = 0, rowsAt = 0, rowsCache = null;
+    let tok = null, tokExp = 0, skew = 0, skewRtt = Infinity, skewAt = 0, rowsAt = 0, rowsCache = null, fcache = null, fAt = 0;
     // --- kimlik ---
     async function auth() {
       if (tok && Date.now() < tokExp - 60e3) return tok;
       let r;
-      if (st.rt) r = await fetch(`https://securetoken.googleapis.com/v1/token?key=${CFG.key}`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(st.rt) }).then(x => x.json());
+      const net = (step, p) => p.catch(e => { fb.err = `${step} · ${e.name === 'AbortError' ? 'zaman aşımı' : 'ağ'}`; const x = Error('net'); x.step = step; throw x; });
+      if (st.rt) r = await net('token', fetch(`https://securetoken.googleapis.com/v1/token?key=${CFG.key}`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(st.rt) }).then(x => x.json()));
       if (!r?.id_token) {
-        const s = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${CFG.key}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"returnSecureToken":true}' }).then(x => x.json());
-        if (!s.idToken) throw Error('auth');
+        if (st.rt) fb.err = 'token · ' + (r?.error?.message || '?');   // kayıtlı oturum geçersiz → yeni anonim giriş
+        const s = await net('giriş', fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${CFG.key}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"returnSecureToken":true}' }).then(x => x.json()));
+        if (!s.idToken) { fb.err = 'giriş · ' + (s.error?.message || '?'); throw Error('auth'); }
         r = { id_token: s.idToken, refresh_token: s.refreshToken, user_id: s.localId, expires_in: s.expiresIn };
+        if (st.uid && st.uid !== s.localId) { st.olds = [...(st.olds || []), st.uid].slice(-5); st.wk = ''; st.grp = ''; st.pts = 0; rowsCache = null; }   // yeni kimlik: bu haftanın tablosuna yeniden kaydolur (eski kayıt eski kimliğin)
       }
       tok = r.id_token; tokExp = Date.now() + (+r.expires_in || 3600) * 1e3; st.rt = r.refresh_token; st.uid = r.user_id; keep();
       return tok;
@@ -183,7 +204,16 @@ window.Lig = (() => {
       : 'arrayValue' in v ? (v.arrayValue.values || []).map(dec) : 'mapValue' in v ? decF(v.mapValue.fields || {}) : 'timestampValue' in v ? Date.parse(v.timestampValue) : null;
     const decF = f => Object.fromEntries(Object.entries(f || {}).map(([k, v]) => [k, dec(v)]));
     const doc = d => d?.fields ? { id: d.name.split('/').pop(), _ut: d.updateTime, ...decF(d.fields) } : null;
-    async function call(method, url, body, tm) {
+    // 401/403: anahtar bir kez tazelenip yeniden denenir; yine reddedilirse kayıtlı oturum bırakılır, yeni anonim girişle bir kez daha
+    // (eskiden hata olduğu gibi yukarı çıkıyor, oturum uygulama kapanana dek bozuk kalıyordu: "online oynanmıyor", 21 Kasım)
+    async function call(method, url, body, tm, again = 0) {
+      try { return await call1(method, url, body, tm); } catch (e) {
+        if ((e.code === 401 || e.code === 403) && again < 2) { tok = null; tokExp = 0; if (again === 1) { st.rt = null; keep(); } return call(method, url, body, tm, again + 1); }
+        if (!fb.err || e.code) fb.err = `${url.split('/documents')[1]?.split(/[/:?]/)[1] || 'istek'} · ${e.code || (e.name === 'AbortError' ? 'zaman aşımı' : e.message)}`;
+        throw e;
+      }
+    }
+    async function call1(method, url, body, tm) {
       const h = { Authorization: 'Bearer ' + await auth(), 'Content-Type': 'application/json' };
       if (tm) tm.t1 = Date.now();
       // 10 sn'de yanıt yoksa vazgeç: takılan tek istek (zayıf mobil ağ) maç takibini durdurmasın
@@ -245,7 +275,9 @@ window.Lig = (() => {
       }
       // yeni grup: o haftanın o kademesindeki sayaç → her 30 kişiye bir grup
       const t = st.tier || 0; let g = 0;
-      const r = await commit([w(`weeks/${wk}/tiers/${t}`, {}, { inc: { n: 1 } })]), n = +(r?.writeResults?.[0]?.transformResults?.[0]?.integerValue || 1); g = (n - 1) / GROUP | 0;   // atomik sayaç
+      // 30'dan az üyesi olan ilk grup (gerçek üye sayısına bakılır). Eskiden yalnız artan sayaç kullanılıyordu: ligden çıkan ve yeniden
+      // katılan oyuncular sayacı şişiriyor, 10 kişi iki gruba bölünüyordu (21 Kasım: sayaç 55, üye 10 → aile birbirini göremedi)
+      for (; g < 200; g++) { const m = await query(`weeks/${wk}`, Q('members', ['grp', 'EQUAL', grpKey(t, g)]), GROUP).catch(() => null); if (!m || m.length < GROUP) break; }
       st.wk = wk; st.grp = grpKey(t, g); st.pts = 0; st.weeks = [...new Set([...(st.weeks || []), wk])].slice(-60); keep();   // weeks: silme için katıldığım haftalar
       await commit([w(`weeks/${wk}/members/${st.uid}`, { grp: st.grp, nick: st.nick, tier: t, pts: 0, at: now() }), w(`users/${st.uid}`, { nick: st.nick, tier: t, wk, grp: st.grp })]);
       rowsCache = null;
@@ -253,7 +285,8 @@ window.Lig = (() => {
     async function rows(force) {
       if (!force && rowsCache && Date.now() - rowsAt < 60e3) return rowsCache;   // dakikada en çok bir okuma (ücretsiz kota)
       const bl = st.blocked || {};
-      const r = (await query(`weeks/${st.wk}`, Q('members', ['grp', 'EQUAL', st.grp]), 60)).filter(x => !bl[x.id] || x.id === st.uid)
+      // eski kimliğimden kalan kayıt (oturum yenilenince kimlik değişti; o belgeyi silemem): aynı takma adlı başka satır gizlenir
+      const r = (await query(`weeks/${st.wk}`, Q('members', ['grp', 'EQUAL', st.grp]), 60)).filter(x => (!bl[x.id] && !(x.nick === st.nick && st.olds?.includes(x.id))) || x.id === st.uid)
         .map(x => ({ uid: x.id, nick: x.nick, pts: x.pts || 0, me: x.id === st.uid }));
       if (!r.some(x => x.me)) r.push({ uid: st.uid, nick: st.nick, pts: st.pts || 0, me: true });
       rowsCache = r; rowsAt = Date.now(); return r;
@@ -272,12 +305,39 @@ window.Lig = (() => {
           await auth();
           const gs = await query('', Q('ghosts', ['by', 'EQUAL', st.uid]), 200).catch(() => []);   // kayıtlı oyunlarım (takma adımı taşır)
           const wks = [...new Set([...(st.weeks || []), st.wk].filter(Boolean))];   // katıldığım bütün haftaların tablo kayıtları (takma adımı taşır)
-          await Promise.all([...wks.map(k => del(`weeks/${k}/members/${st.uid}`)), del(`users/${st.uid}`), del(`q/${st.uid}`), ...gs.map(g => del(`ghosts/${g.id}`))]);
+          const pk = [...await query('', Q('pokes', ['to', 'EQUAL', st.uid]), 200).catch(() => []), ...await query('', Q('pokes', ['from', 'EQUAL', st.uid]), 200).catch(() => [])];   // dürtmeler (takma adımı taşır)
+          await Promise.all([...wks.map(k => del(`weeks/${k}/members/${st.uid}`)), del(`users/${st.uid}`), del(`q/${st.uid}`), ...gs.map(g => del(`ghosts/${g.id}`)), ...pk.map(p => del(`pokes/${p.id}`))]);
           await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:delete?key=${CFG.key}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken: tok }) });
         } catch {}
         st = {}; tok = null; rowsCache = null; keep();
       },
       async rename(nick) { st.nick = nick; keep(); await commit([w(`users/${st.uid}`, { nick }), w(`weeks/${st.wk}/members/${st.uid}`, { nick })]); rowsCache = null; },
+      // 👥 arkadaşların bu haftaki puanı: weeks/{hafta}/members/{uid} (dakikada en çok bir okuma)
+      async friends() {
+        await ensureWeek();
+        const fr = st.fr || {}, ids = Object.keys(fr).slice(0, 30);
+        if (!fcache || fcache.wk !== st.wk || Date.now() - fAt > 60e3 || ids.some(u => !fcache.m[u])) {
+          const ds = await Promise.all(ids.map(u => get(`weeks/${st.wk}/members/${u}`).catch(() => null)));
+          fcache = { wk: st.wk, m: Object.fromEntries(ids.map((u, i) => [u, ds[i] ? { nick: ds[i].nick, pts: ds[i].pts || 0 } : { pts: 0 }])) }; fAt = Date.now();
+        }
+        return ids.map(u => ({ uid: u, nick: fcache.m[u]?.nick || fr[u].n, pts: fcache.m[u]?.pts || 0, poked: st.poked?.[u] === dayId() }));
+      },
+      // 👉 dürt: pokes/{alıcı}_{ben}_{gün}; belge varsa yazılmaz (aynı arkadaşa günde bir). Alıcı uygulamayı açınca okur ve siler.
+      async poke(uid) {
+        await ensureWeek();
+        const d = dayId();
+        const ok = await commit([w(`pokes/${uid}_${st.uid}_${d}`, { to: uid, from: st.uid, nick: st.nick, pts: st.pts || 0, wk: d, at: now() }, { exists: false })]).then(() => true, e => e.code === 400 || e.code === 409 ? 'dup' : false);
+        if (ok) { st.poked = { ...(st.poked || {}), [uid]: d }; keep(); }
+        return ok === true;
+      },
+      async pokes() {
+        if (!st.joined || !st.uid) return [];
+        const ps = await query('', Q('pokes', ['to', 'EQUAL', st.uid]), 10).catch(() => []);
+        ps.forEach(p => del(`pokes/${p.id}`));
+        const out = ps.filter(p => !st.blocked?.[p.from] && !st.frOff?.[p.from]).map(p => ({ uid: p.from, nick: p.nick, pts: p.pts || 0 }));
+        out.forEach(x => base.addFriend(x.uid, x.nick));
+        return out;
+      },
       async board() {
         await ensureWeek();
         const r = sorted(await rows()); st.lastRank = rankOf(r); keep();
@@ -303,14 +363,14 @@ window.Lig = (() => {
     const LEAD = 5500;   // maç belgesi yazılınca geri sayım: öbür taraf belgeyi 1–2 sn içinde görür, ikisinde de ~3 sn kalır
     const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', code5 = () => Array.from({ length: 5 }, () => A[(Math.random() * A.length) | 0]).join('');
     const pickLevel = (lv, maxL) => { const ok = lv.filter(l => l <= maxL); return ok.length ? ok[(Math.random() * ok.length) | 0] : Math.min(...lv, maxL); };
-    const meCard = info => ({ nick: st.nick, tier: st.tier || 0, lv: info.levels || [1], maxL: Math.max(...(info.levels || [1])) });
+    const meCard = info => ({ nick: st.nick, tier: st.tier || 0, lv: info.levels || [1], maxL: Math.max(...(info.levels || [1])), dv: DV });
     const sleep = ms => new Promise(r => setTimeout(r, ms));
     const winner = d => { const fa = d?.pa?.fin, fb2 = d?.pb?.fin; return !fa && !fb2 ? null : fa && (!fb2 || fa <= fb2) ? 'a' : 'b'; };
     const prog = p => ({ lit: p?.lit || 0, moves: p?.moves || 0, done: !!p?.done, ms: p?.ms || 0, left: !!p?.left });
     // maç belgesi (ilk yazma) + tohum: bulmaca bu maça özel üretilir (iki tarafta aynı, bölüm ezberi işe yaramaz)
     function makeMatch(other, otherUid, info, extra) {
-      const id = `${otherUid}_${st.uid}_${Date.now().toString(36)}`, level = pickLevel(other.lv || [1], Math.max(...(info.levels || [1]))), seed = (Math.random() * 2147483647 | 0) || 1;
-      return { id, level, seed, writes: [w(`matches/${id}`, { a: otherUid, b: st.uid, an: other.nick, bn: st.nick, at: other.tier || 0, bt: st.tier || 0, level, seed, fr: !!extra?.friend }, { srv: ['ts'] }), ...(extra?.writes || [])] };
+      const id = `${otherUid}_${st.uid}_${Date.now().toString(36)}`, level = pickLevel(other.lv || [1], Math.max(...(info.levels || [1]))), seed = (Math.random() * 2147483647 | 0) || 1, k = kindFor(level, other.dv);
+      return { id, level, seed, k, writes: [w(`matches/${id}`, { a: otherUid, b: st.uid, an: other.nick, bn: st.nick, at: other.tier || 0, bt: st.tier || 0, level, seed, ...(k ? { k } : {}), fr: !!extra?.friend }, { srv: ['ts'] }), ...(extra?.writes || [])] };
     }
     function follow(m, side) {
       // maç bulundu: rakibin ilerlemesini saniyede bir oku; 25 sn haber gelmezse rakip ayrılmış sayılır
@@ -325,12 +385,14 @@ window.Lig = (() => {
         if (!me.left) me.timer = setTimeout(poll, 1000);
       };
       M.t0Local = m.t0 - skew; M.timer = setTimeout(poll, Math.max(500, M.t0Local - Date.now()));
-      return { id: m.id, level: m.level, seed: m.seed, t0: M.t0Local, opp: m.opp };
+      if (m.opp?.friend && m.ou) base.addFriend(m.ou, m.opp.nick);   // kodla kapışılan oyuncu arkadaş listesine (iki taraf da)
+      return { id: m.id, level: m.level, seed: m.seed, k: m.k || '', t0: M.t0Local, opp: m.opp };
     }
     // rakip yoksa: aynı bölümlerden birinin kayıtlı oyunu (gerçek bir oyuncu; kendi kaydım ve son oynadığım bulmacalar değil)
     async function ghost(info) {
       const lv = (info.levels || [1]).slice(-10), seen = new Set(info.seen || []);
-      const gs = (await query('', Q('ghosts', ['level', 'IN', lv]), 30).catch(() => [])).filter(x => x.by !== st.uid && x.seed && x.tl?.length > 1 && !seen.has(x.seed));
+      // türlü (⬡ / 🧩) kayıtlar eksi bölüm numarasıyla saklanır: 1.2 istemcisi 'level IN [pozitif]' sorgusunda onları görmez (yanlış tahtayla oynatmaz)
+      const gs = (await query('', Q('ghosts', ['level', 'IN', [...lv, ...lv.filter(l => l >= KARMA_LV).map(l => -l)]]), 30).catch(() => [])).filter(x => x.by !== st.uid && x.seed && x.tl?.length > 1 && !seen.has(x.seed) && (x.level > 0 ? !x.k : x.k));
       const g = gs[(Math.random() * gs.length) | 0];
       if (!g) return null;
       const t0 = Date.now() + 3000, me = M = { id: 'ghost_' + g.id, cbs: [], tl: [], left: false, ghost: true, oppFin: 0, fin: 0, last: null };
@@ -341,7 +403,7 @@ window.Lig = (() => {
         me.last = { lit, moves: mv || 0, done, ms: done ? ms : e };
         me.cbs.forEach(cb => cb({ ...me.last, over: me.oppFin && !me.fin ? 'opp' : null })); if (!done) me.timer = setTimeout(tick, 700); };
       me.timer = setTimeout(tick, 3000);
-      return { id: me.id, level: g.level, seed: g.seed, t0, opp: { nick: g.nick || '?', tier: g.tier || 0, ghost: true } };
+      return { id: me.id, level: Math.abs(g.level), seed: g.seed, k: g.k || '', t0, opp: { nick: g.nick || '?', tier: g.tier || 0, ghost: true } };
     }
     // bekleyen birini kap: maç belgesi + onun kuyruk kaydı "taken" (+ bekliyorsam kendi kaydım da) tek commit'te; biri önce kaptıysa koşul tutmaz
     async function take(c, info, token, mineUt) {
@@ -357,7 +419,7 @@ window.Lig = (() => {
     async function joinedAs(mid, side, friend) {
       const m = await get(`matches/${mid}`);
       if (!m) return null;
-      return follow({ id: mid, level: m.level, seed: m.seed, t0: (m.ts || now()) + LEAD, opp: { nick: side === 'a' ? m.bn : m.an, tier: (side === 'a' ? m.bt : m.at) || 0, friend } }, side);
+      return follow({ id: mid, ou: side === 'a' ? m.b : m.a, level: m.level, seed: m.seed, k: m.k || '', t0: (m.ts || now()) + LEAD, opp: { nick: side === 'a' ? m.bn : m.an, tier: (side === 'a' ? m.bt : m.at) || 0, friend } }, side);
     }
     fb.duel = {
       async find(info = {}) {
@@ -409,7 +471,7 @@ window.Lig = (() => {
         const made = makeMatch(room, room.host, info, { friend: true });
         const r = await commit([...made.writes, w(`rooms/${code}`, { state: 'taken', mid: made.id }, { ut: room._ut })]).catch(() => null);
         if (!r) return { error: 'code' };
-        return follow({ ...made, t0: (srvT(r) || now()) + LEAD, opp: { nick: room.nick, tier: room.tier || 0, friend: true } }, 'b');
+        return follow({ ...made, ou: room.host, t0: (srvT(r) || now()) + LEAD, opp: { nick: room.nick, tier: room.tier || 0, friend: true } }, 'b');
       },
       send(p) {
         if (!M || M.left || !M.side) return;
@@ -437,7 +499,7 @@ window.Lig = (() => {
         }
         // bitirdim: oyunum kayıtlı rakip olarak saklanır (en çok 60 örnek; bulmaca tohumuyla)
         if (p.done && m.tl.length > 2) { m.tl.push([v.ms, 1, v.moves]); const tl = m.tl.filter((_, i, a) => a.length <= 60 || i % Math.ceil(a.length / 60) === 0 || i === a.length - 1);
-          commit([w(`ghosts/${m.id}_${m.side}`, { by: st.uid, nick: st.nick, tier: st.tier || 0, level: m.level, seed: m.seed || 0, tl, at: now() })]).catch(() => {}); }
+          commit([w(`ghosts/${m.id}_${m.side}`, { by: st.uid, nick: st.nick, tier: st.tier || 0, level: m.k ? -m.level : m.level, ...(m.k ? { k: m.k } : {}), seed: m.seed || 0, tl, at: now() })]).catch(() => {}); }
         let d = null;
         for (let i = 0; i < 3 && !d; i++) { d = await get(`matches/${m.id}`).catch(() => null); if (!d) await sleep(500); }
         if (!d) return p.left ? null : { id: m.id, win: null, me: v, opp: {}, local: true };
@@ -448,6 +510,28 @@ window.Lig = (() => {
       leave() { if (!M) return; M.left = true; clearTimeout(M.timer); M = null; },
       _skew: () => ({ skew, rtt: skewRtt }),
     };
+    // 🩹 kendini onarma (1.2.1): lig ya da kapışma sunucudan hata alırsa (ağ kopukluğu değil) cihazdaki lig oturumu sıfırlanır —
+    // takma ad, kademe, arkadaşlar, engellenenler korunur — yeni anonim girişle bu haftaya yeniden kaydolunur ve istek bir kez daha denenir.
+    // Eskiden oyuncu Ayarlar › "Ligden çık · verilerimi sil" demeden kapışamıyordu (21 Kasım). Oturum başına en çok 2 onarım.
+    let healed = 0;
+    async function heal() {
+      const KEEP = ['nick', 'tier', 'weeks', 'blocked', 'reported', 'fr', 'frOff', 'poked', 'olds', 'prev'], old = st;
+      st = { joined: true, ...Object.fromEntries(KEEP.filter(k => old[k] !== undefined).map(k => [k, old[k]])) };
+      if (old.uid) st.olds = [...(old.olds || []), old.uid].slice(-5);
+      tok = null; tokExp = 0; rowsCache = null; fcache = null; keep();
+      await auth(); await ensureWeek();
+    }
+    const fixable = e => !!e && e.message !== 'net' && e.name !== 'AbortError' && e.name !== 'TypeError' && e.code !== 409 && !/FAILED_PRECONDITION|ALREADY_EXISTS/.test(e.message);
+    for (const [o, k] of [[fb, 'board'], [fb, 'add'], [fb, 'friends'], [fb.duel, 'find'], [fb.duel, 'host'], [fb.duel, 'join']]) {
+      const f = o[k]; if (typeof f !== 'function') continue;
+      o[k] = async (...a) => {
+        try { return await f(...a); } catch (e) {
+          if (!fixable(e) || healed >= 2 || !st.joined) throw e;
+          healed++; const why = fb.err; await heal(); fb.err = (why ? why + ' → ' : '') + 'oturum yenilendi';
+          return f(...a);
+        }
+      };
+    }
     return fb;
   }
   return window.__ligFake ? fakeApi : FB(fakeApi);

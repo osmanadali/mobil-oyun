@@ -93,13 +93,13 @@ const CLIPS = {
   // 🎓 yeni oyuncu öğreticisi: boş kayıt → oyun kendiliğinden öğretici bölümü açar
   ogretici: { save: null, scn: async ({ page, start, snap }) => { await page.waitForTimeout(1800); start(3.8); await page.waitForTimeout(500); await solveTo(page, 1, 480); } },
   lig: { save: saveAt(633), scn: async ({ page, start, snap }) => {
-    await tab(page, 'league'); await page.evaluate(() => document.getElementById('mJoin')?.click()); await page.waitForTimeout(1500);
+    await tab(page, 'league'); await page.evaluate(() => (document.getElementById('mNick') && (document.getElementById('mNick').value = 'Hızlı Martı'), document.getElementById('mJoin')?.click())); await page.waitForTimeout(1500);
     await page.evaluate(() => { const d = document.createElement('div'); d.style.display = 'none'; document.body.append(d); return window.__ray.lig.score(235, d); }); await page.waitForTimeout(300);
     await page.evaluate(() => { window.__ray.lig.open(); }); await page.waitForTimeout(1300);
     await page.evaluate(() => { [...document.querySelectorAll('.screen.active *')].filter(e => e.scrollHeight > e.clientHeight + 20 && /auto|scroll/.test(getComputedStyle(e).overflowY)).forEach(e => { e.scrollTop = 0; }); });
     await page.waitForTimeout(300); await snap('lig'); start(2.9); await page.waitForTimeout(3000); } },
   kapisma: { save: saveAt(633), scn: async ({ page, start, snap }) => {
-    await tab(page, 'league'); await page.evaluate(() => document.getElementById('mJoin')?.click()); await page.waitForTimeout(1200);
+    await tab(page, 'league'); await page.evaluate(() => (document.getElementById('mNick') && (document.getElementById('mNick').value = 'Hızlı Martı'), document.getElementById('mJoin')?.click())); await page.waitForTimeout(1200);
     await tab(page, 'vs'); await page.waitForTimeout(400); await snap('kapisma'); await page.waitForTimeout(300);
     await page.evaluate(() => document.getElementById('vpR')?.click());
     await page.waitForTimeout(3300); start(2.9); await page.waitForTimeout(3000); } },

@@ -1,9 +1,9 @@
 // App Store Connect: düzenlenebilir sürümün (PREPARE_FOR_SUBMISSION) 9 dildeki mağaza metinlerini doldurur.
-// Kaynak: docs/MAGAZA.md (§4 tam açıklama tr/en, §5 ad/alt başlık/tanıtım/anahtar kelime tr/en, §5b/§5c diğer diller) ve docs/YENILIKLER-<sürüm>.md.
+// Kaynak: docs/MAGAZA.md (§4 tam açıklama tr/en, §5 ad/alt başlık/tanıtım/anahtar kelime tr/en, §5b/§5c diğer diller) ve docs/YENILIKLER-<sürüm>.md; §11 inceleme notu, telif. Sürüm yoksa APPLY=1 ile oluşturur.
 // Varsayılan yalnız gösterir (ne değişecek); APPLY=1 ile yazar. Ortam: APPSTORE_API_KEY_ID, APPSTORE_API_ISSUER_ID, AUTHKEY, VERSION (ör. 1.1)
 'use strict';
 const crypto = require('crypto'), fs = require('fs'), path = require('path');
-const BUNDLE = 'com.osmanadali.ray', APPLY = process.env.APPLY === '1', VERSION = process.env.VERSION || '1.1';
+const BUNDLE = 'com.osmanadali.ray', APPLY = process.env.APPLY === '1', VERSION = process.env.VERSION || '1.2';
 const MARKETING = 'https://osmanadali.github.io', SUPPORT = 'https://osmanadali.github.io/mobil-oyun/gizlilik.html';
 const KID = process.env.APPSTORE_API_KEY_ID.trim(), ISS = process.env.APPSTORE_API_ISSUER_ID.trim(), KEY = fs.readFileSync(process.env.AUTHKEY);
 const b64 = o => Buffer.from(JSON.stringify(o)).toString('base64url');
@@ -34,6 +34,8 @@ if (fs.existsSync(NEWS)) {
   const N = fs.readFileSync(NEWS, 'utf8'), map = { tr: 'tr', en: 'en-US', de: 'de-DE', es: 'es-ES', 'pt-BR': 'pt-BR', fr: 'fr-FR', ko: 'ko', ja: 'ja', 'zh-Hant': 'zh-Hant' };
   for (const m of N.matchAll(/^## (\S+)\n\n```\n([\s\S]*?)\n```/gm)) if (map[m[1]]) T[map[m[1]]].whatsNew = m[2];
 }
+const NOTES = blocks(sec('## 11. İnceleme notları', '## 12.'))[0];
+const COPYRIGHT = '© 2026 Osman Adalı';
 const LIM = { name: 30, subtitle: 30, promotionalText: 170, keywords: 100, description: 4000, whatsNew: 4000 };
 const EMOJI = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u;
 for (const [loc, f] of Object.entries(T)) for (const [k, v] of Object.entries(f)) {
@@ -45,9 +47,22 @@ const out = [`## Ray · mağaza metinleri ${VERSION} (${APPLY ? 'YAZILDI' : 'yal
 const short = v => v == null ? '∅' : JSON.stringify(v.length > 50 ? v.slice(0, 47) + '…' : v);
 (async () => {
   const app = (await api('GET', `/v1/apps?filter[bundleId]=${BUNDLE}`)).data[0]; if (!app) throw Error('Uygulama yok');
-  const ver = (await api('GET', `/v1/apps/${app.id}/appStoreVersions?filter[versionString]=${VERSION}&filter[platform]=IOS`)).data[0];
-  if (!ver) throw Error(`Sürüm ${VERSION} App Store Connect'te yok (önce sürümü oluştur)`);
+  let ver = (await api('GET', `/v1/apps/${app.id}/appStoreVersions?filter[versionString]=${VERSION}&filter[platform]=IOS`)).data[0];
+  if (!ver) {   // sürüm yok: düzenlenebilir başka bir sürüm varsa numarasını değiştir, yoksa yeni sürüm aç
+    const open = (await api('GET', `/v1/apps/${app.id}/appStoreVersions?filter[platform]=IOS&filter[appStoreState]=PREPARE_FOR_SUBMISSION,DEVELOPER_REJECTED,REJECTED,METADATA_REJECTED`)).data[0];
+    out.push(open ? `- Sürüm ${VERSION} yok; düzenlenebilir ${open.attributes.versionString} → ${VERSION} ${APPLY ? 'yapıldı' : 'yapılacak'}` : `- Sürüm ${VERSION} yok → ${APPLY ? 'oluşturuldu' : 'oluşturulacak'}`);
+    if (!APPLY) { const txt = out.join('\n') + '\n\nÖnizleme burada durdu (sürüm henüz yok). apply=true ile çalıştır.'; console.log(txt); if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, txt + '\n'); return; }
+    ver = open ? (await api('PATCH', `/v1/appStoreVersions/${open.id}`, { data: { type: 'appStoreVersions', id: open.id, attributes: { versionString: VERSION } } })).data
+      : (await api('POST', '/v1/appStoreVersions', { data: { type: 'appStoreVersions', attributes: { platform: 'IOS', versionString: VERSION, copyright: COPYRIGHT, releaseType: 'AFTER_APPROVAL' }, relationships: { app: { data: { type: 'apps', id: app.id } } } } })).data;
+  }
   if (!['PREPARE_FOR_SUBMISSION', 'DEVELOPER_REJECTED', 'REJECTED', 'METADATA_REJECTED'].includes(ver.attributes.appStoreState)) throw Error(`Sürüm ${VERSION} düzenlenemez: ${ver.attributes.appStoreState}`);
+  out.push(`- Sürüm ${VERSION}: ${ver.attributes.appStoreState} · telif ${short(ver.attributes.copyright)}${ver.attributes.copyright !== COPYRIGHT ? ' → ' + short(COPYRIGHT) : ''}`);
+  if (APPLY && ver.attributes.copyright !== COPYRIGHT) await api('PATCH', `/v1/appStoreVersions/${ver.id}`, { data: { type: 'appStoreVersions', id: ver.id, attributes: { copyright: COPYRIGHT } } });
+  // inceleme notu (MAGAZA §11)
+  const rd = (await api('GET', `/v1/appStoreVersions/${ver.id}/appStoreReviewDetail`).catch(() => ({ data: null }))).data;
+  out.push(`- İnceleme notu: ${rd ? (rd.attributes.notes === NOTES ? 'aynı' : short(rd.attributes.notes) + ' → ' + short(NOTES)) : 'yok → ' + (APPLY ? 'eklendi' : 'eklenecek')}`, '');
+  if (APPLY && rd && rd.attributes.notes !== NOTES) await api('PATCH', `/v1/appStoreReviewDetails/${rd.id}`, { data: { type: 'appStoreReviewDetails', id: rd.id, attributes: { notes: NOTES, demoAccountRequired: false } } });
+  if (APPLY && !rd) await api('POST', '/v1/appStoreReviewDetails', { data: { type: 'appStoreReviewDetails', attributes: { notes: NOTES, demoAccountRequired: false }, relationships: { appStoreVersion: { data: { type: 'appStoreVersions', id: ver.id } } } } });
   // sürüm yerelleştirmeleri: açıklama, anahtar kelime, tanıtım, yenilikler, URL'ler
   const vl = (await api('GET', `/v1/appStoreVersions/${ver.id}/appStoreVersionLocalizations?limit=50`)).data;
   for (const [loc, f] of Object.entries(T)) {
@@ -70,6 +85,14 @@ const short = v => v == null ? '∅' : JSON.stringify(v.length > 50 ? v.slice(0,
     out.push(`- **${loc}**: ${diff.length ? diff.map(([k, v]) => `${k} ${short(cur.attributes[k])} → ${short(v)}`).join(' · ') : 'aynı'}`);
     if (APPLY && diff.length) await api('PATCH', `/v1/appInfoLocalizations/${cur.id}`, { data: { type: 'appInfoLocalizations', id: cur.id, attributes: Object.fromEntries(diff) } });
   }
+  // yaş derecelendirmesi: 1.2 lig takma adı = kullanıcı içeriği (MAGAZA §8); sohbet yok. Yalnız bu alan yazılır.
+  try {
+    const ar = (await api('GET', `/v1/appInfos/${info.id}/ageRatingDeclaration`)).data;
+    out.push('', '**Yaş derecelendirmesi:** ' + Object.entries(ar.attributes).filter(([, v]) => v != null && v !== 'NONE' && v !== false).map(([k, v]) => `${k}=${v}`).join(', ')
+      + (ar.attributes.userGeneratedContent !== true ? ` · userGeneratedContent ${ar.attributes.userGeneratedContent} → true ${APPLY ? '(yazıldı)' : '(yazılacak)'}` : ''));
+    if (APPLY && ar.attributes.userGeneratedContent !== true) await api('PATCH', `/v1/ageRatingDeclarations/${ar.id}`, { data: { type: 'ageRatingDeclarations', id: ar.id, attributes: { userGeneratedContent: true } } });
+    const ai = (await api('GET', `/v1/appInfos/${info.id}`)).data.attributes; out.push(`- Hesaplanan derece: ${ai.appStoreAgeRating || '?'}`);
+  } catch (e) { out.push('', 'Yaş derecelendirmesi: ' + e.message); }
   const txt = out.join('\n'); console.log(txt);
   if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, txt + '\n');
 })().catch(e => { console.log('::error::' + e.message); process.exit(1); });

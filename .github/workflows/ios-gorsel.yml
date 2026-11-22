@@ -3,7 +3,7 @@ name: iOS ekran görüntüleri
 on:
   workflow_dispatch:
     inputs:
-      version: { description: 'Sürüm (ör. 1.1)', type: string, default: '1.1' }
+      version: { description: 'Sürüm (ör. 1.1)', type: string, default: '1.2' }
       apply: { description: 'Yükle (false = yalnız sayıları göster)', type: boolean, default: false }
 permissions: { contents: read }
 jobs:

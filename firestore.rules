@@ -52,6 +52,15 @@ service cloud.firestore {
       allow create: if authed() && request.resource.data.by == request.auth.uid && request.resource.data.tl.size() <= 80;
       allow delete: if authed() && resource.data.by == request.auth.uid;
     }
+    // 👉 dürtme (1.3): kimlik {alıcı}_{gönderen}_{gün} (alan adı wk, değeri gün: YYYY-AA-GG) → aynı arkadaşa günde bir (belge varken yeniden yazılamaz, güncelleme yok).
+    // Alıcı okur ve siler; gönderen de siler (ligden çıkınca takma adı kalmasın). Serbest metin yok: takma ad + puan.
+    match /pokes/{id} {
+      allow read, delete: if authed() && (resource.data.to == request.auth.uid || resource.data.from == request.auth.uid);
+      allow create: if authed() && request.resource.data.from == request.auth.uid && request.resource.data.to is string
+        && id == request.resource.data.to + '_' + request.auth.uid + '_' + request.resource.data.wk
+        && nickOk(request.resource.data.nick) && request.resource.data.pts is int
+        && request.resource.data.keys().hasOnly(['to', 'from', 'nick', 'pts', 'wk', 'at']);
+    }
     // bildirimler: yalnız oluşturulur, konsoldan incelenir
     match /reports/{id} {
       allow create: if authed() && request.resource.data.by == request.auth.uid;

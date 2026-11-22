@@ -14,6 +14,11 @@ module.exports = async T => {
   const { page } = o;
   const vis = await page.evaluate(() => getComputedStyle(document.querySelector('#tabbar [data-tab=league]')).display !== 'none');
   await page.click('#tabbar [data-tab=league]'); await page.waitForTimeout(400);
+  // takma ad kutusu boş gelir (rastgele öneri yok); boşken katılınmaz
+  const empty = await page.evaluate(() => ({ v: document.getElementById('mNick')?.value, ph: document.getElementById('mNick')?.placeholder }));
+  await page.click('#mJoin'); await page.waitForTimeout(200);
+  const emptyErr = await page.evaluate(() => ({ err: document.getElementById('mNickE')?.textContent || '', joined: !!JSON.parse(localStorage.getItem('ray.lig') || '{}').joined }));
+  check('lig.ad-bos', 'Lige katılırken takma ad kutusu boş gelir (rastgele “Metrocu 773” yok, yalnız soluk yönlendirme); boşken katılınmaz, uyarı çıkar', empty.v === '' && /Takma adını yaz/.test(empty.ph) && /takma ad yaz/.test(emptyErr.err) && !emptyErr.joined, JSON.stringify({ empty, emptyErr }), 'high');
   await page.fill('#mNick', 's1kt1r'); await page.click('#mJoin'); await page.waitForTimeout(200);
   const bad = await page.evaluate(() => ({ err: document.getElementById('mNickE')?.textContent || '', joined: JSON.parse(localStorage.getItem('ray.lig') || '{}').joined }));
   await page.fill('#mNick', 'Hızlı Martı'); await page.click('#mJoin'); await page.waitForTimeout(900);

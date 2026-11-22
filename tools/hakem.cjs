@@ -99,13 +99,16 @@ const shot = (page, name) => page.screenshot({ path: path.join(SHOTS, name + '.p
 const getSave = page => page.evaluate(() => JSON.parse(localStorage.getItem('ray') || '{}'));
 const modalOpen = page => page.evaluate(() => document.getElementById('modal').classList.contains('open') || document.getElementById('game').classList.contains('won'));
 
+const lastTap = new WeakMap();   // oyun aynı karoya 40 ms içindeki ikinci dokunuşu yok sayar (iOS çift olay süzgeci): robot arayı korur
 async function tapTile(page, i) {
+  const l = lastTap.get(page); if (l && l.i === i && Date.now() - l.t < 45) await page.waitForTimeout(45 - (Date.now() - l.t));
+  lastTap.set(page, { i, t: Date.now() + 0 });
   const p = await page.evaluate(i => {
     const { G, geo, HX } = window.__ray, r = document.getElementById('cv').getBoundingClientRect();
     if (G.hex) { const [x, y] = HX.xy(G, i, geo); return { x: r.left + x, y: r.top + y }; }   // ⬡ altıgen gün: karo merkezi
     return { x: r.left + geo.ox + (i % G.cols) * geo.s + geo.s / 2, y: r.top + geo.oy + (i / G.cols | 0) * geo.s + geo.s / 2 };
   }, i);
-  await page.mouse.click(p.x, p.y);
+  await page.mouse.click(p.x, p.y); lastTap.set(page, { i, t: Date.now() });
 }
 // En kısa çözüm: her karoyu çözüm yönüne getirecek kadar dokun. Eşli karo: biri çevrilir (eşi de döner).
 // Karanlık tünel: yalnızca aydınlık karolara dokunulur; hat ilerledikçe yeni tur (ışığı takip eder).
@@ -449,6 +452,7 @@ async function inViewport(page, sel) {
     await shot(page, 'streak-sheet');
     check('streak.sheet', 'Seri rozetine dokununca 7 günlük seri penceresi', w.cells === 7 && w.on === 3 && /3 gün/.test(w.title), JSON.stringify(w), 'medium');
     await page.click('#mPlayD').catch(() => {}); await page.waitForTimeout(300);
+    await page.evaluate(() => document.getElementById('mGo')?.click()).catch(() => {}); await page.waitForTimeout(300);   // pazar: Günün Hattı haftanın kuralıyla açılır, kural kartı önce kapanır
     await page.evaluate(() => { document.getElementById('bBack').click(); document.getElementById('pHome')?.click(); }).catch(() => {}); await page.waitForTimeout(300);
     await page.click('#bSettings'); await page.waitForTimeout(500);
     const hasM = !!(await page.$('#oM')); if (hasM) await page.click('#oM');
@@ -596,7 +600,10 @@ async function inViewport(page, sel) {
     const cv = await page.evaluate(() => {
       const R = window.__ray, lines = [], lens = [];
       for (let c = 0; c < 9; c++) { const a = R.lineStart(c), z = R.lineStart(c + 1) - 1; let d = 0; for (let l = a; l <= z; l++) d += R.puzzleFor(l).diff; lines.push(Math.round(d / (z - a + 1) * 10) / 10); lens.push(z - a + 1); }
-      const t0 = performance.now(); for (let l = 901; l <= 910; l++) R.puzzleFor(l); const ms = Math.round((performance.now() - t0) / 10 * 10) / 10;
+      // hız: üç ayrı 10'luk (901–930, önbelleksiz) ölçülür, en hızlısı alınır — tek ölçüm makinenin anlık yüküyle 40–96 ms arası savruluyordu
+      // (22 Kasım: yayındaki 1.2 de bu makinede tek ölçümde 60'ı geçti); en hızlı tur kodun gerçek hızını gösterir
+      const tm = [0, 1, 2].map(k => { const t0 = performance.now(); for (let l = 901 + k * 10; l <= 910 + k * 10; l++) R.puzzleFor(l); return (performance.now() - t0) / 10; });
+      const ms = Math.round(Math.min(...tm) * 10) / 10;
       // Günün Hattı: haftalık dalga (Pzt kolay → Paz zor), %40 tabanı, tepe %85+; yıl içinde ortalama yükselir
       const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       const week = mon => Array.from({ length: 7 }, (_, k) => { const d = new Date(mon); d.setDate(d.getDate() + k); return R.dPct(ymd(d)); });
@@ -1048,7 +1055,7 @@ async function inViewport(page, sel) {
     let bytes = 0; const walk = d => fs.readdirSync(d).forEach(f => { const p = path.join(d, f); if (p === LANG || p === PRIV) return; fs.statSync(p).isDirectory() ? walk(p) : bytes += fs.statSync(p).size; });
     walk(ROOT); const dict = Math.max(0, ...fs.readdirSync(LANG).map(f => fs.statSync(path.join(LANG, f)).size)), priv = fs.statSync(PRIV).size;
     metrics.webBytes = bytes; metrics.langBytes = dict; metrics.privacyBytes = priv;
-    check('size', 'Web paketi < 900 KB (33 hat kural eklentisi, öğretici, altıgen gün, mağaza, görev, meta, şehir, lig ve kapışma dahil); ayrı: en büyük dil sözlüğü < 72 KB, 9 dilli gizlilik sayfası < 80 KB (CJK harfi UTF-8’de 3 bayt)', bytes < 900 * 1024 && dict < 72 * 1024 && priv < 80 * 1024, `${(bytes / 1024).toFixed(0)} KB · sözlük ${(dict / 1024).toFixed(0)} KB · gizlilik ${(priv / 1024).toFixed(0)} KB`, 'low');
+    check('size', 'Web paketi < 950 KB (33 hat kural eklentisi, öğretici, altıgen gün, mağaza, görev, meta, şehir, lig, kapışma ve arkadaşlar dahil; 1.3’te 900’den 950’ye); ayrı: en büyük dil sözlüğü < 72 KB, 9 dilli gizlilik sayfası < 80 KB (CJK harfi UTF-8’de 3 bayt)', bytes < 950 * 1024 && dict < 72 * 1024 && priv < 80 * 1024, `${(bytes / 1024).toFixed(0)} KB · sözlük ${(dict / 1024).toFixed(0)} KB · gizlilik ${(priv / 1024).toFixed(0)} KB`, 'low');
   }
 
   await browser.close(); server.close();
