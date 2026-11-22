@@ -999,3 +999,4 @@ body[data-scr=home] #home,body[data-scr=league] #league,body[data-scr=city] #cit
 .lgr .poke.done{background:var(--glass);color:var(--mut)}
 #lgFr{display:flex;flex-direction:column;gap:6px}#lgFr .lgr{width:100%}
 .lgtabs{flex:none;margin:0 0 6px}
+.vsr.vswait{margin:6px auto 4px}

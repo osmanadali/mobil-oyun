@@ -147,7 +147,7 @@ window.Lig = (() => {
         if (!p.done) me.timers.push(setTimeout(tick, 700 + R() * 600));
       };
       me.timers.push(setTimeout(tick, 3000));
-      return { id: me.id, level, seed: seed31(), k: info.k ?? kindFor(level, DV, R()), t0, opp: me.opp };
+      return { id: me.id, ou: info.friend ? 'f' + hash(info.friend) : '', level, seed: seed31(), k: info.k ?? kindFor(level, DV, R()), t0, opp: me.opp };
     },
     // arkadaşla: oda kodu (karışmasın diye O/0/I/1 yok). Sahte: arkadaş 4 sn sonra katılır.
     async host(info = {}) {
@@ -159,6 +159,7 @@ window.Lig = (() => {
       if (!/^[A-Z2-9]{5}$/.test(String(code || '').toUpperCase())) return { error: 'code' };
       return api.duel.find({ ...info, wait: 800, friend: info.friendNick || 'Arkadaşın' });
     },
+    async invites() { const v = window.__ligInv || []; window.__ligInv = []; return v; },   // sahte: testler davet ekler
     send() {},   // Firebase: kendi ilerlemen maç belgesine yazılır (hamle başına en çok 2/sn)
     // maç bitti (bitirdim / rakip bitirdi / terk): sonuç. Sahte: önce kim bitirdiyse
     async end(p = {}) {
@@ -386,7 +387,7 @@ window.Lig = (() => {
       };
       M.t0Local = m.t0 - skew; M.timer = setTimeout(poll, Math.max(500, M.t0Local - Date.now()));
       if (m.opp?.friend && m.ou) base.addFriend(m.ou, m.opp.nick);   // kodla kapışılan oyuncu arkadaş listesine (iki taraf da)
-      return { id: m.id, level: m.level, seed: m.seed, k: m.k || '', t0: M.t0Local, opp: m.opp };
+      return { id: m.id, ou: m.ou || '', level: m.level, seed: m.seed, k: m.k || '', t0: M.t0Local, opp: m.opp };
     }
     // rakip yoksa: aynı bölümlerden birinin kayıtlı oyunu (gerçek bir oyuncu; kendi kaydım ve son oynadığım bulmacalar değil)
     async function ghost(info) {
@@ -452,7 +453,7 @@ window.Lig = (() => {
       async host(info = {}) {
         fb.duel.leave(); await auth(); await sync();
         const code = code5(), token = M = { id: 'room', cbs: [], left: false };
-        await commit([w(`rooms/${code}`, { ...meCard(info), host: st.uid, at: now(), state: 'wait', mid: '' }, { exists: false })]);
+        await commit([w(`rooms/${code}`, { ...meCard(info), host: st.uid, at: now(), state: 'wait', mid: '', ...(info.to ? { to: info.to } : {}) }, { exists: false })]);
         return { code, wait: async () => {
           const until = Date.now() + 10 * 60e3;   // oda 10 dk açık
           while (Date.now() < until && !token.left) {
@@ -505,6 +506,13 @@ window.Lig = (() => {
         if (!d) return p.left ? null : { id: m.id, win: null, me: v, opp: {}, local: true };
         const wn = winner(d);
         return { id: m.id, win: wn ? (wn === m.side ? 'me' : 'opp') : null, me: prog(d[k] || v), opp: prog(d[o]), friend: !!d.fr };
+      },
+      // 🔁 tekrar kapış daveti: bana gönderilmiş, hâlâ bekleyen, en çok 90 sn önce açılmış odalar (kod söylemeye gerek yok)
+      async invites() {
+        if (!st.joined || !st.uid) return [];
+        await auth();
+        const rs = await query('', Q('rooms', ['to', 'EQUAL', st.uid]), 5).catch(() => []);
+        return rs.filter(r => r.state === 'wait' && now() - (r.at || 0) < 90e3 && r.host !== st.uid && !st.blocked?.[r.host]).map(r => ({ code: r.id, from: r.host, nick: r.nick, tier: r.tier || 0 }));
       },
       onOpp(cb) { M?.cbs.push(cb); },
       leave() { if (!M) return; M.left = true; clearTimeout(M.timer); M = null; },

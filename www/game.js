@@ -3586,6 +3586,7 @@ const duelLevels = () => { const hi = Math.max(1, save.level - 1), lo = Math.max
 // Kapış sayfası (#vs): sekme çubuğu ⚔️, ana sayfa kartı, Lig'deki düğme, ?vs=KOD daveti. Arama / oda / kod ara adımları üstünde küçük pencere.
 function vsSheet() {
   if (!ligOn()) return;
+  invWatch(60);
   if (modalOpen()) closeModal();
   if (!active('vs')) show('vs');
   const me = LIG.me(), on = me.joined, rec = save.vs || { w: 0, l: 0 }, last = save.vsLast;
@@ -3620,15 +3621,59 @@ async function vsFind(o = {}) {
     <button id="vR" class="btn primary"><span>${L('Yeniden dene', 'Try again')}</span></button><button id="vH" class="btn glassbtn">${L('Arkadaşı davet et', 'Invite a friend')}</button><button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`,
     { vR: () => vsFind(o), vH: vsHost, mClose: closeModal });
 }
+// 🔁 gelen tekrar kapış davetleri: arkadaş maçından sonra (2 dk) ve Kapış sayfası açıkken (1 dk) 2,5 sn'de bir bakılır (oyunda bakılmaz)
+let invT = 0, invUntil = 0, invSeen = new Set();
+function invWatch(sec) {
+  invUntil = Math.max(invUntil, Date.now() + sec * 1000); if (invT) return;
+  const tick = async () => {
+    invT = 0; if (Date.now() > invUntil || !LIG?.me().joined) return;
+    const playing = active('game') && G && !G.won && !G.over && !(G.duel && G.duelOver);   // sonuç penceresi oyun ekranının üstünde: orada da bakılır
+    if (!playing && !document.hidden) {
+      let v = []; try { v = await LIG.duel.invites(); } catch {}
+      const inv = v.find(x => !invSeen.has(x.code));
+      if (inv) {
+        invSeen.add(inv.code);
+        // ikimiz aynı anda "Tekrar kapış" dediysek: kimliği büyük olan öbürünün odasına katılır (tek maç)
+        if (rmOut?.to === inv.from) { if (String(LIG.me().uid) > String(inv.from)) { rmOut = null; LIG.duel.leave(); return invJoin(inv); } }
+        else invAsk(inv);
+      }
+    }
+    invT = setTimeout(tick, 2500);
+  };
+  invT = setTimeout(tick, 600);
+}
+function invAsk(inv) {
+  modal(`<div class="bell">🔁</div><h2>${L(`${esc(inv.nick)} tekrar kapışmak istiyor`, `${esc(inv.nick)} wants a rematch`)}</h2><p>${L('Aynı bulmaca, aynı anda. İlk bitiren kazanır.', 'Same puzzle, same time. First to finish wins.')}</p>
+    <button id="iOk" class="btn primary"><span>${L('⚔️ Kabul et', '⚔️ Accept')}</span></button><button id="iNo" class="btn glassbtn">${L('Hayır', 'No')}</button>`,
+    { iOk: () => invJoin(inv), iNo: closeModal }, true);
+  haptic('heavy'); tone(note(5), .2, .04);
+}
+async function invJoin(inv) {
+  if (!active('vs')) show('vs');
+  vsWait(L('Bağlanıyor…', 'Connecting…'), esc(inv.nick));
+  let m = null; try { m = await LIG.duel.join(inv.code, { levels: duelLevels() }); } catch {}
+  if (!m || m.error) { closeModal(); toast(L('Davetin süresi doldu', 'The invite expired')); return; }
+  vsIntro(m);
+}
 // sunucuya ulaşılamadı: ne olduğu açıkça yazar (adım · kod: lig.js err) ve yeniden dene
 function vsNet(retry) {
   const why = LIG.err || '';
   modal(`<div class="bell">📡</div><h2>${L('Sunucuya ulaşılamadı', 'Couldn’t reach the server')}</h2><p>${L('İnternet bağlantını kontrol et. Mobil veride oynuyorsan Ayarlar › Ray › Mobil Veri açık olmalı.', 'Check your internet connection. On mobile data, make sure Settings › Ray › Mobile Data is on.')}</p>${why ? `<p class="tip">${esc(why)}</p>` : ''}
     <button id="vR" class="btn primary"><span>${L('Yeniden dene', 'Try again')}</span></button><button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, { vR: () => { closeModal(); retry(); }, mClose: closeModal });
 }
-async function vsHost() {
-  let h; try { h = await LIG.duel.host({ levels: duelLevels() }); } catch { return vsNet(vsHost); }
+// o.to / o.nick: 🔁 tekrar kapış — davet doğrudan arkadaşa gider (kod söylemeye gerek yok), o onaylayınca maç başlar
+let rmOut = null;
+async function vsHost(o = {}) {
+  let h; try { h = await LIG.duel.host({ levels: duelLevels(), to: o.to, friendNick: o.nick }); } catch { return vsNet(() => vsHost(o)); }
+  rmOut = o.to ? { to: o.to, code: h.code } : null;
   const url = `${SHARE_URL}?vs=${h.code}`;
+  if (o.to) {   // 🔁 tekrar kapış: arkadaşın ekranında "Kabul et" çıkar
+    modal(`<div class="bell">🔁</div><h2>${L(`${esc(o.nick)} davet edildi`, `${esc(o.nick)} invited`)}</h2><p>${L('Arkadaşının onayı bekleniyor…', 'Waiting for your friend to accept…')}</p>
+      <div class="vsr vswait"><i></i><i></i><i></i></div><p class="tip">${L(`Görmüyorsa kod: <b>${h.code}</b>`, `If they don’t see it, code: <b>${h.code}</b>`)}</p><b id="vCode" hidden>${h.code}</b>
+      <button id="vX" class="btn glassbtn">${L('Vazgeç', 'Cancel')}</button>`, { vX: () => { rmOut = null; LIG.duel.leave(); closeModal(); } }, true);
+    const m = await h.wait(); rmOut = null; if (m && $('vCode')) vsIntro(m); else if (!m && $('vCode')) { closeModal(); toast(L('Arkadaşın yanıt vermedi', 'Your friend didn’t answer')); }
+    return;
+  }
   modal(`<div class="bell">⚔️</div><h2>${L('Arkadaşını davet et', 'Invite your friend')}</h2><p>${L('Arkadaşın Ray’de “Koda katıl”a bu kodu yazsın ya da bağlantıyı açsın.', 'Your friend enters this code under “Join with code” in Ray, or opens the link.')}</p>
     <div class="vscode" id="vCode">${h.code}</div>
     <button id="vShare" class="btn primary"><span>${L('Daveti gönder', 'Send the invite')}</span></button>
@@ -3736,7 +3781,8 @@ function vsResult(d, r, ok, pts) {
     <div id="vsClimb"></div></div>
     <button id="vAgain" class="btn primary"><span>${L('Tekrar kapış', 'Duel again')}</span><small>${o.friend ? L('Arkadaşını yeniden davet et', 'Invite your friend again') : L('Yeni rakip aranır', 'Finds a new opponent')}</small></button>
     <button id="vHome" class="btn glassbtn">${L('Ana sayfa', 'Home')}</button>`,
-    { vAgain: () => { closeModal(); if (o.friend) { vsSheet(); vsHost(); } else { vsSheet(); vsFind(); } }, vHome: () => { closeModal(); show('home'); } }, true);
+    { vAgain: () => { closeModal(); if (o.friend) { vsSheet(); d.ou ? vsHost({ to: d.ou, nick: o.nick }) : vsHost(); } else { vsSheet(); vsFind(); } }, vHome: () => { closeModal(); show('home'); } }, true);
+  if (o.friend) invWatch(120);   // arkadaş "Tekrar kapış" derse onay penceresi burada da çıksın
   // puan sayarak artar
   const el = $('vrPts'), t0 = performance.now() + 350, T = 700;
   const step = () => { if (!el.isConnected) return; const f = Math.max(0, Math.min(1, (performance.now() - t0) / T)); el.textContent = '+' + Math.round(pts * (1 - Math.pow(1 - f, 3))); if (f < 1) requestAnimationFrame(step); else el.classList.add('done'); };
