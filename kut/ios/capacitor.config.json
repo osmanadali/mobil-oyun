@@ -1,0 +1,8 @@
+{
+  "appId": "com.osmanadali.kutarena",
+  "appName": "Kut Arena",
+  "webDir": "www",
+  "backgroundColor": "#140f22",
+  "loggingBehavior": "none",
+  "ios": { "contentInset": "never", "scrollEnabled": false }
+}

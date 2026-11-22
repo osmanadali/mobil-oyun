@@ -92,3 +92,80 @@ workflows:
       - archive.log
       - export.log
       - build/Ray.xcarchive/dSYMs/**
+
+  # ── Kut Arena (iPad, yalnız yatay). Proje kut/ios altında; web oyunu kut/web/paket'ten www'ye kopyalanır.
+  # Gizli değerler Ray ile aynı Apple hesabı: "ray_ios" grubu (APPSTORE_API_KEY_ID, APPSTORE_API_ISSUER_ID, APPSTORE_API_KEY_P8_BASE64, APPLE_TEAM_ID).
+  # Önce App Store Connect'te bundle ID com.osmanadali.kutarena ile "Kut Arena" uygulaması oluşturulmalı.
+  # Başlatma: Start new build › workflow "Kut Arena iOS". Her yüklemede KUT_BUILD_NO'yu bir artır.
+  kut-ios:
+    name: Kut Arena iOS (TestFlight)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    working_directory: kut/ios
+    environment:
+      groups: [ray_ios]
+      node: 22
+      xcode: latest
+      vars:
+        KUT_BUILD_NO: "1"
+    scripts:
+      - name: Ayarları denetle
+        script: |
+          set -e
+          tr1() { printf '%s' "$1" | tr -d ' \r\n\t'; }
+          KID=$(tr1 "$APPSTORE_API_KEY_ID"); ISS=$(tr1 "$APPSTORE_API_ISSUER_ID"); TID=$(tr1 "$APPLE_TEAM_ID")
+          [ -n "$KID" ] && [ -n "$ISS" ] && [ -n "$TID" ] && [ -n "$APPSTORE_API_KEY_P8_BASE64" ] || { echo "Eksik gizli değer: ray_ios grubu"; exit 1; }
+          echo "$KUT_BUILD_NO" | grep -Eq '^[1-9][0-9]{0,9}$' || { echo "KUT_BUILD_NO pozitif tam sayı olmalı"; exit 1; }
+          VN=$(node -p "require('./package.json').version")
+          { echo "APPSTORE_API_KEY_ID=$KID"; echo "APPSTORE_API_ISSUER_ID=$ISS"; echo "APPLE_TEAM_ID=$TID"; echo "VERSION_CODE=$KUT_BUILD_NO"; echo "VERSION_NAME=$VN"; } >> "$CM_ENV"
+          printf '%s' "$APPSTORE_API_KEY_P8_BASE64" | base64 --decode > "$CM_BUILD_DIR/../KutAuthKey.p8"
+          grep -q 'BEGIN PRIVATE KEY' "$CM_BUILD_DIR/../KutAuthKey.p8" || { echo "APPSTORE_API_KEY_P8_BASE64 çözülemedi"; exit 1; }
+          V=$(xcodebuild -version | awk 'NR==1{print int($2)}'); [ "$V" -ge 26 ] || { echo "Capacitor 8 Xcode 26+ ister (bulunan: $V)"; exit 1; }
+          echo "Kut Arena $VN ($KUT_BUILD_NO) derlenecek"
+      - name: Web paketi ve yerel proje
+        script: |
+          set -e
+          npm ci --no-audit --no-fund
+          npm run www
+          test -f www/index.html && du -sh www
+          npx cap add ios
+          npx @capacitor/assets generate --ios --iconBackgroundColor '#140f22' --splashBackgroundColor '#140f22' --splashBackgroundColorDark '#140f22'
+          ./hazirla.sh
+          npx cap sync ios
+      - name: Arşivle (otomatik imza, yalnız iPad)
+        script: |
+          K="$CM_BUILD_DIR/../KutAuthKey.p8"
+          xcodebuild archive -project ios/App/App.xcodeproj -scheme App -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath build/Kut.xcarchive \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CURRENT_PROJECT_VERSION="$VERSION_CODE" MARKETING_VERSION="$VERSION_NAME" \
+            TARGETED_DEVICE_FAMILY=2 CODE_SIGN_STYLE=Automatic \
+            -allowProvisioningUpdates -authenticationKeyPath "$K" \
+            -authenticationKeyID "$APPSTORE_API_KEY_ID" -authenticationKeyIssuerID "$APPSTORE_API_ISSUER_ID" > archive.log 2>&1 \
+            || { grep -E "error:" archive.log | sort -u | head -40; tail -60 archive.log; exit 1; }
+          A=build/Kut.xcarchive/Products/Applications/App.app
+          plutil -extract UIDeviceFamily json -o - "$A/Info.plist" | tr -d ' \n' | grep -qx '\[2\]' || { echo "Yalnız iPad değil"; exit 1; }
+          test -f "$A/public/index.html" || { echo "Web oyunu pakette yok"; exit 1; }
+          echo "Arşiv tamam: $(du -sh "$A" | cut -f1)"
+      - name: Dışa aktar ve TestFlight'a yükle
+        script: |
+          K="$CM_BUILD_DIR/../KutAuthKey.p8"
+          cat > ExportOptions.plist <<PL
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>teamID</key><string>$APPLE_TEAM_ID</string>
+            <key>signingStyle</key><string>automatic</string>
+          </dict></plist>
+          PL
+          sed -i '' 's/^ *//' ExportOptions.plist; plutil -lint ExportOptions.plist
+          xcodebuild -exportArchive -archivePath build/Kut.xcarchive -exportPath build/out -exportOptionsPlist ExportOptions.plist \
+            -allowProvisioningUpdates -authenticationKeyPath "$K" \
+            -authenticationKeyID "$APPSTORE_API_KEY_ID" -authenticationKeyIssuerID "$APPSTORE_API_ISSUER_ID" > export.log 2>&1 \
+            || { grep -iE "error" export.log | sort -u | head -40; tail -60 export.log; rm -f "$K"; exit 1; }
+          rm -f "$K"
+          echo "Kut Arena $VERSION_NAME ($VERSION_CODE) yüklendi; 10-30 dk içinde TestFlight'ta görünür."
+    artifacts:
+      - kut/ios/archive.log
+      - kut/ios/export.log
