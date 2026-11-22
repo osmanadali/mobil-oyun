@@ -107,7 +107,7 @@ workflows:
       node: 22
       xcode: latest
       vars:
-        KUT_BUILD_NO: "1"
+        KUT_BUILD_NO: "2"
     scripts:
       - name: Ayarları denetle
         script: |
