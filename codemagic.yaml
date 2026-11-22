@@ -66,6 +66,9 @@ workflows:
           fi
           # Otomatik imza (sabit anahtar yok): Codemagic makinelerinin donanım kimliği hep aynı. Önceki derlemenin "Apple Development"
           # sertifikası hesapta kalırsa Xcode "Revoke certificate" der: developer.apple.com › Certificates'ten o sertifika elle iptal edilir.
+          # Bu yüzden imzadan önce önceki derlemelerin API'den açtığı geliştirme sertifikaları iptal edilir (dağıtım sertifikasına dokunulmaz);
+          # Xcode yenisini açar. Elle iptal gerekmez (22 Kasım: yapı 20 bu hatayla düştü).
+          AUTHKEY="$K" APPLY=1 node tools/ios/sertifika.cjs || echo "Sertifika temizliği yapılamadı, devam"
           xcodebuild archive -project ios/App/App.xcodeproj -scheme App -configuration Release \
             -destination 'generic/platform=iOS' -archivePath build/Ray.xcarchive \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CURRENT_PROJECT_VERSION="$VERSION_CODE" CODE_SIGN_STYLE=Automatic \
