@@ -130,7 +130,7 @@ function anaCiz() {
   b.classList.toggle('devam', !!M);
   b.innerHTML = par + (M
     ? `<span class="ana">${ik('oyna')}DEVAM ET</span><small>${modAd(M.mod)} · Tur ${M.mod === 'hizli' ? M.tur : L.turAd(M.tur - 1)}</small>`
-    : `<span class="ana">${ik('oyna')}OYNA</span><small>Mod seç ve arenaya gir</small>`);
+    : `<span class="ana">${ik('oyna')}OYNA</span>`);
   q('.yeniMac', a).hidden = !M;
 }
 // maç modları (OYNA → mod seçim penceresi; kayıtlı maç varken "Yeni maç" ikincil düğmesi aynı pencereyi açar)
