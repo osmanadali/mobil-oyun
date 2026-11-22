@@ -38,6 +38,7 @@ svg{display:block}
 
 /* ---------- arkaplan: saydam metro haritası + yumuşak ışık ---------- */
 .bg{position:fixed;inset:0;overflow:hidden;pointer-events:none}
+.bg *{pointer-events:none!important;-webkit-user-select:none;user-select:none}   /* iOS: haritanın SVG çizgileri dokunuşu kapmasın (1.2.3) */
 .map{position:absolute;inset:-6%;opacity:var(--mapOp);transition:opacity 1.6s ease;
   -webkit-mask:radial-gradient(ellipse at 50% 45%,#000 30%,transparent 80%);mask:radial-gradient(ellipse at 50% 45%,#000 30%,transparent 80%);
   animation:drift 60s ease-in-out infinite alternate;will-change:transform}

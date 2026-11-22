@@ -36,6 +36,15 @@ module.exports = async T => {
   const r1 = m => ((m << 1) | (m >> 3)) & 15;
   check('dokunma.cift', 'Dokunmatik çift olay (iOS: aynı dokunuş için 70 ms arayla ikinci touchstart): karo bir kez döner (düz ray 180° dönüp “dönmedi” görünmez); 160 ms arayla iki gerçek dokunuş iki kez döndürür',
     r1(dbl[0][0]) === dbl[0][1] && r1(dbl[1][0]) === dbl[1][1] && r1(r1(dbl[2][0])) === dbl[2][1], JSON.stringify(dbl), 'high');
+  // iOS'ta görülen (1.2.3 videosu, 🩺 "dokunuş path 105,294"): dokunuşun hedefi arka plandaki harita çizgisi (.bg path) olunca tuvale hiç gelmiyordu
+  const stray = await page.evaluate(async i => { const R = window.__ray, G = R.G, g = R.geo, cv = document.getElementById('cv'), rc = cv.getBoundingClientRect();
+    const x = rc.left + g.ox + ((i % G.cols) + .5) * g.s, y = rc.top + g.oy + (((i / G.cols) | 0) + .5) * g.s, path = document.querySelector('.bg .map path');
+    const w = ms => new Promise(r => setTimeout(r, ms)); await w(300);
+    const a = G.cur[i], t = new Touch({ identifier: 31, target: path, clientX: x, clientY: y });
+    path.dispatchEvent(new TouchEvent('touchstart', { touches: [t], changedTouches: [t], cancelable: true, bubbles: true }));
+    path.dispatchEvent(new TouchEvent('touchend', { touches: [], changedTouches: [t], cancelable: true, bubbles: true }));
+    await w(50); return [a, G.cur[i]]; }, i + 2);
+  check('dokunma.harita', 'iOS: dokunuşu arka plandaki harita çizgisi (SVG path) kapsa da tahtanın üstündeyse karo döner (“ortasına dokununca dönmüyor”)', r1(stray[0]) === stray[1], JSON.stringify(stray), 'high');
   check('dokunma.konsol', 'Dokunma testinde konsolda hata yok', !errors.length, JSON.stringify(errors.slice(0, 3)));
   await ctx.close();
 };

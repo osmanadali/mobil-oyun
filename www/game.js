@@ -672,6 +672,19 @@ function ensureAC() {
   if (ac.state !== 'running' && !document.hidden) ac.resume();
   return ac;
 }
+// 🔊 iOS ses kilidi (1.2.3, kullanıcı 22 Kasım: "oyunu açınca ses çalmıyor, üst menüyü indirince açılıyor"): ses bağlamı açılışta
+// 'suspended' / 'interrupted' kalıyordu; kısık (hushed) olunca tone() hiç ensureAC'ye gitmediği için kendini çözemiyordu, ancak bildirim
+// perdesi kesinti bitirince açılıyordu. iOS sesi yalnız dokunuş bitişi / tıklama içinde açar: her dokunuşta (gerekirse) resume + sessiz örnek.
+function unlockAudio() {
+  if (document.hidden || !save || !(save.sound || save.music)) return;
+  try {
+    ensureAC();
+    if (ac.state === 'running') { if (hushed) { hushed = false; Music.wake(); } return; }
+    const b = ac.createBuffer(1, 1, 22050), src = ac.createBufferSource(); src.buffer = b; src.connect(ac.destination); src.start(0);   // iOS: dokunuş içinde çalınan sessiz örnek oturumu açar
+    ac.resume?.().then(() => { if (ac.state === 'running' && !document.hidden) { hushed = false; Music.wake(); } }, () => {});
+  } catch {}
+}
+for (const ev of ['touchend', 'click', 'keydown']) document.addEventListener(ev, unlockAudio, { capture: true, passive: true });
 // yumuşak çan tınısı: sinüs + hafif üst oktav, üstel sönüm (sert tık yok)
 function tone(f, dur = .08, vol = .05, type = 'sine', at = 0) {
   if (!save.sound || hushed || document.hidden) return;   // gizliyken kuyruğa giren ses dönüşte "bip" diye çalmasın
@@ -1427,8 +1440,23 @@ function boardTap(e) {   // e: { clientX, clientY } (dokunma ya da fare)
 // önce gelir; preventDefault çift dokunma / büyüteç / taklit fare olaylarını da durdurur). Fare ve kalem pointerdown ile.
 // her parmak (touch.identifier) yaşamı boyunca bir kez işlenir: iOS bazen aynı dokunuş için touchstart'ı yeniden gönderiyor
 const liveTouch = new Set();
-cv.addEventListener('touchstart', e => { e.preventDefault(); for (const t of e.changedTouches) { if (liveTouch.has(t.identifier)) { tapNote('aynı parmak, atlandı'); continue; } liveTouch.add(t.identifier); tapDiag('touch', t.clientX, t.clientY); boardTap({ clientX: t.clientX, clientY: t.clientY, touch: true }); } }, { passive: false });
-for (const ev of ['touchend', 'touchcancel']) cv.addEventListener(ev, e => { for (const t of e.changedTouches) liveTouch.delete(t.identifier); if (!e.touches.length) liveTouch.clear(); });
+// ⚠️ iOS (1.2.3, kullanıcı videosu 22 Kasım, 🩺 tanıda "dokunuş path 105,294"): arka plandaki metro haritasının SVG çizgileri
+// (.bg, pointer-events:none olmasına rağmen) WebKit'te dokunuşu kapıyordu → çizginin karo üstünden geçtiği yerde parmak tuvale hiç
+// ulaşmıyor, karo dönmüyordu ("köşesine dokununca dönüyor, ortasına dokununca dönmüyor"). Tahtanın üstüne düşen ama hedefi tahta ya da
+// bir düğme / pencere olmayan dokunuş tahtaya yönlendirilir.
+function strayTouch(e) {
+  if (!active('game') || modalOpen()) return;
+  const rc = cv.getBoundingClientRect();
+  for (const t of e.changedTouches) {
+    const el = t.target; if (el === cv || !(el?.closest?.('.bg') || el === document.body || el === document.documentElement || (el instanceof Element && getComputedStyle(el).pointerEvents === 'none'))) continue;   // dokunuşa kapalı olması gereken öğe kaptıysa
+    if (t.clientX < rc.left || t.clientX > rc.right || t.clientY < rc.top || t.clientY > rc.bottom) continue;
+    e.preventDefault(); handleTouch(t);
+  }
+}
+document.addEventListener('touchstart', strayTouch, { capture: true, passive: false });
+function handleTouch(t) { if (liveTouch.has(t.identifier)) { tapNote('aynı parmak, atlandı'); return; } liveTouch.add(t.identifier); tapDiag('touch', t.clientX, t.clientY); boardTap({ clientX: t.clientX, clientY: t.clientY, touch: true }); }
+cv.addEventListener('touchstart', e => { e.preventDefault(); for (const t of e.changedTouches) handleTouch(t); }, { passive: false });
+for (const ev of ['touchend', 'touchcancel']) document.addEventListener(ev, e => { for (const t of e.changedTouches) liveTouch.delete(t.identifier); if (!e.touches.length) liveTouch.clear(); });
 cv.addEventListener('pointerdown', e => { if (e.pointerType === 'touch') { tapDiag('ptr-touch', e.clientX, e.clientY, true); return; } tapDiag(e.pointerType || 'ptr', e.clientX, e.clientY); boardTap(e); });
 
 // kusursuz seri: tacı olmayan bölümü kusursuz bitirmek seriyi +1 yapar, kusursuzsuz bitirmek sıfırlar; taçlı bölüm seriyi etkilemez.
