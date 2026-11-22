@@ -1,4 +1,4 @@
-// Google Play: oyun içi ürünleri API ile kurar (Play Developer API, inappproducts). Yoksa oluşturur, var olana dokunmaz.
+// Google Play: oyun içi ürünleri API ile kurar (Play Developer API, oneTimeProducts). Yoksa oluşturur, var olana dokunmaz.
 // Adlar ve fiyatlar App Store ile aynı (tools/ios/iap.cjs): ABD fiyatından Play bütün ülkelere çevirir, Türkiye elle.
 // Ortam: SA (servis hesabı JSON), APPLY=1 ise kurar (yoksa yalnız denetler ve ne yapacağını yazar).
 'use strict';
@@ -37,31 +37,40 @@ async function api(method, path, body) {
 const micros = m => String(BigInt(m.units || 0) * 1000000n + BigInt(Math.round((m.nanos || 0) / 1000)));
 const money = v => ({ currencyCode: 'USD', units: String(Math.floor(v)), nanos: Math.round((v - Math.floor(v)) * 100) * 10000000 });
 
+// Play'in yeni ürün servisi (oneTimeProducts, 2025; eski inappproducts "Please migrate to the new publishing API" diyor)
+const OPT = 'satin-al', RV = 'regionsVersion.version=2022%2F02';
 (async () => {
   TOK = await token();
   console.log('Servis hesabı:', sa.client_email, '· uygulama:', PKG, '·', APPLY ? 'KURULUM' : 'yalnız denetim');
   let have = [];
-  try { have = (await api('GET', '/inappproducts?maxResults=100')).inappproduct || []; }
-  catch (e) { console.error('::error::Ürün listesi okunamadı: ' + e.message); if (e.status === 403) console.error('::error::Servis hesabına Play Console › Kullanıcılar ve izinler › bu uygulama › "Uygulama içi ürünleri ve abonelikleri yönet" (ve "Mağaza girişini yönet") izni verilmeli.'); process.exit(1); }
-  const ids = new Set(have.map(x => x.sku));
-  console.log(`Play'de var olan ürünler (${have.length}):`, have.map(x => `${x.sku} [${x.status}] ${x.defaultPrice?.currency || ''} ${x.defaultPrice ? Number(x.defaultPrice.priceMicros) / 1e6 : ''}`).join(' · ') || 'yok');
+  try { have = (await api('GET', '/oneTimeProducts?pageSize=100')).oneTimeProducts || []; }
+  catch (e) { console.error('::error::Ürün listesi okunamadı: ' + e.message); if (e.status === 403) console.error('::error::Servis hesabına Play Console › Kullanıcılar ve izinler › bu uygulama › "Uygulama içi ürünleri ve abonelikleri yönet" izni verilmeli (ödeme profili de bağlı olmalı).'); process.exit(1); }
+  const byId = Object.fromEntries(have.map(x => [x.productId, x]));
+  console.log(`Play'de var olan ürünler (${have.length}):`, have.map(x => `${x.productId} [${(x.purchaseOptions || []).map(o => o.state).join(',')}]`).join(' · ') || 'yok');
   let fail = 0;
   for (const p of P) {
-    if (ids.has(p.id)) { console.log(`✓ ${p.id} zaten var, dokunulmadı`); continue; }
+    const cur = byId[p.id];
+    if (cur && (cur.purchaseOptions || []).some(o => o.state === 'ACTIVE')) { console.log(`✓ ${p.id} zaten var ve etkin, dokunulmadı`); continue; }
     let conv;
-    try { conv = (await api('POST', '/pricing:convertRegionPrices', { price: money(p.usd) })).convertedRegionPrices || {}; }
+    try { conv = await api('POST', '/pricing:convertRegionPrices', { price: money(p.usd) }); }
     catch (e) { console.error(`::error::${p.id}: fiyat çevrilemedi: ${e.message}`); fail++; continue; }
-    const prices = {};
-    for (const [rc, v] of Object.entries(conv)) prices[rc] = { priceMicros: micros(v.price), currency: v.price.currencyCode };
-    prices.TR = { priceMicros: String(Math.round(p.tr * 1e6)), currency: 'TRY' };
-    prices.US = { priceMicros: String(Math.round(p.usd * 1e6)), currency: 'USD' };
-    const item = { packageName: PKG, sku: p.id, status: 'active', purchaseType: 'managedUser', defaultPrice: prices.TR, prices,
-      listings: { 'tr-TR': { title: p.tr_n, description: p.tr_d }, 'en-US': { title: p.en_n, description: p.en_d } } };
-    console.log(`${APPLY ? '→' : '•'} ${p.id}: ${p.tr_n} / ${p.en_n} · ₺${p.tr} · ${p.usd} $ · ${Object.keys(prices).length} ülke fiyatı (örn. GB ${prices.GB ? Number(prices.GB.priceMicros) / 1e6 + ' ' + prices.GB.currency : '-'}, DE ${prices.DE ? Number(prices.DE.priceMicros) / 1e6 + ' ' + prices.DE.currency : '-'})`);
+    const reg = { ...(conv.convertedRegionPrices || {}) };
+    const cfg = Object.entries(reg).map(([rc, v]) => ({ regionCode: rc, price: rc === 'TR' ? { currencyCode: 'TRY', units: String(Math.floor(p.tr)), nanos: Math.round((p.tr % 1) * 100) * 10000000 } : rc === 'US' ? money(p.usd) : v.price, availability: 'AVAILABLE' }));
+    if (!cfg.some(c => c.regionCode === 'TR')) cfg.push({ regionCode: 'TR', price: { currencyCode: 'TRY', units: String(Math.floor(p.tr)), nanos: Math.round((p.tr % 1) * 100) * 10000000 }, availability: 'AVAILABLE' });
+    const other = conv.convertedOtherRegionsPrice;
+    const body = { packageName: PKG, productId: p.id,
+      listings: [{ languageCode: 'tr-TR', title: p.tr_n, description: p.tr_d }, { languageCode: 'en-US', title: p.en_n, description: p.en_d }],
+      purchaseOptions: [{ purchaseOptionId: OPT, buyOption: { legacyCompatible: true, multiQuantityEnabled: false }, regionalPricingAndAvailabilityConfigs: cfg,
+        ...(other ? { newRegionsConfig: { usdPrice: other.usdPrice, eurPrice: other.eurPrice, availability: 'AVAILABLE' } } : {}) }] };
+    const gb = cfg.find(c => c.regionCode === 'GB')?.price, de = cfg.find(c => c.regionCode === 'DE')?.price;
+    console.log(`${APPLY ? '→' : '•'} ${p.id}${cur ? ' (var, etkin değil)' : ''}: ${p.tr_n} / ${p.en_n} · ₺${p.tr} · ${p.usd} $ · ${cfg.length} ülke (örn. GB ${gb ? gb.units + '.' + String(gb.nanos / 1e7 | 0).padStart(2, '0') + ' ' + gb.currencyCode : '-'}, DE ${de ? de.units + '.' + String(de.nanos / 1e7 | 0).padStart(2, '0') + ' ' + de.currencyCode : '-'})`);
     if (!APPLY) continue;
-    try { await api('POST', '/inappproducts?autoConvertMissingPrices=true', item); console.log(`  ✓ ${p.id} oluşturuldu ve etkin`); }
-    catch (e) { console.error(`::error::${p.id}: ${e.message}`); fail++; }
+    try {
+      await api('PATCH', `/oneTimeProducts/${p.id}?allowMissing=true&${RV}&updateMask=listings,purchaseOptions`, body);
+      await api('POST', `/oneTimeProducts/${p.id}/purchaseOptions:batchUpdateStates`, { requests: [{ activatePurchaseOptionRequest: { packageName: PKG, productId: p.id, purchaseOptionId: OPT } }] });
+      console.log(`  ✓ ${p.id} oluşturuldu ve etkin`);
+    } catch (e) { console.error(`::error::${p.id}: ${e.message}`); fail++; }
   }
   if (fail) process.exit(1);
-  console.log(APPLY ? 'Bitti.' : 'Denetim bitti: kurmak için apply=true ile çalıştır.');
+  console.log(APPLY ? 'Bitti.' : 'Denetim bitti: kurmak için play_urun=kur ile çalıştır.');
 })().catch(e => { console.error('::error::' + e.message); process.exit(1); });
