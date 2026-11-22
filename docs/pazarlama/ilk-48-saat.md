@@ -8,6 +8,8 @@ Bu liste, 21 Kasım 2026'dan başlayarak **sırayla** yapacağın adımlardır. 
 
 Ayrıntılar: [strateji.md](strateji.md) · [aso.md](aso.md) · [sosyal-medya-takvimi.md](sosyal-medya-takvimi.md) · [reklam-kampanyasi.md](reklam-kampanyasi.md) · [topluluk-pr.md](topluluk-pr.md)
 
+> **L günü = 22 Kasım 2026:** Play sayfası açıldı (doğrulandı). Bölüm 3 bugün başlar.
+
 ## 0. Başlamadan önce bilmen gereken 3 şey
 
 1. **21 Kasım, Play'de yayın günü değil, başvuru günüdür.** 14 günlük kapalı test 21 Kasım'da doluyor. O gün Play Console'dan **üretime erişim başvurusu** yapılır. Google onaylayınca (genelde birkaç gün, en çok ~7 gün) üretim sürümü gönderilir ve o da incelenir. Play sayfasının canlı olduğu güne bu belgede **L günü** diyoruz (tahmini 22–28 Kasım). "Android'de yayında" duyuruları ve Play linki **L gününe kadar paylaşılmaz.**
@@ -51,7 +53,7 @@ Onay 22 Kasım'da gelmezse 23 Kasım ve sonrasında aynı ritim sürer: günde 1
 | # | Ne zaman | Kim | Ne | Nerede |
 |---|---|---|---|---|
 | L1 | Saat 0 | Sen | **Play sayfasını telefondan aç ve kontrol et:** başlık, kısa açıklama, ekran görüntüleri, indirme. Bir **satın alma testi** yap (iade edilebilir test kartı ya da lisanslı test hesabı). | play.google.com/store/apps/details?id=com.osmanadali.ray |
-| L2 | +1 sa | Sen | **Play linkini her yere koy:** Instagram ve TikTok biyografisi, `[PLAY_LINK]` yer tutucuları (sosyal-medya-takvimi.md, topluluk-pr.md). | Profiller |
+| L2 | +1 sa | Sen | **Play linkini her yere koy:** Instagram ve TikTok biyografisi, `https://play.google.com/store/apps/details?id=com.osmanadali.ray` yer tutucuları (sosyal-medya-takvimi.md, topluluk-pr.md). | Profiller |
 | L3 | +2 sa | Sen | **Duyuru videosu (V01):** "Ray artık Android'de". `store/tanitim/ray-play-tanitim-dikey.mp4` Reels ve TikTok'a, `ray-play-duyuru-dikey.png` Instagram hikâyesine (link çıkartmasıyla). Resmi "Google Play'den edinin" rozeti yalnız `store/tanitim/rozet/` içindeki orijinal hâliyle, oranı bozulmadan kullanılır. | Dosyalar `origin/tanitim` dalında |
 | L4 | +3 sa | Sen | **Basın e-postaları:** 14. adımda hazırlanan listeye kişiselleştirilmiş gönderim. Toplu, kopyalı gönderim yapma; tek tek gönder. 5 gün sonra tek bir takip e-postası. | Kendi e-posta hesabın (şablon: topluluk-pr.md §2) |
 | L5 | +4 sa | Sen | **Reddit:** hesap henüz yeniyse ya da az karması varsa **tanıtım gönderisi atma**. Hesap hazırsa (topluluk-pr.md §3 eşikleri) yalnız kendi kendini tanıtmaya izin veren yerlere ve kuralına uygun gönder (r/AndroidGaming'in self-promo günü/başlığı vb.). | reddit.com |

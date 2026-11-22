@@ -29,7 +29,7 @@ Görünen ad: **Ray: Metro Bulmaca**. Reddit adı geliştirici hesabı olarak ay
 | Reddit (profil) | Ray'in geliştiricisi. Tek elle, internetsiz metro bulmacası. | Developer of Ray, a one-hand offline metro puzzle. |
 
 **Bağlantı:** tek bağlantı. Yayından önce Play sayfası açılmaz, o yüzden:
-- `[PLAY_LINK]` = Play mağaza adresi (21 Kasım'da yayınlanınca telefonda açıldığını doğrula, sonra yayınla).
+- `https://play.google.com/store/apps/details?id=com.osmanadali.ray` = Play mağaza adresi (21 Kasım'da yayınlanınca telefonda açıldığını doğrula, sonra yayınla).
 - `[APPSTORE_LINK]` = App Store adresi (hazır). `[WEB_LINK]` = https://osmanadali.github.io/mobil-oyun/
 - İki mağazayı tek tıkla veren bir bağlantı sayfası (Linktree benzeri ya da kendi sayfan) kullan: TikTok'ta profil bağlantısı (bio linki) hesabın şartlarına göre açılır; açılmadıysa bio'ya "Link Instagram'da" yaz.
 
@@ -149,8 +149,8 @@ Not: Hafta 2 ve 4'te Cuma ve Cumartesi kayıtları önceden çekilmiş olmalı. 
   - 12-15: yazı: "Tek elle · İnternetsiz · Sakin" / "One hand · Offline · Calm"; kapanış kartı.
 - **Çekim:** [T] Bölüm 198 (M9 iki merkez; mağaza görselindeki sahne) ya da kısa bir erken bölüm (M1-M2); varsayılan tema; bitiş ekranı (3 yıldız, bilet). Bitişi iki kez çek, daha temiz olanı al.
 - **CTA:** "Google Play'de ara: Ray metro bulmaca" / "Search Ray metro puzzle on Google Play" + link.
-- **Açıklama TR:** Ray bugün Google Play'de! Karoya dokun, 90° döner; bütün durakları merkeze bağla, hat yansın. Tek elle, internetsiz. App Store'da zaten var. 🚇 `[PLAY_LINK]`
-- **Açıklama EN:** Ray is on Google Play today! Tap a tile to turn it 90°, connect every station to the center and light the line. One hand, offline. Already on the App Store. 🚇 `[PLAY_LINK]`
+- **Açıklama TR:** Ray bugün Google Play'de! Karoya dokun, 90° döner; bütün durakları merkeze bağla, hat yansın. Tek elle, internetsiz. App Store'da zaten var. 🚇 `https://play.google.com/store/apps/details?id=com.osmanadali.ray`
+- **Açıklama EN:** Ray is on Google Play today! Tap a tile to turn it 90°, connect every station to the center and light the line. One hand, offline. Already on the App Store. 🚇 `https://play.google.com/store/apps/details?id=com.osmanadali.ray`
 - **Etiketler:** #ray #metrobulmaca #bulmacaoyunu #mobiloyun #puzzlegame #metro #androidgames #indiegame
 
 ### V02 · Pazar 22 Kasım · A · TikTok + Reels
@@ -469,7 +469,7 @@ Reddit gönderi metinleri ve hangi toplulukta ne zaman paylaşılacağı toplulu
 ---
 
 ## Ek: Yayın öncesi 21 Kasım kontrol listesi
-- [ ] Play sayfası açılıyor ve `[PLAY_LINK]` doğru.
+- [ ] Play sayfası açılıyor ve `https://play.google.com/store/apps/details?id=com.osmanadali.ray` doğru.
 - [ ] Hesaplar hazır (§0), profil bağlantısı güncel.
 - [ ] V01-V03 kurgulanmış, ses lisansı kaydı var.
 - [ ] Haftanın çekim oturumu planlı.
