@@ -17,6 +17,5 @@ put UIRequiresFullScreen bool true          # iPad'de bölünmüş ekran yok: ta
 put UIStatusBarHidden bool true
 put UIViewControllerBasedStatusBarAppearance bool false
 put ITSAppUsesNonExemptEncryption bool false  # şifreleme beyanı sorusu çıkmasın (yalnız standart HTTPS)
-put UIApplicationExitsOnSuspend bool false
 plutil -lint "$P"
 echo "Kut Arena Info.plist hazır"
