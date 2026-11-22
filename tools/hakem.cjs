@@ -452,6 +452,7 @@ async function inViewport(page, sel) {
     await shot(page, 'streak-sheet');
     check('streak.sheet', 'Seri rozetine dokununca 7 günlük seri penceresi', w.cells === 7 && w.on === 3 && /3 gün/.test(w.title), JSON.stringify(w), 'medium');
     await page.click('#mPlayD').catch(() => {}); await page.waitForTimeout(300);
+    await page.evaluate(() => document.getElementById('mGo')?.click()).catch(() => {}); await page.waitForTimeout(300);   // pazar: Günün Hattı haftanın kuralıyla açılır, kural kartı önce kapanır
     await page.evaluate(() => { document.getElementById('bBack').click(); document.getElementById('pHome')?.click(); }).catch(() => {}); await page.waitForTimeout(300);
     await page.click('#bSettings'); await page.waitForTimeout(500);
     const hasM = !!(await page.$('#oM')); if (hasM) await page.click('#oM');
