@@ -75,7 +75,7 @@ ids.forEach((id, i) => {
   const [x, z] = yer[i]; kok.position.set(x, 0, z);
   const taraf = gorus === 'yakin' ? 1 : (z > 0 ? 0 : 1);
   kok.rotation.y = gorus === 'yakin' ? (DORT.has(id) ? 0.5 : 0.25) : (taraf === 0 ? Math.PI : 0);
-  if (mod === 'sonra') { G.malzemeIyilestir(model, { renk: taraf === 0 ? 'biz' : 'rakip', kahraman: id }); kok.add(G.golgeLekesi(DORT.has(id) ? 0.6 : 0.42)); }
+  if (mod === 'sonra') { G.malzemeIyilestir(model, { renk: taraf === 0 ? 'biz' : 'rakip', kahraman: id, pbrKoru: (q.get('pbr') || '').split(',').includes(id) }); kok.add(G.golgeLekesi(DORT.has(id) ? 0.6 : 0.42)); }
   sahne.add(kok);
 });
 

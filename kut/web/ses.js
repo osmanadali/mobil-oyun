@@ -26,14 +26,40 @@ try { const k = localStorage.getItem('kut.ses'); if (k === '0') acik = false; } 
 
 export function kur(kokYolu = '') {
   kok = kokYolu;
+  // iOS (WKWebView/Safari): Audio Session API varsa 'playback' — sessiz (zil) anahtarı Web Audio'yu susturmasın
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) { /* desteklenmiyor */ }
   const ac = () => {
-    if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return; }
-    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
-    ctx = new AC(); ana = ctx.createGain(); ana.gain.value = acik ? duzey : 0; ana.connect(ctx.destination);
-    for (const d of DOSYALAR) yukle(d);
-    muzikKur();
+    if (!ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      try { ctx = new AC({ latencyHint: 'interactive' }); } catch (e) { ctx = new AC(); }
+      ana = ctx.createGain(); ana.gain.value = acik ? duzey : 0; ana.connect(ctx.destination);
+      // iOS 'interrupted' (telefon, arka plan, Siri) ya da 'suspended' kalırsa ilk fırsatta yeniden başlat
+      ctx.onstatechange = () => { if (ctx.state !== 'running' && !document.hidden) uyandir(); };
+      for (const d of DOSYALAR) yukle(d);
+      muzikKur();
+    }
+    uyandir(true);
   };
-  for (const o of ['pointerdown', 'keydown', 'touchstart']) window.addEventListener(o, ac, { capture: true, passive: true });
+  // iOS kilidi yalnız "etkinleştiren" olaylarda açar (touchend/pointerup/click/keydown); touchstart/pointerdown de denenir
+  for (const o of ['touchstart', 'touchend', 'pointerdown', 'pointerup', 'click', 'keydown']) window.addEventListener(o, ac, { capture: true, passive: true });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) uyandir(); });
+  window.addEventListener('pageshow', () => uyandir());
+  window.addEventListener('focus', () => uyandir());
+}
+
+let kilitAcik = false;
+// AudioContext'i çalışır duruma getirir; etkileşim içinden çağrılınca boş tampon çalıp iOS kilidini açar
+function uyandir(etkilesim = false) {
+  if (!ctx) return;
+  if (ctx.state !== 'running') { try { const p = ctx.resume(); if (p && p.catch) p.catch(() => {}); } catch (e) { /* yoksay */ } }
+  if (etkilesim && (!kilitAcik || ctx.state !== 'running')) {
+    try {
+      const b = ctx.createBuffer(1, 1, 22050), k = ctx.createBufferSource(); k.buffer = b; k.connect(ctx.destination); k.start(0);
+      kilitAcik = true;
+    } catch (e) { /* yoksay */ }
+  }
+  // müzik istendiyse ve bağlam yeni açıldıysa başlat
+  if (ctx.state === 'running' && istenen && (!calanM || calanM.ad !== istenen) && muzikTampon[istenen]) muzikCal(istenen);
 }
 
 function yukle(ad) {

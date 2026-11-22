@@ -18,4 +18,13 @@ put UIStatusBarHidden bool true
 put UIViewControllerBasedStatusBarAppearance bool false
 put ITSAppUsesNonExemptEncryption bool false  # şifreleme beyanı sorusu çıkmasın (yalnız standart HTTPS)
 plutil -lint "$P"
-echo "Kut Arena Info.plist hazır"
+# Ses: varsayılan ses oturumu (soloAmbient) iPad'in sessiz anahtarında Web Audio'yu susturur ve ilk çalmada
+# oturumu bazen etkinleştirmez. .playback + mixWithOthers: sessiz anahtar açıkken de oyun sesi/müziği duyulur.
+AD=ios/App/App/AppDelegate.swift
+if ! grep -q 'AVAudioSession' "$AD"; then
+  grep -q 'didFinishLaunchingWithOptions.*-> Bool {' "$AD" || { echo "HATA: AppDelegate.swift şablonu beklenmedik (didFinishLaunching bulunamadı)"; exit 1; }
+  perl -0pi -e 's/^import UIKit\n/import UIKit\nimport AVFoundation\n/m' "$AD"
+  perl -0pi -e 's/(func application\(_ application: UIApplication, didFinishLaunchingWithOptions[^\n]*-> Bool \{\n)/$1        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])\n        try? AVAudioSession.sharedInstance().setActive(true)\n/' "$AD"
+fi
+grep -q 'import AVFoundation' "$AD" && grep -q 'setCategory(.playback' "$AD" || { echo "HATA: AppDelegate.swift ses oturumu yaması uygulanamadı"; exit 1; }
+echo "Kut Arena Info.plist ve AppDelegate (ses oturumu) hazır"

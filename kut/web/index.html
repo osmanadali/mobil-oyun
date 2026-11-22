@@ -5,6 +5,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <title>Kut Arena</title>
+<script>/* iPad: uzun basma menüsü, metin seçimi ve resim sürükleme kapalı (yazı alanları hariç). Uzun basma bilgisi zamanlayıcıyla çalışır, etkilenmez. */
+(function(){var yazi=function(t){return t&&t.closest&&t.closest('input,textarea,[contenteditable="true"]');};
+['contextmenu','selectstart','dragstart'].forEach(function(o){document.addEventListener(o,function(e){if(!yazi(e.target))e.preventDefault();},{capture:true});});
+document.addEventListener('selectionchange',function(){var a=document.activeElement;if(yazi(a))return;var s=window.getSelection&&window.getSelection();if(s&&s.rangeCount&&!s.isCollapsed)s.removeAllRanges();});})();</script>
 <script>/* robot görselleri a/b: karşılama + yükleme arka planı her açılışta dönüşümlü (html.arkaB → *_b.webp); yalnız seçilen yükleme görseli önden yüklenir */
 (function(){var n=0;try{n=+(localStorage.getItem('kut.acilisSay')||0)||0;localStorage.setItem('kut.acilisSay',String((n+1)%1000));}catch(e){}
 var b=n%2===1;if(b)document.documentElement.classList.add('arkaB');
@@ -43,6 +47,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--mor0)}
 body{font-family:"Trebuchet MS","Segoe UI",system-ui,-apple-system,Roboto,"DejaVu Sans",sans-serif;color:var(--yazi);
   -webkit-font-smoothing:antialiased;user-select:none;font-size:14px}
 img{display:block;-webkit-user-drag:none}
+/* iPad: uzun basınca metin seçme / Kopyala balonu / büyüteç / resim sürükleme yok (yazı alanları hariç) */
+*,*::before,*::after{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+img,svg,canvas,a{-webkit-user-drag:none;user-drag:none}
+input,textarea,[contenteditable="true"]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .ik{width:1em;height:1em;flex:none;display:inline-block;vertical-align:-.12em}
 .ekran{position:fixed;inset:0;display:none;overflow:hidden}
@@ -1866,6 +1874,62 @@ html.alcak body.hz3 #mac .dukkanSol .btn{font-size:12px}
 #ana .yanDug .btn span{min-width:0;overflow:hidden;text-overflow:ellipsis}
 html.alcak #ana .yanDug .btn{font-size:13.5px}
 @media (max-aspect-ratio:3/2){#ana .yanDug .btn{width:196px;font-size:13.5px;letter-spacing:.01em;gap:8px;padding:0 12px 0 10px}#ana .yanDug.sag .btn{padding:0 10px 0 12px}}
+/* iPad: pencereler yalnız dikey kaysın (yatay sürükleme/sekme yok); içerik genişliği pencereyi aşmasın */
+.pencere{overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch}
+.pencere>*{min-width:0;max-width:100%}
+.pencere p,.pencere li,.pencere h3{overflow-wrap:anywhere}
+.pencere .eylemler{min-width:0;max-width:100%}
+.pencere .btn{max-width:100%;white-space:normal;text-align:center;line-height:1.15}
+.perde{overscroll-behavior:none}
+.hasarOzet .satirlar,.sonGovde,.kahIzgara,.soyKodListe,#mac .soyListe{overflow-x:hidden;overscroll-behavior:contain}
+/* ===================== KUT ARMAĞANI (#perde.armagan) =====================
+   Koyu mor zemin, ortadan yayılan yavaş dönen altın huzmeler, süzülen ışık zerreleri; kartlar kademe çerçeveli
+   (kıvılcım gümüş-mavi, alev turuncu-altın, güneş parlak altın). Sakin: zıplama yok, yalnız hafif yükselme. */
+#perde.armagan{background:radial-gradient(circle at 50% 48%,rgba(255,196,110,.30),rgba(255,196,110,0) 34%),radial-gradient(ellipse 75% 65% at 50% 48%,rgba(120,62,190,.6),rgba(32,12,62,.9) 64%,rgba(10,3,22,.96));overflow:hidden}
+#perde.armagan::before{content:"";position:absolute;left:50%;top:50%;width:170vmax;height:170vmax;margin:-85vmax 0 0 -85vmax;pointer-events:none;
+  background:repeating-conic-gradient(from 0deg,rgba(255,210,120,.2) 0deg 3deg,rgba(255,210,120,0) 8deg 16deg);
+  -webkit-mask:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 26%,transparent 60%);mask:radial-gradient(circle,#000 0,rgba(0,0,0,.6) 26%,transparent 60%);
+  animation:armDon 90s linear infinite}
+#perde.armagan::after{content:"";position:absolute;inset:-20% 0 0;pointer-events:none;opacity:.8;
+  background-image:radial-gradient(circle,rgba(255,226,150,.9) 0 1.4px,transparent 2.4px),radial-gradient(circle,rgba(255,240,200,.7) 0 1px,transparent 2px),radial-gradient(circle,rgba(210,180,255,.6) 0 1.2px,transparent 2.2px);
+  background-size:190px 230px,130px 170px,260px 310px;background-position:20px 40px,90px 10px,40px 120px;animation:armZerre 26s linear infinite}
+@keyframes armDon{to{transform:rotate(360deg)}}
+@keyframes armZerre{from{background-position:20px 40px,90px 10px,40px 120px}to{background-position:50px -190px,70px -160px,80px -190px}}
+#perde.armagan .pencere{position:relative;z-index:1;width:min(940px,95cqw);max-height:92cqh;
+  background:linear-gradient(180deg,rgba(40,18,72,.5),rgba(18,8,36,.66));-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+  box-shadow:0 0 60px rgba(255,200,110,.16),0 20px 50px rgba(0,0,0,.55)}
+#perde.armagan .pencere{border-image-slice:30}
+#perde.armagan .pencere h3{text-align:center;font-family:var(--fBaslik);text-shadow:0 0 18px rgba(255,200,110,.45),0 2px 0 rgba(0,0,0,.5)}
+#perde.armagan .pencere>p{text-align:center}
+#perde.armagan .secimler{gap:16px;align-items:stretch;margin:6px 0 2px;position:relative}
+#perde.armagan .secimler::before{content:"";position:absolute;inset:8% 12%;z-index:-1;pointer-events:none;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(255,206,120,.28),rgba(255,206,120,0) 70%);filter:blur(8px)}
+.secimler .sc.arm{--kr:#bfe0ff;--kr2:rgba(150,200,255,.5);width:206px;padding:10px 12px 12px;gap:5px;justify-content:flex-start;position:relative;
+  border:1.5px solid var(--kr2);border-radius:14px;background:linear-gradient(180deg,rgba(46,24,84,.88),rgba(16,8,32,.92));
+  box-shadow:0 0 0 1px rgba(0,0,0,.35),0 0 22px -4px var(--kr2),inset 0 0 26px -10px var(--kr2);
+  transition:transform .28s ease,box-shadow .28s ease,border-color .28s ease;animation:armGir .55s ease both;animation-delay:calc(var(--sira,0) * 90ms)}
+.secimler .sc.arm.k-alev{--kr:#ffb35a;--kr2:rgba(255,150,60,.55)}
+.secimler .sc.arm.k-gunes{--kr:#ffe27a;--kr2:rgba(255,214,90,.7)}
+.secimler .sc.arm:hover,.secimler .sc.arm:focus-visible,.secimler .sc.arm:active{transform:translateY(-5px);border-color:var(--kr);
+  box-shadow:0 0 0 1px rgba(0,0,0,.35),0 10px 28px -6px var(--kr2),0 0 34px -2px var(--kr2),inset 0 0 30px -8px var(--kr2)}
+@keyframes armGir{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.secimler .sc.arm .kd{color:var(--kr);font-family:var(--fGovde);letter-spacing:.08em}
+.secimler .sc.arm b{font-family:var(--fBaslik);font-size:16px;color:#fff3d6;letter-spacing:.02em}
+.secimler .sc.arm small{font-size:13px;line-height:1.3}
+.secimler .sc.arm em{font-size:12.5px;color:#d8ecff;opacity:.9}
+.armGorsel{position:relative;display:block;width:84px;height:144px;margin:0 auto 2px;flex:none}
+.armGorsel::before{content:"";position:absolute;inset:-14px -30px;border-radius:50%;background:radial-gradient(ellipse at 50% 55%,var(--kr2),transparent 66%);opacity:.75;pointer-events:none}
+.armGorsel .armCer{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;filter:drop-shadow(0 3px 6px rgba(0,0,0,.55))}
+.armGorsel .armIc{position:absolute;left:9%;right:9%;top:20%;bottom:7%;border-radius:6px;display:grid;place-items:center;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 45%,rgba(255,255,255,.16),rgba(60,26,100,.75) 55%,rgba(14,6,30,.95))}
+.armGorsel .armIc::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,var(--kr2),transparent 60%);opacity:.7}
+.armGorsel .armSimge{position:relative;z-index:1;width:40px;height:40px;color:var(--kr);filter:drop-shadow(0 0 8px var(--kr2)) drop-shadow(0 2px 2px rgba(0,0,0,.6));object-fit:contain}
+.armGorsel .armResim{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+#perde.armagan .sc[data-yenile]{width:150px;align-self:center;border-color:rgba(210,195,255,.35);background:rgba(20,10,40,.7)}
+html.alcak .secimler .sc.arm{width:188px;padding:8px 10px}html.alcak .armGorsel{width:62px;height:106px}html.alcak .armGorsel .armSimge{width:30px;height:30px}
+html.alcak .secimler .sc.arm small{font-size:12px}
+html.azHareket #perde.armagan::before,html.azHareket #perde.armagan::after,html.azHareket .secimler .sc.arm{animation:none!important}
+@media (prefers-reduced-motion:reduce){#perde.armagan::before,#perde.armagan::after{animation:none}}
 </style>
 <script>
 /* tek ölçek: --o, --lw, --lh ve html.alcak; ilk boyamadan önce ve her boyut değişiminde */

@@ -106,7 +106,7 @@ oyun.on('birlesti', () => Ses.cal('birlesme', { aralik: 0.3 }));
 oyun.on('kaynasti', () => Ses.cal('kaynasma'));
 oyun.on('ses', (ad) => { if (ad === 'yenile') Ses.cal('yenile'); else if (ad === 'sat') Ses.cal('satin_al', { hiz: 0.8 }); });
 document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('button, .btn'); if (b && !b.disabled) Ses.cal('dugme', { aralik: 0.05 }); }, true);
-function pencere(html, b = false) { $('pencere').innerHTML = html; $('perde').classList.toggle('menuPanel', aktifEkran === 'ana'); $('perde').classList.toggle('panelB', !!b); $('perde').classList.add('acik'); $('pencere').scrollTop = 0; }   // görünür olduktan sonra: gizliyken scrollTop yazılamaz, önceki pencerenin kaydırması kalırdı   // karşılamada süslü menü paneli
+function pencere(html, b = false, tur = '') { $('pencere').innerHTML = html; $('perde').classList.toggle('armagan', tur === 'armagan'); $('perde').classList.toggle('menuPanel', aktifEkran === 'ana'); $('perde').classList.toggle('panelB', !!b); $('perde').classList.add('acik'); $('pencere').scrollTop = 0; }   // görünür olduktan sonra: gizliyken scrollTop yazılamaz, önceki pencerenin kaydırması kalırdı   // karşılamada süslü menü paneli
 function kapat() { $('perde').classList.remove('acik'); }
 $('perde').addEventListener('click', (e) => { if (e.target.id === 'perde' || e.target.closest('[data-kapat]')) kapat(); });
 
@@ -330,6 +330,18 @@ function macCiz() {
   secimDenetle();
   if (uc3) hz3Ciz();
 }
+// Kut Armağanı kart görseli: kademe çerçevesi (arayuz/ui/esya/arm_*.png; güneş → arm_yildiz) + türe göre simge.
+// Robot görseli gelince kut/web/arayuz/armagan/<id>.webp; liste.json (web_paket.cjs günceller) hangilerinin var olduğunu söyler → 404 yok.
+const ARM_CERCEVE = { kivilcim: 'arm_kivilcim', alev: 'arm_alev', gunes: 'arm_yildiz' };
+const ARM_SIMGE = { 'Kut': 'simsek', 'Kaynaştırma': 'kaynas', 'Eşya': 'kalkan', 'Önceden görme': 'goz', 'Alamet': 'isik', 'Ekonomi': 'coin', 'Seviye': 'ok', 'Geri dönüş': 'yenile' };
+let armGorseller = new Set();
+fetch('arayuz/armagan/liste.json').then(r => r.ok ? r.json() : []).then(l => { if (Array.isArray(l)) armGorseller = new Set(l); }).catch(() => {});
+function armaganGorsel(x) {
+  const ozel = armGorseller.has(x.id) ? `<img class="armResim" alt="" draggable="false" src="arayuz/armagan/${x.id}.webp">` : '';
+  const simge = ARM_SIMGE[x.tur] || 'yildiz';
+  const sim = simge === 'coin' ? `<img class="armSimge" alt="" draggable="false" src="arayuz/menu/ikon_altin.webp">` : `<svg class="armSimge"><use href="#i-${simge}"/></svg>`;
+  return `<span class="armGorsel" aria-hidden="true"><span class="armIc">${ozel || sim}</span><img class="armCer" alt="" draggable="false" src="../arayuz/ui/esya/${ARM_CERCEVE[x.kademe] || 'arm_kivilcim'}.png"></span>`;
+}
 // Bekleyen seçimler (bedava kahraman, Kervan, ganimet eşyası): basit pencere. Kapatılırsa düğmelerle yeniden açılır; savaşta seçilmeyen ilk seçenek olur.
 let sonSecim = null;
 function secimDenetle(zorla = false) {
@@ -350,7 +362,7 @@ function secimDenetle(zorla = false) {
     const a = M.armaganSecim;
     baslik = `Kut Armağanı · ${D.ARMAGAN_KADEME[a.kademe]}`; metin = 'Üç karttan birini seç: maç boyunca seninle kalır.' + (a.yenile > 0 ? ' Kartları bir kez yenileyebilirsin.' : '') + ' <b id="arSaat"></b>';
     arSaatKur(a.r);
-    ic = a.secenek.map((id, i) => { const x = D.armagan(id); return `<button class="sc" data-s="${i}"><span class="kd">${D.ARMAGAN_KADEME[x.kademe]} · ${x.tur}</span><b>${x.ad}</b><small>${x.m}</small><em>Neden seç? ${x.neden}</em></button>`; }).join('')
+    ic = a.secenek.map((id, i) => { const x = D.armagan(id); return `<button class="sc arm k-${x.kademe}" data-s="${i}" style="--sira:${i}">${armaganGorsel(x)}<span class="kd">${D.ARMAGAN_KADEME[x.kademe]} · ${x.tur}</span><b>${x.ad}</b><small>${x.m}</small><em>Neden seç? ${x.neden}</em></button>`; }).join('')
       + (a.yenile > 0 ? `<button class="sc" data-yenile="1" style="justify-content:center"><b>${ik('yenile')} Yenile</b><small>Üç kartın hepsi değişir, kademe aynı kalır</small></button>` : '');
   } else if (tip === 'muhur') {
     baslik = 'Soy Mührü'; metin = 'Bir soy seç: o soyun Mührü rafına iner. Mührü taşıyan kahraman bu soyu da sayar.';
@@ -359,7 +371,7 @@ function secimDenetle(zorla = false) {
     baslik = 'Ganimet seçimi'; metin = 'Canavarlar bunları bıraktı. Birini seç, rafına iner.';
     ic = M.ganimetSecim.map((id, i) => `<button class="sc" data-s="${i}">${esyaIk(id)}<b>${(D.esya(id) || {}).ad || id}</b><small>${esyaMetin(id)}</small></button>`).join('');
   }
-  pencere(`<h3>${baslik}</h3><p>${metin}</p><div class="secimler">${ic}</div>`);
+  pencere(`<h3>${baslik}</h3><p>${metin}</p><div class="secimler">${ic}</div>`, false, tip === 'armagan' ? 'armagan' : '');
   document.querySelectorAll('#pencere .sc[data-s]').forEach(b => b.onclick = async () => {
     const k = +b.dataset.s; kapat(); sonSecim = null;
     if (tip === 'ilk') oyun.ilkSec(k); else if (tip === 'kervan') await oyun.kervanSec(k); else if (tip === 'armagan') oyun.armaganSec(k); else oyun.ganimetSec(k);

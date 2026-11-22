@@ -25,12 +25,12 @@ export const AYAR = {
   ton: 'notr',            // 'notr' (NeutralToneMapping, renk/doygunluk korur) | 'agx' | 'aces'
   pozlama: 0.9, 
   ortamYogunluk: 0.32,     // sahne.environmentIntensity (arena, nesneler)
-  yaratikOrtam: 0.55,     // yaratık malzemelerinin envMapIntensity'si (kendi envMap'leri ile)
+  yaratikOrtam: 0.62,     // yaratık malzemelerinin envMapIntensity'si (kendi envMap'leri ile)
   bloomGuc: 0.5, bloomYaricap: 0.4, bloomEsik: 1.1,   // eşik 1'in üstünde: yalnız HDR efekt çekirdekleri parlar, geniş alanlar değil
   bloomOlcek: 0.5,        // bloom çözünürlüğü (ekranın oranı)
   puruzluluk: 0.58, metallik: 0.0, normalOlcek: 1.25,
-  doygunluk: 1.18,        // doku doygunluk çarpanı (1 = değişmez)
-  kontrast: 1.18,
+  doygunluk: 1.34,        // doku doygunluk çarpanı (1 = değişmez); iPad geri bildirimi "renksiz": 1,18 → 1,34 (yalnız yaratık malzemeleri, pbrKoru dahil)
+  kontrast: 1.2,
   rimGuc: 0.5, rimUs: 2.8,
   renkDuzen: 1,            // yalnız 'yuksek': split-tone gücü (0 kapalı); son işlem kapalı kademelerde zaten yok
   vinyet: 0.22,           // yalnız 'yuksek': kenarlar bu oranda kararır (yaratıklar ortada öne çıksın)

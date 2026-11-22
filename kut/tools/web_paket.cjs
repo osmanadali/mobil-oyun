@@ -27,6 +27,11 @@ if (fs.existsSync(path.join(KUT, 'arayuz', 'ui', 'esya'))) for (const f of fs.re
 for (const f of fs.readdirSync(path.join(KUT, 'arayuz', 'portre'))) kopya('arayuz/portre/' + f, 'arayuz/portre/' + f);
 // karşılama / yükleme / menü görselleri (robot; kaynak PNG'ler kut/gelen_gorsel): geliştirme sürümünde de web/arayuz/menu, yol değişmez
 for (const f of fs.readdirSync(path.join(WEB, 'arayuz', 'menu'))) if (f.endsWith('.webp')) kopya('web/arayuz/menu/' + f, 'arayuz/menu/' + f);
+// Kut Armağanı kart görselleri (robot; web/arayuz/armagan/<id>.webp, isteğe bağlı): liste.json var olanları sayar (arayuz.js 404 yerine buna bakar)
+{ const AD = path.join(WEB, 'arayuz', 'armagan'); fs.mkdirSync(AD, { recursive: true });
+  const l = fs.readdirSync(AD).filter(f => f.endsWith('.webp')).map(f => f.slice(0, -5)).sort();
+  fs.writeFileSync(path.join(AD, 'liste.json'), JSON.stringify(l) + '\n');
+  for (const f of [...l.map(x => x + '.webp'), 'liste.json']) kopya('web/arayuz/armagan/' + f, 'arayuz/armagan/' + f); }
 for (const f of fs.readdirSync(path.join(WEB, 'ses'))) if (f.endsWith('.mp3')) { fs.mkdirSync(path.join(OUT, 'ses'), { recursive: true }); fs.copyFileSync(path.join(WEB, 'ses', f), path.join(OUT, 'ses', f)); }
 for (const f of fs.readdirSync(path.join(WEB, 'muzik'))) if (f.endsWith('.mp3')) { fs.mkdirSync(path.join(OUT, 'muzik'), { recursive: true }); fs.copyFileSync(path.join(WEB, 'muzik', f), path.join(OUT, 'muzik', f)); }
 // yazı tipleri (paket içi woff2 + OFL lisansları; dış CDN yok)
