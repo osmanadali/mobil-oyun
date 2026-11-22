@@ -600,7 +600,10 @@ async function inViewport(page, sel) {
     const cv = await page.evaluate(() => {
       const R = window.__ray, lines = [], lens = [];
       for (let c = 0; c < 9; c++) { const a = R.lineStart(c), z = R.lineStart(c + 1) - 1; let d = 0; for (let l = a; l <= z; l++) d += R.puzzleFor(l).diff; lines.push(Math.round(d / (z - a + 1) * 10) / 10); lens.push(z - a + 1); }
-      const t0 = performance.now(); for (let l = 901; l <= 910; l++) R.puzzleFor(l); const ms = Math.round((performance.now() - t0) / 10 * 10) / 10;
+      // hız: üç ayrı 10'luk (901–930, önbelleksiz) ölçülür, en hızlısı alınır — tek ölçüm makinenin anlık yüküyle 40–96 ms arası savruluyordu
+      // (22 Kasım: yayındaki 1.2 de bu makinede tek ölçümde 60'ı geçti); en hızlı tur kodun gerçek hızını gösterir
+      const tm = [0, 1, 2].map(k => { const t0 = performance.now(); for (let l = 901 + k * 10; l <= 910 + k * 10; l++) R.puzzleFor(l); return (performance.now() - t0) / 10; });
+      const ms = Math.round(Math.min(...tm) * 10) / 10;
       // Günün Hattı: haftalık dalga (Pzt kolay → Paz zor), %40 tabanı, tepe %85+; yıl içinde ortalama yükselir
       const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       const week = mon => Array.from({ length: 7 }, (_, k) => { const d = new Date(mon); d.setDate(d.getDate() + k); return R.dPct(ymd(d)); });
