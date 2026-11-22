@@ -781,7 +781,7 @@ export async function savasKur(yeniSim, kok = '', { yerinde = false } = {}) {
   if (hzr.birimG) {
     hzr.birimG.visible = false;
     // hazırlıktaki duruşla aynı yönden başla (yüz kameraya dönükken savaşa döner)
-    if (yerinde) for (const b of liste) { if (b.u.taraf) continue; for (const h of hzr.birim.values()) if (h.kok.position.distanceTo(b.kok.position) < 0.2) { b.kok.rotation.y = h.kok.rotation.y; break; } }
+    if (yerinde) for (const b of liste) { if (b.u.taraf) continue; for (const h of hzr.birim.values()) if (h.kok.position.distanceTo(b.kok.position) < 0.2) { b.kok.rotation.y = h.kok.rotation.y; b.yuzOfs = Math.max(-0.5, Math.min(0.5, acıFark(b.kok.rotation.y, b.hedefAci))); break; } }
   }
   for (const b of liste) { const tr = b.u.taraf ? 1 : 0; if (!(yerinde && tr === 0)) his.giris(b, sira[tr]++ * 0.08 + (tr ? 0.15 : 0)); if ((b.u.b.s || 1) >= 3) vfx.durum(b.kok, 'yildiz3', true); }
   anlikAl(); // t=0
@@ -2333,7 +2333,7 @@ async function hzrBirimKur(o, im) {
   if (!ist || ist.im !== im || hzr.birim.has(o.ref)) { birimSok(b); return; }   // bu arada satıldı/birleşti
   b.imza = im; b.ref = o.ref; b.yer = ist.yer; b.i = ist.i; b.hedefP = hzrHucreP(ist.yer, ist.i); b.tabanOlcek = b.kok.scale.x; b.dogT = 0;
   b.olcekS = (ist.yer === 'yedek' ? YEDEK_OLCEK : 1); b.kok.position.copy(b.hedefP);
-  b.kok.rotation.y = 0; b.hedefAci = 0; b.hzrYildiz = u.b.s;
+  b.kok.rotation.y = hzrAci(b.hedefP.x); b.hedefAci = b.kok.rotation.y; b.hzrYildiz = u.b.s;
   hzr.birimG.add(b.kok); hzr.birim.set(o.ref, b);
 }
 /** Vurgu: hedef hücre (sürüklerken), geçerli mi, bütün hücreler belirgin mi (seçim/sürükleme), seçili ve kaynaşma adayları (ref). */
@@ -2385,6 +2385,8 @@ export function hazirlikAlan() {
 }
 const OPS_HZR_IKI = { hareket: false, hiz: 0, saldiri: null, yetenek: false, vurul: false, olum: false, zafer: false };
 const OPS_HZR_DORT = { hiz: 0, saldiri: false, yetenek: false, vurul: false, olum: false, zafer: false };
+// hazırlık yönü: savaştaki oyuncu birimiyle aynı (birimKur: π; boşta yuzOfs ±0,5 kameraya doğru, sol yarı -, sağ yarı +)
+const HZR_YAN = 0.5, hzrAci = (x) => Math.PI + (x < 0 ? -HZR_YAN : HZR_YAN);
 const HZR_SABIT = { olu: false, hareket: false, saldiri: false, yetenek: false, vurul: false };
 const _hzH = new THREE.Vector3();
 function hzrGuncelle(dt) {
@@ -2398,8 +2400,9 @@ function hzrGuncelle(dt) {
     const hedefS = surulen ? 0.9 : (b.yer === 'yedek' ? YEDEK_OLCEK : 1); b.olcekS += (hedefS - b.olcekS) * Math.min(1, dt * 12);
     b.dogT = Math.min(1, (b.dogT || 0) + dt / 0.28); const dog = 1 - Math.pow(1 - b.dogT, 3) * (1 - 0.3 * Math.sin(b.dogT * Math.PI));
     b.kok.scale.setScalar(b.tabanOlcek * b.olcekS * dog);
-    // yüzü kameraya (oyuncuya) dönük; sürüklenirken hafif sallanır
-    const aci = Math.atan2(kamera.position.x - b.kok.position.x, kamera.position.z - b.kok.position.z) * 0.85 + (surulen ? Math.sin(t * 9) * 0.12 : 0);
+    // yüzü düşmana (tahtanın karşı yarısı, -z) dönük, savaştaki duruşla aynı: π ± HZR_YAN (merkeze doğru 3/4 açı, yüz kameradan görünür);
+    // sürüklenirken hafif sallanır
+    const aci = hzrAci(b.kok.position.x) + (surulen ? Math.sin(t * 9) * 0.12 : 0);
     b.kok.rotation.y += acıFark(aci, b.kok.rotation.y) * Math.min(1, dt * 8);
     const sec = v.secili === ref, aday = v.kaynas && v.kaynas.includes(ref);
     if (sec) secB = b;
