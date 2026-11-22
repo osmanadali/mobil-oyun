@@ -820,8 +820,12 @@ function show(id) {
 const bind = (binds, root) => { for (const [id, fn] of Object.entries(binds)) { const el = root?.querySelector('#' + id) || $(id); if (el) el.onclick = fn; } };   // root: önce o kutunun içinde ara (sayfa ile üstündeki pencerede aynı kimlik olabilir: mRestore)
 // center: ekranın ortasında küçük pencere (duraklat); öteki pencereler alttan açılır
 function modal(html, binds = {}, locked = false, center = false) {
-  mLocked = locked; howBack = null; mOnClose = null; $('modal').classList.toggle('center', center);
-  const sh = $('mCard'), full = html.includes('class="tabs"'); sh.innerHTML = html; sh.scrollTop = 0; $('modal').classList.add('open');
+  mLocked = locked; howBack = null; mOnClose = null;
+  const M = $('modal'), sh = $('mCard'), full = html.includes('class="tabs"');
+  // orta pencere ↔ alt pencere geçişi (ör. "Rakip aranıyor" → "Arkadaşını davet et"): kutu ortadaki küçük halinden tam genişliğe
+  // animasyonla açılıyordu, tablette "ekran sağdan soldan daralıyor" gibi görünüyordu (1.2.3). Yeni düzen kapalı konumdan, geçişsiz başlar.
+  if (M.classList.contains('center') !== center) { sh.style.transition = 'none'; M.classList.remove('open'); M.classList.toggle('center', center); void sh.offsetWidth; sh.style.transition = ''; }
+  sh.innerHTML = html; sh.scrollTop = 0; M.classList.add('open');
   sh.classList.toggle('full', full);   // sekmeli Mağaza: iki sekme de tam boy, hep ✕ (sekme değişince pencere zıplamaz)
   sh.classList.toggle('fit', !full && sh.scrollHeight <= sh.clientHeight + 1);   // sığan pencere: her yerinden aşağı çekilebilir
   // uzun (kaydırılan) pencere: köşede ✕ — aşağı çekmek kaydırmayla karışabiliyor (temalar, sandık, mağaza)
@@ -3645,10 +3649,14 @@ function vsWait(title, sub, onCancel) {
     <button id="vwX" class="btn glassbtn">${L('Vazgeç', 'Cancel')}</button>`, { vwX: () => { onCancel?.(); LIG.duel.leave(); closeModal(); } }, true, true);
   const tk = setInterval(() => { if (!$('vwT')) return clearInterval(tk); $('vwT').textContent = fmtT(Date.now() - t0); }, 500);
 }
+let vsSeq = 0;
 async function vsFind(o = {}) {
-  vsWait(L('Rakip aranıyor…', 'Finding an opponent…'), L('Benzer seviyede bir oyuncu', 'A player at a similar level'));
-  let m = null; try { m = await LIG.duel.find({ levels: duelLevels(), seen: save.vsSeen || [], ...o }); } catch { if ($('vwT')) vsNet(() => vsFind(o)); return; }   // bağlantı hatası "rakip yok" diye gizlenmez
-  if (!$('vwT')) return;   // vazgeçildi
+  // her arama kendi numarasıyla: Vazgeç'ten (ya da yeni aramadan) sonra eski arama sonuç göstermez. Eskiden kapanan pencerenin
+  // içeriği (#vwT) DOM'da kaldığı için "vazgeçildi" anlaşılmıyor, iptalden sonra "Şu an rakip yok" çıkıyordu (1.2.3, kullanıcı videosu)
+  const my = ++vsSeq, live = () => my === vsSeq && modalOpen() && $('vwT');
+  vsWait(L('Rakip aranıyor…', 'Finding an opponent…'), L('Benzer seviyede bir oyuncu', 'A player at a similar level'), () => { vsSeq++; });
+  let m = null; try { m = await LIG.duel.find({ levels: duelLevels(), seen: save.vsSeen || [], ...o }); } catch { if (live()) vsNet(() => vsFind(o)); return; }   // bağlantı hatası "rakip yok" diye gizlenmez
+  if (!live()) return;   // vazgeçildi
   if (m) return vsIntro(m);
   modal(`<div class="bell">🚇</div><h2>${L('Şu an rakip yok', 'No opponent right now')}</h2><p>${L('Birazdan yeniden dene ya da bir arkadaşını davet et.', 'Try again in a moment, or invite a friend.')}</p>
     <button id="vR" class="btn primary"><span>${L('Yeniden dene', 'Try again')}</span></button><button id="vH" class="btn glassbtn">${L('Arkadaşı davet et', 'Invite a friend')}</button><button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`,
@@ -3704,7 +3712,7 @@ async function vsHost(o = {}) {
     modal(`<div class="bell">🔁</div><h2>${L(`${esc(o.nick)} davet edildi`, `${esc(o.nick)} invited`)}</h2><p>${L('Arkadaşının onayı bekleniyor…', 'Waiting for your friend to accept…')}</p>
       <div class="vsr vswait"><i></i><i></i><i></i></div><p class="tip">${L(`Görmüyorsa kod: <b>${h.code}</b>`, `If they don’t see it, code: <b>${h.code}</b>`)}</p><b id="vCode" hidden>${h.code}</b>
       <button id="vX" class="btn glassbtn">${L('Vazgeç', 'Cancel')}</button>`, { vX: () => { rmOut = null; LIG.duel.leave(); closeModal(); } }, true);
-    const m = await h.wait(); rmOut = null; if (m && $('vCode')) vsIntro(m); else if (!m && $('vCode')) { closeModal(); toast(L('Arkadaşın yanıt vermedi', 'Your friend didn’t answer')); }
+    const m = await h.wait(); rmOut = null; if (m && modalOpen() && $('vCode')) vsIntro(m); else if (!m && modalOpen() && $('vCode')) { closeModal(); toast(L('Arkadaşın yanıt vermedi', 'Your friend didn’t answer')); }
     return;
   }
   modal(`<div class="bell">⚔️</div><h2>${L('Arkadaşını davet et', 'Invite your friend')}</h2><p>${L('Arkadaşın Ray’de “Koda katıl”a bu kodu yazsın ya da bağlantıyı açsın.', 'Your friend enters this code under “Join with code” in Ray, or opens the link.')}</p>
@@ -3714,7 +3722,7 @@ async function vsHost(o = {}) {
     vShare: async () => { const text = `${L('Ray’de kapışalım mı? ⚔️ Kod:', 'Duel me in Ray? ⚔️ Code:')} ${h.code}\n${url}`;
       try { const P = window.Capacitor?.Plugins?.Share; if (P) await P.share({ text }); else if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); toast(L('Panoya kopyalandı', 'Copied to clipboard')); } } catch {} },
     vX: () => { LIG.duel.leave(); closeModal(); } }, true);
-  const m = await h.wait(); if (m && $('vCode')) vsIntro(m);
+  const m = await h.wait(); if (m && modalOpen() && $('vCode')) vsIntro(m);
 }
 function vsJoinSheet(code = '') {
   modal(`<div class="bell">⚔️</div><h2>${L('Koda katıl', 'Join with code')}</h2>
