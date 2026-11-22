@@ -18,7 +18,7 @@ workflows:
         ADMOB_APP_ID_IOS: ca-app-pub-1478688740631972~9395068810
         ADMOB_INTERSTITIAL_IOS: ca-app-pub-1478688740631972/5351882023
         ADMOB_REWARDED_IOS: ca-app-pub-1478688740631972/8249508106
-        BUILD_NO: "20"
+        BUILD_NO: "21"
     scripts:
       - name: Ayarları denetle
         script: |
