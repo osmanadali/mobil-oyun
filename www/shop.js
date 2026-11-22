@@ -21,8 +21,18 @@ window.Shop = (() => {
   const prods = {};
   let started = false, plat = null, H = { owned() {}, grant() { return false; } };
   const keep = p => { if (p && byId[p.id]) prods[p.id] = p; };
-  // tüketilemezler: sahiplik mağazadan (satın alma, geri yükleme, yeni cihaz)
-  function owned() { const S = C()?.store; if (!S) return; ITEMS.forEach(x => { if (x.nc && S.owned(x.id)) H.owned(x.key); }); }
+  // tüketilemezler: sahiplik mağazadan (satın alma, geri yükleme, yeni cihaz).
+  // ⚠️ store.owned() KULLANILMAZ: eklenti (13.x) iOS'ta Satın Al'a basılınca, ödeme penceresi açıkken "initiated" durumunda geçici bir
+  // işlem ekleyip receiptUpdated yayınlıyor; LocalReceipts.isOwned durum bakmadığı için buna "sahip" diyordu → Tema paketi / Reklamsız
+  // ödeme alınmadan (iptal edilse bile) açılıyordu (kullanıcılar, 22 Kasım). Yalnız mağazanın ONAYLADIĞI ya da BİTMİŞ işlem sayılır.
+  const PAID = new Set(['approved', 'finished']);
+  function paid(S, id) {
+    const R = S.localReceipts;
+    if (!Array.isArray(R)) return !!S.owned?.(id);   // işlem listesi olmayan ortam (eski sahte mağaza): eski yol
+    return R.some(r => (r.transactions || []).some(t => PAID.has(t.state) && !t.isPending && !t.isConsumed && (t.products || []).some(p => p.id === id)
+      && !String(t.transactionId || '').startsWith('virtual')));   // ödeme sürerken eklentinin uydurduğu geçici işlem asla sayılmaz
+  }
+  function owned() { const S = C()?.store; if (!S) return; ITEMS.forEach(x => { if (x.nc && paid(S, x.id)) H.owned(x.key); }); }
   // onaylanan işlem: tüketilebilir ürün → önce ödül (kayda yazılır), sonra finish. Tüketilemez → doğrula → bitir.
   function approved(t) {
     const cons = (t.products || []).map(p => byId[p.id]).filter(x => x && !x.nc);
