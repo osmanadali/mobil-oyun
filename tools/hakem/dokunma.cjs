@@ -24,6 +24,18 @@ module.exports = async T => {
   check('dokunma.touch', 'Dokunmatik: karonun ortasına her dokunuş tam bir kez döndürür (7 dokunuş = 7 × 90°; çift işleme yok); aynı karoya art arda dokunuş 1 hamle; fare yolu da çalışır',
     s1.cur[i] === rot(s0.cur[i]) && s2.cur[i] === want && s2.moves === s0.moves + 1 && s3.cur[i + 1] !== s2.cur[i + 1] && s3.moves === s2.moves + 1, JSON.stringify({ i, s0: s0.cur[i], s1: s1.cur[i], s2: s2.cur[i], want, m: [s0.moves, s1.moves, s2.moves, s3.moves] }), 'high');
   check('dokunma.tani', '🩺 Dokunma tanısı: her olayı, düştüğü karoyu ve sonucu yazar (touch → karo → döndü)', /touch \d+,\d+ → karo \d+ \(s\d+ k\d+\) → döndü/.test(log) && /mouse/.test(log), log.slice(0, 400), 'high');
+  // iOS'ta görülen çift olay (1.2.3): aynı dokunuş için 70 ms arayla iki touchstart (aynı ya da farklı parmak kimliği) → tek dönüş
+  const dbl = await page.evaluate(async i => { const R = window.__ray, G = R.G, g = R.geo, cv = document.getElementById('cv'), rc = cv.getBoundingClientRect();
+    const x = rc.left + g.ox + ((i % G.cols) + .5) * g.s, y = rc.top + g.oy + (((i / G.cols) | 0) + .5) * g.s, out = [];
+    const fire = (type, id) => { const t = new Touch({ identifier: id, target: cv, clientX: x, clientY: y }); cv.dispatchEvent(new TouchEvent(type, { touches: type === 'touchstart' ? [t] : [], changedTouches: [t], cancelable: true, bubbles: true })); };
+    const w = ms => new Promise(r => setTimeout(r, ms));
+    await w(300); let a = G.cur[i]; fire('touchstart', 7); await w(70); fire('touchstart', 7); await w(30); fire('touchend', 7); out.push([a, G.cur[i]]);
+    await w(300); a = G.cur[i]; fire('touchstart', 8); await w(70); fire('touchend', 8); fire('touchstart', 9); await w(20); fire('touchend', 9); out.push([a, G.cur[i]]);
+    await w(300); a = G.cur[i]; fire('touchstart', 10); await w(20); fire('touchend', 10); await w(160); fire('touchstart', 11); await w(20); fire('touchend', 11); out.push([a, G.cur[i]]);
+    return out; }, i + 1);
+  const r1 = m => ((m << 1) | (m >> 3)) & 15;
+  check('dokunma.cift', 'Dokunmatik çift olay (iOS: aynı dokunuş için 70 ms arayla ikinci touchstart): karo bir kez döner (düz ray 180° dönüp “dönmedi” görünmez); 160 ms arayla iki gerçek dokunuş iki kez döndürür',
+    r1(dbl[0][0]) === dbl[0][1] && r1(dbl[1][0]) === dbl[1][1] && r1(r1(dbl[2][0])) === dbl[2][1], JSON.stringify(dbl), 'high');
   check('dokunma.konsol', 'Dokunma testinde konsolda hata yok', !errors.length, JSON.stringify(errors.slice(0, 3)));
   await ctx.close();
 };

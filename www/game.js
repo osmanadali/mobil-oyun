@@ -1369,7 +1369,9 @@ function boardTap(e) {   // e: { clientX, clientY } (dokunma ya da fare)
   tapNote(`karo ${i} (${G.hex ? 'altıgen' : `s${w + 1} k${c + 1}`})`);
   // aynı karoya 40 ms içinde ikinci olay: tek dokunuşun çift gelmesi (iOS WebKit'te görüldü: düz ray 180° dönüp "dönmedi" sanılıyordu,
   // 1.2, kullanıcı 21 Kasım). İnsan parmağıyla iki dokunuş bu kadar hızlı olmaz.
-  if (i === lastTapI && now - lastTapT < 40) return tapNote('çift olay, atlandı');
+  // dokunmatikte aynı karoya 110 ms içinde ikinci olay da çift sayılır (1.2.3, 22 Kasım: "dönmeyen karoda daha tiz ses" = iki kısa tık,
+  // düz ray 180° dönüp aynı görünüyordu; 40 ms yetmiyordu). Parmakla aynı karoya bu hızda iki kez dokunulamaz; fare yolu eskisi gibi.
+  if (i === lastTapI && now - lastTapT < (e.touch ? 110 : 40)) return tapNote('çift olay, atlandı');
   lastTapI = i; lastTapT = now;
   if (G.tut && !tutGate(i, now)) return;   // 🎓 bu adımda vurgulanmayan karo dönmez
   if (G.fixed[i]) { haptic('light'); tone(440, .06, .02); toast(L('Bu karo ipucuyla sabitlendi', 'This tile was set by a hint')); press.set(i, now); kick(); return; }
@@ -1423,7 +1425,10 @@ function boardTap(e) {   // e: { clientX, clientY } (dokunma ya da fare)
 // ⚠️ iOS (1.2, kullanıcı videosu 21 Kasım): karonun ortasına art arda dokununca WebKit pointer olayını sistem hareketine (çift dokunma
 // vb.) kaptırıp hiç göndermiyordu → halka yok, hamle yok, karo dönmüyor. Dokunmatikte tahta touchstart ile dinlenir (sistem hareketinden
 // önce gelir; preventDefault çift dokunma / büyüteç / taklit fare olaylarını da durdurur). Fare ve kalem pointerdown ile.
-cv.addEventListener('touchstart', e => { e.preventDefault(); for (const t of e.changedTouches) { tapDiag('touch', t.clientX, t.clientY); boardTap(t); } }, { passive: false });
+// her parmak (touch.identifier) yaşamı boyunca bir kez işlenir: iOS bazen aynı dokunuş için touchstart'ı yeniden gönderiyor
+const liveTouch = new Set();
+cv.addEventListener('touchstart', e => { e.preventDefault(); for (const t of e.changedTouches) { if (liveTouch.has(t.identifier)) { tapNote('aynı parmak, atlandı'); continue; } liveTouch.add(t.identifier); tapDiag('touch', t.clientX, t.clientY); boardTap({ clientX: t.clientX, clientY: t.clientY, touch: true }); } }, { passive: false });
+for (const ev of ['touchend', 'touchcancel']) cv.addEventListener(ev, e => { for (const t of e.changedTouches) liveTouch.delete(t.identifier); if (!e.touches.length) liveTouch.clear(); });
 cv.addEventListener('pointerdown', e => { if (e.pointerType === 'touch') { tapDiag('ptr-touch', e.clientX, e.clientY, true); return; } tapDiag(e.pointerType || 'ptr', e.clientX, e.clientY); boardTap(e); });
 
 // kusursuz seri: tacı olmayan bölümü kusursuz bitirmek seriyi +1 yapar, kusursuzsuz bitirmek sıfırlar; taçlı bölüm seriyi etkilemez.
