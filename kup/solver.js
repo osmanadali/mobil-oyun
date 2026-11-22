@@ -216,8 +216,20 @@ const Solver = (() => {
     }
     return { steps, ok: solved(s), fc: [0, 1, 2, 3, 4, 5].map(f => raw[fIdx(NORM[f], f)]) };
   }
+  // bir aşamada kaç parça tamam (0..4)
+  function progress(raw, stage) {
+    const s = relabel(raw), sides = [0, 1, 2, 3];
+    const pairs = sides.map(k => [RING[k], RING[(k + 1) % 4]]);
+    if (stage === 0) return RING.filter(f => solvedAt(s, posWith([f], -1))).length;
+    if (stage === 1) return pairs.filter(pr => solvedAt(s, posWith(pr, -1))).length;
+    if (stage === 2) return pairs.filter(pr => solvedAt(s, posWith(pr, 0))).length;
+    if (stage === 3) return topEdges().filter(p => s[fIdx(p, U_)] === U_).length;
+    if (stage === 4) return topEdges().filter(p => solvedAt(s, p)).length;
+    if (stage === 5) return topCorners().filter(p => sameSet(colorsAt(s, p).map(o => o.c), facesOf(p))).length;
+    return topCorners().filter(p => s[fIdx(p, U_)] === U_).length;
+  }
   function stageOf(raw) { const s = relabel(raw); for (let i = 0; i < GOALS.length; i++) if (!GOALS[i](s)) return i; return 7; }
-  return { FL, IDX, key, faceOfN, apply, applyAll, plan, stageOf, label, relabel, solvedState: () => Int8Array.from(FL, x => x.f), GOALS };
+  return { FL, IDX, key, faceOfN, apply, applyAll, plan, stageOf, label, progress, relabel, solvedState: () => Int8Array.from(FL, x => x.f), GOALS };
 })();
 /*SOLVER-END*/
 if (typeof module !== 'undefined') module.exports = Solver;

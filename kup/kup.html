@@ -23,6 +23,12 @@
 /* Skin'ler kendi dünyasını taşır, sistem temasından bağımsız */
 :root[data-skin="pastel"]{--bg1:#f7eef6;--bg2:#e0e7f7;--ink:#3b3552;--ink-soft:#7c7598;--panel:rgba(255,255,255,.74);--solid:#f6f1f8;--line:rgba(59,53,82,.11);--accent:#8b6fd3;--on-accent:#fff;--star:#f0a83a;--lock:rgba(59,53,82,.05);color-scheme:light}
 :root[data-skin="neon"]{--bg1:#1d1650;--bg2:#05040d;--ink:#ecebff;--ink-soft:#9d98c9;--panel:rgba(18,15,40,.76);--solid:#0c0a1e;--line:rgba(160,150,255,.16);--accent:#2ec4ff;--on-accent:#04121c;--star:#f6f26a;--lock:rgba(160,150,255,.05);color-scheme:dark}
+:root[data-skin="okyanus"]{--bg1:#11586a;--bg2:#05202a;--ink:#e8f6f3;--ink-soft:#9cc5c9;--panel:rgba(6,38,48,.76);--solid:#06252f;--line:rgba(232,246,243,.13);--accent:#ffd166;--on-accent:#2a2003;--star:#ffd166;--lock:rgba(232,246,243,.04);color-scheme:dark}
+:root[data-skin="retro"]{--bg1:#f4e6cb;--bg2:#e2cba1;--ink:#3d2c22;--ink-soft:#7a6553;--panel:rgba(255,249,236,.76);--solid:#f6ecd8;--line:rgba(61,44,34,.13);--accent:#b8322a;--on-accent:#fff;--star:#e3a33a;--lock:rgba(61,44,34,.05);color-scheme:light}
+:root[data-skin="karbon"]{--bg1:#2c2f36;--bg2:#0a0b0d;--ink:#f2f3f5;--ink-soft:#9a9fa8;--panel:rgba(20,22,26,.80);--solid:#111215;--line:rgba(255,255,255,.10);--accent:#e10600;--on-accent:#fff;--star:#ffe500;--lock:rgba(255,255,255,.04);color-scheme:dark}
+:root[data-skin="mermer"]{--bg1:#3b3631;--bg2:#100f0e;--ink:#f3efe6;--ink-soft:#b5ad9f;--panel:rgba(28,26,24,.80);--solid:#161413;--line:rgba(243,239,230,.12);--accent:#c9a54a;--on-accent:#1d1606;--star:#e0c070;--lock:rgba(243,239,230,.04);color-scheme:dark}
+:root[data-skin="lav"]{--bg1:#4a1608;--bg2:#0c0403;--ink:#ffece3;--ink-soft:#c99b8b;--panel:rgba(32,10,6,.80);--solid:#170705;--line:rgba(255,180,150,.14);--accent:#ff5a1f;--on-accent:#1a0600;--star:#ffd23a;--lock:rgba(255,180,150,.04);color-scheme:dark}
+:root[data-skin="altin"]{--bg1:#2e2619;--bg2:#0b0906;--ink:#f6edd8;--ink-soft:#bfae8a;--panel:rgba(30,25,16,.80);--solid:#14110b;--line:rgba(246,237,216,.12);--accent:#d4af37;--on-accent:#1c1503;--star:#f0cf6a;--lock:rgba(246,237,216,.04);color-scheme:dark}
 :root[data-skin="ahsap"]{--bg1:#2f4639;--bg2:#121b16;--ink:#f1e8d8;--ink-soft:#b3ab98;--panel:rgba(22,32,26,.78);--solid:#16201a;--line:rgba(241,232,216,.12);--accent:#e0b04a;--on-accent:#2a1c0c;--star:#e0b04a;--lock:rgba(241,232,216,.04);color-scheme:dark}
 
 html,body{height:100%;overflow:hidden;overscroll-behavior:none}
@@ -114,8 +120,8 @@ button{font-family:inherit}
 .sh-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .sheet h2{font-family:var(--f-display);font-weight:500;font-size:16px;margin:0;letter-spacing:.01em}
 .sheet h3{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-soft);margin:18px 0 10px;font-weight:800}
-.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-.card{appearance:none;border:1.5px solid var(--line);background:transparent;color:var(--ink);border-radius:18px;padding:10px 6px 9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:7px;font:700 12px var(--f-body);position:relative;transition:transform .12s}
+.cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.card{appearance:none;border:1.5px solid var(--line);background:transparent;color:var(--ink);border-radius:16px;padding:8px 4px 7px;font-size:11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:7px;font:700 12px var(--f-body);position:relative;transition:transform .12s}
 .card[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .card canvas{width:100%;max-width:76px;aspect-ratio:1;height:auto}
 .card.locked canvas{filter:grayscale(1) brightness(.75);opacity:.55}
@@ -550,20 +556,37 @@ const Solver = (() => {
     }
     return { steps, ok: solved(s), fc: [0, 1, 2, 3, 4, 5].map(f => raw[fIdx(NORM[f], f)]) };
   }
+  // bir aşamada kaç parça tamam (0..4)
+  function progress(raw, stage) {
+    const s = relabel(raw), sides = [0, 1, 2, 3];
+    const pairs = sides.map(k => [RING[k], RING[(k + 1) % 4]]);
+    if (stage === 0) return RING.filter(f => solvedAt(s, posWith([f], -1))).length;
+    if (stage === 1) return pairs.filter(pr => solvedAt(s, posWith(pr, -1))).length;
+    if (stage === 2) return pairs.filter(pr => solvedAt(s, posWith(pr, 0))).length;
+    if (stage === 3) return topEdges().filter(p => s[fIdx(p, U_)] === U_).length;
+    if (stage === 4) return topEdges().filter(p => solvedAt(s, p)).length;
+    if (stage === 5) return topCorners().filter(p => sameSet(colorsAt(s, p).map(o => o.c), facesOf(p))).length;
+    return topCorners().filter(p => s[fIdx(p, U_)] === U_).length;
+  }
   function stageOf(raw) { const s = relabel(raw); for (let i = 0; i < GOALS.length; i++) if (!GOALS[i](s)) return i; return 7; }
-  return { FL, IDX, key, faceOfN, apply, applyAll, plan, stageOf, label, relabel, solvedState: () => Int8Array.from(FL, x => x.f), GOALS };
+  return { FL, IDX, key, faceOfN, apply, applyAll, plan, stageOf, label, progress, relabel, solvedState: () => Int8Array.from(FL, x => x.f), GOALS };
 })();
 /*SOLVER-END*/
 
 /* ---------- bölümler ---------- */
+const U_ = (len) => ({ kind: 'undo', len });
+const GL = (from, have, goal, minPar = 3) => ({ kind: 'goal', from, have, goal, minPar });
 const GROUPS = [
-  { name: 'İlk adım', n: 2, lens: [1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5], desc: 'Küçük küp. Karışımı izle, geri çevir.' },
-  { name: 'Klasik', n: 3, lens: [1, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8], desc: 'Gerçek 3×3. Hamleler uzuyor.' },
-  { name: 'Dörtlü', n: 4, lens: [2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8], desc: 'Daha çok katman, daha çok dikkat.' },
-  { name: 'Usta', n: 3, lens: [8, 8, 9, 9, 9, 10, 10, 10, 11, 11, 11, 12, 12, 12, 13, 13, 14, 15], desc: 'Uzun karışımlar. İpuçlarını sakla.' },
+  { name: 'Isınma', n: 2, items: [1, 1, 2, 2, 2, 3, 3, 3].map(U_), desc: 'Küçük küp. Karışımı izle, aynı hamleleri tersine çevir.' },
+  { name: 'Geri çevir', n: 3, items: [1, 1, 2, 2, 2, 3, 3, 3, 4, 4].map(U_), desc: 'Aynı fikir, gerçek 3×3. Elini ve gözünü alıştırır.' },
+  { name: 'Alt katman', n: 3, items: [GL(0, 3, 0), GL(0, 3, 0), GL(0, 2, 0), GL(0, 2, 0), GL(0, 1, 0), GL(0, 0, 0), GL(0, 0, 0), GL(1, 3, 1), GL(1, 2, 1), GL(1, 1, 1), GL(1, 0, 1), GL(1, 0, 1)], desc: 'Beyaz artıyı ve ilk katmanı bitir. Öğren\'de 1. ve 2. adım.' },
+  { name: 'Orta katman', n: 3, items: [GL(2, 3, 2), GL(2, 3, 2), GL(2, 2, 2), GL(2, 2, 2), GL(2, 1, 2), GL(2, 0, 2), GL(2, 0, 2), GL(2, 0, 2), GL(1, 0, 2), GL(0, 0, 2)], desc: 'İki katmanı tamamla. Öğren\'de 3. adım. Sondakiler alttan başlar.' },
+  { name: 'Üst katman', n: 3, items: [GL(3, 0, 3, 6), GL(3, 0, 3, 6), GL(4, 0, 4, 7), GL(4, 0, 4, 7), GL(5, 0, 5, 8), GL(5, 0, 5, 8), GL(6, 0, 6), GL(6, 0, 6), GL(6, 0, 6), GL(3, 0, 6), GL(3, 0, 6), GL(3, 0, 6)], desc: 'Son katman, alttakileri bozmadan. Öğren\'de 4-7. adım.' },
+  { name: 'Usta', n: 3, items: [0, 0, 0, 0, 0, 0, 0, 0].map(() => GL(0, 0, 6)), desc: 'Karışık küpü baştan sona çöz. Hedef hamle sayısını tutturmak ustalık ister.' },
 ];
+const GOAL_TXT = ['Beyaz artıyı tamamla', 'İlk katmanı bitir', 'Orta katmanı bitir', 'Üstte sarı artı yap', 'Sarı kenarları eşle', 'Sarı köşeleri yerine taşı', 'Küpü bitir'];
 const LEVELS = [];
-GROUPS.forEach((g, gi) => g.lens.forEach(len => LEVELS.push({ n: g.n, len, g: gi })));
+GROUPS.forEach((g, gi) => g.items.forEach(it => LEVELS.push({ n: g.n, g: gi, ...it })));
 const LESSONS = [
   { t: 'Küpün mantığı', s: 'Merkez, kenar, köşe. Neden bir yüz yetmez?', goal: 'Küpün nasıl çalıştığını anlamak. Bunu bilince hiçbir adım ezber gibi gelmez.', why: 'Kısa, etkileşimli sayfalarla parçaları tanıyacaksın, bir yüzü yapıp neden takıldığını göreceksin ve algoritmaların neden güvenli olduğunu izleyeceksin.', a: '' },
   { t: 'Beyaz artı', s: 'Dört beyaz kenarı alta, renkleri eşleyerek.', goal: 'Alttaki beyaz merkezin çevresine dört beyaz kenarı koymak. Artının her kolunun yan rengi, yanındaki merkezle aynı olmalı.', why: 'Merkezler yer değiştirmez, yani beyaz-kırmızı kenar her zaman beyaz ile kırmızı merkezin arasına gider. Kenarı önce üst katmana alırsın: üst katmanı çevirmek alttakileri bozmaz, orada rahatça gezdirirsin. Yan rengi kendi merkezinin üstüne gelince o yüzü iki kez çevirip indirirsin.', watch: 'Sadece beyazları toplayıp bir yüz yapmak yetmez. Her kenarın iki rengini de kontrol et: beyazı alta, öbür rengi kendi merkezine bakmalı.', a: 'F2' },
@@ -575,7 +598,8 @@ const LESSONS = [
   { t: 'Sarı köşeleri çevir', s: 'Küpü bitir.', goal: 'Köşeleri yerinde çevirip küpü bitirmek.', why: 'R\' D\' R D sağ ön köşeyi döndürür; 2 ya da 4 tekrarda sarı üste gelir. Bu sırada alt katmanlar bozulur, ama bütün köşeler bitince yaptığın hamleler birbirini götürür ve alt kendiliğinden düzelir.', watch: 'En önemli kural: köşeler arasında sadece üst katmanı çevir. Alt bozuk görünüyor diye yarıda bırakma, küpü elinde döndürme.', a: "R' D' R D" },
   { t: 'Tam çözüm', s: 'Yedi adımı baştan sona uygula.', goal: 'Karışık bir küpü öğrendiğin yedi adımla baştan sona çözmek.', why: 'Alt katman, orta katman, üst katman. Her adımın amacını biliyorsun; hamleleri gizleyip kendin dene, takılınca "Hamleyi göster".', watch: 'Bir adım bitmeden sonrakine geçme. Her adımın sonunda önceki adımların hâlâ yerinde olduğunu kontrol et.', a: '' },
 ];
-const SKIN_COST = { klasik: 0, pastel: 12, neon: 45, ahsap: 90 };
+const FREE_HINTS = 30;
+const SKIN_COST = { klasik: 0, pastel: 9, okyanus: 21, retro: 33, neon: 48, karbon: 64, mermer: 82, ahsap: 102, lav: 126, altin: 155 };
 function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 function puzzle(n, len, seed) {
   const r = rng(seed), out = []; let last = -1;
@@ -596,9 +620,33 @@ function fullScramble(n) {
   return out;
 }
 const starsFor = (moves, par) => moves <= par ? 3 : moves <= par * 2 + 2 ? 2 : 1;
+// ilk 30 bölümde hamle sınırı yok; sonrasında cömert sınır
+const NO_LIMIT = 30;
+const noLimit = g => g.mode === 'level' && g.level < NO_LIMIT;
+const threeMax = g => g.goal !== undefined ? Math.round(g.par * 1.5) + 6 : g.scramble.length * 2 + 2;
+const twoStarMax = g => g.goal !== undefined ? Math.round(g.par * 2.5) + 12 : g.scramble.length * 4 + 6;
+const starsOf = (g, mv) => noLimit(g) ? 3 : mv <= threeMax(g) ? 3 : mv <= twoStarMax(g) ? 2 : 1;
+// hedefli bulmaca: tohumlu karışım + yöntemin ilk adımları; par = yöntemle gereken hamle
+function goalSetup(from, have, goal, seed, minPar = 3) {
+  for (let t = 0; t < 60; t++) {
+    const r = rng(seed + t * 104729), sc = []; let last = -1;
+    while (sc.length < 22) { const ax = Math.floor(r() * 3); if (ax === last) continue; last = ax; sc.push([ax, r() < .5 ? 0 : 2, [1, -1, 2][Math.floor(r() * 3)]]); }
+    const moves = [[0, 0, 2], [0, 1, 2], [0, 2, 2]].concat(sc);
+    let raw = Solver.applyAll(Solver.solvedState(), moves);
+    for (const st of Solver.plan(raw).steps) {
+      if (st.stage > from || (st.stage === from && Solver.progress(raw, from) >= have)) break;
+      st.moves.forEach(m => { moves.push(m.mv); raw = Solver.apply(raw, m.mv); });
+    }
+    if (Solver.stageOf(raw) !== from || Solver.progress(raw, from) !== have) continue;
+    const par = Solver.plan(raw).steps.filter(st => st.stage <= goal).reduce((a, b) => a + b.moves.length, 0);
+    if (par < minPar) continue;
+    return { scramble: moves, par, goal };
+  }
+  return { scramble: [[0, 0, 2], [0, 1, 2], [0, 2, 2], [1, 2, 1]], par: 1, goal: 6 };
+}
+const DAILY_STAGES = [0, 1, 2, 3, 5, 6, 2];
 const today = () => { const d = new Date(); return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate(); };
 const dayBefore = k => { const d = new Date(Math.floor(k / 10000), Math.floor(k / 100) % 100 - 1, k % 100 - 1); return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate(); };
-const dailyLen = k => 6 + (k % 3);
 
 /* ---------- kayıt ---------- */
 const KEY = 'kup.v2';
@@ -629,19 +677,77 @@ function woodCanvas(base, dark, light, seed, size = 512) {
   g.globalAlpha = 1; return c;
 }
 function texFrom(canvas) { const t = new T.CanvasTexture(canvas); t.encoding = T.sRGBEncoding; t.anisotropy = 4; return t; }
-let woodBody, woodGrain;
-const getWood = () => {
-  if (!woodBody) { woodBody = texFrom(woodCanvas('#6b4529', '#3a2312', '#8a5d38', 7)); woodGrain = texFrom(woodCanvas('#f2f2f2', '#b8b8b8', '#ffffff', 31, 256)); }
-  return [woodBody, woodGrain];
-};
+function marbleCanvas(size = 512) {
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const g = c.getContext('2d'), r = rng(11);
+  const gr = g.createLinearGradient(0, 0, size, size); gr.addColorStop(0, '#1d1c1f'); gr.addColorStop(1, '#121114'); g.fillStyle = gr; g.fillRect(0, 0, size, size);
+  for (let i = 0; i < 26; i++) {
+    let x = r() * size, y = r() * size, a = r() * 6.28;
+    const gold = r() < .3;
+    g.strokeStyle = gold ? '#c9a54a' : '#d8d2c4'; g.globalAlpha = gold ? .55 : .12 + r() * .25; g.lineWidth = gold ? .8 + r() * .9 : .5 + r() * 2.2;
+    g.beginPath(); g.moveTo(x, y);
+    for (let k = 0; k < 60; k++) { a += (r() - .5) * .7; x += Math.cos(a) * 9; y += Math.sin(a) * 9; g.lineTo(x, y); }
+    g.stroke();
+  }
+  g.globalAlpha = 1; return c;
+}
+function carbonCanvas(size = 512) {
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const g = c.getContext('2d'), q = 16;
+  for (let i = 0; i < size / q; i++) for (let j = 0; j < size / q; j++) {
+    const hor = (i + j) % 2 === 0, x = i * q, y = j * q;
+    const gr = hor ? g.createLinearGradient(x, y, x, y + q) : g.createLinearGradient(x, y, x + q, y);
+    gr.addColorStop(0, '#16171a'); gr.addColorStop(.5, '#34373d'); gr.addColorStop(1, '#16171a');
+    g.fillStyle = gr; g.fillRect(x, y, q, q);
+  }
+  return c;
+}
+function rockCanvas(size = 512) {
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const g = c.getContext('2d'), r = rng(5);
+  g.fillStyle = '#231e1c'; g.fillRect(0, 0, size, size);
+  for (let i = 0; i < 2600; i++) { g.fillStyle = r() < .5 ? '#151110' : '#3a312d'; g.globalAlpha = .25 + r() * .5; const w = 1 + r() * 5; g.fillRect(r() * size, r() * size, w, w); }
+  for (let i = 0; i < 9; i++) {
+    let x = r() * size, y = r() * size, a = r() * 6.28;
+    g.strokeStyle = '#ff5a1f'; g.globalAlpha = .7; g.lineWidth = 1 + r() * 1.6; g.shadowColor = '#ff7a2a'; g.shadowBlur = 6;
+    g.beginPath(); g.moveTo(x, y);
+    for (let k = 0; k < 14; k++) { a += (r() - .5) * 1.4; x += Math.cos(a) * 10; y += Math.sin(a) * 10; g.lineTo(x, y); }
+    g.stroke();
+  }
+  g.globalAlpha = 1; g.shadowBlur = 0; return c;
+}
+const TEXC = { wood: s => woodCanvas('#6b4529', '#3a2312', '#8a5d38', 7, s), marble: marbleCanvas, carbon: carbonCanvas, rock: rockCanvas };
+const texCache = {};
+const getTex = name => texCache[name] || (texCache[name] = texFrom(TEXC[name](512)));
+let woodGrain;
+const getGrain = () => woodGrain || (woodGrain = texFrom(woodCanvas('#f2f2f2', '#b8b8b8', '#ffffff', 31, 256)));
+// basit stüdyo ortamı: parlak ve metal yüzeyler yansıtacak bir şey görsün
+let envTex = null;
+function getEnv() {
+  if (envTex) return envTex;
+  const c = document.createElement('canvas'); c.width = 512; c.height = 256;
+  const g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 256);
+  gr.addColorStop(0, '#ffffff'); gr.addColorStop(.45, '#9aa0aa'); gr.addColorStop(.55, '#3a3d44'); gr.addColorStop(1, '#111216');
+  g.fillStyle = gr; g.fillRect(0, 0, 512, 256);
+  g.fillStyle = 'rgba(255,255,255,.95)'; g.fillRect(60, 40, 120, 50); g.fillRect(330, 60, 90, 36);
+  const t = new T.CanvasTexture(c); t.mapping = T.EquirectangularReflectionMapping; t.encoding = T.sRGBEncoding;
+  const pm = new T.PMREMGenerator(renderer); envTex = pm.fromEquirectangular(t).texture; pm.dispose();
+  return envTex;
+}
 
 /* ---------- skin'ler ---------- */
 // renk sırası: +x sağ, -x sol, +y üst, -y alt, +z ön, -z arka
 const SKINS = {
   klasik: { name: 'Klasik', body: '#121317', rough: .42, metal: .05, stickers: ['#d42a33', '#f2731f', '#f4f4ee', '#ffd31a', '#00a04b', '#1652c4'], sRough: .28, glow: 0 },
   pastel: { name: 'Pastel', body: '#cfc8dc', rough: .65, metal: 0, stickers: ['#ec7f93', '#f3a465', '#fbfaff', '#efcb55', '#6fc79c', '#7fa6e6'], sRough: .55, glow: 0 },
+  okyanus: { name: 'Okyanus', body: '#0e2a3a', rough: .35, metal: .1, stickers: ['#ff6f61', '#f8a55b', '#e8f6f3', '#ffd166', '#2bb39d', '#3a86ff'], sRough: .3, glow: 0, env: .5 },
+  retro:  { name: 'Retro', body: '#efe3cc', rough: .75, metal: 0, stickers: ['#b8322a', '#e48a2a', '#3d2c22', '#e8c547', '#6e8b3d', '#2f7f86'], sRough: .7, glow: 0 },
   neon:   { name: 'Neon', body: '#0a0a14', rough: .3, metal: .35, stickers: ['#ff2e6a', '#ff9a1f', '#e6f6ff', '#f6f26a', '#28ff8c', '#2ec4ff'], sRough: .3, glow: .95 },
-  ahsap:  { name: 'Ahşap', body: '#ffffff', rough: .7, metal: 0, stickers: ['#a3362e', '#c97a32', '#eadcc0', '#d7a836', '#5d7c48', '#3e5c7c'], sRough: .6, glow: 0, wood: true },
+  karbon: { name: 'Karbon', body: '#ffffff', rough: .32, metal: .3, stickers: ['#e10600', '#ff8700', '#f5f5f5', '#ffe500', '#00c165', '#0090ff'], sRough: .2, glow: 0, tex: 'carbon', env: .9 },
+  mermer: { name: 'Mermer', body: '#ffffff', rough: .18, metal: 0, stickers: ['#c8163f', '#ef8a17', '#f2ede4', '#f2c230', '#0f9d63', '#1f4fd6'], sRough: .15, glow: 0, tex: 'marble', env: 1 },
+  ahsap:  { name: 'Ahşap', body: '#ffffff', rough: .7, metal: 0, stickers: ['#a3362e', '#c97a32', '#eadcc0', '#d7a836', '#5d7c48', '#3e5c7c'], sRough: .6, glow: 0, tex: 'wood', grain: 1 },
+  lav:    { name: 'Lav', body: '#ffffff', rough: .85, metal: 0, stickers: ['#ff3b1f', '#ff8c1a', '#efe6dc', '#ffd23a', '#9bff4f', '#47c4ff'], sRough: .35, glow: .75, tex: 'rock' },
+  altin:  { name: 'Altın', body: '#d9b15a', rough: .28, metal: .85, stickers: ['#c4122f', '#ea6a10', '#faf6ea', '#f6c800', '#079a52', '#1748b8'], sRough: .2, glow: 0, env: 1.3 },
 };
 const SKIN_IDS = Object.keys(SKINS);
 if (!SKINS[S.skin] || !skinOpen(S.skin)) S.skin = 'klasik';
@@ -698,10 +804,10 @@ let N = 0, cubies = [], bodyMat, stickMats = [];
 function makeMaterials() {
   const sk = SKINS[S.skin];
   bodyMat && bodyMat.dispose(); stickMats.forEach(m => m.dispose());
-  const [wb, wg] = sk.wood ? getWood() : [null, null];
-  bodyMat = new T.MeshStandardMaterial({ color: lin(sk.body), roughness: sk.rough, metalness: sk.metal, map: wb });
+  const wb = sk.tex ? getTex(sk.tex) : null, wg = sk.grain ? getGrain() : null, env = sk.env ? getEnv() : null;
+  bodyMat = new T.MeshStandardMaterial({ color: lin(sk.body), roughness: sk.rough, metalness: sk.metal, map: wb, envMap: env, envMapIntensity: sk.env || 1 });
   stickMats = sk.stickers.map((h, i) => new T.MeshStandardMaterial({
-    color: lin(h), roughness: sk.sRough, metalness: 0, map: wg,
+    color: lin(h), roughness: sk.sRough, metalness: 0, map: wg, envMap: env, envMapIntensity: (sk.env || 0) * .35,
     emissive: sk.glow ? lin(h) : new T.Color(0), emissiveIntensity: sk.glow ? sk.glow * (i === 2 ? .7 : 1) : 0,
     polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1,
   }));
@@ -845,14 +951,30 @@ function fmt(ms) {
   const cs = Math.floor(ms / 10), m = Math.floor(cs / 6000), s = Math.floor(cs / 100) % 60, c = cs % 100;
   return m + ':' + String(s).padStart(2, '0') + '.' + String(c).padStart(2, '0');
 }
-function parOf(g) { return g.mode === 'speed' ? null : g.scramble.length; }
+// hedefli bölümlerde ipucu planı: oyuncu izledikçe ilerler, sapınca yeniden kurulur
+let lvPlan = null;
+function lvNext() {
+  if (!lvPlan) { const r = Solver.plan(readRaw()); lvPlan = { steps: r.steps, si: 0, mi: 0, fc: r.fc }; }
+  const st = lvPlan.steps[lvPlan.si]; return st ? { st, m: st.moves[lvPlan.mi] } : null;
+}
+function lvTrack(mv) {
+  if (!lvPlan) return;
+  const st = lvPlan.steps[lvPlan.si], m = st && st.moves[lvPlan.mi];
+  if (m && m.mv[0] === mv[0] && m.mv[1] === mv[1] && (m.mv[2] === mv[2] || Math.abs(m.mv[2]) + Math.abs(mv[2]) === 4)) {
+    lvPlan.mi++; if (lvPlan.mi >= st.moves.length) { lvPlan.si++; lvPlan.mi = 0; }
+  } else lvPlan = null;
+}
+function parOf(g) { return g.mode === 'speed' ? null : g.par != null ? g.par : g.scramble.length; }
+const goalReached = g => g.goal !== undefined ? Solver.stageOf(readRaw()) > g.goal : isSolved();
 function newGame(g) {
   closeWin();
-  S.cur = { ...g, hist: [], elapsed: 0, phase: 'scrambling', hintsUsed: 0 };
+  S.cur = { ...g, hist: [], elapsed: 0, phase: 'scrambling', hintsUsed: 0 }; lvPlan = null;
   tStart = 0; build(g.n); zoomK = 1; fitCamera();
-  if (g.mode === 'learn') {
+  if (g.mode === 'learn' || g.goal !== undefined) {
     g.scramble.forEach(applyInstant); S.cur.phase = 'ready';
-    show('play'); save(); guideReplan(true); return;
+    show('play'); save();
+    if (g.mode === 'learn') guideReplan(true); else aimCamera(0, g.goal <= 1 ? -.32 : .45);
+    return;
   }
   const fast = g.mode === 'speed', len = g.scramble.length;
   const dur = fast ? Math.max(55, 1300 / len) : Math.max(160, Math.min(420, 2600 / len));
@@ -860,7 +982,7 @@ function newGame(g) {
   show('play'); save();
 }
 function resumeGame() {
-  const g = G();
+  const g = G(); lvPlan = null;
   if (g.mode === 'learn' && !g.lesson) { show('play'); return conceptPage(g.page || 0); }
   build(g.n);
   g.scramble.forEach(applyInstant); g.hist.forEach(applyInstant);
@@ -873,12 +995,14 @@ function startLevel(i) {
   const g = G();
   if (g && g.mode === 'level' && g.level === i && g.phase !== 'done') return resumeGame();
   const L = LEVELS[i];
+  if (L.kind === 'goal') return newGame({ mode: 'level', level: i, n: 3, ...goalSetup(L.from, L.have, L.goal, 1000 + i * 7919, L.minPar) });
   newGame({ mode: 'level', level: i, n: L.n, scramble: puzzle(L.n, L.len, 1000 + i * 7919) });
 }
 function startDaily() {
   const k = today(), g = G();
   if (g && g.mode === 'daily' && g.day === k && g.phase !== 'done') return resumeGame();
-  newGame({ mode: 'daily', day: k, n: 3, scramble: puzzle(3, dailyLen(k), k) });
+  const st = DAILY_STAGES[k % 7];
+  newGame({ mode: 'daily', day: k, n: 3, ...goalSetup(st, 0, st, k, 6) });
 }
 function startSpeed(n) {
   closeSheets();
@@ -901,7 +1025,8 @@ function onMoveDone(mv, kind) {
   }
   tick(); haptic(8);
   if (g.mode === 'learn') { guideAfterMove(mv, kind); hud(); save(); return; }
-  if (g.phase === 'solving' && isSolved()) win();
+  if (g.goal !== undefined) { clearFocus(); setDim(null); lvTrack(mv); }
+  if (g.phase === 'solving' && goalReached(g)) win();
   else tutorial();
   hud(); save();
 }
@@ -913,8 +1038,17 @@ function undo() {
 }
 function useHint() {
   const g = G(); if (!g || g.mode === 'speed' || anim || (g.phase !== 'ready' && g.phase !== 'solving')) return;
-  const free = g.mode === 'level' && g.level < 12;
+  const free = g.mode === 'level' && g.level < FREE_HINTS;
   if (!free && S.hints <= 0) { toast('İpucu kalmadı · 3 yıldızla kazan'); return; }
+  if (g.goal !== undefined) {
+    const c = lvNext(); if (!c) return;
+    if (!free) { S.hints--; g.hintsUsed++; save(); }
+    const fo = c.st.focus, cub = fo && cubieByColors(fo.cols.map(f => lvPlan.fc[f]));
+    setFocus(cub ? [cub] : [], fo ? fo.to : null);
+    startHint(c.m.mv, free);
+    setHint(c.st.text + ' Sıradaki: ' + c.st.moves.slice(lvPlan.mi).map(m => m.lb).join(' '), true);
+    hud(); return;
+  }
   const st = reduceStack(g.scramble.concat(g.hist)); if (!st.length) return;
   const top = st[st.length - 1];
   if (!free) { S.hints--; g.hintsUsed++; save(); }
@@ -932,7 +1066,7 @@ function restart() {
   if (g.mode === 'speed') return newGame({ mode: 'speed', n: g.n, scramble: fullScramble(g.n) });
   if (g.mode === 'learn' && !g.lesson) return startConcept();
   if (g.mode === 'learn') return newGame({ mode: 'learn', lesson: g.lesson, n: 3, scramble: lessonScramble(g.lesson) });
-  closeWin(); build(g.n); g.scramble.forEach(applyInstant);
+  closeWin(); build(g.n); g.scramble.forEach(applyInstant); clearFocus(); lvPlan = null;
   g.hist = []; g.phase = 'ready'; g.elapsed = 0; tStart = 0; save(); hud(); setHint(defaultHint());
 }
 /* ---------- öğren: rehberli çözüm ---------- */
@@ -1163,14 +1297,14 @@ function win() {
   let stars = 0, rec = false;
   S.total = (S.total || 0) + 1;
   if (g.mode === 'level') {
-    stars = starsFor(g.hist.length, parOf(g));
+    stars = starsOf(g, g.hist.length);
     const prev = S.lv[g.level] || 0;
     if (stars > prev) S.lv[g.level] = stars;
     if (stars === 3 && prev < 3) { S.hints++; gifts.push(['bulb', '+1 ipucu']); }
     const L = LEVELS[g.level], nx = LEVELS[g.level + 1];
     if (nx && nx.g !== L.g && !prev) gifts.push(['star', 'Yeni bölge: ' + GROUPS[nx.g].name]);
   } else if (g.mode === 'daily') {
-    stars = starsFor(g.hist.length, parOf(g));
+    stars = starsOf(g, g.hist.length);
     const prev = S.daily[g.day] || 0;
     if (!prev) {
       S.streak = S.lastDaily === dayBefore(g.day) ? S.streak + 1 : 1; S.lastDaily = g.day;
@@ -1197,7 +1331,7 @@ function win() {
   const par = parOf(g);
   $('wM').innerHTML = g.mode === 'learn' ? (g.lesson < FULL ? `<b>${LESSONS[g.lesson].t}</b> bitti. Sıradaki: <b>${LESSONS[g.lesson + 1].t}</b>` : 'Karışık bir küpü baştan sona çözdün.')
     : g.mode === 'speed' ? `<b>${g.hist.length}</b> hamle · En iyi <b>${fmt(S.best[String(g.n)])}</b>`
-    : `<b>${g.hist.length}</b> hamle · hedef <b>${par}</b>` + (g.mode === 'daily' ? ` · <b>${S.streak}</b> gün seri` : '') + (stars < 3 ? `<br>3 yıldız için ${par} hamlede çöz` : '');
+    : `<b>${g.hist.length}</b> hamle` + (noLimit(g) ? '' : ` · 3★ sınırı <b>${threeMax(g)}</b>`) + (g.mode === 'daily' ? ` · <b>${S.streak}</b> gün seri` : '') + (stars < 3 ? `<br>3 yıldız için ${threeMax(g)} hamlede bitir` : '');
   $('wGifts').innerHTML = gifts.map(([ic, t]) => `<span class="gift"><svg><use href="#i-${ic}" ${ic === 'star' ? 'fill="currentColor"' : ''}/></svg>${t}</span>`).join('');
   const row = $('wRow'); row.innerHTML = '';
   const mk = (html, cls, fn, label) => { const b = document.createElement('button'); b.className = 'btn ' + cls; b.innerHTML = html; if (label) b.setAttribute('aria-label', label); b.onclick = fn; row.appendChild(b); };
@@ -1248,7 +1382,7 @@ function homeUi() {
   if (nxl >= 0) { $('hPlayT').textContent = 'Küpü öğren'; $('hPlayS').textContent = (nxl ? nxl + '. adım · ' : 'Başlangıç · ') + LESSONS[nxl].t; }
   else {
     $('hPlayT').textContent = (resume ? 'Devam · ' : '') + 'Bölüm ' + (nl + 1);
-    $('hPlayS').textContent = L.n + '×' + L.n + ' · ' + GROUPS[L.g].name + ' · ' + L.len + ' hamlede çöz';
+    $('hPlayS').textContent = L.n + '×' + L.n + ' · ' + GROUPS[L.g].name + ' · ' + (L.kind === 'goal' ? GOAL_TXT[L.goal] : L.len + ' hamleyi geri çevir');
   }
   $('hLearnS').textContent = Object.keys(S.learn).length + '/' + LESSONS.length;
   $('hMapS').textContent = Object.keys(S.lv).length + '/' + LEVELS.length;
@@ -1273,14 +1407,14 @@ function hud() {
     $('pSub').innerHTML = `<span><b>${mv}</b> hamle</span><span>En iyi <b>${fmt(S.best[String(g.n)])}</b></span>`;
   } else {
     $('pLbl').textContent = g.mode === 'level' ? 'Bölüm ' + (g.level + 1) + ' · ' + g.n + '×' + g.n : 'Günlük küp';
-    $('pBig').innerHTML = mv + `<span> / ${par}</span>`;
-    const pot = starsFor(Math.max(mv, 0), par);
-    $('pSub').innerHTML = `${starsHtml(g.phase === 'done' ? starsFor(mv, par) : pot)}<span>${mv <= par ? par + ' hamlede 3 yıldız' : mv <= par * 2 + 2 ? (par * 2 + 2) + ' hamleye kadar 2 yıldız' : 'Çöz, 1 yıldız al'}</span>`;
+    const pot = starsOf(g, mv), two = twoStarMax(g), three = threeMax(g), nl = noLimit(g);
+    $('pBig').innerHTML = nl ? mv + '<span> hamle</span>' : mv + `<span> / ${three}</span>`;
+    $('pSub').innerHTML = `${starsHtml(pot)}<span>${g.goal !== undefined ? '<b>' + GOAL_TXT[g.goal] + '</b> · ' : ''}${nl ? 'Hamle sınırı yok' : mv <= three ? three + ' hamleye kadar 3★' : mv <= two ? two + ' hamleye kadar 2★' : 'Bitir, 1★ al'}</span>`;
   }
   const playing = g.phase === 'solving' || g.phase === 'ready';
   $('pUndo').disabled = !g.hist.length || g.phase !== 'solving' || (g.mode === 'learn' && !g.lesson);
   $('pHint').hidden = g.mode === 'speed' || g.mode === 'learn';
-  const free = g.mode === 'level' && g.level < 12;
+  const free = g.mode === 'level' && g.level < FREE_HINTS;
   $('pHintN').textContent = free ? '∞' : S.hints;
   $('pHint').disabled = !playing;
   $('pMainL').textContent = g.mode === 'speed' ? 'Yeniden karıştır' : g.mode === 'learn' ? (g.lesson ? 'Yeni karışım' : 'Baştan') : 'Baştan';
@@ -1292,6 +1426,7 @@ function defaultHint() {
   if (g.phase === 'scrambling') return g.mode === 'speed' ? 'Karıştırılıyor…' : 'Karışımı izle. Aynı hamleleri tersine çevir.';
   if (g.mode === 'level' && g.level < 2 && !g.hist.length) return 'Küpün üstünde parmağını kaydır, katman döner. Boşlukta sürüklersen küp döner.';
   if (g.mode === 'speed' && g.phase === 'ready') return 'Süre ilk hamlede başlar.';
+  if (g.goal !== undefined && !g.hist.length) return 'Hedef: ' + GOAL_TXT[g.goal] + '. Takılırsan ampule bas; hangi parçanın nereye gideceğini gösterir.';
   return '';
 }
 let hintTimer;
@@ -1299,7 +1434,7 @@ function setHint(t, strong) {
   const h = $('hint'); clearTimeout(hintTimer);
   if (!t) { h.classList.add('off'); return; }
   h.textContent = t; h.classList.toggle('strong', !!strong); h.classList.remove('off');
-  if (strong) hintTimer = setTimeout(() => setHint(defaultHint()), 4200);
+  if (strong) hintTimer = setTimeout(() => setHint(defaultHint()), Math.max(4200, t.length * 55));
 }
 let toastT;
 function toast(t) { const e = $('toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => e.classList.remove('on'), 2200); }
@@ -1309,7 +1444,7 @@ function mapUi() {
   const nl = nextLevel();
   let i = 0, html = '';
   GROUPS.forEach((gr, gi) => {
-    const start = i, cnt = gr.lens.length;
+    const start = i, cnt = gr.items.length;
     let st = 0; for (let k = start; k < start + cnt; k++) st += S.lv[k] || 0;
     html += `<div class="grp"><h3>${gr.name} <small>${gr.n}×${gr.n} · ${st}/${cnt * 3} ★</small></h3><p>${gr.desc}</p><div class="lvs">`;
     for (let k = 0; k < cnt; k++, i++) {
@@ -1328,7 +1463,8 @@ $('mList').addEventListener('click', e => { const b = e.target.closest('.lv[data
 function skinPreview(id) {
   const c = document.createElement('canvas'), s = 152; c.width = c.height = s;
   const g = c.getContext('2d'), sk = SKINS[id], pad = 10, cell = (s - pad * 2) / 3;
-  if (sk.wood) g.drawImage(woodCanvas('#6b4529', '#3a2312', '#8a5d38', 7, 152), 0, 0);
+  if (sk.tex) g.drawImage(TEXC[sk.tex](152), 0, 0);
+  else if (sk.metal > .5) { const gr = g.createLinearGradient(0, 0, s, s); gr.addColorStop(0, '#f3d98a'); gr.addColorStop(.5, sk.body); gr.addColorStop(1, '#8a6a22'); g.fillStyle = gr; g.fillRect(0, 0, s, s); }
   else { g.fillStyle = sk.body; g.fillRect(0, 0, s, s); }
   [4, 0, 2, 4, 5, 3, 1, 4, 0].forEach((ci, i) => {
     const x = pad + (i % 3) * cell + 4, y = pad + Math.floor(i / 3) * cell + 4, w = cell - 8;
@@ -1547,6 +1683,6 @@ root.dataset.skin = S.skin;
 makeMaterials();
 build(3);
 resize(); show('home'); requestAnimationFrame(loop);
-window.__kup = { S, CONCEPT, conceptPage, get cubies() { return cubies; }, readRaw, Solver, get guide() { return guide; }, openIntro, lessonScramble, isSolved, enqueue, startLevel, startDaily, startSpeed, goHome, LEVELS, reduceStack, get screen() { return screen; } };
+window.__kup = { S, lvNext, get lvPlan() { return lvPlan; }, CONCEPT, conceptPage, get cubies() { return cubies; }, readRaw, Solver, get guide() { return guide; }, openIntro, lessonScramble, isSolved, enqueue, startLevel, startDaily, startSpeed, goHome, LEVELS, reduceStack, get screen() { return screen; } };
 })();
 </script>
