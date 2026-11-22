@@ -255,7 +255,7 @@ Zamanlar savaş bittiği (sonuç bandının açıldığı) andan saniye. Unity: 
 - MVP seçimi: oyuncunun takımında en çok verilen hasar; eşitse en çok iyileştirme + kalkan. Kimse katkı yapmadıysa gösterilmez.
 - Animasyonları azalt (Ayarlar; ayarlanmadıysa işletim sisteminin "hareketi azalt" tercihi): uçuş, sarsıntı, dönme, kamera geçişi yok;
   amblemler son duruşunda belirir, sesler hemen çalar, MVP sinematiği oynamaz (yıldız sonuç bandında çip).
-- Düğmeler: basınca ölçek 0,95 (0,09 sn), üzerine gelince parlama (opaklık 0,15 sn). Yazı tipi: başlık/düğme "Kut Baslik" (Lilita One + Türkçe harfler), gövde Nunito.
+- Düğmeler: basınca ölçek 0,95 (0,09 sn), üzerine gelince parlama (opaklık 0,15 sn). Yazı tipi: başlık/düğme Cinzel 700/900 (büyük vitrin: Cinzel Decorative), gövde ve sayılar Alegreya Sans.
 
 ## Canlılık katmanları ve donuk kemik denetimi (2026-11-19)
 Web: `web/hareket.js` (`canlilik`, `FID`, `DAVUL_P`; dört ayaklı ve yılanda "canlılık (boşta)" blokları), `web/sahne3d.js` (`GORSEL` `salStil`,

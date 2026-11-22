@@ -95,7 +95,7 @@ workflows:
 
   # ── Kut Arena (iPad, yalnız yatay). Proje kut/ios altında; web oyunu kut/web/paket'ten www'ye kopyalanır.
   # Gizli değerler Ray ile aynı Apple hesabı: "ray_ios" grubu (APPSTORE_API_KEY_ID, APPSTORE_API_ISSUER_ID, APPSTORE_API_KEY_P8_BASE64, APPLE_TEAM_ID).
-  # Önce App Store Connect'te bundle ID com.osmanadali.kutarena ile "Kut Arena" uygulaması oluşturulmalı.
+  # Identifier (com.osmanadali.kutarena) kimlik.cjs ile otomatik kaydedilir; App Store Connect'te "Kut Arena" uygulama kaydı bir kez elle açılır (Apple API'si izin vermiyor).
   # Başlatma: Start new build › workflow "Kut Arena iOS". Her yüklemede KUT_BUILD_NO'yu bir artır.
   kut-ios:
     name: Kut Arena iOS (TestFlight)
@@ -122,6 +122,9 @@ workflows:
           grep -q 'BEGIN PRIVATE KEY' "$CM_BUILD_DIR/../KutAuthKey.p8" || { echo "APPSTORE_API_KEY_P8_BASE64 çözülemedi"; exit 1; }
           V=$(xcodebuild -version | awk 'NR==1{print int($2)}'); [ "$V" -ge 26 ] || { echo "Capacitor 8 Xcode 26+ ister (bulunan: $V)"; exit 1; }
           echo "Kut Arena $VN ($KUT_BUILD_NO) derlenecek"
+      - name: Apple kimliği (Identifier) ve uygulama kaydı
+        script: |
+          AUTHKEY="$CM_BUILD_DIR/../KutAuthKey.p8" node kimlik.cjs
       - name: Web paketi ve yerel proje
         script: |
           set -e

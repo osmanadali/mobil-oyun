@@ -942,6 +942,7 @@ img.ik{object-fit:contain;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
 :root{--fBaslik:"Cinzel",Georgia,"Times New Roman",serif;--fSus:"Cinzel Decorative","Cinzel",Georgia,serif;
   --fGovde:"Alegreya Sans","Trebuchet MS","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;--fSayi:"Alegreya Sans","Trebuchet MS",system-ui,sans-serif}
 body{font-family:var(--fGovde);font-variant-numeric:lining-nums tabular-nums;font-kerning:normal}
+*{font-feature-settings:"lnum" 1,"tnum" 1}
 h1,h2,h3,h4,.pn-bas,.sonucBant b,.sonSerit b,.kutBant b,.kut .yz big,.yukleniyor>b,.hasarOzet .ust b,.hasarOzet .sekmeler button,.dondur,.savasGiris b,.yildizEkran,.sonToren{font-family:var(--fBaslik);font-weight:700}
 .saat b{font-family:var(--fSayi);font-weight:900}
 h3,h4,.pn-bas{letter-spacing:.04em}
@@ -1238,7 +1239,7 @@ body.menu3d:not(.vitrinArka) #ana .anaArka i{animation-play-state:paused}   /* g
 body.vitrinArka #ana .sahneAd span{opacity:0}   /* çizimdeki kahramanlar vitrin adlarıyla eşleşmez */
 html.azHareket #ana .anaArka i{animation:none}
 html.arkaB #ana .anaArka i{background-image:url(arayuz/menu/karsilama_arka_b.webp)}
-/* OYNA: dugme_oyna.webp (oranı 2118:618 korunur), basınca dugme_oyna_basili.webp; yazı Lilita One (Kut Baslik) */
+/* OYNA: dugme_oyna.webp (oranı 2118:618 korunur), basınca dugme_oyna_basili.webp; yazı Cinzel Decorative (TİPOGRAFİ v2) */
 #ana .oyna{width:min(440px,100%);aspect-ratio:2118/618;height:auto;min-height:0;padding:0 17% 4px;border:0;border-image:none;border-radius:0;box-shadow:none;
   background:url(arayuz/menu/dugme_oyna.webp) center/100% 100% no-repeat;overflow:visible;gap:2px;font-size:42px;
   filter:drop-shadow(0 8px 10px rgba(0,0,0,.5)) drop-shadow(0 0 18px rgba(255,190,80,.28))}
@@ -1813,6 +1814,53 @@ html.alcak body.hz3 #mac .macUst .rozet .hik{width:19px;height:19px}html.alcak b
 html.alcak body.hz3 #mac .macUst>.altinRozet{padding:0 12px 0 7px!important}
 html.alcak body.hz3 #mac .macUst>.altinRozet::after{inset:-4px -2px;border-width:9px 9px 9px 37px;border-image-width:9px 9px 9px 37px}
 html.alcak body.hz3 #mac .altinRozet .top{width:28px;height:28px}html.alcak body.hz3 #mac .altinRozet .top .ik{width:25px!important;height:25px!important}
+
+/* ===================== TİPOGRAFİ v2 (Cinzel + Alegreya Sans): renk/kontrast hiyerarşisi ve yazı tipi atamaları =====================
+   Ana metin krem (--yazi #f3e6c8), ikincil soluk lavanta-krem (--yazi2), üçüncül soluk (--soluk). Düz beyaz yok.
+   Başlık/düğme/ad: Cinzel; sayılar: Alegreya Sans 800–900, lnum+tnum; küçük etiketler: Alegreya Sans büyük harf, geniş aralık. */
+:root{--yazi:#f3e6c8;--yazi2:#d6c8e2;--soluk:#a597bd;--murekkep:#3a1a05}
+/* düğmeler (görselli mor/sat/altın): krem yazı, ince koyu kontur; altın görsel: koyu mürekkep */
+.btn.mor,.btn.sat,.bilgiKart .bkEylem .btn.mor,.bilgiKart .bkEylem .btn.altin,#mac .dukkanSol .btn.altin,#aHedef .btn.altin,#savas .hizlar .btn{color:#f6e9c8}
+.btn.sat,.bilgiKart .bkEylem .btn.sat{color:#ffe2d8}
+#savas .hizlar .btn.secik{--kontur:transparent;color:var(--murekkep);text-shadow:0 1px 0 rgba(255,241,200,.7)}
+.btn.savasBtn{--kontur:#3a1602;color:#fff1cf;letter-spacing:.07em;
+  text-shadow:-1.2px -1.2px 0 var(--kontur),1.2px -1.2px 0 var(--kontur),-1.2px 1.2px 0 var(--kontur),1.2px 1.2px 0 var(--kontur),0 2px 0 var(--kontur),0 3px 6px rgba(0,0,0,.6)}
+.btn.savasBtn small{font-family:var(--fGovde);font-weight:700;letter-spacing:.02em;color:#ffeccb}
+#ana .oyna .ana{font-family:var(--fSus);font-weight:900;letter-spacing:.06em;color:#3a1604;--k:transparent;
+  text-shadow:0 1.5px 0 rgba(255,244,210,.75),0 -1px 0 rgba(100,40,0,.35),0 0 14px rgba(255,236,170,.35)}
+#ana .oyna .ana .ik{filter:drop-shadow(0 1px 0 rgba(255,244,210,.7))}
+#ana .oyna small{font-family:var(--fGovde);font-weight:700;letter-spacing:.02em;color:#4a2408;text-shadow:0 1px 0 rgba(255,241,200,.6)}
+/* panel ve rozet sayıları: hizalı rakam */
+.yz,.altinRozet,.tahtaSayac span,.fiyat,.sy b,.saat b,.pKupa em,.pUsta em,#savas .skor .taraf .ust b,#savas .skor .taraf .ust .say,.mvpIst b,#acYuzde,.cubuk b{
+  font-family:var(--fSayi);font-variant-numeric:lining-nums tabular-nums;letter-spacing:.01em}
+.yz,.altinRozet,.tahtaSayac span{font-weight:800}
+.altinRozet{color:#ffe3a0}
+.yz small,.altinRozet .yz small,.rozet small,#savas .skor .taraf .ust,.sezon small,.ipucu small{font-family:var(--fGovde);font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--soluk)}
+.yz span{color:var(--yazi)}
+.sy b{color:var(--yazi)}
+/* adlar ve etiketler: rakip/kahraman adı Cinzel, açıklamalar Alegreya Sans */
+.rakipKim b,.rakipK b,.kart .ad,.sahneAd b,.sezon b,.pAd,.bilgiKart b.bkAd,.bkAd,.alamet .t b,.mvpAd,.armaganSerit>b,.kutBant b,.sonucBant b,.bildirim{font-family:var(--fBaslik);letter-spacing:.03em}
+.rakipKim b{font-weight:900;font-size:14px;color:var(--yazi);text-shadow:0 1px 0 rgba(0,0,0,.7),0 0 8px rgba(0,0,0,.35)}
+.rakipKim span,.rakipK small{font-family:var(--fGovde);font-weight:700;color:var(--yazi2)}
+.kart .ad{font-weight:900;font-size:12.5px;letter-spacing:.02em;color:var(--yazi)}
+.pAd,.sezon b{font-weight:900}
+.sahneAd b{font-weight:700}
+.alamet .t b{font-weight:900;color:#ffe3a0}
+.armaganSerit>b{font-weight:900;letter-spacing:.08em}
+.bildirim{font-weight:700;color:var(--yazi)}
+.slogan{font-family:var(--fBaslik);font-weight:700;letter-spacing:.06em}
+.mvpAd{font-weight:900;letter-spacing:.1em}
+.sonucBant b{font-family:var(--fSus);font-weight:900;letter-spacing:.08em}
+.kutBant b{font-weight:900}
+.pencere h3{font-weight:900;letter-spacing:.05em;color:#ffe3a0}
+.pencere p,.pencere li{color:var(--yazi2)}
+.ipucu span,#acIpucu{color:var(--yazi)}
+.yeniMac{font-family:var(--fGovde);font-weight:700;color:var(--yazi2)}
+/* dükkân şeridi düğmeleri: Cinzel'in küçük harfleri küçük-büyük harf; okunurluk için bir tık büyük */
+body.hz3 #mac .dukkanSol .btn:not(.xpBtn){font-size:13.5px}
+body.hz3 #mac .dukkanSol .btn.xpBtn{font-size:13px}
+html.alcak body.hz3 #mac .dukkanSol .btn{font-size:12px}
+.bilgiKart .bkEylem .btn{font-size:13px;letter-spacing:.03em}
 </style>
 <script>
 /* tek ölçek: --o, --lw, --lh ve html.alcak; ilk boyamadan önce ve her boyut değişiminde */

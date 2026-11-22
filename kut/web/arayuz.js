@@ -8,8 +8,8 @@ const D = window.KUT_DATA, SIM = window.KUT_SIM, L = window.KUT_LOBI, K = D.KURA
 const oyun = new Oyun();
 const $ = (id) => document.getElementById(id);
 const q = (sel, kok = document) => kok.querySelector(sel);
-// Türkçe harfler (ğ ş İ …) Nunito latin-ext dosyalarında: açılışta yükle ki ilk görünüşte yedek yazı tipi titremesi olmasın
-if (document.fonts && document.fonts.load) for (const w of [400, 700, 800, 900]) document.fonts.load(`${w} 16px Nunito`, "ğşİı").catch(() => {});
+// Türkçe harfler (ğ ş İ …) Cinzel ve Alegreya Sans latin-ext dosyalarında: açılışta yükle ki ilk görünüşte yedek yazı tipi titremesi olmasın
+if (document.fonts && document.fonts.load) for (const f of ["400 16px \"Alegreya Sans\"", "700 16px \"Alegreya Sans\"", "800 16px \"Alegreya Sans\"", "900 16px \"Alegreya Sans\"", "700 16px Cinzel", "900 16px Cinzel", "900 16px \"Cinzel Decorative\""]) document.fonts.load(f, "ğşİıÇÖÜ").catch(() => {});
 // canavarların portresi yok: 3D'deki gibi yerine gorunum kahramanının portresi (SAHNE_GEREKSINIM.md, Adım 4)
 const P = (id) => `../arayuz/portre/${(D.canavar(id) || {}).gorunum || id}.png`, SY = (id) => `../arayuz/soy_${id}.png`;
 const IK_RESIM = { coin: 'ik_altin', kalp: 'ik_kalp', kupa: 'ik_kupa', tac: 'ik_tac', yildiz: 'ik_yildiz_altin' };
