@@ -9,7 +9,7 @@
 (function(){var n=0;try{n=+(localStorage.getItem('kut.acilisSay')||0)||0;localStorage.setItem('kut.acilisSay',String((n+1)%1000));}catch(e){}
 var b=n%2===1;if(b)document.documentElement.classList.add('arkaB');
 var l=document.createElement('link');l.rel='preload';l.as='image';l.type='image/webp';l.href='arayuz/menu/yukleme_arka'+(b?'_b':'')+'.webp';document.head.appendChild(l);})();</script>
-<link rel="preload" href="yazi/nunito-latin-ext-400-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="yazi/nunito-latin-ext-900-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="yazi/cinzel-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="yazi/alegreya-sans-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 /* ==================================================================
    KUT ARENA — SON ARAYÜZ TASARIMI
@@ -919,33 +919,45 @@ img.ik{object-fit:contain;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
   html.alcak #mac .savasBtn{font-size:20px!important;gap:2px}html.alcak #mac .savasBtn .ik{width:28px!important;height:28px!important}html.alcak #mac .savasBtn small{font-size:11px!important}
 
 
-/* ===================== YAZI TİPİ (paket içi woff2, kut/web/yazi; OFL) =====================
-   Başlık + düğme: "Kut Baslik" = Lilita One + Türkçe ğ Ğ ş Ş İ eklenmiş türev (OFL ad koruması gereği yeni ad).
-   Gövde: Nunito 400/700/800/900. Unity: TextMeshPro font varlığı olarak aynı dosyalar. */
-@font-face{font-family:"Kut Baslik";src:url(yazi/kut-baslik.woff2) format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
-@font-face{font-family:"Nunito";src:url(yazi/nunito-latin-400-normal.woff2) format("woff2");font-weight:100 500;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
-@font-face{font-family:"Nunito";src:url(yazi/nunito-latin-ext-400-normal.woff2) format("woff2");font-weight:100 500;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
-@font-face{font-family:"Nunito";src:url(yazi/nunito-latin-700-normal.woff2) format("woff2");font-weight:600 700;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
-@font-face{font-family:"Nunito";src:url(yazi/nunito-latin-ext-700-normal.woff2) format("woff2");font-weight:600 700;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
-@font-face{font-family:"Nunito";src:url(yazi/nunito-latin-800-normal.woff2) format("woff2");font-weight:800;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
-@font-face{font-family:"Nunito";src:url(yazi/nunito-latin-ext-800-normal.woff2) format("woff2");font-weight:800;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
-@font-face{font-family:"Nunito";src:url(yazi/nunito-latin-900-normal.woff2) format("woff2");font-weight:900;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
-@font-face{font-family:"Nunito";src:url(yazi/nunito-latin-ext-900-normal.woff2) format("woff2");font-weight:900;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
-:root{--fBaslik:"Kut Baslik","Trebuchet MS",system-ui,sans-serif;--fGovde:"Nunito","Trebuchet MS","Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
-body{font-family:var(--fGovde)}
-h1,h2,h3,h4,.pn-bas,.sonucBant b,.sonSerit b,.kutBant b,.kut .yz big,.saat b,.yukleniyor>b,.hasarOzet .ust b,.hasarOzet .sekmeler button,.dondur,.savasGiris b,.yildizEkran,.sonToren{font-family:var(--fBaslik);font-weight:400}
-h3,h4,.pn-bas{letter-spacing:.03em}
+/* ===================== YAZI TİPİ (paket içi woff2, kut/web/yazi; hepsi OFL, @fontsource 5.3.0) =====================
+   Başlık + düğme: Cinzel 700/900 (oyma Roma büyük harfi; küçük harfler küçük-büyük harf — Türkçe 'i' locl ile noktalı, html lang="tr").
+   Büyük vitrin yazısı (OYNA, sonuç bandı): Cinzel Decorative 900. Gövde, etiket ve sayılar: Alegreya Sans 400–900 (insancıl sans;
+   rakamlar lnum+tnum ile hizalı). Unity: TextMeshPro font varlığı olarak aynı dosyalar. */
+@font-face{font-family:"Cinzel";src:url(yazi/cinzel-latin-700-normal.woff2) format("woff2");font-weight:400 700;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Cinzel";src:url(yazi/cinzel-latin-ext-700-normal.woff2) format("woff2");font-weight:400 700;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Cinzel";src:url(yazi/cinzel-latin-900-normal.woff2) format("woff2");font-weight:800 900;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Cinzel";src:url(yazi/cinzel-latin-ext-900-normal.woff2) format("woff2");font-weight:800 900;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Cinzel Decorative";src:url(yazi/cinzel-decorative-latin-900-normal.woff2) format("woff2");font-weight:400 900;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Cinzel Decorative";src:url(yazi/cinzel-decorative-latin-ext-900-normal.woff2) format("woff2");font-weight:400 900;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Alegreya Sans";src:url(yazi/alegreya-sans-latin-400-normal.woff2) format("woff2");font-weight:100 400;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Alegreya Sans";src:url(yazi/alegreya-sans-latin-ext-400-normal.woff2) format("woff2");font-weight:100 400;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Alegreya Sans";src:url(yazi/alegreya-sans-latin-500-normal.woff2) format("woff2");font-weight:500 600;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Alegreya Sans";src:url(yazi/alegreya-sans-latin-ext-500-normal.woff2) format("woff2");font-weight:500 600;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Alegreya Sans";src:url(yazi/alegreya-sans-latin-700-normal.woff2) format("woff2");font-weight:700;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Alegreya Sans";src:url(yazi/alegreya-sans-latin-ext-700-normal.woff2) format("woff2");font-weight:700;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Alegreya Sans";src:url(yazi/alegreya-sans-latin-800-normal.woff2) format("woff2");font-weight:800;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Alegreya Sans";src:url(yazi/alegreya-sans-latin-ext-800-normal.woff2) format("woff2");font-weight:800;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Alegreya Sans";src:url(yazi/alegreya-sans-latin-900-normal.woff2) format("woff2");font-weight:900;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Alegreya Sans";src:url(yazi/alegreya-sans-latin-ext-900-normal.woff2) format("woff2");font-weight:900;font-display:swap;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+:root{--fBaslik:"Cinzel",Georgia,"Times New Roman",serif;--fSus:"Cinzel Decorative","Cinzel",Georgia,serif;
+  --fGovde:"Alegreya Sans","Trebuchet MS","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;--fSayi:"Alegreya Sans","Trebuchet MS",system-ui,sans-serif}
+body{font-family:var(--fGovde);font-variant-numeric:lining-nums tabular-nums;font-kerning:normal}
+h1,h2,h3,h4,.pn-bas,.sonucBant b,.sonSerit b,.kutBant b,.kut .yz big,.yukleniyor>b,.hasarOzet .ust b,.hasarOzet .sekmeler button,.dondur,.savasGiris b,.yildizEkran,.sonToren{font-family:var(--fBaslik);font-weight:700}
+.saat b{font-family:var(--fSayi);font-weight:900}
+h3,h4,.pn-bas{letter-spacing:.04em}
 
 /* ===================== DÜĞMELER: tutarlı stil =====================
    w_dugme_* 9-slice görselleri aynen; üstüne: yazıda dış kontur (--kontur), iç gölge katmanı (::before), basınca %95 ölçek,
    üzerine gelince/odakta parlama (::after, yalnız opaklık). Unity: Button + Outline + iç gölge sprite + ölçek tween (0,95, 0,09 sn). */
-.btn{font-family:var(--fBaslik);font-weight:400;letter-spacing:.035em;isolation:isolate;transition:transform .09s ease-out;--kontur:#26093f;
-  text-shadow:-1.5px -1.5px 0 var(--kontur),1.5px -1.5px 0 var(--kontur),-1.5px 1.5px 0 var(--kontur),1.5px 1.5px 0 var(--kontur),0 -1.6px 0 var(--kontur),0 1.6px 0 var(--kontur),-1.6px 0 0 var(--kontur),1.6px 0 0 var(--kontur),0 3px 0 var(--kontur)}
-.btn small{font-family:var(--fGovde);font-weight:800;letter-spacing:0}
-.btn.altin{--kontur:#6a3206;color:#fffbea}
-.btn.sat{--kontur:#4a0618}
-.btn.gb{--kontur:#5a0d36}
-.btn.sade{--kontur:#12071f}
+.btn{font-family:var(--fBaslik);font-weight:900;letter-spacing:.05em;isolation:isolate;transition:transform .09s ease-out;--kontur:#1e0830;color:#f6e9c8;
+  text-shadow:-1px -1px 0 var(--kontur),1px -1px 0 var(--kontur),-1px 1px 0 var(--kontur),1px 1px 0 var(--kontur),0 2px 3px rgba(0,0,0,.55)}
+.btn small{font-family:var(--fGovde);font-weight:700;letter-spacing:.01em}
+/* altın düğme: koyu kahve mürekkep, üstte ince açık ışık (oyma görünümü); mor/sat/gb/sade: açık krem + ince koyu kontur + yumuşak gölge */
+.btn.altin{--kontur:transparent;color:#3a1a05;text-shadow:0 1px 0 rgba(255,241,200,.7),0 -1px 0 rgba(90,40,0,.25)}
+.btn.altin small{color:#4a2408}
+.btn.mor,.btn.sade{--kontur:#1e0830;color:#f6e9c8}
+.btn.sat{--kontur:#3e0616;color:#ffe6dc}
+.btn.gb{--kontur:#4a0b2e;color:#fff3dc}
 .btn::before{content:"";position:absolute;inset:4px 5px 6px;border-radius:9px;pointer-events:none;z-index:-1;
   background:linear-gradient(180deg,rgba(255,255,255,.24),rgba(255,255,255,0) 40%,rgba(0,0,0,0) 64%,rgba(0,0,0,.16));
   box-shadow:inset 0 2px 1px rgba(255,255,255,.22),inset 0 -3px 5px rgba(0,0,0,.22)}

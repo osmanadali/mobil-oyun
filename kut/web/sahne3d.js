@@ -295,6 +295,17 @@ async function arenaKur(kok, tl) {
     [kristal, 118, 5.65, 1.0, 0.35], [kristal, 242, 5.65, 1.0, 0.35], [kristal, 53, 5.95, 0.62, 0.25], [kristal, 307, 5.95, 0.55, 0.25],
     [mantar, 88, 5.7, 1.4, 0.45], [mantar, 272, 5.7, 1.25, 0.45], [kayalar, 163, 5.8, 0.55, 0.35], [kayalar, 197, 5.8, 0.5, 0.35]];
   for (const [g, d, r, boy, er] of YER) { const [x, z] = kutup(d, r); CV.engelEkle(x, z, er); halkaya(g, d, r, boy); }
+  // ön sıra (oyuncu tarafı, arka kemer düzeninin aynası): alçak kemer ayakları ±33° (mangalla amblem arasında) ve kırık sütunlar ±16°.
+  // Arkadakilerin yarısı boyda; kamera kendi yanlarındayken (hazırlık/savaş kadrajı) saydamlaşır, tahtayı ve yedek sırasını örtmez.
+  const ON_SIRA = []; const onSiraKoy = (o, d) => { o.userData.az = d * Math.PI / 180; o.traverse(c => { if (c.isMesh) { c.material = (Array.isArray(c.material) ? c.material.map(m => m.clone()) : c.material.clone()); for (const m of [].concat(c.material)) { m.transparent = true; m.userData.op0 = m.opacity; } } }); ON_SIRA.push(o); };
+  for (const d of [33, 327]) { const [x, z] = kutup(d, 5.62); CV.engelEkle(x, z, 0.45); onSiraKoy(halkaya(kemer, d, 5.62, 1.25), d); }
+  for (const d of [16, 344]) { const [x, z] = kutup(d, 5.85); CV.engelEkle(x, z, 0.28); }
+  efektler.push({ kalici: true, o: sahne, guncelle: () => {
+    if (!ON_SIRA.length) return; const kaz = Math.atan2(kamera.position.x, kamera.position.z), yer = Math.hypot(kamera.position.x, kamera.position.z);
+    for (const o of ON_SIRA) { const f = Math.abs(acıFark(kaz, o.userData.az));
+      // kamera bu yanda ve yukarıdaysa (adanın dışında, tahtaya bakıyor) saydam; yandan/arkadan bakınca tam görünür
+      const a = yer < 6.5 ? 1 : Math.min(1, Math.max(0.16, (f - 0.25) / 0.75)); if (o.userData.a === a) continue; o.userData.a = a;
+      o.traverse(c => { if (c.isMesh) { for (const m of [].concat(c.material)) { m.opacity = m.userData.op0 * a; m.depthWrite = a > 0.95; } c.castShadow = a > 0.5; } }); } } });
   for (const d of [44, 316]) { const [x, z] = kutup(d, 5.6); CV.engelEkle(x, z, 0.42); const m = halkaya(mangal, d, 5.6, 0.85); atesEkle(m.position.clone().add(new THREE.Vector3(0, 0.9, 0))); }
   const SUTUN = [[128, 1.9], [232, 1.7], [66, 1.5], [294, 1.6]], RUNE = [102, 258];
   for (const [d] of SUTUN) { const [x, z] = kutup(d, 5.75); CV.engelEkle(x, z, 0.32); }
@@ -307,6 +318,7 @@ async function arenaKur(kok, tl) {
     const yol = CV.bordurSarmasik([[16, 20], [-36, 18], [74, 24], [-78, 22], [138, 12], [222, 14], [168, 10], [-12, 8]]);
     if (sutun) for (const [d, boy] of SUTUN) { const o = halkaya(sutun, d, 5.75, boy), k = new THREE.Box3().setFromObject(o), rr = Math.min(k.max.x - k.min.x, k.max.z - k.min.z) * 0.36;
       yol.push(CV.sarmalYol(o.position.x, o.position.z, rr, boy * 0.45, 1.2, d)); }
+    if (sutun) for (const d of [16, 344]) { const o = halkaya(sutun, d, 5.85, 0.78); onSiraKoy(o, d); }
     if (amblem) { const o = halkaya(amblem, 0, 5.2, 0.42); o.rotation.y = Math.PI; }
     if (rune) for (const d of RUNE) halkaya(rune, d, 5.6, 0.18);
     CV.sarmasikKur(yol);
