@@ -990,10 +990,14 @@ body[data-scr=home] #home,body[data-scr=league] #league,body[data-scr=city] #cit
 :root[data-theme=light] .vres.win h2{background:linear-gradient(180deg,#f0a020,#e0702a);-webkit-background-clip:text;background-clip:text;filter:none}
 @media (prefers-reduced-motion:reduce){.vr-ic,.vres h2,.vr-sub,.vr-duo,.vr-pts,.vr-cr{animation:none}}
 @media (max-width:340px){.vres h2{font-size:27px}.vr-p{padding:14px 5px 8px}.vr-p .vsav{width:40px;height:40px;font-size:19px}.vr-p b,.vr-p span{font-size:13.5px}.vr-ic{font-size:44px}}
+#mCard #vAgain{height:64px}#mCard #vHome{height:48px}   /* kapışma sonucu: düğmeler biraz kısa, Ana sayfa kaydırmadan görünür (1.2.3) */
+@media (max-height:680px){.vres .vr-sub{display:none}}   /* çok kısa ekran (320×640): alt yazı gizlenir, başlık ve kartlar yeterince anlatıyor */
+@media (max-height:720px){#mCard #vAgain{height:54px}#mCard #vAgain small{font-size:12px}#mCard #vHome{height:42px}}
 .vr-row{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;width:100%}.vr-row .vstag{margin:0}
 @media (max-height:720px){.vres{gap:5px}.vres::before{height:160px}.vr-ic{font-size:38px}.vres.lose .vr-ic{font-size:34px}.vres h2{font-size:26px}.vr-sub{font-size:13.5px}
   .vr-duo{margin-top:10px}.vr-p{padding:12px 6px 7px;gap:1px}.vr-p .vsav{width:36px;height:36px;font-size:17px;margin-bottom:2px}.vr-cr{font-size:20px;top:-13px}
-  .vr-pts{padding:3px 12px}.vr-pts b{font-size:19px}.vstag{padding:5px 10px;font-size:12.5px}.vres #vsClimb .climb{padding:7px 10px}}
+  .vr-pts{padding:3px 12px}.vr-pts b{font-size:19px}.vstag{padding:5px 10px;font-size:12.5px}.vres #vsClimb .climb{padding:7px 10px}
+  .vres .cl-rows{height:calc(var(--n) * 21px);margin-top:3px}.vres .cl-r,.vres .climb.go .cl-r.me{height:20px;top:calc(var(--y) * 21px);font-size:12.5px}}   /* 320×640: tablo kısalır, Ana sayfa düğmesi kaydırmadan görünür */
 /* 👥 arkadaşlar ve 👉 dürtme (1.3) */
 .lgsep.fr{margin-top:18px;color:var(--fg);font-weight:800}
 .lgr .poke{font-style:normal;font-size:12.5px;font-weight:800;padding:4px 10px;border-radius:999px;background:var(--acc);color:var(--onacc);white-space:nowrap}
