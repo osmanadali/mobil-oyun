@@ -416,6 +416,8 @@ function takipPoz(o) {
 
 // Tek parçacık. p: konum (Object3D 'takip' verilirse ona göre göreli). Diğer alanlar isteğe bağlı.
 let ONCELIK = 1;   // 0 süs (aura, durum, iz), 1 normal, 2 darbe/Kut — havuz dolarken düşük öncelikli doğumlar düşer
+// sürekli durum efektlerinin (yanık, zehir, sersem, lanet…) parçacık opaklık çarpanı: savaşta üst üste binince curcuna olmasın
+const DURUM_ALFA = 0.75; let ALFA_KAT = 1;
 function P(o) {
   const sys = o.normal ? sNrm : sAdd; const i = sys.ekle(o.on === undefined ? ONCELIK : o.on); if (i < 0) return -1;
   const d = sys.d, b = i * S, p = o.p || _v1;
@@ -426,7 +428,7 @@ function P(o) {
   d[b + EN] = o.en || 1; d[b + UZ] = o.uz || 1;
   const c0 = rgb(o.renk || '#ffffff'), c1 = o.renk2 ? rgb(o.renk2) : c0;
   d[b + R0] = c0[0]; d[b + G0] = c0[1]; d[b + B0] = c0[2]; d[b + R1] = c1[0]; d[b + G1] = c1[1]; d[b + B1] = c1[2];
-  d[b + AL] = o.a === undefined ? 1 : o.a; d[b + ROT] = o.rot === 'r' ? RND() * TAU : (o.rot || 0); d[b + ROTV] = o.rotHiz || 0;
+  d[b + AL] = (o.a === undefined ? 1 : o.a) * ALFA_KAT; d[b + ROT] = o.rot === 'r' ? RND() * TAU : (o.rot || 0); d[b + ROTV] = o.rotHiz || 0;
   d[b + FR] = KARE[o.kare || 'parilti']; d[b + MOD] = o.mod || 0; let hot = o.hot === undefined ? 0.4 : o.hot;
   if ((!o.kare || o.kare === 'parilti') && Math.max(b0, d[b + S1]) > 0.22) hot = Math.min(hot, 0.45);   // geniş parıltılar beyaz leke olmasın
   d[b + HOT] = hot; d[b + UZAT] = o.uzat || 0;
@@ -469,7 +471,7 @@ function patlama(p, o = {}) {
     P({ p, v: _v2, g: o.g === undefined ? 5 : o.g, drag: 2.2, omur: rr(0.28, 0.55) * (o.omur || 1), boy: (o.boy || 0.09) * rr(0.8, 1.3), boy2: 0.02, renk: '#ffffff', renk2: renk2, uz: 1.6, en: 0.55,
       kare: 'kivilcim', mod: 2, uzat: 0.11, hot: 1, fo: 0.3 });
   }
-  if (o.yildiz !== false) for (let i = 0, m = N(4 * guc); i < m; i++) { kureY(_v2, 0.6).multiplyScalar(hiz * rr(0.25, 0.6));
+  if (o.yildiz !== false) for (let i = 0, m = N((o.yildizN || 4) * guc); i < m; i++) { kureY(_v2, 0.6).multiplyScalar(hiz * rr(0.25, 0.6));
     P({ p, v: _v2, g: 1.5, drag: 3, omur: rr(0.35, 0.6), boy: rr(0.16, 0.26) * guc, boy2: 0.04, renk, kare: 'yildiz4', rot: 'r', rotHiz: rr(-4, 4), hot: 1, fo: 0.4 }); }
 }
 // darbe parlaması: kameraya dönük kısa, parlak disk + yıldız
@@ -654,8 +656,9 @@ const ELEMENT_TUR = { ates: 'ates', buz: 'buz', zehir: 'zehir', isik: 'isik', se
 function vurus(pos, o = {}) {
   const p = konum(pos, new THREE.Vector3()), renk = o.renk || '#ffffff', guc = Math.max(0.3, o.guc || 1), yon = o.yon ? _v1.copy(o.yon).normalize().clone() : null, tur = o.tur;
   const onceki = ONCELIK; ONCELIK = 2;
-  flas(p, { renk, boy: 0.55 + 0.35 * guc, sure: 0.12 + 0.05 * guc, isikGuc: 3 * guc });
-  patlama(p, { renk, guc: guc * 0.8, n: 10, hiz: 3, yon, boy: 0.08 });
+  // savaş okunurluğu (iPad: "curcuna"): parlama diski ~%12 küçük, kıvılcım 10 → 7, yıldız 4 → 2 (vuruş başına)
+  flas(p, { renk, boy: 0.48 + 0.31 * guc, sure: 0.12 + 0.05 * guc, isikGuc: 3 * guc });
+  patlama(p, { renk, guc: guc * 0.8, n: 7, hiz: 3, yon, boy: 0.07, yildizN: 2 });
   const el = ELEMENT[o.element || ELEMENT_TUR[tur]]; if (el) altKatman(p, el[2], 0.45 + 0.2 * guc, 0.55);
   const r = ekranAci(p, yon);
   // ekran düzleminde kesik açısına dik kaydırma (pençe izlerini yan yana dizmek için)
@@ -1413,7 +1416,7 @@ function durumNesne(harita, nesne) {
 function durumTur(c, tur) {
   const dt = durumDt, t = durumT, p = durumP, h = durumH;
   if (c.kapan >= 0) { c.kapan += dt; if (tur === 'kalkan') DURUM.kalkan(c, dt, t, p, h); if (c.kapan > 0.2 || tur !== 'kalkan') { if (c.mesh) { c.mesh.visible = false; c.mesh.userData.dolu = false; } durumHarita.delete(tur); } return; }
-  if ((durumGor || tur === 'kalkan') && DURUM[tur]) { ONCELIK = 0; DURUM[tur](c, dt, t, p, h); ONCELIK = 1; }
+  if ((durumGor || tur === 'kalkan') && DURUM[tur]) { ONCELIK = 0; ALFA_KAT = DURUM_ALFA; DURUM[tur](c, dt, t, p, h); ALFA_KAT = 1; ONCELIK = 1; }
 }
 function sars(g) { sarsGuc = Math.min(0.35, Math.max(sarsGuc * Math.exp(-(simdi() - sarsT) * 9), 0) + g); sarsT = simdi(); }
 const _sars = new THREE.Vector3();

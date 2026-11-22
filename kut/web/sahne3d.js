@@ -394,14 +394,100 @@ function atmosferKur() {
     if (!ince) zerre.material.uniforms.uOlcek.value = pikselOlcek();
   } });
 }
-function atesEkle(p) {
-  const g = new THREE.Group(); g.position.copy(p); sahne.add(g);
-  const isik = new THREE.PointLight('#ff8a3a', 4, 4, 1.8); g.add(isik);
-  for (let i = 0; i < 3; i++) {
-    const m = new THREE.Mesh(new THREE.ConeGeometry(0.16 - i * 0.04, 0.5 - i * 0.1, 8), new THREE.MeshBasicMaterial({ color: ['#ff5a1f', '#ff9a2e', '#ffe07a'][i], transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }));
-    m.position.y = 0.2; g.add(m);
-  }
-  efektler.push({ kalici: true, o: g, guncelle: (t) => { const C = g.children; for (let i = 0; i < C.length; i++) { const c = C[i]; if (c.isMesh) { c.scale.set(1 + Math.sin(t * 9 + i) * 0.12, 1 + Math.sin(t * 13 + i * 2) * 0.2, 1); } } isik.intensity = 3.5 + Math.sin(t * 17) * 0.6; } });
+// Mangal ateşi: gürültü akışlı shader alevi (dikey billboard katmanları, her açıdan dolu), kor parıltısı, yükselen kıvılcımlar,
+// hafif duman ve titreyen ışık. Zaman tek uniform'da (paylaşımlı); kademe büyüdükçe kıvılcım azalır, duman ≥5'te kapanır.
+const ATES_GLSL = `
+float aH(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+float aN(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(aH(i), aH(i + vec2(1.0, 0.0)), f.x), mix(aH(i + vec2(0.0, 1.0)), aH(i + vec2(1.0, 1.0)), f.x), f.y); }
+float aF(vec2 p){ float s = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { s += a * aN(p); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; } return s; }`;
+// dikey billboard: yatayda kameraya döner, kamera yükseldikçe biraz kameraya yatar (üstten bakışta da dolu görünür)
+const ATES_VS = `varying vec2 vUv; uniform float uKay;
+void main(){ vUv = uv; vec3 m = (modelMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz; vec3 c = cameraPosition - m;
+  vec3 sag = normalize(vec3(c.z, 0.0, -c.x)); vec3 yu = normalize(mix(vec3(0.0, 1.0, 0.0), cross(normalize(c), sag), 0.55));
+  vec3 d = m + sag * (position.x + uKay) + yu * position.y;
+  gl_Position = projectionMatrix * viewMatrix * vec4(d, 1.0); }`;
+const ALEV_FS = `uniform float uZ, uTohum, uGuc; varying vec2 vUv;${ATES_GLSL}
+void main(){
+  float y = vUv.y, t = uZ + uTohum * 13.0;
+  vec2 q = vec2(vUv.x * 2.4 + uTohum, y * 1.5 - t * 1.7);
+  float d1 = aF(q), d2 = aF(q * 1.8 + vec2(-t * 0.25, -t * 1.1));
+  // yukarı kıvrılan dil: gövde gürültüyle yana savrulur, uca doğru savrulma büyür
+  float x = vUv.x - 0.5 + (d1 - 0.5) * 0.5 * y + sin(y * 6.0 - t * 3.2 + uTohum * 5.0) * 0.045 * y;
+  float gen = mix(0.44, 0.03, pow(y, 0.9));
+  float sekil = 1.0 - smoothstep(0.0, gen, abs(x)); sekil = sqrt(sekil);
+  float k = sekil * (1.0 - smoothstep(0.25, 0.95, y + (d2 - 0.5) * 0.6)) * smoothstep(0.0, 0.2, y) * (1.0 - smoothstep(0.2, 0.5, abs(vUv.x - 0.5)));
+  k = clamp(k * 1.25 - (d2 - 0.35) * (0.35 + 0.6 * y) - 0.05, 0.0, 1.0);
+  // sıcaktan soğuğa: beyaz-sarı çekirdek → turuncu → kırmızı kenar → kaybolur
+  vec3 c = mix(vec3(0.55, 0.05, 0.01), vec3(0.95, 0.22, 0.02), smoothstep(0.04, 0.4, k));
+  c = mix(c, vec3(1.05, 0.52, 0.07), smoothstep(0.45, 0.85, k));
+  c = mix(c, vec3(1.3, 1.0, 0.55), smoothstep(0.92, 1.0, k));
+  float a = smoothstep(0.03, 0.4, k);
+  // katmanlar birbirini büyük ölçüde örter (toplam parlaklık birikmez → beyaza/pastele kaçmaz); yalnız çekirdek bloom eşiğini aşar
+  gl_FragColor = vec4(c * a * uGuc, a * 0.88); }`;
+const DUMAN_FS = `uniform float uZ, uTohum, uOp; varying vec2 vUv;${ATES_GLSL}
+void main(){ float y = vUv.y, t = uZ + uTohum * 7.0;
+  float n = aF(vec2(vUv.x * 2.0 + uTohum, y * 1.4 - t * 0.45));
+  float x = vUv.x - 0.5 + (n - 0.5) * 0.4 * y;
+  float a = (1.0 - smoothstep(0.08 + 0.3 * y, 0.22 + 0.3 * y, abs(x))) * smoothstep(0.0, 0.25, y) * (1.0 - smoothstep(0.45, 1.0, y)) * smoothstep(0.35, 0.7, n);
+  gl_FragColor = vec4(vec3(0.16, 0.13, 0.15), a * uOp); }`;
+const KOR_FS = `uniform float uZ; varying vec2 vUv;${ATES_GLSL}
+void main(){ vec2 d = vUv - 0.5; float r = length(d) * 2.0;
+  float n = aF(d * 7.0 + vec2(uZ * 0.4, -uZ * 0.3));
+  float a = (1.0 - smoothstep(0.15, 1.0, r)) * (0.55 + 0.6 * n);
+  vec3 c = mix(vec3(0.9, 0.18, 0.03), vec3(1.0, 0.55, 0.12), smoothstep(0.45, 0.8, n) * (1.0 - r));
+  gl_FragColor = vec4(c * a * 1.2, a * 0.6); }`;
+const KIV_VS = `attribute float aT; uniform float uZ, uOlcek; varying float vA; varying float vS;
+void main(){ float s = aT * 7.13, h = fract(uZ * (0.32 + 0.22 * fract(s * 3.1)) + aT);
+  float r = 0.05 + 0.1 * fract(s * 5.7), a0 = s * 6.2831;
+  vec3 p = vec3(cos(a0) * r, 0.05 + h * (1.1 + 0.6 * fract(s * 2.3)), sin(a0) * r);
+  p.x += sin(h * 9.0 + s * 4.0) * 0.07 * h + h * h * 0.12 * sin(s * 11.0); p.z += cos(h * 7.0 + s * 3.0) * 0.07 * h;
+  vec4 mv = modelViewMatrix * vec4(p, 1.0); gl_Position = projectionMatrix * mv;
+  gl_PointSize = clamp((0.022 + 0.018 * fract(s * 9.1)) * uOlcek / -mv.z, 1.0, 6.0);
+  vS = h; vA = smoothstep(0.0, 0.08, h) * (1.0 - smoothstep(0.55, 1.0, h)) * (0.6 + 0.4 * sin(uZ * 23.0 + s * 40.0)); }`;
+const KIV_FS = `varying float vA; varying float vS; void main(){ float r = length(gl_PointCoord - 0.5) * 2.0; float a = (1.0 - smoothstep(0.2, 1.0, r)) * vA;
+  vec3 c = mix(vec3(1.25, 0.85, 0.35), vec3(0.95, 0.25, 0.05), smoothstep(0.1, 0.7, vS)); gl_FragColor = vec4(c * a, a * 0.5); }`;
+const ATES_KIV_N = 22;
+let atesOrtak = null;
+function atesOrtakAl() {
+  if (atesOrtak) return atesOrtak;
+  const zaman = { value: 0 }, olcek = { value: 600 };
+  const duzlem = (w, h, y0) => new THREE.PlaneGeometry(w, h).translate(0, h / 2 + y0, 0);
+  // önce çarpılmış (premultiplied) karışım: kenarlar arka planı hafifçe örter, çekirdek eklenir — açık zeminde soluklaşmaz, bloom'u aşırı tetiklemez
+  const karisim = { blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor, transparent: true, depthWrite: false, fog: false, side: THREE.DoubleSide };
+  const alevMat = (tohum, guc) => new THREE.ShaderMaterial({ uniforms: { uZ: zaman, uTohum: { value: tohum }, uGuc: { value: guc }, uKay: { value: 0 } }, vertexShader: ATES_VS, fragmentShader: ALEV_FS, ...karisim });
+  const kivGeo = new THREE.BufferGeometry(); const at = new Float32Array(ATES_KIV_N); for (let i = 0; i < ATES_KIV_N; i++) at[i] = (i * 0.618034) % 1;
+  kivGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(ATES_KIV_N * 3), 3)); kivGeo.setAttribute('aT', new THREE.BufferAttribute(at, 1));
+  kivGeo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0.8, 0), 1.2);
+  atesOrtak = { zaman, olcek, duzlem, alevMat, kivGeo,
+    kivMat: new THREE.ShaderMaterial({ uniforms: { uZ: zaman, uOlcek: olcek }, vertexShader: KIV_VS, fragmentShader: KIV_FS, ...karisim, side: THREE.FrontSide }),
+    dumanMat: (tohum) => new THREE.ShaderMaterial({ uniforms: { uZ: zaman, uTohum: { value: tohum }, uOp: { value: 0.2 }, uKay: { value: 0 } }, vertexShader: ATES_VS, fragmentShader: DUMAN_FS,
+      transparent: true, depthWrite: false, fog: false, side: THREE.DoubleSide }),
+    korMat: new THREE.ShaderMaterial({ uniforms: { uZ: zaman }, vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }', fragmentShader: KOR_FS, ...karisim }) };
+  return atesOrtak;
+}
+function atesEkle(p, o = {}) {
+  const A = atesOrtakAl(), boy = o.boy || 1, tohum0 = (p.x * 3.7 + p.z * 1.3) % 10;
+  const g = new THREE.Group(); g.position.copy(p); g.scale.setScalar(boy); sahne.add(g);
+  const isik = new THREE.PointLight('#ff8a3a', 4, 4.5, 1.8); isik.position.y = 0.3; g.add(isik);
+  // kor parıltısı: kasenin ağzında yatay, nabız atan sıcak disk
+  const kor = new THREE.Mesh(new THREE.CircleGeometry(0.34, 20).rotateX(-Math.PI / 2), A.korMat); kor.position.y = -0.01; kor.renderOrder = 6; g.add(kor);
+  // alev katmanları: büyük gövde + iki yan dil (farklı tohum, hafif kaydırılmış) — billboard olduğu için 360° dolu
+  const KAT = [[0.7, 0.8, 0, 1.0, -0.1], [0.36, 0.5, -0.13, 0.9, -0.07], [0.34, 0.56, 0.13, 0.9, -0.07], [0.26, 0.36, 0.0, 1.0, -0.08]];
+  KAT.forEach(([w, h, kay, guc, y0], i) => { const m = new THREE.Mesh(A.duzlem(w, h, y0), A.alevMat(tohum0 + i * 2.31, guc)); m.material.uniforms.uKay.value = kay; m.renderOrder = 7 + i; m.frustumCulled = false; g.add(m); });
+  const duman = new THREE.Mesh(A.duzlem(0.7, 1.6, 0.5), A.dumanMat(tohum0)); duman.renderOrder = 5; duman.frustumCulled = false; g.add(duman);
+  const kiv = new THREE.Points(A.kivGeo, A.kivMat); kiv.renderOrder = 11; g.add(kiv);
+  const pikselOlcek = () => renderer.getPixelRatio() * renderer.domElement.clientHeight / (2 * Math.tan(THREE.MathUtils.degToRad(kamera.fov) / 2));
+  efektler.push({ kalici: true, o: g, guncelle: (t) => {
+    A.zaman.value = t % 600; A.olcek.value = pikselOlcek();
+    const kd = G.kademeAl();
+    // kıvılcım: tam kademede 22, orta kademelerde azalır, en düşüklerde 5; duman kademe ≥ 5'te yok
+    kiv.geometry.setDrawRange(0, hafif ? 6 : kd >= 7 ? 5 : kd >= 5 ? 9 : kd >= 3 ? 14 : ATES_KIV_N); duman.visible = !hafif && kd < 5;
+    // titreyen ışık: düzensiz (üç sinüs) yoğunluk + küçük konum oynaması
+    const f = Math.sin(t * 11.3 + tohum0) * 0.5 + Math.sin(t * 17.9 + tohum0 * 2) * 0.3 + Math.sin(t * 5.1) * 0.4;
+    isik.intensity = 3.6 + f * 0.55; isik.position.set(Math.sin(t * 7.3) * 0.035, 0.3 + Math.sin(t * 9.7) * 0.03, Math.cos(t * 6.1) * 0.035);
+  } });
+  return g;
 }
 
 async function ualYukle(kok) {
@@ -1261,7 +1347,7 @@ function basUstu(b) { return _ekP.set(b.kok.position.x, b.kok.position.y + 1.12 
 // Ekranda aynı anda en çok YAZI_EN_COK sayı (sıradakiler dahil). Dolunca en düşük öncelikli ve en eski sayı düşer;
 // yeni sayı hepsinden düşük öncelikliyse hiç eklenmez. Öncelik: 3 kritik/yetenek/Kut · 2 ölüm vuruşu · 1 normal · 0 süreli hasar (DOT).
 // tempo: ekranda daha seyrek sayı (18 → 10, hafif kipte 8); aynı hedefe 0,5 sn içinde gelen sıradan vuruşlar tek sayıda toplanır
-const YAZI_EN_COK = 10, YAZI_EN_COK_HAFIF = 8, BIRLES_SN = 0.5, BIRLES_DOT_SN = 1.0;   // motor DOT'u her 0,05 sn'de yayıyor: 1 sn'de bir tek sayı
+const YAZI_EN_COK = 8, YAZI_EN_COK_HAFIF = 7, BIRLES_SN = 0.8, BIRLES_DOT_SN = 1.0;   // iPad "curcuna": 10/8 → 8/7 eşzamanlı yazı, birleştirme 0,5 → 0,8 sn   // motor DOT'u her 0,05 sn'de yayıyor: 1 sn'de bir tek sayı
 function yaziEkle(b, metin, renk, o) {
   if (yazilar.length >= (hafif ? YAZI_EN_COK_HAFIF : YAZI_EN_COK)) {
     let v = -1, vp = Infinity;

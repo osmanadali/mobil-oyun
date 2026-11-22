@@ -91,6 +91,8 @@ satir.push(`        public const int CanBaslangic = ${K.canBaslangic}, SeviyeBas
 satir.push(`        public const double SavasSuresi = ${sayi(K.savasSuresi)};`);
 satir.push(`        /// <summary>Savaş motoru (data.js KURAL.savas): ayrışma uzaklığı, hedef bırakma payı, varsayılan yetenek kurulumu, mana kazancı.</summary>`);
 satir.push(`        public const double SavasAyrim = ${sayi(K.savas.ayrim)}, SavasHedefBirak = ${sayi(K.savas.hedefBirak)}, YetenekKurulum = ${sayi(K.savas.kurulum)};`);
+satir.push(`        /// <summary>Yol bulma (data.js KURAL.savas.yol*): yenileme adımı, takılma eşiği, gevşek süre (adım) ve gevşek dost ayrımı.</summary>`);
+satir.push(`        public const int SavasYolYenile = ${K.savas.yolYenile}, SavasYolTakil = ${K.savas.yolTakil}, SavasYolGevsekSure = ${K.savas.yolGevsekSure}; public const double SavasYolGevsek = ${sayi(K.savas.yolGevsek)};`);
 satir.push(`        public const double VurusMana = ${sayi(K.savas.vurusMana)}, KeskinGozMana = ${sayi(K.savas.keskinGozMana)}, HasarMana = ${sayi(K.savas.hasarMana)}, SabirMana = ${sayi(K.savas.sabirMana)}, HasarManaTavan = ${sayi(K.savas.hasarManaTavan)};`);
 satir.push(`        public static readonly double[] YildizCarpan = { ${dizi(K.yildizCarpan)} };`);
 satir.push(`        /// <summary>İndeks = mevcut seviye → sonraki seviyeye gereken deneyim.</summary>`);
@@ -166,7 +168,7 @@ satir.push('');
 satir.push('        /// <summary>Hızlı Maç: prototipin kuralları (data.js KURAL.hizli).</summary>');
 satir.push('        public static class Hizli');
 satir.push('        {');
-satir.push(`            public const int AltinTur = ${H.altinTur}, Yenile = ${H.yenile}, Kaynastir = ${H.kaynastir}, Yedek = ${H.yedek}, BaslangicCan = ${H.can}, ZaferHedef = ${H.zaferHedef};`);
+satir.push(`            public const int AltinTur = ${H.altinTur}, Yenile = ${H.yenile}, Kaynastir = ${H.kaynastir}, Yedek = ${H.yedek}, BaslangicCan = ${H.can}, ZaferHedef = ${H.zaferHedef}, BotErken = ${H.botErken};`);
 // yuva ve kademeOlasilik işlevleri: 1..30 turu tabloya dök, sonrası son değer
 const yuva = Array.from({ length: 30 }, (_, i) => H.yuva(i + 1));
 satir.push(`            static readonly int[] yuvaTablo = { ${yuva.join(', ')} };`);

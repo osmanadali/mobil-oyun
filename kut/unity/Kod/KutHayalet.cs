@@ -72,11 +72,13 @@ namespace Kut
             while (takim.Count < yuva && deneme++ < 60)
             {
                 var h = sec(); if (kullan.Contains(h.Id)) continue; kullan.Add(h.Id);
-                int s = 1; double p2 = Math.Max(0, Math.Min(0.8, (tur - 2) * 0.09 + (guc - 0.5) * 0.3));
+                // Hızlı Maç ilk Hizli.BotErken turunda ★2 ve kaynaşmış birim yok (zar yine atılır; online.js ile aynı)
+                bool erken = sv == 0 && tur <= KutVeri.Hizli.BotErken;
+                int s = 1; double p2 = erken ? 0 : Math.Max(0, Math.Min(0.8, (tur - 2) * 0.09 + (guc - 0.5) * 0.3));
                 if (R.Sonraki() < p2) s = 2;
                 if (tur >= 9 && R.Sonraki() < 0.12 + (guc - 0.5) * 0.2) s = 3;
                 var b = new TakimBirimi { H = h.Id, S = s };
-                if (tur >= 4 && s == 1 && R.Sonraki() < 0.25)
+                if (tur >= 4 && s == 1 && R.Sonraki() < 0.25 && !erken)
                 {
                     var f = KutVeri.Kahramanlar[(int)Math.Floor(R.Sonraki() * KutVeri.Kahramanlar.Length)];
                     if (f.Id != h.Id && f.Kademe <= Math.Max(1, (int)Math.Ceiling(tur / 3.0))) b.F = f.Id;

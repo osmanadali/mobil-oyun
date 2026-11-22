@@ -42,7 +42,7 @@ namespace Kut
             new Kahraman { Id = "golem", Ad = "Kaya Golemi", Emoji = "🪨", Renk = "#a3775a", Kademe = 1, Soy = new[] { "yer", "dev" }, Can = 980.0, Atk = 38.0, As = 0.5, Menzil = 1, Mana = 80.0, Yetenek = "tasFirlat", Pasif = "tasDeri" },
             new Kahraman { Id = "kurt", Ad = "Kristal Kurt", Emoji = "🐺", Renk = "#8c97a8", Kademe = 1, Soy = new[] { "atli", "avci" }, Can = 728.0, Atk = 46.0, As = 0.85, Menzil = 1, Mana = 60.0, Yetenek = "uluma", Pasif = "suru" },
             new Kahraman { Id = "kurbaga", Ad = "Davulcu Kurbağa", Emoji = "🐸", Renk = "#c9a24a", Kademe = 1, Soy = new[] { "bilge", "gok" }, Can = 930.0, Atk = 49.0, As = 0.65, Menzil = 3, Mana = 70.0, Yetenek = "davul", Pasif = "ruhBagi" },
-            new Kahraman { Id = "yarasa", Ad = "Sis Yarasası", Emoji = "🦇", Renk = "#b4435a", Kademe = 1, Soy = new[] { "karanlik", "su" }, Can = 700.0, Atk = 42.0, As = 0.8, Menzil = 1, Mana = 70.0, Yetenek = "ruhEmme", Pasif = "canEmici" },
+            new Kahraman { Id = "yarasa", Ad = "Sis Yarasası", Emoji = "🦇", Renk = "#b4435a", Kademe = 1, Soy = new[] { "karanlik", "su" }, Can = 700.0, Atk = 42.0, As = 0.8, Menzil = 1, Mana = 80.0, Yetenek = "ruhEmme", Pasif = "canEmici" },
             new Kahraman { Id = "ruzgar", Ad = "Rüzgâr Ruhu", Emoji = "🌪️", Renk = "#7fc8c0", Kademe = 1, Soy = new[] { "gok", "avci" }, Can = 602.0, Atk = 45.0, As = 0.7, Menzil = 3, Mana = 80.0, Yetenek = "kasirga", Pasif = "kacis" },
             new Kahraman { Id = "koc", Ad = "Dağ Koçu", Emoji = "🐏", Renk = "#d06a3c", Kademe = 2, Soy = new[] { "yer", "atli" }, Can = 952.0, Atk = 68.0, As = 0.6, Menzil = 1, Mana = 90.0, Yetenek = "deliOfke", Pasif = "deliCesaret" },
             new Kahraman { Id = "yilan", Ad = "Zümrüt Yılan", Emoji = "🐍", Renk = "#5aa86a", Kademe = 2, Soy = new[] { "su", "bilge" }, Can = 854.0, Atk = 41.0, As = 0.6, Menzil = 3, Mana = 80.0, Yetenek = "zehir", Pasif = "zehirDis" },
@@ -228,6 +228,8 @@ namespace Kut
         public const double SavasSuresi = 45.0;
         /// <summary>Savaş motoru (data.js KURAL.savas): ayrışma uzaklığı, hedef bırakma payı, varsayılan yetenek kurulumu, mana kazancı.</summary>
         public const double SavasAyrim = 0.8, SavasHedefBirak = 0.5, YetenekKurulum = 0.4;
+        /// <summary>Yol bulma (data.js KURAL.savas.yol*): yenileme adımı, takılma eşiği, gevşek süre (adım) ve gevşek dost ayrımı.</summary>
+        public const int SavasYolYenile = 6, SavasYolTakil = 20, SavasYolGevsekSure = 40; public const double SavasYolGevsek = 0.5;
         public const double VurusMana = 10.0, KeskinGozMana = 15.0, HasarMana = 0.07, SabirMana = 0.14, HasarManaTavan = 30.0;
         public static readonly double[] YildizCarpan = { 0.0, 1.0, 1.8, 3.0 };
         /// <summary>İndeks = mevcut seviye → sonraki seviyeye gereken deneyim.</summary>
@@ -296,7 +298,7 @@ namespace Kut
         /// <summary>Hızlı Maç: prototipin kuralları (data.js KURAL.hizli).</summary>
         public static class Hizli
         {
-            public const int AltinTur = 10, Yenile = 1, Kaynastir = 3, Yedek = 4, BaslangicCan = 5, ZaferHedef = 7;
+            public const int AltinTur = 10, Yenile = 1, Kaynastir = 3, Yedek = 4, BaslangicCan = 5, ZaferHedef = 7, BotErken = 4;
             static readonly int[] yuvaTablo = { 3, 3, 4, 4, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6 };
             public static int Yuva(int tur) => yuvaTablo[System.Math.Min(System.Math.Max(tur, 1), yuvaTablo.Length) - 1];
             static readonly double[][] olasilikTablo = { new[] { 1.0, 0.0, 0.0 }, new[] { 1.0, 0.0, 0.0 }, new[] { 0.65, 0.35, 0.0 }, new[] { 0.65, 0.35, 0.0 }, new[] { 0.45, 0.4, 0.15 }, new[] { 0.45, 0.4, 0.15 }, new[] { 0.3, 0.4, 0.3 }, new[] { 0.3, 0.4, 0.3 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 }, new[] { 0.2, 0.35, 0.45 } };

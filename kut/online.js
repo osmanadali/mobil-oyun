@@ -30,10 +30,11 @@
     let deneme = 0;
     while (takim.length < yuva && deneme++ < 60) {
       const h = sec(); if (kullan.has(h.id)) continue; kullan.add(h.id);
-      let s = 1; const p2 = Math.max(0, Math.min(0.8, (tur - 2) * 0.09 + (guc - 0.5) * 0.3));
+      // Hızlı Maç ilk KURAL.hizli.botErken turunda bot ★2 ve kaynaşmış birim taşımaz (yeni oyuncu da kazanabilsin; zar yine atılır)
+      let s = 1; const erken = !sv && tur <= KURAL.hizli.botErken, p2 = erken ? 0 : Math.max(0, Math.min(0.8, (tur - 2) * 0.09 + (guc - 0.5) * 0.3));
       if (R() < p2) s = 2; if (tur >= 9 && R() < 0.12 + (guc - 0.5) * 0.2) s = 3;
       const b = { h: h.id, s };
-      if (tur >= 4 && s === 1 && R() < 0.25) { const f = KAHRAMANLAR[Math.floor(R() * KAHRAMANLAR.length)]; if (f.id !== h.id && f.kademe <= Math.max(1, Math.ceil(tur / 3))) b.f = f.id; }
+      if (tur >= 4 && s === 1 && R() < 0.25 && !erken) { const f = KAHRAMANLAR[Math.floor(R() * KAHRAMANLAR.length)]; if (f.id !== h.id && f.kademe <= Math.max(1, Math.ceil(tur / 3))) b.f = f.id; }
       takim.push(b);
     }
     return yerlestir(takim);

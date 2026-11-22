@@ -74,6 +74,18 @@ ok(O.coz('çöp') === null, 'bozuk kod reddedilir');
     while (!sv.bitti) { sv.adim(); const Lb = sv.birimler.filter(o => !o.olu);
       for (let a = 0; a < Lb.length; a++) for (let b = a + 1; b < Lb.length; b++) { const d = Math.hypot(Lb[a].x - Lb[b].x, Lb[a].y - Lb[b].y); cift++; if (d < enAz) enAz = d; if (d < KS.ayrim - 0.1) yakin++; } } }
   ok(enAz >= 0.4 && yakin / cift < 0.001, `çakışma yok: en yakın iki birim ${enAz.toFixed(3)} hücre, ayrim−0,1 altı ‰${(1000 * yakin / cift).toFixed(3)}`);
+  // 5a2) yol bulma: arka sıradaki yakın dövüşçü (Buz Kaplumbağası), öndeki 3 menzilli dostun arkasından dolaşıp ≤ 4 sn'de düşmana vurur
+  //      (eskiden önü kapalı kalır, hiç vuramazdı); yakın dövüşçüsü arka sıraya dizilmiş bot takımlarında hiç vuramayan yakın dövüşçü %1'in altında
+  { const A = [{ h: 'kugu', s: 1, x: 0, y: 0 }, { h: 'anka', s: 1, x: 1, y: 0 }, { h: 'tilki', s: 1, x: 2, y: 0 }, { h: 'kaplumbaga', s: 1, x: 1, y: 2 }];
+    const B = [{ h: 'kurt', s: 1, x: 0, y: 0 }, { h: 'golem', s: 1, x: 1, y: 0 }, { h: 'ayi', s: 1, x: 2, y: 0 }];
+    const tl = [1, 2, 3].map(toh => { const sv = S.Savas(A, B, { tohum: toh }), kp = sv.birimler[3]; let ilk = null;
+      while (!sv.bitti && ilk === null && sv.t < 20) { sv.adim(); if (sv.fx.some(f => f.tip === 'vurus' && f.k === kp.uid)) ilk = sv.t; } return ilk; });
+    ok(tl.every(x => x !== null && x <= 4), `arka sıradaki Buz Kaplumbağası öndeki 3 dostun etrafından dolaşıp vurur: ${tl.map(x => x === null ? 'yok' : x.toFixed(2) + ' sn').join(', ')}`);
+    let n = 0, yok = 0;
+    for (let i = 0; i < 120; i++) { const tur = 3 + i % 9, ters = O.botTakim(tur, i).map(b => ({ ...b, y: 2 - b.y })), sv = S.Savas(ters, O.botTakim(tur, i + 999), { tohum: i + 1 }), vurdu = new Set();
+      while (!sv.bitti) { sv.adim(); for (const f of sv.fx) if (f.tip === 'vurus') vurdu.add(f.k); }
+      for (const u of sv.birimler) if (u.taraf === 0 && u.menzil <= 1) { n++; if (!vurdu.has(u.uid)) yok++; } }
+    ok(yok / n < 0.01, `ters dizilim (yakın dövüşçü arkada): hiç vuramayan yakın dövüşçü ${yok}/${n}`); }
   // 5b) kalıcı hedef: Gölge Tilki menzildeki Işık Kuğusu'nu vururken Kurt yanına gelse de hedef değişmez (eskiden 0,5 sn'de bir en yakına dönerdi)
   { const sv = S.Savas([{ h: 'tilki', s: 1, x: 1, y: 2 }], [{ h: 'kugu', s: 3, x: 1, y: 0 }, { h: 'kurt', s: 1, x: 3, y: 2 }], { tohum: 2 });
     const [ti, ayi, kurt] = sv.birimler; let yakinAn = 0, sadik = true, vurdu = false;

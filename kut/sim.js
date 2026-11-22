@@ -100,7 +100,9 @@
           vurusMana: ef.keskinGoz ? KS.keskinGozMana : KS.vurusMana, ilkVurusYapildi: false, sonHedefUid: -1, esikTetik: {}, kutCarpan: 1,
           bilesenSay: st.yankiSira.length, yankiDis: 0, yankiDisOran: 0, yankiCiy: 0, kutMiras: false,
           // yetenek kurulumu: kurulumSure (YETENEK[id].kurulum, yoksa KURAL.savas.kurulum); kurulum: kalan süre (0: kurulumda değil)
-          kurulumSure: st.yetenek && YETENEK[st.yetenek] && YETENEK[st.yetenek].kurulum != null ? YETENEK[st.yetenek].kurulum : KS.kurulum, kurulum: 0 });
+          kurulumSure: st.yetenek && YETENEK[st.yetenek] && YETENEK[st.yetenek].kurulum != null ? YETENEK[st.yetenek].kurulum : KS.kurulum, kurulum: 0,
+          // yol bulma: yol (ızgara noktaları), yolI, yolH (yolun hedefi), slot (kapılan saldırı noktası, −1 yok), yolT/yolBek (yenileme sayaçları), takil, gevsek
+          yol: null, yolI: 0, yolH: null, slot: -1, yolT: 0, yolBek: 0, takil: 0, gevsek: 0 });
       });
     });
 
@@ -150,23 +152,129 @@
         }
         if (!itildi) break;
       }
+      // 4 geçiş yetmediyse (kalabalıkta sıkıştı): ızgarada (yol bulma ızgarası) bütün birimlerden ayrim uzak, u'ya en yakın noktaya konur
+      if (birimler.some(o => o !== u && !o.olu && mesafe(u, o) < KS.ayrim - 1e-9)) {
+        let en = -1, enD = 1e9; const A2 = KS.ayrim * KS.ayrim;
+        for (let n = 0; n < YGN; n++) {
+          const px = ynx(n), py = yny(n), ax = px - u.x, ay = py - u.y, d2 = ax * ax + ay * ay; if (d2 >= enD) continue;
+          let bos = true;
+          for (const o of birimler) { if (o === u || o.olu) continue; const bx = px - o.x, by = py - o.y; if (bx * bx + by * by < A2 - 1e-9) { bos = false; break; } }
+          if (bos) { en = n; enD = d2; }
+        }
+        if (en >= 0) { u.x = ynx(en); u.y = yny(en); }
+      }
     }
-    // Yürüme yönü: doğrudan hedefe; o yol bir birimin ayrim çemberine giriyorsa (ve ona yaklaştırıyorsa) ±30°, ±60°, ±90° döndürülmüş
-    // yönler sırayla denenir (önce i'ye göre bir yan; döndürme sabit sayılarla: trigonometri yok, C# ile bit bit aynı). Hepsi kapalıysa null.
-    const DON = [[1, 0], [0.8660254037844386, 0.5], [0.8660254037844386, -0.5], [0.5, 0.8660254037844386], [0.5, -0.8660254037844386], [0, 1], [0, -1]];
-    function yurumeYonu(u, ex, ey, adimU) {
-      const yan = u.i % 2 ? -1 : 1;
-      for (const [c, s0] of DON) {
-        const s = s0 * yan, rx = ex * c - ey * s, ry = ex * s + ey * c, nx = u.x + rx * adimU, ny = u.y + ry * adimU;
+    // Yürüme yönü: e yönüne; o adım bir birimin ayrım çemberine giriyorsa (ve ona yaklaştırıyorsa) ±30°, ±60°, ±90° döndürülmüş yönler
+    // sırayla denenir (önce i'ye göre bir yan; iki yan aynı ilerlemeyi verir). genis (yol izlerken): ±120°, ±150° da denenir.
+    // Döndürme sabit sayılarla: trigonometri yok, C# ile bit bit aynı. Hepsi kapalıysa null. Gevşekken (u.gevsek) dostlara KS.yolGevsek yeter.
+    const DON = [[1, 0], [0.8660254037844386, 0.5], [0.8660254037844386, -0.5], [0.5, 0.8660254037844386], [0.5, -0.8660254037844386], [0, 1], [0, -1],
+      [-0.5, 0.8660254037844386], [-0.5, -0.8660254037844386], [-0.8660254037844386, 0.5], [-0.8660254037844386, -0.5]];
+    const ayrimA = (u, o) => u.gevsek > 0 && o.taraf === u.taraf ? KS.yolGevsek : KS.ayrim;
+    function yurumeYonu(u, ex, ey, adimU, genis) {
+      const yan = u.i % 2 ? -1 : 1, nd = genis ? 11 : 7;
+      for (let k = 0; k < nd; k++) {
+        const c = DON[k][0], s = DON[k][1] * yan, rx = ex * c - ey * s, ry = ex * s + ey * c, nx = u.x + rx * adimU, ny = u.y + ry * adimU;
         let acik = true;
         for (const o of birimler) {
           if (o === u || o.olu) continue;
           const ax = nx - o.x, ay = ny - o.y, yd = Math.sqrt(ax * ax + ay * ay);
-          if (yd < KS.ayrim - 1e-9 && yd < mesafe(u, o)) { acik = false; break; }
+          if (yd < ayrimA(u, o) - 1e-9 && yd < mesafe(u, o)) { acik = false; break; }
         }
         if (acik) return [rx, ry];
       }
       return null;
+    }
+    // ── Yol bulma (TFT gibi): doğrudan yol kapalıysa dostların etrafından dolaşır, hedefin çevresinde boş bir saldırı noktasına gider. ──
+    // Izgara: 0,2 hücre aralıklı 27 × 37 nokta (x 0,4–5,6, y 0,4–7,6). Nokta, u dışındaki yaşayan bir birime ayrimA'dan yakınsa kapalı.
+    // Kova kuyruklu Dijkstra (dik adım 2, çapraz 3: tamsayı, sabit komşu sırası: belirlenimci, C# ile aynı). Saldırı noktası: hedefe menzil
+    // kadar yakın, açık, yolu yürüyen başka birimin kaptığı noktaya (o.slot) ayrim'den uzak, en ucuz nokta (eşitlikte küçük sıra no).
+    const YGX = 27, YGY = 37, YGN = YGX * YGY, YKOVA = 400;
+    const YKOM = [[1, 0, 2], [-1, 0, 2], [0, 1, 2], [0, -1, 2], [1, 1, 3], [-1, 1, 3], [1, -1, 3], [-1, -1, 3]];
+    const yKapali = new Uint8Array(YGN), yUzak = new Int32Array(YGN), yOnce = new Int32Array(YGN), yKova = [];
+    for (let c = 0; c < YKOVA; c++) yKova.push([]);
+    const ynx = n => 0.4 + 0.2 * (n % YGX), yny = n => 0.4 + 0.2 * Math.floor(n / YGX);
+    const yIdx = v => Math.floor(v / 0.2);
+    function yolTara(u) {
+      for (let n = 0; n < YGN; n++) { yKapali[n] = 0; yUzak[n] = 1e9; yOnce[n] = -1; }
+      for (const o of birimler) {
+        if (o === u || o.olu) continue;
+        const r = ayrimA(u, o), r2 = r * r;
+        const x0 = Math.max(0, yIdx(o.x - r - 0.4)), x1 = Math.min(YGX - 1, yIdx(o.x + r - 0.4) + 1);
+        const y0 = Math.max(0, yIdx(o.y - r - 0.4)), y1 = Math.min(YGY - 1, yIdx(o.y + r - 0.4) + 1);
+        for (let gy = y0; gy <= y1; gy++) for (let gx = x0; gx <= x1; gx++) {
+          const n = gy * YGX + gx, dx = ynx(n) - o.x, dy = yny(n) - o.y; if (dx * dx + dy * dy < r2 - 1e-9) yKapali[n] = 1;
+        }
+      }
+      // başlangıç: u'ya en yakın noktanın çevresindeki 9 noktadan açık olanlar (maliyet: uzaklık × 10); hiçbiri açık değilse en yakın nokta
+      const cx = Math.max(0, Math.min(YGX - 1, Math.floor((u.x - 0.4) / 0.2 + 0.5))), cy = Math.max(0, Math.min(YGY - 1, Math.floor((u.y - 0.4) / 0.2 + 0.5)));
+      let tohum = 0, maxc = 0;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const gx = cx + dx, gy = cy + dy; if (gx < 0 || gy < 0 || gx >= YGX || gy >= YGY) continue;
+        const n = gy * YGX + gx; if (yKapali[n]) continue;
+        const ax = ynx(n) - u.x, ay = yny(n) - u.y, c = Math.floor(Math.sqrt(ax * ax + ay * ay) * 10 + 0.5);
+        if (c < yUzak[n]) { yUzak[n] = c; yKova[c].push(n); if (c > maxc) maxc = c; tohum++; }
+      }
+      if (!tohum) { const n = cy * YGX + cx; yUzak[n] = 0; yKova[0].push(n); }
+      for (let c = 0; c <= maxc; c++) {
+        const kv = yKova[c];
+        for (let j = 0; j < kv.length; j++) {
+          const n = kv[j]; if (yUzak[n] !== c) continue;
+          const x = n % YGX, y = (n - x) / YGX;
+          for (const [dx, dy, w] of YKOM) {
+            const X = x + dx, Y = y + dy; if (X < 0 || Y < 0 || X >= YGX || Y >= YGY) continue;
+            const m = Y * YGX + X, nc = c + w; if (yKapali[m] || nc >= YKOVA || nc >= yUzak[m]) continue;
+            yUzak[m] = nc; yOnce[m] = n; yKova[nc].push(m); if (nc > maxc) maxc = nc;
+          }
+        }
+        kv.length = 0;
+      }
+    }
+    // h'ye saldırı noktası (yolTara'dan sonra): [nokta, maliyet] ya da [-1, 1e9]
+    function saldiriNokta(u, h) {
+      const r = menzil(u), r2 = r * r, A2 = KS.ayrim * KS.ayrim;
+      const x0 = Math.max(0, yIdx(h.x - r - 0.4)), x1 = Math.min(YGX - 1, yIdx(h.x + r - 0.4) + 1);
+      const y0 = Math.max(0, yIdx(h.y - r - 0.4)), y1 = Math.min(YGY - 1, yIdx(h.y + r - 0.4) + 1);
+      let en = -1, enC = 1e9;
+      for (let gy = y0; gy <= y1; gy++) for (let gx = x0; gx <= x1; gx++) {
+        const n = gy * YGX + gx; if (yKapali[n] || yUzak[n] >= enC) continue;
+        const px = ynx(n), py = yny(n), dx = px - h.x, dy = py - h.y; if (dx * dx + dy * dy > r2) continue;
+        let kapildi = false;
+        for (const o of birimler) {
+          if (o === u || o.olu || o.slot < 0) continue;
+          const sx = px - ynx(o.slot), sy = py - yny(o.slot); if (sx * sx + sy * sy < A2 - 1e-9) { kapildi = true; break; }
+        }
+        if (!kapildi) { en = n; enC = yUzak[n]; }
+      }
+      return [en, enC];
+    }
+    // yol planı: hedef adayları (zorla varsa yalnız o; yoksa hedef alınabilen düşmanlar) arasından en ucuz saldırı noktası; şimdiki hedefe
+    // 4 (0,4 hücre) pay. Hiçbirine yol yoksa u.yol = null, hedef değişmez (KS.yolYenile adım sonra yeniden denenir).
+    function yolBul(u) {
+      yolTara(u);
+      const z = u.durum.zorla ? birimler.find(o => o.uid === u.durum.zorla.deger && !o.olu) : null;
+      let aday = z ? [z] : dusmanlar(u).filter(o => !o.durum.hedefAlinmaz); if (!aday.length) aday = dusmanlar(u);
+      let en = null, enG = -1, enC = 1e9;
+      for (const o of aday) { const [g, c] = saldiriNokta(u, o); if (g < 0) continue; const cc = c - (o === u.hedef ? 4 : 0); if (cc < enC) { enC = cc; en = o; enG = g; } }
+      if (!en) { u.yol = null; u.slot = -1; u.yolH = null; u.yolBek = KS.yolYenile; return; }
+      const yol = []; for (let n = enG; n >= 0; n = yOnce[n]) yol.push(n); yol.reverse();
+      u.yol = yol; u.yolI = 0; u.yolH = en; u.slot = enG; u.yolT = KS.yolYenile; u.hedef = en;
+    }
+    // u'dan (px, py)'ye doğru çizgi, h dışında bir birimin ayrım çemberine (ona yaklaşarak) giriyor mu? (doğrudan yol açık mı)
+    function seritAcik(u, px, py, h) {
+      const vx = px - u.x, vy = py - u.y, v2 = vx * vx + vy * vy;
+      for (const o of birimler) {
+        if (o === u || o === h || o.olu) continue;
+        const wx = o.x - u.x, wy = o.y - u.y; let k = v2 > 1e-12 ? (wx * vx + wy * vy) / v2 : 0; k = Math.max(0, Math.min(1, k));
+        const qx = u.x + vx * k - o.x, qy = u.y + vy * k - o.y, sd = Math.sqrt(qx * qx + qy * qy);
+        if (sd < ayrimA(u, o) - 1e-9 && sd < mesafe(u, o) - 1e-9) return false;
+      }
+      return true;
+    }
+    // yoldaki ara hedef: sıradaki 4 noktadan doğrudan görülebilen en uzaktaki (yoksa sıradaki)
+    function yolNokta(u) {
+      const p = u.yol; let sec = u.yolI;
+      for (let j = Math.min(p.length - 1, u.yolI + 4); j > u.yolI; j--) if (seritAcik(u, ynx(p[j]), yny(p[j]), null)) { sec = j; break; }
+      u.yolI = sec; return p[sec];
     }
     // Hedef seçimi: Dev Kükremesi'nin zorladığı hedef (yaşıyorsa); sonra hedef alınabilenler arasından en yakın; hepsi hedef alınamazsa en yakın.
     function enYakin(u) {
@@ -427,16 +535,32 @@
         }
         // kalıcı hedef: hedef ölene, hedef alınamaz olana, menzilin hedefBirak ötesine geçene ya da Dev Kükremesi başka birimi zorlayana dek korunur
         { const hd = u.hedef, z = u.durum.zorla;
-          if (!hd || hd.olu || hd.durum.hedefAlinmaz || (z && z.deger !== hd.uid) || mesafe(u, hd) > menzil(u) + KS.hedefBirak) u.hedef = enYakin(u); }
-        const h = u.hedef; if (!h) continue;
-        const d = mesafe(u, h);
+          if (!hd || hd.olu || hd.durum.hedefAlinmaz || (z && z.deger !== hd.uid) || (mesafe(u, hd) > menzil(u) + KS.hedefBirak && !(u.yol && u.yolH === hd))) u.hedef = enYakin(u); }
+        let h = u.hedef; if (!h) continue;
+        let d = mesafe(u, h);
         if (d > menzil(u) + 0.05) {
-          // yürüme (hücre/sn): tempo için 1,7 → 1,2, Çevik 2,4 → 1,6 (kim kime yürüdü okunsun). Yol tıkalıysa yana döner;
-          // tamamen tıkalıysa bekler ve en yakın düşmanı yeniden seçer (üst üste binme yok)
-          const hiz = (u.soy.includes('atli') ? 1.6 : 1.2) * (u.ef.bulutNali ? 1.5 : 1) * DT, adimU = Math.min(hiz, d - menzil(u));
-          const yon = yurumeYonu(u, (h.x - u.x) / d, (h.y - u.y) / d, adimU);
-          if (yon) { u.x += yon[0] * adimU; u.y += yon[1] * adimU; } else u.hedef = enYakin(u);
+          // yürüme (hücre/sn): tempo için 1,7 → 1,2, Çevik 2,4 → 1,6 (kim kime yürüdü okunsun). Doğrudan yol (saldırı uzaklığına dek) açıksa
+          // dümdüz; değilse yol bulma (yolBul: dostların etrafından, boş saldırı noktasına; KS.yolYenile adımda bir yenilenir). Adım kapalıysa
+          // yana döner; KS.yolTakil adım hiç ilerleyemezse KS.yolGevsekSure adım dostlara KS.yolGevsek yaklaşabilir (dost yerinden oynamaz).
+          if (u.gevsek > 0) u.gevsek--;
+          const dogru = seritAcik(u, u.x + (h.x - u.x) / d * (d - menzil(u)), u.y + (h.y - u.y) / d * (d - menzil(u)), h);
+          if (dogru) { u.yol = null; u.slot = -1; }
+          else if (u.yol ? u.yolH !== h || --u.yolT <= 0 || mesafe(u, { x: ynx(u.yol[u.yolI]), y: yny(u.yol[u.yolI]) }) > 0.6 : --u.yolBek <= 0) {
+            yolBul(u); h = u.hedef; d = mesafe(u, h);
+          }
+          if (d > menzil(u) + 0.05) {
+            const hiz = (u.soy.includes('atli') ? 1.6 : 1.2) * (u.ef.bulutNali ? 1.5 : 1) * DT, adimU = Math.min(hiz, d - menzil(u));
+            let ex = (h.x - u.x) / d, ey = (h.y - u.y) / d;
+            if (u.yol) { const n = yolNokta(u), wx = ynx(n) - u.x, wy = yny(n) - u.y, wd = Math.sqrt(wx * wx + wy * wy); if (wd > 1e-6) { ex = wx / wd; ey = wy / wd; } }
+            const yon = yurumeYonu(u, ex, ey, adimU, !dogru);
+            if (yon) { u.x += yon[0] * adimU; u.y += yon[1] * adimU; u.takil = 0; }
+            else {
+              u.yolT = 0; u.yolBek = 0; // kapalı: bir sonraki adımda yeniden planla
+              if (++u.takil >= KS.yolTakil) { u.takil = 0; u.gevsek = KS.yolGevsekSure; }
+            }
+          }
         } else {
+          u.yol = null; u.slot = -1; u.takil = 0;
           u.cd -= DT * hizCarpan(u);
           if (u.cd <= 0) {
             u.cd = 1 / u.as; u.vurus++;

@@ -106,9 +106,11 @@ oyun.on('birlesti', () => Ses.cal('birlesme', { aralik: 0.3 }));
 oyun.on('kaynasti', () => Ses.cal('kaynasma'));
 oyun.on('ses', (ad) => { if (ad === 'yenile') Ses.cal('yenile'); else if (ad === 'sat') Ses.cal('satin_al', { hiz: 0.8 }); });
 document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('button, .btn'); if (b && !b.disabled) Ses.cal('dugme', { aralik: 0.05 }); }, true);
-function pencere(html, b = false, tur = '') { $('pencere').innerHTML = html; $('perde').classList.toggle('armagan', tur === 'armagan'); $('perde').classList.toggle('menuPanel', aktifEkran === 'ana'); $('perde').classList.toggle('panelB', !!b); $('perde').classList.add('acik'); $('pencere').scrollTop = 0; }   // görünür olduktan sonra: gizliyken scrollTop yazılamaz, önceki pencerenin kaydırması kalırdı   // karşılamada süslü menü paneli
+function pencere(html, b = false, tur = '') { $('pencere').innerHTML = html; $('perde').classList.toggle('armagan', tur === 'armagan'); $('perde').dataset.tur = tur; $('perde').classList.toggle('menuPanel', aktifEkran === 'ana'); $('perde').classList.toggle('panelB', !!b); $('perde').classList.add('acik'); $('pencere').scrollTop = 0; }   // görünür olduktan sonra: gizliyken scrollTop yazılamaz, önceki pencerenin kaydırması kalırdı   // karşılamada süslü menü paneli
 function kapat() { $('perde').classList.remove('acik'); }
 $('perde').addEventListener('click', (e) => { if (e.target.id === 'perde' || e.target.closest('[data-kapat]')) kapat(); });
+// iOS: pencere dışındaki karartma sürüklenince sayfa esnemesin; pencere kendi içinde yalnız dikey kayar, uçlarda zincirleme yok (CSS overscroll-behavior)
+$('perde').addEventListener('touchmove', (e) => { if (!e.target.closest || e.target.closest('input,textarea')) return; const p = e.target.closest('.pencere'); if (!p || p.scrollHeight <= p.clientHeight + 1) e.preventDefault(); }, { passive: false });
 
 async function paylas(metin) {
   try { if (navigator.share) { await navigator.share({ text: metin }); return; } } catch (e) {}
@@ -122,23 +124,77 @@ function anaCiz() {
   q('.pAlt', a).textContent = `${P_.istat.mac} maç · ${P_.istat.birinci} birincilik`;
   q('.pKupa em', a).textContent = sayi(P_.kupa);
   q('.pUsta em', a).textContent = `Sv. ${oyun.ustaToplam()}`;
-  const b = q('.oyna', a);
-  const kr = oyun.kural(), par = '<i class="parilti"></i>';
+  const b = q('.oyna', a), par = '<i class="parilti"></i>';
+  // Devam Et: tek kısa satır (mod · tur); ayrıntı yok. Kayıtlı maç yoksa OYNA → mod seçim penceresi
+  const modAd = (m) => ({ hizli: 'Hızlı Maç', lobi: 'Lobi Maçı' })[m] || 'Arena';
+  b.classList.toggle('devam', !!M);
   b.innerHTML = par + (M
-    ? (M.mod === 'hizli'
-      ? `<span class="ana">${ik('oyna')}DEVAM ET</span><small>Hızlı Maç · Tur ${M.tur} · ${M.zafer}/${K.hizli.zaferHedef} zafer · ${M.can} can</small><span class="ilerleme">${Array.from({ length: K.hizli.zaferHedef }, (_, i) => `<i class="${i < M.zafer ? 'v' : ''}"></i>`).join('')}</span>`
-      : `<span class="ana">${ik('oyna')}DEVAM ET</span><small>${M.mod === 'lobi' && M.lobi ? `Lobi · ${M.lobi.oyuncular.filter(o => !o.olu).length}/8 ayakta · ` : ''}Sv ${M.seviye} · Tur ${L.turAd(M.tur - 1)} · ${M.can} can · ${M.altin} altın</small>`)
-    : `<span class="ana">${ik('oyna')}OYNA</span><small>Arena · ${kr.can} can · takımını 8 kahramana büyüt</small>`);
-  q('.yeniMac', a).style.display = M ? '' : 'none';
-  const alt = a.querySelectorAll('.altSerit span');
-  if (alt[0]) alt[0].innerHTML = `<i class="nokta" style="background:#ffb84a"></i>Rakipler: hayalet botlar (çevrimiçi havuz yakında)`;
+    ? `<span class="ana">${ik('oyna')}DEVAM ET</span><small>${modAd(M.mod)} · Tur ${M.mod === 'hizli' ? M.tur : L.turAd(M.tur - 1)}</small>`
+    : `<span class="ana">${ik('oyna')}OYNA</span><small>Mod seç ve arenaya gir</small>`);
+  q('.yeniMac', a).hidden = !M;
 }
-q('#ana .oyna').onclick = async () => { if (oyun.P.mac) { await oyun.turBaslat(true); } else { await oyun.yeniMac(); } goster('mac'); macCiz(); };
-q('#ana .yeniMac').onclick = async () => { await oyun.yeniMac('arena'); goster('mac'); macCiz(); };
-q('#ana .hizliMac').onclick = async () => { await oyun.yeniMac('hizli'); goster('mac'); macCiz(); };
-q('#ana .lobiMac').onclick = async () => { await oyun.yeniMac('lobi'); goster('mac'); macCiz(); };
+// maç modları (OYNA → mod seçim penceresi; kayıtlı maç varken "Yeni maç" ikincil düğmesi aynı pencereyi açar)
+const MODLAR = [
+  { id: 'arena', ad: 'Arena', alt: '100 can · seviye ve faiz', m: 'Takımını 8 kahramana büyüt; bölüm bölüm canavarlar, Kervan ve rakipler.', ik: 'kilic' },
+  { id: 'lobi', ad: 'Lobi Maçı', alt: '8 kişi · son kalan kazanır', m: 'Sen ve 7 hayalet oyuncu. Her tur biriyle eşleşirsin; canı biten elenir.', ik: 'tac' },
+  { id: 'hizli', ad: 'Hızlı Maç', alt: '~7 dk · seviye yok', m: 'Her tur 10 altın, 5 can, 7 zafer. Kısa ve hızlı.', ik: 'oyna' },
+];
+function modPencere() {
+  const M = oyun.P.mac;
+  pencere(`<h3 class="modBas">Mod seç</h3>${M ? '<p class="modUyari">Yeni maç başlarsa kayıtlı maçın biter.</p>' : ''}
+    <div class="modSec">${MODLAR.map((o, i) => `<button class="modK m-${o.id}" data-mod="${o.id}" style="--sira:${i}"><span class="modIk">${ik(o.ik)}</span><b>${o.ad}</b><em>${o.alt}</em><small>${o.m}</small><span class="modGir">Başla</span></button>`).join('')}</div>
+    <div class="eylemler"><button class="btn mor" data-kapat>Vazgeç</button></div>`, false, 'mod');
+  document.querySelectorAll('#pencere .modK').forEach(k => k.onclick = () => { kapat(); macaGir(() => oyun.yeniMac(k.dataset.mod)); });
+}
+// Maça giriş: kısa yükleme ekranı (yukleme_arka, logo, ilerleme). 3D hazırlık sahnesi ve takım modelleri gerçekten yüklenene dek kalır;
+// model ilerlemesi gerçek (S3.yukleme.olay), arada yumuşak sahte ilerleme. 3D yoksa kısa bir an görünür.
+let macYukSurer = false;
+async function macaGir(baslat) {
+  if (macYukSurer) return; macYukSurer = true;
+  const y = $('macYuk'); y.innerHTML = yukIcerik('Arena hazırlanıyor…'); const g = yukGosterge(y); g.basla();
+  y.classList.remove('bitti'); y.classList.add('acik');
+  let sahte = 0.03, gercek = 0; g.yuzde(sahte);
+  const z = setInterval(() => { sahte += (0.88 - sahte) * 0.05; g.yuzde(Math.max(sahte, gercek)); }, 100);
+  const eskiOlay = S3.yukleme.olay;
+  S3.yukleme.olay = (n, top) => { gercek = Math.max(gercek, 0.2 + 0.7 * n / Math.max(1, top)); g.yuzde(gercek, `Kahramanlar yükleniyor… ${n}/${top}`); };
+  try {
+    await new Promise(ok => requestAnimationFrame(() => setTimeout(ok, 30)));   // yükleme ekranı önce boyansın
+    await baslat();
+    goster('mac'); macCiz();
+    if (uc3) {
+      for (let i = 0; i < 2 && (hz3.kur || !hz3.acik); i++) { if (hz3.kur) await hz3.kur; if (!hz3.acik && aktifEkran === 'mac') hz3Ac(); }
+      if (hz3.kur) await hz3.kur;
+      await hz3Esitle();   // hazırlıktaki bütün modeller (yeni olanlar burada iner)
+      for (let i = 0; i < 3; i++) await new Promise(ok => requestAnimationFrame(ok));   // ilk karelerin gölgelendiricileri derlensin
+    } else await new Promise(ok => setTimeout(ok, 250));
+  } catch (e) { console.error(e); }
+  finally {
+    clearInterval(z); S3.yukleme.olay = eskiOlay; g.yuzde(1, 'Hazır!'); g.dur();
+    setTimeout(() => { y.classList.add('bitti'); setTimeout(() => { y.classList.remove('acik', 'bitti'); y.innerHTML = ''; }, 420); }, 180);
+    macYukSurer = false;
+  }
+}
+q('#ana .oyna').onclick = () => { if (oyun.P.mac) macaGir(() => oyun.turBaslat(true)); else if (ogr.adim >= 0) macaGir(() => oyun.yeniMac()); else modPencere(); };   // öğreticide doğrudan Arena
+q('#ana .yeniMac').onclick = modPencere;
 q('#ana .duelloBtn').onclick = duelloPencere; q('#ana .kahBtn').onclick = () => { kodeksCiz(); goster('kodeks'); }; q('#ana .nasilBtn').onclick = nasilPencere;
 q('#ana .anaAyar').onclick = ayarPencere;
+// oyuncu adı: profile dokun → ad penceresi (2–16 karakter). oyun.P.ad (lobi, hayalet, düello kodu) buradan; ayrıca kut.oyuncuAd'da saklanır
+const AD_ANAHTAR = 'kut.oyuncuAd';
+{ let ad = null; try { ad = localStorage.getItem(AD_ANAHTAR); } catch (e) {}
+  if (ad && ad.trim().length >= 2 && oyun.P.ad !== ad) { oyun.P.ad = ad; oyun.kaydet(); } }
+function adPencere() {
+  pencere(`<h3 class="adBas">Oyuncu adı</h3><p class="adNot">Lobide ve düello kodunda bu ad görünür.</p>
+    <form class="adForm" id="adForm" autocomplete="off"><input id="adGir" type="text" maxlength="16" minlength="2" spellcheck="false" autocapitalize="words" enterkeyhint="done" value="${oyun.P.ad.replace(/"/g, '&quot;')}" aria-label="Oyuncu adı">
+    <span class="adSay" id="adSay"></span></form><p class="adHata" id="adHata"></p>
+    <div class="eylemler"><button class="btn mor" data-kapat>İptal</button><button class="btn altin" id="adKaydet">Kaydet</button></div>`, false, 'ad');
+  const gir = $('adGir'), say = () => { const n = [...gir.value.trim()].length; $('adSay').textContent = `${n}/16`; $('adKaydet').disabled = n < 2 || n > 16; $('adHata').textContent = n && n < 2 ? 'En az 2 karakter' : ''; };
+  const kaydet = () => { const ad = gir.value.replace(/\s+/g, ' ').trim(); const n = [...ad].length; if (n < 2 || n > 16) { say(); return; }
+    oyun.P.ad = ad; oyun.kaydet(); try { localStorage.setItem(AD_ANAHTAR, ad); } catch (e) {} kapat(); anaCiz(); bildir('Adın kaydedildi', 'iyi'); };
+  gir.addEventListener('input', say); say();
+  $('adForm').onsubmit = (e) => { e.preventDefault(); kaydet(); }; $('adKaydet').onclick = kaydet;
+  setTimeout(() => { try { gir.focus({ preventScroll: true }); gir.select(); } catch (e) {} }, 60);
+}
+q('#ana .profil').onclick = adPencere;
 // karşılama arka planında hafif parallax (fare / sürükleme; kare başına tek stil yazımı)
 { const ark = q('#ana .anaArka'); let px = 0, py = 0, bekle = false;
   q('#ana').addEventListener('pointermove', (e) => { px = e.clientX / innerWidth * 2 - 1; py = e.clientY / innerHeight * 2 - 1;
@@ -260,8 +316,8 @@ function macCiz() {
   rp.querySelector('.pn-bas .sag').textContent = `Tur ${oyun.turAd()}`;
   if (r) {
     const lider = r.takim.slice().sort((a, b) => kh(b.h).kademe * b.s - kh(a.h).kademe * a.s)[0];
-    const lb = oyun.lobiDurum(), lbS = lb ? `<span style="display:block;font-size:12px;color:var(--yazi2)">Lobi: ${lb.filter(o => !o.olu).length}/8 ayakta · sıran ${lb[0].sira}${r.can != null ? ` · rakibin canı ${r.can}` : ''}</span>` : '';
-    rp.querySelector('.rakipKim').innerHTML = `<div class="amb"><img src="${P(lider.h)}" alt=""></div><div style="min-width:0"><b>${r.ad} <span class="etiket">${r.kaynak === 'bot' ? 'Bot' : r.pve ? 'Canavar' : r.kaynak === 'yansima' ? 'Yansıma' : 'Gerçek'}</span></b><span>${r.pve ? `Canavar turu · ${r.takim.length} canavar · kaybetsen de ganimet` : `${ik('kupa')}${sayi(r.kupa || 0)} kupa · ${r.takim.length} kahraman`}</span>${lbS}</div>`;
+    const lb = oyun.lobiDurum(), lbS = lb ? `<span class="lbS">Lobi: ${lb.filter(o => !o.olu).length}/8 ayakta · sıran ${lb[0].sira}${r.can != null ? ` · rakibin canı ${r.can}` : ''}</span>` : '';
+    rp.querySelector('.rakipKim').innerHTML = `<div class="amb"><img src="${P(lider.h)}" alt=""></div><div style="min-width:0"><b>${r.ad} <span class="etiket">${r.kaynak === 'bot' ? 'Bot' : r.pve ? 'Canavar' : r.kaynak === 'yansima' ? 'Yansıma' : 'Gerçek'}</span></b><span>${r.pve ? `Canavar turu · ${r.takim.length} canavar · kaybetsen de ganimet` : `${ik('kupa')}${sayi(r.kupa || 0)} kupa · ${r.takim.length} kahraman`}</span>${lbS}</div>${lb && r.can != null ? `<em class="rkCan" title="Rakibin canı">${ik('kalp')}${r.can}</em>` : ''}`;
     const yer = {}; r.takim.forEach(b => { yer[b.y * SUTUN + b.x] = b; });
     $('rakipTahta').innerHTML = [0, 1, 2].map(sira => `<div class="sAd ${sira ? 'arka' : ''}">${SIRA_AD[sira]}</div>` + [0, 1, 2, 3].map(x => {
       const b = yer[sira * SUTUN + x]; return b ? `<div class="m k${kh(b.h).kademe}"><img src="${P(b.h)}" alt="">${yildiz(b.s)}${b.f ? mad(b.f) : ''}</div>` : `<div class="m bos"></div>`;
@@ -326,7 +382,7 @@ function macCiz() {
       : `${mik('deneyim')}Sv ${M.seviye} · ${M.xp}/${gerek}<span class="xpCubuk"><i style="width:${Math.round(100 * M.xp / gerek)}%"></i></span><small>Deneyim Al · ${ik('coin')}${oyun.xpBedel()}</small>`;
   }
   sb[1].innerHTML = `${mik(M.kilit ? 'kilit' : 'kilit_acik')}${M.kilit ? 'Kilitli' : 'Kilitle'}`; sb[1].classList.toggle('altin', M.kilit); sb[1].classList.toggle('mor', !M.kilit);
-  q('.savasBtn', m).innerHTML = M.kervan ? `${ik('oyna')}KERVAN<small>Bir kahraman + eşya seç</small>` : `${ik('kilic')}SAVAŞA!<small>${r ? r.ad + (r.pve ? ' ile' : "'a karşı") : 'Rakip aranıyor…'}</small>`;
+  q('.savasBtn', m).innerHTML = M.kervan ? `${ik('oyna')}KERVAN<small>Bir kahraman + eşya seç</small>` : `${ik('kilic')}SAVAŞA!${r ? '' : '<small>Rakip aranıyor…</small>'}`;
   secimDenetle();
   if (uc3) hz3Ciz();
 }
@@ -458,13 +514,30 @@ function secCiz() {
   $('eSat').onclick = () => oyun.sat();
   if ($('eKay')) $('eKay').onclick = () => oyun.kaynasModDegistir();
 }
+// Kahraman ayrıntı kartı (Kahramanlar sayfası, dükkânda uzun bas, hazırlıkta (i)): solda kademe çerçeveli portre,
+// sağda ad, kademe/soy çipleri, istatistik ızgarası, Yetenek ve Pasif ayrı kutular; ek satırlar (havuz, eşya) altta.
+function kahDetayHTML({ id, ad, s = 0, st, ek = '', esyalar = [] }) {
+  const h = kh(id), yet = D.YETENEK[st.yetenek], pas = D.PASIF[st.pasif];
+  const hiz = (+st.as).toFixed(2).replace(/\.?0+$/, '').replace('.', ',');
+  const stat = [['kalp', 'Can', st.can], ['kilic', 'Saldırı', st.atk], ['simsek', 'Saldırı hızı', hiz], ['hedef', 'Menzil', st.menzil], ['damla', 'Mana', st.mana]];
+  return `<div class="kDetay k${h.kademe}">
+    <div class="kdPortre"><div class="kdCer"><img src="${P(id)}" alt=""></div><span class="kdKad">K${h.kademe}</span>${s ? yildiz(s) : ''}</div>
+    <div class="kdSag">
+      <h3 class="kdAd">${ad}</h3>
+      <div class="kdCipler"><span class="kdCip kad">Kademe ${h.kademe}</span><span class="kdCip fiyat">${ik('coin')}${h.kademe} altın</span>${st.soy.map(x => `<span class="kdCip soy"><img src="${SY(x)}" alt="">${D.SOYLAR[x].ad}</span>`).join('')}</div>
+      <div class="kdStat">${stat.map(([n, a, v]) => `<div><small>${ik(n)}${a}</small><b>${v}</b></div>`).join('')}</div>
+      <div class="kdYP">
+        <div class="kdKutu yet"><h4>${ik('simsek')}Yetenek</h4><b>${yet.ad}</b><p>${yet.m}</p></div>
+        <div class="kdKutu pas"><h4>${ik('kalkan')}Pasif</h4><b>${pas.ad}</b><p>${pas.m}</p></div>
+      </div>
+      ${esyalar.length ? `<div class="kdEsya">${esyalar.map(e => `<div>${esyaIk(e)}<span><b>${(D.esya(e) || { ad: e }).ad}</b> ${esyaMetin(e)}</span></div>`).join('')}</div>` : ''}
+      ${ek ? `<div class="kdEk">${ek}</div>` : ''}
+    </div></div>
+    <div class="eylemler"><button class="btn altin" data-kapat>Tamam</button></div>`;
+}
 function kartBilgi(id) {
-  if (!id) return; const h = kh(id);
-  pencere(`<div style="display:flex;gap:16px;align-items:center"><img src="${P(id)}" style="width:120px;height:120px;object-fit:contain"><div><h3>${h.ad}</h3>
-    <p>${h.soy.map(s => `<img src="${SY(s)}" style="width:22px;vertical-align:middle"> ${D.SOYLAR[s].ad}`).join(' · ')} · ${h.kademe} altın</p>${(() => { const hv = oyun.havuzBilgi(id); return hv ? `<p style="color:var(--yazi2)">Havuzda ${hv.kalan}/${hv.toplam} kopya</p>` : ''; })()}</div></div>
-    <p><b>Yetenek: ${D.YETENEK[h.yetenek].ad}.</b> ${D.YETENEK[h.yetenek].m}</p><p><b>Pasif: ${D.PASIF[h.pasif].ad}.</b> ${D.PASIF[h.pasif].m}</p>
-    <p>Can ${h.can} · Saldırı ${h.atk} · Hız ${h.as} · Menzil ${h.menzil} · Mana ${h.mana}</p>
-    <div class="eylemler"><button class="btn altin" data-kapat>Tamam</button></div>`);
+  if (!id) return; const h = kh(id); const hv = oyun.havuzBilgi(id);
+  pencere(kahDetayHTML({ id, ad: h.ad, st: { ...h, soy: h.soy }, ek: hv ? `Havuzda ${hv.kalan}/${hv.toplam} kopya` : '' }), false, 'kahraman');
 }
 oyun.on('degisti', () => { if (aktifEkran === 'mac') macCiz(); });
 { const sb = document.querySelectorAll('#mac .dukkanSol .btn'); sb[0].onclick = () => oyun.yenile(); sb[1].onclick = () => oyun.kilit(); sb[2].onclick = () => oyun.xpAl(); }
@@ -565,12 +638,13 @@ function hz3Guvenli(w, h) {
 function hz3Esitle() {
   const M = oyun.M; if (!M) return; const liste = []; hz3.refYer = new Map();
   for (const yer of ['tahta', 'yedek']) M[yer].forEach((b, i) => { if (b) { liste.push({ ref: b, b, yer, i }); hz3.refYer.set(b, { yer, i }); } });
-  S3.hazirlikEsitle(liste);
+  const yuk = S3.hazirlikEsitle(liste);
   const sec = oyun.al(oyun.secili);
   let kaynas = null;
   if (sec && oyun.kaynasMod) { const uclu = sec.f && !sec.f2 && oyun.armaganVar('ucluKaynasma');
     kaynas = liste.map(o => o.b).filter(b => b !== sec && !b.f && b.h !== sec.h && (!uclu || b.h !== sec.f)); }
   S3.hazirlikVurgu({ secili: sec || null, kaynas, acik: !!sec || oyun.seciliEsya !== null || !!hz3.sur });
+  return yuk;
 }
 function hz3Ciz() {
   const M = oyun.M, m = $('mac'), sev = oyun.seviyeli();
@@ -597,8 +671,8 @@ function bilgiKartCiz() {
   const uclu = b.f && !b.f2 && oyun.armaganVar('ucluKaynasma'), kB = oyun.kaynastirBedel(b.h), kaynasabilir = (!b.f || uclu) && oyun.M.altin >= kB;
   const kBY = oyun.seviyeli() && h.kademe < 3 && kB > 1 ? kB + '–5' : kB;
   el.className = `bilgiKart k${h.kademe}`; el.hidden = false; el._ref = b;
-  el.innerHTML = `<div class="bkUst"><b>${oyun.birimAd(b)}</b>${yildiz(b.s)}</div>
-    <div class="bkSoy"><span class="kTag">K${h.kademe}</span>${st.soy.map(s => `<span class="bs"><img src="${SY(s)}" alt="">${D.SOYLAR[s].ad}</span>`).join('')}</div>
+  el.innerHTML = `<div class="bkBas"><div class="bkPor"><img src="${P(b.h)}" alt=""></div><div class="bkBilgi"><div class="bkUst"><b>${oyun.birimAd(b)}</b>${yildiz(b.s)}</div>
+    <div class="bkSoy"><span class="kTag">K${h.kademe}</span>${st.soy.map(s => `<span class="bs"><img src="${SY(s)}" alt="">${D.SOYLAR[s].ad}</span>`).join('')}</div></div></div>
     ${b.e && b.e.length ? `<div class="bkEsya">${b.e.map(id => esyaIk(id)).join('')}</div>` : ''}
     <div class="bkEylem"><button class="btn sat" id="bkSat">${mik('sat')}Sat<small>+${oyun.satisDegeri(b)}${ik('coin')}</small></button>
       ${!b.f || uclu ? `<button class="btn ${oyun.kaynasMod ? 'altin' : 'mor'}" id="bkKay" ${kaynasabilir || oyun.kaynasMod ? '' : 'disabled'}>${mik('kaynastir')}${oyun.kaynasMod ? 'İkinciye dokun' : `Kaynaştır${kB ? `<small>${kBY}${ik('coin')}</small>` : ''}`}</button>` : ''}
@@ -621,13 +695,8 @@ function bilgiKartYer() {
   const t = `translate(${Math.round(x)}px,${Math.round(y)}px)`; if (el._t !== t) { el._t = t; el.style.transform = t; }
 }
 function birimDetay(b) {
-  const h = kh(b.h), st = SIM.birimStat(b);
-  pencere(`<div style="display:flex;gap:16px;align-items:center"><img src="${P(b.h)}" style="width:110px;height:110px;object-fit:contain"><div><h3>${oyun.birimAd(b)}</h3>
-    <p>${yildiz(b.s)} K${h.kademe} · ${st.soy.map(s => `<img src="${SY(s)}" style="width:22px;vertical-align:middle"> ${D.SOYLAR[s].ad}`).join(' · ')} · Ustalık Sv.${oyun.ustaSv(b.h)}</p></div></div>
-    <p>Can ${st.can} · Saldırı ${st.atk} · Hız ${st.as.toFixed(2).replace('.', ',')} · Menzil ${st.menzil} · Mana ${st.mana}</p>
-    <p><b>Yetenek: ${D.YETENEK[st.yetenek].ad}.</b> ${D.YETENEK[st.yetenek].m}</p><p><b>Pasif: ${D.PASIF[st.pasif].ad}.</b> ${D.PASIF[st.pasif].m}</p>
-    ${b.e && b.e.length ? b.e.map(id => `<p>${esyaIk(id)} <b>${(D.esya(id) || { ad: id }).ad}.</b> ${esyaMetin(id)}</p>`).join('') : ''}
-    <div class="eylemler"><button class="btn altin" data-kapat>Tamam</button></div>`);
+  const st = SIM.birimStat(b);
+  pencere(kahDetayHTML({ id: b.h, ad: oyun.birimAd(b), s: b.s, st, esyalar: b.e || [], ek: `Ustalık Sv. ${oyun.ustaSv(b.h)}` }), false, 'kahraman');
 }
 // ── 3D tahtada dokunma ve sürükleme ──
 (() => {
@@ -1050,7 +1119,7 @@ function kodeksCiz() {
   $('soyKodListe').innerHTML = Object.entries(D.SOYLAR).map(([s, v]) => {
     const tas = D.KAHRAMANLAR.filter(h => h.soy.includes(s)).map(h => h.id);
     return `<div class="sk"><img src="${SY(s)}" alt=""><div style="min-width:0"><div class="ust"><b>${v.ad}</b><span class="tasiyan">${tas.map(id => `<img src="${P(id)}" alt="">`).join('')}</span></div>
-      <div class="esk"><span><em>2</em>${v.aciklama[0]}</span></div><div class="esk"><span><em>4</em>${v.aciklama[1]}</span></div></div></div>`; }).join('');
+      <div class="esk"><em>2</em><span>${v.aciklama[0]}</span></div><div class="esk"><em>4</em><span>${v.aciklama[1]}</span></div></div></div>`; }).join('');
   q('#kodeks .kodUst .rozet .yz').innerHTML = `<small>Ustalık</small>Sv. ${oyun.ustaToplam()}`;
   document.querySelectorAll('#kodeks .filtre .btn').forEach((b, i) => { b.classList.toggle('on', i === kodeksFiltre); b.onclick = () => { kodeksFiltre = i; kodeksCiz(); }; });
 }
@@ -1216,13 +1285,16 @@ anaCiz(); goster('ana');
 (async () => {
   const gorseller = ['../arayuz/logo.png', ...D.KAHRAMANLAR.map(h => P(h.id)), ...Object.keys(D.SOYLAR).map(SY), ...Object.values(IK_RESIM).map(n => `../arayuz/ui/${n}.png`), '../gorsel/gokyuzu.webp',
     ...[document.documentElement.classList.contains('arkaB') ? 'karsilama_arka_b' : 'karsilama_arka', 'dugme_oyna', 'dugme_oyna_basili', 'profil_cerceve', 'profil_cerceve_b', 'menu_panel', 'dugme_ikincil', 'dugme_ikincil_basili', 'dugme_savas', 'dugme_yuvarlak', 'ikon_ayarlar', 'ikon_yenile', 'ikon_kilit_acik'].map(n => `arayuz/menu/${n}.webp`)];
+  // karşılamada 3D vitrin yok (statik karsilama_arka + Ken Burns + zerreler, CSS): açılışta yalnız 3D sahne (renderer, arena) kurulur;
+  // kahraman modelleri maça girerken kısa yükleme ekranıyla gelir (macYukle). ?vitrin=1 eski canlı vitrini açar (karsilama.js vitrinKur).
+  const vitrinAcik = /[?&]vitrin=1\b/.test(location.search);
   let v = null;
   const r = await acilisYukle(S3, {
     gorseller,
-    sahne: async () => { await sahneyiHazirla(); v = vitrinKur({ S3, SIM, D, tuval: $('tuval3d') }); await v.hazirla(); },
-    derle: async () => { document.body.classList.add('menu3d'); await v.isit(); },
+    sahne: async () => { await sahneyiHazirla(); if (vitrinAcik) { v = vitrinKur({ S3, SIM, D, tuval: $('tuval3d') }); await v.hazirla(); } },
+    derle: async () => { if (v) { document.body.classList.add('menu3d'); await v.isit(); } },
   });
-  if (r && r.hata) { sahneHazir = null; document.body.classList.remove('menu3d'); } else { vitrin = v; uc3 = !/[?&]hazirlik3d=0\b/.test(location.search); if (uc3) hz3Duzen(); }   // 3D yoksa karşılama portre yedeğiyle açılır
+  if (r && r.hata) { sahneHazir = null; document.body.classList.remove('menu3d'); } else { vitrin = v; uc3 = !/[?&]hazirlik3d=0\b/.test(location.search); if (uc3) hz3Duzen(); }   // 3D yoksa hazırlık 2D ızgarayla açılır
   acilisBitti = true; acilisKapat();
   if (aktifEkran === 'ana') { if (vitrin) vitrin.ac(); anaGiris(); }
   if (!/[?&]ogretici=0\b/.test(location.search)) ogrBaslat();
@@ -1230,4 +1302,4 @@ anaCiz(); goster('ana');
 })();
 // bitiş ekranı önizlemesi (test): oyun durumuna dokunmadan sonuç bandını k (0 zafer, 1 yenilgi, 2 berabere) ile kurar ve animasyonu başlatır
 function _sonucOnizle(k) { bitisTemizle(); $('sonucYer').innerHTML = `<div class="sonucPerde ${['zafer', 'yenilgi', 'berabere'][k]}" aria-hidden="true"><div class="spIsin"></div><div class="spPatla"></div></div><div class="sonucBant ${['zafer', 'yenilgi', 'berabere'][k]}">${sonucBaslikHTML(k)}<div class="bil"><em>Önizleme</em></div><div class="sDugmeler"><button class="btn mor">${ik('kilic')} Hasar özeti</button><button class="btn altin">Devam ${ik('oyna')}</button></div></div><div class="pn hasarOzet" id="hasarOzet" hidden></div>`; sonucAnimBaslat(k); }
-window.KUT_TEST = { acilis: false, get vitrin() { return vitrin; }, oyun, S3, goster, macCiz, sonCiz, ogr, ogrBaslat, ogrKapat, OGR_ADIMLAR, bitis: { _sonucOnizle, mvpAc, mvpSec, mvpKapat, savasGirisGoster, torenGoster } };
+window.KUT_TEST = { acilis: false, anaCiz, macaGir, modPencere, adPencere, get vitrin() { return vitrin; }, oyun, S3, goster, macCiz, sonCiz, ogr, ogrBaslat, ogrKapat, OGR_ADIMLAR, bitis: { _sonucOnizle, mvpAc, mvpSec, mvpKapat, savasGirisGoster, torenGoster } };

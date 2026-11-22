@@ -89,6 +89,8 @@ namespace Kut
         public bool E(string id) => Ef.Contains(id);
         public Dictionary<string, Durum> Durum = new Dictionary<string, Durum>();
         public SavasBirimi Hedef;
+        // yol bulma (sim.js yolBul): yol (ızgara noktaları), YolI, YolH (yolun hedefi), Slot (kapılan saldırı noktası, −1 yok), YolT/YolBek (yenileme sayaçları), Takil, Gevsek
+        public int[] Yol; public int YolI, Slot = -1, YolT, YolBek, Takil, Gevsek; public SavasBirimi YolH;
         public bool Var(string d) => Durum.ContainsKey(d);
     }
 
@@ -283,25 +285,140 @@ namespace Kut
                 }
                 if (!itildi) break;
             }
-        }
-        /// <summary>Yürüme yönü: doğrudan hedefe; yol bir birimin ayrım çemberine sokuyorsa ±30°, ±60°, ±90° (önce i'ye göre bir yan; sabit sayılarla). Hepsi kapalıysa false.</summary>
-        static readonly double[][] DON = { new[] { 1.0, 0 }, new[] { 0.8660254037844386, 0.5 }, new[] { 0.8660254037844386, -0.5 }, new[] { 0.5, 0.8660254037844386 }, new[] { 0.5, -0.8660254037844386 }, new[] { 0.0, 1 }, new[] { 0.0, -1 } };
-        bool YurumeYonu(SavasBirimi u, double ex, double ey, double adimU, out double rx, out double ry)
-        {
-            double yan = u.I % 2 != 0 ? -1 : 1;
-            foreach (var r in DON)
+            // 4 geçiş yetmediyse: ızgarada bütün birimlerden ayrım uzak, u'ya en yakın noktaya konur
+            if (Birimler.Any(o => o != u && !o.Olu && Mesafe(u, o) < A - 1e-9))
             {
-                double c = r[0], sn = r[1] * yan; rx = ex * c - ey * sn; ry = ex * sn + ey * c;
+                int en = -1; double enD = 1e9, A2 = A * A;
+                for (int n = 0; n < YGN; n++)
+                {
+                    double px = Ynx(n), py = Yny(n), ax = px - u.X, ay = py - u.Y, d2 = ax * ax + ay * ay; if (d2 >= enD) continue;
+                    bool bos = true;
+                    foreach (var o in Birimler) { if (o == u || o.Olu) continue; double bx = px - o.X, by = py - o.Y; if (bx * bx + by * by < A2 - 1e-9) { bos = false; break; } }
+                    if (bos) { en = n; enD = d2; }
+                }
+                if (en >= 0) { u.X = Ynx(en); u.Y = Yny(en); }
+            }
+        }
+        /// <summary>Yürüme yönü: e yönüne; adım bir birimin ayrım çemberine sokuyorsa ±30°, ±60°, ±90° (genis: ±120°, ±150° da; önce i'ye göre bir yan;
+        /// sabit sayılarla). Gevşekken dostlara SavasYolGevsek yeter. Hepsi kapalıysa false.</summary>
+        static readonly double[][] DON = { new[] { 1.0, 0 }, new[] { 0.8660254037844386, 0.5 }, new[] { 0.8660254037844386, -0.5 }, new[] { 0.5, 0.8660254037844386 }, new[] { 0.5, -0.8660254037844386 }, new[] { 0.0, 1 }, new[] { 0.0, -1 },
+            new[] { -0.5, 0.8660254037844386 }, new[] { -0.5, -0.8660254037844386 }, new[] { -0.8660254037844386, 0.5 }, new[] { -0.8660254037844386, -0.5 } };
+        static double AyrimA(SavasBirimi u, SavasBirimi o) => u.Gevsek > 0 && o.Taraf == u.Taraf ? KutVeri.SavasYolGevsek : KutVeri.SavasAyrim;
+        bool YurumeYonu(SavasBirimi u, double ex, double ey, double adimU, bool genis, out double rx, out double ry)
+        {
+            double yan = u.I % 2 != 0 ? -1 : 1; int nd = genis ? 11 : 7;
+            for (int k = 0; k < nd; k++)
+            {
+                double c = DON[k][0], sn = DON[k][1] * yan; rx = ex * c - ey * sn; ry = ex * sn + ey * c;
                 double nx = u.X + rx * adimU, ny = u.Y + ry * adimU; bool acik = true;
                 foreach (var o in Birimler)
                 {
                     if (o == u || o.Olu) continue;
                     double ax = nx - o.X, ay = ny - o.Y, yd = Math.Sqrt(ax * ax + ay * ay);
-                    if (yd < KutVeri.SavasAyrim - 1e-9 && yd < Mesafe(u, o)) { acik = false; break; }
+                    if (yd < AyrimA(u, o) - 1e-9 && yd < Mesafe(u, o)) { acik = false; break; }
                 }
                 if (acik) return true;
             }
             rx = ry = 0; return false;
+        }
+        // ── Yol bulma (sim.js yolBul ile birebir): 0,2 aralıklı 27 × 37 ızgara, kova kuyruklu Dijkstra (dik 2, çapraz 3), boş saldırı noktası ──
+        const int YGX = 27, YGY = 37, YGN = YGX * YGY, YKOVA = 400;
+        static readonly int[][] YKOM = { new[] { 1, 0, 2 }, new[] { -1, 0, 2 }, new[] { 0, 1, 2 }, new[] { 0, -1, 2 }, new[] { 1, 1, 3 }, new[] { -1, 1, 3 }, new[] { 1, -1, 3 }, new[] { -1, -1, 3 } };
+        readonly bool[] yKapali = new bool[YGN]; readonly int[] yUzak = new int[YGN], yOnce = new int[YGN];
+        readonly List<int>[] yKova = Enumerable.Range(0, YKOVA).Select(_ => new List<int>()).ToArray();
+        static double Ynx(int n) => 0.4 + 0.2 * (n % YGX);
+        static double Yny(int n) => 0.4 + 0.2 * (n / YGX);
+        static int YIdx(double v) => (int)Math.Floor(v / 0.2);
+        void YolTara(SavasBirimi u)
+        {
+            for (int n = 0; n < YGN; n++) { yKapali[n] = false; yUzak[n] = 1000000000; yOnce[n] = -1; }
+            foreach (var o in Birimler)
+            {
+                if (o == u || o.Olu) continue;
+                double r = AyrimA(u, o), r2 = r * r;
+                int x0 = Math.Max(0, YIdx(o.X - r - 0.4)), x1 = Math.Min(YGX - 1, YIdx(o.X + r - 0.4) + 1);
+                int y0 = Math.Max(0, YIdx(o.Y - r - 0.4)), y1 = Math.Min(YGY - 1, YIdx(o.Y + r - 0.4) + 1);
+                for (int gy = y0; gy <= y1; gy++) for (int gx = x0; gx <= x1; gx++)
+                {
+                    int n = gy * YGX + gx; double dx = Ynx(n) - o.X, dy = Yny(n) - o.Y; if (dx * dx + dy * dy < r2 - 1e-9) yKapali[n] = true;
+                }
+            }
+            int cx = Math.Max(0, Math.Min(YGX - 1, (int)Math.Floor((u.X - 0.4) / 0.2 + 0.5))), cy = Math.Max(0, Math.Min(YGY - 1, (int)Math.Floor((u.Y - 0.4) / 0.2 + 0.5)));
+            int tohum = 0, maxc = 0;
+            for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++)
+            {
+                int gx = cx + dx, gy = cy + dy; if (gx < 0 || gy < 0 || gx >= YGX || gy >= YGY) continue;
+                int n = gy * YGX + gx; if (yKapali[n]) continue;
+                double ax = Ynx(n) - u.X, ay = Yny(n) - u.Y; int c = (int)Math.Floor(Math.Sqrt(ax * ax + ay * ay) * 10 + 0.5);
+                if (c < yUzak[n]) { yUzak[n] = c; yKova[c].Add(n); if (c > maxc) maxc = c; tohum++; }
+            }
+            if (tohum == 0) { int n = cy * YGX + cx; yUzak[n] = 0; yKova[0].Add(n); }
+            for (int c = 0; c <= maxc; c++)
+            {
+                var kv = yKova[c];
+                for (int j = 0; j < kv.Count; j++)
+                {
+                    int n = kv[j]; if (yUzak[n] != c) continue;
+                    int x = n % YGX, y = n / YGX;
+                    foreach (var km in YKOM)
+                    {
+                        int X = x + km[0], Y = y + km[1]; if (X < 0 || Y < 0 || X >= YGX || Y >= YGY) continue;
+                        int m = Y * YGX + X, nc = c + km[2]; if (yKapali[m] || nc >= YKOVA || nc >= yUzak[m]) continue;
+                        yUzak[m] = nc; yOnce[m] = n; yKova[nc].Add(m); if (nc > maxc) maxc = nc;
+                    }
+                }
+                kv.Clear();
+            }
+        }
+        int SaldiriNokta(SavasBirimi u, SavasBirimi h, out int enC)
+        {
+            double r = MenzilAl(u), r2 = r * r, A2 = KutVeri.SavasAyrim * KutVeri.SavasAyrim;
+            int x0 = Math.Max(0, YIdx(h.X - r - 0.4)), x1 = Math.Min(YGX - 1, YIdx(h.X + r - 0.4) + 1);
+            int y0 = Math.Max(0, YIdx(h.Y - r - 0.4)), y1 = Math.Min(YGY - 1, YIdx(h.Y + r - 0.4) + 1);
+            int en = -1; enC = 1000000000;
+            for (int gy = y0; gy <= y1; gy++) for (int gx = x0; gx <= x1; gx++)
+            {
+                int n = gy * YGX + gx; if (yKapali[n] || yUzak[n] >= enC) continue;
+                double px = Ynx(n), py = Yny(n), dx = px - h.X, dy = py - h.Y; if (dx * dx + dy * dy > r2) continue;
+                bool kapildi = false;
+                foreach (var o in Birimler)
+                {
+                    if (o == u || o.Olu || o.Slot < 0) continue;
+                    double sx = px - Ynx(o.Slot), sy = py - Yny(o.Slot); if (sx * sx + sy * sy < A2 - 1e-9) { kapildi = true; break; }
+                }
+                if (!kapildi) { en = n; enC = yUzak[n]; }
+            }
+            return en;
+        }
+        void YolBul(SavasBirimi u)
+        {
+            YolTara(u);
+            SavasBirimi z = null;
+            if (u.Var("zorla")) { int zu = (int)u.Durum["zorla"].Deger; z = Birimler.FirstOrDefault(o => o.Uid == zu && !o.Olu); }
+            var aday = z != null ? new List<SavasBirimi> { z } : Dusmanlar(u).Where(o => !o.Var("hedefAlinmaz")).ToList(); if (aday.Count == 0) aday = Dusmanlar(u);
+            SavasBirimi en = null; int enG = -1; double enC = 1e9;
+            foreach (var o in aday) { int g = SaldiriNokta(u, o, out int c); if (g < 0) continue; double cc = c - (o == u.Hedef ? 4 : 0); if (cc < enC) { enC = cc; en = o; enG = g; } }
+            if (en == null) { u.Yol = null; u.Slot = -1; u.YolH = null; u.YolBek = KutVeri.SavasYolYenile; return; }
+            var yol = new List<int>(); for (int n = enG; n >= 0; n = yOnce[n]) yol.Add(n); yol.Reverse();
+            u.Yol = yol.ToArray(); u.YolI = 0; u.YolH = en; u.Slot = enG; u.YolT = KutVeri.SavasYolYenile; u.Hedef = en;
+        }
+        bool SeritAcik(SavasBirimi u, double px, double py, SavasBirimi h)
+        {
+            double vx = px - u.X, vy = py - u.Y, v2 = vx * vx + vy * vy;
+            foreach (var o in Birimler)
+            {
+                if (o == u || o == h || o.Olu) continue;
+                double wx = o.X - u.X, wy = o.Y - u.Y, k = v2 > 1e-12 ? (wx * vx + wy * vy) / v2 : 0; k = Math.Max(0, Math.Min(1, k));
+                double qx = u.X + vx * k - o.X, qy = u.Y + vy * k - o.Y, sd = Math.Sqrt(qx * qx + qy * qy);
+                if (sd < AyrimA(u, o) - 1e-9 && sd < Mesafe(u, o) - 1e-9) return false;
+            }
+            return true;
+        }
+        int YolNokta(SavasBirimi u)
+        {
+            var p = u.Yol; int sec = u.YolI;
+            for (int j = Math.Min(p.Length - 1, u.YolI + 4); j > u.YolI; j--) if (SeritAcik(u, Ynx(p[j]), Yny(p[j]), null)) { sec = j; break; }
+            u.YolI = sec; return p[sec];
         }
         /// <summary>Dev Kükremesi'nin zorladığı hedef; sonra hedef alınabilenlerden en yakın; hepsi hedef alınamazsa en yakın.</summary>
         SavasBirimi EnYakin(SavasBirimi u)
@@ -618,19 +735,34 @@ namespace Kut
                 // kalıcı hedef: ölene, hedef alınamaz olana, menzilin SavasHedefBirak ötesine geçene ya da Dev Kükremesi başkasını zorlayana dek
                 {
                     var hd = u.Hedef;
-                    if (hd == null || hd.Olu || hd.Var("hedefAlinmaz") || (u.Var("zorla") && u.Durum["zorla"].Deger != hd.Uid) || Mesafe(u, hd) > MenzilAl(u) + KutVeri.SavasHedefBirak) u.Hedef = EnYakin(u);
+                    if (hd == null || hd.Olu || hd.Var("hedefAlinmaz") || (u.Var("zorla") && u.Durum["zorla"].Deger != hd.Uid) || (Mesafe(u, hd) > MenzilAl(u) + KutVeri.SavasHedefBirak && !(u.Yol != null && u.YolH == hd))) u.Hedef = EnYakin(u);
                 }
                 var h = u.Hedef; if (h == null) continue;
                 double dd = Mesafe(u, h);
                 if (dd > MenzilAl(u) + 0.05)
                 {
-                    // yürüme: yol tıkalıysa yana döner; tamamen tıkalıysa bekler ve en yakını yeniden seçer (üst üste binme yok)
-                    double hiz = (u.Soy.Contains("atli") ? 1.6 : 1.2) * (u.E("bulutNali") ? 1.5 : 1) * DT, adimU = Math.Min(hiz, dd - MenzilAl(u)); // tempo: 1,7 → 1,2, Çevik 2,4 → 1,6
-                    if (YurumeYonu(u, (h.X - u.X) / dd, (h.Y - u.Y) / dd, adimU, out double rx, out double ry)) { u.X += rx * adimU; u.Y += ry * adimU; }
-                    else u.Hedef = EnYakin(u);
+                    // yürüme: doğrudan yol açıksa dümdüz; değilse yol bulma (YolBul); adım kapalıysa yana; SavasYolTakil adım takılırsa gevşek (sim.js ile aynı)
+                    if (u.Gevsek > 0) u.Gevsek--;
+                    bool dogru = SeritAcik(u, u.X + (h.X - u.X) / dd * (dd - MenzilAl(u)), u.Y + (h.Y - u.Y) / dd * (dd - MenzilAl(u)), h);
+                    if (dogru) { u.Yol = null; u.Slot = -1; }
+                    else if (u.Yol != null ? u.YolH != h || --u.YolT <= 0 || Math.Sqrt((Ynx(u.Yol[u.YolI]) - u.X) * (Ynx(u.Yol[u.YolI]) - u.X) + (Yny(u.Yol[u.YolI]) - u.Y) * (Yny(u.Yol[u.YolI]) - u.Y)) > 0.6 : --u.YolBek <= 0)
+                    { YolBul(u); h = u.Hedef; dd = Mesafe(u, h); }
+                    if (dd > MenzilAl(u) + 0.05)
+                    {
+                        double hiz = (u.Soy.Contains("atli") ? 1.6 : 1.2) * (u.E("bulutNali") ? 1.5 : 1) * DT, adimU = Math.Min(hiz, dd - MenzilAl(u)); // tempo: 1,7 → 1,2, Çevik 2,4 → 1,6
+                        double ex = (h.X - u.X) / dd, ey = (h.Y - u.Y) / dd;
+                        if (u.Yol != null) { int n = YolNokta(u); double wx = Ynx(n) - u.X, wy = Yny(n) - u.Y, wd = Math.Sqrt(wx * wx + wy * wy); if (wd > 1e-6) { ex = wx / wd; ey = wy / wd; } }
+                        if (YurumeYonu(u, ex, ey, adimU, !dogru, out double rx, out double ry)) { u.X += rx * adimU; u.Y += ry * adimU; u.Takil = 0; }
+                        else
+                        {
+                            u.YolT = 0; u.YolBek = 0;
+                            if (++u.Takil >= KutVeri.SavasYolTakil) { u.Takil = 0; u.Gevsek = KutVeri.SavasYolGevsekSure; }
+                        }
+                    }
                 }
                 else
                 {
+                    u.Yol = null; u.Slot = -1; u.Takil = 0;
                     u.Cd -= DT * HizCarpan(u);
                     if (u.Cd <= 0)
                     {

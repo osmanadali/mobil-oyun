@@ -22,7 +22,7 @@
     { id: 'golem', ad: 'Kaya Golemi', emoji: '🪨', renk: '#a3775a', kademe: 1, soy: ['yer', 'dev'],        can: 980, atk: 38, as: 0.50, menzil: 1, mana: 80,  yetenek: 'tasFirlat',  pasif: 'tasDeri' },
     { id: 'kurt', ad: 'Kristal Kurt', emoji: '🐺', renk: '#8c97a8', kademe: 1, soy: ['atli', 'avci'],      can: 728, atk: 46, as: 0.85, menzil: 1, mana: 60,  yetenek: 'uluma',      pasif: 'suru' },
     { id: 'kurbaga', ad: 'Davulcu Kurbağa', emoji: '🐸', renk: '#c9a24a', kademe: 1, soy: ['bilge', 'gok'],      can: 930, atk: 49, as: 0.65, menzil: 3, mana: 70,  yetenek: 'davul',      pasif: 'ruhBagi' },
-    { id: 'yarasa', ad: 'Sis Yarasası', emoji: '🦇', renk: '#b4435a', kademe: 1, soy: ['karanlik', 'su'],    can: 700, atk: 42, as: 0.80, menzil: 1, mana: 70,  yetenek: 'ruhEmme',    pasif: 'canEmici' },
+    { id: 'yarasa', ad: 'Sis Yarasası', emoji: '🦇', renk: '#b4435a', kademe: 1, soy: ['karanlik', 'su'],    can: 700, atk: 42, as: 0.80, menzil: 1, mana: 80,  yetenek: 'ruhEmme',    pasif: 'canEmici' },
     { id: 'ruzgar', ad: 'Rüzgâr Ruhu', emoji: '🌪️', renk: '#7fc8c0', kademe: 1, soy: ['gok', 'avci'],       can: 602, atk: 45, as: 0.70, menzil: 3, mana: 80,  yetenek: 'kasirga',    pasif: 'kacis' },
     { id: 'koc', ad: 'Dağ Koçu', emoji: '🐏', renk: '#d06a3c', kademe: 2, soy: ['yer', 'atli'],       can: 952, atk: 68, as: 0.60, menzil: 1, mana: 90,  yetenek: 'deliOfke',   pasif: 'deliCesaret' },
     { id: 'yilan', ad: 'Zümrüt Yılan', emoji: '🐍', renk: '#5aa86a', kademe: 2, soy: ['su', 'bilge'],       can: 854, atk: 41, as: 0.60, menzil: 3, mana: 80,  yetenek: 'zehir',      pasif: 'zehirDis' },
@@ -244,6 +244,7 @@
     altinTur: 10,           // her tur yeniden 10 altın (faiz yok → kartopu yok, geride kalan toparlar)
     yenile: 1, kaynastir: 3,
     yedek: 4,
+    botErken: 4,            // ilk 4 turda Hızlı Maç botu ★2 ve kaynaşmış birim taşımaz (online.js botTakim; erken turda yeni oyuncu da kazanabilsin)
     can: 5, zaferHedef: 7,  // 5 can, 7 zafer: bir maç en fazla 11 tur (~6–8 dk)
     yuva: (tur) => Math.min(6, 2 + Math.ceil(tur / 2)), // takım sınırı: 3,3,4,4,5,5,6…
     kademeOlasilik(tur) {   // dükkân kademe olasılıkları [k1,k2,k3]
@@ -286,7 +287,9 @@
     // savaş motoru (sakin, okunur savaş): ayrim: iki birimin merkezleri arası en az uzaklık (hücre; üst üste binme yok);
     // hedefBirak: hedef menzilin bu kadar ötesine geçerse yeni hedef aranır (kalıcı hedef; 2 hücrede süre sınırına kalan savaş %5,8 oldu → 0,5); kurulum: yeteneğin varsayılan kurulum süresi (sn;
     // YETENEK[id].kurulum ile değişir); mana: vuruş başına (Keskin Göz ile), alınan hasarın oranı (Sabır Taşı ile; kurulumun yavaşlattığı tempoyu dengelemek için %5 → %7) ve vuruş başına tavanı
-    savas: { ayrim: 0.8, hedefBirak: 0.5, kurulum: 0.4, vurusMana: 10, keskinGozMana: 15, hasarMana: 0.07, sabirMana: 0.14, hasarManaTavan: 30 },
+    savas: { ayrim: 0.8, hedefBirak: 0.5, kurulum: 0.4, vurusMana: 10, keskinGozMana: 15, hasarMana: 0.07, sabirMana: 0.14, hasarManaTavan: 30,
+      // yol bulma (sim.js yolBul): yolYenile adımda bir yeniden planlar; yolTakil adım ilerleyemezse yolGevsekSure adım dostlara yolGevsek yaklaşabilir
+      yolYenile: 6, yolTakil: 20, yolGevsekSure: 40, yolGevsek: 0.5 },
     // tahta: 4 sütun × 3 sıra (ön, orta, arka); en çok 8 kahraman
     tahtaSutun: 4, tahtaSira: 3, takimTavan: 8,
     yedek: 7,

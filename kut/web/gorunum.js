@@ -36,13 +36,24 @@ export const AYAR = {
   vinyet: 0.22,           // yalnız 'yuksek': kenarlar bu oranda kararır (yaratıklar ortada öne çıksın)
   parlama: 1.4,           // dokudaki yerel olarak parlak-doygun ayrıntıların (kristal, göz, desen) kendinden ışıması
   parlamaEsik: 0.1,       // piksel ile çevresinin (bulanık mip) parlaklık farkı eşiği (doğrusal)
-  parlamaBulanik: 5.0,    // çevre için mip sapması (büyük = daha geniş çevre)      // doygunluk×parlaklık eşiği (doğrusal uzayda)
+  parlamaBulanik: 5.0,    // çevre için mip sapması (büyük = daha geniş çevre); yalnız parlamaLod < 0 iken
+  parlamaLod: 5.5,        // çevre için SABİT mip düzeyi (2048 dokuda ~45 texel). Ekran türevine bağlı sapma (bias) mesafe/poz/yüzey eğimiyle
+                          // kayıyor, maske eşik bandında kare kare açılıp kapanıyordu (iPad: kurbağa/rüzgâr yüzeyi "dalgalanıyor"); -1 eski davranış      // doygunluk×parlaklık eşiği (doğrusal uzayda)
 };
 // Taraf kenar ışığı renkleri: bizimki soğuk mavi-beyaz, rakip çok hafif sıcak kırmızımsı
 export const RIM = { biz: new THREE.Color('#6ab8ff'), rakip: new THREE.Color('#ff6a50'), notr: new THREE.Color('#ffe6c8') };
 export const RIM_GUC = { biz: 0.5, rakip: 0.6, notr: 0.45 };
 // Kahramana özel ince ayar (doku yapısına göre): parlama maskesi çok geniş kalanlar kısılır
-export const KAHRAMAN_AYAR = {};
+// alanlar: parlama, parlamaEsik, doygunluk, rimKat (taraf kenar gücü çarpanı), ortam (envMapIntensity)
+export const KAHRAMAN_AYAR = {
+  // Buz Kaplumbağası: dokunun 1/3'ü açık-doygun mavi kristal/kabuk adası (maske ortalaması 0,33; diğerleri 0,04–0,19) → kabuk bütünüyle
+  // ışıyordu. Eşik yükseltilip parlama kısılınca yalnız en belirgin kristal uçları ışır; doygunluk, kenar ışığı ve yansıma da azalır.
+  kaplumbaga: { parlama: 0.55, parlamaEsik: 0.2, doygunluk: 1.12, rimKat: 0.6, ortam: 0.4 },
+  // Davulcu Kurbağa / Rüzgâr Ruhu: geniş açık-doygun gövde adaları (maske ort. 0,19 / 0,12) → kalan maske kenarı hareketle kayıyordu;
+  // eşik biraz yukarı, parlama biraz aşağı (gözler ve desen yine ışır)
+  kurbaga: { parlama: 1.05, parlamaEsik: 0.14 },
+  ruzgar: { parlama: 1.1, parlamaEsik: 0.13 },
+};
 
 let R = null, S = null, K = null, composer = null, bloom = null, ortamDoku = null, kalite = 'yuksek';
 let boyut = { w: 1, h: 1, dpr: 1 };
@@ -254,7 +265,7 @@ function yamala(m) {
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
 uniform vec3 uRimRenk; uniform float uRimGuc; uniform float uRimUs;
-uniform float uDoy; uniform float uKontrast; uniform float uParla; uniform float uParlaEsik; uniform float uParlaBias;
+uniform float uDoy; uniform float uKontrast; uniform float uParla; uniform float uParlaEsik; uniform float uParlaBias; uniform float uParlaLod;
 uniform vec3 uVurusRenk; uniform float uVurus;`)
       .replace('#include <map_fragment>', `#include <map_fragment>
 { float l_ = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
@@ -266,7 +277,7 @@ vec3 kutTaban = diffuseColor.rgb;`)
 #ifdef USE_MAP
   // parlama maskesi: dokunun kendi bulanık mip'ine göre YEREL olarak belirgin parlak + doygun ayrıntılar (göz, kristal, desen).
   // Gövdenin tamamı açık/doygun renkli olsa bile (kuğu, kurbağa) geniş alanlar parlamaz.
-  vec3 ham_ = texture2D(map, vMapUv).rgb, bul_ = texture2D(map, vMapUv, uParlaBias).rgb;
+  vec3 ham_ = texture2D(map, vMapUv).rgb, bul_ = uParlaLod >= 0.0 ? textureLod(map, vMapUv, uParlaLod).rgb : texture2D(map, vMapUv, uParlaBias).rgb;
   float mx_ = max(ham_.r, max(ham_.g, ham_.b)), mn_ = min(ham_.r, min(ham_.g, ham_.b));
   float sat_ = (mx_ - mn_) / max(mx_, 1e-4);
   float fark_ = mx_ - max(bul_.r, max(bul_.g, bul_.b));
@@ -298,12 +309,12 @@ export function malzemeIyilestir(model, { renk = 'biz', kahraman = null, parlama
       const y = m.clone();
       // pbrKoru: modelin kendi pürüzlülük/metal haritaları ve değerleri olduğu gibi kalır (Tripo PBR)
       if (!pbrKoru) { y.roughness = AYAR.puruzluluk; y.metalness = AYAR.metallik; }
-      if (ortamDoku) { y.envMap = ortamDoku; y.envMapIntensity = AYAR.yaratikOrtam; }
+      if (ortamDoku) { y.envMap = ortamDoku; y.envMapIntensity = ozel.ortam ?? AYAR.yaratikOrtam; }
       if (y.normalMap && !pbrKoru) y.normalScale.setScalar(AYAR.normalOlcek);
       y.userData.kut = {
-        uRimRenk: { value: rim.clone() }, uRimGuc: { value: rimGuc ?? ((typeof renk === 'string' && RIM_GUC[renk]) || AYAR.rimGuc) }, uRimUs: { value: AYAR.rimUs },
-        uDoy: { value: doygunluk ?? AYAR.doygunluk }, uKontrast: { value: AYAR.kontrast },
-        uParla: { value: parlama ?? ozel.parlama ?? AYAR.parlama }, uParlaEsik: { value: AYAR.parlamaEsik }, uParlaBias: { value: AYAR.parlamaBulanik },
+        uRimRenk: { value: rim.clone() }, uRimGuc: { value: (rimGuc ?? ((typeof renk === 'string' && RIM_GUC[renk]) || AYAR.rimGuc)) * (ozel.rimKat ?? 1) }, uRimUs: { value: AYAR.rimUs },
+        uDoy: { value: doygunluk ?? ozel.doygunluk ?? AYAR.doygunluk }, uKontrast: { value: AYAR.kontrast },
+        uParla: { value: parlama ?? ozel.parlama ?? AYAR.parlama }, uParlaEsik: { value: ozel.parlamaEsik ?? AYAR.parlamaEsik }, uParlaBias: { value: AYAR.parlamaBulanik }, uParlaLod: { value: AYAR.parlamaLod },
         uVurusRenk: { value: new THREE.Color('#ffffff') }, uVurus: { value: 0 },
       };
       yamala(y);
@@ -317,7 +328,7 @@ export function malzemeIyilestir(model, { renk = 'biz', kahraman = null, parlama
     /** Vuruş/iyileşme parlaması: miktar 0..1 (her karede azaltın), renk isteğe bağlı. */
     parlat(miktar, r) { for (const m of malzemeler) { m.userData.kut.uVurus.value = miktar; if (r) m.userData.kut.uVurusRenk.value.set(r); } },
     /** Kenar ışığı rengini/gücünü değiştir (ör. seçili birim, Kut dokunuşu). */
-    kenar(r, guc) { for (const m of malzemeler) { if (r) m.userData.kut.uRimRenk.value.set(r); if (guc != null) m.userData.kut.uRimGuc.value = guc; } },
+    kenar(r, guc) { for (const m of malzemeler) { if (r) m.userData.kut.uRimRenk.value.set(r); if (guc != null) m.userData.kut.uRimGuc.value = guc * (ozel.rimKat ?? 1); } },
   };
   model.userData.gorunum = sonuc;
   return sonuc;
