@@ -33,6 +33,12 @@ const day = s => s ? new Date(s).toLocaleString('tr-TR', { timeZone: 'Europe/Ist
   const builds = (await get(`/v1/builds?filter[app]=${app.id}&sort=-uploadedDate&limit=5`)).data;
   out.push('', '**Son yüklenen yapılar**', '');
   for (const b of builds) out.push(`- yapı ${b.attributes.version}: ${tr(b.attributes.processingState)} · yükleme ${day(b.attributes.uploadedDate)}`);
+  // uygulama içi ürünler: tür, durum, Aile Paylaşımı (açıksa ailenin bir üyesinin aldığı tüketilemez ürün öbür üyelere ücretsiz açılır)
+  try {
+    const iaps = (await get(`/v1/apps/${app.id}/inAppPurchasesV2?limit=50`)).data;
+    out.push('', '**Uygulama içi ürünler**', '');
+    for (const p of iaps) out.push(`- ${p.attributes.productId} · ${p.attributes.inAppPurchaseType} · ${p.attributes.state} · Aile Paylaşımı: ${p.attributes.familySharable ? 'AÇIK' : 'kapalı'}`);
+  } catch (e) { out.push('', 'Ürünler okunamadı: ' + e.message); }
   out.push('', 'Not: Apple\'ın yazılı mesajları API\'den okunamaz; "Reddedildi" ya da "Çözülmemiş sorun" görürsen App Store Connect › App Review\'daki mesaja bak.');
   const txt = out.join('\n'); console.log(txt);
   if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, txt + '\n');
