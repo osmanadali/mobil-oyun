@@ -673,7 +673,7 @@ function woodCanvas(base, dark, light, seed, size = 512, strong) {
   g.fillStyle = base; g.fillRect(0, 0, size, size);
   for (let i = 0; i < 170; i++) {
     const y0 = r() * size, amp = 3 + r() * 10, f = .004 + r() * .01, ph = r() * 6;
-    g.strokeStyle = r() < .6 ? dark : light; g.globalAlpha = strong ? .12 + r() * .3 : .05 + r() * .16; g.lineWidth = (strong ? 1.5 + r() * 5 : .6 + r() * 2.6) * size / 512;
+    g.strokeStyle = r() < .6 ? dark : light; g.globalAlpha = strong ? .1 + r() * .22 : .03 + r() * .09; g.lineWidth = (strong ? 1.5 + r() * 4 : .6 + r() * 2.2) * size / 512;
     g.beginPath();
     for (let x = -4; x <= size + 4; x += 6) { const y = y0 + Math.sin(x * f + ph) * amp + Math.sin(x * f * 3.1 + ph) * amp * .25; x < 0 ? g.moveTo(x, y) : g.lineTo(x, y); }
     g.stroke();
@@ -684,48 +684,79 @@ function texFrom(canvas) { const t = new T.CanvasTexture(canvas); t.encoding = T
 function marbleCanvas(size = 512) {
   const c = document.createElement('canvas'); c.width = c.height = size;
   const g = c.getContext('2d'), r = rng(11), k = size / 512;
-  const gr = g.createLinearGradient(0, 0, size, size); gr.addColorStop(0, '#2a282c'); gr.addColorStop(1, '#151417'); g.fillStyle = gr; g.fillRect(0, 0, size, size);
-  for (let i = 0; i < 9; i++) {
+  const gr = g.createLinearGradient(0, 0, size, size); gr.addColorStop(0, '#26242a'); gr.addColorStop(1, '#18171b'); g.fillStyle = gr; g.fillRect(0, 0, size, size);
+  for (let i = 0; i < 6; i++) {
     let x = r() * size, y = r() * size, a = r() * 6.28;
     const gold = i % 3 === 0;
-    g.strokeStyle = gold ? '#e2bd5c' : '#e8e2d4'; g.globalAlpha = gold ? .95 : .45 + r() * .35;
-    g.lineWidth = (gold ? 5 + r() * 4 : 3 + r() * 7) * k; g.shadowColor = gold ? '#e2bd5c' : '#ffffff'; g.shadowBlur = 10 * k;
+    g.strokeStyle = gold ? '#d6b25a' : '#cfc8ba'; g.globalAlpha = gold ? .55 : .16 + r() * .12;
+    g.lineWidth = (gold ? 2.2 : 2 + r() * 4) * k; g.lineJoin = 'round';
     g.beginPath(); g.moveTo(x, y);
-    for (let j = 0; j < 22; j++) { a += (r() - .5) * .9; x += Math.cos(a) * 34 * k; y += Math.sin(a) * 34 * k; g.lineTo(x, y); }
+    for (let j = 0; j < 22; j++) { a += (r() - .5) * .6; x += Math.cos(a) * 30 * k; y += Math.sin(a) * 30 * k; g.lineTo(x, y); }
     g.stroke();
-    g.lineWidth = 1.2 * k; g.globalAlpha = .35; g.shadowBlur = 0; g.stroke();
   }
-  g.globalAlpha = 1; g.shadowBlur = 0; return c;
+  g.globalAlpha = 1; return c;
 }
 function carbonCanvas(size = 512) {
   const c = document.createElement('canvas'); c.width = c.height = size;
-  const g = c.getContext('2d'), q = size / 6;
-  for (let i = 0; i < 6; i++) for (let j = 0; j < 6; j++) {
+  const g = c.getContext('2d'), n = 10, q = size / n;
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
     const hor = (i + j) % 2 === 0, x = i * q, y = j * q;
     const gr = hor ? g.createLinearGradient(x, y, x, y + q) : g.createLinearGradient(x, y, x + q, y);
-    gr.addColorStop(0, '#0c0d10'); gr.addColorStop(.5, '#5a5f6a'); gr.addColorStop(1, '#0c0d10');
+    gr.addColorStop(0, '#15161a'); gr.addColorStop(.5, '#2a2d33'); gr.addColorStop(1, '#15161a');
     g.fillStyle = gr; g.fillRect(x, y, q, q);
-    g.strokeStyle = 'rgba(0,0,0,.6)'; g.lineWidth = size / 170; g.strokeRect(x, y, q, q);
   }
+  // kırmızı ince şerit: yarış detayı
+  g.fillStyle = '#c8102e'; g.fillRect(0, size * .9, size, size * .025);
   return c;
 }
 function rockCanvas(size = 512, glowOnly) {
   const c = document.createElement('canvas'); c.width = c.height = size;
   const g = c.getContext('2d'), r = rng(5), k = size / 512;
-  g.fillStyle = glowOnly ? '#000' : '#2b2421'; g.fillRect(0, 0, size, size);
-  if (!glowOnly) for (let i = 0; i < 260; i++) { g.fillStyle = r() < .5 ? '#120e0d' : '#4a3f3a'; g.globalAlpha = .3 + r() * .5; const w = (6 + r() * 26) * k; g.beginPath(); g.arc(r() * size, r() * size, w / 2, 0, 7); g.fill(); }
-  else for (let i = 0; i < 260; i++) { r(); r(); r(); r(); r(); }
+  g.fillStyle = glowOnly ? '#000' : '#262120'; g.fillRect(0, 0, size, size);
+  if (!glowOnly) for (let i = 0; i < 160; i++) { g.fillStyle = r() < .5 ? '#1a1514' : '#352d2a'; g.globalAlpha = .35 + r() * .35; const w = (8 + r() * 26) * k; g.beginPath(); g.arc(r() * size, r() * size, w / 2, 0, 7); g.fill(); }
   const r2 = rng(77);
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 3; i++) {
     let x = r2() * size, y = r2() * size, a = r2() * 6.28;
-    g.strokeStyle = '#ff6a1f'; g.globalAlpha = 1; g.lineWidth = (5 + r2() * 5) * k; g.shadowColor = '#ff9a2a'; g.shadowBlur = 18 * k; g.lineJoin = 'round';
+    g.strokeStyle = glowOnly ? '#a8400f' : '#8a3a14'; g.globalAlpha = 1; g.lineWidth = 3.5 * k; g.lineJoin = 'round';
     g.beginPath(); g.moveTo(x, y);
-    for (let j = 0; j < 9; j++) { a += (r2() - .5) * 1.5; x += Math.cos(a) * 46 * k; y += Math.sin(a) * 46 * k; g.lineTo(x, y); }
-    g.stroke(); g.strokeStyle = '#ffd36a'; g.lineWidth = 1.6 * k; g.shadowBlur = 0; g.stroke();
+    for (let j = 0; j < 7; j++) { a += (r2() - .5) * 1.3; x += Math.cos(a) * 40 * k; y += Math.sin(a) * 40 * k; g.lineTo(x, y); }
+    g.stroke();
   }
-  g.globalAlpha = 1; g.shadowBlur = 0; return c;
+  g.globalAlpha = 1; return c;
 }
-const TEXC = { wood: s => woodCanvas('#6b4529', '#2e1a0b', '#a8784a', 7, s, 1), marble: marbleCanvas, carbon: carbonCanvas, rock: rockCanvas, rockGlow: s => rockCanvas(s, 1) };
+// fırçalanmış metal + oyma çerçeve (gövde rengiyle çarpılır)
+function brushedCanvas(size = 512) {
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const g = c.getContext('2d'), r = rng(23), k = size / 512;
+  g.fillStyle = '#eeeeee'; g.fillRect(0, 0, size, size);
+  for (let i = 0; i < 900; i++) { g.fillStyle = r() < .5 ? '#ffffff' : '#c9c9c9'; g.globalAlpha = .25 + r() * .35; g.fillRect(0, r() * size, size, (.6 + r() * 1.4) * k); }
+  g.globalAlpha = 1;
+  const m = size * .1, w = 6 * k;
+  g.strokeStyle = '#8f8f8f'; g.lineWidth = w; g.strokeRect(m, m, size - 2 * m, size - 2 * m);
+  g.strokeStyle = '#ffffff'; g.lineWidth = 2 * k; g.strokeRect(m + w * .8, m + w * .8, size - 2 * m - w * 1.6, size - 2 * m - w * 1.6);
+  // köşelerde küçük baklava
+  [[m, m], [size - m, m], [m, size - m], [size - m, size - m]].forEach(([x, y]) => { g.fillStyle = '#8f8f8f'; g.beginPath(); g.moveTo(x, y - 12 * k); g.lineTo(x + 12 * k, y); g.lineTo(x, y + 12 * k); g.lineTo(x - 12 * k, y); g.fill(); });
+  return c;
+}
+// çıkartma dokuları (renkle çarpılır): çerçeveli ve mücevher kesimli
+function stickerCanvas(kind, size = 256) {
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const g = c.getContext('2d');
+  if (kind === 'frame') {
+    g.fillStyle = '#ffffff'; g.fillRect(0, 0, size, size);
+    const gr = g.createLinearGradient(0, 0, size, size); gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(1, 'rgba(0,0,0,.22)'); g.fillStyle = gr; g.fillRect(0, 0, size, size);
+    g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = size * .05; g.strokeRect(size * .12, size * .12, size * .76, size * .76);
+    g.strokeStyle = 'rgba(0,0,0,.3)'; g.lineWidth = size * .02; g.beginPath(); g.moveTo(size * .62, size * .12); g.lineTo(size * .88, size * .38); g.stroke();
+  } else {
+    // mücevher: ortada parlak tabla, kenarlara doğru faset gölgeleri
+    g.fillStyle = '#d8d8d8'; g.fillRect(0, 0, size, size);
+    const m = size * .22, f = [['#ffffff', [[0, 0], [size, 0], [size - m, m], [m, m]]], ['#b4b4b4', [[size, 0], [size, size], [size - m, size - m], [size - m, m]]], ['#9a9a9a', [[size, size], [0, size], [m, size - m], [size - m, size - m]]], ['#eaeaea', [[0, size], [0, 0], [m, m], [m, size - m]]]];
+    f.forEach(([col, pts]) => { g.fillStyle = col; g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.fill(); });
+    const gr = g.createLinearGradient(m, m, size - m, size - m); gr.addColorStop(0, '#ffffff'); gr.addColorStop(1, '#d0d0d0'); g.fillStyle = gr; g.fillRect(m, m, size - 2 * m, size - 2 * m);
+  }
+  return c;
+}
+const TEXC = { wood: s => woodCanvas('#6b4529', '#3a2312', '#93663d', 7, s, 1), marble: marbleCanvas, carbon: carbonCanvas, rock: rockCanvas, rockGlow: s => rockCanvas(s, 1), brushed: brushedCanvas, st_frame: () => stickerCanvas('frame'), st_gem: () => stickerCanvas('gem') };
 const texCache = {};
 const getTex = name => texCache[name] || (texCache[name] = texFrom(TEXC[name](512)));
 let woodGrain;
@@ -751,16 +782,16 @@ const SKINS = {
   pastel: { name: 'Pastel', body: '#cfc8dc', rough: .65, metal: 0, stickers: ['#ec7f93', '#f3a465', '#fbfaff', '#efcb55', '#6fc79c', '#7fa6e6'], sRough: .55, glow: 0 },
   okyanus: { name: 'Okyanus', body: '#0e2a3a', rough: .35, metal: .1, stickers: ['#ff6f61', '#f8a55b', '#e8f6f3', '#ffd166', '#2bb39d', '#3a86ff'], sRough: .3, glow: 0, env: .5 },
   retro:  { name: 'Retro', body: '#efe3cc', rough: .75, metal: 0, stickers: ['#b8322a', '#e48a2a', '#3d2c22', '#e8c547', '#6e8b3d', '#2f7f86'], sRough: .7, glow: 0 },
-  neon:   { name: 'Neon', body: '#0a0a14', rough: .3, metal: .35, stickers: ['#ff2e6a', '#ff9a1f', '#e6f6ff', '#f6f26a', '#28ff8c', '#2ec4ff'], sRough: .3, glow: .95 },
-  karbon: { name: 'Karbon', body: '#ffffff', rough: .32, metal: .3, stickers: ['#e10600', '#ff8700', '#f5f5f5', '#ffe500', '#00c165', '#0090ff'], sRough: .2, glow: 0, tex: 'carbon', env: .9 },
-  mermer: { name: 'Mermer', body: '#ffffff', rough: .18, metal: 0, stickers: ['#c8163f', '#ef8a17', '#f2ede4', '#f2c230', '#0f9d63', '#1f4fd6'], sRough: .15, glow: 0, tex: 'marble', env: 1 },
-  ahsap:  { name: 'Ahşap', body: '#ffffff', rough: .7, metal: 0, stickers: ['#a3362e', '#c97a32', '#eadcc0', '#d7a836', '#5d7c48', '#3e5c7c'], sRough: .6, glow: 0, tex: 'wood', grain: 1 },
-  lav:    { name: 'Lav', body: '#ffffff', rough: .85, metal: 0, stickers: ['#ff3b1f', '#ff8c1a', '#efe6dc', '#ffd23a', '#9bff4f', '#47c4ff'], sRough: .35, glow: .75, tex: 'rock' },
-  altin:  { name: 'Altın', body: '#d9b15a', rough: .28, metal: .85, stickers: ['#c4122f', '#ea6a10', '#faf6ea', '#f6c800', '#079a52', '#1748b8'], sRough: .2, glow: 0, env: 1.3 },
+  neon:   { name: 'Neon', body: '#0a0a14', rough: .3, metal: .35, stickers: ['#ff1f5a', '#ff5e00', '#dfe9ff', '#ffe81a', '#14f08a', '#2b7bff'], sRough: .3, glow: .5, glowW: .25 },
+  karbon: { name: 'Karbon', body: '#ffffff', rough: .25, metal: .35, stickers: ['#e10600', '#ff7a00', '#f2f2f2', '#ffd900', '#00b85c', '#0a7cff'], sRough: .18, glow: 0, tex: 'carbon', env: 1.1, sticker: 'frame', ss: .9 },
+  mermer: { name: 'Mermer', body: '#ffffff', rough: .2, metal: 0, stickers: ['#c8163f', '#ef7d12', '#f4efe6', '#f5c518', '#0f9d63', '#1f4fd6'], sRough: .12, glow: 0, tex: 'marble', env: 1, sticker: 'gem', ss: .9 },
+  ahsap:  { name: 'Ahşap', body: '#ffffff', rough: .7, metal: 0, stickers: ['#a51f24', '#ec7a12', '#f6eedc', '#f5c400', '#3f8f3a', '#2457a6'], sRough: .55, glow: 0, tex: 'wood', grain: 1, ss: .88 },
+  lav:    { name: 'Lav', body: '#ffffff', rough: .85, metal: 0, stickers: ['#c8102e', '#ff9a1f', '#efe6dc', '#ffe14a', '#7ccf3c', '#3aa0e8'], sRough: .35, glow: .22, tex: 'rock', ss: .9 },
+  altin:  { name: 'Altın', body: '#e2bb63', rough: .3, metal: .9, stickers: ['#c4122f', '#ea6a10', '#fbf7ec', '#f6c800', '#079a52', '#1748b8'], sRough: .15, glow: 0, env: 1.5, tex: 'brushed', sticker: 'gem', ss: .86 },
 };
 const SKIN_IDS = Object.keys(SKINS);
 // dokulu skinlerde çıkartmalar biraz küçük: gövde daha çok görünsün
-const stickScale = () => SKINS[S.skin].tex ? .86 : 1;
+const stickScale = () => SKINS[S.skin].ss || 1;
 if (!SKINS[S.skin] || !skinOpen(S.skin)) S.skin = 'klasik';
 const lin = h => new T.Color(h).convertSRGBToLinear();
 
@@ -815,12 +846,12 @@ let N = 0, cubies = [], bodyMat, stickMats = [];
 function makeMaterials() {
   const sk = SKINS[S.skin];
   bodyMat && bodyMat.dispose(); stickMats.forEach(m => m.dispose());
-  const wb = sk.tex ? getTex(sk.tex) : null, wg = sk.grain ? getGrain() : null, env = sk.env ? getEnv() : null;
+  const wb = sk.tex ? getTex(sk.tex) : null, wg = sk.grain ? getGrain() : sk.sticker ? getTex('st_' + sk.sticker) : null, env = sk.env ? getEnv() : null;
   bodyMat = new T.MeshStandardMaterial({ color: lin(sk.body), roughness: sk.rough, metalness: sk.metal, map: wb, envMap: env, envMapIntensity: sk.env || 1 });
-  if (sk.tex === 'rock') { bodyMat.emissive = new T.Color(0xffffff); bodyMat.emissiveMap = getTex('rockGlow'); bodyMat.emissiveIntensity = 1.1; }
+  if (sk.tex === 'rock') { bodyMat.emissive = new T.Color(0xffffff); bodyMat.emissiveMap = getTex('rockGlow'); bodyMat.emissiveIntensity = .7; }
   stickMats = sk.stickers.map((h, i) => new T.MeshStandardMaterial({
     color: lin(h), roughness: sk.sRough, metalness: 0, map: wg, envMap: env, envMapIntensity: (sk.env || 0) * .35,
-    emissive: sk.glow ? lin(h) : new T.Color(0), emissiveIntensity: sk.glow ? sk.glow * (i === 2 ? .7 : 1) : 0,
+    emissive: sk.glow ? lin(h) : new T.Color(0), emissiveIntensity: sk.glow ? sk.glow * (i === 2 ? (sk.glowW != null ? sk.glowW / sk.glow : .7) : 1) : 0,
     polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1,
   }));
   dimMats.forEach(m => m.dispose());
@@ -1476,7 +1507,7 @@ $('mList').addEventListener('click', e => { const b = e.target.closest('.lv[data
 function skinPreview(id) {
   const c = document.createElement('canvas'), s = 152; c.width = c.height = s;
   const g = c.getContext('2d'), sk = SKINS[id], pad = 10, cell = (s - pad * 2) / 3;
-  if (sk.tex) g.drawImage(TEXC[sk.tex](152), 0, 0);
+  if (sk.tex) { g.drawImage(TEXC[sk.tex](152), 0, 0); if (sk.metal > .5) { g.globalCompositeOperation = 'multiply'; g.fillStyle = sk.body; g.fillRect(0, 0, s, s); g.globalCompositeOperation = 'source-over'; } }
   else if (sk.metal > .5) { const gr = g.createLinearGradient(0, 0, s, s); gr.addColorStop(0, '#f3d98a'); gr.addColorStop(.5, sk.body); gr.addColorStop(1, '#8a6a22'); g.fillStyle = gr; g.fillRect(0, 0, s, s); }
   else { g.fillStyle = sk.body; g.fillRect(0, 0, s, s); }
   [4, 0, 2, 4, 5, 3, 1, 4, 0].forEach((ci, i) => {
