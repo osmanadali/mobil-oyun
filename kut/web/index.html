@@ -1861,6 +1861,11 @@ body.hz3 #mac .dukkanSol .btn:not(.xpBtn){font-size:13.5px}
 body.hz3 #mac .dukkanSol .btn.xpBtn{font-size:13px}
 html.alcak body.hz3 #mac .dukkanSol .btn{font-size:12px}
 .bilgiKart .bkEylem .btn{font-size:13px;letter-spacing:.03em}
+/* karşılama yan düğmeleri: Cinzel geniş; uzun Türkçe ad (Nasıl Oynanır) taşmasın */
+#ana .yanDug .btn{font-size:15.5px;letter-spacing:.025em;white-space:nowrap}
+#ana .yanDug .btn span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+html.alcak #ana .yanDug .btn{font-size:13.5px}
+@media (max-aspect-ratio:3/2){#ana .yanDug .btn{font-size:14px}}
 </style>
 <script>
 /* tek ölçek: --o, --lw, --lh ve html.alcak; ilk boyamadan önce ve her boyut değişiminde */
