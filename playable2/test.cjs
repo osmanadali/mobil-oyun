@@ -20,7 +20,7 @@ const DIST = path.join(__dirname, 'dist'), th = process.argv[2] || 'neon';
     for (let k = 0; k < 12; k++) { const s = await p.evaluate(() => window.RAY_AD_STATE()); if (s.hint < 0) break; const c = await p.evaluate(i => window.RAY_AD_TILE(i), s.hint); await p.touchscreen.tap(c.x, c.y); taps++; await p.waitForTimeout(900); if (k === 1) await p.screenshot({ path: `/tmp/claude-0/t-${w}-1.png` }); }
     await p.waitForTimeout(400); await p.screenshot({ path: `/tmp/claude-0/t-${w}-2.png` });
     await p.waitForTimeout(3000); await p.screenshot({ path: `/tmp/claude-0/t-${w}-3.png` });
-    await p.waitForTimeout(3500); await p.screenshot({ path: `/tmp/claude-0/t-${w}-4.png` });
+    await p.waitForFunction(() => window.RAY_AD_STATE().phase === "cta", null, { timeout: 12000 }).catch(() => {}); await p.waitForTimeout(600); await p.screenshot({ path: `/tmp/claude-0/t-${w}-4.png` });
     const st = await p.evaluate(() => window.RAY_AD_STATE());
     const ok = demo0.phase === 'demo' && st0.phase === 'play' && lit0 === 6 && taps === 6 && st.won && st.phase === 'cta' && !net.length && !errs.length && ls === false;
     if (!ok) bad++;

@@ -4,7 +4,7 @@
 'use strict';
 const { chromium } = require('playwright'), fs = require('fs'), path = require('path'), cp = require('child_process'), os = require('os');
 const DIST = path.join(__dirname, 'dist'), th = process.argv[2] || 'neon';
-const TOTAL = 24600, TAPS = [6600, 8000, 9400, 10800, 12200, 13800], STILLS = [[2000, 1], [7300, 2], [12600, 3], [14400, 4], [20000, 5], [23500, 6]];
+const TOTAL = 24600, TAPS = [6600, 8000, 9400, 10800, 12200, 13800], STILLS = [[2000, 1], [7300, 2], [12600, 3], [14400, 4], [20000, 6], [23500, 5]];
 (async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ray-v-')), b = await chromium.launch();
   const ctx = await b.newContext({ locale: 'tr-TR', viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true, recordVideo: { dir: tmp, size: { width: 1080, height: 1920 } } });
