@@ -134,7 +134,9 @@ function bh(b) {   // birimin his durumu
   if (!b._his) {
     b._his = { geri: { x: 0, v: 0 }, ezil: { x: 0, v: 0 }, egil: { x: 0, v: 0 }, yon: new THREE.Vector3(0, 0, 1), flas: 0, flasSure: 0.13, flasRenk: new THREE.Color(1, 1, 1),
       atil: null, giris: null, olum: null, zafer: null, uni: null, bosta: false, donma: 0,
-      yp: { renk: new THREE.Color(1, 1, 1), guc: 0, t: 0, sure: 0, tepe: 0 } };   // yetenek hazırlık parlaması (element rengi)
+      yp: { renk: new THREE.Color(1, 1, 1), guc: 0, t: 0, sure: 0, tepe: 0 },     // yetenek hazırlık parlaması (element rengi)
+      yb: { renk: new THREE.Color(1, 1, 1), guc: 0, t: 0, sure: 0 },             // süreli gövde boyası (zehir yeşili, buz mavisi, lanet moru…)
+      sis: { oran: 0, t: 0, sure: 0 }, buz: 0 };                                 // gövde şişmesi (Boynuz Öfkesi) · buz donması (Buz Nefesi, sn)
   }
   H.birimler.add(b); return b._his;
 }
@@ -156,7 +158,7 @@ export const his = {
   dinle(ad, fn) { H.dinleyici[ad] = fn; },
   /** Yeni savaş: bütün birim durumlarını unut (savasKur başında çağır) */
   sifirla() {
-    for (const b of H.birimler) { const s = b._his; if (s) { s.atil = s.giris = s.olum = s.zafer = null; s.geri.x = s.geri.v = s.ezil.x = s.ezil.v = s.egil.x = s.egil.v = 0; s.flas = 0; if (s.uni) { s.uni.uKutFlas.value = 0; s.uni.uKutCoz.value = 0; } } }
+    for (const b of H.birimler) { const s = b._his; if (s) { s.atil = s.giris = s.olum = s.zafer = null; s.geri.x = s.geri.v = s.ezil.x = s.ezil.v = s.egil.x = s.egil.v = 0; s.flas = 0; s.yb.guc = 0; s.sis.oran = 0; s.buz = 0; if (s.uni) { s.uni.uKutFlas.value = 0; s.uni.uKutCoz.value = 0; } } }
     H.birimler.clear(); H.donma = H.donmaSoguma = 0; H.yavas.kalan = 0; H.travma = 0; H.tekme.x = H.tekme.v = 0; H.zoom.aktif = false; H.girisSon = 0; H.zaman = 0;
   },
   /** Birim malzemelerini yamalar (parlama + çözülme). birimKur sonunda bir kez çağır; çağrılmazsa ilk ihtiyaçta kendisi yapar. */
@@ -268,7 +270,14 @@ export const his = {
   /** Birim başına hit-stop: birimin tepkileri ve (sahne3d'de) animasyonu sure sn donar; parlama ve sarsıntı gerçek zamanda sürer */
   donma(b, sure = 0.06) { if (!b) return; const s = bh(b); s.donma = Math.max(s.donma || 0, Math.min(0.12, sure)); },
   /** birim şu an donuk mu (sahne3d karışıcı/kodlu hareket dt'sini 0'lar) */
-  donuk(b) { return !!(b && b._his && b._his.donma > 0); },
+  donuk(b) { return !!(b && b._his && (b._his.donma > 0 || b._his.buz > 0)); },
+  /** Süreli gövde boyası (yetenek etkisi): 0,12 sn'de açılır, hafif nabızla tutulur, son 0,4 sn'de söner. Vuruş parlaması öncelikli,
+      hazırlık parlamasıyla güçlü olan görünür (aynı malzeme yaması; yeni malzeme yok). */
+  boya(b, renk, guc = 0.3, sure = 2) { if (!b) return; const s = bh(b); his.hazirla(b); const y = s.yb; y.renk.set(renk); y.guc = guc; y.t = 0; y.sure = Math.max(0.2, sure); },
+  /** Gövde şişmesi: oran (0,08 = %8), sure sn (0,15 sn'de şişer, son 0,3 sn'de iner; ayak tabanı merkezli) */
+  sis(b, oran = 0.08, sure = 1) { if (!b) return; const s = bh(b); s.sis.oran = oran; s.sis.t = 0; s.sis.sure = Math.max(0.3, sure); },
+  /** Buz donması: birimin animasyonu sure sn durur (hit-stop'tan ayrı, uzun; ölünce çözülür) */
+  dondur(b, sure = 1) { if (!b) return; const s = bh(b); s.buz = Math.max(s.buz || 0, sure); },
   /** hasar sayısını darbe gücüne çevirir: taban 0,3 (her vuruş hissedilir), 220 hasarda tam güç; yetenekte daha güçlü */
   hasarGucu(n, { buyuk = false } = {}) { return (0.3 + 0.7 * kirp((n - 20) / 200)) * (buyuk ? 1.25 : 1); },
 
@@ -292,7 +301,7 @@ export const his = {
   /** Ölüm: yere yığılma (iki ayaklıda Death01, dört ayaklıda dortAyakliGuncelle({olum})) zamanlamasıyla toz, sonra
       kenarı kor gibi parlayan gölgelendirici çözülmesi + yükselen küller. ops.yakinlastir: son ölüm için true. */
   olum(b, { tur, yakinlastir = false } = {}) {
-    if (!b) return; const s = bh(b); his.hazirla(b);
+    if (!b) return; const s = bh(b); his.hazirla(b); s.buz = 0; s.yb.guc = 0;
     tur = tur || (b.gor && b.gor.tur) || 'iki';
     const z = tur === 'iki' ? { carp: 1.33, coz: 1.75, sure: 0.75 } : tur === 'yilan' ? { carp: 0.5, coz: 1.05, sure: 0.7 } : { carp: 0.6, coz: 1.1, sure: 0.7 };
     s.olum = { t: 0, ...z, toz: false, bitti: false };
@@ -311,6 +320,7 @@ export const his = {
 function birimGuncelle(b, dt, dtR) {
   const s = b._his; if (!s) return;
   if (s.donma > 0) { s.donma -= dtR; dt = 0; }   // yerel hit-stop: yaylar ve atılma donar
+  if (s.buz > 0) { s.buz -= dtR; dt = 0; }       // buz donması (uzun): tepkiler de durur
   const o = 1 / kokOlcek(b);
   // yaylar
   yay(s.geri, 0, 210, 19, dt); yay(s.ezil, 0, 330, 15, dt); yay(s.egil, 0, 230, 17, dt);
@@ -371,13 +381,17 @@ function birimGuncelle(b, dt, dtR) {
   if (s.flas > 0) { s.flas = Math.max(0, s.flas - dtR / s.flasSure); }
   const yp = s.yp; let ypG = 0;
   if (yp.guc > 0) { yp.t += dt; const e = yp.t < yp.tepe ? yp.t / yp.tepe : 1 - (yp.t - yp.tepe) / Math.max(1e-3, yp.sure - yp.tepe); ypG = yp.guc * yumusak(e); if (yp.t >= yp.sure) yp.guc = 0; }
-  if (s.uni) { if (s.flas > 0) s.uni.uKutFlas.value = Math.min(1.2, s.flas); else if (ypG > 0.002) { s.flasRenk.copy(yp.renk); s.uni.uKutFlas.value = ypG; s.uni.uKutKenar.value = 0; } else s.uni.uKutFlas.value = 0; }
+  const yb = s.yb; let ybG = 0;
+  if (yb.guc > 0) { yb.t += dtR; const e = Math.min(1, yb.t / 0.12) * (yb.t > yb.sure - 0.4 ? Math.max(0, (yb.sure - yb.t) / 0.4) : 1); ybG = yb.guc * e * (0.85 + 0.15 * Math.sin(yb.t * 7)); if (yb.t >= yb.sure) yb.guc = 0; }
+  if (s.uni) { if (s.flas > 0) s.uni.uKutFlas.value = Math.min(1.2, s.flas); else if (ypG > 0.002 && ypG >= ybG) { s.flasRenk.copy(yp.renk); s.uni.uKutFlas.value = ypG; s.uni.uKutKenar.value = 0; }
+    else if (ybG > 0.002) { s.flasRenk.copy(yb.renk); s.uni.uKutFlas.value = ybG; s.uni.uKutKenar.value = 0; } else s.uni.uKutFlas.value = 0; }
   // gövdeye yaz (ayak tabanı merkezli ölçek: model tabanı govde başlangıcında)
   const gv = b.govde;
   gv.position.set(ox, oy, oz);
   ezil = kirp(ezil, -0.45, 0.4);
   const sy = 1 + ezil, sxz = 1 / Math.sqrt(Math.max(0.3, sy));
   gv.scale.set(sxz, sy, sxz);
+  const ss = s.sis; if (ss.oran) { ss.t += dtR; const e = Math.min(1, ss.t / 0.15) * (ss.t > ss.sure - 0.3 ? Math.max(0, (ss.sure - ss.t) / 0.3) : 1); gv.scale.multiplyScalar(1 + ss.oran * e); if (ss.t >= ss.sure) ss.oran = 0; }
   // eğilme: vuruşta tepe vuruş yönüne, atılmada ileri
   const ex = s.yon, ay = s._ay || ex;
   const ax1 = ex.z, az1 = -ex.x;                       // YUKARI × yon (yatay eksen)
@@ -562,11 +576,17 @@ const DA = {
   hucum: [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0.1, -0.03, 0, 0.4, -0.08, 0.2, 1, 0, 0, 0, 0, 0, 0], [0.17, 0, -0.01, -0.06, -0.25, -0.1, 0.7, 0, 0, 0.15, 0, 0, 0],
           [0.33, 0.02, -0.02, -0.1, -0.3, -0.12, 0.7, 0, 0, 0.15, 0, 0, 0], [0.37, 0.13, -0.025, -0.14, -0.46, -0.36, 0, 0, 0, 0.04, 0, 0, 0],
           [0.45, 0.1, -0.02, -0.1, -0.36, -0.27, 0, 0, 0, 0, 0, 0, 0], [0.75, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
+  // Can Emme (Sis Yarasası, patlama 0,3 = kavrama; his.atil hedefe atar): geri kabarır → başla öne dalıp ısırır (baş nabzı: ağız) → yutkunarak
+  // tutar, can küresi ağza vardıkça (0,8) gövde %11 şişer → geri çekilir, söner
+  sar:   [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0.15, -0.06, 0.03, 0.2, 0.25, 0.2, 0, 0, 0, 0, 0.02, 0, 0], [0.3, 0.12, -0.02, -0.25, -0.45, -0.35, 0, 0, 0.1, 0.06, 0, 0, 0],
+          [0.4, 0.1, -0.02, -0.2, -0.4, -0.3, 0, 0, -0.05, 0.03, 0.03, 0, 0], [0.55, 0.1, -0.02, -0.2, -0.4, -0.3, 0, 0, 0.08, 0.03, 0.05, 0, 0],
+          [0.7, 0.08, -0.01, -0.16, -0.35, -0.25, 0, 0, -0.04, 0.02, 0.08, 0, 0], [0.85, 0.02, 0, 0.05, 0.1, 0.1, 0, 0, 0.06, 0, 0.11, 0, 0],
+          [1.05, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.04, 0, 0], [1.25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]],
 };
 // yetenek adı → stil (kahramanın imza yeteneği; aynı görünümü kullanan canavarların yetenekleri eski stilde kalır)
-const YET_STIL = { buzNefes: 'nefes', ocak: 'ocak', dortnal: 'hucum' };
+const YET_STIL = { buzNefes: 'nefes', ocak: 'ocak', dortnal: 'hucum', ruhEmme: 'sar' };
 // stilin patlama karesi (sn): sahne3d'nin verdiği 'an' (patlamaya kalan sn) bu kareye kilitlenir (yetZaman)
-const DA_AN = { ulu: 0.32, ofke: 0.36, nefes: 0.3, ocak: 0.25, hucum: 0.17, tukur: 0.36 };
+const DA_AN = { ulu: 0.32, ofke: 0.36, nefes: 0.3, ocak: 0.25, hucum: 0.17, tukur: 0.36, sar: 0.3 };
 /** yetenek saatini stil saatine çevirir: patlama karesi (P) tam 'an' sn sonra gelir. Kalan süre hazırlıktan kısaysa hazırlık sıkışır,
     uzunsa poz dinlenmede bekler; patlamadan sonra gerçek hızla akar. */
 function yetZaman(t, an, P) {
@@ -905,9 +925,11 @@ const _F = new THREE.Vector3(), _R = new THREE.Vector3(), _U = new THREE.Vector3
 // cirp: kanatlıda yetenek boyunca çırpma (false: kanat pozu kanallardan gelir)
 const T2 = Math.PI * 2;
 const YET_POZ = {
-  // Kaya Fırlat (Golem): çömel, sağ el yerden kaya koparır → kaya başın üstüne → bırakma (u=0) öne fırlama → toparlan
-  tasFirlat: { cirp: true, k: [[-0.42, 0, 0, 0, 0, 0, 0, 0, 0], [-0.25, 0.42, 0.1, 0, 0, 0.05, 0.25, 0.55, -0.12], [-0.17, 0.36, 0.09, 0, 0, 0.05, 0.2, 0.5, -0.05],
-    [-0.07, -0.2, 0.02, 0.03, 0, 0.1, 0, 1.25, 0.2], [0, 0.34, 0.05, 0, 0, 0, 0.1, 0.35, -0.08], [0.12, 0.3, 0.04, 0, 0, 0, 0.05, 0.2, -0.06], [0.52, 0, 0, 0, 0, 0, 0, 0, 0]] },
+  // Kaya Fırlat (Golem; taban Idle_Loop): öne eğilip çömel, iki el yere (kaya yerden kopar) → iki elle kaldır, kaya başın üstünde, geri
+  //   esne, gövde şişer → u=0 iki kol başın üstünden öne savrulur, kaya bırakılır → öne eğik izleme → toparlan
+  tasFirlat: { cirp: true, k: [[-0.36, 0, 0, 0, 0, 0, 0, 0, 0], [-0.27, 0.55, 0.15, 0, 0, 0.18, 0.45, 0, -0.18], [-0.2, 0.5, 0.15, 0, 0, 0.2, 0.55, 0, -0.12],
+    [-0.12, 0.08, 0.07, 0.02, 0, 0.26, 1.85, 0, 0.12], [-0.05, -0.32, 0.03, 0.05, 0, 0.3, 2.75, 0, 0.22], [0, -0.22, 0.02, 0.04, 0, 0.26, 2.5, 0, 0.12],
+    [0.06, 0.48, 0.08, 0.02, 0, 0.12, 1.05, 0, -0.14], [0.16, 0.42, 0.07, 0, 0, 0.08, 0.6, 0, -0.1], [0.55, 0, 0, 0, 0, 0, 0, 0, 0]] },
   // Savaş Davulu (Kurbağa): dört göbek vuruşu u = 0 / 0,2 / 0,4 / 0,6 (her biri bir dalga); son vuruştan önce küçük sıçrama, inişte büyük halka
   davul: { cirp: true, k: [[-0.36, 0, 0, 0, 0, 0, 0, 0, 0], [-0.1, -0.1, 0, 0, 0, 0.95, 0.3, 0, 0.15],
     [0, 0.18, 0.06, 0.07, 0, -0.1, 0.75, 0, -0.1], [0.05, 0.12, 0.05, 0.03, 0, 0, 0.6, 0, -0.05],

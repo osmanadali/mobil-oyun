@@ -10,6 +10,12 @@ const DOSYALAR = ['vurus_yumruk', 'vurus_pence', 'vurus_isirma', 'atis_buyu', 'a
 export const YETENEK_SES = { tasFirlat: 'kaya_firlat', uluma: 'uluma', davul: 'davul', ruhEmme: 'can_emme', kasirga: 'kasirga',
   deliOfke: 'boynuz', zehir: 'zehir', buzNefes: 'buz', ocak: 'ates_halkasi', dortnal: 'dortnal', kanat: 'isik_kanat',
   karaGolge: 'kara_golge', kulDogus: 'kul_yagmuru', ayaz: 'ayaz', golgeOk: 'golge_ok', yildirim: 'yildirim' };
+// Yeteneğin ikinci sesi (sahne3d 'yetenekAlt'): etki görüntüde varınca (kaya çarpması, ok saplanması, zehir değmesi, buz kırılması,
+// can yutma, Yıldırım'ın 2. ve 3. düşüşü). Yetenek sesi patlama anında çalar; bu, çarpmanın ağırlığını verir. Savaş Davulu vuruşları sessiz
+// (davul sesi dört vuruşu zaten taşır).
+const YETENEK_ALT = { tasFirlat: ['vurus_yumruk', { hiz: 0.72, duzey: 1.6, aralik: 0 }], golgeOk: ['isabet_buyu', { hiz: 0.78, duzey: 1.6, aralik: 0 }],
+  zehir: ['isabet_buyu', { hiz: 1.25, duzey: 1.3, aralik: 0 }], karaGolge: ['vurus_pence', { hiz: 0.7, duzey: 1.3, aralik: 0 }], buzNefes: ['kalkan_kir', { hiz: 1.1, duzey: 0.8, aralik: 0 }],
+  ruhEmme: ['vurus_isirma', { hiz: 0.8, duzey: 0.9, aralik: 0 }], yildirim: ['yildirim', { hiz: 1.12, duzey: 0.45, aralik: 0.05, sapma: 0.05 }] };
 // Yakın dövüşçünün vuruş sesi (yoksa pençe)
 const YAKIN_SES = { golem: 'vurus_yumruk', ayi: 'vurus_yumruk', koc: 'vurus_yumruk', kaplumbaga: 'vurus_yumruk',
   yilan: 'vurus_isirma', kurt: 'vurus_isirma', semender: 'vurus_isirma' };
@@ -94,6 +100,7 @@ export function olay(f, kaynakBirim, hedefBirim) {
       else cal(YAKIN_SES[kaynakBirim && kaynakBirim.b.h] || 'vurus_pence', { sapma: 0.08, aralik: 0.04 });
       break;
     case 'yetenek': cal(YETENEK_SES[f.ad], { aralik: 0.2 }); break;
+    case 'yetenekAlt': { const a = YETENEK_ALT[f.ad]; if (a) cal(a[0], a[1]); break; }
     case 'olum': cal('olum', { sapma: 0.05 }); break;
     case 'dirilis': cal('dirilis'); break;
     case 'kut': cal('kut', { aralik: 0.5 }); break;

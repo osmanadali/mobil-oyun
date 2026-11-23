@@ -30,20 +30,26 @@ const RAKIP = (h) => { const l = ['yilan', 'kurbaga', 'ruzgar'].filter(x => x !=
   const p = await br.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
   p.setDefaultTimeout(200000);
   p.on('pageerror', e => console.log('HATA', e.message));
+  // belirlenimci zaman: performance.now kare başına sabit 1/FPS ilerler (gerçek saate bağlı görsel hesaplar CPU yükünden bağımsız;
+  // iki geçiş — yetenek anını bulma ve yakalama — aynı kareleri üretir)
+  await p.addInitScript(() => { const ger = performance.now.bind(performance); window.__sz = { aktif: false, t: 0 }; performance.now = () => window.__sz.aktif ? window.__sz.t : ger(); });
   await p.goto(`http://localhost:8092/web/test3d.html?elle=1${HAFIF ? '&hafif=1' : ''}&a=golem&b=golem&tohum=7`, { waitUntil: 'domcontentloaded', timeout: 120000 });
   await p.waitForFunction(() => window.HAZIR, null, { timeout: 240000 });
+  // ilerletirken çizim yok (yalnız yakalanan karede _ciz): SwiftShader'da 2–3 kat hızlı
+  await p.evaluate(() => { if (SAHNE._cizAtla) SAHNE._cizAtla(true); window.__sz.t = performance.now(); window.__sz.aktif = true; });
   const kur = (h) => p.evaluate(async ({ h, rakip }) => {
     const sim = KUT_SIM.Savas([{ h, s: 1, x: 1, y: 0 }], rakip, { tohum: 7, alamet: 'yok' });
     for (const u of sim.birimler) if (u.taraf === 1) { u.mana = 1e9; u.mp = 0; }
     await SAHNE.savasKur(sim);
     const u = sim.birimler.find(o => o.taraf === 0);
-    window.__V = { sim, u, uid: u.uid, dolu: false, kare: 0, kam: null };
+    window.__V = { sim, u, uid: u.uid, dolu: false, kare: 0, kam: null, yet: 0 };
+    const ad0 = sim.adim.bind(sim); sim.adim = () => { ad0(); for (const f of sim.fx) if (f.tip === 'yetenek' && f.u === u.uid) window.__V.yet++; };
   }, { h, rakip: RAKIP(h) });
   // n kare ilerlet (ekran görüntüsü yok); bul: yetenek pozunun ilk karesinde dur
   const ilerle = (n, bul = false) => p.evaluate(({ n, bul, FPS }) => {
     const V = window.__V;
     for (let i = 0; i < n; i++) {
-      SAHNE.kare(1 / FPS); V.kare++;
+      window.__sz.t += 1000 / FPS; SAHNE.kare(1 / FPS); V.kare++;
       if (!V.dolu && V.u.ilkVurusYapildi) { V.u.mp = V.u.mana; V.dolu = true; }   // ilk vuruştan sonra mana dolu → yetenek hemen
       const b = SAHNE._bTMP(V.uid);
       // görsel yetenek başlangıcı: yetenek pozu ya da hücum kayması (Bulut Hücumu); yedek: motor manayı harcadıktan 0,5 sn sonra
@@ -61,7 +67,9 @@ const RAKIP = (h) => { const l = ['yilan', 'kurbaga', 'ruzgar'].filter(x => x !=
     const t = document.getElementById('t'), k = document.getElementById('k');
     const c = document.createElement('canvas'); c.width = K.W; c.height = K.H; const x = c.getContext('2d');
     for (let i = 0; i < n; i++) {
-      SAHNE.kare(1 / FPS); V.kare++;
+      window.__sz.t += 1000 / FPS; SAHNE.kare(1 / FPS); V.kare++;
+      // ilk vuruş yakalama penceresine düşerse de mana dolsun (yoksa yetenek hiç gelmez: eski golem önizlemesinde Kaya Fırlat yoktu)
+      if (!V.dolu && V.u.ilkVurusYapildi) { V.u.mp = V.u.mana; V.dolu = true; }
       const b = SAHNE._bTMP(V.uid); if (!b) break;
       const rk = V.sim.birimler.filter(o => o.taraf === 1).map(o => SAHNE._bTMP(o.uid)).filter(Boolean);
       const p0 = b.kok.position.clone(); let rx = p0.x, rz = p0.z - 2;
@@ -103,7 +111,9 @@ const RAKIP = (h) => { const l = ['yilan', 'kurbaga', 'ruzgar'].filter(x => x !=
       const kareler = await cek(Math.min(15, N - i), ADIM);
       for (const url of kareler) fs.writeFileSync(path.join(dir, `k${String(sira++).padStart(3, '0')}.jpg`), Buffer.from(url.split(',')[1], 'base64'));
     }
-    console.log(h, 'kareler', N, `(${((Date.now() - T0) / 1000).toFixed(0)} sn)`);
+    const yet = await p.evaluate(() => window.__V.yet);
+    console.log(h, 'kareler', N, 'yetenek', yet, `(${((Date.now() - T0) / 1000).toFixed(0)} sn)`);
+    if (!yet) { console.log(h, 'YAKALAMADA YETENEK YOK — video üretilmedi'); continue; }
     if (process.env.SADECE_KARE === '1') continue;
     const mp4 = path.join(OUTD, h + '.mp4'), X = 0.4, sure = N / FPS;
     // döngü: videonun sonu ilk X sn ile çapraz geçer (son kare → ilk kare dikişsiz)
