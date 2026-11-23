@@ -23,3 +23,5 @@
   .ad-side .ad-ic{width:64px;height:64px;border-radius:16px}.ad-side .ad-t{font-size:20px}.ad-side .ad-s{font-size:14px}.ad-side .ad-dl{font-size:16px;padding:10px 22px}
   .ad-side .ad-bd{flex-direction:column}.ad-side .ad-bd img{height:32px}.ad-side .ad-bd img[data-s=android]{height:42px}
 }
+.ad-hand.auto b{animation:adPress 1.1s ease-in-out both}
+@keyframes adPress{0%{transform:translate(26px,40px);opacity:0}35%{transform:translate(8px,14px);opacity:1}80%{transform:translate(0,0) scale(.88)}100%{transform:translate(8px,14px)}}

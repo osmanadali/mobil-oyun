@@ -17,12 +17,17 @@ module.exports = async function plan(lvl) {
     P.sol.forEach((s, i) => { const u = unrot(s); if (u === s || rot(u) !== s) return; const cur = P.sol.slice(); cur[i] = u; cand.push({ i, n: dark(cur), own: own[i] }); });
     cand.sort((a, b) => b.n - a.n);
     const key = cand[0];
-    // diğer merkezin ağında 2–5 karo karartan iki karo (birbirinden uzak)
-    const small = cand.filter(c => c.own !== key.own && c.n >= 2 && c.n <= 6);
+    // diğer merkezin ağında 1–6 karo karartan, birbirinden uzak karolar: 2 gösterim (el kendisi yapar) + 5 oyuncu hamlesi; anahtar karo en son
+    const dist = (a, b) => Math.abs(a % P.cols - b % P.cols) + Math.abs((a / P.cols | 0) - (b / P.cols | 0));
+    const small = cand.filter(c => c.own !== key.own && c.n >= 1 && c.n <= 6).sort((a, b) => b.n - a.n);
     const pick = [];
-    for (const c of small) if (!pick.some(x => Math.abs(x.i % P.cols - c.i % P.cols) + Math.abs((x.i / P.cols | 0) - (c.i / P.cols | 0)) < 3)) { pick.push(c); if (pick.length === 2) break; }
+    for (const minD of [3, 2, 1]) { for (const c of small) if (pick.length < 7 && !pick.includes(c) && pick.every(x => dist(x.i, c.i) >= minD)) pick.push(c); if (pick.length >= 7) break; }
+    // gösterim: tahtanın üstündeki iki karo (göz önce oraya gider); oyuncunun karoları aşağıdan yukarı
+    pick.sort((a, b) => a.i - b.i);
     const cur = P.sol.slice(); for (const c of [...pick, key]) cur[c.i] = unrot(P.sol[c.i]);
-    return { lvl, sig, cur, order: [...pick.map(c => c.i), key.i], key, pick, darkStart: dark(cur), total: P.cur.length, cols: P.cols, rows: P.rows, hubs: [P.hub, P.hub2] };
+    // hepsi birlikte de çözülebilir mi (karolar bağımsız: her biri tek dokunuşla yerine gelir)
+    const after = cur.slice(); for (const c of [...pick, key]) after[c.i] = P.sol[c.i];
+    return { lvl, sig, cur, demo: pick.slice(0, 2).map(c => c.i), order: [...pick.map(c => c.i), key.i], key, pick, darkStart: dark(cur), solvedOk: R.lit({ ...P, cur: after }).solved, total: P.cur.length, cols: P.cols, rows: P.rows, hubs: [P.hub, P.hub2] };
   }, lvl);
   await b.close(); return r;
 };

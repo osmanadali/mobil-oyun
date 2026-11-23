@@ -14,7 +14,7 @@ const rd = f => fs.readFileSync(f, 'utf8');
 (async () => {
   fs.mkdirSync(DIST, { recursive: true });
   const P = await require('./plan.cjs')(LVL);
-  if (P.order.length !== 3 || P.key.n < 10) throw Error('bulmaca planı zayıf: ' + JSON.stringify(P.key));
+  if (P.order.length < 7 || P.key.n < 10 || !P.solvedOk) throw Error('bulmaca planı zayıf: ' + JSON.stringify(P.key));
   // oyun sayfası: <body> içeriği (betiklerden önce) + betik sırası index.html'den
   const idx = rd(path.join(WWW, 'index.html'));
   const ipad = idx.match(/<script>\/\* 📱→iPad[\s\S]*?<\/script>/)[0];
@@ -35,7 +35,7 @@ const rd = f => fs.readFileSync(f, 'utf8');
       skin: th, owned: { [th]: 1 }, allThemes: true, runs: { level: { lvl: LVL, cur: P.cur, fixed: P.cur.map(() => false), moves: 0, last: -1, ms: 0, sig: P.sig } } };
     for (const t of ['web', 'google']) {
       const google = t === 'google';
-      const ad = { save, order: P.order, line: 8, icon, badgeIos, badgeAnd };
+      const ad = { save, order: P.order, demo: P.demo, line: 8, icon, badgeIos, badgeAnd };
       const html = `<!doctype html><html lang="tr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#0e1120">

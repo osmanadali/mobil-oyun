@@ -4,10 +4,10 @@
 'use strict';
 const { chromium } = require('playwright'), fs = require('fs'), path = require('path'), cp = require('child_process'), os = require('os');
 const DIST = path.join(__dirname, 'dist'), th = process.argv[2] || 'neon';
-const TOTAL = 20500, TAPS = [2600, 4700, 7100], STILLS = [[1500, 1], [6000, 2], [7900, 3], [13500, 4], [19000, 5]];
+const TOTAL = 24600, TAPS = [6600, 8000, 9400, 10800, 12200, 13800], STILLS = [[2000, 1], [7300, 2], [12600, 3], [14400, 4], [20000, 5], [23500, 6]];
 (async () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ray-v-')), b = await chromium.launch();
-  const ctx = await b.newContext({ locale: 'tr-TR', viewport: { width: 540, height: 960 }, deviceScaleFactor: 2, hasTouch: true, recordVideo: { dir: tmp, size: { width: 1080, height: 1920 } } });
+  const ctx = await b.newContext({ locale: 'tr-TR', viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true, recordVideo: { dir: tmp, size: { width: 1080, height: 1920 } } });
   const p = await ctx.newPage();
   p.on('pageerror', e => { console.error('HATA', e.message); process.exitCode = 1; });
   await p.route('**/*', r => r.request().url() === 'https://ad.test/ray.html' ? r.fulfill({ contentType: 'text/html', body: fs.readFileSync(path.join(DIST, `ray-reklam-${th}.html`)) }) : r.abort());
@@ -23,6 +23,6 @@ const TOTAL = 20500, TAPS = [2600, 4700, 7100], STILLS = [[1500, 1], [6000, 2], 
   const vid = await p.video().path(); await ctx.close(); await b.close();
   // baştaki boş yükleme anı kırpılır (sayfa çizilmeden önceki ~0,4 sn)
   const out = path.join(DIST, `ray-reklam-${th}-kayit.mp4`);
-  cp.execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-ss', '0.4', '-i', vid, '-t', '20', '-r', '30', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-preset', 'medium', '-movflags', '+faststart', '-an', out]);
+  cp.execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-ss', '0.4', '-i', vid, '-t', '24', '-r', '30', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-preset', 'medium', '-movflags', '+faststart', '-an', out]);
   fs.rmSync(tmp, { recursive: true, force: true }); console.log(out, (fs.statSync(out).size / 1048576).toFixed(1) + ' MB');
 })().catch(e => { console.error(e); process.exit(2); });

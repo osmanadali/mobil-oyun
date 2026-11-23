@@ -10,18 +10,21 @@ const DIST = path.join(__dirname, 'dist'), th = process.argv[2] || 'neon';
     p.on('pageerror', e => errs.push(e.message)); p.on('console', m => m.type() === 'error' && errs.push(m.text()));
     await p.route('**/*', r => { const u = r.request().url(); if (u === 'https://ad.test/ray.html') return r.fulfill({ contentType: 'text/html', body: fs.readFileSync(path.join(DIST, `ray-reklam-${th}.html`)) }); if (!u.startsWith('data:')) net.push(u); return r.abort(); });
     await p.goto('https://ad.test/ray.html'); await p.waitForTimeout(1200);
+    const demo0 = await p.evaluate(() => window.RAY_AD_STATE());
+    await p.waitForFunction(() => window.RAY_AD_STATE().phase === 'play', null, { timeout: 12000 });
+    const lit0 = await p.evaluate(() => window.__ray.G.cur.filter((v, i) => v !== window.__ray.G.sol[i]).length);
     const ls = await p.evaluate(() => { try { return Object.keys(window.localStorage).length >= 0 && typeof Storage !== 'undefined' && window.localStorage instanceof Storage; } catch { return 'err'; } });
     const st0 = await p.evaluate(() => window.RAY_AD_STATE());
     await p.screenshot({ path: `/tmp/claude-0/t-${w}-0.png` });
     let taps = 0;
-    for (let k = 0; k < 8; k++) { const s = await p.evaluate(() => window.RAY_AD_STATE()); if (s.hint < 0) break; const c = await p.evaluate(i => window.RAY_AD_TILE(i), s.hint); await p.touchscreen.tap(c.x, c.y); taps++; await p.waitForTimeout(900); if (k === 1) await p.screenshot({ path: `/tmp/claude-0/t-${w}-1.png` }); }
+    for (let k = 0; k < 12; k++) { const s = await p.evaluate(() => window.RAY_AD_STATE()); if (s.hint < 0) break; const c = await p.evaluate(i => window.RAY_AD_TILE(i), s.hint); await p.touchscreen.tap(c.x, c.y); taps++; await p.waitForTimeout(900); if (k === 1) await p.screenshot({ path: `/tmp/claude-0/t-${w}-1.png` }); }
     await p.waitForTimeout(400); await p.screenshot({ path: `/tmp/claude-0/t-${w}-2.png` });
     await p.waitForTimeout(3000); await p.screenshot({ path: `/tmp/claude-0/t-${w}-3.png` });
     await p.waitForTimeout(3500); await p.screenshot({ path: `/tmp/claude-0/t-${w}-4.png` });
     const st = await p.evaluate(() => window.RAY_AD_STATE());
-    const ok = st0.phase === 'play' && taps === 3 && st.won && st.phase === 'cta' && !net.length && !errs.length && ls === false;
+    const ok = demo0.phase === 'demo' && st0.phase === 'play' && lit0 === 6 && taps === 6 && st.won && st.phase === 'cta' && !net.length && !errs.length && ls === false;
     if (!ok) bad++;
-    console.log(`${w}x${h}`, ok ? 'GEÇTİ' : 'DÜŞTÜ', JSON.stringify({ st0, taps, st, net: net.slice(0, 3), errs: errs.slice(0, 3), realLocalStorage: ls }));
+    console.log(`${w}x${h}`, ok ? 'GEÇTİ' : 'DÜŞTÜ', JSON.stringify({ demo0: demo0.phase, lit0, st0, taps, st, net: net.slice(0, 3), errs: errs.slice(0, 3), realLocalStorage: ls }));
     await ctx.close();
   }
   await b.close(); process.exit(bad ? 1 : 0);
