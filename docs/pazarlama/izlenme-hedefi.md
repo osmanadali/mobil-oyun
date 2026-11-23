@@ -4,7 +4,17 @@ Kullanıcı kararı (20 Kasım): önce **birkaç gün iOS arama reklamı**, ayn�
 
 Bu belge, öteki dosyalardaki bütçe ve takvimin yerine geçen **güncel sıradır**. Bütün rakamlar öneri ve tahmindir. Hesaplara giriş, yayın ve harcamayı kullanıcı yapar.
 
-## 1. Sıra ve bütçe (5.000 TL / ilk ay)
+> **Güncel bütçe (kullanıcı kararı, 23 Kasım):** Sosyal medyaya para ayrılmıyor; izlenme sigortası kaldırıldı ve parası oynanabilir reklama kaydırıldı. Instagram/TikTok yalnız organik. Meta SDK eklenmeyecek (gizlilik beyanı ve izleme izni gerektirir).
+>
+> | Kalem | Tutar |
+> |---|---|
+> | Apple Search Ads TR (iOS 1.2.1 onaylanınca, 7 gün, günde ≤ 135 TL) | ~950 TL |
+> | Google App Campaigns + oynanabilir reklam (Android 1.2.3 Play'de yayına girince, ~14 gün, günde ~285 TL) | ~4.000 TL (öneri: TR 2.500 + Brezilya/Meksika 1.500; onay bekliyor) |
+> | Yedek | ~50 TL |
+>
+> §2.2 (taban sigortası) artık geçersizdir; §2.1 izlenme hedefleri organik hedef olarak kalır, garanti değildir.
+
+## 1. Sıra ve bütçe (ilk taslak) (5.000 TL / ilk ay)
 
 | Evre | Ne zaman | Ne | Bütçe (öneri) |
 |---|---|---|---|
