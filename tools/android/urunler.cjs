@@ -63,7 +63,7 @@ const OPT = 'satin-al', RV = 'regionsVersion.version=2022%2F02';
       purchaseOptions: [{ purchaseOptionId: OPT, buyOption: { legacyCompatible: true, multiQuantityEnabled: false }, regionalPricingAndAvailabilityConfigs: cfg,
         ...(other ? { newRegionsConfig: { usdPrice: other.usdPrice, eurPrice: other.eurPrice, availability: 'AVAILABLE' } } : {}) }] };
     const gb = cfg.find(c => c.regionCode === 'GB')?.price, de = cfg.find(c => c.regionCode === 'DE')?.price;
-    console.log(`${APPLY ? '→' : '•'} ${p.id}${cur ? ' (var, etkin değil)' : ''}: ${p.tr_n} / ${p.en_n} · ₺${p.tr} · ${p.usd} $ · ${cfg.length} ülke (örn. GB ${gb ? gb.units + '.' + String(gb.nanos / 1e7 | 0).padStart(2, '0') + ' ' + gb.currencyCode : '-'}, DE ${de ? de.units + '.' + String(de.nanos / 1e7 | 0).padStart(2, '0') + ' ' + de.currencyCode : '-'})`);
+    console.log(`${APPLY ? '→' : '•'} ${p.id}${cur ? ' (var, etkin değil)' : ''}: ${p.tr_n} / ${p.en_n} · ₺${p.tr} · ${p.usd} $ · ${cfg.length} ülke (örn. GB ${gb ? (gb.units || 0) + '.' + String(gb.nanos / 1e7 | 0).padStart(2, '0') + ' ' + gb.currencyCode : '-'}, DE ${de ? (de.units || 0) + '.' + String(de.nanos / 1e7 | 0).padStart(2, '0') + ' ' + de.currencyCode : '-'})`);
     if (!APPLY) continue;
     try {
       await api('PATCH', `/oneTimeProducts/${p.id}?allowMissing=true&${RV}&updateMask=listings,purchaseOptions`, body);
