@@ -30,7 +30,7 @@ async function token() {
 let TOK;
 async function api(method, path, body) {
   const r = await fetch(API + path, { method, headers: { authorization: 'Bearer ' + TOK, 'content-type': 'application/json' }, body: body && JSON.stringify(body) });
-  const t = await r.text(), j = t ? JSON.parse(t) : {};
+  const t = await r.text(); let j = {}; try { j = t ? JSON.parse(t) : {}; } catch { j = { error: { message: 'JSON değil: ' + t.slice(0, 120).replace(/\s+/g, ' ') } }; }
   if (!r.ok) { const e = Error(`${method} ${path.split('?')[0]} → ${r.status} ${j.error?.message || t.slice(0, 300)}`); e.status = r.status; throw e; }
   return j;
 }
@@ -66,7 +66,7 @@ const OPT = 'satin-al', RV = 'regionsVersion.version=2022%2F02';
     console.log(`${APPLY ? '→' : '•'} ${p.id}${cur ? ' (var, etkin değil)' : ''}: ${p.tr_n} / ${p.en_n} · ₺${p.tr} · ${p.usd} $ · ${cfg.length} ülke (örn. GB ${gb ? (gb.units || 0) + '.' + String(gb.nanos / 1e7 | 0).padStart(2, '0') + ' ' + gb.currencyCode : '-'}, DE ${de ? (de.units || 0) + '.' + String(de.nanos / 1e7 | 0).padStart(2, '0') + ' ' + de.currencyCode : '-'})`);
     if (!APPLY) continue;
     try {
-      await api('PATCH', `/oneTimeProducts/${p.id}?allowMissing=true&${RV}&updateMask=listings,purchaseOptions`, body);
+      await api('PATCH', `/onetimeproducts/${p.id}?allowMissing=true&${RV}&updateMask=listings,purchaseOptions`, body);
       await api('POST', `/oneTimeProducts/${p.id}/purchaseOptions:batchUpdateStates`, { requests: [{ activatePurchaseOptionRequest: { packageName: PKG, productId: p.id, purchaseOptionId: OPT } }] });
       console.log(`  ✓ ${p.id} oluşturuldu ve etkin`);
     } catch (e) { console.error(`::error::${p.id}: ${e.message}`); fail++; }
