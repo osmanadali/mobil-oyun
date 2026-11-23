@@ -51,7 +51,7 @@ const YUKARI = new THREE.Vector3(0, 1, 0);
 // ───────────────────────── malzeme yaması: parlama + çözülme ─────────────────────────
 // Her birimin malzemeleri BİR KEZ klonlanır (his.hazirla). Program önbellek anahtarı sabit olduğu için
 // bütün birimler aynı gölgelendirici programını paylaşır: derleme savaş kurulumunda bir kez olur.
-const YAMA_ANAHTAR = 'kutHis2';
+const YAMA_ANAHTAR = 'kutHis3';
 function malzemeYamala(m, u) {
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u);
@@ -60,7 +60,7 @@ function malzemeYamala(m, u) {
       .replace('#include <project_vertex>', '#include <project_vertex>\nvKutP = (modelMatrix * vec4(transformed, 1.0)).xyz;');
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>
-varying vec3 vKutP; uniform float uKutFlas; uniform vec3 uKutFlasRenk; uniform float uKutKenar; uniform float uKutCoz; uniform vec3 uKutCozRenk; uniform vec2 uKutBoy;
+varying vec3 vKutP; uniform float uKutFlas; uniform vec3 uKutFlasRenk; uniform float uKutKenar; uniform float uKutCoz; uniform vec3 uKutCozRenk; uniform vec2 uKutBoy; uniform float uKutBoya; uniform vec3 uKutBoyaRenk;
 float kutH(vec3 p){ p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
 float kutG(vec3 x){ vec3 i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f);
   return mix(mix(mix(kutH(i), kutH(i + vec3(1,0,0)), f.x), mix(kutH(i + vec3(0,1,0)), kutH(i + vec3(1,1,0)), f.x), f.y),
@@ -72,6 +72,10 @@ if (uKutCoz > 0.0) {
   kutN = (kutG(vKutP * 9.0) * 0.65 + kutG(vKutP * 23.0) * 0.35) * 0.62 + (1.0 - kutY) * 0.38;
   if (kutN < uKutCoz * 1.08) discard;
 }`)
+      // süreli gövde boyası (zehir yeşili, buz mavisi, lanet moru): ışığa eklenen parıltı turuncu gövdeyi sarıya çeviriyordu; artık albedo
+      // parlaklığı korunarak boyanın rengine çekilir (turuncu kurbağa gerçekten yeşillenir)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+if (uKutBoya > 0.0) { float kutL = dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114)); diffuseColor.rgb = mix(diffuseColor.rgb, uKutBoyaRenk * (0.22 + 1.55 * kutL), uKutBoya); }`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
 if (uKutFlas > 0.0) { float kutR = 1.0 - abs(dot(normalize(normal), normalize(vViewPosition))); totalEmissiveRadiance += uKutFlasRenk * uKutFlas * mix(0.45 + 0.9 * kutR * kutR, 0.08 + 1.1 * kutR * kutR, uKutKenar); }
 if (uKutCoz > 0.0) { float kutK = 1.0 - smoothstep(0.0, 0.075, kutN - uKutCoz * 1.08); totalEmissiveRadiance += uKutCozRenk * kutK * 4.0; }`);
@@ -158,13 +162,13 @@ export const his = {
   dinle(ad, fn) { H.dinleyici[ad] = fn; },
   /** Yeni savaş: bütün birim durumlarını unut (savasKur başında çağır) */
   sifirla() {
-    for (const b of H.birimler) { const s = b._his; if (s) { s.atil = s.giris = s.olum = s.zafer = null; s.geri.x = s.geri.v = s.ezil.x = s.ezil.v = s.egil.x = s.egil.v = 0; s.flas = 0; s.yb.guc = 0; s.sis.oran = 0; s.buz = 0; if (s.uni) { s.uni.uKutFlas.value = 0; s.uni.uKutCoz.value = 0; } } }
+    for (const b of H.birimler) { const s = b._his; if (s) { s.atil = s.giris = s.olum = s.zafer = null; s.geri.x = s.geri.v = s.ezil.x = s.ezil.v = s.egil.x = s.egil.v = 0; s.flas = 0; s.yb.guc = 0; s.sis.oran = 0; s.buz = 0; if (s.uni) { s.uni.uKutFlas.value = 0; s.uni.uKutCoz.value = 0; s.uni.uKutBoya.value = 0; } } }
     H.birimler.clear(); H.donma = H.donmaSoguma = 0; H.yavas.kalan = 0; H.travma = 0; H.tekme.x = H.tekme.v = 0; H.zoom.aktif = false; H.girisSon = 0; H.zaman = 0;
   },
   /** Birim malzemelerini yamalar (parlama + çözülme). birimKur sonunda bir kez çağır; çağrılmazsa ilk ihtiyaçta kendisi yapar. */
   hazirla(b) {
     const s = bh(b); if (s.uni) return s.uni;
-    const u = { uKutFlas: { value: 0 }, uKutFlasRenk: { value: s.flasRenk }, uKutKenar: { value: 0 }, uKutCoz: { value: 0 }, uKutCozRenk: { value: new THREE.Color('#ff9a2e') }, uKutBoy: { value: new THREE.Vector2(0, 1.4) } };
+    const u = { uKutFlas: { value: 0 }, uKutFlasRenk: { value: s.flasRenk }, uKutKenar: { value: 0 }, uKutCoz: { value: 0 }, uKutCozRenk: { value: new THREE.Color('#ff9a2e') }, uKutBoy: { value: new THREE.Vector2(0, 1.4) }, uKutBoya: { value: 0 }, uKutBoyaRenk: { value: s.yb.renk } };
     b.model.traverse((m) => {
       if (!m.isMesh || !m.material) return;
       const yap = (mat) => { if (!mat || !(mat.isMeshStandardMaterial || mat.isMeshPhongMaterial || mat.isMeshLambertMaterial)) return mat; const c = mat.clone(); malzemeYamala(c, u); return c; };
@@ -273,7 +277,8 @@ export const his = {
   donuk(b) { return !!(b && b._his && (b._his.donma > 0 || b._his.buz > 0)); },
   /** Süreli gövde boyası (yetenek etkisi): 0,12 sn'de açılır, hafif nabızla tutulur, son 0,4 sn'de söner. Vuruş parlaması öncelikli,
       hazırlık parlamasıyla güçlü olan görünür (aynı malzeme yaması; yeni malzeme yok). */
-  boya(b, renk, guc = 0.3, sure = 2) { if (!b) return; const s = bh(b); his.hazirla(b); const y = s.yb; y.renk.set(renk); y.guc = guc; y.t = 0; y.sure = Math.max(0.2, sure); },
+  /** süreli gövde boyası. o.kenar: albedo boyanmaz, yalnız nabız atan kenar ışıması (kızıl koçta kızıl boya seçilmez: Boynuz Öfkesi) */
+  boya(b, renk, guc = 0.3, sure = 2, o = null) { if (!b) return; const s = bh(b); his.hazirla(b); const y = s.yb; y.renk.set(renk); y.guc = guc; y.t = 0; y.sure = Math.max(0.2, sure); y.kenar = !!(o && o.kenar); },
   /** Gövde şişmesi: oran (0,08 = %8), sure sn (0,15 sn'de şişer, son 0,3 sn'de iner; ayak tabanı merkezli) */
   sis(b, oran = 0.08, sure = 1) { if (!b) return; const s = bh(b); s.sis.oran = oran; s.sis.t = 0; s.sis.sure = Math.max(0.3, sure); },
   /** Buz donması: birimin animasyonu sure sn durur (hit-stop'tan ayrı, uzun; ölünce çözülür) */
@@ -383,8 +388,13 @@ function birimGuncelle(b, dt, dtR) {
   if (yp.guc > 0) { yp.t += dt; const e = yp.t < yp.tepe ? yp.t / yp.tepe : 1 - (yp.t - yp.tepe) / Math.max(1e-3, yp.sure - yp.tepe); ypG = yp.guc * yumusak(e); if (yp.t >= yp.sure) yp.guc = 0; }
   const yb = s.yb; let ybG = 0;
   if (yb.guc > 0) { yb.t += dtR; const e = Math.min(1, yb.t / 0.12) * (yb.t > yb.sure - 0.4 ? Math.max(0, (yb.sure - yb.t) / 0.4) : 1); ybG = yb.guc * e * (0.85 + 0.15 * Math.sin(yb.t * 7)); if (yb.t >= yb.sure) yb.guc = 0; }
-  if (s.uni) { if (s.flas > 0) s.uni.uKutFlas.value = Math.min(1.2, s.flas); else if (ypG > 0.002 && ypG >= ybG) { s.flasRenk.copy(yp.renk); s.uni.uKutFlas.value = ypG; s.uni.uKutKenar.value = 0; }
-    else if (ybG > 0.002) { s.flasRenk.copy(yb.renk); s.uni.uKutFlas.value = ybG; s.uni.uKutKenar.value = 0; } else s.uni.uKutFlas.value = 0; }
+  if (s.uni) {
+    // boya: albedo boyanın rengine çekilir (gücün ~2,8 katı, en çok 0,82: turuncu kurbağa sarımsı değil gerçekten yeşil) + hafif kenar ışıması; kenar kipinde yalnız nabızlı kenar ışıması
+    const kenarK = yb.kenar && ybG > 0.002;
+    s.uni.uKutBoya.value = ybG > 0.002 && !kenarK ? Math.min(0.82, ybG * 2.8) : 0;
+    if (s.flas > 0) s.uni.uKutFlas.value = Math.min(1.2, s.flas); else if (ypG > 0.002 && ypG >= ybG) { s.flasRenk.copy(yp.renk); s.uni.uKutFlas.value = ypG; s.uni.uKutKenar.value = 0; }
+    else if (kenarK) { s.flasRenk.copy(yb.renk); s.uni.uKutFlas.value = ybG * (1.6 + 1.4 * Math.sin(yb.t * 9) ** 2); s.uni.uKutKenar.value = 1; }
+    else if (ybG > 0.002) { s.flasRenk.copy(yb.renk); s.uni.uKutFlas.value = ybG * 0.55; s.uni.uKutKenar.value = 0.7; } else s.uni.uKutFlas.value = 0; }
   // gövdeye yaz (ayak tabanı merkezli ölçek: model tabanı govde başlangıcında)
   const gv = b.govde;
   gv.position.set(ox, oy, oz);
@@ -928,7 +938,7 @@ const YET_POZ = {
   // Kaya Fırlat (Golem; taban Idle_Loop): öne eğilip çömel, iki el yere (kaya yerden kopar) → iki elle kaldır, kaya başın üstünde, geri
   //   esne, gövde şişer → u=0 iki kol başın üstünden öne savrulur, kaya bırakılır → öne eğik izleme → toparlan
   tasFirlat: { cirp: true, k: [[-0.36, 0, 0, 0, 0, 0, 0, 0, 0], [-0.27, 0.55, 0.15, 0, 0, 0.18, 0.45, 0, -0.18], [-0.2, 0.5, 0.15, 0, 0, 0.2, 0.55, 0, -0.12],
-    [-0.12, 0.08, 0.07, 0.02, 0, 0.26, 1.85, 0, 0.12], [-0.05, -0.32, 0.03, 0.05, 0, 0.3, 2.75, 0, 0.22], [0, -0.22, 0.02, 0.04, 0, 0.26, 2.5, 0, 0.12],
+    [-0.12, 0.08, 0.07, 0.02, 0, 0.26, 1.75, 0, 0.12], [-0.05, -0.3, 0.03, 0.05, 0, 0.3, 2.4, 0, 0.22], [0, -0.2, 0.02, 0.04, 0, 0.26, 2.2, 0, 0.12],
     [0.06, 0.48, 0.08, 0.02, 0, 0.12, 1.05, 0, -0.14], [0.16, 0.42, 0.07, 0, 0, 0.08, 0.6, 0, -0.1], [0.55, 0, 0, 0, 0, 0, 0, 0, 0]] },
   // Savaş Davulu (Kurbağa): dört göbek vuruşu u = 0 / 0,2 / 0,4 / 0,6 (her biri bir dalga); son vuruştan önce küçük sıçrama, inişte büyük halka
   davul: { cirp: true, k: [[-0.36, 0, 0, 0, 0, 0, 0, 0, 0], [-0.1, -0.1, 0, 0, 0, 0.95, 0.3, 0, 0.15],

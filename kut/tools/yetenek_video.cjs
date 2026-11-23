@@ -7,8 +7,9 @@
 //   ORTAM: KARE_DIR=<geçici kare klasörü> (varsayılan /tmp/kut_yetvid), HAFIF=1 (gölgesiz, hızlı), SADECE_KARE=1 (ffmpeg yok)
 // Gerekenler: playwright (chromium, SwiftShader WebGL), /usr/bin/ffmpeg.
 // Akış: test3d.html?elle=1 sahnesinde KUT_SIM.Savas ile kahraman (taraf 0, ön sıra) + 2 rakip kurulur; rakiplerin manası
-// erişilmez yapılır (yalnız gösterilen yetenek görünsün), kahraman ilk vuruşunu yapınca manası doldurulur (sunum: motor
-// dosyaları değişmez, yalnız bu sim nesnesinin alanı). Sahne SAHNE.kare(1/30) ile sabit adımla ilerletilir (belirlenimci),
+// erişilmez, saldırı sayacı (cd) sonsuz yapılır: rakipler yalnız hedeftir (yetenek kullanmaz, saldırmaz — menzilli mermileri ve
+// darbe halkaları gösterilen yeteneği örtmesin), kahraman ilk vuruşunu yapınca manası doldurulur (sunum: motor dosyaları
+// değişmez, yalnız bu sim nesnesinin alanı). Sahne SAHNE.kare(1/30) ile sabit adımla ilerletilir (belirlenimci),
 // yetenek pozunun başlangıcından ÖNCE_SN önce ile SONRA_SN sonra arası 480×320 kare kare yakalanır; kamera kahramana
 // 3/4 açıdan, rakipleri de kadraja alan orta plan. ffmpeg: başta/sonda kısa çapraz geçişli döngü, H.264 yuv420p crf 26 faststart.
 const { chromium } = require('playwright');
@@ -24,6 +25,15 @@ const W = 480, H = 320, FPS = 30, ONCE_SN = 0.5, SONRA_SN = 2.6, AZAMI_BEKLE = 8
 // rakipler: menzilli iki kahraman (yerinden kımıldamaz, kahramanla kamera arasına yürümez), karşı ön sırada aynı sütun (1) ve
 // kameradan uzak sütunda orta sıra (0); kamera +x yanında. Yakın dövüşçü kahraman onlara yürür, menzilli kahraman yerinden atar.
 const RAKIP = (h) => { const l = ['yilan', 'kurbaga', 'ruzgar'].filter(x => x !== h); return [{ h: l[0], s: 2, x: 1, y: 0 }, { h: l[1], s: 2, x: 0, y: 1 }]; };
+// yetenek başına kadraj (varsayılanların üstüne): hedef 'uzak' → doğrultu en uzak rakibe (varsayılan en yakın), yan −1 → kamera
+// doğrultunun öbür yanında (ekranda kahraman sağda), on → önden bakış payı, uzak/y → uzaklık ve yükseklik çarpanı, odak → odağın
+// rakip ortasına payı (varsayılan 0,45; kalanı kahraman).
+// Bulut Hücumu: at en uzak rakibin (kurbağa) önüne ışınlanır; varsayılan açıda iniş noktası iki rakibin ARKASINDA kalıyordu (at
+// kurbağanın ardında görünmüyordu) → kamera öbür yandan, hücum çapraz ve kameraya doğru, iniş iki rakibin önünde ve kadrajda.
+// Kasırga: hortum rakipleri 1,5 hücre geri iter; varsayılan kadrajda yılan ve hortum sağ kenardan taşıyordu → daha geniş, yandan, odak
+// rakiplere yakın.
+// Zümrüt Zehri: hedef kurbağa yılana yürür ve önden bakışta kameraya en yakın birim olup kadrajın ortasını kaplıyordu → daha yandan, geniş.
+const KAMH = { bulutat: { yan: -1, on: -0.15, uzak: 1.12, y: 1.08 }, ruzgar: { on: 0.25, uzak: 1.3, y: 1.1, odak: 0.55 }, yilan: { on: 0.2, uzak: 1.15 } };
 (async () => {
   fs.mkdirSync(OUTD, { recursive: true });
   const br = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'] });
@@ -39,7 +49,7 @@ const RAKIP = (h) => { const l = ['yilan', 'kurbaga', 'ruzgar'].filter(x => x !=
   await p.evaluate(() => { if (SAHNE._cizAtla) SAHNE._cizAtla(true); window.__sz.t = performance.now(); window.__sz.aktif = true; });
   const kur = (h) => p.evaluate(async ({ h, rakip }) => {
     const sim = KUT_SIM.Savas([{ h, s: 1, x: 1, y: 0 }], rakip, { tohum: 7, alamet: 'yok' });
-    for (const u of sim.birimler) if (u.taraf === 1) { u.mana = 1e9; u.mp = 0; }
+    for (const u of sim.birimler) if (u.taraf === 1) { u.mana = 1e9; u.mp = 0; u.cd = 1e9; }   // rakip: yalnız hedef
     await SAHNE.savasKur(sim);
     const u = sim.birimler.find(o => o.taraf === 0);
     window.__V = { sim, u, uid: u.uid, dolu: false, kare: 0, kam: null, yet: 0 };
@@ -62,7 +72,7 @@ const RAKIP = (h) => { const l = ['yilan', 'kurbaga', 'ruzgar'].filter(x => x !=
   // kamera (sayfada): kahraman solda, rakipler sağda; bakış kahraman→rakip ortası doğrultusuna dik, biraz önden (3/4).
   // Doğrultu ve odak çekimin ilk karesinde belirlenir, sonra odak yavaşça izler (döngü için sakin kamera).
   // Kare: WebGL tuvali + 2B üst katman (can çubukları, yazılar) aynı görevde birleştirilip JPEG döner (ekran görüntüsünden çok hızlı).
-  const cek = (n, adim) => p.evaluate(({ n, adim, K, FPS }) => {
+  const cek = (n, adim, KH) => p.evaluate(({ n, adim, K, KH, FPS }) => {
     const V = window.__V, out = [];
     const t = document.getElementById('t'), k = document.getElementById('k');
     const c = document.createElement('canvas'); c.width = K.W; c.height = K.H; const x = c.getContext('2d');
@@ -74,25 +84,27 @@ const RAKIP = (h) => { const l = ['yilan', 'kurbaga', 'ruzgar'].filter(x => x !=
       const rk = V.sim.birimler.filter(o => o.taraf === 1).map(o => SAHNE._bTMP(o.uid)).filter(Boolean);
       const p0 = b.kok.position.clone(); let rx = p0.x, rz = p0.z - 2;
       if (rk.length) { rx = 0; rz = 0; for (const r of rk) { rx += r.kok.position.x; rz += r.kok.position.z; } rx /= rk.length; rz /= rk.length; }
-      const fx = p0.x * 0.55 + rx * 0.45, fz = p0.z * 0.55 + rz * 0.45;
+      const ok = KH.odak != null ? KH.odak : 0.45, fx = p0.x * (1 - ok) + rx * ok, fz = p0.z * (1 - ok) + rz * ok;
       if (!V.kam) {
         // doğrultu: en yakın rakip (yakın dövüşçünün hedefi) → kahramanla hedef arasına kimse girmez
-        let en = null, ed = 1e9; for (const r of rk) { const d = Math.hypot(r.kok.position.x - p0.x, r.kok.position.z - p0.z); if (d < ed) { ed = d; en = r; } }
+        const sg = KH.hedef === 'uzak' ? -1 : 1;   // en yakın (varsayılan) ya da en uzak rakip
+        let en = null, ed = 1e9; for (const r of rk) { const d = sg * Math.hypot(r.kok.position.x - p0.x, r.kok.position.z - p0.z); if (d < ed) { ed = d; en = r; } }
         let dx = (en ? en.kok.position.x : rx) - p0.x, dz = (en ? en.kok.position.z : rz) - p0.z; const L = Math.hypot(dx, dz) || 1; dx /= L; dz /= L;
-        const ox = -dz + dx * K.on, oz = dx + dz * K.on;   // ekranın sağı = rakip doğrultusu; K.on: önden bakış payı
+        const on = KH.on != null ? KH.on : K.on, yan = KH.yan || 1;
+        const ox = -dz * yan + dx * on, oz = dx * yan + dz * on;   // ekranın sağı = rakip doğrultusu (yan −1: solu); on: önden bakış payı
         V.kam = { aci: Math.atan2(ox, oz), fx, fz };
       } else { V.kam.fx += (fx - V.kam.fx) * 0.06; V.kam.fz += (fz - V.kam.fz) * 0.06; }
       if (i % adim) continue;
       const v = b.kok.userData.vfxBoy || 1.3, o = 0.7 + 0.3 * v / 1.3;   // büyük gövdede kamera geri çekilir
       b.kok.position.set(V.kam.fx, p0.y, V.kam.fz);
-      SAHNE.yakinKamera(V.uid, K.uzak * o, V.kam.aci, K.y * o, 0.6 * o);
+      SAHNE.yakinKamera(V.uid, K.uzak * o * (KH.uzak || 1), V.kam.aci, K.y * o * (KH.y || 1), 0.6 * o);
       b.kok.position.copy(p0);
       SAHNE._ciz();
       x.drawImage(t, 0, 0, K.W, K.H); x.drawImage(k, 0, 0, K.W, K.H);
       out.push(c.toDataURL('image/jpeg', 0.94));
     }
     return out;
-  }, { n, adim, K: KAM, FPS });
+  }, { n, adim, K: KAM, KH: KH || {}, FPS });
   const sonuc = [];
   const T0 = Date.now();
   for (const h of L) {
@@ -108,7 +120,7 @@ const RAKIP = (h) => { const l = ['yilan', 'kurbaga', 'ruzgar'].filter(x => x !=
     const ADIM = +(process.env.ADIM || 1);   // önizleme: yalnız her ADIM'ıncı kare
     let sira = 0;   // 15'erli parçalar (bellek: tek seferde 90+ JPEG dönmesin)
     for (let i = 0; i < N; i += 15) {
-      const kareler = await cek(Math.min(15, N - i), ADIM);
+      const kareler = await cek(Math.min(15, N - i), ADIM, KAMH[h]);
       for (const url of kareler) fs.writeFileSync(path.join(dir, `k${String(sira++).padStart(3, '0')}.jpg`), Buffer.from(url.split(',')[1], 'base64'));
     }
     const yet = await p.evaluate(() => window.__V.yet);
