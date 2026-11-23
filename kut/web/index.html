@@ -1492,10 +1492,14 @@ html.alcak #perde.menuPanel.panelB .pencere{border-image-outset:3px 9px 5px}
 .sonucBant .cip.kotu{color:#ffb0c0;border-color:rgba(255,90,120,.38);background:rgba(180,30,60,.14)}
 .sonucBant .cip.altin,.sonucBant .cip.mvp{color:#ffe08a;border-color:rgba(242,191,74,.45);background:rgba(242,191,74,.1)}
 .sonucBant .sDugmeler{gap:16px;align-items:center;margin-top:4px}
-.sonucBant #sOzet{min-width:190px;min-height:56px;padding:0 20px;font-size:18px;color:#e8e2f4;border:1px solid rgba(210,195,255,.28);border-image:none;border-radius:14px;
-  background:linear-gradient(180deg,rgba(44,34,70,.92),rgba(20,14,34,.94));box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 6px 14px rgba(0,0,0,.45);filter:none}
+.sonucBant #sOzet{min-width:232px;height:66px;min-height:0;padding:0 34px 2px;font-size:18px;color:#f3e6ff;border:0;border-radius:0;
+  border-style:solid;border-color:transparent;border-image:url(arayuz/menu/dugme_ikincil.webp) 44 66 fill / 22px 34px / 0 stretch;gap:10px;--k:#1c0834;
+  background:none;box-shadow:none;text-shadow:-1.5px -1.5px 0 var(--k),1.5px -1.5px 0 var(--k),-1.5px 1.5px 0 var(--k),1.5px 1.5px 0 var(--k),0 3px 0 var(--k);
+  filter:drop-shadow(0 8px 10px rgba(0,0,0,.5)) drop-shadow(0 0 12px rgba(170,110,255,.25))}
+.sonucBant #sOzet .ik{width:24px;height:24px;filter:drop-shadow(0 2px 0 #1c0834) drop-shadow(0 0 6px rgba(255,214,120,.55))}
+.sonucBant #sOzet span{letter-spacing:.06em;padding-left:.06em}
 .sonucBant #sOzet::before,.sonucBant #sOzet::after{display:none}
-.sonucBant #sOzet:active{transform:scale(.96)}
+.sonucBant #sOzet:active{border-image-source:url(arayuz/menu/dugme_ikincil_basili.webp);transform:translateY(2px) scale(.97)}
 .sonucBant #sOzet.secik{outline:2px solid rgba(210,195,255,.6);outline-offset:2px}
 .sonucBant #sDevam{width:270px;min-width:0;height:auto;min-height:0;aspect-ratio:2118/618;padding:0 18% 4px;border:0;border-image:none;border-radius:0;box-shadow:none;
   background:url(arayuz/menu/dugme_oyna_b.webp) center/100% 100% no-repeat;font-size:30px;gap:8px;color:#fffaf0;--k:#5a2404;
@@ -1503,6 +1507,7 @@ html.alcak #perde.menuPanel.panelB .pencere{border-image-outset:3px 9px 5px}
 .sonucBant #sDevam::before,.sonucBant #sDevam::after{display:none}
 .sonucBant #sDevam:active{background-image:url(arayuz/menu/dugme_oyna_basili_b.webp);transform:translateY(2px) scale(.97)}
 .sonucBant #sDevam .ik{width:24px;height:24px;filter:drop-shadow(0 2px 0 #6a3206)}
+.sonucBant #sDevam{padding:0 0 4px;justify-content:center;letter-spacing:0}.sonucBant #sDevam span{display:block;letter-spacing:.08em;padding-left:.08em;text-align:center}
 #savas .hasarOzet{border-radius:12px}
 html.azHareket .sonucPerde,html.azHareket .sonucPerde *,html.azHareket .sAyrac,html.azHareket #savas .saat.son10{animation:none!important}
 html.azHareket .spIsin,html.azHareket .spPatla{opacity:.5}
@@ -1519,7 +1524,7 @@ html.alcak #sonucYer{--sy:59%}
 html.alcak .sonucBant{gap:6px;padding:12px 0 12px}
 html.alcak .sonucBant .cip{height:26px;font-size:13px;padding:0 10px}
 html.alcak .sonucBant #sDevam{width:200px;font-size:23px}
-html.alcak .sonucBant #sOzet{min-height:46px;min-width:150px;font-size:15px}
+html.alcak .sonucBant #sOzet{height:56px;min-width:180px;font-size:15px;padding:0 26px 2px;border-image-width:18px 28px}
 html.alcak .sAyrac{display:none}
 /* ===================== 3D HAZIRLIK (Aşama C) =====================
    body.hz3: takım savaşın yapıldığı 3D arenada (sahne3d hazirlik*). Ortada boşluk tuvale geçer (dokun/sürükle); kenarlarda ince koyu cam şeritler:
