@@ -803,7 +803,7 @@ const SKINS = {
   okyanus: { name: 'Okyanus', body: '#0e2a3a', rough: .35, metal: .1, stickers: ['#ff6f61', '#f8a55b', '#e8f6f3', '#ffd166', '#2bb39d', '#3a86ff'], sRough: .3, glow: 0, env: .5 },
   retro:  { name: 'Retro', body: '#efe3cc', rough: .75, metal: 0, stickers: ['#b8322a', '#e48a2a', '#3d2c22', '#e8c547', '#6e8b3d', '#2f7f86'], sRough: .7, glow: 0 },
   neon:   { name: 'Neon', body: '#0a0a14', rough: .3, metal: .35, stickers: ['#ff1f5a', '#ff5e00', '#dfe9ff', '#ffe81a', '#14f08a', '#2b7bff'], sRough: .3, glow: .5, glowW: .25 },
-  karbon: { name: 'Karbon', body: '#ffffff', rough: .25, metal: .35, stickers: ['#e10600', '#ff7a00', '#f2f2f2', '#ffd900', '#00b85c', '#0a7cff'], sRough: .18, glow: 0, tex: 'carbon', env: 1.1, sticker: 'frame', ss: .9 },
+  karbon: { name: 'Karbon', body: '#ffffff', rough: .25, metal: .35, stickers: ['#e10600', '#ff7a00', '#f2f2f2', '#ffd900', '#00b85c', '#0a7cff'], sRough: .18, glow: 0, tex: 'carbon', env: 1.1, shape: 'chip', ss: .92 },
   mermer: { name: 'Mermer', body: '#ffffff', rough: .2, metal: 0, stickers: ['#c8163f', '#ef7d12', '#f4efe6', '#f5c518', '#0f9d63', '#1f4fd6'], sRough: .1, glow: 0, tex: 'marble', env: 1, shape: 'gem', ss: .92 },
   ahsap:  { name: 'Ahşap', body: '#ffffff', rough: .62, metal: 0, stickers: ['#b3221f', '#f07c10', '#fbf3e2', '#ffd21a', '#3f9a3a', '#2a5fb8'], sRough: .5, glow: 0, tex: 'wood', grain: 1, shape: 'tile', ss: .92, env: .35 },
   lav:    { name: 'Lav', body: '#ffffff', rough: .85, metal: 0, stickers: ['#ff1e1e', '#ff8a00', '#fff4e6', '#ffe62e', '#7dff2e', '#2fb4ff'], sRough: .3, glow: .45, glowW: .12, tex: 'rock', ss: .9 },
@@ -871,8 +871,8 @@ function bevelTile(size, inner, h, cut) {
   g.setAttribute('position', new T.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new T.Float32BufferAttribute(uv, 2));
   g.computeVertexNormals(); return g;
 }
-const gemGeo = bevelTile(.8, .56, .085, .16), tileGeo = bevelTile(.8, .9, .028, .1);
-const stickGeoFor = () => { const sh = SKINS[S.skin].shape; return sh === 'gem' ? gemGeo : sh === 'tile' ? tileGeo : stickGeo; };
+const gemGeo = bevelTile(.8, .56, .085, .16), tileGeo = bevelTile(.8, .9, .028, .1), chipGeo = bevelTile(.8, .8, .05, .05);
+const stickGeoFor = () => { const sh = SKINS[S.skin].shape; return sh === 'gem' ? gemGeo : sh === 'tile' ? tileGeo : sh === 'chip' ? chipGeo : stickGeo; };
 const FACES = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]].map(a => new T.Vector3(...a));
 
 let N = 0, cubies = [], bodyMat, stickMats = [];
@@ -883,7 +883,7 @@ function makeMaterials() {
   bodyMat = new T.MeshStandardMaterial({ color: lin(sk.body), roughness: sk.rough, metalness: sk.metal, map: wb, envMap: env, envMapIntensity: sk.env || 1 });
   if (sk.tex === 'rock') { bodyMat.emissive = new T.Color(0xffffff); bodyMat.emissiveMap = getTex('rockGlow'); bodyMat.emissiveIntensity = .7; }
   stickMats = sk.stickers.map((h, i) => new T.MeshStandardMaterial({
-    flatShading: sk.shape === 'gem',
+    flatShading: sk.shape === 'gem' || sk.shape === 'chip',
     color: lin(h), roughness: sk.sRough, metalness: 0, map: wg, envMap: env, envMapIntensity: (sk.env || 0) * .35,
     emissive: sk.glow ? lin(h) : new T.Color(0), emissiveIntensity: sk.glow ? sk.glow * (i === 2 ? (sk.glowW != null ? sk.glowW / sk.glow : .7) : 1) : 0,
     polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1,
