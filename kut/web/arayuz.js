@@ -106,8 +106,8 @@ oyun.on('birlesti', () => Ses.cal('birlesme', { aralik: 0.3 }));
 oyun.on('kaynasti', () => Ses.cal('kaynasma'));
 oyun.on('ses', (ad) => { if (ad === 'yenile') Ses.cal('yenile'); else if (ad === 'sat') Ses.cal('satin_al', { hiz: 0.8 }); });
 document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('button, .btn'); if (b && !b.disabled) Ses.cal('dugme', { aralik: 0.05 }); }, true);
-function pencere(html, b = false, tur = '') { $('pencere').innerHTML = html; $('perde').classList.toggle('armagan', tur === 'armagan'); $('perde').dataset.tur = tur; $('perde').classList.toggle('menuPanel', aktifEkran === 'ana'); $('perde').classList.toggle('panelB', !!b); $('perde').classList.add('acik'); $('pencere').scrollTop = 0; }   // görünür olduktan sonra: gizliyken scrollTop yazılamaz, önceki pencerenin kaydırması kalırdı   // karşılamada süslü menü paneli
-function kapat() { $('perde').classList.remove('acik'); }
+function pencere(html, b = false, tur = '') { yetVideoDurdur(); $('pencere').innerHTML = html; $('perde').classList.toggle('armagan', tur === 'armagan'); $('perde').dataset.tur = tur; $('perde').classList.toggle('menuPanel', aktifEkran === 'ana'); $('perde').classList.toggle('panelB', !!b); $('perde').classList.add('acik'); $('pencere').scrollTop = 0; }   // görünür olduktan sonra: gizliyken scrollTop yazılamaz, önceki pencerenin kaydırması kalırdı   // karşılamada süslü menü paneli
+function kapat() { yetVideoDurdur(); $('perde').classList.remove('acik'); }
 $('perde').addEventListener('click', (e) => { if (e.target.id === 'perde' || e.target.closest('[data-kapat]')) kapat(); });
 // iOS: pencere dışındaki karartma sürüklenince sayfa esnemesin; pencere kendi içinde yalnız dikey kayar, uçlarda zincirleme yok (CSS overscroll-behavior)
 $('perde').addEventListener('touchmove', (e) => { if (!e.target.closest || e.target.closest('input,textarea')) return; const p = e.target.closest('.pencere'); if (!p || p.scrollHeight <= p.clientHeight + 1) e.preventDefault(); }, { passive: false });
@@ -392,6 +392,22 @@ const ARM_CERCEVE = { kivilcim: 'arm_kivilcim', alev: 'arm_alev', gunes: 'arm_yi
 const ARM_SIMGE = { 'Kut': 'simsek', 'Kaynaştırma': 'kaynas', 'Eşya': 'kalkan', 'Önceden görme': 'goz', 'Alamet': 'isik', 'Ekonomi': 'coin', 'Seviye': 'ok', 'Geri dönüş': 'yenile' };
 let armGorseller = new Set();
 fetch('arayuz/armagan/liste.json').then(r => r.ok ? r.json() : []).then(l => { if (Array.isArray(l)) armGorseller = new Set(l); }).catch(() => {});
+// Yetenek önizleme videoları (tools/yetenek_video.cjs ile önceden üretilmiş; web/arayuz/yetenek/<id>.mp4): liste.json var olanları sayar, yoksa eski görünüm
+let yetVideolar = new Set();
+fetch('arayuz/yetenek/liste.json').then(r => r.ok ? r.json() : []).then(l => { if (Array.isArray(l)) yetVideolar = new Set(l); }).catch(() => {});
+// video kimliği: yeteneğin asıl sahibi (kaynaşmada yetenek birinciden gelir)
+const yetVideoId = (yid) => { const k = D.KAHRAMANLAR.find(x => x.yetenek === yid); return k && yetVideolar.has(k.id) ? k.id : null; };
+// otomatik oynatma kapalı: Animasyonları azalt, Hafif grafik ya da uyarlanır kalite düşük kademede (pil) → dokununca oynar
+const yetVideoOto = () => { try { return !azHareket() && ayarOku('kut.hafif') !== '1' && !(S3.kaliteBilgi().kademe >= 5); } catch (e) { return false; } };
+function yetVideoBagla() {
+  const v = document.querySelector('#pencere .kdVid video'); if (!v) return;
+  const kap = v.parentElement; v.muted = true; v.defaultMuted = true;
+  v.addEventListener('playing', () => kap.classList.add('oynuyor')); v.addEventListener('pause', () => kap.classList.remove('oynuyor'));
+  const kaynak = v.querySelectorAll('source'); if (kaynak.length) kaynak[kaynak.length - 1].addEventListener('error', () => kap.classList.add('yok'));   // hiçbiri oynamazsa portre (poster) kalır
+  kap.addEventListener('click', (e) => { e.stopPropagation(); if (v.paused) v.play().catch(() => {}); else v.pause(); });
+  if (yetVideoOto()) v.play().catch(() => {});
+}
+function yetVideoDurdur() { for (const v of document.querySelectorAll('#pencere video')) { try { v.pause(); for (const k of v.querySelectorAll('source')) k.remove(); v.removeAttribute('src'); v.load(); } catch (e) {} } }   // pencere kapanınca: çözücü ve pil serbest
 function armaganGorsel(x) {
   const ozel = armGorseller.has(x.id) ? `<img class="armResim" alt="" draggable="false" src="arayuz/armagan/${x.id}.webp">` : '';
   const simge = ARM_SIMGE[x.tur] || 'yildiz';
@@ -517,7 +533,7 @@ function secCiz() {
 // Kahraman ayrıntı kartı (Kahramanlar sayfası, dükkânda uzun bas, hazırlıkta (i)): solda kademe çerçeveli portre,
 // sağda ad, kademe/soy çipleri, istatistik ızgarası, Yetenek ve Pasif ayrı kutular; ek satırlar (havuz, eşya) altta.
 function kahDetayHTML({ id, ad, s = 0, st, ek = '', esyalar = [] }) {
-  const h = kh(id), yet = D.YETENEK[st.yetenek], pas = D.PASIF[st.pasif];
+  const h = kh(id), yet = D.YETENEK[st.yetenek], pas = D.PASIF[st.pasif], vid = yetVideoId(st.yetenek);
   const hiz = (+st.as).toFixed(2).replace(/\.?0+$/, '').replace('.', ',');
   const stat = [['kalp', 'Can', st.can], ['kilic', 'Saldırı', st.atk], ['simsek', 'Saldırı hızı', hiz], ['hedef', 'Menzil', st.menzil], ['damla', 'Mana', st.mana]];
   return `<div class="kDetay k${h.kademe}">
@@ -526,8 +542,9 @@ function kahDetayHTML({ id, ad, s = 0, st, ek = '', esyalar = [] }) {
       <h3 class="kdAd">${ad}</h3>
       <div class="kdCipler"><span class="kdCip kad">Kademe ${h.kademe}</span><span class="kdCip fiyat">${ik('coin')}${h.kademe} altın</span>${st.soy.map(x => `<span class="kdCip soy"><img src="${SY(x)}" alt="">${D.SOYLAR[x].ad}</span>`).join('')}</div>
       <div class="kdStat">${stat.map(([n, a, v]) => `<div><small>${ik(n)}${a}</small><b>${v}</b></div>`).join('')}</div>
-      <div class="kdYP">
-        <div class="kdKutu yet"><h4>${ik('simsek')}Yetenek</h4><b>${yet.ad}</b><p>${yet.m}</p></div>
+      <div class="kdYP${vid ? ' vid' : ''}">
+        ${vid ? `<div class="kdKutu yet vid"><div class="kdVid"><video muted playsinline loop preload="${yetVideoOto() ? 'auto' : 'none'}" poster="${P(vid)}" disablepictureinpicture disableremoteplayback aria-label="Yetenek önizlemesi: ${yet.ad}"><source src="arayuz/yetenek/${vid}.mp4" type="video/mp4"><source src="arayuz/yetenek/${vid}.webm" type="video/webm"></video><span class="kdVidEt">${ik('simsek')}Yetenek: ${yet.ad}</span><i class="kdVidOyna" aria-hidden="true"></i></div><div class="kdYetMetin"><h4>${ik('simsek')}Yetenek</h4><b>${yet.ad}</b><p>${yet.m}</p></div></div>`
+          : `<div class="kdKutu yet"><h4>${ik('simsek')}Yetenek</h4><b>${yet.ad}</b><p>${yet.m}</p></div>`}
         <div class="kdKutu pas"><h4>${ik('kalkan')}Pasif</h4><b>${pas.ad}</b><p>${pas.m}</p></div>
       </div>
       ${esyalar.length ? `<div class="kdEsya">${esyalar.map(e => `<div>${esyaIk(e)}<span><b>${(D.esya(e) || { ad: e }).ad}</b> ${esyaMetin(e)}</span></div>`).join('')}</div>` : ''}
@@ -537,7 +554,7 @@ function kahDetayHTML({ id, ad, s = 0, st, ek = '', esyalar = [] }) {
 }
 function kartBilgi(id) {
   if (!id) return; const h = kh(id); const hv = oyun.havuzBilgi(id);
-  pencere(kahDetayHTML({ id, ad: h.ad, st: { ...h, soy: h.soy }, ek: hv ? `Havuzda ${hv.kalan}/${hv.toplam} kopya` : '' }), false, 'kahraman');
+  pencere(kahDetayHTML({ id, ad: h.ad, st: { ...h, soy: h.soy }, ek: hv ? `Havuzda ${hv.kalan}/${hv.toplam} kopya` : '' }), false, 'kahraman'); yetVideoBagla();
 }
 oyun.on('degisti', () => { if (aktifEkran === 'mac') macCiz(); });
 { const sb = document.querySelectorAll('#mac .dukkanSol .btn'); sb[0].onclick = () => oyun.yenile(); sb[1].onclick = () => oyun.kilit(); sb[2].onclick = () => oyun.xpAl(); }
@@ -696,7 +713,7 @@ function bilgiKartYer() {
 }
 function birimDetay(b) {
   const st = SIM.birimStat(b);
-  pencere(kahDetayHTML({ id: b.h, ad: oyun.birimAd(b), s: b.s, st, esyalar: b.e || [], ek: `Ustalık Sv. ${oyun.ustaSv(b.h)}` }), false, 'kahraman');
+  pencere(kahDetayHTML({ id: b.h, ad: oyun.birimAd(b), s: b.s, st, esyalar: b.e || [], ek: `Ustalık Sv. ${oyun.ustaSv(b.h)}` }), false, 'kahraman'); yetVideoBagla();
 }
 // ── 3D tahtada dokunma ve sürükleme ──
 (() => {

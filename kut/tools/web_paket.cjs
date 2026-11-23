@@ -32,6 +32,11 @@ for (const f of fs.readdirSync(path.join(WEB, 'arayuz', 'menu'))) if (f.endsWith
   const l = fs.readdirSync(AD).filter(f => f.endsWith('.webp')).map(f => f.slice(0, -5)).sort();
   fs.writeFileSync(path.join(AD, 'liste.json'), JSON.stringify(l) + '\n');
   for (const f of [...l.map(x => x + '.webp'), 'liste.json']) kopya('web/arayuz/armagan/' + f, 'arayuz/armagan/' + f); }
+// yetenek önizleme videoları (tools/yetenek_video.cjs; web/arayuz/yetenek/<id>.mp4, isteğe bağlı): mp4 (+ varsa webm yedeği) doğrudan kopyalanır, liste.json var olanları sayar
+{ const YD = path.join(WEB, 'arayuz', 'yetenek'); fs.mkdirSync(YD, { recursive: true });
+  const l = fs.readdirSync(YD).filter(f => f.endsWith('.mp4')).map(f => f.slice(0, -4)).sort();
+  fs.writeFileSync(path.join(YD, 'liste.json'), JSON.stringify(l) + '\n');
+  for (const f of [...l.flatMap(x => [x + '.mp4', ...(fs.existsSync(path.join(YD, x + '.webm')) ? [x + '.webm'] : [])]), 'liste.json']) kopya('web/arayuz/yetenek/' + f, 'arayuz/yetenek/' + f); }
 for (const f of fs.readdirSync(path.join(WEB, 'ses'))) if (f.endsWith('.mp3')) { fs.mkdirSync(path.join(OUT, 'ses'), { recursive: true }); fs.copyFileSync(path.join(WEB, 'ses', f), path.join(OUT, 'ses', f)); }
 for (const f of fs.readdirSync(path.join(WEB, 'muzik'))) if (f.endsWith('.mp3')) { fs.mkdirSync(path.join(OUT, 'muzik'), { recursive: true }); fs.copyFileSync(path.join(WEB, 'muzik', f), path.join(OUT, 'muzik', f)); }
 // yazı tipleri (paket içi woff2 + OFL lisansları; dış CDN yok)

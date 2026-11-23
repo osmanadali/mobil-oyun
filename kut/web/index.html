@@ -152,7 +152,14 @@ body.menu3d #kaplama{visibility:hidden}   /* menüde can çubukları / sayılar 
 @keyframes anaHale{0%,100%{opacity:.55;transform:scale(.96)}50%{opacity:1;transform:scale(1.04)}}
 #ana .logo{position:relative;width:min(430px,40cqw);max-height:26cqh;object-fit:contain;filter:drop-shadow(0 10px 22px rgba(0,0,0,.6));animation:anaSuz 6s ease-in-out infinite}
 @keyframes anaSuz{0%,100%{transform:translateY(0) rotate(-.4deg)}50%{transform:translateY(-6px) rotate(.4deg)}}
-#ana .slogan{margin:0;font-size:15px;font-weight:800;letter-spacing:.1em;color:var(--altinA);text-shadow:0 2px 0 #000,0 0 12px rgba(242,191,74,.6);white-space:nowrap}
+/* slogan: arka plan karakterlerinin üstünde okunur kalsın — koyu cam şerit + yumuşak radyal gölge, krem/altın Cinzel, iki yanda altın süs çizgisi */
+#ana .slogan{position:relative;display:flex;align-items:center;gap:12px;margin:2px 0 0;padding:5px 22px 6px;font-size:16px;font-weight:700;letter-spacing:.1em;color:#fff1cf;white-space:nowrap;
+  background:radial-gradient(closest-side,rgba(10,4,20,.78),rgba(10,4,20,.55) 62%,rgba(10,4,20,0)),linear-gradient(90deg,rgba(18,8,30,0),rgba(18,8,30,.5) 16%,rgba(18,8,30,.5) 84%,rgba(18,8,30,0));
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);border-radius:999px;
+  text-shadow:0 1px 0 #2a1205,0 2px 2px rgba(0,0,0,.95),0 0 10px rgba(0,0,0,.85),0 0 18px rgba(242,191,74,.35);-webkit-text-stroke:.35px rgba(60,28,6,.7);paint-order:stroke fill}
+#ana .slogan::before,#ana .slogan::after{content:"";flex:none;width:46px;height:2px;border-radius:2px;box-shadow:0 1px 2px rgba(0,0,0,.8)}
+#ana .slogan::before{background:linear-gradient(90deg,rgba(242,191,74,0),#f2bf4a 70%,#ffe9a6)}
+#ana .slogan::after{background:linear-gradient(270deg,rgba(242,191,74,0),#f2bf4a 70%,#ffe9a6)}
 #ana .sahneAd{flex:1;min-height:0;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;position:relative;z-index:2;pointer-events:none}
 #ana .sahneAd span{font-size:13px;font-weight:800;color:var(--yazi2);padding:3px 14px;border-radius:14px;background:linear-gradient(90deg,rgba(14,6,28,0),rgba(14,6,28,.55) 18%,rgba(14,6,28,.55) 82%,rgba(14,6,28,0));text-shadow:0 1px 3px #000,0 0 8px rgba(0,0,0,.8);letter-spacing:.04em;opacity:.9;transition:opacity .5s}
 #ana .sahneAd span b{color:var(--altinA)}
@@ -200,7 +207,7 @@ html.alcak #ana .pAd{font-size:16px}html.alcak #ana .pAlt{display:none}html.alca
 html.alcak #ana .sezon b{font-size:15px}
 html.alcak #ana .merkez{margin-top:-46px}
 html.alcak #ana .logo{width:min(300px,30cqw);max-height:22cqh}
-html.alcak #ana .slogan{font-size:13px}
+html.alcak #ana .slogan{font-size:13px;padding:3px 16px 4px;gap:8px}html.alcak #ana .slogan::before,html.alcak #ana .slogan::after{width:30px}
 html.alcak #ana .altBlok{grid-template-columns:1fr minmax(0,340px) 1fr;gap:12px}
 html.alcak #ana .yanDug{gap:8px}html.alcak #ana .yanDug .btn{width:176px;min-height:46px;font-size:15px;gap:8px}html.alcak #ana .yanDug .btn .ik{width:22px;height:22px}
 html.alcak #ana .oyna{min-height:74px;font-size:30px;gap:2px}html.alcak #ana .oyna small{font-size:13px!important}
@@ -2072,6 +2079,22 @@ html.alcak .soyKodListe>.sk{flex:none;min-height:46px}
 .kdKutu h4 .ik{width:16px;height:16px}
 .kdKutu b{display:block;font:700 16px/1.2 var(--fBaslik);color:#fff3d6;margin-bottom:3px}
 .kdKutu p{margin:0;font-size:14px;line-height:1.35;color:var(--yazi2)}
+/* yetenek önizleme videosu (arayuz/yetenek/<id>.mp4, varsa): Yetenek kutusu tam genişlik, solda kademe renkli çerçeveli video yuvası */
+.kdYP.vid{grid-template-columns:minmax(0,1fr)}
+.kdKutu.yet.vid{display:grid;grid-template-columns:minmax(0,252px) minmax(0,1fr);gap:12px;align-items:center;padding:8px 12px 8px 8px}
+.kdVid{--kcA:color-mix(in srgb,var(--kc) 60%,#fff);position:relative;aspect-ratio:3/2;border-radius:10px;padding:3px;cursor:pointer;
+  background:linear-gradient(160deg,var(--kcA),var(--kc) 45%,color-mix(in srgb,var(--kc) 55%,#000));box-shadow:0 4px 10px rgba(0,0,0,.5),0 0 12px color-mix(in srgb,var(--kc) 40%,transparent)}
+.kdVid video{display:block;width:100%;height:100%;object-fit:cover;border-radius:7px;background:#12061f}
+.kdVid.yok{cursor:default}.kdVid.yok .kdVidOyna{display:none}
+.kdVidEt{position:absolute;left:8px;top:8px;display:inline-flex;align-items:center;gap:4px;max-width:calc(100% - 16px);padding:3px 8px 3px 5px;border-radius:8px;
+  font:700 11.5px/1.1 var(--fBaslik);letter-spacing:.04em;color:#fff3d6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  background:rgba(12,5,24,.72);border:1px solid color-mix(in srgb,var(--kc) 70%,transparent);text-shadow:0 1px 2px #000;pointer-events:none}
+.kdVidEt .ik{width:13px;height:13px;flex:none;color:var(--altin)}
+.kdVidOyna{position:absolute;left:50%;top:55%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(12,5,24,.62);border:2px solid rgba(255,233,166,.85);pointer-events:none;transition:opacity .25s}
+.kdVidOyna::after{content:"";position:absolute;left:17px;top:12px;border-style:solid;border-width:10px 0 10px 16px;border-color:transparent transparent transparent #ffe9a6}
+.kdVid.oynuyor .kdVidOyna{opacity:0}
+.kdYetMetin{min-width:0}
+html.alcak .kdKutu.yet.vid{grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:9px}html.alcak .kdVidEt{font-size:10.5px}
 .kdEsya{display:flex;flex-direction:column;gap:6px;margin-top:10px}
 .kdEsya>div{display:flex;gap:8px;align-items:center;font-size:13.5px;line-height:1.3;color:var(--yazi2)}
 .kdEsya .esyaIk{width:30px;height:30px;flex:none}.kdEsya b{color:#fff3d6}
