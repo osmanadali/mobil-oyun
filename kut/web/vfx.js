@@ -570,6 +570,134 @@ function zincir(a, b, o = {}) {
     P({ p: B, omur: 0.07, boy: kal * 9, renk, kare: 'parilti', hot: 1, a: al, fi: 0 });
   });
 }
+// ───────────────────────── şimşek şeridi (Yıldırım) ─────────────────────────
+// Gökten inen şimşek kanalları ve dalları kameraya dönük TEK şerit ağında (bir çizim çağrısı; yuva havuzu kur()'da bir kez ayrılır,
+// kare başına ayırma yok). Ön çarpımlı karışım (ONE, ONE_MINUS_SRC_ALPHA): şeridin dışı koyu lacivert-mor ÖRTÜ (parlak gün batımı
+// göğünü karartır: beyaz gövde açık zeminde de seçilir), içi elektrik mavisi → mor hale, ortası HDR beyaz çekirdek (bloom).
+// Kanal yolu orta nokta kaydırmasıyla bir kez üretilir; her 1/30 sn dilimde aynı kanal hafifçe titrer, yeğinlik/kalınlık dizisiyle
+// (SIM_TIT) birkaç kare yanıp söner, 3. dilimde dallar yeniden çakar (ikinci boşalma). Zaman vfx zamanı: hit-stop'ta donar.
+const SIM_SLOT = 20, SIM_N = 17, SIM_DAL = 4, SIM_DN = 9;
+const SIM_VMAX = SIM_SLOT * ((SIM_N - 1) + SIM_DAL * (SIM_DN - 1)) * 6;
+// [yeğinlik, kalınlık] — 1/30 sn dilimler: dönüş vuruşu (kalın), söner, yeniden çakar, titreyerek söner. Sönüşte gövde incelmez
+// (kalınlık ≥ 0,92): eskiden son dilimlerde 0,7'ye inen ince, soluk gövde turuncu hedefin önünde pembe-beyaz bir iplik gibi kalıyordu
+const SIM_TIT = [[1.35, 1.3], [1.1, 1.15], [0.35, 0.95], [1.2, 1.15], [0.95, 1.05], [0.45, 0.98], [0.85, 1.0], [0.6, 0.98], [0.4, 0.95], [0.5, 0.95], [0.3, 0.94], [0.18, 0.92]];
+const SIM_KISA = [[1, 1], [0.45, 0.9], [0.9, 1], [0.3, 0.8]];   // bulut içi çatırtı / çağrı şimşeği
+const simsekler = []; let simsekM = null, karartM = null, krGuc = 0, krA0 = 0, krYas = 1, krSure = 0.0001, simIsit = 0;   // simIsit: ilk kareler görünür (gölgelendirici önceden derlenir)
+const SIM_VS = `attribute vec3 aYon; attribute vec2 aYan; attribute vec2 aA; varying float vV; varying vec2 vA;
+void main(){ vec3 V = normalize(cameraPosition - position); vec3 T = normalize(aYon + vec3(0.0, 1e-5, 0.0)); vec3 S = cross(T, V); float l = length(S);
+  S = l > 1e-4 ? S / l : vec3(1.0, 0.0, 0.0); vV = aYan.x; vA = aA; gl_Position = projectionMatrix * viewMatrix * vec4(position + S * aYan.x * aYan.y, 1.0); }`;
+const SIM_FS = `uniform vec3 uKoyu; uniform vec3 uMor; uniform vec3 uMavi; uniform float uCek; varying float vV; varying vec2 vA;
+void main(){ float d = abs(vV), I = vA.x;
+  // örtü sönüşte de güçlü kalır (taban 0,55): yeğinlik düşünce koyu kılıf erirse arka plan (turuncu gövde, sarı gök) yarı saydam mor
+  // haleyle karışıp gövdeyi pembe-beyaza çeviriyordu; kılıf durdukça şimşek mavi-mor ve koyu kenarlı okunur
+  float kap = (1.0 - smoothstep(0.7, 1.0, d)) * clamp(vA.y * min(0.55 + I * 1.2, 1.0), 0.0, 1.0);
+  vec3 r = mix(uMavi, uMor, smoothstep(0.16, 0.42, d)); r = mix(r, uKoyu, smoothstep(0.42, 0.72, d));
+  float cek = 1.0 - smoothstep(0.07, 0.2, d);
+  vec3 c = r * kap + uMavi * (1.0 - smoothstep(0.0, 0.45, d)) * 0.35 * I + vec3(cek * uCek * I);
+  gl_FragColor = vec4(c, kap);
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
+}`;
+// ekran karartması: tam ekran dörtgen (kırpma uzayında, kameradan bağımsız), parçacıklardan ve şimşekten ÖNCE çizilir → sahne
+// (gök, birimler) kararır, şimşek ve çarpma parlaması kararmaz; kenarlar biraz daha koyu (vinyet)
+const KARART_VS = `varying vec2 vU; void main(){ vU = position.xy; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
+const KARART_FS = `uniform float uA; uniform vec3 uR; varying vec2 vU;
+void main(){ float r = length(vU * vec2(1.0, 0.85)); gl_FragColor = vec4(uR, uA * (0.6 + 0.4 * smoothstep(0.25, 1.35, r)));
+  #include <colorspace_fragment>
+}`;
+function simsekKur() {
+  for (let i = 0; i < SIM_SLOT; i++) simsekler.push({ acik: false, gec: 0, yas: 0, dilim: -1, n: SIM_N, p: new Float32Array(SIM_N * 3), dal: new Float32Array(SIM_DAL * SIM_DN * 3),
+    dalN: 0, dalMax: 0, en: 0.2, kap: 0.9, tit: SIM_TIT, I: 0, W: 1, jit: 0, jitA: 0.03, ust: 0, L: 1, dx: 0, dy: -1, dz: 0 });
+  const g = new THREE.BufferGeometry();
+  const at = (ad, k) => { const a = new THREE.BufferAttribute(new Float32Array(SIM_VMAX * k), k); a.setUsage(THREE.DynamicDrawUsage); g.setAttribute(ad, a); return a; };
+  at('position', 3); at('aYon', 3); at('aYan', 2); at('aA', 2); g.setDrawRange(0, 0);
+  const lin = (h) => new THREE.Color(h);   // sRGB onaltılık → doğrusal (çıktı geçişi sRGB'ye geri çevirir: koyu örtü gerçekten koyu)
+  const mat = new THREE.ShaderMaterial({ uniforms: { uKoyu: { value: lin('#0b0528') }, uMor: { value: lin('#6d2bff') }, uMavi: { value: lin('#2e86ff') }, uCek: { value: kalite === 'hafif' ? 1.7 : 2.2 } },
+    vertexShader: SIM_VS, fragmentShader: SIM_FS, transparent: true, depthWrite: false, depthTest: false, fog: false, side: THREE.DoubleSide,
+    blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
+    blendSrcAlpha: THREE.OneFactor, blendDstAlpha: THREE.OneMinusSrcAlphaFactor });
+  simsekM = new THREE.Mesh(g, mat); simsekM.frustumCulled = false; simsekM.renderOrder = 30.5; simsekM.visible = false; simsekM.name = 'vfx_simsek'; sahne.add(simsekM);
+  const km = new THREE.ShaderMaterial({ uniforms: { uA: { value: 0 }, uR: { value: lin('#0c0a26') } }, vertexShader: KARART_VS, fragmentShader: KARART_FS,
+    transparent: true, depthWrite: false, depthTest: false, fog: false });
+  karartM = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), km); karartM.frustumCulled = false; karartM.renderOrder = 28; karartM.visible = false; karartM.name = 'vfx_karart'; sahne.add(karartM); simIsit = 3;
+}
+function simsekBirak() {
+  for (const m of [simsekM, karartM]) if (m) { sahne.remove(m); m.geometry.dispose(); m.material.dispose(); }
+  simsekM = karartM = null; simsekler.length = 0; krGuc = krA0 = 0; krYas = 1;
+}
+// kısa ekran karartması (guc: en koyu opaklık, sure sn); üst üste gelen çağrılar o anki değerden devralır (titreme yok)
+function karart(guc, sure) { if (!karartM) return; const su = krDeger(); if (guc < su && krYas < krSure) return; krA0 = su; krGuc = guc; krYas = 0; krSure = Math.max(0.05, sure); }
+function krDeger() { if (krYas >= krSure) return 0; const at = 0.035; if (krYas < at) return krA0 + (krGuc - krA0) * (krYas / at); const k = (krYas - at) / (krSure - at); return krGuc * (1 - k) * (1 - k); }
+// orta nokta kaydırmalı kırık yol: out[o ..] n nokta (n = 2^k + 1), A → B; sap: ilk kaydırmanın boya oranı (her düzeyde × 0,55)
+function kirikYol(out, o, n, ax, ay, az, bx, by, bz, sap) {
+  const ex = bx - ax, ey = by - ay, ez = bz - az, L = Math.hypot(ex, ey, ez) || 1;
+  let s1x = -ez, s1z = ex, l1 = Math.hypot(s1x, s1z); if (l1 < 1e-4 * L) { s1x = 1; s1z = 0; l1 = 1; } s1x /= l1; s1z /= l1;
+  const s2x = ey * s1z / L, s2y = (ez * s1x - ex * s1z) / L, s2z = -ey * s1x / L;   // e × s1 (s1.y = 0)
+  out[o] = ax; out[o + 1] = ay; out[o + 2] = az; const e = o + (n - 1) * 3; out[e] = bx; out[e + 1] = by; out[e + 2] = bz;
+  let adim = n - 1, gen = L * sap;
+  while (adim > 1) { const y = adim >> 1;
+    for (let i = 0; i < n - 1; i += adim) { const a = o + i * 3, b = o + (i + adim) * 3, m = o + (i + y) * 3, u = (RND() * 2 - 1) * gen, v = (RND() * 2 - 1) * gen;
+      out[m] = (out[a] + out[b]) * 0.5 + s1x * u + s2x * v; out[m + 1] = (out[a + 1] + out[b + 1]) * 0.5 + s2y * v; out[m + 2] = (out[a + 2] + out[b + 2]) * 0.5 + s1z * u + s2z * v; }
+    adim = y; gen *= 0.55; }
+}
+// dallar: ana kanalın üst-orta kısmından aşağı-dışa açılan kısa kırık yollar (yeniden çakışta yenilenir)
+function simsekDal(s) {
+  s.dalN = OLCEK < 1 ? Math.min(2, s.dalMax) : s.dalMax; const p = s.p, n = s.n;
+  for (let d = 0; d < s.dalN; d++) {
+    const j = 2 + Math.floor(RND() * (n - 6)), b = j * 3, a = RND() * TAU, Lb = s.L * rr(0.16, 0.3);
+    let ux = s.dx * 0.6 + Math.cos(a) * 0.9, uy = s.dy * 0.6, uz = s.dz * 0.6 + Math.sin(a) * 0.9; const l = Math.hypot(ux, uy, uz); ux /= l; uy /= l; uz /= l;
+    kirikYol(s.dal, d * SIM_DN * 3, SIM_DN, p[b], p[b + 1], p[b + 2], p[b] + ux * Lb, p[b + 1] + uy * Lb, p[b + 2] + uz * Lb, 0.22);
+  }
+}
+// şimşek at: A (gök) → B (yer). o: en (yarım kalınlık), dal (dal sayısı), kap (örtü), sap (kırıklık), tit (dilim dizisi), gec (sn), kisa (9 nokta),
+// ust (tepe sönümü payı), odak (2B kaplama solar), dusuk (süs: çatırtı/ark; havuzda 6 yuva ana düşüşlere ayrılır)
+function simsekAt(A, B, o = {}) {
+  if (!simsekM) return null; let s = null, bos = 0; for (const x of simsekler) if (!x.acik) { bos++; if (!s) s = x; } if (!s || (o.dusuk && bos < 6)) return null;
+  s.acik = true; s.gec = o.gec || 0; s.yas = 0; s.dilim = -1; s.n = o.kisa ? 9 : SIM_N; s.en = o.en || 0.18; s.kap = o.kap === undefined ? 0.9 : o.kap;
+  s.ust = o.ust || 0; s.odak = !!o.odak; s.tit = o.tit || SIM_TIT; s.dalMax = Math.min(SIM_DAL, o.dal === undefined ? 3 : o.dal); s.jitA = o.jit === undefined ? 0.035 : o.jit;
+  const ex = B.x - A.x, ey = B.y - A.y, ez = B.z - A.z; s.L = Math.hypot(ex, ey, ez) || 1; s.dx = ex / s.L; s.dy = ey / s.L; s.dz = ez / s.L;
+  kirikYol(s.p, 0, s.n, A.x, A.y, A.z, B.x, B.y, B.z, o.sap || 0.13); s.dalN = 0; if (s.dalMax) simsekDal(s);
+  return s;
+}
+const _sj = new Float32Array(SIM_N * 3);
+const hs1 = (a, b) => { const x = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return x - Math.floor(x); };
+// tek şerit: nokta dizisi (titreşimle) → her parça 2 üçgen (6 köşe); eklemde ortalama teğet → kesintisiz
+function serit(v, src, o, n, en, uc, I, kap, jit, jitA, ust = 0) {
+  const g = simsekM.geometry, P = g.attributes.position.array, Y = g.attributes.aYon.array, W = g.attributes.aYan.array, A = g.attributes.aA.array;
+  if (v + (n - 1) * 6 > SIM_VMAX) return v;
+  for (let i = 0; i < n; i++) { const k = o + i * 3, j = i * 3, ic = i > 0 && i < n - 1 ? jitA : 0;
+    _sj[j] = src[k] + (hs1(i, jit) - 0.5) * 2 * ic; _sj[j + 1] = src[k + 1] + (hs1(i + 31, jit) - 0.5) * ic; _sj[j + 2] = src[k + 2] + (hs1(i + 57, jit) - 0.5) * 2 * ic; }
+  for (let i = 0; i < n - 1; i++) {
+    for (let q = 0; q < 6; q++) {
+      const ii = i + (q === 2 || q === 3 || q === 5 ? 1 : 0), yan = q === 1 || q === 4 || q === 5 ? 1 : -1;
+      const a = Math.max(0, ii - 1) * 3, b = Math.min(n - 1, ii + 1) * 3, t = ii / (n - 1), w = en * (uc ? 1 - 0.78 * t : 0.82 + 0.18 * t);
+      P[v * 3] = _sj[ii * 3]; P[v * 3 + 1] = _sj[ii * 3 + 1]; P[v * 3 + 2] = _sj[ii * 3 + 2];
+      Y[v * 3] = _sj[b] - _sj[a]; Y[v * 3 + 1] = _sj[b + 1] - _sj[a + 1]; Y[v * 3 + 2] = _sj[b + 2] - _sj[a + 2];
+      W[v * 2] = yan; W[v * 2 + 1] = w; A[v * 2] = ust > 0 && t < ust ? I * t / ust : I; A[v * 2 + 1] = kap; v++;
+    }
+  }
+  return v;
+}
+function simsekGuncelle(dt) {
+  if (simIsit > 0) simIsit--;
+  if (karartM) { krYas += dt; const a = krDeger(); karartM.material.uniforms.uA.value = a; karartM.visible = a > 0.004 || simIsit > 0; }
+  if (!simsekM) return;
+  let v = 0;
+  for (const s of simsekler) {
+    if (!s.acik) continue;
+    if (s.gec > 0) { s.gec -= dt; if (s.gec > 0) continue; }
+    s.yas += dt; const dil = Math.floor(s.yas * 30);
+    if (dil >= s.tit.length) { s.acik = false; continue; }
+    if (dil !== s.dilim) { s.dilim = dil; s.jit = RND() * 97; s.I = s.tit[dil][0]; s.W = s.tit[dil][1]; if (dil === 3 && s.dalMax) simsekDal(s); }
+    // dallar önce (ana kanalın çekirdeği dalların koyu örtüsünün üstünde kalsın)
+    for (let d = 0; d < s.dalN; d++) v = serit(v, s.dal, d * SIM_DN * 3, SIM_DN, s.en * 0.5 * s.W, true, s.I * 0.85, s.kap * 0.8, s.jit + d * 7, s.jitA * 0.6);
+    v = serit(v, s.p, 0, s.n, s.en * s.W, false, s.I, s.kap, s.jit, s.jitA, s.ust);
+    // ana düşüş: gövdenin orta-alt kısmı ekran odağı (can çubuğu şimşeğin önünde kalmasın; sahne3d bir an soldurur)
+    if (s.odak && dil < 8) { const m = (s.n >> 1) * 3 + 6; _v1.set(s.p[m], s.p[m + 1], s.p[m + 2]); odak(_v1, 0.45); }
+  }
+  const g = simsekM.geometry; g.setDrawRange(0, v); simsekM.visible = v > 0 || simIsit > 0;
+  if (v) for (const ad of ['position', 'aYon', 'aYan', 'aA']) { const a = g.attributes[ad]; a.clearUpdateRanges(); a.addUpdateRange(0, v * a.itemSize); a.needsUpdate = true; }
+}
 // yer izi (çatlak, yanık, kırağı, zehir gölü)
 function dekal(p, o = {}) {
   _v3.set(p.x, Z() + 0.03 + RND() * 0.01, p.z);
@@ -827,6 +955,8 @@ function vurus(pos, o = {}) {
 // Gölge Oku 0,3; Zümrüt Zehri 0,34) etkiyi motordan biraz sonraya taşıyarak elde edilir.
 const ON_SURE = { tasFirlat: 0.06, uluma: 0, davul: 0, ruhEmme: 0, kasirga: 0.12, deliOfke: 0, zehir: 0.14, buzNefes: 0.12, ocak: 0, dortnal: 0.3, kanat: 0, karaGolge: 0.2, kulDogus: 0.24, ayaz: 0, golgeOk: 0.2, yildirim: 0.05 };
 const GEC = { tasFirlat: 0.46, dortnal: 0.12, kasirga: 0.28, zehir: 0.2, buzNefes: 0.1, karaGolge: 0.12, kulDogus: 0.1, golgeOk: 0.1 };
+// Yıldırım: ilk düşüş motorun etki anından YIL_ONC sn sonra (hedeflerin üstünde bulut toplanır, yükleme), sonrakiler YIL_ARA arayla
+const YIL_ONC = 0.2, YIL_ARA = 0.1;
 const AYAZ_HIZ = 8.5, KANAT_HIZ = 7, DAVUL_HIZ = 8, OCAK_HIZ = 9;
 // hedef başına görsel gecikme (sn, motorun etki anından sonra). o: { tip: 'hasar' | 'iyi' | 'kalkan' | 'durum', sira: hedefin sırası,
 // mesafe: kaynağa uzaklık (hücre) } — dalga yayılan yeteneklerde (Ayaz, Işık Kanadı, Savaş Davulu) her hedef dalga değdiğinde tepki verir
@@ -834,7 +964,7 @@ function gecikme(ad, o = {}) {
   const tip = o.tip || 'hasar', m = o.mesafe || 0;
   switch (ad) {
     case 'ayaz': return m / AYAZ_HIZ;
-    case 'yildirim': return Math.min(2, o.sira || 0) * 0.09;
+    case 'yildirim': return YIL_ONC + Math.min(2, o.sira || 0) * YIL_ARA;
     case 'kanat': return tip === 'kalkan' || tip === 'durum' ? Math.max(0.3, m / KANAT_HIZ + 0.08) : 0;
     case 'davul': return tip === 'durum' ? 0.6 + m / DAVUL_HIZ : 0;
     case 'ruhEmme': return tip === 'iyi' ? 0.5 : 0;
@@ -966,6 +1096,10 @@ const YETENEK = {
   davul(k, hs, o) {
     const g = o.guc, il = o.ileri || _v4.set(0, 0, 1), ilx = il.x, ilz = il.z, dv = k.o ? davulElde.get(k.o) : null;
     const c0 = new THREE.Vector3(k.p.x, Z() + 0.05, k.p.z), R = 10, m = new THREE.Vector3();
+    // dostların yönleri (dünya x-z açısı) ve en uzak dostun uzaklığı: son vuruşun ses dalgası yalnız onlara gider
+    const dostYon = [], dostR0 = [0.9];
+    for (const h of hs) { if (h.o && h.o === k.o) continue; dostYon.push(Math.atan2(h.p.z - k.p.z, h.p.x - k.p.x)); dostR0.push(Math.hypot(h.p.x - k.p.x, h.p.z - k.p.z)); }
+    const dostR = Math.max(...dostR0) + 0.5;
     for (let d = 0; d < 4; d++) zamanla(d * 0.2, () => {
       if (dv && dv.visible) { m.copy(dv.position); dv.userData.vur = 1; } else m.set(k.p.x + ilx * 0.32 * k.h, k.p.y + 0.42 * k.h, k.p.z + ilz * 0.32 * k.h);
       const son = d === 3;
@@ -979,17 +1113,33 @@ const YETENEK = {
       if (!son) { sok(c0, { renk: d % 2 ? '#ffb347' : '#ff7a2e', r: (0.9 + 0.45 * d) * g, sure: 0.5 });
         const mN = N(8); for (let i = 0; i < mN; i++) { const a = i / mN * TAU + d * 0.3; _v3.set(c0.x + Math.cos(a) * 0.35, Z() + 0.06, c0.z + Math.sin(a) * 0.35);
           P({ p: _v3, mod: 1, v: _v2.set(Math.cos(a) * (2.4 + d) * g, 0, Math.sin(a) * (2.4 + d) * g), drag: 1.2, omur: 0.55, boy: 0.42, boy2: 0.75, renk: '#ffb02e', renk2: '#ff5a1f', kare: 'dalga', normal: true, rot: -a - Math.PI / 2, hot: 0.2, fi: 0, fo: 0.4 }); } }
-      else { sars(0.12 * g); sok(c0, { renk: '#ff7a2e', r: 2.0 * g, sure: 0.5, toz: true, tozRenk: '#c9a982', tozN: 6 });
-        // bütün sahaya yayılan ses dalgası: ince turuncu halka (geniş alanı örtmesin: düşük opaklık, sertçe söner)
-        // (ölçeklenen halka doku 20 birimde kalın bir bant oluyordu → sabit boylu ses yaylarından halka: cephe ince kalır) + çok soluk iz halkası
-        const nA = N(30), om = Math.min(1.1, R / DAVUL_HIZ);
-        for (let i = 0; i < nA; i++) { const a = i / nA * TAU; _v3.set(c0.x + Math.cos(a) * 0.7, Z() + 0.06, c0.z + Math.sin(a) * 0.7);
+      else { sars(0.12 * g); sok(c0, { renk: '#ff7a2e', r: 1.4 * g, sure: 0.5, toz: true, tozRenk: '#c9a982', tozN: 6 });
+        // ses dalgası YALNIZ DOSTLARA doğru: dostların yönündeki (±40°) sabit boylu ses yayları, en uzak dosta dek yol alır (eskiden bütün
+        // sahaya yayılan halka rakipleri de kaplıyor, etkinin yalnız dostlara gittiği okunmuyordu). Dost yoksa eski tam halka.
+        const yon = dostYon.length ? dostYon : null, nA = N(yon ? 56 : 30), om = Math.min(1.1, (yon ? dostR : R) / DAVUL_HIZ);
+        for (let i = 0; i < nA; i++) { const a = i / nA * TAU;
+          if (yon && !yon.some(b => Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b))) < 0.7)) continue;
+          _v3.set(c0.x + Math.cos(a) * 0.7, Z() + 0.06, c0.z + Math.sin(a) * 0.7);
           P({ p: _v3, mod: 1, v: _v2.set(Math.cos(a) * DAVUL_HIZ, 0, Math.sin(a) * DAVUL_HIZ), omur: om, boy: 0.5, boy2: 0.95, renk: '#ffc46a', renk2: '#ff6a1f', kare: 'dalga', normal: true, rot: -a - Math.PI / 2, hot: 0.25, a: 0.9, fi: 0, fo: 0.35 }); }
-        P({ p: c0, mod: 1, omur: om * 0.8, boy: 0.6, boy2: R * 1.6, renk: '#ffb347', kare: 'halka', hot: 0.3, a: 0.16, fi: 0, fo: 0.3 }); }
+        if (!yon) P({ p: c0, mod: 1, omur: om * 0.8, boy: 0.6, boy2: R * 1.6, renk: '#ffb347', kare: 'halka', hot: 0.3, a: 0.16, fi: 0, fo: 0.3 }); }
     });
     for (const h of hs) { if (h.o && h.o === k.o) continue; const d = Math.hypot(h.p.x - k.p.x, h.p.z - k.p.z), hp = new THREE.Vector3().copy(h.p), hh = h.h;
       zamanla(0.6 + d / DAVUL_HIZ, () => { if (h.o) konum(h.o, hp); _v3.copy(hp).setY(hp.y + 0.55 * hh); flas(_v3, { renk: '#ffb347', boy: 0.65, sure: 0.18, halka: false, isik: false });
-        sutun(hp, { renk: '#ff8a2e', ic: '#ffe1a0', h: 1.6, en: 0.6, sure: 0.5, zerre: false, a: 0.8 });
+        // güç sütunu: altta koyu kızıl kılıf (normal karışım: parlak gün batımı göğünde de seçilir), üstte doygun turuncu-altın ışın
+        // (eskiden soluk beyazımsı sütun, açık gökte zor seçiliyordu)
+        // (ışın kısık sıcaklıkta: bloom'da beyaza dönmesin, turuncu kalsın)
+        // sütun alçak (1,3): gövde boyunda arenanın koyu duvarının önünde kalır, açık göğe taşıp beyaza dönmez
+        _v3.set(hp.x, Z() + 0.65, hp.z); _v4.set(0, 1, 0);
+        P({ p: _v3, mod: 2, eksen: _v4, omur: 0.9, boy: 1, en: 1.0, uz: 1.3, boy2: 1.15, renk: '#4a1004', kare: 'isin', normal: true, hot: 0, a: 0.9, fi: 0.08, fo: 0.5, on: 0 });
+        P({ p: _v3, mod: 2, eksen: _v4, omur: 0.85, boy: 1, en: 0.55, uz: 1.3, boy2: 1.2, renk: '#ff4a00', renk2: '#ff7a10', kare: 'isin', hot: 0.06, a: 1, fi: 0.08, fo: 0.45 });
+        P({ p: _v3, mod: 2, eksen: _v4, omur: 0.8, boy: 1, en: 0.2, uz: 1.3, boy2: 1.1, renk: '#ffb030', kare: 'isin', hot: 0.2, a: 0.9, fi: 0.05, fo: 0.4 });
+        _v3.set(hp.x, Z() + 0.15, hp.z); P({ p: _v3, omur: 0.7, boy: 0.9, boy2: 1.5, renk: '#ff6a1a', kare: 'parilti', hot: 0.3, a: 0.8, fi: 0.05, fo: 0.3 });
+        // güç işareti (Uluma'nın hız işaretinin turuncu eşi): başın üstünde yükselen iki ok başı (^), koyu kılıflı (orta mesafeden seçilir)
+        // (gövdenin orta-üstünden yükselir: başın üstündeki can çubuğunun ardında kalmasın)
+        if (kamera) { const hb = _v3.set(hp.x, Z() + hh * 0.7, hp.z), sag = _v1.setFromMatrixColumn(kamera.matrixWorld, 0);
+          for (let j = 0; j < 2; j++) for (const sg of [-1, 1]) for (const ic of [0, 1]) {
+            const pp = new THREE.Vector3().copy(hb).setY(hb.y - j * 0.22).addScaledVector(sag, sg * 0.1), ek = new THREE.Vector3().copy(sag).multiplyScalar(-sg).addScaledVector(_pY, 1.1);
+            P({ p: pp, v: _v2.set(0, 0.9, 0), drag: 1.2, omur: 0.8, boy: 1, en: ic ? 0.13 : 0.24, uz: ic ? 0.34 : 0.44, renk: ic ? '#ffc04a' : '#3a0c02', renk2: ic ? '#ff4a00' : undefined, kare: 'isin', mod: 2, eksen: ek, normal: !ic, hot: ic ? 0.15 : 0, a: 1, fi: 0.08 + j * 0.06, fo: 0.4 }); } }
         for (let i = 0, n = N(3); i < n; i++) { _v4.set(hp.x + rr(-0.25, 0.25), hp.y + hh * rr(0.75, 1.0), hp.z + rr(-0.25, 0.25)); nota(_v4, _v2.set(rr(-0.3, 0.3), rr(0.8, 1.3), rr(-0.3, 0.3)), rr(0.28, 0.34), rr(0.75, 1.0)); }
         for (let i = 0, n = N(8); i < n; i++) { _v3.set(hp.x, Z() + 0.1, hp.z); P({ p: _v3, yorunge: { r: rr(0.3, 0.45), w: rr(3, 5), vy: rr(1, 2) }, omur: rr(0.5, 0.8), boy: rr(0.08, 0.14), boy2: 0.02, renk: '#ffcf6a', kare: RND() < 0.4 ? 'yildiz4' : 'parilti', hot: 1 }); } }); }
   },
@@ -1326,7 +1476,9 @@ const YETENEK = {
       // kor bulutu: koyu kızıl-kahve is, altı kızgın turuncu ışır (koyu zeminde de, açık gökte de seçilir), içinde kor çakmaları
       surec(ilk + YAG - yuk + 0.15, (kk, dt, yas, is) => { const sol = kk > 0.8 ? (1 - kk) / 0.2 : Math.min(1, yas / 0.08);
         _v3.copy(bulut).setY(bulut.y - 0.16); P({ p: _v3, omur: -1, boy: Rr * 1.5, renk: '#ff4a08', kare: 'parilti', hot: 0.1, a: 0.3 * sol * (0.85 + 0.15 * Math.sin(yas * 23)) });
-        odak(bulut, 0.9 * Rr);
+        // odak yarıçapı bulutun çekirdeği (eskiden 0,9·Rr bütün bulutu kaplıyordu: kahramanın ad balonu kaçamayıp 0,4'e soluyor,
+        // önizlemede "Kül Yağmuru!" kül dumanının ardında yarı saydam kalıyordu)
+        odak(bulut, 0.5 * Rr);
         is.acc = (is.acc || 0) + dt * 52 * OLCEK; while (is.acc >= 1) { is.acc--;
         _v3.set(bulut.x + rr(-0.85, 0.85) * Rr, bulut.y + rr(-0.08, 0.2), bulut.z + rr(-0.85, 0.85) * Rr * 0.75);
         if (RND() < 0.68) P({ p: _v3, v: _v2.set(rr(-0.2, 0.2), rr(0, 0.12), rr(-0.2, 0.2)), drag: 1.5, omur: rr(0.5, 0.75), boy: rr(0.5, 0.7), boy2: rr(0.85, 1.1), renk: '#4a1206', renk2: '#1c0804', kare: 'duman', normal: true, rot: 'r', a: 0.92 * sol, hot: 0, on: 0 });
@@ -1428,32 +1580,84 @@ const YETENEK = {
       }
     });
   },
-  // Fırtına Ejderi: baştan göğe şimşek → her hedefin üstünde kara bulut toplanır, yerde gölge → 0,09 sn arayla gökten yıldırım (flaş, şok,
-  // kıvılcım, yanık); çarpılan hedefte 0,6 sn sarı elektrik kıvılcımları
+  // Fırtına Ejderi: baştan kendi fırtına bulutuna kısa şimşek (çağrı; sahne hafifçe kararır) → her hedefin üstünde kara bulut toplanır
+  // (büyüyüp dönen topaklar, içinde mavi-mor çakmalar ve bulut içi çatırtılar), yerde gölge koyulaşır; son 0,16 sn yükleme (daralan
+  // halka, yerden yükselen kıvılcımlar) → YIL_ARA arayla gökten kalın, dallı, titreyen şimşek (şerit: koyu örtü + mavi-mor hale + beyaz
+  // çekirdek). Çarpma: kısa ekran karartması, mavi nokta ışığı, çarpma yıldızı (havada ve yerde), şok halkası, mavi-beyaz parlayıp soğuyan
+  // yanık çatlağı ve is lekesi, seken kıvılcımlar; çarpılan hedefin gövdesinde 0,6 sn elektrik kıvılcımları ve küçük arklar
   yildirim(k, hs, o) {
-    const g = o.guc, on = ON_SURE.yildirim, bas = o.soket ? new THREE.Vector3().copy(o.soket) : new THREE.Vector3().copy(k.p).setY(k.p.y + 0.9 * k.h);
-    zincir(bas, _v3.copy(bas).add(_v2.set(rr(-0.3, 0.3), 7, rr(-0.3, 0.3))), { renk: '#fff27a', sure: 0.2, kalin: 0.13 * g, dal: 2 });
-    flas(bas, { renk: '#fff27a', boy: 0.55, sure: 0.18, isikGuc: 5, a: 0.75 });   // ejderi beyaza boğmasın
-    _v3.copy(bas).setY(bas.y + 1.2); P({ p: _v3, omur: 0.3, boy: 0.8, boy2: 1.4, renk: '#fff27a', kare: 'parilti', hot: 0.35, a: 0.55, fi: 0 });
+    const g = o.guc, on = ON_SURE.yildirim, hafif = kalite === 'hafif';
+    const bas = o.soket ? new THREE.Vector3().copy(o.soket) : new THREE.Vector3().copy(k.p).setY(k.p.y + 0.9 * k.h);
+    const kp = k.o ? konum(k.o, new THREE.Vector3()) : k.p.clone();
+    _v3.set(kp.x + rr(-0.12, 0.12), kp.y + k.h + 0.45, kp.z + rr(-0.12, 0.12));   // hazırlık bulutu (HAZIR.yildirim)
+    simsekAt(bas, _v3, { en: 0.09 * g, dal: 1, kap: 0.75, tit: SIM_KISA, sap: 0.22, kisa: true });
+    flas(bas, { renk: '#9fd0ff', boy: 0.5, sure: 0.16, isikGuc: 4, a: 0.7 });
+    P({ p: _v3, omur: 0.28, boy: 0.6, boy2: 1.2, renk: '#8fb8ff', kare: 'parilti', hot: 0.4, a: 0.6, fi: 0 });
+    karart(hafif ? 0.1 : 0.16, 0.75);
     hs.slice(0, 3).forEach((h, i) => {
-      const tS = on + i * 0.09, hz = new THREE.Vector3().copy(h.p), hh0 = h.h || 1;
-      // gök bulutu (hedefin başının ~1 birim üstünde; kadraja sığmazsa alçalır) ve yerde gölge: yıldırımdan hemen önce
-      let BY = Math.max(1.7, hh0 + 1.0);
+      const tS = on + YIL_ONC + i * YIL_ARA, t0 = Math.max(0, tS - 0.3), sb = tS - t0, hz = new THREE.Vector3().copy(h.p), hh0 = h.h || 1;
+      // gök bulutu hedefin başının ~1 birim üstünde (kadraja sığmazsa alçalır)
+      let BY = Math.max(1.75, hh0 + 1.05);
       if (kamera) for (let j = 0; j < 5; j++) { _v1.set(hz.x, Z() + BY + 0.4, hz.z).project(kamera); if (_v1.y < 0.92 || BY < hh0 + 0.55) break; BY -= 0.15; }
-      zamanla(Math.max(0, tS - 0.16), () => { if (h.o) konum(h.o, hz);
-        for (let j = 0, n = N(8); j < n; j++) { _v3.set(hz.x + rr(-0.55, 0.55), Z() + BY + rr(-0.1, 0.2), hz.z + rr(-0.45, 0.45)); P({ p: _v3, v: _v2.set(rr(-0.2, 0.2), 0, rr(-0.2, 0.2)), drag: 1.5, omur: rr(0.55, 0.75), boy: rr(0.55, 0.8), boy2: rr(0.85, 1.1), renk: '#2a2e44', renk2: '#14161f', kare: 'duman', normal: true, rot: 'r', a: 0.88, hot: 0 }); }
-        _v3.set(hz.x, Z() + BY, hz.z); P({ p: _v3, omur: 0.2, boy: 0.7, boy2: 1.1, renk: '#fff6a0', kare: 'parilti', hot: 0.4, a: 0.5, fi: 0.3 });
-        dekal(hz, { r: 1.1, renk: '#06060c', kare: 'duman', a: 0.4, sure: 0.6 }); });
+      zamanla(t0, () => { if (h.o) konum(h.o, hz); const on2 = ONCELIK; ONCELIK = 2;
+        for (let j = 0, n = N(11); j < n; j++) { _v3.set(hz.x, Z() + BY + rr(-0.08, 0.2), hz.z);
+          P({ p: _v3, yorunge: { r: rr(0.08, 0.6), w: rr(0.5, 1.1) * (j % 2 ? 1 : -1) }, omur: sb + rr(0.45, 0.65), boy: rr(0.3, 0.45), boy2: rr(0.95, 1.25),
+            renk: j % 3 ? '#2b2948' : '#3d3466', renk2: '#121222', kare: 'duman', normal: true, rot: 'r', rotHiz: rr(-0.6, 0.6), a: 0.93, hot: 0, fi: 0.3, fo: 0.7 }); }
+        _v3.set(hz.x, Z() + BY + 0.05, hz.z);
+        P({ p: _v3, omur: sb + 0.5, boy: 0.6, boy2: 1.5, renk: '#1d1b36', renk2: '#0e0e1a', kare: 'duman', normal: true, rot: 'r', a: 0.9, hot: 0, fi: 0.35, fo: 0.7 });
+        _v3.set(hz.x, Z() + 0.03, hz.z);   // yerde koyulaşan gölge
+        P({ p: _v3, mod: 1, normal: true, omur: sb + 0.35, boy: 0.9, boy2: 1.6, renk: '#07060f', kare: 'duman', rot: 'r', hot: 0, a: 0.55, fi: 0.45, fo: 0.6 });
+        ONCELIK = on2;
+        // bulut içi çakmalar (yüklemeye doğru sıklaşır) ve çatırtılar (bulutun kameraya bakan yüzünde kısa arklar)
+        surec(sb + 0.25, (kk, dt, yas, is) => {
+          is.acc = (is.acc || 0) + dt * (yas < sb ? 12 + 34 * yas / sb : 8) * Math.max(0.6, OLCEK); while (is.acc >= 1) { is.acc--;
+            _v3.set(hz.x + rr(-0.45, 0.45), Z() + BY + rr(-0.05, 0.2), hz.z + rr(-0.4, 0.4));
+            P({ p: _v3, omur: rr(0.05, 0.09), boy: rr(0.3, 0.55), renk: RND() < 0.5 ? '#5f8cff' : '#8a6cff', kare: 'parilti', hot: 0.35, a: 0.7, fi: 0 }); }
+          is.ck = (is.ck || 0) + dt * (hafif ? 5 : 9); if (is.ck >= 1 && yas < sb + 0.1) { is.ck = 0;
+            _v4.set(hz.x, Z() + BY + 0.05, hz.z); if (kamera) _v2.copy(kamera.position).sub(_v4).normalize().multiplyScalar(0.55); else _v2.set(0, 0, 0.55);
+            _v4.add(_v2); const a = RND() * TAU, r = rr(0.3, 0.55);
+            _v1.set(_v4.x + Math.cos(a) * r, _v4.y + rr(-0.08, 0.12), _v4.z + Math.sin(a) * r * 0.7); _v2.set(_v4.x - Math.cos(a) * r, _v4.y + rr(-0.08, 0.12), _v4.z - Math.sin(a) * r * 0.7);
+            simsekAt(_v1, _v2, { en: 0.045, dal: 0, kap: 0.55, tit: SIM_KISA, sap: 0.28, kisa: true, jit: 0.02, dusuk: true }); } });
+      });
+      // yükleme: daralan halka, zemin ışıması, yerden yükselen kıvılcımlar
+      zamanla(Math.max(0, tS - 0.16), () => { if (h.o) konum(h.o, hz); const on2 = ONCELIK; ONCELIK = 2; _v3.set(hz.x, Z() + 0.045, hz.z);
+        P({ p: _v3, mod: 1, omur: 0.17, boy: 1.5, boy2: 0.35, renk: '#a8d4ff', renk2: '#6a5cff', kare: 'halka', hot: 0.8, a: 0.95, fi: 0.25, fo: 0.85 });
+        P({ p: _v3, mod: 1, omur: 0.18, boy: 0.5, boy2: 1.1, renk: '#4a6cff', kare: 'parilti', hot: 0.3, a: 0.55, fi: 0.5, fo: 0.9 }); ONCELIK = on2;
+        surec(0.16, (kk, dt, yas, is) => { is.acc = (is.acc || 0) + dt * 50 * OLCEK; while (is.acc >= 1) { is.acc--; const a = RND() * TAU, r = rr(0.12, 0.5);
+          _v3.set(hz.x + Math.cos(a) * r, Z() + rr(0.02, 0.15), hz.z + Math.sin(a) * r);
+          P({ p: _v3, v: _v2.set(0, rr(2.5, 4.5), 0), drag: 1.5, omur: rr(0.1, 0.16), boy: 0.08, uz: 2.6, en: 0.45, renk: '#ffffff', renk2: '#7fb0ff', kare: 'kivilcim', mod: 2, uzat: 0.08, hot: 1, fi: 0 }); } });
+      });
       zamanla(tS, () => {
-        if (h.o) konum(h.o, hz); const alt = new THREE.Vector3().copy(hz).setY(hz.y + 0.15), ust = alt.clone().add(_v2.set(rr(-0.35, 0.35), BY + 0.1 - 0.15 - hz.y + Z(), rr(-0.35, 0.35)));
-        zincir(ust, alt, { renk: '#fff27a', sure: 0.32, kalin: 0.17 * g, dal: 3, kontur: true, sap: 0.32 });
-        flas(_v3.copy(alt).setY(alt.y + 0.3), { renk: '#fff27a', boy: 0.95 * g, sure: 0.2, isikGuc: 6, a: 0.8 });
-        sok(alt, { renk: '#fff27a', r: 1.0 * g, toz: true, tozRenk: '#8a7a6a', tozN: 8 });
-        patlama(_v3.copy(alt).setY(alt.y + 0.2), { renk: '#fff27a', n: 10, hiz: 4, guc: g, yildizN: 2 });
-        dekal(alt, { r: 0.6, renk: '#1a1410', a: 0.8 }); sars(0.2 * g);
+        if (h.o) konum(h.o, hz); const on2 = ONCELIK; ONCELIK = 2;
+        const alt = new THREE.Vector3(hz.x, Z() + 0.04, hz.z), ust = new THREE.Vector3(hz.x + rr(-0.3, 0.3), Z() + BY + 0.05, hz.z + rr(-0.3, 0.3));
+        simsekAt(ust, alt, { en: 0.2 * g, dal: 4, kap: 0.92, sap: 0.12, ust: 0.12, odak: true });
+        karart(hafif ? 0.3 : 0.42, 0.3); isikYak(_v3.set(hz.x, Z() + 1.0, hz.z), '#9cc0ff', 11 * g, 0.32); sars(0.16 * g);
+        // çarpma yıldızı (havada) ve mavi parıltı
+        _v3.set(hz.x, Z() + 0.3, hz.z);
+        P({ p: _v3, omur: 0.3, boy: 1.4 * g, boy2: 2.5 * g, renk: '#5f8cff', kare: 'parilti', hot: 0.3, a: 0.75, fi: 0, fo: 0.2 });
+        P({ p: _v3, omur: 0.24, boy: 0.9 * g, boy2: 1.9 * g, renk: '#ffffff', renk2: '#8fc0ff', kare: 'yildiz4', rot: rr(-0.25, 0.25), hot: 1, a: 1, fi: 0, fo: 0.15 });
+        P({ p: _v3, omur: 0.18, boy: 0.6 * g, boy2: 1.2 * g, renk: '#dff0ff', kare: 'yildiz4', rot: 0.785, hot: 1, a: 0.9, fi: 0, fo: 0.15 });
+        // yerde çarpma yıldızı ve şok halkası
+        P({ p: alt, mod: 1, omur: 0.32, boy: 0.7 * g, boy2: 1.8 * g, renk: '#ffffff', renk2: '#5a7cff', kare: 'yildiz6', rot: 'r', rotHiz: 2, hot: 1, a: 1, fi: 0, fo: 0.3 });
+        sok(alt, { renk: '#7fa4ff', r: 1.05 * g, toz: true, tozRenk: '#4a4458', tozN: 8, sure: 0.45, a: 0.85 });
+        // yanık: koyu çatlak + is lekesi; çatlak önce mavi-beyaz kor gibi parlar, sonra soğur (aynı açı)
+        const rt = RND() * TAU; _v3.set(hz.x, Z() + 0.03 + RND() * 0.008, hz.z);
+        P({ p: _v3, mod: 1, normal: true, omur: 2.2, boy: 1.25 * g, boy2: 1.4 * g, renk: '#0e0a16', kare: 'duman', rot: 'r', hot: 0, a: 0.5, fi: 0.03, fo: 0.55 });
+        P({ p: _v3, mod: 1, normal: true, omur: 2.6, boy: 0.95 * g, boy2: 1.05 * g, renk: '#0b0712', kare: 'catlakYer', rot: rt, hot: 0, a: 0.9, fi: 0.02, fo: 0.6 });
+        _v3.y += 0.006; P({ p: _v3, mod: 1, omur: 0.75, boy: 0.95 * g, boy2: 1.05 * g, renk: '#e6f2ff', renk2: '#3a4cff', kare: 'catlakYer', rot: rt, hot: 0.9, a: 1, fi: 0, fo: 0.25 });
+        // kıvılcımlar: hızlı çizgiler + yerde seken kıvılcımlar
+        _v3.set(hz.x, Z() + 0.25, hz.z); patlama(_v3, { renk: '#9fc8ff', renk2: '#6a7cff', n: 12, hiz: 4.5, guc: g, yildiz: false });
+        for (let j = 0, n = N(10); j < n; j++) { kureY(_v2, 0.55).multiplyScalar(rr(2, 4.2)); _v3.set(hz.x, Z() + 0.15, hz.z);
+          P({ p: _v3, v: _v2, g: 9, drag: 0.8, omur: rr(0.45, 0.75), boy: rr(0.06, 0.09), uz: 2, en: 0.5, renk: '#ffffff', renk2: '#6fa0ff', kare: 'kivilcim', mod: 2, uzat: 0.07, hot: 1, sek: 0.03, fo: 0.5 }); }
+        ONCELIK = on2;
+        // çarpılan hedef: gövdede elektrik kıvılcımları ve iki küçük ark
         const hh = h.h || 1; surec(0.6, (kk, dt, yas, is) => { const tp = h.o ? takipPoz(h.o) : hz; is.acc = (is.acc || 0) + dt * 22 * OLCEK; while (is.acc >= 1) { is.acc--;
           _v3.set(tp.x + rr(-0.25, 0.25), tp.y + rr(0.15, 0.9) * hh, tp.z + rr(-0.25, 0.25));
-          P({ p: _v3, v: kureY(_v2, 0.2).multiplyScalar(rr(1, 2.2)), drag: 5, omur: rr(0.07, 0.13), boy: 0.08, uz: 1.8, en: 0.5, renk: '#ffffff', renk2: '#fff27a', kare: 'kivilcim', mod: 2, uzat: 0.06, hot: 1, a: 1 - kk * 0.5 }); } });
+          P({ p: _v3, v: kureY(_v2, 0.2).multiplyScalar(rr(1, 2.2)), drag: 5, omur: rr(0.07, 0.13), boy: 0.08, uz: 1.8, en: 0.5, renk: '#ffffff', renk2: '#7fb4ff', kare: 'kivilcim', mod: 2, uzat: 0.06, hot: 1, a: 1 - kk * 0.5 }); }
+          for (const ta of [0.06, 0.24]) if (yas >= ta && (is.ark || 0) < ta) { const a = RND() * TAU, r = 0.28 * Math.sqrt(hh);
+            _v1.set(tp.x + Math.cos(a) * r, tp.y + rr(0.25, 0.85) * hh, tp.z + Math.sin(a) * r); _v2.set(tp.x - Math.cos(a) * r, tp.y + rr(0.25, 0.85) * hh, tp.z - Math.sin(a) * r);
+            simsekAt(_v1, _v2, { en: 0.04, dal: 0, kap: 0.5, tit: SIM_KISA, sap: 0.3, kisa: true, jit: 0.015, dusuk: true }); }
+          is.ark = yas; });
       });
     });
   },
@@ -1645,16 +1849,17 @@ const HAZIR = {
       P({ p: _v3, omur: -1, boy: 0.3, renk: '#e0c2ff', kare: 'yildiz4', rot: 0.785 + kk * 1.6, hot: 1, a: 0.9 });
       _v4.set(p.x, Z() + 0.04, p.z); P({ p: _v4, mod: 1, omur: -1, boy: 1.3 - 0.5 * e, renk: '#9a4dff', kare: 'halka', hot: 0.4, a: 0.7 }); });
   },
-  // Ejder: üstünde dönen kara fırtına bulutu (içinde sarı çakmalar), gövdede ve başta sarı elektrik kıvılcımları
+  // Ejder: üstünde dönen kara fırtına bulutu (içinde mavi-beyaz çakmalar), gövdede ve başta mavi-beyaz elektrik kıvılcımları; bulut
+  // düşüşler bitene dek (YIL_ONC + 2·YIL_ARA) seyrelerek sürer
   yildirim(k, o) {
     const kem = o.kemik, s = Math.max(0.1, o.sure);
-    surec(s + 0.3, (kk, dt, yas, is) => { if (k.o && !k.o.visible) return; const p = k.o ? takipPoz(k.o) : k.p, by = p.y + k.h + 0.45, hz = yas < s ? 1 : 0.35;
+    surec(s + 0.5, (kk, dt, yas, is) => { if (k.o && !k.o.visible) return; const p = k.o ? takipPoz(k.o) : k.p, by = p.y + k.h + 0.45, hz = yas < s ? 1 : 0.35;
       is.acc = (is.acc || 0) + dt * 30 * OLCEK * hz; while (is.acc >= 1) { is.acc--; _v3.set(p.x, by + rr(-0.1, 0.15), p.z);
         if (RND() < 0.78) P({ p: _v3, yorunge: { r: rr(0.25, 0.75), w: rr(2.2, 3.2), vy: 0 }, omur: rr(0.5, 0.75), boy: rr(0.4, 0.55), boy2: rr(0.6, 0.85), renk: '#2e3248', renk2: '#12141e', kare: 'duman', normal: true, rot: 'r', a: 0.88, hot: 0, on: 0 });
-        else P({ p: _v3, yorunge: { r: rr(0.1, 0.5), w: 3 }, omur: rr(0.06, 0.12), boy: rr(0.4, 0.7), renk: '#fff27a', kare: 'parilti', hot: 0.8, a: 0.8, on: 0 }); }
+        else P({ p: _v3, yorunge: { r: rr(0.1, 0.5), w: 3 }, omur: rr(0.06, 0.12), boy: rr(0.4, 0.7), renk: RND() < 0.6 ? '#9fc8ff' : '#b49cff', kare: 'parilti', hot: 0.8, a: 0.8, on: 0 }); }
       if (yas < s) { is.ak = (is.ak || 0) + dt * 26 * OLCEK; while (is.ak >= 1) { is.ak--; const a = RND() * TAU, r = rr(0.12, 0.3) * k.h; _v3.set(p.x + Math.cos(a) * r, p.y + rr(0.25, 0.95) * k.h, p.z + Math.sin(a) * r);
-        P({ p: _v3, v: kureY(_v2, 0.3).multiplyScalar(rr(0.8, 1.8)), drag: 4, omur: rr(0.08, 0.16), boy: 0.07, en: 0.5, renk: '#ffffff', renk2: '#fff27a', kare: 'kivilcim', mod: 2, uzat: 0.06, hot: 1 }); }
-        if (kem && kem.parent) P({ p: takipPoz(kem), omur: -1, boy: 0.12 + 0.22 * kk * kk, renk: '#fff27a', kare: 'parilti', hot: 0.9, a: 0.7 }); } });
+        P({ p: _v3, v: kureY(_v2, 0.3).multiplyScalar(rr(0.8, 1.8)), drag: 4, omur: rr(0.08, 0.16), boy: 0.07, en: 0.5, renk: '#ffffff', renk2: '#7fb4ff', kare: 'kivilcim', mod: 2, uzat: 0.06, hot: 1 }); }
+        if (kem && kem.parent) P({ p: takipPoz(kem), omur: -1, boy: 0.12 + 0.22 * kk * kk, renk: '#bfe0ff', kare: 'parilti', hot: 0.9, a: 0.7 }); } });
   },
 };
 // Işık Kanadı: tüy değince dostun üstünde kalkan kabarcığı açılır, yıldızlar saçılır, yukarıdan tek tüy süzülür
@@ -1843,7 +2048,7 @@ function kur(sahne_, kamera_, o = {}) {
           float a = uA * (0.008 + f * 0.75 + bant * 0.08 * f + hex * (0.025 + 0.12 * f)) * alt; gl_FragColor = vec4(mix(uR, vec3(1.0), f * 0.7), a); }` });
     const m = new THREE.Mesh(kureG, mat); m.visible = false; m.renderOrder = 32; m.name = 'vfx_kalkan'; sahne.add(m); kalkanHavuz.push(m);
   }
-  yetenekNesneKur(kg, km);
+  yetenekNesneKur(kg, km); simsekKur();
   if (kalite === 'yuksek' && o.isik !== false) { isik = new THREE.PointLight('#ffd08a', 0, 5.5, 1.6); isik.position.set(0, -50, 0); sahne.add(isik); }
   return vfx;
 }
@@ -1921,7 +2126,7 @@ function birak() {
   for (const h of [parcaKaya, parcaBuz, kristalH, dikenH]) if (h) sahne.remove(h.m);
   for (const m of [...okHavuz, ...hortumHavuz, ...davulHavuz, ...kalpHavuz, ...zumrutHavuz, ...penceHavuz]) sahne.remove(m);
   parcaKaya = parcaBuz = kristalH = dikenH = null; okHavuz.length = hortumHavuz.length = davulHavuz.length = kalpHavuz.length = zumrutHavuz.length = penceHavuz.length = isitma.length = 0; kayaElde.clear(); davulElde.clear();
-  if (isik) sahne.remove(isik); if (atlas) atlas.tex.dispose();
+  if (isik) sahne.remove(isik); if (atlas) atlas.tex.dispose(); simsekBirak();
   kayaHavuz.length = 0; kalkanHavuz.length = 0; isik = null; isler = []; durumlar.clear(); takipOn.clear(); sahne = null;
 }
 function guncelle(dt) {
@@ -1950,6 +2155,7 @@ function guncelle(dt) {
   if (isitma.length && kareNo > 2) { for (const m of isitma) m.visible = false; isitma.length = 0; }
   parcaKaya.guncelle(dt); parcaBuz.guncelle(dt); kristalH.guncelle(dt); dikenH.guncelle(dt);
   hortumT += dt; for (const m of hortumHavuz) if (m.visible) m.material.uniforms.uT.value = hortumT;
+  simsekGuncelle(dt);   // şimşek şeritleri ve ekran karartması
   // 5) GPU'ya yaz
   sAdd.yaz(takipPoz); sNrm.yaz(takipPoz);
 }

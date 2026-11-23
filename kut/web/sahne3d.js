@@ -1305,8 +1305,9 @@ function yetenekHis(f, b, hedefler, ekle, liste = null, i = 0) {
     ekle(varis, () => { if (h0 && h0.olumT < 0) his.donma(h0, 0.08); if (olumcul) { his.yavaslat(0.15, 0.6); vfx.ekranFlas('#b07cff', hafif ? 0.2 : 0.3, 0.45, '#7a2cff'); } });
     if (h0) altSes(varis, 'carp', h0.uid);
   }
-  // Yıldırım: ilk şimşekte 0,06 sn tam ekran duraklama ve kısa beyaz kenar parlaması (hafifte soluk); her düşüşte hedefte kısa duraklama ve gök gürültüsü
-  else if (f.ad === 'yildirim') { ekle(f.t, () => { if (b.olumT >= 0) return; his.durdur(0.06); vfx.ekranFlas('#ffffff', hafif ? 0.16 : 0.3, 0.1, '#fff6c0'); });
+  // Yıldırım: ilk şimşek görüntüde düştüğünde (vfx.gecikme: bulut ve yükleme payı) 0,06 sn tam ekran duraklama ve kısa elektrik mavisi
+  // kenar parlaması (beyaz kenar parlak gün batımında sahneyi soldururdu; karartmayı vfx yapar); her düşüşte hedefte kısa duraklama ve gök gürültüsü
+  else if (f.ad === 'yildirim') { ekle(f.t + (hedefler.length ? f._gec(hedefler[0].uid, 'hasar') : 0), () => { if (b.olumT >= 0) return; his.durdur(0.06); vfx.ekranFlas('#a9c4ff', hafif ? 0.14 : 0.24, 0.14, '#5a48ff'); });
     hedefler.forEach((o, j) => { const g = f._gec(o.uid, 'hasar'); ekle(f.t + g, () => { if (o.olumT < 0) his.donma(o, 0.06); }); if (j > 0) altSes(f.t + g, j, o.uid); }); }
 }
 // küçük sayaç (Boynuz Öfkesi: kalan güçlenmiş vuruş)
@@ -1599,7 +1600,7 @@ function balonDegrade() {
 function balonCiz(w, O, dtG = 0.016) {
   // yetenek balonu (OGRETICI §4.3): dost altın zemin + koyu yazı; düşman koyu zemin + yakut kenar + beyaz yazı; Kut'ta 1,4 kat + güneş
   for (const bt of bantlar) {
-    const b = bt.b; let ax, ay;
+    const b = bt.b; let ax, ay; bt._k = null;
     if (b._cubuk) { ax = b._cubuk.x; ay = b._cubuk.y - 3; }
     else { const p = ekran(basUstu(b)); ax = p.x; ay = p.y - 12; }
     const e = Math.min(bt.yas / BALON_SURE, bt.gercek / BALON_GERCEK), g = bt.gercek;
@@ -1625,6 +1626,7 @@ function balonCiz(w, O, dtG = 0.016) {
     bt._it = (bt._it || 0) + (it - (bt._it || 0)) * Math.min(1, dtG * 12); by -= bt._it;
     al *= solma(bt, !sig, dtG, 0.4); kcx.globalAlpha = al;
     if (by < 8) by = 8;
+    if (al > 0.3) { const k = bt._kk || (bt._kk = { x0: 0, y0: 0, x1: 0, y1: 0 }); k.x0 = cx - bw / 2; k.x1 = cx + bw / 2; k.y0 = by; k.y1 = by + bh + kuyruk; bt._k = k; }   // sayılar kaçınsın
     // gövde + kuyruk tek yol
     const bx = cx - bw / 2, r = bh / 2, tx = Math.max(bx + r, Math.min(bx + bw - r, ax));
     kcx.beginPath(); kcx.moveTo(bx + r, by); kcx.arcTo(bx + bw, by, bx + bw, by + bh, r); kcx.arcTo(bx + bw, by + bh, bx, by + bh, r);
@@ -1732,6 +1734,12 @@ function kaplamaCiz(dt = 0, dtG = dt) {
     const p = ekran(y.p); const e = y.yas / 0.95; kcx.globalAlpha = y.alfa * Math.max(0, 1 - Math.pow(Math.max(0, e - 0.35) / 0.65, 2));
     const taban = y.kritik ? 26 : y.buyuk ? 20 : 17, sc = (e < 0.12 ? 1.7 - 5.8 * e : 1) * (1 + y.nabiz * 2.2), ol = y.olcek * sc, boy = taban * ol;
     let xx = p.x + y.yon * (e * 18 + y.serit * 16), yy = p.y - (50 * e - 40 * e * e) - 8 - y.serit * 19;
+    // açık ad balonuna binen sayı balonun yanına kayar (yumuşak): ad okunur kalır (eskiden Işık Kanadı'nda kahramanın ♡140'ı
+    // "Işık Kanadı!" balonunu, Bulut Hücumu'nda rakibin −58'i balonu örtüyordu); kayma yönü sayının balona göre yanı
+    { let hk = 0; const yw = 0.31 * boy * String(y.metin).length + 3;
+      for (let j = 0; j < bantlar.length; j++) { const k = bantlar[j]._k; if (!k || yy < k.y0 - 2 || yy - boy * 0.78 > k.y1 + 26 || xx + yw < k.x0 - 3 || xx - yw > k.x1 + 3) continue;
+        hk = xx >= (k.x0 + k.x1) / 2 ? k.x1 + yw + 4 - xx : k.x0 - yw - 4 - xx; }   // balonun hemen altında doğan da (yükselecek) baştan yana
+      y.bk = y.bk === undefined ? hk : y.bk + (hk - y.bk) * Math.min(1, dtG * 20); xx += y.bk; }
     // sayaç (Boynuz Öfkesi ×3): yükselmez, can çubuğunun sağında durur (yetenek balonunun ve sayıların üstüne binmesin)
     if (y.tur === 'sayac' && y.b && y.b._cubuk) { xx = y.b._cubuk.x + O.gw * 0.5 + 14 * O.o; yy = y.b._cubuk.y + 20 * O.o; }
     // sıradan/süreli küçük sayılar da yeteneğin ana nesnesinin üstünden çekilir (yetenek ve kritik sayıları hep tam görünür)
