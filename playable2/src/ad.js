@@ -36,7 +36,7 @@
     var G = R() && R().G;
     if (phase === 'play' && G && G.won) { phase = 'won'; wonAt = performance.now(); hand.style.opacity = 0; cap.style.opacity = 0;
       setTimeout(function () { try { R().fest(A.line); } catch (e) {} }, 2300);
-      setTimeout(function () { phase = 'cta'; cta.classList.add('on'); }, 6400); }
+      setTimeout(function () { phase = 'cta'; cta.classList.add('on'); }, 7600); }
     if (phase === 'play') place();
     w.requestAnimationFrame(loop);
   }
