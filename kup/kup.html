@@ -936,9 +936,18 @@ function fitCamera() {
   dist = Math.max(R / Math.sin(usableV / 2), R / Math.sin(hf * .94 / 2)) * zoomK;
   camera.updateProjectionMatrix(); placeCamera();
 }
+// el sınırsız: küp her yöne tam tur döner; "yukarı" yönü kutuplardan geçerken de sürekli kalır
 function placeCamera() {
-  camera.position.set(dist * Math.cos(el) * Math.sin(az), dist * Math.sin(el) + lookY, dist * Math.cos(el) * Math.cos(az));
+  const ce = Math.cos(el), se = Math.sin(el), sa = Math.sin(az), ca = Math.cos(az);
+  camera.position.set(dist * ce * sa, dist * se + lookY, dist * ce * ca);
+  camera.up.set(-se * sa, ce, -se * ca);
   camera.lookAt(0, lookY, 0);
+}
+const wrapPi = a => ((a % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI) - Math.PI;
+function orbitBy(dx, dy) {
+  const k = 5.2 / Math.min(innerWidth, innerHeight), flip = Math.cos(el) < 0 ? -1 : 1;
+  az -= dx * k * flip; el = wrapPi(el + dy * k);
+  vAz = -dx * k * flip; vEl = dy * k; placeCamera(); dirty = true;
 }
 function resize() { renderer.setSize(innerWidth, innerHeight, false); fitCamera(); dirty = true; }
 addEventListener('resize', resize);
@@ -1249,9 +1258,9 @@ function moveWords(lb) {
   const f = FACE_TR[lb[0]], d = lb.includes("'") ? 'saatin tersine' : lb.includes('2') ? 'iki kez' : 'saat yönünde';
   return `Sallanan katmanı çevir: <b>${f}</b> yüz, <b>${d}</b> <span style="font-family:var(--f-mono)">(${lb})</span>.`;
 }
-function aimCamera(k, el) {
+function aimCamera(k, el2) {
   const ta = k * PI2 + .55, d = ((ta - az) % (2 * Math.PI) + 3 * Math.PI) % (2 * Math.PI) - Math.PI;
-  camT = { az: az + d, el };
+  camT = { az: az + d, el: el + wrapPi(el2 - el) };
 }
 function coachUi() {
   const g = G(), on = !!(g && g.mode === 'learn' && screen === 'play' && g.phase !== 'done');
@@ -1500,7 +1509,7 @@ function hud() {
 function defaultHint() {
   const g = G(); if (!g) return '';
   if (g.phase === 'scrambling') return g.mode === 'speed' ? 'Karıştırılıyor…' : 'Karışımı izle. Aynı hamleleri tersine çevir.';
-  if (g.mode === 'level' && g.level < 2 && !g.hist.length) return 'Küpün üstünde parmağını kaydır, katman döner. Boşlukta sürüklersen küp döner.';
+  if (g.mode === 'level' && g.level < 2 && !g.hist.length) return 'Tek parmakla küpün üstünde kaydır: katman döner. Boşlukta ya da iki parmakla sürükle: küp döner.';
   if (g.mode === 'speed' && g.phase === 'ready') return 'Süre ilk hamlede başlar.';
   if (g.goal !== undefined && !g.hist.length) return 'Hedef: ' + GOAL_TXT[g.goal] + '. Takılırsan ampule bas; hangi parçanın nereye gideceğini gösterir.';
   return '';
@@ -1602,7 +1611,15 @@ function toNDC(x, y) { ndc.set(x / innerWidth * 2 - 1, -(y / innerHeight) * 2 + 
 function project(v) { const p = v.clone().project(camera); return new T.Vector2((p.x + 1) / 2 * innerWidth, (1 - p.y) / 2 * innerHeight); }
 const cv = renderer.domElement;
 const canTurn = () => { const g = G(); if (!g || screen !== 'play' || anim || queue.length) return false; if (g.mode === 'learn' && !g.lesson) return !!CONCEPT[g.page].task; return g.phase === 'ready' || g.phase === 'solving'; };
+// iki parmak: küpün üstünde bile döndürür
+const ptrs = new Map();
 cv.addEventListener('pointerdown', e => {
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (ptrs.size === 2 && e.pointerType === 'touch') {
+    try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+    if (drag.mode === 'turn') { anim = { list: drag.list, axis: drag.rAx, from: drag.angle, to: 0, t0: performance.now(), dur: 120, mv: null, kind: 'user' }; }
+    drag.mode = 'orbit2'; drag.id = null; vAz = vEl = 0; spin = null; camT = null; stopHint(); return;
+  }
   if (drag.mode || e.button > 0) return;
   audioInit(); cv.setPointerCapture(e.pointerId);
   drag.id = e.pointerId; drag.x0 = drag.x = e.clientX; drag.y0 = drag.y = e.clientY;
@@ -1619,13 +1636,13 @@ cv.addEventListener('pointerdown', e => {
   } else drag.mode = 'orbit';
 });
 cv.addEventListener('pointermove', e => {
+  const pp = ptrs.get(e.pointerId);
+  if (drag.mode === 'orbit2' && pp) { orbitBy((e.clientX - pp.x) / 2, (e.clientY - pp.y) / 2); pp.x = e.clientX; pp.y = e.clientY; return; }
+  if (pp) { pp.x = e.clientX; pp.y = e.clientY; }
+  if (drag.mode === 'hold') return;
   if (e.pointerId !== drag.id || !drag.mode) return;
   const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.x = e.clientX; drag.y = e.clientY;
-  if (drag.mode === 'orbit') {
-    const k = 5.2 / Math.min(innerWidth, innerHeight);
-    az -= dx * k; el = Math.max(-1.35, Math.min(1.35, el + dy * k));
-    vAz = -dx * k; vEl = dy * k; placeCamera(); dirty = true; return;
-  }
+  if (drag.mode === 'orbit') { orbitBy(dx, dy); return; }
   const D = new T.Vector2(e.clientX - drag.x0, e.clientY - drag.y0);
   if (drag.mode === 'pending') {
     if (D.length() < 9) return;
@@ -1651,6 +1668,8 @@ cv.addEventListener('pointermove', e => {
   }
 });
 function endDrag(e) {
+  ptrs.delete(e.pointerId);
+  if (drag.mode === 'orbit2' || drag.mode === 'hold') { drag.mode = ptrs.size ? 'hold' : null; if (!drag.mode) pump(); return; }
   if (e.pointerId !== drag.id || !drag.mode) return;
   if (drag.mode === 'turn') {
     let q = Math.round(drag.angle / PI2);
@@ -1733,7 +1752,7 @@ function loop(now) {
   const dt = Math.min(50, now - lastFrame); lastFrame = now;
   stepAnim(now); stepHint(now);
   if (!drag.mode && (Math.abs(vAz) > 1e-4 || Math.abs(vEl) > 1e-4)) {
-    az += vAz; el = Math.max(-1.35, Math.min(1.35, el + vEl)); vAz *= .92; vEl *= .92; placeCamera(); dirty = true;
+    az += vAz; el = wrapPi(el + vEl); vAz *= .92; vEl *= .92; placeCamera(); dirty = true;
   }
   if (spin) {
     const t = Math.min(1, (now - spin.t0) / 1600);
