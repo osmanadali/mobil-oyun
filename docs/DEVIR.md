@@ -132,6 +132,8 @@ Durum 3 Kasım 2026 itibarıyla (en yeni madde başta):
 
 ## 6. Sıradaki işler
 
+**🗓 24 Kasım salı bakımı:** kullanıcı kararı: haftanın kuralı **gelecek salıya (1 Aralık)** kaldı; önce `kapis-karma` → main PR'ı (1.2.3 yayındaki kod main'e girer). 1 Aralık'ta kural main'in üstüne kurulur. Önerilen kural listesi bitti; adaylar: 🧱 Yol çalışması (kapalı hücre, hat etrafından dolaşır; önerilen), 🚦 Yeşil dalga (sırayla döndürülmesi gereken 3 karo), 🔗 Aktarma durağı (iki merkezin hattı tek durakta buluşur). Instagram duyuru görselleri (gönderi 1080×1350, hikâye) kullanıcıya verildi.
+
 **🔜 Bekleyenler (20 Kasım sonu, yeni oturum buradan başlar):**
 0. **1.2.2 GÖNDERİLDİ (22 Kasım):** iOS yapı 20 → App Review (WAITING_FOR_REVIEW; inceleme notunda arkadaşlar + dürtme). Android: Play üretim erişimi onaylandı; 1.2.2 (versionCode 16) `release.yml` track=production ile üretime yüklendi, 10 yerel ayarda sürüm notu (`docs/yenilikler-<sürüm>.md` → whatsnew). Servis hesabına "Sürümleri üretime yayınla" izni verildi, üretim ülkeleri seçildi: bundan sonra üretim yüklemesi oturumdan yapılabilir. Kapalı testte 1.2.2 (15). Sonraki versionCode 17, Codemagic BUILD_NO 21. Bu dal (`kapis-karma`) main'den ileride: codemagic.yaml otomatik sertifika temizliği, release.yml sürüm notları, devir notu → yeni PR ile main'e.
 2. Play: 21 Kasım "Üretime erişim için başvur" (yayın günü değil; Google incelemesi ~birkaç gün–7 gün; tahmini yayın 23–28 Kasım). Onay gelince üretim sürümü (versionCode 14 ya da yenisi) kullanıcı onayıyla.
