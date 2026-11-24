@@ -34,16 +34,19 @@ export function yukIcerik(baslik = 'Arena hazırlanıyor…') {
   return `<div class="yukArka" aria-hidden="true"></div><div class="huzme"></div><div class="huzme iki"></div><div class="parca" aria-hidden="true">${p}</div>
     <div class="orta"><div class="logoK"><img src="../arayuz/logo.png" alt="Kut Arena"></div>
     <div class="cubuk"><i></i><b>%0</b></div><div class="durum">${baslik}</div>
-    <div class="ipucu"><svg class="ik"><use href="#i-isik"/></svg><div><small>İpucu</small><span>${ipucuSec()}</span></div></div></div>`;
+    <div class="ipucu"><img class="kik ik" alt="" draggable="false" src="arayuz/kit/ikon_set_oyun/ikon_ipucu.webp"><div><small>İpucu</small><span>${ipucuSec()}</span></div></div></div>`;
 }
 let ipucuSira = Math.floor(Math.random() * IPUCLARI.length);
-function ipucuSec() { ipucuSira = (ipucuSira + 1) % IPUCLARI.length; return IPUCLARI[ipucuSira]; }
+// ipucu metni HTML olarak yazılır: ★N → N tane kit yıldızı (★2 gümüş, ★3 altın)
+const YK = ['bronz', 'bronz', 'gumus', 'altin'];
+const ymKit = (t) => t.replace(/★(\d)/g, (_, n) => `<span class="ymk" aria-label="${n} yıldız">${`<img class="kik ymk1" alt="" draggable="false" src="arayuz/kit/yildiz_set/yildiz_${YK[Math.min(3, +n)]}.webp">`.repeat(+n)}</span>`);
+function ipucuSec() { ipucuSira = (ipucuSira + 1) % IPUCLARI.length; return ymKit(IPUCLARI[ipucuSira]); }
 
 /** Bir yükleme ekranı kökünü (#acilis ya da .yukleniyor) yönetir: yüzde, durum yazısı, dönen ipuçları. */
 export function yukGosterge(kok) {
   const cubuk = kok.querySelector('.cubuk'), dolu = cubuk.querySelector('i'), yaz = cubuk.querySelector('b'), durum = kok.querySelector('.durum'), ip = kok.querySelector('.ipucu span');
   let son = 0, z = 0;
-  const dondur = () => { ip.classList.add('gecis'); setTimeout(() => { ip.textContent = ipucuSec(); ip.classList.remove('gecis'); }, 350); };
+  const dondur = () => { ip.classList.add('gecis'); setTimeout(() => { ip.innerHTML = ipucuSec(); ip.classList.remove('gecis'); }, 350); };
   return {
     yuzde(p, metin) {   // geri gitmez (toplam iş yüklendikçe büyüyebilir)
       p = Math.max(son, Math.min(1, p || 0)); son = p;

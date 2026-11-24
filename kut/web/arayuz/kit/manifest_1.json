@@ -1,0 +1,1630 @@
+{
+ "aciklama": "GORSEL_ISTEK_3.md #1-#33 arayüz kiti (robot görselleri, gelen_gorsel/*_a|_b.png kaynaklı). Görseller retina için hedef CSS boyutunun ~2 katı; dilim payları GÖRSEL pikselidir, CSS border-image-width için yarıya bölün (css alanında hazır). tur: sabit = oran korunur, 3-dilim = yalnız yatay esner (border-image üst/alt 0), 9-dilim = her yönde esner, ikon = contain, doku/serit = döşenir (repeat / repeat-x), zemin = cover. Çerçeve türlerinde (pencere_cerceve, vurgu_set, kart_cerceve_*) border-image fill KULLANMAYIN; iç zemin ayrı katman (doku_cam_mor, kart_zemin). Kaynak alfa 248+ tam opak yapıldı, <6 temizlendi; parçalar bağlı bileşen taramasıyla gerçek alfa sınırından kesildi (2 px saydam pay).",
+ "secimler": [
+  {
+   "no": 1,
+   "bolum": "mod_kart_arena",
+   "secilen": "mod_kart_arena_b.png",
+   "gerekce": "_b: çerçeve daha iri ve keskin, yıldız yuvalı köşe taşları menu_panel diline daha yakın; #2 _a ve #3 _b ile aynı çerçeve ailesi (üç kart birebir aynı çerçeve)."
+  },
+  {
+   "no": 2,
+   "bolum": "mod_kart_lobi",
+   "secilen": "mod_kart_lobi_a.png",
+   "gerekce": "_a: #1_b ve #3_b ile aynı çerçeve ailesi (_b küçük çerçeveli öbür aileden); sekiz kaide ve taç tarife uygun."
+  },
+  {
+   "no": 3,
+   "bolum": "mod_kart_hizli",
+   "secilen": "mod_kart_hizli_b.png",
+   "gerekce": "_b: #1_b ile aynı çerçeve; kum saati yüzen adanın kıyısında, turkuaz şimşek tarife daha uygun (_a arena kaidesini tekrarlıyordu)."
+  },
+  {
+   "no": 4,
+   "bolum": "madalyon_yuva",
+   "secilen": "madalyon_yuva_a.png",
+   "gerekce": "_a: simetrik, sade halka; ortası sakin; hud_saat/dugme_yuvarlak diline yakın. _b yanlarda taşkın kanatlı, daire içine sığmıyor."
+  },
+  {
+   "no": 5,
+   "bolum": "amblem_mod_set",
+   "secilen": "amblem_mod_set_a.png",
+   "gerekce": "_a: çapraz kılıç + kalkan daha okunur, taç ve sekiz kristal halkası tam; _b kılıçlar kalkanı örtüyor."
+  },
+  {
+   "no": 6,
+   "bolum": "dugme_altin_kucuk_set",
+   "secilen": "dugme_altin_kucuk_set_b.png",
+   "gerekce": "_b: yüzey daha düz ve parlak, uç taşları dugme_oyna gibi sivri yuvada; _a ortada daha belirgin dalga lekeleri var (esneyince görünür)."
+  },
+  {
+   "no": 7,
+   "bolum": "dugme_mor_set",
+   "secilen": "dugme_mor_set_b.png",
+   "gerekce": "_b: uç kapakları altın düğmeyle (#6_b) aynı sivri taş yuvası; iç mor dolgu ortada düz, iç dikdörtgen çizgisi yok. _a uçları ince ve sönük."
+  },
+  {
+   "no": 8,
+   "bolum": "dugme_renk_set",
+   "secilen": "dugme_renk_set_a.png",
+   "gerekce": "_a: kapak biçimi #7_b ile birebir (sivri, iri taş yuvası); _b kapakları daha küçük. Gün batımı degradesi iki seçenekte de benzer."
+  },
+  {
+   "no": 9,
+   "bolum": "pencere_cerceve",
+   "secilen": "pencere_cerceve_b.png",
+   "gerekce": "_b: köşe süsleri iri ve oymalı (menu_panel ailesi), kenar boyunca ince mor iç çizgi; _a köşeleri cılız, kenarlar çok ince, büyük pencerede sönük kalıyor."
+  },
+  {
+   "no": 10,
+   "bolum": "doku_cam_mor",
+   "secilen": "doku_cam_mor_a.png",
+   "gerekce": "_a: istenen #2a1446–#1a0b2e aralığında, daha koyu ve düz; _b daha açık ve belirgin bulut çizgileri (yazı okunurluğunu düşürür, döşenince tekrar fark edilir)."
+  },
+  {
+   "no": 11,
+   "bolum": "kurdele_set_1",
+   "secilen": "kurdele_set_1_b.png",
+   "gerekce": "_b: bant ortası pürüzsüz ve düz (3-dilim için uygun), kurdele kuyrukları temiz kıvrımlı; _a ortada dalgalı leke dokusu var, gerilince görünür."
+  },
+  {
+   "no": 12,
+   "bolum": "ayrac_suslu",
+   "secilen": "ayrac_suslu_b.png",
+   "gerekce": "_b: ortadaki kıvrımlı altın süsler tarifteki \"curled flourishes\" ile birebir, uçlar ince sivri; _a süsleri küçük ve kısa."
+  },
+  {
+   "no": 13,
+   "bolum": "vurgu_set",
+   "secilen": "vurgu_set_b.png",
+   "gerekce": "_b: zemin temiz (alfa 0); _a bütün tuvalde %1-3 alfa ışıma pusu taşıyor ve köşe süsleri kenarlara taşıyor. _b kenarlar düz, köşe süsü yalnız köşede (9-dilime uygun)."
+  },
+  {
+   "no": 14,
+   "bolum": "ikon_set_menu",
+   "secilen": "ikon_set_menu_a.png",
+   "gerekce": "_a: kitap ve geri oku daha okunur, pavyonun ışıklı kapısı küçük boyda bile ev olarak seçiliyor; _b pavyon ve kitap daha kalabalık."
+  },
+  {
+   "no": 15,
+   "bolum": "ikon_set_durum",
+   "secilen": "ikon_set_durum_a.png",
+   "gerekce": "_a: kapat X tıknaz ve 24px'de okunur, dokunma eli ve halkası net; _b X içi mor çizgili, el bilekli/kalabalık."
+  },
+  {
+   "no": 16,
+   "bolum": "panel_ince_set",
+   "secilen": "panel_ince_set_b.png",
+   "gerekce": "_b: kenarlar düz ve eşit kalın, köşe taşı küçük ve yalnız köşede (temiz 9-dilim); _a köşe başlıkları iri ve dışa taşkın, ince panelde ağır duruyor."
+  },
+  {
+   "no": 17,
+   "bolum": "baslik_bandi",
+   "secilen": "baslik_bandi_b.png",
+   "gerekce": "_b: alt kenarda kıvrımla biten ince altın filigran çizgisi tarifteki gibi, uçları yumuşak; _a uçlarında iri sivri taş kapakları var, panel başlığı için düğmeye benziyor."
+  },
+  {
+   "no": 18,
+   "bolum": "sus_set",
+   "secilen": "sus_set_b.png",
+   "gerekce": "_b: aşağı ve sağ ok aynı biçimde (tarif: 6. parça 3. ile aynı ok), balon kuyruğunun üst kenarı düz; _a'da sağ ok farklı çatallı biçimde."
+  },
+  {
+   "no": 19,
+   "bolum": "satir_plaka_set_1",
+   "secilen": "satir_plaka_set_1_b.png",
+   "gerekce": "_b: köşeler tarifteki gibi yumuşak yuvarlak, perçinler yalnız köşede, iç dolgu düz; _a köşeleri pahlı ve köşe içinde ayrı dolgu üçgenleri var (dikişe benziyor)."
+  },
+  {
+   "no": 20,
+   "bolum": "satir_plaka_set_2",
+   "secilen": "satir_plaka_set_2_b.png",
+   "gerekce": "_b: #19_b ile aynı yuvarlak köşe ve perçin dili, sol üst köşede küçük renkli kristal (tarife uygun); _a #19_a'nın pahlı köşelerini taşıyor."
+  },
+  {
+   "no": 21,
+   "bolum": "cip_set_1",
+   "secilen": "cip_set_1_a.png",
+   "gerekce": "_a ile _b neredeyse aynı; _a soket halkası daha belirgin ve uç taşı daha küçük (kısa çiplerde dolgu alanı geniş kalıyor). #22_a ile aynı biçim."
+  },
+  {
+   "no": 22,
+   "bolum": "cip_set_2",
+   "secilen": "cip_set_2_a.png",
+   "gerekce": "_a: #21_a ile aynı biçim (sol taş + soket); _b soketi daha iri, #21 ile oranı tutmuyor."
+  },
+  {
+   "no": 23,
+   "bolum": "plaka_set",
+   "secilen": "plaka_set_a.png",
+   "gerekce": "_a: soket iri ve koyu içli, plaka birleşimi hud_altin_rozet'e daha yakın; _b soket küçük."
+  },
+  {
+   "no": 24,
+   "bolum": "sekme_set",
+   "secilen": "sekme_set_a.png",
+   "gerekce": "_a: pahlı köşeler belirgin (düğmeden ayrışıyor), iz plakası daha uzun (~8:1, tarife uygun); _b aktif sekmede iri leke dokusu var."
+  },
+  {
+   "no": 25,
+   "bolum": "metin_alani_set",
+   "secilen": "metin_alani_set_b.png",
+   "gerekce": "_b: yuvarlak köşeli, satır plakası (#19_b) ve panel diliyle aynı; köşe taşları yalnız köşede. _a köşeleri pahlı/sivri."
+  },
+  {
+   "no": 26,
+   "bolum": "anahtar_set",
+   "secilen": "anahtar_set_b.png",
+   "gerekce": "_b: daha yalın ve dengeli, topuz ray içine oturuyor; _a'da üst/alt kenar ortasında ek yıldız süsleri ve dış mor şerit kalabalık."
+  },
+  {
+   "no": 27,
+   "bolum": "cubuk_set",
+   "secilen": "cubuk_set_b.png",
+   "gerekce": "_b: büyük çubuk daha iri ve okunur, ince iz daha uzun (~17:1); _a ile biçim aynı ama küçük çözünürlüklü."
+  },
+  {
+   "no": 28,
+   "bolum": "cubuk_dolgu_set",
+   "secilen": "cubuk_dolgu_set_a.png",
+   "gerekce": "_a: şeritler eşit kalın ve parlak bant düzenli, kalkan tarama çizgileri ince ve düzenli; _b altın şerit kahverengiye kaçıyor."
+  },
+  {
+   "no": 29,
+   "bolum": "kontrol_set",
+   "secilen": "kontrol_set_a.png",
+   "gerekce": "_a: topuz yuvarlak ve sade (küçükte okunur), tutamak ince kapsül; _b topuz ve tutamak süslü/kalabalık."
+  },
+  {
+   "no": 30,
+   "bolum": "kart_cerceve_set_1",
+   "secilen": "kart_cerceve_set_1_b.png",
+   "gerekce": "_b: üç çerçeve biçimce birebir aynı, köşe kıvrımları ve iç kakma çizgisi #31_a ile aynı dil; _a gümüş çerçeve öbür ikisinden farklı köşe biçiminde."
+  },
+  {
+   "no": 31,
+   "bolum": "kart_cerceve_set_2",
+   "secilen": "kart_cerceve_set_2_a.png",
+   "gerekce": "_a: köşe kıvrımı ve kakma çizgisi #30_b ile aynı; _b köşeleri dışa boynuzlu, set 1 ile uyuşmuyor. İki setin parçaları aynı 384×500 ölçüye getirildi."
+  },
+  {
+   "no": 32,
+   "bolum": "kart_zemin",
+   "secilen": "kart_zemin_b.png",
+   "gerekce": "_b: sade, ortası boş, kaide altta ve büyük (portre önünde net okunur); _a'da kemer ve sütunlar portrenin arkasında kalabalık yapıyor."
+  },
+  {
+   "no": 33,
+   "bolum": "kademe_tas_set",
+   "secilen": "kademe_tas_set_a.png",
+   "gerekce": "_a: orta yüz düz ve açık (üstüne kısa yazı okunur), yuvalar beşinde aynı; _b taşlar çok yüzlü, orta yüz kırık, yazı okunmaz."
+  }
+ ],
+ "parcalar": [
+  {
+   "yol": "kit/mod_kart_arena/kart.webp",
+   "bolum": "mod_kart_arena",
+   "no": 1,
+   "ne": "mod kartı zemini (sahne + boş cam alan + üst taş)",
+   "genislik": 564,
+   "yukseklik": 756,
+   "tur": "sabit",
+   "kullanim": ".modSec .modK.m-arena background (background-size:100% 100%); oran 564:756 korunmalı; madalyon (#4) ayraç ortasına (yukarıdan ~%45)"
+  },
+  {
+   "yol": "kit/mod_kart_lobi/kart.webp",
+   "bolum": "mod_kart_lobi",
+   "no": 2,
+   "ne": "mod kartı zemini (sahne + boş cam alan + üst taş)",
+   "genislik": 564,
+   "yukseklik": 756,
+   "tur": "sabit",
+   "kullanim": ".modSec .modK.m-lobi background (background-size:100% 100%); oran 564:756 korunmalı; madalyon (#4) ayraç ortasına (yukarıdan ~%45)"
+  },
+  {
+   "yol": "kit/mod_kart_hizli/kart.webp",
+   "bolum": "mod_kart_hizli",
+   "no": 3,
+   "ne": "mod kartı zemini (sahne + boş cam alan + üst taş)",
+   "genislik": 564,
+   "yukseklik": 756,
+   "tur": "sabit",
+   "kullanim": ".modSec .modK.m-hizli background (background-size:100% 100%); oran 564:756 korunmalı; madalyon (#4) ayraç ortasına (yukarıdan ~%45)"
+  },
+  {
+   "yol": "kit/madalyon_yuva/yuva.webp",
+   "bolum": "madalyon_yuva",
+   "no": 4,
+   "ne": "yuvarlak madalyon soketi (ortasına ikon/amblem)",
+   "genislik": 288,
+   "yukseklik": 320,
+   "tur": "sabit",
+   "kullanim": ".modK .modIk, .yukEkran .ipucu madalyonu, .sonSerit .mad, .ogrPor, #kodeks .rozet .top, .kut .el zemini, seviye madalyonu; background-size:contain; iç disk merkezi ~%52 yükseklikte"
+  },
+  {
+   "yol": "kit/amblem_mod_set/amblem_arena.webp",
+   "bolum": "amblem_mod_set",
+   "no": 5,
+   "ne": "Arena amblemi (çapraz kılıç + kalkan)",
+   "genislik": 240,
+   "yukseklik": 228,
+   "tur": "ikon",
+   "kullanim": ".modK .modIk .ik (madalyon üstünde); lobi amblemi ayrıca lobi listesi başlığı ve .rakipKim .lbS"
+  },
+  {
+   "yol": "kit/amblem_mod_set/amblem_lobi.webp",
+   "bolum": "amblem_mod_set",
+   "no": 5,
+   "ne": "Lobi amblemi (taç + 8 kristal halka)",
+   "genislik": 237,
+   "yukseklik": 240,
+   "tur": "ikon",
+   "kullanim": ".modK .modIk .ik (madalyon üstünde); lobi amblemi ayrıca lobi listesi başlığı ve .rakipKim .lbS"
+  },
+  {
+   "yol": "kit/amblem_mod_set/amblem_hizli.webp",
+   "bolum": "amblem_mod_set",
+   "no": 5,
+   "ne": "Hızlı Maç amblemi (kum saati + şimşek)",
+   "genislik": 190,
+   "yukseklik": 240,
+   "tur": "ikon",
+   "kullanim": ".modK .modIk .ik (madalyon üstünde); lobi amblemi ayrıca lobi listesi başlığı ve .rakipKim .lbS"
+  },
+  {
+   "yol": "kit/dugme_altin_kucuk_set/normal.webp",
+   "bolum": "dugme_altin_kucuk_set",
+   "no": 6,
+   "ne": "küçük altın düğme normal",
+   "genislik": 446,
+   "yukseklik": 122,
+   "tur": "3-dilim",
+   "kullanim": ".modK .modGir, küçük .btn.altin (Kaydet/Tamam/Dövüştür), :active → basili, :disabled → pasif",
+   "dilim": {
+    "ust": 0,
+    "sag": 114,
+    "alt": 0,
+    "sol": 111,
+    "css": "border-image: url(kit/dugme_altin_kucuk_set/normal.webp) 0 114 0 111 fill / 0px 57px 0px 55.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/dugme_altin_kucuk_set/basili.webp",
+   "bolum": "dugme_altin_kucuk_set",
+   "no": 6,
+   "ne": "küçük altın düğme basılı",
+   "genislik": 445,
+   "yukseklik": 122,
+   "tur": "3-dilim",
+   "kullanim": ".modK .modGir, küçük .btn.altin (Kaydet/Tamam/Dövüştür), :active → basili, :disabled → pasif",
+   "dilim": {
+    "ust": 0,
+    "sag": 114,
+    "alt": 0,
+    "sol": 111,
+    "css": "border-image: url(kit/dugme_altin_kucuk_set/basili.webp) 0 114 0 111 fill / 0px 57px 0px 55.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/dugme_altin_kucuk_set/pasif.webp",
+   "bolum": "dugme_altin_kucuk_set",
+   "no": 6,
+   "ne": "küçük altın düğme pasif (gri taş)",
+   "genislik": 446,
+   "yukseklik": 122,
+   "tur": "3-dilim",
+   "kullanim": ".modK .modGir, küçük .btn.altin (Kaydet/Tamam/Dövüştür), :active → basili, :disabled → pasif",
+   "dilim": {
+    "ust": 0,
+    "sag": 114,
+    "alt": 0,
+    "sol": 111,
+    "css": "border-image: url(kit/dugme_altin_kucuk_set/pasif.webp) 0 114 0 111 fill / 0px 57px 0px 55.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/dugme_mor_set/normal.webp",
+   "bolum": "dugme_mor_set",
+   "no": 7,
+   "ne": "mor ikincil düğme normal",
+   "genislik": 517,
+   "yukseklik": 117,
+   "tur": "3-dilim",
+   "kullanim": ".btn.mor (+:active basili, .secik secili, :disabled pasif); hayalet → Vazgeç/İptal/Kapat ve .ogrDug .atla (altına hafif koyu zemin)",
+   "dilim": {
+    "ust": 0,
+    "sag": 87,
+    "alt": 0,
+    "sol": 86,
+    "css": "border-image: url(kit/dugme_mor_set/normal.webp) 0 87 0 86 fill / 0px 43.5px 0px 43px stretch"
+   }
+  },
+  {
+   "yol": "kit/dugme_mor_set/basili.webp",
+   "bolum": "dugme_mor_set",
+   "no": 7,
+   "ne": "mor düğme basılı",
+   "genislik": 517,
+   "yukseklik": 117,
+   "tur": "3-dilim",
+   "kullanim": ".btn.mor (+:active basili, .secik secili, :disabled pasif); hayalet → Vazgeç/İptal/Kapat ve .ogrDug .atla (altına hafif koyu zemin)",
+   "dilim": {
+    "ust": 0,
+    "sag": 87,
+    "alt": 0,
+    "sol": 86,
+    "css": "border-image: url(kit/dugme_mor_set/basili.webp) 0 87 0 86 fill / 0px 43.5px 0px 43px stretch"
+   }
+  },
+  {
+   "yol": "kit/dugme_mor_set/secili.webp",
+   "bolum": "dugme_mor_set",
+   "no": 7,
+   "ne": "mor düğme seçili (altın ışıma, kenarda ışıma payı var)",
+   "genislik": 538,
+   "yukseklik": 147,
+   "tur": "3-dilim",
+   "kullanim": ".btn.mor (+:active basili, .secik secili, :disabled pasif); hayalet → Vazgeç/İptal/Kapat ve .ogrDug .atla (altına hafif koyu zemin)",
+   "dilim": {
+    "ust": 0,
+    "sag": 87,
+    "alt": 0,
+    "sol": 86,
+    "css": "border-image: url(kit/dugme_mor_set/secili.webp) 0 87 0 86 fill / 0px 43.5px 0px 43px stretch"
+   },
+   "isima_payi_px": 15,
+   "not": "ışıma payı kadar border-image-outset ver (görselin yarısı CSS px olarak: isima_payi_px/2) ki düğme boyu normal ile aynı kalsın"
+  },
+  {
+   "yol": "kit/dugme_mor_set/pasif.webp",
+   "bolum": "dugme_mor_set",
+   "no": 7,
+   "ne": "mor düğme pasif",
+   "genislik": 518,
+   "yukseklik": 117,
+   "tur": "3-dilim",
+   "kullanim": ".btn.mor (+:active basili, .secik secili, :disabled pasif); hayalet → Vazgeç/İptal/Kapat ve .ogrDug .atla (altına hafif koyu zemin)",
+   "dilim": {
+    "ust": 0,
+    "sag": 87,
+    "alt": 0,
+    "sol": 86,
+    "css": "border-image: url(kit/dugme_mor_set/pasif.webp) 0 87 0 86 fill / 0px 43.5px 0px 43px stretch"
+   }
+  },
+  {
+   "yol": "kit/dugme_mor_set/hayalet.webp",
+   "bolum": "dugme_mor_set",
+   "no": 7,
+   "ne": "hayalet düğme (içi boş, yalnız altın kontur)",
+   "genislik": 517,
+   "yukseklik": 117,
+   "tur": "3-dilim",
+   "kullanim": ".btn.mor (+:active basili, .secik secili, :disabled pasif); hayalet → Vazgeç/İptal/Kapat ve .ogrDug .atla (altına hafif koyu zemin)",
+   "dilim": {
+    "ust": 0,
+    "sag": 87,
+    "alt": 0,
+    "sol": 86,
+    "css": "border-image: url(kit/dugme_mor_set/hayalet.webp) 0 87 0 86 fill / 0px 43.5px 0px 43px stretch"
+   }
+  },
+  {
+   "yol": "kit/dugme_renk_set/yakut.webp",
+   "bolum": "dugme_renk_set",
+   "no": 8,
+   "ne": "yakut düğme",
+   "genislik": 505,
+   "yukseklik": 117,
+   "tur": "3-dilim",
+   "kullanim": "yakut → .btn.sat, #aCik, Maçtan çık; gün batımı → .btn.gb (Paylaş, KAYNAŞTIR); pasif hâl için dugme_mor_set/pasif",
+   "dilim": {
+    "ust": 0,
+    "sag": 79,
+    "alt": 0,
+    "sol": 79,
+    "css": "border-image: url(kit/dugme_renk_set/yakut.webp) 0 79 0 79 fill / 0px 39.5px 0px 39.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/dugme_renk_set/yakut_basili.webp",
+   "bolum": "dugme_renk_set",
+   "no": 8,
+   "ne": "yakut düğme basılı",
+   "genislik": 505,
+   "yukseklik": 119,
+   "tur": "3-dilim",
+   "kullanim": "yakut → .btn.sat, #aCik, Maçtan çık; gün batımı → .btn.gb (Paylaş, KAYNAŞTIR); pasif hâl için dugme_mor_set/pasif",
+   "dilim": {
+    "ust": 0,
+    "sag": 79,
+    "alt": 0,
+    "sol": 79,
+    "css": "border-image: url(kit/dugme_renk_set/yakut_basili.webp) 0 79 0 79 fill / 0px 39.5px 0px 39.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/dugme_renk_set/gunbatimi.webp",
+   "bolum": "dugme_renk_set",
+   "no": 8,
+   "ne": "gün batımı düğme",
+   "genislik": 505,
+   "yukseklik": 118,
+   "tur": "3-dilim",
+   "kullanim": "yakut → .btn.sat, #aCik, Maçtan çık; gün batımı → .btn.gb (Paylaş, KAYNAŞTIR); pasif hâl için dugme_mor_set/pasif",
+   "dilim": {
+    "ust": 0,
+    "sag": 79,
+    "alt": 0,
+    "sol": 79,
+    "css": "border-image: url(kit/dugme_renk_set/gunbatimi.webp) 0 79 0 79 fill / 0px 39.5px 0px 39.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/dugme_renk_set/gunbatimi_basili.webp",
+   "bolum": "dugme_renk_set",
+   "no": 8,
+   "ne": "gün batımı düğme basılı",
+   "genislik": 505,
+   "yukseklik": 117,
+   "tur": "3-dilim",
+   "kullanim": "yakut → .btn.sat, #aCik, Maçtan çık; gün batımı → .btn.gb (Paylaş, KAYNAŞTIR); pasif hâl için dugme_mor_set/pasif",
+   "dilim": {
+    "ust": 0,
+    "sag": 79,
+    "alt": 0,
+    "sol": 79,
+    "css": "border-image: url(kit/dugme_renk_set/gunbatimi_basili.webp) 0 79 0 79 fill / 0px 39.5px 0px 39.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/pencere_cerceve/cerceve.webp",
+   "bolum": "pencere_cerceve",
+   "no": 9,
+   "ne": "pencere çerçevesi (yalnız çerçeve, içi saydam)",
+   "genislik": 1006,
+   "yukseklik": 657,
+   "tur": "9-dilim",
+   "kullanim": "bütün .pencere / #pencere / #son .sonKart / #kodeks .kahPanel, .soyKod / duraklatma paneli: border-image (fill YOK) + iç zemin doku_cam_mor/doku.webp döşeme; dilim payını CSS px olarak yarıya böl",
+   "dilim": {
+    "ust": 133,
+    "sag": 169,
+    "alt": 138,
+    "sol": 169,
+    "css": "border-image: url(kit/pencere_cerceve/cerceve.webp) 133 169 138 169 fill / 66.5px 84.5px 69px 84.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/doku_cam_mor/doku.webp",
+   "bolum": "doku_cam_mor",
+   "no": 10,
+   "ne": "mor cam iç dokusu (opak, dikişsiz döşenir)",
+   "genislik": 512,
+   "yukseklik": 512,
+   "tur": "doku",
+   "kullanim": "pencere/panel iç zemini: background:url(kit/doku_cam_mor/doku.webp) 0 0/256px 256px repeat (retina 2x)"
+  },
+  {
+   "yol": "kit/kurdele_set_1/mor.webp",
+   "bolum": "kurdele_set_1",
+   "no": 11,
+   "ne": "mor başlık kurdelesi",
+   "genislik": 844,
+   "yukseklik": 131,
+   "tur": "3-dilim",
+   "kullanim": "mor → .pencere h3, #pencere h3, #kodeks .kodUst h2, DURAKLATILDI, #ana .slogan; altın → #sonSerit ZAFER/1., .mvpAd, .savasGiris b; gümüş → 2.–4. sıra, berabere",
+   "dilim": {
+    "ust": 0,
+    "sag": 312,
+    "alt": 0,
+    "sol": 301,
+    "css": "border-image: url(kit/kurdele_set_1/mor.webp) 0 312 0 301 fill / 0px 156px 0px 150.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/kurdele_set_1/altin.webp",
+   "bolum": "kurdele_set_1",
+   "no": 11,
+   "ne": "altın başlık kurdelesi",
+   "genislik": 844,
+   "yukseklik": 131,
+   "tur": "3-dilim",
+   "kullanim": "mor → .pencere h3, #pencere h3, #kodeks .kodUst h2, DURAKLATILDI, #ana .slogan; altın → #sonSerit ZAFER/1., .mvpAd, .savasGiris b; gümüş → 2.–4. sıra, berabere",
+   "dilim": {
+    "ust": 0,
+    "sag": 312,
+    "alt": 0,
+    "sol": 301,
+    "css": "border-image: url(kit/kurdele_set_1/altin.webp) 0 312 0 301 fill / 0px 156px 0px 150.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/kurdele_set_1/gumus.webp",
+   "bolum": "kurdele_set_1",
+   "no": 11,
+   "ne": "gümüş başlık kurdelesi",
+   "genislik": 844,
+   "yukseklik": 131,
+   "tur": "3-dilim",
+   "kullanim": "mor → .pencere h3, #pencere h3, #kodeks .kodUst h2, DURAKLATILDI, #ana .slogan; altın → #sonSerit ZAFER/1., .mvpAd, .savasGiris b; gümüş → 2.–4. sıra, berabere",
+   "dilim": {
+    "ust": 0,
+    "sag": 312,
+    "alt": 0,
+    "sol": 301,
+    "css": "border-image: url(kit/kurdele_set_1/gumus.webp) 0 312 0 301 fill / 0px 156px 0px 150.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/ayrac_suslu/ayrac.webp",
+   "bolum": "ayrac_suslu",
+   "no": 12,
+   "ne": "süslü yatay ayraç (16:1, sabit oran)",
+   "genislik": 893,
+   "yukseklik": 100,
+   "tur": "sabit",
+   "kullanim": ".sAyrac, .mvpCizgi, .kdAd altı, .yukEkran .durum altı, başlık altı; background-size:contain, yükseklik ≈ genişlik/9 (nesne ince, alt-üst süs payı var)"
+  },
+  {
+   "yol": "kit/vurgu_set/altin.webp",
+   "bolum": "vurgu_set",
+   "no": 13,
+   "ne": "altın seçili vurgu çerçevesi",
+   "genislik": 602,
+   "yukseklik": 247,
+   "tur": "9-dilim",
+   "kullanim": "altın → .modK:hover/:active, .ogrCerceve::after, armağan seçili, .secimler .sc:hover; zümrüt → #mac .kart.yuksel; gün batımı → kaynaştırma hedefi. Üst katman (::after), fill YOK",
+   "dilim": {
+    "ust": 77,
+    "sag": 105,
+    "alt": 78,
+    "sol": 105,
+    "css": "border-image: url(kit/vurgu_set/altin.webp) 77 105 78 105 fill / 38.5px 52.5px 39px 52.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/vurgu_set/zumrut.webp",
+   "bolum": "vurgu_set",
+   "no": 13,
+   "ne": "zümrüt vurgu çerçevesi",
+   "genislik": 601,
+   "yukseklik": 244,
+   "tur": "9-dilim",
+   "kullanim": "altın → .modK:hover/:active, .ogrCerceve::after, armağan seçili, .secimler .sc:hover; zümrüt → #mac .kart.yuksel; gün batımı → kaynaştırma hedefi. Üst katman (::after), fill YOK",
+   "dilim": {
+    "ust": 77,
+    "sag": 105,
+    "alt": 78,
+    "sol": 105,
+    "css": "border-image: url(kit/vurgu_set/zumrut.webp) 77 105 78 105 fill / 38.5px 52.5px 39px 52.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/vurgu_set/gunbatimi.webp",
+   "bolum": "vurgu_set",
+   "no": 13,
+   "ne": "gün batımı vurgu çerçevesi",
+   "genislik": 603,
+   "yukseklik": 247,
+   "tur": "9-dilim",
+   "kullanim": "altın → .modK:hover/:active, .ogrCerceve::after, armağan seçili, .secimler .sc:hover; zümrüt → #mac .kart.yuksel; gün batımı → kaynaştırma hedefi. Üst katman (::after), fill YOK",
+   "dilim": {
+    "ust": 77,
+    "sag": 105,
+    "alt": 78,
+    "sol": 105,
+    "css": "border-image: url(kit/vurgu_set/gunbatimi.webp) 77 105 78 105 fill / 38.5px 52.5px 39px 52.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/ikon_set_menu/ikon_kahramanlar.webp",
+   "bolum": "ikon_set_menu",
+   "no": 14,
+   "ne": "Kahramanlar (kodeks kitabı)",
+   "genislik": 240,
+   "yukseklik": 231,
+   "tur": "ikon",
+   "kullanim": "#ana .yanDug .btn .ik, .kahBtn, .pKalem, #son Ana menü, #kodeks .kodUst geri (dugme_yuvarlak üstünde); background-size:contain"
+  },
+  {
+   "yol": "kit/ikon_set_menu/ikon_nasil.webp",
+   "bolum": "ikon_set_menu",
+   "no": 14,
+   "ne": "Nasıl oynanır (parşömen + soru)",
+   "genislik": 240,
+   "yukseklik": 230,
+   "tur": "ikon",
+   "kullanim": "#ana .yanDug .btn .ik, .kahBtn, .pKalem, #son Ana menü, #kodeks .kodUst geri (dugme_yuvarlak üstünde); background-size:contain"
+  },
+  {
+   "yol": "kit/ikon_set_menu/ikon_duello.webp",
+   "bolum": "ikon_set_menu",
+   "no": 14,
+   "ne": "Düello kodu (zincirli kılıçlar)",
+   "genislik": 240,
+   "yukseklik": 230,
+   "tur": "ikon",
+   "kullanim": "#ana .yanDug .btn .ik, .kahBtn, .pKalem, #son Ana menü, #kodeks .kodUst geri (dugme_yuvarlak üstünde); background-size:contain"
+  },
+  {
+   "yol": "kit/ikon_set_menu/ikon_kalem.webp",
+   "bolum": "ikon_set_menu",
+   "no": 14,
+   "ne": "Düzenle (tüy kalem)",
+   "genislik": 195,
+   "yukseklik": 240,
+   "tur": "ikon",
+   "kullanim": "#ana .yanDug .btn .ik, .kahBtn, .pKalem, #son Ana menü, #kodeks .kodUst geri (dugme_yuvarlak üstünde); background-size:contain"
+  },
+  {
+   "yol": "kit/ikon_set_menu/ikon_ev.webp",
+   "bolum": "ikon_set_menu",
+   "no": 14,
+   "ne": "Ana menü (kubbeli köşk)",
+   "genislik": 236,
+   "yukseklik": 240,
+   "tur": "ikon",
+   "kullanim": "#ana .yanDug .btn .ik, .kahBtn, .pKalem, #son Ana menü, #kodeks .kodUst geri (dugme_yuvarlak üstünde); background-size:contain"
+  },
+  {
+   "yol": "kit/ikon_set_menu/ikon_geri.webp",
+   "bolum": "ikon_set_menu",
+   "no": 14,
+   "ne": "Geri (sola ok)",
+   "genislik": 240,
+   "yukseklik": 160,
+   "tur": "ikon",
+   "kullanim": "#ana .yanDug .btn .ik, .kahBtn, .pKalem, #son Ana menü, #kodeks .kodUst geri (dugme_yuvarlak üstünde); background-size:contain"
+  },
+  {
+   "yol": "kit/ikon_set_durum/ikon_kapat.webp",
+   "bolum": "ikon_set_durum",
+   "no": 15,
+   "ne": "Kapat (altın X)",
+   "genislik": 240,
+   "yukseklik": 234,
+   "tur": "ikon",
+   "kullanim": "kapat → pencere sağ üst (dugme_yuvarlak üstünde), #hasarOzet .kapat; onay → .kut.bitti .onay; uyarı → .modUyari, .adHata; kopya → #dKopya; paylaş → #son Paylaş; dokun → .ogrEl, .kut .el, .mvpIpucu, .soyBos"
+  },
+  {
+   "yol": "kit/ikon_set_durum/ikon_onay.webp",
+   "bolum": "ikon_set_durum",
+   "no": 15,
+   "ne": "Onay (zümrüt tik)",
+   "genislik": 240,
+   "yukseklik": 210,
+   "tur": "ikon",
+   "kullanim": "kapat → pencere sağ üst (dugme_yuvarlak üstünde), #hasarOzet .kapat; onay → .kut.bitti .onay; uyarı → .modUyari, .adHata; kopya → #dKopya; paylaş → #son Paylaş; dokun → .ogrEl, .kut .el, .mvpIpucu, .soyBos"
+  },
+  {
+   "yol": "kit/ikon_set_durum/ikon_uyari.webp",
+   "bolum": "ikon_set_durum",
+   "no": 15,
+   "ne": "Uyarı (ünlemli üçgen)",
+   "genislik": 240,
+   "yukseklik": 214,
+   "tur": "ikon",
+   "kullanim": "kapat → pencere sağ üst (dugme_yuvarlak üstünde), #hasarOzet .kapat; onay → .kut.bitti .onay; uyarı → .modUyari, .adHata; kopya → #dKopya; paylaş → #son Paylaş; dokun → .ogrEl, .kut .el, .mvpIpucu, .soyBos"
+  },
+  {
+   "yol": "kit/ikon_set_durum/ikon_kopya.webp",
+   "bolum": "ikon_set_durum",
+   "no": 15,
+   "ne": "Kopyala (iki tablet)",
+   "genislik": 221,
+   "yukseklik": 240,
+   "tur": "ikon",
+   "kullanim": "kapat → pencere sağ üst (dugme_yuvarlak üstünde), #hasarOzet .kapat; onay → .kut.bitti .onay; uyarı → .modUyari, .adHata; kopya → #dKopya; paylaş → #son Paylaş; dokun → .ogrEl, .kut .el, .mvpIpucu, .soyBos"
+  },
+  {
+   "yol": "kit/ikon_set_durum/ikon_paylas.webp",
+   "bolum": "ikon_set_durum",
+   "no": 15,
+   "ne": "Paylaş (üç bağlı küre)",
+   "genislik": 236,
+   "yukseklik": 240,
+   "tur": "ikon",
+   "kullanim": "kapat → pencere sağ üst (dugme_yuvarlak üstünde), #hasarOzet .kapat; onay → .kut.bitti .onay; uyarı → .modUyari, .adHata; kopya → #dKopya; paylaş → #son Paylaş; dokun → .ogrEl, .kut .el, .mvpIpucu, .soyBos"
+  },
+  {
+   "yol": "kit/ikon_set_durum/ikon_dokun.webp",
+   "bolum": "ikon_set_durum",
+   "no": 15,
+   "ne": "Dokun (işaret eden altın eldiven)",
+   "genislik": 188,
+   "yukseklik": 240,
+   "tur": "ikon",
+   "kullanim": "kapat → pencere sağ üst (dugme_yuvarlak üstünde), #hasarOzet .kapat; onay → .kut.bitti .onay; uyarı → .modUyari, .adHata; kopya → #dKopya; paylaş → #son Paylaş; dokun → .ogrEl, .kut .el, .mvpIpucu, .soyBos"
+  },
+  {
+   "yol": "kit/panel_ince_set/mor.webp",
+   "bolum": "panel_ince_set",
+   "no": 16,
+   "ne": "ince panel mor",
+   "genislik": 569,
+   "yukseklik": 170,
+   "tur": "9-dilim",
+   "kullanim": "mor → .bilgiKart, #esyaRaf, #hasarOzet, #savas .hizlar/.ayakta, #son .kutu, #ogrBalon; yakut → Gözcü paneli, satış alanı, .alametK.acik; kehribar → .kutBant; taş → .kutBant.bitti. fill ile",
+   "dilim": {
+    "ust": 47,
+    "sag": 57,
+    "alt": 49,
+    "sol": 58,
+    "css": "border-image: url(kit/panel_ince_set/mor.webp) 47 57 49 58 fill / 23.5px 28.5px 24.5px 29px stretch"
+   }
+  },
+  {
+   "yol": "kit/panel_ince_set/yakut.webp",
+   "bolum": "panel_ince_set",
+   "no": 16,
+   "ne": "ince panel yakut",
+   "genislik": 568,
+   "yukseklik": 170,
+   "tur": "9-dilim",
+   "kullanim": "mor → .bilgiKart, #esyaRaf, #hasarOzet, #savas .hizlar/.ayakta, #son .kutu, #ogrBalon; yakut → Gözcü paneli, satış alanı, .alametK.acik; kehribar → .kutBant; taş → .kutBant.bitti. fill ile",
+   "dilim": {
+    "ust": 47,
+    "sag": 57,
+    "alt": 49,
+    "sol": 58,
+    "css": "border-image: url(kit/panel_ince_set/yakut.webp) 47 57 49 58 fill / 23.5px 28.5px 24.5px 29px stretch"
+   }
+  },
+  {
+   "yol": "kit/panel_ince_set/kehribar.webp",
+   "bolum": "panel_ince_set",
+   "no": 16,
+   "ne": "ince panel kehribar",
+   "genislik": 568,
+   "yukseklik": 170,
+   "tur": "9-dilim",
+   "kullanim": "mor → .bilgiKart, #esyaRaf, #hasarOzet, #savas .hizlar/.ayakta, #son .kutu, #ogrBalon; yakut → Gözcü paneli, satış alanı, .alametK.acik; kehribar → .kutBant; taş → .kutBant.bitti. fill ile",
+   "dilim": {
+    "ust": 47,
+    "sag": 57,
+    "alt": 49,
+    "sol": 58,
+    "css": "border-image: url(kit/panel_ince_set/kehribar.webp) 47 57 49 58 fill / 23.5px 28.5px 24.5px 29px stretch"
+   }
+  },
+  {
+   "yol": "kit/panel_ince_set/tas.webp",
+   "bolum": "panel_ince_set",
+   "no": 16,
+   "ne": "ince panel taş (pasif)",
+   "genislik": 568,
+   "yukseklik": 172,
+   "tur": "9-dilim",
+   "kullanim": "mor → .bilgiKart, #esyaRaf, #hasarOzet, #savas .hizlar/.ayakta, #son .kutu, #ogrBalon; yakut → Gözcü paneli, satış alanı, .alametK.acik; kehribar → .kutBant; taş → .kutBant.bitti. fill ile",
+   "dilim": {
+    "ust": 47,
+    "sag": 57,
+    "alt": 49,
+    "sol": 58,
+    "css": "border-image: url(kit/panel_ince_set/tas.webp) 47 57 49 58 fill / 23.5px 28.5px 24.5px 29px stretch"
+   }
+  },
+  {
+   "yol": "kit/baslik_bandi/bant.webp",
+   "bolum": "baslik_bandi",
+   "no": 17,
+   "ne": "panel başlık bandı",
+   "genislik": 888,
+   "yukseklik": 130,
+   "tur": "3-dilim",
+   "kullanim": "#kodeks .pn-bas, #son .kutu h4, #hasarOzet .ust, rakip paneli üst satırı, hazırlık panel başlıkları",
+   "dilim": {
+    "ust": 0,
+    "sag": 123,
+    "alt": 0,
+    "sol": 124,
+    "css": "border-image: url(kit/baslik_bandi/bant.webp) 0 123 0 124 fill / 0 61.5px 0 62px stretch"
+   }
+  },
+  {
+   "yol": "kit/sus_set/madde_kristal.webp",
+   "bolum": "sus_set",
+   "no": 18,
+   "ne": "madde imi kristali",
+   "genislik": 94,
+   "yukseklik": 99,
+   "tur": "sabit",
+   "kullanim": ".pn-bas .elmas, .kutu h4 .elmas, .pencere ul li imi"
+  },
+  {
+   "yol": "kit/sus_set/ayrac_dikey.webp",
+   "bolum": "sus_set",
+   "no": 18,
+   "ne": "dikey ayraç",
+   "genislik": 46,
+   "yukseklik": 244,
+   "tur": "sabit",
+   "kullanim": ".macUst>.rozet::after, .alamet::after, .tahtaSayac::after, .mvpIst arası"
+  },
+  {
+   "yol": "kit/sus_set/kaydir_ok.webp",
+   "bolum": "sus_set",
+   "no": 18,
+   "ne": "kaydırma oku (aşağı)",
+   "genislik": 116,
+   "yukseklik": 108,
+   "tur": "sabit",
+   "kullanim": "uzun liste/pencere alt ucu, açılır liste imi"
+  },
+  {
+   "yol": "kit/sus_set/balon_kuyruk.webp",
+   "bolum": "sus_set",
+   "no": 18,
+   "ne": "konuşma balonu kuyruğu (üst kenar düz)",
+   "genislik": 154,
+   "yukseklik": 89,
+   "tur": "sabit",
+   "kullanim": "#ogrBalon, .alamet.acik .t, .soyAc, .sansKutu altı; sahne3d balonCiz()"
+  },
+  {
+   "yol": "kit/sus_set/yildiz_hap.webp",
+   "bolum": "sus_set",
+   "no": 18,
+   "ne": "küçük boş kapsül (3-dilim)",
+   "genislik": 203,
+   "yukseklik": 76,
+   "tur": "3-dilim",
+   "kullanim": "sahne3d cubukCiz() yıldız rozeti hapı, kaynaşık birim hapı",
+   "dilim": {
+    "ust": 0,
+    "sag": 35,
+    "alt": 0,
+    "sol": 35,
+    "css": "border-image: url(kit/sus_set/yildiz_hap.webp) 0 35 0 35 fill / 0 17.5px 0 17.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/sus_set/ok_sag.webp",
+   "bolum": "sus_set",
+   "no": 18,
+   "ne": "küçük sağ ok",
+   "genislik": 96,
+   "yukseklik": 106,
+   "tur": "sabit",
+   "kullanim": "#kupaSayi oku, #son .lig sonraki lig, .dusmanOk"
+  },
+  {
+   "yol": "kit/satir_plaka_set_1/normal.webp",
+   "bolum": "satir_plaka_set_1",
+   "no": 19,
+   "ne": "satır plakası normal",
+   "genislik": 720,
+   "yukseklik": 120,
+   "tur": "9-dilim",
+   "kullanim": "normal → soy/hasar/ayar satırları, stat kutuları, #ozet karoları, lobi sıralama, kart ad plakası; vurgu → .sr.mvp, kendi lobi satırı, .soy3.on; taş → etkin olmayan/elenen satır. fill ile",
+   "dilim": {
+    "ust": 27,
+    "sag": 47,
+    "alt": 30,
+    "sol": 46,
+    "css": "border-image: url(kit/satir_plaka_set_1/normal.webp) 27 47 30 46 fill / 13.5px 23.5px 15px 23px stretch"
+   }
+  },
+  {
+   "yol": "kit/satir_plaka_set_1/vurgu.webp",
+   "bolum": "satir_plaka_set_1",
+   "no": 19,
+   "ne": "satır plakası vurgu (parlak kenar)",
+   "genislik": 728,
+   "yukseklik": 130,
+   "tur": "9-dilim",
+   "kullanim": "normal → soy/hasar/ayar satırları, stat kutuları, #ozet karoları, lobi sıralama, kart ad plakası; vurgu → .sr.mvp, kendi lobi satırı, .soy3.on; taş → etkin olmayan/elenen satır. fill ile",
+   "dilim": {
+    "ust": 27,
+    "sag": 47,
+    "alt": 30,
+    "sol": 46,
+    "css": "border-image: url(kit/satir_plaka_set_1/vurgu.webp) 27 47 30 46 fill / 13.5px 23.5px 15px 23px stretch"
+   }
+  },
+  {
+   "yol": "kit/satir_plaka_set_1/tas.webp",
+   "bolum": "satir_plaka_set_1",
+   "no": 19,
+   "ne": "satır plakası taş (pasif)",
+   "genislik": 720,
+   "yukseklik": 122,
+   "tur": "9-dilim",
+   "kullanim": "normal → soy/hasar/ayar satırları, stat kutuları, #ozet karoları, lobi sıralama, kart ad plakası; vurgu → .sr.mvp, kendi lobi satırı, .soy3.on; taş → etkin olmayan/elenen satır. fill ile",
+   "dilim": {
+    "ust": 27,
+    "sag": 47,
+    "alt": 30,
+    "sol": 46,
+    "css": "border-image: url(kit/satir_plaka_set_1/tas.webp) 27 47 30 46 fill / 13.5px 23.5px 15px 23px stretch"
+   }
+  },
+  {
+   "yol": "kit/satir_plaka_set_2/safir.webp",
+   "bolum": "satir_plaka_set_2",
+   "no": 20,
+   "ne": "satır plakası safir",
+   "genislik": 568,
+   "yukseklik": 120,
+   "tur": "9-dilim",
+   "kullanim": "safir → .kdKutu.yet; ametist → .kdKutu.pas; yakut → lobide sıradaki rakip; gün batımı → .soy3 eşik 3, kaynaşmış satır. fill ile",
+   "dilim": {
+    "ust": 24,
+    "sag": 44,
+    "alt": 25,
+    "sol": 45,
+    "css": "border-image: url(kit/satir_plaka_set_2/safir.webp) 24 44 25 45 fill / 12px 22px 12.5px 22.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/satir_plaka_set_2/ametist.webp",
+   "bolum": "satir_plaka_set_2",
+   "no": 20,
+   "ne": "satır plakası ametist",
+   "genislik": 569,
+   "yukseklik": 119,
+   "tur": "9-dilim",
+   "kullanim": "safir → .kdKutu.yet; ametist → .kdKutu.pas; yakut → lobide sıradaki rakip; gün batımı → .soy3 eşik 3, kaynaşmış satır. fill ile",
+   "dilim": {
+    "ust": 24,
+    "sag": 44,
+    "alt": 25,
+    "sol": 45,
+    "css": "border-image: url(kit/satir_plaka_set_2/ametist.webp) 24 44 25 45 fill / 12px 22px 12.5px 22.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/satir_plaka_set_2/yakut.webp",
+   "bolum": "satir_plaka_set_2",
+   "no": 20,
+   "ne": "satır plakası yakut",
+   "genislik": 568,
+   "yukseklik": 119,
+   "tur": "9-dilim",
+   "kullanim": "safir → .kdKutu.yet; ametist → .kdKutu.pas; yakut → lobide sıradaki rakip; gün batımı → .soy3 eşik 3, kaynaşmış satır. fill ile",
+   "dilim": {
+    "ust": 24,
+    "sag": 44,
+    "alt": 25,
+    "sol": 45,
+    "css": "border-image: url(kit/satir_plaka_set_2/yakut.webp) 24 44 25 45 fill / 12px 22px 12.5px 22.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/satir_plaka_set_2/gunbatimi.webp",
+   "bolum": "satir_plaka_set_2",
+   "no": 20,
+   "ne": "satır plakası gün batımı",
+   "genislik": 567,
+   "yukseklik": 119,
+   "tur": "9-dilim",
+   "kullanim": "safir → .kdKutu.yet; ametist → .kdKutu.pas; yakut → lobide sıradaki rakip; gün batımı → .soy3 eşik 3, kaynaşmış satır. fill ile",
+   "dilim": {
+    "ust": 24,
+    "sag": 44,
+    "alt": 25,
+    "sol": 45,
+    "css": "border-image: url(kit/satir_plaka_set_2/gunbatimi.webp) 24 44 25 45 fill / 12px 22px 12.5px 22.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/cip_set_1/notr.webp",
+   "bolum": "cip_set_1",
+   "no": 21,
+   "ne": "değer çipi nötr (mor)",
+   "genislik": 461,
+   "yukseklik": 117,
+   "tur": "3-dilim",
+   "kullanim": "nötr → .pRoz span, .modK em, .kdCip, #rakipSoy .cip, .etiket...; altın → .kart .fiyat (sokette ikon_altin); zümrüt → .yukselEt, .kupaD .art, iyi; yakut → .art.eksi, .rkCan, kötü, .kart.pahali .fiyat. Sol dilim soketi içerir (ikon soket merkezine, sol uçtan ~%17)",
+   "dilim": {
+    "ust": 0,
+    "sag": 78,
+    "alt": 0,
+    "sol": 166,
+    "css": "border-image: url(kit/cip_set_1/notr.webp) 0 78 0 166 fill / 0px 39px 0px 83px stretch"
+   }
+  },
+  {
+   "yol": "kit/cip_set_1/altin.webp",
+   "bolum": "cip_set_1",
+   "no": 21,
+   "ne": "değer çipi altın",
+   "genislik": 461,
+   "yukseklik": 116,
+   "tur": "3-dilim",
+   "kullanim": "nötr → .pRoz span, .modK em, .kdCip, #rakipSoy .cip, .etiket...; altın → .kart .fiyat (sokette ikon_altin); zümrüt → .yukselEt, .kupaD .art, iyi; yakut → .art.eksi, .rkCan, kötü, .kart.pahali .fiyat. Sol dilim soketi içerir (ikon soket merkezine, sol uçtan ~%17)",
+   "dilim": {
+    "ust": 0,
+    "sag": 78,
+    "alt": 0,
+    "sol": 166,
+    "css": "border-image: url(kit/cip_set_1/altin.webp) 0 78 0 166 fill / 0px 39px 0px 83px stretch"
+   }
+  },
+  {
+   "yol": "kit/cip_set_1/zumrut.webp",
+   "bolum": "cip_set_1",
+   "no": 21,
+   "ne": "değer çipi zümrüt",
+   "genislik": 461,
+   "yukseklik": 116,
+   "tur": "3-dilim",
+   "kullanim": "nötr → .pRoz span, .modK em, .kdCip, #rakipSoy .cip, .etiket...; altın → .kart .fiyat (sokette ikon_altin); zümrüt → .yukselEt, .kupaD .art, iyi; yakut → .art.eksi, .rkCan, kötü, .kart.pahali .fiyat. Sol dilim soketi içerir (ikon soket merkezine, sol uçtan ~%17)",
+   "dilim": {
+    "ust": 0,
+    "sag": 78,
+    "alt": 0,
+    "sol": 166,
+    "css": "border-image: url(kit/cip_set_1/zumrut.webp) 0 78 0 166 fill / 0px 39px 0px 83px stretch"
+   }
+  },
+  {
+   "yol": "kit/cip_set_1/yakut.webp",
+   "bolum": "cip_set_1",
+   "no": 21,
+   "ne": "değer çipi yakut",
+   "genislik": 461,
+   "yukseklik": 116,
+   "tur": "3-dilim",
+   "kullanim": "nötr → .pRoz span, .modK em, .kdCip, #rakipSoy .cip, .etiket...; altın → .kart .fiyat (sokette ikon_altin); zümrüt → .yukselEt, .kupaD .art, iyi; yakut → .art.eksi, .rkCan, kötü, .kart.pahali .fiyat. Sol dilim soketi içerir (ikon soket merkezine, sol uçtan ~%17)",
+   "dilim": {
+    "ust": 0,
+    "sag": 78,
+    "alt": 0,
+    "sol": 166,
+    "css": "border-image: url(kit/cip_set_1/yakut.webp) 0 78 0 166 fill / 0px 39px 0px 83px stretch"
+   }
+  },
+  {
+   "yol": "kit/cip_set_2/ametist.webp",
+   "bolum": "cip_set_2",
+   "no": 22,
+   "ne": "değer çipi ametist",
+   "genislik": 465,
+   "yukseklik": 118,
+   "tur": "3-dilim",
+   "kullanim": "ametist → .cip.mvp, .kdVidEt; gün batımı → .gunBatimi, kazanma serisi, armağan alev; buz → kaybetme serisi, armağan kıvılcım",
+   "dilim": {
+    "ust": 0,
+    "sag": 64,
+    "alt": 0,
+    "sol": 184,
+    "css": "border-image: url(kit/cip_set_2/ametist.webp) 0 64 0 184 fill / 0px 32px 0px 92px stretch"
+   }
+  },
+  {
+   "yol": "kit/cip_set_2/gunbatimi.webp",
+   "bolum": "cip_set_2",
+   "no": 22,
+   "ne": "değer çipi gün batımı",
+   "genislik": 465,
+   "yukseklik": 119,
+   "tur": "3-dilim",
+   "kullanim": "ametist → .cip.mvp, .kdVidEt; gün batımı → .gunBatimi, kazanma serisi, armağan alev; buz → kaybetme serisi, armağan kıvılcım",
+   "dilim": {
+    "ust": 0,
+    "sag": 64,
+    "alt": 0,
+    "sol": 184,
+    "css": "border-image: url(kit/cip_set_2/gunbatimi.webp) 0 64 0 184 fill / 0px 32px 0px 92px stretch"
+   }
+  },
+  {
+   "yol": "kit/cip_set_2/buz.webp",
+   "bolum": "cip_set_2",
+   "no": 22,
+   "ne": "değer çipi buz",
+   "genislik": 465,
+   "yukseklik": 119,
+   "tur": "3-dilim",
+   "kullanim": "ametist → .cip.mvp, .kdVidEt; gün batımı → .gunBatimi, kazanma serisi, armağan alev; buz → kaybetme serisi, armağan kıvılcım",
+   "dilim": {
+    "ust": 0,
+    "sag": 64,
+    "alt": 0,
+    "sol": 184,
+    "css": "border-image: url(kit/cip_set_2/buz.webp) 0 64 0 184 fill / 0px 32px 0px 92px stretch"
+   }
+  },
+  {
+   "yol": "kit/plaka_set/mor.webp",
+   "bolum": "plaka_set",
+   "no": 23,
+   "ne": "soketli plaka mor",
+   "genislik": 485,
+   "yukseklik": 140,
+   "tur": "3-dilim",
+   "kullanim": "mor → #ana .profil, kodeks rozeti, .yukEkran .ipucu, .bildirim; yakut → rakip etiketi, .bildirim.hata, .adHata; zümrüt → .bildirim.iyi; kehribar → .modUyari, Kervan bilgi. Sol dilim soketin tamamı",
+   "dilim": {
+    "ust": 0,
+    "sag": 104,
+    "alt": 0,
+    "sol": 141,
+    "css": "border-image: url(kit/plaka_set/mor.webp) 0 104 0 141 fill / 0px 52px 0px 70.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/plaka_set/yakut.webp",
+   "bolum": "plaka_set",
+   "no": 23,
+   "ne": "soketli plaka yakut",
+   "genislik": 485,
+   "yukseklik": 140,
+   "tur": "3-dilim",
+   "kullanim": "mor → #ana .profil, kodeks rozeti, .yukEkran .ipucu, .bildirim; yakut → rakip etiketi, .bildirim.hata, .adHata; zümrüt → .bildirim.iyi; kehribar → .modUyari, Kervan bilgi. Sol dilim soketin tamamı",
+   "dilim": {
+    "ust": 0,
+    "sag": 104,
+    "alt": 0,
+    "sol": 141,
+    "css": "border-image: url(kit/plaka_set/yakut.webp) 0 104 0 141 fill / 0px 52px 0px 70.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/plaka_set/zumrut.webp",
+   "bolum": "plaka_set",
+   "no": 23,
+   "ne": "soketli plaka zümrüt",
+   "genislik": 484,
+   "yukseklik": 142,
+   "tur": "3-dilim",
+   "kullanim": "mor → #ana .profil, kodeks rozeti, .yukEkran .ipucu, .bildirim; yakut → rakip etiketi, .bildirim.hata, .adHata; zümrüt → .bildirim.iyi; kehribar → .modUyari, Kervan bilgi. Sol dilim soketin tamamı",
+   "dilim": {
+    "ust": 0,
+    "sag": 104,
+    "alt": 0,
+    "sol": 141,
+    "css": "border-image: url(kit/plaka_set/zumrut.webp) 0 104 0 141 fill / 0px 52px 0px 70.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/plaka_set/kehribar.webp",
+   "bolum": "plaka_set",
+   "no": 23,
+   "ne": "soketli plaka kehribar",
+   "genislik": 485,
+   "yukseklik": 140,
+   "tur": "3-dilim",
+   "kullanim": "mor → #ana .profil, kodeks rozeti, .yukEkran .ipucu, .bildirim; yakut → rakip etiketi, .bildirim.hata, .adHata; zümrüt → .bildirim.iyi; kehribar → .modUyari, Kervan bilgi. Sol dilim soketin tamamı",
+   "dilim": {
+    "ust": 0,
+    "sag": 104,
+    "alt": 0,
+    "sol": 141,
+    "css": "border-image: url(kit/plaka_set/kehribar.webp) 0 104 0 141 fill / 0px 52px 0px 70.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/sekme_set/aktif.webp",
+   "bolum": "sekme_set",
+   "no": 24,
+   "ne": "sekme aktif (altın)",
+   "genislik": 482,
+   "yukseklik": 122,
+   "tur": "3-dilim",
+   "kullanim": "#kodeks .filtre (Hepsi/Kademe), #hasarOzet .sekmeler, #aHedef kare hızı, Ayarlar sekmeleri; iz sekmelerin arkasında",
+   "dilim": {
+    "ust": 0,
+    "sag": 167,
+    "alt": 0,
+    "sol": 152,
+    "css": "border-image: url(kit/sekme_set/aktif.webp) 0 167 0 152 fill / 0px 83.5px 0px 76px stretch"
+   }
+  },
+  {
+   "yol": "kit/sekme_set/pasif.webp",
+   "bolum": "sekme_set",
+   "no": 24,
+   "ne": "sekme pasif (mor)",
+   "genislik": 482,
+   "yukseklik": 122,
+   "tur": "3-dilim",
+   "kullanim": "#kodeks .filtre (Hepsi/Kademe), #hasarOzet .sekmeler, #aHedef kare hızı, Ayarlar sekmeleri; iz sekmelerin arkasında",
+   "dilim": {
+    "ust": 0,
+    "sag": 167,
+    "alt": 0,
+    "sol": 152,
+    "css": "border-image: url(kit/sekme_set/pasif.webp) 0 167 0 152 fill / 0px 83.5px 0px 76px stretch"
+   }
+  },
+  {
+   "yol": "kit/sekme_set/iz.webp",
+   "bolum": "sekme_set",
+   "no": 24,
+   "ne": "sekme izi (oluk plaka)",
+   "genislik": 523,
+   "yukseklik": 75,
+   "tur": "3-dilim",
+   "kullanim": "#kodeks .filtre (Hepsi/Kademe), #hasarOzet .sekmeler, #aHedef kare hızı, Ayarlar sekmeleri; iz sekmelerin arkasında",
+   "dilim": {
+    "ust": 0,
+    "sag": 167,
+    "alt": 0,
+    "sol": 152,
+    "css": "border-image: url(kit/sekme_set/iz.webp) 0 167 0 152 fill / 0px 83.5px 0px 76px stretch"
+   }
+  },
+  {
+   "yol": "kit/metin_alani_set/normal.webp",
+   "bolum": "metin_alani_set",
+   "no": 25,
+   "ne": "metin alanı normal",
+   "genislik": 564,
+   "yukseklik": 142,
+   "tur": "9-dilim",
+   "kullanim": ".adForm input#adGir, .pencere textarea (#dKod, #dGir), #son .kodKutu; :focus → odak. fill ile",
+   "dilim": {
+    "ust": 43,
+    "sag": 70,
+    "alt": 48,
+    "sol": 67,
+    "css": "border-image: url(kit/metin_alani_set/normal.webp) 43 70 48 67 fill / 21.5px 35px 24px 33.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/metin_alani_set/odak.webp",
+   "bolum": "metin_alani_set",
+   "no": 25,
+   "ne": "metin alanı odakta (altın ışıma, kenarda ışıma payı)",
+   "genislik": 590,
+   "yukseklik": 167,
+   "tur": "9-dilim",
+   "kullanim": ".adForm input#adGir, .pencere textarea (#dKod, #dGir), #son .kodKutu; :focus → odak. fill ile",
+   "dilim": {
+    "ust": 43,
+    "sag": 70,
+    "alt": 48,
+    "sol": 67,
+    "css": "border-image: url(kit/metin_alani_set/odak.webp) 43 70 48 67 fill / 21.5px 35px 24px 33.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/anahtar_set/acik.webp",
+   "bolum": "anahtar_set",
+   "no": 26,
+   "ne": "aç/kapa anahtarı açık (zümrüt, topuz sağda)",
+   "genislik": 334,
+   "yukseklik": 133,
+   "tur": "sabit",
+   "kullanim": "Ayarlar #aSes, #aMuzik, #aUyarla, #aFps, #aAz (anahtar olarak); sabit oran, background-size:100% 100%"
+  },
+  {
+   "yol": "kit/anahtar_set/kapali.webp",
+   "bolum": "anahtar_set",
+   "no": 26,
+   "ne": "aç/kapa anahtarı kapalı (gri, topuz solda)",
+   "genislik": 335,
+   "yukseklik": 134,
+   "tur": "sabit",
+   "kullanim": "Ayarlar #aSes, #aMuzik, #aUyarla, #aFps, #aAz (anahtar olarak); sabit oran, background-size:100% 100%"
+  },
+  {
+   "yol": "kit/cubuk_set/cubuk_buyuk.webp",
+   "bolum": "cubuk_set",
+   "no": 27,
+   "ne": "büyük çubuk çerçevesi (boş oluk)",
+   "genislik": 762,
+   "yukseklik": 126,
+   "tur": "3-dilim",
+   "kullanim": "büyük → .yukEkran .cubuk, #son .lig .takimCan, ustalık; mini → sahne3d birim can çubukları (drawImage 3-dilim); ince → ses/müzik kaydırıcısı, #hasarOzet .c. Dolgu (#28) oluğun içine, çerçeve üstte",
+   "dilim": {
+    "ust": 0,
+    "sag": 116,
+    "alt": 0,
+    "sol": 116,
+    "css": "border-image: url(kit/cubuk_set/cubuk_buyuk.webp) 0 116 0 116 fill / 0 58px 0 58px stretch"
+   }
+  },
+  {
+   "yol": "kit/cubuk_set/cubuk_mini_dost.webp",
+   "bolum": "cubuk_set",
+   "no": 27,
+   "ne": "mini çubuk dost (zümrüt uçlar)",
+   "genislik": 486,
+   "yukseklik": 75,
+   "tur": "3-dilim",
+   "kullanim": "büyük → .yukEkran .cubuk, #son .lig .takimCan, ustalık; mini → sahne3d birim can çubukları (drawImage 3-dilim); ince → ses/müzik kaydırıcısı, #hasarOzet .c. Dolgu (#28) oluğun içine, çerçeve üstte",
+   "dilim": {
+    "ust": 0,
+    "sag": 73,
+    "alt": 0,
+    "sol": 73,
+    "css": "border-image: url(kit/cubuk_set/cubuk_mini_dost.webp) 0 73 0 73 fill / 0 36.5px 0 36.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/cubuk_set/cubuk_mini_rakip.webp",
+   "bolum": "cubuk_set",
+   "no": 27,
+   "ne": "mini çubuk rakip (yakut uçlar)",
+   "genislik": 486,
+   "yukseklik": 76,
+   "tur": "3-dilim",
+   "kullanim": "büyük → .yukEkran .cubuk, #son .lig .takimCan, ustalık; mini → sahne3d birim can çubukları (drawImage 3-dilim); ince → ses/müzik kaydırıcısı, #hasarOzet .c. Dolgu (#28) oluğun içine, çerçeve üstte",
+   "dilim": {
+    "ust": 0,
+    "sag": 72,
+    "alt": 0,
+    "sol": 72,
+    "css": "border-image: url(kit/cubuk_set/cubuk_mini_rakip.webp) 0 72 0 72 fill / 0 36px 0 36px stretch"
+   }
+  },
+  {
+   "yol": "kit/cubuk_set/cubuk_ince.webp",
+   "bolum": "cubuk_set",
+   "no": 27,
+   "ne": "ince iz (kaydırıcı / hasar çubuğu)",
+   "genislik": 725,
+   "yukseklik": 38,
+   "tur": "3-dilim",
+   "kullanim": "büyük → .yukEkran .cubuk, #son .lig .takimCan, ustalık; mini → sahne3d birim can çubukları (drawImage 3-dilim); ince → ses/müzik kaydırıcısı, #hasarOzet .c. Dolgu (#28) oluğun içine, çerçeve üstte",
+   "dilim": {
+    "ust": 0,
+    "sag": 37,
+    "alt": 0,
+    "sol": 37,
+    "css": "border-image: url(kit/cubuk_set/cubuk_ince.webp) 0 37 0 37 fill / 0 18.5px 0 18.5px stretch"
+   }
+  },
+  {
+   "yol": "kit/cubuk_dolgu_set/dolgu_altin.webp",
+   "bolum": "cubuk_dolgu_set",
+   "no": 28,
+   "ne": "altın-kehribar dolgu",
+   "genislik": 772,
+   "yukseklik": 40,
+   "tur": "serit",
+   "kullanim": "altın → .yukEkran .cubuk i, lig/ustalık, kaydırıcı dolgusu; turuncu/lila → #hasarOzet .c i; kalkan → sahne3d kalkanDesen(); iz → cubukCiz() iz şeridi, .takimCan s.iz. background: url() 0 0/auto 100% repeat-x (yatayda dikişsiz)"
+  },
+  {
+   "yol": "kit/cubuk_dolgu_set/dolgu_turuncu.webp",
+   "bolum": "cubuk_dolgu_set",
+   "no": 28,
+   "ne": "turuncu dolgu",
+   "genislik": 763,
+   "yukseklik": 40,
+   "tur": "serit",
+   "kullanim": "altın → .yukEkran .cubuk i, lig/ustalık, kaydırıcı dolgusu; turuncu/lila → #hasarOzet .c i; kalkan → sahne3d kalkanDesen(); iz → cubukCiz() iz şeridi, .takimCan s.iz. background: url() 0 0/auto 100% repeat-x (yatayda dikişsiz)"
+  },
+  {
+   "yol": "kit/cubuk_dolgu_set/dolgu_lila.webp",
+   "bolum": "cubuk_dolgu_set",
+   "no": 28,
+   "ne": "lila dolgu",
+   "genislik": 753,
+   "yukseklik": 40,
+   "tur": "serit",
+   "kullanim": "altın → .yukEkran .cubuk i, lig/ustalık, kaydırıcı dolgusu; turuncu/lila → #hasarOzet .c i; kalkan → sahne3d kalkanDesen(); iz → cubukCiz() iz şeridi, .takimCan s.iz. background: url() 0 0/auto 100% repeat-x (yatayda dikişsiz)"
+  },
+  {
+   "yol": "kit/cubuk_dolgu_set/dolgu_kalkan.webp",
+   "bolum": "cubuk_dolgu_set",
+   "no": 28,
+   "ne": "kalkan dolgusu (gümüş tarama)",
+   "genislik": 806,
+   "yukseklik": 40,
+   "tur": "serit",
+   "kullanim": "altın → .yukEkran .cubuk i, lig/ustalık, kaydırıcı dolgusu; turuncu/lila → #hasarOzet .c i; kalkan → sahne3d kalkanDesen(); iz → cubukCiz() iz şeridi, .takimCan s.iz. background: url() 0 0/auto 100% repeat-x (yatayda dikişsiz)"
+  },
+  {
+   "yol": "kit/cubuk_dolgu_set/dolgu_iz.webp",
+   "bolum": "cubuk_dolgu_set",
+   "no": 28,
+   "ne": "hasar izi dolgusu (krem)",
+   "genislik": 772,
+   "yukseklik": 40,
+   "tur": "serit",
+   "kullanim": "altın → .yukEkran .cubuk i, lig/ustalık, kaydırıcı dolgusu; turuncu/lila → #hasarOzet .c i; kalkan → sahne3d kalkanDesen(); iz → cubukCiz() iz şeridi, .takimCan s.iz. background: url() 0 0/auto 100% repeat-x (yatayda dikişsiz)"
+  },
+  {
+   "yol": "kit/kontrol_set/kaydirici_topuz.webp",
+   "bolum": "kontrol_set",
+   "no": 29,
+   "ne": "kaydırıcı topuzu",
+   "genislik": 132,
+   "yukseklik": 131,
+   "tur": "sabit",
+   "kullanim": "ses/müzik kaydırıcı topuzu"
+  },
+  {
+   "yol": "kit/kontrol_set/kivilcim_uc.webp",
+   "bolum": "kontrol_set",
+   "no": 29,
+   "ne": "dolgu ucu kıvılcımı",
+   "genislik": 169,
+   "yukseklik": 163,
+   "tur": "sabit",
+   "kullanim": ".cubuk i::after (dolgunun parlayan ucu), mix-blend-mode:screen önerilir"
+  },
+  {
+   "yol": "kit/kontrol_set/kaydirma_ray.webp",
+   "bolum": "kontrol_set",
+   "no": 29,
+   "ne": "kaydırma rayı (dikey)",
+   "genislik": 34,
+   "yukseklik": 249,
+   "tur": "3-dilim-dikey",
+   "kullanim": ".pencere, #hasarOzet .satirlar kaydırma göstergesi rayı (dikey 3-dilim)",
+   "dilim": {
+    "ust": 29,
+    "sag": 0,
+    "alt": 31,
+    "sol": 0,
+    "css": "border-image: url(kit/kontrol_set/kaydirma_ray.webp) 29 0 31 0 fill / 14.5px 0 15.5px 0 stretch"
+   }
+  },
+  {
+   "yol": "kit/kontrol_set/kaydirma_tutamak.webp",
+   "bolum": "kontrol_set",
+   "no": 29,
+   "ne": "kaydırma tutamağı",
+   "genislik": 69,
+   "yukseklik": 172,
+   "tur": "sabit",
+   "kullanim": "kaydırma tutamağı (ray üstünde)"
+  },
+  {
+   "yol": "kit/kart_cerceve_set_1/kart_cerceve_k1.webp",
+   "bolum": "kart_cerceve_set_1",
+   "no": 30,
+   "ne": "kademe 1 gümüş kart çerçevesi",
+   "genislik": 384,
+   "yukseklik": 500,
+   "tur": "9-dilim",
+   "kullanim": "#mac .kart.k1–k5, #kahIzgara .kk, #pencere .kdCer/.kdVid, .bilgiKart .bkPor, #sonTakim .m, .secimler .sc; altın → Soy Mührü/Ganimet/eşya seçimi, armağan güneş; gün batımı → kaynaşmış karo, armağan alev. fill YOK (içi saydam, altına kart_zemin)",
+   "dilim": {
+    "ust": 130,
+    "sag": 118,
+    "alt": 125,
+    "sol": 118,
+    "css": "border-image: url(kit/kart_cerceve_set_1/kart_cerceve_k1.webp) 130 118 125 118 fill / 65px 59px 62.5px 59px stretch"
+   }
+  },
+  {
+   "yol": "kit/kart_cerceve_set_1/kart_cerceve_k2.webp",
+   "bolum": "kart_cerceve_set_1",
+   "no": 30,
+   "ne": "kademe 2 zümrüt kart çerçevesi",
+   "genislik": 384,
+   "yukseklik": 500,
+   "tur": "9-dilim",
+   "kullanim": "#mac .kart.k1–k5, #kahIzgara .kk, #pencere .kdCer/.kdVid, .bilgiKart .bkPor, #sonTakim .m, .secimler .sc; altın → Soy Mührü/Ganimet/eşya seçimi, armağan güneş; gün batımı → kaynaşmış karo, armağan alev. fill YOK (içi saydam, altına kart_zemin)",
+   "dilim": {
+    "ust": 130,
+    "sag": 118,
+    "alt": 125,
+    "sol": 118,
+    "css": "border-image: url(kit/kart_cerceve_set_1/kart_cerceve_k2.webp) 130 118 125 118 fill / 65px 59px 62.5px 59px stretch"
+   }
+  },
+  {
+   "yol": "kit/kart_cerceve_set_1/kart_cerceve_k3.webp",
+   "bolum": "kart_cerceve_set_1",
+   "no": 30,
+   "ne": "kademe 3 safir kart çerçevesi",
+   "genislik": 384,
+   "yukseklik": 500,
+   "tur": "9-dilim",
+   "kullanim": "#mac .kart.k1–k5, #kahIzgara .kk, #pencere .kdCer/.kdVid, .bilgiKart .bkPor, #sonTakim .m, .secimler .sc; altın → Soy Mührü/Ganimet/eşya seçimi, armağan güneş; gün batımı → kaynaşmış karo, armağan alev. fill YOK (içi saydam, altına kart_zemin)",
+   "dilim": {
+    "ust": 130,
+    "sag": 118,
+    "alt": 125,
+    "sol": 118,
+    "css": "border-image: url(kit/kart_cerceve_set_1/kart_cerceve_k3.webp) 130 118 125 118 fill / 65px 59px 62.5px 59px stretch"
+   }
+  },
+  {
+   "yol": "kit/kart_cerceve_set_2/kart_cerceve_k4.webp",
+   "bolum": "kart_cerceve_set_2",
+   "no": 31,
+   "ne": "kademe 4 ametist kart çerçevesi",
+   "genislik": 384,
+   "yukseklik": 500,
+   "tur": "9-dilim",
+   "kullanim": "#mac .kart.k1–k5, #kahIzgara .kk, #pencere .kdCer/.kdVid, .bilgiKart .bkPor, #sonTakim .m, .secimler .sc; altın → Soy Mührü/Ganimet/eşya seçimi, armağan güneş; gün batımı → kaynaşmış karo, armağan alev. fill YOK (içi saydam, altına kart_zemin)",
+   "dilim": {
+    "ust": 121,
+    "sag": 116,
+    "alt": 118,
+    "sol": 118,
+    "css": "border-image: url(kit/kart_cerceve_set_2/kart_cerceve_k4.webp) 121 116 118 118 fill / 60.5px 58px 59px 59px stretch"
+   }
+  },
+  {
+   "yol": "kit/kart_cerceve_set_2/kart_cerceve_k5.webp",
+   "bolum": "kart_cerceve_set_2",
+   "no": 31,
+   "ne": "kademe 5 gün batımı kart çerçevesi",
+   "genislik": 384,
+   "yukseklik": 500,
+   "tur": "9-dilim",
+   "kullanim": "#mac .kart.k1–k5, #kahIzgara .kk, #pencere .kdCer/.kdVid, .bilgiKart .bkPor, #sonTakim .m, .secimler .sc; altın → Soy Mührü/Ganimet/eşya seçimi, armağan güneş; gün batımı → kaynaşmış karo, armağan alev. fill YOK (içi saydam, altına kart_zemin)",
+   "dilim": {
+    "ust": 121,
+    "sag": 116,
+    "alt": 118,
+    "sol": 118,
+    "css": "border-image: url(kit/kart_cerceve_set_2/kart_cerceve_k5.webp) 121 116 118 118 fill / 60.5px 58px 59px 59px stretch"
+   }
+  },
+  {
+   "yol": "kit/kart_cerceve_set_2/kart_cerceve_altin.webp",
+   "bolum": "kart_cerceve_set_2",
+   "no": 31,
+   "ne": "saf altın kart çerçevesi",
+   "genislik": 384,
+   "yukseklik": 500,
+   "tur": "9-dilim",
+   "kullanim": "#mac .kart.k1–k5, #kahIzgara .kk, #pencere .kdCer/.kdVid, .bilgiKart .bkPor, #sonTakim .m, .secimler .sc; altın → Soy Mührü/Ganimet/eşya seçimi, armağan güneş; gün batımı → kaynaşmış karo, armağan alev. fill YOK (içi saydam, altına kart_zemin)",
+   "dilim": {
+    "ust": 121,
+    "sag": 116,
+    "alt": 118,
+    "sol": 118,
+    "css": "border-image: url(kit/kart_cerceve_set_2/kart_cerceve_altin.webp) 121 116 118 118 fill / 60.5px 58px 59px 59px stretch"
+   }
+  },
+  {
+   "yol": "kit/kart_zemin/zemin.webp",
+   "bolum": "kart_zemin",
+   "no": 32,
+   "ne": "kahraman portre kartı zemini (opak)",
+   "genislik": 512,
+   "yukseklik": 512,
+   "tur": "zemin",
+   "kullanim": "#kahIzgara .kk::before, #mac .kart .resim, .kdCer::before, .bkPor, .secimler .sc img.pp arkası, #ana .profil .avatar (daire kırp); background-size:cover, background-position:center bottom"
+  },
+  {
+   "yol": "kit/kademe_tas_set/kademe_k1.webp",
+   "bolum": "kademe_tas_set",
+   "no": 33,
+   "ne": "gümüş-beyaz kademe taşı (K1)",
+   "genislik": 115,
+   "yukseklik": 135,
+   "tur": "sabit",
+   "kullanim": "#kahIzgara .kk .kTag, #pencere .kdKad, .kTag, .kdCip.kad soketi, Kodeks filtre, .sansKutu; clip-path elmas yerine, yazı ortada"
+  },
+  {
+   "yol": "kit/kademe_tas_set/kademe_k2.webp",
+   "bolum": "kademe_tas_set",
+   "no": 33,
+   "ne": "zümrüt kademe taşı (K2)",
+   "genislik": 115,
+   "yukseklik": 135,
+   "tur": "sabit",
+   "kullanim": "#kahIzgara .kk .kTag, #pencere .kdKad, .kTag, .kdCip.kad soketi, Kodeks filtre, .sansKutu; clip-path elmas yerine, yazı ortada"
+  },
+  {
+   "yol": "kit/kademe_tas_set/kademe_k3.webp",
+   "bolum": "kademe_tas_set",
+   "no": 33,
+   "ne": "safir kademe taşı (K3)",
+   "genislik": 115,
+   "yukseklik": 136,
+   "tur": "sabit",
+   "kullanim": "#kahIzgara .kk .kTag, #pencere .kdKad, .kTag, .kdCip.kad soketi, Kodeks filtre, .sansKutu; clip-path elmas yerine, yazı ortada"
+  },
+  {
+   "yol": "kit/kademe_tas_set/kademe_k4.webp",
+   "bolum": "kademe_tas_set",
+   "no": 33,
+   "ne": "ametist kademe taşı (K4)",
+   "genislik": 115,
+   "yukseklik": 135,
+   "tur": "sabit",
+   "kullanim": "#kahIzgara .kk .kTag, #pencere .kdKad, .kTag, .kdCip.kad soketi, Kodeks filtre, .sansKutu; clip-path elmas yerine, yazı ortada"
+  },
+  {
+   "yol": "kit/kademe_tas_set/kademe_k5.webp",
+   "bolum": "kademe_tas_set",
+   "no": 33,
+   "ne": "gün batımı kademe taşı (K5)",
+   "genislik": 114,
+   "yukseklik": 135,
+   "tur": "sabit",
+   "kullanim": "#kahIzgara .kk .kTag, #pencere .kdKad, .kTag, .kdCip.kad soketi, Kodeks filtre, .sansKutu; clip-path elmas yerine, yazı ortada"
+  }
+ ]
+}

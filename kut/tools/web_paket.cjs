@@ -27,6 +27,9 @@ if (fs.existsSync(path.join(KUT, 'arayuz', 'ui', 'esya'))) for (const f of fs.re
 for (const f of fs.readdirSync(path.join(KUT, 'arayuz', 'portre'))) kopya('arayuz/portre/' + f, 'arayuz/portre/' + f);
 // karşılama / yükleme / menü görselleri (robot; kaynak PNG'ler kut/gelen_gorsel): geliştirme sürümünde de web/arayuz/menu, yol değişmez
 for (const f of fs.readdirSync(path.join(WEB, 'arayuz', 'menu'))) if (f.endsWith('.webp')) kopya('web/arayuz/menu/' + f, 'arayuz/menu/' + f);
+// arayüz kiti (robot; web/arayuz/kit/<set>/<parça>.webp, GORSEL_ISTEK_3): her alt klasörün .webp dosyaları (3B *_3b.webp dahil) + manifest_*.json
+if (fs.existsSync(path.join(WEB, 'arayuz', 'kit'))) for (const d of fs.readdirSync(path.join(WEB, 'arayuz', 'kit'))) { const p = path.join(WEB, 'arayuz', 'kit', d);
+  if (fs.statSync(p).isDirectory()) { for (const f of fs.readdirSync(p)) if (f.endsWith('.webp')) kopya('web/arayuz/kit/' + d + '/' + f, 'arayuz/kit/' + d + '/' + f); } else if (/^manifest_.*\.json$/.test(d)) kopya('web/arayuz/kit/' + d, 'arayuz/kit/' + d); }
 // Kut Armağanı kart görselleri (robot; web/arayuz/armagan/<id>.webp, isteğe bağlı): liste.json var olanları sayar (arayuz.js 404 yerine buna bakar)
 { const AD = path.join(WEB, 'arayuz', 'armagan'); fs.mkdirSync(AD, { recursive: true });
   const l = fs.readdirSync(AD).filter(f => f.endsWith('.webp')).map(f => f.slice(0, -5)).sort();
@@ -42,6 +45,17 @@ for (const f of fs.readdirSync(path.join(WEB, 'muzik'))) if (f.endsWith('.mp3'))
 // yazı tipleri (paket içi woff2 + OFL lisansları; dış CDN yok)
 for (const f of fs.readdirSync(path.join(WEB, 'yazi'))) if (/\.(woff2|txt)$/.test(f)) { fs.mkdirSync(path.join(OUT, 'yazi'), { recursive: true }); fs.copyFileSync(path.join(WEB, 'yazi', f), path.join(OUT, 'yazi', f)); }
 for (const f of ['gokyuzu.webp', 'doku_tas.webp', 'doku_cimen.webp']) kopya('gorsel/' + f, 'gorsel/' + f);
+// küçük kit görselleri (yalnız index.html CSS url(...) içinde geçen, JS'te anılmayan, <20 KB) sayfaya data: URI olarak gömülür: yayının dosya sınırı (511) için
+{ const hp = path.join(OUT, 'index.html'); let h = fs.readFileSync(hp, 'utf8');
+  const js = fs.readdirSync(OUT).filter(f => f.endsWith('.js')).map(f => fs.readFileSync(path.join(OUT, f), 'utf8')).join('\n');
+  const yollar = [...new Set([...h.matchAll(/url\("?(arayuz\/kit\/[^)"]+\.webp)"?\)/g)].map(m => m[1]))];
+  let gom = 0;
+  for (const y of yollar) { const d = path.join(OUT, y); if (!fs.existsSync(d) || fs.statSync(d).size >= 20000) continue;
+    const kok = y.slice('arayuz/kit/'.length, -5); if (js.includes(y) || new RegExp(kok.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '[\'"`]').test(js)) continue;
+    const toplamAnis = h.split(y).length - 1, urlAnis = h.split('url(' + y + ')').length - 1 + h.split('url("' + y + '")').length - 1; if (toplamAnis !== urlAnis) continue;
+    const uri = 'data:image/webp;base64,' + fs.readFileSync(d).toString('base64');
+    h = h.split('url("' + y + '")').join('url("' + uri + '")').split('url(' + y + ')').join('url("' + uri + '")'); gom++; }
+  fs.writeFileSync(hp, h); console.log('gömülü kit görseli:', gom); }
 // kalan ../ yolu var mı?
 const kalan = ['index.html', 'arayuz.js', 'karsilama.js', 'sahne3d.js', 'gorunum.js', 'vfx.js', 'hareket.js'].flatMap(f => fs.readFileSync(path.join(OUT, f), 'utf8').split('\n').filter(l => !/^\s*(\/\*|\/\/|\*)/.test(l) && /['"`]\.\.\//.test(l)).map(l => f + ': ' + l.trim().slice(0, 80)));
 let toplam = 0, sayi = 0; (function gez(d) { for (const f of fs.readdirSync(d)) { const p = path.join(d, f); if (fs.statSync(p).isDirectory()) gez(p); else { toplam += fs.statSync(p).size; sayi++; } } })(OUT);

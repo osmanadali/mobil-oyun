@@ -16,6 +16,27 @@ var l=document.createElement('link');l.rel='preload';l.as='image';l.type='image/
 <link rel="preload" href="yazi/cinzel-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="yazi/alegreya-sans-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 /* ==================================================================
+   KİT (GORSEL_ISTEK_3 robot arayüz kiti) — ORTAK SINIFLAR. Görseller arayuz/kit/<set>/<parça>.webp (2× retina);
+   dilim payları ve ölçüler kit/manifest_1.json (#1–33) + manifest_2.json (#34–64). Kurallar bu dosyanın EN SONUNDAKİ
+   "KİT v3" bloğunda; düz CSS kutu/degrade/kenarlık yerine bunları kullanın. JS: kik('set/parça','sınıf') → <img class="kik">.
+   3 DİLİM DERİ (en sondaki "DÜZELTME (hakem turu 1)" bloğu): düğme, sekme ve büyük çubuk border-image ile DEĞİL, …_sol/_orta/_sag.webp üç arka plan
+     katmanıyla çizilir (orta katman uçların altına girer → dilim ek yeri çizgisi yok). Değişkenler --k3s/--k3o/--k3g/--k3w; --bh öğenin yüksekliğine eşit olmalı.
+   Düğmeler (3 dilim; uç genişliği --bh = düğme yüksekliği; bağlamda boy için yalnız --bh ve height/min-height değiştirin):
+     .btn.altin    dugme_altin_kucuk_set normal / :active basili / :disabled pasif   (birincil: Tamam, Kaydet, Başla)
+     .btn.mor      dugme_mor_set normal / basili / pasif; .mor.secik → secili (ışıma payı outset ile)   (ikincil)
+     .btn.hayalet  dugme_mor_set/hayalet (içi boş; Vazgeç / İptal / Kapat); .btn.sade da bununla
+     .btn.sat      dugme_renk_set yakut / yakut_basili (sat, maçtan çık)   .btn.gb  gunbatimi / gunbatimi_basili
+     .btn.kucuk    --bh 38px (satır içi)      .btn.yuvarlak (+.altin)  menu/dugme_yuvarlak ailesi + ortada <img class="kik">
+     Kontur: --kontur; ikon: <img class="kik ik"> (ölçü .btn .ik). OYNA (#ana .oyna) ve sonuç "Devam" (#sDevam) dugme_oyna ile ayrı.
+   Pencere (#perde .pencere, Armağan hariç): pencere_cerceve 9 dilim (dolgu yok, outset ile altın çizgi kutu kenarında) +
+     doku_cam_mor iç zemin; ilk h3 = kurdele_set_1/mor başlık; son .eylemler üstünde ayrac_suslu; KAPAT_X (.pKapat, sağ üst
+     yuvarlak + ikon_kapat); ul.kitMadde kristal madde imi; kaydırma göstergesi kontrol_set ray/tutamak; textarea/input metin_alani_set.
+   Denetimler: .kitAnahtar(.acik) anahtar_set · .kitIz + .kitSekme(.on) sekme_set · .kitSatir (satir_plaka_set_1 + .ksIk ikon +
+     .ksYazi b/small + denetim) · .bildirim(.hata/.iyi) plaka_set + soket ikonu · .tabletNot panel_ince_set/mor.
+   Savaş / sonuç / maç sonu / Kodeks / öğretici / armağan ("savaş ve sonuç" bloğu): .kitCubuk > i (cubuk_buyuk + dolgu_altin; --cb boy,
+     --o doluluk 0–1) · .kitBas (baslik_bandi + madde_kristal) · .kilic (silah_set; JS kilicSvg) · perde = perde_vinyet_alfa (vinyetin saydam sürümü).
+   ================================================================== */
+/* ==================================================================
    KUT ARENA — SON ARAYÜZ TASARIMI
    Temel: Öneri A "Altın Efsane" (altın kenar, koyu mor zemin, köşe mücevheri)
    Eklenenler: B'nin bilgi hiyerarşisi ve öğretici metinleri, C'nin sağ alt Kut
@@ -2141,7 +2162,1434 @@ html.alcak #savas .alametK{height:38px}html.alcak #savas .alametK .ay{width:28px
 .sk .ust{height:19px}.sk .tasiyan img{width:19px;height:19px}
 .sk .esk{line-height:1.15}.sk .esk em{height:14px}
 html.alcak .sk .ust{height:auto}
+
+/* ======================================================================================================
+   KİT v3 — robot arayüz kiti (arayuz/kit; ayrıntı en üstteki "KİT" notunda). Bu blok en sonda: ortak parçaların son sözü.
+   ====================================================================================================== */
+/* ---- düğmeler: altın / mor / yakut (sat) / gün batımı (gb) / hayalet + sade; 3 dilim, uç genişliği yüksekliğe (--bh) bağlı ---- */
+.btn{--bh:48px}
+.pencere .btn{--bh:52px}
+.btn.altin,.btn.mor,.btn.sat,.btn.gb,.btn.sade,.btn.hayalet{background:none;box-shadow:none;border-radius:999px;padding-left:calc(var(--bh)*.66);padding-right:calc(var(--bh)*.66);filter:drop-shadow(0 4px 5px rgba(0,0,0,.45))}
+.btn.altin::before,.btn.mor::before,.btn.sat::before,.btn.gb::before,.btn.sade::before,.btn.hayalet::before{display:none}
+.btn.altin::after,.btn.mor::after,.btn.sat::after,.btn.gb::after,.btn.sade::after,.btn.hayalet::after{border-radius:999px;inset:4px calc(var(--bh)*.18)}
+.btn.altin:not(.oyna):not(#sDevam):is(#kit,.btn):is(#kit,.btn){border-style:solid;border-color:transparent;border-image-source:url(arayuz/kit/dugme_altin_kucuk_set/normal.webp);border-image-slice:0 114 0 111 fill;
+  border-image-width:0 calc(var(--bh)*.934) 0 calc(var(--bh)*.91);border-image-outset:0;border-image-repeat:stretch}
+.btn.altin:not(.oyna):not(#sDevam):is(#kit,.btn):is(#kit,.btn):active{border-image-source:url(arayuz/kit/dugme_altin_kucuk_set/basili.webp)}
+.btn.mor:is(#kit,.btn):is(#kit,.btn),.btn.sade:is(#kit,.btn):is(#kit,.btn),.btn.hayalet:is(#kit,.btn):is(#kit,.btn){border-style:solid;border-color:transparent;border-image-source:url(arayuz/kit/dugme_mor_set/normal.webp);border-image-slice:0 87 0 86 fill;
+  border-image-width:0 calc(var(--bh)*.744) 0 calc(var(--bh)*.735);border-image-outset:0;border-image-repeat:stretch}
+.btn.mor:is(#kit,.btn):is(#kit,.btn):active{border-image-source:url(arayuz/kit/dugme_mor_set/basili.webp)}
+.btn.mor.secik:is(#kit,.btn):is(#kit,.btn){border-image-source:url(arayuz/kit/dugme_mor_set/secili.webp);border-image-width:0 calc((var(--bh) + 15px)*.592) 0 calc((var(--bh) + 15px)*.585);border-image-outset:7.5px 5px}
+.btn.hayalet:is(#kit,.btn):is(#kit,.btn),.btn.sade:is(#kit,.btn):is(#kit,.btn){border-image-source:url(arayuz/kit/dugme_mor_set/hayalet.webp)}
+.btn.hayalet,.btn.sade{background:rgba(14,5,28,.5) padding-box;background-clip:padding-box}
+.btn.hayalet:is(#kit,.btn):is(#kit,.btn):active,.btn.sade:is(#kit,.btn):is(#kit,.btn):active{border-image-source:url(arayuz/kit/dugme_mor_set/basili.webp)}
+.btn.sat:is(#kit,.btn):is(#kit,.btn),.btn.gb:is(#kit,.btn):is(#kit,.btn){border-style:solid;border-color:transparent;border-image-source:url(arayuz/kit/dugme_renk_set/yakut.webp);border-image-slice:0 79 0 79 fill;
+  border-image-width:0 calc(var(--bh)*.675) 0 calc(var(--bh)*.675);border-image-outset:0;border-image-repeat:stretch}
+.btn.sat:is(#kit,.btn):is(#kit,.btn):active{border-image-source:url(arayuz/kit/dugme_renk_set/yakut_basili.webp)}
+.btn.gb:is(#kit,.btn):is(#kit,.btn){border-image-source:url(arayuz/kit/dugme_renk_set/gunbatimi.webp)}
+.btn.gb:is(#kit,.btn):is(#kit,.btn):active{border-image-source:url(arayuz/kit/dugme_renk_set/gunbatimi_basili.webp)}
+/* devre dışı: kit pasif taşları (altın → gri taş; mor/yakut/gün batımı → mor pasif). Gri filtre yok. */
+.btn.altin:not(.oyna):not(#sDevam):is(#kit,.btn):is(#kit,.btn):disabled,.btn.altin:not(.oyna):not(#sDevam):is(#kit,.btn):is(#kit,.btn)[disabled]{border-image-source:url(arayuz/kit/dugme_altin_kucuk_set/pasif.webp);filter:drop-shadow(0 3px 4px rgba(0,0,0,.4));opacity:1}
+.btn.mor:is(#kit,.btn):is(#kit,.btn):disabled,.btn.mor:is(#kit,.btn):is(#kit,.btn)[disabled],.btn.sat:is(#kit,.btn):is(#kit,.btn):disabled,.btn.sat:is(#kit,.btn):is(#kit,.btn)[disabled],.btn.gb:is(#kit,.btn):is(#kit,.btn):disabled,.btn.gb:is(#kit,.btn):is(#kit,.btn)[disabled],.btn.hayalet:is(#kit,.btn):is(#kit,.btn):disabled,.btn.sade:is(#kit,.btn):is(#kit,.btn):disabled{
+  border-image-source:url(arayuz/kit/dugme_mor_set/pasif.webp);border-image-slice:0 87 0 86 fill;border-image-width:0 calc(var(--bh)*.744) 0 calc(var(--bh)*.735);border-image-outset:0;filter:drop-shadow(0 3px 4px rgba(0,0,0,.4));opacity:1}
+.btn:is(.altin,.mor,.sat,.gb,.hayalet,.sade):disabled{color:#d6cde2!important;--kontur:#2a2234!important;cursor:not-allowed}
+.btn:is(.altin,.mor,.sat,.gb,.hayalet,.sade):disabled:active{transform:none}
+.btn:disabled .ik{filter:grayscale(1) brightness(.9) drop-shadow(0 1px 1px rgba(0,0,0,.5))}
+/* yazı: altın = OYNA ile aynı krem + kahve kontur; mor/hayalet = krem + mor kontur; yakut / gün batımı kendi konturu */
+.btn.altin:not(.oyna):not(#sDevam){--kontur:#5a2404;color:#fffaf0;text-shadow:-1px -1px 0 var(--kontur),1px -1px 0 var(--kontur),-1px 1px 0 var(--kontur),1px 1px 0 var(--kontur),0 2px 0 var(--kontur),0 3px 4px rgba(60,20,0,.5)}
+.btn.altin small{color:#fff3cf}
+.btn.mor,.btn.hayalet,.btn.sade{--kontur:#1c0834;color:#fbf0d4}
+.btn.sat{--kontur:#4a0618;color:#fff0ea}.btn.gb{--kontur:#5a0d32;color:#fff6e4}
+.btn.altin.secik{filter:drop-shadow(0 0 7px rgba(255,214,100,.85)) drop-shadow(0 4px 5px rgba(0,0,0,.45))}
+.btn .kik.ik{object-fit:contain;flex:none;pointer-events:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.55))}
+.kik{object-fit:contain;-webkit-user-drag:none}
+/* boylar: küçük (Başla, satır içi), varsayılan 48, pencere 52 */
+.btn.kucuk{--bh:38px;min-height:38px;height:38px;font-size:14px;letter-spacing:.04em}
+.pencere .btn.kucuk{--bh:38px;min-height:38px;padding:0 calc(var(--bh)*.66);font-size:14px}
+.btn small{line-height:1.05}
+/* yuvarlak ikon düğme (kitte yuvarlak düğme yok: arayuz/menu/dugme_yuvarlak ailesi; .altin seçili) */
+.btn.yuvarlak{width:48px;height:48px;min-width:0;min-height:0;padding:0!important;border:0!important;border-image:none!important;border-radius:50%!important;box-shadow:none!important;
+  background:url(arayuz/menu/dugme_yuvarlak.webp) center/100% 100% no-repeat!important;filter:drop-shadow(0 4px 5px rgba(0,0,0,.5))}
+.btn.yuvarlak:active{background-image:url(arayuz/menu/dugme_yuvarlak_basili.webp)!important}
+.btn.yuvarlak.altin{background-image:url(arayuz/menu/dugme_yuvarlak_altin.webp)!important}
+.btn.yuvarlak::before{display:none}.btn.yuvarlak::after{border-radius:50%;inset:3px}
+.btn.yuvarlak .kik{width:50%;height:50%;filter:drop-shadow(0 2px 1px rgba(0,0,0,.6))}
+
+/* ---- pencere: pencere_cerceve (9 dilim, dolgu yok) + doku_cam_mor iç zemin; çerçevenin altın çizgisi kutunun kenarında (outset) ---- */
+#perde:not(.armagan):not(#kit) .pencere{border-style:solid;border-color:transparent;border-width:28px 14px 28px;border-radius:14px;
+  border-image:url(arayuz/kit/pencere_cerceve/cerceve.webp) 133 169 138 169 / 66.5px 84.5px 69px 84.5px / 21px 19px 20.5px 19px stretch;
+  background:#1f0c38 url(arayuz/kit/doku_cam_mor/doku.webp) 0 0/256px 256px repeat;background-clip:border-box;box-shadow:0 0 0 2px rgba(10,3,20,.35),0 24px 48px rgba(0,0,0,.6);filter:none;
+  padding:6px 30px 8px;gap:12px}
+#perde:not(.armagan) .pencere::before,#perde:not(.armagan) .pencere::after{display:none}
+html.alcak #perde:not(.armagan):not(#kit) .pencere{border-width:20px 10px 20px;border-image-width:46.5px 59px 48px 59px;border-image-outset:15px 13px 14px 13px;padding:4px 20px 6px;gap:8px;border-radius:10px}
+/* başlık: mor kurdele (3 dilim) */
+#perde:not(.armagan) .pencere>h3:first-of-type{align-self:center;flex:none;display:flex;align-items:center;justify-content:center;min-width:min(290px,100%);max-width:100%;height:50px;margin:0;
+  padding:0 72px 4px;border:0 solid transparent;border-image:url(arayuz/kit/kurdele_set_1/mor.webp) 0 312 0 301 fill / 0 119px 0 115px stretch;
+  font-size:23px;line-height:1;color:#fff1cf;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834,0 2px 0 #1c0834,0 3px 6px rgba(0,0,0,.6)}
+html.alcak #perde:not(.armagan) .pencere>h3:first-of-type{height:38px;min-width:min(230px,100%);padding:0 54px 3px;border-image-width:0 90px 0 87px;font-size:18px}
+/* sağ üst kapat (KAPAT_X): kaydırınca üstte kalır */
+#perde .pencere>.pKapat{position:sticky;top:0;align-self:flex-end;flex:none;width:46px;height:46px;min-height:0;margin:-2px -18px -48px 0;z-index:3}
+html.alcak #perde .pencere>.pKapat{width:36px;height:36px;margin:-1px -12px -37px 0}
+/* eylem satırı: üstünde süslü ayraç (ayrac_suslu), ortada */
+#perde:not(.armagan) .pencere>.eylemler:last-child{position:relative;padding-top:30px;margin-top:2px;justify-content:center;flex:none}
+#perde:not(.armagan) .pencere>.eylemler:last-child::before{content:"";position:absolute;left:50%;top:0;width:min(300px,80%);aspect-ratio:893/100;transform:translateX(-50%);
+  background:url(arayuz/kit/ayrac_suslu/ayrac.webp) center/contain no-repeat;pointer-events:none}
+html.alcak #perde:not(.armagan) .pencere>.eylemler:last-child{padding-top:22px}
+html.alcak #perde:not(.armagan) .pencere>.eylemler:last-child::before{width:min(200px,70%)}
+/* madde imi: kristal (sus_set/madde_kristal) */
+.pencere ul.kitMadde{list-style:none;padding-left:2px}
+.pencere ul.kitMadde>li{position:relative;padding-left:26px}
+.pencere ul.kitMadde>li::before{content:"";position:absolute;left:0;top:.28em;width:16px;height:17px;background:url(arayuz/kit/sus_set/madde_kristal.webp) center/contain no-repeat;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}
+/* kaydırma göstergesi: kontrol_set ray + tutamak (WebKit) */
+#perde .pencere::-webkit-scrollbar{display:block;width:12px;height:0}
+#perde .pencere::-webkit-scrollbar-track{background:url(arayuz/kit/kontrol_set/kaydirma_ray.webp) center/6px 100% no-repeat;margin:10px 0}
+#perde .pencere::-webkit-scrollbar-thumb{background:url(arayuz/kit/kontrol_set/kaydirma_tutamak.webp) center/11px 100% no-repeat;min-height:44px}
+/* metin alanı (metin_alani_set; 9 dilim, dolgu) */
+.pencere textarea,.adForm input,.kitMetin{border-style:solid;border-color:transparent;border-width:14px 18px;border-radius:0;box-shadow:none;outline:none;
+  border-image:url(arayuz/kit/metin_alani_set/normal.webp) 43 70 48 67 fill / 21.5px 35px 24px 33.5px stretch;background:none;color:#fff7e6;caret-color:#ffd77a}
+.pencere textarea{min-height:84px;padding:2px 4px;font:600 15px/1.35 ui-monospace,Menlo,monospace;resize:none}
+.pencere textarea:focus,.adForm input:focus,.kitMetin:focus{border-image-source:url(arayuz/kit/metin_alani_set/odak.webp);border-image-outset:6.25px 6.5px;box-shadow:none}
+.pencere textarea::placeholder,.adForm input::placeholder{color:rgba(226,211,245,.45)}
+
+/* ---- aç/kapa anahtarı (anahtar_set; sabit oran 2,5:1) ---- */
+.kitAnahtar{flex:none;width:86px;height:34px;padding:0;border:0;border-radius:17px;background:url(arayuz/kit/anahtar_set/kapali.webp) center/100% 100% no-repeat;cursor:pointer;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.5));transition:transform .09s ease-out}
+.kitAnahtar.acik{background-image:url(arayuz/kit/anahtar_set/acik.webp)}
+.kitAnahtar:active{transform:scale(.93)}
+.kitAnahtar:focus-visible{outline:2px solid #ffe39a;outline-offset:3px}
+/* ---- sekmeler (sekme_set): iz (oluk) + sekme; .on = aktif altın ---- */
+.kitIz{display:flex;align-items:center;justify-content:center;gap:2px;flex:none;align-self:center;height:48px;padding:0 14px;border:0 solid transparent;
+  border-image:url(arayuz/kit/sekme_set/iz.webp) 0 70 0 70 fill / 0 45px 0 45px stretch}
+.kitSekme{position:relative;height:38px;min-width:98px;padding:0 26px 2px;border:0 solid transparent;cursor:pointer;
+  border-image:url(arayuz/kit/sekme_set/pasif.webp) 0 167 0 152 fill / 0 calc(38px*1.369) 0 calc(38px*1.246) stretch;background:none;
+  font-family:var(--fBaslik);font-weight:900;font-size:14px;letter-spacing:.04em;color:#e9dcff;
+  text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834,0 2px 2px rgba(0,0,0,.6);transition:transform .09s ease-out}
+.kitSekme.on{border-image-source:url(arayuz/kit/sekme_set/aktif.webp);color:#fffaf0;--k:#5a2404;text-shadow:-1px -1px 0 var(--k),1px -1px 0 var(--k),-1px 1px 0 var(--k),1px 1px 0 var(--k),0 2px 0 var(--k)}
+.kitSekme:active{transform:scale(.95)}
+.kitIz.kitSekmeler{margin:2px 0 0}
+.kitIz .kitSekme{min-width:92px}
+html.alcak .kitIz{height:40px;padding:0 10px;border-image-width:0 37px 0 37px}
+html.alcak .kitSekme{height:31px;min-width:80px;padding:0 18px 2px;font-size:12.5px;border-image-width:0 calc(31px*1.369) 0 calc(31px*1.246)}
+/* ---- ayar satırı: satir_plaka_set_1 (9 dilim, dolgu) + ikon + yazı + denetim ---- */
+.kitSatirlar{display:flex;flex-direction:column;gap:8px;min-height:272px;flex:none}   /* sekme değişince pencere boyu sabit (en uzun sekme: Görüntü, 4 satır) */
+.kitSatir{display:flex;align-items:center;gap:12px;min-height:62px;padding:8px 18px 8px 16px;border:0 solid transparent;
+  border-image:url(arayuz/kit/satir_plaka_set_1/normal.webp) 27 47 30 46 fill / 13.5px 23.5px 15px 23px stretch}
+.kitSatir .ksIk{width:38px;height:38px;object-fit:contain;flex:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.6))}
+.kitSatir .ksYazi{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.pencere .kitSatir .ksYazi b{font-family:var(--fBaslik);font-weight:700;font-size:17px;letter-spacing:.03em;color:#fff1cf;text-shadow:0 2px 0 rgba(0,0,0,.6)}
+.kitSatir .ksYazi small{font-size:13.5px;line-height:1.28;color:var(--yazi2)}
+.kitSatir .kitIz{height:44px;padding:0 10px;border-image-width:0 41px 0 41px}
+.kitSatir .kitIz .kitSekme{height:34px;min-width:66px;padding:0 16px 2px;font-size:13px;border-image-width:0 calc(34px*1.369) 0 calc(34px*1.246)}
+.kitSatir .kitIz .kitSekme:last-child{min-width:104px}
+html.alcak .kitSatirlar{gap:5px;min-height:auto}
+html.alcak .kitSatir{min-height:48px;padding:5px 14px 5px 12px;gap:9px}
+html.alcak .kitSatir .ksIk{width:28px;height:28px}
+html.alcak .pencere .kitSatir .ksYazi b{font-size:14.5px}
+html.alcak .kitSatir .ksYazi small{font-size:11.5px;line-height:1.2}
+html.alcak .kitSatir .kitIz .kitSekme{height:29px;min-width:52px;padding:0 12px 2px;font-size:11.5px;border-image-width:0 calc(29px*1.369) 0 calc(29px*1.246)}
+html.alcak .kitSatir .kitIz .kitSekme:last-child{min-width:86px}
+html.alcak .kitSatir .kitIz{height:38px;padding:0 8px}
+html.alcak .kitAnahtar{width:68px;height:27px}
+
+/* ======================= menü ekranları ======================= */
+/* karşılama: oyuncu kutusu = plaka_set/mor (soketli plaka: avatar sokette, profil_cerceve halkası üstünde) */
+#ana .profil{--ph:100px;height:var(--ph);padding:0 34px 0 8px;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;
+  border-image:url(arayuz/kit/plaka_set/mor.webp) 0 104 0 141 fill / 0 calc(var(--ph)*.743) 0 calc(var(--ph)*1.007) stretch;filter:drop-shadow(0 6px 8px rgba(0,0,0,.45))}
+#ana .avKap{width:72px;height:72px;margin:0 8px 0 4px}
+#ana .avKap .cerceve{left:-12px;top:-19px;width:96px;height:103px}
+#ana .pAd{font-size:18px}#ana .pAlt{font-size:11.5px}#ana .pRoz{margin-top:3px}
+#ana .profil .pKalem{width:18px;height:21px;right:42px;top:20px;opacity:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.7))}
+#ana .pRoz span{height:26px;padding:0 13px 0 4px;gap:7px;border:0 solid transparent;border-radius:0;background:none;
+  border-image:url(arayuz/kit/cip_set_1/notr.webp) 0 78 0 166 fill / 0 17.4px 0 36.9px stretch}
+#ana .pRoz .ik{width:19px;height:19px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}
+#ana .pRoz em{text-shadow:0 1px 0 #1c0834,0 0 3px rgba(0,0,0,.6)}
+html.alcak #ana .profil{--ph:62px;padding:0 26px 0 6px}
+html.alcak #ana .avKap{width:46px;height:46px;margin:0 5px 0 3px}
+html.alcak #ana .avKap .cerceve{left:-8px;top:-12px;width:62px;height:66px}
+html.alcak #ana .pAd{font-size:15px}
+html.alcak #ana .profil .pKalem{width:13px;height:15px;right:28px;top:11px}
+html.alcak #ana .pRoz span{height:22px;padding:0 10px 0 3px;gap:5px;border-image-width:0 14.7px 0 31.2px}
+html.alcak #ana .pRoz .ik{width:16px;height:16px}
+/* sezon: amblem_sezon + mor kurdele üstünde sezon adı */
+#ana .sezon{flex-direction:row;align-items:center;gap:6px;padding:2px 0}
+#ana .sezon .szAmb{width:48px;height:56px;flex:none;filter:drop-shadow(0 4px 5px rgba(0,0,0,.55))}
+#ana .szYazi{display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.1}
+#ana .sezon b{display:flex;align-items:center;height:34px;padding:0 46px 3px;border:0 solid transparent;
+  border-image:url(arayuz/kit/kurdele_set_1/mor.webp) 0 312 0 301 fill / 0 81px 0 78px stretch;font-size:16px;color:#fff1cf;white-space:nowrap;
+  text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834,0 2px 0 #1c0834}
+html.alcak #ana .sezon .szAmb{width:34px;height:40px}
+html.alcak #ana .sezon b{height:26px;padding:0 34px 2px;border-image-width:0 62px 0 60px;font-size:13px}
+html.alcak #ana .sezon small{font-size:10px}
+/* slogan: mor kurdele */
+#ana .slogan{height:42px;padding:0 78px 4px;border:0 solid transparent;border-radius:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none;
+  border-image:url(arayuz/kit/kurdele_set_1/mor.webp) 0 312 0 301 fill / 0 100px 0 96.5px stretch;color:#fff1cf;-webkit-text-stroke:0;
+  text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834,0 2px 0 #1c0834,0 3px 6px rgba(0,0,0,.6);filter:drop-shadow(0 6px 8px rgba(0,0,0,.45))}
+#ana .slogan::before,#ana .slogan::after{display:none}
+html.alcak #ana .slogan{height:32px;padding:0 58px 3px;border-image-width:0 76px 0 73.5px}
+/* yan düğmeler: mor düğme (uçtaki taşlardan sonra ikon) */
+#ana .yanDug .btn{--bh:58px;width:clamp(232px,24cqw,262px);padding:0 calc(var(--bh)*.72) 1px;gap:9px}
+#ana .yanDug.sag .btn{padding:0 calc(var(--bh)*.72) 1px}
+#ana .yanDug .btn .ik{width:32px;height:32px;color:initial}
+@media (max-aspect-ratio:3/2){#ana .yanDug .btn{width:clamp(226px,23cqw,250px);padding:0 calc(var(--bh)*.7) 1px;gap:8px}#ana .yanDug.sag .btn{padding:0 calc(var(--bh)*.7) 1px}}
+html.alcak #ana .yanDug .btn{--bh:46px;width:190px;padding:0 calc(var(--bh)*.68) 1px;gap:6px}
+html.alcak #ana .yanDug.sag .btn{padding:0 calc(var(--bh)*.68) 1px}
+html.alcak #ana .yanDug .btn .ik{width:24px;height:24px}
+#ana .macSec .yeniMac{--bh:44px;padding:0 calc(var(--bh)*.7);font-family:var(--fBaslik);font-weight:900;letter-spacing:.04em;--kontur:#1c0834;
+  text-shadow:-1px -1px 0 var(--kontur),1px -1px 0 var(--kontur),-1px 1px 0 var(--kontur),1px 1px 0 var(--kontur),0 2px 3px rgba(0,0,0,.55)}
+#ana .macSec .yeniMac .ik{width:22px;height:22px}
+html.alcak #ana .macSec .yeniMac{--bh:38px}
+/* OYNA ikonu (ikon_oynat) */
+#ana .oyna .ana .oynatIk{width:34px;height:34px;object-fit:contain;filter:drop-shadow(1.5px 0 0 #5a2404) drop-shadow(-1.5px 0 0 #5a2404) drop-shadow(0 1.5px 0 #5a2404) drop-shadow(0 -1.5px 0 #5a2404) drop-shadow(0 3px 2px rgba(60,20,0,.5))}
+html.alcak #ana .oyna .ana .oynatIk{width:24px;height:24px}
+.btn .oynatIk{object-fit:contain;flex:none}
+.btn.altin .oynatIk{filter:drop-shadow(1px 0 0 #5a2404) drop-shadow(-1px 0 0 #5a2404) drop-shadow(0 1px 0 #5a2404) drop-shadow(0 -1px 0 #5a2404)}
+/* bildirim: soketli plaka (mor / yakut = hata / zümrüt = iyi) + soket ikonu */
+.bildirim{--ph:48px;display:flex;align-items:center;height:var(--ph);padding:0 calc(var(--ph)*.8) 2px calc(var(--ph)*1.12);border:0 solid transparent;border-radius:0;background:none;
+  border-image:url(arayuz/kit/plaka_set/mor.webp) 0 104 0 141 fill / 0 calc(var(--ph)*.743) 0 calc(var(--ph)*1.007) stretch;filter:drop-shadow(0 6px 10px rgba(0,0,0,.5));
+  text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834,0 2px 0 #1c0834}
+.bildirim::before{content:"";position:absolute;left:calc(var(--ph)*.2);top:50%;width:calc(var(--ph)*.56);height:calc(var(--ph)*.56);transform:translateY(-50%);
+  background:url(arayuz/menu/ikon_bilgi.webp) center/contain no-repeat}
+.bildirim.hata{border-image-source:url(arayuz/kit/plaka_set/yakut.webp)}.bildirim.hata::before{background-image:url(arayuz/kit/ikon_set_durum/ikon_uyari.webp)}
+.bildirim.iyi{border-image-source:url(arayuz/kit/plaka_set/zumrut.webp)}.bildirim.iyi::before{background-image:url(arayuz/kit/ikon_set_durum/ikon_onay.webp)}
+html.alcak .bildirim{--ph:40px;font-size:14px}
+/* telefon notu: ince mor panel */
+.tabletNot{border:0 solid transparent;border-radius:0;background:none;box-shadow:none;padding:10px 12px 10px 22px;
+  border-image:url(arayuz/kit/panel_ince_set/mor.webp) 47 57 49 58 fill / 23.5px 28.5px 24.5px 29px stretch;filter:drop-shadow(0 8px 12px rgba(0,0,0,.5))}
+.tabletNot .ik{width:28px;height:28px}
+.tabletNot .btn{--bh:38px;min-height:38px;height:38px}
+/* dikey uyarı: yükleme arka planı + amblem_cihaz_cevir + mor kurdele */
+.dondur{background:linear-gradient(rgba(14,5,28,.55),rgba(14,5,28,.78)),url(arayuz/menu/yukleme_arka.webp) center/cover no-repeat,#1c0a35}
+.dondur i{width:120px;height:142px;border:0;border-radius:0;background:url(arayuz/kit/amblem_set_2/amblem_cihaz_cevir.webp) center/contain no-repeat;animation:dondurK 2.6s ease-in-out infinite;filter:drop-shadow(0 8px 12px rgba(0,0,0,.6))}
+@keyframes dondurK{50%{transform:rotate(-14deg) scale(1.04)}}
+.dondur b{display:inline-flex;align-items:center;justify-self:center;height:46px;padding:0 70px 4px;border:0 solid transparent;
+  border-image:url(arayuz/kit/kurdele_set_1/mor.webp) 0 312 0 301 fill / 0 110px 0 106px stretch;color:#fff1cf;font-size:19px;
+  text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834,0 2px 0 #1c0834}
+
+/* ---- mod seç penceresi: mod_kart_* (sabit oran 564:756) + madalyon_yuva + amblem_mod_set; Başla = küçük altın düğme; seçim vurgusu vurgu_set/altin ---- */
+#perde[data-tur=mod] .pencere{width:min(900px,94cqw)}
+.pencere .modUyari{display:flex;align-items:center;justify-content:center;gap:8px;margin:-2px 0 0}
+.pencere .modUyari .ik{width:22px;height:22px;flex:none}
+.modSec{--kw:min(calc((100% - 32px) / 3),calc((86cqh - 230px) * .746),290px);grid-template-columns:repeat(3,var(--kw));justify-content:center;gap:16px;margin:2px 0 20px}
+.modK{display:block;aspect-ratio:564/756;height:auto;padding:0;border:0;border-radius:0;box-shadow:none;background:url(arayuz/kit/mod_kart_arena/kart.webp) 0 0/100% 100% no-repeat;
+  filter:drop-shadow(0 10px 14px rgba(0,0,0,.55));cursor:pointer;container-type:inline-size}
+.modK.m-lobi{background-image:url(arayuz/kit/mod_kart_lobi/kart.webp)}.modK.m-hizli{background-image:url(arayuz/kit/mod_kart_hizli/kart.webp)}
+@media (hover:hover){.modK:hover{transform:translateY(-4px);box-shadow:none}}
+.modK:active{transform:translateY(1px) scale(.985)}
+.modK::after{content:"";position:absolute;inset:-9px;border:0 solid transparent;border-image:url(arayuz/kit/vurgu_set/altin.webp) 77 105 78 105 / 30px 41px 30px 41px stretch;
+  opacity:0;transition:opacity .18s;pointer-events:none}
+@media (hover:hover){.modK:hover::after{opacity:1}}
+.modK:active::after,.modK:focus-visible::after{opacity:1}
+.modK:focus-visible{outline:0}
+.modK .modIk{position:absolute;left:50%;top:55.4%;width:22%;height:auto;aspect-ratio:288/320;margin:0;transform:translate(-50%,-50%);border-radius:0;box-shadow:none;
+  background:url(arayuz/kit/madalyon_yuva/yuva.webp) center/100% 100% no-repeat;display:grid;place-items:center;filter:drop-shadow(0 3px 4px rgba(0,0,0,.5))}
+.modK .modIk .ik{width:72%;height:72%;object-fit:contain;margin-top:2%;color:initial;filter:drop-shadow(0 2px 2px rgba(0,0,0,.55))}
+.modK .modYazi{position:absolute;left:10%;right:10%;top:67%;bottom:8%;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:2px;text-align:center}
+.modK b{font-size:clamp(14px,7.6cqw,20px);line-height:1.05;color:#fff3d6;text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834,0 2px 0 #1c0834}
+.modK em{font-size:clamp(11px,5cqw,13.5px);text-shadow:0 1px 0 #12061f}
+.modK small{flex:none;font-size:clamp(11px,4.9cqw,13px);line-height:1.22;color:var(--yazi2);text-shadow:0 1px 0 #12061f}
+.modK .modGir{position:absolute;left:50%;bottom:0;transform:translate(-50%,48%);margin:0;height:38px;min-width:58%;padding:0 30px 2px;justify-content:center;border-radius:0;background:none;box-shadow:none;
+  border:0 solid transparent;border-image:url(arayuz/kit/dugme_altin_kucuk_set/normal.webp) 0 114 0 111 fill / 0 35.5px 0 34.6px stretch;
+  font-size:15px;color:#fffaf0;--k:#5a2404;text-shadow:-1px -1px 0 var(--k),1px -1px 0 var(--k),-1px 1px 0 var(--k),1px 1px 0 var(--k),0 2px 0 var(--k);filter:drop-shadow(0 4px 4px rgba(0,0,0,.45))}
+.modK:active .modGir{border-image-source:url(arayuz/kit/dugme_altin_kucuk_set/basili.webp)}
+html.alcak #perde[data-tur=mod] .pencere{width:min(760px,94cqw)}
+html.alcak #perde[data-tur=mod] .pencere>.eylemler{display:none}   /* telefonda kartlar sığsın: kapatma sağ üstteki X ile */
+html.alcak .modSec{--kw:min(calc((100% - 24px) / 3),calc((86cqh - 112px) * .746),220px);gap:12px;margin:0 0 16px}
+html.alcak .pencere:has(.modUyari) .modSec{--kw:min(calc((100% - 24px) / 3),calc((86cqh - 142px) * .746),220px)}
+html.alcak .pencere .modUyari{font-size:12.5px;margin:-4px 0 -2px}html.alcak .pencere .modUyari .ik{width:17px;height:17px}
+html.alcak .modK{padding:0}
+html.alcak .modK small{display:none}
+html.alcak .modK .modYazi{top:68%;bottom:12%}
+html.alcak .modK .modIk{width:26%}
+html.alcak .modK .modGir{height:30px;padding:0 22px 2px;font-size:12.5px;border-image-width:0 28px 0 27.3px}
+html.alcak .modK::after{inset:-7px;border-image-width:23px 31px 23px 31px}
+/* ---- ad penceresi ---- */
+.adForm{margin:4px 6px 0}
+.adForm input{height:62px;padding:0 44px 0 4px;font:600 22px/1 var(--fGovde)}
+.adForm .adSay{right:38px}
+.pencere .adHata{display:flex;align-items:center;justify-content:center;gap:6px;min-height:22px}
+.pencere .adHata:not(:empty)::before{content:"";width:20px;height:20px;flex:none;background:url(arayuz/kit/ikon_set_durum/ikon_uyari.webp) center/contain no-repeat}
+html.alcak .adForm input{height:52px;font-size:19px}
+/* telefonda pencere düğmeleri biraz alçak */
+html.alcak .pencere .btn:not(.yuvarlak):not(.kucuk){--bh:42px;min-height:42px;font-size:15px}
+/* ---- nasıl oynanır: öğretici satırı ---- */
+.pencere .nOgrSatir{justify-content:flex-start;align-items:center;margin:2px 0 6px}
+.pencere .nOgrSatir span{font-size:13.5px;color:var(--soluk)}
+/* ======================= hazırlık ekranı (KİT v3; GORSEL_ISTEK_3) =======================
+   Ortak parçalar (yeniden kullanılabilir; ölçü değişkenleri):
+     ince panel / araç ipucu   panel_ince_set/mor (9 dilim, dolgu) .......... .bilgiKart, .alamet .t, .soyAc, .sansKutu, #esyaRaf, #armaganSerit, .rakip.acik
+     soketli çip               cip_set_1 (notr/altin/zumrut/yakut), cip_set_2 (ametist/gunbatimi/buz): 3 dilim; sol uçta soket = ikon yeri
+                               (yükseklik H → sol uç H×1,419 / sağ uç H×0,667; set 2: H×1,559 / H×0,542; ikon ~0,62H, soketin merkezi ~0,55H)
+     satır plakası             satir_plaka_set_1 normal / vurgu / tas, satir_plaka_set_2 safir / ametist / gunbatimi (9 dilim)
+     kart çerçevesi            kart_cerceve_set_1/2 k1–k5 (kademe rengi; içi saydam) + kart_zemin (opak sahne) ... .kart, .sc.kc, .kdCer, .kdVid, .bkPor
+     yuva                      yuva_set/yuva_kare (+ _secili), yuva_kart_bos, muhur_kilit ........ #esyaRaf .re, .miniTahta .m, .kart.bos, kilitli dükkân
+     kademe taşı               kademe_tas_set/kademe_k1–k5 (K yazısı üstünde) ......................... .kTag, .kdKad
+     eşik altıgeni             boncuk_set/esik_bos / esik_bronz / esik_altin / esik_gunbatimi ........ .soy3 em, .soyAc em
+   ======================================================================================== */
+/* ---- üst şerit: bölme çizgisi = süslü dikey ayraç; tahta sayacı ikon_tahta; boş can ikon_can_bos ---- */
+body.hz3 #mac .macUst>.rozet:not(:first-child):not(.altinRozet):not(.tahtaSayac)::after,body.hz3 #mac .macUst>.alamet::after,body.hz3 #mac .macUst>.tahtaSayac::after{
+  width:7px;left:-3px;top:6px;bottom:6px;background:url(arayuz/kit/sus_set/ayrac_dikey.webp) center/contain no-repeat}
+body.hz3 #mac .kalpler .hik.bos{filter:drop-shadow(0 1px 1px rgba(0,0,0,.6));opacity:1}
+body.hz3 #mac .tahtaSayac .ik{width:24px;height:24px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}
+html.alcak body.hz3 #mac .tahtaSayac .ik{width:19px;height:19px}
+/* ---- alamet: kit madalyonu (kendi halkasıyla) + açıklama ince panelde ---- */
+#mac .alamet .ay,#savas .alametK .ay{border:0!important;border-radius:0!important;box-shadow:none!important;filter:drop-shadow(0 2px 2px rgba(0,0,0,.55))}
+body.hz3 #mac .alamet .ay{width:36px;height:36px}
+html.alcak body.hz3 #mac .alamet .ay{width:29px;height:29px}
+body.hz3 #mac .alamet.acik .t{padding:12px 16px 13px;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;
+  border-image:url(arayuz/kit/panel_ince_set/mor.webp) 47 57 49 58 fill / 16px 19px 16.5px 19.5px stretch;filter:drop-shadow(0 8px 12px rgba(0,0,0,.55))}
+body.hz3 #mac .alamet.acik .t b{color:#fff1cf;text-shadow:0 1px 0 #1c0834}
+/* ---- rakip etiketi: soketli plaka (yakut; Kervan turunda kehribar), portre sokette; açılınca ince panel ---- */
+body.hz3 #mac .macUst .rakip,body.hz3 #mac .macUst .rakip.acik{border:0;border-radius:0;background:none;box-shadow:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45))}
+body.hz3 #mac .rakip .rakipKim{--ph:40px;height:var(--ph);padding:0 calc(var(--ph)*.62) 1px calc(var(--ph)*1.02);position:relative;border:0 solid transparent;
+  border-image:url(arayuz/kit/plaka_set/yakut.webp) 0 104 0 141 fill / 0 calc(var(--ph)*.743) 0 calc(var(--ph)*1.007) stretch}
+body.hz3 #mac .rakip.kervanP .rakipKim{border-image-source:url(arayuz/kit/plaka_set/kehribar.webp)}
+body.hz3 #mac .rakip .rakipKim .amb{position:absolute;left:calc(var(--ph)*.14);top:50%;width:calc(var(--ph)*.72);height:calc(var(--ph)*.72);margin:0;transform:translateY(-50%);border:0;border-radius:50%;
+  background:radial-gradient(circle at 50% 35%,#4a2a6e,#12061f 75%);box-shadow:none;overflow:hidden}
+body.hz3 #mac .rakip .rakipKim .amb.kitAmb{background:none;overflow:visible}
+body.hz3 #mac .rakip .rakipKim .amb.kitAmb .ik{width:100%;height:100%;object-fit:contain}
+body.hz3 #mac .rakip .rakipKim b{color:#fff1cf;text-shadow:-1px -1px 0 #3a0614,1px -1px 0 #3a0614,-1px 1px 0 #3a0614,1px 1px 0 #3a0614}
+body.hz3 #mac .rakip .rakipKim .rkYok{font-size:12px;font-weight:700;line-height:1.15;color:#fff1cf;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 0 #3a1a05}
+body.hz3 #mac .macUst .rakip.acik{width:300px;max-width:300px;padding:10px 14px 12px;border:0 solid transparent;
+  border-image:url(arayuz/kit/panel_ince_set/mor.webp) 47 57 49 58 fill / 16px 19px 16.5px 19.5px stretch}
+body.hz3 #mac .rakip.acik .rakipKim{--ph:52px;height:var(--ph);padding:0 calc(var(--ph)*.5) 2px calc(var(--ph)*1.02);margin:-2px -4px 6px;display:flex;align-items:center}
+body.hz3 #mac .rakip.acik .rakipKim>div:not(.amb){display:flex;flex-direction:column;gap:1px;min-width:0}
+body.hz3 #mac .rakip.acik .rakipKim b{display:flex;align-items:center;gap:6px;font-size:14px}
+body.hz3 #mac .rakip.acik .rakipKim b .etiket{display:inline-flex;flex:none}
+body.hz3 #mac .rakip.acik .rakipKim>div>span:not(.lbS):not(.gozcuS){display:block;font-size:11px;line-height:1.15;color:#ffe3ea;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 0 #3a0614}
+body.hz3 #mac .rakip.acik .rakipKim>div>span .ik{width:13px;height:13px;vertical-align:-2px}
+body.hz3 #mac .rakip.acik .rakipKim .lbS,body.hz3 #mac .rakip.acik .rakipKim .gozcuS{display:flex}
+.rakipKim .lbS,.rakipKim .gozcuS{display:flex;align-items:center;gap:4px;font-size:11.5px;color:#ffe3ea;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rakipKim .lbS .ik,.rakipKim .gozcuS .ik{width:15px;height:15px;flex:none}
+.rakipKim .gozcuS{color:#c9f0ff}
+/* rakibin canı: yakut çip, kalp sokette */
+.rakipKim .rkCan{--ch:24px;height:var(--ch);padding:0 calc(var(--ch)*.5) 1px calc(var(--ch)*1.12);gap:0;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;position:relative;
+  border-image:url(arayuz/kit/cip_set_1/yakut.webp) 0 78 0 166 fill / 0 calc(var(--ch)*.667) 0 calc(var(--ch)*1.419) stretch;color:#fff0f2;text-shadow:0 1px 0 #3a0614}
+.rakipKim .rkCan .ik{position:absolute;left:calc(var(--ch)*.24);top:50%;width:calc(var(--ch)*.62)!important;height:calc(var(--ch)*.62)!important;transform:translateY(-50%)}
+/* açık rakip paneli: mini tahta hücreleri kit yuvası; soy çipleri soketli; tür etiketi ikonlu */
+body.hz3 #mac .rakip.acik .miniTahta{padding:2px 0 4px;gap:3px}
+#mac .miniTahta .m{border-width:0!important;border-style:solid!important;border-color:transparent!important;border-radius:0!important;background:none!important;box-shadow:none!important;overflow:visible;
+  border-image:url(arayuz/kit/yuva_set/yuva_kare.webp) 59 fill / 9px stretch}
+#mac .miniTahta .m.bos{opacity:.55}
+#mac .miniTahta .m>img{left:6%;width:88%;bottom:3px;height:88%}
+#mac .miniTahta .sAd,#mac .miniTahta .sAd.arka{color:#d8c9ef;text-shadow:0 1px 0 #12061f}
+#mac .rakipSoy{flex-wrap:wrap}
+#mac .rakipSoy .cip{--ch:24px;position:relative;height:var(--ch);padding:0 calc(var(--ch)*.55) 1px calc(var(--ch)*1.1)!important;gap:0;border-width:0!important;border-style:solid!important;border-color:transparent!important;border-radius:0;background:none!important;box-shadow:none!important;
+  border-image:url(arayuz/kit/cip_set_1/notr.webp) 0 78 0 166 fill / 0 calc(var(--ch)*.667) 0 calc(var(--ch)*1.419) stretch!important;font-size:11.5px;font-weight:700;color:#f3e6c8;text-shadow:0 1px 0 #1c0834}
+#mac .rakipSoy .cip img{position:absolute;left:calc(var(--ch)*.18);top:50%;width:calc(var(--ch)*.74)!important;height:calc(var(--ch)*.74)!important;transform:translateY(-50%)}
+#mac .rakipSoy .cip:not(:has(img)){padding:0 12px 1px!important;border-image:url(arayuz/kit/sus_set/yildiz_hap.webp) 0 35 0 35 fill / 0 11px 0 11px stretch!important}
+.rakipKim .etiket{display:inline-flex;align-items:center;gap:3px;height:20px;padding:0 8px 0 3px;border:0;border-radius:0;background:url(arayuz/kit/sus_set/yildiz_hap.webp) center/100% 100% no-repeat;color:#fff1cf;font-size:11px}
+.rakipKim .etiket .ik{width:15px;height:15px}
+/* ---- sol: soy satırları (satır plakası: etkin değil taş, eşik 1 vurgu, eşik 2+ gün batımı) + eşik altıgeni ---- */
+.soy3,.soy3.on{border:0 solid transparent;border-radius:0;background:none;box-shadow:none;opacity:1;filter:drop-shadow(0 3px 4px rgba(0,0,0,.45));height:36px;padding:0 10px 1px 5px;gap:5px;
+  border-image:url(arayuz/kit/satir_plaka_set_1/tas.webp) 27 47 30 46 fill / 8px 13px 9px 13px stretch}
+.soy3 img{filter:saturate(.45) brightness(.85)}
+.soy3.on{border-image-source:url(arayuz/kit/satir_plaka_set_1/vurgu.webp)}
+.soy3.on img,.soy3.acik img{filter:none}
+.soy3.on:is(.sv2,.sv3,.sv4){border-image:url(arayuz/kit/satir_plaka_set_2/gunbatimi.webp) 24 44 25 45 fill / 7.5px 13px 7.5px 13.5px stretch}
+.soy3 .sy{display:flex;align-items:center;gap:3px;color:#d9d3e6}
+.soy3 .sy b{font-size:16px;color:#fff3d6;text-shadow:0 1px 0 #1c0834,0 0 3px rgba(0,0,0,.6)}
+.soy3 .sy em,.soy3 .soyAc em{display:inline-grid;place-items:center;width:22px;height:22px;min-width:0;margin:0;border-radius:0;font-style:normal;font-size:11px;font-weight:900;color:#fff7e6;
+  background:url(arayuz/kit/boncuk_set/esik_bos.webp) center/contain no-repeat!important;text-shadow:-1px -1px 0 #241634,1px -1px 0 #241634,-1px 1px 0 #241634,1px 1px 0 #241634}
+.soy3 .sy em.tam{background-image:url(arayuz/kit/boncuk_set/esik_altin.webp)!important;color:#fffaf0;text-shadow:-1px -1px 0 #5a2404,1px -1px 0 #5a2404,-1px 1px 0 #5a2404,1px 1px 0 #5a2404}
+.soy3 .soyAc{padding:12px 16px 13px;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;filter:drop-shadow(0 8px 12px rgba(0,0,0,.55));
+  border-image:url(arayuz/kit/panel_ince_set/mor.webp) 47 57 49 58 fill / 16px 19px 16.5px 19.5px stretch}
+.soy3 .soyAc b{color:#fff1cf;text-shadow:0 1px 0 #1c0834}
+.soy3 .soyAc span{display:flex;align-items:flex-start;gap:6px;margin-top:4px}
+.soy3 .soyAc span em{flex:none;width:21px;height:21px;margin:-2px 0 0}
+.soy3 .soyAc span.on em{color:#fffaf0;background-image:url(arayuz/kit/boncuk_set/esik_bronz.webp)!important}
+.soy3 .soyAc span.on.e1 em{background-image:url(arayuz/kit/boncuk_set/esik_altin.webp)!important}
+.soy3 .soyAc span.on.e2 em,.soy3 .soyAc span.on.e3 em{background-image:url(arayuz/kit/boncuk_set/esik_gunbatimi.webp)!important}
+body.hz3 #mac .soyBos{opacity:.75}body.hz3 #mac .soyBos .ik{width:30px;height:30px}
+html.alcak .soy3,html.alcak .soy3.on{height:28px;padding:0 8px 1px 3px;gap:3px;border-image-width:6px 10px 7px 10px}
+html.alcak .soy3.on:is(.sv2,.sv3,.sv4){border-image-width:6px 10px 6px 10.5px}
+html.alcak .soy3 .sy em{width:18px;height:18px;font-size:9.5px}
+/* ---- sol: eşya rafı (ince panel + kit yuvaları) ve armağan şeridi ---- */
+body.hz3 #esyaRaf{padding:9px 10px 10px;gap:5px;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;filter:drop-shadow(0 6px 8px rgba(0,0,0,.45));
+  border-image:url(arayuz/kit/panel_ince_set/mor.webp) 47 57 49 58 fill / 16px 19px 16.5px 19.5px stretch}
+#esyaRaf .re{border-width:0!important;border-style:solid!important;border-color:transparent!important;border-radius:0!important;background:none!important;box-shadow:none!important;padding:5px!important;
+  border-image:url(arayuz/kit/yuva_set/yuva_kare.webp) 59 fill / 10px stretch}
+#esyaRaf .re.secik{border-image:url(arayuz/kit/yuva_set/yuva_kare_secili.webp) 65 66 65 67 fill / 11px stretch}
+#esyaRaf .re img{filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+#esyaRaf .re:active{transform:scale(.92)}
+html.alcak body.hz3 #esyaRaf{padding:7px 8px 8px;border-image-width:12px 14px 12.5px 14.5px}
+html.alcak #esyaRaf .re{padding:4px!important;border-image-width:8px}
+body.hz3 #armaganSerit{padding:8px 19px 9px;gap:5px;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;filter:drop-shadow(0 6px 8px rgba(0,0,0,.45));
+  border-image:url(arayuz/kit/panel_ince_set/mor.webp) 47 57 49 58 fill / 14px 17px 14.5px 17.5px stretch;max-width:180px}
+body.hz3 #armaganSerit>b{display:flex;align-items:center;gap:5px;color:#ffe9a6;text-shadow:0 1px 0 #1c0834}
+body.hz3 #armaganSerit>b::after{content:"";width:12px;height:11px;opacity:1;background:url(arayuz/kit/sus_set/kaydir_ok.webp) center/contain no-repeat;transition:transform .15s}
+body.hz3 #armaganSerit.acik>b::after{transform:rotate(180deg)}
+.armaganSerit .ar{--ch:24px;position:relative;display:inline-flex;align-items:center;max-width:100%;height:var(--ch);padding:0 calc(var(--ch)*.5) 1px calc(var(--ch)*1.1);border:0 solid transparent;border-radius:0;background:none;
+  border-image:url(arayuz/kit/cip_set_2/buz.webp) 0 64 0 184 fill / 0 calc(var(--ch)*.542) 0 calc(var(--ch)*1.559) stretch;font-size:11.5px;font-weight:700;color:#fff;text-shadow:0 1px 0 #1c0834;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.armaganSerit .ar.alev{border-image-source:url(arayuz/kit/cip_set_2/gunbatimi.webp)}
+.armaganSerit .ar.gunes{border-image:url(arayuz/kit/cip_set_1/altin.webp) 0 78 0 166 fill / 0 calc(var(--ch)*.667) 0 calc(var(--ch)*1.419) stretch;text-shadow:0 1px 0 #5a2404}
+.armaganSerit .ar .ik{position:absolute;left:calc(var(--ch)*.24);top:50%;width:calc(var(--ch)*.6);height:calc(var(--ch)*.6);transform:translateY(-50%)}
+body.hz3 #armaganSerit.acik>span.ar{display:inline-flex}
+#armaganSerit .btn.kucuk{--bh:34px;min-height:34px;height:34px;padding:0 calc(var(--bh)*.6);font-size:12px;gap:4px}
+#armaganSerit .btn .ik{width:18px;height:18px}
+/* ---- seçili kahramanın bilgi kartı: ince panel, kademe çerçeveli portre, kademe taşı, soketli soy çipleri ---- */
+.bilgiKart,.bilgiKart.k1,.bilgiKart.k2,.bilgiKart.k3,.bilgiKart.k4,.bilgiKart.k5{padding:12px 15px 13px;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;
+  border-image:url(arayuz/kit/panel_ince_set/mor.webp) 47 57 49 58 fill / 17px 20px 17.5px 20.5px stretch;filter:drop-shadow(0 10px 14px rgba(0,0,0,.55))}
+.bilgiKart .bkBas{grid-template-columns:50px minmax(0,1fr);gap:10px}
+.bilgiKart .bkPor{width:50px;height:58px;padding:0;border:4px solid transparent;border-radius:6px;box-shadow:none;
+  border-image:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k1.webp) 130 118 125 118 / 13px 12px 12.5px 12px / 1px stretch;background:url(arayuz/kit/kart_zemin/zemin.webp) center/cover padding-box}
+.bilgiKart .bkPor img{border-radius:3px;background:none}
+.bilgiKart .bkUst b{color:#fff1cf;text-shadow:0 1px 0 #1c0834}
+.bilgiKart .bkSoy{gap:3px 4px}
+.bilgiKart .bkSoy .bs{--ch:24px;position:relative;height:var(--ch);padding:0 calc(var(--ch)*.55) 1px calc(var(--ch)*1.12);border:0 solid transparent;border-radius:0;background:none;
+  border-image:url(arayuz/kit/cip_set_1/notr.webp) 0 78 0 166 fill / 0 calc(var(--ch)*.667) 0 calc(var(--ch)*1.419) stretch;font-size:11.5px;color:#f3e6c8;text-shadow:0 1px 0 #1c0834}
+.bilgiKart .bkSoy .bs img{position:absolute;left:calc(var(--ch)*.17);top:50%;width:calc(var(--ch)*.76);height:calc(var(--ch)*.76);transform:translateY(-50%)}
+.bilgiKart .bkEylem{gap:5px;margin-top:8px}
+.bilgiKart{width:304px}
+.bilgiKart .bkEylem .btn:not(.bkBil){--bh:30px;min-height:38px;height:38px;padding:0 17px!important;gap:2px}
+.bilgiKart .bkEylem .btn .mik{width:17px;height:17px}
+.bilgiKart .bkEylem .btn small{margin-left:3px}
+.bilgiKart .bkEsya img{filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+html.alcak .bilgiKart{padding:9px 12px 10px;border-image-width:13px 15px 13.5px 15.5px}
+html.alcak .bilgiKart{width:270px}html.alcak .bilgiKart .bkEylem .btn:not(.bkBil){--bh:26px;min-height:32px;height:32px;padding:0 13px!important}
+/* kademe taşı (K yazısı üstünde): dükkân, bilgi kartı, ayrıntı portresi */
+#mac .kTag,.bilgiKart .kTag,.kdKad{display:inline-grid;place-items:center;width:22px;height:26px;padding:0 0 1px;border:0!important;border-radius:0!important;box-shadow:none!important;
+  background:url(arayuz/kit/kademe_tas_set/kademe_k1.webp) center/contain no-repeat!important;font:900 9.5px/1 var(--fBaslik);color:#fff;letter-spacing:0;
+  text-shadow:-1px -1px 0 #1a0d2a,1px -1px 0 #1a0d2a,-1px 1px 0 #1a0d2a,1px 1px 0 #1a0d2a;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+:is(#mac,.bilgiKart,.kDetay).k2 :is(.kTag,.kdKad),#mac .k2 .kTag,.bilgiKart.k2 .kTag{background-image:url(arayuz/kit/kademe_tas_set/kademe_k2.webp)!important}
+:is(#mac,.bilgiKart,.kDetay).k3 :is(.kTag,.kdKad),#mac .k3 .kTag,.bilgiKart.k3 .kTag{background-image:url(arayuz/kit/kademe_tas_set/kademe_k3.webp)!important}
+:is(#mac,.bilgiKart,.kDetay).k4 :is(.kTag,.kdKad),#mac .k4 .kTag,.bilgiKart.k4 .kTag{background-image:url(arayuz/kit/kademe_tas_set/kademe_k4.webp)!important}
+:is(#mac,.bilgiKart,.kDetay).k5 :is(.kTag,.kdKad),#mac .k5 .kTag,.bilgiKart.k5 .kTag{background-image:url(arayuz/kit/kademe_tas_set/kademe_k5.webp)!important}
+/* kademe kart çerçevesi (bilgi kartı portresi) */
+.bilgiKart.k2 .bkPor{border-image-source:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k2.webp)}
+.bilgiKart.k3 .bkPor{border-image-source:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k3.webp)}
+.bilgiKart.k4 .bkPor{border-image:url(arayuz/kit/kart_cerceve_set_2/kart_cerceve_k4.webp) 121 116 118 118 / 12px 12px 12px 12px / 1px stretch}
+.bilgiKart.k5 .bkPor{border-image:url(arayuz/kit/kart_cerceve_set_2/kart_cerceve_k5.webp) 121 116 118 118 / 12px 12px 12px 12px / 1px stretch}
+/* ---- dükkân kartları: kademe kart çerçevesi (9 dilim) + kart_zemin; ad plakası; fiyat altın çip; yüksel zümrüt çip + zümrüt vurgu; boş yuva; kilit mührü ---- */
+#mac .kart,body.hz3 #mac .kart{--kcw:22px;border:5px solid transparent;border-radius:12px;box-shadow:none;overflow:visible;
+  border-image:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k1.webp) 130 118 125 118 / 24px 22px 23px 22px / 2px stretch;
+  background:#1b0a30 url(arayuz/kit/kart_zemin/zemin.webp) center 30%/cover no-repeat padding-box;filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))}
+#mac .kart.k2{border-image-source:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k2.webp)}
+#mac .kart.k3{border-image-source:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k3.webp)}
+#mac .kart.k4{border-image:url(arayuz/kit/kart_cerceve_set_2/kart_cerceve_k4.webp) 121 116 118 118 / 23px 22px 22px 22px / 2px stretch}
+#mac .kart.k5{border-image:url(arayuz/kit/kart_cerceve_set_2/kart_cerceve_k5.webp) 121 116 118 118 / 23px 22px 22px 22px / 2px stretch}
+#mac .kart .resim{background:none!important;overflow:hidden;border-radius:7px 7px 0 0}
+#mac .kart.yuksel{box-shadow:none}
+#mac .kart.yuksel::after{content:"";position:absolute;inset:-14px -15px;border:0 solid transparent;pointer-events:none;z-index:4;
+  border-image:url(arayuz/kit/vurgu_set/zumrut.webp) 77 105 78 105 / 26px 34px 26px 34px stretch;animation:kartVurgu 1.6s ease-in-out infinite}
+@keyframes kartVurgu{50%{opacity:.6}}
+#mac .kart:active{transform:translateY(1px) scale(.97)}
+#mac .kart .ad,body.hz3 #mac .kart .ad{position:relative;z-index:2;margin:0 -1px -1px;padding:0 10px 1px;border:0 solid transparent;border-top:0;border-radius:0;background:none;
+  border-image:url(arayuz/kit/satir_plaka_set_1/normal.webp) 27 47 30 46 fill / 7px 12px 7.5px 12px stretch;color:#fff1cf;
+  text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834;overflow:hidden;text-overflow:ellipsis}
+/* fiyat: altın çip, ikon_altin sokette */
+#mac .kart .fiyat,body.hz3 #mac .kart .fiyat{--ch:26px;height:var(--ch);padding:0 calc(var(--ch)*.5) 1px calc(var(--ch)*1.12);gap:0;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;
+  border-image:url(arayuz/kit/cip_set_1/altin.webp) 0 78 0 166 fill / 0 calc(var(--ch)*.667) 0 calc(var(--ch)*1.419) stretch;color:#fffaf0;font-size:15px;
+  text-shadow:-1px -1px 0 #5a2404,1px -1px 0 #5a2404,-1px 1px 0 #5a2404,1px 1px 0 #5a2404}
+#mac .kart .fiyat .ik,body.hz3 #mac .kart .fiyat .ik{position:absolute;left:calc(var(--ch)*.2);top:50%;width:calc(var(--ch)*.7);height:calc(var(--ch)*.7);transform:translateY(-50%)}
+/* yüksel / elinde: zümrüt ve nötr çip (ikon sokette) */
+#mac .kart .yukselEt,#mac .kart .sahipEt,body.hz3 #mac .kart .yukselEt,body.hz3 #mac .kart .sahipEt{--ch:20px;height:var(--ch);padding:0 calc(var(--ch)*.5) 1px calc(var(--ch)*1.12);gap:1px;border:0 solid transparent;border-radius:0;
+  background:none;box-shadow:none;opacity:1;border-image:url(arayuz/kit/cip_set_1/zumrut.webp) 0 78 0 166 fill / 0 calc(var(--ch)*.667) 0 calc(var(--ch)*1.419) stretch;
+  color:#f4fff8;font-weight:800;text-shadow:-1px -1px 0 #06361f,1px -1px 0 #06361f,-1px 1px 0 #06361f,1px 1px 0 #06361f}
+#mac .kart .sahipEt,body.hz3 #mac .kart .sahipEt{border-image-source:url(arayuz/kit/cip_set_1/notr.webp);color:#f3e6c8;text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834}
+#mac .kart .yukselEt .ik,#mac .kart .sahipEt .ik,body.hz3 #mac .kart .yukselEt .ik{position:absolute;left:calc(var(--ch)*.22);top:50%;width:calc(var(--ch)*.64);height:calc(var(--ch)*.64);transform:translateY(-50%)}
+#mac .kart .yukselEt .ik.yz,body.hz3 #mac .kart .yukselEt .ik.yz{position:static;transform:none;width:calc(var(--ch)*.62);height:calc(var(--ch)*.62);margin-right:1px}
+#mac .kart .havuzEt{display:flex;align-items:center;gap:3px;background:none;padding:0;color:#e9ddf7;text-shadow:0 1px 1px #12061f}
+#mac .kart .havuzEt .ik{width:16px;height:16px}
+/* boş dükkân yuvası ve kilitli dükkân mührü */
+#mac .kart.bos,body.hz3 #mac .kart.bos{border:0;border-image:none;opacity:.8;filter:none;background:url(arayuz/kit/yuva_set/yuva_kart_bos.webp) center/100% 100% no-repeat}
+#mac .kartlar.kilitli .kart:not(.bos)::before{content:"";position:absolute;left:50%;top:-12px;z-index:5;width:30px;height:30px;transform:translateX(-50%);pointer-events:none;
+  background:url(arayuz/kit/yuva_set/muhur_kilit.webp) center/contain no-repeat;filter:drop-shadow(0 2px 3px rgba(0,0,0,.6))}
+/* dükkân şansı kutusu: ince panel; sürükleyip satma: yakut ince panel */
+.sansKutu{padding:10px 16px 11px;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;color:#f3e6c8;text-shadow:0 1px 0 #1c0834;
+  border-image:url(arayuz/kit/panel_ince_set/mor.webp) 47 57 49 58 fill / 15px 18px 15.5px 18.5px stretch;filter:drop-shadow(0 8px 12px rgba(0,0,0,.55))}
+body.hz3 #mac.surSat .dukkan{outline:0}
+body.hz3 #mac.surSat .dukkan::after{inset:4px 10px;border:0 solid transparent;border-radius:0;background:none;font-family:var(--fBaslik);color:#fff0ea;
+  border-image:url(arayuz/kit/panel_ince_set/yakut.webp) 47 57 49 58 fill / 22px 27px 23px 27.5px stretch;
+  text-shadow:-1px -1px 0 #4a0618,1px -1px 0 #4a0618,-1px 1px 0 #4a0618,1px 1px 0 #4a0618,0 2px 0 #4a0618}
+html.alcak #mac .kart,html.alcak body.hz3 #mac .kart{border-width:3px;border-image-width:16px 15px 15.5px 15px;border-radius:9px}
+html.alcak #mac .kart.k4,html.alcak #mac .kart.k5{border-image-width:15.5px 15px 15px 15px}
+html.alcak #mac .kart .ad,html.alcak body.hz3 #mac .kart .ad{border-image-width:5px 9px 5.5px 9px;padding:0 6px 1px}
+html.alcak #mac .kart .fiyat,html.alcak body.hz3 #mac .kart .fiyat{--ch:20px;height:var(--ch);padding:0 calc(var(--ch)*.5) 1px calc(var(--ch)*1.12);font-size:12px}
+html.alcak #mac .kart .yukselEt,html.alcak #mac .kart .sahipEt,html.alcak body.hz3 #mac .kart .yukselEt,html.alcak body.hz3 #mac .kart .sahipEt{--ch:16px;height:var(--ch);padding:0 calc(var(--ch)*.45) 1px calc(var(--ch)*1.1);font-size:8.5px!important}
+html.alcak #mac .kart.yuksel::after{inset:-10px -11px;border-image-width:19px 25px 19px 25px}
+html.alcak #mac .kartlar.kilitli .kart:not(.bos)::before{width:22px;height:22px;top:-9px}
+/* ---- dükkân solu: Yenile / Kilitle / Deneyim Al (kit mor düğme; kilitliyken altın); deneyim çubuğu dolgusu lila doku ---- */
+body.hz3 #mac .dukkanSol .btn{--bh:30px;padding:0 15px!important;gap:3px}
+body.hz3 #mac .dukkanSol .btn:not(.xpBtn){font-size:12px}
+body.hz3 #mac .dukkanSol .btn:not(.xpBtn) .mik{width:15px;height:15px}
+body.hz3 #mac .dukkanSol .btn:not(.xpBtn) small{font-size:11px;display:inline-flex;align-items:center}
+body.hz3 #mac .dukkanSol .xpBtn{--bh:34px;padding:0 16px!important;justify-content:center;text-align:center}
+body.hz3 #mac .dukkanSol .xpBtn small{flex-basis:100%;justify-content:center;display:flex;align-items:center;gap:1px}
+html.alcak body.hz3 #mac .dukkanSol .btn{--bh:24px;padding:0 10px!important}
+html.alcak body.hz3 #mac .dukkanSol .btn:not(.xpBtn){font-size:11px}
+html.alcak body.hz3 #mac .dukkanSol .xpBtn{--bh:26px;padding:0 9px!important;font-size:10.5px}
+.xpCubuk i{background:url(arayuz/kit/cubuk_dolgu_set/dolgu_lila.webp) left center/auto 100% repeat-x!important;box-shadow:0 0 4px rgba(190,120,255,.7)}
+/* ---- SAVAŞA!: dugme_savas (KİT v3 altın düğme zemini kaldırmasın); Kervan turunda dugme_kervan_set ---- */
+#mac .btn.savasBtn,#mac .btn.savasBtn:is(#kit,.btn):is(#kit,.btn){border:0!important;border-image:none!important;background:url(arayuz/menu/dugme_savas.webp) center/contain no-repeat!important}
+#mac .btn.savasBtn:active{background-image:url(arayuz/menu/dugme_savas_basili.webp)!important}
+#mac .btn.savasBtn.kervanBtn:is(#kit,.btn):is(#kit,.btn){background-image:url(arayuz/kit/dugme_kervan_set/dugme_kervan.webp)!important;--kontur:#4a1d02}
+#mac .btn.savasBtn.kervanBtn:is(#kit,.btn):is(#kit,.btn):active{background-image:url(arayuz/kit/dugme_kervan_set/dugme_kervan_basili.webp)!important}
+#mac .btn.savasBtn:is(#kit,.btn):is(#kit,.btn):active{background-image:url(arayuz/menu/dugme_savas_basili.webp)!important}
+.secimler .sc .scY{display:inline-block;width:16px;height:16px;vertical-align:-2px}
+#mac .btn.savasBtn:disabled{filter:grayscale(1) brightness(.72);opacity:.8}
+#mac .btn.savasBtn small{background:none;padding:0;text-shadow:-1px -1px 0 #3a1a05,1px -1px 0 #3a1a05,-1px 1px 0 #3a1a05,1px 1px 0 #3a1a05,0 2px 2px rgba(0,0,0,.6)}
+/* ---- seçim pencereleri (başlangıç kahramanı, Kervan, ganimet, Soy Mührü): kart çerçevesi + kart_zemin; ganimet/mühür altın çerçeve ---- */
+.secimler .sc.kc{--sc:min(150px,26cqw);width:var(--sc);min-height:calc(var(--sc)*1.2);padding:16px 13px 24px;gap:4px;justify-content:flex-start;border:6px solid transparent;border-radius:12px;box-shadow:none;
+  border-image:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k1.webp) 130 118 125 118 / 30px 28px 29px 28px / 2px stretch;
+  background:#1b0a30 url(arayuz/kit/kart_zemin/zemin.webp) center 35%/cover no-repeat padding-box;filter:drop-shadow(0 8px 10px rgba(0,0,0,.55));transition:transform .15s}
+.secimler .sc.kc.k2{border-image-source:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k2.webp)}
+.secimler .sc.kc.k3{border-image-source:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k3.webp)}
+.secimler .sc.kc.altin{min-height:0;border-image:url(arayuz/kit/kart_cerceve_set_2/kart_cerceve_altin.webp) 121 116 118 118 / 28px 28px 28px 28px / 2px stretch;
+  background:#1f0c38 url(arayuz/kit/doku_cam_mor/doku.webp) 0 0/256px 256px repeat padding-box}
+.secimler .sc.kc.altin[data-soy]{--sc:min(132px,22cqw);padding:14px 10px 20px}
+.secimler .sc.kc.altin[data-soy] img.pp{width:36px!important;height:36px!important}
+.secimler .sc.kc:hover,.secimler .sc.kc:focus-visible{border-color:transparent;box-shadow:none;transform:translateY(-4px)}
+.secimler .sc.kc:active{transform:translateY(1px) scale(.97)}
+.secimler .sc.kc::after{content:"";position:absolute;inset:-16px -17px;border:0 solid transparent;pointer-events:none;opacity:0;transition:opacity .15s;
+  border-image:url(arayuz/kit/vurgu_set/altin.webp) 77 105 78 105 / 30px 41px 30px 41px stretch}
+.secimler .sc.kc:is(:hover,:focus-visible,:active)::after{opacity:1}
+.secimler .sc.kc{position:relative}
+.secimler .sc.kc img.pp{width:80px;height:80px;filter:drop-shadow(0 4px 4px rgba(0,0,0,.6))}
+.secimler .sc.kc .esyaIk{width:44px;height:44px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.6))}
+.secimler .sc.kc b{font-family:var(--fBaslik);font-size:14px;line-height:1.15;color:#fff1cf;text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834}
+.secimler .sc.kc small{color:#f0e6ff;font-weight:700;text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834,0 1px 3px #12061f}
+html.alcak .secimler .sc.kc{--sc:min(124px,24cqw);padding:12px 9px 18px;border-width:4px;border-image-width:22px 21px 21.5px 21px}
+html.alcak .secimler .sc.kc img.pp{width:56px;height:56px}
+/* ---- kahraman ayrıntı kartı (kahDetayHTML): portre kademe çerçevesi + kart_zemin, kademe taşı, soketli çipler, stat plakaları, yetenek (safir) / pasif (ametist) plakaları, video çerçevesi ---- */
+.kdCer,.kdCer.k1{padding:0;border:9px solid transparent;border-radius:14px;box-shadow:none;
+  border-image:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k1.webp) 130 118 125 118 / 44px 40px 42px 40px / 3px stretch;
+  background:#1b0a30 url(arayuz/kit/kart_zemin/zemin.webp) center 30%/cover no-repeat padding-box;filter:drop-shadow(0 10px 14px rgba(0,0,0,.55))}
+.kDetay.k2 .kdCer{border-image-source:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k2.webp)}
+.kDetay.k3 .kdCer{border-image-source:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k3.webp)}
+.kDetay.k4 .kdCer{border-image:url(arayuz/kit/kart_cerceve_set_2/kart_cerceve_k4.webp) 121 116 118 118 / 41px 40px 40px 40px / 3px stretch}
+.kDetay.k5 .kdCer{border-image:url(arayuz/kit/kart_cerceve_set_2/kart_cerceve_k5.webp) 121 116 118 118 / 41px 40px 40px 40px / 3px stretch}
+.kdCer::before,.kdCer::after{display:none}
+.kdCer img{border-radius:6px}
+.kdKad{top:-14px;right:-12px;width:40px;height:47px;font-size:13px;padding-bottom:2px;clip-path:none}
+.kdPortre .yildizlar{gap:2px}.kdPortre .yildizlar .ik{width:26px;height:26px}
+.kdCip{--ch:30px;position:relative;height:var(--ch);padding:0 calc(var(--ch)*.5) 1px calc(var(--ch)*1.12);gap:0;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;
+  border-image:url(arayuz/kit/cip_set_1/notr.webp) 0 78 0 166 fill / 0 calc(var(--ch)*.667) 0 calc(var(--ch)*1.419) stretch;color:#f3e6c8;text-shadow:0 1px 0 #1c0834}
+.kdCip.kad{padding:0 calc(var(--ch)*.5) 1px calc(var(--ch)*1.12);background:none;color:#f3e6c8;border-color:transparent}
+.kdCip.fiyat{padding:0 calc(var(--ch)*.5) 1px calc(var(--ch)*1.12);border-image-source:url(arayuz/kit/cip_set_1/altin.webp);color:#fffaf0;text-shadow:-1px -1px 0 #5a2404,1px -1px 0 #5a2404,-1px 1px 0 #5a2404,1px 1px 0 #5a2404}
+.kdCip img,.kdCip .ik,.kdCip.kad .ik,.kdCip.fiyat .ik{position:absolute;left:calc(var(--ch)*.18);top:50%;width:calc(var(--ch)*.72);height:calc(var(--ch)*.72);margin:0;transform:translateY(-50%)}
+.kdCip.kad .ik{left:calc(var(--ch)*.24);width:calc(var(--ch)*.6);height:calc(var(--ch)*.7)}
+.kdStat>div{border:0 solid transparent;border-radius:0;background:none;box-shadow:none;padding:9px 6px 10px;
+  border-image:url(arayuz/kit/satir_plaka_set_1/normal.webp) 27 47 30 46 fill / 9px 15px 10px 15px stretch}
+.kdStat small{color:#d6c8e2}
+.kdStat small .ik{width:17px;height:17px;object-fit:contain;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}
+.kdKutu,.kdKutu.yet{border:0 solid transparent;border-radius:0;background:none;box-shadow:none;padding:12px 18px 13px;
+  border-image:url(arayuz/kit/satir_plaka_set_2/safir.webp) 24 44 25 45 fill / 12px 22px 12.5px 22.5px stretch}
+.kdKutu.pas{border-image-source:url(arayuz/kit/satir_plaka_set_2/ametist.webp)}
+.kdKutu.yet.vid{padding:10px 18px 10px 10px}
+.kdKutu h4 .ik{width:20px;height:20px;object-fit:contain;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}
+.kdVid,.kDetay.k1 .kdVid{padding:0;border:6px solid transparent;border-radius:8px;box-shadow:none;background:#12061f padding-box;
+  border-image:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k1.webp) 130 118 125 118 / 26px 24px 25px 24px / 2px stretch}
+.kDetay.k2 .kdVid{border-image-source:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k2.webp)}
+.kDetay.k3 .kdVid{border-image-source:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k3.webp)}
+.kDetay.k4 .kdVid{border-image:url(arayuz/kit/kart_cerceve_set_2/kart_cerceve_k4.webp) 121 116 118 118 / 25px 24px 24px 24px / 2px stretch}
+.kDetay.k5 .kdVid{border-image:url(arayuz/kit/kart_cerceve_set_2/kart_cerceve_k5.webp) 121 116 118 118 / 25px 24px 24px 24px / 2px stretch}
+.kdVid video{border-radius:3px}
+.kdVidEt{--ch:26px;height:var(--ch);left:6px;top:6px;padding:0 calc(var(--ch)*.5) 1px calc(var(--ch)*1.2);gap:0;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;
+  border-image:url(arayuz/kit/cip_set_2/ametist.webp) 0 64 0 184 fill / 0 calc(var(--ch)*.542) 0 calc(var(--ch)*1.559) stretch;color:#fff1cf;text-shadow:0 1px 0 #1c0834}
+.kdVidEt .ik{position:absolute;left:calc(var(--ch)*.26);top:50%;width:calc(var(--ch)*.6);height:calc(var(--ch)*.6);transform:translateY(-50%)}
+.kdVidOyna{width:52px;height:52px;margin:-26px 0 0 -26px;border:0;border-radius:50%;background:url(arayuz/menu/ikon_oynat.webp) 56% 50%/44% 44% no-repeat,url(arayuz/menu/dugme_yuvarlak.webp) center/100% 100% no-repeat;
+  filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
+.kdVidOyna::after{display:none}
+.kdEsya>div{padding:7px 14px 8px 10px;border:0 solid transparent;border-image:url(arayuz/kit/satir_plaka_set_1/normal.webp) 27 47 30 46 fill / 9px 15px 10px 15px stretch}
+.kdEk{display:inline-flex;align-items:center;--ch:28px;position:relative;height:var(--ch);padding:0 calc(var(--ch)*.55) 1px calc(var(--ch)*1.15);border:0 solid transparent;
+  border-image:url(arayuz/kit/cip_set_1/notr.webp) 0 78 0 166 fill / 0 calc(var(--ch)*.667) 0 calc(var(--ch)*1.419) stretch;color:#e2d3f5;text-shadow:0 1px 0 #1c0834}
+.kdEk .ik{position:absolute;left:calc(var(--ch)*.22);top:50%;width:calc(var(--ch)*.64);height:calc(var(--ch)*.64);transform:translateY(-50%)}
+html.alcak .kdCer{border-width:6px;border-image-width:30px 27px 29px 27px}
+html.alcak .kDetay.k4 .kdCer,html.alcak .kDetay.k5 .kdCer{border-image-width:28px 27px 27px 27px}
+html.alcak .kdKad{width:30px;height:35px;font-size:10px;top:-10px;right:-8px}
+html.alcak .kdCip{--ch:25px;font-size:12.5px}
+html.alcak .kdStat>div{border-image-width:7px 11px 7.5px 11px;padding:6px 4px 7px}
+html.alcak .kdKutu,html.alcak .kdKutu.yet{padding:9px 14px 10px;border-image-width:9px 16px 9.5px 16.5px}
+html.alcak .kdKutu.yet.vid{padding:7px 14px 7px 7px}
+html.alcak .kdVid{border-width:4px;border-image-width:19px 18px 18px 18px}
+html.alcak .kdVidEt{--ch:21px}
+html.alcak .kdVidOyna{width:40px;height:40px;margin:-20px 0 0 -20px}
+/* yıldızlar: kit yıldızları (★1 bronz, ★2 gümüş, ★3 altın + taçlı) */
+.yildizlar .ik{object-fit:contain;filter:drop-shadow(0 1px 1px rgba(0,0,0,.7))}
+.yildizlar.y3 .ik:nth-child(2){transform:translateY(-2px) scale(1.12)}
+/* ---- 2D hazırlık yedeği (WebGL yoksa): yuvalar kit yuvası, seçili altın, sıra adı başlık bandı, seçili paneli ince panel ---- */
+body:not(.hz3) #mac .yuva{border:0 solid transparent;border-radius:0;box-shadow:none;background:none;border-image:url(arayuz/kit/yuva_set/yuva_kare.webp) 59 fill / 14px stretch}
+body:not(.hz3) #mac .yuva.secili{border-image:url(arayuz/kit/yuva_set/yuva_kare_secili.webp) 65 66 65 67 fill / 15px stretch}
+body:not(.hz3) #mac .yuva .taban{display:none}
+body:not(.hz3) #mac .siraAd{border:0 solid transparent;background:none;border-image:url(arayuz/kit/baslik_bandi/bant.webp) 0 123 0 124 fill / 0 26px 0 26px stretch;color:#fff1cf}
+body:not(.hz3) #mac .secPanel{border:0 solid transparent;background:none;box-shadow:none;border-image:url(arayuz/kit/panel_ince_set/mor.webp) 47 57 49 58 fill / 20px 24px 21px 24.5px stretch}
+body:not(.hz3) #mac .yetenek{border:0 solid transparent;border-radius:0;background:none;border-image:url(arayuz/kit/satir_plaka_set_2/safir.webp) 24 44 25 45 fill / 12px 22px 12.5px 22.5px stretch}
+body:not(.hz3) #mac .yetenek.pasif{border-image-source:url(arayuz/kit/satir_plaka_set_2/ametist.webp)}
+/* ======================= /hazırlık ekranı ======================= */
+/* ======================= savaş ve sonuç (KİT v3; GORSEL_ISTEK_3) =======================
+   Savaş HUD, Kut düğmesi, SAVAŞ! geçişi, sonuç bandı + hasar özeti, Maçın Yıldızı, maç sonu + tören, Kodeks, öğretici, armağan, perde.
+   Ortak parçalar menü / hazırlık bloklarıyla aynı (ince panel, satır plakası, çip, soketli plaka, sekme, kart çerçevesi, kurdele).
+   Yeni ortak sınıflar:
+     .kitCubuk (+ > i dolgu)    cubuk_set/cubuk_buyuk + cubuk_dolgu_set/dolgu_altin (3 dilim; yükseklik --cb) ..... #son .lig, Sırada, ustalık
+     .kitBas                     baslik_bandi (3 dilim) + madde_kristal ...................................... #son .kutu h4, #kodeks .pn-bas, #hasarOzet .ust
+   Perde: perde_vinyet (multiply maskesi) aynı görselden türetilmiş saydam sürüm perde_vinyet_alfa.webp ile verilir
+   (pencerenin altındaki katmanla "multiply" karışımı yığın bağlamında çalışmıyor; alfa sürümü aynı kararmayı verir).
+   ======================================================================================== */
+/* ---- perde: vinyet (kenarlar koyu mor-siyah, orta açık) + hafif düz karartma ---- */
+.perde:not(.armagan){background:url(arayuz/kit/perde_vinyet/perde_vinyet_alfa.webp) center/cover no-repeat,rgba(10,3,22,.32)}
+.ogr.karart{background:url(arayuz/kit/perde_vinyet/perde_vinyet_alfa.webp) center/cover no-repeat,rgba(18,7,31,.2)}
+
+/* ======================= SAVAŞ HUD ======================= */
+/* rakip etiketi: yakut soketli plaka, portre sokette (profil_cerceve_b halkası korunur) */
+#savas .savasUst .pn.rakipK{--ph:54px;position:relative;height:var(--ph);min-width:0;padding:0 calc(var(--ph)*.66) 1px calc(var(--ph)*1.1);gap:0;border:0 solid transparent;border-radius:0;
+  border-image:url(arayuz/kit/plaka_set/yakut.webp) 0 104 0 141 fill / 0 calc(var(--ph)*.743) 0 calc(var(--ph)*1.007) stretch;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;
+  filter:drop-shadow(0 4px 6px rgba(0,0,0,.45))}
+#savas .savasUst .pn.rakipK::before,#savas .savasUst .pn.rakipK::after{display:none}
+#savas .rakipK .amb{position:absolute;left:calc(var(--ph)*.2);top:50%;width:calc(var(--ph)*.6);height:calc(var(--ph)*.6);margin-top:calc(var(--ph)*-.3);border:0;border-radius:50%;
+  background:radial-gradient(circle at 50% 35%,#4a2a6e,#12061f 75%)}
+#savas .rakipK small{font-size:10px;letter-spacing:.06em;color:#ffd0da;text-shadow:0 1px 0 #3a0614}
+#savas .rakipK b{font-size:15px;color:#fff1cf;text-shadow:-1px -1px 0 #3a0614,1px -1px 0 #3a0614,-1px 1px 0 #3a0614,1px 1px 0 #3a0614,0 2px 0 #3a0614}
+#savas .rakipK span{font-size:11px;color:#ffe2e8;text-shadow:0 1px 0 #3a0614}
+/* alamet: yakut soketli plaka, alamet madalyonu sokette; açılınca yakut ince panel */
+#savas .savasUst .alametK{--ph:50px;position:relative;height:var(--ph);padding:0 calc(var(--ph)*.62) 1px calc(var(--ph)*1.08);gap:0;border:0 solid transparent;border-radius:0;
+  border-image:url(arayuz/kit/plaka_set/yakut.webp) 0 104 0 141 fill / 0 calc(var(--ph)*.743) 0 calc(var(--ph)*1.007) stretch;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;
+  filter:drop-shadow(0 4px 6px rgba(0,0,0,.45))}
+#savas .savasUst .alametK .ay{position:absolute;left:calc(var(--ph)*.12);top:50%;width:calc(var(--ph)*.76);height:calc(var(--ph)*.76);margin-top:calc(var(--ph)*-.38)}
+#savas .alametK b{color:#fff1cf;text-shadow:-1px -1px 0 #3a0614,1px -1px 0 #3a0614,-1px 1px 0 #3a0614,1px 1px 0 #3a0614,0 2px 0 #3a0614}
+#savas .savasUst .alametK.acik{height:auto;min-height:var(--ph);padding:10px 18px 11px calc(var(--ph)*1.08);border-image:url(arayuz/kit/panel_ince_set/yakut.webp) 47 57 49 58 fill / 16px 19px 16.5px 19.5px stretch}
+#savas .savasUst .alametK.acik .ay{top:10px;margin-top:0}
+#savas .alametK.acik span{color:#ffe8ee;text-shadow:0 1px 0 #3a0614}
+/* hız ve ayakta panelleri: ince mor panel */
+#savas .pn.hizlar,#savas .pn.ayakta{border:0 solid transparent;border-radius:0;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;
+  border-image:url(arayuz/kit/panel_ince_set/mor.webp) 47 57 49 58 fill / 16px 19px 16.5px 19.5px stretch;filter:drop-shadow(0 6px 8px rgba(0,0,0,.45))}
+#savas .pn.hizlar{padding:12px 9px 9px;gap:7px}
+#savas .pn.hizlar::before,#savas .pn.hizlar::after,#savas .pn.ayakta::before,#savas .pn.ayakta::after{display:none}
+#savas .hizlar small{color:#e9dcff;text-shadow:0 1px 0 #1c0834}
+/* hız düğmeleri: yuvarlak düğme + ikon_set_hiz (1× / 2× / 3×) */
+#savas .hizlar .btn .kik{width:52%;height:34%;object-fit:contain;flex:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}
+#savas .hizlar .btn.secik .kik{filter:drop-shadow(0 1px 0 #6a3206) drop-shadow(0 0 3px rgba(255,240,200,.6))}
+#savas .hizlar .btn b{color:#fff3d6;text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834}
+#savas .hizlar .btn.secik b{color:#fffaf0;text-shadow:-1px -1px 0 #6a3206,1px -1px 0 #6a3206,-1px 1px 0 #6a3206,1px 1px 0 #6a3206}
+/* duraklat + sonuca geç: yuvarlak düğme + ikon (sonuca geç = ikon_sona_gec, altında küçük ad) */
+#savas .duraklat .btn.sonaGec{width:58px;height:58px;min-height:0;padding:0!important;margin:0;border:0!important;border-image:none!important;border-radius:50%!important;
+  background:url(arayuz/menu/dugme_yuvarlak.webp) center/100% 100% no-repeat!important;box-shadow:none;filter:drop-shadow(0 4px 5px rgba(0,0,0,.5));position:relative;overflow:visible}
+#savas .duraklat .btn.sonaGec:active{background-image:url(arayuz/menu/dugme_yuvarlak_basili.webp)!important}
+#savas .duraklat .btn.sonaGec::before{display:none}
+#savas .duraklat .btn.sonaGec .kik{width:56%;height:56%;object-fit:contain;filter:drop-shadow(0 2px 1px rgba(0,0,0,.6))}
+#savas .duraklat .btn.sonaGec span{position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:1px;font:700 11px/1 var(--fBaslik);letter-spacing:.02em;white-space:nowrap;color:#fff1cf;
+  text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834,0 2px 2px rgba(0,0,0,.6)}
+html.alcak #savas .duraklat .btn.sonaGec{width:50px;height:50px}
+/* ayakta: SEN zümrüt / RAKİP yakut çip; portreler kademe kart çerçevesinde; ölü = ikon_dustu */
+#savas .pn.ayakta{padding:11px 14px 11px 12px;gap:6px}
+#savas .ayakta .s>span{--ch:24px;display:inline-flex;align-items:center;justify-content:center;width:auto;min-width:66px;height:var(--ch);padding:0 calc(var(--ch)*.55) 1px calc(var(--ch)*1.05);margin-right:2px;
+  border:0 solid transparent;border-image:url(arayuz/kit/cip_set_1/zumrut.webp) 0 78 0 166 fill / 0 calc(var(--ch)*.667) 0 calc(var(--ch)*1.419) stretch;
+  font:700 10.5px/1 var(--fBaslik);letter-spacing:.06em;color:#fffaf0;text-shadow:-1px -1px 0 #0b3d22,1px -1px 0 #0b3d22,-1px 1px 0 #0b3d22,1px 1px 0 #0b3d22}
+#savas .ayakta .dus>span{border-image-source:url(arayuz/kit/cip_set_1/yakut.webp);color:#fff1f3;text-shadow:-1px -1px 0 #4a0618,1px -1px 0 #4a0618,-1px 1px 0 #4a0618,1px 1px 0 #4a0618}
+#savas .ayakta .bas,#savas .ayakta .dus .bas{width:30px;height:36px;border:3px solid transparent;border-radius:4px;box-shadow:none;overflow:visible;
+  border-image:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k1.webp) 130 118 125 118 / 9px 8px 9px 8px / 1px stretch;
+  background:#1b0a30 url(arayuz/kit/kart_zemin/zemin.webp) center 30%/cover no-repeat padding-box}
+#savas .ayakta .bas.k2{border-image-source:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k2.webp)}
+#savas .ayakta .bas.k3{border-image-source:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k3.webp)}
+#savas .ayakta .bas.k4{border-image:url(arayuz/kit/kart_cerceve_set_2/kart_cerceve_k4.webp) 121 116 118 118 / 9px 8px 9px 8px / 1px stretch}
+#savas .ayakta .bas.k5{border-image:url(arayuz/kit/kart_cerceve_set_2/kart_cerceve_k5.webp) 121 116 118 118 / 9px 8px 9px 8px / 1px stretch}
+#savas .ayakta .bas img{left:-8%;top:2%;width:116%;height:100%;border-radius:2px}
+#savas .ayakta .bas.olu{border-image-source:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k1.webp);filter:saturate(.3) brightness(.8)}
+#savas .ayakta .bas.olu::after{inset:auto;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;background:url(arayuz/kit/ikon_set_ilerleme/ikon_dustu.webp) center/contain no-repeat;filter:drop-shadow(0 1px 2px #000)}
+#savas .ayakta .s em{font-family:var(--fSayi);color:#fff1cf;text-shadow:0 1px 0 #1c0834}
+html.alcak #savas .pn.ayakta{padding:8px 11px 8px 9px;gap:4px}
+html.alcak #savas .ayakta .bas{width:25px;height:30px}
+html.alcak #savas .ayakta .s>span{--ch:21px;min-width:56px;font-size:9.5px}
+/* gün batımı çarpanı: gün batımı çipi (set 2) */
+#savas .saat .gunBatimi{--ch:20px;height:var(--ch);padding:0 calc(var(--ch)*.5) 1px calc(var(--ch)*.9);border:0 solid transparent;border-radius:0;background:none;box-shadow:none;
+  border-image:url(arayuz/kit/cip_set_2/gunbatimi.webp) 0 64 0 184 fill / 0 calc(var(--ch)*.542) 0 calc(var(--ch)*1.1) stretch;
+  color:#fffaf0;font-size:11px;text-shadow:-1px -1px 0 #5a0d32,1px -1px 0 #5a0d32,-1px 1px 0 #5a0d32,1px 1px 0 #5a0d32}
+
+/* ---- KUT düğmesi: kut_set (hazır / bitti; sabit oran 377:440) + kut_isin ışın halkası ---- */
+#savas .kut,#savas .kut.bitti{width:172px;height:201px;border:0;border-radius:0;box-shadow:none;background:url(arayuz/kit/kut_set/kut_dugme_hazir.webp) center/100% 100% no-repeat;
+  filter:drop-shadow(0 0 18px rgba(255,170,60,.6)) drop-shadow(0 6px 10px rgba(0,0,0,.5))}
+#savas .kut.bitti{background-image:url(arayuz/kit/kut_set/kut_dugme_bitti.webp);filter:drop-shadow(0 6px 10px rgba(0,0,0,.5))}
+#savas .kut .isin{inset:auto;left:50%;top:50%;width:150%;height:auto;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:0;
+  background:url(arayuz/kit/kut_isin/kut_isin.webp) center/contain no-repeat;-webkit-mask:none;mask:none;mix-blend-mode:screen;animation:kutIsinDon 14s linear infinite}
+@keyframes kutIsinDon{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+#savas .kut.secim .isin{animation-duration:4s}
+#savas .kut.bitti .isin{display:none}
+#savas .kut .yz{margin-top:6%;color:#4a1a02;text-shadow:0 1px 0 rgba(255,245,215,.85),0 0 10px rgba(255,255,230,.7)}
+#savas .kut .yz big{font-size:38px}
+#savas .kut .yz small{position:absolute;left:50%;bottom:4.2%;transform:translateX(-50%);min-width:34px;font:900 11px/1 var(--fSayi);color:#fff1cf;text-align:center;
+  text-shadow:-1px -1px 0 #3a1606,1px -1px 0 #3a1606,-1px 1px 0 #3a1606,1px 1px 0 #3a1606}
+/* dokun ipucu: madalyon yuvası + ikon_dokun */
+#savas .kut .el{left:-10px;bottom:8px;width:52px;height:58px;border:0;border-radius:0;box-shadow:none;background:url(arayuz/kit/madalyon_yuva/yuva.webp) center/100% 100% no-repeat;filter:drop-shadow(0 3px 4px rgba(0,0,0,.5))}
+#savas .kut .el .ik{width:58%;height:58%;object-fit:contain;margin-top:4%}
+/* kullanıldı: kullananın portresi taş diskte, sayaç alttaki yuvada, onay ikon_onay */
+#savas .kut.bitti .kullanan{inset:auto;left:19.5%;right:19.5%;top:23.5%;bottom:23.5%;border-radius:50%;filter:grayscale(.3) brightness(.95)}
+#savas .kut.bitti .sayac{top:auto;bottom:4.2%;padding:0;border:0;border-radius:0;background:none;font:900 11px/1 var(--fSayi);color:#e9dcff;
+  text-shadow:-1px -1px 0 #1a0d2a,1px -1px 0 #1a0d2a,-1px 1px 0 #1a0d2a,1px 1px 0 #1a0d2a}
+#savas .kut.bitti .onay{right:-2px;bottom:18%;width:46px;height:42px;border:0;border-radius:0;background:url(arayuz/kit/ikon_set_durum/ikon_onay.webp) center/contain no-repeat;filter:drop-shadow(0 2px 3px rgba(0,0,0,.6))}
+#savas .kut.bitti .onay .ik{display:none}
+html.alcak #savas .kut,html.alcak #savas .kut.bitti{width:132px;height:154px}
+html.alcak #savas .kut .yz big{font-size:30px}
+html.alcak #savas .kut .el{width:42px;height:47px}
+html.alcak #savas .kut.bitti .onay{width:36px;height:33px}
+/* Kut bandı: kehribar ince panel (kullanıldı / sessizlik: taş) */
+#savas .kutBant{border:0 solid transparent;border-radius:0;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;padding:12px 18px 13px;
+  border-image:url(arayuz/kit/panel_ince_set/kehribar.webp) 47 57 49 58 fill / 16px 19px 16.5px 19.5px stretch;filter:drop-shadow(0 6px 10px rgba(0,0,0,.5))}
+#savas .kutBant.bitti{border-image-source:url(arayuz/kit/panel_ince_set/tas.webp)}
+#savas .kutBant b{color:#fff3c4;text-shadow:-1px -1px 0 #4a1e02,1px -1px 0 #4a1e02,-1px 1px 0 #4a1e02,1px 1px 0 #4a1e02,0 2px 0 #4a1e02,0 0 10px rgba(255,200,90,.5)}
+#savas .kutBant span{color:#fff4dc;text-shadow:0 1px 0 #3a1606,0 0 3px rgba(40,14,0,.7)}
+#savas .kutBant span em{color:#ffe48a}
+#savas .kutBant.bitti b{color:#efe6ff;text-shadow:-1px -1px 0 #241634,1px -1px 0 #241634,-1px 1px 0 #241634,1px 1px 0 #241634,0 2px 0 #241634}
+#savas .kutBant.bitti span{color:#e2d8f0;text-shadow:0 1px 0 #1a1024}
+html.alcak #savas .kutBant{padding:9px 14px 10px}
+
+/* ---- SAVAŞ! geçişi: bant_savas (3 dilim) + kılıç (silah_set) + şok halkası (fx_sok_halka) ---- */
+.sgBant{left:50%;right:auto;width:min(100cqw,1100px);transform-origin:50% 50%;margin-left:min(-50cqw,-550px);top:-58px;height:116px;border:0 solid transparent;background:none;
+  border-image:url(arayuz/kit/bant_genis_set/bant_savas.webp) 0 158 0 159 fill / 0 106px 0 107px stretch;filter:drop-shadow(0 8px 14px rgba(0,0,0,.55))}
+@media (max-width:1100px){.sgBant{width:100cqw;margin-left:-50cqw}}
+html.alcak .sgBant{top:-44px;height:88px;border-image-width:0 80px 0 81px}
+.kilic{display:block;background:url(arayuz/kit/silah_set/kilic.webp) center/contain no-repeat}
+.sgAmblem{--kw:calc(var(--kh)*.4)}
+.sgAmblem .kilic{top:calc(var(--kh)*-.65);transform-origin:50% 65%}
+.sgAmblem .halka,.sAmblem .halka,.sonToren .halka{border:0!important;box-shadow:none!important;background:url(arayuz/kit/fx_set/fx_sok_halka.webp) center/contain no-repeat;mix-blend-mode:screen}
+.berabere .sAmblem .halka{filter:hue-rotate(170deg) saturate(.8)}
+.sonToren.s4 .halka{filter:grayscale(1) brightness(.8)}
+.kivilcim i{height:14px;top:-7px;border-radius:0;box-shadow:none;background:url(arayuz/kit/fx_set/fx_kivilcim.webp) right center/14px 14px no-repeat,linear-gradient(90deg,transparent,color-mix(in srgb,var(--kc) 70%,#fff) 60%,transparent) 0 50%/calc(100% - 7px) 2px no-repeat;mix-blend-mode:screen}
+.savasGiris b{padding:4px 74px 10px;border:0 solid transparent;border-image:url(arayuz/kit/kurdele_set_1/altin.webp) 0 312 0 301 fill / 0 120px 0 116px stretch;
+  font-size:52px;color:#fffaf0;text-shadow:-2px -2px 0 #5a2404,2px -2px 0 #5a2404,-2px 2px 0 #5a2404,2px 2px 0 #5a2404,0 4px 0 #5a2404,0 0 22px rgba(255,212,92,.8)}
+html.alcak .savasGiris b{padding:3px 54px 7px;font-size:38px;border-image-width:0 88px 0 85px}
+
+/* ======================= SONUÇ BANDI ======================= */
+/* geniş bant (bant_genis_set; 3 dilim) başlığın arkasında, ekranı boydan boya geçer; ince CSS çizgileri kalkar */
+.sonucBant{background:none}
+.sonucBant::before,.sonucBant::after{display:none}
+.sonucBant .sBas::before{content:"";position:absolute;left:50%;top:50%;width:min(100cqw,1180px);height:150px;transform:translate(-50%,-50%);z-index:0;pointer-events:none;
+  border:0 solid transparent;border-image:url(arayuz/kit/bant_genis_set/bant_zafer.webp) 0 250 0 255 fill / 0 131px 0 134px stretch;filter:drop-shadow(0 10px 16px rgba(0,0,0,.55))}
+.sonucBant.yenilgi .sBas::before{height:118px;border-image:url(arayuz/kit/bant_genis_set/bant_yenilgi.webp) 0 246 0 245 fill / 0 131px 0 130px stretch}
+.sonucBant.berabere .sBas::before{height:116px;border-image:url(arayuz/kit/bant_genis_set/bant_berabere.webp) 0 246 0 247 fill / 0 131px 0 131px stretch}
+html.alcak .sonucBant .sBas::before{height:112px;border-image-width:0 98px 0 100px}
+html.alcak .sonucBant.yenilgi .sBas::before,html.alcak .sonucBant.berabere .sBas::before{height:88px;border-image-width:0 98px 0 98px}
+.sonucBant .sYazi{z-index:2}
+.sonucBant .sAmblem{z-index:1}
+/* başlık ayracı: süslü ayraç */
+.sAyrac{width:min(360px,60cqw);height:auto;aspect-ratio:893/100;gap:0;margin-top:4px;background:url(arayuz/kit/ayrac_suslu/ayrac.webp) center/contain no-repeat}
+.sAyrac i,.sAyrac span{display:none}
+.berabere .sAyrac{filter:hue-rotate(185deg) saturate(.55) brightness(1.1)}
+.yenilgi .sAyrac{filter:saturate(.6) brightness(.85)}
+/* sonuç çipleri: cip_set_1 (iyi zümrüt / kötü yakut / altın / nötr) + cip_set_2 ametist (yıldız); ikon sokette */
+.sonucBant .cip{--ch:34px;position:relative;height:var(--ch);padding:0 calc(var(--ch)*.55) 1px calc(var(--ch)*1.22);gap:0;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;
+  border-image:url(arayuz/kit/cip_set_1/notr.webp) 0 78 0 166 fill / 0 calc(var(--ch)*.667) 0 calc(var(--ch)*1.419) stretch;color:#fff4dc;font-size:14.5px;
+  text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834;filter:drop-shadow(0 3px 4px rgba(0,0,0,.45))}
+.sonucBant .cip .ik{position:absolute;left:calc(var(--ch)*.2);top:50%;width:calc(var(--ch)*.66);height:calc(var(--ch)*.66);transform:translateY(-50%);object-fit:contain;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}
+.sonucBant .cip.iyi{border-image-source:url(arayuz/kit/cip_set_1/zumrut.webp);color:#f2fff6;text-shadow:-1px -1px 0 #0b3d22,1px -1px 0 #0b3d22,-1px 1px 0 #0b3d22,1px 1px 0 #0b3d22}
+.sonucBant .cip.kotu{border-image-source:url(arayuz/kit/cip_set_1/yakut.webp);color:#fff1f3;text-shadow:-1px -1px 0 #4a0618,1px -1px 0 #4a0618,-1px 1px 0 #4a0618,1px 1px 0 #4a0618}
+.sonucBant .cip.altin{border-image-source:url(arayuz/kit/cip_set_1/altin.webp);color:#fffaf0;text-shadow:-1px -1px 0 #5a2404,1px -1px 0 #5a2404,-1px 1px 0 #5a2404,1px 1px 0 #5a2404}
+.sonucBant .cip.mvp{padding-left:calc(var(--ch)*1.34);border-image:url(arayuz/kit/cip_set_2/ametist.webp) 0 64 0 184 fill / 0 calc(var(--ch)*.542) 0 calc(var(--ch)*1.559) stretch;color:#fff6ff;
+  text-shadow:-1px -1px 0 #2c0a4a,1px -1px 0 #2c0a4a,-1px 1px 0 #2c0a4a,1px 1px 0 #2c0a4a}
+.sonucBant .cip.mvp .ik{left:calc(var(--ch)*.26)}
+.sonucBant .cip.iyi,.sonucBant .cip.kotu,.sonucBant .cip.altin,.sonucBant .cip.mvp,.sonucBant .cip.notr{background:none;box-shadow:none}
+.sonucBant .bil em{color:#fff1cf;font-style:normal;text-shadow:0 1px 0 #1c0834}
+html.alcak .sonucBant .cip{--ch:28px;font-size:12.5px}
+/* Hasar özeti: ortak mor düğme (kit), ikon ikon_savas */
+.sonucBant #sOzet{--bh:60px;height:60px;min-width:220px;padding:0 calc(var(--bh)*.74) 2px;border-style:solid;border-color:transparent;border-width:0;
+  border-image:url(arayuz/kit/dugme_mor_set/normal.webp) 0 87 0 86 fill / 0 calc(var(--bh)*.744) 0 calc(var(--bh)*.735) stretch;gap:8px;color:#fbf0d4;
+  text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834,0 2px 0 #1c0834}
+.sonucBant #sOzet:active{border-image-source:url(arayuz/kit/dugme_mor_set/basili.webp)}
+.sonucBant #sOzet.secik{outline:0;border-image:url(arayuz/kit/dugme_mor_set/secili.webp) 0 87 0 86 fill / 0 calc((var(--bh) + 15px)*.592) 0 calc((var(--bh) + 15px)*.585) / 7.5px 5px stretch}
+.sonucBant #sOzet .ik{width:28px;height:28px;object-fit:contain;filter:drop-shadow(0 2px 1px rgba(0,0,0,.6))}
+html.alcak .sonucBant #sOzet{--bh:50px;height:50px;min-width:170px}
+/* ışık: sonuç huzmesi isik_huzme (döner), patlama fx_hale; amblem ışığı ve flaş fx_hale */
+.spIsin{width:120cqmin;height:120cqmin;margin:-60cqmin 0 0 -60cqmin;background:url(arayuz/kit/isik_huzme/isik_huzme.webp) center/contain no-repeat;-webkit-mask:none;mask:none;mix-blend-mode:screen}
+.sonucPerde.yenilgi .spIsin{filter:hue-rotate(-50deg) saturate(.7) brightness(.7)}
+.sonucPerde.berabere .spIsin{filter:hue-rotate(185deg) saturate(.6)}
+.spPatla{border-radius:0;background:url(arayuz/kit/fx_set/fx_hale.webp) center/contain no-repeat;mix-blend-mode:screen}
+.sonucPerde.yenilgi .spPatla{filter:hue-rotate(-40deg) saturate(.8) brightness(.8)}
+.sonucPerde.berabere .spPatla{filter:hue-rotate(185deg) saturate(.7)}
+.sAmblem .flas,.sAmblem .isik{border-radius:0;background:url(arayuz/kit/fx_set/fx_hale.webp) center/contain no-repeat;mix-blend-mode:screen}
+.yenilgi .sAmblem .flas{filter:hue-rotate(-40deg)}.berabere .sAmblem .flas{filter:hue-rotate(185deg)}
+/* kılıçlar: silah_set (zafer çapraz; yenilgide kırık iki parça), berabere kalkanları toren_amblem_set/amblem_kalkan */
+.sAmblem{--kw:calc(var(--kh)*.4)}
+.sAmblem .kilic{top:calc(var(--kh)*-.65);transform-origin:50% 65%}
+.yenilgi .kilic{top:calc(var(--kh)*-.5);transform-origin:50% 50%}
+.yenilgi .kilic.ust,.yenilgi .kilic.alt{-webkit-clip-path:none;clip-path:none}
+.yenilgi .kilic.ust{background:url(arayuz/kit/silah_set/kilic_kirik_ust.webp) 50% 0/auto 50% no-repeat}
+.yenilgi .kilic.alt{background:url(arayuz/kit/silah_set/kilic_kirik_alt.webp) 50% 100%/auto 56% no-repeat}
+.sAmblem .kalkan{width:96px;height:111px;top:-56px;object-fit:contain}
+.sAmblem .kalkan.sag{transform:scaleX(-1)}
+html.alcak .sAmblem .kalkan{width:72px;height:83px;top:-42px}
+.sParilti{z-index:3}
+
+/* ---- hasar özeti: ince mor panel; başlık bandı; kapat yuvarlak; sekmeler sekme_set; satırlar satır plakası; çubuklar cubuk_ince + dolgular ---- */
+#savas .pn.hasarOzet{padding:14px 16px 14px;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;
+  border-image:url(arayuz/kit/panel_ince_set/mor.webp) 47 57 49 58 fill / 20px 24px 21px 24.5px stretch;filter:drop-shadow(0 10px 16px rgba(0,0,0,.55))}
+#savas .pn.hasarOzet::before,#savas .pn.hasarOzet::after{display:none}
+.hasarOzet .ust{position:relative;height:42px;padding:0 4px 0 0;margin:-2px -4px 0}
+.hasarOzet .ust b{display:flex;align-items:center;height:40px;padding:0 44px 3px;border:0 solid transparent;border-image:url(arayuz/kit/kurdele_set_1/mor.webp) 0 312 0 301 fill / 0 96px 0 93px stretch;
+  font-size:17px;color:#fff1cf;white-space:nowrap;text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834,0 2px 0 #1c0834}
+.hasarOzet .kapat.btn{width:42px;height:42px;min-width:0;min-height:0;padding:0!important;border:0!important;border-image:none!important;border-radius:50%!important;box-shadow:none;
+  background:url(arayuz/menu/dugme_yuvarlak.webp) center/100% 100% no-repeat!important;filter:drop-shadow(0 3px 4px rgba(0,0,0,.5))}
+.hasarOzet .kapat.btn:active{background-image:url(arayuz/menu/dugme_yuvarlak_basili.webp)!important}
+.hasarOzet .kapat.btn::before{display:none}
+.hasarOzet .kapat .kik{width:50%;height:50%;object-fit:contain}
+.hasarOzet .sekmeler.kitIz{align-self:stretch;height:46px;padding:0 12px;gap:4px;border-radius:0;background:none;border-image-width:0 43px 0 43px}
+.hasarOzet .sekmeler button.kitSekme{flex:1;min-height:0;height:36px;min-width:0;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;font-size:14px;color:#e9dcff;
+  border-image:url(arayuz/kit/sekme_set/pasif.webp) 0 167 0 152 fill / 0 calc(36px*1.369) 0 calc(36px*1.246) stretch}
+.hasarOzet .sekmeler button.kitSekme.on{border-image-source:url(arayuz/kit/sekme_set/aktif.webp);background:none;box-shadow:none;color:#fffaf0}
+.hasarOzet .lejant{gap:14px;justify-content:center}
+.hasarOzet .lejant span{display:inline-flex;align-items:center;gap:4px;color:#e9dcff;text-shadow:0 1px 0 #1c0834}
+.hasarOzet .lejant span::before{display:none}
+.hasarOzet .lejant .kik{width:17px;height:17px;object-fit:contain;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}
+.hasarOzet .sr{padding:7px 14px 7px 9px;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;
+  border-image:url(arayuz/kit/satir_plaka_set_1/normal.webp) 27 47 30 46 fill / 9px 15.5px 10px 15px stretch}
+.hasarOzet .sr.mvp{background:none;box-shadow:none;border-image-source:url(arayuz/kit/satir_plaka_set_1/vurgu.webp)}
+.hasarOzet .sr.olu{border-image-source:url(arayuz/kit/satir_plaka_set_1/tas.webp)}
+.hasarOzet .por,.hasarOzet .por.dus{border:0;border-radius:50%;background:radial-gradient(circle at 50% 35%,#4a3a6e,#140a26 72%)}
+.hasarOzet .por img{left:6%;top:4%;width:88%;height:88%;border-radius:50%;-webkit-clip-path:circle(46% at 50% 50%);clip-path:circle(46% at 50% 50%)}
+.hasarOzet .por::after{content:"";position:absolute;left:-12%;top:-14%;width:124%;height:128%;background:url(arayuz/kit/halka_set/halka_zumrut.webp) center/100% 100% no-repeat;pointer-events:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+.hasarOzet .por.dus::after{background-image:url(arayuz/kit/halka_set/halka_yakut.webp)}
+.hasarOzet .por .tac{top:-18px;z-index:2}
+.hasarOzet .por .tac .ik{width:28px;height:24px;object-fit:contain}
+.hasarOzet .ad b{color:#fff1cf;text-shadow:0 1px 0 #1c0834}
+.hasarOzet .ad small{display:inline-flex;gap:1px;align-items:center}
+.hasarOzet .ad small .kik{width:13px;height:13px}
+.hasarOzet .c{height:14px;margin:0 -2px;border:0 solid transparent;border-radius:0;overflow:visible;background:none;
+  border-image:url(arayuz/kit/cubuk_set/cubuk_ince.webp) 0 37 0 37 fill / 0 13.6px 0 13.6px stretch}
+.hasarOzet .c i{left:6px;top:4px;bottom:4px;max-width:calc(100% - 12px);border-radius:1px;background:url(arayuz/kit/cubuk_dolgu_set/dolgu_turuncu.webp) left center/auto 100% repeat-x}
+.hasarOzet .c.a i{background-image:url(arayuz/kit/cubuk_dolgu_set/dolgu_lila.webp)}
+.hasarOzet .c.i i{background-image:url(arayuz/menu/hud_can_dolgu_yesil.webp);background-size:100% 100%}
+.hasarOzet .c span,.hasarOzet .c em{top:0;line-height:14px;font-size:11.5px}
+.hasarOzet .c span{left:9px;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000}
+.hasarOzet .c em{right:9px}
+.hasarOzet .toplam{position:relative;padding-top:21px;color:#e2d3f5}
+.hasarOzet .toplam::before{content:"";position:absolute;left:50%;top:0;width:min(170px,70%);aspect-ratio:893/100;transform:translateX(-50%);background:url(arayuz/kit/ayrac_suslu/ayrac.webp) center/contain no-repeat}
+.hasarOzet .satirlar{scrollbar-width:auto}
+.hasarOzet .satirlar::-webkit-scrollbar{display:block;width:12px}
+.hasarOzet .satirlar::-webkit-scrollbar-track{background:url(arayuz/kit/kontrol_set/kaydirma_ray.webp) center/6px 100% no-repeat}
+.hasarOzet .satirlar::-webkit-scrollbar-thumb{background:url(arayuz/kit/kontrol_set/kaydirma_tutamak.webp) center/11px 100% no-repeat;min-height:40px}
+html.alcak #savas .pn.hasarOzet{padding:10px 12px 10px}
+html.alcak .hasarOzet .ust{height:36px}html.alcak .hasarOzet .ust b{height:34px;padding:0 36px 3px;font-size:15px;border-image-width:0 80px 0 77px}
+html.alcak .hasarOzet .kapat.btn{width:36px;height:36px}
+html.alcak .hasarOzet .sekmeler.kitIz{height:40px}
+html.alcak .hasarOzet .sekmeler button.kitSekme{height:31px;font-size:12.5px;border-image-width:0 calc(31px*1.369) 0 calc(31px*1.246)}
+
+/* ======================= MAÇIN YILDIZI ======================= */
+/* ad: altın kurdele kartuşu; çizgi: süslü ayraç; istatistikler arası dikey ayraç + istatistik ikonları; ipucu ikon_dokun; sinema şeridi iç kenarı ayraç */
+.mvpSerit::after{content:"";position:absolute;left:50%;width:min(520px,70cqw);aspect-ratio:893/100;transform:translateX(-50%);background:url(arayuz/kit/ayrac_suslu/ayrac.webp) center/contain no-repeat;opacity:.9}
+.mvpSerit.ust::after{bottom:-10px}.mvpSerit.alt::after{top:-10px;transform:translateX(-50%) scaleY(-1)}
+.mvpAd{display:block;margin-top:8px;margin-left:-22px;padding:6px 64px 10px 54px;border:0 solid transparent;border-image:url(arayuz/kit/kurdele_set_1/altin.webp) 0 312 0 301 fill / 0 104px 0 100px stretch;
+  font-family:var(--fBaslik);font-weight:700;font-size:clamp(22px,3.6cqw,34px);letter-spacing:.06em;color:#fffaf0;overflow:visible;max-width:none;
+  text-shadow:-1px -1px 0 #5a2404,1px -1px 0 #5a2404,-1px 1px 0 #5a2404,1px 1px 0 #5a2404,0 2px 0 #5a2404,0 0 14px rgba(255,212,92,.5)}
+.mvpCizgi{width:min(300px,34cqw);height:auto;aspect-ratio:893/100;margin:10px 0 12px;background:url(arayuz/kit/ayrac_suslu/ayrac.webp) left center/contain no-repeat}
+.mvpEtiket{display:inline-flex;align-items:center;gap:8px;color:#ffe39a;text-shadow:0 1px 0 #3a1606,0 0 8px rgba(0,0,0,.6)}
+.mvpEtiket::before{content:"";width:22px;height:22px;background:url(arayuz/kit/yildiz_set/yildiz_tacli.webp) center/contain no-repeat;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+.mvpIst{gap:0}
+.mvpIst div{position:relative;padding:0 clamp(14px,2.6cqw,26px)}
+.mvpIst div:first-child{padding-left:0}
+.mvpIst div+div::before{content:"";position:absolute;left:-4px;top:2px;bottom:2px;width:8px;background:url(arayuz/kit/sus_set/ayrac_dikey.webp) center/contain no-repeat}
+.mvpIst b{display:inline-flex;align-items:center;gap:7px;text-shadow:0 2px 0 #1c0834,0 0 10px rgba(0,0,0,.6)}
+.mvpIst b::before{content:"";width:24px;height:24px;flex:none;background:url(arayuz/kit/ikon_set_stat/ikon_saldiri.webp) center/contain no-repeat;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+.mvpIst div:nth-child(2) b::before{background-image:url(arayuz/kit/ikon_set_ilerleme/ikon_yuksel.webp)}
+.mvpIst div.kalkan b::before{background-image:url(arayuz/kit/ikon_set_stat/ikon_kalkan.webp)}
+.mvpIst div.iyi b::before{background-image:url(arayuz/kit/ikon_set_stat/ikon_iyilestirme.webp)}
+.mvpIst div.alinan b::before{background-image:url(arayuz/kit/ikon_set_stat/ikon_kalkan.webp)}
+.mvpIpucu{display:inline-flex;align-items:center;gap:8px}
+.mvpIpucu::before{content:"";width:22px;height:28px;background:url(arayuz/kit/ikon_set_durum/ikon_dokun.webp) center/contain no-repeat;opacity:.85}
+html.alcak .mvpAd{padding:4px 46px 7px 40px;border-image-width:0 76px 0 73px}
+
+/* ======================= MAÇ SONU ======================= */
+#son .isinlar{width:110cqmin;height:110cqmin;border-radius:0;background:url(arayuz/kit/isik_huzme/isik_huzme.webp) center/contain no-repeat;-webkit-mask:none;mask:none;mix-blend-mode:screen;opacity:.7;animation:sonIsinDon 60s linear infinite}
+@keyframes sonIsinDon{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+html.azHareket #son .isinlar{animation:none}
+/* konfeti: zerre_set */
+.konfeti i{width:18px;height:19px;border:0;border-radius:0;background:url(arayuz/kit/zerre_set/zerre_altin_pul.webp) center/contain no-repeat!important;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
+.konfeti i:nth-child(6n+2){background-image:url(arayuz/kit/zerre_set/zerre_kristal.webp)!important}
+.konfeti i:nth-child(6n+3){background-image:url(arayuz/kit/zerre_set/zerre_yildiz.webp)!important}
+.konfeti i:nth-child(6n+4){background-image:url(arayuz/kit/zerre_set/zerre_yaprak.webp)!important}
+.konfeti i:nth-child(6n+5){background-image:url(arayuz/kit/zerre_set/zerre_kor.webp)!important}
+.konfeti i:nth-child(6n){width:14px;height:15px;background-image:url(arayuz/kit/zerre_set/zerre_toz.webp)!important}
+/* kart: pencere çerçevesi + cam doku (pencerelerle aynı) */
+#son .pn.sonKart{border-style:solid;border-color:transparent;border-width:28px 14px 22px;border-radius:14px;
+  border-image:url(arayuz/kit/pencere_cerceve/cerceve.webp) 133 169 138 169 / 66.5px 84.5px 69px 84.5px / 21px 19px 20.5px 19px stretch;
+  background:#1f0c38 url(arayuz/kit/doku_cam_mor/doku.webp) 0 0/256px 256px repeat;background-clip:border-box;box-shadow:0 0 0 2px rgba(10,3,20,.35),0 24px 48px rgba(0,0,0,.6);padding:0 6px 8px}
+#son .pn.sonKart::before,#son .pn.sonKart::after{display:none}
+html.alcak #son .pn.sonKart{border-width:20px 10px 16px;border-image-width:46.5px 59px 48px 59px;border-image-outset:15px 13px 14px 13px;padding:0 4px 4px}
+/* başlık: kurdele (zafer / 1. altın, 2. ve 4. gümüş, 3. bronz, elendin yakut, 5.–8. ve maç bitti taş) */
+#son .sonSerit{--sh:84px;width:auto;min-width:min(560px,72%);max-width:94%;height:var(--sh);margin:-50px auto 0;padding:0 120px 6px;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;
+  border-image:url(arayuz/kit/kurdele_set_1/altin.webp) 0 312 0 301 fill / 0 calc(var(--sh)*2.38) 0 calc(var(--sh)*2.3) stretch;filter:drop-shadow(0 8px 10px rgba(0,0,0,.5))}
+#son .sonSerit::before,#son .sonSerit::after{display:none}
+#son .sonSerit b{color:#fffaf0;font-size:40px;text-shadow:-2px -2px 0 #5a2404,2px -2px 0 #5a2404,-2px 2px 0 #5a2404,2px 2px 0 #5a2404,0 3px 0 #5a2404}
+#son .sonSerit span{color:#fff3d6;font-size:13px;text-shadow:-1px -1px 0 #5a2404,1px -1px 0 #5a2404,-1px 1px 0 #5a2404,1px 1px 0 #5a2404}
+#son .sonSerit.kayip{border-image-source:url(arayuz/kit/kurdele_set_2/kurdele_yakut.webp);border-image-slice:0 160 0 160 fill;border-image-width:0 calc(var(--sh)*.84) 0 calc(var(--sh)*.84);background:none;box-shadow:none}
+#son .sonSerit.kayip b,#son .sonSerit.kayip span{text-shadow:-2px -2px 0 #4a0618,2px -2px 0 #4a0618,-2px 2px 0 #4a0618,2px 2px 0 #4a0618,0 3px 0 #4a0618}
+#son .sonSerit.s2,#son .sonSerit.s4{border-image:url(arayuz/kit/kurdele_set_1/gumus.webp) 0 312 0 301 fill / 0 calc(var(--sh)*2.38) 0 calc(var(--sh)*2.3) stretch}
+#son .sonSerit.s2 b,#son .sonSerit.s2 span,#son .sonSerit.s4 b,#son .sonSerit.s4 span{text-shadow:-2px -2px 0 #1e3654,2px -2px 0 #1e3654,-2px 2px 0 #1e3654,2px 2px 0 #1e3654,0 3px 0 #1e3654}
+#son .sonSerit.s3{border-image:url(arayuz/kit/kurdele_set_2/kurdele_bronz.webp) 0 159 0 160 fill / 0 calc(var(--sh)*.84) 0 calc(var(--sh)*.84) stretch}
+#son .sonSerit.s3 b,#son .sonSerit.s3 span{text-shadow:-2px -2px 0 #4a1e06,2px -2px 0 #4a1e06,-2px 2px 0 #4a1e06,2px 2px 0 #4a1e06,0 3px 0 #4a1e06}
+#son .sonSerit.s5,#son .sonSerit.bitti{border-image:url(arayuz/kit/kurdele_set_2/kurdele_tas.webp) 0 160 0 160 fill / 0 calc(var(--sh)*.84) 0 calc(var(--sh)*.84) stretch}
+#son .sonSerit.s5 b,#son .sonSerit.s5 span,#son .sonSerit.bitti b,#son .sonSerit.bitti span{color:#f1ecf8;text-shadow:-2px -2px 0 #241634,2px -2px 0 #241634,-2px 2px 0 #241634,2px 2px 0 #241634,0 3px 0 #241634}
+/* şerit madalyonları: madalyon yuvası + tören amblemi / yıldız */
+#son .sonSerit .mad{width:64px;height:71px;border:0;border-radius:0;box-shadow:none;background:url(arayuz/kit/madalyon_yuva/yuva.webp) center/100% 100% no-repeat;filter:drop-shadow(0 4px 5px rgba(0,0,0,.5))}
+#son .sonSerit .mad.l{left:40px}#son .sonSerit .mad.r{right:40px}
+#son .sonSerit .mad .ik,#son .sonSerit .mad .trMini{width:62%;height:62%;object-fit:contain;margin-top:6%;filter:drop-shadow(0 2px 2px rgba(0,0,0,.6))}
+html.alcak #son .sonSerit{--sh:58px;margin-top:-34px;padding:0 84px 4px}
+html.alcak #son .sonSerit b{font-size:28px}
+html.alcak #son .sonSerit .mad{width:46px;height:51px}html.alcak #son .sonSerit .mad.l{left:28px}html.alcak #son .sonSerit .mad.r{right:28px}
+/* kutular: ince mor panel; başlık: başlık bandı + kristal madde imi */
+#son .kutu{padding:12px 16px 14px;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;
+  border-image:url(arayuz/kit/panel_ince_set/mor.webp) 47 57 49 58 fill / 18px 21.5px 18.5px 22px stretch;filter:drop-shadow(0 6px 8px rgba(0,0,0,.4))}
+#son .kutu h4,.kitBas{display:flex;align-items:center;gap:7px;height:32px;margin:-2px -6px 8px;padding:0 26px 2px 22px;border:0 solid transparent;
+  border-image:url(arayuz/kit/baslik_bandi/bant.webp) 0 123 0 124 fill / 0 30px 0 30.5px stretch;color:#fff1cf;font-size:14px;
+  text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834}
+#son .kutu h4 .elmas,.kitBas .elmas,#kodeks .pn-bas .elmas{width:13px;height:14px;transform:none;border-radius:0;box-shadow:none;background:url(arayuz/kit/sus_set/madde_kristal.webp) center/contain no-repeat;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}
+#son .kutu h4 .sag{color:#e2d3f5;text-shadow:0 1px 0 #1c0834}
+html.alcak #son .kutu{padding:9px 12px 10px}
+html.alcak #son .kutu h4{height:28px;margin-bottom:5px}
+/* özet sayıları: satır plakası */
+#son .ozet div{padding:7px 6px 8px;border:0 solid transparent;border-radius:0;background:none;border-image:url(arayuz/kit/satir_plaka_set_1/normal.webp) 27 47 30 46 fill / 10px 17px 11px 17px stretch}
+#son .ozet b{font-family:var(--fSayi);text-shadow:0 2px 0 #12061f}
+#son .ozet span{color:#e2d3f5;text-shadow:0 1px 0 #12061f}
+/* tur geçmişi: jetonlar (kazanılan zümrüt, kaybedilen yakut, berabere taş) */
+#son .turlar{gap:4px}
+#son .tr{width:40px;height:40px;border:0;border-radius:0;background:url(arayuz/kit/jeton_set/jeton_berabere.webp) center/contain no-repeat;color:#f4f0fa;font-family:var(--fSayi);font-size:15px;
+  text-shadow:-1px -1px 0 #1a1024,1px -1px 0 #1a1024,-1px 1px 0 #1a1024,1px 1px 0 #1a1024;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+#son .tr small{font-size:8.5px;letter-spacing:.04em;opacity:1;margin-bottom:-1px}
+#son .tr.g{background:url(arayuz/kit/jeton_set/jeton_kazandi.webp) center/contain no-repeat;color:#f2fff6;border:0;text-shadow:-1px -1px 0 #0b3d22,1px -1px 0 #0b3d22,-1px 1px 0 #0b3d22,1px 1px 0 #0b3d22}
+#son .tr.k{background:url(arayuz/kit/jeton_set/jeton_kaybetti.webp) center/contain no-repeat;color:#fff1f3;border:0;text-shadow:-1px -1px 0 #4a0618,1px -1px 0 #4a0618,-1px 1px 0 #4a0618,1px 1px 0 #4a0618}
+#son .turNot{display:flex;align-items:center;gap:6px;flex-wrap:wrap;color:#e2d3f5}
+#son .turNot .kik{width:16px;height:16px;object-fit:contain}
+html.alcak #son .tr{width:34px;height:34px;font-size:13px}
+/* kupa: ikon_kupa, ok_sag, fark çipi (zümrüt / yakut) */
+#son .kupaD .ik{width:50px;height:44px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(255,212,92,.5)) drop-shadow(0 2px 2px rgba(0,0,0,.5))}
+#son .kupaD .sayi{display:flex;align-items:center;gap:6px;font-family:var(--fSayi);text-shadow:0 2px 0 #12061f}
+#son .kupaD .sayi s{display:inline-flex;align-items:center;gap:6px;margin:0;color:#cfc2e2}
+#son .kupaD .sayi .ok{width:16px;height:17px;object-fit:contain}
+#son .kupaD .art{--ch:32px;position:relative;height:var(--ch);display:inline-flex;align-items:center;padding:0 calc(var(--ch)*.55) 1px calc(var(--ch)*1.2);border:0 solid transparent;border-radius:0;background:none;
+  border-image:url(arayuz/kit/cip_set_1/zumrut.webp) 0 78 0 166 fill / 0 calc(var(--ch)*.667) 0 calc(var(--ch)*1.419) stretch;color:#f2fff6;font-size:18px;
+  text-shadow:-1px -1px 0 #0b3d22,1px -1px 0 #0b3d22,-1px 1px 0 #0b3d22,1px 1px 0 #0b3d22}
+#son .kupaD .art::before{content:"";position:absolute;left:calc(var(--ch)*.22);top:50%;width:calc(var(--ch)*.62);height:calc(var(--ch)*.62);transform:translateY(-50%);background:url(arayuz/kit/ikon_set_ilerleme/ikon_yuksel.webp) center/contain no-repeat}
+#son .kupaD .art.eksi{border-image-source:url(arayuz/kit/cip_set_1/yakut.webp);color:#fff1f3;text-shadow:-1px -1px 0 #4a0618,1px -1px 0 #4a0618,-1px 1px 0 #4a0618,1px 1px 0 #4a0618}
+#son .kupaD .art.eksi::before{background-image:url(arayuz/kit/ikon_set_ilerleme/ikon_dustu.webp)}
+html.alcak #son .kupaD .art{--ch:26px;font-size:15px}
+/* çubuklar: büyük çubuk çerçevesi + altın dolgu (3 dilim; yükseklik --cb) */
+.kitCubuk,#son .lig .takimCan,#son .siradaK+.takimCan{--cb:22px;position:relative;height:var(--cb)!important;margin-top:4px!important;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;overflow:visible;
+  border-image:url(arayuz/kit/cubuk_set/cubuk_buyuk.webp) 0 116 0 116 fill / 0 calc(var(--cb)*.921) 0 calc(var(--cb)*.921) stretch}
+.kitCubuk>i,#son .lig .takimCan i,#son .siradaK+.takimCan i{position:absolute;left:calc(var(--cb)*.66);top:calc(var(--cb)*.31);bottom:calc(var(--cb)*.31);max-width:calc(100% - var(--cb)*1.32);border-radius:1px;
+  background:url(arayuz/kit/cubuk_dolgu_set/dolgu_altin.webp) left center/auto 100% repeat-x!important;box-shadow:0 0 6px rgba(255,200,90,.45)}
+#son .lig .takimCan i,#son .siradaK+.takimCan i{width:calc((100% - var(--cb)*1.32) * var(--o,.6))}
+#son .lig{display:flex;flex-direction:column;color:#e2d3f5;text-shadow:0 1px 0 #12061f}
+#son .lig .ligYazi{display:flex;align-items:center;gap:5px}
+#son .lig .ligYazi .kik{width:13px;height:14px;object-fit:contain}
+html.alcak .kitCubuk,html.alcak #son .lig .takimCan,html.alcak #son .siradaK+.takimCan{--cb:18px}
+/* ustalık satırı: altın portre halkası */
+#son .ustaD img{border:0;border-radius:50%;background:radial-gradient(circle at 50% 35%,#4a3a6e,#140a26 72%);padding:3px}
+#son .ustaD .halka{position:relative;flex:none;width:40px;height:40px}
+#son .ustaD .halka img{width:100%;height:100%;padding:4px;-webkit-clip-path:circle(44% at 50% 50%);clip-path:circle(44% at 50% 50%)}
+#son .ustaD .halka::after{content:"";position:absolute;left:-10%;top:-12%;width:120%;height:124%;background:url(arayuz/kit/halka_set/halka_altin.webp) center/100% 100% no-repeat}
+#son .ustaD{color:#e2d3f5;text-shadow:0 1px 0 #12061f}
+/* son takım: kademe kart çerçevesi + kart zemini; kaynaşık madalyon gün batımı halkası */
+#son .sonTakim .m{border:5px solid transparent;border-radius:6px;box-shadow:none;overflow:visible;
+  border-image:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k1.webp) 130 118 125 118 / 19px 17px 18px 17px / 2px stretch;
+  background:#1b0a30 url(arayuz/kit/kart_zemin/zemin.webp) center 30%/cover no-repeat padding-box;filter:drop-shadow(0 4px 5px rgba(0,0,0,.5))}
+#son .sonTakim .m.k2{border-image-source:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k2.webp)}
+#son .sonTakim .m.k3{border-image-source:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k3.webp)}
+#son .sonTakim .m.k4{border-image:url(arayuz/kit/kart_cerceve_set_2/kart_cerceve_k4.webp) 121 116 118 118 / 18px 17px 17px 17px / 2px stretch}
+#son .sonTakim .m.k5{border-image:url(arayuz/kit/kart_cerceve_set_2/kart_cerceve_k5.webp) 121 116 118 118 / 18px 17px 17px 17px / 2px stretch}
+#son .sonTakim .m.kaynas{box-shadow:none;filter:drop-shadow(0 0 7px rgba(255,111,154,.75)) drop-shadow(0 4px 5px rgba(0,0,0,.5))}
+#son .sonTakim .m>img{border-radius:3px}
+#son .sonTakim .m .yildizlar{left:0;top:-2px}
+#son .sonTakim .m .madalyon{right:-10px;bottom:-10px;width:30px;height:30px;border:0;border-radius:50%;box-shadow:none;overflow:visible;background:radial-gradient(circle at 50% 35%,#4a3a6e,#140a26 72%)}
+#son .sonTakim .m .madalyon img{border-radius:50%;-webkit-clip-path:circle(46% at 50% 50%);clip-path:circle(46% at 50% 50%)}
+#son .sonTakim .m .madalyon::after{content:"";position:absolute;left:-12%;top:-14%;width:124%;height:128%;background:url(arayuz/kit/halka_set/halka_gunbatimi.webp) center/100% 100% no-repeat;pointer-events:none}
+/* takımın yıldızı: vurgulu satır plakası */
+#son .yildizMac{padding:8px 16px 9px 12px;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;
+  border-image:url(arayuz/kit/satir_plaka_set_1/vurgu.webp) 27 47 30 46 fill / 11px 19px 12px 18.5px stretch}
+#son .yildizMac .ik{width:30px;height:30px;object-fit:contain;filter:drop-shadow(0 2px 2px rgba(0,0,0,.6))}
+#son .yildizMac small{color:#ffe39a;text-shadow:0 1px 0 #3a1606}
+#son .yildizMac b{color:#fff1cf;text-shadow:0 1px 0 #1c0834}
+#son .yildizMac span{color:#e9dcff}
+/* düello kodu: metin alanı */
+#son .kodKutu{height:54px;border-style:solid;border-color:transparent;border-width:12px 18px;border-radius:0;background:none;box-shadow:none;
+  border-image:url(arayuz/kit/metin_alani_set/normal.webp) 43 70 48 67 fill / 21.5px 35px 24px 33.5px stretch;color:#fff7e6;text-shadow:0 1px 0 #12061f}
+html.alcak #son .kodKutu{height:44px;border-width:9px 16px}
+#son .kodSatir .btn .ik{width:22px;height:22px;object-fit:contain}
+/* sırada: lobi sıralaması satırları (sıra jetonu + satır plakası; kendi satırın vurgulu, elenenler taş) */
+#son .siradaK{color:#e2d3f5;text-shadow:0 1px 0 #12061f}
+#son .siradaK b{color:#fff1cf}
+#son .lobiSira{display:flex;flex-direction:column;gap:2px;margin:3px 0 5px}
+#son .lobiSira .ls{display:flex;align-items:center;gap:8px;min-height:27px;padding:1px 14px 2px 6px;border:0 solid transparent;
+  border-image:url(arayuz/kit/satir_plaka_set_1/normal.webp) 27 47 30 46 fill / 8px 13px 9px 13px stretch}
+#son .lobiSira .ls.sen{border-image-source:url(arayuz/kit/satir_plaka_set_1/vurgu.webp)}
+#son .lobiSira .ls.ele{border-image-source:url(arayuz/kit/satir_plaka_set_1/tas.webp)}
+#son .lobiSira .ls i{display:grid;place-items:center;width:24px;height:24px;flex:none;font:900 11px/1 var(--fSayi);font-style:normal;color:#fff;background:url(arayuz/kit/jeton_set/sira_tas.webp) center/contain no-repeat;
+  text-shadow:-1px -1px 0 #1a1024,1px -1px 0 #1a1024,-1px 1px 0 #1a1024,1px 1px 0 #1a1024}
+#son .lobiSira .ls i.s1{background-image:url(arayuz/kit/jeton_set/sira_altin.webp);text-shadow:-1px -1px 0 #5a2404,1px -1px 0 #5a2404,-1px 1px 0 #5a2404,1px 1px 0 #5a2404}
+#son .lobiSira .ls i.s2{background-image:url(arayuz/kit/jeton_set/sira_gumus.webp);text-shadow:-1px -1px 0 #1e3654,1px -1px 0 #1e3654,-1px 1px 0 #1e3654,1px 1px 0 #1e3654}
+#son .lobiSira .ls i.s3{background-image:url(arayuz/kit/jeton_set/sira_bronz.webp);text-shadow:-1px -1px 0 #4a1e06,1px -1px 0 #4a1e06,-1px 1px 0 #4a1e06,1px 1px 0 #4a1e06}
+#son .lobiSira .ls span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#son .lobiSira .ls small{color:#cfc2e2}
+html.alcak #son .lobiSira .ls{min-height:26px}
+/* tören: amblemler toren_amblem_set; huzme isik_huzme; sıra yazısı kurdelede */
+.sonToren .trIsin{background:url(arayuz/kit/isik_huzme/isik_huzme.webp) center/contain no-repeat;-webkit-mask:none;mask:none;mix-blend-mode:screen}
+.sonToren.s2 .trIsin{background:url(arayuz/kit/isik_huzme/isik_huzme.webp) center/contain no-repeat;filter:hue-rotate(190deg) saturate(.4) brightness(1.1)}
+.sonToren.s3 .trIsin{background:url(arayuz/kit/isik_huzme/isik_huzme.webp) center/contain no-repeat;filter:saturate(.7) brightness(.85)}
+.sonToren .trAmb{object-fit:contain}
+.sonToren .trYazi{align-items:center;gap:10px;height:84px;padding:0 96px 6px;border:0 solid transparent;border-image:url(arayuz/kit/kurdele_set_1/altin.webp) 0 312 0 301 fill / 0 200px 0 193px stretch;filter:drop-shadow(0 8px 10px rgba(0,0,0,.5))}
+.sonToren .trYazi b{font-size:54px;color:#fffaf0;text-shadow:-2px -2px 0 #5a2404,2px -2px 0 #5a2404,-2px 2px 0 #5a2404,2px 2px 0 #5a2404,0 4px 0 #5a2404}
+.sonToren .trYazi span{font-size:30px;color:#fff3d6;text-shadow:-2px -2px 0 #5a2404,2px -2px 0 #5a2404,-2px 2px 0 #5a2404,2px 2px 0 #5a2404,0 3px 0 #5a2404}
+.sonToren.s2 .trYazi{border-image-source:url(arayuz/kit/kurdele_set_1/gumus.webp)}
+.sonToren.s2 .trYazi b,.sonToren.s2 .trYazi span{text-shadow:-2px -2px 0 #1e3654,2px -2px 0 #1e3654,-2px 2px 0 #1e3654,2px 2px 0 #1e3654,0 3px 0 #1e3654}
+.sonToren.s3 .trYazi{border-image:url(arayuz/kit/kurdele_set_2/kurdele_bronz.webp) 0 159 0 160 fill / 0 70px 0 70px stretch}
+.sonToren.s3 .trYazi b,.sonToren.s3 .trYazi span{text-shadow:-2px -2px 0 #4a1e06,2px -2px 0 #4a1e06,-2px 2px 0 #4a1e06,2px 2px 0 #4a1e06,0 3px 0 #4a1e06}
+.sonToren.s4 .trYazi{border-image:url(arayuz/kit/kurdele_set_2/kurdele_tas.webp) 0 160 0 160 fill / 0 70px 0 70px stretch}
+.sonToren.s4 .trYazi b,.sonToren.s4 .trYazi span{color:#f1ecf8;text-shadow:-2px -2px 0 #241634,2px -2px 0 #241634,-2px 2px 0 #241634,2px 2px 0 #241634,0 3px 0 #241634}
+html.alcak .sonToren .trYazi{height:62px;padding:0 70px 4px;border-image-width:0 148px 0 143px}
+html.alcak .sonToren.s3 .trYazi,html.alcak .sonToren.s4 .trYazi{border-image-width:0 52px 0 52px}
+html.alcak .sonToren .trYazi b{font-size:38px}html.alcak .sonToren .trYazi span{font-size:22px}
+/* düğme ikonları (ev, savaş) */
+#son .sonEylem .btn .ik{width:26px;height:26px;object-fit:contain;filter:drop-shadow(0 2px 1px rgba(0,0,0,.55))}
+#son .sonEylem .btn.altin .ik{width:30px;height:30px}
+
+/* ======================= KODEKS ======================= */
+#kodeks .gok{background:url(arayuz/kit/kodeks_arka/kodeks_arka.webp) center/cover no-repeat}
+#kodeks .gok::after{background:linear-gradient(180deg,rgba(18,7,31,.25),rgba(18,7,31,.35) 60%,rgba(18,7,31,.55))}
+/* geri: yuvarlak düğme + ikon_geri */
+#kodeks .kodUst .btn.yuvarlak{width:54px!important;height:54px!important;flex:none}
+#kodeks .kodUst .btn.yuvarlak .kik{width:58%;height:58%}
+/* başlık: mor kurdele */
+#kodeks .kodUst h2{display:flex;align-items:center;height:50px;padding:0 70px 4px;border:0 solid transparent;border-image:url(arayuz/kit/kurdele_set_1/mor.webp) 0 312 0 301 fill / 0 119px 0 115px stretch;
+  font-size:23px;color:#fff1cf;text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834,0 2px 0 #1c0834,0 3px 6px rgba(0,0,0,.6);filter:drop-shadow(0 6px 8px rgba(0,0,0,.45))}
+#kodeks .kodUst .acik{padding:7px 20px 8px;border:0 solid transparent;border-image:url(arayuz/kit/satir_plaka_set_1/normal.webp) 27 47 30 46 fill / 10px 17px 11px 17px stretch;color:#f0e6ff;text-shadow:0 1px 0 #12061f}
+/* ustalık rozeti: mor soketli plaka, madalyon + ikon_ustalik sokette */
+#kodeks .kodUst .rozet{--ph:54px;position:relative;display:flex;align-items:center;height:var(--ph);padding:0 calc(var(--ph)*.66) 1px calc(var(--ph)*1.12);gap:0;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;
+  border-image:url(arayuz/kit/plaka_set/mor.webp) 0 104 0 141 fill / 0 calc(var(--ph)*.743) 0 calc(var(--ph)*1.007) stretch;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45))}
+#kodeks .kodUst .rozet .top{position:absolute;left:calc(var(--ph)*.16);top:50%;width:calc(var(--ph)*.68);height:calc(var(--ph)*.68);margin-top:calc(var(--ph)*-.34);border:0;border-radius:50%;box-shadow:none;background:none;display:grid;place-items:center}
+#kodeks .kodUst .rozet .top .ik{width:100%;height:100%;object-fit:contain;color:initial}
+#kodeks .kodUst .rozet .yz{color:#fff1cf;text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834}
+#kodeks .kodUst .rozet .yz small{color:#e2d3f5}
+/* paneller: pencere çerçevesi + cam doku */
+#kodeks .pn.kahPanel,#kodeks .pn.soyKod{border-style:solid;border-color:transparent;border-width:20px 12px 16px;border-radius:12px;
+  border-image:url(arayuz/kit/pencere_cerceve/cerceve.webp) 133 169 138 169 / 50px 63px 52px 63px / 15px 13px 14px 13px stretch;
+  background:#1f0c38 url(arayuz/kit/doku_cam_mor/doku.webp) 0 0/256px 256px repeat;background-clip:border-box;box-shadow:0 18px 36px rgba(0,0,0,.55)}
+#kodeks .pn.kahPanel::before,#kodeks .pn.kahPanel::after,#kodeks .pn.soyKod::before,#kodeks .pn.soyKod::after{display:none}
+#kodeks .pn-bas{height:34px;margin:0 2px 2px;padding:0 30px 2px 26px;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;
+  border-image:url(arayuz/kit/baslik_bandi/bant.webp) 0 123 0 124 fill / 0 32px 0 32.5px stretch;color:#fff1cf;text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834}
+#kodeks .pn-bas .sag{display:inline-flex;align-items:center;gap:5px;color:#e2d3f5;text-shadow:0 1px 0 #1c0834}
+#kodeks .pn-bas .sag .kik{width:15px;height:15px;object-fit:contain}
+html.alcak #kodeks .pn.kahPanel,html.alcak #kodeks .pn.soyKod{border-width:16px 9px 12px;border-image-width:40px 50px 41px 50px;border-image-outset:12px 10px 11px 10px}
+/* filtre: sekme izi + sekmeler */
+#kodeks .filtre.kitIz{align-self:center;justify-content:center;margin:4px 0 0;height:46px;gap:4px;padding:0 16px}
+#kodeks .filtre .kitSekme{min-width:96px;height:36px}
+html.alcak #kodeks .filtre.kitIz{height:38px}
+html.alcak #kodeks .filtre .kitSekme{height:29px;min-width:72px;font-size:11.5px;border-image-width:0 calc(29px*1.369) 0 calc(29px*1.246)}
+/* kahraman kartı: kademe kart çerçevesi + kart zemini; kademe taşı; ad plakası; yetenek / pasif ikonları */
+#kodeks .kk{--kcw:22px;border:6px solid transparent;border-radius:10px;padding:0;box-shadow:none;overflow:visible;
+  border-image:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k1.webp) 130 118 125 118 / 26px 24px 25px 24px / 2px stretch;
+  background:#1b0a30 url(arayuz/kit/kart_zemin/zemin.webp) center 30%/cover no-repeat padding-box;filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))}
+#kodeks .kk.k2{border-image-source:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k2.webp)}
+#kodeks .kk.k3{border-image-source:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k3.webp)}
+#kodeks .kk.k4{border-image:url(arayuz/kit/kart_cerceve_set_2/kart_cerceve_k4.webp) 121 116 118 118 / 25px 24px 24px 24px / 2px stretch}
+#kodeks .kk.k5{border-image:url(arayuz/kit/kart_cerceve_set_2/kart_cerceve_k5.webp) 121 116 118 118 / 25px 24px 24px 24px / 2px stretch}
+#kodeks .kk::before,#kodeks .kk::after{display:none}
+#kodeks .kk .resim{border-radius:4px 4px 0 0}
+#kodeks .kk .kTag{display:inline-grid;place-items:center;width:24px;height:28px;padding:0 0 1px;border:0;border-radius:0;box-shadow:none;clip-path:none;
+  background:url(arayuz/kit/kademe_tas_set/kademe_k1.webp) center/contain no-repeat;font:900 10px/1 var(--fBaslik);color:#fff;
+  text-shadow:-1px -1px 0 #1a0d2a,1px -1px 0 #1a0d2a,-1px 1px 0 #1a0d2a,1px 1px 0 #1a0d2a;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+#kodeks .kk.k2 .kTag{background-image:url(arayuz/kit/kademe_tas_set/kademe_k2.webp)}
+#kodeks .kk.k3 .kTag{background-image:url(arayuz/kit/kademe_tas_set/kademe_k3.webp)}
+#kodeks .kk.k4 .kTag{background-image:url(arayuz/kit/kademe_tas_set/kademe_k4.webp)}
+#kodeks .kk.k5 .kTag{background-image:url(arayuz/kit/kademe_tas_set/kademe_k5.webp)}
+#kodeks .kk .soylar .soyIk{padding:0;background:none;box-shadow:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,.7))}
+#kodeks .kk .alt{margin:0 -2px -2px;padding:5px 12px 6px;border:0 solid transparent;border-radius:0;background:none;
+  border-image:url(arayuz/kit/satir_plaka_set_1/normal.webp) 27 47 30 46 fill / 8px 13px 9px 13px stretch}
+#kodeks .kk .alt::before{display:none}
+#kodeks .kk .alt b{color:#fff1cf;text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834}
+#kodeks .kk .alt span{color:#e9dcff;text-shadow:0 1px 0 #12061f}
+#kodeks .kk .alt span i{width:12px;height:12px;border-radius:0;background:url(arayuz/kit/ikon_set_ilerleme/ikon_yetenek.webp) center/contain no-repeat}
+#kodeks .kk .alt span.p i{background-image:url(arayuz/kit/ikon_set_ilerleme/ikon_pasif.webp)}
+#kodeks .kk.sec{box-shadow:none;filter:drop-shadow(0 0 8px rgba(255,212,92,.8)) drop-shadow(0 4px 6px rgba(0,0,0,.5))}
+html.alcak #kodeks .kk{border-width:4px;border-image-width:20px 18px 19px 18px}
+/* soylar: satır plakası; taşıyanlar altın halkada; eşikler altıgen (2 bronz, 4 altın) */
+#kodeks .sk{padding:1px 12px 2px 6px;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;
+  border-image:url(arayuz/kit/satir_plaka_set_1/normal.webp) 27 47 30 46 fill / 6px 11px 7px 11px stretch}
+#kodeks .soyKodListe{gap:2px}
+#kodeks .sk>img{width:34px;height:34px}
+#kodeks .sk>img{filter:drop-shadow(0 2px 2px rgba(0,0,0,.6))}
+#kodeks .sk .ust b{color:#fff1cf;text-shadow:0 1px 0 #1c0834}
+#kodeks .sk .tasiyan{gap:4px}
+#kodeks .sk .tasiyan img{border:0;padding:2px;background:radial-gradient(circle at 50% 35%,#4a3a6e,#140a26 72%) content-box;outline:0;
+  box-shadow:none;-webkit-mask:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5));
+  background:url(arayuz/kit/halka_set/halka_altin.webp) center/100% 100% no-repeat,radial-gradient(circle,#3a2a5e 0 60%,transparent 62%)}
+#kodeks .sk .esk span{color:#e9dcff}
+#kodeks .sk .esk em{display:inline-grid;place-items:center;width:20px;height:20px;min-width:0;border-radius:0;box-shadow:none;background:url(arayuz/kit/boncuk_set/esik_bronz.webp) center/contain no-repeat;
+  color:#fffaf0;font-size:10px;text-shadow:-1px -1px 0 #4a1e06,1px -1px 0 #4a1e06,-1px 1px 0 #4a1e06,1px 1px 0 #4a1e06}
+#kodeks .sk .esk+.esk em{background-image:url(arayuz/kit/boncuk_set/esik_altin.webp);text-shadow:-1px -1px 0 #5a2404,1px -1px 0 #5a2404,-1px 1px 0 #5a2404,1px 1px 0 #5a2404}
+#kodeks .soyKodListe{scrollbar-width:auto}
+#kodeks .soyKodListe::-webkit-scrollbar,#kodeks .kahIzgara::-webkit-scrollbar{display:block;width:12px}
+#kodeks .soyKodListe::-webkit-scrollbar-track,#kodeks .kahIzgara::-webkit-scrollbar-track{background:url(arayuz/kit/kontrol_set/kaydirma_ray.webp) center/6px 100% no-repeat}
+#kodeks .soyKodListe::-webkit-scrollbar-thumb,#kodeks .kahIzgara::-webkit-scrollbar-thumb{background:url(arayuz/kit/kontrol_set/kaydirma_tutamak.webp) center/11px 100% no-repeat;min-height:40px}
+
+/* ======================= ÖĞRETİCİ ======================= */
+/* balon: ince mor panel + balon kuyruğu; rehber portresi madalyon yuvasında; spot çerçevesi vurgu_set/altin; el ikon_dokun */
+#ogr .pn.ogrBalon{padding:16px 20px 14px 18px;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;
+  border-image:url(arayuz/kit/panel_ince_set/mor.webp) 47 57 49 58 fill / 20px 24px 21px 24.5px stretch;filter:drop-shadow(0 10px 16px rgba(0,0,0,.55))}
+#ogr .pn.ogrBalon::before,#ogr .pn.ogrBalon::after{display:none}
+.ogrPor{border:0;border-radius:0;box-shadow:none;padding:9px 9px 10px;background:url(arayuz/kit/madalyon_yuva/yuva.webp) center/100% 100% no-repeat;height:72px;width:64px;object-fit:contain;filter:drop-shadow(0 3px 4px rgba(0,0,0,.5))}
+html.alcak .ogrPor{width:44px;height:50px;padding:6px 6px 7px}
+.ogrCerceve::after{inset:-16px -18px;border:0;border-radius:0;box-shadow:none;border-image:url(arayuz/kit/vurgu_set/altin.webp) 77 105 78 105 / 28px 38px 28px 38px stretch}
+.ogrEl .ik{object-fit:contain;filter:drop-shadow(0 3px 4px rgba(0,0,0,.6))}
+.ogrDug .atla{--bh:38px;height:38px;min-height:0;padding:0 calc(var(--bh)*.66);text-decoration:none;border:0 solid transparent;
+  border-image:url(arayuz/kit/dugme_mor_set/hayalet.webp) 0 87 0 86 fill / 0 calc(var(--bh)*.744) 0 calc(var(--bh)*.735) stretch;background:rgba(14,5,28,.5) padding-box;
+  font:700 12.5px/1 var(--fBaslik);white-space:nowrap;color:#efe4ff;text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834;filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}
+.ogrDug .atla:active{border-image-source:url(arayuz/kit/dugme_mor_set/basili.webp)}
+.ogrSay{--ch:26px;position:relative;display:inline-flex;align-items:center;height:var(--ch);padding:0 calc(var(--ch)*.5) 1px calc(var(--ch)*1.25);border:0 solid transparent;
+  border-image:url(arayuz/kit/cip_set_1/notr.webp) 0 78 0 166 fill / 0 calc(var(--ch)*.667) 0 calc(var(--ch)*1.419) stretch;font-family:var(--fSayi);color:#fff1cf;text-shadow:0 1px 0 #1c0834}
+.ogrSay::before{content:"";position:absolute;left:calc(var(--ch)*.22);top:50%;width:calc(var(--ch)*.62);height:calc(var(--ch)*.62);transform:translateY(-50%);background:url(arayuz/kit/ikon_set_menu/ikon_nasil.webp) center/contain no-repeat}
+html.alcak .ogrDug .atla{--bh:34px;height:34px;font-size:12px}
+
+/* ======================= KUT ARMAĞANI ======================= */
+/* arka plan armagan_arka (+ dönen isik_huzme, süzülen altın zerreler); pencere ortak çerçeve; kartlar kademe kart çerçevesi + cam doku */
+#perde.armagan{background:#160828 url(arayuz/kit/armagan_arka/armagan_arka.webp) center/cover no-repeat}
+#perde.armagan::before{width:120vmin;height:120vmin;margin:-60vmin 0 0 -60vmin;background:url(arayuz/kit/isik_huzme/isik_huzme.webp) center/contain no-repeat;-webkit-mask:none;mask:none;mix-blend-mode:screen;opacity:.75}
+#perde.armagan::after{inset:0;opacity:.85;background-repeat:no-repeat;
+  background-image:url(arayuz/kit/zerre_set/zerre_altin_pul.webp),url(arayuz/kit/zerre_set/zerre_toz.webp),url(arayuz/kit/zerre_set/zerre_kristal.webp),url(arayuz/kit/zerre_set/zerre_altin_pul.webp),url(arayuz/kit/zerre_set/zerre_yildiz.webp),url(arayuz/kit/zerre_set/zerre_toz.webp),url(arayuz/kit/zerre_set/zerre_kristal.webp),url(arayuz/kit/zerre_set/zerre_altin_pul.webp),url(arayuz/kit/zerre_set/zerre_toz.webp),url(arayuz/kit/zerre_set/zerre_yildiz.webp);
+  background-size:16px 17px,11px 12px,14px 15px,12px 13px,15px 16px,10px 11px,12px 13px,18px 19px,11px 12px,13px 14px;
+  background-position:6% 14%,17% 72%,9% 46%,24% 8%,4% 88%,93% 18%,88% 64%,96% 40%,79% 90%,84% 6%;animation:armZerreK 9s ease-in-out infinite alternate}
+@keyframes armZerreK{from{transform:translateY(0);opacity:.85}to{transform:translateY(-14px);opacity:.55}}
+#perde.armagan .pencere{border-style:solid;border-color:transparent;border-width:28px 14px 28px;border-radius:14px;
+  border-image:url(arayuz/kit/pencere_cerceve/cerceve.webp) 133 169 138 169 / 66.5px 84.5px 69px 84.5px / 21px 19px 20.5px 19px stretch;
+  background:rgba(31,12,56,.72) url(arayuz/kit/doku_cam_mor/doku.webp) 0 0/256px 256px repeat;background-blend-mode:normal;background-clip:border-box;
+  -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);box-shadow:0 0 60px rgba(255,200,110,.18),0 24px 48px rgba(0,0,0,.6);padding:6px 30px 14px}
+#perde.armagan .pencere::before,#perde.armagan .pencere::after{display:none}
+html.alcak #perde.armagan .pencere{border-width:20px 10px 20px;border-image-width:46.5px 59px 48px 59px;border-image-outset:15px 13px 14px 13px;padding:4px 20px 8px}
+#perde.armagan .pencere>h3:first-of-type{align-self:center;display:flex;align-items:center;justify-content:center;min-width:min(330px,100%);height:52px;margin:0;padding:0 78px 4px;
+  border:0 solid transparent;border-image:url(arayuz/kit/kurdele_set_1/altin.webp) 0 312 0 301 fill / 0 124px 0 120px stretch;font-size:23px;color:#fffaf0;white-space:nowrap;
+  text-shadow:-1px -1px 0 #5a2404,1px -1px 0 #5a2404,-1px 1px 0 #5a2404,1px 1px 0 #5a2404,0 2px 0 #5a2404,0 0 14px rgba(255,212,92,.45)}
+html.alcak #perde.armagan .pencere>h3:first-of-type{height:40px;padding:0 58px 3px;font-size:18px;border-image-width:0 95px 0 92px}
+#perde.armagan .pencere>p{color:#f0e6ff;text-shadow:0 1px 0 #12061f}
+/* seçim süresi: küçük saat madalyonu (hud_saat) */
+#arSaat{display:inline-grid;place-items:center;width:40px;height:39px;margin-left:4px;vertical-align:middle;background:url(arayuz/menu/hud_saat.webp) center/100% 100% no-repeat;
+  font:900 11px/1 var(--fSayi);color:#fff3cf;text-shadow:0 1px 0 #000;padding-top:2px}
+#perde.armagan .secimler::before{background:url(arayuz/kit/fx_set/fx_hale.webp) center/contain no-repeat;filter:none;opacity:.5;border-radius:0;mix-blend-mode:screen}
+/* armağan kartı: kıvılcım → K3 (safir), alev → K5, güneş → altın çerçeve; iç zemin cam doku */
+.secimler .sc.arm{padding:16px 15px 18px;border:6px solid transparent;border-radius:12px;box-shadow:none;
+  border-image:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k3.webp) 130 118 125 118 / 30px 28px 29px 28px / 2px stretch;
+  background:#1f0c38 url(arayuz/kit/doku_cam_mor/doku.webp) 0 0/256px 256px repeat padding-box;filter:drop-shadow(0 10px 14px rgba(0,0,0,.55))}
+.secimler .sc.arm.k-alev{border-image:url(arayuz/kit/kart_cerceve_set_2/kart_cerceve_k5.webp) 121 116 118 118 / 28px 28px 28px 28px / 2px stretch}
+.secimler .sc.arm.k-gunes{border-image:url(arayuz/kit/kart_cerceve_set_2/kart_cerceve_altin.webp) 121 116 118 118 / 28px 28px 28px 28px / 2px stretch}
+.secimler .sc.arm:hover,.secimler .sc.arm:focus-visible,.secimler .sc.arm:active{box-shadow:none;border-color:transparent}
+.secimler .sc.arm::after{content:"";position:absolute;inset:-16px -17px;border:0 solid transparent;pointer-events:none;opacity:0;transition:opacity .15s;
+  border-image:url(arayuz/kit/vurgu_set/altin.webp) 77 105 78 105 / 30px 41px 30px 41px stretch}
+.secimler .sc.arm:is(:hover,:focus-visible,:active)::after{opacity:1}
+.secimler .sc.arm .kd{--ch:24px;position:relative;display:inline-flex;align-items:center;align-self:center;height:var(--ch);padding:0 calc(var(--ch)*.5) 1px calc(var(--ch)*1.15);
+  border:0 solid transparent;border-image:url(arayuz/kit/cip_set_2/buz.webp) 0 64 0 184 fill / 0 calc(var(--ch)*.542) 0 calc(var(--ch)*1.559) stretch;
+  font:700 10.5px/1 var(--fBaslik);letter-spacing:.05em;color:#f4fbff;white-space:nowrap;text-shadow:-1px -1px 0 #0c2a4a,1px -1px 0 #0c2a4a,-1px 1px 0 #0c2a4a,1px 1px 0 #0c2a4a}
+.secimler .sc.arm .kd .ik{position:absolute;left:calc(var(--ch)*.24);top:50%;width:calc(var(--ch)*.7);height:calc(var(--ch)*.7);transform:translateY(-50%);object-fit:contain}
+.secimler .sc.arm.k-alev .kd{border-image-source:url(arayuz/kit/cip_set_2/gunbatimi.webp);text-shadow:-1px -1px 0 #5a0d32,1px -1px 0 #5a0d32,-1px 1px 0 #5a0d32,1px 1px 0 #5a0d32}
+.secimler .sc.arm.k-gunes .kd{border-image:url(arayuz/kit/cip_set_1/altin.webp) 0 78 0 166 fill / 0 calc(var(--ch)*.667) 0 calc(var(--ch)*1.419) stretch;text-shadow:-1px -1px 0 #5a2404,1px -1px 0 #5a2404,-1px 1px 0 #5a2404,1px 1px 0 #5a2404}
+.secimler .sc.arm b{color:#fff1cf;text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834,0 2px 0 #1c0834}
+.secimler .sc.arm small{color:#f0e6ff;text-shadow:0 1px 0 #12061f}
+.secimler .sc.arm em{position:relative;margin-top:4px;padding:5px 10px 6px;font-style:normal;color:#ffe9b8;opacity:1;border:0 solid transparent;
+  border-image:url(arayuz/kit/satir_plaka_set_2/ametist.webp) 24 44 25 45 fill / 8px 14px 8.5px 14.5px stretch;text-shadow:0 1px 0 #1c0834}
+.armGorsel::before{background:url(arayuz/kit/fx_set/fx_hale.webp) center/contain no-repeat;border-radius:0;opacity:.55;mix-blend-mode:screen}
+.secimler .sc.arm.k-kivilcim .armGorsel::before{filter:hue-rotate(185deg) saturate(.7)}
+.armGorsel .armSimge{width:46px;height:46px}
+/* Yenile: kart çerçevesi (taş K1), ortada yuvarlak düğme + ikon_yenile, hak çipi */
+#perde.armagan .sc[data-yenile]{width:156px;padding:16px 12px 18px;gap:6px;border:6px solid transparent;border-radius:12px;box-shadow:none;
+  border-image:url(arayuz/kit/kart_cerceve_set_1/kart_cerceve_k1.webp) 130 118 125 118 / 30px 28px 29px 28px / 2px stretch;
+  background:#1f0c38 url(arayuz/kit/doku_cam_mor/doku.webp) 0 0/256px 256px repeat padding-box;filter:drop-shadow(0 10px 14px rgba(0,0,0,.55))}
+#perde.armagan .sc[data-yenile] b{display:flex;flex-direction:column;align-items:center;gap:6px;color:#fff1cf;font-family:var(--fBaslik);text-shadow:-1px -1px 0 #1c0834,1px -1px 0 #1c0834,-1px 1px 0 #1c0834,1px 1px 0 #1c0834}
+#perde.armagan .sc[data-yenile] .yenIk{display:grid;place-items:center;width:58px;height:58px;background:url(arayuz/menu/dugme_yuvarlak.webp) center/100% 100% no-repeat;filter:drop-shadow(0 4px 5px rgba(0,0,0,.5))}
+#perde.armagan .sc[data-yenile] .yenIk .ik{width:56%;height:56%;object-fit:contain}
+#perde.armagan .sc[data-yenile]:active .yenIk{background-image:url(arayuz/menu/dugme_yuvarlak_basili.webp)}
+#perde.armagan .sc[data-yenile] small{color:#e9dcff;text-shadow:0 1px 0 #12061f}
+html.alcak .secimler .sc.arm{padding:7px 9px 9px;gap:3px;border-width:4px;border-image-width:22px 21px 21.5px 21px}
+html.alcak #perde.armagan .pencere{gap:4px;padding:2px 16px 6px}
+html.alcak #perde.armagan .pencere>p{font-size:12.5px;line-height:1.25}
+html.alcak #perde.armagan .armGorsel{width:50px;height:86px}
+html.alcak .secimler .sc.arm .kd{--ch:20px;font-size:9.5px}
+html.alcak .secimler .sc.arm b{font-size:14px}
+html.alcak .secimler .sc.arm small{font-size:11.5px;line-height:1.22}
+html.alcak .secimler .sc.arm em{margin-top:2px;padding:3px 8px 4px;font-size:11px;line-height:1.2}
+html.alcak #arSaat{width:32px;height:31px;font-size:9.5px}
+html.alcak #perde.armagan .sc[data-yenile]{width:130px;border-width:4px;border-image-width:22px 21px 21.5px 21px}
+html.alcak #perde.armagan .sc[data-yenile] .yenIk{width:46px;height:46px}
+/* ======================= /savaş ve sonuç ======================= */
+/* ======================= DÜZELTME (hakem turu 1) =======================
+   Bu blok en sonda: hakem turunda bulunan sorunların kök düzeltmeleri.
+   1) 3 DİLİM DERİ (.k3): düğme ve sekmeler border-image yerine üç arka plan katmanı (…_sol / …_orta / …_sag.webp, kaynak görselin
+      dilim çizgilerinden kesildi). Orta katman uç başlıkların 3 px altına girer → border-image'ın dilim ek yeri çizgileri
+      (özellikle basılıyken ölçek dönüşümünde) oluşmaz. Ölçü: uçlar yüksekliğe oranlı (auto 100%); orta genişlik = 100% − --bh × --k3w + 6px.
+      Değişkenler: --k3s/--k3o/--k3g (sol/orta/sağ url), --k3w = (sol+sağ dilim) / görsel yüksekliği, --bh = deri yüksekliği (öğe yüksekliği). */
+.btn:is(.altin,.mor,.sat,.gb,.sade,.hayalet):not(.oyna,.yuvarlak,.savasBtn,.sonaGec,.kapat,.ayarBtn,.pKapat,[id=sDevam],.hizlar .btn,.duraklat .btn),
+.modK .modGir,.ogrDug .atla,.kitSekme{
+  border-width:0!important;border-image:none!important;background-color:transparent!important;
+  background-image:var(--k3s),var(--k3g),var(--k3o)!important;background-repeat:no-repeat!important;background-origin:border-box!important;background-clip:border-box!important;
+  background-position:left center,right center,center!important;background-size:auto 100%,auto 100%,calc(100% - var(--bh)*var(--k3w) + 6px) 100%!important}
+/* altın (dugme_altin_kucuk_set) */
+.btn.altin,.modK .modGir{--k3s:url(arayuz/kit/dugme_altin_kucuk_set/normal_sol.webp);--k3o:url(arayuz/kit/dugme_altin_kucuk_set/normal_orta.webp);--k3g:url(arayuz/kit/dugme_altin_kucuk_set/normal_sag.webp);--k3w:1.8443}
+.btn.altin:active,.modK:active .modGir{--k3s:url(arayuz/kit/dugme_altin_kucuk_set/basili_sol.webp);--k3o:url(arayuz/kit/dugme_altin_kucuk_set/basili_orta.webp);--k3g:url(arayuz/kit/dugme_altin_kucuk_set/basili_sag.webp)}
+.btn.altin:disabled,.btn.altin[disabled]{--k3s:url(arayuz/kit/dugme_altin_kucuk_set/pasif_sol.webp);--k3o:url(arayuz/kit/dugme_altin_kucuk_set/pasif_orta.webp);--k3g:url(arayuz/kit/dugme_altin_kucuk_set/pasif_sag.webp)}
+/* mor (dugme_mor_set) */
+.btn.mor{--k3s:url(arayuz/kit/dugme_mor_set/normal_sol.webp);--k3o:url(arayuz/kit/dugme_mor_set/normal_orta.webp);--k3g:url(arayuz/kit/dugme_mor_set/normal_sag.webp);--k3w:1.4786}
+.btn:is(.mor,.sade,.hayalet):active,.ogrDug .atla:active{--k3s:url(arayuz/kit/dugme_mor_set/basili_sol.webp);--k3o:url(arayuz/kit/dugme_mor_set/basili_orta.webp);--k3g:url(arayuz/kit/dugme_mor_set/basili_sag.webp)}
+/* hayalet/sade: hayalet çerçeve + yarı saydam mor iç (hayalet_dolu = normal %50 + hayalet çerçeve); ayrı CSS zemin kutusu yok */
+.btn.sade,.btn.hayalet,.ogrDug .atla{--k3s:url(arayuz/kit/dugme_mor_set/hayalet_dolu_sol.webp);--k3o:url(arayuz/kit/dugme_mor_set/hayalet_dolu_orta.webp);--k3g:url(arayuz/kit/dugme_mor_set/hayalet_dolu_sag.webp);--k3w:1.4786}
+/* yakut / gün batımı (dugme_renk_set) */
+.btn.sat{--k3s:url(arayuz/kit/dugme_renk_set/yakut_sol.webp);--k3o:url(arayuz/kit/dugme_renk_set/yakut_orta.webp);--k3g:url(arayuz/kit/dugme_renk_set/yakut_sag.webp);--k3w:1.3504}
+.btn.sat:active{--k3s:url(arayuz/kit/dugme_renk_set/yakut_basili_sol.webp);--k3o:url(arayuz/kit/dugme_renk_set/yakut_basili_orta.webp);--k3g:url(arayuz/kit/dugme_renk_set/yakut_basili_sag.webp)}
+.btn.gb{--k3s:url(arayuz/kit/dugme_renk_set/gunbatimi_sol.webp);--k3o:url(arayuz/kit/dugme_renk_set/gunbatimi_orta.webp);--k3g:url(arayuz/kit/dugme_renk_set/gunbatimi_sag.webp);--k3w:1.3504}
+.btn.gb:active{--k3s:url(arayuz/kit/dugme_renk_set/gunbatimi_basili_sol.webp);--k3o:url(arayuz/kit/dugme_renk_set/gunbatimi_basili_orta.webp);--k3g:url(arayuz/kit/dugme_renk_set/gunbatimi_basili_sag.webp)}
+.btn:is(.mor,.sat,.gb,.sade,.hayalet):disabled,.btn:is(.mor,.sat,.gb,.sade,.hayalet)[disabled]{--k3s:url(arayuz/kit/dugme_mor_set/pasif_sol.webp);--k3o:url(arayuz/kit/dugme_mor_set/pasif_orta.webp);--k3g:url(arayuz/kit/dugme_mor_set/pasif_sag.webp);--k3w:1.4786}
+/* mor seçili: ışımalı secili görseli kutudan taşar (7,5 px üst/alt, 5 px yan) → ::before katmanında; öğenin kendi derisi kapalı */
+.btn.mor.secik:not(.hizlar .btn){--k3s:none;--k3o:none;--k3g:none}
+.btn.mor.secik:not(.hizlar .btn)::before{display:block!important;content:"";position:absolute;inset:-7.5px -5px;z-index:-1;border-radius:0;box-shadow:none;opacity:1;
+  background:url(arayuz/kit/dugme_mor_set/secili_sol.webp) left center/auto 100% no-repeat,url(arayuz/kit/dugme_mor_set/secili_sag.webp) right center/auto 100% no-repeat,
+    url(arayuz/kit/dugme_mor_set/secili_orta.webp) center/calc(100% - (var(--bh) + 15px)*1.1769 + 6px) 100% no-repeat}
+/* sekmeler (sekme_set): --bh = sekme yüksekliği */
+.kitSekme{--bh:38px;--k3s:url(arayuz/kit/sekme_set/pasif_sol.webp);--k3o:url(arayuz/kit/sekme_set/pasif_orta.webp);--k3g:url(arayuz/kit/sekme_set/pasif_sag.webp);--k3w:2.6148}
+.kitSekme.on{--k3s:url(arayuz/kit/sekme_set/aktif_sol.webp);--k3o:url(arayuz/kit/sekme_set/aktif_orta.webp);--k3g:url(arayuz/kit/sekme_set/aktif_sag.webp)}
+html.alcak .kitSekme{--bh:31px}
+.kitSatir .kitIz .kitSekme{--bh:34px}html.alcak .kitSatir .kitIz .kitSekme{--bh:29px}
+.hasarOzet .sekmeler button.kitSekme{--bh:36px}
+.modK .modGir{--bh:38px}html.alcak .modK .modGir{--bh:30px}
+.ogrDug .atla{--bh:38px}html.alcak .ogrDug .atla{--bh:34px}
+/* çubuk (cubuk_buyuk) de 3 dilim deri: .kitCubuk ve yükleme çubuğu; --bh = --cb */
+.kitCubuk,#son .lig .takimCan,#son .siradaK+.takimCan,.yukEkran .cubuk{--bh:var(--cb);--k3s:url(arayuz/kit/cubuk_set/cubuk_buyuk_sol.webp);--k3o:url(arayuz/kit/cubuk_set/cubuk_buyuk_orta.webp);--k3g:url(arayuz/kit/cubuk_set/cubuk_buyuk_sag.webp);--k3w:1.8413;
+  border-width:0!important;border-image:none!important;background-color:transparent!important;
+  background-image:var(--k3s),var(--k3g),var(--k3o)!important;background-repeat:no-repeat!important;background-origin:border-box!important;
+  background-position:left center,right center,center!important;background-size:auto 100%,auto 100%,calc(100% - var(--bh)*var(--k3w) + 6px) 100%!important}
+
+/* 2) DÜĞME / SEKME İÇ PAYLARI: yazı uçlardaki elmaslara değmez (elmasın iç kenarı ≈ 0,51 × yükseklik) */
+.kitSekme{padding:0 calc(var(--bh)*.64 + 5px) 2px!important;min-width:0}
+.kitIz{padding:0 calc(var(--izh,48px)*.62)!important}
+.kitIz{--izh:48px}html.alcak .kitIz{--izh:40px}.kitSatir .kitIz{--izh:44px}html.alcak .kitSatir .kitIz{--izh:38px}.hasarOzet .sekmeler.kitIz{--izh:46px}
+.kitIz .kitSekme{min-width:0}
+.kitSatir .kitIz .kitSekme,.kitSatir .kitIz .kitSekme:last-child{min-width:0}
+
+/* 3) KARŞILAMA */
+/* öğretici "atla": hayalet deri (yukarıdaki .k3), CSS zemin kutusu yok */
+.ogrDug .atla{padding:0 calc(var(--bh)*.66)!important}
+html.alcak .ogrDug .btn{--bh:40px}
+/* yan düğmeler telefonda tek satır, aynı yazı boyu */
+html.alcak #ana .yanDug .btn{width:206px;white-space:nowrap;font-size:12.5px;letter-spacing:0;padding:0 calc(var(--bh)*.6) 1px!important;gap:6px}
+html.alcak #ana .yanDug .btn span{overflow:visible;flex:1}
+/* bildirim ve telefon notu: karşılamada logo + sloganın altında (logoyu örtmez); mantıksal px */
+body:has(#ana.aktif) .bildirim{top:324px}
+html.alcak body:has(#ana.aktif) .bildirim{top:166px}
+html.alcak .tabletNot{top:214px}
+
+/* 4) MOD SEÇ: vurgu çerçevesi Başla düğmesinin altında; telefonda Vazgeç görünür (kartlar ona yer bırakır) */
+.modK::after{z-index:0}
+.modK .modGir{z-index:2}
+html.alcak #perde[data-tur=mod] .pencere>.eylemler{display:flex}
+html.alcak .modSec{--kw:min(calc((100% - 24px) / 3),calc((86cqh - 196px) * .746),220px);margin:0 0 14px}
+html.alcak .pencere:has(.modUyari) .modSec{--kw:min(calc((100% - 24px) / 3),calc((86cqh - 226px) * .746),220px)}
+
+/* 5) PENCERE KAPAT (X): kaydırmada içerikle birlikte gider (yapışkan değil) → madde metninin üstüne binmez */
+#perde:not(.armagan) .pencere{position:relative}
+#perde .pencere>.pKapat{position:absolute;top:4px;right:12px;margin:0;align-self:auto}
+html.alcak #perde .pencere>.pKapat{top:3px;right:8px;margin:0}
+/* metin içi kit yıldızı (ym) */
+span.ymk{display:inline-flex!important;vertical-align:-.18em;gap:0;white-space:nowrap}
+img.ymk1{display:inline-block;width:1.15em;height:1.15em;object-fit:contain;vertical-align:-.2em;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}
+.ymk img.ymk1{margin-right:-.18em}.ymk img.ymk1:last-child{margin-right:0}
+
+/* 6) YÜKLEME EKRANI: çubuk = cubuk_buyuk (3 dilim deri, yukarıda) + dolgu_altin (kırpma ile dolar; ölçeklenmez);
+      ipucu = panel_ince_set/mor 9 dilim + madalyon_yuva soketinde ikon_ipucu; ışık huzmesi isik_huzme, zerreler zerre_set */
+.yukEkran .cubuk{--cb:30px;height:var(--cb);width:min(500px,100%);border-radius:0;overflow:visible;box-shadow:none;filter:drop-shadow(0 6px 10px rgba(0,0,0,.45))}
+.yukEkran .cubuk i{inset:calc(var(--cb)*.31) calc(var(--cb)*.66);transform:none;border-radius:1px;
+  background:url(arayuz/kit/cubuk_dolgu_set/dolgu_altin.webp) left center/auto 100% repeat-x;
+  clip-path:inset(0 calc(100% - var(--p,0)*100%) 0 0);transition:clip-path .35s ease-out}
+.yukEkran .cubuk i::after{display:none}
+.yukEkran .cubuk b{font-family:var(--fSayi,inherit);font-size:13px;color:#fff6dc;text-shadow:-1px -1px 0 #2a1046,1px -1px 0 #2a1046,-1px 1px 0 #2a1046,1px 1px 0 #2a1046,0 2px 2px rgba(0,0,0,.7)}
+html.alcak .yukEkran .cubuk{--cb:24px}
+.yukEkran .ipucu{position:relative;gap:14px;min-height:72px;padding:12px 26px 12px 14px;border:0 solid transparent;border-radius:0;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;
+  border-image:url(arayuz/kit/panel_ince_set/mor.webp) 47 57 49 58 fill / 20px 24px 21px 24.5px stretch;filter:drop-shadow(0 10px 16px rgba(0,0,0,.5))}
+.yukEkran .ipucu::before,.yukEkran .ipucu::after{display:none}
+.yukEkran .ipucu .ik{width:50px;height:56px;padding:10px 10px 12px;border-radius:0;box-shadow:none;object-fit:contain;flex:none;
+  background:url(arayuz/kit/madalyon_yuva/yuva.webp) center/100% 100% no-repeat;filter:drop-shadow(0 3px 4px rgba(0,0,0,.5))}
+html.alcak .yukEkran .ipucu{min-height:58px;padding:8px 18px 8px 10px}
+html.alcak .yukEkran .ipucu .ik{width:40px;height:45px;padding:8px 8px 9px}
+.yukEkran .huzme{width:150cqmin;height:150cqmin;margin:-75cqmin 0 0 -75cqmin;background:url(arayuz/kit/isik_huzme/isik_huzme.webp) center/contain no-repeat;-webkit-mask:none;mask:none;mix-blend-mode:screen;opacity:.55}
+.yukEkran .huzme.iki{background:url(arayuz/kit/isik_huzme/isik_huzme.webp) center/contain no-repeat;filter:hue-rotate(230deg) saturate(.8);opacity:.35}
+.yukEkran .parca i{width:14px;height:14px;border-radius:0;background:url(arayuz/kit/zerre_set/zerre_altin_pul.webp) center/contain no-repeat}
+.yukEkran .parca i:nth-child(3n){width:16px;height:16px;background:url(arayuz/kit/zerre_set/zerre_kristal.webp) center/contain no-repeat}
+.yukEkran .parca i:nth-child(4n){background-image:url(arayuz/kit/zerre_set/zerre_yildiz.webp)}
+.yukEkran .logoK::before{display:none}
+/* 7) ÇİPLER (cip_set_1 / cip_set_2): yazı soldaki sokete ve sağdaki elmasa değmez (soket ≈ 1,11 h, elmas ≈ 0,5 h) */
+:is(.kdCip,.kdEk,.bilgiKart .bkSoy .bs,#savas .ayakta .s>span,.sonucBant .cip,.ogrSay,#mac .rakipSoy .cip,.rakipKim .rkCan,.armaganSerit .ar,#son .kupaD .art,.secimler .sc.arm .kd){padding-right:calc(var(--ch)*.74)!important;padding-left:calc(var(--ch)*1.24)!important}
+:is(.kdVidEt,.sonucBant .cip.mvp){padding-right:calc(var(--ch)*.68)!important;padding-left:calc(var(--ch)*1.32)!important}
+.kdCip{word-spacing:.2em}
+
+/* 8) KAHRAMAN AYRINTI (Kodeks + hazırlık): X köşede; Yetenek ve Pasif aynı plaka (satir_plaka_set_2/ametist); video karesi portreyle dolu */
+.kdKutu,.kdKutu.yet,.kdKutu.yet.vid{border-image-source:url(arayuz/kit/satir_plaka_set_2/ametist.webp)}
+.kdKutu.yet h4{color:#d6a8ff}
+.kdVid{background:#12061f var(--kdp,none) center/cover no-repeat padding-box!important}
+.kdVid video{object-fit:cover;background:transparent}
+#perde[data-tur=kahraman] .pencere>.kDetay{margin-top:4px}
+#perde[data-tur=kahraman] .kdAd{padding-right:48px}
+html.alcak #perde[data-tur=kahraman] .kdAd{padding-right:36px}
+html.alcak .kdYP,html.alcak .kdYP.vid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:8px;align-items:stretch}
+html.alcak .kdKutu.yet.vid{grid-template-columns:minmax(0,118px) minmax(0,1fr);gap:8px}
+html.alcak .kdVidEt{display:none}
+html.alcak .kdKutu p{font-size:13px;line-height:1.25}
+/* Kodeks: uzun adlar iki satıra iner (kesilmez), kart boyu sabit */
+#kodeks .kk .alt b{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.08;min-height:2.16em;display:flex;align-items:center;justify-content:center;text-wrap:balance}
+/* 9) AYARLAR: sekme değişince pencere boyu sabit (en uzun sekme Görüntü: 4 satır); telefonda pencere geniş, satırlar sıkı, açıklamalar okunur (13 px ≈ 11 px ekranda) */
+.kitSatirlar{min-height:288px}
+html.alcak #perde .pencere:has(.kitSatirlar){width:min(800px,94cqw)}
+html.alcak .kitSatirlar{gap:4px;min-height:176px}
+html.alcak .kitSatir{min-height:41px;padding:2px 14px 2px 12px}
+html.alcak .pencere .kitSatir .ksYazi b{font-size:15px;line-height:1.1}
+html.alcak .kitSatir .ksYazi small{font-size:13px;line-height:1.18}
+html.alcak #perde:not(.armagan) .pencere:has(.kitSatirlar)>.eylemler:last-child{padding-top:16px}
+html.alcak .ogrDug .atla{--bh:40px}
+/* 10) DİKEY UYARI: kısa başlık kurdelenin içinde tek satır; açıklama altta; karartma perde_vinyet_alfa */
+.dondur{background:url(arayuz/kit/perde_vinyet/perde_vinyet_alfa.webp) center/100% 100% no-repeat,url(arayuz/menu/yukleme_arka.webp) center/cover no-repeat,#1c0a35}
+.dondur b{white-space:nowrap;max-width:calc(100vw - 24px)}
+/* açıklama: ince mor panel (panel_ince_set/mor, 9 dilim) — parlak arka plan üstünde okunur */
+.dondur span{justify-self:center;max-width:min(350px,calc(100vw - 32px));padding:12px 26px 13px;border:0 solid transparent;border-image:url(arayuz/kit/panel_ince_set/mor.webp) 47 57 49 58 fill / 20px 24px 21px 24.5px stretch;font-size:15px;line-height:1.35;color:#f3eaff;text-shadow:0 1px 0 #1c0834,0 0 4px #1c0834;filter:drop-shadow(0 6px 10px rgba(0,0,0,.5))}
+.dondur span{max-width:min(420px,calc(100vw - 48px));text-align:center;justify-self:center;line-height:1.35}
+/* 11) HAZIRLIK */
+/* dükkân solu: sütun yazıya yetecek kadar geniş; iç pay elmasın dışında (0,62 × yükseklik + 3 px) */
+body.hz3 #mac .dukkanSerit{grid-template-columns:clamp(128px,12cqw,140px) minmax(0,1fr) clamp(132px,13cqw,172px)}
+html.alcak body.hz3 #mac .dukkanSerit{grid-template-columns:118px minmax(0,1fr) 112px}
+body.hz3 #mac .dukkanSol .btn,html.alcak body.hz3 #mac .dukkanSol .btn,body.hz3 #mac .dukkanSol .xpBtn,html.alcak body.hz3 #mac .dukkanSol .xpBtn{padding:0 calc(var(--bh)*.62 + 3px)!important;white-space:nowrap}
+html.alcak body.hz3 #mac .dukkanSol .xpBtn{font-size:10px;letter-spacing:0}
+/* rakip etiketi: portre soketi plakanın kendi soketi (CSS daire zemini yok; portre kart_zemin dokusunda) */
+body.hz3 #mac .rakip .rakipKim .amb{background:url(arayuz/kit/kart_zemin/zemin.webp) center/cover no-repeat}
+body.hz3 #mac .rakip .rakipKim .amb.kitAmb{background:none}
+body.hz3 #mac .macUst .rakip.acik{width:340px;max-width:340px}
+body.hz3 #mac .rakip .rakipKim .rkYok b{display:block;font-size:14px;line-height:1.1}
+body.hz3 #mac .rakip .rakipKim .rkYok span{display:block;font-size:11.5px;line-height:1.15;white-space:nowrap}
+body.hz3 #mac .rakip .rakipKim .rkYok{white-space:normal;overflow:visible}
+/* seçim pencereleri: açıklama ortada (başlık ve kartlarla aynı eksen); altta süslü ayraç (boş alan yerine pencere dili) */
+#perde .pencere>p.secMetin{align-self:center;text-align:center;max-width:min(640px,100%);margin-left:auto;margin-right:auto}
+#perde .pencere>.secAlt{flex:none;align-self:center;width:min(300px,80%);aspect-ratio:893/100;margin:2px 0 4px;background:url(arayuz/kit/ayrac_suslu/ayrac.webp) center/contain no-repeat;pointer-events:none}
+html.alcak #perde .pencere>.secAlt{width:min(200px,70%);margin:0}
+/* 12) SAVAŞ HUD */
+/* KUT HAZIR balonu Kut düğmesinin ışın halkasının üstünde (okunur); köşe parıltısı fx_hale */
+#savas .kutAlan{z-index:4}
+#savas .kutBant{position:relative;z-index:3}
+#savas .kut{position:relative;z-index:1}
+html.alcak #savas .kutAlan{gap:24px}
+.kutParlama{background:url(arayuz/kit/fx_set/fx_hale.webp) 100% 100%/min(520px,60cqw) auto no-repeat;mix-blend-mode:screen;opacity:.55;transform:translate(22%,22%)}
+/* skor şeridi can izi: oluk = cubuk_mini oluğu, dolgu = kit dolgu (dost yeşil / rakip kırmızı), hasar izi dolgu_iz */
+#savas .skor .takimCan{background:url(arayuz/kit/cubuk_set/oluk.webp) center/100% 100% no-repeat;box-shadow:none}
+#savas .skor .takimCan i{background:url(arayuz/kit/cubuk_dolgu_set/dolgu_dost.webp) left center/100cqw 100% no-repeat;box-shadow:none}
+#savas .skor .taraf.sag .takimCan i{background:url(arayuz/kit/cubuk_dolgu_set/dolgu_rakip.webp) right center/100cqw 100% no-repeat}
+#savas .skor .takimCan .iz{background:url(arayuz/kit/cubuk_dolgu_set/dolgu_iz.webp) left center/100cqw 100% no-repeat;opacity:.9}
+#savas .skor .taraf.sag .takimCan .iz{background-position:right center}
+
+/* 13) SONUÇ BANDI: çipler küçülmez (kesilmez), telefonda alt alta sarar; Hasar özeti ve Devam birlikte belirir */
+.sonucBant .bil{flex-wrap:wrap;row-gap:6px}
+.sonucBant .cip{flex:none;max-width:none;overflow:visible}
+.sDugmeler:has(#sDevam.bekle) #sOzet{opacity:0;pointer-events:none}
+#sOzet{transition:opacity .2s}
+
+/* 14) HASAR ÖZETİ: açıkken sonuç bandı sağa kayar (panel bandı / çipleri / düğmeleri örtmez); etiketler çubuğun üstünde ayrı satırda;
+       portre zemini kart_zemin dokusu (CSS degrade yok); iyileştirme dolgusu kit yeşili */
+#sonucYer:has(#hasarOzet:not([hidden])) .sonucBant{left:min(392px,40cqw);transition:left .25s ease-out}
+#sonucYer:has(#hasarOzet:not([hidden])) .sonucBant .sAyrac{max-width:90%}
+html.alcak #sonucYer:has(#hasarOzet:not([hidden])) .sonucBant{left:min(372px,46cqw)}
+.hasarOzet .c{height:30px!important;margin:0 -2px;border:0!important;border-image:none!important;background:none!important}
+.hasarOzet .c::before{content:"";position:absolute;left:0;right:0;bottom:0;height:14px;border:0 solid transparent;
+  border-image:url(arayuz/kit/cubuk_set/cubuk_ince.webp) 0 37 0 37 fill / 0 13.6px 0 13.6px stretch;pointer-events:none}
+.hasarOzet .c i{top:auto!important;bottom:4px;height:6px;left:9px;max-width:calc(100% - 18px)}
+.hasarOzet .c span,.hasarOzet .c em{top:0!important;line-height:15px}
+.hasarOzet .c span{left:4px}.hasarOzet .c em{right:4px;color:#d9ccef}
+.hasarOzet .c.i i{background:url(arayuz/kit/cubuk_dolgu_set/dolgu_dost.webp) left center/auto 100% repeat-x}
+.hasarOzet .vb{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+html.alcak .hasarOzet .c{height:26px!important}html.alcak .hasarOzet .c span,html.alcak .hasarOzet .c em{line-height:12px;font-size:10.5px}
+.hasarOzet .por,.hasarOzet .por.dus{background:url(arayuz/kit/kart_zemin/zemin.webp) center/cover no-repeat}
+/* portre halkaları (son ekranı ustalık ve kaynaşık madalyon): kart_zemin dokulu disk */
+#son .ustaD img,#son .sonTakim .m .madalyon{background:url(arayuz/kit/kart_zemin/zemin.webp) center/cover no-repeat}
+
+/* 15) MAÇIN YILDIZI: sinema şeritleri koyu cam doku (doku_cam_mor'un karartılmışı) + iç kenarda süslü ayraç */
+.mvpSerit{background:#07030c url(arayuz/kit/doku_cam_mor/doku_koyu.webp) 0 0/256px 256px repeat}
+/* 16) MAÇ SONU: lobi sıralaması iki sütun (1–4 | 5–8) → Sırada paneli kapanır; gövde kayınca kit kaydırma göstergesi (ray + tutamak) görünür;
+       telefonda kutu iç payı çerçevenin içinde */
+#son .lobiSira{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-flow:row;gap:3px 8px}
+#son .lobiSira .ls{min-height:25px}
+.sonGovde{scrollbar-width:auto}
+.sonGovde::-webkit-scrollbar{display:block!important;width:12px!important}
+.sonGovde::-webkit-scrollbar-track{background:url(arayuz/kit/kontrol_set/kaydirma_ray.webp) center/6px 100% no-repeat;margin:6px 0}
+.sonGovde::-webkit-scrollbar-thumb{background:url(arayuz/kit/kontrol_set/kaydirma_tutamak.webp) center/11px 100% no-repeat;min-height:40px}
+html.alcak #son .kutu{padding:9px 16px 10px 18px}
+html.alcak #son .lobiSira .ls{min-height:22px}
+/* hazırlık seçili kart: kademe taşı yazısı sığar */
+.bilgiKart .kTag{width:26px!important;height:31px!important;font-size:10px!important;letter-spacing:-.03em!important;padding-bottom:2px!important}
+#perde .pencere{scrollbar-width:auto}
+/* Soy Mührü telefonda: 10 soy iki sıraya sığar (5 sütun, küçük kart) */
+html.alcak .pencere .secimler:has([data-soy]){gap:6px}
+html.alcak .pencere .secimler .sc.kc[data-soy]{--sc:min(116px,17cqw);min-height:0;padding:9px 6px 12px;gap:2px}
+html.alcak .pencere .secimler .sc.kc[data-soy] .pp{width:28px!important;height:28px!important}
+html.alcak .pencere .secimler .sc.kc[data-soy] b{font-size:12.5px}
+html.alcak .pencere .secimler .sc.kc[data-soy] small{font-size:11.5px;line-height:1.15}
+/* 17) ÖĞRETİCİ VURGU ÇERÇEVESİ: yalnız vurgu_set/altin (9 dilim); nabız ölçek + parlaklıkla (CSS kenarlık / kutu gölgesi ışıması yok) */
+.ogrCerceve::after{border-style:solid!important;border-color:transparent!important;border-image:url(arayuz/kit/vurgu_set/altin.webp) 77 105 78 105 / 28px 38px 28px 38px stretch!important;box-shadow:none!important;animation:ogrNabizK 1.2s ease-in-out infinite}
+html.alcak .ogrCerceve::after{inset:-11px -13px;border-image-width:20px 27px 20px 27px!important}
+@keyframes ogrNabizK{50%{transform:scale(1.03);filter:brightness(1.25) drop-shadow(0 0 6px rgba(255,212,92,.7))}}
+@media (prefers-reduced-motion:reduce){.ogrCerceve::after{animation:none}}
+/* telefonda açık rakip paneli: daha geniş (başlık ve çip sığar, mini tahta hücreleri büyür) */
+html.alcak body.hz3 #mac .macUst .rakip.acik{width:360px;max-width:360px}
+html.alcak body.hz3 #mac .rakip.acik .rakipKim{--ph:46px}
+html.alcak body.hz3 #mac .rakip.acik .rakipKim b{font-size:13px}
+/* 18) KAYDIRMA İŞARETİ (.altVar, JS kaydirIzle): kayan pencere / maç sonu gövdesinin altında daha içerik varsa yapışkan kit oku (sus_set/kaydir_ok) */
+#perde:not(.armagan) .pencere.altVar::after{content:"";display:block!important;position:sticky;bottom:12px;z-index:4;flex:none;align-self:center;grid-column:1/-1;justify-self:center;
+  width:40px;height:44px;margin:-44px auto 0;inset:auto auto 8px auto;transform:none;border:0;border-radius:0;box-shadow:none;background:url(arayuz/kit/sus_set/kaydir_ok.webp) 50% 60%/58% auto no-repeat,url(arayuz/kit/madalyon_yuva/yuva.webp) center/100% 100% no-repeat;pointer-events:none;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.7));animation:kaydirOk 1.4s ease-in-out infinite}
+@keyframes kaydirOk{50%{transform:translateY(-5px)}}
+#son .sonEylem{position:relative}
+.sonKart.altVar>.sonEylem::before{content:"";position:absolute;right:40px;top:calc(50% - 8px);width:34px;height:31px;z-index:4;background:url(arayuz/kit/sus_set/kaydir_ok.webp) center/contain no-repeat;
+  pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.7));animation:kaydirOk 1.4s ease-in-out infinite}
+html.alcak #perde:not(.armagan) .pencere.altVar::after{width:32px;height:36px;margin-top:-36px;bottom:4px}
+html.alcak .sonKart.altVar>.sonEylem::before{width:28px;height:26px;right:34px;top:calc(50% - 6px)}
+/* 3 dilim derinin yüksekliği (--bh) öğe yüksekliğine eşit: değişken boylu bağlamlarda sabit boy */
+body.hz3 #mac .dukkanSol{justify-content:space-between}
+body.hz3 #mac .dukkanSol .btn:not(.xpBtn){flex:none;--bh:31px;height:31px;min-height:0}
+/* deneyim düğmesi üç satır (Sv · çubuk · bedel): hap deri bu boyda uçları çok büyür → satır plakası (satir_plaka_set_1, 9 dilim; basılı/seçili vurgu) */
+body.hz3 #mac .dukkanSol .btn.xpBtn{flex:1 1 auto;min-height:0;height:auto;padding:4px 12px 5px!important;border-radius:0;
+  background:none!important;border:0 solid transparent!important;border-image:url(arayuz/kit/satir_plaka_set_1/normal.webp) 27 47 30 46 fill / 11px 19px 12px 19px stretch!important}
+body.hz3 #mac .dukkanSol .btn.xpBtn:active{border-image-source:url(arayuz/kit/satir_plaka_set_1/vurgu.webp)!important}
+body.hz3 #mac .dukkanSol .btn.xpBtn:disabled{border-image-source:url(arayuz/kit/satir_plaka_set_1/tas.webp)!important}
+html.alcak body.hz3 #mac .dukkanSol .btn:not(.xpBtn){--bh:25px;height:25px}
+html.alcak body.hz3 #mac .dukkanSol .btn.xpBtn{padding:2px 8px 3px!important;border-image-width:8px 13px 8px 13px!important}
+html.alcak body.hz3 #mac .dukkanSol .xpBtn .xpCubuk{display:none}
+html.alcak body.hz3 #mac .dukkanSol .btn:not(.xpBtn){font-size:10px}
+.sonEylem .btn.mor{--bh:56px;height:56px}.sonEylem .btn.altin{--bh:70px;height:70px}
+html.alcak .sonEylem .btn.mor{--bh:46px;height:46px}html.alcak .sonEylem .btn.altin{--bh:50px;height:50px}
+/* dükkân kartı adı: sol sütun genişleyince uzun adlar (Davulcu Kurbağa) kesilmesin */
+#mac .kart .ad,body.hz3 #mac .kart .ad{letter-spacing:0;padding-left:7px;padding-right:7px;font-size:11.5px}
+html.alcak #mac .kart .ad,html.alcak body.hz3 #mac .kart .ad{font-size:10.5px;padding:0 5px 1px}
+html.alcak #son .kodSatir .btn{--bh:40px}
+.hasarOzet .sekmeler button.kitSekme{height:var(--bh)!important;min-height:0!important}
+html.alcak .hasarOzet .sekmeler button.kitSekme{--bh:31px}
+.bilgiKart .bkEylem .btn:not(.bkBil){--bh:38px;height:38px;min-height:0}
+html.alcak .bilgiKart .bkEylem .btn:not(.bkBil){--bh:32px;height:32px;padding:0 calc(var(--bh)*.6)!important;font-size:11.5px;letter-spacing:0}
+html.alcak body.hz3 #mac .dukkanSol .btn:not(.xpBtn) small{display:inline-flex;align-items:center;font-size:10px;margin-left:1px}
+html.alcak body.hz3 #mac .dukkanSol .btn:not(.xpBtn) small .ik{width:11px;height:11px}
+html.alcak body.hz3 #mac .rakip .rakipKim .rkYok b{font-size:13px}
+html.alcak body.hz3 #mac .rakip .rakipKim .rkYok span{font-size:12px}
+/* ======================= /DÜZELTME (hakem turu 1) ======================= */
+/* ==== DÜZELTME TUR 2 ==== */
+/* ayar satırı (telefon): yazı satır plakasının (satir_plaka_set_1) iç alanında, dilim payları plakayla oranlı; pencere biraz daha uzun → satırlar sıkışmaz */
+html.alcak #perde .pencere:has(.kitSatirlar){max-height:95cqh}
+html.alcak .kitSatirlar{gap:5px;min-height:224px}   /* sekme değişince pencere boyu sabit (Görüntü: 4 satır) */
+html.alcak .kitSatir{min-height:46px;padding:8px 16px 8px 14px;border-image-width:9.5px 17.5px 10.5px 17px}
+html.alcak .pencere .kitSatir .ksYazi b{font-size:15px;line-height:1.12}
+html.alcak .kitSatir .ksYazi small{font-size:14px;line-height:1.16}
+html.alcak #perde:not(.armagan) .pencere:has(.kitSatirlar)>.eylemler:last-child{padding-top:10px}
+/* küçük pencere düğmesi: yazı iki uçtaki elmas başlıkların içinde kalır */
+.pencere .btn.kucuk{padding:0 calc(var(--bh)*.92);white-space:nowrap}
+/* bilgi kartı (telefon): Sat / Kaynaştır yazısı iki uç başlığının (dugme_mor_set uçları ≈ .74 × boy) içinde; Sat içerik kadar, Kaynaştır kalan genişlik */
+html.alcak .bilgiKart{width:318px}
+html.alcak .bilgiKart .bkEylem .btn:not(.bkBil){padding:0 calc(var(--bh)*.76)!important;letter-spacing:0;gap:2px}
+html.alcak .bilgiKart .bkEylem .btn:not(.bkBil)>.mik{display:none}   /* telefonda yazı + bedel yeter (düğme ikonu yer kaplar) */
+html.alcak .bilgiKart .bkEylem #bkSat{flex:0 0 auto}
+html.alcak .bilgiKart .bkEylem #bkKay{flex:1 1 auto}
+/* savaş rakip plakası (plaka_set/yakut): üç satır plakanın altın kenarlarına taşıyordu → iki satır: üstte "Rakip · Tur" + kupa yan yana, altta ad; yazı plakanın iç bandında */
+#savas .savasUst .pn.rakipK>div:not(.amb){display:grid;grid-template-columns:auto auto;justify-content:start;align-content:center;column-gap:7px;row-gap:1px;padding-top:1px}
+#savas .savasUst .pn.rakipK>div:not(.amb)>small{grid-area:1/1;line-height:1.1;align-self:end}
+#savas .savasUst .pn.rakipK>div:not(.amb)>span{grid-area:1/2;line-height:1.1;align-self:end;font-size:10px;opacity:.92}
+#savas .savasUst .pn.rakipK>div:not(.amb)>b{grid-area:2/1/3/3;line-height:1.1}
+/* son hakem kusurları: kervan yıldızları tek parça · telefon notu Tamam iç payı · kaydırma oku metni örtmesin (altta solan bant) */
+.scYler{white-space:nowrap;display:inline-block}
+.tabletNot{padding-right:24px}
+#perde:not(.armagan) .pencere.altVar::after{width:auto;height:58px;margin:-58px -60px 0;bottom:0;align-self:stretch;justify-self:stretch;
+  background:url(arayuz/kit/sus_set/kaydir_ok.webp) 50% 78%/22px auto no-repeat,url(arayuz/kit/madalyon_yuva/yuva.webp) 50% 100%/38px 42px no-repeat,linear-gradient(rgba(34,14,58,0),rgba(34,14,58,.94) 62%);filter:none}
+html.alcak #perde:not(.armagan) .pencere.altVar::after{width:auto;height:46px;margin:-46px -60px 0;background-size:18px auto,30px 34px,auto}
 </style>
+<script>/* KİT önyükleme: pencere, mod kartı ve ortak düğme görselleri açılıştan sonra boşta yüklenir (ilk pencere açılışında boş çerçeve görünmesin; açılışı yavaşlatmaz) */
+addEventListener('load',function(){setTimeout(function(){var f=function(){['pencere_cerceve/cerceve','doku_cam_mor/doku','kurdele_set_1/mor','ayrac_suslu/ayrac','mod_kart_arena/kart','mod_kart_lobi/kart','mod_kart_hizli/kart','madalyon_yuva/yuva','amblem_mod_set/amblem_arena','amblem_mod_set/amblem_lobi','amblem_mod_set/amblem_hizli','dugme_altin_kucuk_set/normal','dugme_altin_kucuk_set/basili','dugme_mor_set/basili','dugme_mor_set/hayalet','ikon_set_durum/ikon_kapat','metin_alani_set/normal','metin_alani_set/odak','sekme_set/iz','sekme_set/aktif','sekme_set/pasif','satir_plaka_set_1/normal','anahtar_set/acik','anahtar_set/kapali','perde_vinyet/perde_vinyet_alfa','kut_set/kut_dugme_hazir','kut_set/kut_dugme_bitti','kut_isin/kut_isin','bant_genis_set/bant_savas','bant_genis_set/bant_zafer','bant_genis_set/bant_yenilgi','silah_set/kilic','kurdele_set_1/altin','panel_ince_set/mor','panel_ince_set/kehribar','plaka_set/yakut','ikon_set_hiz/ikon_hiz1','ikon_set_hiz/ikon_hiz2','ikon_set_hiz/ikon_hiz3','ikon_set_hiz/ikon_sona_gec'].forEach(function(p){var i=new Image();i.decoding='async';i.src='arayuz/kit/'+p+'.webp';});};(window.requestIdleCallback||setTimeout)(f);},3000);});</script>
 <script>
 /* tek ölçek: --o, --lw, --lh ve html.alcak; ilk boyamadan önce ve her boyut değişiminde */
 (function () {
@@ -2270,7 +3718,7 @@ html.alcak .sk .ust{height:auto}
     <div class="logoK"><img src="../arayuz/logo.png" alt="Kut Arena"></div>
     <div class="cubuk" id="acCubuk"><i></i><b id="acYuzde">%0</b></div>
     <div class="durum" id="acDurum">Arena hazırlanıyor…</div>
-    <div class="ipucu"><svg class="ik"><use href="#i-isik"/></svg><div><small>İpucu</small><span id="acIpucu">3 aynı kahraman birleşip ★2 olur; üç ★2 de ★3.</span></div></div>
+    <div class="ipucu"><img class="kik ik" alt="" draggable="false" src="arayuz/kit/ikon_set_oyun/ikon_ipucu.webp"><div><small>İpucu</small><span id="acIpucu">Aynı soydan 2 ve 4 kahraman, soyun gücünü açar.</span></div></div>
   </div>
   <div class="surum" id="acSurum"></div>
 </div>
@@ -2284,11 +3732,11 @@ html.alcak .sk .ust{height:auto}
     <div class="ustSerit">
       <div class="profil" role="button" tabindex="0" aria-label="Oyuncu adını değiştir">
         <div class="avKap"><div class="avatar"><img src="../arayuz/portre/anka.png" alt=""></div><i class="cerceve" aria-hidden="true"></i></div>
-        <div class="pyz"><b class="pAd">Oyuncu</b><svg class="ik pKalem" aria-hidden="true"><use href="#i-kalem"/></svg><span class="pAlt">0 maç · 0 birincilik</span>
-          <div class="pRoz"><span class="pKupa"><svg class="ik"><use href="#i-kupa"/></svg><em>0</em></span><span class="pUsta"><svg class="ik"><use href="#i-tac"/></svg><em>Sv. 0</em></span></div></div>
+        <div class="pyz"><b class="pAd">Oyuncu</b><img class="kik pKalem" alt="" draggable="false" src="arayuz/kit/ikon_set_menu/ikon_kalem.webp"><span class="pAlt">0 maç · 0 birincilik</span>
+          <div class="pRoz"><span class="pKupa"><img class="kik ik" alt="" draggable="false" src="arayuz/kit/ikon_set_ilerleme/ikon_kupa.webp"><em>0</em></span><span class="pUsta"><img class="kik ik" alt="" draggable="false" src="arayuz/kit/ikon_set_ilerleme/ikon_ustalik.webp"><em>Sv. 0</em></span></div></div>
       </div>
       <div class="bosluk"></div>
-      <div class="sezon"><small>Sezon 1</small><b>Gök Kapısı</b></div>
+      <div class="sezon"><img class="kik szAmb" alt="" draggable="false" src="arayuz/kit/amblem_set_2/amblem_sezon.webp"><div class="szYazi"><small>Sezon 1</small><b>Gök Kapısı</b></div></div>
     </div>
     <div class="merkez">
       <div class="logoKap"><img class="logo" src="../arayuz/logo.png" alt="Kut Arena"></div>
@@ -2297,21 +3745,21 @@ html.alcak .sk .ust{height:auto}
     <div class="sahneAd" aria-live="polite"></div>
     <div class="altBlok">
       <div class="yanDug sol">
-        <button class="btn mor kahBtn"><svg class="ik"><use href="#i-kitap"/></svg><span>Kahramanlar</span></button>
-        <button class="btn mor nasilBtn"><svg class="ik"><use href="#i-soru"/></svg><span>Nasıl Oynanır</span></button>
+        <button class="btn mor kahBtn"><img class="kik ik" alt="" draggable="false" src="arayuz/kit/ikon_set_menu/ikon_kahramanlar.webp"><span>Kahramanlar</span></button>
+        <button class="btn mor nasilBtn"><img class="kik ik" alt="" draggable="false" src="arayuz/kit/ikon_set_menu/ikon_nasil.webp"><span>Nasıl Oynanır</span></button>
       </div>
       <div class="oynaKol">
         <button class="btn altin oyna">
-          <span class="ana"><svg class="ik"><use href="#i-oyna"/></svg>OYNA</span>
+          <span class="ana"><img class="ik oynatIk" alt="" draggable="false" src="arayuz/menu/ikon_oynat.webp">OYNA</span>
           <small>Seviye atla, altın biriktir</small>
         </button>
         <div class="macSec">
-          <button class="btn mor yeniMac" hidden><svg class="ik"><use href="#i-yenile"/></svg><span>Yeni Maç</span></button>
+          <button class="btn mor yeniMac" hidden><img class="kik ik" alt="" draggable="false" src="arayuz/menu/ikon_yenile.webp"><span>Yeni Maç</span></button>
         </div>
       </div>
       <div class="yanDug sag">
-        <button class="btn mor duelloBtn"><svg class="ik"><use href="#i-zincir"/></svg><span>Düello Kodu</span></button>
-        <button class="btn mor ayarBtn2 anaAyar"><svg class="ik"><use href="#i-ayar"/></svg><span>Ayarlar</span></button>
+        <button class="btn mor duelloBtn"><img class="kik ik" alt="" draggable="false" src="arayuz/kit/ikon_set_menu/ikon_duello.webp"><span>Düello Kodu</span></button>
+        <button class="btn mor ayarBtn2 anaAyar"><img class="kik ik" alt="" draggable="false" src="arayuz/menu/ikon_ayarlar.webp"><span>Ayarlar</span></button>
       </div>
     </div>
   </div>
@@ -2333,12 +3781,12 @@ html.alcak .sk .ust{height:auto}
     <div class="macOrta">
       <div class="solKolon">
         <div class="pn gem rakip">
-          <div class="pn-bas"><svg class="ik"><use href="#i-goz"/></svg>Sıradaki rakip<span class="sag">Tur 6</span></div>
+          <div class="pn-bas"><img class="kik ik" alt="" draggable="false" src="arayuz/kit/ikon_set_oyun/ikon_gozcu.webp">Sıradaki rakip<span class="sag">Tur 6</span></div>
           <div class="rakipKim"><div class="amb"><img src="../arayuz/portre/tilki.png" alt=""></div>
             <div style="min-width:0"><b>SisAvcısı <span class="etiket">Gerçek</span></b><span><svg class="ik"><use href="#i-kupa"/></svg>1 210 kupa · 4 can</span></div></div>
           <div class="miniTahta" id="rakipTahta"></div>
           <div class="rakipSoy" id="rakipSoy"></div>
-          <div class="ipucuSatir"><svg class="ik"><use href="#i-isik"/></svg><span>Karanlık yaralıları bitirir: ön sırayı sağlam tut.</span></div>
+          <div class="ipucuSatir"><img class="kik ik" alt="" draggable="false" src="arayuz/kit/ikon_set_oyun/ikon_ipucu.webp"><span>Karanlık yaralıları bitirir: ön sırayı sağlam tut.</span></div>
         </div>
         <div class="pn gem soyPanel">
           <div class="pn-bas"><span class="elmas"></span>Soyların<span class="soyPasif" id="soyPasif"></span></div>
@@ -2349,7 +3797,7 @@ html.alcak .sk .ust{height:auto}
       <div class="pn kalin gem tahtaPanel">
         <div class="pn-bas"><span class="elmas"></span>Takımın<span class="sag">5/5 yuva · Tur 7'de 6</span></div>
         <div class="tahtaAlan">
-          <div class="dusmanOk"><i></i><svg class="ik"><use href="#i-ok"/></svg>Düşman bu yönde<i></i></div>
+          <div class="dusmanOk"><i></i><img class="kik ik" alt="" draggable="false" src="arayuz/kit/sus_set/ok_sag.webp">Düşman bu yönde<i></i></div>
           <div class="siraAd on">Ön<i> sıra</i></div>
           <div class="sira" id="onSira"></div>
           <div class="siraAd">Orta<i> sıra</i></div>
@@ -2393,11 +3841,11 @@ html.alcak .sk .ust{height:auto}
     </div>
     <div class="alametK"><span class="ay"></span><div><b>Kan Ayı</b><span>herkes +%20 hasar</span></div></div>
   </div>
-  <div class="duraklat"><button class="btn mor" aria-label="Duraklat"><img class="mik" alt="" draggable="false" src="arayuz/menu/ikon_duraklat.webp"></button><button class="btn mor sonaGec" aria-label="Sonuca geç">Sonuca<br>geç</button></div>
+  <div class="duraklat"><button class="btn mor" aria-label="Duraklat"><img class="mik" alt="" draggable="false" src="arayuz/menu/ikon_duraklat.webp"></button><button class="btn sonaGec" aria-label="Sonuca geç"><img class="kik" alt="" draggable="false" src="arayuz/kit/ikon_set_hiz/ikon_sona_gec.webp"><span>Sonuca geç</span></button></div>
   <div class="pn hizlar">
-    <button class="btn mor"><img class="mik" alt="" draggable="false" src="arayuz/menu/ikon_hiz.webp"><b>1×</b></button>
-    <button class="btn altin secik"><img class="mik" alt="" draggable="false" src="arayuz/menu/ikon_hiz.webp"><b>2×</b></button>
-    <button class="btn mor"><img class="mik" alt="" draggable="false" src="arayuz/menu/ikon_hiz.webp"><b>3×</b></button>
+    <button class="btn mor" aria-label="Hız 1×"><img class="kik" alt="" draggable="false" src="arayuz/kit/ikon_set_hiz/ikon_hiz1.webp"><b>1×</b></button>
+    <button class="btn altin secik" aria-label="Hız 2×"><img class="kik" alt="" draggable="false" src="arayuz/kit/ikon_set_hiz/ikon_hiz2.webp"><b>2×</b></button>
+    <button class="btn mor" aria-label="Hız 3×"><img class="kik" alt="" draggable="false" src="arayuz/kit/ikon_set_hiz/ikon_hiz3.webp"><b>3×</b></button>
     <small>Hız</small>
   </div>
   <div class="pn ayakta" id="ayakta"></div>
@@ -2412,7 +3860,7 @@ html.alcak .sk .ust{height:auto}
   <div class="konfeti" id="konfeti"></div>
   <div class="icerik">
     <div class="pn kalin gem sonKart">
-      <div class="sonSerit" id="sonSerit"><span class="mad l"><svg class="ik"><use href="#i-yildiz"/></svg></span><b>ZAFER!</b><span>Arena senin · 7 zafer</span><span class="mad r"><svg class="ik"><use href="#i-yildiz"/></svg></span></div>
+      <div class="sonSerit" id="sonSerit"><span class="mad l"><img class="kik ik" alt="" draggable="false" src="arayuz/kit/yildiz_set/yildiz_altin.webp"></span><b>ZAFER!</b><span>Arena senin · 7 zafer</span><span class="mad r"><img class="kik ik" alt="" draggable="false" src="arayuz/kit/yildiz_set/yildiz_altin.webp"></span></div>
       <div class="sonGovde">
         <div class="sonSutun">
           <div class="kutu">
@@ -2425,8 +3873,8 @@ html.alcak .sk .ust{height:auto}
           </div>
           <div class="kutu">
             <h4><span class="elmas"></span>Kupa</h4>
-            <div class="kupaD"><svg class="ik"><use href="#i-kupa"/></svg><div class="sayi" id="kupaSayi"><s>1 240 →</s>1 280</div><div class="art" id="kupaArt">+40</div></div>
-            <div class="lig">Altın Lig'e 220 kupa kaldı<div class="takimCan"><i style="width:64%;background:linear-gradient(180deg,#ffe48a,#d98e14)"></i></div></div>
+            <div class="kupaD"><img class="kik ik" alt="" draggable="false" src="arayuz/kit/ikon_set_ilerleme/ikon_kupa.webp"><div class="sayi" id="kupaSayi"><s>1 240 <img class="kik ok" alt="" draggable="false" src="arayuz/kit/sus_set/ok_sag.webp"></s>1 280</div><div class="art" id="kupaArt">+40</div></div>
+            <div class="lig"><span class="ligYazi"><img class="kik" alt="" draggable="false" src="arayuz/kit/sus_set/ok_sag.webp">Altın Lig'e 220 kupa kaldı</span><div class="takimCan kitCubuk" style="--o:.64"><i></i></div></div>
             <div class="ustaD"><img src="../arayuz/portre/koc.png" alt=""><span><b>Dağ Koçu Sv.2</b> · yeni çerçeve açıldı</span></div>
           </div>
         </div>
@@ -2436,19 +3884,19 @@ html.alcak .sk .ust{height:auto}
             <div class="liste" id="sonTakim"></div>
             <div class="yildizMac"><svg class="ik"><use href="#i-yildiz"/></svg><div><small>Maçın yıldızı</small><b>Kaya Golemi × Anka</b><span>Kaya Fırlat + Yeniden Doğuş · 1 840 hasar</span></div></div>
             <div class="kodSatir"><div class="kodKutu">KUT1-7GQ2-ANK9-XR4P-LM8Z-TW3E</div>
-              <button class="btn mor"><svg class="ik"><use href="#i-kopya"/></svg>Kopyala</button>
-              <button class="btn gb"><svg class="ik"><use href="#i-paylas"/></svg>Paylaş</button></div>
+              <button class="btn mor"><img class="kik ik" alt="" draggable="false" src="arayuz/kit/ikon_set_durum/ikon_kopya.webp">Kopyala</button>
+              <button class="btn gb"><img class="kik ik" alt="" draggable="false" src="arayuz/kit/ikon_set_durum/ikon_paylas.webp">Paylaş</button></div>
           </div>
           <div class="kutu">
             <h4><span class="elmas"></span>Sırada</h4>
             <div class="siradaK">Eşleşme aralığı: <b>1 130 – 1 430</b> kupa<br>Haftalık görev: Anka'yı pasif olarak kullan <b style="color:var(--altinA)">6/10</b></div>
-            <div class="takimCan" style="margin-top:6px;height:10px"><i style="width:60%;background:linear-gradient(180deg,#ffe48a,#d98e14)"></i></div>
+            <div class="takimCan kitCubuk" style="--o:.6"><i></i></div>
           </div>
         </div>
       </div>
       <div class="sonEylem">
-        <button class="btn mor"><svg class="ik"><use href="#i-ev"/></svg>Ana menü</button>
-        <button class="btn altin"><svg class="ik"><use href="#i-kilic"/></svg>Yeniden oyna</button>
+        <button class="btn mor"><img class="kik ik" alt="" draggable="false" src="arayuz/kit/ikon_set_menu/ikon_ev.webp">Ana menü</button>
+        <button class="btn altin"><img class="kik ik" alt="" draggable="false" src="arayuz/kit/ikon_set_tur/ikon_savas.webp">Yeniden oyna</button>
       </div>
     </div>
   </div>
@@ -2459,16 +3907,16 @@ html.alcak .sk .ust{height:auto}
   <div class="gok"></div>
   <div class="icerik">
     <header class="kodUst">
-      <button class="btn mor" style="width:56px;height:52px;padding:0" aria-label="Geri"><svg class="ik" style="width:26px;height:26px"><use href="#i-geri"/></svg></button>
+      <button class="btn yuvarlak" aria-label="Geri"><img class="kik" alt="" draggable="false" src="arayuz/kit/ikon_set_menu/ikon_geri.webp"></button>
       <h2>Kahramanlar ve soylar</h2>
       <div class="acik">Bütün kahramanlar herkese açık.<br>Ustalık yalnız görünüş kazandırır.</div>
-      <div class="rozet"><div class="top"><svg class="ik"><use href="#i-tac"/></svg></div><div class="yz"><small>Ustalık</small>Sv. 23</div></div>
+      <div class="rozet"><div class="top"><img class="kik ik" alt="" draggable="false" src="arayuz/kit/ikon_set_ilerleme/ikon_ustalik.webp"></div><div class="yz"><small>Ustalık</small>Sv. 23</div></div>
     </header>
     <div class="kodGovde">
       <div class="pn kalin gem kahPanel">
-        <div class="pn-bas"><span class="elmas"></span>Kahramanlar · 16<span class="sag"><span style="color:var(--safir)">■</span> yetenek · <span style="color:var(--ametist)">■</span> pasif</span></div>
-        <div class="filtre">
-          <button class="btn sade on">Hepsi</button><button class="btn sade">Kademe 1</button><button class="btn sade">Kademe 2</button><button class="btn sade">Kademe 3</button>
+        <div class="pn-bas"><span class="elmas"></span>Kahramanlar · 16<span class="sag"><img class="kik" alt="" draggable="false" src="arayuz/kit/ikon_set_ilerleme/ikon_yetenek.webp">yetenek · <img class="kik" alt="" draggable="false" src="arayuz/kit/ikon_set_ilerleme/ikon_pasif.webp">pasif</span></div>
+        <div class="filtre kitIz" role="tablist">
+          <button class="kitSekme on">Hepsi</button><button class="kitSekme">Kademe 1</button><button class="kitSekme">Kademe 2</button><button class="kitSekme">Kademe 3</button>
         </div>
         <div class="kahIzgara" id="kahIzgara"></div>
       </div>
@@ -2483,15 +3931,15 @@ html.alcak .sk .ust{height:auto}
 
 <div class="bildirim" id="bildirim"></div>
 <div class="ogr" id="ogr" hidden><div class="ogrCerceve" id="ogrC1"></div><div class="ogrCerceve ek" id="ogrC2"></div>
-  <div class="ogrEl" id="ogrEl"><svg class="ik"><use href="#i-el"/></svg></div>
+  <div class="ogrEl" id="ogrEl"><img class="kik ik" alt="" draggable="false" src="arayuz/kit/ikon_set_durum/ikon_dokun.webp"></div>
   <div class="pn kalin gem ogrBalon" id="ogrBalon" role="dialog" aria-live="polite"><img class="ogrPor" src="../arayuz/portre/baykus.png" alt="">
     <div class="ogrMetin" id="ogrMetin"></div>
     <div class="ogrDug"><button class="atla" id="ogrAtla">Öğreticiyi atla</button><span class="ogrSay" id="ogrSay"></span><button class="btn altin" id="ogrTamam">Anladım</button></div></div></div>
 <div id="macYuk" class="yukleniyor yukEkran macYuk" role="status" aria-live="polite"></div>
 <div class="perde" id="perde"><div class="pn kalin gem pencere" id="pencere"></div></div>
-<div class="tabletNot" id="tabletNot" hidden role="status"><svg class="ik"><use href="#i-isik"/></svg><span>Kut Arena tablet için tasarlandı; en iyi deneyim tablette.</span><button class="btn mor" id="tabletNotKapat">Tamam</button></div>
+<div class="tabletNot" id="tabletNot" hidden role="status"><img class="kik ik" alt="" draggable="false" src="arayuz/kit/ikon_set_oyun/ikon_ipucu.webp"><span>Kut Arena tablet için tasarlandı; en iyi deneyim tablette.</span><button class="btn altin kucuk" id="tabletNotKapat">Tamam</button></div>
 </div><!-- #kok -->
-<div class="dondur"><i></i><b>Tableti ya da telefonu yatay çevir</b><span>Kut Arena yatay ekran için tasarlandı.</span></div>
+<div class="dondur"><i></i><b>Yatay çevir</b><span>Tableti ya da telefonu yan çevir: Kut Arena yatay ekran için tasarlandı.</span></div>
 <script src="../data.js"></script>
 <script src="../sim.js"></script>
 <script src="../online.js"></script>

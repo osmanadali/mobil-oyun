@@ -1,0 +1,80 @@
+{
+  "aciklama": "Hakem turu 1 düzeltmeleri: kit görsellerinden TÜRETİLEN parçalar (yeni robot üretimi değil; kaynak kit görselinin kesimi ya da renk/parlaklık uyarlaması). 3 dilim deriler border-image yerine üç arka plan katmanıyla çizilir: orta katman uçların altına 3 px girer, dilim ek yeri çizgisi oluşmaz (index.html 'DÜZELTME (hakem turu 1)' bloğu, .k3 değişkenleri --k3s/--k3o/--k3g/--k3w).",
+  "uc_dilim": [
+    {
+      "kaynak": "dugme_altin_kucuk_set/{normal,basili,pasif}.webp",
+      "parcalar": "_sol/_orta/_sag",
+      "sol": 111,
+      "sag": 114,
+      "yukseklik": 122,
+      "k3w": 1.8443
+    },
+    {
+      "kaynak": "dugme_mor_set/{normal,basili,pasif,hayalet,secili,hayalet_dolu}.webp",
+      "parcalar": "_sol/_orta/_sag",
+      "sol": 86,
+      "sag": 87,
+      "yukseklik": 117,
+      "k3w": 1.4786,
+      "not": "secili 147 px yüksek (ışıma payı): ::before katmanında 7,5 px / 5 px taşar, k3w 1.1769"
+    },
+    {
+      "kaynak": "dugme_renk_set/{yakut,yakut_basili,gunbatimi,gunbatimi_basili}.webp",
+      "parcalar": "_sol/_orta/_sag",
+      "sol": 79,
+      "sag": 79,
+      "yukseklik": 117,
+      "k3w": 1.3504
+    },
+    {
+      "kaynak": "sekme_set/{pasif,aktif}.webp",
+      "parcalar": "_sol/_orta/_sag",
+      "sol": 152,
+      "sag": 167,
+      "yukseklik": 122,
+      "k3w": 2.6148,
+      "not": "yazı payı 0,64 × yükseklik + 5 px (elmasın iç kenarı ≈ 0,51 h)"
+    },
+    {
+      "kaynak": "cubuk_set/cubuk_buyuk.webp",
+      "parcalar": "_sol/_orta/_sag",
+      "sol": 116,
+      "sag": 116,
+      "yukseklik": 126,
+      "k3w": 1.8413
+    }
+  ],
+  "turetilen": [
+    {
+      "yol": "kit/dugme_mor_set/hayalet_dolu.webp",
+      "kaynak": "dugme_mor_set/normal (alfa %50) + hayalet çerçeve",
+      "kullanim": ".btn.hayalet, .btn.sade, öğretici 'atla' (CSS yarı saydam zemin kutusu yerine)"
+    },
+    {
+      "yol": "kit/cubuk_dolgu_set/dolgu_dost.webp",
+      "kaynak": "dolgu_altin, ton +90°",
+      "kullanim": "dost can dolgusu: skor şeridi .takimCan i, sahne3d birim can çubuğu, hasar özeti iyileştirme"
+    },
+    {
+      "yol": "kit/cubuk_dolgu_set/dolgu_rakip.webp",
+      "kaynak": "dolgu_altin, ton −43°",
+      "kullanim": "rakip can dolgusu: skor şeridi, sahne3d birim can çubuğu"
+    },
+    {
+      "yol": "kit/cubuk_dolgu_set/dolgu_mavi.webp",
+      "kaynak": "dolgu_altin, ton +162°",
+      "kullanim": "yedek (mana / kalkan alternatifi)"
+    },
+    {
+      "yol": "kit/cubuk_set/oluk.webp",
+      "kaynak": "cubuk_mini_dost iç oluğu (x 60–426, y 18–58)",
+      "kullanim": "skor şeridi can izinin boş oluğu"
+    },
+    {
+      "yol": "kit/doku_cam_mor/doku_koyu.webp",
+      "kaynak": "doku_cam_mor parlaklık %20",
+      "kullanim": "Maçın Yıldızı sinema şeritleri (.mvpSerit)"
+    }
+  ],
+  "sahne3d_can_cubugu": "cubuk_mini_dost / cubuk_mini_rakip: 3 dilim drawImage; kaynak uç 60 px, iç oluk y 18–57 (39 px) → çubuğun (can + mana) tam üstüne oturur; uçlar yatayda %75 (KIT_CUBUK_UC)"
+}

@@ -1538,31 +1538,46 @@ for (let i = 0; i <= 20; i++) { const n = i / 20; MANA_DOLGU.push(`rgb(${150 + 1
 // mana dolgusu: robot dokusu (arayuz/menu/hud_mana_cubuk.webp, önden yüklenir); yüklenmediyse eski düz mavi
 let MANA_DOKU = null;   // ilk kullanımda kokYol ile yüklenir (init sonrası)
 const manaDoku = () => { if (!MANA_DOKU && typeof Image !== 'undefined') { MANA_DOKU = new Image(); MANA_DOKU.src = kokYol + 'arayuz/menu/hud_mana_cubuk.webp'; } return MANA_DOKU; };
+// birim can çubuğu kit görselleri (arayuz/kit): çerçeve cubuk_mini_dost / cubuk_mini_rakip (3 dilim; iç oluk kaynakta y 18–57, x 60…w−60),
+// dolgular cubuk_dolgu_set (dost yeşil / rakip kırmızı = dolgu_altin'den renk kaydırma; iz krem, kalkan gümüş). Yüklenmediyse eski düz çizim.
+const _kitImg = {};
+const kitImg = (yol) => { let i = _kitImg[yol]; if (!i && typeof Image !== 'undefined') { i = _kitImg[yol] = new Image(); i.src = kokYol + 'arayuz/kit/' + yol + '.webp'; } return i && i.complete && i.naturalWidth ? i : null; };
+const KIT_CUBUK_UC = 0.75;   // uç başlıkları (elmas) yatayda %75: çubuk ayak izi dar kalsın
+function kitCubukUc(O) { return Math.round(60 * (O.hh + 1 + O.mh) / 39 * KIT_CUBUK_UC); }
+function kitDolgu(img, x, y, w, h, gw) { if (w <= 0.3) return; kcx.drawImage(img, 0, 0, Math.max(1, img.naturalWidth * Math.min(1, w / gw)), img.naturalHeight, x, y, w, h); }
 function cubukCiz(b, a, x, y, O, dost) {
   const o = O.o, gw = O.gw, hh = O.hh, mh = O.mh, tr = dost ? '#59d0ff' : '#ff5a6a';
   const mx = Math.max(1, a.mx), hp = Math.max(0, a.hp), kal = Math.max(0, a.kalkan || 0), tot = Math.max(mx, hp + kal);
   const H = hh + 1 + mh;
-  // çerçeve: koyu zemin, dışta ince siyah, içte takım rengi
-  kcx.fillStyle = 'rgba(8,5,20,.86)'; yuvarlak(x - 2, y - 2, gw + 4, H + 4, 3); kcx.fill();
-  kcx.lineWidth = 3; kcx.strokeStyle = 'rgba(0,0,0,.55)'; kcx.stroke();
-  kcx.lineWidth = 1.4; kcx.strokeStyle = tr; kcx.stroke();
+  const cer = kitImg(dost ? 'cubuk_set/cubuk_mini_dost' : 'cubuk_set/cubuk_mini_rakip'), dCan = kitImg(dost ? 'cubuk_dolgu_set/dolgu_dost' : 'cubuk_dolgu_set/dolgu_rakip');
+  const dIz = kitImg('cubuk_dolgu_set/dolgu_iz'), dKal = kitImg('cubuk_dolgu_set/dolgu_kalkan');
+  if (cer) {   // çerçeve: iç oluk çubuğu tam sarar; uçlar dışarıda
+    const sc = H / 39, uc = kitCubukUc(O), sw = cer.naturalWidth, shh = cer.naturalHeight, fy = y - 18 * sc, F = shh * sc;
+    kcx.drawImage(cer, 0, 0, 60, shh, x - uc, fy, uc + 0.6, F);
+    kcx.drawImage(cer, sw - 60, 0, 60, shh, x + gw - 0.6, fy, uc + 0.6, F);
+    kcx.drawImage(cer, 60, 0, sw - 120, shh, x, fy, gw, F);
+  } else {
+    kcx.fillStyle = 'rgba(8,5,20,.86)'; yuvarlak(x - 2, y - 2, gw + 4, H + 4, 3); kcx.fill();
+    kcx.lineWidth = 3; kcx.strokeStyle = 'rgba(0,0,0,.55)'; kcx.stroke();
+    kcx.lineWidth = 1.4; kcx.strokeStyle = tr; kcx.stroke();
+  }
   // hasar izi (can + kalkan toplamı üzerinden)
   const iz = gw * Math.min(1, b.izCan / tot), hpw = gw * Math.min(1, hp / tot), kw = gw * Math.min(1, (hp + kal) / tot) - hpw;
-  if (iz > hpw + kw + 0.3) { kcx.fillStyle = 'rgba(255,244,228,.92)'; kcx.fillRect(x + hpw + kw, y, iz - hpw - kw, hh); }
+  if (iz > hpw + kw + 0.3) { if (dIz) kitDolgu(dIz, x + hpw + kw, y, iz - hpw - kw, hh, gw); else { kcx.fillStyle = 'rgba(255,244,228,.92)'; kcx.fillRect(x + hpw + kw, y, iz - hpw - kw, hh); } }
   // can
   if (hpw > 0.3) {
-    kcx.translate(x, y); kcx.fillStyle = canDegrade(hh, dost); kcx.fillRect(0, 0, hpw, hh); kcx.translate(-x, -y);
-    kcx.fillStyle = 'rgba(255,255,255,.28)'; kcx.fillRect(x, y, hpw, Math.max(1, hh * 0.22));
+    if (dCan) kitDolgu(dCan, x, y, hpw, hh, gw);
+    else { kcx.translate(x, y); kcx.fillStyle = canDegrade(hh, dost); kcx.fillRect(0, 0, hpw, hh); kcx.translate(-x, -y); kcx.fillStyle = 'rgba(255,255,255,.28)'; kcx.fillRect(x, y, hpw, Math.max(1, hh * 0.22)); }
   }
-  // kalkan: canın sağına beyaz uzanır
-  if (kw > 0.3) { kcx.fillStyle = kalkanDesen(); kcx.fillRect(x + hpw, y, kw, hh); kcx.fillStyle = '#ffffff'; kcx.fillRect(x + hpw, y, kw, 1); kcx.fillRect(x + hpw + kw - 1, y, 1, hh); }
+  // kalkan: canın sağına gümüş uzanır
+  if (kw > 0.3) { if (dKal) kitDolgu(dKal, x + hpw, y, kw, hh, gw); else { kcx.fillStyle = kalkanDesen(); kcx.fillRect(x + hpw, y, kw, hh); kcx.fillStyle = '#ffffff'; kcx.fillRect(x + hpw, y, kw, 1); kcx.fillRect(x + hpw + kw - 1, y, 1, hh); } }
   // çentikler: her 100 can ince (sığarsa), çok canlıda her 500 kalın
   const adim = gw * 100 / tot, kalin = mx >= 1000;
   if (adim >= 3) { kcx.fillStyle = 'rgba(8,5,20,.55)'; for (let v = 100; v < tot - 1; v += 100) { if (kalin && v % 500 === 0) continue; kcx.fillRect(Math.round(x + gw * v / tot), y, 1, Math.ceil(hh * 0.5)); } }
   if (kalin) { kcx.fillStyle = 'rgba(8,5,20,.9)'; for (let v = 500; v < tot - 1; v += 500) kcx.fillRect(Math.round(x + gw * v / tot) - 0.5, y, 2, hh); }
   // mana: koyu oluk, mavi dolgu; dolunca nabız
   const my = y + hh + 1, dolu = a.mana > 0 && a.mp >= a.mana - 1e-6;
-  kcx.fillStyle = 'rgba(20,30,60,.9)'; kcx.fillRect(x, my, gw, mh);
+  if (!cer) { kcx.fillStyle = 'rgba(20,30,60,.9)'; kcx.fillRect(x, my, gw, mh); }   // kit çerçevesinde oluk görselin kendi iç zemini
   if (a.mana > 0 && a.mp > 0) {
     const mw = gw * Math.min(1, a.mp / a.mana);
     if (dolu) {
@@ -1592,8 +1607,9 @@ function cubukCiz(b, a, x, y, O, dost) {
   }
   // kaynaşık birim: çubuğun solunda iç içe iki halka (ana + kaynaşan rengi)
   if (b.u.b.f) { const kr = 4.2 * o, kf = b.kfR || (b.kfR = [D.kahraman(b.u.b.h).renk, D.kahraman(b.u.b.f).renk]);
-    kcx.fillStyle = 'rgba(8,5,20,.86)'; yuvarlak(x - 2 - 6.4 * kr, y + H / 2 - 1.5 * kr, 5.4 * kr, 3 * kr, 1.5 * kr); kcx.fill();
-    kcx.save(); kaynasCiz(kcx, x - 2 - 3.7 * kr, y + H / 2, kr * 0.95, kf[0], kf[1], Math.max(1.4, 1.2 * o)); kcx.restore(); }
+    const ux = cer ? kitCubukUc(O) : 0;   // kit çerçevesinin elmas ucunun solunda
+    kcx.fillStyle = 'rgba(8,5,20,.86)'; yuvarlak(x - ux - 2 - 6.4 * kr, y + H / 2 - 1.5 * kr, 5.4 * kr, 3 * kr, 1.5 * kr); kcx.fill();
+    kcx.save(); kaynasCiz(kcx, x - ux - 2 - 3.7 * kr, y + H / 2, kr * 0.95, kf[0], kf[1], Math.max(1.4, 1.2 * o)); kcx.restore(); }
   // yıldız rozeti: çubuğun üst ortasında koyu hap, seviye renginde yıldızlar
   const yl = Math.max(1, Math.min(3, b.u.b.s || 1)), r = 4.3 * o, ara = r * 2.15, rw = yl * ara + 5 * o, rh = r * 2 + 3 * o;
   const rx = x + gw / 2 - rw / 2, ry = y - 2 - rh + 2.5 * o;
@@ -1912,7 +1928,7 @@ function kaplamaCiz(dt = 0, dtG = dt) {
     const L = cubukYuva(liste.length); L.b = b; L.a = a; L.x = px; L.y = py; L.ox = 0; L.oy = 0; L.ik = hedef < 0; liste.push(L);
   }
   // kalabalık: çakışan çubukları dikeyde (aynı sıradalarsa yatayda da) birkaç px ayır; hedef ofset yumuşatılır
-  const lim = 13 * O.o, gx = O.gw + 6, gy = BH + 3;
+  const lim = 13 * O.o, gx = O.gw + 6 + 2 * kitCubukUc(O), gy = BH + 3;
   for (let it = 0; it < 4; it++) for (let m = 0; m < liste.length; m++) for (let n = m + 1; n < liste.length; n++) {
     const A = liste[m], B = liste[n], dx = (B.x + B.ox) - (A.x + A.ox), dy = (B.y + B.oy) - (A.y + A.oy);
     if (Math.abs(dx) >= gx || Math.abs(dy) >= gy) continue;
@@ -1924,7 +1940,7 @@ function kaplamaCiz(dt = 0, dtG = dt) {
   // yerinde kalır): eskiden yalnız çubuk–çubuk ayrımı vardı, sersem yıldızları komşu çubuğa 9–12 px değiyordu
   for (let m = 0; m < liste.length; m++) { const A = liste[m];
     for (let n = 0; n < liste.length; n++) { const ib = liste[n].b._ikB; if (n === m || !ib || !ib.var) continue;
-      const ax0 = A.x + A.ox - O.gw / 2 - 3, ax1 = A.x + A.ox + O.gw / 2 + 3, ay0 = A.y + A.oy - 2 - 9.1 * O.o, ay1 = A.y + A.oy + BH;
+      const ax0 = A.x + A.ox - O.gw / 2 - 3 - kitCubukUc(O), ax1 = A.x + A.ox + O.gw / 2 + 3 + kitCubukUc(O), ay0 = A.y + A.oy - 2 - 9.1 * O.o, ay1 = A.y + A.oy + BH;
       if (ax1 <= ib.x0 || ax0 >= ib.x1 || ay1 <= ib.y0 - 2 || ay0 >= ib.y1 + 2) continue;
       const yuk = (ib.y0 - 3) - ay1, asg = (ib.y1 + 3) - ay0, d = -yuk < asg ? yuk : asg;
       A.oy = Math.max(-2 * lim, Math.min(2 * lim, A.oy + d)); } }
@@ -1944,7 +1960,7 @@ function kaplamaCiz(dt = 0, dtG = dt) {
     const ust = cubukCiz(b, L.a, x, y, O, b.u.taraf === 0);
     const c = b._cubukO || (b._cubukO = { x: 0, y: 0 }); c.x = x + O.gw / 2; c.y = ust; b._cubuk = c;
     const ow = ofkeRozet(b, x, y, O, dtG);
-    engelEkle(x - 3 - (b.u.b.f ? 27 * O.o : 0), ust - 1, x + O.gw + 3 + ow, y + BH, b.uid, 'c');   // çubuk + yıldız rozeti (+ soldaki kaynaşma halkası, sağdaki öfke rozeti)
+    engelEkle(x - 3 - kitCubukUc(O) - (b.u.b.f ? 27 * O.o : 0), ust - 1, x + O.gw + 3 + kitCubukUc(O) + ow, y + BH, b.uid, 'c');   // çubuk + yıldız rozeti (+ soldaki kaynaşma halkası, sağdaki öfke rozeti)
   }
   kcx.globalAlpha = 1; cubukA = 1;
   if (hudVar) engelEkle(hudX0 + O.gw / 2, -1e4, hudX1 - O.gw / 2, hudY - 13 * O.o - 3, -1, 'h');   // üst HUD (skor paneli): sayılar altına girmesin
@@ -2257,7 +2273,8 @@ export function kare(dtSabit) {
   const kareSon = performance.now();
   _olc.js = cizBas - kareBas; _olc.ciz = cizSon - cizBas; _olc.kap = kareSon - cizSon; _olc.toplam = kareSon - kareBas;
   if (olcerAcik) olcerYaz(kareSon);
-  KARE_SONUC.bitti = !!(sim && sim.bitti && gorselT >= Math.max((anlikSay - 1) * DT + ONDE_SN, sonGec + 0.15));   // son darbe yetenekle ertelendiyse görüntüde varmasını bekle KARE_SONUC.sonuc = sim && sim.sonuc; KARE_SONUC.t = gorselT;
+  KARE_SONUC.bitti = !!(sim && sim.bitti && gorselT >= Math.max((anlikSay - 1) * DT + ONDE_SN, sonGec + 0.15));   // son darbe yetenekle ertelendiyse görüntüde varmasını bekle
+  KARE_SONUC.sonuc = sim && sim.sonuc; KARE_SONUC.t = gorselT;
   return KARE_SONUC;
 }
 
