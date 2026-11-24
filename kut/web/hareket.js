@@ -48,7 +48,8 @@ const _q1 = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _q3 = new THRE
 const _m1 = new THREE.Matrix4(), _m2 = new THREE.Matrix4(), _m3 = new THREE.Matrix4();
 const YUKARI = new THREE.Vector3(0, 1, 0);
 // Boynuz Öfkesi gövde boyası (kenar kipi): gövde koyu kızıl, kontur sıcak beyaz-sarı nabız
-const KENAR_GOVDE = new THREE.Color('#4a0604'), KENAR_SICAK = new THREE.Color('#ffd86a');
+// kontur parlak gün batımı göğünde de seçilsin: kor kızılı ile turuncu arasında nabız (eski beyaz-sarı uç sarı gökle birleşiyordu)
+const KENAR_GOVDE = new THREE.Color('#4a0604'), KENAR_SICAK = new THREE.Color('#ff8a1a');
 
 // ───────────────────────── malzeme yaması: parlama + çözülme ─────────────────────────
 // Her birimin malzemeleri BİR KEZ klonlanır (his.hazirla). Program önbellek anahtarı sabit olduğu için
@@ -415,14 +416,15 @@ function birimGuncelle(b, dt, dtR) {
   const yp = s.yp; let ypG = 0;
   if (yp.guc > 0) { yp.t += dt; const e = yp.t < yp.tepe ? yp.t / yp.tepe : 1 - (yp.t - yp.tepe) / Math.max(1e-3, yp.sure - yp.tepe); ypG = yp.guc * yumusak(e); if (yp.t >= yp.sure) yp.guc = 0; }
   const yb = s.yb; let ybG = 0;
-  if (yb.guc > 0) { yb.t += dtR; const e = Math.min(1, yb.t / 0.12) * (yb.t > yb.sure - 0.4 ? Math.max(0, (yb.sure - yb.t) / 0.4) : 1); ybG = yb.guc * e * (0.85 + 0.15 * Math.sin(yb.t * 7)); if (yb.t >= yb.sure) yb.guc = 0; }
+  // sönüş kısa ve hızlanan (0,2 sn, kare): albedo karışımı doğrusal sönerken ara tonda kalıyordu (Kara Gölge: mor → pembe-gri → turuncu)
+  if (yb.guc > 0) { yb.t += dtR; const e = Math.min(1, yb.t / 0.12) * (yb.t > yb.sure - 0.2 ? Math.max(0, (yb.sure - yb.t) / 0.2) ** 2 : 1); ybG = yb.guc * e * (0.85 + 0.15 * Math.sin(yb.t * 7)); if (yb.t >= yb.sure) yb.guc = 0; }
   if (s.uni) {
     // boya: albedo boyanın rengine çekilir (gücün ~2,8 katı, en çok 0,82: turuncu kurbağa sarımsı değil gerçekten yeşil) + hafif kenar ışıması;
     // kenar kipinde gövde koyu kızıla iner (en çok 0,6) ve kontur nabızla turuncudan sıcak sarıya parlar
     const kenarK = yb.kenar && ybG > 0.002;
     s.uni.uKutBoya.value = ybG > 0.002 ? (kenarK ? Math.min(0.6, ybG * 1.8) : Math.min(0.82, ybG * 2.8)) : 0;
     if (s.flas > 0) s.uni.uKutFlas.value = Math.min(1.2, s.flas); else if (ypG > 0.002 && ypG >= ybG) { s.flasRenk.copy(yp.renk); s.uni.uKutFlas.value = ypG; s.uni.uKutKenar.value = 0; }
-    else if (kenarK) { const nb = Math.sin(yb.t * 9) ** 2; s.flasRenk.copy(yb.kRenk).lerp(KENAR_SICAK, 0.15 + 0.6 * nb); s.uni.uKutFlas.value = ybG * (1.2 + 1.6 * nb); s.uni.uKutKenar.value = 1; }
+    else if (kenarK) { const nb = Math.sin(yb.t * 9) ** 2; s.flasRenk.copy(yb.kRenk).lerp(KENAR_SICAK, 0.1 + 0.5 * nb); s.uni.uKutFlas.value = ybG * (1.6 + 1.6 * nb); s.uni.uKutKenar.value = 1; }
     else if (ybG > 0.002) { s.flasRenk.copy(yb.renk); s.uni.uKutFlas.value = ybG * 0.55; s.uni.uKutKenar.value = 0.7; } else s.uni.uKutFlas.value = 0; }
   // gövdeye yaz (ayak tabanı merkezli ölçek: model tabanı govde başlangıcında)
   const gv = b.govde;

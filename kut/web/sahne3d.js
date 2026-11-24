@@ -333,7 +333,7 @@ async function arenaKur(kok, tl) {
     CV.sarmasikKur(yol);
   });
   atmosferKur();
-  CV.adalarKur(yuzen, olcekle, efektler);   // yüzen adalar: yakın/orta/uzak üç katman
+  { const n0 = efektler.length; CV.adalarKur(yuzen, olcekle, efektler); for (let i = n0; i < efektler.length; i++) efektler[i].ada = true; }   // yüzen adalar: yakın/orta/uzak üç katman (ada: önizleme videosunda durdurulabilir)
 }
 // ── ATMOSFER (yalnız görüntü; REFERANS_ANIMASYON §3, hepsi [UYGUN] bütçe) ──
 // (1) alçak yükseklik sisi: adanın kenarından dışarı ve aşağı taşan yumuşak sis halkası + ada eteğinde dikey sis perdesi (tahtanın üstüne çıkmaz)
@@ -987,7 +987,7 @@ function olayPlanla(f, liste = [f], i = 0) {
     const su = sim.birimler.find(o => o.uid === f.k), kalan = su ? su.ofke : ofkeSay.get(f.k) - 1; ofkeSay.set(f.k, kalan);
     ekle(f.t, () => { if (!hedef || hedef.olumT >= 0 || kaynak.olumT >= 0) return; const yon = hedef.kok.position.clone().sub(kaynak.kok.position);
       vfx.vurus(hedef.kok.position.clone().setY(hedef.kok.position.y + 0.55 * (hedef.kok.userData.vfxBoy || 1)), { renk: '#ff3d1a', guc: 1.6, yon, tur: 'boynuz', element: 'ates' });
-      his.donma(hedef, 0.07); his.donma(kaynak, 0.07); his.sarsinti(0.12, 0.18, yon); if (kalan > 0) sayacGoster(kaynak, kalan); });
+      his.donma(hedef, 0.07); his.donma(kaynak, 0.07); his.sarsinti(0.12, 0.18, yon); sayacGoster(kaynak, kalan); });
   }
   if (f.tip === 'vurus' && kaynak && hedef && (kaynak.hizSon > f.t || kaynak.davulSon > f.t)) {
     // Uluma (+saldırı hızı) ve Savaş Davulu (+hasar) süresince vuruşta küçük ek: mavi hız kıvılcımı / turuncu kor (ikisi birden olabilir)
@@ -1025,7 +1025,7 @@ function olayPlanla(f, liste = [f], i = 0) {
     if (f.ad === 'uluma') for (const o of hedefler) { o.hizSon = f.t + 4; const g = f._gec(o.uid, 'durum'); ekle(f.t + g, () => vfx.durum(o.kok, 'hiz', true)); ekle(f.t + 4, () => vfx.durum(o.kok, 'hiz', false)); }
     if (f.ad === 'davul') for (const o of hedefler) o.davulSon = f.t + 4;
     // Boynuz Öfkesi: 3 sn öfke (boynuz kıvrımlarında alev: baş kemiği), gövdede nabız atan kızgın turuncu kenar ışıması (kızıl koçta kızıl boya seçilmiyordu), %8 şişer
-    if (f.ad === 'deliOfke') { ekle(f.t, () => { if (b.olumT >= 0) return; vfx.durum(b.kok, 'ofke', true, { kemik: soketKemik(b, 'deliOfke') }); his.boya(b, '#ffa020', 0.34, 3, { kenar: true }); his.sis(b, 0.08, 3); });
+    if (f.ad === 'deliOfke') { ekle(f.t, () => { if (b.olumT >= 0) return; vfx.durum(b.kok, 'ofke', true, { kemik: soketKemik(b, 'deliOfke') }); his.boya(b, '#ff2a08', 0.34, 3, { kenar: true }); his.sis(b, 0.08, 3); });
       ekle(f.t + 3, () => vfx.durum(b.kok, 'ofke', false)); }
     // Buz Nefesi: koni değince (gecikme) dondurulan hedefi 3B buz kristali kümesi sarar (vfx), gövde buz mavisine boyanır, animasyonu
     // durur; yarı saydam buz pusu (motorun 'sersem'i bu sürede yıldız göstermez) 1,2 sn'de kırılır
@@ -1312,8 +1312,12 @@ function yetenekHis(f, b, hedefler, ekle, liste = null, i = 0) {
 }
 // küçük sayaç (Boynuz Öfkesi: kalan güçlenmiş vuruş)
 // yeni sayaç aynı birimin eskisinin yerine geçer (aynı sabit yerde ×2 ile ×3 üst üste binmesin)
-function sayacGoster(b, n) { if (!b || b.olumT >= 0) return; for (let i = yazilar.length - 1; i >= 0; i--) if (yazilar[i].tur === 'sayac' && yazilar[i].uid === b.uid) yazilar.splice(i, 1);
-  const y = yaziEkle(b, '×' + n, '#ff6a3a', SAYAC_OPS); if (y) y.p.y += 0.25 * (b.kok.userData.vfxBoy || 1); }
+// Öfke rozeti (Boynuz Öfkesi): sayaç artık sönen bir yazı değil, öfke sürdükçe (motorun u.ofke'si görsel zamanda) can çubuğunun sağında
+// duran koyu hap rozet: alev simgesi + ×n; çubuğun çerçevesi de kor kızılı nabız atar. Kalabalıkta koç başka birimlerin ardında kalınca
+// öfke yalnız küçük, 1 sn'lik '×3' yazısından okunuyordu; yükselen alevlerin içinde de seçilmiyordu (koyu zemin).
+function sayacGoster(b, n) { if (!b) return; if (b.olumT >= 0) n = 0;
+  if (n > 0 && !(b._ofkeN > 0)) b._ofkeG = 0;   // yeni öfke: rozet açılış patlaması
+  if (n !== b._ofkeN) b._ofkeP = 0.18; b._ofkeN = n; }
 function yetenekEfekt(b, ad, kut = false) {
   if (!b || !D.YETENEK[ad]) return;
   bantEkle(b, D.YETENEK[ad].ad + '!', { kut });
@@ -1416,6 +1420,10 @@ function yaziEkle(b, metin, renk, o) {
     for (let i = v + 1; i < yazilar.length; i++) yazilar[i - 1] = yazilar[i]; yazilar.length--;   // sıra korunur
   }
   const gec = Math.max(0, b.yaziSon + 0.12 - gorselT); b.yaziSon = gorselT + gec;
+  // süzülme yönü yalnız aynı birimin önceki sayısı hâlâ ekrandayken değişir (ayrışsınlar); tek başına doğan sayı hep aynı yöne süzülür.
+  // Eskiden her sayıda değişiyordu: aynı vuruşun sayısı döngünün başında ve sonunda farklı yöne kaydığı için önizleme videolarının çapraz
+  // geçişinde iki kopya yan yana karışıyordu ('-6060').
+  if (!yazilar.some(q => q.uid === b.uid && q.yas < 0.95)) b.yaziSira = 0;
   const yon = ((b.yaziSira = (b.yaziSira || 0) + 1) % 2 ? 1 : -1);
   // üst üste binme kaplamaCiz'in yerleşiminde çözülür (sayiYerlestir): ekrandaki sayılar, can çubukları, ad balonu ve durum simgeleri engeldir
   const p = b.kok.position.clone(); p.y += 1.25 * (b.kok.userData.vfxBoy || 1);
@@ -1447,6 +1455,8 @@ function balonGuncelle(dt, dtG) {
 // Kritik (altın, KRİTİK etiketi) yalnız yetenek ya da Kut ile 200+ hasarda. Aynı hedefe BIRLES_SN içinde gelen küçük sayılar
 // (normal vuruş, DOT, iyileşme) tek sayıda toplanır ve her eklemede biraz büyüyüp nabız atar.
 // DOT sayıları küçük ve soluk; rakibin bizim birimlere vurduğu normal sayılar da biraz küçük ve soluk.
+// Yanık: sarı-beyaz dolgu + kalın kızıl kenar (eski '#fff2a6' %60'a solan dolgu parlak sarı gökte ve mor adalarda bej-gri okunuyordu)
+const DOT_RENK = { zehir: '#c4ff3a', yanik: '#fff07a' }, DOT_KENAR = { zehir: '#1f6a0c', yanik: '#e8240a' };
 const SAYI_OPS = { onc: 1, tur: '', n: 0, olcek: 1, buyuk: false, kritik: false, kenar: null, alfa: 1 };
 function sayiGoster(f, o) {
   const b = birimler.get(f.u); if (!b) return;
@@ -1454,7 +1464,13 @@ function sayiGoster(f, o) {
   const k = birimler.get(f.k), el = k ? ELEMENT_H[k.u.b.h] : null, yet = !!(o && (o.buyuk || o.kut));
   const kritik = f.tip === 'hasar' && f.n >= 200 && yet, iri = f.tip === 'hasar' && f.n >= 200;
   const onc = f.tip === 'dot' ? 0 : yet ? 3 : (o && o.olumcul) ? 2 : 1;
-  const renk = kritik ? '#ffd84a' : f.tip === 'dot' ? (SAYI_RENK[el] || '#ffb36a') : f.tip === 'hasar' ? '#ffffff' : f.tip === 'iyi' ? '#7dffa0' : f.tip === 'kalkan' ? '#dfe9ff' : '#cfcfcf';
+  // süreli hasarın kaynağı yok (motor DOT'u kaynaksız yayar: k −1): renk hedefteki duruma göre (zehir yeşili / yanık sarı-beyaz + kızıl kenar).
+  // Eskiden hep '#ffb36a' (ten-turuncu), 0,62 saydamlık ve 0,78 boy: turuncu gün batımı göğünde ve mor adalarda neredeyse okunmuyordu.
+  // görsel anlıkta durum henüz yoksa (ilk tik, görüntü motorun gerisinde) motorun durumuna bakılır: eskiden ilk tikler renksiz kalıp ayrı,
+  // soluk '-2' sayısı olarak doğuyordu (renk farkı birleşmeyi de önlüyordu)
+  const gD = f.tip === 'dot' ? anlikGorsel() : null, dg = gD && gD[b.si], ud = f.tip === 'dot' && b.u && b.u.durum;
+  const dotTur = dg && dg.zehir ? 'zehir' : dg && dg.yanik ? 'yanik' : ud && ud.zehir ? 'zehir' : ud && ud.yanik ? 'yanik' : f.tip === 'dot' ? 'yanik' : null;
+  const renk = kritik ? '#ffd84a' : f.tip === 'dot' ? (DOT_RENK[dotTur] || SAYI_RENK[el] || '#ffe08a') : f.tip === 'hasar' ? '#ffffff' : f.tip === 'iyi' ? '#7dffa0' : f.tip === 'kalkan' ? '#dfe9ff' : '#cfcfcf';
   // birleştirme: aynı hedef, aynı tür ve renk, öncelik ≤ 1, ilk sayıdan bu yana BIRLES_SN'den az
   if (onc <= 1 && (f.tip === 'hasar' || f.tip === 'dot' || f.tip === 'iyi')) {
     for (let i = yazilar.length - 1; i >= 0; i--) {
@@ -1467,11 +1483,15 @@ function sayiGoster(f, o) {
   }
   const dusman = k && k.u.taraf === 1 && b.u.taraf === 0;
   const s = SAYI_OPS; s.onc = onc; s.tur = f.tip; s.n = f.n; s.kritik = kritik; s.buyuk = kritik || iri;
-  s.olcek = kritik ? 1.25 : f.tip === 'dot' ? 0.78 : (onc === 1 && dusman && f.tip === 'hasar') ? 0.8 : 1;
-  s.alfa = f.tip === 'dot' ? 0.62 : (onc === 1 && dusman && f.tip === 'hasar') ? 0.72 : 1;
-  s.kenar = (f.tip === 'hasar' && !kritik && el) ? SAYI_RENK[el] : null;
-  yaziEkle(b, f.tip === 'kac' ? 'kaçtı' : f.tip === 'kalkan' ? '🛡' + f.n : (f.tip === 'iyi' ? '+' : '-') + f.n, renk, s);
+  s.olcek = kritik ? 1.25 : f.tip === 'dot' ? 0.86 : (onc === 1 && dusman && f.tip === 'hasar') ? 0.8 : 1;
+  s.alfa = f.tip === 'dot' ? 1 : (onc === 1 && dusman && f.tip === 'hasar') ? 0.72 : 1;
+  s.kenar = (f.tip === 'hasar' && !kritik && el) ? SAYI_RENK[el] : f.tip === 'dot' ? (DOT_KENAR[dotTur] || null) : null;
+  const y = yaziEkle(b, f.tip === 'kac' ? 'kaçtı' : f.tip === 'kalkan' ? '🛡' + f.n : (f.tip === 'iyi' ? '+' : '-') + f.n, renk, s);
+  // süreli hasar sayısı 0,3 sn görünmeden toplanır (birleşme sürer), sonra doğar: tek tik '-2' gibi minik sayılar yetenek sayısının
+  // (−170) dibinde ayrı ayrı belirmesin (Kül Yağmuru'nda −2, −5, −6 üst üste biniyordu)
+  if (y && f.tip === 'dot') y.yas -= DOT_GIZLI;
 }
+const DOT_GIZLI = 0.3;
 const YAZI_FONT = '"Trebuchet MS","Segoe UI",system-ui,sans-serif';
 // ── Birim üstü çubuk (TFT düzeyi) ──
 // can (takım rengi) + gecikmeli beyaz hasar izi (0,35 sn bekler, kayarak iner) + sağa uzanan kalkan dilimi + 100'lük ince / 500'lük kalın çentik;
@@ -1601,7 +1621,7 @@ function balonCiz(w, O, dtG = 0.016) {
   // yetenek balonu (OGRETICI §4.3): dost altın zemin + koyu yazı; düşman koyu zemin + yakut kenar + beyaz yazı; Kut'ta 1,4 kat + güneş
   for (const bt of bantlar) {
     const b = bt.b; let ax, ay; bt._k = null;
-    if (b._cubuk) { ax = b._cubuk.x; ay = b._cubuk.y - 3; }
+    if (b._cubuk) { ax = b._cubuk.x; ay = b._cubuk.y - BALON_ARA * O.o; }   // kuyruk ucu kendi çubuğunun yıldız rozetine değmez (eski 3 px)
     else { const p = ekran(basUstu(b)); ax = p.x; ay = p.y - 12; }
     const e = Math.min(bt.yas / BALON_SURE, bt.gercek / BALON_GERCEK), g = bt.gercek;
     const giris = Math.min(1, g / 0.18), sc0 = g < 0.18 ? 0.92 + 0.08 * (1 - Math.pow(1 - giris, 3)) + Math.sin(giris * Math.PI) * 0.06 : 1;
@@ -1622,20 +1642,42 @@ function balonCiz(w, O, dtG = 0.016) {
       const alt = by + bh + kuyruk; if (alt < e.y - e.r || by > e.y + e.r) continue;
       if (e.y < by + bh * 0.5) { sig = false; continue; }   // nesne balonun üst yarısında: kaydırmak üstünden atlatır → yalnız solar
       it = Math.max(it, alt - (e.y - e.r) + 4); }
-    const itMax = 80 * O.o; if (it > itMax) { it = itMax; sig = false; }
+    const itMax = 44 * O.o; if (it > itMax) { it = itMax; sig = false; }   // (eski 80 px: gerçek oyunda balon sahibinden kopup rakip çubuklarına çıkıyordu)
     bt._it = (bt._it || 0) + (it - (bt._it || 0)) * Math.min(1, dtG * 12); by -= bt._it;
-    al *= solma(bt, !sig, dtG, 0.4); kcx.globalAlpha = al;
+    al *= solma(bt, !sig, dtG, BALON_SOLMA); kcx.globalAlpha = al;
     // başka birimin can çubuğuna / durum simgesine ya da öbür açık balona binmesin (Bulut Hücumu'nda at kurbağanın ardından geçerken balon
     // kurbağanın çubuğunu ~4 kare örtüyordu): yana (kuyruk gövdenin içinde kalır, sahibini göstermeyi sürdürür) ya da yukarı kayar; en az
     // kayan konum, önceki seçime yapışık. Kuyruğun ucu (alttaki ~3 px) sayılmaz; en çok ~34 px yükselir (daha yukarıda balon başka birimin
     // balonu gibi okunur: o zaman yerinde kalır). Kaçış hızlı, yerine dönüş yumuşak.
+    // Hiçbir aday boş değilse (gerçek oyunda üstte öbür açık balon, yanlarda komşu çubuklar: 'Savaş Davulu!' yerinde kalıp yılanın çubuğunu
+    // tamamen örtüyordu) geniş arama: yanda balon genişliği kadar ve 58 px'e dek yukarıda adaylar; çakışma alanı en az olan seçilir (çubuk ve
+    // simge çakışması balon–balon çakışmasından ağır sayılır).
+    // Kuyruk koridoru: kayan balonun kuyruğu gövdeden sahibinin çubuğuna (ax, ucY) uzanır; koridor başka birimin çubuğunu/simgesini
+    // keserse kuyruk o birimi gösteriyor gibi okunur (gerçek oyunda 'Savaş Davulu!' yılanın çubuğunun üstünde, kurbağanın çubuğu ~90 px
+    // aşağıda kalıyordu): ilk aramada böyle aday alınmaz, geniş aramada ağır ceza.
+    const ucY = ay - yuk, kr = bh / 2 + kuyruk;
+    const koridor = (x, alt) => { const kx = Math.max(x - bw / 2 + kr, Math.min(x + bw / 2 - kr, ax)); return kuyrukCakisma(kx, alt - kuyruk + 3 * O.o, ax, ucY, b.uid); };
     { const r0 = bh / 2, yk = bh + kuyruk, yan = Math.max(0, bw / 2 - r0 - kuyruk), xa = 16 + bw / 2, xb = w - 16 - bw / 2, alt0 = by + yk - 3 * O.o, azami = 34 * O.o;
       let ec = Infinity, sx = 0, sy = 0, sk = bt._kol || 0;
       for (let k = 0; k < 5; k++) {
         const x = Math.max(xa, Math.min(xb, cx + BALON_YAN[k] * yan)), alt = yukariIt(x - bw / 2 - 2, x + bw / 2 + 2, alt0, yk - 3 * O.o + 2, 6, b.uid);
         if (alt !== alt || alt0 - alt > azami) continue;
+        if (koridor(x, alt)) continue;
         const c = (alt0 - alt) + 1.3 * Math.abs(x - cx) + (k === (bt._kol || 0) ? 0 : 6);
         if (c < ec) { ec = c; sx = x - cx; sy = alt - alt0; sk = k; }
+      }
+      if (ec === Infinity) {
+        const YAN2 = [-0.6, 0.6, -1, 1], h2 = yk - 3 * O.o + 2;
+        for (let k = 0; k < 9; k++) {
+          const dx = k < 5 ? BALON_YAN[k] * yan : YAN2[k - 5] * bw;
+          const x = Math.max(xa, Math.min(xb, cx + dx));
+          // odak kaçışı (yukarı kayma) geri alınabilir: çubuk örtmek nesnenin önüne geçmekten kötü
+          for (let v = -Math.floor(bt._it || 0); v <= 58 * O.o; v += 6 * O.o) {
+            const alt = alt0 - v; if (alt - h2 < 6) break;
+            const c = balonCakisma(x - bw / 2 - 2, alt - h2, x + bw / 2 + 2, alt, b.uid) * 6 + koridor(x, alt) * 400 + Math.abs(v) + 1.3 * Math.abs(x - cx) + (k + 10 === (bt._kol || 0) ? 0 : 6);
+            if (c < ec) { ec = c; sx = x - cx; sy = -v; sk = k + 10; }
+          }
+        }
       }
       bt._kol = sk;
       if (bt._sx === undefined) { bt._sx = sx; bt._sy = sy; }
@@ -1644,10 +1686,13 @@ function balonCiz(w, O, dtG = 0.016) {
     if (by < 8) by = 8;
     if (al > 0.3) { const k = bt._kk || (bt._kk = { x0: 0, y0: 0, x1: 0, y1: 0 }); k.x0 = cx - bw / 2; k.x1 = cx + bw / 2; k.y0 = by; k.y1 = by + bh + kuyruk; bt._k = k;
       engelEkle(k.x0 - 2, k.y0 - 2, k.x1 + 2, k.y1 + 1, -1, 'b'); }   // öbür balon ve sayılar kaçınsın
-    // gövde + kuyruk tek yol
-    const bx = cx - bw / 2, r = bh / 2, tx = Math.max(bx + r, Math.min(bx + bw - r, ax));
+    // gövde + kuyruk tek yol. Kuyruğun ucu hep sahibinin çubuğunun üstünde (ax, ucY): balon kalabalıktan kaçıp yukarı/yana kaydıysa kuyruk
+    // uzar ve sahibine kadar iner (çizgi roman balonu). Eskiden kuyruk balonun altında 6 px kalıyordu: kayan balon altındaki rakibin
+    // çubuğunu gösteriyor, yetenek rakibinmiş gibi okunuyordu.
+    const bx = cx - bw / 2, r = bh / 2, tx = Math.max(bx + r + kuyruk * 0.8, Math.min(bx + bw - r - kuyruk * 0.8, ax));
+    const uy = Math.max(by + bh + kuyruk, ucY), ux = uy - (by + bh) > kuyruk * 1.6 ? ax : tx, kg = uy - (by + bh) > kuyruk * 3 ? 0.62 : 0.8;
     kcx.beginPath(); kcx.moveTo(bx + r, by); kcx.arcTo(bx + bw, by, bx + bw, by + bh, r); kcx.arcTo(bx + bw, by + bh, bx, by + bh, r);
-    kcx.lineTo(tx + kuyruk * 0.8, by + bh); kcx.lineTo(tx, by + bh + kuyruk); kcx.lineTo(tx - kuyruk * 0.8, by + bh);
+    kcx.lineTo(tx + kuyruk * kg, by + bh); kcx.lineTo(ux, uy); kcx.lineTo(tx - kuyruk * kg, by + bh);
     kcx.arcTo(bx, by + bh, bx, by, r); kcx.arcTo(bx, by, bx + bw, by, r); kcx.closePath();
     let yazi, golge;
     if (bt.dost) {
@@ -1695,7 +1740,11 @@ function odakKesisir(x, y, w, h) {
   for (let i = 0; i < odakEkN; i++) { const e = odakEk[i], cx = Math.max(x, Math.min(e.x, x + w)), cy = Math.max(y, Math.min(e.y, y + h)); if ((cx - e.x) * (cx - e.x) + (cy - e.y) * (cy - e.y) < e.r * e.r) return true; }
   return false;
 }
-// solma: odakla kesişen çubuk 0,22'ye (balon önce yukarı kayar; kayamazsa 0,4'e) ~0,07 sn'de iner, odak geçince ~0,15 sn'de döner
+// solma: odakla kesişen çubuk 0,22'ye (balon önce yukarı kayar; kayamazsa 0,4'e) ~0,07 sn'de iner, odak geçince ~0,15 sn'de döner.
+// Eski 0,22/0,4/0,25 çok derindi: Uluma'nın başı, Kaya Fırlat'ın kayası, Can Emme'nin kalbi, Kara Gölge'nin pençesi ve gözü, Kül Yağmuru'nun
+// bulutu boyunca çubuk ~1 sn neredeyse görünmüyor (parlak gökte griye dönüyor), balon %35'e iniyordu. Şimdi yalnız hafif çekilir (nesne
+// çubuğun ardından seçilir, çubuk ve ad okunur kalır); çubuğun odak kutusu da dar (yalnız çubuk + rozet, eskiden 16 px üst / 4 px yan pay).
+const CUBUK_SOLMA = 0.8, BALON_SOLMA = 0.88, SAYI_SOLMA = 0.75;
 function solma(nesne, kes, dtG, alt) { const h = kes ? alt : 1, v = nesne._kA === undefined ? 1 : nesne._kA; nesne._kA = v + (h - v) * Math.min(1, dtG * (kes ? 16 : 8)); return nesne._kA; }
 // çubuk listesi: birim başına kalıcı yuva nesneleri (kare başına nesne yok)
 const cubukHavuz = [], cubukListe = [];
@@ -1734,13 +1783,20 @@ function asagiIt(x0, x1, alt, yuk, altSinir) {
 // [alt, üst, derinlik yarıçapı (yörünge: uzak kenar ekranda yukarıda), yatay yarı genişlik] (dünya birimi; vfx.js DP/DURUM ölçüleri).
 // Sersem yıldızları başın çevresinde döner: bandı yıldızların yüksekliği (yörüngenin derinliği sayılmaz; dik oyun kamerasında derinlikle
 // çubuk ~50 px kalkıyordu, birimden kopuyordu); arkadan geçen yıldız bir an çubuğun ardında kalır.
-const IKON_BANT = { lanet: [0.03, 0.73, 0, 0.32], sersem: [0, 0.5, 0, 0.62], zehir: [0.14, 0.64, 0, 0.18] };
+// Lanet gözü artık başın üstünde değil, gövdenin önünde (vfx DURUM.lanet): çubuğun bandına girmez, çubuk yerinden sıçramaz (eskiden
+// çubuk tek karede ~58 px yukarı fırlayıp başın ~70 px üstünde, yüzen adanın üstünde kalıyordu: kime ait olduğu okunmuyordu).
+const IKON_BANT = { sersem: [0, 0.5, 0, 0.62], zehir: [0.14, 0.64, 0, 0.18] };
 const _ikO = { x: 0, y: 0, z: 0 }, _ikV = new THREE.Vector3(), _ikF = new THREE.Vector3(), _ikS = new THREE.Vector3();
 let ikX0 = 0, ikX1 = 0, ikY0 = 0, ikY1 = 0;
+// Simge kapanınca vfx onu DURUM_SONUS (0,32 sn) içinde söndürür: bant o süre (+ pay) ayrılı kalır (eskiden durum biter bitmez çubuk
+// aşağı iniyor, sönmekte olan lanet gözünün içine giriyordu)
+const IKON_TUT = 0.42;
 function ikonBant(b) {
-  const vd = b.vd; if (!vd || !(vd.lanet || vd.sersem || vd.zehir)) return false;
+  const vd = b.vd, sn = performance.now() / 1000, tt = b._ikT || (b._ikT = {}); let var_ = false;
+  for (const tur in IKON_BANT) { if (vd && vd[tur]) tt[tur] = sn; if (tt[tur] !== undefined && sn - tt[tur] < IKON_TUT) var_ = true; }
+  if (!var_) return false;
   let lo = Infinity, hi = -Infinity, r = 0, yr = 0;
-  for (const tur in IKON_BANT) if (vd[tur]) { const a = IKON_BANT[tur]; if (a[0] < lo) lo = a[0]; if (a[1] > hi) hi = a[1]; if (a[2] > r) r = a[2]; if (a[3] > yr) yr = a[3]; }
+  for (const tur in IKON_BANT) if (tt[tur] !== undefined && sn - tt[tur] < IKON_TUT) { const a = IKON_BANT[tur]; if (a[0] < lo) lo = a[0]; if (a[1] > hi) hi = a[1]; if (a[2] > r) r = a[2]; if (a[3] > yr) yr = a[3]; }
   const q = b.kok.position, hb = b.kok.userData.vfxBoy || 1;
   _ikF.setFromMatrixColumn(kamera.matrixWorld, 2); _ikF.y = 0; if (_ikF.lengthSq() < 1e-8) _ikF.set(0, 0, 1); _ikF.normalize();   // yatayda kameraya doğru
   _ikS.setFromMatrixColumn(kamera.matrixWorld, 0); _ikS.y = 0; if (_ikS.lengthSq() < 1e-8) _ikS.set(1, 0, 0); _ikS.normalize();
@@ -1752,14 +1808,37 @@ function ikonBant(b) {
   ikX0 = mx - gx; ikX1 = mx + gx; ikY0 = Math.min(u, my); ikY1 = Math.max(a, my);
   return true;
 }
-const SUTUN = [0, 1, -1, 2, -2], BALON_YAN = [0, -0.5, 0.5, -1, 1];
+const SUTUN = [0, 1, -1, 2, -2], BALON_YAN = [0, -0.5, 0.5, -1, 1], BALON_ARA = 7;
+// kuyruk koridoru (x0, y0) → (x1, y1) üzerinde başka birimin can çubuğuna / durum simgesine düşen örnek sayısı (4 px adım, ±3 px)
+function kuyrukCakisma(x0, y0, x1, y1, haric) {
+  const L = Math.hypot(x1 - x0, y1 - y0); if (L < 6) return 0;
+  const n = Math.ceil(L / 4); let t = 0;
+  for (let j = 1; j < n; j++) { const f = j / n, x = x0 + (x1 - x0) * f, y = y0 + (y1 - y0) * f;
+    for (let i = 0; i < engelN; i++) { const e = engel[i]; if (e.uid === haric || (e.tur !== 'c' && e.tur !== 'i')) continue;
+      if (x + 3 > e.x0 && x - 3 < e.x1 && y + 3 > e.y0 && y - 3 < e.y1) { t++; break; } } }
+  return t;
+}
+// balon kutusunun engellerle çakışma alanı (px²; can çubuğu ve durum simgesi 3 kat, öbür balon 2 kat, sayı yok sayılır)
+function balonCakisma(x0, y0, x1, y1, haric) {
+  let t = 0;
+  for (let i = 0; i < engelN; i++) { const e = engel[i]; if (e.uid === haric || e.tur === 's') continue;
+    const w = Math.min(x1, e.x1) - Math.max(x0, e.x0), h = Math.min(y1, e.y1) - Math.max(y0, e.y0); if (w <= 0 || h <= 0) continue;
+    t += w * h * (e.tur === 'c' || e.tur === 'i' ? 3 : e.tur === 'b' ? 2 : 1); }
+  return t;
+}
 // Yüzen sayının yerleşimi (kaplamaCiz sırayla çağırır: sayaç, sıradan/yetenek sayıları eskiden yeniye, en son süreli hasar): doğal yer
 // (vurulanın başı üstü + yükseliş + hafif yana süzülme) engellerle çakışıyorsa en az kayan konum seçilir: aynı sütunda yukarı yığın ya da
 // yan sütunlar (yelpaze; sayının yönüne öncelik). Eskiler yerinde kalır, yeni gelen kayar; seçim önceki kareye yapışık, konum yumuşak.
 // Sayı ekranın içinde sıkıştırılır (kenardan taşmaz). DOT yığını şişirmez: en çok ~2 sıra yükselir, yer yoksa solar.
+// Sayı vurulanı izler (dayanak her karede birimin o anki yerinden; eskiden doğduğu yerde kalıyordu: Kasırga'da itilen yılanın −45/−110'u
+// boş bir sütunun üstünde asılı kalıyor, kime ait olduğu okunmuyordu). Giriş patlaması 1,35 kat (eski 1,7: kutusu sayılmayan büyüme
+// komşu sayıya ilk 3 karede değiyordu). Sayı kutuları çevresinde SAYI_PAY_X / SAYI_PAY_Y boşluk (eski 0–2 px: "−200 −38" tek sayı gibi
+// okunuyordu); yeni doğan (henüz saydam) sayı da engeldir (aynı karede doğan iki kalkan yazısı iç içe giriyordu).
+const SAYI_PAY_X = 6, SAYI_PAY_Y = 5;
 function sayiYerlestir(y, W, H, O, dtG) {
+  if (y.b && y.b.olumT < 0 && y.b.kok.visible) { const q = y.b.kok.position; if (y._py === undefined) y._py = y.p.y - q.y; y.p.set(q.x, q.y + y._py, q.z); }
   const p = ekran(y.p), e = y.yas / 0.95;
-  const taban = y.kritik ? 26 : y.buyuk ? 20 : 17, sc = (e < 0.12 ? 1.7 - 5.8 * e : 1) * (1 + y.nabiz * 2.2);
+  const taban = y.kritik ? 26 : y.buyuk ? 20 : 17, sc = (e < 0.12 ? 1.35 - 2.9 * e : 1) * (1 + y.nabiz * 2.2);
   y._al = y.alfa * Math.max(0, 1 - Math.pow(Math.max(0, e - 0.35) / 0.65, 2)); y._ol = y.olcek * sc; y._taban = taban; y._gor = p.z <= 1 && y._al > 0.004;
   if (!y._gor) return;
   // doğal yer: vurulanın başı üstü (+ çubuğu durum simgesinin üstüne çıktıysa o kadar yukarı: sayı simgenin içinde doğmasın)
@@ -1774,7 +1853,7 @@ function sayiYerlestir(y, W, H, O, dtG) {
   else {
     const xMin = bw / 2 + 4, xMax = W - bw / 2 - 4;
     ny = Math.min(H - 5, Math.max(bh + 4, ny));
-    const adim = bw * 0.62 + 4, yuk = bh + 3, azami = (y.onc === 0 ? 2.2 : 5) * yuk;
+    const adim = bw * 0.62 + 4 + SAYI_PAY_X, yuk = bh + 3, azami = (y.onc === 0 ? 2.2 : y.onc === 1 ? 3.2 : 4.2) * yuk;
     let ec = Infinity, sk = -1;
     // yapışkan: önceki yeri (doğal yere göre aynı fark) hâlâ boşsa sayı orada kalır (altındaki eski sayı sönerken aşağı kaymaz)
     if (y._kol >= 0) {
@@ -1787,9 +1866,10 @@ function sayiYerlestir(y, W, H, O, dtG) {
       const c = (ny + 3 - alt) + 1.5 * Math.abs(x - nx) + (k === y._kol ? 0 : 8);
       if (c < ec) { ec = c; sk = k; tx = x; ty = alt - 3; }
     }
-    if (sk < 0) {   // yukarıda yer yok (ekranın üst kenarı ya da kalabalık): aşağı; o da yoksa DOT solar, öbürü doğal yerinde kalır
+    if (sk < 0) {   // yukarıda yer yok (ekranın üst kenarı ya da kalabalık): aşağı; o da yoksa DOT ve sıradan sayı gösterilmez (eskiden DOT
+      // %35 saydam, sıradan sayı doğal yerinde başka sayının üstüne çiziliyordu: Kül Yağmuru'nun −6/−8'i −170'in içinde), öncelikli sayı yerinde
       const x = Math.max(xMin, Math.min(xMax, nx)), alt = asagiIt(x - bw / 2, x + bw / 2, ny + 3, yuk, H - 2);
-      tx = x; if (alt === alt) { ty = alt - 3; sk = 5; } else { ty = ny; if (y.onc === 0) y._al *= 0.35; }
+      tx = x; if (alt === alt) { ty = alt - 3; sk = 5; } else { ty = ny; if (y.onc <= 1) { y._al = 0; y._gor = false; y._kol = -1; return; } }
     }
     y._kol = sk; y._hoy = ty - ny;
   }
@@ -1801,7 +1881,7 @@ function sayiYerlestir(y, W, H, O, dtG) {
     const ax = nx + y._ox, ay = ny + y._oy;
     if ((Math.abs(y._ox - ox) > 0.5 || Math.abs(y._oy - oy) > 0.5) && yukariIt(ax - bw / 2, ax + bw / 2, ay + 3, bh + 3, -1e9) !== ay + 3) { y._ox = ox; y._oy = oy; } }
   y._x = Math.max(bw / 2 + 2, Math.min(W - bw / 2 - 2, nx + y._ox)); y._y = Math.max(bh + 2, Math.min(H - 3, ny + y._oy));
-  if (y._al > 0.12) engelEkle(tx - bw / 2, ty - bh - 2, tx + bw / 2, ty + 4, -1, 's');   // 2 px pay: girişte büyüyen sayı komşusuna değmesin
+  if (y._al > 0.12 || e < 0.3) engelEkle(tx - bw / 2 - SAYI_PAY_X, ty - bh - 2 - SAYI_PAY_Y, tx + bw / 2 + SAYI_PAY_X, ty + 4 + SAYI_PAY_Y, -1, 's');
 }
 // sayı yazı tipleri: üç boy grubu, boyut animasyonu ölçekle (font dizgesi her yazıda yeniden kurulmaz)
 const SAYI_FONT = { 17: `900 17px ${YAZI_FONT}`, 20: `900 20px ${YAZI_FONT}`, 26: `900 26px ${YAZI_FONT}` }, KRITIK_FONT = `900 11px ${YAZI_FONT}`;
@@ -1819,12 +1899,14 @@ function kaplamaCiz(dt = 0, dtG = dt) {
     if (p.z > 1) continue;
     const px = p.x; let py = p.y, hedef = 0;
     // baş üstü durum simgesi (ikonBant) çubuğun bandına düşüyorsa çubuk simgenin üstüne çıkar (ekranın üst kenarını aşmadan)
+    const ikB = b._ikB || (b._ikB = { x0: 0, y0: 0, x1: 0, y1: 0, var: false }); ikB.var = false;
     if (ikonBant(b)) {
-      const ust = py - 2 - 9.1 * O.o, alt = py + BH - 2, ara = 3 * O.o;
+      const ust = py - 2 - 9.1 * O.o, alt = py + BH - 2, ara = 4 * O.o;
       if (alt > ikY0 - ara && ust < ikY1 + ara && ikX1 > px - O.gw / 2 && ikX0 < px + O.gw / 2) hedef = Math.min(0, Math.max(ikY0 - ara - alt, 6 - ust));
-      engelEkle(ikX0, ikY0, ikX1, ikY1, b.uid, 'i');
+      engelEkle(ikX0, ikY0, ikX1, ikY1, b.uid, 'i'); ikB.x0 = ikX0; ikB.y0 = ikY0; ikB.x1 = ikX1; ikB.y1 = ikY1; ikB.var = true;
     }
-    b._ikS = b._ikS === undefined ? hedef : b._ikS + (hedef - b._ikS) * Math.min(1, dtG * 14);
+    // simgenin üstüne çıkış hızlı (eskiden 14/sn: geçişte 4–9 px birkaç kare simgeyle iç içe), iniş yumuşak
+    b._ikS = b._ikS === undefined ? hedef : b._ikS + (hedef - b._ikS) * Math.min(1, dtG * (hedef < b._ikS ? 45 : 14));
     py += b._ikS;
     if (hudVar && px > hudX0 && px < hudX1 && py < hudY) py = hudY;
     const L = cubukYuva(liste.length); L.b = b; L.a = a; L.x = px; L.y = py; L.ox = 0; L.oy = 0; L.ik = hedef < 0; liste.push(L);
@@ -1838,6 +1920,14 @@ function kaplamaCiz(dt = 0, dtG = dt) {
     A.oy = Math.max(-lim, Math.min(A.ik ? 0 : lim, A.oy - sy * py)); B.oy = Math.max(-lim, Math.min(B.ik ? 0 : lim, B.oy + sy * py));   // simgenin üstüne çıkan çubuk aşağı itilmez
     if (Math.abs(dy) < gy * 0.5) { const px2 = Math.min(4 * O.o, (gx - Math.abs(dx)) / 4), sx = dx >= 0 ? 1 : -1; A.ox -= sx * px2; B.ox += sx * px2; }
   }
+  // komşu birimin durum simgesi (sersem yıldızları, lanet gözü) bir çubuğa biniyorsa çubuk simgeden dikeyde kaçar (en az kayan yön; 3B simge
+  // yerinde kalır): eskiden yalnız çubuk–çubuk ayrımı vardı, sersem yıldızları komşu çubuğa 9–12 px değiyordu
+  for (let m = 0; m < liste.length; m++) { const A = liste[m];
+    for (let n = 0; n < liste.length; n++) { const ib = liste[n].b._ikB; if (n === m || !ib || !ib.var) continue;
+      const ax0 = A.x + A.ox - O.gw / 2 - 3, ax1 = A.x + A.ox + O.gw / 2 + 3, ay0 = A.y + A.oy - 2 - 9.1 * O.o, ay1 = A.y + A.oy + BH;
+      if (ax1 <= ib.x0 || ax0 >= ib.x1 || ay1 <= ib.y0 - 2 || ay0 >= ib.y1 + 2) continue;
+      const yuk = (ib.y0 - 3) - ay1, asg = (ib.y1 + 3) - ay0, d = -yuk < asg ? yuk : asg;
+      A.oy = Math.max(-2 * lim, Math.min(2 * lim, A.oy + d)); } }
   // ayrılma hızlı (hızlı geçişte — Bulut Hücumu — çubuklar birbirinin içinden geçmesin), yerine dönüş yumuşak
   const kzA = Math.min(1, dtG * 40), kzD = Math.min(1, dtG * 10);
   for (let m = 0; m < liste.length; m++) {
@@ -1850,10 +1940,11 @@ function kaplamaCiz(dt = 0, dtG = dt) {
   odakHazirla();
   for (let m = 0; m < liste.length; m++) {
     const L = liste[m], b = L.b, x = Math.round(L.x + b._cox - O.gw / 2), y = Math.round(L.y + b._coy);
-    cubukA = solma(b, odakEkN > 0 && odakKesisir(x - 4, y - 16 * O.o, O.gw + 8, BH + 20 * O.o), dtG, 0.22); kcx.globalAlpha = cubukA;
+    cubukA = solma(b, odakEkN > 0 && odakKesisir(x - 2, y - 6 * O.o, O.gw + 4, BH + 8 * O.o), dtG, CUBUK_SOLMA); kcx.globalAlpha = cubukA;
     const ust = cubukCiz(b, L.a, x, y, O, b.u.taraf === 0);
     const c = b._cubukO || (b._cubukO = { x: 0, y: 0 }); c.x = x + O.gw / 2; c.y = ust; b._cubuk = c;
-    engelEkle(x - 3 - (b.u.b.f ? 27 * O.o : 0), ust - 1, x + O.gw + 3, y + BH, b.uid, 'c');   // çubuk + yıldız rozeti (+ soldaki kaynaşma halkası)
+    const ow = ofkeRozet(b, x, y, O, dtG);
+    engelEkle(x - 3 - (b.u.b.f ? 27 * O.o : 0), ust - 1, x + O.gw + 3 + ow, y + BH, b.uid, 'c');   // çubuk + yıldız rozeti (+ soldaki kaynaşma halkası, sağdaki öfke rozeti)
   }
   kcx.globalAlpha = 1; cubukA = 1;
   if (hudVar) engelEkle(hudX0 + O.gw / 2, -1e4, hudX1 - O.gw / 2, hudY - 13 * O.o - 3, -1, 'h');   // üst HUD (skor paneli): sayılar altına girmesin
@@ -1875,11 +1966,12 @@ function kaplamaCiz(dt = 0, dtG = dt) {
     kcx.globalAlpha = y._al;
     const taban = y._taban, ol = y._ol, boy = taban * ol, xx = y._x, yy = y._y;
     // sıradan/süreli küçük sayılar da yeteneğin ana nesnesinin üstünden çekilir (yetenek ve kritik sayıları hep tam görünür)
-    if (y.onc <= 1) { kcx.globalAlpha *= solma(y, odakEkN > 0 && odakKesisir(xx - 22, yy - 20, 44, 24), dtG, 0.25); if (kcx.globalAlpha < 0.01) continue; }
+    // (süreli hasar sayısı solmaz: zaten küçük; yarı saydam yanık sayısı parlak gökte okunmuyordu)
+    if (y.onc === 1) { kcx.globalAlpha *= solma(y, odakEkN > 0 && odakKesisir(xx - 22, yy - 20, 44, 24), dtG, SAYI_SOLMA); if (kcx.globalAlpha < 0.01) continue; }
     const f = SAYI_FONT[taban]; if (f !== sonFont) { kcx.font = f; sonFont = f; }
     kcx.setTransform(kapDpr * ol, 0, 0, kapDpr * ol, kapDpr * xx, kapDpr * yy);
     kcx.lineWidth = (y.kritik ? 6 : 4.5) / ol; kcx.strokeStyle = y.kritik ? '#7a3a00' : 'rgba(20,8,40,.9)'; kcx.strokeText(y.metin, 0, 0);
-    if (y.kenar) { kcx.lineWidth = 2 / ol; kcx.strokeStyle = y.kenar; kcx.strokeText(y.metin, 0, 0); }
+    if (y.kenar) { kcx.lineWidth = (y.tur === 'dot' ? 2.6 : 2) / ol; kcx.strokeStyle = y.kenar; kcx.strokeText(y.metin, 0, 0); }
     kcx.fillStyle = y.renk; kcx.fillText(y.metin, 0, 0);
     kcx.setTransform(kapDpr, 0, 0, kapDpr, 0, 0);
     if (y.kritik) { kcx.font = KRITIK_FONT; sonFont = KRITIK_FONT; kcx.lineWidth = 3; kcx.strokeStyle = '#3a1800'; kcx.strokeText('KRİTİK', xx, yy - boy * 0.9); kcx.fillStyle = '#ffe9a0'; kcx.fillText('KRİTİK', xx, yy - boy * 0.9); }
@@ -1899,6 +1991,40 @@ function kaplamaCiz(dt = 0, dtG = dt) {
       kcx.font = `900 18px ${YAZI_FONT}`; kcx.fillStyle = '#ffe9b0'; kcx.lineWidth = 3; kcx.strokeStyle = 'rgba(20,8,40,.9)'; kcx.strokeText(kutKart.ad, X + 90, Y + 56); kcx.fillText(kutKart.ad, X + 90, Y + 56);
       kcx.restore(); }
   }
+}
+// öfke rozeti: çubuğun sağında koyu hap (alev + ×n), çubuk çerçevesinde kor nabzı; döner: rozetin çubuğa eklediği genişlik (engel)
+const OFKE_FONT = {};
+function ofkeRozet(b, x, y, O, dtG) {
+  const n = b._ofkeN || 0; b._ofkeA = b._ofkeA === undefined ? 0 : b._ofkeA;
+  b._ofkeA += ((n > 0 ? 1 : 0) - b._ofkeA) * Math.min(1, dtG * (n > 0 ? 14 : 7));
+  if (b._ofkeP > 0) b._ofkeP = Math.max(0, b._ofkeP - dtG);
+  if (n > 0) b._ofkeS = n; b._ofkeG = (b._ofkeG || 0) + dtG;
+  const al = b._ofkeA; if (al < 0.02) return 0;
+  const o = O.o, gw = O.gw, H = O.hh + 1 + O.mh, nb = 0.5 + 0.5 * Math.sin(gorselT * Math.PI * 2 * 2.4), a0 = kcx.globalAlpha;
+  kcx.save(); kcx.globalAlpha = a0 * al;
+  // çubuk çerçevesi: kor kızılı nabız (dışa açılan çift çizgi)
+  kcx.lineWidth = 2 * o; kcx.strokeStyle = `rgba(255,${(70 + 80 * nb) | 0},20,${(0.65 + 0.35 * nb).toFixed(3)})`;
+  if (O.golgeli) { kcx.shadowColor = '#ff3a0a'; kcx.shadowBlur = (4 + 6 * nb) * o; }
+  yuvarlak(x - 3.5, y - 3.5, gw + 7, H + 7, 4); kcx.stroke(); kcx.shadowBlur = 0;
+  // rozet: açılışta ve her değişimde kısa büyüme
+  const pop = 1 + Math.max(0, 0.35 * (1 - (b._ofkeG || 0) / 0.2)) + (b._ofkeP || 0) * 1.4;
+  const rh = Math.round(16 * o), fs = Math.round(12 * o), metin = '×' + (b._ofkeS || 1);
+  const f = OFKE_FONT[fs] || (OFKE_FONT[fs] = `900 ${fs}px ${YAZI_FONT}`); kcx.font = f;
+  const tw = kcx.measureText(metin).width, ic = rh * 0.62, rw = Math.round(5 * o + ic + 2 * o + tw + 6 * o);
+  const rx = x + gw + 6 * o, cy = y + H / 2;
+  kcx.translate(rx, cy); kcx.scale(pop, pop);
+  kcx.fillStyle = 'rgba(46,6,2,.94)'; yuvarlak(0, -rh / 2, rw, rh, rh / 2); kcx.fill();
+  if (O.golgeli) { kcx.shadowColor = '#ff5a14'; kcx.shadowBlur = (3 + 5 * nb) * o; }
+  kcx.lineWidth = 1.6 * o; kcx.strokeStyle = '#ff6a1a'; kcx.stroke(); kcx.shadowBlur = 0;
+  // alev simgesi: dış kızıl, iç sarı-beyaz dil
+  const fx = 5 * o + ic / 2, fh = ic, alev = (s, renk) => { const w2 = fh * 0.36 * s, t = -fh * 0.55 * s, a = fh * 0.42 * s;
+    kcx.beginPath(); kcx.moveTo(fx, t); kcx.bezierCurveTo(fx + w2 * 0.3, t + fh * 0.25 * s, fx + w2 * 1.25, -fh * 0.05 * s, fx + w2, a * 0.55);
+    kcx.quadraticCurveTo(fx, a * 1.2, fx - w2, a * 0.55); kcx.bezierCurveTo(fx - w2 * 1.2, -fh * 0.1 * s, fx - w2 * 0.2, t + fh * 0.3 * s, fx, t); kcx.closePath(); kcx.fillStyle = renk; kcx.fill(); };
+  alev(1 + 0.06 * nb, '#ff3a10'); alev(0.62, '#ffb22a'); alev(0.34, '#fff4c0');
+  kcx.textAlign = 'left'; kcx.textBaseline = 'middle'; kcx.lineJoin = 'round';
+  kcx.fillStyle = '#ffd36a'; kcx.fillText(metin, 5 * o + ic + 2 * o, 0.5);
+  kcx.restore(); kcx.textBaseline = 'alphabetic';
+  return 6 * o + rw * pop;
 }
 function yuvarlak(x, y, w, h, r) { r = Math.min(r, h / 2, Math.max(0, w) / 2); kcx.beginPath(); kcx.moveTo(x + r, y); kcx.arcTo(x + w, y, x + w, y + h, r); kcx.arcTo(x + w, y + h, x, y + h, r); kcx.arcTo(x, y + h, x, y, r); kcx.arcTo(x, y, x + w, y, r); kcx.closePath(); }
 // görsel anlık: iki motor adımı arası ara değer (x, y, can); mana ve kalkan sonraki adımdan, gerisi önceki adımdan.
@@ -1976,7 +2102,7 @@ export function kare(dtSabit) {
   }
   const dtGercek = dtSabit !== undefined ? dtSabit : Math.min(0.05, saat.getDelta());
   const t = kareBas / 1000;
-  for (let j = 0; j < efektler.length; j++) { const e = efektler[j]; if (e.kalici) e.guncelle(t); }
+  for (let j = 0; j < efektler.length; j++) { const e = efektler[j]; if (e.kalici && !(adaDur && e.ada)) e.guncelle(t); }
   // görsel zaman: hit-stop / Kut yavaşlaması / giriş beklemesi YALNIZ görüntüyü ve motorun ne kadar ilerletileceğini etkiler;
   // motor her zaman sabit DT adımıyla ve aynı olay sırasıyla koşar (belirlenimci)
   HIS_OPS.hizKati = hizKati; const H = his.guncelle(dtGercek, HIS_OPS);
@@ -2581,6 +2707,9 @@ export function _poz(uid, ad, t, yalniz = false) {
 export function _ciz() { G.ciz(); }
 // test (kare yakalama): kare() çizmeden ilerlesin (yalnız yakalanan karede _ciz çağrılır; SwiftShader'da 2–3 kat hızlı)
 let cizAtla = false; export function _cizAtla(v) { cizAtla = !!v; }
+// yetenek önizleme videosu (tools/yetenek_video.cjs): yüzen adaların süzülmesi durur. Döngünün çapraz geçişinde videonun sonu başıyla
+// karışır: süzülen adalar iki konumda üst üste görünüyordu (hayalet kenarlar). Oyunda kullanılmaz.
+let adaDur = false; export function _adaDurdur(v) { adaDur = !!v; }
 // test: iki ayaklı birimin tek karesi savaş akışı dışında (karışıcı + aktarım + hareket.js katmanı); ops ikiAyakliGuncelle seçenekleri
 export function _ikiKare(uid, dt, ops = {}) { const b = birimler.get(uid); if (!b || !b.isk) return false; b.isk.mix.update(dt); aktar(b); ikiAyakliGuncelle(b.ik, dt, { ...OPS_IKI, ...ops }); return true; }
 export function _yazilar() { return yazilar.map(y => ({ m: y.metin, onc: y.onc, tur: y.tur, yas: +y.yas.toFixed(2), bir: y.bir })); }

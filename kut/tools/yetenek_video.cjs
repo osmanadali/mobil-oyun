@@ -62,7 +62,9 @@ const W = 480, H = 320, FPS = 30, ONCE_SN = 0.8, SONRA_SN = 2.5, SONRA_AZAMI = 3
 const CRF = process.env.CRF || '14', CRF_VP9 = process.env.CRF_VP9 || '20';
 // mana doldurma: savaş başından en erken BEKLE_SN sonra, son (motor) vuruşundan SUKUN_SN sonra (1,5: önceki vuruşun darbesi pencere
 // başından önce sönsün; hızlı vuranda vuruş aralığından 3 kare kısa)
-const BEKLE_SN = 2.2, SUKUN_SN = 1.5;
+// SUKUN 1,5 → 2,0 ve kahraman bu sürede bekletilir (V.mana): can dönüşünden sonra kahraman vurmaz (döngünün sonu boşta duruş); başlangıç
+// da vuruşun toparlanma evresinden çıkmış olmalı
+const BEKLE_SN = 2.2, SUKUN_SN = 2.0;
 // Sahne yerleşimi (yalnız bu betiğin sim nesnesi; arena birimi: ızgara sütunu x = 0,75 + 1,5·sütun, taraf 0 ön sıra y = 5, taraf 1
 // ön sıra y = 3, orta sıra 2). Kamera her kahramanda +x yanında (gök hep gün batımı tarafı).
 // Rakipler: menzilli iki kahraman (saldırmaz, yürümez): karşı ön sırada kahramanın sütunu (1) ve onun sol arka çaprazı (1,17 / 2,28).
@@ -76,7 +78,10 @@ const BEKLE_SN = 2.2, SUKUN_SN = 1.5;
 // yolunda kimse yok. Eskiden kurbağa at ile yılanın arasındaydı: at hücumda kurbağanın ardından geçiyor (ad balonu kurbağanın can
 // çubuğuna biniyordu), dönüşte kurbağanın önünden geçip onu örtüyordu.
 const RAKIP_SIRA = { bulutat: ['kurbaga', 'yilan'] };   // [öndeki, ikinci]
-const RAKIP1 = { bulutat: [2.25, 5.0] };   // ilk rakibin yeri (varsayılan: karşı ön sıra, kahramanın sütunu)
+// Bulut Atı: kurbağa (ilk hedef) atın kameraya yakın çaprazında (aynalamadan önce x −0,45: aynalanınca kameraya doğru; uzaklık 1,0 =
+// yakın dövüş menzili). Eskiden tam ardındaydı (2,25 / 5): dinlenme pozunda (döngünün başı ve sonu) atın yelesi ve göğsü kurbağanın sağ
+// yarısını örtüyordu.
+const RAKIP1 = { bulutat: [1.8, 4.89] };   // ilk rakibin yeri (varsayılan: karşı ön sıra, kahramanın sütunu)
 // Zümrüt Zehri (kamera hafif arkadan): ikinci rakip (rüzgâr) kurbağanın ardında kalıyordu → biraz kameraya ve sağa (1,6 / 1,8)
 const RAKIP2 = { bulutat: [2.05, 1.15], kurt: [1.0, 2.55], kugu: [1.0, 2.55], kurbaga: [1.0, 2.55], semender: [1.35, 2.6], yilan: [1.6, 1.8] };   // ikinci rakibin yeri
 const RAKIP = (h) => {
@@ -96,8 +101,12 @@ const YARALI = { semender: 0.5, yilan: 0.45 };
 // 2,1 içinde; kamera doğrultusuna göre hesaplı).
 const DOST_YER = [[-0.72, 1.48], [0.36, 1.8]];
 // Zümrüt Zehri: kamera kahramanın hafif ardından bakıyor; dost kameradan uzak yana (−x) ve sola: yılandan büyük görünmesin
-const DOST_YER_H = { kurt: [[-0.71, 1.82], [0.81, 1.78]], yilan: [[-1.3, 0.75]] };
-const KAHRAMAN_YER = { kurt: [2.25, 4.0], kugu: [2.25, 4.0], kurbaga: [2.25, 4.0], semender: [2.25, 4.3], bulutat: [2.25, 4.0] };   // varsayılan: ön sıra 1. sütun (2,25 / 5)
+// Işık Kanadı: koç (ilk dost) eski yerde kuğunun tam ardında kalıyordu (yalnız boynuzları görünüyordu), iki dostun can çubukları üst üste
+// biniyordu → kameradan bakınca koç 0,8 birim sola (1,0 geride), tilki 1,7 sola (1,6 geride): üç çubuk ayrık sütunlarda.
+const DOST_YER_H = { kurt: [[-0.71, 1.82], [0.81, 1.78]], yilan: [[-1.3, 0.75]], kugu: [[0.09, 1.28], [0.49, 2.28]] };
+// Işık Kuğusu ve Rüzgâr Ruhu kameraya yaklaştırılır (+x): küçük gövdeleri turuncu kurbağanın yanında baskın değildi (Rüzgâr sol kenara
+// ~25 px yakın, yılan boyunda)
+const KAHRAMAN_YER = { kurt: [2.25, 4.0], kugu: [2.75, 4.0], kurbaga: [2.25, 4.0], semender: [2.25, 4.3], bulutat: [2.25, 4.0], ruzgar: [2.85, 5.0] };   // varsayılan: ön sıra 1. sütun (2,25 / 5)
 // Bulut Hücumu: at en uzak rakibe ışınlanıp önüne iner. Eskiden iniş noktası kameradan bakınca rakiplerin ARKASINDA kaldığı için kamera
 // öbür yandan bakıyordu (yan −1: gök mor-pembe, öteki videolar gün batımı sarısı). Yerleşim x'te aynalanır (kamera öteki videolarla
 // aynı yanda, gök gün batımı sarısı).
@@ -108,7 +117,7 @@ const AYNA = { bulutat: true };
 // Bulut Hücumu: daha yandan (on 0,15: hücum ekranda soldan sağa okunur); doğrultu en uzak rakibe (yılan sağda, kurbağa solda).
 // Zümrüt Zehri: hedef kurbağa önden bakışta kameraya en yakın birim olup kadrajın ortasını kaplıyordu, yılan küçük kalıyordu →
 // kamera hafif kahramanın ardından (on −0,1) ve odak kahramana yakın: yılan öne, kurbağa geriye düşer.
-const KAMH = { bulutat: { on: 0.15, y: 1.08, hedef: 'uzak' }, yilan: { on: -0.1, odak: 0.35 } };
+const KAMH = { bulutat: { on: 0.15, y: 1.08, hedef: 'uzak' }, yilan: { on: -0.1, odak: 0.35 }, ruzgar: { odak: 0.38 }, kugu: { odak: 0.4 } };
 // Alan halkaları (yerde, kahramanın çevresinde; r: görsel yarıçap, arena birimi; izin: kadraj dışında kalabilecek çevre payı). Kor
 // Halkası (vfx ocak: 2,25 × güç) sol kenardan taşıyordu: çember noktaları kadraja katılır, ≥%90'ı içeride.
 const HALKA = { semender: { r: 2.25, izin: 0.1 } };
@@ -118,6 +127,11 @@ const HALKA = { semender: { r: 2.25, izin: 0.1 } };
 const DONUS = { ruzgar: { kim: 'rakip', bas: 1.25, sure: 0.8 }, bulutat: { kim: 'kahraman', bas: 1.15, sure: 0.95, kavis: [-0.3, 0] } };
 // kahramanın menzili (yalnız bu sim nesnesi): Kasırga rakipleri menzil (3) dışına iter, Rüzgâr Ruhu öne yürüyordu → döngüde çift görüntü
 const MENZIL = { ruzgar: 4 };
+// KALKAN_SON: bitmeyen kalkan (Işık Kanadı: rakipler vurmadığı için kalkan sonsuza dek durur) yetenekten bas sn sonra sure sn içinde erir
+// (yalnız bu sim nesnesi): eskiden pencere sonuna dek sürüyordu, döngünün çapraz geçişinde kalkan baloncukları saydamlaşarak "kalkan
+// bitmeden" kayboluyordu. Şimdi kalkan görünür biçimde söner (çubuktaki kalkan dilimi kısalır, baloncuk kendi sönüşüyle kapanır), döngü
+// temiz karede kapanır.
+const KALKAN_SON = { kugu: { bas: 2.3, sure: 0.5 } };
 // sahne: iki takım (sim birimleri), p: arena konumu [x, y] (ızgara yerine; aynalama burada)
 const izgara = (x, y, taraf) => [0.75 + x * 1.5, taraf === 0 ? [5, 6, 7][y] : [3, 2, 1][y]];
 function sahne(h) {
@@ -126,7 +140,7 @@ function sahne(h) {
   (DOST[h] || []).forEach((d, i) => a.push({ h: d, s: 1, x: 2, y: 1 + i, p: [k[0] + dy[i][0], k[1] + dy[i][1]] }));
   const b = RAKIP(h).map(r => ({ ...r, p: r.p || izgara(r.x, r.y, 1) }));
   if (AYNA[h]) for (const o of [...a, ...b]) o.p = [6 - o.p[0], o.p[1]];
-  return { a, b, yarali: YARALI[h] || 0, donus: DONUS[h] || null, menzil: MENZIL[h] || 0, halka: HALKA[h] || null };
+  return { a, b, yarali: YARALI[h] || 0, donus: DONUS[h] || null, menzil: MENZIL[h] || 0, halka: HALKA[h] || null, kalkanSon: KALKAN_SON[h] || null };
 }
 (async () => {
   if (process.env.SADECE_KARE !== '1') fs.mkdirSync(OUTD, { recursive: true });
@@ -142,6 +156,8 @@ function sahne(h) {
   await p.evaluate(async () => {
     // ilerletirken çizim yok (yalnız yakalanan karede _ciz): SwiftShader'da 2–3 kat hızlı
     if (SAHNE._cizAtla) SAHNE._cizAtla(true);
+    // yüzen adalar durur: çapraz geçişte iki konumda karışıp hayalet kenar bırakıyorlardı
+    if (SAHNE._adaDurdur) SAHNE._adaDurdur(true);
     // sabit kamera: kare() içindeki sarsıntı/yakınlaştırma (his) ve vfx sarsıntısı kapalı. Eskiden 3B çizim sabit kamerayla, 2B katman
     // sarsılan kamerayla çiziliyordu: Yıldırım'da can çubukları ve ad balonu modellerden kopup zıplıyordu.
     const { his } = await import('/web/hareket.js'), { vfx } = await import('/web/vfx.js');
@@ -151,12 +167,12 @@ function sahne(h) {
     const kc = document.getElementById('k').getContext('2d'), f0 = kc.fillText.bind(kc);
     kc.fillText = function (t, x, y, mw) {
       const Z = window.__YZ;
-      if (Z && this.globalAlpha > 0.3 && t && String(t).trim()) {
+      if (Z && this.globalAlpha > 0.04 && t && String(t).trim()) {
         const m = this.getTransform(), mt = this.measureText(t);
         const l = x - mt.actualBoundingBoxLeft, r = x + mt.actualBoundingBoxRight, u = y - mt.actualBoundingBoxAscent, d = y + mt.actualBoundingBoxDescent;
         let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
         for (const [px, py] of [[l, u], [r, u], [l, d], [r, d]]) { const X = m.a * px + m.c * py + m.e, Y = m.b * px + m.d * py + m.f; x0 = Math.min(x0, X); x1 = Math.max(x1, X); y0 = Math.min(y0, Y); y1 = Math.max(y1, Y); }
-        Z.push([String(t), x0, y0, x1, y1, this.textBaseline === 'middle' ? 1 : 0]);
+        Z.push([String(t), x0, y0, x1, y1, this.textBaseline === 'middle' ? 1 : 0, this.globalAlpha]);   // saydamlık: döngü geçişi hayalet ölçüsü
       }
       return f0(t, x, y, mw);
     };
@@ -210,12 +226,16 @@ function sahne(h) {
     // Eskiden ilk vuruşta doluyordu: başlangıçta giriş tozu ve vuruş mermisi vardı, sondaki görüntüyle çapraz geçişte hayalet kalıyordu.
     // Hızlı vuranda (Bulut Atı ~0,9 sn) bekleme vuruş arasından 3 kare kısa tutulur. Dolana dek doğal mana birikmez (yetenek kendiliğinden
     // erken gelip bulma geçişini şaşırtmasın).
+    // Giriş tozu dağıldıktan sonraki ilk vuruştan sonra kahraman bekletilir (cd: yalnız bu sim nesnesi) ve SUKUN sonra mana dolar: video
+    // vuruşun toparlanma evresinden çıkmış, boşta duran kahramanla başlar (sonu da can dönüşünden sonra boşta duruş). Eskiden hızlı
+    // vuranda bekleme vuruş aralığından kısa tutuluyordu: motor görüntünün önünde olduğundan video yay/kanat kalkıkken başlıyor, döngünün
+    // çapraz geçişinde kahraman çift görünüyordu (Gölge Oku, Yıldırım, Savaş Davulu).
     V.mana = () => {
       if (V.dolu) return;
       u.mp = 0;
-      if (u.vurus !== V.vurSon) { if (V.vurSon >= 0) V.vurAra = V.kare - V.vurK; V.vurSon = u.vurus; V.vurK = V.kare; }
-      const ara = V.vurAra ? Math.min(dz.sukun, V.vurAra - 3) : dz.sukun;
-      if (V.kare >= dz.bekle && u.ilkVurusYapildi && V.kare - V.vurK >= ara) { u.mp = u.mana; V.dolu = true; }
+      if (u.vurus !== V.vurSon) { V.vurSon = u.vurus; V.vurK = V.kare; if (V.kare >= dz.bekle && u.ilkVurusYapildi) V.tut = true; }
+      if (V.tut) u.cd = 1e9;
+      if (V.tut && V.kare - V.vurK >= dz.sukun) { u.mp = u.mana; u.cd = 0; V.tut = false; V.dolu = true; }
     };
     // DONUS: yetenek öncesi yerlere yumuşak dönüş (motor zamanıyla; anlık görüntü adımdan sonra alındığı için kayma görüntüye aynen geçer)
     const donus = () => {
@@ -233,21 +253,42 @@ function sahne(h) {
       }
       if (e >= 1) { V.donBitti = true; for (const [o, , , cd] of V.donBas) { if (o === u) { o.cd = 0.3; o.hedef = null; } else o.cd = cd; } }   // kahraman en yakın rakibe döner
     };
+    const kalkanSon = () => {
+      const K = dz.kalkanSon; if (!K || V.yetT == null) return; const t0 = V.yetT + K.bas; if (sim.t < t0) return;
+      if (!V.kal0) V.kal0 = sim.birimler.filter(o => o.taraf === 0 && o.kalkan > 0).map(o => [o, o.kalkan]);
+      const e = Math.min(1, (sim.t - t0) / K.sure); for (const [o, k0] of V.kal0) o.kalkan = k0 * (1 - e);
+    };
     // yetenek belirteçleri: yeteneğin olduğu adımda yeni gelen ya da yenilenen durumlar (birim, ad, değer), artan öfke yükü ve kalkan.
     // Belirteç motor durumunda durdukça ve verildiği süre dolmadıkça kare "kirli" (kahramanın sıradan vuruşlarının durumları — Zehirli Diş,
     // Soğuk Dokunuş — sayılmaz; Zehirli Diş'in 18'lik zehri yeteneğin 55'lik zehrini erken ezse de yeşil boya 4 sn sürer: süre esas)
     const durumAl = () => sim.birimler.map(o => ({ d: Object.fromEntries(Object.entries(o.durum).map(([k, x]) => [k, [x.sure, x.deger || 0]])), ofke: o.ofke, kalkan: o.kalkan }));
     V.tok = [];
-    V.kirli = () => V.tok.some(([i, ad, dg, su]) => { const o = sim.birimler[i]; if (!o || o.olu) return false;
+    const tokKirli = () => V.tok.some(([i, ad, dg, su]) => { const o = sim.birimler[i]; if (!o || o.olu) return false;
       if (ad === 'ofke') return o.ofke > 0; if (ad === 'kalkan') return o.kalkan > 0.5; if (sim.t < V.yetT + su) return true;
       const d = o.durum[ad]; return !!d && Math.abs((d.deger || 0) - dg) < 1e-6; });
+    // CAN DÖNÜŞÜ: yetenekten (en erken CAN_BEKLE sn sonra) ve yetenek belirteçleri bittikten sonra rakiplerin canı CAN_SURE sn'de yetenek
+    // öncesine yumuşakça döner (çubuk soldan sağa dolar) ve kahraman artık vurmaz: döngünün sonu başıyla aynı canla kapanır. Eskiden
+    // rakibin çubuğu yetenekten sonra eksik kalıyor, döngünün çapraz geçişinde eksik dilim kızıla eriyerek "iyileşmeden" doluyordu
+    // (Kasırga, Gölge Oku, Buz Nefesi). Dönüş bitmeden kare kirli (geçiş dönüşten sonra başlar).
+    const CAN_BEKLE = 1.4, CAN_SURE = 0.5;
+    const canDon = () => {
+      if (V.yetT == null || !V.hp0) return;
+      if (V.canBas == null) { if (sim.t < V.yetT + CAN_BEKLE || tokKirli() || (V.donus && !V.donBitti)) return; V.canBas = sim.t; V.canBit = sim.t + CAN_SURE;
+        V.canIlk = sim.birimler.map(o => o.hp); }
+      u.cd = 1e9;   // dönüş başladıktan sonra kahraman vurmaz (döngünün başı da vuruşsuz sakin bir an)
+      if (V.canSon) return;
+      const e = Math.min(1, (sim.t - V.canBas) / CAN_SURE), s = e * e * (3 - 2 * e);
+      sim.birimler.forEach((o, i) => { if (o.taraf !== 1 || o.olu) return; const h0 = V.hp0[i], h1 = V.canIlk[i]; if (h0 > h1) o.hp = h1 + (h0 - h1) * s; });
+      if (e >= 1) V.canSon = true;
+    };
+    V.kirli = () => tokKirli() || (V.yetT != null && !V.canSon);
     const ad0 = sim.adim.bind(sim);
     sim.adim = () => {
-      const once = V.yetT == null ? sim.birimler.map(o => [o.x, o.y]) : null, dOnce = V.yetT == null ? durumAl() : null;
+      const once = V.yetT == null ? sim.birimler.map(o => [o.x, o.y]) : null, dOnce = V.yetT == null ? durumAl() : null, hOnce = V.yetT == null ? sim.birimler.map(o => o.hp) : null;
       ad0();
       for (const [d, x, y] of civi) { d.x = x; d.y = y; }
       for (const f of sim.fx) {
-        if (f.tip === 'yetenek' && f.u === u.uid) { V.yet++; if (V.yetT == null) { V.yetT = sim.t; V.on = once;
+        if (f.tip === 'yetenek' && f.u === u.uid) { V.yet++; if (V.yetT == null) { V.yetT = sim.t; V.on = once; V.hp0 = hOnce;
           durumAl().forEach((o, i) => { const a = dOnce[i]; if (!a) return;
             for (const [k, [su, dg]] of Object.entries(o.d)) if (!a.d[k] || su > a.d[k][0] + 1e-6 || dg !== a.d[k][1]) V.tok.push([i, k, dg, su]);
             if (o.ofke > a.ofke) V.tok.push([i, 'ofke']); if (o.kalkan > a.kalkan + 0.5) V.tok.push([i, 'kalkan']); }); } }
@@ -255,7 +296,25 @@ function sahne(h) {
       }
       // yetenekten sonra mana sıfırda: ikinci yetenek gelmez (uzun pencerede), mana çubuğu döngü başındakiyle (0) aynı
       if (V.yetT != null) u.mp = 0;
-      donus();
+      donus(); kalkanSon(); canDon();
+    };
+    // görsel saatler (yalnız bu sayfanın sahnesi; motor değişmez): kıpırtılar (fidget) kapalı — döngünün sonunda başlayan bir kıpırtı
+    // başında yoktu. SAAT (çekim geçişi): kahraman dışındaki birimlerin (dost, rakip) bekleme saatleri (dört ayaklı / yılan d.t, iki ayaklı
+    // katman saati ve bekleme klibi) döngünün başlangıç bölgesinde (olası S..S+G) ve bitiş bölgesinde (olası Lb−G..Lb) AYNI değerde
+    // durur, arada ileri gidip geri döner (sin² eğrisi, en hızlı ~1 kat): döngünün çapraz geçişinde dostların kuyruğu/kanadı iki pozda
+    // karışıp çift görüntü yapmaz (Kristal Kurt'ta semenderin kuyruğu, yarasanın kanatları).
+    const saatOku = (b, dt) => { const a = b.isk && b.isk.aktif && b.isk.aktifAd === b.isk.beklemeAd ? b.isk.aktif : null;
+      return { d: b.dort ? b.dort.t + dt : null, y: b.yilan ? b.yilan.t + dt : null, i: b.ik ? b.ik.t + dt : null, a: a ? a.time + dt : null }; };
+    window.__onKare = (k, dt) => {
+      for (const o of sim.birimler) { const b = SAHNE._bTMP(o.uid); if (!b) continue; if (b.dort) b.dort.fidT = 99; if (b.ik) b.ik.fidT = 99; }
+      const S = window.__SAAT; if (!S || k < S.A0) return;
+      const L = sim.birimler.filter(o => o.uid !== u.uid).map(o => SAHNE._bTMP(o.uid));
+      if (!S.ref) S.ref = L.map(b => b ? saatOku(b, dt) : null);
+      let d = 0; if (k > S.A && k < S.B) { const e = (k - S.A) / (S.B - S.A), q = Math.sin(Math.PI * e); d = S.amp * q * q; }
+      L.forEach((b, j) => { const r = S.ref[j]; if (!b || !r) return;
+        if (r.d != null && b.dort) b.dort.t = r.d + d - dt; if (r.y != null && b.yilan) b.yilan.t = r.y + d - dt; if (r.i != null && b.ik) b.ik.t = r.i + d - dt;
+        const a = b.isk && b.isk.aktif && b.isk.aktifAd === b.isk.beklemeAd ? b.isk.aktif : null;
+        if (r.a != null && a) { const T = a.getClip().duration || 1; a.time = (((r.a + d) % T) + T) % T - dt; } });
     };
   }, { dz: { ...sahne(h), bekle: Math.round(BEKLE_SN * FPS), sukun: Math.round(SUKUN_SN * FPS) } });
   // n kare ilerlet (ekran görüntüsü yok); bul: yetenek pozunun ilk karesinde dur. Her karede birimlerin sahne konumu window.__IZ'e
@@ -264,7 +323,7 @@ function sahne(h) {
     const V = window.__V, IZ = window.__IZ || (window.__IZ = []), YZK = window.__YZK || (window.__YZK = []);
     for (let i = 0; i < n; i++) {
       window.__sz.t += 1000 / FPS; if (yazi) window.__YZ = [];
-      SAHNE.kare(1 / FPS); V.kare++;
+      window.__onKare(V.kare + 1, 1 / FPS); SAHNE.kare(1 / FPS); V.kare++;
       if (yazi) { YZK[V.kare] = window.__YZ; window.__YZ = null; }
       V.mana();   // giriş tozu dağılıp son vuruş geçince mana dolu → yetenek hemen
       if (!yazi) {
@@ -358,7 +417,8 @@ function sahne(h) {
       for (let k = ilk; k < ilk + N; k++) {
         const Z = window.__YZK[k], Lk = IZ[k]; if (!Z || !Lk) continue;
         const ank = Lk.map(q => { const m = olcu[q.uid]; if (!m) return null; const a = izd(c0, q.x, q.y + m.cub, q.z); return { q, m, ax: a[0], ay: a[1] }; }).filter(Boolean);
-        for (const [, x0, y0, x1, y1, bal] of Z) {
+        for (const [, x0, y0, x1, y1, bal, al] of Z) {
+          if (al <= 0.3) continue;
           let sec = null, es = 1e9; const cx = (x0 + x1) / 2;
           for (const a of ank) {
             if (bal && a.q.uid !== V.uid) continue;
@@ -366,8 +426,9 @@ function sahne(h) {
             if (sk < es) { es = sk; sec = a; }
           }
           if (!sec) continue;
-          const bx = bal ? 11 : 4, by = bal ? 7 : 3;   // balon gövdesi yazının çevresinde
-          nk.push([sec.q.x, sec.q.y + sec.m.cub, sec.q.z, sec.ax - x0 + bx, x1 - sec.ax + bx, sec.ay - y0 + by, y1 - sec.ay + by, 3, 3]); ty++;
+          // balon gövdesi yazının çevresinde; sayılarda dış kontur (4,5 px çizgi: ölçülen dolgu kutusunun 2,3 px dışı) + 2 px
+          const bx = bal ? 11 : 6, by = bal ? 7 : 5;
+          nk.push([sec.q.x, sec.q.y + sec.m.cub, sec.q.z, sec.ax - x0 + bx, x1 - sec.ax + bx, sec.ay - y0 + by, y1 - sec.ay + by, 4, 4]); ty++;
         }
       }
     }
@@ -401,13 +462,15 @@ function sahne(h) {
     return { kay: +sec.s.toFixed(2), dikey: +sec.vv.toFixed(2), geri: +sec.kk.toFixed(2), tasma, yazi: ty };
   }, { ilk, N, K: KAM, KH: KH || {}, yazi: !!yazi, halka: halka || null });
   // yazı taşması denetimi (son ölçüm geçişinden sonra): kadraj dışına taşan yazılar [kare, metin, taşma px]
-  const yaziTasma = (ilk, N) => p.evaluate(({ ilk, N, W, H }) => {
+  // pay: kenara bu kadar px'ten yakın dolgu kutusu da sayılır (pay 0: yalnız taşan)
+  const yaziTasma = (ilk, N, pay = 0) => p.evaluate(({ ilk, N, W, H, pay }) => {
     const out = [];
-    for (let k = ilk; k < ilk + N; k++) for (const [t, x0, y0, x1, y1] of (window.__YZK[k] || [])) {
-      const ts = Math.max(0 - x0, 0 - y0, x1 - W, y1 - H); if (ts > 0.5) out.push([k - ilk, t, Math.round(ts)]);
+    for (let k = ilk; k < ilk + N; k++) for (const [t, x0, y0, x1, y1, , al] of (window.__YZK[k] || [])) {
+      if (al <= 0.3) continue;
+      const ts = Math.max(0 - x0, 0 - y0, x1 - W, y1 - H) + pay; if (ts > 0.5) out.push([k - ilk, t, Math.round(ts - pay)]);
     }
     return out;
-  }, { ilk, N, W, H });
+  }, { ilk, N, W, H, pay });
   // ölçüm geçişi: aynı kurulum, seçilen kamera; çizimsiz ilerleyip 2B katmanın yazı kutularını kaydeder
   const olc = async (h, ilk, N) => {
     // kamera matrisleri yalnız çizimde güncellenir (yakinKamera konum/bakış verir): bir çizim, yoksa 2B katman eski kamerayla çizilir
@@ -422,7 +485,7 @@ function sahne(h) {
     const c = document.createElement('canvas'); c.width = K.W; c.height = K.H; const x = c.getContext('2d');
     const th = document.createElement('canvas'); th.width = 96; th.height = 64; const tx = th.getContext('2d', { willReadFrequently: true });
     for (let i = 0; i < n; i++) {
-      window.__sz.t += 1000 / FPS; SAHNE.kare(1 / FPS); V.kare++;
+      window.__sz.t += 1000 / FPS; window.__onKare(V.kare + 1, 1 / FPS); SAHNE.kare(1 / FPS); V.kare++;
       V.mana();   // (bulma geçişiyle aynı kural: belirlenimci yeniden oynatma)
       const b = SAHNE._bTMP(V.uid); if (!b) break;
       if (V.kare % adim) continue;
@@ -448,6 +511,7 @@ function sahne(h) {
     return { temiz, kirli: kirli < 0 ? null : kirli, vurT: window.__V.vurT.slice(), gt: GT.slice(ilk, ilk + NU) };
   }, { ilk, NU, SONUM: SONUM_SN });
   // vuruş evresi (sn): görsel zamanda son motor vuruşundan bu yana geçen süre (kahramanın saldırı pozu aynı evrede aynı)
+  const tz2 = (tz, ilk) => tz.temiz != null ? tz.temiz - ilk : 0;
   const evre = (g, vurT) => { let e = 99; for (const t of vurT) if (t <= g + 1e-6) e = g - t; return e; };
   const sonuc = [];
   const T0 = Date.now();
@@ -470,11 +534,19 @@ function sahne(h) {
     console.log(h, 'pencere', N, 'kare', `(${(N / FPS).toFixed(2)} sn)`, 'temiz', tz.temiz != null ? tz.temiz - ilk : 'YOK (kalıcı durum pencere sonuna dek)', 'vuruş aralığı', P);
     const kd0 = await kadraj(ilk, N, KAMH[h], false, halka);
     await olc(h, ilk, N);                                // 1. ölçüm: tahmini kameranın yazı kutuları
-    const kd = await kadraj(ilk, N, KAMH[h], true, halka);
+    let kd = await kadraj(ilk, N, KAMH[h], true, halka);
     await olc(h, ilk, N);                                // 2. ölçüm: son kamerayla denetim
-    const ts = await yaziTasma(ilk, N);
+    // yazı yerleşimi kameraya bağlı (sayı yığını, üst kenarda sıkıştırma): kenara 5 px'ten yakın yazı kaldıysa son ölçümle yeniden
+    // çözülür (en çok 2 kez). Eskiden bir kez ölçülüyordu: Zümrüt Zehri'nin zehir sayılarının konturu üst kenara 2 px kalıyordu.
+    for (let it = 0; it < 2 && (await yaziTasma(ilk, N, 5)).length; it++) { kd = await kadraj(ilk, N, KAMH[h], true, halka); await olc(h, ilk, N); }
+    const ts = await yaziTasma(ilk, N, 3);
     console.log(h, 'yetenek pozu karesi', bas, 'kadraj', JSON.stringify(kd0), '→', JSON.stringify(kd), ts.length ? 'TAŞAN YAZI ' + JSON.stringify(ts.slice(0, 8)) : 'yazılar içeride', `(${((Date.now() - T0) / 1000).toFixed(0)} sn)`);
     await kur(h);   // aynı kurulum, aynı adımlar: belirlenimci yeniden oynatma
+    { // görsel saat bölgeleri (döngü seçimiyle aynı sınırlar: S ≤ Smax, Lb ≥ Lmin)
+      const Smax0 = Math.max(0, bas - ilk - GECIS - ONDE_PAY), Lm0 = Math.min(N, bas - ilk + Math.round(SONRA_SN * FPS)), Lm = Math.min(N, Math.max(Lm0, tz2(tz, ilk) + GECIS));
+      const A = ilk + Smax0 + GECIS, B = ilk + Lm - GECIS;
+      await p.evaluate(({ A, A0: A0, B, FPS }) => { window.__SAAT = { A0, A, B, amp: B - A > 20 ? (B - A) / (FPS * Math.PI) : 0, ref: null }; }, { A, A0: ilk, B, FPS });
+    }
     // kamera çekimden önce kurulur ve matrisleri bir çizimle güncellenir: kare() can çubuklarını, yazıları (2B katman) ve görüş alanı
     // denetimini o anki kamerayla yapar (yoksa ilk karenin çubukları önceki kahramanın kamerasına göre kayık çıkıyordu)
     await p.evaluate(() => { window.__kamKur(); SAHNE._ciz(); });
@@ -486,6 +558,7 @@ function sahne(h) {
       for (const url of r.out) fs.writeFileSync(path.join(dir, `k${String(sira++).padStart(3, '0')}.jpg`), Buffer.from(url.split(',')[1], 'base64'));
       kucuk.push(...r.kucuk);
     }
+    await p.evaluate(() => { window.__SAAT = null; });
     const yet = await p.evaluate(() => window.__V.yet);
     console.log(h, 'kareler', sira, 'yetenek', yet, `(${((Date.now() - T0) / 1000).toFixed(0)} sn)`);
     if (!yet) { console.log(h, 'YAKALAMADA YETENEK YOK — video üretilmedi'); continue; }
@@ -497,22 +570,36 @@ function sahne(h) {
     const G = GECIS, FM = new Map(), fark = (i, j) => { const ky = i * 4096 + j; let v = FM.get(ky); if (v !== undefined) return v;
       const a = kucuk[i], b = kucuk[j]; let s = 0; for (let q = 0; q < a.length; q++) s += Math.abs(a[q] - b[q]); v = s / a.length; FM.set(ky, v); return v; };
     const Ps = P / FPS, AKT = Math.min(0.9, 0.55 * Ps), HAZ = 0.4;
-    const evD = (i) => { const e = evre(tz.gt[i], tz.vurT); return e < AKT ? e : e > Ps - HAZ && e < Ps + 0.5 ? e - Ps : null; };
+    // kurulma evresi yalnız gerçekten gelen bir vuruştan önce (can dönüşünden sonra kahraman vurmaz: sondaki boşta duruş kurulma sayılmaz)
+    const evD = (i) => { const g = tz.gt[i], e = evre(g, tz.vurT); if (e < AKT) return e;
+      let n = null; for (const t of tz.vurT) if (t > g + 1e-6) { n = t; break; } return n != null && n - g < HAZ ? -(n - g) : null; };
     const evF = (i, j) => { const a = evD(i), b = evD(j); if (a === null && b === null) return 0; if (a === null || b === null) return 15; return Math.min(15, Math.abs(a - b) * FPS); };
+    // yazı hayaleti: geçiş çiftinin iki karesinde (son ölçüm geçişinin yazı kutuları; çekimle aynı kamera ve aynı kareler) birbirine yakın
+    // ama FARKLI yazılar (başka konumda aynı sayı ya da başka sayı) karışımda çift görüntü yapar ('−6030', '−4242'): iki yazının küçük
+    // saydamlığı kadar maliyet; yalnız bir yanda olan yazı (sönerek kaybolur) az maliyet. 96×64 piksel farkı küçük yazıyı seçemiyordu.
+    const yz = await p.evaluate(({ ilk, n }) => { const Z = window.__YZK || [], o = []; for (let k = 0; k < n; k++) o.push((Z[ilk + k] || []).map(q => [q[0], q[1], q[2], q[3], q[4], q[6] || 1])); return o; }, { ilk, n: sira });
+    const ayniY = (a, b) => a[0] === b[0] && Math.abs(a[1] - b[1]) < 1.5 && Math.abs(a[2] - b[2]) < 1.5;
+    const YM = new Map(), yzF = (i, j) => { const ky = i * 4096 + j; let v = YM.get(ky); if (v !== undefined) return v; const A = yz[i] || [], B = yz[j] || []; v = 0;
+      for (const a of A) { let es = false;
+        for (const b of B) { if (Math.min(a[3], b[3]) - Math.max(a[1], b[1]) < -10 || Math.min(a[4], b[4]) - Math.max(a[2], b[2]) < -10) continue;
+          if (ayniY(a, b)) { es = true; v += 0.3 * Math.abs(a[5] - b[5]); } else v += Math.min(a[5], b[5]); }
+        if (!es) v += 0.12 * a[5]; }
+      for (const b of B) if (!A.some(a => ayniY(a, b))) v += 0.12 * b[5];
+      YM.set(ky, v); return v; };
     const Smax = Math.max(0, bas - ilk - G - ONDE_PAY), Lmin0 = Math.min(sira, bas - ilk + Math.round(SONRA_SN * FPS));
     const Lmin = Math.min(sira, Math.max(Lmin0, tz.temiz != null ? tz.temiz - ilk + G : 0));
     let sec = null;
     for (let S = 0; S <= Smax; S++) {
       const dk = fark(S + G - 1, S + G);
       for (let Lc = Math.max(Lmin, S + 3 * G); Lc <= sira; Lc++) {
-        let im = 0; for (let i = 0; i < G; i++) im += fark(Lc - G + i, S + i); im /= G;
+        let im = 0, ym = 0; for (let i = 0; i < G; i++) { im += fark(Lc - G + i, S + i); ym += yzF(Lc - G + i, S + i); } im /= G; ym /= G;
         let de = 0; for (let i = 0; i < G; i += 3) de = Math.max(de, evF(Lc - G + i, S + i));
-        const m = im + 0.5 * de + 1.5 * dk + 0.01 * (Lc - Lmin);
-        if (!sec || m < sec.m) sec = { S, Lb: Lc, m, im, de, dk };
+        const m = im + 4 * ym + 0.5 * de + 1.5 * dk + 0.01 * (Lc - Lmin);
+        if (!sec || m < sec.m) sec = { S, Lb: Lc, m, im, ym, de, dk };
       }
     }
     const { S, Lb } = sec, nV = Lb - S - G;
-    console.log(h, 'döngü: S', S, 'bitiş', Lb, `(${(nV / FPS).toFixed(2)} sn video)`, 'geçiş farkı', sec.im.toFixed(2), 'evre farkı', sec.de.toFixed(1), 'kare',
+    console.log(h, 'döngü: S', S, 'bitiş', Lb, `(${(nV / FPS).toFixed(2)} sn video)`, 'geçiş farkı', sec.im.toFixed(2), 'yazı hayaleti', sec.ym.toFixed(2), 'evre farkı', sec.de.toFixed(1), 'kare',
       'dikiş adımı', sec.dk.toFixed(2), 'temiz', tz.temiz != null ? tz.temiz - ilk : null, 'en erken bitiş', Lmin);
     fs.writeFileSync(path.join(dir, 'dongu.json'), JSON.stringify({ ilk, bas: bas - ilk, N, temiz: tz.temiz != null ? tz.temiz - ilk : null, P, S, Lb, G, kare: nV, ...sec, Lmin, gt: tz.gt.slice(0, sira), vurT: tz.vurT }) + '\n');
     if (process.env.SADECE_KARE === '1') continue;   // kareler + döngü seçimi (dongu.json), kodlama yok
