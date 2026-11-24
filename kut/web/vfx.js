@@ -33,7 +33,7 @@ function konum(p, out = new THREE.Vector3()) { // Vector3 | Object3D | {x,y,z}
 const IZGARA = 6;
 const KARE = { parilti: 0, yildiz4: 1, yildiz6: 2, halka: 3, duman: 4, kesik: 5, run: 6, alev: 7, buz: 8, yaprak: 9, damla: 10, isin: 11, tuy: 12, goz: 13, catlak: 14,
   kabarcik: 15, tas: 16, kivilcim: 17, sok: 18, kar: 19, pence: 20, arti: 21, dalga: 22, girdap: 23, toz: 24,
-  run_kut: 25, run_golge: 26, run_ates: 27, kafatasi: 28, catlakYer: 29, nota: 30, kalp: 31 };
+  run_kut: 25, run_golge: 26, run_ates: 27, kafatasi: 28, catlakYer: 29, nota: 30, kalp: 31, okYukari: 32, okKilif: 33, sutun: 34 };
 function mulberry(a) { return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
 function atlasUret(C) {
@@ -292,6 +292,24 @@ function atlasUret(C) {
     x.bezierCurveTo(r * 0.62, -r * 0.8, r * 0.98, r * 0.02, 0, r * 0.72); x.closePath();
     x.fillStyle = radyal(r * 0.85, [[0, 255, 1], [0.55, 232, 1], [1, 185, 1]], -r * 0.2, -r * 0.3, 0, 0); x.fill(); sondur();
     x.fillStyle = g(255, 1); x.beginPath(); x.ellipse(-r * 0.32, -r * 0.28, r * 0.13, r * 0.08, -0.6, 0, TAU); x.fill();
+  });
+  // 32 kalın yukarı ok (güçlendirme: Savaş Davulu) ve 33 onun kalın kenarlı (genişletilmiş) silueti: ok eklemeli parlak çekirdek, kılıf aynı
+  // boyda normal karışımlı KOYU çerçeve olarak çizilir (eklemeli sistem sonra çizilir: çekirdek hep kılıfın üstünde) → parlak gökte de seçilir
+  const okYol = () => { x.beginPath(); x.moveTo(0, -r32 * 0.86); x.lineTo(r32 * 0.74, -r32 * 0.1); x.lineTo(r32 * 0.3, -r32 * 0.1); x.lineTo(r32 * 0.3, r32 * 0.8);
+    x.lineTo(-r32 * 0.3, r32 * 0.8); x.lineTo(-r32 * 0.3, -r32 * 0.1); x.lineTo(-r32 * 0.74, -r32 * 0.1); x.closePath(); };
+  let r32 = 0;
+  ciz(KARE.okYukari, r => { r32 = r; x.lineJoin = 'round';
+    okYol(); x.fillStyle = dogrusal(0, -r * 0.86, 0, r * 0.8, [[0, 255, 1], [0.45, 240, 1], [1, 205, 1]]); x.fill();
+    x.fillStyle = g(255, 1); x.beginPath(); x.moveTo(-r * 0.05, -r * 0.66); x.lineTo(-r * 0.5, -r * 0.18); x.lineTo(-r * 0.34, -r * 0.18); x.closePath(); x.fill();   // tepe parıltısı
+  });
+  ciz(KARE.okKilif, r => { r32 = r; x.lineJoin = 'round'; okYol(); x.lineWidth = C * 0.13; x.strokeStyle = g(255, 1); x.stroke(); x.fillStyle = g(255, 1); x.fill(); });
+  // 34 güç sütunu: dikey sütun, sivri alev tepeli, tabanı solar (dolu; kılıfı aynı doku daha geniş ölçekle koyu çizilir)
+  ciz(KARE.sutun, r => {
+    const w = r * 0.42; x.beginPath(); x.moveTo(-w, r * 1.08); x.lineTo(-w, -r * 0.35); x.bezierCurveTo(-w, -r * 0.66, -w * 0.3, -r * 0.74, 0, -r * 1.0);
+    x.bezierCurveTo(w * 0.3, -r * 0.74, w, -r * 0.66, w, -r * 0.35); x.lineTo(w, r * 1.08); x.closePath();
+    x.fillStyle = dogrusal(-w, 0, w, 0, [[0, 205, 1], [0.5, 255, 1], [1, 205, 1]]); x.fill();
+    x.globalCompositeOperation = 'destination-in'; x.fillStyle = dogrusal(0, -r, 0, r * 1.08, [[0, 255, 1], [0.72, 255, 1], [1, 255, 0]]); x.fillRect(-r * 1.1, -r * 1.1, r * 2.2, r * 2.2);
+    x.globalCompositeOperation = 'source-over';
   });
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.NoColorSpace; tex.generateMipmaps = true; tex.minFilter = THREE.LinearMipmapLinearFilter; tex.magFilter = THREE.LinearFilter; tex.anisotropy = 4;
@@ -900,6 +918,9 @@ function mermi(bas, son, sure, o = {}) {
 }
 
 // ───────────────────────── vuruş (darbe) ─────────────────────────
+// ekranAci'nin _v3/_v4'e dokunmayan eşi (çağıranın geçici vektörleri bozulmasın)
+const _eaA = new THREE.Vector3(), _eaB = new THREE.Vector3(), _dvA = new THREE.Vector3(), _dvB = new THREE.Vector3();
+function ekranAciB(p, yon) { if (!kamera) return 0; const a = _eaA.copy(p).project(kamera), b = _eaB.copy(p).add(yon).project(kamera); return Math.atan2(b.y - a.y, (b.x - a.x) * (kamera.aspect || 1.6)); }
 function ekranAci(p, yon) { // yön vektörünün ekrandaki açısı (kesik izini ona göre çevir)
   if (!kamera || !yon) return rr(-0.6, 0.6);
   const a = _v3.copy(p).project(kamera), b = _v4.copy(p).add(yon).project(kamera);
@@ -924,6 +945,10 @@ function vurus(pos, o = {}) {
   } else if (tur === 'boynuz') { // toslama: yerde şok, toz, çatlak, hafif sarsıntı
     sok(p, { renk, r: 0.7 * guc, toz: true, tozRenk: '#b49a7a', tozN: 8, sure: 0.4 });
     _v3.set(p.x, Z() + 0.03, p.z); P({ p: _v3, mod: 1, normal: true, omur: 1.2, boy: 0.9 * guc, boy2: 1.0 * guc, renk: '#3a2414', kare: 'catlakYer', rot: 'r', hot: 0, a: 0.8, fi: 0.02, fo: 0.55 });
+    // öfkeli (güçlenmiş) toslama: darbede koyu kılıflı alev fışkırması (her harcanan öfke yığını belirgin bir patlama)
+    if (guc >= 1.5) for (let i = 0, n = N(7); i < n; i++) { kureY(_v2, 0.7).multiplyScalar(rr(1.2, 2.2)); if (yon) _v2.addScaledVector(yon, 0.8); const rt = rr(-0.5, 0.5), om = rr(0.3, 0.45), bo = rr(0.34, 0.46);
+      P({ p, v: _v2, g: -1.5, drag: 2.4, omur: om, boy: bo, boy2: bo * 0.3, renk: '#380100', renk2: '#060000', kare: 'alev', normal: true, rot: rt, hot: 0, a: 0.95, fi: 0.04, fo: 0.45 });
+      P({ p, v: _v2, g: -1.5, drag: 2.4, omur: om, boy: bo * 0.5, boy2: bo * 0.14, renk: '#ffa040', renk2: '#ff2800', kare: 'alev', rot: rt, hot: 0.6, a: 1, fi: 0.04, fo: 0.45 }); }
     sars(0.05 * guc);
   } else if (tur === 'yumruk') { // ağır yumruk: kameraya dönük büyük halka + taş kırıntısı
     P({ p, omur: 0.26, boy: 0.25, boy2: 1.25 * guc, renk, kare: 'sok', normal: true, rot: 'r', hot: 0.2, a: 0.9, fi: 0, fo: 0.25 });
@@ -1119,61 +1144,94 @@ const YETENEK = {
         const yon = dostYon.length ? dostYon : null, nA = N(yon ? 56 : 30), om = Math.min(1.1, (yon ? dostR : R) / DAVUL_HIZ);
         for (let i = 0; i < nA; i++) { const a = i / nA * TAU;
           if (yon && !yon.some(b => Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b))) < 0.7)) continue;
-          _v3.set(c0.x + Math.cos(a) * 0.7, Z() + 0.06, c0.z + Math.sin(a) * 0.7);
-          P({ p: _v3, mod: 1, v: _v2.set(Math.cos(a) * DAVUL_HIZ, 0, Math.sin(a) * DAVUL_HIZ), omur: om, boy: 0.5, boy2: 0.95, renk: '#ffc46a', renk2: '#ff6a1f', kare: 'dalga', normal: true, rot: -a - Math.PI / 2, hot: 0.25, a: 0.9, fi: 0, fo: 0.35 }); }
-        if (!yon) P({ p: c0, mod: 1, omur: om * 0.8, boy: 0.6, boy2: R * 1.6, renk: '#ffb347', kare: 'halka', hot: 0.3, a: 0.16, fi: 0, fo: 0.3 }); }
+          _v3.set(c0.x + Math.cos(a) * 0.7, Z() + 0.06, c0.z + Math.sin(a) * 0.7); _v2.set(Math.cos(a) * DAVUL_HIZ, 0, Math.sin(a) * DAVUL_HIZ);
+          if (yon) P({ p: _v3, mod: 1, v: _v2, omur: om, boy: 0.56, boy2: 1.06, renk: '#060000', kare: 'dalga', normal: true, rot: -a - Math.PI / 2, hot: 0, a: 0.55, fi: 0, fo: 0.35 });   // koyu gölge yay
+          P({ p: _v3, mod: 1, v: _v2, omur: om, boy: 0.5, boy2: 0.95, renk: yon ? '#ff5708' : '#ffc46a', renk2: yon ? '#e31a01' : '#ff6a1f', kare: 'dalga', normal: true, rot: -a - Math.PI / 2, hot: 0.25, a: 0.9, fi: 0, fo: 0.35 }); }
+        if (!yon) P({ p: c0, mod: 1, omur: om * 0.8, boy: 0.6, boy2: R * 1.6, renk: '#ffb347', kare: 'halka', hot: 0.3, a: 0.16, fi: 0, fo: 0.3 });
+        // göğüs hizasında DOSTA DOĞRU giden ses dalgaları: davuldan her dosta iki yay (koyu kılıf + turuncu-altın çekirdek), dalga dosta
+        // değdiği anda söner (güç sütunu orada yükselir) — "davul dostlara çaldı" tek bakışta okunsun
+        for (const h of hs) { if (h.o && h.o === k.o) continue; konum(h.o || h.p, _dvA); _dvB.set(_dvA.x - m.x, 0, _dvA.z - m.z); const L = _dvB.length(); if (L < 0.45) continue; _dvB.divideScalar(L);
+          const rt = ekranAciB(m, _dvB) - Math.PI / 2, om2 = Math.max(0.08, (L - 0.4) / DAVUL_HIZ), yy = Math.max(m.y, _dvA.y + 0.5 * h.h);
+          for (let j = 0; j < 2; j++) { _v3.copy(m).addScaledVector(_dvB, 0.15 + 0.3 * j).setY(yy); _v2.copy(_dvB).multiplyScalar(DAVUL_HIZ);
+            P({ p: _v3, v: _v2, omur: om2 * (1 - 0.3 * j), boy: 0.54, boy2: 0.92, renk: '#080100', kare: 'dalga', normal: true, rot: rt, hot: 0, a: 0.85, fi: 0, fo: 0.7 });
+            P({ p: _v3, v: _v2, omur: om2 * (1 - 0.3 * j), boy: 0.46, boy2: 0.82, renk: '#ff5000', renk2: '#ff1c00', kare: 'dalga', rot: rt, hot: 0.3, a: 1, fi: 0, fo: 0.7 }); } } }
     });
-    for (const h of hs) { if (h.o && h.o === k.o) continue; const d = Math.hypot(h.p.x - k.p.x, h.p.z - k.p.z), hp = new THREE.Vector3().copy(h.p), hh = h.h;
-      zamanla(0.6 + d / DAVUL_HIZ, () => { if (h.o) konum(h.o, hp); _v3.copy(hp).setY(hp.y + 0.55 * hh); flas(_v3, { renk: '#ffb347', boy: 0.65, sure: 0.18, halka: false, isik: false });
-        // güç sütunu: altta koyu kızıl kılıf (normal karışım: parlak gün batımı göğünde de seçilir), üstte doygun turuncu-altın ışın
-        // (eskiden soluk beyazımsı sütun, açık gökte zor seçiliyordu)
-        // (ışın kısık sıcaklıkta: bloom'da beyaza dönmesin, turuncu kalsın)
-        // sütun alçak (1,3): gövde boyunda arenanın koyu duvarının önünde kalır, açık göğe taşıp beyaza dönmez
-        _v3.set(hp.x, Z() + 0.65, hp.z); _v4.set(0, 1, 0);
-        P({ p: _v3, mod: 2, eksen: _v4, omur: 0.9, boy: 1, en: 1.0, uz: 1.3, boy2: 1.15, renk: '#4a1004', kare: 'isin', normal: true, hot: 0, a: 0.9, fi: 0.08, fo: 0.5, on: 0 });
-        P({ p: _v3, mod: 2, eksen: _v4, omur: 0.85, boy: 1, en: 0.55, uz: 1.3, boy2: 1.2, renk: '#ff4a00', renk2: '#ff7a10', kare: 'isin', hot: 0.06, a: 1, fi: 0.08, fo: 0.45 });
-        P({ p: _v3, mod: 2, eksen: _v4, omur: 0.8, boy: 1, en: 0.2, uz: 1.3, boy2: 1.1, renk: '#ffb030', kare: 'isin', hot: 0.2, a: 0.9, fi: 0.05, fo: 0.4 });
-        _v3.set(hp.x, Z() + 0.15, hp.z); P({ p: _v3, omur: 0.7, boy: 0.9, boy2: 1.5, renk: '#ff6a1a', kare: 'parilti', hot: 0.3, a: 0.8, fi: 0.05, fo: 0.3 });
-        // güç işareti (Uluma'nın hız işaretinin turuncu eşi): başın üstünde yükselen iki ok başı (^), koyu kılıflı (orta mesafeden seçilir)
-        // (gövdenin orta-üstünden yükselir: başın üstündeki can çubuğunun ardında kalmasın)
-        if (kamera) { const hb = _v3.set(hp.x, Z() + hh * 0.7, hp.z), sag = _v1.setFromMatrixColumn(kamera.matrixWorld, 0);
-          for (let j = 0; j < 2; j++) for (const sg of [-1, 1]) for (const ic of [0, 1]) {
-            const pp = new THREE.Vector3().copy(hb).setY(hb.y - j * 0.22).addScaledVector(sag, sg * 0.1), ek = new THREE.Vector3().copy(sag).multiplyScalar(-sg).addScaledVector(_pY, 1.1);
-            P({ p: pp, v: _v2.set(0, 0.9, 0), drag: 1.2, omur: 0.8, boy: 1, en: ic ? 0.13 : 0.24, uz: ic ? 0.34 : 0.44, renk: ic ? '#ffc04a' : '#3a0c02', renk2: ic ? '#ff4a00' : undefined, kare: 'isin', mod: 2, eksen: ek, normal: !ic, hot: ic ? 0.15 : 0, a: 1, fi: 0.08 + j * 0.06, fo: 0.4 }); } }
+    for (const h of hs) { if (h.o && h.o === k.o) continue; const d = Math.hypot(h.p.x - k.p.x, h.p.z - k.p.z), hp = new THREE.Vector3().copy(h.p), hh = h.h, sag = new THREE.Vector3();
+      zamanla(0.6 + d / DAVUL_HIZ, () => { if (h.o) { if (!h.o.visible) return; konum(h.o, hp); }
+        const onc = ONCELIK; ONCELIK = 2;
+        if (kamera) sag.setFromMatrixColumn(kamera.matrixWorld, 0).setY(0); if (sag.lengthSq() < 1e-6) sag.set(1, 0, 0); sag.normalize();   // ekranın sağı (yatay)
+        // GÜÇLENDİ okuması (parlak gün batımı göğünde de): her katman koyu kılıf (normal karışım) + doygun parlak çekirdek (eklemeli, kılıftan
+        // dar: eklemeli sistem normalden sonra çizilir, çekirdek hep kılıfın üstünde). Eskiden soluk açık turuncu sütun, ok başları seçilmiyordu.
+        _v3.copy(hp).setY(hp.y + 0.55 * hh); flas(_v3, { renk: '#ff5010', boy: 0.5, sure: 0.16, halka: false, isik: false, a: 0.8 });
+        // RENK NOTU: parçacık rengi yüksek kalitede doğrusal sayılıp çıkışta sRGB'ye çevrilir (koyu renkler açılır: '#8a1200' turuncu görünür),
+        // hafifte olduğu gibi çıkar. Kılıflar bu yüzden çok koyu ('#060000'), eklemeli renkler tam doygun (en büyük kanal ff): ikisinde de okunur.
+        // güç sütunu: sivri alev tepeli kızıl-turuncu sütun (eklemeli) + aynı doku 1,5 kat geniş koyu kılıf (normal) + ince altın çekirdek;
+        // dostun başının üstüne taşar, koyu çerçeve açık gökte de seçilir
+        const sh = 1.15 * hh + 0.55; _v3.set(hp.x, Z() + sh / 2, hp.z); _v4.set(0, 1, 0);
+        P({ p: _v3, mod: 2, eksen: _v4, omur: 1.0, boy: 0.7, boy2: 1.04, en: 0.84 * hh, uz: sh * 1.03, renk: '#080100', renk2: '#030000', kare: 'sutun', normal: true, hot: 0, a: 1, fi: 0.05, fo: 0.55 });
+        P({ p: _v3, mod: 2, eksen: _v4, omur: 0.95, boy: 0.7, boy2: 1.04, en: 0.56 * hh, uz: sh, renk: '#ff1800', renk2: '#ff2c00', kare: 'sutun', hot: 0.05, a: 1, fi: 0.05, fo: 0.5 });
+        P({ p: _v3, mod: 2, eksen: _v4, omur: 0.85, boy: 0.7, boy2: 1.02, en: 0.1, uz: sh * 0.9, renk: '#ff6000', kare: 'isin', hot: 0.2, a: 0.9, fi: 0.05, fo: 0.45 });
+        // ayak altında belirgin halka: koyu kılıf + dönen ateş rünü (genişleyip oturur; sonra DURUM.davul halkası sürer)
+        _v3.set(hp.x, Z() + 0.04, hp.z);
+        P({ p: _v3, mod: 1, omur: 0.8, boy: 0.4 * hh, boy2: 1.3 * hh, renk: '#060000', kare: 'halka', normal: true, hot: 0, a: 0.9, fi: 0, fo: 0.5 });
+        P({ p: _v3, mod: 1, omur: 0.8, boy: 0.35 * hh, boy2: 1.15 * hh, renk: '#ff2800', renk2: '#ff1000', kare: 'run_ates', rot: 'r', rotHiz: 2.4, hot: 0.2, a: 0.95, fi: 0, fo: 0.5 });
+        // yukarı oklar: dostun iki yanında (ekranda) kalın, koyu konturlu altın ok yükselir (tek parçacık; kontur dokuda)
+        for (let j = 0; j < 2; j++) zamanla(j * 0.12, () => { if (h.o && !h.o.visible) return; const o2 = ONCELIK; ONCELIK = 2;
+          _v3.copy(hp).addScaledVector(sag, (j ? 1 : -1) * 0.46 * hh).setY(Z() + 0.42 * hh); _v2.set(0, 1.15 * Math.sqrt(hh), 0);
+          P({ p: _v3, v: _v2, drag: 1.3, omur: 0.95, boy: 0.34 * hh, boy2: 0.4 * hh, renk: '#080100', kare: 'okKilif', normal: true, hot: 0, a: 1, fi: 0.12, fo: 0.6 });
+          P({ p: _v3, v: _v2, drag: 1.3, omur: 0.95, boy: 0.34 * hh, boy2: 0.4 * hh, renk: '#ff7000', renk2: '#ff3800', kare: 'okYukari', hot: 0.1, a: 1, fi: 0.12, fo: 0.6 });
+          ONCELIK = o2; });
+        // yükselen alev dilleri: gövdenin iki yanından; her dil koyu kızıl kılıf (normal) + altın-kızıl çekirdek (eklemeli), aynı yol
+        surec(0.7, (kk, dt2, yas, is) => { if (h.o && !h.o.visible) return; is.acc = (is.acc || 0) + dt2 * 30 * OLCEK;
+          while (is.acc >= 1) { is.acc--; const sg = RND() < 0.5 ? -1 : 1, om = rr(0.4, 0.55), bo = rr(0.26, 0.34) * hh, rt = rr(-0.25, 0.25), k1 = DP.davulAlevK, k2 = DP.davulAlev;
+            _v3.copy(hp).addScaledVector(sag, sg * rr(0.2, 0.34) * hh).setY(Z() + rr(0.05, 0.5) * hh); _v2.set(rr(-0.1, 0.1), rr(1.3, 1.9) * Math.sqrt(hh), rr(-0.1, 0.1));
+            k1.omur = k2.omur = om; k1.boy = bo; k1.boy2 = bo * 0.35; k2.boy = bo * 0.55; k2.boy2 = bo * 0.18; k1.rot = k2.rot = rt; P(k1); P(k2); } });   // kare başına nesne yok (DP)
         for (let i = 0, n = N(3); i < n; i++) { _v4.set(hp.x + rr(-0.25, 0.25), hp.y + hh * rr(0.75, 1.0), hp.z + rr(-0.25, 0.25)); nota(_v4, _v2.set(rr(-0.3, 0.3), rr(0.8, 1.3), rr(-0.3, 0.3)), rr(0.28, 0.34), rr(0.75, 1.0)); }
-        for (let i = 0, n = N(8); i < n; i++) { _v3.set(hp.x, Z() + 0.1, hp.z); P({ p: _v3, yorunge: { r: rr(0.3, 0.45), w: rr(3, 5), vy: rr(1, 2) }, omur: rr(0.5, 0.8), boy: rr(0.08, 0.14), boy2: 0.02, renk: '#ffcf6a', kare: RND() < 0.4 ? 'yildiz4' : 'parilti', hot: 1 }); } }); }
+        for (let i = 0, n = N(8); i < n; i++) { _v3.set(hp.x, Z() + 0.1, hp.z); P({ p: _v3, yorunge: { r: rr(0.3, 0.45), w: rr(3, 5), vy: rr(1, 2) }, omur: rr(0.5, 0.8), boy: rr(0.08, 0.14), boy2: 0.02, renk: '#ff9020', kare: RND() < 0.4 ? 'yildiz4' : 'parilti', hot: 1 }); }
+        ONCELIK = onc; }); }
   },
-  // Sis Yarasası: kavrama → hedefin göğsünden kızıl can küresi (kalp) sökülür, sarmal çizerek yarasanın ağzına akar (0,5 sn); ardında
-  // kızıl kıvılcım akışı. Varışta yarasada kızıl flaş, iyileşme ve aura (gövde şişmesi pozdan, parlama sahne3d'den)
+  // Sis Yarasası: kavrama → hedefin YARASAYA BAKAN yüzünden kızıl can kalbi sökülür, yay çizerek yarasanın ağzına akar (0,5 sn); hedefin
+  // dış hattından (kameradan bakınca silueti) kızıl can zerreleri çekilip yarasaya akar. Yarasa hedefin yanına konar (hareket.js his.atil
+  // kavrama), efektler hedefin gövdesinin önüne değil kenarına doğar: hedef ve canının çekildiği görünür kalır (eskiden göğüsteki beyaz
+  // kesik, flaş ve koyu duman hedefin üstünü örtüyordu). Varışta yarasada kızıl flaş, iyileşme ve aura (gövde şişmesi pozdan)
   ruhEmme(k, hs, o) {
     const h = hs[0]; if (!h) return; const g = o.guc;
     const hp = new THREE.Vector3().copy(h.p).setY(h.p.y + 0.5 * h.h), kp = o.soket ? new THREE.Vector3().copy(o.soket) : new THREE.Vector3().copy(k.p).setY(k.p.y + 0.55 * k.h);
-    flas(hp, { renk: '#ff3d5a', boy: 0.8, sure: 0.2 });
-    _v4.copy(hp).sub(kp).setY(0); if (_v4.lengthSq() < 1e-6) _v4.set(0, 0, 1);
-    P({ p: hp, mod: 2, eksen: _v2.set(-_v4.z, 0.6, _v4.x).normalize(), omur: 0.3, boy: 1, en: 0.16, uz: 0.9, boy2: 1.2, renk: '#ff2d4d', kare: 'kesik', hot: 0.8, a: 1, fi: 0, fo: 0.4 });
-    for (let i = 0, n = N(8); i < n; i++) { kureY(_v2, 0.3).multiplyScalar(rr(1, 2.2)); P({ p: hp, v: _v2, drag: 2, g: -0.5, omur: rr(0.5, 0.8), boy: rr(0.28, 0.45), boy2: 0.7, renk: '#5a0f2a', renk2: '#2a0a1a', kare: 'duman', normal: true, rot: 'r', a: 0.55, hot: 0 }); }
-    const yer = new THREE.Vector3(), dis = new THREE.Vector3().copy(kp).sub(hp).setY(0); if (dis.lengthSq() < 1e-6) dis.set(0, 0, 1); dis.normalize();
-    const VAR = 0.5, kalp = kalpAl(), cik = 0.14, ucY = kadrajYuk(hp, kp, Math.max(0.75, 0.5 * hp.distanceTo(kp)), 0.2, 0.4), kYan = yanKavis(hp, kp, 0.4, new THREE.Vector3());
-    // 3B can kalbi: hedefin göğsünden sökülür (büyüyerek dışarı çıkar), yüksek bir yay çizerek (yakın dövüşte iki gövde bitişik: alçak yol
-    // kafaların ve çubukların arkasında kalıyordu) yarasanın ağzına akar; nabız atar, kameraya döner, arkasında kızıl kıvılcım şeridi
+    const dis = new THREE.Vector3().copy(kp).sub(hp).setY(0); if (dis.lengthSq() < 1e-6) dis.set(0, 0, 1); dis.normalize();
+    // yara noktası: hedefin yarasaya bakan yüzeyi (gövde yarıçapı ~0,3·boy), göğüs hizasının biraz üstü
+    const yuz = new THREE.Vector3().copy(hp).addScaledVector(dis, 0.3 * h.h); yuz.y += 0.08 * h.h;
+    flas(yuz, { renk: '#ff3d5a', boy: 0.5, sure: 0.16, a: 0.8, halka: false });
+    P({ p: yuz, mod: 2, eksen: _v2.set(-dis.z, 0.6, dis.x).normalize(), omur: 0.24, boy: 1, en: 0.12, uz: 0.55, boy2: 1.1, renk: '#ff4060', renk2: '#c00018', kare: 'kesik', hot: 0.5, a: 0.95, fi: 0, fo: 0.35 });
+    for (let i = 0, n = N(5); i < n; i++) { _v2.copy(dis).multiplyScalar(rr(0.6, 1.3)).add(kureY(_v4, 0.4).multiplyScalar(0.35)); P({ p: yuz, v: _v2, drag: 2.2, g: -0.5, omur: rr(0.45, 0.65), boy: rr(0.16, 0.24), boy2: 0.42, renk: '#130103', renk2: '#040002', kare: 'duman', normal: true, rot: 'r', a: 0.5, hot: 0 }); }
+    const yer = new THREE.Vector3(), cikP = new THREE.Vector3().copy(yuz).addScaledVector(dis, 0.12).setY(yuz.y + 0.08);
+    const VAR = 0.5, kalp = kalpAl(), cik = 0.14, ucY = kadrajYuk(cikP, kp, Math.max(0.6, 0.45 * cikP.distanceTo(kp)), 0.2, 0.35), kYan = yanKavis(cikP, kp, 0.3, new THREE.Vector3());
+    // 3B can kalbi: yara noktasından büyüyerek sökülür (hedefin gövdesinin önünde değil, kenarında), yay çizerek yarasanın ağzına akar;
+    // nabız atar, kameraya döner, arkasında kızıl kıvılcım şeridi
     surec(VAR, (kk, dt, yas, is) => {
       let olc = 1;
-      if (yas < cik) { const e = yas / cik; yer.copy(hp).addScaledVector(dis, 0.18 * e); yer.y += 0.1 * e; olc = cikisK(e); }
-      else { const e = (yas - cik) / (VAR - cik), ee = e * e * (3 - 2 * e); _v4.copy(hp).addScaledVector(dis, 0.18).setY(hp.y + 0.1); yer.lerpVectors(_v4, kp, ee); yer.y += Math.sin(Math.PI * ee) * ucY; yer.addScaledVector(kYan, Math.sin(Math.PI * ee)); olc = 1 - 0.35 * Math.max(0, (e - 0.75) / 0.25); }
-      const nab = 1 + 0.16 * Math.max(0, Math.sin(yas * 26)), bo = 0.42 * g * olc * nab;
+      if (yas < cik) { const e = yas / cik; yer.lerpVectors(yuz, cikP, e); olc = 0.55 + 0.45 * cikisK(e); }
+      else { const e = (yas - cik) / (VAR - cik), ee = e * e * (3 - 2 * e); yer.lerpVectors(cikP, kp, ee); yer.y += Math.sin(Math.PI * ee) * ucY; yer.addScaledVector(kYan, Math.sin(Math.PI * ee)); olc = 1 - 0.35 * Math.max(0, (e - 0.75) / 0.25); }
+      const nab = 1 + 0.16 * Math.max(0, Math.sin(yas * 26)), bo = 0.36 * g * olc * nab;
       if (kalp) { kalp.position.copy(yer); if (kamera) kalp.quaternion.copy(kamera.quaternion); kalp.rotateY(Math.sin(yas * 9) * 0.55); kalp.scale.setScalar(bo); kalp.material.emissiveIntensity = 0.7 + 0.6 * (nab - 1) / 0.16; if (kk >= 1) kalp.visible = false; }
-      else P({ p: yer, omur: -1, boy: 0.5 * g * olc, renk: '#ff5a72', renk2: '#ff1a3d', kare: 'kalp', hot: 0.5, a: 1 });
-      P({ p: yer, omur: -1, boy: 0.9 * g * olc, renk: '#5a0418', kare: 'parilti', normal: true, hot: 0, a: 0.45 });   // koyu hâle: açık zeminde kalp seçilsin
-      P({ p: yer, omur: -1, boy: 0.62 * nab * g * olc, renk: '#ff2d4d', kare: 'parilti', hot: 0.3, a: 0.5 });
-      odak(yer, 0.32);
-      is.acc = (is.acc || 0) + dt * 70 * OLCEK; while (is.acc >= 1) { is.acc--; _v3.copy(yer).add(kureY(_v2, 0).multiplyScalar(0.08));
-        P({ p: _v3, v: kureY(_v2, 0.2).multiplyScalar(rr(0.15, 0.4)), drag: 2, omur: rr(0.3, 0.5), boy: rr(0.09, 0.15), boy2: 0.02, renk: '#ff8aa0', renk2: '#c0103a', kare: RND() < 0.3 ? 'kalp' : 'parilti', hot: 0.6, fo: 0.5 }); }
+      // (kare başına nesne yok: hazır parçacık tanımları DP.ruh*)
+      if (!kalp) { const o2 = DP.ruhKalp; o2.p = yer; o2.boy = 0.45 * g * olc; P(o2); }
+      { const o2 = DP.ruhHale; o2.p = yer; o2.boy = 0.78 * g * olc; P(o2); }   // koyu hâle: açık zeminde kalp seçilsin
+      { const o2 = DP.ruhParlak; o2.p = yer; o2.boy = 0.55 * nab * g * olc; P(o2); }
+      odak(yer, 0.3);
+      is.acc = (is.acc || 0) + dt * 70 * OLCEK; while (is.acc >= 1) { is.acc--; _v3.copy(yer).add(kureY(_v2, 0).multiplyScalar(0.08)); kureY(_v2, 0.2).multiplyScalar(rr(0.15, 0.4));
+        const o2 = DP.ruhIz; o2.omur = rr(0.3, 0.5); o2.boy = rr(0.09, 0.15); o2.kare = RND() < 0.3 ? 'kalp' : 'parilti'; P(o2); }
     });
-    surec(0.75, (kk, dt, yas, is) => { is.acc = (is.acc || 0) + dt * 42 * OLCEK * g; while (is.acc >= 1) { is.acc--;
-      kureY(_v2, 0.5).multiplyScalar(rr(1.5, 3)); _v3.copy(hp).add(_v4.set(rr(-0.15, 0.15), rr(-0.1, 0.2), rr(-0.15, 0.15))); const t = RND();
-      if (t < 0.5) P({ p: _v3, v: _v2, hedef: kp, hom: rr(3, 5), hiz: rr(3.5, 5), omur: 1.4, boy: rr(0.14, 0.22), uz: 2.2, en: 0.7, renk: '#ffd0da', renk2: '#ff2d4d', kare: 'kivilcim', mod: 2, uzat: 0.08, hot: 0.7, fo: 0.85 });
-      else if (t < 0.82) P({ p: _v3, v: _v2, hedef: kp, hom: rr(3, 5), hiz: rr(3.5, 5), omur: 1.4, boy: rr(0.3, 0.45), boy2: 0.16, renk: '#ff2d4d', renk2: '#c0103a', kare: 'parilti', hot: 0.5, fo: 0.85 });
-      else P({ p: _v3, v: _v2, hedef: kp, hom: rr(3, 5), hiz: rr(3.2, 4.5), omur: 1.4, boy: rr(0.28, 0.4), boy2: 0.14, renk: '#9a0f30', renk2: '#5a0820', kare: 'duman', normal: true, rot: 'r', rotHiz: 3, a: 0.75, hot: 0, fo: 0.8 }); } }, 0.12);
+    // can akışı: hedefin kameradan görünen dış hattından (silueti) ve yara noktasından kızıl zerreler, küçük kalpler ve koyu kan dumanı
+    // yarasanın ağzına çekilir; gövdenin önüne doğmaz → hedef seçilir, canı çekilir
+    const hc = new THREE.Vector3().copy(h.p).setY(h.p.y + 0.5 * h.h), rS = 0.42 * h.h, sagK = new THREE.Vector3(), ustK = new THREE.Vector3();
+    if (kamera) { sagK.setFromMatrixColumn(kamera.matrixWorld, 0); ustK.setFromMatrixColumn(kamera.matrixWorld, 1); } else { sagK.set(1, 0, 0); ustK.set(0, 1, 0); }
+    surec(0.75, (kk, dt, yas, is) => { is.acc = (is.acc || 0) + dt * 46 * OLCEK * g; while (is.acc >= 1) { is.acc--;
+      if (RND() < 0.6) { const f = RND() * TAU; _v3.copy(hc).addScaledVector(sagK, Math.cos(f) * rS * rr(0.85, 1.05)).addScaledVector(ustK, Math.sin(f) * rS * 1.15 * rr(0.85, 1.05)); }
+      else _v3.copy(yuz).add(_v4.set(rr(-0.1, 0.1), rr(-0.1, 0.15), rr(-0.1, 0.1)));
+      _v2.copy(_v3).sub(hc).normalize().multiplyScalar(rr(0.6, 1.2)); const t = RND();
+      const o2 = t < 0.45 ? DP.ruhAkKiv : t < 0.72 ? DP.ruhAkPar : t < 0.86 ? DP.ruhAkKalp : DP.ruhAkDuman;   // kare başına nesne yok (DP)
+      o2.hedef = kp; o2.hom = rr(3, 5); o2.hiz = t < 0.72 ? rr(3.5, 5) : rr(3.2, 4.5);
+      o2.boy = t < 0.45 ? rr(0.14, 0.22) : t < 0.72 ? rr(0.26, 0.38) : t < 0.86 ? rr(0.12, 0.17) : rr(0.22, 0.32); P(o2); o2.hedef = null; } }, 0.12);
     // varış: ağızda kızıl kalp patlaması (küçük kalpler saçılır), iyileşme; gövde parlaması kısık (yarasanın ayrıntısı kaybolmasın)
     zamanla(VAR, () => { flas(kp, { renk: '#ff3d5a', boy: 0.62, sure: 0.22, a: 0.8 }); iyiles(k, '#ff6a85', { sutun: 0.45 });
       for (let i = 0, n = N(7); i < n; i++) { kureY(_v2, 0.5).multiplyScalar(rr(0.8, 1.6)); P({ p: kp, v: _v2, drag: 2.4, g: -0.4, omur: rr(0.45, 0.7), boy: rr(0.14, 0.2), renk: '#ff5a72', renk2: '#ff1a3d', kare: 'kalp', hot: 0.4, fo: 0.5 }); }
@@ -1238,7 +1296,17 @@ const YETENEK = {
     for (let i = 0, n = N(5 * g); i < n; i++) { const yan = i % 2 ? 0.06 : -0.06; _v3.set(bas.x + il.z * yan, bas.y - 0.03, bas.z - il.x * yan);
       P({ p: _v3, v: _v2.set(il.x * rr(1.4, 2.2) + il.z * yan * 6, rr(-0.2, 0.3), il.z * rr(1.4, 2.2) - il.x * yan * 6), drag: 2.4, g: -0.6, omur: rr(0.45, 0.7), boy: rr(0.1, 0.16), boy2: rr(0.32, 0.45), renk: '#ffffff', renk2: '#d9cfd8', kare: 'duman', normal: true, rot: 'r', rotHiz: rr(-1, 1), a: 0.65, hot: 0 }); }
     patlama(bas, { renk: '#ff5a2a', renk2: '#ff2a10', n: 8, hiz: 3.5, guc: g, yildizN: 2 });
-    zamanla(0.15, () => iyiles(k, '#ff7a4a', { sutun: 0.3 }));
+    // ÖFKE PATLAMASI (her döküşte, yığın 3'e dolarken): boynuzlardan yukarı fışkıran çift alev dilleri (koyu kızıl kılıf + beyaz-sarı
+    // sıcak çekirdek, aynı yol) ve başın üstünde açılan koyu is dumanı mantarı; açık gökte de koyu fonlu ateş olarak seçilir
+    const kh = k.h;
+    for (let i = 0, n = N(10 * g); i < n; i++) { _v2.set(rr(-0.7, 0.7), rr(2.2, 3.3), rr(-0.7, 0.7)); const rt = rr(-0.4, 0.4), om = rr(0.34, 0.48), bo = rr(0.42, 0.56) * kh;
+      _v3.set(bas.x + rr(-0.12, 0.12), bas.y + rr(0, 0.1), bas.z + rr(-0.12, 0.12));
+      P({ p: _v3, v: _v2, drag: 2.2, omur: om, boy: bo, boy2: bo * 0.3, renk: '#380100', renk2: '#060000', kare: 'alev', normal: true, rot: rt, hot: 0, a: 0.95, fi: 0.04, fo: 0.45 });
+      P({ p: _v3, v: _v2, drag: 2.2, omur: om, boy: bo * 0.5, boy2: bo * 0.14, renk: '#ffa040', renk2: '#ff2800', kare: 'alev', rot: rt, hot: 0.6, a: 1, fi: 0.04, fo: 0.45 }); }
+    for (let i = 0, n = N(7); i < n; i++) { const a = i / n * TAU + rr(0, 0.5); _v3.set(bas.x + Math.cos(a) * 0.12, bas.y + 0.12 * kh, bas.z + Math.sin(a) * 0.12);
+      P({ p: _v3, v: _v2.set(Math.cos(a) * rr(0.7, 1.1), rr(1.1, 1.6), Math.sin(a) * rr(0.7, 1.1)), drag: 2.4, omur: rr(0.6, 0.85), boy: 0.22 * kh, boy2: 0.55 * kh, renk: '#070101', renk2: '#010000', kare: 'duman', normal: true, rot: 'r', rotHiz: rr(-1, 1), a: 0.75, hot: 0, fi: 0.06, fo: 0.4 }); }
+    // iyileşme (canının %20'si): yalnız yükselen artılar — eklemeli ışık sütunu kızıl koçu soluk pembeye boğuyordu
+    zamanla(0.15, () => iyiles(k, '#ff7a4a', { sutun: 0 }));
     aura(k.o || k.p, { renk: '#ff3d2a', renk2: '#ffb347', sure: 0.6, oran: 8, boy: k.h });
   },
   // Zümrüt Yılan: parlak zümrüt küre (beyaz-yeşil çekirdek, koyu kontur) yay çizerek uçar, ardında damlayan iz → çarpınca sıçrama tacı,
@@ -1927,18 +1995,32 @@ const DP = {
   lanetGoz: { p: _v3, omur: -1, boy: 0.6, renk: '#c48cff', kare: 'goz', normal: true, hot: 0.6 },
   lanetDuman: { p: _v4, v: _v2, omur: 0.8, boy: 0.27, boy2: 0.45, renk: '#4a2270', renk2: '#1a0a2a', kare: 'duman', normal: true, rot: 'r', a: 0.55, hot: 0 },
   kalkanY: { p: _v3, omur: 0.4, boy: 0.12, boy2: 0.02, renk: '#fff6d0', kare: 'yildiz4', rot: 'r', hot: 1 },
-  davulSok: { p: _v3, mod: 1, omur: -1, boy: 1.15, renk: '#ff8a1f', kare: 'sok', normal: true, rot: 0, hot: 0.3, a: 0.7 },
+  // Savaş Davulu güçlenmesi (4 sn): koyu kılıf halka + dönen ateş rünü (eklemeli, kılıfın üstünde) + ara ara yükselen koyu kılıflı alev dili
+  davulKilif: { p: _v3, mod: 1, omur: -1, boy: 1.1, renk: '#060000', kare: 'halka', normal: true, hot: 0, a: 0.85 },
+  davulSok: { p: _v3, mod: 1, omur: -1, boy: 1.1, renk: '#ff2800', kare: 'run_ates', rot: 0, hot: 0.2, a: 0.9 },
+  davulAlevK: { p: _v3, v: _v2, drag: 0.8, omur: 0.45, boy: 0.3, boy2: 0.1, renk: '#300100', renk2: '#060000', kare: 'alev', normal: true, rot: 0, hot: 0, a: 0.9, fi: 0.1, fo: 0.5 },
+  davulAlev: { p: _v3, v: _v2, drag: 0.8, omur: 0.45, boy: 0.18, boy2: 0.06, renk: '#ff6000', renk2: '#ff1400', kare: 'alev', rot: 0, hot: 0.3, a: 1, fi: 0.1, fo: 0.5 },
   davulYor: { r: 0.4, w: 3, vy: 1 },
-  davulKiv: { p: _v3, takip: null, yorunge: null, omur: 0.7, boy: 0.15, boy2: 0.03, renk: '#ff9a1f', kare: 'parilti', hot: 0.7 },
+  davulKiv: { p: _v3, takip: null, yorunge: null, omur: 0.7, boy: 0.15, boy2: 0.03, renk: '#ff9020', kare: 'parilti', hot: 0.7 },
   hizKiv: { p: _v3, v: _v2, drag: 1.5, omur: 0.4, boy: 0.13, uz: 1.6, en: 0.5, renk: '#9fe4ff', renk2: '#2f6bff', kare: 'kivilcim', mod: 2, uzat: 0.25, hot: 0.7 },
   hizHalka: { p: _v3, mod: 1, omur: -1, boy: 1.05, renk: '#4f9bff', kare: 'halka', normal: true, hot: 0.3, a: 0.6 },
-  ofkeDuman: { p: _v3, v: _v2, drag: 1.8, omur: 0.75, boy: 0.16, boy2: 0.42, renk: '#7a3020', renk2: '#2a1410', kare: 'duman', normal: true, rot: 'r', a: 0.55, hot: 0 },
-  ofkeAlevK: { p: _v3, v: _v2, g: -0.8, omur: 0.32, boy: 0.3, boy2: 0.06, renk: '#e02a00', renk2: '#5a0800', kare: 'alev', normal: true, rot: 0, hot: 0, a: 0.85, fo: 0.45 },
-  ofkeSok: { p: _v3, mod: 1, omur: -1, boy: 1.1, renk: '#ff3d2a', kare: 'sok', normal: true, rot: 0, hot: 0.3, a: 0.7 },
-  ofkePar: { p: _v3, omur: -1, boy: 1.2, renk: '#ff2a10', kare: 'parilti', hot: 0.1, a: 0.3 },
+  // Can Emme: kalp hâlesi ve izi, hedefin dış hattından yarasaya çekilen can akışı (p/hedef çağrıda atanır)
+  ruhKalp: { p: _v3, omur: -1, boy: 0.45, renk: '#ff5a72', renk2: '#ff1a3d', kare: 'kalp', hot: 0.5, a: 1 },
+  ruhHale: { p: _v3, omur: -1, boy: 0.78, renk: '#130002', kare: 'parilti', normal: true, hot: 0, a: 0.45 },
+  ruhParlak: { p: _v3, omur: -1, boy: 0.55, renk: '#ff0818', kare: 'parilti', hot: 0.3, a: 0.5 },
+  ruhIz: { p: _v3, v: _v2, drag: 2, omur: 0.4, boy: 0.12, boy2: 0.02, renk: '#ff4060', renk2: '#a00010', kare: 'parilti', hot: 0.6, fo: 0.5 },
+  ruhAkKiv: { p: _v3, v: _v2, hedef: null, hom: 4, hiz: 4, omur: 1.4, boy: 0.18, uz: 2.2, en: 0.7, renk: '#ffb0c0', renk2: '#ff0410', kare: 'kivilcim', mod: 2, uzat: 0.08, hot: 0.7, fo: 0.85 },
+  ruhAkPar: { p: _v3, v: _v2, hedef: null, hom: 4, hiz: 4, omur: 1.4, boy: 0.3, boy2: 0.14, renk: '#ff0818', renk2: '#a00010', kare: 'parilti', hot: 0.5, fo: 0.85 },
+  ruhAkKalp: { p: _v3, v: _v2, hedef: null, hom: 4, hiz: 4, omur: 1.4, boy: 0.14, boy2: 0.08, renk: '#ff1028', renk2: '#ff0010', kare: 'kalp', hot: 0.45, fo: 0.85 },
+  ruhAkDuman: { p: _v3, v: _v2, hedef: null, hom: 4, hiz: 4, omur: 1.4, boy: 0.26, boy2: 0.12, renk: '#2e0105', renk2: '#0c0002', kare: 'duman', normal: true, rot: 'r', rotHiz: 3, a: 0.7, hot: 0, fo: 0.8 },
+  // Boynuz Öfkesi (3 sn): koyu is dumanı kılıfı (kızıl-siyah) + çift alev dilleri (koyu kızıl kılıf + beyaz-sarı sıcak çekirdek, aynı yol)
+  ofkeDuman: { p: _v3, v: _v2, drag: 1.6, omur: 0.7, boy: 0.2, boy2: 0.5, renk: '#070101', renk2: '#010000', kare: 'duman', normal: true, rot: 'r', rotHiz: 0.8, a: 0.82, hot: 0, fi: 0.1, fo: 0.5 },
+  ofkeAlevK: { p: _v3, v: _v2, g: -0.8, omur: 0.32, boy: 0.3, boy2: 0.08, renk: '#380100', renk2: '#080000', kare: 'alev', normal: true, rot: 0, hot: 0, a: 0.95, fo: 0.45 },
+  ofkeKilif: { p: _v3, mod: 1, omur: -1, boy: 1.1, renk: '#060000', kare: 'halka', normal: true, hot: 0, a: 0.85 },
+  ofkeSok: { p: _v3, mod: 1, omur: -1, boy: 1.1, renk: '#ff1800', kare: 'run_ates', rot: 0, hot: 0.25, a: 0.85 },
   ofkeKiv: { p: _v3, v: _v2, omur: 0.5, boy: 0.07, uz: 2, en: 0.6, renk: '#ff6a2a', kare: 'kivilcim', mod: 2, uzat: 0.12, hot: 1 },
-  ofkeAlev: { p: _v3, v: _v2, g: -0.8, omur: 0.3, boy: 0.24, boy2: 0.05, renk: '#ffd040', renk2: '#ff3a00', kare: 'alev', rot: 0, hot: 0.4, fo: 0.45 },
-  ofkeKor: { p: _v3, omur: -1, boy: 0.3, renk: '#ff7a1a', kare: 'parilti', hot: 0.5, a: 0.85, on: 1 },
+  ofkeAlev: { p: _v3, v: _v2, g: -0.8, omur: 0.3, boy: 0.24, boy2: 0.05, renk: '#ffa040', renk2: '#ff2800', kare: 'alev', rot: 0, hot: 0.6, fo: 0.45 },
+  ofkeKor: { p: _v3, omur: -1, boy: 0.3, renk: '#ff7020', kare: 'parilti', hot: 0.6, a: 0.9, on: 1 },
   hizRun: { p: _v3, mod: 1, omur: -1, boy: 1.2, renk: '#3d8bff', kare: 'run', rot: 0, hot: 0.4, a: 0.4 },
   hizIz: { p: _v3, mod: 1, omur: 0.55, boy: 0.22, boy2: 0.1, renk: '#bfefff', renk2: '#3d7bff', kare: 'yildiz4', rot: 0, hot: 0.9, a: 0.85, fi: 0, fo: 0.3 },
   lanetRun: { p: _v3, mod: 1, omur: -1, boy: 1.2, renk: '#7a2cff', kare: 'run_golge', normal: true, rot: 0, hot: 0.2, a: 0.55 },
@@ -1946,6 +2028,7 @@ const DP = {
   y3Run: { p: _v3, mod: 1, omur: -1, boy: 1.2, renk: '#ffd76a', kare: 'run', rot: 0, hot: 0.4, a: 0.45 },
   y3Yildiz: { p: _v3, v: _v2, omur: 0.6, boy: 0.12, renk: '#ffe45a', kare: 'yildiz4', rot: 'r', hot: 0.8 },
 };
+const _durSag = new THREE.Vector3();
 const DURUM = {
   sersem(c, dt, t, p, h) { const y = p.y + h + 0.26; for (let i = 0; i < 3; i++) { const a = t * 4.5 + i * TAU / 3; _v3.set(p.x + Math.cos(a) * 0.4, y + Math.sin(a * 2) * 0.05, p.z + Math.sin(a) * 0.4);
       DP.sersemK2.rot = DP.sersemY.rot = t * 3 + i; P(DP.sersemK2); P(DP.sersemY); P(DP.sersemP);
@@ -1978,27 +2061,40 @@ const DURUM = {
     m.scale.set(rx * k, ry * k, rx * k);
     m.material.uniforms.uA.value = 0.8 * pop + (c.kapan >= 0 ? 0 : 0.2 * Math.max(0, 1 - c.yas / 0.3)); m.material.uniforms.uT.value = t;
     if (RND() < dt * 2 * OLCEK) { kureY(_v2, 0.2).multiplyScalar(rx * 0.5); _v3.set(p.x, p.y + h * 0.5, p.z).add(_v2); P(DP.kalkanY); } },
-  davul(c, dt, t, p, h) { _v3.set(p.x, Z() + 0.05, p.z); const s = DP.davulSok; s.boy = 1.15 + Math.sin(t * 8) * 0.08; s.rot = t; P(s);
+  davul(c, dt, t, p, h) { const hb = Math.max(0.85, h), nb = Math.sin(t * 8);
+    _v3.set(p.x, Z() + 0.045, p.z); DP.davulKilif.boy = (1.05 + nb * 0.05) * hb; P(DP.davulKilif);
+    const s = DP.davulSok; s.boy = (1.0 + nb * 0.06) * hb; s.rot = t * 1.4; P(s);
     c.acc += dt * 14 * OLCEK; while (c.acc >= 1) { c.acc--; _v3.set(0, rr(0, 0.2) * h, 0); const y = DP.davulYor, o = DP.davulKiv; y.r = rr(0.32, 0.45); y.w = rr(2.5, 4); y.vy = rr(0.6, 1.2) * h;
-      o.takip = c.nesne; o.yorunge = y; o.omur = rr(0.6, 0.9); o.boy = rr(0.12, 0.18); o.kare = RND() < 0.4 ? 'yildiz4' : 'parilti'; P(o); o.takip = null; } },
+      o.takip = c.nesne; o.yorunge = y; o.omur = rr(0.6, 0.9); o.boy = rr(0.12, 0.18); o.kare = RND() < 0.4 ? 'yildiz4' : 'parilti'; P(o); o.takip = null; }
+    // güçlenme sürüyor: gövdenin iki yanından (ekranda) ara ara koyu kılıflı altın-kızıl alev dili yükselir
+    c.al = (c.al || 0) + dt * 7 * OLCEK; while (c.al >= 1) { c.al--; if (kamera) _durSag.setFromMatrixColumn(kamera.matrixWorld, 0).setY(0).normalize(); else _durSag.set(1, 0, 0);
+      _v3.copy(p).addScaledVector(_durSag, (RND() < 0.5 ? -1 : 1) * rr(0.2, 0.32) * h).setY(Z() + rr(0.05, 0.35) * h); _v2.set(0, rr(1.0, 1.5) * Math.sqrt(h), 0);
+      const om = rr(0.4, 0.55), bo = rr(0.22, 0.3) * h, k1 = DP.davulAlevK, k2 = DP.davulAlev, rt = rr(-0.25, 0.25);
+      k1.omur = k2.omur = om; k1.boy = bo; k1.boy2 = bo * 0.35; k2.boy = bo * 0.6; k2.boy2 = bo * 0.2; k1.rot = k2.rot = rt; P(k1); P(k2); } },
   hiz(c, dt, t, p, h) { c.acc += dt * 14 * OLCEK; while (c.acc >= 1) { c.acc--; const a = RND() * TAU; _v3.set(p.x + Math.cos(a) * 0.34, p.y + rr(0, 0.5) * h, p.z + Math.sin(a) * 0.34);
       _v2.set(0, rr(1.5, 2.5), 0); DP.hizKiv.omur = rr(0.3, 0.45); P(DP.hizKiv); }
     _v3.set(p.x, Z() + 0.05, p.z); P(DP.hizHalka); DP.hizRun.rot = t * 2.2; DP.hizRun.boy = 1.0 + 0.25 * h; P(DP.hizRun);
     if (RND() < dt * 9 * OLCEK) { const a = RND() * TAU; _v3.set(p.x + Math.cos(a) * 0.25, Z() + 0.05, p.z + Math.sin(a) * 0.25); DP.hizIz.rot = RND() * TAU; P(DP.hizIz); } },
-  ofke(c, dt, t, p, h) { c.acc += dt * 4 * OLCEK; while (c.acc >= 1) { c.acc--; _v3.set(p.x + rr(-0.15, 0.15), p.y + h * 0.85, p.z + rr(-0.15, 0.15));
-      _v2.set(rr(-0.3, 0.3), rr(0.8, 1.3), rr(-0.3, 0.3)); DP.ofkeDuman.omur = rr(0.6, 0.9); P(DP.ofkeDuman); }
-    _v3.set(p.x, Z() + 0.05, p.z); DP.ofkeSok.boy = 1.1 + Math.sin(t * 10) * 0.06; DP.ofkeSok.rot = -t; P(DP.ofkeSok);
-    _v3.set(p.x, p.y + 0.5 * h, p.z); DP.ofkePar.boy = 1.2 * h; DP.ofkePar.a = 0.15 + Math.sin(t * 12) * 0.05; P(DP.ofkePar);
+  // Boynuz Öfkesi: kızıl-turuncu koçun üstünde öfke NET okunsun — boynuzlardan koyu is dumanı kılıfı ve önünde çift alev dilleri (koyu kızıl kılıf
+  // + beyaz-sarı sıcak çekirdek), boynuz kökünde sıcak kor; ayak altında koyu kılıflı kızıl ateş rünü. Gövde koyu kızıla iner, kontur sıcak
+  // beyaz-sarı nabız atar (hareket.js his.boya kenar kipi). Eski pembe-kızıl gövde parıltısı (ofkePar) kaldırıldı: koçu soluk lekeye çeviriyordu.
+  ofke(c, dt, t, p, h) { const bz = !!(c.kemik && c.kemik.parent && c.nesne);
+    c.acc += dt * 14 * OLCEK; while (c.acc >= 1) { c.acc--;
+      if (bz) { c.kemik.localToWorld(_v4.copy(BOYNUZ[RND() < 0.5 ? 0 : 1])); _v3.set(_v4.x + rr(-0.06, 0.06), _v4.y + rr(0.04, 0.1), _v4.z + rr(-0.06, 0.06)); }
+      else _v3.set(p.x + rr(-0.15, 0.15), p.y + h * 0.85, p.z + rr(-0.15, 0.15));
+      // hafif kalitede parçacık rengi doğrusal sayılmaz (koyu renk açılmaz): is dumanı simsiyah leke olmasın diye daha saydam ve küçük
+      _v2.set(rr(-0.2, 0.2), rr(0.9, 1.4), rr(-0.2, 0.2)); const o = DP.ofkeDuman, hf = kalite === 'hafif'; o.omur = rr(0.6, 0.85); o.boy = 0.26 * h; o.boy2 = rr(0.56, 0.7) * h * (hf ? 0.8 : 1); o.a = hf ? 0.5 : 0.82; P(o); }
+    _v3.set(p.x, Z() + 0.05, p.z); const nb = Math.sin(t * 10), hb = Math.max(0.9, h);
+    DP.ofkeKilif.boy = (1.05 + nb * 0.05) * hb; P(DP.ofkeKilif); DP.ofkeSok.boy = (1.0 + nb * 0.06) * hb; DP.ofkeSok.rot = -t * 1.6; P(DP.ofkeSok);
     if (RND() < dt * 10 * OLCEK) { _v3.set(p.x + rr(-0.3, 0.3), p.y + rr(0.1, 0.6) * h, p.z + rr(-0.3, 0.3)); _v2.set(0, rr(1, 2), 0); P(DP.ofkeKiv); }
-    if (c.kemik && c.kemik.parent && c.nesne) {
-      // boynuz kıvrımları baş kemiğinin yerel uzayında (koç modelinden ölçüldü: iki kıvrımın orta-üstü). Alev kökü boynuza yapışık,
-      // diller yukarı yükselir (arkadan bakan oyun kamerasında da başın üstünden görünür); kökte koyu kızıl, içte sarı-turuncu
-      for (let j = 0; j < 2; j++) { c.kemik.localToWorld(_v4.copy(BOYNUZ[j])); _v3.copy(_v4); DP.ofkeKor.boy = (0.34 + 0.06 * Math.sin(t * 17 + j * 2)) * h; P(DP.ofkeKor); }
-      c.al = (c.al || 0) + dt * 56 * OLCEK; while (c.al >= 1) { c.al--; c.kemik.localToWorld(_v4.copy(BOYNUZ[RND() < 0.5 ? 0 : 1]));
-        _v3.set(_v4.x + rr(-0.04, 0.04), _v4.y + rr(0, 0.04), _v4.z + rr(-0.04, 0.04)); _v2.set(rr(-0.12, 0.12), rr(1.1, 1.7), rr(-0.12, 0.12));
-        const rt = rr(-0.3, 0.3), om = rr(0.24, 0.36);
-        if (RND() < 0.45) { const o = DP.ofkeAlevK; o.omur = om; o.boy = rr(0.4, 0.52) * h; o.rot = rt; P(o); }
-        else { const o = DP.ofkeAlev; o.omur = om; o.boy = rr(0.34, 0.46) * h; o.rot = rt; P(o); } } } },
+    // boynuz kıvrımları baş kemiğinin yerel uzayında (koç modelinden ölçüldü: iki kıvrımın orta-üstü). Alev kökü boynuza yapışık, diller
+    // yukarı yükselir (arkadan bakan oyun kamerasında da başın üstünden görünür). Kemik yoksa baş hizasından.
+    if (bz) for (let j = 0; j < 2; j++) { c.kemik.localToWorld(_v4.copy(BOYNUZ[j])); _v3.copy(_v4); DP.ofkeKor.boy = (0.26 + 0.05 * Math.sin(t * 17 + j * 2)) * h; P(DP.ofkeKor); }
+    c.al = (c.al || 0) + dt * 46 * OLCEK; while (c.al >= 1) { c.al--;
+      if (bz) c.kemik.localToWorld(_v4.copy(BOYNUZ[RND() < 0.5 ? 0 : 1])); else _v4.set(p.x + rr(-0.12, 0.12), p.y + h * 0.85, p.z + rr(-0.12, 0.12));
+      _v3.set(_v4.x + rr(-0.04, 0.04), _v4.y + rr(0, 0.04), _v4.z + rr(-0.04, 0.04)); _v2.set(rr(-0.12, 0.12), rr(1.4, 2.0), rr(-0.12, 0.12));
+      const rt = rr(-0.25, 0.25), om = rr(0.28, 0.4), bo = rr(0.56, 0.7) * h, k1 = DP.ofkeAlevK, k2 = DP.ofkeAlev;
+      k1.omur = k2.omur = om; k1.boy = bo; k1.boy2 = bo * 0.25; k2.boy = bo * 0.5; k2.boy2 = bo * 0.12; k1.rot = k2.rot = rt; P(k1); P(k2); } },
   // Buz Nefesi dondurması: gövdeyi saran yarı saydam kristal kabuk (dikey kristaller + soluk buz pusu); kapanırken kırılır
   donKabuk(c, dt, t, p, h) { c.yas += dt; const g = Math.min(1, c.yas / 0.12);
     const nk = kristalH ? 3 : 7;
@@ -2169,10 +2265,19 @@ function durumNesne(harita, nesne) {
   harita.forEach(durumTur);
   if (!harita.size) durumlar.delete(nesne);
 }
+// Görsel açılış / sönüş (sn): kare başına çizilen durum katmanları (halka, rün, parıltı, alev) bir karede belirip bir karede kaybolmasın.
+// Motorun durum süresi değişmez; kapanınca efekt DURUM_SONUS sn içinde solar (yeniden açılırsa kaldığı yerden sürer). Buz kabuğu kırılarak
+// kapanır (anlık), kalkan kendi sönüşünü yapar.
+const DURUM_ACILIS = 0.18, DURUM_SONUS = 0.32;
 function durumTur(c, tur) {
   const dt = durumDt, t = durumT, p = durumP, h = durumH;
-  if (c.kapan >= 0) { c.kapan += dt; if (tur === 'kalkan') DURUM.kalkan(c, dt, t, p, h); if (c.kapan > 0.2 || tur !== 'kalkan') { if (c.mesh) { c.mesh.visible = false; c.mesh.userData.dolu = false; } durumHarita.delete(tur); } return; }
-  if ((durumGor || tur === 'kalkan') && DURUM[tur]) { ONCELIK = 0; ALFA_KAT = tur === 'sersem' || tur === 'yanik' || tur === 'ofke' ? 1 : DURUM_ALFA; DURUM[tur](c, dt, t, p, h); ALFA_KAT = 1; ONCELIK = 1; }
+  const alfa0 = tur === 'sersem' || tur === 'yanik' || tur === 'ofke' ? 1 : DURUM_ALFA;
+  if (c.kapan >= 0) { c.kapan += dt; if (tur === 'kalkan') DURUM.kalkan(c, dt, t, p, h);
+    else if (tur !== 'donKabuk' && c.kapan < DURUM_SONUS && durumGor && DURUM[tur]) { const e = 1 - c.kapan / DURUM_SONUS;
+      ONCELIK = 0; ALFA_KAT = alfa0 * e * e * Math.min(1, (c.gy || 0) / DURUM_ACILIS); DURUM[tur](c, dt, t, p, h); ALFA_KAT = 1; ONCELIK = 1; }
+    if (tur === 'kalkan' ? c.kapan > 0.2 : (tur === 'donKabuk' || c.kapan >= DURUM_SONUS)) { if (c.mesh) { c.mesh.visible = false; c.mesh.userData.dolu = false; } durumHarita.delete(tur); } return; }
+  c.gy = (c.gy || 0) + dt;
+  if ((durumGor || tur === 'kalkan') && DURUM[tur]) { ONCELIK = 0; ALFA_KAT = alfa0 * Math.min(1, c.gy / DURUM_ACILIS); DURUM[tur](c, dt, t, p, h); ALFA_KAT = 1; ONCELIK = 1; }
 }
 function sars(g) { sarsGuc = Math.min(0.35, Math.max(sarsGuc * Math.exp(-(simdi() - sarsT) * 9), 0) + g); sarsT = simdi(); }
 const _sars = new THREE.Vector3();

@@ -47,6 +47,8 @@ const _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vect
 const _q1 = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _q3 = new THREE.Quaternion();
 const _m1 = new THREE.Matrix4(), _m2 = new THREE.Matrix4(), _m3 = new THREE.Matrix4();
 const YUKARI = new THREE.Vector3(0, 1, 0);
+// Boynuz Öfkesi gövde boyası (kenar kipi): gövde koyu kızıl, kontur sıcak beyaz-sarı nabız
+const KENAR_GOVDE = new THREE.Color('#4a0604'), KENAR_SICAK = new THREE.Color('#ffd86a');
 
 // ───────────────────────── malzeme yaması: parlama + çözülme ─────────────────────────
 // Her birimin malzemeleri BİR KEZ klonlanır (his.hazirla). Program önbellek anahtarı sabit olduğu için
@@ -139,7 +141,7 @@ function bh(b) {   // birimin his durumu
     b._his = { geri: { x: 0, v: 0 }, ezil: { x: 0, v: 0 }, egil: { x: 0, v: 0 }, yon: new THREE.Vector3(0, 0, 1), flas: 0, flasSure: 0.13, flasRenk: new THREE.Color(1, 1, 1),
       atil: null, giris: null, olum: null, zafer: null, uni: null, bosta: false, donma: 0,
       yp: { renk: new THREE.Color(1, 1, 1), guc: 0, t: 0, sure: 0, tepe: 0 },     // yetenek hazırlık parlaması (element rengi)
-      yb: { renk: new THREE.Color(1, 1, 1), guc: 0, t: 0, sure: 0 },             // süreli gövde boyası (zehir yeşili, buz mavisi, lanet moru…)
+      yb: { renk: new THREE.Color(1, 1, 1), kRenk: new THREE.Color(1, 1, 1), guc: 0, t: 0, sure: 0, kenar: false },   // süreli gövde boyası (zehir yeşili, buz mavisi, lanet moru…); kRenk: kenar kipinin kontur rengi
       sis: { oran: 0, t: 0, sure: 0 }, buz: 0 };                                 // gövde şişmesi (Boynuz Öfkesi) · buz donması (Buz Nefesi, sn)
   }
   H.birimler.add(b); return b._his;
@@ -277,8 +279,10 @@ export const his = {
   donuk(b) { return !!(b && b._his && (b._his.donma > 0 || b._his.buz > 0)); },
   /** Süreli gövde boyası (yetenek etkisi): 0,12 sn'de açılır, hafif nabızla tutulur, son 0,4 sn'de söner. Vuruş parlaması öncelikli,
       hazırlık parlamasıyla güçlü olan görünür (aynı malzeme yaması; yeni malzeme yok). */
-  /** süreli gövde boyası. o.kenar: albedo boyanmaz, yalnız nabız atan kenar ışıması (kızıl koçta kızıl boya seçilmez: Boynuz Öfkesi) */
-  boya(b, renk, guc = 0.3, sure = 2, o = null) { if (!b) return; const s = bh(b); his.hazirla(b); const y = s.yb; y.renk.set(renk); y.guc = guc; y.t = 0; y.sure = Math.max(0.2, sure); y.kenar = !!(o && o.kenar); },
+  /** süreli gövde boyası. o.kenar (Boynuz Öfkesi): kızıl koçta kızıl boya seçilmez → gövde KOYU KIZILA çekilir (kızgın demir gibi),
+      kenarda nabız atan kontur verilen renkten sıcak beyaz-sarıya kayar (koçun kırmızı-turuncusundan ayrışır; renk yalnız kontura) */
+  boya(b, renk, guc = 0.3, sure = 2, o = null) { if (!b) return; const s = bh(b); his.hazirla(b); const y = s.yb; y.kenar = !!(o && o.kenar);
+    if (y.kenar) { y.kRenk.set(renk); y.renk.copy(KENAR_GOVDE); } else y.renk.set(renk); y.guc = guc; y.t = 0; y.sure = Math.max(0.2, sure); },
   /** Gövde şişmesi: oran (0,08 = %8), sure sn (0,15 sn'de şişer, son 0,3 sn'de iner; ayak tabanı merkezli) */
   sis(b, oran = 0.08, sure = 1) { if (!b) return; const s = bh(b); s.sis.oran = oran; s.sis.t = 0; s.sis.sure = Math.max(0.3, sure); },
   /** Buz donması: birimin animasyonu sure sn durur (hit-stop'tan ayrı, uzun; ölünce çözülür) */
@@ -292,8 +296,28 @@ export const his = {
     if (!b || !hedefPos) return; const s = bh(b); if (s.olum) return;
     b.kok.getWorldPosition(_v1); _v2.copy(hedefPos).sub(_v1);
     const uz = Math.hypot(_v2.x, _v2.z);
-    const d = Math.min(mesafe, Math.max(0, uz - temas * 0.95)) / kokOlcek(b);   // hedefin içine girme: iki gövde yarıçapı kadar dur
-    s.atil = { t: 0, sure: Math.max(0.08, sure), donus, tut: Math.max(0.02, tut), egil, d, yon: yerelYon(b, _v2, new THREE.Vector3()), vurdu: false };
+    let d = Math.min(mesafe, Math.max(0, uz - temas * 0.95)) / kokOlcek(b);   // hedefin içine girme: iki gövde yarıçapı kadar dur
+    let donY = 0, yuk = 0, kavra = false;
+    if (tut >= 0.3 && H.kamera && uz > 1e-3) { kavra = true;
+      // tutmalı atılma (Can Emme kavraması): hedefin İÇİNE / ÖNÜNE dalmaz; iki gövde yarıçapı kadar uzakta kalıp (gerekirse azıcık geri
+      // çekilip) yana kayar ve hedefe döner, yandan bakan kamerada üst-yanına yükselir; ısırık 'sar' pozunun baş dalışıyla okunur. Hedefin
+      // gövdesi ve canının çekildiği görünür kalır (eskiden yarasa oyun kamerasında hedefi arkadan örtüyor, önizlemede kanadı üstüne biniyordu).
+      // S: iki gövde yarıçapı toplamı (temas = S × 0,45). hiza: kamera saldırı doğrultusunda mı (1: oyun kamerası, arkadan · 0: yandan).
+      // Yan kayma küçük (komşu birimin önüne geçmesin), kameranın bakış ışınından uzaklaşan tarafa.
+      const S = temas / 0.45, dx = _v2.x / uz, dz = _v2.z / uz, lx = -dz, lz = dx;
+      H.kamera.getWorldPosition(_v3); let cx = _v3.x - hedefPos.x, cz = _v3.z - hedefPos.z; const cl = Math.hypot(cx, cz) || 1; cx /= cl; cz /= cl;
+      const dc = dx * cx + dz * cz, hiza = Math.abs(dc), sg = Math.sign((lx * cx + lz * cz) * dc) || 1;
+      const a = S * (0.85 + 0.25 * (1 - hiza)), yan = S * 0.25 * hiza * sg, ileri = Math.max(-0.15 * S, uz - a);
+      let mx = dx * ileri + lx * yan, mz = dz * ileri + lz * yan, L = Math.hypot(mx, mz);
+      const Lmax = mesafe * 1.4; if (L > Lmax) { mx *= Lmax / L; mz *= Lmax / L; L = Lmax; }
+      const wx = _v2.x - mx, wz = _v2.z - mz;   // varış yerinden hedefe
+      donY = Math.atan2(wx, wz) - Math.atan2(dx, dz); donY -= Math.round(donY / PI2) * PI2;
+      yuk = (b.kok.userData.vfxBoy || 1) * 0.3 * (1 - hiza) / kokOlcek(b);
+      d = L / kokOlcek(b); _v2.set(mx, 0, mz); if (L < 1e-4) _v2.set(dx, 0, dz);
+    }
+    const yon = yerelYon(b, _v2, new THREE.Vector3());
+    s.atil = { t: 0, sure: Math.max(0.08, sure), donus, tut: Math.max(0.02, tut), egil, d, yon, vurdu: false, donY, yuk, kavra,
+      egYon: kavra ? yerelYon(b, _v1.copy(hedefPos).sub(b.kok.getWorldPosition(_v3)), new THREE.Vector3()) : yon };
   },
   /** Savaş başı girişi: gecikme sn sonra gökten düşer, yere çarpar ('toz' olayı + küçük sarsıntı). */
   giris(b, gecikme = 0, { yukseklik = 6.5 } = {}) {
@@ -330,7 +354,7 @@ function birimGuncelle(b, dt, dtR) {
   // yaylar
   yay(s.geri, 0, 210, 19, dt); yay(s.ezil, 0, 330, 15, dt); yay(s.egil, 0, 230, 17, dt);
   let ox = s.yon.x * s.geri.x, oz = s.yon.z * s.geri.x, oy = 0, ezil = s.ezil.x, egil = s.egil.x * 0.5;
-  let ileriEgil = 0;
+  let ileriEgil = 0, donAtil = 0;
   // atılma
   if (s.atil) {
     const a = s.atil; a.t += dt; const T = a.sure;
@@ -342,8 +366,12 @@ function birimGuncelle(b, dt, dtR) {
     if (!a.vurdu && a.t >= T) { a.vurdu = true; s.ezil.v -= 2.0; }
     ox += a.yon.x * x; oz += a.yon.z * x;
     ileriEgil = a.egil * x / Math.max(1e-4, a.d);
+    if (a.kavra) {   // kavrama: yer değiştirme küçük olabilir → zarf zamandan; hedefe eğilir ve döner, (yandan bakışta) yükselir
+      const u = a.t < T * 0.32 ? 0 : a.t < T ? yumusak((a.t - T * 0.32) / (T * 0.68)) : a.t < T + a.tut ? 1 : 1 - cikis3((a.t - T - a.tut) / a.donus);
+      ileriEgil = a.egil * u; oy += a.yuk * u; donAtil = a.donY * u;
+    }
     if (a.t >= T + a.tut + a.donus) s.atil = null;
-    s._ay = a.yon;
+    s._ay = a.egYon;
   }
   // giriş: düşme → çarpma
   if (s.giris) {
@@ -389,11 +417,12 @@ function birimGuncelle(b, dt, dtR) {
   const yb = s.yb; let ybG = 0;
   if (yb.guc > 0) { yb.t += dtR; const e = Math.min(1, yb.t / 0.12) * (yb.t > yb.sure - 0.4 ? Math.max(0, (yb.sure - yb.t) / 0.4) : 1); ybG = yb.guc * e * (0.85 + 0.15 * Math.sin(yb.t * 7)); if (yb.t >= yb.sure) yb.guc = 0; }
   if (s.uni) {
-    // boya: albedo boyanın rengine çekilir (gücün ~2,8 katı, en çok 0,82: turuncu kurbağa sarımsı değil gerçekten yeşil) + hafif kenar ışıması; kenar kipinde yalnız nabızlı kenar ışıması
+    // boya: albedo boyanın rengine çekilir (gücün ~2,8 katı, en çok 0,82: turuncu kurbağa sarımsı değil gerçekten yeşil) + hafif kenar ışıması;
+    // kenar kipinde gövde koyu kızıla iner (en çok 0,6) ve kontur nabızla turuncudan sıcak sarıya parlar
     const kenarK = yb.kenar && ybG > 0.002;
-    s.uni.uKutBoya.value = ybG > 0.002 && !kenarK ? Math.min(0.82, ybG * 2.8) : 0;
+    s.uni.uKutBoya.value = ybG > 0.002 ? (kenarK ? Math.min(0.6, ybG * 1.8) : Math.min(0.82, ybG * 2.8)) : 0;
     if (s.flas > 0) s.uni.uKutFlas.value = Math.min(1.2, s.flas); else if (ypG > 0.002 && ypG >= ybG) { s.flasRenk.copy(yp.renk); s.uni.uKutFlas.value = ypG; s.uni.uKutKenar.value = 0; }
-    else if (kenarK) { s.flasRenk.copy(yb.renk); s.uni.uKutFlas.value = ybG * (1.6 + 1.4 * Math.sin(yb.t * 9) ** 2); s.uni.uKutKenar.value = 1; }
+    else if (kenarK) { const nb = Math.sin(yb.t * 9) ** 2; s.flasRenk.copy(yb.kRenk).lerp(KENAR_SICAK, 0.15 + 0.6 * nb); s.uni.uKutFlas.value = ybG * (1.2 + 1.6 * nb); s.uni.uKutKenar.value = 1; }
     else if (ybG > 0.002) { s.flasRenk.copy(yb.renk); s.uni.uKutFlas.value = ybG * 0.55; s.uni.uKutKenar.value = 0.7; } else s.uni.uKutFlas.value = 0; }
   // gövdeye yaz (ayak tabanı merkezli ölçek: model tabanı govde başlangıcında)
   const gv = b.govde;
@@ -409,6 +438,7 @@ function birimGuncelle(b, dt, dtR) {
   _v1.set(ax1 * egil + ax2 * ileriEgil, 0, az1 * egil + az2 * ileriEgil);
   const aci = _v1.length();
   if (aci > 1e-5) gv.quaternion.setFromAxisAngle(_v1.divideScalar(aci), aci); else gv.quaternion.identity();
+  if (donAtil) gv.quaternion.multiply(_q1.setFromAxisAngle(YUKARI, donAtil));
 }
 
 // Vurulma zarfı (dört ayaklı, yılan): 0,05 sn'de yumuşak yükselir, ~0,35 sn'de söner; titreşim yok. Sık vuruşta birikmez:

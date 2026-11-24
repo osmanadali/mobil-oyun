@@ -1311,7 +1311,9 @@ function yetenekHis(f, b, hedefler, ekle, liste = null, i = 0) {
     hedefler.forEach((o, j) => { const g = f._gec(o.uid, 'hasar'); ekle(f.t + g, () => { if (o.olumT < 0) his.donma(o, 0.06); }); if (j > 0) altSes(f.t + g, j, o.uid); }); }
 }
 // küçük sayaç (Boynuz Öfkesi: kalan güçlenmiş vuruş)
-function sayacGoster(b, n) { if (!b || b.olumT >= 0) return; const y = yaziEkle(b, '×' + n, '#ff6a3a', SAYAC_OPS); if (y) y.p.y += 0.25 * (b.kok.userData.vfxBoy || 1); }
+// yeni sayaç aynı birimin eskisinin yerine geçer (aynı sabit yerde ×2 ile ×3 üst üste binmesin)
+function sayacGoster(b, n) { if (!b || b.olumT >= 0) return; for (let i = yazilar.length - 1; i >= 0; i--) if (yazilar[i].tur === 'sayac' && yazilar[i].uid === b.uid) yazilar.splice(i, 1);
+  const y = yaziEkle(b, '×' + n, '#ff6a3a', SAYAC_OPS); if (y) y.p.y += 0.25 * (b.kok.userData.vfxBoy || 1); }
 function yetenekEfekt(b, ad, kut = false) {
   if (!b || !D.YETENEK[ad]) return;
   bantEkle(b, D.YETENEK[ad].ad + '!', { kut });
@@ -1415,12 +1417,10 @@ function yaziEkle(b, metin, renk, o) {
   }
   const gec = Math.max(0, b.yaziSon + 0.12 - gorselT); b.yaziSon = gorselT + gec;
   const yon = ((b.yaziSira = (b.yaziSira || 0) + 1) % 2 ? 1 : -1);
-  // şerit: aynı birimde ekranda hâlâ taze duran sayılar (ör. yılanın +160 iyileşmesi ile −169 hasarı, koçun ×3 sayacı ile vuruşu) üst üste
-  // binmesin: her biri bir şerit yukarıda ve yana kayık doğar
-  let serit = 0; for (let i = 0; i < yazilar.length; i++) { const z = yazilar[i]; if (z.uid === b.uid && z.yas + gec < 0.45) serit++; }
+  // üst üste binme kaplamaCiz'in yerleşiminde çözülür (sayiYerlestir): ekrandaki sayılar, can çubukları, ad balonu ve durum simgeleri engeldir
   const p = b.kok.position.clone(); p.y += 1.25 * (b.kok.userData.vfxBoy || 1);
   const y = { uid: b.uid, b, p, metin, renk, yas: -gec, t0: gorselT, olcek: o.olcek, olcek0: o.olcek, buyuk: o.buyuk, kritik: o.kritik, kenar: o.kenar, yon,
-    onc: o.onc, tur: o.tur, n: o.n, alfa: o.alfa, bir: 0, nabiz: 0, serit: serit % 3 };
+    onc: o.onc, tur: o.tur, n: o.n, alfa: o.alfa, bir: 0, nabiz: 0 };
   yazilar.push(y); return y;
 }
 // Yetenek balonu (OGRETICI §4.3): aynı anda en çok 2; üçüncüsü sıraya girer, 0,6 sn'de açılamazsa düşer; Kut balonu öne geçer.
@@ -1625,8 +1625,25 @@ function balonCiz(w, O, dtG = 0.016) {
     const itMax = 80 * O.o; if (it > itMax) { it = itMax; sig = false; }
     bt._it = (bt._it || 0) + (it - (bt._it || 0)) * Math.min(1, dtG * 12); by -= bt._it;
     al *= solma(bt, !sig, dtG, 0.4); kcx.globalAlpha = al;
+    // başka birimin can çubuğuna / durum simgesine ya da öbür açık balona binmesin (Bulut Hücumu'nda at kurbağanın ardından geçerken balon
+    // kurbağanın çubuğunu ~4 kare örtüyordu): yana (kuyruk gövdenin içinde kalır, sahibini göstermeyi sürdürür) ya da yukarı kayar; en az
+    // kayan konum, önceki seçime yapışık. Kuyruğun ucu (alttaki ~3 px) sayılmaz; en çok ~34 px yükselir (daha yukarıda balon başka birimin
+    // balonu gibi okunur: o zaman yerinde kalır). Kaçış hızlı, yerine dönüş yumuşak.
+    { const r0 = bh / 2, yk = bh + kuyruk, yan = Math.max(0, bw / 2 - r0 - kuyruk), xa = 16 + bw / 2, xb = w - 16 - bw / 2, alt0 = by + yk - 3 * O.o, azami = 34 * O.o;
+      let ec = Infinity, sx = 0, sy = 0, sk = bt._kol || 0;
+      for (let k = 0; k < 5; k++) {
+        const x = Math.max(xa, Math.min(xb, cx + BALON_YAN[k] * yan)), alt = yukariIt(x - bw / 2 - 2, x + bw / 2 + 2, alt0, yk - 3 * O.o + 2, 6, b.uid);
+        if (alt !== alt || alt0 - alt > azami) continue;
+        const c = (alt0 - alt) + 1.3 * Math.abs(x - cx) + (k === (bt._kol || 0) ? 0 : 6);
+        if (c < ec) { ec = c; sx = x - cx; sy = alt - alt0; sk = k; }
+      }
+      bt._kol = sk;
+      if (bt._sx === undefined) { bt._sx = sx; bt._sy = sy; }
+      else { const zx = Math.min(1, dtG * (Math.abs(sx) > Math.abs(bt._sx) ? 40 : 12)), zy = Math.min(1, dtG * (sy < bt._sy ? 40 : 12)); bt._sx += (sx - bt._sx) * zx; bt._sy += (sy - bt._sy) * zy; }
+      cx += bt._sx; by += bt._sy; }
     if (by < 8) by = 8;
-    if (al > 0.3) { const k = bt._kk || (bt._kk = { x0: 0, y0: 0, x1: 0, y1: 0 }); k.x0 = cx - bw / 2; k.x1 = cx + bw / 2; k.y0 = by; k.y1 = by + bh + kuyruk; bt._k = k; }   // sayılar kaçınsın
+    if (al > 0.3) { const k = bt._kk || (bt._kk = { x0: 0, y0: 0, x1: 0, y1: 0 }); k.x0 = cx - bw / 2; k.x1 = cx + bw / 2; k.y0 = by; k.y1 = by + bh + kuyruk; bt._k = k;
+      engelEkle(k.x0 - 2, k.y0 - 2, k.x1 + 2, k.y1 + 1, -1, 'b'); }   // öbür balon ve sayılar kaçınsın
     // gövde + kuyruk tek yol
     const bx = cx - bw / 2, r = bh / 2, tx = Math.max(bx + r, Math.min(bx + bw - r, ax));
     kcx.beginPath(); kcx.moveTo(bx + r, by); kcx.arcTo(bx + bw, by, bx + bw, by + bh, r); kcx.arcTo(bx + bw, by + bh, bx, by + bh, r);
@@ -1682,14 +1699,117 @@ function odakKesisir(x, y, w, h) {
 function solma(nesne, kes, dtG, alt) { const h = kes ? alt : 1, v = nesne._kA === undefined ? 1 : nesne._kA; nesne._kA = v + (h - v) * Math.min(1, dtG * (kes ? 16 : 8)); return nesne._kA; }
 // çubuk listesi: birim başına kalıcı yuva nesneleri (kare başına nesne yok)
 const cubukHavuz = [], cubukListe = [];
-function cubukYuva(i) { return cubukHavuz[i] || (cubukHavuz[i] = { b: null, a: null, x: 0, y: 0, ox: 0, oy: 0 }); }
+function cubukYuva(i) { return cubukHavuz[i] || (cubukHavuz[i] = { b: null, a: null, x: 0, y: 0, ox: 0, oy: 0, ik: false }); }
+// ── 2B yerleşim engelleri (kare başına yeniden; kalıcı yuva nesneleri) ──
+// can çubukları ve baş üstü durum simgeleri (uid: birimin), açık ad balonları, üst HUD ve yerleşmiş sayılar (uid −1). Ad balonu başka
+// birimin çubuğuna/simgesine, sayılar hiçbirine binmez (eskiden yalnız sayı ↔ balon çakışması önleniyordu).
+const engel = []; let engelN = 0;
+function engelEkle(x0, y0, x1, y1, uid, tur = '') { let e = engel[engelN]; if (!e) e = engel[engelN] = { x0: 0, y0: 0, x1: 0, y1: 0, uid: 0, tur: '' }; e.x0 = x0; e.y0 = y0; e.x1 = x1; e.y1 = y1; e.uid = uid; e.tur = tur; engelN++; }
+export function _engeller() { return engel.slice(0, engelN).map(e => ({ ...e })); }   // tanı: son karenin 2B yerleşim engelleri (tur: c çubuk, i simge, b balon, h HUD, s sayı)
+// [x0, x1] genişliğinde, altı `alt`, boyu `yuk` olan kutu engellerle çakışıyorsa çakışanların en üstündekinin üstüne çıkar (yinelenir: dikey yığın).
+// Döner: yeni alt; kutunun üstü `ustSinir`ı aşarsa NaN. haric: bu uid'nin engelleri sayılmaz (balonun kendi çubuğu).
+function yukariIt(x0, x1, alt, yuk, ustSinir, haric = -2) {
+  for (let k = 0; k < 16; k++) {
+    let ust = Infinity;
+    for (let i = 0; i < engelN; i++) { const e = engel[i]; if (e.uid === haric || x1 <= e.x0 || x0 >= e.x1 || alt <= e.y0 || alt - yuk >= e.y1) continue; if (e.y0 < ust) ust = e.y0; }
+    if (ust === Infinity) return alt;
+    alt = ust - 1; if (alt - yuk < ustSinir) return NaN;
+  }
+  return NaN;
+}
+// aynısı aşağı doğru (ekranın üst kenarındaki birimde yukarı yer yoksa): döner yeni alt; altSinir aşılırsa NaN
+function asagiIt(x0, x1, alt, yuk, altSinir) {
+  for (let k = 0; k < 16; k++) {
+    let ust = -Infinity;
+    for (let i = 0; i < engelN; i++) { const e = engel[i]; if (x1 <= e.x0 || x0 >= e.x1 || alt <= e.y0 || alt - yuk >= e.y1) continue; if (e.y1 > ust) ust = e.y1; }
+    if (ust === -Infinity) return alt;
+    alt = ust + 1 + yuk; if (alt > altSinir) return NaN;
+  }
+  return NaN;
+}
+// Baş üstü durum simgeleri (vfx DURUM): lanet gözü, sersem yıldızları (başın çevresinde 0,4 yarıçaplı yörünge), zehir kafatası; kökten
+// h (vfxBoy) + [alt, üst] yükseklikte. Can çubuğunun dayanağı (1,12·h + 0,12) tam bu bandın içine düşüyordu: Kara Gölge'de kurbağanın
+// çubuğu mor gözün ortasında kalıyor, çubuk (odak solması) soluklaşınca göz çubuğun önüne geçmiş gibi görünüyordu. Simge varken çubuk
+// simge bandının üstüne çıkar (yumuşak; ayrı bir sıra: baş → simge → çubuk → sayılar); band sayılar ve balon için de engeldir.
+// [alt, üst, derinlik yarıçapı (yörünge: uzak kenar ekranda yukarıda), yatay yarı genişlik] (dünya birimi; vfx.js DP/DURUM ölçüleri).
+// Sersem yıldızları başın çevresinde döner: bandı yıldızların yüksekliği (yörüngenin derinliği sayılmaz; dik oyun kamerasında derinlikle
+// çubuk ~50 px kalkıyordu, birimden kopuyordu); arkadan geçen yıldız bir an çubuğun ardında kalır.
+const IKON_BANT = { lanet: [0.03, 0.73, 0, 0.32], sersem: [0, 0.5, 0, 0.62], zehir: [0.14, 0.64, 0, 0.18] };
+const _ikO = { x: 0, y: 0, z: 0 }, _ikV = new THREE.Vector3(), _ikF = new THREE.Vector3(), _ikS = new THREE.Vector3();
+let ikX0 = 0, ikX1 = 0, ikY0 = 0, ikY1 = 0;
+function ikonBant(b) {
+  const vd = b.vd; if (!vd || !(vd.lanet || vd.sersem || vd.zehir)) return false;
+  let lo = Infinity, hi = -Infinity, r = 0, yr = 0;
+  for (const tur in IKON_BANT) if (vd[tur]) { const a = IKON_BANT[tur]; if (a[0] < lo) lo = a[0]; if (a[1] > hi) hi = a[1]; if (a[2] > r) r = a[2]; if (a[3] > yr) yr = a[3]; }
+  const q = b.kok.position, hb = b.kok.userData.vfxBoy || 1;
+  _ikF.setFromMatrixColumn(kamera.matrixWorld, 2); _ikF.y = 0; if (_ikF.lengthSq() < 1e-8) _ikF.set(0, 0, 1); _ikF.normalize();   // yatayda kameraya doğru
+  _ikS.setFromMatrixColumn(kamera.matrixWorld, 0); _ikS.y = 0; if (_ikS.lengthSq() < 1e-8) _ikS.set(1, 0, 0); _ikS.normalize();
+  const u = ekran(_ikV.set(q.x - _ikF.x * r, q.y + hb + hi, q.z - _ikF.z * r), _ikO).y;   // bandın üstü: yörüngenin uzak kenarı
+  const a = ekran(_ikV.set(q.x + _ikF.x * r, q.y + hb + lo, q.z + _ikF.z * r), _ikO).y;   // altı: yakın kenarı
+  const m = ekran(_ikV.set(q.x, q.y + hb + (lo + hi) / 2, q.z), _ikO), mx = m.x, my = m.y;
+  if (m.z > 1) return false;
+  const s = ekran(_ikV.set(q.x + _ikS.x * yr, q.y + hb + (lo + hi) / 2, q.z + _ikS.z * yr), _ikO), gx = Math.hypot(s.x - mx, s.y - my);
+  ikX0 = mx - gx; ikX1 = mx + gx; ikY0 = Math.min(u, my); ikY1 = Math.max(a, my);
+  return true;
+}
+const SUTUN = [0, 1, -1, 2, -2], BALON_YAN = [0, -0.5, 0.5, -1, 1];
+// Yüzen sayının yerleşimi (kaplamaCiz sırayla çağırır: sayaç, sıradan/yetenek sayıları eskiden yeniye, en son süreli hasar): doğal yer
+// (vurulanın başı üstü + yükseliş + hafif yana süzülme) engellerle çakışıyorsa en az kayan konum seçilir: aynı sütunda yukarı yığın ya da
+// yan sütunlar (yelpaze; sayının yönüne öncelik). Eskiler yerinde kalır, yeni gelen kayar; seçim önceki kareye yapışık, konum yumuşak.
+// Sayı ekranın içinde sıkıştırılır (kenardan taşmaz). DOT yığını şişirmez: en çok ~2 sıra yükselir, yer yoksa solar.
+function sayiYerlestir(y, W, H, O, dtG) {
+  const p = ekran(y.p), e = y.yas / 0.95;
+  const taban = y.kritik ? 26 : y.buyuk ? 20 : 17, sc = (e < 0.12 ? 1.7 - 5.8 * e : 1) * (1 + y.nabiz * 2.2);
+  y._al = y.alfa * Math.max(0, 1 - Math.pow(Math.max(0, e - 0.35) / 0.65, 2)); y._ol = y.olcek * sc; y._taban = taban; y._gor = p.z <= 1 && y._al > 0.004;
+  if (!y._gor) return;
+  // doğal yer: vurulanın başı üstü (+ çubuğu durum simgesinin üstüne çıktıysa o kadar yukarı: sayı simgenin içinde doğmasın)
+  // yükseliş tekdüze (yavaşlayarak; eskiden parabol: tepe sonrası geri inen eski sayı altındaki yeni sayının üstüne biniyordu)
+  let nx = p.x + y.yon * e * 12, ny = p.y - 18 * (1 - (1 - e) * (1 - e)) - 8 + ((y.b && y.b._ikS) || 0);
+  // kutu: giriş patlaması ve nabız sayılmaz (yerleşim sabit boyla; yalnız metin değişince yeniden ölçülür)
+  if (y._twM !== y.metin || y._twT !== taban) { kcx.font = SAYI_FONT[taban]; y._tw = kcx.measureText(y.metin).width; y._twM = y.metin; y._twT = taban; }
+  const ob = y.olcek, bw = y._tw * ob + 6, bh = taban * ob * 0.8 + 2 + (y.kritik ? 12 : 0);
+  let tx, ty;
+  // sayaç (Boynuz Öfkesi ×3): yükselmez, can çubuğunun sağında durur (yer seçmez; öbür sayılar ondan kaçar)
+  if (y.tur === 'sayac' && y.b && y.b._cubuk) { tx = nx = y.b._cubuk.x + O.gw * 0.5 + 14 * O.o; ty = ny = y.b._cubuk.y + 20 * O.o; }
+  else {
+    const xMin = bw / 2 + 4, xMax = W - bw / 2 - 4;
+    ny = Math.min(H - 5, Math.max(bh + 4, ny));
+    const adim = bw * 0.62 + 4, yuk = bh + 3, azami = (y.onc === 0 ? 2.2 : 5) * yuk;
+    let ec = Infinity, sk = -1;
+    // yapışkan: önceki yeri (doğal yere göre aynı fark) hâlâ boşsa sayı orada kalır (altındaki eski sayı sönerken aşağı kaymaz)
+    if (y._kol >= 0) {
+      const x = Math.max(xMin, Math.min(xMax, y._kol < 5 ? nx + SUTUN[y._kol] * y.yon * adim : nx)), alt = ny + 3 + y._hoy;
+      if (alt - yuk >= 4 && alt <= H - 2 && -y._hoy <= azami && yukariIt(x - bw / 2, x + bw / 2, alt, yuk, 4) === alt) { ec = -1; sk = y._kol; tx = x; ty = alt - 3; }
+    }
+    if (ec >= 0) for (let k = 0; k < 5; k++) {
+      const x = Math.max(xMin, Math.min(xMax, nx + SUTUN[k] * y.yon * adim)), alt = yukariIt(x - bw / 2, x + bw / 2, ny + 3, yuk, 4);
+      if (alt !== alt || ny + 3 - alt > azami) continue;
+      const c = (ny + 3 - alt) + 1.5 * Math.abs(x - nx) + (k === y._kol ? 0 : 8);
+      if (c < ec) { ec = c; sk = k; tx = x; ty = alt - 3; }
+    }
+    if (sk < 0) {   // yukarıda yer yok (ekranın üst kenarı ya da kalabalık): aşağı; o da yoksa DOT solar, öbürü doğal yerinde kalır
+      const x = Math.max(xMin, Math.min(xMax, nx)), alt = asagiIt(x - bw / 2, x + bw / 2, ny + 3, yuk, H - 2);
+      tx = x; if (alt === alt) { ty = alt - 3; sk = 5; } else { ty = ny; if (y.onc === 0) y._al *= 0.35; }
+    }
+    y._kol = sk; y._hoy = ty - ny;
+  }
+  // doğal yere göre fark yumuşar (yükseliş sürer); ilk görünüşte doğrudan yerinde doğar. Yumuşak ara konum bir engele (öbür sayı, çubuk,
+  // kayan ad balonu) biniyorsa doğrudan hedefe atlar: geçiş sırasında da üst üste binme olmaz
+  const ox = tx - nx, oy = ty - ny;
+  if (y._ox === undefined) { y._ox = ox; y._oy = oy; }
+  else { const z = Math.min(1, dtG * 16); y._ox += (ox - y._ox) * z; y._oy += (oy - y._oy) * z;
+    const ax = nx + y._ox, ay = ny + y._oy;
+    if ((Math.abs(y._ox - ox) > 0.5 || Math.abs(y._oy - oy) > 0.5) && yukariIt(ax - bw / 2, ax + bw / 2, ay + 3, bh + 3, -1e9) !== ay + 3) { y._ox = ox; y._oy = oy; } }
+  y._x = Math.max(bw / 2 + 2, Math.min(W - bw / 2 - 2, nx + y._ox)); y._y = Math.max(bh + 2, Math.min(H - 3, ny + y._oy));
+  if (y._al > 0.12) engelEkle(tx - bw / 2, ty - bh - 2, tx + bw / 2, ty + 4, -1, 's');   // 2 px pay: girişte büyüyen sayı komşusuna değmesin
+}
 // sayı yazı tipleri: üç boy grubu, boyut animasyonu ölçekle (font dizgesi her yazıda yeniden kurulmaz)
 const SAYI_FONT = { 17: `900 17px ${YAZI_FONT}`, 20: `900 20px ${YAZI_FONT}`, 26: `900 26px ${YAZI_FONT}` }, KRITIK_FONT = `900 11px ${YAZI_FONT}`;
 function kaplamaCiz(dt = 0, dtG = dt) {
   const w = kapW, h = kapH;
   const s = anlikGorsel(), O = cubukOlcu(w, h), BH = O.hh + O.mh + 5, liste = cubukListe;
   O.golgeli = G.kademeAl() < 7;   // ön uyarı parıltısının canvas gölgesi (en düşük kademelerde yok)
-  liste.length = 0;
+  liste.length = 0; engelN = 0;
   // üst HUD (skor paneli) altında kalan çubuk okunmaz: panelin yatay aralığındaysa çubuk panelin hemen altına iner (sonra kalabalık ayrımı)
   hudOlc(O);
   if (s) for (let j = 0; j < birimDizi.length; j++) {
@@ -1697,8 +1817,17 @@ function kaplamaCiz(dt = 0, dtG = dt) {
     izGuncelle(b, a, dt);
     const p = ekran(basUstu(b));
     if (p.z > 1) continue;
-    if (hudVar && p.x > hudX0 && p.x < hudX1 && p.y < hudY) p.y = hudY;
-    const L = cubukYuva(liste.length); L.b = b; L.a = a; L.x = p.x; L.y = p.y; L.ox = 0; L.oy = 0; liste.push(L);
+    const px = p.x; let py = p.y, hedef = 0;
+    // baş üstü durum simgesi (ikonBant) çubuğun bandına düşüyorsa çubuk simgenin üstüne çıkar (ekranın üst kenarını aşmadan)
+    if (ikonBant(b)) {
+      const ust = py - 2 - 9.1 * O.o, alt = py + BH - 2, ara = 3 * O.o;
+      if (alt > ikY0 - ara && ust < ikY1 + ara && ikX1 > px - O.gw / 2 && ikX0 < px + O.gw / 2) hedef = Math.min(0, Math.max(ikY0 - ara - alt, 6 - ust));
+      engelEkle(ikX0, ikY0, ikX1, ikY1, b.uid, 'i');
+    }
+    b._ikS = b._ikS === undefined ? hedef : b._ikS + (hedef - b._ikS) * Math.min(1, dtG * 14);
+    py += b._ikS;
+    if (hudVar && px > hudX0 && px < hudX1 && py < hudY) py = hudY;
+    const L = cubukYuva(liste.length); L.b = b; L.a = a; L.x = px; L.y = py; L.ox = 0; L.oy = 0; L.ik = hedef < 0; liste.push(L);
   }
   // kalabalık: çakışan çubukları dikeyde (aynı sıradalarsa yatayda da) birkaç px ayır; hedef ofset yumuşatılır
   const lim = 13 * O.o, gx = O.gw + 6, gy = BH + 3;
@@ -1706,12 +1835,15 @@ function kaplamaCiz(dt = 0, dtG = dt) {
     const A = liste[m], B = liste[n], dx = (B.x + B.ox) - (A.x + A.ox), dy = (B.y + B.oy) - (A.y + A.oy);
     if (Math.abs(dx) >= gx || Math.abs(dy) >= gy) continue;
     const py = (gy - Math.abs(dy)) / 2, sy = dy >= 0 ? 1 : -1;
-    A.oy = Math.max(-lim, Math.min(lim, A.oy - sy * py)); B.oy = Math.max(-lim, Math.min(lim, B.oy + sy * py));
+    A.oy = Math.max(-lim, Math.min(A.ik ? 0 : lim, A.oy - sy * py)); B.oy = Math.max(-lim, Math.min(B.ik ? 0 : lim, B.oy + sy * py));   // simgenin üstüne çıkan çubuk aşağı itilmez
     if (Math.abs(dy) < gy * 0.5) { const px2 = Math.min(4 * O.o, (gx - Math.abs(dx)) / 4), sx = dx >= 0 ? 1 : -1; A.ox -= sx * px2; B.ox += sx * px2; }
   }
-  const kz = Math.min(1, dtG * 10);
+  // ayrılma hızlı (hızlı geçişte — Bulut Hücumu — çubuklar birbirinin içinden geçmesin), yerine dönüş yumuşak
+  const kzA = Math.min(1, dtG * 40), kzD = Math.min(1, dtG * 10);
   for (let m = 0; m < liste.length; m++) {
-    const L = liste[m], b = L.b; b._cox = b._cox === undefined ? L.ox : b._cox + (L.ox - b._cox) * kz; b._coy = b._coy === undefined ? L.oy : b._coy + (L.oy - b._coy) * kz;
+    const L = liste[m], b = L.b;
+    b._cox = b._cox === undefined ? L.ox : b._cox + (L.ox - b._cox) * (Math.abs(L.ox) > Math.abs(b._cox) ? kzA : kzD);
+    b._coy = b._coy === undefined ? L.oy : b._coy + (L.oy - b._coy) * (Math.abs(L.oy) > Math.abs(b._coy) ? kzA : kzD);
   }
   // uzaktakiler önce, yakındakiler üstte (en çok 16 öğe: araya sokma sıralaması, geçici dizi yok)
   for (let m = 1; m < liste.length; m++) { const L = liste[m]; let n = m - 1; while (n >= 0 && liste[n].y > L.y) { liste[n + 1] = liste[n]; n--; } liste[n + 1] = L; }
@@ -1721,27 +1853,27 @@ function kaplamaCiz(dt = 0, dtG = dt) {
     cubukA = solma(b, odakEkN > 0 && odakKesisir(x - 4, y - 16 * O.o, O.gw + 8, BH + 20 * O.o), dtG, 0.22); kcx.globalAlpha = cubukA;
     const ust = cubukCiz(b, L.a, x, y, O, b.u.taraf === 0);
     const c = b._cubukO || (b._cubukO = { x: 0, y: 0 }); c.x = x + O.gw / 2; c.y = ust; b._cubuk = c;
+    engelEkle(x - 3 - (b.u.b.f ? 27 * O.o : 0), ust - 1, x + O.gw + 3, y + BH, b.uid, 'c');   // çubuk + yıldız rozeti (+ soldaki kaynaşma halkası)
   }
   kcx.globalAlpha = 1; cubukA = 1;
+  if (hudVar) engelEkle(hudX0 + O.gw / 2, -1e4, hudX1 - O.gw / 2, hudY - 13 * O.o - 3, -1, 'h');   // üst HUD (skor paneli): sayılar altına girmesin
   // yetenek balonu sayılardan önce çizilir: sayılar (iyileşme, hasar) balonun altında kalmasın
   balonCiz(w, O, dtG);
   // sayılar: patlayarak büyür, sonra parabolik yayla yan-yukarı süzülür; kritikte büyük + altın kenar + KRİTİK.
   // Boy üç font grubundan ölçekle verilir (font ayrıştırma yalnız grup değişince); çizgi kalınlığı ölçeğe bölünür, görünür kalınlık aynı.
+  // Yerleşim (sayiYerlestir): sayaç → sıradan/yetenek sayıları (eskiden yeniye) → süreli hasar; her biri öncekilerin, can çubuklarının,
+  // açık ad balonunun, durum simgelerinin ve HUD'un üstüne binmeyecek yere (açık ad balonuna binen sayı da: eskiden Işık Kanadı'nda
+  // kahramanın ♡140'ı "Işık Kanadı!" balonunu, Bulut Hücumu'nda rakibin −58'i balonu örtüyordu; aynı birimin −150 ile −60'ı iç içe giriyordu)
+  for (let gec = 0; gec < 3; gec++) for (let i = 0; i < yazilar.length; i++) {
+    const y = yazilar[i]; if (y.yas < 0) continue;
+    if ((y.tur === 'sayac' ? 0 : y.onc === 0 ? 2 : 1) === gec) sayiYerlestir(y, w, h, O, dtG);
+  }
   let sonFont = ''; kcx.textAlign = 'center'; kcx.lineJoin = 'round';
   for (let i = 0; i < yazilar.length; i++) {
     const y = yazilar[i];
-    if (y.yas < 0) continue;
-    const p = ekran(y.p); const e = y.yas / 0.95; kcx.globalAlpha = y.alfa * Math.max(0, 1 - Math.pow(Math.max(0, e - 0.35) / 0.65, 2));
-    const taban = y.kritik ? 26 : y.buyuk ? 20 : 17, sc = (e < 0.12 ? 1.7 - 5.8 * e : 1) * (1 + y.nabiz * 2.2), ol = y.olcek * sc, boy = taban * ol;
-    let xx = p.x + y.yon * (e * 18 + y.serit * 16), yy = p.y - (50 * e - 40 * e * e) - 8 - y.serit * 19;
-    // açık ad balonuna binen sayı balonun yanına kayar (yumuşak): ad okunur kalır (eskiden Işık Kanadı'nda kahramanın ♡140'ı
-    // "Işık Kanadı!" balonunu, Bulut Hücumu'nda rakibin −58'i balonu örtüyordu); kayma yönü sayının balona göre yanı
-    { let hk = 0; const yw = 0.31 * boy * String(y.metin).length + 3;
-      for (let j = 0; j < bantlar.length; j++) { const k = bantlar[j]._k; if (!k || yy < k.y0 - 2 || yy - boy * 0.78 > k.y1 + 26 || xx + yw < k.x0 - 3 || xx - yw > k.x1 + 3) continue;
-        hk = xx >= (k.x0 + k.x1) / 2 ? k.x1 + yw + 4 - xx : k.x0 - yw - 4 - xx; }   // balonun hemen altında doğan da (yükselecek) baştan yana
-      y.bk = y.bk === undefined ? hk : y.bk + (hk - y.bk) * Math.min(1, dtG * 20); xx += y.bk; }
-    // sayaç (Boynuz Öfkesi ×3): yükselmez, can çubuğunun sağında durur (yetenek balonunun ve sayıların üstüne binmesin)
-    if (y.tur === 'sayac' && y.b && y.b._cubuk) { xx = y.b._cubuk.x + O.gw * 0.5 + 14 * O.o; yy = y.b._cubuk.y + 20 * O.o; }
+    if (y.yas < 0 || !y._gor) continue;
+    kcx.globalAlpha = y._al;
+    const taban = y._taban, ol = y._ol, boy = taban * ol, xx = y._x, yy = y._y;
     // sıradan/süreli küçük sayılar da yeteneğin ana nesnesinin üstünden çekilir (yetenek ve kritik sayıları hep tam görünür)
     if (y.onc <= 1) { kcx.globalAlpha *= solma(y, odakEkN > 0 && odakKesisir(xx - 22, yy - 20, 44, 24), dtG, 0.25); if (kcx.globalAlpha < 0.01) continue; }
     const f = SAYI_FONT[taban]; if (f !== sonFont) { kcx.font = f; sonFont = f; }
