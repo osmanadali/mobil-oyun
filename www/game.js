@@ -1365,7 +1365,7 @@ function tapDiag(kind, x, y, skip) {
   tapLog.push(`${(performance.now() / 1000).toFixed(2)} ${kind} ${x | 0},${y | 0}${skip ? ' (yok sayıldı)' : ''}`); if (tapLog.length > 7) tapLog.shift(); tapShow();
 }
 // tanı açıkken sayfanın her yerindeki dokunuş da yazılır (tahtaya ulaşmadıysa hangi öğe yuttu?)
-const tgtName = el => !el ? '?' : el === cv ? 'TAHTA' : (el.id ? '#' + el.id : el.tagName.toLowerCase() + (typeof el.className === 'string' && el.className ? '.' + el.className.split(' ')[0] : ''));
+const tgtName = el => { if (!el) return '?'; if (el === cv) return 'TAHTA'; const n = el.id ? '#' + el.id : el.tagName.toLowerCase() + (typeof el.className === 'string' && el.className ? '.' + el.className.split(' ')[0] : ''); const a = el.id ? null : el.parentElement?.closest?.('[id], [class]'); return a ? n + '<' + (a.id ? '#' + a.id : (typeof a.className === 'string' ? a.className : a.className?.baseVal || '').split(' ')[0]) : n; };
 document.addEventListener('touchstart', e => { if (TAPDBG) for (const t of e.changedTouches) if (t.target !== cv) tapDiag('dokunuş ' + tgtName(t.target), t.clientX, t.clientY); }, { capture: true, passive: true });
 function tapNote(t) { if (!TAPDBG || !tapLog.length) return; tapLog[tapLog.length - 1] += ' → ' + t; tapShow(); }
 function tapShow() {
@@ -1448,16 +1448,42 @@ const liveTouch = new Set();
 // (.bg, pointer-events:none olmasına rağmen) WebKit'te dokunuşu kapıyordu → çizginin karo üstünden geçtiği yerde parmak tuvale hiç
 // ulaşmıyor, karo dönmüyordu ("köşesine dokununca dönüyor, ortasına dokununca dönmüyor"). Tahtanın üstüne düşen ama hedefi tahta ya da
 // bir düğme / pencere olmayan dokunuş tahtaya yönlendirilir.
+const LIVE_OVER = 'button, a, input, textarea, select, [role=button], [role=dialog], .modal.open, #fest, #winPanel, .achpop.show';
+const seenNow = el => { if (el.closest('.screen:not(.active)')) return false; for (let e = el; e && e !== document.body; e = e.parentElement) { const c = getComputedStyle(e); if (c.visibility !== 'visible' || c.pointerEvents === 'none' || c.display === 'none' || +c.opacity < .05) return false; } return true; };
 function strayTouch(e) {
   if (!active('game') || modalOpen()) return;
   const rc = cv.getBoundingClientRect();
   for (const t of e.changedTouches) {
-    const el = t.target; if (el === cv || !(el?.closest?.('.bg') || el === document.body || el === document.documentElement || (el instanceof Element && getComputedStyle(el).pointerEvents === 'none'))) continue;   // dokunuşa kapalı olması gereken öğe kaptıysa
+    // 1.2.4 (kullanıcı videosu 25 Kasım, iPad'de 1.2.3'te de "dokunuş path"): dokunuşu kapan SVG her zaman haritada değil (gizli ekran ya da
+    // sonradan eklenen bir katman). Kural tersine çevrildi: tahtanın üstüne düşen dokunuş, hedef gerçekten dokunulacak bir öğe
+    // (düğme, açık pencere, tören, kazanma paneli) değilse tahtaya gider.
+    const el = t.target; if (el === cv || !(el instanceof Element)) continue;
+    const live = el.closest(LIVE_OVER);
+    if (live && seenNow(live)) continue;   // görünen, dokunulabilir öğe (gizli kazanma paneli, gizli ekran ya da saydam katman sayılmaz)
     if (t.clientX < rc.left || t.clientX > rc.right || t.clientY < rc.top || t.clientY > rc.bottom) continue;
     e.preventDefault(); handleTouch(t);
   }
 }
 document.addEventListener('touchstart', strayTouch, { capture: true, passive: false });
+// 1.2.4 (kullanıcı 25 Kasım: "Görevler'deki 🎯'a basınca görevler açılmıyor"): aynı WebKit hatası tahta dışında da düğmeleri yutuyor:
+// dokunuşun hedefi görünmeyen / dokunulmaz bir öğe (arka plan haritası, gizli ekran, saydam katman) olunca tıklama oraya gider,
+// alttaki düğme çalışmaz. Kısa dokunuşta hedef böyle "ölü" bir öğeyse, o noktadaki ilk canlı öğe bulunur ve tıklama ona verilir.
+const deadEl = el => !(el instanceof Element) || el === document.body || el === document.documentElement || !!el.closest('.bg') || !seenNow(el);
+const tapStart = new Map();
+document.addEventListener('touchstart', e => { for (const t of e.changedTouches) tapStart.set(t.identifier, { x: t.clientX, y: t.clientY, at: performance.now(), el: t.target }); }, { capture: true, passive: true });
+document.addEventListener('touchend', e => {
+  for (const t of e.changedTouches) {
+    const s = tapStart.get(t.identifier); tapStart.delete(t.identifier);
+    if (!s || s.el === cv || Math.hypot(t.clientX - s.x, t.clientY - s.y) > 12 || performance.now() - s.at > 700 || !deadEl(s.el)) continue;
+    const to = document.elementsFromPoint(t.clientX, t.clientY).find(x => !deadEl(x));
+    if (!to || to === cv || to.closest(':disabled')) continue;
+    e.preventDefault();   // ölü öğeye gidecek taklit tıklama olmasın
+    tapDiag('dokunuş ' + tgtName(s.el) + ' → ' + tgtName(to), t.clientX, t.clientY);
+    if (to.matches('input, textarea, select')) to.focus();
+    to.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window, clientX: t.clientX, clientY: t.clientY }));
+  }
+}, { capture: true, passive: false });
+document.addEventListener('touchcancel', e => { for (const t of e.changedTouches) tapStart.delete(t.identifier); }, { capture: true, passive: true });
 function handleTouch(t) { if (liveTouch.has(t.identifier)) { tapNote('aynı parmak, atlandı'); return; } liveTouch.add(t.identifier); tapDiag('touch', t.clientX, t.clientY); boardTap({ clientX: t.clientX, clientY: t.clientY, touch: true }); }
 cv.addEventListener('touchstart', e => { e.preventDefault(); for (const t of e.changedTouches) handleTouch(t); }, { passive: false });
 for (const ev of ['touchend', 'touchcancel']) document.addEventListener(ev, e => { for (const t of e.changedTouches) liveTouch.delete(t.identifier); if (!e.touches.length) liveTouch.clear(); });

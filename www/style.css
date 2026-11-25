@@ -62,6 +62,9 @@ body.playing .glow,body.playing .map,body.playing .primary:after{animation-play-
 .screen{position:absolute;inset:0;padding:var(--sat) 18px 0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:scale(.985);visibility:hidden;transition:opacity .35s ease,transform .45s cubic-bezier(.2,.8,.2,1),visibility 0s .45s}
 .screen.active{opacity:1;pointer-events:auto;transform:none;visibility:visible;transition:opacity .35s ease,transform .45s cubic-bezier(.2,.8,.2,1),visibility 0s}   /* gizli ekran geçiş bitince boyanmaz (telefonda GPU belleği, akıcılık) */
 .screen:not(.active) *,.screen:not(.active) *:after{animation-play-state:paused!important}
+/* 1.2.4 DOKUNMA KÖK SEBEBİ: Şehir haritasının saydam dokunma çizgileri (.sd .hit) "pointer-events:stroke" ile görünürlüğe bakmıyordu;
+   gizli Şehir sayfası (DOM'da en üstte) bütün ekranlarda dokunuşu yutuyordu (1.2'den beri: karo dönmüyor, 🎯 Görevler açılmıyor, 🩺 "dokunuş path"). */
+.screen:not(.active) *{pointer-events:none!important}
 
 /* ---------- ortak ---------- */
 .top{display:flex;align-items:center;gap:8px;height:64px;flex:none}
@@ -589,7 +592,7 @@ body.introing .screen *{animation-play-state:paused!important}
 .cmap .frm{fill:none;stroke:var(--stroke);stroke-width:1.2}
 .sd{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .sd path{fill:none;stroke-linecap:round;stroke-linejoin:round}
-.sd .hit{stroke:transparent;stroke-width:8;pointer-events:stroke}
+.sd .hit{stroke:transparent;stroke-width:8;pointer-events:visibleStroke}
 .sd .hal{stroke:var(--fg);stroke-width:12;opacity:0;transition:opacity .25s}
 .sd.sel .hal{opacity:.2}
 .sd .mln{stroke:var(--railC);stroke-width:2;opacity:.7}
