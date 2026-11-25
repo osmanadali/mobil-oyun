@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       sertifika_iptal: { description: 'API ile oluşmuş geliştirme sertifikalarını iptal et (Codemagic imza hatası; dağıtıma dokunmaz)', type: boolean, default: false }
+      play_urun: { description: 'Google Play oyun içi ürünleri (tools/android/urunler.cjs): yok / denetle / kur', type: choice, options: [yok, denetle, kur], default: yok }
   schedule: [{ cron: '17 6 * * *' }]
 permissions: { contents: read }
 jobs:
@@ -24,3 +25,14 @@ jobs:
           AUTHKEY="$RUNNER_TEMP/AuthKey.p8" APPLY=${{ inputs.sertifika_iptal && '1' || '0' }} node tools/ios/sertifika.cjs || true
       - if: always()
         run: rm -f "$RUNNER_TEMP/AuthKey.p8"
+  play-urun:
+    # Google Play oyun içi ürünleri: yalnız elle (denetle: ne yapacağını yazar · kur: eksik ürünleri oluşturur, var olana dokunmaz)
+    if: github.event_name == 'workflow_dispatch' && inputs.play_urun != 'yok' && inputs.play_urun != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: 22 }
+      - name: Play ürünleri
+        env: { SA: '${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}', APPLY: "${{ inputs.play_urun == 'kur' && '1' || '0' }}" }
+        run: node tools/android/urunler.cjs

@@ -90,6 +90,8 @@ module.exports = function fakeFirebase({ delay = [25, 70] } = {}) {
     if (url.host === 'firestore.googleapis.com') {
       const uid = uidOf(req), rest = decodeURIComponent(url.pathname).split('/documents')[1] || '';
       try {
+        // api.lose(uid, writes): sunucu yazar ama yanıt istemciye ulaşmaz (zayıf mobil ağ, zaman aşımı)
+        if (m === 'POST' && rest.endsWith(':commit') && api.lose?.(uid, body.writes || [])) { commit(uid, body.writes || []); return route.abort('timedout'); }
         if (m === 'POST' && rest.endsWith(':commit')) return json(route, 200, commit(uid, body.writes || []));
         if (m === 'POST' && rest.endsWith(':runQuery')) return json(route, 200, runQuery(rest.replace(/^\//, '').replace(/:runQuery$/, ''), body.structuredQuery));
         const path = rest.replace(/^\//, '');
@@ -103,10 +105,11 @@ module.exports = function fakeFirebase({ delay = [25, 70] } = {}) {
     }
     return route.fulfill({ status: 404, body: '' });
   }
-  return {
-    docs, users, val,
+  const api = {
+    docs, users, val, lose: null,
     async attach(ctx) { for (const h of ['identitytoolkit.googleapis.com', 'securetoken.googleapis.com', 'firestore.googleapis.com']) await ctx.route(`https://${h}/**`, handle); },
     get: path => { const d = docs.get(path); return d ? Object.fromEntries(Object.entries(d.fields).map(([k, v]) => [k, val(v)])) : null; },
     list: pre => [...docs.keys()].filter(p => p.startsWith(pre)),
   };
+  return api;
 };

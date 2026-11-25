@@ -672,6 +672,19 @@ function ensureAC() {
   if (ac.state !== 'running' && !document.hidden) ac.resume();
   return ac;
 }
+// 🔊 iOS ses kilidi (1.2.3, kullanıcı 22 Kasım: "oyunu açınca ses çalmıyor, üst menüyü indirince açılıyor"): ses bağlamı açılışta
+// 'suspended' / 'interrupted' kalıyordu; kısık (hushed) olunca tone() hiç ensureAC'ye gitmediği için kendini çözemiyordu, ancak bildirim
+// perdesi kesinti bitirince açılıyordu. iOS sesi yalnız dokunuş bitişi / tıklama içinde açar: her dokunuşta (gerekirse) resume + sessiz örnek.
+function unlockAudio() {
+  if (document.hidden || !save || !(save.sound || save.music)) return;
+  try {
+    ensureAC();
+    if (ac.state === 'running') { if (hushed) { hushed = false; Music.wake(); } return; }
+    const b = ac.createBuffer(1, 1, 22050), src = ac.createBufferSource(); src.buffer = b; src.connect(ac.destination); src.start(0);   // iOS: dokunuş içinde çalınan sessiz örnek oturumu açar
+    ac.resume?.().then(() => { if (ac.state === 'running' && !document.hidden) { hushed = false; Music.wake(); } }, () => {});
+  } catch {}
+}
+for (const ev of ['touchend', 'click', 'keydown']) document.addEventListener(ev, unlockAudio, { capture: true, passive: true });
 // yumuşak çan tınısı: sinüs + hafif üst oktav, üstel sönüm (sert tık yok)
 function tone(f, dur = .08, vol = .05, type = 'sine', at = 0) {
   if (!save.sound || hushed || document.hidden) return;   // gizliyken kuyruğa giren ses dönüşte "bip" diye çalmasın
@@ -807,8 +820,12 @@ function show(id) {
 const bind = (binds, root) => { for (const [id, fn] of Object.entries(binds)) { const el = root?.querySelector('#' + id) || $(id); if (el) el.onclick = fn; } };   // root: önce o kutunun içinde ara (sayfa ile üstündeki pencerede aynı kimlik olabilir: mRestore)
 // center: ekranın ortasında küçük pencere (duraklat); öteki pencereler alttan açılır
 function modal(html, binds = {}, locked = false, center = false) {
-  mLocked = locked; howBack = null; mOnClose = null; $('modal').classList.toggle('center', center);
-  const sh = $('mCard'), full = html.includes('class="tabs"'); sh.innerHTML = html; sh.scrollTop = 0; $('modal').classList.add('open');
+  mLocked = locked; howBack = null; mOnClose = null;
+  const M = $('modal'), sh = $('mCard'), full = html.includes('class="tabs"');
+  // orta pencere ↔ alt pencere geçişi (ör. "Rakip aranıyor" → "Arkadaşını davet et"): kutu ortadaki küçük halinden tam genişliğe
+  // animasyonla açılıyordu, tablette "ekran sağdan soldan daralıyor" gibi görünüyordu (1.2.3). Yeni düzen kapalı konumdan, geçişsiz başlar.
+  if (M.classList.contains('center') !== center) { sh.style.transition = 'none'; M.classList.remove('open'); M.classList.toggle('center', center); void sh.offsetWidth; sh.style.transition = ''; }
+  sh.innerHTML = html; sh.scrollTop = 0; M.classList.add('open');
   sh.classList.toggle('full', full);   // sekmeli Mağaza: iki sekme de tam boy, hep ✕ (sekme değişince pencere zıplamaz)
   sh.classList.toggle('fit', !full && sh.scrollHeight <= sh.clientHeight + 1);   // sığan pencere: her yerinden aşağı çekilebilir
   // uzun (kaydırılan) pencere: köşede ✕ — aşağı çekmek kaydırmayla karışabiliyor (temalar, sandık, mağaza)
@@ -1348,7 +1365,7 @@ function tapDiag(kind, x, y, skip) {
   tapLog.push(`${(performance.now() / 1000).toFixed(2)} ${kind} ${x | 0},${y | 0}${skip ? ' (yok sayıldı)' : ''}`); if (tapLog.length > 7) tapLog.shift(); tapShow();
 }
 // tanı açıkken sayfanın her yerindeki dokunuş da yazılır (tahtaya ulaşmadıysa hangi öğe yuttu?)
-const tgtName = el => !el ? '?' : el === cv ? 'TAHTA' : (el.id ? '#' + el.id : el.tagName.toLowerCase() + (typeof el.className === 'string' && el.className ? '.' + el.className.split(' ')[0] : ''));
+const tgtName = el => { if (!el) return '?'; if (el === cv) return 'TAHTA'; const n = el.id ? '#' + el.id : el.tagName.toLowerCase() + (typeof el.className === 'string' && el.className ? '.' + el.className.split(' ')[0] : ''); const a = el.id ? null : el.parentElement?.closest?.('[id], [class]'); return a ? n + '<' + (a.id ? '#' + a.id : (typeof a.className === 'string' ? a.className : a.className?.baseVal || '').split(' ')[0]) : n; };
 document.addEventListener('touchstart', e => { if (TAPDBG) for (const t of e.changedTouches) if (t.target !== cv) tapDiag('dokunuş ' + tgtName(t.target), t.clientX, t.clientY); }, { capture: true, passive: true });
 function tapNote(t) { if (!TAPDBG || !tapLog.length) return; tapLog[tapLog.length - 1] += ' → ' + t; tapShow(); }
 function tapShow() {
@@ -1369,7 +1386,9 @@ function boardTap(e) {   // e: { clientX, clientY } (dokunma ya da fare)
   tapNote(`karo ${i} (${G.hex ? 'altıgen' : `s${w + 1} k${c + 1}`})`);
   // aynı karoya 40 ms içinde ikinci olay: tek dokunuşun çift gelmesi (iOS WebKit'te görüldü: düz ray 180° dönüp "dönmedi" sanılıyordu,
   // 1.2, kullanıcı 21 Kasım). İnsan parmağıyla iki dokunuş bu kadar hızlı olmaz.
-  if (i === lastTapI && now - lastTapT < 40) return tapNote('çift olay, atlandı');
+  // dokunmatikte aynı karoya 110 ms içinde ikinci olay da çift sayılır (1.2.3, 22 Kasım: "dönmeyen karoda daha tiz ses" = iki kısa tık,
+  // düz ray 180° dönüp aynı görünüyordu; 40 ms yetmiyordu). Parmakla aynı karoya bu hızda iki kez dokunulamaz; fare yolu eskisi gibi.
+  if (i === lastTapI && now - lastTapT < (e.touch ? 110 : 40)) return tapNote('çift olay, atlandı');
   lastTapI = i; lastTapT = now;
   if (G.tut && !tutGate(i, now)) return;   // 🎓 bu adımda vurgulanmayan karo dönmez
   if (G.fixed[i]) { haptic('light'); tone(440, .06, .02); toast(L('Bu karo ipucuyla sabitlendi', 'This tile was set by a hint')); press.set(i, now); kick(); return; }
@@ -1423,7 +1442,51 @@ function boardTap(e) {   // e: { clientX, clientY } (dokunma ya da fare)
 // ⚠️ iOS (1.2, kullanıcı videosu 21 Kasım): karonun ortasına art arda dokununca WebKit pointer olayını sistem hareketine (çift dokunma
 // vb.) kaptırıp hiç göndermiyordu → halka yok, hamle yok, karo dönmüyor. Dokunmatikte tahta touchstart ile dinlenir (sistem hareketinden
 // önce gelir; preventDefault çift dokunma / büyüteç / taklit fare olaylarını da durdurur). Fare ve kalem pointerdown ile.
-cv.addEventListener('touchstart', e => { e.preventDefault(); for (const t of e.changedTouches) { tapDiag('touch', t.clientX, t.clientY); boardTap(t); } }, { passive: false });
+// her parmak (touch.identifier) yaşamı boyunca bir kez işlenir: iOS bazen aynı dokunuş için touchstart'ı yeniden gönderiyor
+const liveTouch = new Set();
+// ⚠️ iOS (1.2.3, kullanıcı videosu 22 Kasım, 🩺 tanıda "dokunuş path 105,294"): arka plandaki metro haritasının SVG çizgileri
+// (.bg, pointer-events:none olmasına rağmen) WebKit'te dokunuşu kapıyordu → çizginin karo üstünden geçtiği yerde parmak tuvale hiç
+// ulaşmıyor, karo dönmüyordu ("köşesine dokununca dönüyor, ortasına dokununca dönmüyor"). Tahtanın üstüne düşen ama hedefi tahta ya da
+// bir düğme / pencere olmayan dokunuş tahtaya yönlendirilir.
+const LIVE_OVER = 'button, a, input, textarea, select, [role=button], [role=dialog], .modal.open, #fest, #winPanel, .achpop.show';
+const seenNow = el => { if (el.closest('.screen:not(.active)')) return false; for (let e = el; e && e !== document.body; e = e.parentElement) { const c = getComputedStyle(e); if (c.visibility !== 'visible' || c.pointerEvents === 'none' || c.display === 'none' || +c.opacity < .05) return false; } return true; };
+function strayTouch(e) {
+  if (!active('game') || modalOpen()) return;
+  const rc = cv.getBoundingClientRect();
+  for (const t of e.changedTouches) {
+    // 1.2.4 (kullanıcı videosu 25 Kasım, iPad'de 1.2.3'te de "dokunuş path"): dokunuşu kapan SVG her zaman haritada değil (gizli ekran ya da
+    // sonradan eklenen bir katman). Kural tersine çevrildi: tahtanın üstüne düşen dokunuş, hedef gerçekten dokunulacak bir öğe
+    // (düğme, açık pencere, tören, kazanma paneli) değilse tahtaya gider.
+    const el = t.target; if (el === cv || !(el instanceof Element)) continue;
+    const live = el.closest(LIVE_OVER);
+    if (live && seenNow(live)) continue;   // görünen, dokunulabilir öğe (gizli kazanma paneli, gizli ekran ya da saydam katman sayılmaz)
+    if (t.clientX < rc.left || t.clientX > rc.right || t.clientY < rc.top || t.clientY > rc.bottom) continue;
+    e.preventDefault(); handleTouch(t);
+  }
+}
+document.addEventListener('touchstart', strayTouch, { capture: true, passive: false });
+// 1.2.4 (kullanıcı 25 Kasım: "Görevler'deki 🎯'a basınca görevler açılmıyor"): aynı WebKit hatası tahta dışında da düğmeleri yutuyor:
+// dokunuşun hedefi görünmeyen / dokunulmaz bir öğe (arka plan haritası, gizli ekran, saydam katman) olunca tıklama oraya gider,
+// alttaki düğme çalışmaz. Kısa dokunuşta hedef böyle "ölü" bir öğeyse, o noktadaki ilk canlı öğe bulunur ve tıklama ona verilir.
+const deadEl = el => !(el instanceof Element) || el === document.body || el === document.documentElement || !!el.closest('.bg') || !seenNow(el);
+const tapStart = new Map();
+document.addEventListener('touchstart', e => { for (const t of e.changedTouches) tapStart.set(t.identifier, { x: t.clientX, y: t.clientY, at: performance.now(), el: t.target }); }, { capture: true, passive: true });
+document.addEventListener('touchend', e => {
+  for (const t of e.changedTouches) {
+    const s = tapStart.get(t.identifier); tapStart.delete(t.identifier);
+    if (!s || s.el === cv || Math.hypot(t.clientX - s.x, t.clientY - s.y) > 12 || performance.now() - s.at > 700 || !deadEl(s.el)) continue;
+    const to = document.elementsFromPoint(t.clientX, t.clientY).find(x => !deadEl(x));
+    if (!to || to === cv || to.closest(':disabled')) continue;
+    e.preventDefault();   // ölü öğeye gidecek taklit tıklama olmasın
+    tapDiag('dokunuş ' + tgtName(s.el) + ' → ' + tgtName(to), t.clientX, t.clientY);
+    if (to.matches('input, textarea, select')) to.focus();
+    to.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window, clientX: t.clientX, clientY: t.clientY }));
+  }
+}, { capture: true, passive: false });
+document.addEventListener('touchcancel', e => { for (const t of e.changedTouches) tapStart.delete(t.identifier); }, { capture: true, passive: true });
+function handleTouch(t) { if (liveTouch.has(t.identifier)) { tapNote('aynı parmak, atlandı'); return; } liveTouch.add(t.identifier); tapDiag('touch', t.clientX, t.clientY); boardTap({ clientX: t.clientX, clientY: t.clientY, touch: true }); }
+cv.addEventListener('touchstart', e => { e.preventDefault(); for (const t of e.changedTouches) handleTouch(t); }, { passive: false });
+for (const ev of ['touchend', 'touchcancel']) document.addEventListener(ev, e => { for (const t of e.changedTouches) liveTouch.delete(t.identifier); if (!e.touches.length) liveTouch.clear(); });
 cv.addEventListener('pointerdown', e => { if (e.pointerType === 'touch') { tapDiag('ptr-touch', e.clientX, e.clientY, true); return; } tapDiag(e.pointerType || 'ptr', e.clientX, e.clientY); boardTap(e); });
 
 // kusursuz seri: tacı olmayan bölümü kusursuz bitirmek seriyi +1 yapar, kusursuzsuz bitirmek sıfırlar; taçlı bölüm seriyi etkilemez.
@@ -3586,6 +3649,7 @@ const duelLevels = () => { const hi = Math.max(1, save.level - 1), lo = Math.max
 // Kapış sayfası (#vs): sekme çubuğu ⚔️, ana sayfa kartı, Lig'deki düğme, ?vs=KOD daveti. Arama / oda / kod ara adımları üstünde küçük pencere.
 function vsSheet() {
   if (!ligOn()) return;
+  invWatch(60);
   if (modalOpen()) closeModal();
   if (!active('vs')) show('vs');
   const me = LIG.me(), on = me.joined, rec = save.vs || { w: 0, l: 0 }, last = save.vsLast;
@@ -3611,14 +3675,52 @@ function vsWait(title, sub, onCancel) {
     <button id="vwX" class="btn glassbtn">${L('Vazgeç', 'Cancel')}</button>`, { vwX: () => { onCancel?.(); LIG.duel.leave(); closeModal(); } }, true, true);
   const tk = setInterval(() => { if (!$('vwT')) return clearInterval(tk); $('vwT').textContent = fmtT(Date.now() - t0); }, 500);
 }
+let vsSeq = 0;
 async function vsFind(o = {}) {
-  vsWait(L('Rakip aranıyor…', 'Finding an opponent…'), L('Benzer seviyede bir oyuncu', 'A player at a similar level'));
-  let m = null; try { m = await LIG.duel.find({ levels: duelLevels(), seen: save.vsSeen || [], ...o }); } catch { if ($('vwT')) vsNet(() => vsFind(o)); return; }   // bağlantı hatası "rakip yok" diye gizlenmez
-  if (!$('vwT')) return;   // vazgeçildi
+  // her arama kendi numarasıyla: Vazgeç'ten (ya da yeni aramadan) sonra eski arama sonuç göstermez. Eskiden kapanan pencerenin
+  // içeriği (#vwT) DOM'da kaldığı için "vazgeçildi" anlaşılmıyor, iptalden sonra "Şu an rakip yok" çıkıyordu (1.2.3, kullanıcı videosu)
+  const my = ++vsSeq, live = () => my === vsSeq && modalOpen() && $('vwT');
+  vsWait(L('Rakip aranıyor…', 'Finding an opponent…'), L('Benzer seviyede bir oyuncu', 'A player at a similar level'), () => { vsSeq++; });
+  let m = null; try { m = await LIG.duel.find({ levels: duelLevels(), seen: save.vsSeen || [], ...o }); } catch { if (live()) vsNet(() => vsFind(o)); return; }   // bağlantı hatası "rakip yok" diye gizlenmez
+  if (!live()) return;   // vazgeçildi
   if (m) return vsIntro(m);
   modal(`<div class="bell">🚇</div><h2>${L('Şu an rakip yok', 'No opponent right now')}</h2><p>${L('Birazdan yeniden dene ya da bir arkadaşını davet et.', 'Try again in a moment, or invite a friend.')}</p>
     <button id="vR" class="btn primary"><span>${L('Yeniden dene', 'Try again')}</span></button><button id="vH" class="btn glassbtn">${L('Arkadaşı davet et', 'Invite a friend')}</button><button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`,
     { vR: () => vsFind(o), vH: vsHost, mClose: closeModal });
+}
+// 🔁 gelen tekrar kapış davetleri: arkadaş maçından sonra (2 dk) ve Kapış sayfası açıkken (1 dk) 2,5 sn'de bir bakılır (oyunda bakılmaz)
+let invT = 0, invUntil = 0, invSeen = new Set();
+function invWatch(sec) {
+  invUntil = Math.max(invUntil, Date.now() + sec * 1000); if (invT) return;
+  const tick = async () => {
+    invT = 0; if (Date.now() > invUntil || !LIG?.me().joined) return;
+    const playing = active('game') && G && !G.won && !G.over && !(G.duel && G.duelOver);   // sonuç penceresi oyun ekranının üstünde: orada da bakılır
+    if (!playing && !document.hidden) {
+      let v = []; try { v = await LIG.duel.invites(); } catch {}
+      const inv = v.find(x => !invSeen.has(x.code));
+      if (inv) {
+        invSeen.add(inv.code);
+        // ikimiz aynı anda "Tekrar kapış" dediysek: kimliği büyük olan öbürünün odasına katılır (tek maç)
+        if (rmOut?.to === inv.from) { if (String(LIG.me().uid) > String(inv.from)) { rmOut = null; LIG.duel.leave(); return invJoin(inv); } }
+        else invAsk(inv);
+      }
+    }
+    invT = setTimeout(tick, 2500);
+  };
+  invT = setTimeout(tick, 600);
+}
+function invAsk(inv) {
+  modal(`<div class="bell">🔁</div><h2>${L(`${esc(inv.nick)} tekrar kapışmak istiyor`, `${esc(inv.nick)} wants a rematch`)}</h2><p>${L('Aynı bulmaca, aynı anda. İlk bitiren kazanır.', 'Same puzzle, same time. First to finish wins.')}</p>
+    <button id="iOk" class="btn primary"><span>${L('⚔️ Kabul et', '⚔️ Accept')}</span></button><button id="iNo" class="btn glassbtn">${L('Hayır', 'No')}</button>`,
+    { iOk: () => invJoin(inv), iNo: closeModal }, true);
+  haptic('heavy'); tone(note(5), .2, .04);
+}
+async function invJoin(inv) {
+  if (!active('vs')) show('vs');
+  vsWait(L('Bağlanıyor…', 'Connecting…'), esc(inv.nick));
+  let m = null; try { m = await LIG.duel.join(inv.code, { levels: duelLevels() }); } catch {}
+  if (!m || m.error) { closeModal(); toast(L('Davetin süresi doldu', 'The invite expired')); return; }
+  vsIntro(m);
 }
 // sunucuya ulaşılamadı: ne olduğu açıkça yazar (adım · kod: lig.js err) ve yeniden dene
 function vsNet(retry) {
@@ -3626,9 +3728,19 @@ function vsNet(retry) {
   modal(`<div class="bell">📡</div><h2>${L('Sunucuya ulaşılamadı', 'Couldn’t reach the server')}</h2><p>${L('İnternet bağlantını kontrol et. Mobil veride oynuyorsan Ayarlar › Ray › Mobil Veri açık olmalı.', 'Check your internet connection. On mobile data, make sure Settings › Ray › Mobile Data is on.')}</p>${why ? `<p class="tip">${esc(why)}</p>` : ''}
     <button id="vR" class="btn primary"><span>${L('Yeniden dene', 'Try again')}</span></button><button id="mClose" class="btn glassbtn">${L('Kapat', 'Close')}</button>`, { vR: () => { closeModal(); retry(); }, mClose: closeModal });
 }
-async function vsHost() {
-  let h; try { h = await LIG.duel.host({ levels: duelLevels() }); } catch { return vsNet(vsHost); }
+// o.to / o.nick: 🔁 tekrar kapış — davet doğrudan arkadaşa gider (kod söylemeye gerek yok), o onaylayınca maç başlar
+let rmOut = null;
+async function vsHost(o = {}) {
+  let h; try { h = await LIG.duel.host({ levels: duelLevels(), to: o.to, friendNick: o.nick }); } catch { return vsNet(() => vsHost(o)); }
+  rmOut = o.to ? { to: o.to, code: h.code } : null;
   const url = `${SHARE_URL}?vs=${h.code}`;
+  if (o.to) {   // 🔁 tekrar kapış: arkadaşın ekranında "Kabul et" çıkar
+    modal(`<div class="bell">🔁</div><h2>${L(`${esc(o.nick)} davet edildi`, `${esc(o.nick)} invited`)}</h2><p>${L('Arkadaşının onayı bekleniyor…', 'Waiting for your friend to accept…')}</p>
+      <div class="vsr vswait"><i></i><i></i><i></i></div><p class="tip">${L(`Görmüyorsa kod: <b>${h.code}</b>`, `If they don’t see it, code: <b>${h.code}</b>`)}</p><b id="vCode" hidden>${h.code}</b>
+      <button id="vX" class="btn glassbtn">${L('Vazgeç', 'Cancel')}</button>`, { vX: () => { rmOut = null; LIG.duel.leave(); closeModal(); } }, true);
+    const m = await h.wait(); rmOut = null; if (m && modalOpen() && $('vCode')) vsIntro(m); else if (!m && modalOpen() && $('vCode')) { closeModal(); toast(L('Arkadaşın yanıt vermedi', 'Your friend didn’t answer')); }
+    return;
+  }
   modal(`<div class="bell">⚔️</div><h2>${L('Arkadaşını davet et', 'Invite your friend')}</h2><p>${L('Arkadaşın Ray’de “Koda katıl”a bu kodu yazsın ya da bağlantıyı açsın.', 'Your friend enters this code under “Join with code” in Ray, or opens the link.')}</p>
     <div class="vscode" id="vCode">${h.code}</div>
     <button id="vShare" class="btn primary"><span>${L('Daveti gönder', 'Send the invite')}</span></button>
@@ -3636,7 +3748,7 @@ async function vsHost() {
     vShare: async () => { const text = `${L('Ray’de kapışalım mı? ⚔️ Kod:', 'Duel me in Ray? ⚔️ Code:')} ${h.code}\n${url}`;
       try { const P = window.Capacitor?.Plugins?.Share; if (P) await P.share({ text }); else if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); toast(L('Panoya kopyalandı', 'Copied to clipboard')); } } catch {} },
     vX: () => { LIG.duel.leave(); closeModal(); } }, true);
-  const m = await h.wait(); if (m && $('vCode')) vsIntro(m);
+  const m = await h.wait(); if (m && modalOpen() && $('vCode')) vsIntro(m);
 }
 function vsJoinSheet(code = '') {
   modal(`<div class="bell">⚔️</div><h2>${L('Koda katıl', 'Join with code')}</h2>
@@ -3736,7 +3848,8 @@ function vsResult(d, r, ok, pts) {
     <div id="vsClimb"></div></div>
     <button id="vAgain" class="btn primary"><span>${L('Tekrar kapış', 'Duel again')}</span><small>${o.friend ? L('Arkadaşını yeniden davet et', 'Invite your friend again') : L('Yeni rakip aranır', 'Finds a new opponent')}</small></button>
     <button id="vHome" class="btn glassbtn">${L('Ana sayfa', 'Home')}</button>`,
-    { vAgain: () => { closeModal(); if (o.friend) { vsSheet(); vsHost(); } else { vsSheet(); vsFind(); } }, vHome: () => { closeModal(); show('home'); } }, true);
+    { vAgain: () => { closeModal(); if (o.friend) { vsSheet(); d.ou ? vsHost({ to: d.ou, nick: o.nick }) : vsHost(); } else { vsSheet(); vsFind(); } }, vHome: () => { closeModal(); show('home'); } }, true);
+  if (o.friend) invWatch(120);   // arkadaş "Tekrar kapış" derse onay penceresi burada da çıksın
   // puan sayarak artar
   const el = $('vrPts'), t0 = performance.now() + 350, T = 700;
   const step = () => { if (!el.isConnected) return; const f = Math.max(0, Math.min(1, (performance.now() - t0) / T)); el.textContent = '+' + Math.round(pts * (1 - Math.pow(1 - f, 3))); if (f < 1) requestAnimationFrame(step); else el.classList.add('done'); };

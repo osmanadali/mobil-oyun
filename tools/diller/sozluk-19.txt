@@ -145,3 +145,76 @@ fr: Retiré des amis
 ko: 친구에서 삭제했어요
 ja: フレンドから外しました
 zh: 已從好友中移除
+
+# 🔁 tekrar kapış daveti (1.2.3)
+@ {0} wants a rematch
+de: {0} will eine Revanche
+es: {0} quiere la revancha
+pt: {0} quer revanche
+fr: {0} veut une revanche
+ko: {0}님이 재대결을 원해요
+ja: {0}さんが再戦を希望しています
+zh: {0} 想再戰一場
+
+@ ⚔️ Accept
+de: ⚔️ Annehmen
+es: ⚔️ Aceptar
+pt: ⚔️ Aceitar
+fr: ⚔️ Accepter
+ko: ⚔️ 수락
+ja: ⚔️ 受ける
+zh: ⚔️ 接受
+
+@ No
+de: Nein
+es: No
+pt: Não
+fr: Non
+ko: 아니요
+ja: いいえ
+zh: 不要
+
+@ The invite expired
+de: Die Einladung ist abgelaufen
+es: La invitación caducó
+pt: O convite expirou
+fr: L’invitation a expiré
+ko: 초대가 만료됐어요
+ja: 招待の期限が切れました
+zh: 邀請已過期
+
+@ {0} invited
+de: {0} eingeladen
+es: {0} invitado
+pt: {0} convidado
+fr: {0} invité
+ko: {0}님을 초대했어요
+ja: {0}さんを招待しました
+zh: 已邀請 {0}
+
+@ Waiting for your friend to accept…
+de: Warte, bis dein Freund annimmt …
+es: Esperando a que tu amigo acepte…
+pt: Esperando seu amigo aceitar…
+fr: En attente de l’accord de ton ami…
+ko: 친구가 수락하기를 기다리는 중…
+ja: フレンドの承諾を待っています…
+zh: 等待好友接受…
+
+@ If they don’t see it, code: <b>{0}</b>
+de: Falls er es nicht sieht, Code: <b>{0}</b>
+es: Si no lo ve, código: <b>{0}</b>
+pt: Se não aparecer, código: <b>{0}</b>
+fr: S’il ne le voit pas, code : <b>{0}</b>
+ko: 보이지 않으면 코드: <b>{0}</b>
+ja: 表示されない場合のコード：<b>{0}</b>
+zh: 若對方沒看到，代碼：<b>{0}</b>
+
+@ Your friend didn’t answer
+de: Dein Freund hat nicht geantwortet
+es: Tu amigo no respondió
+pt: Seu amigo não respondeu
+fr: Ton ami n’a pas répondu
+ko: 친구가 응답하지 않았어요
+ja: フレンドから返事がありませんでした
+zh: 好友沒有回應
